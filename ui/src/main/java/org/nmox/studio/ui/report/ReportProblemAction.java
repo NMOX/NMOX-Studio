@@ -35,7 +35,20 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "Help", id = "org.nmox.studio.ui.report.ReportProblemAction")
 @ActionRegistration(displayName = "#CTL_ReportProblemAction", lazy = true)
 @ActionReference(path = "Menu/Help", position = 227)
-@Messages("CTL_ReportProblemAction=Report a Problem…")
+@Messages({
+    "CTL_ReportProblemAction=Report a Problem…",
+    "ReportProblemAction_gathering=Gathering diagnostics…",
+    "ReportProblemAction_areaName=Problem report, editable",
+    "ReportProblemAction_noteWhole=This is the whole report. NMOX Studio sends nothing.",
+    "ReportProblemAction_noteOpen=Open on GitHub pre-fills a new issue that you submit yourself; Copy puts the text on the clipboard.",
+    "ReportProblemAction_open=Open on GitHub",
+    "ReportProblemAction_copy=Copy",
+    "ReportProblemAction_cancel=Cancel",
+    "ReportProblemAction_title=Report a Problem",
+    "ReportProblemAction_copied=Report copied to the clipboard.",
+    "ReportProblemAction_clipped=The log tail was clipped to fit the issue URL — the full report is on your clipboard.",
+    "ReportProblemAction_noBrowser=No browser could be opened — the report is on your clipboard; paste it at {0}"
+})
 public final class ReportProblemAction implements ActionListener {
 
     private static final RequestProcessor RP = new RequestProcessor("Report a Problem", 1, true);
@@ -43,7 +56,7 @@ public final class ReportProblemAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        StatusDisplayer.getDefault().setStatusText("Gathering diagnostics…");
+        StatusDisplayer.getDefault().setStatusText(Bundle.ReportProblemAction_gathering());
         RP.post(() -> {
             String tail = ProblemReport.redact(ProblemReport.tail(readLogTail(), ProblemReport.MAX_LOG_LINES),
                     System.getProperty("user.home"), System.getProperty("user.name"));
@@ -118,39 +131,36 @@ public final class ReportProblemAction implements ActionListener {
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setCaretPosition(0);
-        area.getAccessibleContext().setAccessibleName("Problem report, editable");
+        area.getAccessibleContext().setAccessibleName(Bundle.ReportProblemAction_areaName());
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
         // two short labels, not one long line: a single-line label widens the
         // dialog past a laptop screen (the v2.69.6 walk), and the body is clamped
         JPanel note = new JPanel(new java.awt.GridLayout(2, 1));
-        note.add(new JLabel("This is the whole report. NMOX Studio sends nothing."));
-        note.add(new JLabel("Open on GitHub pre-fills a new issue that you submit yourself; Copy puts the text on the clipboard."));
+        note.add(new JLabel(Bundle.ReportProblemAction_noteWhole()));
+        note.add(new JLabel(Bundle.ReportProblemAction_noteOpen()));
         panel.add(note, java.awt.BorderLayout.NORTH);
         panel.add(org.nmox.studio.ui.util.DialogFit.toScreen(new JScrollPane(area)), java.awt.BorderLayout.CENTER);
-        Object open = "Open on GitHub";
-        Object copy = "Copy";
-        Object cancel = "Cancel";
-        NotifyDescriptor nd = new NotifyDescriptor(panel, "Report a Problem", NotifyDescriptor.DEFAULT_OPTION,
+        Object open = Bundle.ReportProblemAction_open();
+        Object copy = Bundle.ReportProblemAction_copy();
+        Object cancel = Bundle.ReportProblemAction_cancel();
+        NotifyDescriptor nd = new NotifyDescriptor(panel, Bundle.ReportProblemAction_title(), NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, new Object[]{open, copy, cancel}, cancel);
         Object answer = DialogDisplayer.getDefault().notify(nd);
         String text = area.getText();
         if (answer == copy) {
             copy(text);
-            StatusDisplayer.getDefault().setStatusText("Report copied to the clipboard.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.ReportProblemAction_copied());
         } else if (answer == open) {
             String url = ProblemReport.issueUrl(title, text);
             if (ProblemReport.clipped(url)) {
                 copy(text);
-                StatusDisplayer.getDefault().setStatusText(
-                        "The log tail was clipped to fit the issue URL — the full report is on your clipboard.");
+                StatusDisplayer.getDefault().setStatusText(Bundle.ReportProblemAction_clipped());
             }
             try {
                 java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
             } catch (Exception ex) {
                 copy(text);
-                StatusDisplayer.getDefault().setStatusText(
-                        "No browser could be opened — the report is on your clipboard; paste it at "
-                        + ProblemReport.NEW_ISSUE);
+                StatusDisplayer.getDefault().setStatusText(Bundle.ReportProblemAction_noBrowser(ProblemReport.NEW_ISSUE));
             }
         }
     }

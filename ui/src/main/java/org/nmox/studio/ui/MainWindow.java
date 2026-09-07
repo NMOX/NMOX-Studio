@@ -46,7 +46,44 @@ import org.openide.windows.WindowManager;
 @Messages({
     "CTL_MainWindowAction=Welcome",
     "CTL_MainWindowTopComponent=Welcome",
-    "HINT_MainWindowTopComponent=Start here: projects, learning spaces, and every tool window"
+    "HINT_MainWindowTopComponent=Start here: projects, learning spaces, and every tool window",
+    "MainWindow_tagline=The web studio with a rack — wire your tools like a synth.",
+    "MainWindow_columnStart=START",
+    "MainWindow_columnRecent=RECENT",
+    "MainWindow_columnTooling=TOOLING",
+    "MainWindow_columnFirstSteps=FIRST STEPS",
+    "MainWindow_columnFirstStepsProgress=FIRST STEPS · {0}",
+    "MainWindow_newExperiment=New Experiment…  ⇧⌘E",
+    "MainWindow_newProject=New Project…  ⇧⌘N",
+    "MainWindow_newLearningSpace=New Learning Space…  ⇧⌘L",
+    "MainWindow_openFolder=Open Folder…  ⌥⌘O",
+    "MainWindow_taskRack=Task Rack  ⌘9",
+    "MainWindow_workbench=Workbench  ⌥⌘0",
+    "MainWindow_projectStudio=Project Studio",
+    "MainWindow_browser=Browser  ⌥⌘4",
+    "MainWindow_irc=IRC  ⌥⌘3",
+    "MainWindow_tasks=Tasks  ⌥⌘1",
+    "MainWindow_tests=Tests  ⌥⌘2",
+    "MainWindow_blockStudio=Block Studio  ⌥⌘5",
+    "MainWindow_dbStudio=DB Studio  ⌥⌘7",
+    "MainWindow_contractStudio=Contract Studio  ⌥⌘6",
+    "MainWindow_apiStudio=API Studio  ⌥⌘8",
+    "MainWindow_infraDesigner=Infra Designer  ⌥⌘9",
+    "MainWindow_dockerPanel=Docker Panel  ⌘8",
+    "MainWindow_whatsNew=What's new",
+    "MainWindow_whatsNewTip=The release notes for this version, in the product (v2.64.0)",
+    "MainWindow_userGuide=User Guide ↗",
+    "MainWindow_userGuideTip=Open the user guide — install, first launch, and every window",
+    "MainWindow_website=Website ⇄",
+    "MainWindow_websiteTip=The bundled NMOX Studio site, served to you on localhost by the app itself",
+    "MainWindow_websiteName=Open the bundled website on localhost",
+    "MainWindow_noRecents=projects you open gather here",
+    "MainWindow_hideList=Hide this list",
+    "MainWindow_hideListTip=Hides the checklist; it never asks again",
+    "MainWindow_stepDone=✓  {0}",
+    "MainWindow_stepTodo=○  {0}",
+    "MainWindow_stepDoneName=done: {0} — {1}",
+    "MainWindow_stepTodoName=to do: {0} — {1}"
 })
 public final class MainWindow extends TopComponent {
 
@@ -93,10 +130,10 @@ public final class MainWindow extends TopComponent {
         private static final Color LINK = new Color(210, 212, 218);
         private static final Color DIM = new Color(110, 112, 118);
 
-        private final JPanel recentColumn = column("RECENT");
+        private final JPanel recentColumn = column(Bundle.MainWindow_columnRecent());
         // v2.66.0 the PM's activation wish: five first gestures that tick
         // themselves from records the product already keeps
-        private final JPanel gettingStarted = column("FIRST STEPS");
+        private final JPanel gettingStarted = column(Bundle.MainWindow_columnFirstSteps());
         private static final org.openide.util.RequestProcessor SIGNALS =
                 new org.openide.util.RequestProcessor("Getting Started", 1, true);
 
@@ -110,41 +147,40 @@ public final class MainWindow extends TopComponent {
             title.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 42));
             title.setForeground(new Color(235, 236, 240));
 
-            JLabel tagline = new JLabel(
-                    "The web studio with a rack — wire your tools like a synth.");
+            JLabel tagline = new JLabel(Bundle.MainWindow_tagline());
             tagline.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 15));
             tagline.setForeground(HEADING);
 
-            JPanel start = column("START");
+            JPanel start = column(Bundle.MainWindow_columnStart());
             // the experiment leads (v2.36.0, David's framing: the FIRST
             // tool for trying a stack — zero ceremony, born teaching)
-            start.add(actionLink("New Experiment…  ⇧⌘E", "File",
+            start.add(actionLink(Bundle.MainWindow_newExperiment(), "File",
                     "org.nmox.studio.ui.actions.NewExperimentAction"));
-            start.add(actionLink("New Project…  ⇧⌘N", "File",
+            start.add(actionLink(Bundle.MainWindow_newProject(), "File",
                     "org.nmox.studio.ui.actions.NewProjectAction"));
-            start.add(actionLink("New Learning Space…  ⇧⌘L", "File",
+            start.add(actionLink(Bundle.MainWindow_newLearningSpace(), "File",
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
-            start.add(actionLink("Open Folder…  ⌥⌘O", "File",
+            start.add(actionLink(Bundle.MainWindow_openFolder(), "File",
                     "org.nmox.studio.ui.actions.OpenFolderAction"));
 
             // Every chord here is live-verified: the platform's Keymaps
             // profile already owns ⌘0, ⇧⌘6, ⇧⌘7 and ⇧⌘8 (Editor, Tasks,
             // Properties, Palette), so advertising them was advertising the
             // wrong window. The studios live on ⌥⌘, which nothing claims.
-            JPanel windows = column("TOOLING");
-            windows.add(windowLink("Task Rack  ⌘9", "RackTopComponent"));
-            windows.add(windowLink("Workbench  ⌥⌘0", "ProjectExplorerTopComponent"));
-            windows.add(windowLink("Project Studio", "ProjectStudioTopComponent"));
-            windows.add(windowLink("Browser  ⌥⌘4", "WebBrowserTopComponent"));
-            windows.add(windowLink("IRC  ⌥⌘3", "IrcTopComponent"));
-            windows.add(windowLink("Tasks  ⌥⌘1", "TasksTopComponent"));
-            windows.add(windowLink("Tests  ⌥⌘2", "TestsExplorerTopComponent"));
-            windows.add(windowLink("Block Studio  ⌥⌘5", "BlockStudioTopComponent"));
-            windows.add(windowLink("DB Studio  ⌥⌘7", "DbStudioTopComponent"));
-            windows.add(windowLink("Contract Studio  ⌥⌘6", "Web3StudioTopComponent"));
-            windows.add(windowLink("API Studio  ⌥⌘8", "ApiClientTopComponent"));
-            windows.add(windowLink("Infra Designer  ⌥⌘9", "InfraDesignerTopComponent"));
-            windows.add(windowLink("Docker Panel  ⌘8", "DockerPanelTopComponent"));
+            JPanel windows = column(Bundle.MainWindow_columnTooling());
+            windows.add(windowLink(Bundle.MainWindow_taskRack(), "RackTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_workbench(), "ProjectExplorerTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_projectStudio(), "ProjectStudioTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_browser(), "WebBrowserTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_irc(), "IrcTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_tasks(), "TasksTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_tests(), "TestsExplorerTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_blockStudio(), "BlockStudioTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_dbStudio(), "DbStudioTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_contractStudio(), "Web3StudioTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_apiStudio(), "ApiClientTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_infraDesigner(), "InfraDesignerTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_dockerPanel(), "DockerPanelTopComponent"));
 
             JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
             columns.setOpaque(false);
@@ -157,8 +193,8 @@ public final class MainWindow extends TopComponent {
             JLabel version = new JLabel(PlainText.plain(footerText()));
             version.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));
             version.setForeground(DIM);
-            JButton whatsNew = textButton("What's new", DIM);
-            whatsNew.setToolTipText("The release notes for this version, in the product (v2.64.0)");
+            JButton whatsNew = textButton(Bundle.MainWindow_whatsNew(), DIM);
+            whatsNew.setToolTipText(Bundle.MainWindow_whatsNewTip());
             whatsNew.addActionListener(e -> org.nmox.studio.ui.whatsnew.WhatsNew.showCurrent());
             // v1.216.0 (arc review): v1.210.0 declared USER_GUIDE_URL and
             // its changelog said the Welcome screen offers the User Guide
@@ -166,15 +202,15 @@ public final class MainWindow extends TopComponent {
             // for six releases: the v1.38.1 lesson (an affordance
             // documented but never exercised is untested), caught by the
             // review's dead-reference sweep.
-            JButton userGuide = textButton("User Guide ↗", DIM);
-            userGuide.setToolTipText("Open the user guide — install, first launch, and every window");
+            JButton userGuide = textButton(Bundle.MainWindow_userGuide(), DIM);
+            userGuide.setToolTipText(Bundle.MainWindow_userGuideTip());
             userGuide.addActionListener(e -> browse(USER_GUIDE_URL));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
             // the product's own site, served by the product (v2.40.0)
-            JButton website = textButton("Website ⇄", DIM);
-            website.setToolTipText("The bundled NMOX Studio site, served to you on localhost by the app itself");
-            website.getAccessibleContext().setAccessibleName("Open the bundled website on localhost");
+            JButton website = textButton(Bundle.MainWindow_website(), DIM);
+            website.setToolTipText(Bundle.MainWindow_websiteTip());
+            website.getAccessibleContext().setAccessibleName(Bundle.MainWindow_websiteName());
             website.addActionListener(e -> {
                 javax.swing.Action a = org.openide.awt.Actions.forID("Help",
                         "org.nmox.studio.ui.actions.OpenSiteAction");
@@ -202,10 +238,10 @@ public final class MainWindow extends TopComponent {
         /** Rebuilds the recent-projects column from the live service. */
         void refreshRecents() {
             recentColumn.removeAll();
-            recentColumn.add(columnHeading("RECENT"));
+            recentColumn.add(columnHeading(Bundle.MainWindow_columnRecent()));
             List<File> recents = recentProjects();
             if (recents.isEmpty()) {
-                JLabel none = new JLabel("projects you open gather here");
+                JLabel none = new JLabel(Bundle.MainWindow_noRecents());
                 none.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
                 none.setForeground(DIM);
                 none.setAlignmentX(Component.LEFT_ALIGNMENT);
@@ -245,14 +281,14 @@ public final class MainWindow extends TopComponent {
             boolean visible = org.nmox.studio.ui.gettingstarted.GettingStarted.visible(done, hidden);
             gettingStarted.setVisible(visible);
             if (visible) {
-                gettingStarted.add(columnHeading("FIRST STEPS · "
-                        + org.nmox.studio.ui.gettingstarted.GettingStarted.progress(done)));
+                gettingStarted.add(columnHeading(Bundle.MainWindow_columnFirstStepsProgress(
+                        org.nmox.studio.ui.gettingstarted.GettingStarted.progress(done))));
                 for (org.nmox.studio.ui.gettingstarted.GettingStarted.Step step
                         : org.nmox.studio.ui.gettingstarted.GettingStarted.STEPS) {
                     gettingStarted.add(stepLink(step, done.contains(step.key())));
                 }
-                JButton hide = textButton("Hide this list", DIM);
-                hide.setToolTipText("Hides the checklist; it never asks again");
+                JButton hide = textButton(Bundle.MainWindow_hideList(), DIM);
+                hide.setToolTipText(Bundle.MainWindow_hideListTip());
                 hide.addActionListener(e -> {
                     org.nmox.studio.ui.gettingstarted.GettingStartedSignals.hide();
                     paintGettingStarted(done, true);
@@ -315,11 +351,12 @@ public final class MainWindow extends TopComponent {
          */
         private static JButton stepLink(org.nmox.studio.ui.gettingstarted.GettingStarted.Step step,
                 boolean ticked) {
-            JButton row = textButton((ticked ? "✓  " : "○  ") + step.label(),
+            JButton row = textButton(ticked ? Bundle.MainWindow_stepDone(step.label()) : Bundle.MainWindow_stepTodo(step.label()),
                     ticked ? DIM : new Color(225, 226, 230));
             row.setToolTipText(PlainText.plain(step.gesture()));
             row.getAccessibleContext().setAccessibleName(
-                    (ticked ? "done: " : "to do: ") + step.label() + " — " + step.gesture());
+                    ticked ? Bundle.MainWindow_stepDoneName(step.label(), step.gesture())
+                            : Bundle.MainWindow_stepTodoName(step.label(), step.gesture()));
             org.nmox.studio.ui.gettingstarted.GettingStarted.Target t = step.target();
             row.addActionListener(e -> {
                 switch (t.kind()) {

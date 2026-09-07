@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "kotlin.tmLanguage.json", mimeType = "text/x-kotlin")
-@MIMEResolver.ExtensionRegistration(displayName = "Kotlin", mimeType = "text/x-kotlin", extension = {"kt", "kts"}, position = 2200)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_KotlinGrammar_LOADER", mimeType = "text/x-kotlin", extension = {"kt", "kts"}, position = 2200)
+@org.openide.util.NbBundle.Messages("LBL_KotlinGrammar_LOADER=Kotlin")
 public final class KotlinGrammar {
 
     private KotlinGrammar() {

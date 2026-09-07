@@ -18,7 +18,8 @@ import org.openide.filesystems.MIMEResolver;
  * {@code OutlineModel}, all keyed on {@code text/coffeescript}.
  */
 @GrammarRegistration(grammar = "coffeescript.tmLanguage.json", mimeType = "text/coffeescript")
-@MIMEResolver.ExtensionRegistration(displayName = "CoffeeScript", mimeType = "text/coffeescript", extension = {"coffee", "litcoffee", "cson"}, position = 2510)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_CoffeeScriptGrammar_LOADER", mimeType = "text/coffeescript", extension = {"coffee", "litcoffee", "cson"}, position = 2510)
+@org.openide.util.NbBundle.Messages("LBL_CoffeeScriptGrammar_LOADER=CoffeeScript")
 public final class CoffeeScriptGrammar {
 
     private CoffeeScriptGrammar() {

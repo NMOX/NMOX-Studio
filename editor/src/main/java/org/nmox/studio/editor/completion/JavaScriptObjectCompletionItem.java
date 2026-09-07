@@ -19,6 +19,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * Constructed per query by {@link JavaScriptCompletionProvider} and the
  * polyglot provider's buffer-identifier lane.
  */
+@org.openide.util.NbBundle.Messages({
+    "JavaScriptObjectCompletionItem_hint=[object]"
+})
 public class JavaScriptObjectCompletionItem implements CompletionItem {
     
     private final String objectName;
@@ -59,7 +62,7 @@ public class JavaScriptObjectCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             objectName,
-            "[object]",
+            Bundle.JavaScriptObjectCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(255, 140, 0),

@@ -39,6 +39,11 @@ import javax.swing.text.JTextComponent;
  * is off (a hidden BoxLayout child costs no width), so the toggle needs
  * no editor reopen.
  */
+@org.openide.util.NbBundle.Messages({
+    "MinimapSideBar_tooltip=Minimap — click to scroll",
+    "MinimapSideBar_accessibleName=Minimap",
+    "MinimapSideBar_accessibleDescription=Document overview; click or drag to scroll the editor"
+})
 public final class MinimapSideBar extends JComponent {
 
     /** Strip width in pixels: enough for a 120-column silhouette to read. */
@@ -83,7 +88,7 @@ public final class MinimapSideBar extends JComponent {
         this.target = target;
         reshape.setRepeats(false);
         setOpaque(true);
-        setToolTipText("Minimap — click to scroll");
+        setToolTipText(Bundle.MinimapSideBar_tooltip());
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -270,12 +275,12 @@ public final class MinimapSideBar extends JComponent {
             accessibleContext = new AccessibleJComponent() {
                 @Override
                 public String getAccessibleName() {
-                    return "Minimap";
+                    return Bundle.MinimapSideBar_accessibleName();
                 }
 
                 @Override
                 public String getAccessibleDescription() {
-                    return "Document overview; click or drag to scroll the editor";
+                    return Bundle.MinimapSideBar_accessibleDescription();
                 }
             };
         }

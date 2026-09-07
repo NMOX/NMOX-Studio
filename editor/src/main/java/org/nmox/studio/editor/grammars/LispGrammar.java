@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "commonlisp.tmLanguage.json", mimeType = "text/x-lisp")
-@MIMEResolver.ExtensionRegistration(displayName = "Lisp", mimeType = "text/x-lisp", extension = {"lisp", "cl", "asd", "el"}, position = 2230)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_LispGrammar_LOADER", mimeType = "text/x-lisp", extension = {"lisp", "cl", "asd", "el"}, position = 2230)
+@org.openide.util.NbBundle.Messages("LBL_LispGrammar_LOADER=Lisp")
 public final class LispGrammar {
 
     private LispGrammar() {

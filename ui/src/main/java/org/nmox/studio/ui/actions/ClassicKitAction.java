@@ -37,14 +37,35 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ClassicKitAction")
 @ActionRegistration(displayName = "#CTL_ClassicKitAction")
 @ActionReference(path = "Menu/File", position = 119)
-@Messages("CTL_ClassicKitAction=Classic Kit…")
+@Messages({
+    "CTL_ClassicKitAction=Classic Kit…",
+    "ClassicKitAction_libraryWithUnderscore={0} (+ {1} — hard dependency, wired first)",
+    "ClassicKitAction_webpackBox=webpack.config.js — entry auto-detected, dist/bundle.js, dev server",
+    "ClassicKitAction_gruntBox=Gruntfile.js — uglify js/ into dist/, watch, build/default tasks",
+    "ClassicKitAction_gulpBox=gulpfile.js — gulp 4 exports: build, watch",
+    "ClassicKitAction_bowerBox=bower.json — name from folder, records vendored libraries",
+    "ClassicKitAction_lineChanged=  ✓ {0}",
+    "ClassicKitAction_lineKept=  – {0}",
+    "ClassicKitAction_lineStatus=  ({0})",
+    "ClassicKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",
+    "ClassicKitAction_vendoredRadio=Vendored — pinned builds copied into vendor/, script tags wired into index.html",
+    "ClassicKitAction_npmRadio=npm — added to package.json dependencies (no network run here)",
+    "ClassicKitAction_libraryHeading=Add a classic library:",
+    "ClassicKitAction_deliveryHeading=Delivery:",
+    "ClassicKitAction_buildToolHeading=Add a build tool:",
+    "ClassicKitAction_note=<html><small>Existing files are never overwritten — an existing config gets a .suggested sibling instead.</small></html>",
+    "ClassicKitAction_title=Classic Kit — {0}",
+    "ClassicKitAction_messageName=Message",
+    "ClassicKitAction_report=Classic Kit:\n\n{0}",
+    "ClassicKitAction_couldNotWrite=Could not write: {0}"
+})
 public final class ClassicKitAction implements ActionListener {
 
     /** Checkbox text; Backbone announces the Underscore it brings along. */
     static String libraryLabel(ClassicKit.Lib lib) {
         if ("backbone".equals(lib.id())) {
-            return lib.label() + " (+ " + ClassicKit.underscore().label()
-                    + " — hard dependency, wired first)";
+            return Bundle.ClassicKitAction_libraryWithUnderscore(lib.label(),
+                    ClassicKit.underscore().label());
         }
         return lib.label();
     }
@@ -57,10 +78,10 @@ public final class ClassicKitAction implements ActionListener {
     /** The generators, id → honest checkbox text. */
     static Map<String, String> generatorLabels() {
         Map<String, String> labels = new LinkedHashMap<>();
-        labels.put("webpack", "webpack.config.js — entry auto-detected, dist/bundle.js, dev server");
-        labels.put("grunt", "Gruntfile.js — uglify js/ into dist/, watch, build/default tasks");
-        labels.put("gulp", "gulpfile.js — gulp 4 exports: build, watch");
-        labels.put("bower", "bower.json — name from folder, records vendored libraries");
+        labels.put("webpack", Bundle.ClassicKitAction_webpackBox());
+        labels.put("grunt", Bundle.ClassicKitAction_gruntBox());
+        labels.put("gulp", Bundle.ClassicKitAction_gulpBox());
+        labels.put("bower", Bundle.ClassicKitAction_bowerBox());
         return labels;
     }
 
@@ -68,9 +89,10 @@ public final class ClassicKitAction implements ActionListener {
     static String renderReport(List<ClassicKit.Outcome> outcomes) {
         StringBuilder report = new StringBuilder();
         for (ClassicKit.Outcome o : outcomes) {
-            report.append(o.changed() ? "  ✓ " : "  – ").append(o.path());
+            report.append(o.changed() ? Bundle.ClassicKitAction_lineChanged(o.path())
+                    : Bundle.ClassicKitAction_lineKept(o.path()));
             if (!"written".equals(o.status())) {
-                report.append("  (").append(o.status()).append(')');
+                report.append(Bundle.ClassicKitAction_lineStatus(o.status()));
             }
             report.append('\n');
         }
@@ -82,7 +104,7 @@ public final class ClassicKitAction implements ActionListener {
         File project = RackService.getDefault().getRack().getProjectDir();
         if (project == null || !project.isDirectory()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Aim the studio at a project first (open a folder or project)."));
+                    Bundle.ClassicKitAction_aimFirst()));
             return;
         }
 
@@ -92,9 +114,9 @@ public final class ClassicKitAction implements ActionListener {
                     "jquery".equals(lib.id())));
         }
         JRadioButton vendored = new JRadioButton(
-                "Vendored — pinned builds copied into vendor/, script tags wired into index.html", true);
+                Bundle.ClassicKitAction_vendoredRadio(), true);
         JRadioButton npm = new JRadioButton(
-                "npm — added to package.json dependencies (no network run here)");
+                Bundle.ClassicKitAction_npmRadio());
         ButtonGroup delivery = new ButtonGroup();
         delivery.add(vendored);
         delivery.add(npm);
@@ -116,18 +138,17 @@ public final class ClassicKitAction implements ActionListener {
 
         JPanel panel = new JPanel(new GridLayout(0, 1, 0, 4));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Add a classic library:"));
+        panel.add(new JLabel(Bundle.ClassicKitAction_libraryHeading()));
         libraryBoxes.values().forEach(panel::add);
-        panel.add(new JLabel("Delivery:"));
+        panel.add(new JLabel(Bundle.ClassicKitAction_deliveryHeading()));
         panel.add(vendored);
         panel.add(npm);
-        panel.add(new JLabel("Add a build tool:"));
+        panel.add(new JLabel(Bundle.ClassicKitAction_buildToolHeading()));
         generatorBoxes.values().forEach(panel::add);
-        panel.add(new JLabel("<html><small>Existing files are never overwritten — "
-                + "an existing config gets a .suggested sibling instead.</small></html>"));
+        panel.add(new JLabel(Bundle.ClassicKitAction_note()));
 
         DialogDescriptor descriptor = new DialogDescriptor(panel,
-                "Classic Kit — " + project.getName());
+                Bundle.ClassicKitAction_title(project.getName()));
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -150,7 +171,7 @@ public final class ClassicKitAction implements ActionListener {
         List<String> problems = ClassicKit.validate(opts, project);
         if (!problems.isEmpty()) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(String.join("\n", problems), "Message"),
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(String.join("\n", problems), Bundle.ClassicKitAction_messageName()),
                             NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
@@ -161,12 +182,12 @@ public final class ClassicKitAction implements ActionListener {
                 List<ClassicKit.Outcome> outcomes = ClassicKit.write(project, opts);
                 String report = renderReport(outcomes);
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Classic Kit:\n\n" + report, "Message"),
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ClassicKitAction_report(report), Bundle.ClassicKitAction_messageName()),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
-                String message = "Could not write: " + ex.getMessage();
+                String message = Bundle.ClassicKitAction_couldNotWrite(ex.getMessage());
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ClassicKitAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

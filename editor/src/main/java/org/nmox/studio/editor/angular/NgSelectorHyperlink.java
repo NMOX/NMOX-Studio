@@ -69,7 +69,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Go to the component that declares this selector";
+        return NbBundle.getMessage(NgSelectorHyperlink.class, "NgSelectorHyperlink_tooltip");
     }
 
     /**
@@ -106,8 +106,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
             java.awt.EventQueue.invokeLater(() -> {
                 if (found == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No component in this project declares the selector \""
-                            + tag + '"');
+                            NbBundle.getMessage(NgSelectorHyperlink.class, "NgSelectorHyperlink_noComponent", tag));
                 } else {
                     openAt(found.file(), found.offset());
                 }
@@ -249,7 +248,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
             }
         } catch (Exception ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + file.getName() + ": " + ex.getMessage());
+                    NbBundle.getMessage(NgSelectorHyperlink.class, "NgSelectorHyperlink_couldNotOpen", file.getName(), ex.getMessage()));
         }
     }
 }

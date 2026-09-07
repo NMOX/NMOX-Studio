@@ -261,6 +261,7 @@
                                 <exclude>**/PackagedConfGateTest.java</exclude>
                                 <exclude>**/PackagedLicenseGateTest.java</exclude>
                                 <exclude>**/PackagedSiteGateTest.java</exclude>
+                                <exclude>**/LocaleBundleParityTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
                             </excludes>
                         </configuration>
@@ -279,6 +280,7 @@
                                 <include>**/PackagedConfGateTest.java</include>
                                 <include>**/PackagedLicenseGateTest.java</include>
                                 <include>**/PackagedSiteGateTest.java</include>
+                                <include>**/LocaleBundleParityTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                             </includes>
                         </configuration>

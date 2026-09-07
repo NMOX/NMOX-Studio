@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "vlang.tmLanguage.json", mimeType = "text/x-vlang")
-@MIMEResolver.ExtensionRegistration(displayName = "V", mimeType = "text/x-vlang", extension = {"v", "vsh", "vv"}, position = 2438)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_VGrammar_LOADER", mimeType = "text/x-vlang", extension = {"v", "vsh", "vv"}, position = 2438)
+@org.openide.util.NbBundle.Messages("LBL_VGrammar_LOADER=V")
 public final class VGrammar {
 
     private VGrammar() {

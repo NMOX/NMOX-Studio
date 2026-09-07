@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "astro.tmLanguage.json", mimeType = "text/x-astro")
-@MIMEResolver.ExtensionRegistration(displayName = "Astro", mimeType = "text/x-astro", extension = {"astro"}, position = 2000)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_AstroGrammar_LOADER", mimeType = "text/x-astro", extension = {"astro"}, position = 2000)
+@org.openide.util.NbBundle.Messages("LBL_AstroGrammar_LOADER=Astro")
 public final class AstroGrammar {
 
     private AstroGrammar() {

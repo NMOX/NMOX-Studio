@@ -21,6 +21,14 @@ import org.nmox.studio.rack.service.WorkspaceTrust;
  * running there and deletes the tree. The {@code .nmox-experiment}
  * marker is the contract: only marked directories can be discarded.
  */
+@org.openide.util.NbBundle.Messages({
+    "Experiments_sizeGb={0} GB",
+    "Experiments_sizeMb={0} MB",
+    "Experiments_sizeKb={0} KB",
+    "Experiments_sizeB={0} B",
+    "Experiments_shelfOne={0} experiment · {1} on disk — discard what you''re done with, promote what grew up.",
+    "Experiments_shelfMany={0} experiments · {1} on disk — discard what you''re done with, promote what grew up."
+})
 public final class Experiments {
 
     public static final String MARKER = ".nmox-experiment";
@@ -141,12 +149,12 @@ public final class Experiments {
      */
     public static String shelfSummary(int count, long bytes) {
         String size = bytes >= 1024L * 1024 * 1024
-                ? String.format(java.util.Locale.ROOT, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
+                ? Bundle.Experiments_sizeGb(String.format(java.util.Locale.ROOT, "%.1f", bytes / (1024.0 * 1024 * 1024)))
                 : bytes >= 1024L * 1024
-                ? (bytes / (1024 * 1024)) + " MB"
-                : bytes >= 1024 ? (bytes / 1024) + " KB" : bytes + " B";
-        return count + (count == 1 ? " experiment · " : " experiments · ") + size
-                + " on disk — discard what you're done with, promote what grew up.";
+                ? Bundle.Experiments_sizeMb(String.valueOf(bytes / (1024 * 1024)))
+                : bytes >= 1024 ? Bundle.Experiments_sizeKb(String.valueOf(bytes / 1024)) : Bundle.Experiments_sizeB(String.valueOf(bytes));
+        return count == 1 ? Bundle.Experiments_shelfOne(String.valueOf(count), size)
+                : Bundle.Experiments_shelfMany(String.valueOf(count), size);
     }
 
     /**

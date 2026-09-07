@@ -23,7 +23,8 @@ public class LiveRunSearchProvider implements SearchProvider {
         }
         for (LiveRuns.Run run : LiveRuns.live()) {
             if (matches(needle, run.label())) {
-                String label = "Stop · " + run.label() + " " + LiveRuns.since(run.id());
+                String label = org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class,
+                        "LiveRunSearchProvider_stop", run.label(), LiveRuns.since(run.id()));
                 if (!response.addResult(() -> stop(run.id(), run.label()), label.trim())) {
                     return;
                 }
@@ -39,6 +40,8 @@ public class LiveRunSearchProvider implements SearchProvider {
     private static void stop(String id, String label) {
         LiveRuns.Run r = LiveRuns.stop(id);
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                org.nmox.studio.core.util.PlainStatus.text(r == null ? label + " had already finished" : "Stopped: " + label));
+                org.nmox.studio.core.util.PlainStatus.text(r == null
+                        ? org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class, "LiveRunSearchProvider_alreadyFinished", label)
+                        : org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class, "LiveRunSearchProvider_stopped", label)));
     }
 }

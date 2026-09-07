@@ -59,7 +59,7 @@ public class ToggleLineCommentAction extends BaseAction {
                     toggleBlock(doc, selStart, selEnd, block.open(), block.close());
                 }
             } catch (BadLocationException ex) {
-                Utilities.setStatusBoldText(target, "Toggle comment failed");
+                Utilities.setStatusBoldText(target, org.openide.util.NbBundle.getMessage(ToggleLineCommentAction.class, "ToggleLineCommentAction_failed"));
             }
         });
     }

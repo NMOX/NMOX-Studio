@@ -56,7 +56,37 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_RackAction=Task Rack",
     "CTL_RackTopComponent=Task Rack",
-    "HINT_RackTopComponent=Reason-style rack of web development task devices"
+    "HINT_RackTopComponent=Reason-style rack of web development task devices",
+    "RackTopComponent_projectButton=Project…",
+    "RackTopComponent_projectTooltip=Choose the project directory the rack operates on",
+    "RackTopComponent_chooserTitle=Select Project Directory",
+    "RackTopComponent_rearToggle=Rear (Tab)",
+    "RackTopComponent_frontToggle=Front (Tab)",
+    "RackTopComponent_flipTooltip=Flip the rack around to patch cables (Tab)",
+    "RackTopComponent_savePatch=Save Patch",
+    "RackTopComponent_savedLabel={0}  [saved]",
+    "RackTopComponent_saveFailed=Could not save the patch: {0}",
+    "RackTopComponent_loadPatch=Load Patch",
+    "RackTopComponent_theSavedPatch=the saved patch",
+    "RackTopComponent_noPatchInProject=No {0} in project.",
+    "RackTopComponent_presetsButton=Presets ▾",
+    "RackTopComponent_presetsTooltip=Wire a ready-made pipeline into the rack — drop a saved patch into ~/.nmox/presets.d to add your own",
+    "RackTopComponent_exportCi=Export CI…",
+    "RackTopComponent_exportCiTooltip=Compile this patch into .github/workflows/nmox-rack.yml — the same commands the rack runs, as a GitHub Actions pipeline",
+    "RackTopComponent_exported=Exported {0}",
+    "RackTopComponent_exportFailed=Could not export the CI workflow: {0}",
+    "RackTopComponent_stopAll=Stop All",
+    "RackTopComponent_stopAllTooltip=Kill every process the rack is running",
+    "RackTopComponent_stoppedOne=Stopped {0} tool",
+    "RackTopComponent_stoppedMany=Stopped {0} tools",
+    "RackTopComponent_stoppingOne=Stopping {0} tool…",
+    "RackTopComponent_stoppingMany=Stopping {0} tools…",
+    "RackTopComponent_replaceConfirm=Replace the rack with {0}? This patch has unsaved changes, and loading cannot be undone — save it first if you want to keep it.",
+    "RackTopComponent_replaceTitle=Replace Rack",
+    "RackTopComponent_thePreset=the {0} preset",
+    "RackTopComponent_presetFailed=Could not wire the preset: {0}",
+    "RackTopComponent_yoursItem={0} · yours",
+    "RackTopComponent_loadFailed=Could not load the patch: {0}"
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -201,12 +231,12 @@ public final class RackTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
 
-        JButton chooseProject = new JButton("Project…");
-        chooseProject.setToolTipText("Choose the project directory the rack operates on");
+        JButton chooseProject = new JButton(Bundle.RackTopComponent_projectButton());
+        chooseProject.setToolTipText(Bundle.RackTopComponent_projectTooltip());
         chooseProject.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(rack.getProjectDir());
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setDialogTitle("Select Project Directory");
+            chooser.setDialogTitle(Bundle.RackTopComponent_chooserTitle());
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 // a saved patch in the chosen project loads automatically
                 org.nmox.studio.rack.service.RackService.getDefault()
@@ -219,17 +249,17 @@ public final class RackTopComponent extends TopComponent {
         bar.add(projectLabel);
         bar.addSeparator();
 
-        flipToggle = new JToggleButton("Rear (Tab)");
-        flipToggle.setToolTipText("Flip the rack around to patch cables (Tab)");
+        flipToggle = new JToggleButton(Bundle.RackTopComponent_rearToggle());
+        flipToggle.setToolTipText(Bundle.RackTopComponent_flipTooltip());
         flipToggle.setFocusable(false);
         flipToggle.addActionListener(e -> {
             rackPanel.setFront(!flipToggle.isSelected());
-            flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? "Front (Tab)" : "Rear (Tab)"));
+            flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? Bundle.RackTopComponent_frontToggle() : Bundle.RackTopComponent_rearToggle()));
         });
         bar.add(flipToggle);
         bar.addSeparator();
 
-        JButton save = new JButton("Save Patch");
+        JButton save = new JButton(Bundle.RackTopComponent_savePatch());
         save.addActionListener(e -> {
             File target = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
             // the JSON snapshot is taken here (synchronous, model-consistent);
@@ -245,7 +275,7 @@ public final class RackTopComponent extends TopComponent {
                         markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
                         // never appended onto itself across repeated saves
-                        projectLabel.setText(PlainText.plain(projectName + "  [saved]"));
+                        projectLabel.setText(PlainText.plain(Bundle.RackTopComponent_savedLabel(projectName)));
                         javax.swing.Timer revert = new javax.swing.Timer(2000,
                                 ev -> updateProjectLabel());
                         revert.setRepeats(false);
@@ -253,29 +283,28 @@ public final class RackTopComponent extends TopComponent {
                     });
                 } catch (IOException ex) {
                     java.awt.EventQueue.invokeLater(() ->
-                            error("Could not save the patch: " + ex.getMessage()));
+                            error(Bundle.RackTopComponent_saveFailed(ex.getMessage())));
                 }
             });
         });
         bar.add(save);
 
-        JButton load = new JButton("Load Patch");
+        JButton load = new JButton(Bundle.RackTopComponent_loadPatch());
         load.addActionListener(e -> {
             File source = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
             if (source.isFile()) {
-                if (!confirmReplace("the saved patch")) {
+                if (!confirmReplace(Bundle.RackTopComponent_theSavedPatch())) {
                     return;
                 }
                 loadPatch(source);
             } else {
-                info("No " + RackIO.DEFAULT_FILENAME + " in project.");
+                info(Bundle.RackTopComponent_noPatchInProject(RackIO.DEFAULT_FILENAME));
             }
         });
         bar.add(load);
 
-        JButton presets = new JButton("Presets ▾");
-        presets.setToolTipText("Wire a ready-made pipeline into the rack —"
-                + " drop a saved patch into ~/.nmox/presets.d to add your own");
+        JButton presets = new JButton(Bundle.RackTopComponent_presetsButton());
+        presets.setToolTipText(Bundle.RackTopComponent_presetsTooltip());
         presets.addActionListener(e -> {
             // the drop-in scan is file IO — off the EDT per the v1.33.1 law,
             // then the whole menu (built-ins + yours) shows on the callback;
@@ -295,9 +324,8 @@ public final class RackTopComponent extends TopComponent {
         });
         bar.add(presets);
 
-        JButton exportCi = new JButton("Export CI…");
-        exportCi.setToolTipText("Compile this patch into .github/workflows/nmox-rack.yml —"
-                + " the same commands the rack runs, as a GitHub Actions pipeline");
+        JButton exportCi = new JButton(Bundle.RackTopComponent_exportCi());
+        exportCi.setToolTipText(Bundle.RackTopComponent_exportCiTooltip());
         exportCi.addActionListener(e -> {
             // YAML built here (synchronous, model-consistent on the EDT); the
             // mkdir + write ride the lane — the same no-blocking-I/O-on-the-EDT
@@ -312,22 +340,22 @@ public final class RackTopComponent extends TopComponent {
                             java.nio.charset.StandardCharsets.UTF_8);
                     java.awt.EventQueue.invokeLater(() -> {
                         org.openide.awt.StatusDisplayer.getDefault()
-                                .setStatusText("Exported " + out.getAbsolutePath());
+                                .setStatusText(Bundle.RackTopComponent_exported(out.getAbsolutePath()));
                         org.nmox.studio.rack.engine.FileLink.open(
                                 new org.nmox.studio.rack.engine.FileLink.Location(out, 1));
                     });
                 } catch (Exception ex) {
                     java.awt.EventQueue.invokeLater(() ->
-                            error("Could not export the CI workflow: " + ex.getMessage()));
+                            error(Bundle.RackTopComponent_exportFailed(ex.getMessage())));
                 }
             });
         });
         bar.add(exportCi);
         bar.addSeparator();
 
-        JButton stopAll = new JButton("Stop All");
+        JButton stopAll = new JButton(Bundle.RackTopComponent_stopAll());
         stopAll.setForeground(new Color(180, 40, 40));
-        stopAll.setToolTipText("Kill every process the rack is running");
+        stopAll.setToolTipText(Bundle.RackTopComponent_stopAllTooltip());
         stopAll.addActionListener(e -> {
             // async: panic() escalates TERM → grace → KILL and can block
             // ~2.5s per stubborn device — that must not freeze the paint
@@ -345,14 +373,14 @@ public final class RackTopComponent extends TopComponent {
                 stopAll.setEnabled(true);
                 if (n > 0) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                            "Stopped " + n + (n == 1 ? " tool" : " tools"));
+                            n == 1 ? Bundle.RackTopComponent_stoppedOne(String.valueOf(n)) : Bundle.RackTopComponent_stoppedMany(String.valueOf(n)));
                 }
             });
             if (started) {
                 stopAll.setEnabled(false);
                 if (n > 0) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                            "Stopping " + n + (n == 1 ? " tool…" : " tools…"));
+                            n == 1 ? Bundle.RackTopComponent_stoppingOne(String.valueOf(n)) : Bundle.RackTopComponent_stoppingMany(String.valueOf(n)));
                 }
             }
         });
@@ -393,10 +421,8 @@ public final class RackTopComponent extends TopComponent {
             return true;
         }
         org.openide.NotifyDescriptor confirm = new org.openide.NotifyDescriptor(
-                "Replace the rack with " + what + "? This patch has unsaved"
-                        + " changes, and loading cannot be undone — save it"
-                        + " first if you want to keep it.",
-                "Replace Rack",
+                Bundle.RackTopComponent_replaceConfirm(what),
+                Bundle.RackTopComponent_replaceTitle(),
                 org.openide.NotifyDescriptor.YES_NO_OPTION,
                 org.openide.NotifyDescriptor.QUESTION_MESSAGE,
                 null,
@@ -426,14 +452,14 @@ public final class RackTopComponent extends TopComponent {
             javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(preset.getDisplayName()));
             item.setToolTipText(PlainText.plain(preset.getDescription()));
             item.addActionListener(a -> {
-                if (!confirmReplace("the " + preset.getDisplayName() + " preset")) {
+                if (!confirmReplace(Bundle.RackTopComponent_thePreset(preset.getDisplayName()))) {
                     return;
                 }
                 try {
                     RackIO.fromJson(rack, preset.buildPatch());
                     markPersisted();
                 } catch (RuntimeException ex) {
-                    error("Could not wire the preset: " + ex.getMessage());
+                    error(Bundle.RackTopComponent_presetFailed(ex.getMessage()));
                 }
             });
             menu.add(item);
@@ -441,10 +467,10 @@ public final class RackTopComponent extends TopComponent {
         if (!yours.isEmpty()) {
             menu.addSeparator();
             for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
-                javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(custom.name() + " · yours"));
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(Bundle.RackTopComponent_yoursItem(custom.name())));
                 item.setToolTipText(PlainText.plain(custom.file().getAbsolutePath()));
                 item.addActionListener(a -> {
-                    if (!confirmReplace("the " + custom.name() + " preset")) {
+                    if (!confirmReplace(Bundle.RackTopComponent_thePreset(custom.name()))) {
                         return;
                     }
                     loadPatch(custom.file());
@@ -466,7 +492,7 @@ public final class RackTopComponent extends TopComponent {
                 doc = RackIO.readDocument(file);
             } catch (IOException | RuntimeException ex) {
                 java.awt.EventQueue.invokeLater(() ->
-                        error("Could not load the patch: " + ex.getMessage()));
+                        error(Bundle.RackTopComponent_loadFailed(ex.getMessage())));
                 return;
             }
             java.awt.EventQueue.invokeLater(() -> {
@@ -474,7 +500,7 @@ public final class RackTopComponent extends TopComponent {
                     RackIO.fromJson(rack, doc);
                     markPersisted();
                 } catch (RuntimeException ex) {
-                    error("Could not load the patch: " + ex.getMessage());
+                    error(Bundle.RackTopComponent_loadFailed(ex.getMessage()));
                 }
             });
         });

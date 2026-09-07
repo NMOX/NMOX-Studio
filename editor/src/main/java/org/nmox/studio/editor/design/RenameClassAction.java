@@ -61,7 +61,21 @@ import org.openide.util.RequestProcessor;
     @ActionReference(path = "Editors/text/x-svelte/Popup", position = 1860),
     @ActionReference(path = "Editors/text/x-ng-template/Popup", position = 1860)
 })
-@Messages("CTL_RenameClass=Rename Class…")
+@Messages({
+    "CTL_RenameClass=Rename Class…",
+    "RenameClassAction_noCaret=Place the caret on a class name first.",
+    "RenameClassAction_placeCaretMarkup=Place the caret on a class name inside class=\"…\" or a <style> selector.",
+    "RenameClassAction_placeCaretSelector=Place the caret on a .class selector.",
+    "RenameClassAction_prompt=New name for .{0}:",
+    "RenameClassAction_dialogTitle=Rename Class",
+    "RenameClassAction_invalidName=\"{0}\" is not a valid class name.",
+    "RenameClassAction_censusCap=Rename refused: the project has more stylesheets than the bounded census reads — a partial rename would corrupt it.",
+    "RenameClassAction_collision=Rename refused: .{0} already exists — renaming onto it would merge the two classes'' rules.",
+    "RenameClassAction_nowhere=.{0} appears nowhere in this project.",
+    "RenameClassAction_unsaved=Rename refused: unsaved changes in {0} — save first.",
+    "RenameClassAction_stopped=Rename stopped at {0}: {1}",
+    "RenameClassAction_renamed=Renamed .{0} → .{1} — {4,choice,1#{2} span|1<{2} spans} in {5,choice,1#{3} file|1<{3} files}"
+})
 public final class RenameClassAction implements ActionListener {
 
     private static final RequestProcessor RP =
@@ -91,7 +105,7 @@ public final class RenameClassAction implements ActionListener {
             }
         }
         if (comp == null) {
-            status("Place the caret on a class name first.");
+            status(Bundle.RenameClassAction_noCaret());
             return;
         }
         Document doc = comp.getDocument();
@@ -108,13 +122,13 @@ public final class RenameClassAction implements ActionListener {
                 : CssClasses.selectorSpanAt(text, caret);
         if (span == null) {
             status(markup
-                    ? "Place the caret on a class name inside class=\"…\" or a <style> selector."
-                    : "Place the caret on a .class selector.");
+                    ? Bundle.RenameClassAction_placeCaretMarkup()
+                    : Bundle.RenameClassAction_placeCaretSelector());
             return;
         }
         String oldName = text.substring(span[0], span[1]);
         NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                "New name for ." + oldName + ":", "Rename Class");
+                Bundle.RenameClassAction_prompt(oldName), Bundle.RenameClassAction_dialogTitle());
         input.setInputText(oldName);
         if (DialogDisplayer.getDefault().notify(input)
                 != NotifyDescriptor.OK_OPTION) {
@@ -125,7 +139,7 @@ public final class RenameClassAction implements ActionListener {
             return;
         }
         if (!CssClasses.validClassName(newName)) {
-            status("\"" + newName + "\" is not a valid class name.");
+            status(Bundle.RenameClassAction_invalidName(newName));
             return;
         }
         // modified-editor census on the EDT, where the registry lives
@@ -181,17 +195,15 @@ public final class RenameClassAction implements ActionListener {
         CssClasses.RenameSurvey survey =
                 CssClasses.surveyRename(root, oldName, newName);
         if (!survey.censusComplete()) {
-            status("Rename refused: the project has more stylesheets than the "
-                    + "bounded census reads — a partial rename would corrupt it.");
+            status(Bundle.RenameClassAction_censusCap());
             return;
         }
         if (survey.collision()) {
-            status("Rename refused: ." + newName + " already exists — renaming "
-                    + "onto it would merge the two classes' rules.");
+            status(Bundle.RenameClassAction_collision(newName));
             return;
         }
         if (survey.spanCount() == 0) {
-            status("." + oldName + " appears nowhere in this project.");
+            status(Bundle.RenameClassAction_nowhere(oldName));
             return;
         }
         List<String> dirtyHits = new ArrayList<>();
@@ -201,8 +213,7 @@ public final class RenameClassAction implements ActionListener {
             }
         }
         if (!dirtyHits.isEmpty()) {
-            status("Rename refused: unsaved changes in "
-                    + String.join(", ", dirtyHits) + " — save first.");
+            status(Bundle.RenameClassAction_unsaved(String.join(", ", dirtyHits)));
             return;
         }
         int files = 0;
@@ -216,15 +227,13 @@ public final class RenameClassAction implements ActionListener {
                     files++;
                 }
             } catch (IOException ex) {
-                status("Rename stopped at " + f.getName() + ": " + ex.getMessage());
+                status(Bundle.RenameClassAction_stopped(f.getName(), ex.getMessage()));
                 return;
             }
         }
         int spans = survey.spanCount();
         int fileCount = files;
-        status("Renamed ." + oldName + " → ." + newName + " — "
-                + spans + (spans == 1 ? " span in " : " spans in ")
-                + fileCount + (fileCount == 1 ? " file" : " files"));
+        status(Bundle.RenameClassAction_renamed(oldName, newName, String.valueOf(spans), String.valueOf(fileCount), spans, fileCount));
     }
 
     /** FileObject-stream write so open, unmodified editors reload. */

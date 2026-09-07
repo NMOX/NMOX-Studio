@@ -31,7 +31,23 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ContractKitAction")
 @ActionRegistration(displayName = "#CTL_ContractKitAction")
 @ActionReference(path = "Menu/File", position = 120)
-@Messages("CTL_ContractKitAction=Contract Kit (Web3)…")
+@Messages({
+    "CTL_ContractKitAction=Contract Kit (Web3)…",
+    "ContractKitAction_lineChanged=  ✓ {0}",
+    "ContractKitAction_lineKept=  – {0}",
+    "ContractKitAction_lineStatus=  ({0})",
+    "ContractKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",
+    "ContractKitAction_chainName=Chain",
+    "ContractKitAction_contractNameName=Contract name",
+    "ContractKitAction_chainLabel=Chain:",
+    "ContractKitAction_contractNameLabel=Contract name (an identifier — cased per the chain's convention):",
+    "ContractKitAction_note=<html><small>Scaffolds the live-proven starter — manifest, contract, native test, and next-step notes. Existing files are never overwritten; a differing file gets a .suggested sibling. Keys never touch the IDE.</small></html>",
+    "ContractKitAction_title=Contract Kit — {0}",
+    "ContractKitAction_messageName=Message",
+    "ContractKitAction_toolHint=\n\nHeads up: `{0}` isn''t on your PATH yet — CONTRACT-NOTES.md has the install line.",
+    "ContractKitAction_report=Contract Kit ({0}):\n\n{1}\nCONTRACT-NOTES.md has the next steps.{2}",
+    "ContractKitAction_couldNotScaffold=Could not scaffold: {0}"
+})
 public final class ContractKitAction implements ActionListener {
 
     /** True when the chain's tool resolves on the augmented PATH. */
@@ -43,9 +59,10 @@ public final class ContractKitAction implements ActionListener {
     static String renderReport(List<ContractKit.Outcome> outcomes) {
         StringBuilder report = new StringBuilder();
         for (ContractKit.Outcome o : outcomes) {
-            report.append(o.changed() ? "  ✓ " : "  – ").append(o.path());
+            report.append(o.changed() ? Bundle.ContractKitAction_lineChanged(o.path())
+                    : Bundle.ContractKitAction_lineKept(o.path()));
             if (!"written".equals(o.status())) {
-                report.append("  (").append(o.status()).append(')');
+                report.append(Bundle.ContractKitAction_lineStatus(o.status()));
             }
             report.append('\n');
         }
@@ -57,12 +74,12 @@ public final class ContractKitAction implements ActionListener {
         File project = RackService.getDefault().getRack().getProjectDir();
         if (project == null || !project.isDirectory()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Aim the studio at a project first (open a folder or project)."));
+                    Bundle.ContractKitAction_aimFirst()));
             return;
         }
 
         JComboBox<ContractKit.Chain> chains = new JComboBox<>(ContractKit.Chain.values());
-        chains.getAccessibleContext().setAccessibleName("Chain");
+        chains.getAccessibleContext().setAccessibleName(Bundle.ContractKitAction_chainName());
         chains.setRenderer(new javax.swing.DefaultListCellRenderer() {
             @Override
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> l,
@@ -72,21 +89,19 @@ public final class ContractKitAction implements ActionListener {
             }
         });
         JTextField name = new JTextField("MyContract");
-        name.getAccessibleContext().setAccessibleName("Contract name");
+        name.getAccessibleContext().setAccessibleName(Bundle.ContractKitAction_contractNameName());
         name.selectAll();
 
         JPanel panel = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Chain:"));
+        panel.add(new JLabel(Bundle.ContractKitAction_chainLabel()));
         panel.add(chains);
-        panel.add(new JLabel("Contract name (an identifier — cased per the chain's convention):"));
+        panel.add(new JLabel(Bundle.ContractKitAction_contractNameLabel()));
         panel.add(name);
-        panel.add(new JLabel("<html><small>Scaffolds the live-proven starter — manifest, contract, "
-                + "native test, and next-step notes. Existing files are never overwritten; "
-                + "a differing file gets a .suggested sibling. Keys never touch the IDE.</small></html>"));
+        panel.add(new JLabel(Bundle.ContractKitAction_note()));
 
         DialogDescriptor descriptor = new DialogDescriptor(panel,
-                "Contract Kit — " + project.getName());
+                Bundle.ContractKitAction_title(project.getName()));
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -96,7 +111,7 @@ public final class ContractKitAction implements ActionListener {
         String invalid = ContractKit.validate(contractName);
         if (invalid != null) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(invalid, "Message"), NotifyDescriptor.WARNING_MESSAGE)));
+                    new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(invalid, Bundle.ContractKitAction_messageName()), NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
         // disk I/O has no place in an event dispatch; the report then hops
@@ -107,16 +122,15 @@ public final class ContractKitAction implements ActionListener {
                         ContractKit.scaffold(project, chain, contractName);
                 String report = renderReport(outcomes);
                 String hint = toolOnPath(chain.tool) ? ""
-                        : "\n\nHeads up: `" + chain.tool + "` isn't on your PATH yet — "
-                          + "CONTRACT-NOTES.md has the install line.";
+                        : Bundle.ContractKitAction_toolHint(chain.tool);
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Contract Kit (" + chain.label + "):\n\n"
-                                + report + "\nCONTRACT-NOTES.md has the next steps." + hint, "Message"),
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ContractKitAction_report(chain.label, report, hint),
+                                Bundle.ContractKitAction_messageName()),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
-                String message = "Could not scaffold: " + ex.getMessage();
+                String message = Bundle.ContractKitAction_couldNotScaffold(ex.getMessage());
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ContractKitAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

@@ -24,6 +24,15 @@ import org.openide.windows.WindowManager;
  * the file and its pixel size — or the reason nothing was saved. Refusals
  * speak; nothing here fails silently.
  */
+@org.openide.util.NbBundle.Messages({
+    "ShotSaver_fileName=Screenshot file",
+    "ShotSaver_cancelled=Not saved — {0} cancelled",
+    "ShotSaver_noSize=Not saved — the {0} target has no size to paint",
+    "ShotSaver_saved=Saved {0} {1} ({2}×{3}, 2x)",
+    "ShotSaver_failed=Not saved — {0}: {1}",
+    "ShotSaver_copyNoSize=Not copied — the {0} target has no size to paint",
+    "ShotSaver_copied=Copied {0} to the clipboard ({1}×{2}, 2x)"
+})
 final class ShotSaver {
 
     private static final RequestProcessor RP = new RequestProcessor("nmox-screenshot", 1, true);
@@ -41,9 +50,9 @@ final class ShotSaver {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(dialogTitle);
         chooser.setSelectedFile(new File(defaultDir(), defaultName));
-        chooser.getAccessibleContext().setAccessibleName("Screenshot file");
+        chooser.getAccessibleContext().setAccessibleName(Bundle.ShotSaver_fileName());
         if (chooser.showSaveDialog(main) != JFileChooser.APPROVE_OPTION) {
-            StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Not saved — " + what + " cancelled"));
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.ShotSaver_cancelled(what)));
             return;
         }
         File file = chooser.getSelectedFile();
@@ -51,17 +60,17 @@ final class ShotSaver {
         BufferedImage img = Screenshot.paint2x(target);
         if (img == null) {
             StatusDisplayer.getDefault().setStatusText(PlainStatus.text(
-                    "Not saved — the " + what + " target has no size to paint"));
+                    Bundle.ShotSaver_noSize(what)));
             return;
         }
         RP.post(() -> {
             String status;
             try {
                 ImageIO.write(img, "png", file);
-                status = "Saved " + what + " " + file.getName()
-                        + " (" + img.getWidth() + "×" + img.getHeight() + ", 2x)";
+                status = Bundle.ShotSaver_saved(what, file.getName(),
+                        String.valueOf(img.getWidth()), String.valueOf(img.getHeight()));
             } catch (IOException ex) {
-                status = "Not saved — " + what + ": " + ex.getMessage();
+                status = Bundle.ShotSaver_failed(what, ex.getMessage());
             }
             String s = status;
             SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(s)));
@@ -77,12 +86,12 @@ final class ShotSaver {
         BufferedImage img = Screenshot.paint2x(target);
         if (img == null) {
             StatusDisplayer.getDefault().setStatusText(PlainStatus.text(
-                    "Not copied — the " + what + " target has no size to paint"));
+                    Bundle.ShotSaver_copyNoSize(what)));
             return;
         }
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new ImageTransferable(img), null);
-        StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copied " + what + " to the clipboard ("
-                + img.getWidth() + "×" + img.getHeight() + ", 2x)"));
+        StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.ShotSaver_copied(what,
+                String.valueOf(img.getWidth()), String.valueOf(img.getHeight()))));
     }
 
     static File defaultDir() {

@@ -19,6 +19,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * arguments. Constructed per member-mode query by
  * {@link JavaScriptCompletionProvider} from its global-object tables.
  */
+@org.openide.util.NbBundle.Messages({
+    "JavaScriptMethodCompletionItem_hint=[method] {0}"
+})
 public class JavaScriptMethodCompletionItem implements CompletionItem {
     
     private final JavaScriptCompletionProvider.JavaScriptMethod method;
@@ -58,7 +61,7 @@ public class JavaScriptMethodCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             method.name,
-            "[method] " + method.signature,
+            Bundle.JavaScriptMethodCompletionItem_hint(method.signature),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(138, 43, 226),

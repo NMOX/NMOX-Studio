@@ -32,7 +32,12 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Editors/text/javascript/Popup", position = 1875),
     @ActionReference(path = "Editors/text/typescript/Popup", position = 1875)
 })
-@Messages("CTL_TestInApiStudio=Test in API Studio")
+@Messages({
+    "CTL_TestInApiStudio=Test in API Studio",
+    "TestInApiStudioAction_caretOnRoute=Place the caret on a route line first.",
+    "TestInApiStudioAction_caretOnRouteHint=Place the caret on a route line — app.get('/path', …) and friends.",
+    "TestInApiStudioAction_drafted={0} {1} drafted in API Studio."
+})
 public final class TestInApiStudioAction implements ActionListener {
 
     private final DataObject context;
@@ -54,7 +59,7 @@ public final class TestInApiStudioAction implements ActionListener {
             }
         }
         if (comp == null) {
-            status("Place the caret on a route line first.");
+            status(Bundle.TestInApiStudioAction_caretOnRoute());
             return;
         }
         String line;
@@ -70,11 +75,11 @@ public final class TestInApiStudioAction implements ActionListener {
         }
         String[] route = org.nmox.studio.apiclient.api.RouteLine.parse(line);
         if (route == null) {
-            status("Place the caret on a route line — app.get('/path', …) and friends.");
+            status(Bundle.TestInApiStudioAction_caretOnRouteHint());
             return;
         }
         ApiClientTopComponent.openWithDraft(route[0], route[1]);
-        status(route[0] + " " + route[1] + " drafted in API Studio.");
+        status(Bundle.TestInApiStudioAction_drafted(route[0], route[1]));
     }
 
     private boolean belongsToContext(Document doc) {

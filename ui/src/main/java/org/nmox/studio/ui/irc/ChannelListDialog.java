@@ -32,6 +32,17 @@ import org.openide.DialogDisplayer;
  * title says so — "showing first 2000 of N" — because a silently
  * truncated list is a lie.
  */
+@org.openide.util.NbBundle.Messages({
+    "ChannelListDialog_channels=Channels",
+    "ChannelListDialog_filterChannels=Filter channels",
+    "ChannelListDialog_showingFirst=Showing first {0} of {1} channels",
+    "ChannelListDialog_count={0} channels",
+    "ChannelListDialog_filterLabel=Filter:",
+    "ChannelListDialog_title=Channels on {0} (double-click to join)",
+    "ChannelListDialog_colChannel=Channel",
+    "ChannelListDialog_colUsers=Users",
+    "ChannelListDialog_colTopic=Topic"
+})
 final class ChannelListDialog {
 
     private ChannelListDialog() {
@@ -42,7 +53,7 @@ final class ChannelListDialog {
             int totalSeen, Consumer<String> join) {
         Model model = new Model(rows);
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
-        table.getAccessibleContext().setAccessibleName("Channels");
+        table.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_channels());
         TableRowSorter<Model> sorter = new TableRowSorter<>(model);
         table.setRowSorter(sorter);
         table.getColumnModel().getColumn(0).setPreferredWidth(180);
@@ -59,7 +70,7 @@ final class ChannelListDialog {
         });
 
         JTextField filter = new JTextField();
-        filter.getAccessibleContext().setAccessibleName("Filter channels");
+        filter.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_filterChannels());
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String q = filter.getText().trim().toLowerCase(Locale.ROOT);
@@ -90,12 +101,12 @@ final class ChannelListDialog {
         });
 
         String count = totalSeen > rows.size()
-                ? "Showing first " + rows.size() + " of " + totalSeen + " channels"
-                : rows.size() + " channels";
+                ? Bundle.ChannelListDialog_showingFirst(String.valueOf(rows.size()), String.valueOf(totalSeen))
+                : Bundle.ChannelListDialog_count(String.valueOf(rows.size()));
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel top = new JPanel(new BorderLayout(8, 0));
-        top.add(new JLabel("Filter:"), BorderLayout.WEST);
+        top.add(new JLabel(Bundle.ChannelListDialog_filterLabel()), BorderLayout.WEST);
         top.add(filter, BorderLayout.CENTER);
         top.add(new JLabel(PlainText.plain(count)), BorderLayout.EAST);
         panel.add(top, BorderLayout.NORTH);
@@ -103,7 +114,7 @@ final class ChannelListDialog {
         panel.setPreferredSize(new Dimension(720, 420));
 
         DialogDescriptor dd = new DialogDescriptor(panel,
-                "Channels on " + network + " (double-click to join)");
+                Bundle.ChannelListDialog_title(network));
         dd.setModal(false);
         dd.setOptions(new Object[] {DialogDescriptor.CLOSED_OPTION});
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
@@ -131,9 +142,9 @@ final class ChannelListDialog {
         @Override
         public String getColumnName(int c) {
             return switch (c) {
-                case 0 -> "Channel";
-                case 1 -> "Users";
-                default -> "Topic";
+                case 0 -> Bundle.ChannelListDialog_colChannel();
+                case 1 -> Bundle.ChannelListDialog_colUsers();
+                default -> Bundle.ChannelListDialog_colTopic();
             };
         }
 

@@ -1541,6 +1541,16 @@ keymaps never costs you the studio chords.
   Node's own type stripping (`--experimental-strip-types`, Node 22.6+; the
   default from 23.6 and 22.18 LTS). An older Node's refusal is translated
   into the sentence that names the floor.
+- **Your language** — NMOX Studio speaks English, Español, Français,
+  Deutsch, Русский and हिन्दी. Pick one in **Options ▸ General ▸
+  Language** (each listed in its own name, so you can always find yours);
+  the choice is written into your per-user launcher settings
+  (`etc/nmoxstudio.conf` under the userdir, as a `--locale` argument) and
+  takes effect the next time you start the app — the balloon says so.
+  What changes: the menus, dialogs, tooltips, status lines, the Welcome
+  and Options. What stays: the rack faceplates' panel vocabulary (GO,
+  STOP, EXPLAIN — the hardware labels, like a synth's), and the platform's
+  own deeper dialogs, which have no bundles in these languages yet.
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place

@@ -18,6 +18,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * semicolon — the declaration is finished in one keypress. Constructed
  * per query by {@link CssCompletionProvider} from its value tables.
  */
+@org.openide.util.NbBundle.Messages({
+    "CssValueCompletionItem_hint=[val]"
+})
 public class CssValueCompletionItem implements CompletionItem {
     
     private final String value;
@@ -57,7 +60,7 @@ public class CssValueCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             value,
-            "[val]",
+            Bundle.CssValueCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(150, 50, 150),

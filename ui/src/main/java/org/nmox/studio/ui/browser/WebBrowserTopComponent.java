@@ -46,7 +46,15 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_WebBrowserAction=Browser",
     "CTL_WebBrowserTopComponent=Browser",
-    "HINT_WebBrowserTopComponent=The in-app web browser with developer tools"
+    "HINT_WebBrowserTopComponent=The in-app web browser with developer tools",
+    "WebBrowserTopComponent_unavailableNote=<html><div style='width:420px'>"
+        + "<b>The embedded browser needs the bundled runtime.</b><br><br>"
+        + "Installed builds of NMOX Studio ship a Java runtime that "
+        + "includes JavaFX, which powers this window's WebKit engine "
+        + "and its developer tools. This launch is running on a plain "
+        + "JDK without JavaFX (typical for a dev build with --jdkhome), "
+        + "so pages open in your system browser instead — every "
+        + "Open-in-Browser action still works.</div></html>"
 })
 public final class WebBrowserTopComponent extends TopComponent {
 
@@ -171,14 +179,7 @@ public final class WebBrowserTopComponent extends TopComponent {
 
     private static JPanel unavailablePanel() {
         JPanel panel = new JPanel(new BorderLayout());
-        JLabel note = new JLabel("<html><div style='width:420px'>"
-                + "<b>The embedded browser needs the bundled runtime.</b><br><br>"
-                + "Installed builds of NMOX Studio ship a Java runtime that "
-                + "includes JavaFX, which powers this window's WebKit engine "
-                + "and its developer tools. This launch is running on a plain "
-                + "JDK without JavaFX (typical for a dev build with --jdkhome), "
-                + "so pages open in your system browser instead — every "
-                + "Open-in-Browser action still works.</div></html>",
+        JLabel note = new JLabel(Bundle.WebBrowserTopComponent_unavailableNote(),
                 SwingConstants.CENTER);
         note.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
         panel.add(note, BorderLayout.CENTER);

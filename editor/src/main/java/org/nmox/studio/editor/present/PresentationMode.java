@@ -19,6 +19,10 @@ import org.openide.awt.StatusDisplayer;
  * top. Born for the developer evangelist live-coding NMOX Studio on a
  * projector, where the default font is unreadable past the third row.
  */
+@org.openide.util.NbBundle.Messages({
+    "PresentationMode_on=Presentation Mode on — editors, Output and Terminal +{0} pt, Browser at {1}% (⌥-wheel fine-tunes)",
+    "PresentationMode_off=Presentation Mode off"
+})
 public final class PresentationMode {
 
     /** The from-the-back-of-the-room bump, in points, added to every editor's base font. */
@@ -72,12 +76,12 @@ public final class PresentationMode {
             // overwritten (the walk's find); PlainStatus.text because the note is runtime text
             if (enable) {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                        "Presentation Mode on — editors, Output and Terminal +" + DELTA_POINTS + " pt, Browser at "
-                        + Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100) + "% (⌥-wheel fine-tunes)"
+                        Bundle.PresentationMode_on(String.valueOf(DELTA_POINTS),
+                                String.valueOf(Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100)))
                         + (outputNote == null ? "" : "; " + outputNote)));
             } else {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                        "Presentation Mode off" + (outputNote == null ? "" : " — " + outputNote)));
+                        Bundle.PresentationMode_off() + (outputNote == null ? "" : " — " + outputNote)));
             }
         });
     }

@@ -133,12 +133,12 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
 
     @Override
     public String getDisplayName() {
-        return "Structure";
+        return org.openide.util.NbBundle.getMessage(StructureNavigatorPanel.class, "LBL_Structure");
     }
 
     @Override
     public String getDisplayHint() {
-        return "Outline of the current file";
+        return org.openide.util.NbBundle.getMessage(StructureNavigatorPanel.class, "StructureNavigatorPanel_hint");
     }
 
     @Override
@@ -155,7 +155,7 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
             tree.setCellRenderer(new OutlineCellRenderer());
             tree.addTreeSelectionListener(e -> navigateToSelection());
 
-            empty = new JLabel("No structure to show", JLabel.CENTER);
+            empty = new JLabel(org.openide.util.NbBundle.getMessage(StructureNavigatorPanel.class, "StructureNavigatorPanel_empty"), JLabel.CENTER);
             empty.setEnabled(false);
             empty.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
@@ -347,8 +347,7 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
             if (obj instanceof OutlineModel.Item item) {
                 setIcon(new BadgeIcon(item.kind()));
                 if (item.detail() != null) {
-                    setText("<html>" + escape(item.name())
-                            + " <font color='#7a7a7a'>" + escape(item.detail()) + "</font></html>");
+                    setText(org.openide.util.NbBundle.getMessage(StructureNavigatorPanel.class, "StructureNavigatorPanel_itemWithDetail", escape(item.name()), escape(item.detail())));
                 } else {
                     // Escape here too, and for the same reason the branch
                     // above does: an item name comes from a PARSED SOURCE
@@ -360,7 +359,7 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
                     // <img src> in a cloned repo would make the IDE's own
                     // JVM fetch that URL just from opening the file
                     // (the v1.208.0 class; v1.311.0).
-                    setText("<html>" + escape(item.name()) + "</html>");
+                    setText(org.openide.util.NbBundle.getMessage(StructureNavigatorPanel.class, "StructureNavigatorPanel_item", escape(item.name())));
                 }
             }
             return this;

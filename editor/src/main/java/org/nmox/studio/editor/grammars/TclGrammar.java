@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "tcl.tmLanguage.json", mimeType = "text/x-tcl")
-@MIMEResolver.ExtensionRegistration(displayName = "Tcl", mimeType = "text/x-tcl", extension = {"tcl", "tk"}, position = 2443)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_TclGrammar_LOADER", mimeType = "text/x-tcl", extension = {"tcl", "tk"}, position = 2443)
+@org.openide.util.NbBundle.Messages("LBL_TclGrammar_LOADER=Tcl")
 public final class TclGrammar {
 
     private TclGrammar() {

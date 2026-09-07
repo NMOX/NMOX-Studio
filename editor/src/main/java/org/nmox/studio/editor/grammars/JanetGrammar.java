@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "janet.tmLanguage.json", mimeType = "text/x-janet")
-@MIMEResolver.ExtensionRegistration(displayName = "Janet", mimeType = "text/x-janet", extension = {"janet", "jdn"}, position = 2450)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_JanetGrammar_LOADER", mimeType = "text/x-janet", extension = {"janet", "jdn"}, position = 2450)
+@org.openide.util.NbBundle.Messages("LBL_JanetGrammar_LOADER=Janet")
 public final class JanetGrammar {
 
     private JanetGrammar() {

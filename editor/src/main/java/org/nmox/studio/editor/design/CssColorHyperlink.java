@@ -39,6 +39,11 @@ import org.openide.windows.WindowManager;
     @MimeRegistration(mimeType = "text/x-ng-template", service = HyperlinkProviderExt.class, position = 150),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 150)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssColorHyperlink_tooltip=Pick a color (replaces this literal)",
+    "CssColorHyperlink_chooserTitle=Pick a color",
+    "CssColorHyperlink_notReplaced=Color not replaced — the stylesheet changed while the picker was open"
+})
 public final class CssColorHyperlink implements HyperlinkProviderExt {
 
     /** Stylesheets are small; refuse to scan absurd documents. */
@@ -62,7 +67,7 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Pick a color (replaces this literal)";
+        return Bundle.CssColorHyperlink_tooltip();
     }
 
     @Override
@@ -78,7 +83,7 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
     private static void pickAndReplace(Document doc, CssColors.ColorSpan span) {
         Color picked = javax.swing.JColorChooser.showDialog(
                 WindowManager.getDefault().getMainWindow(),
-                "Pick a color", opaque(span.color()));
+                Bundle.CssColorHyperlink_chooserTitle(), opaque(span.color()));
         if (picked == null) {
             return; // canceled
         }
@@ -91,7 +96,7 @@ public final class CssColorHyperlink implements HyperlinkProviderExt {
                     -> s.start() == span.start() && s.end() == span.end());
             if (!stillThere) {
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        "Color not replaced — the stylesheet changed while the picker was open");
+                        Bundle.CssColorHyperlink_notReplaced());
                 return;
             }
             String replacement = CssColors.format(picked, original);

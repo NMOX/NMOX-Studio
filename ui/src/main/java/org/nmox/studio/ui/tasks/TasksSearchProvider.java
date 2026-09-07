@@ -17,6 +17,11 @@ import org.openide.windows.WindowManager;
  * file is read directly (not through the window) so search works even
  * before the tab was ever shown — the window builds on open.
  */
+@org.openide.util.NbBundle.Messages({
+    "TasksSearchProvider_blocked=\u26d4 {0}",
+    "TasksSearchProvider_labelled={0}  [{1}]",
+    "TasksSearchProvider_hit={0} — {1} (Tasks)"
+})
 public class TasksSearchProvider implements SearchProvider {
 
     @Override
@@ -54,9 +59,11 @@ public class TasksSearchProvider implements SearchProvider {
                 if (!matches(c, needle)) {
                     continue;
                 }
-                String label = (c.blocked() ? "\u26d4 " : "") + c.title()
-                        + (c.label().isEmpty() ? "" : "  [" + c.label() + "]")
-                        + " — " + col.name() + " (Tasks)";
+                String head = c.blocked() ? Bundle.TasksSearchProvider_blocked(c.title()) : c.title();
+                if (!c.label().isEmpty()) {
+                    head = Bundle.TasksSearchProvider_labelled(head, c.label());
+                }
+                String label = Bundle.TasksSearchProvider_hit(head, col.name());
                 if (!addResult.test(TasksSearchProvider::openTasks, label)) {
                     return;
                 }

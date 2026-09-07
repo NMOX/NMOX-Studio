@@ -42,11 +42,45 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 116),
     @ActionReference(path = "Shortcuts", name = "DS-X")
 })
-@Messages("CTL_ManageExperimentsAction=Experiments…")
+@Messages({
+    "CTL_ManageExperimentsAction=Experiments…",
+    "ManageExperimentsAction_startOne=Start an Experiment…",
+    "ManageExperimentsAction_ageToday= · today",
+    "ManageExperimentsAction_ageDay= · {0} day ago",
+    "ManageExperimentsAction_ageDays= · {0} days ago",
+    "ManageExperimentsAction_emptyShelf=No experiments yet. An experiment is the fastest way to try a stack —\na throwaway workspace that opens with its own walkthrough, dependencies\ninstalled, ready to Run.",
+    "ManageExperimentsAction_title=Experiments",
+    "ManageExperimentsAction_row={0}   —   {1}, created {2}{3}",
+    "ManageExperimentsAction_open=Open",
+    "ManageExperimentsAction_duplicate=Duplicate",
+    "ManageExperimentsAction_duplicateTip=Fork it: a full copy beside the original, to try a second approach",
+    "ManageExperimentsAction_duplicateName=Duplicate the selected experiment",
+    "ManageExperimentsAction_promote=Promote…",
+    "ManageExperimentsAction_discard=Discard…",
+    "ManageExperimentsAction_openTip=Aim the studio at this experiment",
+    "ManageExperimentsAction_promoteTip=Graduate it: move out of ~/.nmox/experiments, drop the marker, git init",
+    "ManageExperimentsAction_discardTip=Stop anything running there and delete the tree",
+    "ManageExperimentsAction_experimentSingular=experiment",
+    "ManageExperimentsAction_experimentPlural=experiments",
+    "ManageExperimentsAction_headerSizing={0} in ~/.nmox/experiments — newest first. Sizing…",
+    "ManageExperimentsAction_forked=Forked {0} → {1} — the original is untouched.",
+    "ManageExperimentsAction_couldNotDuplicate=Could not duplicate: {0}",
+    "ManageExperimentsAction_messageName=Message",
+    "ManageExperimentsAction_promoteInto=Promote {0} into…",
+    "ManageExperimentsAction_promoteHere=Promote here",
+    "ManageExperimentsAction_promoting=Promoting experiment…",
+    "ManageExperimentsAction_graduated={0} graduated: {1}\n(marker removed, git initialized)",
+    "ManageExperimentsAction_couldNotPromote=Could not promote: {0}",
+    "ManageExperimentsAction_discardQuestion=Discard {0}? Anything running there is stopped; the tree is deleted.",
+    "ManageExperimentsAction_discardTitle=Discard Experiment",
+    "ManageExperimentsAction_discarding=Discarding experiment…",
+    "ManageExperimentsAction_discarded=Discarded {0} — discarding is what keeps experiments cheap to start.",
+    "ManageExperimentsAction_couldNotDiscard=Could not discard: {0}"
+})
 public final class ManageExperimentsAction implements ActionListener {
 
     /** The empty shelf's one useful button (v2.36.1). */
-    static final String START_ONE = "Start an Experiment…";
+    static final String START_ONE = Bundle.ManageExperimentsAction_startOne();
 
     /**
      * The one worker lane for experiment filesystem churn (create,
@@ -67,9 +101,10 @@ public final class ManageExperimentsAction implements ActionListener {
             long days = java.time.temporal.ChronoUnit.DAYS.between(
                     java.time.LocalDate.parse(created), java.time.LocalDate.now());
             if (days <= 0) {
-                return " · today";
+                return Bundle.ManageExperimentsAction_ageToday();
             }
-            return " · " + days + (days == 1 ? " day ago" : " days ago");
+            return days == 1 ? Bundle.ManageExperimentsAction_ageDay(String.valueOf(days))
+                    : Bundle.ManageExperimentsAction_ageDays(String.valueOf(days));
         } catch (RuntimeException unparseable) {
             return "";
         }
@@ -84,10 +119,8 @@ public final class ManageExperimentsAction implements ActionListener {
             // message made the learner walk back through the File menu;
             // now the shelf's front door is one click away
             NotifyDescriptor offer = new NotifyDescriptor(
-                    "No experiments yet. An experiment is the fastest way to try a stack —\n"
-                    + "a throwaway workspace that opens with its own walkthrough, dependencies\n"
-                    + "installed, ready to Run.",
-                    "Experiments", NotifyDescriptor.OK_CANCEL_OPTION,
+                    Bundle.ManageExperimentsAction_emptyShelf(),
+                    Bundle.ManageExperimentsAction_title(), NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.INFORMATION_MESSAGE,
                     new Object[]{START_ONE, NotifyDescriptor.CANCEL_OPTION}, START_ONE);
             if (DialogDisplayer.getDefault().notify(offer) == START_ONE) {
@@ -107,20 +140,21 @@ public final class ManageExperimentsAction implements ActionListener {
                 File dir = (File) v;
                 Experiments.Info info = Experiments.info(dir);
                 return super.getListCellRendererComponent(l,
-                        dir.getName() + "   —   " + info.template().toLowerCase(java.util.Locale.ROOT)
-                        + ", created " + info.created() + age(info.created()), i, sel, focus);
+                        Bundle.ManageExperimentsAction_row(dir.getName(),
+                                info.template().toLowerCase(java.util.Locale.ROOT),
+                                info.created(), age(info.created())), i, sel, focus);
             }
         });
 
-        JButton open = new JButton("Open");
-        JButton duplicate = new JButton("Duplicate");
-        duplicate.setToolTipText("Fork it: a full copy beside the original, to try a second approach");
-        duplicate.getAccessibleContext().setAccessibleName("Duplicate the selected experiment");
-        JButton promote = new JButton("Promote…");
-        JButton discard = new JButton("Discard…");
-        open.setToolTipText("Aim the studio at this experiment");
-        promote.setToolTipText("Graduate it: move out of ~/.nmox/experiments, drop the marker, git init");
-        discard.setToolTipText("Stop anything running there and delete the tree");
+        JButton open = new JButton(Bundle.ManageExperimentsAction_open());
+        JButton duplicate = new JButton(Bundle.ManageExperimentsAction_duplicate());
+        duplicate.setToolTipText(Bundle.ManageExperimentsAction_duplicateTip());
+        duplicate.getAccessibleContext().setAccessibleName(Bundle.ManageExperimentsAction_duplicateName());
+        JButton promote = new JButton(Bundle.ManageExperimentsAction_promote());
+        JButton discard = new JButton(Bundle.ManageExperimentsAction_discard());
+        open.setToolTipText(Bundle.ManageExperimentsAction_openTip());
+        promote.setToolTipText(Bundle.ManageExperimentsAction_promoteTip());
+        discard.setToolTipText(Bundle.ManageExperimentsAction_discardTip());
 
         JPanel buttons = new JPanel();
         buttons.add(open);
@@ -129,9 +163,10 @@ public final class ManageExperimentsAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = new JLabel(PlainText.plain(model.size()
-                + (model.size() == 1 ? " experiment" : " experiments")
-                + " in ~/.nmox/experiments — newest first. Sizing…"));
+        JLabel header = new JLabel(PlainText.plain(Bundle.ManageExperimentsAction_headerSizing(
+                org.nmox.studio.core.util.Plural.of(model.size(),
+                        Bundle.ManageExperimentsAction_experimentSingular(),
+                        Bundle.ManageExperimentsAction_experimentPlural()))));
         panel.add(header, BorderLayout.NORTH);
         // the disk cost lands when the walk finishes — node_modules
         // trees make this seconds, never an EDT freeze (v1.33.1 law)
@@ -149,7 +184,7 @@ public final class ManageExperimentsAction implements ActionListener {
         panel.add(buttons, BorderLayout.SOUTH);
         panel.setPreferredSize(new java.awt.Dimension(520, 300));
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Experiments",
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.ManageExperimentsAction_title(),
                 true, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
@@ -195,14 +230,14 @@ public final class ManageExperimentsAction implements ActionListener {
                         dialog.dispose();
                         RackService.getDefault().openProjectQuietly(fork);
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                "Forked " + dir.getName() + " → " + fork.getName()
-                                + " — the original is untouched.");
+                                Bundle.ManageExperimentsAction_forked(dir.getName(), fork.getName()));
                     });
                 } catch (Exception ex) {
                     SwingUtilities.invokeLater(() -> {
                         duplicate.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain("Could not duplicate: " + ex.getMessage(), "Message"),
+                                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageExperimentsAction_couldNotDuplicate(ex.getMessage()),
+                                        Bundle.ManageExperimentsAction_messageName()),
                                 NotifyDescriptor.ERROR_MESSAGE));
                     });
                 }
@@ -214,16 +249,16 @@ public final class ManageExperimentsAction implements ActionListener {
                 return;
             }
             JFileChooser chooser = new JFileChooser(System.getProperty("user.home"));
-            chooser.setDialogTitle("Promote " + dir.getName() + " into…");
+            chooser.setDialogTitle(Bundle.ManageExperimentsAction_promoteInto(dir.getName()));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            if (chooser.showDialog(dialog, "Promote here") != JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(dialog, Bundle.ManageExperimentsAction_promoteHere()) != JFileChooser.APPROVE_OPTION) {
                 return;
             }
             File destParent = chooser.getSelectedFile();
             disableButtons.run();
             EXPERIMENTS_RP.post(() -> {
                 org.netbeans.api.progress.ProgressHandle handle =
-                        org.netbeans.api.progress.ProgressHandle.createHandle("Promoting experiment…");
+                        org.netbeans.api.progress.ProgressHandle.createHandle(Bundle.ManageExperimentsAction_promoting());
                 handle.start();
                 try {
                     File promoted = Experiments.promote(dir, destParent);
@@ -232,16 +267,17 @@ public final class ManageExperimentsAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(
-                                new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: "
-                                        + promoted.getAbsolutePath() + "\n(marker removed, git initialized)", "Message"),
+                                new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageExperimentsAction_graduated(
+                                        dir.getName(), promoted.getAbsolutePath()),
+                                        Bundle.ManageExperimentsAction_messageName()),
                                         NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
-                    String message = "Could not promote: " + ex.getMessage();
+                    String message = Bundle.ManageExperimentsAction_couldNotPromote(ex.getMessage());
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageExperimentsAction_messageName()), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();
@@ -259,8 +295,9 @@ public final class ManageExperimentsAction implements ActionListener {
             // so use the full constructor with NO_OPTION as the initial value
             // (the v1.98.0 infra dialog-safety idiom).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped; the tree is deleted.", "Message"),
-                    "Discard Experiment", NotifyDescriptor.YES_NO_OPTION,
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageExperimentsAction_discardQuestion(dir.getName()),
+                            Bundle.ManageExperimentsAction_messageName()),
+                    Bundle.ManageExperimentsAction_discardTitle(), NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                     NotifyDescriptor.NO_OPTION);
@@ -271,7 +308,7 @@ public final class ManageExperimentsAction implements ActionListener {
             disableButtons.run();
             EXPERIMENTS_RP.post(() -> {
                 org.netbeans.api.progress.ProgressHandle handle =
-                        org.netbeans.api.progress.ProgressHandle.createHandle("Discarding experiment…");
+                        org.netbeans.api.progress.ProgressHandle.createHandle(Bundle.ManageExperimentsAction_discarding());
                 handle.start();
                 try {
                     Experiments.discard(dir);
@@ -279,8 +316,7 @@ public final class ManageExperimentsAction implements ActionListener {
                         enableButtons.run();
                         model.removeElement(dir);
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                "Discarded " + dir.getName()
-                                + " — discarding is what keeps experiments cheap to start.");
+                                Bundle.ManageExperimentsAction_discarded(dir.getName()));
                         if (model.isEmpty()) {
                             dialog.dispose();
                         } else {
@@ -288,11 +324,11 @@ public final class ManageExperimentsAction implements ActionListener {
                         }
                     });
                 } catch (Exception ex) {
-                    String message = "Could not discard: " + ex.getMessage();
+                    String message = Bundle.ManageExperimentsAction_couldNotDiscard(ex.getMessage());
                     SwingUtilities.invokeLater(() -> {
                         enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageExperimentsAction_messageName()), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

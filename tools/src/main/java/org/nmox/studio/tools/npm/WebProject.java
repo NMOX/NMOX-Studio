@@ -181,13 +181,13 @@ public class WebProject implements Project {
             public Action[] getActions(boolean arg0) {
                 return new Action[]{
                     ProjectSensitiveActions.projectCommandAction(
-                            ActionProvider.COMMAND_BUILD, "Build", null),
+                            ActionProvider.COMMAND_BUILD, org.openide.util.NbBundle.getMessage(WebProject.class, "WebProject_build"), null),
                     ProjectSensitiveActions.projectCommandAction(
-                            ActionProvider.COMMAND_RUN, "Run", null),
+                            ActionProvider.COMMAND_RUN, org.openide.util.NbBundle.getMessage(WebProject.class, "WebProject_run"), null),
                     ProjectSensitiveActions.projectCommandAction(
-                            ActionProvider.COMMAND_TEST, "Test", null),
+                            ActionProvider.COMMAND_TEST, org.openide.util.NbBundle.getMessage(WebProject.class, "WebProject_test"), null),
                     ProjectSensitiveActions.projectCommandAction(
-                            ActionProvider.COMMAND_CLEAN, "Clean", null),
+                            ActionProvider.COMMAND_CLEAN, org.openide.util.NbBundle.getMessage(WebProject.class, "WebProject_clean"), null),
                     null,
                     CommonProjectActions.newFileAction(),
                     CommonProjectActions.copyProjectAction(),

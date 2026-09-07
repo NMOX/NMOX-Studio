@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "vue.tmLanguage.json", mimeType = "text/x-vue")
-@MIMEResolver.ExtensionRegistration(displayName = "Vue", mimeType = "text/x-vue", extension = {"vue"}, position = 2420)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_VueGrammar_LOADER", mimeType = "text/x-vue", extension = {"vue"}, position = 2420)
+@org.openide.util.NbBundle.Messages("LBL_VueGrammar_LOADER=Vue")
 public final class VueGrammar {
 
     private VueGrammar() {

@@ -10,7 +10,8 @@ import org.openide.filesystems.MIMEResolver;
  * than asking Prolog users for the unambiguous .pro/.prolog spellings.
  */
 @GrammarRegistration(grammar = "prolog.tmLanguage.json", mimeType = "text/x-prolog")
-@MIMEResolver.ExtensionRegistration(displayName = "Prolog", mimeType = "text/x-prolog", extension = {"pro", "prolog", "plt"}, position = 2442)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_PrologGrammar_LOADER", mimeType = "text/x-prolog", extension = {"pro", "prolog", "plt"}, position = 2442)
+@org.openide.util.NbBundle.Messages("LBL_PrologGrammar_LOADER=Prolog")
 public final class PrologGrammar {
 
     private PrologGrammar() {

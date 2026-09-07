@@ -50,6 +50,11 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/x-svelte", service = HyperlinkProviderExt.class, position = 10),
     @MimeRegistration(mimeType = "text/x-ng-template", service = HyperlinkProviderExt.class, position = 10)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssClassHyperlink_tooltip=Go to the class's rule",
+    "CssClassHyperlink_notDeclared=.{0} is not declared in this project''s stylesheets",
+    "CssClassHyperlink_couldNotOpen=Could not open {0}: {1}"
+})
 public final class CssClassHyperlink implements HyperlinkProviderExt {
 
     private static final RequestProcessor RP =
@@ -73,7 +78,7 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Go to the class's rule";
+        return Bundle.CssClassHyperlink_tooltip();
     }
 
     @Override
@@ -102,8 +107,7 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
                     .findFirst().orElse(null);
             java.awt.EventQueue.invokeLater(() -> {
                 if (found == null) {
-                    StatusDisplayer.getDefault().setStatusText("." + name
-                            + " is not declared in this project's stylesheets");
+                    StatusDisplayer.getDefault().setStatusText(Bundle.CssClassHyperlink_notDeclared(name));
                 } else {
                     openAt(found.file(), found.offset());
                 }
@@ -209,7 +213,7 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
             }
         } catch (Exception ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + file.getName() + ": " + ex.getMessage());
+                    Bundle.CssClassHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
         }
     }
 }

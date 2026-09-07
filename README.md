@@ -234,6 +234,11 @@ VITALS' GATE knob makes **WCAG a shipping gate**: an inaccessible page
 closes the deploy gate exactly like a slow one.
 
 ### ⚡ Built to live in all day
+**In your language.** The IDE's own chrome — menus, dialogs, tooltips,
+status lines, Welcome, Options — speaks English, Español, Français,
+Deutsch, Русский and हिन्दी; pick yours in Options ▸ General ▸ Language
+and restart. Rack faceplates keep their panel vocabulary on purpose.
+
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
   you (the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an

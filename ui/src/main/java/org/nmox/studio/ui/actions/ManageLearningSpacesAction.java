@@ -45,7 +45,31 @@ import org.openide.util.NbBundle.Messages;
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 113)
 })
-@Messages("CTL_ManageLearningSpacesAction=Learning Spaces…")
+@Messages({
+    "CTL_ManageLearningSpacesAction=Learning Spaces…",
+    "ManageLearningSpacesAction_browse=Browse the {0} tutorials…",
+    "ManageLearningSpacesAction_emptyShelf=No learning spaces yet — pick a language, framework, or library and it arrives with sample code, a walkthrough, and a live REPL.",
+    "ManageLearningSpacesAction_title=Learning Spaces",
+    "ManageLearningSpacesAction_shelfName=Learning spaces shelf",
+    "ManageLearningSpacesAction_row={0}   —   {1}, created {2}{3}",
+    "ManageLearningSpacesAction_open=Open",
+    "ManageLearningSpacesAction_promote=Promote…",
+    "ManageLearningSpacesAction_discard=Discard…",
+    "ManageLearningSpacesAction_openTip=Aim the studio at this learning space",
+    "ManageLearningSpacesAction_promoteTip=Graduate it: move out of ~/.nmox/learn, drop the marker, git init",
+    "ManageLearningSpacesAction_discardTip=Stop anything running there and delete the tree",
+    "ManageLearningSpacesAction_sizing=Sizing…",
+    "ManageLearningSpacesAction_headerDescription=Learning spaces shelf summary: how many, their disk cost, and the lifecycle",
+    "ManageLearningSpacesAction_promoteInto=Promote {0} into…",
+    "ManageLearningSpacesAction_promoteHere=Promote here",
+    "ManageLearningSpacesAction_graduated={0} graduated: {1}\n(marker removed, git initialized)",
+    "ManageLearningSpacesAction_messageName=Message",
+    "ManageLearningSpacesAction_couldNotPromote=Could not promote: {0}",
+    "ManageLearningSpacesAction_discardQuestion=Discard {0}? Anything running there is stopped and the whole space is deleted from disk.",
+    "ManageLearningSpacesAction_discardTitle=Discard Learning Space",
+    "ManageLearningSpacesAction_discarding=Discarding learning space…",
+    "ManageLearningSpacesAction_couldNotDiscard=Could not discard: {0}"
+})
 public final class ManageLearningSpacesAction implements ActionListener {
 
     /**
@@ -74,12 +98,10 @@ public final class ManageLearningSpacesAction implements ActionListener {
             // (the experiments manager's v2.36.1 sentence, mirrored)
             // the catalog counts itself; the read stays off the EDT with the
             // shelf scan that brought us here (v2.85.0)
-            Object browse = "Browse the " + catalogSize + " tutorials…";
+            Object browse = Bundle.ManageLearningSpacesAction_browse(String.valueOf(catalogSize));
             NotifyDescriptor d = new NotifyDescriptor(
-                    "No learning spaces yet — pick a language, framework, or"
-                    + " library and it arrives with sample code, a walkthrough,"
-                    + " and a live REPL.",
-                    "Learning Spaces", NotifyDescriptor.OK_CANCEL_OPTION,
+                    Bundle.ManageLearningSpacesAction_emptyShelf(),
+                    Bundle.ManageLearningSpacesAction_title(), NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{browse, NotifyDescriptor.CANCEL_OPTION}, browse);
             // equals, not ==: the option is built at runtime now (SpotBugs
@@ -99,7 +121,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
         spaces.forEach(model::addElement);
 
         JList<File> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Learning spaces shelf");
+        list.getAccessibleContext().setAccessibleName(Bundle.ManageLearningSpacesAction_shelfName());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {
@@ -110,17 +132,17 @@ public final class ManageLearningSpacesAction implements ActionListener {
                 LearningSpace.Info info = LearningSpace.info(dir);
                 String label = "?".equals(info.name()) ? dir.getName() : info.name();
                 return super.getListCellRendererComponent(l,
-                        dir.getName() + "   —   " + label + ", created " + info.created()
-                        + ManageExperimentsAction.age(info.created()), i, sel, focus);
+                        Bundle.ManageLearningSpacesAction_row(dir.getName(), label, info.created(),
+                                ManageExperimentsAction.age(info.created())), i, sel, focus);
             }
         });
 
-        JButton open = new JButton("Open");
-        JButton promote = new JButton("Promote…");
-        JButton discard = new JButton("Discard…");
-        open.setToolTipText("Aim the studio at this learning space");
-        promote.setToolTipText("Graduate it: move out of ~/.nmox/learn, drop the marker, git init");
-        discard.setToolTipText("Stop anything running there and delete the tree");
+        JButton open = new JButton(Bundle.ManageLearningSpacesAction_open());
+        JButton promote = new JButton(Bundle.ManageLearningSpacesAction_promote());
+        JButton discard = new JButton(Bundle.ManageLearningSpacesAction_discard());
+        open.setToolTipText(Bundle.ManageLearningSpacesAction_openTip());
+        promote.setToolTipText(Bundle.ManageLearningSpacesAction_promoteTip());
+        discard.setToolTipText(Bundle.ManageLearningSpacesAction_discardTip());
 
         JPanel buttons = new JPanel();
         buttons.add(open);
@@ -128,12 +150,12 @@ public final class ManageLearningSpacesAction implements ActionListener {
         buttons.add(discard);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JLabel header = new JLabel("Sizing…");
+        JLabel header = new JLabel(Bundle.ManageLearningSpacesAction_sizing());
         // the NAME follows the text (count, disk cost, lifecycle) — a
         // constant name here was what a screen reader heard instead of it
         // (v2.85.0); the role goes in the description
         header.getAccessibleContext().setAccessibleDescription(
-                "Learning spaces shelf summary: how many, their disk cost, and the lifecycle");
+                Bundle.ManageLearningSpacesAction_headerDescription());
         panel.add(header, BorderLayout.NORTH);
         SPACES_RP.post(() -> {
             long bytes = 0;
@@ -148,7 +170,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
         panel.add(buttons, BorderLayout.SOUTH);
         panel.setPreferredSize(new java.awt.Dimension(520, 300));
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Learning Spaces",
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.ManageLearningSpacesAction_title(),
                 true, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
@@ -159,9 +181,9 @@ public final class ManageLearningSpacesAction implements ActionListener {
             }
             javax.swing.JFileChooser chooser =
                     new javax.swing.JFileChooser(System.getProperty("user.home"));
-            chooser.setDialogTitle("Promote " + dir.getName() + " into…");
+            chooser.setDialogTitle(Bundle.ManageLearningSpacesAction_promoteInto(dir.getName()));
             chooser.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
-            if (chooser.showDialog(dialog, "Promote here") != javax.swing.JFileChooser.APPROVE_OPTION) {
+            if (chooser.showDialog(dialog, Bundle.ManageLearningSpacesAction_promoteHere()) != javax.swing.JFileChooser.APPROVE_OPTION) {
                 return;
             }
             File destParent = chooser.getSelectedFile();
@@ -173,14 +195,15 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         // a real project now: open loudly so it reaches the recents
                         RackService.getDefault().openProject(promoted);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(dir.getName() + " graduated: " + promoted.getAbsolutePath()
-                                + "\n(marker removed, git initialized)", "Message"),
+                                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageLearningSpacesAction_graduated(
+                                        dir.getName(), promoted.getAbsolutePath()),
+                                        Bundle.ManageLearningSpacesAction_messageName()),
                                 NotifyDescriptor.INFORMATION_MESSAGE));
                     });
                 } catch (Exception ex) {
-                    String message = "Could not promote: " + ex.getMessage();
+                    String message = Bundle.ManageLearningSpacesAction_couldNotPromote(ex.getMessage());
                     SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageLearningSpacesAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
                 }
             });
         });
@@ -203,9 +226,9 @@ public final class ManageLearningSpacesAction implements ActionListener {
             // button, so use the full constructor with NO_OPTION (the v1.98.0
             // dialog-safety idiom, as ManageExperimentsAction does).
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain("Discard " + dir.getName() + "? Anything running there is stopped"
-                            + " and the whole space is deleted from disk.", "Message"),
-                    "Discard Learning Space", NotifyDescriptor.YES_NO_OPTION,
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageLearningSpacesAction_discardQuestion(dir.getName()),
+                            Bundle.ManageLearningSpacesAction_messageName()),
+                    Bundle.ManageLearningSpacesAction_discardTitle(), NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.WARNING_MESSAGE,
                     new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                     NotifyDescriptor.NO_OPTION);
@@ -216,7 +239,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
             discard.setEnabled(false);
             SPACES_RP.post(() -> {
                 org.netbeans.api.progress.ProgressHandle handle =
-                        org.netbeans.api.progress.ProgressHandle.createHandle("Discarding learning space…");
+                        org.netbeans.api.progress.ProgressHandle.createHandle(Bundle.ManageLearningSpacesAction_discarding());
                 handle.start();
                 try {
                     LearningSpace.discard(dir);
@@ -237,12 +260,12 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         }
                     });
                 } catch (Exception ex) {
-                    String message = "Could not discard: " + ex.getMessage();
+                    String message = Bundle.ManageLearningSpacesAction_couldNotDiscard(ex.getMessage());
                     SwingUtilities.invokeLater(() -> {
                         open.setEnabled(true);
                         discard.setEnabled(true);
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageLearningSpacesAction_messageName()), NotifyDescriptor.ERROR_MESSAGE));
                     });
                 } finally {
                     handle.finish();

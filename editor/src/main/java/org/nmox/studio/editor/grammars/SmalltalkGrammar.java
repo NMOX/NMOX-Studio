@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * for provenance) and its file extension.
  */
 @GrammarRegistration(grammar = "smalltalk.tmLanguage.json", mimeType = "text/x-smalltalk")
-@MIMEResolver.ExtensionRegistration(displayName = "Smalltalk", mimeType = "text/x-smalltalk", extension = {"st"}, position = 2441)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_SmalltalkGrammar_LOADER", mimeType = "text/x-smalltalk", extension = {"st"}, position = 2441)
+@org.openide.util.NbBundle.Messages("LBL_SmalltalkGrammar_LOADER=Smalltalk")
 public final class SmalltalkGrammar {
 
     private SmalltalkGrammar() {

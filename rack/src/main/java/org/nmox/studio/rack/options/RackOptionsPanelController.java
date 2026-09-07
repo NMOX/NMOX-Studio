@@ -30,7 +30,15 @@ import org.openide.util.NbPreferences;
 )
 @org.openide.util.NbBundle.Messages({
     "RackOptions_DisplayName=Rack & Cloud",
-    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare browser run serve kvasir ai claude chatgpt gemini openai google anthropic"
+    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare browser run serve kvasir ai claude chatgpt gemini openai google anthropic",
+    "RackOptionsPanelController_openServedPage=Open the served page in the Browser tab after Run",
+    "RackOptionsPanelController_providerCombo=KVASIR AI provider",
+    "RackOptionsPanelController_reflexLabel=REFLEX poll interval (ms):",
+    "RackOptionsPanelController_providerLabel=KVASIR answers with:",
+    "RackOptionsPanelController_doTokenLabel=DigitalOcean API token:",
+    "RackOptionsPanelController_hetznerTokenLabel=Hetzner Cloud token:",
+    "RackOptionsPanelController_cloudflareTokenLabel=Cloudflare API token:",
+    "RackOptionsPanelController_tokenNote=<html><i>Blank token fields keep the stored value. Env vars (DIGITALOCEAN_TOKEN, HCLOUD_TOKEN, CLOUDFLARE_API_TOKEN) act as fallbacks. KVASIR keys are set per provider on the device's KEY… button.</i></html>"
 })
 public class RackOptionsPanelController extends OptionsPanelController {
 
@@ -147,7 +155,7 @@ public class RackOptionsPanelController extends OptionsPanelController {
         // Opinionated developers keep an external browser open on a second
         // monitor; closing the loop for them would be taking the wheel.
         openServedPage = new javax.swing.JCheckBox(
-                "Open the served page in the Browser tab after Run", true);
+                Bundle.RackOptionsPanelController_openServedPage(), true);
         org.nmox.studio.rack.engine.KvasirProvider[] providers =
                 org.nmox.studio.rack.engine.KvasirProvider.values();
         String[] providerLabels = new String[providers.length];
@@ -155,7 +163,7 @@ public class RackOptionsPanelController extends OptionsPanelController {
             providerLabels[i] = providers[i].label();
         }
         kvasirProvider = new javax.swing.JComboBox<>(providerLabels);
-        kvasirProvider.getAccessibleContext().setAccessibleName("KVASIR AI provider");
+        kvasirProvider.getAccessibleContext().setAccessibleName(Bundle.RackOptionsPanelController_providerCombo());
         doToken = new JPasswordField(28);
         hetznerToken = new JPasswordField(28);
         cloudflareToken = new JPasswordField(28);
@@ -165,41 +173,38 @@ public class RackOptionsPanelController extends OptionsPanelController {
         c.gridwidth = 1;
         c.gridy++;
 
-        panel.add(new JLabel("REFLEX poll interval (ms):"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_reflexLabel()), c);
         c.gridx = 1;
         panel.add(reflexInterval, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel("KVASIR answers with:"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_providerLabel()), c);
         c.gridx = 1;
         panel.add(kvasirProvider, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel("DigitalOcean API token:"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_doTokenLabel()), c);
         c.gridx = 1;
         panel.add(doToken, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel("Hetzner Cloud token:"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_hetznerTokenLabel()), c);
         c.gridx = 1;
         panel.add(hetznerToken, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel("Cloudflare API token:"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_cloudflareTokenLabel()), c);
         c.gridx = 1;
         panel.add(cloudflareToken, c);
 
         c.gridx = 0;
         c.gridy++;
         c.gridwidth = 2;
-        panel.add(new JLabel("<html><i>Blank token fields keep the stored value. Env vars"
-                + " (DIGITALOCEAN_TOKEN, HCLOUD_TOKEN, CLOUDFLARE_API_TOKEN) act as fallbacks."
-                + " KVASIR keys are set per provider on the device's KEY\u2026 button."
-                + "</i></html>"), c);
+        panel.add(new JLabel(Bundle.RackOptionsPanelController_tokenNote()), c);
         return panel;
     }
 

@@ -11,7 +11,8 @@ import org.openide.filesystems.MIMEResolver;
  * grammar-only mime (the v1.110.0 lexer law's sibling rule).
  */
 @GrammarRegistration(grammar = "http.tmLanguage.json", mimeType = "text/x-http-request")
-@MIMEResolver.ExtensionRegistration(displayName = "HTTP Request File", mimeType = "text/x-http-request", extension = {"http", "rest"}, position = 2457)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_HttpFileGrammar_LOADER", mimeType = "text/x-http-request", extension = {"http", "rest"}, position = 2457)
+@org.openide.util.NbBundle.Messages("LBL_HttpFileGrammar_LOADER=HTTP Request File")
 public final class HttpFileGrammar {
 
     private HttpFileGrammar() {

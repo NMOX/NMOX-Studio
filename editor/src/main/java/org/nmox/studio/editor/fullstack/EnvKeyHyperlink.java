@@ -17,6 +17,10 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
     @MimeRegistration(mimeType = "text/javascript", service = HyperlinkProviderExt.class, position = 16),
     @MimeRegistration(mimeType = "text/typescript", service = HyperlinkProviderExt.class, position = 16)
 })
+@org.openide.util.NbBundle.Messages({
+    "EnvKeyHyperlink_tooltip=Go to the key's .env declaration",
+    "EnvKeyHyperlink_notDeclared={0} is not declared in this project''s .env family"
+})
 public final class EnvKeyHyperlink extends ProjectJumpHyperlink {
 
     @Override
@@ -26,7 +30,7 @@ public final class EnvKeyHyperlink extends ProjectJumpHyperlink {
 
     @Override
     protected String tooltip() {
-        return "Go to the key's .env declaration";
+        return Bundle.EnvKeyHyperlink_tooltip();
     }
 
     @Override
@@ -36,7 +40,7 @@ public final class EnvKeyHyperlink extends ProjectJumpHyperlink {
                 .filter(k -> k.name().equals(key))
                 .findFirst().orElse(null);
         if (found == null) {
-            status(key + " is not declared in this project's .env family");
+            status(Bundle.EnvKeyHyperlink_notDeclared(key));
         } else {
             openAt(found.file(), found.offset());
         }

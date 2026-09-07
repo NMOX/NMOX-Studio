@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "pascal.tmLanguage.json", mimeType = "text/x-pascal")
-@MIMEResolver.ExtensionRegistration(displayName = "Pascal", mimeType = "text/x-pascal", extension = {"pas", "pp", "lpr"}, position = 2446)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_PascalGrammar_LOADER", mimeType = "text/x-pascal", extension = {"pas", "pp", "lpr"}, position = 2446)
+@org.openide.util.NbBundle.Messages("LBL_PascalGrammar_LOADER=Pascal")
 public final class PascalGrammar {
 
     private PascalGrammar() {

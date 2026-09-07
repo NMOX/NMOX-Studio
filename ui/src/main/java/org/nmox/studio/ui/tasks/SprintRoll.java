@@ -14,6 +14,10 @@ import java.util.regex.Pattern;
  * dialog stays editable and Cancel starts no sprint. Pure so both
  * rules are unit tests.
  */
+@org.openide.util.NbBundle.Messages({
+    "SprintRoll_velocityOne=Velocity — last {0} sprint: {1} done (avg {2})",
+    "SprintRoll_velocityMany=Velocity — last {0} sprints: {1} done (avg {2})"
+})
 final class SprintRoll {
 
     private static final Pattern TRAILING_NUMBER = Pattern.compile("^(.*?)(\\d+)\\s*$");
@@ -62,8 +66,10 @@ final class SprintRoll {
             counts.append(cs.done());
             sum += cs.done();
         }
-        return "Velocity — last " + n + (n == 1 ? " sprint: " : " sprints: ")
-                + counts + " done (avg " + Math.round(sum / (double) n) + ")";
+        String avg = String.valueOf(Math.round(sum / (double) n));
+        return n == 1
+                ? Bundle.SprintRoll_velocityOne(String.valueOf(n), counts.toString(), avg)
+                : Bundle.SprintRoll_velocityMany(String.valueOf(n), counts.toString(), avg);
     }
 
 }

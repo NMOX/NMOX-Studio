@@ -37,6 +37,15 @@ import org.openide.NotifyDescriptor;
  * out of Reason. Devices drag in from the palette and reorder by
  * their title-bar grip.
  */
+@org.openide.util.NbBundle.Messages({
+    "RackPanel_unplug=Unplug \"{0}\"",
+    "RackPanel_howToUse=How to use {0}…",
+    "RackPanel_howToBody={0} — {1}\n\n{2}",
+    "RackPanel_openManifest=Open {0}",
+    "RackPanel_removeDevice=Remove {0}",
+    "RackPanel_rackEmpty=RACK EMPTY",
+    "RackPanel_rackEmptyHint=Drag a device in from the shelf — or load a preset from the toolbar"
+})
 public class RackPanel extends JPanel implements Rack.Listener {
 
     private final Rack rack;
@@ -431,18 +440,18 @@ public class RackPanel extends JPanel implements Rack.Listener {
             if (!front) {
                 Port p = device.portAt(e.getPoint());
                 if (p != null && !rack.cablesAt(p).isEmpty()) {
-                    JMenuItem unplug = new JMenuItem("Unplug \"" + p.getLabel() + "\"");
+                    JMenuItem unplug = new JMenuItem(Bundle.RackPanel_unplug(p.getLabel()));
                     unplug.addActionListener(a -> rack.disconnectAll(p));
                     menu.add(unplug);
                     menu.addSeparator();
                 }
             }
             DeviceCatalog.byId(device.getTypeId()).ifPresent(entry -> {
-                JMenuItem howTo = new JMenuItem("How to use " + device.getTitle() + "…");
+                JMenuItem howTo = new JMenuItem(Bundle.RackPanel_howToUse(device.getTitle()));
                 howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
                         new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(entry.title() + " — " + entry.description() + "\n\n"
-                                        + entry.usage().replace("\n", "\n\n"), "Message"),
+                                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.RackPanel_howToBody(entry.title(), entry.description(),
+                                        entry.usage().replace("\n", "\n\n")), "Message"),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
                 menu.add(howTo);
                 menu.addSeparator();
@@ -451,12 +460,12 @@ public class RackPanel extends JPanel implements Rack.Listener {
             // from the faceplate: NPM-9000 → package.json, DYNAMO → its
             // taskfile, ARTISAN → composer.json, GOVERNOR → .gas-snapshot
             device.primaryManifest().ifPresent(manifest -> {
-                JMenuItem open = new JMenuItem("Open " + manifest.getName());
+                JMenuItem open = new JMenuItem(Bundle.RackPanel_openManifest(manifest.getName()));
                 open.addActionListener(a -> openInEditor(manifest));
                 menu.add(open);
                 menu.addSeparator();
             });
-            JMenuItem remove = new JMenuItem("Remove " + device.getTitle());
+            JMenuItem remove = new JMenuItem(Bundle.RackPanel_removeDevice(device.getTitle()));
             remove.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
                     java.awt.event.KeyEvent.VK_DELETE, 0));
             remove.addActionListener(a -> rack.removeDevice(device));
@@ -586,11 +595,11 @@ public class RackPanel extends JPanel implements Rack.Listener {
         int cy = Math.max(70, getHeight() / 3);
         g.setFont(RackStyle.TITLE_FONT);
         g.setColor(new Color(255, 255, 255, 40));
-        String big = "RACK EMPTY";
+        String big = Bundle.RackPanel_rackEmpty();
         g.drawString(big, cx - g.getFontMetrics().stringWidth(big) / 2, cy);
         g.setFont(RackStyle.LABEL_FONT);
         g.setColor(new Color(255, 255, 255, 30));
-        String hint = "Drag a device in from the shelf — or load a preset from the toolbar";
+        String hint = Bundle.RackPanel_rackEmptyHint();
         g.drawString(hint, cx - g.getFontMetrics().stringWidth(hint) / 2, cy + 22);
     }
 

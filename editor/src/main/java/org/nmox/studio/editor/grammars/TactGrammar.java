@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * these files, so the editor must speak them.
  */
 @GrammarRegistration(grammar = "tact.tmLanguage.json", mimeType = "text/x-tact")
-@MIMEResolver.ExtensionRegistration(displayName = "Tact", mimeType = "text/x-tact", extension = {"tact"}, position = 2454)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_TactGrammar_LOADER", mimeType = "text/x-tact", extension = {"tact"}, position = 2454)
+@org.openide.util.NbBundle.Messages("LBL_TactGrammar_LOADER=Tact")
 public final class TactGrammar {
 
     private TactGrammar() {

@@ -28,6 +28,12 @@ import org.openide.util.lookup.ServiceProvider;
  * this class owns only the bounded index and the open-at-line.
  */
 @ServiceProvider(service = SymbolProvider.class)
+@org.openide.util.NbBundle.Messages({
+    "NmoxSymbolProvider_displayName=NMOX project symbols",
+    "NmoxSymbolProvider_aimProject=Aim a project to search its symbols.",
+    "NmoxSymbolProvider_truncated=Large project — symbols indexed from the first {0} files only.",
+    "NmoxSymbolProvider_couldNotOpen=Could not open {0}: {1}"
+})
 public final class NmoxSymbolProvider implements SymbolProvider {
 
     private final ProjectSymbols index = new ProjectSymbols();
@@ -40,7 +46,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
 
     @Override
     public String getDisplayName() {
-        return "NMOX project symbols";
+        return Bundle.NmoxSymbolProvider_displayName();
     }
 
     @Override
@@ -53,7 +59,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
         ProjectAim aim = Lookup.getDefault().lookup(ProjectAim.class);
         File dir = aim == null ? null : aim.projectDir();
         if (dir == null) {
-            result.setMessage("Aim a project to search its symbols.");
+            result.setMessage(Bundle.NmoxSymbolProvider_aimProject());
             return;
         }
         NameMatcher matcher;
@@ -77,8 +83,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
         result.addResult(hits);
         if (index.wasTruncated()) {
             // a silently partial index would read as a complete one
-            result.setMessage("Large project — symbols indexed from the first "
-                    + ProjectSymbols.MAX_FILES + " files only.");
+            result.setMessage(Bundle.NmoxSymbolProvider_truncated(String.valueOf(ProjectSymbols.MAX_FILES)));
         }
     }
 
@@ -165,7 +170,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
                 }
             } catch (Exception ex) {
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        "Could not open " + fo.getNameExt() + ": " + ex.getMessage());
+                        Bundle.NmoxSymbolProvider_couldNotOpen(fo.getNameExt(), ex.getMessage()));
             }
         }
     }

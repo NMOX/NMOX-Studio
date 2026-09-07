@@ -45,7 +45,25 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 115),
     @ActionReference(path = "Shortcuts", name = "DS-E")
 })
-@Messages("CTL_NewExperimentAction=New Experiment…")
+@Messages({
+    "CTL_NewExperimentAction=New Experiment…",
+    "NewExperimentAction_installBox=Install dependencies so the first Run just works",
+    "NewExperimentAction_templateLabel=Template:",
+    "NewExperimentAction_nameLabel=Name (optional — a throwaway name is fine):",
+    "NewExperimentAction_note=<html><small>Lives in ~/.nmox/experiments — no git, no recents, already trusted. It opens with a walkthrough; promote it later if it turns into something.</small></html>",
+    "NewExperimentAction_browseSpaces=Guided instead? Browse the Learning Spaces…",
+    "NewExperimentAction_browseSpacesCounted=Guided instead? Browse {0} Learning Spaces…",
+    "NewExperimentAction_browseSpacesTip=Languages, frameworks, and libraries — sample code, a tutorial, a live REPL",
+    "NewExperimentAction_title=New Experiment",
+    "NewExperimentAction_creating=Creating experiment…",
+    "NewExperimentAction_installing=Installing dependencies with {0}…",
+    "NewExperimentAction_runLabel={0} install — {1}",
+    "NewExperimentAction_installStopped=Install stopped — run {0} install when you are ready",
+    "NewExperimentAction_couldNotCreate=Could not create the experiment: {0}",
+    "NewExperimentAction_messageName=Message",
+    "NewExperimentAction_installed=Dependencies installed — press F6 and follow EXPERIMENT.md",
+    "NewExperimentAction_installFailed={0} install failed (exit {1}) — Tools ▸ Environment Doctor can help"
+})
 public final class NewExperimentAction implements ActionListener {
 
     @Override
@@ -64,37 +82,35 @@ public final class NewExperimentAction implements ActionListener {
         JTextField name = new JTextField();
         name.getAccessibleContext().setAccessibleName("Experiment name (optional)");
         JCheckBox installBox = new JCheckBox(
-                "Install dependencies so the first Run just works", true);
+                Bundle.NewExperimentAction_installBox(), true);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel rows = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
-        rows.add(new JLabel("Template:"));
+        rows.add(new JLabel(Bundle.NewExperimentAction_templateLabel()));
         rows.add(template);
-        rows.add(new JLabel("Name (optional — a throwaway name is fine):"));
+        rows.add(new JLabel(Bundle.NewExperimentAction_nameLabel()));
         rows.add(name);
         rows.add(installBox);
-        rows.add(new JLabel("<html><small>Lives in ~/.nmox/experiments — no git, no recents, "
-                + "already trusted. It opens with a walkthrough; promote it later if it "
-                + "turns into something.</small></html>"));
+        rows.add(new JLabel(Bundle.NewExperimentAction_note()));
         // the guided path, one click away: David's framing is that this
         // dialog is the front door for learning a stack, and the catalog
         // (50 languages / 24 frameworks / 18 libraries) is its deep end
-        JButton spaces = new JButton("Guided instead? Browse the Learning Spaces…");
+        JButton spaces = new JButton(Bundle.NewExperimentAction_browseSpaces());
         // the number comes from the catalog, never a literal (v2.85.0: the
         // button promised 92 while 93 shipped) — read off the EDT, the
         // label-only update lands when it lands
         org.openide.util.RequestProcessor.getDefault().post(() -> {
             int n = org.nmox.studio.rack.projectstudio.LearningCatalog.all().size();
             javax.swing.SwingUtilities.invokeLater(() ->
-                    spaces.setText("Guided instead? Browse " + n + " Learning Spaces…"));
+                    spaces.setText(Bundle.NewExperimentAction_browseSpacesCounted(String.valueOf(n))));
         });
-        spaces.setToolTipText("Languages, frameworks, and libraries — sample code, a tutorial, a live REPL");
+        spaces.setToolTipText(Bundle.NewExperimentAction_browseSpacesTip());
         JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
         south.add(spaces);
         panel.add(rows, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "New Experiment");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.NewExperimentAction_title());
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         // dispose() does NOT change the descriptor's value — it stays at
         // its OK initial, so without this flag the create path ran AFTER
@@ -121,7 +137,7 @@ public final class NewExperimentAction implements ActionListener {
         // template froze the whole UI; now it runs on the experiments lane
         ManageExperimentsAction.EXPERIMENTS_RP.post(() -> {
             org.netbeans.api.progress.ProgressHandle handle =
-                    org.netbeans.api.progress.ProgressHandle.createHandle("Creating experiment…");
+                    org.netbeans.api.progress.ProgressHandle.createHandle(Bundle.NewExperimentAction_creating());
             handle.start();
             try {
                 File dir = Experiments.create(chosen, chosenName);
@@ -136,9 +152,9 @@ public final class NewExperimentAction implements ActionListener {
                         String pm = org.nmox.studio.rack.devices.ProjectInspector
                                 .nodePackageManager(dir);
                         StatusDisplayer.getDefault()
-                                .setStatusText("Installing dependencies with " + pm + "…");
+                                .setStatusText(Bundle.NewExperimentAction_installing(pm));
                         // joins the toolbar ■ (v2.71.0), like the wizard's install
-                        String runLabel = pm + " install — " + dir.getName();
+                        String runLabel = Bundle.NewExperimentAction_runLabel(pm, dir.getName());
                         String runId = "experiment-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
                         org.netbeans.api.progress.ProgressHandle installing =
                                 org.netbeans.api.progress.ProgressHandle.createHandle(runLabel, () -> {
@@ -155,7 +171,7 @@ public final class NewExperimentAction implements ActionListener {
                                     LiveRuns.remove(runId);
                                     if (LiveRuns.wasStoppedByUser(runId)) {
                                         StatusDisplayer.getDefault().setStatusText(
-                                                "Install stopped — run " + pm + " install when you are ready");
+                                                Bundle.NewExperimentAction_installStopped(pm));
                                         return;
                                     }
                                     reportInstall(pm, code);
@@ -174,11 +190,11 @@ public final class NewExperimentAction implements ActionListener {
                     }
                 });
             } catch (Exception ex) {
-                String message = "Could not create the experiment: " + ex.getMessage();
+                String message = Bundle.NewExperimentAction_couldNotCreate(ex.getMessage());
                 // deferred a dispatch: shown while the wizard is still disposing,
                 // the error can stack behind the main window and soft-lock the app
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.NewExperimentAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
             } finally {
                 handle.finish();
             }
@@ -193,8 +209,8 @@ public final class NewExperimentAction implements ActionListener {
     private static void reportInstall(String pm, int code) {
         SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(
                 org.nmox.studio.core.util.PlainStatus.text(code == 0
-                ? "Dependencies installed — press F6 and follow EXPERIMENT.md"
-                : pm + " install failed (exit " + code + ") — Tools ▸ Environment Doctor can help")));
+                ? Bundle.NewExperimentAction_installed()
+                : Bundle.NewExperimentAction_installFailed(pm, String.valueOf(code)))));
     }
 
     /** The manager's Open re-uses the same guide-opening path (v2.36.1). */

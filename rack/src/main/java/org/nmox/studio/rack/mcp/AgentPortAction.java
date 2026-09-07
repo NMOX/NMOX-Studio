@@ -31,7 +31,19 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "Tools", id = "org.nmox.studio.rack.mcp.AgentPortAction")
 @ActionRegistration(displayName = "#CTL_AgentPortAction", lazy = true)
 @ActionReference(path = "Menu/Tools", position = 95)
-@Messages("CTL_AgentPortAction=Agent Port (MCP)…")
+@Messages({
+    "CTL_AgentPortAction=Agent Port (MCP)…",
+    "AgentPortAction_disclosure=<html><body style=''width: {0}''><b>The Agent Port is listening on 127.0.0.1:{1}</b> — loopback only.<br><br>Any program holding the token below can READ, and only read: <i>{2}</i> — and be told when a run starts, a server goes live, or a file you edit changes, and hear a run''s own output at the level it asks for.<br>Nothing it says can run a command or change a file. Paste this into a .mcp.json to connect an agent:</body></html>",
+    "AgentPortAction_startFailed=The Agent Port could not start: {0}",
+    "AgentPortAction_listening=Agent Port listening on 127.0.0.1:{0}",
+    "AgentPortAction_configName=MCP client configuration",
+    "AgentPortAction_copyConfig=Copy Config",
+    "AgentPortAction_configCopied=Agent Port config copied.",
+    "AgentPortAction_stop=Stop Agent Port",
+    "AgentPortAction_close=Close",
+    "AgentPortAction_title=Agent Port (MCP)",
+    "AgentPortAction_stopped=Agent Port stopped — nothing is listening."
+})
 public final class AgentPortAction implements ActionListener {
 
     // EDT-confined single-window state; an AtomicReference so the write
@@ -60,14 +72,7 @@ public final class AgentPortAction implements ActionListener {
         // UNITLESS on purpose: Swing's CSS reads "width: 720" and ignores
         // "width: 720px" for a body (probed headless — 935 px one-line vs 720
         // wrapped); a units-bearing value would silently restore the bug
-        return "<html><body style='width: " + LABEL_WIDTH + "'><b>The Agent Port is listening on "
-                + "127.0.0.1:" + port + "</b> — loopback only.<br><br>"
-                + "Any program holding the token below can READ, and only read: "
-                + "<i>" + tools + "</i> — "
-                + "and be told when a run starts, a server goes live, or a file you edit changes, "
-                + "and hear a run's own output at the level it asks for.<br>"
-                + "Nothing it says can run a command or change a file. "
-                + "Paste this into a .mcp.json to connect an agent:</body></html>";
+        return Bundle.AgentPortAction_disclosure(String.valueOf(LABEL_WIDTH), String.valueOf(port), tools);
     }
 
     static String shownToken(AgentPort port) {
@@ -101,12 +106,12 @@ public final class AgentPortAction implements ActionListener {
                     .putBoolean("agentport.started", true);
         } catch (IOException ex) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain("The Agent Port could not start: " + ex.getMessage(), "Message")));
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.AgentPortAction_startFailed(ex.getMessage()), "Message")));
             return;
         }
         RUNNING.set(port);
         StatusDisplayer.getDefault().setStatusText(
-                "Agent Port listening on 127.0.0.1:" + port.port());
+                Bundle.AgentPortAction_listening(String.valueOf(port.port())));
         showRunning();
     }
 
@@ -141,28 +146,28 @@ public final class AgentPortAction implements ActionListener {
         config.setEditable(false);
         config.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,
                 java.awt.Font.PLAIN, 12));
-        config.getAccessibleContext().setAccessibleName("MCP client configuration");
+        config.getAccessibleContext().setAccessibleName(Bundle.AgentPortAction_configName());
         panel.add(new JScrollPane(config), BorderLayout.CENTER);
-        JButton copy = new JButton("Copy Config");
+        JButton copy = new JButton(Bundle.AgentPortAction_copyConfig());
         copy.addActionListener(ev -> {
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                     .setContents(new java.awt.datatransfer.StringSelection(snippet), null);
-            StatusDisplayer.getDefault().setStatusText("Agent Port config copied.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_configCopied());
         });
         JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
         south.add(copy);
         panel.add(south, BorderLayout.SOUTH);
 
-        Object stopOption = "Stop Agent Port";
-        Object close = "Close";
+        Object stopOption = Bundle.AgentPortAction_stop();
+        Object close = Bundle.AgentPortAction_close();
         DialogDescriptor descriptor = new DialogDescriptor(panel,
-                "Agent Port (MCP)", true, new Object[]{close, stopOption},
+                Bundle.AgentPortAction_title(), true, new Object[]{close, stopOption},
                 close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(descriptor) == stopOption) {
             port.stop();
             RUNNING.set(null);
             StatusDisplayer.getDefault().setStatusText(
-                    "Agent Port stopped — nothing is listening.");
+                    Bundle.AgentPortAction_stopped());
         }
     }
 }

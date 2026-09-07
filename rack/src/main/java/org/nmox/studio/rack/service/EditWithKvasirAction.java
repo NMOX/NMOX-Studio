@@ -49,7 +49,27 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "Edit", id = "org.nmox.studio.rack.service.EditWithKvasirAction")
 @ActionRegistration(displayName = "#CTL_EditWithKvasirAction", lazy = true)
 @ActionReference(path = "Editors/Popup", position = 1955)
-@Messages("CTL_EditWithKvasirAction=Edit with KVASIR…")
+@Messages({
+    "CTL_EditWithKvasirAction=Edit with KVASIR…",
+    "EditWithKvasirAction_selectFirst=Select some code first — Edit with KVASIR rewrites only the selection.",
+    "EditWithKvasirAction_tooLarge=Selection too large for an KVASIR edit ({0} chars, cap {1}) — nothing was sent.",
+    "EditWithKvasirAction_modelDepth=Model depth",
+    "EditWithKvasirAction_instructionField=Edit instruction",
+    "EditWithKvasirAction_sendsNote=<html><small>Sends only the selection, the file name, the language, and your instruction. The reply replaces the selection only after you approve the preview.</small></html>",
+    "EditWithKvasirAction_prompt=<html>What should KVASIR change in the selection ({0} chars of <b>{1}</b>)?</html>",
+    "EditWithKvasirAction_title=Edit with KVASIR",
+    "EditWithKvasirAction_emptyInstruction=Say what to change — an empty instruction sends nothing.",
+    "EditWithKvasirAction_drafting=KVASIR is drafting the edit…",
+    "EditWithKvasirAction_discarded=KVASIR edit discarded — the file is untouched.",
+    "EditWithKvasirAction_currentSelection=Current selection",
+    "EditWithKvasirAction_proposes=KVASIR proposes",
+    "EditWithKvasirAction_previewNote=<html>Apply replaces the selection in <b>{0}</b> as one undo unit ({1} → {2} chars, {3} → {4} lines). Nothing else in the file changes.</html>",
+    "EditWithKvasirAction_apply=Apply",
+    "EditWithKvasirAction_keepCurrent=Keep Current Code",
+    "EditWithKvasirAction_previewTitle=KVASIR edit — preview",
+    "EditWithKvasirAction_applied=KVASIR edit applied — ⌘Z undoes it.",
+    "EditWithKvasirAction_fileChanged=The file changed while KVASIR was thinking — nothing was applied. Re-select and try again."
+})
 public final class EditWithKvasirAction implements ActionListener {
 
     private static final RequestProcessor RP =
@@ -61,16 +81,14 @@ public final class EditWithKvasirAction implements ActionListener {
         String selection = editor == null ? null : editor.getSelectedText();
         if (selection == null || selection.isBlank()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Select some code first — Edit with KVASIR rewrites only the selection."));
+                    Bundle.EditWithKvasirAction_selectFirst()));
             return;
         }
         if (selection.length() > KvasirEdit.MAX_CODE_CHARS) {
             // refuse, never truncate: a rewrite of a truncated selection
             // would delete the un-sent tail on Apply (the KvasirEdit law)
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain("Selection too large for an KVASIR edit ("
-                    + selection.length() + " chars, cap "
-                    + KvasirEdit.MAX_CODE_CHARS + ") — nothing was sent.", "Message")));
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.EditWithKvasirAction_tooLarge(String.valueOf(selection.length()), String.valueOf(KvasirEdit.MAX_CODE_CHARS)), "Message")));
             return;
         }
         Document doc = editor.getDocument();
@@ -82,38 +100,35 @@ public final class EditWithKvasirAction implements ActionListener {
         javax.swing.JComboBox<String> model =
                 new javax.swing.JComboBox<>(AskKvasirModel.labels());
         model.setSelectedIndex(AskKvasirModel.chosenIndex());
-        model.getAccessibleContext().setAccessibleName("Model depth");
-        instruction.getAccessibleContext().setAccessibleName("Edit instruction");
+        model.getAccessibleContext().setAccessibleName(Bundle.EditWithKvasirAction_modelDepth());
+        instruction.getAccessibleContext().setAccessibleName(Bundle.EditWithKvasirAction_instructionField());
         JPanel south = new JPanel(new BorderLayout(8, 0));
-        south.add(new JLabel("<html><small>Sends only the selection, the file name, "
-                + "the language, and your instruction. The reply replaces the "
-                + "selection only after you approve the preview.</small></html>"),
+        south.add(new JLabel(Bundle.EditWithKvasirAction_sendsNote()),
                 BorderLayout.CENTER);
         south.add(model, BorderLayout.EAST);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("<html>What should KVASIR change in the selection ("
-                + selection.length() + " chars of <b>" + PlainText.escape(fileName) + "</b>)?</html>"),
+        panel.add(new JLabel(Bundle.EditWithKvasirAction_prompt(String.valueOf(selection.length()), PlainText.escape(fileName))),
                 BorderLayout.NORTH);
         panel.add(instruction, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Edit with KVASIR");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.EditWithKvasirAction_title());
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
         String asked = instruction.getText().trim();
         if (asked.isBlank()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Say what to change — an empty instruction sends nothing."));
+                    Bundle.EditWithKvasirAction_emptyInstruction()));
             return;
         }
         AskKvasirModel.remember(model.getSelectedIndex());
         EditRequest request = new EditRequest(fileName, language, selection, asked);
         String chosenModel = AskKvasirModel.chosen();
 
-        StatusDisplayer.getDefault().setStatusText("KVASIR is drafting the edit…");
+        StatusDisplayer.getDefault().setStatusText(Bundle.EditWithKvasirAction_drafting());
         // the send rides the RP (the keychain read can block on an unlock
         // prompt — the v1.56 law); the preview and the apply hop to the EDT
         RP.post(() -> {
@@ -139,7 +154,7 @@ public final class EditWithKvasirAction implements ActionListener {
         StatusDisplayer.getDefault().setStatusText("");
         if (!showPreview(original, proposal.replacement(), fileName)) {
             StatusDisplayer.getDefault().setStatusText(
-                    "KVASIR edit discarded — the file is untouched.");
+                    Bundle.EditWithKvasirAction_discarded());
             return;
         }
         apply(doc, start, original, proposal.replacement());
@@ -149,23 +164,19 @@ public final class EditWithKvasirAction implements ActionListener {
     private static boolean showPreview(String original, String replacement,
             String fileName) {
         JPanel diff = new JPanel(new GridLayout(1, 2, 8, 0));
-        diff.add(titled("Current selection", original));
-        diff.add(titled("KVASIR proposes", replacement));
+        diff.add(titled(Bundle.EditWithKvasirAction_currentSelection(), original));
+        diff.add(titled(Bundle.EditWithKvasirAction_proposes(), replacement));
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("<html>Apply replaces the selection in <b>" + PlainText.escape(fileName)
-                + "</b> as one undo unit (" + original.length() + " → "
-                + replacement.length() + " chars, "
-                + countLines(original) + " → " + countLines(replacement)
-                + " lines). Nothing else in the file changes.</html>"),
+        panel.add(new JLabel(Bundle.EditWithKvasirAction_previewNote(PlainText.escape(fileName), String.valueOf(original.length()), String.valueOf(replacement.length()), String.valueOf(countLines(original)), String.valueOf(countLines(replacement)))),
                 BorderLayout.NORTH);
         panel.add(diff, BorderLayout.CENTER);
-        Object applyOption = "Apply";
-        Object keep = "Keep Current Code";
+        Object applyOption = Bundle.EditWithKvasirAction_apply();
+        Object keep = Bundle.EditWithKvasirAction_keepCurrent();
         // Cancel is the default: Enter on a dialog that rewrites the
         // user's file must do nothing (the v1.98.0 safe-default idiom)
         NotifyDescriptor nd = new NotifyDescriptor(panel,
-                "KVASIR edit — preview", NotifyDescriptor.DEFAULT_OPTION,
+                Bundle.EditWithKvasirAction_previewTitle(), NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE,
                 new Object[]{applyOption, keep}, keep);
         return DialogDisplayer.getDefault().notify(nd) == applyOption;
@@ -210,11 +221,10 @@ public final class EditWithKvasirAction implements ActionListener {
         }
         if (applied[0]) {
             StatusDisplayer.getDefault().setStatusText(
-                    "KVASIR edit applied — ⌘Z undoes it.");
+                    Bundle.EditWithKvasirAction_applied());
         } else {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "The file changed while KVASIR was thinking — nothing was "
-                    + "applied. Re-select and try again."));
+                    Bundle.EditWithKvasirAction_fileChanged()));
         }
     }
 

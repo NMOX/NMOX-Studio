@@ -29,6 +29,10 @@ import org.netbeans.api.keyring.Keyring;
  * keyring may block on OS calls; UI code calls through the module's
  * RequestProcessor, same as every other IO here).
  */
+@org.openide.util.NbBundle.Messages({
+    "ApiSecrets_keychainUnavailable=Keychain unavailable",
+    "ApiSecrets_tokensNotSaved=API Studio auth tokens will not be saved this session."
+})
 public final class ApiSecrets {
 
     private static final Logger LOG = Logger.getLogger(ApiSecrets.class.getName());
@@ -124,9 +128,9 @@ public final class ApiSecrets {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.ApiSecrets_keychainUnavailable(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "API Studio auth tokens will not be saved this session.", null);
+                    Bundle.ApiSecrets_tokensNotSaved(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

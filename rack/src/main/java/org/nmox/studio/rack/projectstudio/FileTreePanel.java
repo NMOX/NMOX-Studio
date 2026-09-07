@@ -42,6 +42,10 @@ import org.openide.nodes.Node;
  * files written by builds appear without an expansion dance.</li>
  * </ul>
  */
+@org.openide.util.NbBundle.Messages({
+    "FileTreePanel_noProject=No project",
+    "FileTreePanel_unreadable={0} (unreadable)"
+})
 public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
     /** Directories that stay dark: huge, generated, or plumbing. */
@@ -95,7 +99,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         super(new BorderLayout());
         this.resolver = resolver;
         view.setRootVisible(true);
-        manager.setRootContext(placeholder("No project"));
+        manager.setRootContext(placeholder(Bundle.FileTreePanel_noProject()));
         manager.addPropertyChangeListener(selectionRelay);
         add(view, BorderLayout.CENTER);
     }
@@ -145,7 +149,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         this.root = dir;
         restartWatcher();
         if (dir == null) {
-            onEdt(() -> manager.setRootContext(placeholder("No project")));
+            onEdt(() -> manager.setRootContext(placeholder(Bundle.FileTreePanel_noProject())));
             return;
         }
         // resolve off the EDT: a fresh launch aiming at a slow or
@@ -157,7 +161,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                     return; // aim changed while we resolved; the newer scan owns the tree
                 }
                 manager.setRootContext(node != null ? node
-                        : placeholder(dir.getName() + " (unreadable)"));
+                        : placeholder(Bundle.FileTreePanel_unreadable(dir.getName())));
             });
         });
     }

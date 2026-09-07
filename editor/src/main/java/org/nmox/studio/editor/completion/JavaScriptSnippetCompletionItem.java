@@ -20,6 +20,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * Constructed per query by {@link JavaScriptCompletionProvider} from
  * its static snippet list.
  */
+@org.openide.util.NbBundle.Messages({
+    "JavaScriptSnippetCompletionItem_hint=[snippet] {0}"
+})
 public class JavaScriptSnippetCompletionItem implements CompletionItem {
     
     private final JavaScriptCompletionProvider.JavaScriptSnippet snippet;
@@ -91,7 +94,7 @@ public class JavaScriptSnippetCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             snippet.trigger,
-            "[snippet] " + snippet.description,
+            Bundle.JavaScriptSnippetCompletionItem_hint(snippet.description),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(34, 139, 34),

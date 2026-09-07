@@ -15,7 +15,8 @@ import org.openide.filesystems.MIMEResolver;
  * matched by full filename in {@link ConfigFileResolver}.
  */
 @GrammarRegistration(grammar = "apache.tmLanguage.json", mimeType = "text/x-apache-conf")
-@MIMEResolver.ExtensionRegistration(displayName = "Apache Config", mimeType = "text/x-apache-conf", extension = {"vhost"}, position = 2440)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ApacheGrammar_LOADER", mimeType = "text/x-apache-conf", extension = {"vhost"}, position = 2440)
+@org.openide.util.NbBundle.Messages("LBL_ApacheGrammar_LOADER=Apache Config")
 public final class ApacheGrammar {
 
     private ApacheGrammar() {

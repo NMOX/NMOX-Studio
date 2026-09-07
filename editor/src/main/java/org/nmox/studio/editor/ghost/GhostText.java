@@ -37,6 +37,13 @@ import org.openide.awt.StatusDisplayer;
  * installed only while a ghost is armed and removed with it (the v1.44.0
  * symmetry law).
  */
+@org.openide.util.NbBundle.Messages({
+    "GhostText_insertedAtEnd=KVASIR completion inserted at the end of the file — ⌘Z removes it.",
+    "GhostText_moreLines=… +{1,choice,1#{0} line|1<{0} lines}",
+    "GhostText_armed=KVASIR completion — Tab inserts; typing or moving the caret dismisses.",
+    "GhostText_armedAll=KVASIR completion — Tab inserts all {0} lines; typing or moving the caret dismisses.",
+    "GhostText_inserted=KVASIR completion inserted — ⌘Z removes it."
+})
 public final class GhostText {
 
     /** The platform's prepend attribute (editor-lib2 HighlightsViewFactory). */
@@ -117,14 +124,14 @@ public final class GhostText {
             insertNow(at, text);
             component.select(at, at + text.length());
             StatusDisplayer.getDefault().setStatusText(
-                    "KVASIR completion inserted at the end of the file — ⌘Z removes it.");
+                    Bundle.GhostText_insertedAtEnd());
             return;
         }
         this.insertion = text;
         this.offset = at;
         String first = firstLine(text);
         int more = moreLines(text);
-        String shown = more > 0 ? first + "  … +" + more + " line" + (more == 1 ? "" : "s") : first;
+        String shown = more > 0 ? first + "  " + Bundle.GhostText_moreLines(String.valueOf(more), more) : first;
         SimpleAttributeSet attrs = new SimpleAttributeSet();
         attrs.addAttribute(VIRTUAL_TEXT_PREPEND, shown);
         Color fg = component.getForeground() == null ? Color.GRAY : component.getForeground();
@@ -135,8 +142,7 @@ public final class GhostText {
         component.addCaretListener(caret);
         doc.addDocumentListener(edits);
         StatusDisplayer.getDefault().setStatusText(
-                "KVASIR completion — Tab inserts" + (more > 0 ? " all " + (more + 1) + " lines" : "")
-                + "; typing or moving the caret dismisses.");
+                more > 0 ? Bundle.GhostText_armedAll(String.valueOf(more + 1)) : Bundle.GhostText_armed());
     }
 
     /** Whether a ghost is armed on this pane. */
@@ -150,7 +156,7 @@ public final class GhostText {
         detach();
         if (text != null && at >= 0) {
             insertNow(at, text);
-            StatusDisplayer.getDefault().setStatusText("KVASIR completion inserted — ⌘Z removes it.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.GhostText_inserted());
         }
     }
 

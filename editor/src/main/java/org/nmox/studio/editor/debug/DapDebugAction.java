@@ -33,13 +33,13 @@ import org.openide.util.RequestProcessor;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/x-python",
-            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
+            popupPath = "", popupPosition = 8000),
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/x-go",
-            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
+            popupPath = "", popupPosition = 8000),
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/javascript",
-            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000),
+            popupPath = "", popupPosition = 8000),
     @EditorActionRegistration(name = "nmox-debug-file", mimeType = "text/typescript",
-            popupText = "Debug File (breakpoints)", popupPath = "", popupPosition = 8000)
+            popupPath = "", popupPosition = 8000)
 })
 public class DapDebugAction extends BaseAction {
 
@@ -70,7 +70,7 @@ public class DapDebugAction extends BaseAction {
                 // the launch before any adapter or debuggee is spawned.
                 if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectRoot(file))) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "Debug cancelled — workspace not trusted.");
+                            org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_notTrusted"));
                     return;
                 }
                 switch (mime) {
@@ -84,7 +84,7 @@ public class DapDebugAction extends BaseAction {
                 showOutput();
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
-                        "Debug failed: " + ex.getMessage() + " — is the debug adapter installed?");
+                        org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_failed", ex.getMessage()));
             }
         });
     }

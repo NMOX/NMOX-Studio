@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "purescript.tmLanguage.json", mimeType = "text/x-purescript")
-@MIMEResolver.ExtensionRegistration(displayName = "PureScript", mimeType = "text/x-purescript", extension = {"purs"}, position = 2437)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_PureScriptGrammar_LOADER", mimeType = "text/x-purescript", extension = {"purs"}, position = 2437)
+@org.openide.util.NbBundle.Messages("LBL_PureScriptGrammar_LOADER=PureScript")
 public final class PureScriptGrammar {
 
     private PureScriptGrammar() {

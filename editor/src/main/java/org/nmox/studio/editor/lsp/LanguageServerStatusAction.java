@@ -9,6 +9,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -25,8 +26,8 @@ public final class LanguageServerStatusAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         LanguageServersPanel panel = new LanguageServersPanel();
-        JButton close = new JButton("Close");
-        DialogDescriptor d = new DialogDescriptor(panel, "Language Servers", false,
+        JButton close = new JButton(NbBundle.getMessage(LanguageServerStatusAction.class, "LanguageServerStatusAction_close"));
+        DialogDescriptor d = new DialogDescriptor(panel, NbBundle.getMessage(LanguageServerStatusAction.class, "LanguageServerStatusAction_title"), false,
                 new Object[]{close}, close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(d);
         close.addActionListener(ev -> dialog.dispose());

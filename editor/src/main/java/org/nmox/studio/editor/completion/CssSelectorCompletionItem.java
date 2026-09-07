@@ -19,6 +19,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * the developer typing declarations immediately. Constructed per query
  * by {@link CssCompletionProvider}.
  */
+@org.openide.util.NbBundle.Messages({
+    "CssSelectorCompletionItem_hint=[sel]"
+})
 public class CssSelectorCompletionItem implements CompletionItem {
     
     private final String selector;
@@ -58,7 +61,7 @@ public class CssSelectorCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             selector,
-            "[sel]",
+            Bundle.CssSelectorCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(0, 150, 0),

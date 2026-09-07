@@ -22,6 +22,12 @@ import java.util.Locale;
  * a selector the file doesn't contain means the cascade got it from
  * somewhere else, and writing anywhere else would be a guess.
  */
+@org.openide.util.NbBundle.Messages({
+    "StyleWriteback_emptyStylesheet=stylesheet is empty",
+    "StyleWriteback_allRequired=selector, property and value are all required",
+    "StyleWriteback_structuralChars=property/value must not contain { } : ;",
+    "StyleWriteback_selectorNotFound=selector \"{0}\" not found in this file"
+})
 public final class StyleWriteback {
 
     private StyleWriteback() {
@@ -45,12 +51,12 @@ public final class StyleWriteback {
      */
     public static Result apply(String css, String selectorText, String property, String value) {
         if (css == null || css.isEmpty()) {
-            return Result.refused("stylesheet is empty");
+            return Result.refused(Bundle.StyleWriteback_emptyStylesheet());
         }
         if (selectorText == null || selectorText.isBlank()
                 || property == null || property.isBlank()
                 || value == null || value.isBlank()) {
-            return Result.refused("selector, property and value are all required");
+            return Result.refused(Bundle.StyleWriteback_allRequired());
         }
         // values ending in a brace or containing one would corrupt the
         // block structure — refuse rather than write a broken file
@@ -58,12 +64,12 @@ public final class StyleWriteback {
                 || property.indexOf('{') >= 0 || property.indexOf('}') >= 0
                 || property.indexOf(':') >= 0 || property.indexOf(';') >= 0
                 || value.indexOf(';') >= 0) {
-            return Result.refused("property/value must not contain { } : ;");
+            return Result.refused(Bundle.StyleWriteback_structuralChars());
         }
         String neutral = neutralizeComments(css);
         int[] block = findRuleBlock(neutral, selectorText);
         if (block == null) {
-            return Result.refused("selector \"" + selectorText + "\" not found in this file");
+            return Result.refused(Bundle.StyleWriteback_selectorNotFound(selectorText));
         }
         int open = block[0];
         int close = block[1];

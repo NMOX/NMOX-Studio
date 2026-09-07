@@ -18,6 +18,10 @@ import org.nmox.studio.core.util.Versions;
  * entries between what it saw and what runs now, capped with an honest
  * marker.
  */
+@org.openide.util.NbBundle.Messages({
+    "ReleaseNotes_omittedOne=… and {0} earlier release not shown — the full notes are on GitHub.",
+    "ReleaseNotes_omittedMany=… and {0} earlier releases not shown — the full notes are on GitHub."
+})
 public final class ReleaseNotes {
 
     /** Entries shown at most on a first boot after an update. */
@@ -164,8 +168,9 @@ public final class ReleaseNotes {
             sb.append('\n').append(e.body());
         }
         if (omitted > 0) {
-            sb.append("\n\n… and ").append(omitted).append(" earlier release")
-                    .append(omitted == 1 ? "" : "s").append(" not shown — the full notes are on GitHub.");
+            sb.append("\n\n").append(omitted == 1
+                    ? Bundle.ReleaseNotes_omittedOne(String.valueOf(omitted))
+                    : Bundle.ReleaseNotes_omittedMany(String.valueOf(omitted)));
         }
         return sb.toString();
     }

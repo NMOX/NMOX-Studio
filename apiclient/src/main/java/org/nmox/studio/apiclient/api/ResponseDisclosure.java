@@ -28,6 +28,9 @@ import java.util.TreeMap;
  *       v1.149.0 lone-surrogate lesson), marked when truncated.</li>
  * </ul>
  */
+@org.openide.util.NbBundle.Messages({
+    "ResponseDisclosure_what=the request''s method and URL (query values masked), the response status, its headers with credentials removed, and up to {0,number,0} characters of the response body"
+})
 public final class ResponseDisclosure {
 
     /** Enough of a body to diagnose an error; small enough to read. */
@@ -97,9 +100,7 @@ public final class ResponseDisclosure {
      * same method's {@link #body} produces exactly these pieces.
      */
     public static String what(ApiResponse r) {
-        return "the request's method and URL (query values masked), the response status,"
-                + " its headers with credentials removed, and up to "
-                + MAX_BODY_CHARS + " characters of the response body";
+        return Bundle.ResponseDisclosure_what(MAX_BODY_CHARS);
     }
 
     /**

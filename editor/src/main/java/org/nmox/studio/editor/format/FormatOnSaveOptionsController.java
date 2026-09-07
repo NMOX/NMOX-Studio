@@ -22,6 +22,8 @@ import org.openide.util.NbBundle;
  * IDE-wide preference.
  */
 @NbBundle.Messages({
+    "FormatOnSave_enabled=Format files with Prettier on save",
+    "FormatOnSave_detail=<html><i>Runs only in projects that opted into Prettier — a .prettierrc / prettier.config file or a package.json that mentions prettier. The project's own node_modules/.bin/prettier is preferred over a global install. Files that fail to format save unchanged.</i></html>",
     "FormatOnSave_DisplayName=Format on Save",
     "FormatOnSave_Keywords=format save prettier formatter"
 })
@@ -72,11 +74,8 @@ public class FormatOnSaveOptionsController extends OptionsPanelController {
         if (panel != null) {
             return panel;
         }
-        enabled = new JCheckBox("Format files with Prettier on save");
-        JLabel detail = new JLabel("<html><i>Runs only in projects that opted into Prettier"
-                + " — a .prettierrc / prettier.config file or a package.json that mentions"
-                + " prettier. The project's own node_modules/.bin/prettier is preferred"
-                + " over a global install. Files that fail to format save unchanged.</i></html>");
+        enabled = new JCheckBox(Bundle.FormatOnSave_enabled());
+        JLabel detail = new JLabel(Bundle.FormatOnSave_detail());
         JPanel column = new JPanel();
         column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
         enabled.setAlignmentX(JComponent.LEFT_ALIGNMENT);

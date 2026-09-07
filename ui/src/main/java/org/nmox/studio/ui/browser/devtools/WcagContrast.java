@@ -16,6 +16,11 @@ import java.util.Locale;
  * background yields no verdict: the real backdrop is some ancestor's,
  * and guessing would report a contrast the page doesn't have.
  */
+@org.openide.util.NbBundle.Messages({
+    "WcagContrast_summary={0}:1 \u2014 AA {1}, AAA {2} (normal text); AA {3}, AAA {4} (large text)",
+    "WcagContrast_pass=pass",
+    "WcagContrast_fail=FAIL"
+})
 public final class WcagContrast {
 
     /** One verdict: the ratio and the four WCAG thresholds. */
@@ -24,14 +29,13 @@ public final class WcagContrast {
 
         /** "4.54:1 — AA pass, AAA fail (normal text)" style summary. */
         public String summary() {
-            return String.format(Locale.ROOT,
-                    "%.2f:1 — AA %s, AAA %s (normal text); AA %s, AAA %s (large text)",
-                    ratio, pass(aaNormal), pass(aaaNormal),
+            return Bundle.WcagContrast_summary(
+                    String.format(Locale.ROOT, "%.2f", ratio), pass(aaNormal), pass(aaaNormal),
                     pass(aaLarge), pass(aaaLarge));
         }
 
         private static String pass(boolean ok) {
-            return ok ? "pass" : "FAIL";
+            return ok ? Bundle.WcagContrast_pass() : Bundle.WcagContrast_fail();
         }
     }
 

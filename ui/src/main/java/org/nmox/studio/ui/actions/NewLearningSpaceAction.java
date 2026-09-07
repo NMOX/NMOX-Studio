@@ -52,7 +52,21 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 112),
     @ActionReference(path = "Shortcuts", name = "DS-L")
 })
-@Messages("CTL_NewLearningSpaceAction=New Learning Space…")
+@Messages({
+    "CTL_NewLearningSpaceAction=New Learning Space…",
+    "NewLearningSpaceAction_catalogEmpty=The learning catalog is empty or unreadable.",
+    "NewLearningSpaceAction_listName=Learning spaces",
+    "NewLearningSpaceAction_searchName=Search the learning spaces",
+    "NewLearningSpaceAction_searchTip=Filter by name, family, or description",
+    "NewLearningSpaceAction_heading=Learn by doing — pick a language, framework, or library:",
+    "NewLearningSpaceAction_title=New Learning Space",
+    "NewLearningSpaceAction_couldNotCreate=Could not create the learning space: {0}",
+    "NewLearningSpaceAction_messageName=Message",
+    "NewLearningSpaceAction_requiresChecking=requires {0} — checking…",
+    "NewLearningSpaceAction_requiresFound=requires {0} — ✓ found",
+    "NewLearningSpaceAction_requiresMissing=requires {0} — ✗ not found",
+    "NewLearningSpaceAction_requiresMissingHint=requires {0} — ✗ not found · {1}"
+})
 public final class NewLearningSpaceAction implements ActionListener {
 
     private static final Color TOOL_OK = new Color(96, 176, 96);
@@ -77,14 +91,14 @@ public final class NewLearningSpaceAction implements ActionListener {
     private void showPicker(List<LearningCatalog.Space> all) {
         if (all.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "The learning catalog is empty or unreadable."));
+                    Bundle.NewLearningSpaceAction_catalogEmpty()));
             return;
         }
 
         DefaultListModel<LearningCatalog.Space> model = new DefaultListModel<>();
         all.forEach(model::addElement);
         JList<LearningCatalog.Space> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Learning spaces");
+        list.getAccessibleContext().setAccessibleName(Bundle.NewLearningSpaceAction_listName());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {
@@ -102,8 +116,8 @@ public final class NewLearningSpaceAction implements ActionListener {
 
         JTextField search = new JTextField();
 
-        search.getAccessibleContext().setAccessibleName("Search the learning spaces");
-        search.setToolTipText("Filter by name, family, or description");
+        search.getAccessibleContext().setAccessibleName(Bundle.NewLearningSpaceAction_searchName());
+        search.setToolTipText(Bundle.NewLearningSpaceAction_searchTip());
         search.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) { refilter(); }
             @Override public void removeUpdate(DocumentEvent e) { refilter(); }
@@ -136,7 +150,7 @@ public final class NewLearningSpaceAction implements ActionListener {
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Learn by doing — pick a language, framework, or library:"),
+        panel.add(new JLabel(Bundle.NewLearningSpaceAction_heading()),
                 BorderLayout.NORTH);
         JPanel body = new JPanel(new BorderLayout(0, 6));
         body.add(search, BorderLayout.NORTH);
@@ -145,7 +159,7 @@ public final class NewLearningSpaceAction implements ActionListener {
         panel.add(body, BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(560, 460));
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "New Learning Space");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.NewLearningSpaceAction_title());
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -160,9 +174,9 @@ public final class NewLearningSpaceAction implements ActionListener {
                 File dir = LearningSpace.create(chosen);
                 SwingUtilities.invokeLater(() -> openSpace(dir, chosen));
             } catch (Exception ex) {
-                String message = "Could not create the learning space: " + ex.getMessage();
+                String message = Bundle.NewLearningSpaceAction_couldNotCreate(ex.getMessage());
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.NewLearningSpaceAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }
@@ -212,7 +226,7 @@ public final class NewLearningSpaceAction implements ActionListener {
             return;
         }
         label.setForeground(TOOL_PROBING);
-        label.setText("requires " + tool + " — checking…");
+        label.setText(Bundle.NewLearningSpaceAction_requiresChecking(tool));
         org.openide.util.RequestProcessor.getDefault().post(() -> {
             // present = ToolLocator resolves the bare name to a real path
             boolean resolved = !ToolLocator.resolve(tool).equals(tool);
@@ -235,10 +249,11 @@ public final class NewLearningSpaceAction implements ActionListener {
     /** The availability line, pure: the ✓/✗ verdict plus the OS-appropriate install command. */
     static String availabilityText(String tool, boolean found, String installHint) {
         if (found) {
-            return "requires " + tool + " — ✓ found";
+            return Bundle.NewLearningSpaceAction_requiresFound(tool);
         }
-        return "requires " + tool + " — ✗ not found"
-                + (installHint == null || installHint.isBlank() ? "" : " · " + installHint);
+        return installHint == null || installHint.isBlank()
+                ? Bundle.NewLearningSpaceAction_requiresMissing(tool)
+                : Bundle.NewLearningSpaceAction_requiresMissingHint(tool, installHint);
     }
 
     /**

@@ -18,6 +18,13 @@ import java.util.List;
  * lives, so the consent line is the literal truth. Pure so every cap
  * is a unit test.
  */
+@org.openide.util.NbBundle.Messages({
+    "CheckDisclosure_baseOne=The {0} failed check of {1} (labels and hints)",
+    "CheckDisclosure_baseMany=The {0} failed checks of {1} (labels and hints)",
+    "CheckDisclosure_noFiles={0} — no file contents.",
+    "CheckDisclosure_withOneFile={0} and your checked file (capped).",
+    "CheckDisclosure_withFiles={0} and your {1} checked files (capped)."
+})
 public final class CheckDisclosure {
 
     static final int FILE_CAP = 4000;
@@ -28,12 +35,12 @@ public final class CheckDisclosure {
     /** The consent dialog's one-line summary — the literal truth. */
     public static String what(String spaceName, List<Checkpoints.Checkpoint> failed) {
         long files = failed.stream().filter(Checkpoints.Checkpoint::isFileKind).count();
-        String base = "The " + failed.size() + " failed "
-                + (failed.size() == 1 ? "check" : "checks") + " of " + spaceName
-                + " (labels and hints)";
-        return files == 0 ? base + " — no file contents."
-                : base + " and your " + (files == 1 ? "checked file" : files + " checked files")
-                + " (capped).";
+        String base = failed.size() == 1
+                ? Bundle.CheckDisclosure_baseOne(String.valueOf(failed.size()), spaceName)
+                : Bundle.CheckDisclosure_baseMany(String.valueOf(failed.size()), spaceName);
+        return files == 0 ? Bundle.CheckDisclosure_noFiles(base)
+                : files == 1 ? Bundle.CheckDisclosure_withOneFile(base)
+                : Bundle.CheckDisclosure_withFiles(base, String.valueOf(files));
     }
 
     /** The conversation's opening body. */

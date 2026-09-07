@@ -31,6 +31,30 @@ import org.openide.util.RequestProcessor;
  * Keychain writes ride a RequestProcessor because the keyring may block
  * on OS calls (the EDT-never-blocks law).
  */
+@org.openide.util.NbBundle.Messages({
+    "NetworkEditorDialog_networkName=Network name",
+    "NetworkEditorDialog_serverHost=Server host",
+    "NetworkEditorDialog_port=Port",
+    "NetworkEditorDialog_tls=TLS",
+    "NetworkEditorDialog_nickname=Nickname",
+    "NetworkEditorDialog_saslAccount=SASL account",
+    "NetworkEditorDialog_password=Password",
+    "NetworkEditorDialog_autojoinChannels=Auto-join channels",
+    "NetworkEditorDialog_nameLabel=Name:",
+    "NetworkEditorDialog_hostLabel=Host:",
+    "NetworkEditorDialog_portLabel=Port:",
+    "NetworkEditorDialog_nickLabel=Nick:",
+    "NetworkEditorDialog_saslLabel=SASL account:",
+    "NetworkEditorDialog_passwordLabel=Password:",
+    "NetworkEditorDialog_autojoinLabel=Autojoin:",
+    "NetworkEditorDialog_note=<html><i>Password goes to the OS keychain, never to disk.<br>"
+        + "With a SASL account it authenticates in-registration;<br>"
+        + "without one it identifies to NickServ after connect.</i></html>",
+    "NetworkEditorDialog_addTitle=Add IRC Network",
+    "NetworkEditorDialog_editTitle=Edit IRC Network",
+    "NetworkEditorDialog_deleteMessage=Delete network \"{0}\"? Its saved password is removed from the OS keychain too.",
+    "NetworkEditorDialog_deleteTitle=Delete IRC Network"
+})
 final class NetworkEditorDialog {
 
     /** Shown for an existing secret; saving this exact value is a no-op. */
@@ -48,20 +72,20 @@ final class NetworkEditorDialog {
      */
     static String show(IrcConfig config, IrcConfig.Network existing) {
         JTextField name = new JTextField(existing == null ? "" : existing.name(), 18);
-        name.getAccessibleContext().setAccessibleName("Network name");
+        name.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_networkName());
         name.setEditable(existing == null); // the name is the store key
         JTextField host = new JTextField(existing == null ? "" : existing.host(), 18);
-        host.getAccessibleContext().setAccessibleName("Server host");
+        host.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_serverHost());
         JTextField port = new JTextField(
                 existing == null ? "6697" : Integer.toString(existing.port()), 6);
-        port.getAccessibleContext().setAccessibleName("Port");
-        JCheckBox tls = new JCheckBox("TLS", existing == null || existing.tls());
+        port.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_port());
+        JCheckBox tls = new JCheckBox(Bundle.NetworkEditorDialog_tls(), existing == null || existing.tls());
         JTextField nick = new JTextField(existing == null ? "nmox-user" : existing.nick(), 18);
-        nick.getAccessibleContext().setAccessibleName("Nickname");
+        nick.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_nickname());
         JTextField sasl = new JTextField(existing == null ? "" : existing.saslAccount(), 18);
-        sasl.getAccessibleContext().setAccessibleName("SASL account");
+        sasl.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_saslAccount());
         JPasswordField password = new JPasswordField(18);
-        password.getAccessibleContext().setAccessibleName("Password");
+        password.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_password());
         if (existing != null) {
             // the keyring may block on OS calls — probe it OFF the EDT and
             // mask the field once known (the modal dialog's nested event
@@ -79,7 +103,7 @@ final class NetworkEditorDialog {
         }
         JTextField autojoin = new JTextField(existing == null
                 ? "" : String.join(", ", existing.autojoin()), 18);
-        autojoin.getAccessibleContext().setAccessibleName("Auto-join channels");
+        autojoin.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_autojoinChannels());
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -87,22 +111,20 @@ final class NetworkEditorDialog {
         gc.insets = new Insets(3, 4, 3, 4);
         gc.anchor = GridBagConstraints.WEST;
         int row = 0;
-        row = addRow(form, gc, row, "Name:", name);
-        row = addRow(form, gc, row, "Host:", host);
-        row = addRow(form, gc, row, "Port:", port);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_nameLabel(), name);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_hostLabel(), host);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_portLabel(), port);
         row = addRow(form, gc, row, "", tls);
-        row = addRow(form, gc, row, "Nick:", nick);
-        row = addRow(form, gc, row, "SASL account:", sasl);
-        row = addRow(form, gc, row, "Password:", password);
-        row = addRow(form, gc, row, "Autojoin:", autojoin);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_nickLabel(), nick);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_saslLabel(), sasl);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_passwordLabel(), password);
+        row = addRow(form, gc, row, Bundle.NetworkEditorDialog_autojoinLabel(), autojoin);
         gc.gridx = 1;
         gc.gridy = row;
-        form.add(new JLabel("<html><i>Password goes to the OS keychain, never to disk.<br>"
-                + "With a SASL account it authenticates in-registration;<br>"
-                + "without one it identifies to NickServ after connect.</i></html>"), gc);
+        form.add(new JLabel(Bundle.NetworkEditorDialog_note()), gc);
 
         DialogDescriptor dd = new DialogDescriptor(form,
-                existing == null ? "Add IRC Network" : "Edit IRC Network");
+                existing == null ? Bundle.NetworkEditorDialog_addTitle() : Bundle.NetworkEditorDialog_editTitle());
         if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
             return null;
         }
@@ -146,9 +168,9 @@ final class NetworkEditorDialog {
      */
     static boolean confirmAndDelete(IrcConfig config, String network) {
         NotifyDescriptor d = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain("Delete network \"" + network + "\"? Its saved password is removed "
-                + "from the OS keychain too.", "Message"),
-                "Delete IRC Network",
+                org.nmox.studio.core.util.PlainDialogs.plain(
+                        Bundle.NetworkEditorDialog_deleteMessage(network), "Message"),
+                Bundle.NetworkEditorDialog_deleteTitle(),
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE,
                 null,

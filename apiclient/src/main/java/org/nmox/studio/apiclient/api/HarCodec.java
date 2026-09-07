@@ -30,6 +30,16 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * collapse to the first occurrence; and non-replayable schemes
  * ({@code data:}, {@code blob:}, {@code ws:}) are skipped by name.
  */
+@org.openide.util.NbBundle.Messages({
+    "HarCodec_assetsSkipped={0,number,0} page-asset entries skipped (kept XHR/fetch only).",
+    "HarCodec_dupesCollapsed={0,number,0} repeated method+URL entries collapsed.",
+    "HarCodec_cookiesDropped={0,choice,0#{0,number,0} Cookie headers|1#{0,number,0} Cookie header|1<{0,number,0} Cookie headers} dropped — a captured session cookie is a credential and never lands in the workspace file.",
+    "HarCodec_unreplayableSkipped={0,number,0} non-HTTP entries (data:/blob:/ws:) skipped.",
+    "HarCodec_overflowNotImported={0,number,0} entries beyond the first {1,number,0} not imported.",
+    "HarCodec_authDropped=A captured Authorization header that isn't Bearer/Basic was DROPPED — recorded credentials never land in the workspace file; set the request's Auth field yourself.",
+    "HarCodec_multipartNotImported={0} {1}: multipart body not imported (same stance as the curl import).",
+    "HarCodec_bodyOverCap={0} {1}: body over {2,number,0} chars not imported — paste it in if you really need it."
+})
 public final class HarCodec {
 
     /** A page load can carry thousands of entries; this is a workbench. */
@@ -130,22 +140,19 @@ public final class HarCodec {
                     : "No importable requests found in this HAR.");
         }
         if (assets > 0) {
-            notes.add(assets + " page-asset entries skipped (kept XHR/fetch only).");
+            notes.add(Bundle.HarCodec_assetsSkipped(assets));
         }
         if (dupes > 0) {
-            notes.add(dupes + " repeated method+URL entries collapsed.");
+            notes.add(Bundle.HarCodec_dupesCollapsed(dupes));
         }
         if (cookies > 0) {
-            notes.add(cookies + " Cookie header" + (cookies == 1 ? "" : "s")
-                    + " dropped — a captured session cookie is a credential and "
-                    + "never lands in the workspace file.");
+            notes.add(Bundle.HarCodec_cookiesDropped(cookies));
         }
         if (unreplayable > 0) {
-            notes.add(unreplayable + " non-HTTP entries (data:/blob:/ws:) skipped.");
+            notes.add(Bundle.HarCodec_unreplayableSkipped(unreplayable));
         }
         if (overflow > 0) {
-            notes.add(overflow + " entries beyond the first " + MAX_REQUESTS
-                    + " not imported.");
+            notes.add(Bundle.HarCodec_overflowNotImported(overflow, MAX_REQUESTS));
         }
         return new Imported(requests, notes);
     }
@@ -215,9 +222,7 @@ public final class HarCodec {
         return cookies;
     }
 
-    private static final String AUTH_NOTE = "A captured Authorization header "
-            + "that isn't Bearer/Basic was DROPPED — recorded credentials never "
-            + "land in the workspace file; set the request's Auth field yourself.";
+    private static final String AUTH_NOTE = Bundle.HarCodec_authDropped();
 
     private static void body(JSONObject postData, ApiModel.Request r, List<String> notes) {
         if (postData == null) {
@@ -225,17 +230,14 @@ public final class HarCodec {
         }
         String mime = postData.optString("mimeType", "");
         if (mime.toLowerCase(Locale.ROOT).startsWith("multipart/")) {
-            notes.add(r.method + " " + r.url
-                    + ": multipart body not imported (same stance as the curl import).");
+            notes.add(Bundle.HarCodec_multipartNotImported(r.method, r.url));
             return;
         }
         String text = postData.optString("text", "");
         if (text.length() > MAX_BODY_CHARS) {
             // an over-cap body is REFUSED, not truncated: a silently cut
             // payload would replay as a DIFFERENT request and "work"
-            notes.add(r.method + " " + r.url + ": body over "
-                    + MAX_BODY_CHARS + " chars not imported — paste it in if you "
-                    + "really need it.");
+            notes.add(Bundle.HarCodec_bodyOverCap(r.method, r.url, MAX_BODY_CHARS));
             return;
         }
         r.body = text;

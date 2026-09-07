@@ -38,6 +38,18 @@ import org.openide.util.NbPreferences;
  * there is no interactive attack to defend, and nothing here reaches the
  * network on its own — a key must be set and EXPLAIN must be pressed.
  */
+@org.openide.util.NbBundle.Messages({
+    "KvasirConsent_recipient={0}''s API ({1})",
+    "KvasirConsent_failureMessage=<html><b>Send this failure to {0} for an explanation?</b><br><br>KVASIR will send <b>only</b> the following, and nothing else:<ul><li>the failing command: <code>{1}</code></li><li>its exit code: <code>{2}</code></li><li>up to five sampled error lines</li><li>the device (task lane): <code>{3}</code></li><li>the project name: <code>{4}</code></li></ul>It does <b>not</b> send your source files, environment variables, or any secret.<br><br>Your API key is used to authenticate the request. This choice is remembered.</html>",
+    "KvasirConsent_sendToKvasir=Send to KVASIR",
+    "KvasirConsent_keepLocal=Keep Local",
+    "KvasirConsent_failureTitle=KVASIR — send failure for explanation?",
+    "KvasirConsent_kindMessage=<html><b>Send this to {0} for an explanation?</b><br><br>KVASIR will send <b>only</b> the following, and nothing else:<ul><li>{1}</li></ul>It sends <b>nothing</b> beyond the line above — no environment variables, no secrets, nothing it did not name.<br><br>Your API key is used to authenticate the request. This choice is remembered for this kind of request only.</html>",
+    "KvasirConsent_kindTitle=KVASIR — send for explanation?",
+    "KvasirConsent_codeMessage=<html><b>Send this code selection to {0}?</b><br><br>Ask KVASIR will send <b>only</b> the following, and nothing else:<ul><li>the code you selected ({1} characters)</li><li>the file''s name: <code>{2}</code></li><li>its language: <code>{3}</code></li><li>your question</li></ul>It does <b>not</b> send the rest of the file, other files, environment variables, or any secret.<br><br>Your API key authenticates the request. This choice is remembered.</html>",
+    "KvasirConsent_codeTitle=Ask KVASIR — send selected code?",
+    "KvasirConsent_unknown=(unknown)"
+})
 public final class KvasirConsent {
 
     /**
@@ -122,7 +134,7 @@ public final class KvasirConsent {
     /** The vendor the configured provider's request goes to, for the dialogs. */
     private static String recipient() {
         KvasirProvider p = KvasirProvider.configured();
-        return escape(p.vendor()) + "'s API (" + escape(p.product()) + ")";
+        return Bundle.KvasirConsent_recipient(escape(p.vendor()), escape(p.product()));
     }
 
     /** True once the user has agreed to send failure context to the configured provider. */
@@ -157,26 +169,17 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this failure to " + recipient() + " for an explanation?</b>"
-                + "<br><br>KVASIR will send <b>only</b> the following, and nothing else:"
-                + "<ul>"
-                + "<li>the failing command: <code>" + escape(ctx.command()) + "</code></li>"
-                + "<li>its exit code: <code>" + ctx.exitCode() + "</code></li>"
-                + "<li>up to five sampled error lines</li>"
-                + "<li>the device (task lane): <code>" + escape(ctx.device()) + "</code></li>"
-                + "<li>the project name: <code>" + escape(ctx.projectName()) + "</code></li>"
-                + "</ul>"
-                + "It does <b>not</b> send your source files, environment variables, or any secret."
-                + "<br><br>Your API key is used to authenticate the request. This choice is remembered."
-                + "</html>";
-        Object sendOption = "Send to KVASIR";
+        String message = Bundle.KvasirConsent_failureMessage(recipient(), escape(ctx.command()),
+                String.valueOf(ctx.exitCode()), escape(ctx.device()), escape(ctx.projectName()));
+        Object sendOption = Bundle.KvasirConsent_sendToKvasir();
+        Object keepLocal = Bundle.KvasirConsent_keepLocal();
         NotifyDescriptor nd = new NotifyDescriptor(
                 new javax.swing.JLabel(message),
-                "KVASIR — send failure for explanation?",
+                Bundle.KvasirConsent_failureTitle(),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
-                new Object[]{sendOption, "Keep Local"},
-                "Keep Local");
+                new Object[]{sendOption, keepLocal},
+                keepLocal);
         if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
             grant();
             return true;
@@ -222,28 +225,22 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this to " + recipient() + " for an explanation?</b>"
-                + "<br><br>KVASIR will send <b>only</b> the following, and nothing else:"
-                + "<ul><li>" + escape(what) + "</li></ul>"
-                // the disclosure line above is the whole truth — some kinds
-                // DO carry file content (space.check sends the checked file,
-                // browser.error a source excerpt), so the old fixed "does
-                // not send your source files" line could contradict the
-                // bullet it sat under (caught live, v2.39.5). Say only what
-                // is always true: nothing beyond what the bullet names.
-                + "It sends <b>nothing</b> beyond the line above — no environment"
-                + " variables, no secrets, nothing it did not name."
-                + "<br><br>Your API key is used to authenticate the request. This choice is remembered"
-                + " for this kind of request only."
-                + "</html>";
-        Object sendOption = "Send to KVASIR";
+        // the disclosure line is the whole truth — some kinds DO carry file
+        // content (space.check sends the checked file, browser.error a
+        // source excerpt), so the old fixed "does not send your source
+        // files" line could contradict the bullet it sat under (caught
+        // live, v2.39.5). Say only what is always true: nothing beyond
+        // what the bullet names.
+        String message = Bundle.KvasirConsent_kindMessage(recipient(), escape(what));
+        Object sendOption = Bundle.KvasirConsent_sendToKvasir();
+        Object keepLocal = Bundle.KvasirConsent_keepLocal();
         NotifyDescriptor nd = new NotifyDescriptor(
                 new javax.swing.JLabel(message),
-                "KVASIR — send for explanation?",
+                Bundle.KvasirConsent_kindTitle(),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
-                new Object[]{sendOption, "Keep Local"},
-                "Keep Local");
+                new Object[]{sendOption, keepLocal},
+                keepLocal);
         if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
             grantKind(kind);
             return true;
@@ -284,26 +281,17 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this code selection to " + recipient() + "?</b>"
-                + "<br><br>Ask KVASIR will send <b>only</b> the following, and nothing else:"
-                + "<ul>"
-                + "<li>the code you selected (" + q.code().length() + " characters)</li>"
-                + "<li>the file's name: <code>" + escape(q.fileName()) + "</code></li>"
-                + "<li>its language: <code>" + escape(q.language()) + "</code></li>"
-                + "<li>your question</li>"
-                + "</ul>"
-                + "It does <b>not</b> send the rest of the file, other files, "
-                + "environment variables, or any secret."
-                + "<br><br>Your API key authenticates the request. This choice is remembered."
-                + "</html>";
-        Object sendOption = "Send to KVASIR";
+        String message = Bundle.KvasirConsent_codeMessage(recipient(), String.valueOf(q.code().length()),
+                escape(q.fileName()), escape(q.language()));
+        Object sendOption = Bundle.KvasirConsent_sendToKvasir();
+        Object keepLocal = Bundle.KvasirConsent_keepLocal();
         NotifyDescriptor nd = new NotifyDescriptor(
                 new javax.swing.JLabel(message),
-                "Ask KVASIR — send selected code?",
+                Bundle.KvasirConsent_codeTitle(),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
-                new Object[]{sendOption, "Keep Local"},
-                "Keep Local");
+                new Object[]{sendOption, keepLocal},
+                keepLocal);
         if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
             grantCode();
             return true;
@@ -313,7 +301,7 @@ public final class KvasirConsent {
 
     private static String escape(String s) {
         if (s == null || s.isBlank()) {
-            return "(unknown)";
+            return Bundle.KvasirConsent_unknown();
         }
         return PlainText.escape(s);
     }

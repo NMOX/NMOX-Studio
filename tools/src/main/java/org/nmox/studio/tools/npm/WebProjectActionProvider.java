@@ -206,7 +206,7 @@ final class WebProjectActionProvider implements ActionProvider {
                         announced.set(url);
                         org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
                                 new org.nmox.studio.rack.service.ServingRegistry.Serving(
-                                        servingId, "Run — " + project.getName(), url,
+                                        servingId, labelFor(ActionProvider.COMMAND_RUN) + " — " + project.getName(), url,
                                         org.nmox.studio.rack.service.ServingRegistry.Kind.WEB,
                                         dir));
                     }
@@ -288,13 +288,13 @@ final class WebProjectActionProvider implements ActionProvider {
     static String labelFor(String command) {
         switch (command) {
             case COMMAND_RUN:
-                return "Run";
+                return org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class, "WebProjectActionProvider_run");
             case COMMAND_BUILD:
-                return "Build";
+                return org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class, "WebProjectActionProvider_build");
             case COMMAND_TEST:
-                return "Test";
+                return org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class, "WebProjectActionProvider_test");
             case COMMAND_CLEAN:
-                return "Clean";
+                return org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class, "WebProjectActionProvider_clean");
             default:
                 return command;
         }

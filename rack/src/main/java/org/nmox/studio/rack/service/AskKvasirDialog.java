@@ -26,6 +26,17 @@ import org.openide.util.RequestProcessor;
  * the input disables while a send is in flight so one conversation can
  * never interleave its own turns.
  */
+@org.openide.util.NbBundle.Messages({
+    "AskKvasirDialog_ask=Ask",
+    "AskKvasirDialog_transcriptName=KVASIR conversation",
+    "AskKvasirDialog_inputName=Follow-up question",
+    "AskKvasirDialog_title=KVASIR — {0}",
+    "AskKvasirDialog_youPrefix=You: ",
+    "AskKvasirDialog_kvasirPrefix=KVASIR: ",
+    "AskKvasirDialog_defaultQuestion=Explain what this code does.",
+    "AskKvasirDialog_capReached=[conversation cap reached — start a new Ask from a selection]",
+    "AskKvasirDialog_thinking=Thinking…"
+})
 public final class AskKvasirDialog {
 
     private static final RequestProcessor RP =
@@ -35,7 +46,7 @@ public final class AskKvasirDialog {
     private final AskKvasirEngine engine;
     private final JTextArea transcript = new JTextArea(22, 76);
     private final JTextField input = new JTextField();
-    private final JButton ask = new JButton("Ask");
+    private final JButton ask = new JButton(Bundle.AskKvasirDialog_ask());
 
     private final String model;
 
@@ -51,8 +62,8 @@ public final class AskKvasirDialog {
         transcript.setLineWrap(true);
         transcript.setWrapStyleWord(true);
         transcript.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-        transcript.getAccessibleContext().setAccessibleName("KVASIR conversation");
-        input.getAccessibleContext().setAccessibleName("Follow-up question");
+        transcript.getAccessibleContext().setAccessibleName(Bundle.AskKvasirDialog_transcriptName());
+        input.getAccessibleContext().setAccessibleName(Bundle.AskKvasirDialog_inputName());
     }
 
     /**
@@ -73,7 +84,7 @@ public final class AskKvasirDialog {
         panel.add(south, BorderLayout.SOUTH);
 
         DialogDescriptor dd = new DialogDescriptor(panel,
-                "KVASIR — " + convo.title(), false,
+                Bundle.AskKvasirDialog_title(convo.title()), false,
                 new Object[]{DialogDescriptor.CLOSED_OPTION},
                 DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
         JDialog dialog = (JDialog) DialogDisplayer.getDefault().createDialog(dd);
@@ -89,7 +100,7 @@ public final class AskKvasirDialog {
         input.addActionListener(e -> submit.run());
 
         for (org.nmox.studio.rack.engine.KvasirClient.Turn t : convo.history()) {
-            append(("user".equals(t.role()) ? "You: " : "KVASIR: ") + t.text() + "\n\n");
+            append(("user".equals(t.role()) ? Bundle.AskKvasirDialog_youPrefix() : Bundle.AskKvasirDialog_kvasirPrefix()) + t.text() + "\n\n");
         }
         dialog.setVisible(true);
         if (convo.exchanges() == 0) {
@@ -101,16 +112,16 @@ public final class AskKvasirDialog {
     /** One exchange: append the question, disable input, answer off-EDT. */
     private void send(String question) {
         String shown = question == null || question.isBlank()
-                ? "Explain what this code does." : question;
-        append("You: " + shown + "\n");
+                ? Bundle.AskKvasirDialog_defaultQuestion() : question;
+        append(Bundle.AskKvasirDialog_youPrefix() + shown + "\n");
         busy(true);
         RP.post(() -> {
             AskKvasirEngine.Result r = engine.converse(convo, question, model);
             SwingUtilities.invokeLater(() -> {
-                append("KVASIR: " + r.text() + "\n\n");
+                append(Bundle.AskKvasirDialog_kvasirPrefix() + r.text() + "\n\n");
                 busy(false);
                 if (!convo.canAsk()) {
-                    append("[conversation cap reached — start a new Ask from a selection]\n");
+                    append(Bundle.AskKvasirDialog_capReached() + "\n");
                     input.setEnabled(false);
                     ask.setEnabled(false);
                 }
@@ -126,6 +137,6 @@ public final class AskKvasirDialog {
     private void busy(boolean b) {
         input.setEnabled(!b);
         ask.setEnabled(!b);
-        ask.setText(PlainText.plain(b ? "Thinking…" : "Ask"));
+        ask.setText(PlainText.plain(b ? Bundle.AskKvasirDialog_thinking() : Bundle.AskKvasirDialog_ask()));
     }
 }

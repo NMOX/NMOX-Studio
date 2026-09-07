@@ -14,6 +14,14 @@ import org.nmox.studio.ui.irc.protocol.IrcMessage;
  * record so back-to-back {@code /whois} calls don't blend. Pure
  * message-in/record-out, no Swing.
  */
+@org.openide.util.NbBundle.Messages({
+    "WhoisCollector_header=── whois {0} ──",
+    "WhoisCollector_server=server: {0}",
+    "WhoisCollector_serverWithInfo=server: {0} — {1}",
+    "WhoisCollector_channels=channels: {0}",
+    "WhoisCollector_idle=idle: {0}",
+    "WhoisCollector_loggedInAs=logged in as: {0}"
+})
 public final class WhoisCollector {
 
     /**
@@ -152,21 +160,22 @@ public final class WhoisCollector {
     /** The card the transcript renders: one line per known fact. */
     public static List<String> cardLines(WhoisInfo info) {
         List<String> out = new ArrayList<>();
-        out.add("── whois " + info.nick() + " ──");
+        out.add(Bundle.WhoisCollector_header(info.nick()));
         out.add("  " + info.userHost()
                 + (info.realName().isEmpty() ? "" : " (" + info.realName() + ")"));
         if (!info.server().isEmpty()) {
-            out.add("  server: " + info.server()
-                    + (info.serverInfo().isEmpty() ? "" : " — " + info.serverInfo()));
+            out.add("  " + (info.serverInfo().isEmpty()
+                    ? Bundle.WhoisCollector_server(info.server())
+                    : Bundle.WhoisCollector_serverWithInfo(info.server(), info.serverInfo())));
         }
         if (!info.channels().isEmpty()) {
-            out.add("  channels: " + String.join(" ", info.channels()));
+            out.add("  " + Bundle.WhoisCollector_channels(String.join(" ", info.channels())));
         }
         if (info.idleSeconds() >= 0) {
-            out.add("  idle: " + formatIdle(info.idleSeconds()));
+            out.add("  " + Bundle.WhoisCollector_idle(formatIdle(info.idleSeconds())));
         }
         if (!info.account().isEmpty()) {
-            out.add("  logged in as: " + info.account());
+            out.add("  " + Bundle.WhoisCollector_loggedInAs(info.account()));
         }
         return out;
     }

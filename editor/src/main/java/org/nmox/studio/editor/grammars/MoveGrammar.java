@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * for provenance) and its file extension.
  */
 @GrammarRegistration(grammar = "move.tmLanguage.json", mimeType = "text/x-move")
-@MIMEResolver.ExtensionRegistration(displayName = "Move", mimeType = "text/x-move", extension = {"move"}, position = 2452)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_MoveGrammar_LOADER", mimeType = "text/x-move", extension = {"move"}, position = 2452)
+@org.openide.util.NbBundle.Messages("LBL_MoveGrammar_LOADER=Move")
 public final class MoveGrammar {
 
     private MoveGrammar() {

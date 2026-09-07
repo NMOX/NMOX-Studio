@@ -10,7 +10,8 @@ import org.openide.filesystems.MIMEResolver;
  * so fixed-form .f/.for (Fortran 77) are deliberately left unclaimed.
  */
 @GrammarRegistration(grammar = "fortran.tmLanguage.json", mimeType = "text/x-fortran")
-@MIMEResolver.ExtensionRegistration(displayName = "Fortran", mimeType = "text/x-fortran", extension = {"f90", "f95", "f03", "f08", "f18"}, position = 2439)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_FortranGrammar_LOADER", mimeType = "text/x-fortran", extension = {"f90", "f95", "f03", "f08", "f18"}, position = 2439)
+@org.openide.util.NbBundle.Messages("LBL_FortranGrammar_LOADER=Fortran")
 public final class FortranGrammar {
 
     private FortranGrammar() {

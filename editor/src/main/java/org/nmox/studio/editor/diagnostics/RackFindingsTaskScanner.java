@@ -30,6 +30,10 @@ import org.openide.filesystems.FileUtil;
  * shape here. Publishes arrive on device worker threads and stay there —
  * no EDT work anywhere on this path.
  */
+@org.openide.util.NbBundle.Messages({
+    "RackFindingsTaskScanner_name=Rack tool findings",
+    "RackFindingsTaskScanner_description=Problems reported by rack quality tools (eslint, tsc, phpstan)"
+})
 public final class RackFindingsTaskScanner extends PushTaskScanner {
 
     private final RackFindings findings = new RackFindings();
@@ -37,8 +41,8 @@ public final class RackFindingsTaskScanner extends PushTaskScanner {
     private volatile Callback callback;
 
     private RackFindingsTaskScanner() {
-        super("Rack tool findings",
-                "Problems reported by rack quality tools (eslint, tsc, phpstan)",
+        super(Bundle.RackFindingsTaskScanner_name(),
+                Bundle.RackFindingsTaskScanner_description(),
                 null);
         DiagnosticsBus.addListener((tool, problems)
                 -> push(findings.publish(tool, problems)));

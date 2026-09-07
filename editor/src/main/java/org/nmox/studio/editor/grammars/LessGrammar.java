@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * see NOTICE-grammars.md) and its file extension.
  */
 @GrammarRegistration(grammar = "less.tmLanguage.json", mimeType = "text/x-less")
-@MIMEResolver.ExtensionRegistration(displayName = "Less", mimeType = "text/x-less", extension = {"less"}, position = 2210)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_LessGrammar_LOADER", mimeType = "text/x-less", extension = {"less"}, position = 2210)
+@org.openide.util.NbBundle.Messages("LBL_LessGrammar_LOADER=Less")
 public final class LessGrammar {
 
     private LessGrammar() {

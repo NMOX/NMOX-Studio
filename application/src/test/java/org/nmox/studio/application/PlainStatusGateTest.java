@@ -49,7 +49,10 @@ class PlainStatusGateTest {
                         pos = close + 1;
                         String arg = body.substring(start, close).replaceAll("//[^\n]*", "").strip();
                         if (arg.isEmpty() || arg.startsWith("\"") || arg.startsWith("PlainStatus.text(")
-                                || arg.startsWith("org.nmox.studio.core.util.PlainStatus.text(")) {
+                                || arg.startsWith("org.nmox.studio.core.util.PlainStatus.text(")
+                                // a bundle value is the product's own authored sentence (v2.97.0, the l10n arc)
+                                || arg.startsWith("Bundle.") || arg.startsWith("NbBundle.")
+                                || arg.startsWith("org.openide.util.NbBundle.")) {
                             continue;
                         }
                         int line = 1 + (int) body.chars().limit(k).filter(c -> c == '\n').count();

@@ -18,6 +18,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * Constructed per query by {@link JavaScriptCompletionProvider} (and
  * reused by the polyglot provider for its keyword lists).
  */
+@org.openide.util.NbBundle.Messages({
+    "JavaScriptKeywordCompletionItem_hint=[keyword]"
+})
 public class JavaScriptKeywordCompletionItem implements CompletionItem {
     
     private final String keyword;
@@ -57,7 +60,7 @@ public class JavaScriptKeywordCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             keyword,
-            "[keyword]",
+            Bundle.JavaScriptKeywordCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(0, 0, 255),

@@ -22,6 +22,11 @@ import java.util.List;
  * whole file), message at {@value #MSG_CAP} code points. The excerpt
  * names its own truncation. Pure so every cap is a unit test.
  */
+@org.openide.util.NbBundle.Messages({
+    "BrowserErrorDisclosure_whatMessageOnly=The error message only \u2014 no source (the error did not"
+        + " resolve to a project file).",
+    "BrowserErrorDisclosure_whatWithSource=The error message and {0} lines of {1} around line {2}."
+})
 public final class BrowserErrorDisclosure {
 
     static final int CONTEXT = 3;
@@ -34,11 +39,10 @@ public final class BrowserErrorDisclosure {
     /** The consent dialog's one-line summary — the literal truth. */
     public static String what(File file, int line) {
         if (file == null) {
-            return "The error message only — no source (the error did not"
-                    + " resolve to a project file).";
+            return Bundle.BrowserErrorDisclosure_whatMessageOnly();
         }
-        return "The error message and " + (CONTEXT * 2 + 1)
-                + " lines of " + file.getName() + " around line " + line + ".";
+        return Bundle.BrowserErrorDisclosure_whatWithSource(
+                String.valueOf(CONTEXT * 2 + 1), file.getName(), String.valueOf(line));
     }
 
     /** The conversation's opening body. */

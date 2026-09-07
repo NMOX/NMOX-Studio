@@ -42,7 +42,16 @@ import org.openide.util.RequestProcessor;
     @ActionReference(path = "Editors/text/x-scss/Popup", position = 1855),
     @ActionReference(path = "Editors/text/x-sass/Popup", position = 1855)
 })
-@Messages("CTL_SassCompile=Compile to CSS")
+@Messages({
+    "CTL_SassCompile=Compile to CSS",
+    "SassCompileAction_notLocal=Not a local file.",
+    "SassCompileAction_couldNotSave=Could not save before compiling.",
+    "SassCompileAction_compiledArmed=Compiled {0} — recompiling on save.",
+    "SassCompileAction_compiled=Compiled {0}.",
+    "SassCompileAction_partial=Partials (_{0}) are imports, not entry points — compile the stylesheet that uses it.",
+    "SassCompileAction_noSass=sass not found — install it in the project (npm i -D sass) or globally on PATH.",
+    "SassCompileAction_failed=Sass error: {0}"
+})
 public final class SassCompileAction implements ActionListener {
 
     /** One lane: compiles queue rather than pile up. */
@@ -62,7 +71,7 @@ public final class SassCompileAction implements ActionListener {
         FileObject fo = context.getPrimaryFile();
         File file = FileUtil.toFile(fo);
         if (file == null) {
-            status("Not a local file.");
+            status(Bundle.SassCompileAction_notLocal());
             return;
         }
         // the save (an editor-buffer write to disk) and the compile both
@@ -77,7 +86,7 @@ public final class SassCompileAction implements ActionListener {
                 try {
                     save.save();
                 } catch (java.io.IOException ex) {
-                    EventQueue.invokeLater(() -> status("Could not save before compiling."));
+                    EventQueue.invokeLater(() -> status(Bundle.SassCompileAction_couldNotSave()));
                     return;
                 }
             }
@@ -96,14 +105,13 @@ public final class SassCompileAction implements ActionListener {
         switch (result.outcome()) {
             case COMPILED -> {
                 boolean newlyArmed = armAfter && arm(fo, file);
-                status("Compiled " + result.output().getName()
-                        + (newlyArmed ? " — recompiling on save." : "."));
+                status(newlyArmed
+                        ? Bundle.SassCompileAction_compiledArmed(result.output().getName())
+                        : Bundle.SassCompileAction_compiled(result.output().getName()));
             }
-            case PARTIAL -> status("Partials (_" + stripUnderscore(file.getName())
-                    + ") are imports, not entry points — compile the stylesheet that uses it.");
-            case NO_SASS -> status("sass not found — install it in the project "
-                    + "(npm i -D sass) or globally on PATH.");
-            case FAILED -> status("Sass error: " + result.error());
+            case PARTIAL -> status(Bundle.SassCompileAction_partial(stripUnderscore(file.getName())));
+            case NO_SASS -> status(Bundle.SassCompileAction_noSass());
+            case FAILED -> status(Bundle.SassCompileAction_failed(result.error()));
         }
     }
 

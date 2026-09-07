@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "odin.tmLanguage.json", mimeType = "text/x-odin")
-@MIMEResolver.ExtensionRegistration(displayName = "Odin", mimeType = "text/x-odin", extension = {"odin"}, position = 2447)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_OdinGrammar_LOADER", mimeType = "text/x-odin", extension = {"odin"}, position = 2447)
+@org.openide.util.NbBundle.Messages("LBL_OdinGrammar_LOADER=Odin")
 public final class OdinGrammar {
 
     private OdinGrammar() {

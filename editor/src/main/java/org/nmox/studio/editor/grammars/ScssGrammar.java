@@ -10,7 +10,8 @@ import org.openide.filesystems.MIMEResolver;
  * approximately, from v1.4.x to v2.19.x.
  */
 @GrammarRegistration(grammar = "scss.tmLanguage.json", mimeType = "text/x-scss")
-@MIMEResolver.ExtensionRegistration(displayName = "SCSS", mimeType = "text/x-scss", extension = {"scss"}, position = 2380)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ScssGrammar_LOADER", mimeType = "text/x-scss", extension = {"scss"}, position = 2380)
+@org.openide.util.NbBundle.Messages("LBL_ScssGrammar_LOADER=SCSS")
 public final class ScssGrammar {
 
     private ScssGrammar() {

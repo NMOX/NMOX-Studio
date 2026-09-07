@@ -23,6 +23,14 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * field so the secret lands in the OS keychain instead of the
  * committable workspace file (the v1.97.0 secrets law).
  */
+@org.openide.util.NbBundle.Messages({
+    "CurlCodec_dataUrlencodeVerbatim=--data-urlencode imported verbatim — curl would URL-encode it on send.",
+    "CurlCodec_cookieFilesNotImported=Cookie files (-b {0}) aren''t imported — paste name=value pairs.",
+    "CurlCodec_ignoredTransportFlag=Ignored {0} (transport/output flag).",
+    "CurlCodec_ignoredUnknownFlag=Ignored unknown flag {0}.",
+    "CurlCodec_ignoredExtraArgument=Ignored extra argument ''{0}'' — URL already set.",
+    "CurlCodec_authorizationKept=Authorization header kept as a header — consider the Auth field, which stores the secret in the OS keychain."
+})
 public final class CurlCodec {
 
     private CurlCodec() {
@@ -77,7 +85,7 @@ public final class CurlCodec {
                 }
                 case "--data-urlencode" -> {
                     dataParts.add(need(tokens, ++i, t));
-                    notes.add("--data-urlencode imported verbatim — curl would URL-encode it on send.");
+                    notes.add(Bundle.CurlCodec_dataUrlencodeVerbatim());
                 }
                 case "--json" -> {
                     dataParts.add(need(tokens, ++i, t));
@@ -100,7 +108,7 @@ public final class CurlCodec {
                     String v = need(tokens, ++i, t);
                     if (!v.contains("=")) {
                         throw new IllegalArgumentException(
-                                "Cookie files (-b " + v + ") aren't imported — paste name=value pairs.");
+                                Bundle.CurlCodec_cookieFilesNotImported(v));
                     }
                     r.headers.add(new Pair("Cookie", v));
                 }
@@ -116,16 +124,16 @@ public final class CurlCodec {
                         // transport/output tuning — nothing to save
                     } else if (IGNORED_WITH_VALUE.contains(t)) {
                         need(tokens, ++i, t);
-                        notes.add("Ignored " + t + " (transport/output flag).");
+                        notes.add(Bundle.CurlCodec_ignoredTransportFlag(t));
                     } else if (t.startsWith("-") && t.length() > 1) {
                         // unknown flag: never guess its arity — skipping a
                         // value it owns could eat the URL, so leave the next
                         // token alone and say so
-                        notes.add("Ignored unknown flag " + t + ".");
+                        notes.add(Bundle.CurlCodec_ignoredUnknownFlag(t));
                     } else if (r.url.isEmpty()) {
                         r.url = t;
                     } else {
-                        notes.add("Ignored extra argument '" + t + "' — URL already set.");
+                        notes.add(Bundle.CurlCodec_ignoredExtraArgument(t));
                     }
                 }
             }
@@ -187,8 +195,7 @@ public final class CurlCodec {
                     // fall through to the plain-header path below
                 }
             }
-            notes.add("Authorization header kept as a header — consider the Auth "
-                    + "field, which stores the secret in the OS keychain.");
+            notes.add(Bundle.CurlCodec_authorizationKept());
         }
         r.headers.add(new Pair(name, value));
     }

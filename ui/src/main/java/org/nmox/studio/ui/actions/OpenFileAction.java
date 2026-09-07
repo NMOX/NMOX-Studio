@@ -37,13 +37,18 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Menu/File", position = 50),
     @ActionReference(path = "Shortcuts", name = "D-O")
 })
-@Messages("CTL_OpenFileAction=Open File…")
+@Messages({
+    "CTL_OpenFileAction=Open File…",
+    "OpenFileAction_chooserTitle=Open File",
+    "OpenFileAction_noEditor=Could not open {0} — no editor is registered for this file.",
+    "OpenFileAction_messageName=Message"
+})
 public final class OpenFileAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Open File");
+        chooser.setDialogTitle(Bundle.OpenFileAction_chooserTitle());
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(true);
 
@@ -56,8 +61,8 @@ public final class OpenFileAction implements ActionListener {
             for (File file : chooser.getSelectedFiles()) {
                 if (file != null && file.exists() && file.isFile() && !openFile(file)) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                            org.nmox.studio.core.util.PlainDialogs.plain("Could not open " + file.getName()
-                            + " — no editor is registered for this file.", "Message"),
+                            org.nmox.studio.core.util.PlainDialogs.plain(Bundle.OpenFileAction_noEditor(file.getName()),
+                            Bundle.OpenFileAction_messageName()),
                             NotifyDescriptor.WARNING_MESSAGE));
                 }
             }

@@ -44,6 +44,9 @@ import org.openide.loaders.DataObject;
     // may point at files outside the .component.html convention
     @MimeRegistration(mimeType = "text/html", service = CompletionProvider.class, position = 530)
 })
+@org.openide.util.NbBundle.Messages({
+    "NgTemplateCompletionProvider_componentHint=[component]"
+})
 public class NgTemplateCompletionProvider implements CompletionProvider {
 
     @Override
@@ -176,7 +179,7 @@ public class NgTemplateCompletionProvider implements CompletionProvider {
         @Override
         public void render(Graphics g, Font defaultFont, Color defaultColor,
                 Color backgroundColor, int width, int height, boolean selected) {
-            CompletionUtilities.renderHtml(null, selector, "[component]",
+            CompletionUtilities.renderHtml(null, selector, Bundle.NgTemplateCompletionProvider_componentHint(),
                     g, defaultFont,
                     selected ? Color.WHITE : new Color(0xDD, 0x00, 0x31),
                     width, height, selected);

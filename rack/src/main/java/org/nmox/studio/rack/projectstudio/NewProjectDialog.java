@@ -36,6 +36,33 @@ import org.openide.NotifyDescriptor;
  * and (optionally) kicks off npm install - from empty folder to a
  * running dev loop without leaving the IDE.
  */
+@org.openide.util.NbBundle.Messages({
+    "NewProjectDialog_nameField=Project name",
+    "NewProjectDialog_locationField=Project location",
+    "NewProjectDialog_templateList=Project template",
+    "NewProjectDialog_installBox=Run npm install after creating",
+    "NewProjectDialog_createButton=Create Project",
+    "NewProjectDialog_cancelButton=Cancel",
+    "NewProjectDialog_templateSkipped=Template {0} skipped: {1}",
+    "NewProjectDialog_title=New Project",
+    "NewProjectDialog_templateItem=<html><b>{0}</b><br><small>{1}</small></html>",
+    "NewProjectDialog_customTemplateItem=<html><b>{0}</b> <font color=''#888''>· yours</font><br><small>{1}</small></html>",
+    "NewProjectDialog_chooserTitle=Parent Directory for the New Project",
+    "NewProjectDialog_nameLabel=Name:",
+    "NewProjectDialog_locationLabel=Location:",
+    "NewProjectDialog_templateLabel=Template:",
+    "NewProjectDialog_willCreate=Will create: {0}",
+    "NewProjectDialog_nameMissing=Give the project a name.",
+    "NewProjectDialog_alreadyExists={0} already exists in that location.",
+    "NewProjectDialog_createFailed=Could not create the project: {0}",
+    "NewProjectDialog_installing=Installing dependencies with {0}…",
+    "NewProjectDialog_installRunLabel={0} install — {1}",
+    "NewProjectDialog_installStopped=Install stopped — run {0} install when you are ready",
+    "NewProjectDialog_installed=Dependencies installed — press Run to start your project",
+    "NewProjectDialog_installFailedStatus={0} install failed (exit {1})",
+    "NewProjectDialog_installFailedDialog=<html><b>{0} install didn''t finish.</b><br><br>Your project files were created fine — only the dependency<br>download failed (exit code {1}).<br><br>Two places to look:<br>&nbsp;&nbsp;• <b>Output ▸ Project Setup</b> — the full log of what {0} said<br>&nbsp;&nbsp;• <b>Tools ▸ Environment Doctor</b> — shows whether Node and {0} are installed<br><br>You can also just run <code>{0} install</code> again later.</html>",
+    "NewProjectDialog_creating=Creating…"
+})
 public class NewProjectDialog extends JDialog {
 
     /** Template generation + git init run here, never on the EDT. */
@@ -49,20 +76,20 @@ public class NewProjectDialog extends JDialog {
         // technology (v2.85.0 census: 46 inputs product-wide had neither a
         // name nor a labelFor; the sweep is the next shift's, these two
         // could not wait)
-        nameField.getAccessibleContext().setAccessibleName("Project name");
-        locationField.getAccessibleContext().setAccessibleName("Project location");
+        nameField.getAccessibleContext().setAccessibleName(Bundle.NewProjectDialog_nameField());
+        locationField.getAccessibleContext().setAccessibleName(Bundle.NewProjectDialog_locationField());
     }
     // built-ins first, then any ~/.nmox/templates.d drop-ins (v1.293.0) —
     // both kinds render name+description and generate the same way, so the
     // list holds the union and the OK path dispatches on the element type
     private final JList<Object> templateList = new JList<>(templateModel());
     {
-        templateList.getAccessibleContext().setAccessibleName("Project template");
+        templateList.getAccessibleContext().setAccessibleName(Bundle.NewProjectDialog_templateList());
     }
-    private final JCheckBox installBox = new JCheckBox("Run npm install after creating", true);
+    private final JCheckBox installBox = new JCheckBox(Bundle.NewProjectDialog_installBox(), true);
     private final JLabel previewLabel = new JLabel(" ");
-    private final JButton createButton = new JButton("Create Project");
-    private final JButton cancelButton = new JButton("Cancel");
+    private final JButton createButton = new JButton(Bundle.NewProjectDialog_createButton());
+    private final JButton cancelButton = new JButton(Bundle.NewProjectDialog_cancelButton());
     private final JButton browseButton = new JButton("…");
 
     private File createdProject;
@@ -89,7 +116,7 @@ public class NewProjectDialog extends JDialog {
                 loaded.templates().forEach(model::addElement);
                 for (UserTemplates.Skipped s : loaded.skipped()) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                            "Template " + s.file() + " skipped: " + s.reason());
+                            Bundle.NewProjectDialog_templateSkipped(s.file(), s.reason()));
                 }
             });
         });
@@ -101,7 +128,7 @@ public class NewProjectDialog extends JDialog {
     }
 
     public NewProjectDialog(Component parent) {
-        super(javax.swing.SwingUtilities.getWindowAncestor(parent), "New Project",
+        super(javax.swing.SwingUtilities.getWindowAncestor(parent), Bundle.NewProjectDialog_title(),
                 ModalityType.APPLICATION_MODAL);
 
         locationField.setText(defaultLocation().getAbsolutePath());
@@ -115,13 +142,10 @@ public class NewProjectDialog extends JDialog {
                     boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof ProjectTemplates t) {
-                    setText("<html><b>" + t.getDisplayName() + "</b><br><small>"
-                            + t.getDescription() + "</small></html>");
+                    setText(Bundle.NewProjectDialog_templateItem(t.getDisplayName(), t.getDescription()));
                 } else if (value instanceof UserTemplates.Custom c) {
                     // "yours" says where it came from without a second column
-                    setText("<html><b>" + escape(c.name()) + "</b> <font color='#888'>·"
-                            + " yours</font><br><small>" + escape(c.description())
-                            + "</small></html>");
+                    setText(Bundle.NewProjectDialog_customTemplateItem(escape(c.name()), escape(c.description())));
                 }
                 setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
                 return this;
@@ -149,7 +173,7 @@ public class NewProjectDialog extends JDialog {
         browse.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(new File(locationField.getText()));
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setDialogTitle("Parent Directory for the New Project");
+            chooser.setDialogTitle(Bundle.NewProjectDialog_chooserTitle());
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 locationField.setText(chooser.getSelectedFile().getAbsolutePath());
                 updatePreview();
@@ -164,7 +188,7 @@ public class NewProjectDialog extends JDialog {
 
         c.gridx = 0;
         c.gridy = 0;
-        form.add(new JLabel("Name:"), c);
+        form.add(new JLabel(Bundle.NewProjectDialog_nameLabel()), c);
         c.gridx = 1;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -176,7 +200,7 @@ public class NewProjectDialog extends JDialog {
         c.weightx = 0;
         c.fill = GridBagConstraints.NONE;
         c.gridwidth = 1;
-        form.add(new JLabel("Location:"), c);
+        form.add(new JLabel(Bundle.NewProjectDialog_locationLabel()), c);
         c.gridx = 1;
         c.weightx = 1;
         c.fill = GridBagConstraints.HORIZONTAL;
@@ -188,7 +212,7 @@ public class NewProjectDialog extends JDialog {
 
         c.gridx = 0;
         c.gridy = 2;
-        form.add(new JLabel("Template:"), c);
+        form.add(new JLabel(Bundle.NewProjectDialog_templateLabel()), c);
         c.gridx = 1;
         c.gridwidth = 2;
         c.weightx = 1;
@@ -257,19 +281,19 @@ public class NewProjectDialog extends JDialog {
     }
 
     private void updatePreview() {
-        previewLabel.setText("Will create: " + targetDir().getAbsolutePath());
+        previewLabel.setText(Bundle.NewProjectDialog_willCreate(targetDir().getAbsolutePath()));
     }
 
     private void createProject() {
         String name = sanitizedName();
         if (name.isEmpty()) {
-            warn("Give the project a name.");
+            warn(Bundle.NewProjectDialog_nameMissing());
             return;
         }
         Object template = templateList.getSelectedValue();
         File dir = targetDir();
         if (dir.exists()) {
-            warn(dir.getName() + " already exists in that location.");
+            warn(Bundle.NewProjectDialog_alreadyExists(dir.getName()));
             return;
         }
         // generate + git init are file IO plus up to four git spawns — off the
@@ -285,7 +309,7 @@ public class NewProjectDialog extends JDialog {
             } catch (IOException ex) {
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     setBusy(false);
-                    error("Could not create the project: " + ex.getMessage());
+                    error(Bundle.NewProjectDialog_createFailed(ex.getMessage()));
                 });
                 return;
             }
@@ -326,11 +350,11 @@ public class NewProjectDialog extends JDialog {
                     String pm = org.nmox.studio.rack.devices.ProjectInspector
                             .nodePackageManager(dir);
                     org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Installing dependencies with " + pm + "…");
+                            .setStatusText(Bundle.NewProjectDialog_installing(pm));
                     // the install joins the toolbar ■ (v2.71.0): a hung
                     // registry fetch is the beginner's most common wall,
                     // and it had no stop on screen
-                    String runLabel = pm + " install — " + dir.getName();
+                    String runLabel = Bundle.NewProjectDialog_installRunLabel(pm, dir.getName());
                     String runId = "project-setup:" + dir.getAbsolutePath() + "#" + System.nanoTime();
                     org.netbeans.api.progress.ProgressHandle installing =
                             org.netbeans.api.progress.ProgressHandle.createHandle(runLabel, () -> {
@@ -350,7 +374,7 @@ public class NewProjectDialog extends JDialog {
                                     // STOP reads STOPPED (v2.69.15), one registry over:
                                     // the user ended it, so no "didn't finish" dialog
                                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                            "Install stopped — run " + pm + " install when you are ready");
+                                            Bundle.NewProjectDialog_installStopped(pm));
                                     return;
                                 }
                                 if (code == 0) {
@@ -380,21 +404,13 @@ public class NewProjectDialog extends JDialog {
     private static void reportInstall(String pm, int code) {
         if (code == 0) {
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("Dependencies installed — press Run to start your project");
+                    .setStatusText(Bundle.NewProjectDialog_installed());
             return;
         }
         org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText(org.nmox.studio.core.util.PlainStatus.text(pm + " install failed (exit " + code + ")"));
+                .setStatusText(org.nmox.studio.core.util.PlainStatus.text(Bundle.NewProjectDialog_installFailedStatus(pm, String.valueOf(code))));
         org.openide.NotifyDescriptor d = new org.openide.NotifyDescriptor.Message(
-                "<html><b>" + pm + " install didn't finish.</b><br><br>"
-                + "Your project files were created fine — only the dependency<br>"
-                + "download failed (exit code " + code + ").<br><br>"
-                + "Two places to look:<br>"
-                + "&nbsp;&nbsp;• <b>Output ▸ Project Setup</b> — the full log of what "
-                + pm + " said<br>"
-                + "&nbsp;&nbsp;• <b>Tools ▸ Environment Doctor</b> — shows whether Node "
-                + "and " + pm + " are installed<br><br>"
-                + "You can also just run <code>" + pm + " install</code> again later.</html>",
+                Bundle.NewProjectDialog_installFailedDialog(PlainText.escape(pm), String.valueOf(code)),
                 org.openide.NotifyDescriptor.WARNING_MESSAGE);
         org.openide.DialogDisplayer.getDefault().notifyLater(d);
     }
@@ -402,7 +418,7 @@ public class NewProjectDialog extends JDialog {
     /** Locks the form while creation runs; the button says why. */
     private void setBusy(boolean busy) {
         createButton.setEnabled(!busy);
-        createButton.setText(PlainText.plain(busy ? "Creating…" : "Create Project"));
+        createButton.setText(PlainText.plain(busy ? Bundle.NewProjectDialog_creating() : Bundle.NewProjectDialog_createButton()));
         cancelButton.setEnabled(!busy);
         nameField.setEnabled(!busy);
         locationField.setEnabled(!busy);

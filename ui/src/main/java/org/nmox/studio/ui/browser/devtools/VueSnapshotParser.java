@@ -14,6 +14,9 @@ import java.util.Map;
  * default, and "no Vue on this page" is a first-class answer
  * ({@code version == 0}, empty roots) rather than an error.
  */
+@org.openide.util.NbBundle.Messages({
+    "VueSnapshotParser_anonymous=Anonymous"
+})
 public final class VueSnapshotParser {
 
     /** One Vue component node. */
@@ -104,9 +107,9 @@ public final class VueSnapshotParser {
     }
 
     private static VueNode shallow(Map<String, Object> o) {
-        String name = JsonLite.str(o, "n", "Anonymous");
+        String name = JsonLite.str(o, "n", Bundle.VueSnapshotParser_anonymous());
         if (name.isBlank()) {
-            name = "Anonymous";
+            name = Bundle.VueSnapshotParser_anonymous();
         }
         if (name.length() > 200) {
             name = name.substring(0, 200);

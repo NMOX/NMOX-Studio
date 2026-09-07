@@ -21,6 +21,27 @@ import org.openide.util.lookup.ServiceProvider;
  * launch-time env, so the note says exactly that.
  */
 @ServiceProvider(service = StatusLineElementProvider.class, position = 600)
+@org.openide.util.NbBundle.Messages({
+    "RackStatusLine_servingChip=⇄ serving: {0}",
+    "RackStatusLine_moreSuffix= +{0}",
+    "RackStatusLine_agentChip=⌁ agent port :{0}",
+    "RackStatusLine_agentTooltip=The Agent Port is listening on 127.0.0.1:{0} (read-only) — {1}{2}. Click for the config, or to stop it.",
+    "RackStatusLine_noAgentStreaming=no agent streaming",
+    "RackStatusLine_oneAgentStreaming=one agent streaming",
+    "RackStatusLine_agentsStreaming={0} agents streaming",
+    "RackStatusLine_noRequestYet=; no request yet",
+    "RackStatusLine_requestJustNow=; a request just now",
+    "RackStatusLine_lastRequestAgo=; last request {0} ago",
+    "RackStatusLine_seconds={0} s",
+    "RackStatusLine_minutes={0} min",
+    "RackStatusLine_hours={0} h",
+    "RackStatusLine_servingLine={0} — {1}",
+    "RackStatusLine_running=● {0} running",
+    "RackStatusLine_envChanged=env changed — restarts pick it up",
+    "RackStatusLine_stopItem=    Stop {0}",
+    "RackStatusLine_alreadyStopped={0} had already stopped",
+    "RackStatusLine_stopped=Stopped: {0}"
+})
 public class RackStatusLine implements StatusLineElementProvider {
 
     @Override
@@ -45,7 +66,7 @@ public class RackStatusLine implements StatusLineElementProvider {
             return null;
         }
         int more = servings.size() - 1;
-        return "⇄ serving: " + servings.get(0).url() + (more > 0 ? " +" + more : "");
+        return Bundle.RackStatusLine_servingChip(servings.get(0).url()) + (more > 0 ? Bundle.RackStatusLine_moreSuffix(String.valueOf(more)) : "");
     }
 
     /** Tooltip: every serving, one per line. */
@@ -56,7 +77,7 @@ public class RackStatusLine implements StatusLineElementProvider {
 
     /** Agent Port chip: "⌁ agent port :N" while it listens (v2.84.0) — a port that can read the IDE is never invisible; null when off. */
     static String agentChipText(int[] listening) {
-        return listening == null ? null : "⌁ agent port :" + listening[0];
+        return listening == null ? null : Bundle.RackStatusLine_agentChip(String.valueOf(listening[0]));
     }
 
     static String agentChipTooltip(int[] listening) {
@@ -65,21 +86,20 @@ public class RackStatusLine implements StatusLineElementProvider {
         }
         int n = listening[1];
         int since = listening.length > 2 ? listening[2] : -1;
-        return "The Agent Port is listening on 127.0.0.1:" + listening[0] + " (read-only) — "
-                + (n == 0 ? "no agent streaming" : n == 1 ? "one agent streaming" : n + " agents streaming")
-                + (since < 0 ? "; no request yet" : since < 2 ? "; a request just now" : "; last request " + sinceText(since) + " ago")
-                + ". Click for the config, or to stop it.";
+        return Bundle.RackStatusLine_agentTooltip(String.valueOf(listening[0]),
+                n == 0 ? Bundle.RackStatusLine_noAgentStreaming() : n == 1 ? Bundle.RackStatusLine_oneAgentStreaming() : Bundle.RackStatusLine_agentsStreaming(String.valueOf(n)),
+                since < 0 ? Bundle.RackStatusLine_noRequestYet() : since < 2 ? Bundle.RackStatusLine_requestJustNow() : Bundle.RackStatusLine_lastRequestAgo(sinceText(since)));
     }
 
     /** "12 s", "3 min", "2 h" — the coarse clock a tooltip wants. */
     static String sinceText(int seconds) {
         if (seconds < 90) {
-            return seconds + " s";
+            return Bundle.RackStatusLine_seconds(String.valueOf(seconds));
         }
         if (seconds < 5_400) {
-            return Math.round(seconds / 60.0) + " min";
+            return Bundle.RackStatusLine_minutes(String.valueOf(Math.round(seconds / 60.0)));
         }
-        return Math.round(seconds / 3600.0) + " h";
+        return Bundle.RackStatusLine_hours(String.valueOf(Math.round(seconds / 3600.0)));
     }
 
     static String chipTooltip(List<ServingRegistry.Serving> servings) {
@@ -175,7 +195,7 @@ public class RackStatusLine implements StatusLineElementProvider {
                 liveLabel.setText("");
                 liveLabel.setToolTipText(null);
             } else {
-                liveLabel.setText("● " + live + " running");
+                liveLabel.setText(Bundle.RackStatusLine_running(String.valueOf(live)));
                 liveLabel.setForeground(new java.awt.Color(80, 200, 110));
                 liveLabel.setToolTipText(PlainText.plain(names.toString()));
             }
@@ -190,7 +210,7 @@ public class RackStatusLine implements StatusLineElementProvider {
             agentLabel.setForeground(new java.awt.Color(200, 150, 235));
             agentLabel.setToolTipText(PlainText.plain(agentChipTooltip(listening)));
             boolean envNote = RackService.getDefault().envNoteActive();
-            envLabel.setText(PlainText.plain(envNote ? "env changed — restarts pick it up" : ""));
+            envLabel.setText(PlainText.plain(envNote ? Bundle.RackStatusLine_envChanged() : ""));
             envLabel.setForeground(new java.awt.Color(222, 178, 80));
         }
 
@@ -203,17 +223,17 @@ public class RackStatusLine implements StatusLineElementProvider {
             JPopupMenu menu = new JPopupMenu();
             java.util.List<org.nmox.studio.core.spi.LiveRuns.Run> live = org.nmox.studio.core.spi.LiveRuns.live();
             for (ServingRegistry.Serving s : servings) {
-                JMenuItem item = new JMenuItem(PlainText.plain(s.deviceTitle() + " — " + s.url()));
+                JMenuItem item = new JMenuItem(PlainText.plain(Bundle.RackStatusLine_servingLine(s.deviceTitle(), s.url())));
                 item.addActionListener(e -> ServingLinks.open(s.url()));
                 menu.add(item);
                 // a serving a run owns gets its Stop beside its Open (v2.73.0):
                 // the chip is where the eye already is when a server is up
                 if (runOwning(s, live) != null) {
-                    JMenuItem stop = new JMenuItem("    Stop " + s.deviceTitle());
+                    JMenuItem stop = new JMenuItem(Bundle.RackStatusLine_stopItem(s.deviceTitle()));
                     stop.addActionListener(e -> {
                         org.nmox.studio.core.spi.LiveRuns.Run r = org.nmox.studio.core.spi.LiveRuns.stop(s.deviceId());
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                org.nmox.studio.core.util.PlainStatus.text(r == null ? s.deviceTitle() + " had already stopped" : "Stopped: " + s.deviceTitle()));
+                                org.nmox.studio.core.util.PlainStatus.text(r == null ? Bundle.RackStatusLine_alreadyStopped(s.deviceTitle()) : Bundle.RackStatusLine_stopped(s.deviceTitle())));
                     });
                     menu.add(stop);
                 }

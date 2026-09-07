@@ -22,6 +22,7 @@ import javax.swing.SwingUtilities;
 import org.nmox.studio.editor.lsp.LanguageServerCatalog.Server;
 import org.nmox.studio.editor.lsp.LanguageServerInstaller.Result;
 import org.nmox.studio.rack.engine.CommandExecutor;
+import org.openide.util.NbBundle;
 
 /**
  * The install interface behind Tools ▸ Language Servers…: every language
@@ -36,8 +37,9 @@ public final class LanguageServersPanel extends JPanel {
     private static final Color MISSING = new Color(220, 140, 90);
 
     private final JProgressBar bar = new JProgressBar();
-    private final JLabel status = new JLabel(" ");
-    private final JButton cancelBtn = new JButton("Cancel");
+    private static final String BLANK = " ";
+    private final JLabel status = new JLabel(BLANK);
+    private final JButton cancelBtn = new JButton(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_cancel"));
     private final List<Row> rows = new ArrayList<>();
     private final Deque<Row> queue = new ArrayDeque<>();
     private CommandExecutor.Handle current;
@@ -49,9 +51,7 @@ public final class LanguageServersPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         setPreferredSize(new Dimension(560, 520));
 
-        JLabel header = new JLabel("<html><b>Language servers</b> — the intelligence backends behind "
-                + "hover, go-to-definition, rename and live errors. Install one and it lights up "
-                + "the next time you open that language.</html>");
+        JLabel header = new JLabel(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_header"));
         add(header, BorderLayout.NORTH);
 
         JPanel list = new JPanel();
@@ -66,7 +66,7 @@ public final class LanguageServersPanel extends JPanel {
         scroll.getVerticalScrollBar().setUnitIncrement(16);
         add(scroll, BorderLayout.CENTER);
 
-        JButton all = new JButton("Install all missing");
+        JButton all = new JButton(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installAll"));
         all.addActionListener(e -> installAllMissing());
         cancelBtn.setEnabled(false);
         cancelBtn.addActionListener(e -> cancel());
@@ -95,7 +95,7 @@ public final class LanguageServersPanel extends JPanel {
             }
         }
         if (queue.isEmpty()) {
-            status.setText("Everything installable is already installed.");
+            status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_allInstalled"));
             return;
         }
         batchTotal = queue.size();
@@ -108,7 +108,7 @@ public final class LanguageServersPanel extends JPanel {
         if (row == null) {
             bar.setVisible(false);
             cancelBtn.setEnabled(false);
-            status.setText("Done.");
+            status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_done"));
             return;
         }
         install(row, true);
@@ -119,7 +119,7 @@ public final class LanguageServersPanel extends JPanel {
             return; // one at a time
         }
         row.button.setEnabled(false);
-        row.statusLabel.setText("…");
+        row.statusLabel.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_pending"));
         bar.setVisible(true);
         cancelBtn.setEnabled(true);
         if (batch && batchTotal > 0) {
@@ -128,13 +128,13 @@ public final class LanguageServersPanel extends JPanel {
             bar.setMaximum(batchTotal);
             bar.setValue(batchDone);
             bar.setStringPainted(true);
-            bar.setString(row.server.language() + "  (" + (batchDone + 1) + "/" + batchTotal + ")");
+            bar.setString(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_batchProgress", row.server.language(), String.valueOf(batchDone + 1), String.valueOf(batchTotal)));
         } else {
             bar.setIndeterminate(true);
             bar.setStringPainted(true);
-            bar.setString("Installing " + row.server.language() + "…");
+            bar.setString(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installing", row.server.language()));
         }
-        status.setText("Running: " + String.join(" ", row.server.command()));
+        status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_running", String.join(" ", row.server.command())));
 
         current = LanguageServerInstaller.install(row.server, new LanguageServerInstaller.Listener() {
             @Override
@@ -155,24 +155,22 @@ public final class LanguageServersPanel extends JPanel {
         switch (result) {
             case INSTALLED -> {
                 row.refresh();
-                status.setText("Installed " + row.server.language() + ".");
+                status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installed", row.server.language()));
             }
             case FAILED -> {
-                row.statusLabel.setText("✗");
+                row.statusLabel.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_missingMark"));
                 row.statusLabel.setForeground(MISSING);
                 row.button.setEnabled(true);
-                status.setText(PlainText.plain(row.server.language() + " install failed — see the Output window."));
+                status.setText(PlainText.plain(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installFailed", row.server.language())));
             }
             case NEEDS_TOOLCHAIN -> {
                 row.button.setEnabled(false);
-                row.button.setText(PlainText.plain(row.server.installer() + " not found"));
-                status.setText("Install " + row.server.installer()
-                        + " first, then retry " + row.server.language() + ".");
+                row.button.setText(PlainText.plain(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installerNotFound", row.server.installer())));
+                status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installToolchainFirst", row.server.installer(), row.server.language()));
             }
             case NEEDS_PROJECT -> {
                 row.button.setEnabled(true);
-                status.setText(PlainText.plain(row.server.language()
-                        + " installs into the project - open the project first, then retry."));
+                status.setText(PlainText.plain(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_needsProject", row.server.language())));
             }
             default -> row.button.setEnabled(true);
         }
@@ -193,7 +191,7 @@ public final class LanguageServersPanel extends JPanel {
         }
         bar.setVisible(false);
         cancelBtn.setEnabled(false);
-        status.setText("Cancelled.");
+        status.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_cancelled"));
         for (Row r : rows) {
             r.refresh();
         }
@@ -231,19 +229,19 @@ public final class LanguageServersPanel extends JPanel {
         void refresh() {
             boolean ok = LanguageServerCatalog.isInstalled(server.binary());
             if (ok) {
-                statusLabel.setText("✓");
+                statusLabel.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_okMark"));
                 statusLabel.setForeground(OK);
-                button.setText("Installed");
+                button.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_installedButton"));
                 button.setEnabled(false);
             } else {
-                statusLabel.setText("✗");
+                statusLabel.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_missingMark"));
                 statusLabel.setForeground(MISSING);
                 if (server.autoInstallable()) {
-                    button.setText("Install");
+                    button.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_install"));
                     button.setToolTipText(PlainText.plain(String.join(" ", server.command())));
                     button.setEnabled(true);
                 } else {
-                    button.setText("Manual");
+                    button.setText(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_manual"));
                     button.setToolTipText(PlainText.plain(server.install()));
                     button.setEnabled(false);
                 }

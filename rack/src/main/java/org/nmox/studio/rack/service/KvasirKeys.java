@@ -35,6 +35,10 @@ import org.nmox.studio.rack.engine.KvasirProvider;
  * <p>All methods are thread-safe and callable from any thread except the
  * EDT (the keyring may block on OS calls).
  */
+@org.openide.util.NbBundle.Messages({
+    "KvasirKeys_keychainUnavailable=Keychain unavailable",
+    "KvasirKeys_keyNotSaved=The KVASIR API key will not be saved this session."
+})
 public final class KvasirKeys {
 
     private static final Logger LOG = Logger.getLogger(KvasirKeys.class.getName());
@@ -242,9 +246,9 @@ public final class KvasirKeys {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.KvasirKeys_keychainUnavailable(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "The KVASIR API key will not be saved this session.", null);
+                    Bundle.KvasirKeys_keyNotSaved(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

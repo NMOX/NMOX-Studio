@@ -25,8 +25,9 @@ public class LiveServerSearchProvider implements SearchProvider {
             // ("localhost") finds the serving without the whole URL.
             if (SearchTerms.matches(needle, serving.url(), serving.deviceTitle(),
                     serving.projectDir().getName(), "serving live server localhost port")) {
-                String label = "Serving · " + serving.url() + " — "
-                        + serving.deviceTitle() + " · " + serving.projectDir().getName();
+                String label = org.openide.util.NbBundle.getMessage(LiveServerSearchProvider.class,
+                        "LiveServerSearchProvider_serving", serving.url(),
+                        serving.deviceTitle(), serving.projectDir().getName());
                 boolean more = response.addResult(actionFor(serving), label);
                 if (!more) {
                     return;

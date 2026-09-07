@@ -73,7 +73,120 @@ import org.openide.windows.TopComponent;
         displayName = "#CTL_DockerPanelAction",
         preferredID = "DockerPanelTopComponent"
 )
-@org.openide.util.NbBundle.Messages("CTL_DockerPanelAction=Docker Panel")
+@org.openide.util.NbBundle.Messages({
+    "CTL_DockerPanelAction=Docker Panel",
+    "DockerPanelTopComponent_engineChecking=ENGINE: checking…",
+    "DockerPanelTopComponent_autoRefresh=Auto-refresh 15s",
+    "DockerPanelTopComponent_colName=NAME",
+    "DockerPanelTopComponent_colImage=IMAGE",
+    "DockerPanelTopComponent_colStatus=STATUS",
+    "DockerPanelTopComponent_colPorts=PORTS",
+    "DockerPanelTopComponent_colCpu=CPU",
+    "DockerPanelTopComponent_colMem=MEM",
+    "DockerPanelTopComponent_colReference=REFERENCE",
+    "DockerPanelTopComponent_colId=ID",
+    "DockerPanelTopComponent_colSize=SIZE",
+    "DockerPanelTopComponent_colCreated=CREATED",
+    "DockerPanelTopComponent_colDriver=DRIVER",
+    "DockerPanelTopComponent_colScope=SCOPE",
+    "DockerPanelTopComponent_containersTable=Containers",
+    "DockerPanelTopComponent_imagesTable=Images",
+    "DockerPanelTopComponent_volumesTable=Volumes",
+    "DockerPanelTopComponent_networksTable=Networks",
+    "DockerPanelTopComponent_dockerfilePreview=Dockerfile preview",
+    "DockerPanelTopComponent_ignorePreview=.dockerignore preview",
+    "DockerPanelTopComponent_composePreview=compose file preview",
+    "DockerPanelTopComponent_windowName=Docker Panel",
+    "DockerPanelTopComponent_windowTooltip=Containers, images, volumes, networks, and one-click dockerize",
+    "DockerPanelTopComponent_tabEngine=Engine",
+    "DockerPanelTopComponent_tabContainers=Containers",
+    "DockerPanelTopComponent_tabImages=Images",
+    "DockerPanelTopComponent_tabVolumes=Volumes",
+    "DockerPanelTopComponent_tabNetworks=Networks",
+    "DockerPanelTopComponent_tabDockerize=Dockerize",
+    "DockerPanelTopComponent_refreshAll=Refresh All",
+    "DockerPanelTopComponent_verbRunning={0}…",
+    "DockerPanelTopComponent_verbFailed=Could not {0}: {1}",
+    "DockerPanelTopComponent_dockerExited=docker exited {0}",
+    "DockerPanelTopComponent_engineDown=ENGINE: DOWN — start Docker Desktop / colima, then Refresh",
+    "DockerPanelTopComponent_engineUp=ENGINE: UP · v{0}",
+    "DockerPanelTopComponent_refreshedAt=refreshed {0}",
+    "DockerPanelTopComponent_colCategory=CATEGORY",
+    "DockerPanelTopComponent_colCount=COUNT",
+    "DockerPanelTopComponent_colActive=ACTIVE",
+    "DockerPanelTopComponent_colReclaimable=RECLAIMABLE",
+    "DockerPanelTopComponent_reclaim=RECLAIM",
+    "DockerPanelTopComponent_confirmPruneVolumes=Remove ALL unused volumes? Their data is gone for good.",
+    "DockerPanelTopComponent_verbPrune=prune {0}",
+    "DockerPanelTopComponent_deepClean=DEEP CLEAN — remove ALL unused images (not just dangling)",
+    "DockerPanelTopComponent_confirmDeepClean=Remove every image not used by a container? Re-pulls may be slow.",
+    "DockerPanelTopComponent_verbDeepImagePrune=deep image prune",
+    "DockerPanelTopComponent_confirmTitle=Docker Panel",
+    "DockerPanelTopComponent_start=Start",
+    "DockerPanelTopComponent_stop=Stop",
+    "DockerPanelTopComponent_restart=Restart",
+    "DockerPanelTopComponent_remove=Remove",
+    "DockerPanelTopComponent_logs=Logs",
+    "DockerPanelTopComponent_inspect=Inspect",
+    "DockerPanelTopComponent_openInBrowser=Open in Browser",
+    "DockerPanelTopComponent_verbStart=start {0}",
+    "DockerPanelTopComponent_verbStop=stop {0}",
+    "DockerPanelTopComponent_verbRestart=restart {0}",
+    "DockerPanelTopComponent_verbRemove=remove {0}",
+    "DockerPanelTopComponent_confirmRemoveContainers=Force-remove selected container(s)?",
+    "DockerPanelTopComponent_inspectTitle=inspect {0}",
+    "DockerPanelTopComponent_logsTitle=logs {0}  (last 500 lines)",
+    "DockerPanelTopComponent_browserRefused=could not open a browser for {0} (port {1})",
+    "DockerPanelTopComponent_noHostPorts={0} publishes no host ports",
+    "DockerPanelTopComponent_noRecognizablePort=no recognizable host port in \"{0}\" for {1}",
+    "DockerPanelTopComponent_pullFieldName=Image reference to pull",
+    "DockerPanelTopComponent_pullFieldTooltip=image reference, e.g. nginx:alpine",
+    "DockerPanelTopComponent_pull=Pull",
+    "DockerPanelTopComponent_verbPull=pull {0}",
+    "DockerPanelTopComponent_runEllipsis=Run…",
+    "DockerPanelTopComponent_tagEllipsis=Tag…",
+    "DockerPanelTopComponent_newTagPrompt=New tag for {0}:",
+    "DockerPanelTopComponent_tagImageTitle=Tag Image",
+    "DockerPanelTopComponent_verbTag=tag",
+    "DockerPanelTopComponent_layers=Layers",
+    "DockerPanelTopComponent_layersTitle=layers {0}",
+    "DockerPanelTopComponent_confirmRemoveImages=Remove selected image(s)?",
+    "DockerPanelTopComponent_verbRmi=rmi {0}",
+    "DockerPanelTopComponent_removeAllDangling=Remove all dangling",
+    "DockerPanelTopComponent_verbPruneDangling=prune dangling images",
+    "DockerPanelTopComponent_containerNameField=Container name (blank = auto)",
+    "DockerPanelTopComponent_portsField=Ports host:container (space-separated)",
+    "DockerPanelTopComponent_envField=Env KEY=VAL (space-separated)",
+    "DockerPanelTopComponent_containerNameLabel=Name (blank = auto):",
+    "DockerPanelTopComponent_portsLabel=Ports host:container (space-separated):",
+    "DockerPanelTopComponent_envLabel=Env KEY=VAL (space-separated):",
+    "DockerPanelTopComponent_runTitle=Run {0}",
+    "DockerPanelTopComponent_runFailed=Could not run {0}: {1}",
+    "DockerPanelTopComponent_danglingRef=<dangling>",
+    "DockerPanelTopComponent_danglingFlag=DANGLING",
+    "DockerPanelTopComponent_confirmRemoveVolumes=Remove selected volume(s)? Their data is gone for good.",
+    "DockerPanelTopComponent_verbRemoveVolume=remove volume",
+    "DockerPanelTopComponent_pruneUnused=Prune unused",
+    "DockerPanelTopComponent_verbPruneVolumes=prune volumes",
+    "DockerPanelTopComponent_verbRemoveNetwork=remove network",
+    "DockerPanelTopComponent_verbPruneNetworks=prune networks",
+    "DockerPanelTopComponent_recipeTooltip=Detected toolchain, or a recipe from ~/.nmox/dockerize.d",
+    "DockerPanelTopComponent_regenerate=Regenerate",
+    "DockerPanelTopComponent_writeFiles=Write files into project",
+    "DockerPanelTopComponent_buildImage=Build image",
+    "DockerPanelTopComponent_runContainer=Run container",
+    "DockerPanelTopComponent_sourceRecipe=recipe: {0} · yours",
+    "DockerPanelTopComponent_sourceDetected=detected toolchain: {0}",
+    "DockerPanelTopComponent_sourceStaticSuffix= (static bundle → nginx)",
+    "DockerPanelTopComponent_dockerizeInfo=Project: {0}   ·   {1}   ·   image: {2}   ·   port: {3}",
+    "DockerPanelTopComponent_recipeSkipped=Recipe {0} skipped: {1}",
+    "DockerPanelTopComponent_detectedItem=Detected ({0})",
+    "DockerPanelTopComponent_confirmOverwrite=Overwrite existing {0}?",
+    "DockerPanelTopComponent_wroteFiles=wrote {0} into {1}",
+    "DockerPanelTopComponent_writeFailed=Could not write the Docker files: {0}",
+    "DockerPanelTopComponent_dockerOk=docker {0} OK",
+    "DockerPanelTopComponent_dockerFailed=docker {0} failed [{1}]"
+})
 public final class DockerPanelTopComponent extends TopComponent {
 
     private static final Color BG = new Color(25, 26, 29);
@@ -88,29 +201,29 @@ public final class DockerPanelTopComponent extends TopComponent {
     private static DockerPanelTopComponent fallbackInstance;
 
     private final DockerClient client = DockerClient.getDefault();
-    private final JLabel engineLabel = new JLabel("ENGINE: checking…");
+    private final JLabel engineLabel = new JLabel(Bundle.DockerPanelTopComponent_engineChecking());
     private final JLabel statusLabel = new JLabel(" ");
     private final javax.swing.Timer autoTimer = new javax.swing.Timer(15_000, e -> refreshAll());
-    private final JCheckBox autoBox = new JCheckBox("Auto-refresh 15s", false);
+    private final JCheckBox autoBox = new JCheckBox(Bundle.DockerPanelTopComponent_autoRefresh(), false);
 
     private final JPanel enginePanel = new JPanel(new GridBagLayout());
-    private final DefaultTableModel containersModel = model("", "NAME", "IMAGE", "STATUS", "PORTS", "CPU", "MEM");
-    private final JTable containersTable = table(containersModel, "Containers");
-    private final DefaultTableModel imagesModel = model("REFERENCE", "ID", "SIZE", "CREATED", "");
-    private final JTable imagesTable = table(imagesModel, "Images");
-    private final DefaultTableModel volumesModel = model("NAME", "DRIVER");
-    private final JTable volumesTable = table(volumesModel, "Volumes");
-    private final DefaultTableModel networksModel = model("NAME", "DRIVER", "SCOPE", "ID");
-    private final JTable networksTable = table(networksModel, "Networks");
+    private final DefaultTableModel containersModel = model("", Bundle.DockerPanelTopComponent_colName(), Bundle.DockerPanelTopComponent_colImage(), Bundle.DockerPanelTopComponent_colStatus(), Bundle.DockerPanelTopComponent_colPorts(), Bundle.DockerPanelTopComponent_colCpu(), Bundle.DockerPanelTopComponent_colMem());
+    private final JTable containersTable = table(containersModel, Bundle.DockerPanelTopComponent_containersTable());
+    private final DefaultTableModel imagesModel = model(Bundle.DockerPanelTopComponent_colReference(), Bundle.DockerPanelTopComponent_colId(), Bundle.DockerPanelTopComponent_colSize(), Bundle.DockerPanelTopComponent_colCreated(), "");
+    private final JTable imagesTable = table(imagesModel, Bundle.DockerPanelTopComponent_imagesTable());
+    private final DefaultTableModel volumesModel = model(Bundle.DockerPanelTopComponent_colName(), Bundle.DockerPanelTopComponent_colDriver());
+    private final JTable volumesTable = table(volumesModel, Bundle.DockerPanelTopComponent_volumesTable());
+    private final DefaultTableModel networksModel = model(Bundle.DockerPanelTopComponent_colName(), Bundle.DockerPanelTopComponent_colDriver(), Bundle.DockerPanelTopComponent_colScope(), Bundle.DockerPanelTopComponent_colId());
+    private final JTable networksTable = table(networksModel, Bundle.DockerPanelTopComponent_networksTable());
 
     private List<ContainerInfo> containers = List.of();
     private List<ImageInfo> images = List.of();
     private List<VolumeInfo> volumes = List.of();
     private List<NetworkInfo> networks = List.of();
 
-    private final JTextArea dockerfilePreview = preview("Dockerfile preview");
-    private final JTextArea ignorePreview = preview(".dockerignore preview");
-    private final JTextArea composePreview = preview("compose file preview");
+    private final JTextArea dockerfilePreview = preview(Bundle.DockerPanelTopComponent_dockerfilePreview());
+    private final JTextArea ignorePreview = preview(Bundle.DockerPanelTopComponent_ignorePreview());
+    private final JTextArea composePreview = preview(Bundle.DockerPanelTopComponent_composePreview());
     private final JLabel dockerizeInfo = new JLabel(" ");
     private Map<String, String> dockerizeFiles = Map.of();
     /**
@@ -121,8 +234,8 @@ public final class DockerPanelTopComponent extends TopComponent {
     private final javax.swing.JComboBox<Object> recipeCombo = new javax.swing.JComboBox<>();
 
     public DockerPanelTopComponent() {
-        setName("Docker Panel");
-        setToolTipText("Containers, images, volumes, networks, and one-click dockerize");
+        setName(Bundle.DockerPanelTopComponent_windowName());
+        setToolTipText(Bundle.DockerPanelTopComponent_windowTooltip());
         setLayout(new BorderLayout());
         setBackground(BG);
 
@@ -130,12 +243,12 @@ public final class DockerPanelTopComponent extends TopComponent {
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBackground(BG);
-        tabs.addTab("Engine", wrap(enginePanel));
-        tabs.addTab("Containers", buildContainersTab());
-        tabs.addTab("Images", buildImagesTab());
-        tabs.addTab("Volumes", buildVolumesTab());
-        tabs.addTab("Networks", buildNetworksTab());
-        tabs.addTab("Dockerize", buildDockerizeTab());
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabEngine(), wrap(enginePanel));
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabContainers(), buildContainersTab());
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabImages(), buildImagesTab());
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabVolumes(), buildVolumesTab());
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabNetworks(), buildNetworksTab());
+        tabs.addTab(Bundle.DockerPanelTopComponent_tabDockerize(), buildDockerizeTab());
         add(tabs, BorderLayout.CENTER);
 
         statusLabel.setForeground(DIM);
@@ -195,7 +308,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         engineLabel.setForeground(TEXT);
         engineLabel.setFont(engineLabel.getFont().deriveFont(Font.BOLD));
         header.add(engineLabel);
-        JButton refresh = new JButton("Refresh All");
+        JButton refresh = new JButton(Bundle.DockerPanelTopComponent_refreshAll());
         refresh.addActionListener(e -> refreshAll());
         header.add(refresh);
         autoBox.setBackground(BG);
@@ -245,7 +358,7 @@ public final class DockerPanelTopComponent extends TopComponent {
                 if (!sel) {
                     c.setForeground("●".equals(s) ? UP : "○".equals(s) ? DIM
                             : "◐".equals(s) ? new Color(255, 190, 60)
-                            : "DANGLING".equals(s) ? new Color(255, 190, 60) : TEXT);
+                            : Bundle.DockerPanelTopComponent_danglingFlag().equals(s) ? new Color(255, 190, 60) : TEXT);
                 }
                 return c;
             }
@@ -282,11 +395,11 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     /** Runs a verb, surfaces failure, refreshes the panel after. */
     private void verbThenRefresh(java.util.concurrent.CompletableFuture<Result> f, String what) {
-        status(what + "…");
+        status(Bundle.DockerPanelTopComponent_verbRunning(what));
         f.whenComplete((r, ex) -> SwingUtilities.invokeLater(() -> {
             if (r != null && !r.ok()) {
-                error("Could not " + what + ": "
-                        + (r.stderr().isBlank() ? "docker exited " + r.exit() : r.stderr().strip()));
+                error(Bundle.DockerPanelTopComponent_verbFailed(what,
+                        r.stderr().isBlank() ? Bundle.DockerPanelTopComponent_dockerExited(String.valueOf(r.exit())) : r.stderr().strip()));
             }
             refreshAll();
         }));
@@ -297,10 +410,10 @@ public final class DockerPanelTopComponent extends TopComponent {
     private void refreshAll() {
         client.engineVersion().thenAccept(v -> SwingUtilities.invokeLater(() -> {
             if (v == null) {
-                engineLabel.setText("ENGINE: DOWN — start Docker Desktop / colima, then Refresh");
+                engineLabel.setText(Bundle.DockerPanelTopComponent_engineDown());
                 engineLabel.setForeground(DOWN);
             } else {
-                engineLabel.setText("ENGINE: UP · v" + v);
+                engineLabel.setText(Bundle.DockerPanelTopComponent_engineUp(v));
                 engineLabel.setForeground(UP);
             }
         }));
@@ -308,7 +421,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         refreshContainers();
         refreshImages();
         refreshVolumesNetworks();
-        status("refreshed " + java.time.LocalTime.now().withNano(0));
+        status(Bundle.DockerPanelTopComponent_refreshedAt(java.time.LocalTime.now().withNano(0)));
     }
 
     private void refreshEngineTab() {
@@ -319,7 +432,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             g.insets = new java.awt.Insets(6, 12, 6, 12);
             g.anchor = GridBagConstraints.WEST;
             g.gridy = 0;
-            for (String h : new String[]{"CATEGORY", "COUNT", "ACTIVE", "SIZE", "RECLAIMABLE", ""}) {
+            for (String h : new String[]{Bundle.DockerPanelTopComponent_colCategory(), Bundle.DockerPanelTopComponent_colCount(), Bundle.DockerPanelTopComponent_colActive(), Bundle.DockerPanelTopComponent_colSize(), Bundle.DockerPanelTopComponent_colReclaimable(), ""}) {
                 g.gridx = enginePanel.getComponentCount() % 6;
                 JLabel l = new JLabel(PlainText.plain(h));
                 l.setForeground(DIM);
@@ -341,9 +454,9 @@ public final class DockerPanelTopComponent extends TopComponent {
                 String kind = pruneKind(row.type());
                 if (kind != null) {
                     boolean volumes = "volume".equals(kind);
-                    enginePanel.add(btn("RECLAIM", () -> {
-                        if (!volumes || confirm("Remove ALL unused volumes? Their data is gone for good.")) {
-                            verbThenRefresh(client.prune(kind, false), "prune " + kind);
+                    enginePanel.add(btn(Bundle.DockerPanelTopComponent_reclaim(), () -> {
+                        if (!volumes || confirm(Bundle.DockerPanelTopComponent_confirmPruneVolumes())) {
+                            verbThenRefresh(client.prune(kind, false), Bundle.DockerPanelTopComponent_verbPrune(kind));
                         }
                     }), g);
                 }
@@ -351,9 +464,9 @@ public final class DockerPanelTopComponent extends TopComponent {
             g.gridy++;
             g.gridx = 0;
             g.gridwidth = 6;
-            enginePanel.add(btn("DEEP CLEAN — remove ALL unused images (not just dangling)", () -> {
-                if (confirm("Remove every image not used by a container? Re-pulls may be slow.")) {
-                    verbThenRefresh(client.prune("image", true), "deep image prune");
+            enginePanel.add(btn(Bundle.DockerPanelTopComponent_deepClean(), () -> {
+                if (confirm(Bundle.DockerPanelTopComponent_confirmDeepClean())) {
+                    verbThenRefresh(client.prune("image", true), Bundle.DockerPanelTopComponent_verbDeepImagePrune());
                 }
             }), g);
             enginePanel.revalidate();
@@ -386,7 +499,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private boolean confirm(String message) {
-        NotifyDescriptor d = new NotifyDescriptor.Confirmation(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), "Docker Panel",
+        NotifyDescriptor d = new NotifyDescriptor.Confirmation(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), Bundle.DockerPanelTopComponent_confirmTitle(),
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE);
         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
@@ -404,18 +517,18 @@ public final class DockerPanelTopComponent extends TopComponent {
         p.add(wrap(containersTable), BorderLayout.CENTER);
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
-        actions.add(btn("Start", () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("start", c.id()), "start " + c.name()))));
-        actions.add(btn("Stop", () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("stop", c.id()), "stop " + c.name()))));
-        actions.add(btn("Restart", () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("restart", c.id()), "restart " + c.name()))));
-        actions.add(btn("Remove", () -> {
-            if (confirm("Force-remove selected container(s)?")) {
-                eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("rm", c.id()), "remove " + c.name()));
+        actions.add(btn(Bundle.DockerPanelTopComponent_start(), () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("start", c.id()), Bundle.DockerPanelTopComponent_verbStart(c.name())))));
+        actions.add(btn(Bundle.DockerPanelTopComponent_stop(), () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("stop", c.id()), Bundle.DockerPanelTopComponent_verbStop(c.name())))));
+        actions.add(btn(Bundle.DockerPanelTopComponent_restart(), () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("restart", c.id()), Bundle.DockerPanelTopComponent_verbRestart(c.name())))));
+        actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
+            if (confirm(Bundle.DockerPanelTopComponent_confirmRemoveContainers())) {
+                eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("rm", c.id()), Bundle.DockerPanelTopComponent_verbRemove(c.name())));
             }
         }));
-        actions.add(btn("Logs", () -> eachSelectedContainer(this::showLogs)));
-        actions.add(btn("Inspect", () -> eachSelectedContainer(c ->
-                client.inspect(c.id()).thenAccept(json -> textDialog("inspect " + c.name(), json)))));
-        actions.add(btn("Open in Browser", () -> eachSelectedContainer(this::openPorts)));
+        actions.add(btn(Bundle.DockerPanelTopComponent_logs(), () -> eachSelectedContainer(this::showLogs)));
+        actions.add(btn(Bundle.DockerPanelTopComponent_inspect(), () -> eachSelectedContainer(c ->
+                client.inspect(c.id()).thenAccept(json -> textDialog(Bundle.DockerPanelTopComponent_inspectTitle(c.name()), json)))));
+        actions.add(btn(Bundle.DockerPanelTopComponent_openInBrowser(), () -> eachSelectedContainer(this::openPorts)));
         p.add(actions, BorderLayout.SOUTH);
         return p;
     }
@@ -430,7 +543,7 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     private void showLogs(ContainerInfo c) {
         client.logs(c.id(), 500).thenAccept(text ->
-                textDialog("logs " + c.name() + "  (last 500 lines)", text));
+                textDialog(Bundle.DockerPanelTopComponent_logsTitle(c.name()), text));
     }
 
     private void openPorts(ContainerInfo c) {
@@ -444,12 +557,11 @@ public final class DockerPanelTopComponent extends TopComponent {
         // three different truths, told apart: no ports at all, ports we could
         // not recognize a host mapping in, and ports the browser refused
         if (!c.hostPorts().isEmpty()) {
-            status("could not open a browser for " + c.name() + " (port "
-                    + c.hostPorts().get(0) + ")");
+            status(Bundle.DockerPanelTopComponent_browserRefused(c.name(), String.valueOf(c.hostPorts().get(0))));
         } else if (c.ports() == null || c.ports().isBlank()) {
-            status(c.name() + " publishes no host ports");
+            status(Bundle.DockerPanelTopComponent_noHostPorts(c.name()));
         } else {
-            status("no recognizable host port in \"" + c.ports() + "\" for " + c.name());
+            status(Bundle.DockerPanelTopComponent_noRecognizablePort(c.ports(), c.name()));
         }
     }
 
@@ -493,34 +605,34 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
         JTextField pullField = new JTextField(22);
-        pullField.getAccessibleContext().setAccessibleName("Image reference to pull");
-        pullField.setToolTipText("image reference, e.g. nginx:alpine");
+        pullField.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_pullFieldName());
+        pullField.setToolTipText(Bundle.DockerPanelTopComponent_pullFieldTooltip());
         actions.add(pullField);
-        actions.add(btn("Pull", () -> {
+        actions.add(btn(Bundle.DockerPanelTopComponent_pull(), () -> {
             String ref = pullField.getText().trim();
             if (!ref.isEmpty()) {
-                verbThenRefresh(client.pull(ref), "pull " + ref);
+                verbThenRefresh(client.pull(ref), Bundle.DockerPanelTopComponent_verbPull(ref));
             }
         }));
-        actions.add(btn("Run…", () -> eachSelectedImage(this::quickRun)));
-        actions.add(btn("Tag…", () -> eachSelectedImage(img -> {
+        actions.add(btn(Bundle.DockerPanelTopComponent_runEllipsis(), () -> eachSelectedImage(this::quickRun)));
+        actions.add(btn(Bundle.DockerPanelTopComponent_tagEllipsis(), () -> eachSelectedImage(img -> {
             NotifyDescriptor.InputLine line =
-                    new NotifyDescriptor.InputLine("New tag for " + img.ref() + ":", "Tag Image");
+                    new NotifyDescriptor.InputLine(Bundle.DockerPanelTopComponent_newTagPrompt(img.ref()), Bundle.DockerPanelTopComponent_tagImageTitle());
             line.setInputText(img.ref());
             if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION
                     && !line.getInputText().isBlank()) {
-                verbThenRefresh(client.tag(img.ref(), line.getInputText().trim()), "tag");
+                verbThenRefresh(client.tag(img.ref(), line.getInputText().trim()), Bundle.DockerPanelTopComponent_verbTag());
             }
         })));
-        actions.add(btn("Layers", () -> eachSelectedImage(img ->
-                client.history(img.ref()).thenAccept(h -> textDialog("layers " + img.ref(), h)))));
-        actions.add(btn("Remove", () -> {
-            if (confirm("Remove selected image(s)?")) {
-                eachSelectedImage(img -> verbThenRefresh(client.removeImage(img.ref(), true), "rmi " + img.ref()));
+        actions.add(btn(Bundle.DockerPanelTopComponent_layers(), () -> eachSelectedImage(img ->
+                client.history(img.ref()).thenAccept(h -> textDialog(Bundle.DockerPanelTopComponent_layersTitle(img.ref()), h)))));
+        actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
+            if (confirm(Bundle.DockerPanelTopComponent_confirmRemoveImages())) {
+                eachSelectedImage(img -> verbThenRefresh(client.removeImage(img.ref(), true), Bundle.DockerPanelTopComponent_verbRmi(img.ref())));
             }
         }));
-        actions.add(btn("Remove all dangling", () ->
-                verbThenRefresh(client.prune("image", false), "prune dangling images")));
+        actions.add(btn(Bundle.DockerPanelTopComponent_removeAllDangling(), () ->
+                verbThenRefresh(client.prune("image", false), Bundle.DockerPanelTopComponent_verbPruneDangling())));
         p.add(actions, BorderLayout.SOUTH);
         return p;
     }
@@ -536,31 +648,31 @@ public final class DockerPanelTopComponent extends TopComponent {
     /** A run dialog with the three things you always need: name, ports, env. */
     private void quickRun(ImageInfo img) {
         JTextField name = new JTextField(16);
-        name.getAccessibleContext().setAccessibleName("Container name (blank = auto)");
+        name.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_containerNameField());
         JTextField ports = new JTextField("8080:80", 16);
-        ports.getAccessibleContext().setAccessibleName("Ports host:container (space-separated)");
+        ports.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_portsField());
         JTextField env = new JTextField(16);
-        env.getAccessibleContext().setAccessibleName("Env KEY=VAL (space-separated)");
+        env.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_envField());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new java.awt.Insets(4, 4, 4, 4);
         g.anchor = GridBagConstraints.WEST;
         g.gridy = 0;
         g.gridx = 0;
-        form.add(new JLabel("Name (blank = auto):"), g);
+        form.add(new JLabel(Bundle.DockerPanelTopComponent_containerNameLabel()), g);
         g.gridx = 1;
         form.add(name, g);
         g.gridy = 1;
         g.gridx = 0;
-        form.add(new JLabel("Ports host:container (space-separated):"), g);
+        form.add(new JLabel(Bundle.DockerPanelTopComponent_portsLabel()), g);
         g.gridx = 1;
         form.add(ports, g);
         g.gridy = 2;
         g.gridx = 0;
-        form.add(new JLabel("Env KEY=VAL (space-separated):"), g);
+        form.add(new JLabel(Bundle.DockerPanelTopComponent_envLabel()), g);
         g.gridx = 1;
         form.add(env, g);
-        DialogDescriptor dd = new DialogDescriptor(form, "Run " + img.ref());
+        DialogDescriptor dd = new DialogDescriptor(form, Bundle.DockerPanelTopComponent_runTitle(img.ref()));
         if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -585,7 +697,7 @@ public final class DockerPanelTopComponent extends TopComponent {
                 .thenAccept(r -> {
                     if (!r.ok()) {
                         SwingUtilities.invokeLater(() -> error(
-                                "Could not run " + img.ref() + ": " + r.stderr().strip()));
+                                Bundle.DockerPanelTopComponent_runFailed(img.ref(), r.stderr().strip())));
                     }
                     refreshAll();
                 });
@@ -597,9 +709,9 @@ public final class DockerPanelTopComponent extends TopComponent {
             imagesModel.setRowCount(0);
             for (ImageInfo i : images) {
                 imagesModel.addRow(new Object[]{
-                    i.dangling() ? "<dangling>" : i.ref(),
+                    i.dangling() ? Bundle.DockerPanelTopComponent_danglingRef() : i.ref(),
                     i.id().length() > 12 ? i.id().substring(0, 12) : i.id(),
-                    i.size(), i.created(), i.dangling() ? "DANGLING" : ""});
+                    i.size(), i.created(), i.dangling() ? Bundle.DockerPanelTopComponent_danglingFlag() : ""});
             }
         }));
     }
@@ -612,18 +724,18 @@ public final class DockerPanelTopComponent extends TopComponent {
         p.add(wrap(volumesTable), BorderLayout.CENTER);
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
-        actions.add(btn("Remove", () -> {
-            if (confirm("Remove selected volume(s)? Their data is gone for good.")) {
+        actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
+            if (confirm(Bundle.DockerPanelTopComponent_confirmRemoveVolumes())) {
                 for (int row : volumesTable.getSelectedRows()) {
                     if (row < volumes.size()) {
-                        verbThenRefresh(client.removeVolume(volumes.get(row).name()), "remove volume");
+                        verbThenRefresh(client.removeVolume(volumes.get(row).name()), Bundle.DockerPanelTopComponent_verbRemoveVolume());
                     }
                 }
             }
         }));
-        actions.add(btn("Prune unused", () -> {
-            if (confirm("Remove ALL unused volumes? Their data is gone for good.")) {
-                verbThenRefresh(client.prune("volume", false), "prune volumes");
+        actions.add(btn(Bundle.DockerPanelTopComponent_pruneUnused(), () -> {
+            if (confirm(Bundle.DockerPanelTopComponent_confirmPruneVolumes())) {
+                verbThenRefresh(client.prune("volume", false), Bundle.DockerPanelTopComponent_verbPruneVolumes());
             }
         }));
         p.add(actions, BorderLayout.SOUTH);
@@ -636,15 +748,15 @@ public final class DockerPanelTopComponent extends TopComponent {
         p.add(wrap(networksTable), BorderLayout.CENTER);
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
-        actions.add(btn("Remove", () -> {
+        actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
             for (int row : networksTable.getSelectedRows()) {
                 if (row < networks.size()) {
-                    verbThenRefresh(client.removeNetwork(networks.get(row).id()), "remove network");
+                    verbThenRefresh(client.removeNetwork(networks.get(row).id()), Bundle.DockerPanelTopComponent_verbRemoveNetwork());
                 }
             }
         }));
-        actions.add(btn("Prune unused", () ->
-                verbThenRefresh(client.prune("network", false), "prune networks")));
+        actions.add(btn(Bundle.DockerPanelTopComponent_pruneUnused(), () ->
+                verbThenRefresh(client.prune("network", false), Bundle.DockerPanelTopComponent_verbPruneNetworks())));
         p.add(actions, BorderLayout.SOUTH);
         return p;
     }
@@ -676,7 +788,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel north = new JPanel(new BorderLayout());
         north.setBackground(BG);
         north.add(dockerizeInfo, BorderLayout.CENTER);
-        recipeCombo.setToolTipText("Detected toolchain, or a recipe from ~/.nmox/dockerize.d");
+        recipeCombo.setToolTipText(Bundle.DockerPanelTopComponent_recipeTooltip());
         // a drop-in recipe's name is external; a list renderer would paint an
         // <html>-led one as markup, so the combo html-disables its renderer
         recipeCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
@@ -695,10 +807,10 @@ public final class DockerPanelTopComponent extends TopComponent {
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         actions.setBackground(BG);
-        actions.add(btn("Regenerate", this::regenerateDockerize));
-        actions.add(btn("Write files into project", this::writeDockerizeFiles));
-        actions.add(btn("Build image", () -> dockerizeCommand("build", "-t", imageName(), ".")));
-        actions.add(btn("Run container", () -> {
+        actions.add(btn(Bundle.DockerPanelTopComponent_regenerate(), this::regenerateDockerize));
+        actions.add(btn(Bundle.DockerPanelTopComponent_writeFiles(), this::writeDockerizeFiles));
+        actions.add(btn(Bundle.DockerPanelTopComponent_buildImage(), () -> dockerizeCommand("build", "-t", imageName(), ".")));
+        actions.add(btn(Bundle.DockerPanelTopComponent_runContainer(), () -> {
             int port = currentPort();
             dockerizeCommand("run", "-d", "--name", imageName() + "-dev",
                     "-p", port + ":" + port, imageName());
@@ -791,24 +903,22 @@ public final class DockerPanelTopComponent extends TopComponent {
                 // ALWAYS the fresh on-disk parse: Regenerate must show edits,
                 // and a deleted recipe falls through to the detected branch
                 files = DockerRecipes.materialize(fresh.get(), image);
-                source = "recipe: " + fresh.get().name() + " · yours";
+                source = Bundle.DockerPanelTopComponent_sourceRecipe(fresh.get().name());
             } else {
                 files = DockerizeGenerator.generate(kind, image, statics);
-                source = "detected toolchain: " + kind
-                        + (statics ? " (static bundle → nginx)" : "");
+                source = Bundle.DockerPanelTopComponent_sourceDetected(kind)
+                        + (statics ? Bundle.DockerPanelTopComponent_sourceStaticSuffix() : "");
             }
             SwingUtilities.invokeLater(() -> {
                 dockerizeFiles = files;
                 refillRecipeCombo(kind, loaded, selected);
-                dockerizeInfo.setText("Project: " + dir.getName()
-                        + "   ·   " + source
-                        + "   ·   image: " + image + "   ·   port: " + port);
+                dockerizeInfo.setText(Bundle.DockerPanelTopComponent_dockerizeInfo(dir.getName(), source, image, String.valueOf(port)));
                 dockerfilePreview.setText(files.getOrDefault("Dockerfile", ""));
                 ignorePreview.setText(files.getOrDefault(".dockerignore", ""));
                 composePreview.setText(files.getOrDefault("compose.yaml", ""));
                 for (DockerRecipes.Skipped skip : loaded.skipped()) {
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                            "Recipe " + skip.file() + " skipped: " + skip.reason());
+                            Bundle.DockerPanelTopComponent_recipeSkipped(skip.file(), skip.reason()));
                 }
             });
         });
@@ -826,7 +936,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             recipeCombo.removeActionListener(l);
         }
         recipeCombo.removeAllItems();
-        recipeCombo.addItem("Detected (" + kind + ")");
+        recipeCombo.addItem(Bundle.DockerPanelTopComponent_detectedItem(kind));
         for (DockerRecipes.Recipe r : loaded.recipes()) {
             recipeCombo.addItem(r);
         }
@@ -851,7 +961,7 @@ public final class DockerPanelTopComponent extends TopComponent {
                 existing.add(name);
             }
         }
-        if (!existing.isEmpty() && !confirm("Overwrite existing " + String.join(", ", existing) + "?")) {
+        if (!existing.isEmpty() && !confirm(Bundle.DockerPanelTopComponent_confirmOverwrite(String.join(", ", existing)))) {
             return;
         }
         try {
@@ -860,9 +970,9 @@ public final class DockerPanelTopComponent extends TopComponent {
                 Files.createDirectories(target.getParent()); // PHP ships docker/nginx.conf
                 Files.writeString(target, e.getValue(), java.nio.charset.StandardCharsets.UTF_8);
             }
-            status("wrote " + String.join(", ", dockerizeFiles.keySet()) + " into " + dir.getName());
+            status(Bundle.DockerPanelTopComponent_wroteFiles(String.join(", ", dockerizeFiles.keySet()), dir.getName()));
         } catch (Exception ex) {
-            error("Could not write the Docker files: " + ex.getMessage());
+            error(Bundle.DockerPanelTopComponent_writeFailed(ex.getMessage()));
         }
     }
 
@@ -878,7 +988,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         org.nmox.studio.rack.engine.CommandExecutor.run("HARBOR", projectDir(), Map.of(),
                 cmd, line -> {
                 }, code -> {
-                    status("docker " + args[0] + (code == 0 ? " OK" : " failed [" + code + "]"));
+                    status(code == 0 ? Bundle.DockerPanelTopComponent_dockerOk(args[0]) : Bundle.DockerPanelTopComponent_dockerFailed(args[0], String.valueOf(code)));
                     refreshAll();
                 });
         org.nmox.studio.rack.engine.CommandExecutor.showOutput("HARBOR");

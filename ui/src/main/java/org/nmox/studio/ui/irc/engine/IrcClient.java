@@ -70,6 +70,10 @@ import org.openide.util.RequestProcessor;
  * honest lines and never a password retry loop. A pre-IRCv3 server
  * simply ignores the CAP line and its 001 clears the negotiation state.
  */
+@org.openide.util.NbBundle.Messages({
+    "IrcClient_closed=closed",
+    "IrcClient_connectionLost=connection lost"
+})
 public final class IrcClient {
 
     private static final Logger LOG = Logger.getLogger(IrcClient.class.getName());
@@ -284,7 +288,7 @@ public final class IrcClient {
             if (s != null) {
                 closeQuietly(s); // unblocks the reader, which announces CLOSED
             } else {
-                toClosed("closed");
+                toClosed(Bundle.IrcClient_closed());
             }
         });
     }
@@ -722,11 +726,11 @@ public final class IrcClient {
 
     private void endSession(String failure) {
         if (closed) {
-            toClosed(failure == null ? "closed" : failure);
+            toClosed(failure == null ? Bundle.IrcClient_closed() : failure);
             return;
         }
         setState(State.RECONNECTING);
-        fireDisconnected(failure == null ? "connection lost" : failure);
+        fireDisconnected(failure == null ? Bundle.IrcClient_connectionLost() : failure);
         long delay = backoffMs;
         backoffMs = Math.min(maxBackoffMs, backoffMs * 2);
         pendingReconnect = rp.post(() -> {

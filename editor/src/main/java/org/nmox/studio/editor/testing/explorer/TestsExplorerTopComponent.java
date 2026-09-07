@@ -62,6 +62,25 @@ import org.openide.windows.TopComponent;
 @TopComponent.OpenActionRegistration(displayName = "#CTL_TestsExplorerAction",
         preferredID = "TestsExplorerTopComponent")
 @Messages({
+    "TestsExplorerTopComponent_tooltip=Every test the focused runner can run, before anything runs",
+    "TestsExplorerTopComponent_treeName=Discovered tests",
+    "TestsExplorerTopComponent_refresh=Refresh",
+    "TestsExplorerTopComponent_refreshName=Refresh test list",
+    "TestsExplorerTopComponent_run=Run",
+    "TestsExplorerTopComponent_runName=Run selected test",
+    "TestsExplorerTopComponent_nothingToStop=No test run to stop",
+    "TestsExplorerTopComponent_stoppedRuns={1,choice,1#Stopped {0} test run|1<Stopped {0} test runs}",
+    "TestsExplorerTopComponent_stopName=Stop running test",
+    "TestsExplorerTopComponent_statusName=Test discovery status",
+    "TestsExplorerTopComponent_stop=Stop",
+    "TestsExplorerTopComponent_aimProject=Aim a project to list its tests.",
+    "TestsExplorerTopComponent_scanning=Scanning {0}…",
+    "TestsExplorerTopComponent_summary={1,choice,1#{0} test|1<{0} tests} in {3,choice,1#{2} file|1<{2} files}",
+    "TestsExplorerTopComponent_truncated= — large project, first {0} files only",
+    "TestsExplorerTopComponent_line=line {0}",
+    "TestsExplorerTopComponent_couldNotOpen=Could not open {0}: {1}",
+    "TestsExplorerTopComponent_selectTest=Select a test to run it.",
+    "TestsExplorerTopComponent_noRunner=No runner for {0} ({1})",
     "CTL_TestsExplorerAction=Tests",
     "CTL_TestsExplorerTopComponent=Tests"
 })
@@ -75,14 +94,15 @@ public final class TestsExplorerTopComponent extends TopComponent {
             new DefaultMutableTreeNode("Tests");
     private final DefaultTreeModel model = new DefaultTreeModel(rootNode);
     private final JTree tree = new JTree(model);
-    private final JLabel status = new JLabel(" ");
+    private static final String BLANK = " ";
+    private final JLabel status = new JLabel(BLANK);
     private final ProjectAim.Listener aimListener =
             () -> java.awt.EventQueue.invokeLater(this::aimChanged);
     private volatile long refreshSeq;
 
     public TestsExplorerTopComponent() {
         setName(Bundle.CTL_TestsExplorerTopComponent());
-        setToolTipText("Every test the focused runner can run, before anything runs");
+        setToolTipText(Bundle.TestsExplorerTopComponent_tooltip());
         setLayout(new BorderLayout());
 
         // test names are FILE CONTENT — a name spelled <html><img src>
@@ -91,16 +111,16 @@ public final class TestsExplorerTopComponent extends TopComponent {
         tree.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(new DefaultTreeCellRenderer()));
         tree.setRootVisible(false);
         tree.setShowsRootHandles(true);
-        tree.getAccessibleContext().setAccessibleName("Discovered tests");
+        tree.getAccessibleContext().setAccessibleName(Bundle.TestsExplorerTopComponent_treeName());
 
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.TestsExplorerTopComponent_refresh());
         refresh.addActionListener(e -> refreshAsync());
-        refresh.getAccessibleContext().setAccessibleName("Refresh test list");
-        JButton run = new JButton("Run");
+        refresh.getAccessibleContext().setAccessibleName(Bundle.TestsExplorerTopComponent_refreshName());
+        JButton run = new JButton(Bundle.TestsExplorerTopComponent_run());
         run.addActionListener(e -> runSelected());
-        run.getAccessibleContext().setAccessibleName("Run selected test");
+        run.getAccessibleContext().setAccessibleName(Bundle.TestsExplorerTopComponent_runName());
         // the window's own Stop (v2.73.0): enabled while a focused-test run
         // is live (the lane joined the ■ in v2.70.0; this stops ONLY test
         // runs, the toolbar ■ stops everything), following LiveRuns while
@@ -108,16 +128,17 @@ public final class TestsExplorerTopComponent extends TopComponent {
         stop.addActionListener(e -> {
             int stopped = TestRunsStop.stopAll();
             StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(stopped == 0
-                    ? "No test run to stop" : "Stopped " + stopped + " test run" + (stopped == 1 ? "" : "s")));
+                    ? Bundle.TestsExplorerTopComponent_nothingToStop()
+                    : Bundle.TestsExplorerTopComponent_stoppedRuns(String.valueOf(stopped), stopped)));
         });
-        stop.getAccessibleContext().setAccessibleName("Stop running test");
+        stop.getAccessibleContext().setAccessibleName(Bundle.TestsExplorerTopComponent_stopName());
         stop.setEnabled(false);
         bar.add(refresh);
         bar.add(run);
         bar.add(stop);
         add(bar, BorderLayout.NORTH);
         add(new JScrollPane(tree), BorderLayout.CENTER);
-        status.getAccessibleContext().setAccessibleName("Test discovery status");
+        status.getAccessibleContext().setAccessibleName(Bundle.TestsExplorerTopComponent_statusName());
         add(status, BorderLayout.SOUTH);
 
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -153,7 +174,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
         LiveRuns.removeListener(runsListener);
     }
 
-    private final JButton stop = new JButton("Stop");
+    private final JButton stop = new JButton(Bundle.TestsExplorerTopComponent_stop());
 
     /** Any-thread listener: the Stop follows the test runs on the EDT. */
     private final Runnable runsListener = () -> javax.swing.SwingUtilities.invokeLater(this::followRuns);
@@ -174,11 +195,11 @@ public final class TestsExplorerTopComponent extends TopComponent {
         if (dir == null) {
             rootNode.removeAllChildren();
             model.reload();
-            status.setText("Aim a project to list its tests.");
+            status.setText(Bundle.TestsExplorerTopComponent_aimProject());
             return;
         }
         long seq = ++refreshSeq;
-        status.setText("Scanning " + dir.getName() + "…");
+        status.setText(Bundle.TestsExplorerTopComponent_scanning(dir.getName()));
         RP.post(() -> {
             Map<Path, List<DiscoveredTest>> found = index.refresh(dir.toPath(),
                     TestsExplorerTopComponent::mimeOf, v -> seq != refreshSeq);
@@ -213,10 +234,10 @@ public final class TestsExplorerTopComponent extends TopComponent {
         for (int i = 0; i < tree.getRowCount() && i < 40; i++) {
             tree.expandRow(i);
         }
-        status.setText(PlainText.plain(tests + (tests == 1 ? " test in " : " tests in ")
-                + found.size() + (found.size() == 1 ? " file" : " files")
+        status.setText(PlainText.plain(Bundle.TestsExplorerTopComponent_summary(
+                String.valueOf(tests), tests, String.valueOf(found.size()), found.size())
                 + (truncated
-                ? " — large project, first " + TestIndex.MAX_FILES + " files only"
+                ? Bundle.TestsExplorerTopComponent_truncated(String.valueOf(TestIndex.MAX_FILES))
                 : "")));
     }
 
@@ -231,7 +252,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
         @Override
         public String toString() {
             DiscoveredTest t = (DiscoveredTest) getUserObject();
-            return t.name() + "  \u00b7 line " + t.line();
+            return t.name() + "  \u00b7 " + Bundle.TestsExplorerTopComponent_line(String.valueOf(t.line()));
         }
     }
 
@@ -259,7 +280,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
             }
         } catch (Exception ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + t.file().getFileName() + ": " + ex.getMessage());
+                    Bundle.TestsExplorerTopComponent_couldNotOpen(String.valueOf(t.file().getFileName()), ex.getMessage()));
         }
     }
 
@@ -267,7 +288,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
         DiscoveredTest t = selectedTest();
         if (t == null) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Select a test to run it.");
+                    Bundle.TestsExplorerTopComponent_selectTest());
             return;
         }
         String mime = mimeOf(t.file());
@@ -277,7 +298,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
                 t.file().toFile(), mime, t.name(), t.line());
         if (!dispatched) {
             StatusDisplayer.getDefault().setStatusText(
-                    "No runner for " + t.name() + " (" + mime + ")");
+                    Bundle.TestsExplorerTopComponent_noRunner(t.name(), mime));
         }
     }
 

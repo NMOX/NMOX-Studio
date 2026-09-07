@@ -27,6 +27,17 @@ import java.util.Map;
  * class's own emit and parse by the tests: worked examples are
  * fixtures, not prose.
  */
+@org.openide.util.NbBundle.Messages({
+    "Keyframes_nameNotIdent=animation name must be a plain identifier",
+    "Keyframes_noFrames=an animation needs at least one keyframe",
+    "Keyframes_durationNotPositive=duration must be positive",
+    "Keyframes_easingInvalid=easing must be a timing function",
+    "Keyframes_percentOutOfRange=keyframe percents must be 0..100",
+    "Keyframes_percentNotIncreasing=keyframe percents must be strictly increasing",
+    "Keyframes_frameEmpty={0}% has no declarations",
+    "Keyframes_propertyNotPlain=property \"{0}\" is not a plain CSS property name",
+    "Keyframes_valueInvalid=value for {0} must not be blank or contain '{' '}' ;"
+})
 public final class Keyframes {
 
     private Keyframes() {
@@ -103,38 +114,38 @@ public final class Keyframes {
      */
     public static String problem(Spec spec) {
         if (!isIdent(spec.name())) {
-            return "animation name must be a plain identifier";
+            return Bundle.Keyframes_nameNotIdent();
         }
         if (spec.frames().isEmpty()) {
-            return "an animation needs at least one keyframe";
+            return Bundle.Keyframes_noFrames();
         }
         if (spec.durationMs() < 1) {
-            return "duration must be positive";
+            return Bundle.Keyframes_durationNotPositive();
         }
         if (!isEasing(spec.easing())) {
-            return "easing must be a timing function";
+            return Bundle.Keyframes_easingInvalid();
         }
         int prev = -1;
         for (Frame f : spec.frames()) {
             if (f.percent() < 0 || f.percent() > 100) {
-                return "keyframe percents must be 0..100";
+                return Bundle.Keyframes_percentOutOfRange();
             }
             if (f.percent() <= prev) {
-                return "keyframe percents must be strictly increasing";
+                return Bundle.Keyframes_percentNotIncreasing();
             }
             prev = f.percent();
             if (f.props().isEmpty()) {
-                return f.percent() + "% has no declarations";
+                return Bundle.Keyframes_frameEmpty(String.valueOf(f.percent()));
             }
             for (Map.Entry<String, String> e : f.props().entrySet()) {
                 String p = e.getKey();
                 String v = e.getValue();
                 if (!isPropertyName(p)) {
-                    return "property \"" + p + "\" is not a plain CSS property name";
+                    return Bundle.Keyframes_propertyNotPlain(p);
                 }
                 if (v == null || v.isBlank() || v.indexOf('{') >= 0 || v.indexOf('}') >= 0
                         || v.indexOf(';') >= 0) {
-                    return "value for " + p + " must not be blank or contain { } ;";
+                    return Bundle.Keyframes_valueInvalid(p);
                 }
             }
         }

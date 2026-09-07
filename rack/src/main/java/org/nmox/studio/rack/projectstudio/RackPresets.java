@@ -16,10 +16,44 @@ import org.nmox.studio.rack.model.RackIO;
  * never drift from the real patch schema - if a port or param is
  * renamed, the preset breaks at build time, not in a user's hands.
  */
+@org.openide.util.NbBundle.Messages({
+    "RackPresets_webPipelineName=Web Pipeline",
+    "RackPresets_webPipelineDescription=MAESTRO fires install → build → test; SURGE pops the browser when serving",
+    "RackPresets_devLoopName=Dev Loop",
+    "RackPresets_devLoopDescription=Dev server auto-opens the browser; saves run the tests",
+    "RackPresets_tddLoopName=TDD Loop",
+    "RackPresets_tddLoopDescription=REFLEX armed: every save runs the tests, tally on the console",
+    "RackPresets_ciLaneName=CI Lane",
+    "RackPresets_ciLaneDescription=MAESTRO fires install → build → test, output on the console",
+    "RackPresets_uptimeWatchName=Uptime Watch",
+    "RackPresets_uptimeWatchDescription=While the dev server runs, TEMPO clocks PING health checks",
+    "RackPresets_modernWebName=Modern Web",
+    "RackPresets_modernWebDescription=VELOCITY serves (SCOPE pops the browser on READY); saves fan out to VERITAS tests and PURITY lint",
+    "RackPresets_monorepoLanesName=Monorepo Lanes",
+    "RackPresets_monorepoLanesDescription=Mixed repo: ROSETTA shows the mix, WAYPOINT dials the package, saves fan out to node + cargo test lanes",
+    "RackPresets_shipLaneName=Ship Lane",
+    "RackPresets_shipLaneDescription=Prod build → security scan → armed deploy, with console trail",
+    "RackPresets_polyglotGauntletName=Polyglot Gauntlet",
+    "RackPresets_polyglotGauntletDescription=Per-language saves drive their own lane; QUORUM clears PREFLIGHT only when every lane is green",
+    "RackPresets_shipGateName=Ship Gate",
+    "RackPresets_shipGateDescription=Prod build → Lighthouse floor → bundle budget → PREFLIGHT verdict → armed deploy",
+    "RackPresets_devIntelligenceName=Dev Intelligence",
+    "RackPresets_devIntelligenceDescription=Serve with full awareness: clocked health probes, port radar, flight recorder, log tail",
+    "RackPresets_lampBenchName=LAMP Bench",
+    "RackPresets_lampBenchDescription=Composer install fans out to phpunit + phpstan + Pint; IGNITION serves public/",
+    "RackPresets_multiChainBenchName=Multi-Chain Bench",
+    "RackPresets_multiChainBenchDescription=STELLAR + ANCHOR + ANVIL side by side — Soroban, Solana, and EVM lanes on one MONITOR",
+    "RackPresets_web3BenchName=Web3 Bench",
+    "RackPresets_web3BenchDescription=ANVIL chain + forge build/test + GOVERNOR gas gate, MONITOR watching",
+    "RackPresets_classicWebName=Classic Web Bench",
+    "RackPresets_classicWebDescription=CRATE installs (npm + bower), DYNAMO runs the taskfile, IGNITION serves the site, VITALS scores it",
+    "RackPresets_e2eLoopName=E2E Loop",
+    "RackPresets_e2eLoopDescription=VELOCITY serves and SPECTER runs the E2E suite the moment READY fires; REPORT re-aims SCOPE at the HTML report"
+})
 public enum RackPresets {
 
-    WEB_PIPELINE("Web Pipeline",
-            "MAESTRO fires install → build → test; SURGE pops the browser when serving") {
+    WEB_PIPELINE(Bundle.RackPresets_webPipelineName(),
+            Bundle.RackPresets_webPipelineDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -48,8 +82,8 @@ public enum RackPresets {
         }
     },
 
-    DEV_LOOP("Dev Loop",
-            "Dev server auto-opens the browser; saves run the tests") {
+    DEV_LOOP(Bundle.RackPresets_devLoopName(),
+            Bundle.RackPresets_devLoopDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
@@ -64,8 +98,8 @@ public enum RackPresets {
         }
     },
 
-    TDD_LOOP("TDD Loop",
-            "REFLEX armed: every save runs the tests, tally on the console") {
+    TDD_LOOP(Bundle.RackPresets_tddLoopName(),
+            Bundle.RackPresets_tddLoopDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "true", "filter", "1"));
@@ -79,8 +113,8 @@ public enum RackPresets {
         }
     },
 
-    CI_LANE("CI Lane",
-            "MAESTRO fires install → build → test, output on the console") {
+    CI_LANE(Bundle.RackPresets_ciLaneName(),
+            Bundle.RackPresets_ciLaneDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -95,8 +129,8 @@ public enum RackPresets {
         }
     },
 
-    UPTIME_WATCH("Uptime Watch",
-            "While the dev server runs, TEMPO clocks PING health checks") {
+    UPTIME_WATCH(Bundle.RackPresets_uptimeWatchName(),
+            Bundle.RackPresets_uptimeWatchDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
@@ -114,8 +148,8 @@ public enum RackPresets {
         }
     },
 
-    MODERN_WEB("Modern Web",
-            "VELOCITY serves (SCOPE pops the browser on READY); saves fan out to VERITAS tests and PURITY lint") {
+    MODERN_WEB(Bundle.RackPresets_modernWebName(),
+            Bundle.RackPresets_modernWebDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice velocity = add(rack, DeviceType.VITE, null);
@@ -135,8 +169,8 @@ public enum RackPresets {
         }
     },
 
-    MONOREPO_LANES("Monorepo Lanes",
-            "Mixed repo: ROSETTA shows the mix, WAYPOINT dials the package, saves fan out to node + cargo test lanes") {
+    MONOREPO_LANES(Bundle.RackPresets_monorepoLanesName(),
+            Bundle.RackPresets_monorepoLanesDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice rosetta = add(rack, DeviceType.ROSETTA, null);
@@ -159,8 +193,8 @@ public enum RackPresets {
         }
     },
 
-    SHIP_LANE("Ship Lane",
-            "Prod build → security scan → armed deploy, with console trail") {
+    SHIP_LANE(Bundle.RackPresets_shipLaneName(),
+            Bundle.RackPresets_shipLaneDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -175,8 +209,8 @@ public enum RackPresets {
         }
     },
 
-    POLYGLOT_GAUNTLET("Polyglot Gauntlet",
-            "Per-language saves drive their own lane; QUORUM clears PREFLIGHT only when every lane is green") {
+    POLYGLOT_GAUNTLET(Bundle.RackPresets_polyglotGauntletName(),
+            Bundle.RackPresets_polyglotGauntletDescription()) {
         @Override
         void wire(Rack rack) {
             add(rack, DeviceType.ROSETTA, null);
@@ -199,8 +233,8 @@ public enum RackPresets {
         }
     },
 
-    SHIP_GATE("Ship Gate",
-            "Prod build → Lighthouse floor → bundle budget → PREFLIGHT verdict → armed deploy") {
+    SHIP_GATE(Bundle.RackPresets_shipGateName(),
+            Bundle.RackPresets_shipGateDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -222,8 +256,8 @@ public enum RackPresets {
         }
     },
 
-    DEV_INTELLIGENCE("Dev Intelligence",
-            "Serve with full awareness: clocked health probes, port radar, flight recorder, log tail") {
+    DEV_INTELLIGENCE(Bundle.RackPresets_devIntelligenceName(),
+            Bundle.RackPresets_devIntelligenceDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice server = add(rack, DeviceType.DEV_SERVER, null);
@@ -246,8 +280,8 @@ public enum RackPresets {
         }
     },
 
-    LAMP_BENCH("LAMP Bench",
-            "Composer install fans out to phpunit + phpstan + Pint; IGNITION serves public/") {
+    LAMP_BENCH(Bundle.RackPresets_lampBenchName(),
+            Bundle.RackPresets_lampBenchDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
@@ -272,8 +306,8 @@ public enum RackPresets {
         }
     },
 
-    MULTI_CHAIN_BENCH("Multi-Chain Bench",
-            "STELLAR + ANCHOR + ANVIL side by side — Soroban, Solana, and EVM lanes on one MONITOR") {
+    MULTI_CHAIN_BENCH(Bundle.RackPresets_multiChainBenchName(),
+            Bundle.RackPresets_multiChainBenchDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -293,8 +327,8 @@ public enum RackPresets {
         }
     },
 
-    WEB3_BENCH("Web3 Bench",
-            "ANVIL chain + forge build/test + GOVERNOR gas gate, MONITOR watching") {
+    WEB3_BENCH(Bundle.RackPresets_web3BenchName(),
+            Bundle.RackPresets_web3BenchDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -320,8 +354,8 @@ public enum RackPresets {
         }
     },
 
-    CLASSIC_WEB("Classic Web Bench",
-            "CRATE installs (npm + bower), DYNAMO runs the taskfile, IGNITION serves the site, VITALS scores it") {
+    CLASSIC_WEB(Bundle.RackPresets_classicWebName(),
+            Bundle.RackPresets_classicWebDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
@@ -346,8 +380,8 @@ public enum RackPresets {
         }
     },
 
-    E2E_LOOP("E2E Loop",
-            "VELOCITY serves and SPECTER runs the E2E suite the moment READY fires; REPORT re-aims SCOPE at the HTML report") {
+    E2E_LOOP(Bundle.RackPresets_e2eLoopName(),
+            Bundle.RackPresets_e2eLoopDescription()) {
         @Override
         void wire(Rack rack) {
             RackDevice velocity = add(rack, DeviceType.VITE, null);

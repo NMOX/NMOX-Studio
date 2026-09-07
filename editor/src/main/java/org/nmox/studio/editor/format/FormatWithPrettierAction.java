@@ -55,7 +55,18 @@ import org.openide.util.RequestProcessor;
     @ActionReference(path = "Editors/text/x-svelte/Popup", position = 1850),
     @ActionReference(path = "Editors/text/x-astro/Popup", position = 1850)
 })
-@Messages("CTL_FormatWithPrettier=Format with Prettier")
+@Messages({
+    "CTL_FormatWithPrettier=Format with Prettier",
+    "FormatWithPrettierAction_noBuffer=No editor buffer to format.",
+    "FormatWithPrettierAction_couldNotApply=Could not apply the formatted text.",
+    "FormatWithPrettierAction_changed=Document changed while formatting — run it again.",
+    "FormatWithPrettierAction_formatted=Formatted with Prettier.",
+    "FormatWithPrettierAction_formattedDefaults=Formatted with Prettier defaults — the project has no Prettier config.",
+    "FormatWithPrettierAction_alreadyFormatted=Already formatted.",
+    "FormatWithPrettierAction_tooLarge=File too large for Prettier — saved size limit applies here too.",
+    "FormatWithPrettierAction_noPrettier=Prettier not found — install it in the project or globally on PATH.",
+    "FormatWithPrettierAction_failed=Prettier could not format this file (syntax error?)."
+})
 public final class FormatWithPrettierAction implements ActionListener {
 
     /** One interruptible lane; a second request queues behind the first. */
@@ -74,7 +85,7 @@ public final class FormatWithPrettierAction implements ActionListener {
         Document doc = ec == null ? null : ec.getDocument();
         File file = FileUtil.toFile(context.getPrimaryFile());
         if (doc == null || file == null) {
-            status("No editor buffer to format.");
+            status(Bundle.FormatWithPrettierAction_noBuffer());
             return;
         }
         final String snapshot;
@@ -96,21 +107,21 @@ public final class FormatWithPrettierAction implements ActionListener {
                 try {
                     applied = applyIfUnchanged(doc, snapshot, result.text());
                 } catch (BadLocationException ex) {
-                    status("Could not apply the formatted text.");
+                    status(Bundle.FormatWithPrettierAction_couldNotApply());
                     return;
                 }
                 if (!applied) {
-                    status("Document changed while formatting — run it again.");
+                    status(Bundle.FormatWithPrettierAction_changed());
                 } else if (result.optedIn()) {
-                    status("Formatted with Prettier.");
+                    status(Bundle.FormatWithPrettierAction_formatted());
                 } else {
-                    status("Formatted with Prettier defaults — the project has no Prettier config.");
+                    status(Bundle.FormatWithPrettierAction_formattedDefaults());
                 }
             }
-            case ALREADY_FORMATTED -> status("Already formatted.");
-            case TOO_LARGE -> status("File too large for Prettier — saved size limit applies here too.");
-            case NO_PRETTIER -> status("Prettier not found — install it in the project or globally on PATH.");
-            case FAILED -> status("Prettier could not format this file (syntax error?).");
+            case ALREADY_FORMATTED -> status(Bundle.FormatWithPrettierAction_alreadyFormatted());
+            case TOO_LARGE -> status(Bundle.FormatWithPrettierAction_tooLarge());
+            case NO_PRETTIER -> status(Bundle.FormatWithPrettierAction_noPrettier());
+            case FAILED -> status(Bundle.FormatWithPrettierAction_failed());
         }
     }
 

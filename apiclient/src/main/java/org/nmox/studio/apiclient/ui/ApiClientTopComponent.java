@@ -75,7 +75,157 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_ApiClientAction=API Studio",
     "CTL_ApiClientTopComponent=API Studio",
-    "HINT_ApiClientTopComponent=Postman-style API management and testing"
+    "HINT_ApiClientTopComponent=Postman-style API management and testing",
+    // chrome (shift-2970): every user-visible English string of this window
+    "ApiClientTopComponent_send=Send",
+    "ApiClientTopComponent_cancel=Cancel",
+    "ApiClientTopComponent_explain=Explain…",
+    "ApiClientTopComponent_treeA11y=Collections and requests",
+    "ApiClientTopComponent_paramsA11y=Query parameters",
+    "ApiClientTopComponent_environmentA11y=Environment",
+    "ApiClientTopComponent_methodA11y=HTTP method",
+    "ApiClientTopComponent_urlA11y=Request URL",
+    "ApiClientTopComponent_nameA11y=Request name",
+    "ApiClientTopComponent_bodyA11y=Request body",
+    "ApiClientTopComponent_authTypeA11y=Auth type",
+    "ApiClientTopComponent_responseBodyA11y=Response body",
+    "ApiClientTopComponent_findA11y=Find in response",
+    "ApiClientTopComponent_responseHeadersA11y=Response headers",
+    "ApiClientTopComponent_variablesA11y=Import preview",
+    "ApiClientTopComponent_messageA11y=Message",
+    // numeric arguments are formatted {n,number,0}: MessageFormat would otherwise
+    // group digits (1,234 ms) where the old concatenation printed 1234
+    "ApiClientTopComponent_sendTooltip=Send the request  ({0}Enter)",
+    "ApiClientTopComponent_environmentLabel= Environment: ",
+    "ApiClientTopComponent_variables=Variables…",
+    "ApiClientTopComponent_copyCurl=Copy curl",
+    "ApiClientTopComponent_copyCurlTooltip=Copy this request as the exact curl command Send would run",
+    "ApiClientTopComponent_copyFetch=Copy fetch",
+    "ApiClientTopComponent_copyFetchTooltip=Copy this request as the fetch() call your code would make",
+    "ApiClientTopComponent_copyTypes=Copy TS types",
+    "ApiClientTopComponent_copyTypesTooltip=Copy TypeScript interfaces for the JSON response on screen",
+    "ApiClientTopComponent_typesNeedResponse=Send a request first — types come from the response on screen.",
+    "ApiClientTopComponent_typesNotJson=The response is not a JSON object — nothing to type.",
+    "ApiClientTopComponent_typesCopied=TypeScript interfaces copied.",
+    "ApiClientTopComponent_selectRequestFirst=Select a request first.",
+    "ApiClientTopComponent_curlCopied=curl command copied.",
+    "ApiClientTopComponent_curlCopiedWithSecret=curl command copied — includes the auth secret.",
+    "ApiClientTopComponent_fetchCopied=fetch() snippet copied.",
+    "ApiClientTopComponent_fetchCopiedWithSecret=fetch() snippet copied — includes the auth secret.",
+    "ApiClientTopComponent_nothingToExplain=Nothing to explain yet — send a request first.",
+    "ApiClientTopComponent_noRoute=no route",
+    "ApiClientTopComponent_kvasirDidNotRun=KVASIR did not run — needs an API key and your consent.",
+    "ApiClientTopComponent_importCurlItem=curl command…",
+    "ApiClientTopComponent_importHttpItem=.http / .rest file…",
+    "ApiClientTopComponent_importOpenApiItem=OpenAPI 3 (JSON/YAML)…",
+    "ApiClientTopComponent_importPostmanItem=Postman Collection…",
+    "ApiClientTopComponent_importPostmanEnvItem=Postman Environment…",
+    "ApiClientTopComponent_importInsomniaItem=Insomnia Export…",
+    "ApiClientTopComponent_importHarItem=HAR capture…",
+    "ApiClientTopComponent_exportHttpItem=Export collection to .http…",
+    // the menu item is PlainText.plain-guarded at the call site, so the
+    // library file's name may lead the value without the <html> sniff
+    "ApiClientTopComponent_libraryItem={0} · library",
+    "ApiClientTopComponent_importHttpTitle=Import .http file",
+    "ApiClientTopComponent_httpFilesFilter=.http / .rest request files",
+    "ApiClientTopComponent_importOpenApiTitle=Import OpenAPI 3 (JSON or YAML)",
+    "ApiClientTopComponent_openApiFilesFilter=OpenAPI documents",
+    "ApiClientTopComponent_importPostmanTitle=Import Postman Collection (v2.1)",
+    "ApiClientTopComponent_postmanFilesFilter=Postman collections",
+    "ApiClientTopComponent_importPostmanEnvTitle=Import Postman Environment",
+    "ApiClientTopComponent_postmanEnvFilesFilter=Postman environments",
+    "ApiClientTopComponent_importInsomniaTitle=Import Insomnia Export (v4 JSON)",
+    "ApiClientTopComponent_insomniaFilesFilter=Insomnia exports",
+    "ApiClientTopComponent_importHarTitle=Import HAR capture",
+    "ApiClientTopComponent_harFilesFilter=HAR captures",
+    "ApiClientTopComponent_exportHttpTitle=Export \"{0}\" as .http",
+    "ApiClientTopComponent_httpExportFilesFilter=.http request files",
+    "ApiClientTopComponent_importedNamed=Imported \"{0}\": {1,choice,0#{1,number,0} requests|1#{1,number,0} request|1<{1,number,0} requests}",
+    "ApiClientTopComponent_importedCount=Imported {0,choice,0#{0,number,0} requests|1#{0,number,0} request|1<{0,number,0} requests}",
+    "ApiClientTopComponent_importedFromCapture=Imported {0,choice,0#{0,number,0} requests|1#{0,number,0} request|1<{0,number,0} requests} from the capture",
+    "ApiClientTopComponent_baseUrlInto=, '{{'baseUrl'}}' into {0}",
+    "ApiClientTopComponent_variablesInto=, {0,choice,0#{0,number,0} variables|1#{0,number,0} variable|1<{0,number,0} variables} into {1}",
+    "ApiClientTopComponent_notesSuffix= — {0}",
+    "ApiClientTopComponent_createdEnvironment=Created environment \"{0}\": {1,choice,0#{1,number,0} variables|1#{1,number,0} variable|1<{1,number,0} variables}",
+    "ApiClientTopComponent_updatedEnvironment=Updated environment \"{0}\": {1,choice,0#{1,number,0} variables|1#{1,number,0} variable|1<{1,number,0} variables} added (existing values kept)",
+    "ApiClientTopComponent_nothingToExport=Nothing to export — select a collection with requests.",
+    "ApiClientTopComponent_exported=Exported {0,choice,0#{0,number,0} requests|1#{0,number,0} request|1<{0,number,0} requests} to {1} — auth stays in your keychain, the file says what to re-add.",
+    "ApiClientTopComponent_pasteCurl=Paste a curl command:",
+    "ApiClientTopComponent_importCurlTitle=Import curl",
+    "ApiClientTopComponent_importedRequest=Imported \"{0}\".",
+    "ApiClientTopComponent_importedWithNotes=Imported with notes: {0}",
+    "ApiClientTopComponent_duplicate=Duplicate",
+    "ApiClientTopComponent_rename=Rename…",
+    "ApiClientTopComponent_delete=Delete",
+    "ApiClientTopComponent_addCollection=+ Collection",
+    "ApiClientTopComponent_addRequest=+ Request",
+    "ApiClientTopComponent_importButton=Import…",
+    "ApiClientTopComponent_importButtonTooltip=Import curl / .http / OpenAPI / Postman / HAR, or export a collection to .http",
+    "ApiClientTopComponent_collections=Collections",
+    "ApiClientTopComponent_history=History",
+    "ApiClientTopComponent_historyFailed=failed",
+    "ApiClientTopComponent_historyMillis=({0,number,0} ms)",
+    "ApiClientTopComponent_historyTooltip=Double-click restores a send as a new request (auth token not carried — re-enter it)",
+    "ApiClientTopComponent_restoreAsRequest=Restore as request",
+    "ApiClientTopComponent_clearHistory=Clear history",
+    "ApiClientTopComponent_restored=Restored from history.",
+    "ApiClientTopComponent_restoredReenterAuth=Restored from history — re-enter the auth token (secrets never ride history).",
+    "ApiClientTopComponent_clearHistoryConfirm=Clear all {0,number,0} history entries?",
+    "ApiClientTopComponent_nameLabel=Name: ",
+    "ApiClientTopComponent_params=Params",
+    "ApiClientTopComponent_headers=Headers",
+    "ApiClientTopComponent_body=Body",
+    "ApiClientTopComponent_auth=Auth",
+    "ApiClientTopComponent_tests=Tests",
+    "ApiClientTopComponent_standards=Standards",
+    "ApiClientTopComponent_typeLabel=Type: ",
+    "ApiClientTopComponent_tokenLabel=Token (Bearer), or user:password (Basic) — {{vars}} allowed:",
+    "ApiClientTopComponent_keychainNote=<html><small>Stored in the OS keychain, never in .nmoxapi.json. {{vars}} still resolve at send time.</small></html>",
+    "ApiClientTopComponent_explainTooltip=Ask KVASIR what this response means (sends a redacted summary — you confirm first)",
+    "ApiClientTopComponent_findLabel=Find:",
+    "ApiClientTopComponent_saveBody=Save…",
+    "ApiClientTopComponent_saveBodyTooltip=Save the RAW response body to a file (not the pretty-printed view)",
+    // numeric-only arguments on a PlainText.plain-guarded label: no <html> can lead
+    "ApiClientTopComponent_matchCount={0,choice,0#{0,number,0} matches|1#{0,number,0} match|1<{0,number,0} matches}",
+    "ApiClientTopComponent_matchesCapped={0,number,0}+ matches",
+    "ApiClientTopComponent_noResponseToSave=No response to save — send a request first.",
+    "ApiClientTopComponent_saveBodyTitle=Save response body (raw)",
+    "ApiClientTopComponent_savedTruncated=Saved (response was truncated at the capture cap).",
+    "ApiClientTopComponent_savedFile=Saved {0}.",
+    "ApiClientTopComponent_couldNotSave=Could not save: {0}",
+    "ApiClientTopComponent_cancelled=Cancelled",
+    "ApiClientTopComponent_sending=Sending…",
+    "ApiClientTopComponent_unexpectedError=unexpected error",
+    "ApiClientTopComponent_sendFailed=Send failed — {0}",
+    "ApiClientTopComponent_cancelledAfter=Cancelled  ·  {0,number,0}ms",
+    "ApiClientTopComponent_noRouteVerdict=No route — {0}  ·  {1,number,0}ms",
+    // the verdict strip is PlainText.plain-guarded; {0} is the numeric HTTP status
+    "ApiClientTopComponent_verdict={0,number,0}  ·  {1,number,0}ms  ·  {2}",
+    "ApiClientTopComponent_truncatedAt=  ·  body truncated at {0}",
+    "ApiClientTopComponent_noTests=  No tests on this request.",
+    "ApiClientTopComponent_gradeLine=  Security headers grade: {0}",
+    "ApiClientTopComponent_nothingToGrade=  No response — nothing to grade.",
+    "ApiClientTopComponent_workspaceRoot=Workspace",
+    "ApiClientTopComponent_selectRequestToDuplicate=Select a request to duplicate.",
+    "ApiClientTopComponent_duplicatedAs=Duplicated as \"{0}\".",
+    "ApiClientTopComponent_nameInput=Name:",
+    "ApiClientTopComponent_renameTitle=Rename",
+    "ApiClientTopComponent_deleteCollectionConfirm=Delete collection \"{0}\" and its {1,choice,0#{1,number,0} requests|1#{1,number,0} request|1<{1,number,0} requests}?",
+    "ApiClientTopComponent_deleteCollectionTitle=Delete collection",
+    "ApiClientTopComponent_environmentNameInput=Environment name:",
+    "ApiClientTopComponent_newEnvironmentTitle=New environment",
+    "ApiClientTopComponent_variablesTitle=Variables for \"{0}\"  (KEY=value per line)",
+    "ApiClientTopComponent_couldNotRead=Couldn''t read {0} — starting empty",
+    "ApiClientTopComponent_backupKept=The unreadable original was kept at {0}.",
+    "ApiClientTopComponent_cannotSave=API Studio can't save its workspace",
+    "ApiClientTopComponent_notPersisted=Changes are not being persisted: {0}",
+    "ApiClientTopComponent_offerCreateEnvironment=Click to create environment \"{0}\" with '{{'{1}'}}' set",
+    "ApiClientTopComponent_offerSetVariable=Click to set '{{'{0}'}}' in \"{1}\"",
+    "ApiClientTopComponent_serverRunning=A server is running at {0}",
+    "ApiClientTopComponent_changedOnDisk={0} changed on disk — Reload?",
+    "ApiClientTopComponent_unsavedEditsReload=You have unsaved edits; click to reload from disk and discard them",
+    "ApiClientTopComponent_reloaded=Reloaded {0}",
+    "ApiClientTopComponent_pickedUpChanges=Picked up changes made outside the studio"
 })
 public final class ApiClientTopComponent extends TopComponent {
 
@@ -156,7 +306,7 @@ public final class ApiClientTopComponent extends TopComponent {
             new JComboBox<>(new String[]{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"});
     private final JTextField urlField = new JTextField();
     private final JTextField nameField = new JTextField();
-    private final JButton sendButton = new JButton("Send");
+    private final JButton sendButton = new JButton(Bundle.ApiClientTopComponent_send());
     // send history (v1.197.0)
     private final javax.swing.DefaultListModel<org.nmox.studio.apiclient.model.SendHistory.Entry>
             historyModel = new javax.swing.DefaultListModel<>();
@@ -173,14 +323,14 @@ public final class ApiClientTopComponent extends TopComponent {
     private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
     private final JTable testsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
     {
-        tree.getAccessibleContext().setAccessibleName("Collections and requests");
-        paramsTable.getAccessibleContext().setAccessibleName("Query parameters");
-        headersTable.getAccessibleContext().setAccessibleName("Headers");
-        testsTable.getAccessibleContext().setAccessibleName("Tests");
+        tree.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_treeA11y());
+        paramsTable.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_paramsA11y());
+        headersTable.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_headers());
+        testsTable.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_tests());
     }
 
     private final JLabel statusLabel = new JLabel(" ");
-    private final javax.swing.JButton explainButton = new javax.swing.JButton("Explain…");
+    private final javax.swing.JButton explainButton = new javax.swing.JButton(Bundle.ApiClientTopComponent_explain());
     /** The last delivered response — what Explain would disclose. */
     private ApiResponse lastResponse;
     private String lastMethod;
@@ -215,15 +365,15 @@ public final class ApiClientTopComponent extends TopComponent {
         setLayout(new BorderLayout());
         // the studios' inputs speak to assistive tech (v2.38.0, the
         // a11y-100 sweep: forty label-less inputs across four studios)
-        envCombo.getAccessibleContext().setAccessibleName("Environment");
-        methodCombo.getAccessibleContext().setAccessibleName("HTTP method");
-        urlField.getAccessibleContext().setAccessibleName("Request URL");
-        nameField.getAccessibleContext().setAccessibleName("Request name");
-        bodyArea.getAccessibleContext().setAccessibleName("Request body");
-        authCombo.getAccessibleContext().setAccessibleName("Auth type");
-        responseBody.getAccessibleContext().setAccessibleName("Response body");
-        responseFind.getAccessibleContext().setAccessibleName("Find in response");
-        responseHeaders.getAccessibleContext().setAccessibleName("Response headers");
+        envCombo.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_environmentA11y());
+        methodCombo.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_methodA11y());
+        urlField.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_urlA11y());
+        nameField.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_nameA11y());
+        bodyArea.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_bodyA11y());
+        authCombo.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_authTypeA11y());
+        responseBody.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_responseBodyA11y());
+        responseFind.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_findA11y());
+        responseHeaders.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_responseHeadersA11y());
 
         saveDebounce = new Timer(800, e -> save());
         saveDebounce.setRepeats(false);
@@ -252,8 +402,8 @@ public final class ApiClientTopComponent extends TopComponent {
             }
         });
         String mod = java.awt.event.InputEvent.getModifiersExText(menuMask);
-        sendButton.setToolTipText("Send the request  ("
-                + mod + (mod.length() > 1 ? "+" : "") + "Enter)");
+        sendButton.setToolTipText(Bundle.ApiClientTopComponent_sendTooltip(
+                mod + (mod.length() > 1 ? "+" : "")));
 
         rebind = new org.nmox.studio.apiclient.api.ProjectRebind(projectDir());
         rackListener = new org.nmox.studio.core.spi.ProjectAim.Listener() {
@@ -271,7 +421,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private JToolBar buildToolbar() {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
-        bar.add(new JLabel(" Environment: "));
+        bar.add(new JLabel(Bundle.ApiClientTopComponent_environmentLabel()));
         envCombo.addActionListener(e -> {
             if (!loading && envCombo.getSelectedItem() != null) {
                 workspace.activeEnvironment = (String) envCombo.getSelectedItem();
@@ -279,7 +429,7 @@ public final class ApiClientTopComponent extends TopComponent {
             }
         });
         bar.add(envCombo);
-        JButton editEnv = new JButton("Variables…");
+        JButton editEnv = new JButton(Bundle.ApiClientTopComponent_variables());
         editEnv.addActionListener(e -> editEnvironment());
         bar.add(editEnv);
         bar.addSeparator();
@@ -305,17 +455,16 @@ public final class ApiClientTopComponent extends TopComponent {
         sendButton.setForeground(new Color(0x1D, 0x9E, 0x75));
         sendButton.addActionListener(e -> send());
         bar.add(sendButton);
-        JButton copyCurl = new JButton("Copy curl");
-        copyCurl.setToolTipText("Copy this request as the exact curl command Send would run");
+        JButton copyCurl = new JButton(Bundle.ApiClientTopComponent_copyCurl());
+        copyCurl.setToolTipText(Bundle.ApiClientTopComponent_copyCurlTooltip());
         copyCurl.addActionListener(e -> copyAsCurl());
         bar.add(copyCurl);
-        JButton copyFetch = new JButton("Copy fetch");
-        copyFetch.setToolTipText("Copy this request as the fetch() call your code would make");
+        JButton copyFetch = new JButton(Bundle.ApiClientTopComponent_copyFetch());
+        copyFetch.setToolTipText(Bundle.ApiClientTopComponent_copyFetchTooltip());
         copyFetch.addActionListener(e -> copyAsFetch());
         bar.add(copyFetch);
-        JButton copyTypes = new JButton("Copy TS types");
-        copyTypes.setToolTipText(
-                "Copy TypeScript interfaces for the JSON response on screen");
+        JButton copyTypes = new JButton(Bundle.ApiClientTopComponent_copyTypes());
+        copyTypes.setToolTipText(Bundle.ApiClientTopComponent_copyTypesTooltip());
         copyTypes.addActionListener(e -> copyAsTypes());
         bar.add(copyTypes);
         return bar;
@@ -331,7 +480,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private void copyAsTypes() {
         String body = responseBody.getText();
         if (body == null || body.isBlank()) {
-            status("Send a request first — types come from the response on screen.");
+            status(Bundle.ApiClientTopComponent_typesNeedResponse());
             return;
         }
         String root = current != null && current.name != null && !current.name.isBlank()
@@ -339,18 +488,18 @@ public final class ApiClientTopComponent extends TopComponent {
         String types = org.nmox.studio.apiclient.api.JsonTypes.interfacesFor(
                 body, root.isBlank() ? "Response" : root);
         if (types == null) {
-            status("The response is not a JSON object — nothing to type.");
+            status(Bundle.ApiClientTopComponent_typesNotJson());
             return;
         }
         java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                 new java.awt.datatransfer.StringSelection(types), null);
-        status("TypeScript interfaces copied.");
+        status(Bundle.ApiClientTopComponent_typesCopied());
     }
 
     /** The current request as a terminal-ready curl command, to the clipboard. */
     private void copyAsCurl() {
         if (current == null) {
-            status("Select a request first.");
+            status(Bundle.ApiClientTopComponent_selectRequestFirst());
             return;
         }
         Environment env = workspace.active();
@@ -365,10 +514,9 @@ public final class ApiClientTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                         new java.awt.datatransfer.StringSelection(curl), null);
-                status("curl command copied"
-                        + (target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
+                status(target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
                                 && target.authToken != null && !target.authToken.isBlank()
-                                ? " — includes the auth secret" : "") + ".");
+                                ? Bundle.ApiClientTopComponent_curlCopiedWithSecret() : Bundle.ApiClientTopComponent_curlCopied());
                 if (current == target) {
                     withLoading(() -> authField.setText(target.authToken));
                 }
@@ -379,7 +527,7 @@ public final class ApiClientTopComponent extends TopComponent {
     /** The current request as a fetch() snippet, to the clipboard (v2.31.0). */
     private void copyAsFetch() {
         if (current == null) {
-            status("Select a request first.");
+            status(Bundle.ApiClientTopComponent_selectRequestFirst());
             return;
         }
         Environment env = workspace.active();
@@ -393,10 +541,9 @@ public final class ApiClientTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                         new java.awt.datatransfer.StringSelection(code), null);
-                status("fetch() snippet copied"
-                        + (target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
+                status(target.authType != org.nmox.studio.apiclient.model.ApiModel.AuthType.NONE
                                 && target.authToken != null && !target.authToken.isBlank()
-                                ? " — includes the auth secret" : "") + ".");
+                                ? Bundle.ApiClientTopComponent_fetchCopiedWithSecret() : Bundle.ApiClientTopComponent_fetchCopied());
                 if (current == target) {
                     withLoading(() -> authField.setText(target.authToken));
                 }
@@ -465,11 +612,11 @@ public final class ApiClientTopComponent extends TopComponent {
     private void explainResponse() {
         org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
         if (kvasir == null || lastResponse == null) {
-            status("Nothing to explain yet — send a request first.");
+            status(Bundle.ApiClientTopComponent_nothingToExplain());
             return;
         }
         String title = (lastMethod == null ? "GET" : lastMethod) + " · "
-                + (lastResponse.reached() ? String.valueOf(lastResponse.status()) : "no route");
+                + (lastResponse.reached() ? String.valueOf(lastResponse.status()) : Bundle.ApiClientTopComponent_noRoute());
         boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                 "api.response", title,
                 org.nmox.studio.apiclient.api.ResponseDisclosure.what(lastResponse),
@@ -477,7 +624,7 @@ public final class ApiClientTopComponent extends TopComponent {
                         lastMethod, lastUrl, lastResponse),
                 "What does this response mean, and what should I check first?"));
         if (!started) {
-            status("KVASIR did not run — needs an API key and your consent.");
+            status(Bundle.ApiClientTopComponent_kvasirDidNotRun());
         }
     }
 
@@ -492,22 +639,22 @@ public final class ApiClientTopComponent extends TopComponent {
     private void showImportMenu(javax.swing.JButton anchor,
             java.util.List<org.nmox.studio.apiclient.api.HttpLibrary.Entry> library) {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-        javax.swing.JMenuItem curl = new javax.swing.JMenuItem("curl command…");
+        javax.swing.JMenuItem curl = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importCurlItem());
         curl.addActionListener(a -> importCurl());
-        javax.swing.JMenuItem http = new javax.swing.JMenuItem(".http / .rest file…");
+        javax.swing.JMenuItem http = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importHttpItem());
         http.addActionListener(a -> importHttpFile());
-        javax.swing.JMenuItem openapi = new javax.swing.JMenuItem("OpenAPI 3 (JSON/YAML)…");
+        javax.swing.JMenuItem openapi = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importOpenApiItem());
         openapi.addActionListener(a -> importOpenApi());
-        javax.swing.JMenuItem postman = new javax.swing.JMenuItem("Postman Collection…");
+        javax.swing.JMenuItem postman = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importPostmanItem());
         postman.addActionListener(a -> importPostman());
-        javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem("Postman Environment…");
+        javax.swing.JMenuItem postmanEnv = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importPostmanEnvItem());
         postmanEnv.addActionListener(a -> importPostmanEnv());
-        javax.swing.JMenuItem insomnia = new javax.swing.JMenuItem("Insomnia Export…");
+        javax.swing.JMenuItem insomnia = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importInsomniaItem());
         insomnia.addActionListener(a -> importInsomnia());
-        javax.swing.JMenuItem har = new javax.swing.JMenuItem("HAR capture…");
+        javax.swing.JMenuItem har = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_importHarItem());
         har.addActionListener(a -> importHar());
         javax.swing.JMenuItem export = new javax.swing.JMenuItem(
-                "Export collection to .http…");
+                Bundle.ApiClientTopComponent_exportHttpItem());
         export.addActionListener(a -> exportHttp());
         menu.add(curl);
         menu.add(http);
@@ -520,7 +667,7 @@ public final class ApiClientTopComponent extends TopComponent {
             menu.addSeparator();
             for (org.nmox.studio.apiclient.api.HttpLibrary.Entry entry : library) {
                 javax.swing.JMenuItem item =
-                        new javax.swing.JMenuItem(PlainText.plain(entry.name() + " · library"));
+                        new javax.swing.JMenuItem(PlainText.plain(Bundle.ApiClientTopComponent_libraryItem(entry.name())));
                 item.setToolTipText(PlainText.plain(entry.file().getAbsolutePath()));
                 item.addActionListener(a -> importHttpFrom(entry.file()));
                 menu.add(item);
@@ -535,9 +682,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importHttpFile() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import .http file")
+                .setTitle(Bundle.ApiClientTopComponent_importHttpTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        ".http / .rest request files", "http", "rest"))
+                        Bundle.ApiClientTopComponent_httpFilesFilter(), "http", "rest"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -561,7 +708,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -592,9 +739,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importOpenApi() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import OpenAPI 3 (JSON or YAML)")
+                .setTitle(Bundle.ApiClientTopComponent_importOpenApiTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "OpenAPI documents", "json", "yaml", "yml"))
+                        Bundle.ApiClientTopComponent_openApiFilesFilter(), "json", "yaml", "yml"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -607,7 +754,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -629,14 +776,13 @@ public final class ApiClientTopComponent extends TopComponent {
                 current = c.requests.get(0);
                 restoreSelection();
                 touch();
-                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
-                        .append("\": ").append(c.requests.size()).append(" request")
-                        .append(c.requests.size() == 1 ? "" : "s");
+                StringBuilder msg = new StringBuilder(
+                        Bundle.ApiClientTopComponent_importedNamed(c.name, c.requests.size()));
                 if (added > 0) {
-                    msg.append(", {{baseUrl}} into ").append(env.name);
+                    msg.append(Bundle.ApiClientTopComponent_baseUrlInto(env.name));
                 }
                 if (!got.notes().isEmpty()) {
-                    msg.append(" — ").append(String.join(" ", got.notes()));
+                    msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
                 }
                 status(msg.append('.').toString());
             });
@@ -663,15 +809,12 @@ public final class ApiClientTopComponent extends TopComponent {
         current = c.requests.get(0);
         restoreSelection();
         touch();
-        StringBuilder msg = new StringBuilder("Imported ")
-                .append(c.requests.size()).append(" request")
-                .append(c.requests.size() == 1 ? "" : "s");
+        StringBuilder msg = new StringBuilder(Bundle.ApiClientTopComponent_importedCount(c.requests.size()));
         if (added > 0) {
-            msg.append(", ").append(added).append(" variable")
-                    .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+            msg.append(Bundle.ApiClientTopComponent_variablesInto(added, env.name));
         }
         if (!got.notes().isEmpty()) {
-            msg.append(" — ").append(String.join(" ", got.notes()));
+            msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
         }
         status(msg.append('.').toString());
     }
@@ -680,9 +823,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importPostman() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import Postman Collection (v2.1)")
+                .setTitle(Bundle.ApiClientTopComponent_importPostmanTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "Postman collections", "json", "postman_collection"))
+                        Bundle.ApiClientTopComponent_postmanFilesFilter(), "json", "postman_collection"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -695,7 +838,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -719,15 +862,13 @@ public final class ApiClientTopComponent extends TopComponent {
                 current = c.requests.get(0);
                 restoreSelection();
                 touch();
-                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
-                        .append("\": ").append(c.requests.size()).append(" request")
-                        .append(c.requests.size() == 1 ? "" : "s");
+                StringBuilder msg = new StringBuilder(
+                        Bundle.ApiClientTopComponent_importedNamed(c.name, c.requests.size()));
                 if (added > 0) {
-                    msg.append(", ").append(added).append(" variable")
-                            .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+                    msg.append(Bundle.ApiClientTopComponent_variablesInto(added, env.name));
                 }
                 if (!got.notes().isEmpty()) {
-                    msg.append(" — ").append(String.join(" ", got.notes()));
+                    msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
                 }
                 status(msg.append('.').toString());
             });
@@ -742,14 +883,14 @@ public final class ApiClientTopComponent extends TopComponent {
     private void exportHttp() {
         Collection c = selectedCollection();
         if (c == null || c.requests.isEmpty()) {
-            status("Nothing to export — select a collection with requests.");
+            status(Bundle.ApiClientTopComponent_nothingToExport());
             return;
         }
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Export \"" + c.name + "\" as .http")
+                .setTitle(Bundle.ApiClientTopComponent_exportHttpTitle(c.name))
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        ".http request files", "http", "rest"))
+                        Bundle.ApiClientTopComponent_httpExportFilesFilter(), "http", "rest"))
                 .showSaveDialog();
         if (file == null) {
             return;
@@ -764,13 +905,12 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
-            java.awt.EventQueue.invokeLater(() -> status("Exported " + n
-                    + " request" + (n == 1 ? "" : "s") + " to " + target.getName()
-                    + " — auth stays in your keychain, the file says what to re-add."));
+            java.awt.EventQueue.invokeLater(() -> status(
+                    Bundle.ApiClientTopComponent_exported(n, target.getName())));
         });
     }
 
@@ -783,9 +923,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importPostmanEnv() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import Postman Environment")
+                .setTitle(Bundle.ApiClientTopComponent_importPostmanEnvTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "Postman environments", "json", "postman_environment"))
+                        Bundle.ApiClientTopComponent_postmanEnvFilesFilter(), "json", "postman_environment"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -798,7 +938,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -823,12 +963,11 @@ public final class ApiClientTopComponent extends TopComponent {
                     }
                 }
                 touch();
-                StringBuilder msg = new StringBuilder(fresh ? "Created" : "Updated")
-                        .append(" environment \"").append(env.name).append("\": ")
-                        .append(added).append(" variable").append(added == 1 ? "" : "s")
-                        .append(fresh ? "" : " added (existing values kept)");
+                StringBuilder msg = new StringBuilder(fresh
+                        ? Bundle.ApiClientTopComponent_createdEnvironment(env.name, added)
+                        : Bundle.ApiClientTopComponent_updatedEnvironment(env.name, added));
                 if (!got.notes().isEmpty()) {
-                    msg.append(" — ").append(String.join(" ", got.notes()));
+                    msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
                 }
                 status(msg.append('.').toString());
             });
@@ -839,9 +978,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importInsomnia() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import Insomnia Export (v4 JSON)")
+                .setTitle(Bundle.ApiClientTopComponent_importInsomniaTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "Insomnia exports", "json"))
+                        Bundle.ApiClientTopComponent_insomniaFilesFilter(), "json"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -854,7 +993,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -876,15 +1015,13 @@ public final class ApiClientTopComponent extends TopComponent {
                 current = c.requests.get(0);
                 restoreSelection();
                 touch();
-                StringBuilder msg = new StringBuilder("Imported \"").append(c.name)
-                        .append("\": ").append(c.requests.size()).append(" request")
-                        .append(c.requests.size() == 1 ? "" : "s");
+                StringBuilder msg = new StringBuilder(
+                        Bundle.ApiClientTopComponent_importedNamed(c.name, c.requests.size()));
                 if (added > 0) {
-                    msg.append(", ").append(added).append(" variable")
-                            .append(added == 1 ? "" : "s").append(" into ").append(env.name);
+                    msg.append(Bundle.ApiClientTopComponent_variablesInto(added, env.name));
                 }
                 if (!got.notes().isEmpty()) {
-                    msg.append(" — ").append(String.join(" ", got.notes()));
+                    msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
                 }
                 status(msg.append('.').toString());
             });
@@ -895,9 +1032,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private void importHar() {
         java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                 ApiClientTopComponent.class)
-                .setTitle("Import HAR capture")
+                .setTitle(Bundle.ApiClientTopComponent_importHarTitle())
                 .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
-                        "HAR captures", "har", "json"))
+                        Bundle.ApiClientTopComponent_harFilesFilter(), "har", "json"))
                 .showOpenDialog();
         if (file == null) {
             return;
@@ -910,7 +1047,7 @@ public final class ApiClientTopComponent extends TopComponent {
             } catch (java.io.IOException | IllegalArgumentException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.DialogDisplayer.getDefault().notify(
-                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"),
+                                new org.openide.NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()),
                                         org.openide.NotifyDescriptor.ERROR_MESSAGE)));
                 return;
             }
@@ -923,12 +1060,10 @@ public final class ApiClientTopComponent extends TopComponent {
                 current = c.requests.get(0);
                 restoreSelection();
                 touch();
-                StringBuilder msg = new StringBuilder("Imported ")
-                        .append(c.requests.size()).append(" request")
-                        .append(c.requests.size() == 1 ? "" : "s")
-                        .append(" from the capture");
+                StringBuilder msg = new StringBuilder(
+                        Bundle.ApiClientTopComponent_importedFromCapture(c.requests.size()));
                 if (!got.notes().isEmpty()) {
-                    msg.append(" — ").append(String.join(" ", got.notes()));
+                    msg.append(Bundle.ApiClientTopComponent_notesSuffix(String.join(" ", got.notes())));
                 }
                 status(msg.append('.').toString());
             });
@@ -940,10 +1075,10 @@ public final class ApiClientTopComponent extends TopComponent {
         javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
         area.setLineWrap(true);
         javax.swing.JPanel panel = new javax.swing.JPanel(new BorderLayout(0, 6));
-        panel.add(new JLabel("Paste a curl command:"), BorderLayout.NORTH);
+        panel.add(new JLabel(Bundle.ApiClientTopComponent_pasteCurl()), BorderLayout.NORTH);
         panel.add(new JScrollPane(area), BorderLayout.CENTER);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                panel, "Import curl");
+                panel, Bundle.ApiClientTopComponent_importCurlTitle());
         if (org.openide.DialogDisplayer.getDefault().notify(dd)
                 != org.openide.DialogDescriptor.OK_OPTION) {
             return;
@@ -954,7 +1089,7 @@ public final class ApiClientTopComponent extends TopComponent {
         } catch (IllegalArgumentException ex) {
             org.openide.DialogDisplayer.getDefault().notify(
                     new org.openide.NotifyDescriptor.Message(
-                            org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), "Message"), org.openide.NotifyDescriptor.ERROR_MESSAGE));
+                            org.nmox.studio.core.util.PlainDialogs.plain(ex.getMessage(), Bundle.ApiClientTopComponent_messageA11y()), org.openide.NotifyDescriptor.ERROR_MESSAGE));
             return;
         }
         Collection c = selectedCollection();
@@ -970,8 +1105,8 @@ public final class ApiClientTopComponent extends TopComponent {
         restoreSelection();
         touch();
         status(got.notes().isEmpty()
-                ? "Imported \"" + got.request().name + "\"."
-                : "Imported with notes: " + String.join(" ", got.notes()));
+                ? Bundle.ApiClientTopComponent_importedRequest(got.request().name)
+                : Bundle.ApiClientTopComponent_importedWithNotes(String.join(" ", got.notes())));
     }
 
     // ---- left: collections tree ----
@@ -984,14 +1119,14 @@ public final class ApiClientTopComponent extends TopComponent {
         // Delete also lives where the platform puts it: the context menu
         // and the Delete key — reachable regardless of panel geometry
         javax.swing.JPopupMenu treeMenu = new javax.swing.JPopupMenu();
-        javax.swing.JMenuItem duplicateItem = new javax.swing.JMenuItem("Duplicate");
+        javax.swing.JMenuItem duplicateItem = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_duplicate());
         duplicateItem.addActionListener(e -> duplicateSelected());
         treeMenu.add(duplicateItem);
-        javax.swing.JMenuItem renameItem = new javax.swing.JMenuItem("Rename…");
+        javax.swing.JMenuItem renameItem = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_rename());
         renameItem.addActionListener(e -> renameSelected());
         treeMenu.add(renameItem);
         treeMenu.addSeparator();
-        javax.swing.JMenuItem deleteItem = new javax.swing.JMenuItem("Delete");
+        javax.swing.JMenuItem deleteItem = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_delete());
         deleteItem.addActionListener(e -> deleteSelected());
         treeMenu.add(deleteItem);
         // Duplicate/Rename/Delete read the tree SELECTION; a right-click
@@ -1027,16 +1162,15 @@ public final class ApiClientTopComponent extends TopComponent {
         // matter the margins — the v1.167.0/v1.182.0 "Dele" class, closed
         // structurally. Every button is visible at every width.
         JPanel tools = new JPanel(new java.awt.GridLayout(2, 2, 2, 2));
-        JButton addCol = new JButton("+ Collection");
+        JButton addCol = new JButton(Bundle.ApiClientTopComponent_addCollection());
         addCol.addActionListener(e -> addCollection());
-        JButton addReq = new JButton("+ Request");
+        JButton addReq = new JButton(Bundle.ApiClientTopComponent_addRequest());
         addReq.addActionListener(e -> addRequest());
         // one Import… menu button: two separate buttons overflowed the
         // toolbar at the default panel width and silently hid Delete
         // (2026-07-26 gauntlet find — a JToolBar clips without a chevron)
-        JButton importBtn = new JButton("Import…");
-        importBtn.setToolTipText("Import curl / .http / OpenAPI / Postman / HAR, "
-                + "or export a collection to .http");
+        JButton importBtn = new JButton(Bundle.ApiClientTopComponent_importButton());
+        importBtn.setToolTipText(Bundle.ApiClientTopComponent_importButtonTooltip());
         importBtn.addActionListener(e -> {
             // the library scan is file IO — off the EDT (v1.33.1), menu on
             // the callback, button disabled until it shows so two fast
@@ -1054,7 +1188,7 @@ public final class ApiClientTopComponent extends TopComponent {
         });
         // (menu construction lives in showImportMenu so the library scan can
         // feed it from off the EDT)
-        JButton del = new JButton("Delete");
+        JButton del = new JButton(Bundle.ApiClientTopComponent_delete());
         del.addActionListener(e -> deleteSelected());
         tools.add(addCol);
         tools.add(addReq);
@@ -1066,8 +1200,8 @@ public final class ApiClientTopComponent extends TopComponent {
         // History is the DB Studio parity request: every send leaves a
         // findable row (authored model only; see SendHistory's law).
         javax.swing.JTabbedPane leftTabs = new javax.swing.JTabbedPane();
-        leftTabs.addTab("Collections", panel);
-        leftTabs.addTab("History", buildHistoryPanel());
+        leftTabs.addTab(Bundle.ApiClientTopComponent_collections(), panel);
+        leftTabs.addTab(Bundle.ApiClientTopComponent_history(), buildHistoryPanel());
         JPanel wrapper = new JPanel(new BorderLayout());
         wrapper.add(leftTabs, BorderLayout.CENTER);
         return wrapper;
@@ -1091,16 +1225,15 @@ public final class ApiClientTopComponent extends TopComponent {
                             java.time.Instant.ofEpochMilli(e.timestamp),
                             java.time.ZoneId.systemDefault())
                             .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
-                    String outcome = e.status == 0 ? "failed" : String.valueOf(e.status);
+                    String outcome = e.status == 0 ? Bundle.ApiClientTopComponent_historyFailed() : String.valueOf(e.status);
                     setText(when + "  " + e.method + " " + e.url
                             + "  → " + outcome
-                            + (e.durationMs > 0 ? " (" + e.durationMs + " ms)" : ""));
+                            + (e.durationMs > 0 ? " " + Bundle.ApiClientTopComponent_historyMillis(e.durationMs) : ""));
                 }
                 return this;
             }
         }));
-        historyList.setToolTipText("Double-click restores a send as a new request"
-                + " (auth token not carried — re-enter it)");
+        historyList.setToolTipText(Bundle.ApiClientTopComponent_historyTooltip());
         historyList.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
@@ -1110,10 +1243,10 @@ public final class ApiClientTopComponent extends TopComponent {
             }
         });
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
-        javax.swing.JMenuItem restore = new javax.swing.JMenuItem("Restore as request");
+        javax.swing.JMenuItem restore = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_restoreAsRequest());
         restore.addActionListener(e -> restoreFromHistory(historyList.getSelectedValue()));
         menu.add(restore);
-        javax.swing.JMenuItem clear = new javax.swing.JMenuItem("Clear history");
+        javax.swing.JMenuItem clear = new javax.swing.JMenuItem(Bundle.ApiClientTopComponent_clearHistory());
         clear.addActionListener(e -> clearHistory());
         menu.add(clear);
         org.nmox.studio.core.util.Popups.selectOnTrigger(historyList);
@@ -1157,8 +1290,8 @@ public final class ApiClientTopComponent extends TopComponent {
         touch();
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
                 org.nmox.studio.core.util.PlainStatus.text(entry.authType == AuthType.NONE
-                ? "Restored from history."
-                : "Restored from history — re-enter the auth token (secrets never ride history)."));
+                ? Bundle.ApiClientTopComponent_restored()
+                : Bundle.ApiClientTopComponent_restoredReenterAuth()));
     }
 
     private void clearHistory() {
@@ -1168,8 +1301,8 @@ public final class ApiClientTopComponent extends TopComponent {
         // the v1.98.0 safe-default idiom: Enter must not destroy
         Object answer = org.openide.DialogDisplayer.getDefault().notify(
                 new org.openide.NotifyDescriptor(
-                        "Clear all " + workspace.history.size() + " history entries?",
-                        "Clear history",
+                        Bundle.ApiClientTopComponent_clearHistoryConfirm(workspace.history.size()),
+                        Bundle.ApiClientTopComponent_clearHistory(),
                         org.openide.NotifyDescriptor.YES_NO_OPTION,
                         org.openide.NotifyDescriptor.QUESTION_MESSAGE,
                         null, org.openide.NotifyDescriptor.NO_OPTION));
@@ -1188,7 +1321,7 @@ public final class ApiClientTopComponent extends TopComponent {
         JPanel top = new JPanel();
         top.setLayout(new BoxLayout(top, BoxLayout.X_AXIS));
         top.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-        top.add(new JLabel("Name: "));
+        top.add(new JLabel(Bundle.ApiClientTopComponent_nameLabel()));
         nameField.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
                 current.name = nameField.getText();
@@ -1212,8 +1345,8 @@ public final class ApiClientTopComponent extends TopComponent {
         editor.add(top, BorderLayout.NORTH);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Params", new JScrollPane(paramsTable));
-        tabs.addTab("Headers", new JScrollPane(headersTable));
+        tabs.addTab(Bundle.ApiClientTopComponent_params(), new JScrollPane(paramsTable));
+        tabs.addTab(Bundle.ApiClientTopComponent_headers(), new JScrollPane(headersTable));
         bodyArea.setFont(MONO);
         bodyArea.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
@@ -1221,9 +1354,9 @@ public final class ApiClientTopComponent extends TopComponent {
                 touch();
             }
         }));
-        tabs.addTab("Body", new JScrollPane(bodyArea));
-        tabs.addTab("Auth", buildAuthPanel());
-        tabs.addTab("Tests", new JScrollPane(testsTable));
+        tabs.addTab(Bundle.ApiClientTopComponent_body(), new JScrollPane(bodyArea));
+        tabs.addTab(Bundle.ApiClientTopComponent_auth(), buildAuthPanel());
+        tabs.addTab(Bundle.ApiClientTopComponent_tests(), new JScrollPane(testsTable));
         editor.add(tabs, BorderLayout.CENTER);
 
         JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, editor, buildResponsePanel());
@@ -1237,7 +1370,7 @@ public final class ApiClientTopComponent extends TopComponent {
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel row = new JPanel();
         row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
-        row.add(new JLabel("Type: "));
+        row.add(new JLabel(Bundle.ApiClientTopComponent_typeLabel()));
         authCombo.addActionListener(e -> {
             if (!loading && current != null) {
                 current.authType = (AuthType) authCombo.getSelectedItem();
@@ -1247,7 +1380,7 @@ public final class ApiClientTopComponent extends TopComponent {
         row.add(authCombo);
         panel.add(row);
         panel.add(new JLabel(" "));
-        panel.add(new JLabel("Token (Bearer), or user:password (Basic) — {{vars}} allowed:"));
+        panel.add(new JLabel(Bundle.ApiClientTopComponent_tokenLabel()));
         authField.getDocument().addDocumentListener(new SimpleDoc(() -> {
             if (!loading && current != null) {
                 current.authToken = new String(authField.getPassword());
@@ -1258,8 +1391,7 @@ public final class ApiClientTopComponent extends TopComponent {
             }
         }));
         panel.add(authField);
-        panel.add(new JLabel("<html><small>Stored in the OS keychain, never in "
-                + ".nmoxapi.json. {{vars}} still resolve at send time.</small></html>"));
+        panel.add(new JLabel(Bundle.ApiClientTopComponent_keychainNote()));
         return panel;
     }
 
@@ -1272,8 +1404,7 @@ public final class ApiClientTopComponent extends TopComponent {
         // KVASIR is a SOFT dependency (ledger 30): with no rack in the
         // platform the lookup misses and the button simply never appears
         if (org.nmox.studio.core.spi.KvasirAsk.find() != null) {
-            explainButton.setToolTipText("Ask KVASIR what this response means"
-                    + " (sends a redacted summary — you confirm first)");
+            explainButton.setToolTipText(Bundle.ApiClientTopComponent_explainTooltip());
             explainButton.setEnabled(false);
             explainButton.addActionListener(e -> explainResponse());
             north.add(explainButton, BorderLayout.EAST);
@@ -1282,14 +1413,14 @@ public final class ApiClientTopComponent extends TopComponent {
         JTabbedPane tabs = new JTabbedPane();
         responseBody.setEditable(false);
         responseBody.setFont(MONO);
-        tabs.addTab("Body", buildBodyTab());
+        tabs.addTab(Bundle.ApiClientTopComponent_body(), buildBodyTab());
         responseHeaders.setEditable(false);
         responseHeaders.setFont(MONO);
-        tabs.addTab("Headers", new JScrollPane(responseHeaders));
+        tabs.addTab(Bundle.ApiClientTopComponent_headers(), new JScrollPane(responseHeaders));
         testResults.setLayout(new BoxLayout(testResults, BoxLayout.Y_AXIS));
-        tabs.addTab("Tests", new JScrollPane(testResults));
+        tabs.addTab(Bundle.ApiClientTopComponent_tests(), new JScrollPane(testResults));
         standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.Y_AXIS));
-        tabs.addTab("Standards", new JScrollPane(standardsPanel));
+        tabs.addTab(Bundle.ApiClientTopComponent_standards(), new JScrollPane(standardsPanel));
         panel.add(tabs, BorderLayout.CENTER);
         return panel;
     }
@@ -1303,12 +1434,12 @@ public final class ApiClientTopComponent extends TopComponent {
 
         JPanel bar = new JPanel(new BorderLayout(6, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
-        bar.add(new JLabel("Find:"), BorderLayout.WEST);
+        bar.add(new JLabel(Bundle.ApiClientTopComponent_findLabel()), BorderLayout.WEST);
         bar.add(responseFind, BorderLayout.CENTER);
         JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 0));
         east.add(findCount);
-        JButton saveBody = new JButton("Save…");
-        saveBody.setToolTipText("Save the RAW response body to a file (not the pretty-printed view)");
+        JButton saveBody = new JButton(Bundle.ApiClientTopComponent_saveBody());
+        saveBody.setToolTipText(Bundle.ApiClientTopComponent_saveBodyTooltip());
         saveBody.addActionListener(e -> saveResponseBody());
         east.add(saveBody);
         bar.add(east, BorderLayout.EAST);
@@ -1355,8 +1486,9 @@ public final class ApiClientTopComponent extends TopComponent {
             }
         }
         findCount.setText(PlainText.plain(query.isEmpty() ? " "
-                : matches.size() + (matches.size() >= ResponseSearch.MAX_MATCHES ? "+" : "")
-                + " match" + (matches.size() == 1 ? "" : "es")));
+                : matches.size() >= ResponseSearch.MAX_MATCHES
+                        ? Bundle.ApiClientTopComponent_matchesCapped(matches.size())
+                        : Bundle.ApiClientTopComponent_matchCount(matches.size())));
     }
 
     private void jumpToNextMatch() {
@@ -1379,11 +1511,11 @@ public final class ApiClientTopComponent extends TopComponent {
         ApiResponse toSave = lastResponse;
         if (toSave == null || !toSave.reached()) {
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                    "No response to save — send a request first.");
+                    Bundle.ApiClientTopComponent_noResponseToSave());
             return;
         }
         java.io.File file = new org.openide.filesystems.FileChooserBuilder("api-response-save")
-                .setTitle("Save response body (raw)")
+                .setTitle(Bundle.ApiClientTopComponent_saveBodyTitle())
                 .setFilesOnly(true)
                 .showSaveDialog();
         if (file == null) {
@@ -1394,14 +1526,14 @@ public final class ApiClientTopComponent extends TopComponent {
                 java.nio.file.Files.write(file.toPath(),
                         toSave.body().getBytes(java.nio.charset.StandardCharsets.UTF_8));
                 String note = toSave.truncated()
-                        ? "Saved (response was truncated at the capture cap)."
-                        : "Saved " + file.getName() + ".";
+                        ? Bundle.ApiClientTopComponent_savedTruncated()
+                        : Bundle.ApiClientTopComponent_savedFile(file.getName());
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(note)));
             } catch (java.io.IOException ex) {
                 java.awt.EventQueue.invokeLater(() ->
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                "Could not save: " + ex.getMessage()));
+                                Bundle.ApiClientTopComponent_couldNotSave(ex.getMessage())));
             }
         });
     }
@@ -1415,22 +1547,22 @@ public final class ApiClientTopComponent extends TopComponent {
             // started yet, nothing will run, so reset here
             if (inFlight.cancel()) {
                 inFlight = null;
-                sendButton.setText("Send");
-                verdict("Cancelled", Color.GRAY);
+                sendButton.setText(Bundle.ApiClientTopComponent_send());
+                verdict(Bundle.ApiClientTopComponent_cancelled(), Color.GRAY);
             }
             return;
         }
         if (current == null) {
             return;
         }
-        sendButton.setText("Cancel");
-        verdict("Sending…", Color.GRAY);
+        sendButton.setText(Bundle.ApiClientTopComponent_cancel());
+        verdict(Bundle.ApiClientTopComponent_sending(), Color.GRAY);
         Environment env = workspace.active();
         Map<String, String> vars = env != null ? env.variables : Map.of();
         Request request = current;
         inFlight = SEND_RP.post(() -> {
             boolean delivered = false;
-            String failure = "unexpected error";
+            String failure = Bundle.ApiClientTopComponent_unexpectedError();
             try {
                 // already off the EDT — a first use of this request's
                 // auth loads its token here, right where it's needed
@@ -1457,10 +1589,10 @@ public final class ApiClientTopComponent extends TopComponent {
                 if (!delivered) {
                     // a throwing worker must never leave Send dead and the
                     // status stuck on "Sending…" until restart
-                    String message = "Send failed — " + failure;
+                    String message = Bundle.ApiClientTopComponent_sendFailed(failure);
                     SwingUtilities.invokeLater(() -> {
                         recordHistory(request, 0, 0);
-                        sendButton.setText("Send");
+                        sendButton.setText(Bundle.ApiClientTopComponent_send());
                         verdict(message, FAIL_RED);
                     });
                 }
@@ -1469,7 +1601,7 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     private void showResponse(ApiResponse r, List<TestRunner.Result> results, String display) {
-        sendButton.setText("Send");
+        sendButton.setText(Bundle.ApiClientTopComponent_send());
         sendButton.setEnabled(true);
         // remember what Explain would send: the response actually shown
         lastResponse = r;
@@ -1478,13 +1610,13 @@ public final class ApiClientTopComponent extends TopComponent {
         explainButton.setEnabled(true);
         if (!r.reached()) {
             boolean cancelled = "cancelled".equals(r.error());
-            verdict(cancelled ? "Cancelled  ·  " + r.millis() + "ms"
-                    : "No route — " + r.error() + "  ·  " + r.millis() + "ms", cancelled ? Color.GRAY : FAIL_RED);
+            verdict(cancelled ? Bundle.ApiClientTopComponent_cancelledAfter(r.millis())
+                    : Bundle.ApiClientTopComponent_noRouteVerdict(r.error(), r.millis()), cancelled ? Color.GRAY : FAIL_RED);
             responseBody.setText(cancelled ? "" : r.error());
             refindInBody();
         } else {
-            verdict(r.status() + "  ·  " + r.millis() + "ms  ·  " + humanBytes(r.bytes())
-                    + (r.truncated() ? "  ·  body truncated at " + humanBytes(r.bytes()) : ""), r.ok() ? OK_GREEN : FAIL_RED);
+            verdict(Bundle.ApiClientTopComponent_verdict(r.status(), r.millis(), humanBytes(r.bytes()))
+                    + (r.truncated() ? Bundle.ApiClientTopComponent_truncatedAt(humanBytes(r.bytes())) : ""), r.ok() ? OK_GREEN : FAIL_RED);
             responseBody.setText(display == null ? r.body() : display);
             refindInBody();
             responseBody.setCaretPosition(0);
@@ -1496,7 +1628,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
         testResults.removeAll();
         if (results.isEmpty()) {
-            testResults.add(new JLabel("  No tests on this request."));
+            testResults.add(new JLabel(Bundle.ApiClientTopComponent_noTests()));
         }
         for (TestRunner.Result res : results) {
             JLabel line = new JLabel(PlainText.plain((res.passed() ? "  ✓  " : "  ✗  ")
@@ -1512,7 +1644,7 @@ public final class ApiClientTopComponent extends TopComponent {
         if (r.reached()) {
             org.nmox.studio.apiclient.api.HeaderGrader.Report report =
                     org.nmox.studio.apiclient.api.HeaderGrader.grade(r.headers());
-            JLabel gradeLine = new JLabel("  Security headers grade: " + report.grade());
+            JLabel gradeLine = new JLabel(Bundle.ApiClientTopComponent_gradeLine(report.grade()));
             gradeLine.setFont(gradeLine.getFont().deriveFont(Font.BOLD));
             gradeLine.setForeground("A".equals(report.grade()) || "B".equals(report.grade())
                     ? OK_GREEN : FAIL_RED);
@@ -1532,7 +1664,7 @@ public final class ApiClientTopComponent extends TopComponent {
                 standardsPanel.add(line);
             }
         } else {
-            standardsPanel.add(new JLabel("  No response — nothing to grade."));
+            standardsPanel.add(new JLabel(Bundle.ApiClientTopComponent_nothingToGrade()));
         }
         standardsPanel.revalidate();
         standardsPanel.repaint();
@@ -1541,7 +1673,7 @@ public final class ApiClientTopComponent extends TopComponent {
     // ---- tree model + selection ----
 
     private void rebuildTree() {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Workspace");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(Bundle.ApiClientTopComponent_workspaceRoot());
         for (Collection c : workspace.collections) {
             DefaultMutableTreeNode cn = new DefaultMutableTreeNode(c);
             for (Request r : c.requests) {
@@ -1795,7 +1927,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private void duplicateSelected() {
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
         if (node == null || !(node.getUserObject() instanceof Request r)) {
-            status("Select a request to duplicate.");
+            status(Bundle.ApiClientTopComponent_selectRequestToDuplicate());
             return;
         }
         Request copy = Request.duplicate(r);
@@ -1825,7 +1957,7 @@ public final class ApiClientTopComponent extends TopComponent {
         current = copy;
         restoreSelection();
         touch();
-        status("Duplicated as \"" + copy.name + "\".");
+        status(Bundle.ApiClientTopComponent_duplicatedAs(copy.name));
     }
 
     private void renameSelected() {
@@ -1839,7 +1971,7 @@ public final class ApiClientTopComponent extends TopComponent {
         if (existing == null) {
             return;
         }
-        NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine("Name:", "Rename");
+        NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(Bundle.ApiClientTopComponent_nameInput(), Bundle.ApiClientTopComponent_renameTitle());
         in.setInputText(existing);
         if (DialogDisplayer.getDefault().notify(in) != NotifyDescriptor.OK_OPTION
                 || in.getInputText().isBlank()) {
@@ -1878,10 +2010,8 @@ public final class ApiClientTopComponent extends TopComponent {
             if (!c.requests.isEmpty()) {
                 Object answer = org.openide.DialogDisplayer.getDefault().notify(
                         new org.openide.NotifyDescriptor(
-                                "Delete collection \"" + c.name + "\" and its "
-                                + c.requests.size() + " request"
-                                + (c.requests.size() == 1 ? "" : "s") + "?",
-                                "Delete collection",
+                                Bundle.ApiClientTopComponent_deleteCollectionConfirm(c.name, c.requests.size()),
+                                Bundle.ApiClientTopComponent_deleteCollectionTitle(),
                                 org.openide.NotifyDescriptor.YES_NO_OPTION,
                                 org.openide.NotifyDescriptor.QUESTION_MESSAGE,
                                 null, org.openide.NotifyDescriptor.NO_OPTION));
@@ -1906,7 +2036,7 @@ public final class ApiClientTopComponent extends TopComponent {
         Environment env = workspace.active();
         if (env == null) {
             NotifyDescriptor.InputLine name = new NotifyDescriptor.InputLine(
-                    "Environment name:", "New environment");
+                    Bundle.ApiClientTopComponent_environmentNameInput(), Bundle.ApiClientTopComponent_newEnvironmentTitle());
             if (DialogDisplayer.getDefault().notify(name) != NotifyDescriptor.OK_OPTION) {
                 return;
             }
@@ -1924,13 +2054,13 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private void editVariables(Environment env) {
         JTextArea area = new JTextArea(12, 40);
-        area.getAccessibleContext().setAccessibleName("Import preview");
+        area.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_variablesA11y());
         area.setFont(MONO);
         StringBuilder sb = new StringBuilder();
         env.variables.forEach((k, v) -> sb.append(k).append('=').append(v).append('\n'));
         area.setText(sb.toString());
         NotifyDescriptor d = new NotifyDescriptor(new JScrollPane(area),
-                "Variables for \"" + env.name + "\"  (KEY=value per line)",
+                Bundle.ApiClientTopComponent_variablesTitle(env.name),
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE, null, null);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             env.variables.clear();
@@ -1979,8 +2109,8 @@ public final class ApiClientTopComponent extends TopComponent {
                 // the empty fallback (the next autosave can't clobber it) — say so
                 File backup = outcome.backup();
                 SwingUtilities.invokeLater(() -> balloon(
-                        "Couldn't read " + WorkspaceIO.FILENAME + " — starting empty",
-                        "The unreadable original was kept at " + backup.getName() + ".",
+                        Bundle.ApiClientTopComponent_couldNotRead(WorkspaceIO.FILENAME),
+                        Bundle.ApiClientTopComponent_backupKept(backup.getName()),
                         false, null));
             }
             return outcome.workspace() != null ? outcome.workspace() : Workspace.starter();
@@ -2133,9 +2263,9 @@ public final class ApiClientTopComponent extends TopComponent {
             if (!saveFailureNotified) {
                 saveFailureNotified = true;
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "API Studio can't save its workspace",
+                        Bundle.ApiClientTopComponent_cannotSave(),
                         javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                        "Changes are not being persisted: " + ex.getMessage(),
+                        Bundle.ApiClientTopComponent_notPersisted(ex.getMessage()),
                         null);
             }
         }
@@ -2300,10 +2430,9 @@ public final class ApiClientTopComponent extends TopComponent {
         }
         offeredBaseUrls.add(offer.guardKey()); // offered is offered, accepted or not
         String detail = offer.createEnvironment()
-                ? "Click to create environment \"" + offer.envName()
-                        + "\" with {{" + offer.key() + "}} set"
-                : "Click to set {{" + offer.key() + "}} in \"" + offer.envName() + "\"";
-        balloon("A server is running at " + offer.url(), detail, true,
+                ? Bundle.ApiClientTopComponent_offerCreateEnvironment(offer.envName(), offer.key())
+                : Bundle.ApiClientTopComponent_offerSetVariable(offer.key(), offer.envName());
+        balloon(Bundle.ApiClientTopComponent_serverRunning(offer.url()), detail, true,
                 e -> applyOffer(offer));
     }
 
@@ -2369,16 +2498,16 @@ public final class ApiClientTopComponent extends TopComponent {
             return; // our save landed between the verdict and this dispatch
         }
         if (saveDebounce.isRunning()) {
-            balloon(WorkspaceIO.FILENAME + " changed on disk — Reload?",
-                    "You have unsaved edits; click to reload from disk and discard them",
+            balloon(Bundle.ApiClientTopComponent_changedOnDisk(WorkspaceIO.FILENAME),
+                    Bundle.ApiClientTopComponent_unsavedEditsReload(),
                     false, e -> {
                         saveDebounce.stop();
                         loadWorkspace();
                     });
         } else {
             loadWorkspace();
-            balloon("Reloaded " + WorkspaceIO.FILENAME,
-                    "Picked up changes made outside the studio", true, null);
+            balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
+                    Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
         }
     }
 

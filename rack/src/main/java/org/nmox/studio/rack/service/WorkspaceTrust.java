@@ -19,6 +19,12 @@ import org.openide.NotifyDescriptor;
  * fresh userdir must not silently re-trust nothing the user granted), so do
  * not "normalize" this to NbPreferences.
  */
+@org.openide.util.NbBundle.Messages({
+    "WorkspaceTrust_message=<html><b>Do you trust the files in this folder?</b><br><br>Running this project''s tasks — npm installs, watchers, database<br>scripts, compilers — executes its code on your machine.<br><br>Project: <code>{0}</code></html>",
+    "WorkspaceTrust_trustWorkspace=Trust Workspace",
+    "WorkspaceTrust_keepSafe=Keep Safe",
+    "WorkspaceTrust_title=Workspace Trust"
+})
 public final class WorkspaceTrust {
 
     /**
@@ -191,22 +197,20 @@ public final class WorkspaceTrust {
         // Platform dialog (themed with the rest of the IDE), not a bare
         // Swing window; DialogDisplayer is safe to call from any thread and
         // blocks until the user answers.
-        String message = "<html><b>Do you trust the files in this folder?</b><br><br>"
-                + "Running this project's tasks — npm installs, watchers, database<br>"
-                + "scripts, compilers — executes its code on your machine.<br><br>"
-                // the message MEANS its markup; the project path is external (a
-                // directory can be named <img src=…>) and rides PlainText.escape
-                + "Project: <code>" + PlainText.escape(dir.getAbsolutePath()) + "</code></html>";
-        Object trustOption = "Trust Workspace";
+        // the message MEANS its markup; the project path is external (a
+        // directory can be named <img src=…>) and rides PlainText.escape
+        String message = Bundle.WorkspaceTrust_message(PlainText.escape(dir.getAbsolutePath()));
+        Object trustOption = Bundle.WorkspaceTrust_trustWorkspace();
+        Object keepSafe = Bundle.WorkspaceTrust_keepSafe();
         NotifyDescriptor nd = new NotifyDescriptor(
                 // a JLabel renders <html> text (the v1.208.0 fetch class); the
                 // path above is escaped so it can only ever paint as characters
                 new javax.swing.JLabel(message),
-                "Workspace Trust",
+                Bundle.WorkspaceTrust_title(),
                 NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.WARNING_MESSAGE,
-                new Object[]{trustOption, "Keep Safe"},
-                "Keep Safe");
+                new Object[]{trustOption, keepSafe},
+                keepSafe);
         if (DialogDisplayer.getDefault().notify(nd) == trustOption) {
             trust(dir);
             return true;

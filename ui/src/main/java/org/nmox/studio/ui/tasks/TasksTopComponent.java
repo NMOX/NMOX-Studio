@@ -103,7 +103,115 @@ import org.openide.windows.TopComponent;
         preferredID = "TasksTopComponent")
 @Messages({
     "CTL_TasksAction=Tasks",
-    "CTL_TasksTopComponent=Tasks"
+    "CTL_TasksTopComponent=Tasks",
+    "TasksTopComponent_tooltip=Per-project task board (.nmoxtasks.json)",
+    "TasksTopComponent_changedOutside={0} changed outside the IDE — reloaded; repeat your change",
+    "TasksTopComponent_newCard=New Card…",
+    "TasksTopComponent_newCardA11y=New card",
+    "TasksTopComponent_newCardTip=Adds a card to the first column",
+    "TasksTopComponent_newColumn=New Column…",
+    "TasksTopComponent_newColumnA11y=New column",
+    "TasksTopComponent_newColumnTip=Adds a column at the end of the board",
+    "TasksTopComponent_overview=Overview",
+    "TasksTopComponent_overviewA11y=Toggle board overview",
+    "TasksTopComponent_overviewTip=Dashboard read of this board: WIP, flow, aging cards",
+    "TasksTopComponent_standup=Standup…",
+    "TasksTopComponent_standupA11y=Generate standup report",
+    "TasksTopComponent_standupTip=Yesterday / today / blockers, from this board's clock and stamps plus the git log — as markdown",
+    "TasksTopComponent_sprint=Sprint…",
+    "TasksTopComponent_sprintA11y=Sprint menu",
+    "TasksTopComponent_sprintTip=Set the sprint window, generate the sprint report, or close the sprint — the scrum ceremonies live here",
+    "TasksTopComponent_card=card",
+    "TasksTopComponent_cards=cards",
+    "TasksTopComponent_header={0} — {1}",
+    "TasksTopComponent_headerRunning={0}   \u23f1 {1} · {2}",
+    "TasksTopComponent_countOfLimit={0}/{1}",
+    "TasksTopComponent_columnHeader={0}  {1}",
+    "TasksTopComponent_columnA11y=Column {0}, {1} {2}{3}",
+    "TasksTopComponent_overLimitSuffix=, over limit",
+    "TasksTopComponent_columnCardsA11y={0} cards",
+    "TasksTopComponent_blockedCard=\u26d4 {0}",
+    "TasksTopComponent_clockedCard=\u23f1 {0}",
+    "TasksTopComponent_cardWithNotes={0}  — {1}",
+    "TasksTopComponent_cardWithLabel={0}  [{1}]",
+    "TasksTopComponent_edit=Edit…",
+    "TasksTopComponent_delete=Delete…",
+    "TasksTopComponent_setLabel=Set Label…",
+    "TasksTopComponent_clockIn=Clock In",
+    "TasksTopComponent_clockedIn=Clocked in",
+    "TasksTopComponent_clockedInStopped=Clocked in — stopped the clock on \"{0}\" (one clock per board)",
+    "TasksTopComponent_clockAlreadyRunning=That card's clock is already running",
+    "TasksTopComponent_clockOut=Clock Out",
+    "TasksTopComponent_clockedOutBlip=Clocked out — under a minute, dropped as a blip",
+    "TasksTopComponent_clockedOut=Clocked out",
+    "TasksTopComponent_noClockRunning=No clock running on that card",
+    "TasksTopComponent_markBlocked=Mark Blocked…",
+    "TasksTopComponent_unblock=Unblock",
+    "TasksTopComponent_cardTitleA11y=Card title",
+    "TasksTopComponent_cardNotesA11y=Card notes",
+    "TasksTopComponent_newCardTitle=New Card",
+    "TasksTopComponent_cardNeedsTitleNothingAdded=A card needs a title — nothing added",
+    "TasksTopComponent_editCardTitle=Edit Card",
+    "TasksTopComponent_cardNeedsTitleUnchanged=A card needs a title — unchanged",
+    "TasksTopComponent_deleteCardQuestion=Delete card \"{0}\"?",
+    "TasksTopComponent_messageA11y=Message",
+    "TasksTopComponent_deleteCardTitle=Delete Card",
+    "TasksTopComponent_nameLabel=Name:",
+    "TasksTopComponent_newColumnTitle=New Column",
+    "TasksTopComponent_columnNeedsNameNothingAdded=A column needs a name — nothing added",
+    "TasksTopComponent_standupReportA11y=Standup report",
+    "TasksTopComponent_copyToClipboard=Copy to Clipboard",
+    "TasksTopComponent_copyStandupA11y=Copy standup to clipboard",
+    "TasksTopComponent_standupCopied=Standup copied",
+    "TasksTopComponent_standupTitle=Standup",
+    "TasksTopComponent_editSprint=Edit Sprint…",
+    "TasksTopComponent_startSprint=Start Sprint…",
+    "TasksTopComponent_sprintReport=Sprint Report…",
+    "TasksTopComponent_closeSprint=Close Sprint…",
+    "TasksTopComponent_sprintNameLabel=Sprint name:",
+    "TasksTopComponent_sprintStartLabel=Start (YYYY-MM-DD):",
+    "TasksTopComponent_sprintEndLabel=End (YYYY-MM-DD):",
+    "TasksTopComponent_velocityHtml=<html><small>{0}</small></html>",
+    "TasksTopComponent_sprintTitle=Sprint",
+    "TasksTopComponent_sprintDatesInvalid=Sprint dates must be YYYY-MM-DD — nothing changed",
+    "TasksTopComponent_sprintNeedsName=A sprint needs a name — nothing changed",
+    "TasksTopComponent_sprintEndsBeforeStart=The sprint can't end before it starts — nothing changed",
+    "TasksTopComponent_sprintSet=Sprint {0} — {1} … {2}",
+    "TasksTopComponent_sprintReportA11y=Sprint report",
+    "TasksTopComponent_copySprintReportA11y=Copy sprint report to clipboard",
+    "TasksTopComponent_sprintReportCopied=Sprint report copied",
+    "TasksTopComponent_sprintReportTitle=Sprint Report",
+    "TasksTopComponent_closeSprintQuestion=Close sprint {0}? The window, done count, and retro notes are archived; cards stay where they are.",
+    "TasksTopComponent_closeSprintTitle=Close Sprint",
+    "TasksTopComponent_sprintClosed=Sprint {0} closed — {1} done, archived for velocity",
+    "TasksTopComponent_nextSprintQuestion=Start the next sprint now? The dialog comes pre-filled and editable.",
+    "TasksTopComponent_nextSprintTitle=Next Sprint",
+    "TasksTopComponent_retroNotesA11y=Retro notes",
+    "TasksTopComponent_retroTitle=Retro — went well / bit us / changed",
+    "TasksTopComponent_labelPrompt=Label (blank clears):",
+    "TasksTopComponent_setLabelTitle=Set Label",
+    "TasksTopComponent_blockerOwnerA11y=Blocker owner",
+    "TasksTopComponent_unblockActionA11y=Unblock action",
+    "TasksTopComponent_ownerLabel=Owner (who is on the hook):",
+    "TasksTopComponent_unblockActionLabel=Unblock action (what gets it moving — required):",
+    "TasksTopComponent_markBlockedTitle=Mark Blocked",
+    "TasksTopComponent_blockerNeedsAction=A blocker needs an unblock action — that is what makes the register actionable",
+    "TasksTopComponent_rename=Rename…",
+    "TasksTopComponent_renameColumnTitle=Rename Column",
+    "TasksTopComponent_columnNeedsNameKept=A column needs a name — kept \"{0}\"",
+    "TasksTopComponent_setWipLimit=Set WIP Limit…",
+    "TasksTopComponent_wipLimitPrompt=Limit (0 = none):",
+    "TasksTopComponent_wipLimitTitle=WIP Limit",
+    "TasksTopComponent_wipLimitNotNumber=WIP limit must be a number — kept {0}",
+    "TasksTopComponent_moveLeft=Move Left",
+    "TasksTopComponent_alreadyFirst=Already the first column",
+    "TasksTopComponent_moveRight=Move Right",
+    "TasksTopComponent_alreadyLast=Already the last column",
+    "TasksTopComponent_deleteColumn=Delete Column…",
+    "TasksTopComponent_deleteEmptyColumnQuestion=Delete this empty column?",
+    "TasksTopComponent_deleteColumnWithCardsQuestion=Delete this column AND its {0} cards?",
+    "TasksTopComponent_deleteColumnTitle=Delete Column",
+    "TasksTopComponent_boardKeepsOneColumn=A board keeps at least one column"
 })
 public final class TasksTopComponent extends TopComponent {
 
@@ -154,7 +262,7 @@ public final class TasksTopComponent extends TopComponent {
 
     public TasksTopComponent() {
         setName(Bundle.CTL_TasksTopComponent());
-        setToolTipText("Per-project task board (.nmoxtasks.json)");
+        setToolTipText(Bundle.TasksTopComponent_tooltip());
     }
 
     // ---- lifecycle -------------------------------------------------------
@@ -260,8 +368,7 @@ public final class TasksTopComponent extends TopComponent {
         IO_RP.post(() -> {
             if (TasksIO.foreignEdit(dir, tracker)) {
                 java.awt.EventQueue.invokeLater(() -> {
-                    status(TasksIO.FILENAME + " changed outside the IDE"
-                            + " — reloaded; repeat your change");
+                    status(Bundle.TasksTopComponent_changedOutside(TasksIO.FILENAME));
                     reload();
                 });
                 return;
@@ -287,33 +394,31 @@ public final class TasksTopComponent extends TopComponent {
     private void buildUi() {
         setLayout(new BorderLayout());
         JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        JButton addCard = new JButton("New Card…");
-        addCard.getAccessibleContext().setAccessibleName("New card");
-        addCard.setToolTipText("Adds a card to the first column");
+        JButton addCard = new JButton(Bundle.TasksTopComponent_newCard());
+        addCard.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_newCardA11y());
+        addCard.setToolTipText(Bundle.TasksTopComponent_newCardTip());
         addCard.addActionListener(e -> newCardDialog(0));
-        JButton addColumn = new JButton("New Column…");
-        addColumn.getAccessibleContext().setAccessibleName("New column");
-        addColumn.setToolTipText("Adds a column at the end of the board");
+        JButton addColumn = new JButton(Bundle.TasksTopComponent_newColumn());
+        addColumn.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_newColumnA11y());
+        addColumn.setToolTipText(Bundle.TasksTopComponent_newColumnTip());
         addColumn.addActionListener(e -> newColumnDialog());
-        overviewToggle = new javax.swing.JToggleButton("Overview");
+        overviewToggle = new javax.swing.JToggleButton(Bundle.TasksTopComponent_overview());
         overviewToggle.getAccessibleContext().setAccessibleName(
-                "Toggle board overview");
+                Bundle.TasksTopComponent_overviewA11y());
         overviewToggle.setToolTipText(
-                "Dashboard read of this board: WIP, flow, aging cards");
+                Bundle.TasksTopComponent_overviewTip());
         overviewToggle.addActionListener(e -> {
             faces.show(center, overviewToggle.isSelected() ? "overview" : "board");
             rebuild();
         });
-        JButton standup = new JButton("Standup…");
+        JButton standup = new JButton(Bundle.TasksTopComponent_standup());
         standup.getAccessibleContext().setAccessibleName(
-                "Generate standup report");
-        standup.setToolTipText("Yesterday / today / blockers, from this"
-                + " board's clock and stamps plus the git log — as markdown");
+                Bundle.TasksTopComponent_standupA11y());
+        standup.setToolTipText(Bundle.TasksTopComponent_standupTip());
         standup.addActionListener(e -> showStandup());
-        JButton sprint = new JButton("Sprint…");
-        sprint.getAccessibleContext().setAccessibleName("Sprint menu");
-        sprint.setToolTipText("Set the sprint window, generate the sprint report,"
-                + " or close the sprint — the scrum ceremonies live here");
+        JButton sprint = new JButton(Bundle.TasksTopComponent_sprint());
+        sprint.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_sprintA11y());
+        sprint.setToolTipText(Bundle.TasksTopComponent_sprintTip());
         sprint.addActionListener(e -> showSprintMenu(sprint));
         top.add(addCard);
         top.add(addColumn);
@@ -363,14 +468,16 @@ public final class TasksTopComponent extends TopComponent {
      *  30s ticker can refresh it WITHOUT rebuilding the strip (a rebuild
      *  would drop the list selection every tick). */
     private String headerText() {
-        String base = boundDir.getName() + " — " + org.nmox.studio.core.util.Plural.of(board.cardCount(), "card");
+        String base = Bundle.TasksTopComponent_header(boundDir.getName(),
+                org.nmox.studio.core.util.Plural.of(board.cardCount(),
+                        Bundle.TasksTopComponent_card(), Bundle.TasksTopComponent_cards()));
         TaskBoard.Card running = board.runningCard();
         if (running == null) {
             return base;
         }
         long since = running.sessions().get(running.sessions().size() - 1)[0];
-        return base + "   \u23f1 " + running.title() + " · "
-                + BoardStats.duration(System.currentTimeMillis() - since);
+        return Bundle.TasksTopComponent_headerRunning(base, running.title(),
+                BoardStats.duration(System.currentTimeMillis() - since));
     }
 
     private JPanel columnPanel(int index, TaskBoard.Column col) {
@@ -380,16 +487,20 @@ public final class TasksTopComponent extends TopComponent {
         panel.setBorder(BorderFactory.createEtchedBorder());
 
         String count = col.wipLimit() > 0
-                ? col.cards().size() + "/" + col.wipLimit()
+                ? Bundle.TasksTopComponent_countOfLimit(
+                        String.valueOf(col.cards().size()), String.valueOf(col.wipLimit()))
                 : String.valueOf(col.cards().size());
-        JLabel header = new JLabel(PlainText.plain(col.name() + "  " + count));
+        JLabel header = new JLabel(PlainText.plain(
+                Bundle.TasksTopComponent_columnHeader(col.name(), count)));
         header.setBorder(BorderFactory.createEmptyBorder(4, 6, 2, 6));
         if (col.overLimit()) {
             header.setForeground(new Color(220, 80, 80)); // over WIP limit
         }
         header.getAccessibleContext().setAccessibleName(
-                "Column " + col.name() + ", " + count + (col.cards().size() == 1 ? " card" : " cards")
-                + (col.overLimit() ? ", over limit" : ""));
+                Bundle.TasksTopComponent_columnA11y(col.name(), count,
+                        col.cards().size() == 1 ? Bundle.TasksTopComponent_card()
+                                : Bundle.TasksTopComponent_cards(),
+                        col.overLimit() ? Bundle.TasksTopComponent_overLimitSuffix() : ""));
         header.setComponentPopupMenu(columnMenu(index));
         panel.add(header, BorderLayout.NORTH);
 
@@ -401,7 +512,7 @@ public final class TasksTopComponent extends TopComponent {
         JList<TaskBoard.Card> list = Popups.popupTargetList(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new CardRenderer());
-        list.getAccessibleContext().setAccessibleName(col.name() + " cards");
+        list.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_columnCardsA11y(col.name()));
         wireList(list, index);
         // a just-moved card keeps selection and focus, so ⌘↓ ⌘↓ ⌘→ reads
         // as one continuous gesture instead of one move per mouse click
@@ -431,13 +542,14 @@ public final class TasksTopComponent extends TopComponent {
                 int index, boolean selected, boolean focus) {
             super.getListCellRendererComponent(list, value, index, selected, focus);
             if (value instanceof TaskBoard.Card c) {
-                String head = c.blocked() ? "\u26d4 " + c.title() : c.title();
+                String head = c.blocked() ? Bundle.TasksTopComponent_blockedCard(c.title()) : c.title();
                 if (c.clockedIn()) {
-                    head = "\u23f1 " + head;
+                    head = Bundle.TasksTopComponent_clockedCard(head);
                 }
-                String tail = c.label().isEmpty() ? "" : "  [" + c.label() + "]";
-                setText((c.notes().isEmpty() ? head
-                        : head + "  — " + firstLine(c.notes())) + tail);
+                String text = c.notes().isEmpty() ? head
+                        : Bundle.TasksTopComponent_cardWithNotes(head, firstLine(c.notes()));
+                setText(c.label().isEmpty() ? text
+                        : Bundle.TasksTopComponent_cardWithLabel(text, c.label()));
                 if (c.blocked() && !selected) {
                     setForeground(new Color(220, 80, 80));
                 }
@@ -496,25 +608,25 @@ public final class TasksTopComponent extends TopComponent {
 
         // context menu — clicked card wins (v1.270.0)
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem edit = new JMenuItem("Edit…");
+        JMenuItem edit = new JMenuItem(Bundle.TasksTopComponent_edit());
         edit.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
                 editCardDialog(list.getSelectedValue());
             }
         });
-        JMenuItem delete = new JMenuItem("Delete…");
+        JMenuItem delete = new JMenuItem(Bundle.TasksTopComponent_delete());
         delete.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
                 confirmRemoveCard(list.getSelectedValue());
             }
         });
-        JMenuItem label = new JMenuItem("Set Label…");
+        JMenuItem label = new JMenuItem(Bundle.TasksTopComponent_setLabel());
         label.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
                 setLabelDialog(list.getSelectedValue());
             }
         });
-        JMenuItem clockIn = new JMenuItem("Clock In");
+        JMenuItem clockIn = new JMenuItem(Bundle.TasksTopComponent_clockIn());
         clockIn.addActionListener(e -> {
             TaskBoard.Card sel = list.getSelectedValue();
             if (sel == null) {
@@ -524,14 +636,13 @@ public final class TasksTopComponent extends TopComponent {
             // whatever was running — say so instead of moving it silently
             TaskBoard.Card was = board.runningCard();
             if (mutate(() -> board.clockIn(sel.id(), System.currentTimeMillis()))) {
-                status(was == null ? "Clocked in"
-                        : "Clocked in — stopped the clock on \"" + was.title()
-                                + "\" (one clock per board)");
+                status(was == null ? Bundle.TasksTopComponent_clockedIn()
+                        : Bundle.TasksTopComponent_clockedInStopped(was.title()));
             } else {
-                status("That card's clock is already running");
+                status(Bundle.TasksTopComponent_clockAlreadyRunning());
             }
         });
-        JMenuItem clockOut = new JMenuItem("Clock Out");
+        JMenuItem clockOut = new JMenuItem(Bundle.TasksTopComponent_clockOut());
         clockOut.addActionListener(e -> {
             TaskBoard.Card sel = list.getSelectedValue();
             if (sel == null) {
@@ -544,19 +655,19 @@ public final class TasksTopComponent extends TopComponent {
                     - sel.sessions().get(sel.sessions().size() - 1)[0]
                     < TaskBoard.BLIP_MS;
             if (mutate(() -> board.clockOut(sel.id(), now))) {
-                status(blip ? "Clocked out — under a minute, dropped as a blip"
-                        : "Clocked out");
+                status(blip ? Bundle.TasksTopComponent_clockedOutBlip()
+                        : Bundle.TasksTopComponent_clockedOut());
             } else {
-                status("No clock running on that card");
+                status(Bundle.TasksTopComponent_noClockRunning());
             }
         });
-        JMenuItem block = new JMenuItem("Mark Blocked…");
+        JMenuItem block = new JMenuItem(Bundle.TasksTopComponent_markBlocked());
         block.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
                 blockDialog(list.getSelectedValue());
             }
         });
-        JMenuItem unblock = new JMenuItem("Unblock");
+        JMenuItem unblock = new JMenuItem(Bundle.TasksTopComponent_unblock());
         unblock.addActionListener(e -> {
             if (list.getSelectedValue() != null) {
                 mutate(() -> board.unblock(list.getSelectedValue().id()));
@@ -702,16 +813,16 @@ public final class TasksTopComponent extends TopComponent {
     private void newCardDialog(int preferredColumn) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
         JTextField title = new JTextField(28);
-        title.getAccessibleContext().setAccessibleName("Card title");
+        title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
         JTextArea notes = new JTextArea(5, 28);
-        notes.getAccessibleContext().setAccessibleName("Card notes");
+        notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        DialogDescriptor d = new DialogDescriptor(form, "New Card");
+        DialogDescriptor d = new DialogDescriptor(form, Bundle.TasksTopComponent_newCardTitle());
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             if (title.getText().strip().isEmpty()) {
-                status("A card needs a title — nothing added");
+                status(Bundle.TasksTopComponent_cardNeedsTitleNothingAdded());
                 return;
             }
             mutate(() -> board.addCard(preferredColumn, title.getText(),
@@ -722,17 +833,17 @@ public final class TasksTopComponent extends TopComponent {
     private void editCardDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
         JTextField title = new JTextField(card.title(), 28);
-        title.getAccessibleContext().setAccessibleName("Card title");
+        title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
         JTextArea notes = new JTextArea(card.notes(), 5, 28);
-        notes.getAccessibleContext().setAccessibleName("Card notes");
+        notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        DialogDescriptor d = new DialogDescriptor(form, "Edit Card");
+        DialogDescriptor d = new DialogDescriptor(form, Bundle.TasksTopComponent_editCardTitle());
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION
                 && !mutate(() -> board.editCard(card.id(), title.getText(),
                         notes.getText()))) {
-            status("A card needs a title — unchanged");
+            status(Bundle.TasksTopComponent_cardNeedsTitleUnchanged());
         }
     }
 
@@ -740,7 +851,8 @@ public final class TasksTopComponent extends TopComponent {
         // full ctor with NO as the initial value — a reflexive Enter must
         // not delete (v1.98.0)
         NotifyDescriptor d = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain("Delete card \"" + card.title() + "\"?", "Message"), "Delete Card",
+                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.TasksTopComponent_deleteCardQuestion(card.title()),
+                        Bundle.TasksTopComponent_messageA11y()), Bundle.TasksTopComponent_deleteCardTitle(),
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                 null, NotifyDescriptor.NO_OPTION);
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION) {
@@ -750,10 +862,10 @@ public final class TasksTopComponent extends TopComponent {
 
     private void newColumnDialog() {
         NotifyDescriptor.InputLine in =
-                new NotifyDescriptor.InputLine("Name:", "New Column");
+                new NotifyDescriptor.InputLine(Bundle.TasksTopComponent_nameLabel(), Bundle.TasksTopComponent_newColumnTitle());
         if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION
                 && !mutate(() -> board.addColumn(in.getInputText(), 0))) {
-            status("A column needs a name — nothing added");
+            status(Bundle.TasksTopComponent_columnNeedsNameNothingAdded());
         }
     }
 
@@ -800,22 +912,22 @@ public final class TasksTopComponent extends TopComponent {
                         System.currentTimeMillis(),
                         java.time.ZoneId.systemDefault());
                 JTextArea text = new JTextArea(md, 18, 52);
-        text.getAccessibleContext().setAccessibleName("Standup report");
+        text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_standupReportA11y());
                 text.setEditable(false);
                 text.setCaretPosition(0);
                 JScrollPane scroll = new JScrollPane(text);
                 scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-                JButton copy = new JButton("Copy to Clipboard");
+                JButton copy = new JButton(Bundle.TasksTopComponent_copyToClipboard());
                 copy.getAccessibleContext().setAccessibleName(
-                        "Copy standup to clipboard");
+                        Bundle.TasksTopComponent_copyStandupA11y());
                 copy.addActionListener(ev -> {
                     java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                             .setContents(new java.awt.datatransfer
                                     .StringSelection(text.getText()), null);
                     org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Standup copied");
+                            .setStatusText(Bundle.TasksTopComponent_standupCopied());
                 });
-                DialogDescriptor d = new DialogDescriptor(scroll, "Standup");
+                DialogDescriptor d = new DialogDescriptor(scroll, Bundle.TasksTopComponent_standupTitle());
                 d.setOptions(new Object[]{copy, NotifyDescriptor.CANCEL_OPTION});
                 d.setClosingOptions(new Object[]{NotifyDescriptor.CANCEL_OPTION});
                 DialogDisplayer.getDefault().notify(d);
@@ -828,14 +940,14 @@ public final class TasksTopComponent extends TopComponent {
     private void showSprintMenu(java.awt.Component owner) {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
         javax.swing.JMenuItem set = new javax.swing.JMenuItem(PlainText.plain(
-                board.hasSprint() ? "Edit Sprint…" : "Start Sprint…"));
+                board.hasSprint() ? Bundle.TasksTopComponent_editSprint() : Bundle.TasksTopComponent_startSprint()));
         set.addActionListener(e -> editSprint());
         menu.add(set);
-        javax.swing.JMenuItem report = new javax.swing.JMenuItem("Sprint Report…");
+        javax.swing.JMenuItem report = new javax.swing.JMenuItem(Bundle.TasksTopComponent_sprintReport());
         report.setEnabled(board.hasSprint());
         report.addActionListener(e -> showSprintReport());
         menu.add(report);
-        javax.swing.JMenuItem close = new javax.swing.JMenuItem("Close Sprint…");
+        javax.swing.JMenuItem close = new javax.swing.JMenuItem(Bundle.TasksTopComponent_closeSprint());
         close.setEnabled(board.hasSprint());
         close.addActionListener(e -> closeSprint());
         menu.add(close);
@@ -869,21 +981,21 @@ public final class TasksTopComponent extends TopComponent {
         javax.swing.JPanel panel = new javax.swing.JPanel(
                 new java.awt.GridLayout(0, 2, 6, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new javax.swing.JLabel("Sprint name:"));
+        panel.add(new javax.swing.JLabel(Bundle.TasksTopComponent_sprintNameLabel()));
         panel.add(name);
-        panel.add(new javax.swing.JLabel("Start (YYYY-MM-DD):"));
+        panel.add(new javax.swing.JLabel(Bundle.TasksTopComponent_sprintStartLabel()));
         panel.add(start);
-        panel.add(new javax.swing.JLabel("End (YYYY-MM-DD):"));
+        panel.add(new javax.swing.JLabel(Bundle.TasksTopComponent_sprintEndLabel()));
         panel.add(end);
         String velocity = SprintRoll.velocityLine(board.sprintHistory());
         if (velocity != null) {
             javax.swing.JLabel v = new javax.swing.JLabel(
-                    "<html><small>" + velocity + "</small></html>");
+                    Bundle.TasksTopComponent_velocityHtml(velocity));
             v.getAccessibleContext().setAccessibleName(velocity);
             panel.add(v);
             panel.add(new javax.swing.JLabel(""));
         }
-        DialogDescriptor d = new DialogDescriptor(panel, "Sprint");
+        DialogDescriptor d = new DialogDescriptor(panel, Bundle.TasksTopComponent_sprintTitle());
         if (DialogDisplayer.getDefault().notify(d) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -893,15 +1005,15 @@ public final class TasksTopComponent extends TopComponent {
             s0 = java.time.LocalDate.parse(start.getText().strip());
             s1 = java.time.LocalDate.parse(end.getText().strip());
         } catch (java.time.format.DateTimeParseException bad) {
-            status("Sprint dates must be YYYY-MM-DD — nothing changed");
+            status(Bundle.TasksTopComponent_sprintDatesInvalid());
             return;
         }
         if (name.getText().isBlank()) {
-            status("A sprint needs a name — nothing changed");
+            status(Bundle.TasksTopComponent_sprintNeedsName());
             return;
         }
         if (s1.isBefore(s0)) {
-            status("The sprint can't end before it starts — nothing changed");
+            status(Bundle.TasksTopComponent_sprintEndsBeforeStart());
             return;
         }
         long startMs = s0.atStartOfDay(zone).toInstant().toEpochMilli();
@@ -911,7 +1023,7 @@ public final class TasksTopComponent extends TopComponent {
             board.setSprint(n, startMs, endMs);
             return true;
         });
-        status("Sprint " + n + " — " + s0 + " … " + s1);
+        status(Bundle.TasksTopComponent_sprintSet(n, s0.toString(), s1.toString()));
     }
 
     private void showSprintReport() {
@@ -921,21 +1033,21 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         JTextArea text = new JTextArea(md, 18, 52);
-        text.getAccessibleContext().setAccessibleName("Sprint report");
+        text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_sprintReportA11y());
         text.setEditable(false);
         text.setCaretPosition(0);
         JScrollPane scroll = new JScrollPane(text);
         scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        JButton copy = new JButton("Copy to Clipboard");
-        copy.getAccessibleContext().setAccessibleName("Copy sprint report to clipboard");
+        JButton copy = new JButton(Bundle.TasksTopComponent_copyToClipboard());
+        copy.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_copySprintReportA11y());
         copy.addActionListener(ev -> {
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                     .setContents(new java.awt.datatransfer
                             .StringSelection(text.getText()), null);
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("Sprint report copied");
+                    .setStatusText(Bundle.TasksTopComponent_sprintReportCopied());
         });
-        DialogDescriptor d = new DialogDescriptor(scroll, "Sprint Report");
+        DialogDescriptor d = new DialogDescriptor(scroll, Bundle.TasksTopComponent_sprintReportTitle());
         d.setOptions(new Object[]{copy, NotifyDescriptor.CANCEL_OPTION});
         d.setClosingOptions(new Object[]{NotifyDescriptor.CANCEL_OPTION});
         DialogDisplayer.getDefault().notify(d);
@@ -945,9 +1057,10 @@ public final class TasksTopComponent extends TopComponent {
         // closing archives and clears — irreversible bookkeeping, so the
         // reflexive Enter lands on No (the v1.98.0 safe default)
         NotifyDescriptor confirm = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain("Close sprint " + board.sprintName() + "? The window, done count,"
-                + " and retro notes are archived; cards stay where they are.", "Message"),
-                "Close Sprint", NotifyDescriptor.YES_NO_OPTION,
+                org.nmox.studio.core.util.PlainDialogs.plain(
+                        Bundle.TasksTopComponent_closeSprintQuestion(board.sprintName()),
+                        Bundle.TasksTopComponent_messageA11y()),
+                Bundle.TasksTopComponent_closeSprintTitle(), NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                 NotifyDescriptor.NO_OPTION);
@@ -960,8 +1073,8 @@ public final class TasksTopComponent extends TopComponent {
             return out[0] != null;
         });
         if (out[0] != null) {
-            status("Sprint " + out[0].name() + " closed — " + out[0].done()
-                    + " done, archived for velocity");
+            status(Bundle.TasksTopComponent_sprintClosed(out[0].name(),
+                    String.valueOf(out[0].done())));
             // the roll-over (v2.38.1): consecutive sprints are the norm,
             // so offer the next one pre-filled — name incremented, window
             // the day after at the same length. Enter accepts (starting a
@@ -974,9 +1087,8 @@ public final class TasksTopComponent extends TopComponent {
                     java.time.Instant.ofEpochMilli(out[0].end()), zone);
             java.time.LocalDate[] next = SprintRoll.nextWindow(closedStart, closedEnd);
             NotifyDescriptor roll = new NotifyDescriptor(
-                    "Start the next sprint now? The dialog comes pre-filled"
-                    + " and editable.",
-                    "Next Sprint", NotifyDescriptor.YES_NO_OPTION,
+                    Bundle.TasksTopComponent_nextSprintQuestion(),
+                    Bundle.TasksTopComponent_nextSprintTitle(), NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null, NotifyDescriptor.YES_OPTION);
             if (DialogDisplayer.getDefault().notify(roll) == NotifyDescriptor.YES_OPTION) {
                 editSprint(SprintRoll.nextName(out[0].name()), next[0], next[1]);
@@ -989,11 +1101,11 @@ public final class TasksTopComponent extends TopComponent {
         JTextArea text = new JTextArea(board.retro(), 10, 44);
         text.setLineWrap(true);
         text.setWrapStyleWord(true);
-        text.getAccessibleContext().setAccessibleName("Retro notes");
+        text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_retroNotesA11y());
         JScrollPane scroll = new JScrollPane(text);
         scroll.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         DialogDescriptor d = new DialogDescriptor(scroll,
-                "Retro — went well / bit us / changed");
+                Bundle.TasksTopComponent_retroTitle());
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             mutate(() -> { board.setRetro(text.getText()); return true; });
         }
@@ -1001,7 +1113,7 @@ public final class TasksTopComponent extends TopComponent {
 
     private void setLabelDialog(TaskBoard.Card card) {
         NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(
-                "Label (blank clears):", "Set Label");
+                Bundle.TasksTopComponent_labelPrompt(), Bundle.TasksTopComponent_setLabelTitle());
         in.setInputText(card.label());
         if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION) {
             mutate(() -> board.setLabel(card.id(), in.getInputText()));
@@ -1011,20 +1123,19 @@ public final class TasksTopComponent extends TopComponent {
     private void blockDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
         JTextField owner = new JTextField(card.blockOwner(), 28);
-        owner.getAccessibleContext().setAccessibleName("Blocker owner");
+        owner.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_blockerOwnerA11y());
         JTextField action = new JTextField(card.blockAction(), 28);
-        action.getAccessibleContext().setAccessibleName("Unblock action");
-        form.add(new JLabel("Owner (who is on the hook):"));
+        action.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_unblockActionA11y());
+        form.add(new JLabel(Bundle.TasksTopComponent_ownerLabel()));
         form.add(owner);
-        form.add(new JLabel("Unblock action (what gets it moving — required):"));
+        form.add(new JLabel(Bundle.TasksTopComponent_unblockActionLabel()));
         form.add(action);
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        DialogDescriptor d = new DialogDescriptor(form, "Mark Blocked");
+        DialogDescriptor d = new DialogDescriptor(form, Bundle.TasksTopComponent_markBlockedTitle());
         if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
             if (action.getText().strip().isEmpty()) {
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        "A blocker needs an unblock action — that is what"
-                        + " makes the register actionable");
+                        Bundle.TasksTopComponent_blockerNeedsAction());
                 return;
             }
             mutate(() -> board.block(card.id(), owner.getText(),
@@ -1034,21 +1145,21 @@ public final class TasksTopComponent extends TopComponent {
 
     private JPopupMenu columnMenu(int index) {
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem rename = new JMenuItem("Rename…");
+        JMenuItem rename = new JMenuItem(Bundle.TasksTopComponent_rename());
         rename.addActionListener(e -> {
             NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(
-                    "Name:", "Rename Column");
+                    Bundle.TasksTopComponent_nameLabel(), Bundle.TasksTopComponent_renameColumnTitle());
             in.setInputText(board.column(index).name());
             if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION
                     && !mutate(() -> board.renameColumn(index, in.getInputText()))) {
-                status("A column needs a name — kept \""
-                        + board.column(index).name() + "\"");
+                status(Bundle.TasksTopComponent_columnNeedsNameKept(
+                        board.column(index).name()));
             }
         });
-        JMenuItem wip = new JMenuItem("Set WIP Limit…");
+        JMenuItem wip = new JMenuItem(Bundle.TasksTopComponent_setWipLimit());
         wip.addActionListener(e -> {
             NotifyDescriptor.InputLine in = new NotifyDescriptor.InputLine(
-                    "Limit (0 = none):", "WIP Limit");
+                    Bundle.TasksTopComponent_wipLimitPrompt(), Bundle.TasksTopComponent_wipLimitTitle());
             in.setInputText(String.valueOf(board.column(index).wipLimit()));
             if (DialogDisplayer.getDefault().notify(in) == NotifyDescriptor.OK_OPTION) {
                 try {
@@ -1057,30 +1168,32 @@ public final class TasksTopComponent extends TopComponent {
                 } catch (NumberFormatException ignore) {
                     // not a number: keep the limit, and say so — a swallowed
                     // gesture reads as a broken dialog
-                    status("WIP limit must be a number — kept "
-                            + board.column(index).wipLimit());
+                    status(Bundle.TasksTopComponent_wipLimitNotNumber(
+                            String.valueOf(board.column(index).wipLimit())));
                 }
             }
         });
-        JMenuItem left = new JMenuItem("Move Left");
+        JMenuItem left = new JMenuItem(Bundle.TasksTopComponent_moveLeft());
         left.addActionListener(e -> {
             if (!mutate(() -> board.moveColumn(index, index - 1))) {
-                status("Already the first column");
+                status(Bundle.TasksTopComponent_alreadyFirst());
             }
         });
-        JMenuItem right = new JMenuItem("Move Right");
+        JMenuItem right = new JMenuItem(Bundle.TasksTopComponent_moveRight());
         right.addActionListener(e -> {
             if (!mutate(() -> board.moveColumn(index, index + 1))) {
-                status("Already the last column");
+                status(Bundle.TasksTopComponent_alreadyLast());
             }
         });
-        JMenuItem remove = new JMenuItem("Delete Column…");
+        JMenuItem remove = new JMenuItem(Bundle.TasksTopComponent_deleteColumn());
         remove.addActionListener(e -> {
             int n = board.column(index).cards().size();
             NotifyDescriptor d = new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain(n == 0 ? "Delete this empty column?"
-                           : "Delete this column AND its " + n + " cards?", "Message"),
-                    "Delete Column", NotifyDescriptor.YES_NO_OPTION,
+                    org.nmox.studio.core.util.PlainDialogs.plain(n == 0
+                            ? Bundle.TasksTopComponent_deleteEmptyColumnQuestion()
+                            : Bundle.TasksTopComponent_deleteColumnWithCardsQuestion(String.valueOf(n)),
+                            Bundle.TasksTopComponent_messageA11y()),
+                    Bundle.TasksTopComponent_deleteColumnTitle(), NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null,
                     NotifyDescriptor.NO_OPTION);
             if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
@@ -1093,7 +1206,7 @@ public final class TasksTopComponent extends TopComponent {
             // menus then aimed a second click at a different column)
             if (board.columnCount() <= 1) {
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        "A board keeps at least one column");
+                        Bundle.TasksTopComponent_boardKeepsOneColumn());
                 return;
             }
             mutate(() -> board.removeColumn(index));
