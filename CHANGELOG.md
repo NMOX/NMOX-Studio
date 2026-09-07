@@ -26,7 +26,7 @@ into Swing, with no way for a user to choose anything else.
    survives byte for byte, and choosing the system default removes the
    block rather than writing an empty one. `UiLocaleTest` proves the
    shell-safety refusals, the round trip and the never-doubled block.
-2. **2,826 chrome strings became bundle keys** across all ten modules
+2. **2,830 chrome strings became bundle keys** across all ten modules
    — menus, dialogs, tooltips, status lines, notifications, table
    headers, tab titles, wizard captions, refusal messages and
    accessible names — through the platform's own `@NbBundle.Messages`
@@ -85,8 +85,8 @@ and the user guide. Walk law recorded: the Options window's category
 strip cannot be driven from the background — like the Open Folder
 chooser and Swing popups before it.
 
-Every one of the 2,826 keys is translated in all five languages —
-14,130 strings across 71 packages, held to key-set, placeholder and
+Every one of the 2,830 keys is translated in all five languages —
+14,150 strings across 71 packages, held to key-set, placeholder and
 non-blank parity by the gate. Untranslated keys would fall back to
 English automatically, so a future key added without its translations
 degrades to the original sentence rather than to a key name.

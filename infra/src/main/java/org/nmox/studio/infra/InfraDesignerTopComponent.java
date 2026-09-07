@@ -510,7 +510,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
             DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title, true,
                     new Object[]{deploy, cancel}, cancel,
                     DialogDescriptor.DEFAULT_ALIGN, null, null);
-            if (DialogDisplayer.getDefault().notify(dd) != deploy) {
+            // v2.97.0 (the l10n arc): the option is a Bundle value, not an
+            // interned literal, so identity is no longer a safe comparison
+            if (!deploy.equals(DialogDisplayer.getDefault().notify(dd))) {
                 return;
             }
         } else {
