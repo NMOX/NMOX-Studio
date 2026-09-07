@@ -408,9 +408,9 @@ public class KvasirDevice extends RackDevice {
         javax.swing.JCheckBox forget = new javax.swing.JCheckBox(
                 "Forget the stored key for this provider");
         javax.swing.JLabel keyLabel = new javax.swing.JLabel(
-                keyPrompt(providers[provider.getSelectedIndex()]));
+                PlainText.plain(keyPrompt(providers[provider.getSelectedIndex()])));
         provider.addActionListener(e -> keyLabel.setText(
-                keyPrompt(providers[provider.getSelectedIndex()])));
+                PlainText.plain(keyPrompt(providers[provider.getSelectedIndex()]))));
 
         javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 1, 0, 6));
         panel.add(new javax.swing.JLabel("Which AI answers KVASIR (every face follows this choice):"));
@@ -449,10 +449,9 @@ public class KvasirDevice extends RackDevice {
         });
     }
 
-    /** The key field's caption, guarded as plain text (the markup-render law). */
+    /** The key field's caption; its two sinks above guard it with PlainText.plain (the markup-render law). */
     private static String keyPrompt(KvasirProvider p) {
-        return PlainText.plain(p.vendor() + " API key for " + p.product()
-                + " (stored in the OS keychain):");
+        return p.vendor() + " API key for " + p.product() + " (stored in the OS keychain):";
     }
 
     // ---- the full-text popup (BLACKBOX dialog shape) -----------------------
