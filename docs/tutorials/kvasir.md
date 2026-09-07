@@ -13,8 +13,8 @@ You need an API key from one of the three providers KVASIR speaks:
 Anthropic (Claude), OpenAI (ChatGPT) or Google (Gemini). Press **KEY…**
 on the faceplate to pick the provider and store its key in the OS
 keychain, or export the provider's environment variable —
-`ANTHROPIC_API_KEY` / `CLAUDE_API_KEY`, `OPENAI_API_KEY`, or
-`GEMINI_API_KEY` / `GOOGLE_API_KEY`. The provider choice covers every
+`ANTHROPIC_API_KEY` / `CLAUDE_API_KEY`, `OPENAI_API_KEY` /
+`CHATGPT_API_KEY`, or `GEMINI_API_KEY` / `GOOGLE_API_KEY`. The provider choice covers every
 KVASIR face and also lives in Options ▸ Rack & Cloud.
 
 ## Steps

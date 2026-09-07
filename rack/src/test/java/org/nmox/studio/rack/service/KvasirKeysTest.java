@@ -58,6 +58,10 @@ class KvasirKeysTest {
         assertThat(KvasirKeys.read(KvasirProvider.ANTHROPIC)).as("no Anthropic var set").isNull();
         KvasirKeys.env = Map.of("GOOGLE_API_KEY", "AIza-google-var")::get;
         assertThat(KvasirKeys.read(KvasirProvider.GOOGLE)).as("the second Google name").isEqualTo("AIza-google-var".toCharArray());
+        KvasirKeys.env = Map.of("CHATGPT_API_KEY", "sk-chatgpt-var")::get;
+        assertThat(KvasirKeys.read(KvasirProvider.OPENAI)).as("v2.96.1: the ChatGPT name").isEqualTo("sk-chatgpt-var".toCharArray());
+        KvasirKeys.env = Map.of("OPENAI_API_KEY", "sk-first", "CHATGPT_API_KEY", "sk-second")::get;
+        assertThat(KvasirKeys.read(KvasirProvider.OPENAI)).as("the SDK name wins").isEqualTo("sk-first".toCharArray());
     }
 
     @Test
