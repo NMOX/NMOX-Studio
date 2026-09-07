@@ -94,8 +94,7 @@ public final class TestsExplorerTopComponent extends TopComponent {
             new DefaultMutableTreeNode("Tests");
     private final DefaultTreeModel model = new DefaultTreeModel(rootNode);
     private final JTree tree = new JTree(model);
-    private static final String BLANK = " ";
-    private final JLabel status = new JLabel(BLANK);
+    private final JLabel status = new JLabel(" ");
     private final ProjectAim.Listener aimListener =
             () -> java.awt.EventQueue.invokeLater(this::aimChanged);
     private volatile long refreshSeq;

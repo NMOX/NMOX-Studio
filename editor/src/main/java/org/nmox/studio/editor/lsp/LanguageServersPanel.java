@@ -37,8 +37,7 @@ public final class LanguageServersPanel extends JPanel {
     private static final Color MISSING = new Color(220, 140, 90);
 
     private final JProgressBar bar = new JProgressBar();
-    private static final String BLANK = " ";
-    private final JLabel status = new JLabel(BLANK);
+    private final JLabel status = new JLabel(" ");
     private final JButton cancelBtn = new JButton(NbBundle.getMessage(LanguageServersPanel.class, "LanguageServersPanel_cancel"));
     private final List<Row> rows = new ArrayList<>();
     private final Deque<Row> queue = new ArrayDeque<>();
