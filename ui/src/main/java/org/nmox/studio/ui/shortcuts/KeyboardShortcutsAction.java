@@ -135,7 +135,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
         Object close = Bundle.KeyboardShortcutsAction_close();
         NotifyDescriptor nd = new NotifyDescriptor(panel, Bundle.KeyboardShortcutsAction_title(), NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, new Object[]{copy, close}, close);
-        if (DialogDisplayer.getDefault().notify(nd) == copy) {
+        if (copy.equals(DialogDisplayer.getDefault().notify(nd))) {
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                     new StringSelection(ShortcutSheet.renderMarkdown(rows, profile)), null);
             StatusDisplayer.getDefault().setStatusText(Bundle.KeyboardShortcutsAction_copied());

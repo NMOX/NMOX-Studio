@@ -138,14 +138,14 @@ public final class WhatsNew {
         NotifyDescriptor nd = new NotifyDescriptor(scroll, title, NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, options, close);
         Object answer = DialogDisplayer.getDefault().notify(nd);
-        if (answer == copy) {
+        if (copy.equals(answer)) {
             // the release post starts from exactly these notes (v2.88.0, the evangelist's motion)
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                     new java.awt.datatransfer.StringSelection(markdown), null);
             org.openide.awt.StatusDisplayer.getDefault().setStatusText(Bundle.WhatsNew_copied());
             return;
         }
-        if (answer == github) {
+        if (github.equals(answer)) {
             try {
                 java.awt.Desktop.getDesktop().browse(java.net.URI.create(
                         "https://github.com/NMOX/NMOX-Studio/releases"));

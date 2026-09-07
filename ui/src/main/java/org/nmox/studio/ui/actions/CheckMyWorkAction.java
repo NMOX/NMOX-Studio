@@ -125,7 +125,7 @@ public final class CheckMyWorkAction implements ActionListener {
                         new Object[] {explain, NotifyDescriptor.OK_OPTION},
                         NotifyDescriptor.OK_OPTION,
                         org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
-                if (DialogDisplayer.getDefault().notify(dd) == explain) {
+                if (explain.equals(DialogDisplayer.getDefault().notify(dd))) {
                     boolean started = kvasir.explain(
                             new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                                     "space.check",

@@ -147,10 +147,10 @@ public final class ReportProblemAction implements ActionListener {
                 NotifyDescriptor.PLAIN_MESSAGE, new Object[]{open, copy, cancel}, cancel);
         Object answer = DialogDisplayer.getDefault().notify(nd);
         String text = area.getText();
-        if (answer == copy) {
+        if (copy.equals(answer)) {
             copy(text);
             StatusDisplayer.getDefault().setStatusText(Bundle.ReportProblemAction_copied());
-        } else if (answer == open) {
+        } else if (open.equals(answer)) {
             String url = ProblemReport.issueUrl(title, text);
             if (ProblemReport.clipped(url)) {
                 copy(text);
