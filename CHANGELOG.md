@@ -56,14 +56,20 @@ into Swing, with no way for a user to choose anything else.
    key English does not, drops one English has, changes a message's
    placeholder set, or ships a blank value — a `{0}` lost in French is
    a MessageFormat exception in French only. The branding overlays are
-   held to the same shape across all five locale jars.
+   held to the same shape across all five locale jars. Its own floor
+   earned its keep on the first clean build: the scan filtered on
+   `org-nmox-studio-` while the assembled jars are named
+   `org-nmox-NMOX-Studio-`, so it had been reporting perfect parity
+   over zero jars. It now names the prefix it wants and refuses an
+   empty match outright.
 6. **`ChromeLiteralRatchetTest`** counts the Swing sinks still fed a
    bare English word, per module, and fails when any module GROWS its
    count: new UI text rides a bundle. The pins are the measured
-   remainder — seven strings product-wide, each one furniture rather
-   than prose (a wordmark, two `<html>` heads of data-built
-   composites, the faceplate's own LCD vocabulary).
-7. **Ten source-grep gates were taught the new lawful form.** Each had
+   remainder — six strings product-wide, each one furniture rather
+   than prose: the Welcome's wordmark, three `<html>` heads of
+   composites whose text parts are data, and the two lines of the
+   faceplate's own LCD vocabulary painted by a missing device.
+7. **Nineteen source-grep gates were taught the new lawful form.** Each had
    pinned an English literal at a call site as a proxy for a law, and
    the literal moved into an annotation while the law stayed put. Most
    came back stronger: the patch-replace confirm now checks its
