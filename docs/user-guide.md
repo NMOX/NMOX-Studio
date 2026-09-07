@@ -354,8 +354,9 @@ Gemini Flash / Pro. The key is stored in your OS keychain (macOS Keychain,
 GNOME Keyring, Windows Credential Vault), one entry per provider, never on
 disk and never in any project file. Alternatively, KVASIR reads the
 provider's environment variable — **`ANTHROPIC_API_KEY`** (or
-**`CLAUDE_API_KEY`**), **`OPENAI_API_KEY`**, **`GEMINI_API_KEY`** (or
-**`GOOGLE_API_KEY`**) — a stored key winning over the environment. Keys
+**`CLAUDE_API_KEY`**), **`OPENAI_API_KEY`** (or **`CHATGPT_API_KEY`**),
+**`GEMINI_API_KEY`** (or **`GOOGLE_API_KEY`**) — a stored key winning over
+the environment. Keys
 never cross providers, and a vendor that retires a model id can be
 answered without waiting for a release: the preference
 `kvasir.model.<anthropic|openai|google>.<fast|deep>` pins another. No key,

@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.96.1] - 2026-09-07
+
+**The ChatGPT key by the name people export.** David: "This machine
+has Gemini and ChatGPT keys in ENV if you want to test" — and the
+ChatGPT key was `CHATGPT_API_KEY`, a name v2.96.0 never read.
+
+1. **`CHATGPT_API_KEY` is honored beside `OPENAI_API_KEY`** (the SDK
+   name still wins when both are set), for the same reason
+   `CLAUDE_API_KEY` sits beside `ANTHROPIC_API_KEY`: it is what people
+   actually export. `KvasirKeysTest.envPerProvider` pins both the name
+   and the order; the device description, `docs/devices.md`, the user
+   guide and the tutorial say so.
+2. **The OpenAI wire reached the real API for the first time** —
+   authenticated by the Bearer header, the envelope accepted, and the
+   API's own error object ("You have no credits remaining…") surfaced
+   through the parse as an honest `KVASIR error:` line, not a crash.
+   The answer path itself waits on credits on that account;
+   `liveOpenAi` stays gated for the box that has them.
+
 ## [2.96.0] - 2026-09-07
 
 **KVASIR speaks Claude, ChatGPT and Gemini.** David's ask: "Make

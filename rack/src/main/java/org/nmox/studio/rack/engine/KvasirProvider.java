@@ -52,7 +52,10 @@ public enum KvasirProvider {
     /** ChatGPT — the OpenAI Chat Completions API. */
     OPENAI("openai", "ChatGPT (OpenAI)", "OpenAI", "ChatGPT",
             "gpt-5-mini", "GPT-5 mini", "gpt-5", "GPT-5",
-            "nmox.kvasir.openai.apikey", "OPENAI_API_KEY"),
+            // CHATGPT_API_KEY is honored beside the SDK's name for the same
+            // reason CLAUDE_API_KEY is beside ANTHROPIC_API_KEY: it is what
+            // people actually export (measured on David's box, v2.96.1)
+            "nmox.kvasir.openai.apikey", "OPENAI_API_KEY", "CHATGPT_API_KEY"),
     /** Gemini — the Google Generative Language API. */
     GOOGLE("google", "Gemini (Google)", "Google", "Gemini",
             // measured 2026-09-07 against the live API: 2.5-pro answers 404

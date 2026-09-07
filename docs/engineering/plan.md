@@ -4265,3 +4265,16 @@ exists only under the JDK fallback in unit tests — the first seed went
 to a dead path); and a Swing `JComboBox` popup is undrivable from the
 background (no AX action, `set value` ignored, no menu appears), the
 Open Folder chooser's sibling — seed the preference instead.
+
+**v2.96.1, minutes later.** David: "This machine has Gemini and ChatGPT
+keys in ENV if you want to test." The ChatGPT key was exported as
+`CHATGPT_API_KEY` — a name the product never read, the CLAUDE_API_KEY
+lesson one vendor over; now honored second to `OPENAI_API_KEY`. The
+live run reached OpenAI's API through the real wire and came back with
+the account's own "no credits remaining" error, parsed into an honest
+`KVASIR error:` line — auth, envelope and error path proven; the
+answer path waits on credits. **Harness scar, recorded against
+myself:** checking an env var's presence with zsh's
+`${${(P)v}:-unset}` PRINTS THE VALUE when set — two keys landed in a
+session transcript and had to be rotated. The safe form is a test,
+never an expansion: `[[ -n ${(P)v} ]] && echo set`.

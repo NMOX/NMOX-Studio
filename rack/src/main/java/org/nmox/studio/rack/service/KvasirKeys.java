@@ -15,7 +15,7 @@ import org.nmox.studio.rack.engine.KvasirProvider;
  * {@code "nmox.kvasir.openai.apikey"}, {@code "nmox.kvasir.google.apikey"}).
  * No preference and no workspace file ever carries a key — this class
  * and each provider's environment variables ({@code ANTHROPIC_API_KEY} /
- * {@code CLAUDE_API_KEY}, {@code OPENAI_API_KEY}, {@code GEMINI_API_KEY} /
+ * {@code CLAUDE_API_KEY}, {@code OPENAI_API_KEY} / {@code CHATGPT_API_KEY}, {@code GEMINI_API_KEY} /
  * {@code GOOGLE_API_KEY}) are the only doors (the
  * {@code RpcSecrets}/{@code Passwords} idiom, verbatim).
  *
