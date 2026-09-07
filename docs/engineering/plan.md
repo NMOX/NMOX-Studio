@@ -4251,3 +4251,17 @@ Two rounds of empty 404s were the harness, not the API.
 **Honest ceiling.** OpenAI is proven over the canned transport only —
 this machine holds no OpenAI key. `liveOpenAi` is written and gated
 (`-Dnmox.kvasir.live.openai=1`) for the first box that has one.
+
+**The walk (walk-45).** Both wires in one session on the assembled
+app: Claude explained a real failed `npm test` behind the consent
+naming Anthropic; the same userdir relaunched with `kvasir.provider=
+google` seeded raised a NEW consent naming Google's API (Gemini) —
+the Anthropic grant in the same file did not carry, which is the
+per-provider law doing its job on the shipped bytes — and Gemini's
+diagnosis landed on the faceplate. Two harness laws: the running
+platform keys `NbPreferences.forModule` by the module's code-name-base
+(`org/nmox/NMOX/Studio/rack.properties`), not the package (that node
+exists only under the JDK fallback in unit tests — the first seed went
+to a dead path); and a Swing `JComboBox` popup is undrivable from the
+background (no AX action, `set value` ignored, no menu appears), the
+Open Folder chooser's sibling — seed the preference instead.

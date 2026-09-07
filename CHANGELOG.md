@@ -82,6 +82,20 @@ a gesture, and consent names its recipient.
    is proven over the canned transport only — no OpenAI key on this
    machine; `liveOpenAi` (`-Dnmox.kvasir.live.openai=1`) is written for
    the first one. Claude unchanged, its 14 client tests untouched.
+   **Walked in the assembled app** (walk-45): the Claude wire first
+   (a real failed `npm test`, the consent naming Anthropic's API
+   (Claude), a diagnosis on the faceplate), then the same userdir
+   re-launched with Gemini configured — EXPLAIN raised a FRESH consent
+   naming Google's API (Gemini), the Anthropic grant sitting in the
+   same preferences file did not carry, and the faceplate read
+   Gemini's diagnosis and fix; clean quit, zero SEVERE, zero orphans,
+   `kvasir.external.consent.google=true` persisted beside the bare
+   Anthropic key. Two harness laws: in the running app NbPreferences
+   keys a module's node by code-name-base (`org/nmox/NMOX/Studio/
+   rack.properties` serves every rack class; the package-path node
+   exists only under the JDK fallback unit tests run on), and a Swing
+   `JComboBox` popup is undrivable from the background (no AX action,
+   set-value ignored) — a walk seeds the provider by preference.
    Docs: user guide, the KVASIR and Explain-anything tutorials, the
    Kitchen Sink station, README, the demo script, the codebase guide,
    `docs/devices.md` regenerated, the website's rack paragraph in both
