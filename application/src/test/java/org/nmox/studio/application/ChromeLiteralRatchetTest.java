@@ -69,8 +69,14 @@ class ChromeLiteralRatchetTest {
             if (Files.isDirectory(src)) {
                 try (Stream<Path> files = Files.walk(src)) {
                     for (Path p : files.filter(f -> f.toString().endsWith(".java")).toList()) {
-                        // the faceplates are the hardware panel — out by decision
-                        if (module.equals("rack") && p.toString().contains("/rack/devices/")) {
+                        // the faceplates are the hardware panel — out by decision.
+                        // Separators normalized first: a repo-scan gate that
+                        // matches a bare "/" path skips nothing on the Windows
+                        // lane, and the Windows lane is the binding measurement
+                        // (this shipped as a windows-only red on PR #711 —
+                        // rack counted 216 where the pin is 2).
+                        String path = p.toString().replace('\\', '/');
+                        if (module.equals("rack") && path.contains("/rack/devices/")) {
                             continue;
                         }
                         Matcher m = LITERAL_SINK.matcher(Files.readString(p));
