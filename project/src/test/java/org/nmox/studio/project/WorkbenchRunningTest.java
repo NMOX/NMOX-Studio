@@ -72,8 +72,12 @@ class WorkbenchRunningTest {
         assertThat(src.indexOf("liveServings.removeListener(servingsListener)")).isGreaterThan(closed);
         // unit 6 moved the buttons through flatButton(text, accessibleName): the
         // gate reads the calls that name them (the behavioral test presses them)
-        assertThat(src).contains("flatButton(\"Stop\", \"Stop \" + r.title())")
-                .contains("flatButton(\"Open\", \"Open \" + r.url() + \" in the Browser\")")
+        // v2.97.0 (the l10n arc): both the label and the accessible name are
+        // bundle values now — the law is that each button is built with BOTH
+        assertThat(src).contains("flatButton(Bundle.ProjectExplorerTopComponent_stopButton(), "
+                + "Bundle.ProjectExplorerTopComponent_stopRun(r.title()))")
+                .contains("flatButton(Bundle.ProjectExplorerTopComponent_openButton(), "
+                + "Bundle.ProjectExplorerTopComponent_openIn(r.url()))")
                 .contains("LiveRuns.stop(r.runId())")
                 .contains("ServingLinks.open(r.url())");
     }
