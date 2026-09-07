@@ -47,7 +47,7 @@ public final class RunScriptAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (!"package.json".equals(context.getPrimaryFile().getNameExt())) {
-            status("Run Script lives in package.json.");
+            status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_livesInPackageJson"));
             return;
         }
         JTextComponent comp = EditorRegistry.lastFocusedComponent();
@@ -61,7 +61,7 @@ public final class RunScriptAction implements ActionListener {
             }
         }
         if (comp == null) {
-            status("Place the caret on a script line first.");
+            status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_caretFirst"));
             return;
         }
         String text;
@@ -72,15 +72,15 @@ public final class RunScriptAction implements ActionListener {
         }
         String script = NpmScripts.scriptAt(text, comp.getCaretPosition());
         if (script == null) {
-            status("Place the caret on a line inside \"scripts\" to run it.");
+            status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_caretInScripts"));
             return;
         }
         File dir = FileUtil.toFile(context.getPrimaryFile().getParent());
         if (dir == null) {
-            status("Not a local project.");
+            status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_notLocal"));
             return;
         }
-        status("Running \"" + script + "\"…");
+        status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_running", script));
         RP.post(() -> {
             NpmService npm = NpmService.getDefault();
             npm.runScript(dir, script, npm.detectPackageManager(dir));

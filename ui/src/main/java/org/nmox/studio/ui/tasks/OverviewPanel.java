@@ -34,6 +34,52 @@ import javax.swing.JPanel;
  * (a checked-in board arrives with clones), so every label routes
  * through {@link PlainTables#plain} — the v1.311.0 law.
  */
+@org.openide.util.NbBundle.Messages({
+    "OverviewPanel_a11y=Board overview",
+    "OverviewPanel_heading=BOARD OVERVIEW",
+    "OverviewPanel_headingProject=BOARD OVERVIEW · {0}",
+    "OverviewPanel_sprintSection=SPRINT {0} — day {1} of {2} · {3} committed · {4} remaining",
+    "OverviewPanel_tileCards=CARDS ON THE BOARD",
+    "OverviewPanel_tileWip=WIP NOW (MIDDLE COLUMNS)",
+    "OverviewPanel_tileDoneToday=DONE TODAY",
+    "OverviewPanel_tileDoneWeek=DONE THIS WEEK",
+    "OverviewPanel_tileBlocked=BLOCKED",
+    "OverviewPanel_tileA11y={0}: {1}",
+    "OverviewPanel_columnsSection=COLUMNS & WIP — limits are advisory; red means over",
+    "OverviewPanel_flowSection=FLOW — cards finished per day, last {0} days",
+    "OverviewPanel_blockersSection=BLOCKER REGISTER — every blocker has an owner and an unblock action",
+    "OverviewPanel_noBlockers=No blocked cards — nothing is waiting on anyone.",
+    "OverviewPanel_timeSection=TIME — clocked today {0} · last 7 days {1}",
+    "OverviewPanel_epicsSection=EPICS — labels in use, busiest first",
+    "OverviewPanel_attentionSection=NEEDS ATTENTION — oldest unfinished cards",
+    "OverviewPanel_nothingWaiting=Nothing waiting — the board is clear.",
+    "OverviewPanel_retroSection=RETRO — what went well, what bit us, what changed",
+    "OverviewPanel_editRetro=Edit Retro…",
+    "OverviewPanel_editRetroA11y=Edit retro notes",
+    "OverviewPanel_noRetro=No retro notes yet — Edit Retro… starts them.",
+    "OverviewPanel_retroNotesA11y=Retro notes",
+    "OverviewPanel_unowned=unowned",
+    "OverviewPanel_blockerMeta={0} · {1}d · {2}",
+    "OverviewPanel_blockerA11y=Blocked: {0}, owner {1}, {2} days, unblock: {3}",
+    "OverviewPanel_running=\u23f1 {0}",
+    "OverviewPanel_timeMeta=today {0} · week {1}",
+    "OverviewPanel_clockRunningSuffix=, clock running",
+    "OverviewPanel_timeA11y=Time on {0}{1}: today {2}, week {3}",
+    "OverviewPanel_legendChip={0} — {1}",
+    "OverviewPanel_card=card",
+    "OverviewPanel_cards=cards",
+    "OverviewPanel_epicA11y=Epic {0}, {1}",
+    "OverviewPanel_countOfLimit={0} / {1}",
+    "OverviewPanel_countOver={0}  OVER",
+    "OverviewPanel_overLimitSuffix=, over limit",
+    "OverviewPanel_columnA11y=Column {0}, {1}{2}",
+    "OverviewPanel_agingMeta={0} · {1}d",
+    "OverviewPanel_agingA11y=Aging card {0}, {1}",
+    "OverviewPanel_barA11y={0} of {1}{2}",
+    "OverviewPanel_burndownA11y=Sprint burndown",
+    "OverviewPanel_burndownDescription={0} committed, {1} remaining on day {2} of {3}",
+    "OverviewPanel_flowA11y=Flow: {0} finished in the last {1} days"
+})
 final class OverviewPanel extends JPanel {
 
     static final Color GROUND = new Color(0x10, 0x14, 0x10);
@@ -56,7 +102,7 @@ final class OverviewPanel extends JPanel {
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(GROUND);
         setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
-        getAccessibleContext().setAccessibleName("Board overview");
+        getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_a11y());
     }
 
     /** Rebuilds the whole face from the board. Cheap at kanban scale. */
@@ -65,19 +111,20 @@ final class OverviewPanel extends JPanel {
         BoardStats s = BoardStats.of(board, System.currentTimeMillis(),
                 ZoneId.systemDefault(), FLOW_DAYS, AGING_ROWS);
 
-        add(heading(projectName == null ? "BOARD OVERVIEW"
-                : "BOARD OVERVIEW · " + projectName));
+        add(heading(projectName == null ? Bundle.OverviewPanel_heading()
+                : Bundle.OverviewPanel_headingProject(projectName)));
         add(Box.createVerticalStrut(8));
 
         if (board.hasSprint()) {
             BoardStats.Burndown burn = BoardStats.burndown(board,
                     System.currentTimeMillis(), ZoneId.systemDefault());
             int day = burn.remainingPerDay().size();
-            add(sectionLabel("SPRINT " + board.sprintName().toUpperCase(java.util.Locale.ROOT)
-                    + " — day " + day + " of " + burn.totalDays()
-                    + " · " + burn.committed() + " committed · "
-                    + (burn.remainingPerDay().isEmpty() ? 0
-                            : burn.remainingPerDay().get(day - 1)) + " remaining"));
+            add(sectionLabel(Bundle.OverviewPanel_sprintSection(
+                    board.sprintName().toUpperCase(java.util.Locale.ROOT),
+                    String.valueOf(day), String.valueOf(burn.totalDays()),
+                    String.valueOf(burn.committed()),
+                    String.valueOf(burn.remainingPerDay().isEmpty() ? 0
+                            : burn.remainingPerDay().get(day - 1)))));
             add(Box.createVerticalStrut(4));
             BurndownStrip strip = new BurndownStrip(burn);
             strip.setAlignmentX(LEFT_ALIGNMENT);
@@ -89,13 +136,13 @@ final class OverviewPanel extends JPanel {
         tiles.setOpaque(false);
         tiles.setAlignmentX(LEFT_ALIGNMENT);
         tiles.setMaximumSize(new Dimension(Integer.MAX_VALUE, 84));
-        tiles.add(tile(String.valueOf(s.totalCards()), "CARDS ON THE BOARD"));
+        tiles.add(tile(String.valueOf(s.totalCards()), Bundle.OverviewPanel_tileCards()));
         tiles.add(tile(String.valueOf(s.wipNow()),
-                "WIP NOW (MIDDLE COLUMNS)"));
-        tiles.add(tile(String.valueOf(s.doneToday()), "DONE TODAY"));
-        tiles.add(tile(String.valueOf(s.doneThisWeek()), "DONE THIS WEEK"));
+                Bundle.OverviewPanel_tileWip()));
+        tiles.add(tile(String.valueOf(s.doneToday()), Bundle.OverviewPanel_tileDoneToday()));
+        tiles.add(tile(String.valueOf(s.doneThisWeek()), Bundle.OverviewPanel_tileDoneWeek()));
         JComponent blockedTile = tile(String.valueOf(s.blockedCount()),
-                "BLOCKED");
+                Bundle.OverviewPanel_tileBlocked());
         if (s.blockedCount() > 0) {
             // the one number on the board that should read as an alarm
             ((JLabel) ((JPanel) blockedTile).getComponent(0))
@@ -105,7 +152,7 @@ final class OverviewPanel extends JPanel {
         add(tiles);
         add(Box.createVerticalStrut(10));
 
-        add(sectionLabel("COLUMNS & WIP — limits are advisory; red means over"));
+        add(sectionLabel(Bundle.OverviewPanel_columnsSection()));
         add(Box.createVerticalStrut(4));
         JPanel cols = new JPanel();
         cols.setLayout(new BoxLayout(cols, BoxLayout.Y_AXIS));
@@ -122,20 +169,17 @@ final class OverviewPanel extends JPanel {
         add(cols);
         add(Box.createVerticalStrut(10));
 
-        add(sectionLabel("FLOW — cards finished per day, last "
-                + FLOW_DAYS + " days"));
+        add(sectionLabel(Bundle.OverviewPanel_flowSection(String.valueOf(FLOW_DAYS))));
         add(Box.createVerticalStrut(4));
         FlowStrip flow = new FlowStrip(s.flow());
         flow.setAlignmentX(LEFT_ALIGNMENT);
         add(flow);
         add(Box.createVerticalStrut(10));
 
-        add(sectionLabel("BLOCKER REGISTER — every blocker has an owner"
-                + " and an unblock action"));
+        add(sectionLabel(Bundle.OverviewPanel_blockersSection()));
         add(Box.createVerticalStrut(4));
         if (s.blockers().isEmpty()) {
-            JLabel none = new JLabel(
-                    "No blocked cards — nothing is waiting on anyone.");
+            JLabel none = new JLabel(Bundle.OverviewPanel_noBlockers());
             none.setForeground(DIM);
             add(none);
         } else {
@@ -147,10 +191,9 @@ final class OverviewPanel extends JPanel {
         add(Box.createVerticalStrut(10));
 
         if (!s.timeEntries().isEmpty()) {
-            add(sectionLabel("TIME — clocked today "
-                    + BoardStats.duration(s.trackedTodayMs())
-                    + " · last 7 days "
-                    + BoardStats.duration(s.trackedWeekMs())));
+            add(sectionLabel(Bundle.OverviewPanel_timeSection(
+                    BoardStats.duration(s.trackedTodayMs()),
+                    BoardStats.duration(s.trackedWeekMs()))));
             add(Box.createVerticalStrut(4));
             for (BoardStats.TimeEntry t : s.timeEntries()) {
                 add(timeRow(t));
@@ -160,7 +203,7 @@ final class OverviewPanel extends JPanel {
         }
 
         if (!s.labels().isEmpty()) {
-            add(sectionLabel("EPICS — labels in use, busiest first"));
+            add(sectionLabel(Bundle.OverviewPanel_epicsSection()));
             add(Box.createVerticalStrut(4));
             JPanel legend = new JPanel(
                     new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 14, 2));
@@ -173,11 +216,10 @@ final class OverviewPanel extends JPanel {
             add(Box.createVerticalStrut(10));
         }
 
-        add(sectionLabel("NEEDS ATTENTION — oldest unfinished cards"));
+        add(sectionLabel(Bundle.OverviewPanel_attentionSection()));
         add(Box.createVerticalStrut(4));
         if (s.oldestActive().isEmpty()) {
-            JLabel none = new JLabel(
-                    "Nothing waiting — the board is clear.");
+            JLabel none = new JLabel(Bundle.OverviewPanel_nothingWaiting());
             none.setForeground(DIM);
             none.setAlignmentX(LEFT_ALIGNMENT);
             add(none);
@@ -191,10 +233,9 @@ final class OverviewPanel extends JPanel {
         JPanel retroHead = new JPanel(new BorderLayout(8, 0));
         retroHead.setOpaque(false);
         retroHead.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-        retroHead.add(sectionLabel("RETRO — what went well, what bit us,"
-                + " what changed"), BorderLayout.WEST);
-        javax.swing.JButton edit = new javax.swing.JButton("Edit Retro…");
-        edit.getAccessibleContext().setAccessibleName("Edit retro notes");
+        retroHead.add(sectionLabel(Bundle.OverviewPanel_retroSection()), BorderLayout.WEST);
+        javax.swing.JButton edit = new javax.swing.JButton(Bundle.OverviewPanel_editRetro());
+        edit.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_editRetroA11y());
         edit.setFont(mono(Font.PLAIN, 10f));
         edit.addActionListener(e -> editRetro.run());
         retroHead.add(edit, BorderLayout.EAST);
@@ -202,8 +243,7 @@ final class OverviewPanel extends JPanel {
         add(Box.createVerticalStrut(4));
         String retro = board.retro();
         if (retro.isEmpty()) {
-            JLabel none = new JLabel(
-                    "No retro notes yet — Edit Retro… starts them.");
+            JLabel none = new JLabel(Bundle.OverviewPanel_noRetro());
             none.setForeground(DIM);
             add(none);
         } else {
@@ -214,7 +254,7 @@ final class OverviewPanel extends JPanel {
             text.setOpaque(false);
             text.setForeground(TEXT);
             text.setFont(mono(Font.PLAIN, 12f));
-            text.getAccessibleContext().setAccessibleName("Retro notes");
+            text.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_retroNotesA11y());
             add(text);
         }
         add(Box.createVerticalGlue());
@@ -229,16 +269,15 @@ final class OverviewPanel extends JPanel {
         JLabel title = new JLabel(PlainText.plain(clip(b.title())));
         title.setForeground(OVER);
         title.setFont(mono(Font.PLAIN, 12f));
-        String owner = b.owner().isEmpty() ? "unowned" : b.owner();
-        JLabel meta = new JLabel(PlainText.plain(
-                owner + " · " + b.sinceDays() + "d · " + clip(b.action())));
+        String owner = b.owner().isEmpty() ? Bundle.OverviewPanel_unowned() : b.owner();
+        JLabel meta = new JLabel(PlainText.plain(Bundle.OverviewPanel_blockerMeta(
+                owner, String.valueOf(b.sinceDays()), clip(b.action()))));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.WEST);
         row.add(meta, BorderLayout.EAST);
-        row.getAccessibleContext().setAccessibleName("Blocked: " + b.title()
-                + ", owner " + owner + ", " + b.sinceDays()
-                + " days, unblock: " + b.action());
+        row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_blockerA11y(
+                b.title(), owner, String.valueOf(b.sinceDays()), b.action()));
         return row;
     }
 
@@ -247,20 +286,18 @@ final class OverviewPanel extends JPanel {
         row.setOpaque(false);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 18));
         JLabel title = new JLabel(PlainText.plain(
-                (t.running() ? "\u23f1 " : "") + clip(t.title())));
+                t.running() ? Bundle.OverviewPanel_running(clip(t.title())) : clip(t.title())));
         title.setForeground(t.running() ? PHOSPHOR : TEXT);
         title.setFont(mono(Font.PLAIN, 12f));
-        JLabel meta = new JLabel(
-                "today " + BoardStats.duration(t.todayMs())
-                + " · week " + BoardStats.duration(t.weekMs()));
+        JLabel meta = new JLabel(Bundle.OverviewPanel_timeMeta(
+                BoardStats.duration(t.todayMs()), BoardStats.duration(t.weekMs())));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.WEST);
         row.add(meta, BorderLayout.EAST);
-        row.getAccessibleContext().setAccessibleName("Time on " + t.title()
-                + (t.running() ? ", clock running" : "")
-                + ": today " + BoardStats.duration(t.todayMs())
-                + ", week " + BoardStats.duration(t.weekMs()));
+        row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_timeA11y(
+                t.title(), t.running() ? Bundle.OverviewPanel_clockRunningSuffix() : "",
+                BoardStats.duration(t.todayMs()), BoardStats.duration(t.weekMs())));
         return row;
     }
 
@@ -272,13 +309,14 @@ final class OverviewPanel extends JPanel {
         dot.setBackground(labelColor(lc.label()));
         dot.setPreferredSize(new Dimension(9, 9));
         JLabel text = new JLabel(PlainText.plain(
-                lc.label() + " — " + lc.count()));
+                Bundle.OverviewPanel_legendChip(lc.label(), String.valueOf(lc.count()))));
         text.setForeground(TEXT);
         text.setFont(mono(Font.PLAIN, 11f));
         chip.add(dot);
         chip.add(text);
-        chip.getAccessibleContext().setAccessibleName(
-                "Epic " + lc.label() + ", " + org.nmox.studio.core.util.Plural.of(lc.count(), "card"));
+        chip.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_epicA11y(
+                lc.label(), org.nmox.studio.core.util.Plural.of(lc.count(),
+                        Bundle.OverviewPanel_card(), Bundle.OverviewPanel_cards())));
         return chip;
     }
 
@@ -322,7 +360,7 @@ final class OverviewPanel extends JPanel {
         cap.setFont(mono(Font.PLAIN, 10f));
         p.add(big, BorderLayout.CENTER);
         p.add(cap, BorderLayout.SOUTH);
-        p.getAccessibleContext().setAccessibleName(caption + ": " + number);
+        p.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_tileA11y(caption, number));
         return p;
     }
 
@@ -332,12 +370,13 @@ final class OverviewPanel extends JPanel {
         row.setAlignmentX(LEFT_ALIGNMENT);
         row.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
         String count = c.wipLimit() > 0
-                ? c.count() + " / " + c.wipLimit() : String.valueOf(c.count());
+                ? Bundle.OverviewPanel_countOfLimit(String.valueOf(c.count()), String.valueOf(c.wipLimit()))
+                : String.valueOf(c.count());
         JLabel name = new JLabel(PlainText.plain(c.name()));
         name.setForeground(c.overLimit() ? OVER : TEXT);
         name.setFont(mono(Font.PLAIN, 12f));
         name.setPreferredSize(new Dimension(160, 18));
-        JLabel n = new JLabel(PlainText.plain(count + (c.overLimit() ? "  OVER" : "")));
+        JLabel n = new JLabel(PlainText.plain(c.overLimit() ? Bundle.OverviewPanel_countOver(count) : count));
         n.setForeground(c.overLimit() ? OVER : DIM);
         n.setFont(mono(Font.PLAIN, 12f));
         n.setPreferredSize(new Dimension(90, 18));
@@ -345,9 +384,8 @@ final class OverviewPanel extends JPanel {
         row.add(name, BorderLayout.WEST);
         row.add(bar, BorderLayout.CENTER);
         row.add(n, BorderLayout.EAST);
-        row.getAccessibleContext().setAccessibleName(
-                "Column " + c.name() + ", " + count
-                + (c.overLimit() ? ", over limit" : ""));
+        row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_columnA11y(
+                c.name(), count, c.overLimit() ? Bundle.OverviewPanel_overLimitSuffix() : ""));
         return row;
     }
 
@@ -360,14 +398,14 @@ final class OverviewPanel extends JPanel {
         title.setForeground(TEXT);
         title.setFont(mono(Font.PLAIN, 12f));
         String tail = a.ageDays() < 0 ? a.column()
-                : a.column() + " · " + a.ageDays() + "d";
+                : Bundle.OverviewPanel_agingMeta(a.column(), String.valueOf(a.ageDays()));
         JLabel meta = new JLabel(PlainText.plain(tail));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.CENTER);
         row.add(meta, BorderLayout.EAST);
         row.getAccessibleContext().setAccessibleName(
-                "Aging card " + a.title() + ", " + tail);
+                Bundle.OverviewPanel_agingA11y(a.title(), tail));
         return row;
     }
 
@@ -398,8 +436,9 @@ final class OverviewPanel extends JPanel {
             this.max = Math.max(1, max);
             this.over = over;
             setPreferredSize(new Dimension(80, 14));
-            getAccessibleContext().setAccessibleName(
-                    count + " of " + this.max + (over ? ", over limit" : ""));
+            getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_barA11y(
+                    String.valueOf(count), String.valueOf(this.max),
+                    over ? Bundle.OverviewPanel_overLimitSuffix() : ""));
         }
 
         @Override
@@ -435,13 +474,14 @@ final class OverviewPanel extends JPanel {
             setOpaque(false);
             setPreferredSize(new Dimension(100, 72));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, 72));
-            getAccessibleContext().setAccessibleName("Sprint burndown");
+            getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_burndownA11y());
             getAccessibleContext().setAccessibleDescription(
-                    burn.committed() + " committed, "
-                    + (burn.remainingPerDay().isEmpty() ? 0
-                            : burn.remainingPerDay().get(burn.remainingPerDay().size() - 1))
-                    + " remaining on day " + burn.remainingPerDay().size()
-                    + " of " + burn.totalDays());
+                    Bundle.OverviewPanel_burndownDescription(
+                            String.valueOf(burn.committed()),
+                            String.valueOf(burn.remainingPerDay().isEmpty() ? 0
+                                    : burn.remainingPerDay().get(burn.remainingPerDay().size() - 1)),
+                            String.valueOf(burn.remainingPerDay().size()),
+                            String.valueOf(burn.totalDays())));
         }
 
         @Override
@@ -505,9 +545,10 @@ final class OverviewPanel extends JPanel {
             for (int b : bins) {
                 total += b;
             }
-            getAccessibleContext().setAccessibleName(
-                    "Flow: " + org.nmox.studio.core.util.Plural.of(total, "card") + " finished in the last "
-                    + bins.length + " days");
+            getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_flowA11y(
+                    org.nmox.studio.core.util.Plural.of(total,
+                            Bundle.OverviewPanel_card(), Bundle.OverviewPanel_cards()),
+                    String.valueOf(bins.length)));
         }
 
         @Override

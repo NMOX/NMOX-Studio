@@ -127,7 +127,151 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_DbStudioAction=DB Studio",
     "CTL_DbStudioTopComponent=DB Studio",
-    "HINT_DbStudioTopComponent=Database management: connections, schema tree, SQL/document console"
+    "HINT_DbStudioTopComponent=Database management: connections, schema tree, SQL/document console",
+    // chrome (shift-2970): every user-visible English string of this window.
+    // Numeric arguments are formatted {n,number,0}: MessageFormat would
+    // otherwise group digits (1,234 ms) where the old concatenation printed 1234.
+    "DbStudioTopComponent_treeA11y=Connections and schema",
+    "DbStudioTopComponent_limitA11y=Row limit",
+    "DbStudioTopComponent_savedComboA11y=Saved queries",
+    "DbStudioTopComponent_historyA11y=Query history",
+    "DbStudioTopComponent_statementResultA11y=Statement result",
+    "DbStudioTopComponent_resultRowsA11y=Result rows",
+    "DbStudioTopComponent_messageA11y=Message",
+    "DbStudioTopComponent_add=Add",
+    "DbStudioTopComponent_edit=Edit",
+    "DbStudioTopComponent_remove=Remove",
+    "DbStudioTopComponent_test=Test",
+    "DbStudioTopComponent_connect=Connect",
+    "DbStudioTopComponent_disconnect=Disconnect",
+    "DbStudioTopComponent_run=RUN",
+    "DbStudioTopComponent_explainButton=EXPLAIN",
+    "DbStudioTopComponent_cancel=Cancel",
+    "DbStudioTopComponent_saveQuery=Save…",
+    "DbStudioTopComponent_manageSaved=Manage…",
+    "DbStudioTopComponent_runTooltip=Execute the console against the active connection",
+    "DbStudioTopComponent_limitLabel= Limit: ",
+    "DbStudioTopComponent_limitTooltip=Fetch at most this many rows per result set",
+    "DbStudioTopComponent_cancelTooltip=Best-effort cancel of the running statement",
+    "DbStudioTopComponent_saveQueryTooltip=Save the console text as a named query (.nmoxdb.json)",
+    "DbStudioTopComponent_savedComboTooltip=Saved queries — selecting one loads it into the console",
+    "DbStudioTopComponent_historyTooltip=Double-click an entry to load it back into the console",
+    "DbStudioTopComponent_loadedFromHistory=Loaded from history",
+    "DbStudioTopComponent_history=History",
+    "DbStudioTopComponent_peekOtherDatabase=Console queries \"{0}\" — Edit the connection''s database to \"{1}\" to query it",
+    "DbStudioTopComponent_consoleEmpty=Console is empty — type a query first",
+    "DbStudioTopComponent_selectConnectionFirst=Select a connection first",
+    "DbStudioTopComponent_nothingToRun=Nothing to run",
+    "DbStudioTopComponent_running=Running…",
+    "DbStudioTopComponent_connectionGone=Connection no longer exists in the Services window",
+    "DbStudioTopComponent_cancelRequested=Cancel requested…",
+    "DbStudioTopComponent_statements={0,choice,0#{0,number,0} statements|1#{0,number,0} statement|1<{0,number,0} statements}",
+    "DbStudioTopComponent_failedCount= · {0,number,0} failed",
+    "DbStudioTopComponent_totalMs= · {0,number,0} ms",
+    "DbStudioTopComponent_rowsCapped={0,number,0}+ rows",
+    "DbStudioTopComponent_rows={0,choice,0#{0,number,0} rows|1#{0,number,0} row|1<{0,number,0} rows}",
+    "DbStudioTopComponent_updated={0,number,0} updated",
+    "DbStudioTopComponent_readOnly=Read-only",
+    "DbStudioTopComponent_rowsAffected={0,number,0} row(s) affected",
+    "DbStudioTopComponent_noPendingEdits=No pending edits",
+    "DbStudioTopComponent_editsPending={0,choice,0#{0,number,0} edits pending|1#{0,number,0} edit pending|1<{0,number,0} edits pending}",
+    "DbStudioTopComponent_apply=Apply…",
+    "DbStudioTopComponent_applyTooltip=Preview and run the UPDATE statements for the pending edits",
+    "DbStudioTopComponent_revert=Revert",
+    "DbStudioTopComponent_revertTooltip=Forget every pending edit",
+    "DbStudioTopComponent_editableGridTooltip=Double-click a cell to edit; Apply… previews the UPDATEs first",
+    "DbStudioTopComponent_csv=CSV",
+    "DbStudioTopComponent_csvTooltip=Export this grid as CSV (UTF-8)",
+    "DbStudioTopComponent_json=JSON",
+    "DbStudioTopComponent_jsonTooltip=Export this grid as JSON (UTF-8)",
+    "DbStudioTopComponent_noRowsToExport=No rows to export",
+    "DbStudioTopComponent_exportCsvTitle=Export as CSV",
+    "DbStudioTopComponent_exportJsonTitle=Export as JSON",
+    "DbStudioTopComponent_exportedTo=Exported {0,number,0} row(s) → {1}",
+    "DbStudioTopComponent_exportedRows=Exported {0,number,0} row(s)",
+    "DbStudioTopComponent_exportFailedWith=Export failed: {0}",
+    "DbStudioTopComponent_exportFailed=Export failed",
+    "DbStudioTopComponent_runInFlightRetry=A run is in flight — try again when it finishes",
+    "DbStudioTopComponent_applying=Applying {0,number,0} update(s)…",
+    "DbStudioTopComponent_statementDidNotExecute=The statement did not execute",
+    "DbStudioTopComponent_zeroRowsMatched=0 rows matched — the row may have changed since the grid loaded. Re-run the query and try again.",
+    "DbStudioTopComponent_applyStopped=Apply stopped: {0}",
+    "DbStudioTopComponent_applyStoppedAfter=Apply stopped after {0,number,0} of {1,number,0} update(s)",
+    "DbStudioTopComponent_editsKept={0} — your edits are kept; fix and retry.",
+    "DbStudioTopComponent_appliedRefreshed=Applied {0,number,0} update(s) — grid refreshed",
+    "DbStudioTopComponent_appliedTo=Applied {0,number,0} update(s) to {1}",
+    "DbStudioTopComponent_headerMs=   ·   {0,number,0} ms",
+    "DbStudioTopComponent_headerFirstRows=   ·   first {0,number,0} rows only",
+    "DbStudioTopComponent_nothingToSave=Nothing to save — the console is empty",
+    "DbStudioTopComponent_nameInput=Name:",
+    "DbStudioTopComponent_saveQueryTitle=Save Query",
+    "DbStudioTopComponent_savedQueryNeedsName=A saved query needs a name",
+    "DbStudioTopComponent_saved=Saved \"{0}\"",
+    "DbStudioTopComponent_loaded=Loaded \"{0}\"",
+    "DbStudioTopComponent_rename=Rename…",
+    "DbStudioTopComponent_delete=Delete…",
+    "DbStudioTopComponent_newNameInput=New name:",
+    "DbStudioTopComponent_renameSavedQueryTitle=Rename Saved Query",
+    "DbStudioTopComponent_savedQueryExists=A saved query named \"{0}\" already exists",
+    "DbStudioTopComponent_renamedTo=Renamed to \"{0}\"",
+    "DbStudioTopComponent_deleteSavedQueryConfirm=Delete saved query \"{0}\"?",
+    "DbStudioTopComponent_deleteSavedQueryTitle=Delete Saved Query",
+    "DbStudioTopComponent_deleted=Deleted \"{0}\"",
+    "DbStudioTopComponent_manageSavedQueriesTitle=Manage Saved Queries",
+    "DbStudioTopComponent_noSavedQueries=No saved queries",
+    "DbStudioTopComponent_savedQueriesPrompt=Saved queries…",
+    "DbStudioTopComponent_envConfigFound=Found database config in .env",
+    "DbStudioTopComponent_envOffer=Create a \"{0}\" ({1}) connection? Click to review — nothing is saved until you confirm.",
+    "DbStudioTopComponent_addedFromEnv=Added {0} from .env",
+    "DbStudioTopComponent_dockerContainerRunning=Database container running in Docker",
+    "DbStudioTopComponent_clickToReview= Click to review — nothing is saved until you confirm.",
+    "DbStudioTopComponent_addedFromDocker=Added {0} from Docker",
+    "DbStudioTopComponent_reloaded=Reloaded {0}",
+    "DbStudioTopComponent_reloadedDetail=The file changed outside DB Studio — connections, history and saved queries follow it.",
+    "DbStudioTopComponent_loading=Loading…",
+    "DbStudioTopComponent_disconnected=Disconnected {0}",
+    "DbStudioTopComponent_connectingTo=Connecting to {0}…",
+    "DbStudioTopComponent_connectFailed=Connect failed: {0}",
+    "DbStudioTopComponent_notConnected=not connected",
+    "DbStudioTopComponent_connected=Connected: {0} — {1,number,0} {2}",
+    "DbStudioTopComponent_tableNoun={0,choice,0#tables|1#table|1<tables}",
+    "DbStudioTopComponent_testing=Testing {0}…",
+    "DbStudioTopComponent_reachable=OK: {0} is reachable",
+    "DbStudioTopComponent_testFailed=Test failed: {0}",
+    "DbStudioTopComponent_testReachable=Test {0}: reachable",
+    "DbStudioTopComponent_testFailedFor=Test {0}: failed",
+    "DbStudioTopComponent_connectionsRoot=Connections",
+    "DbStudioTopComponent_noConnectionsYet=No connections yet — click Add below to create one",
+    "DbStudioTopComponent_firstRunHint=Add a connection, then double-click a table to peek at its data",
+    "DbStudioTopComponent_noServicesConnections=No connections in the Services window yet",
+    "DbStudioTopComponent_empty=(empty)",
+    "DbStudioTopComponent_noColumns=(no columns)",
+    "DbStudioTopComponent_managedInServices=Managed in the Services window",
+    "DbStudioTopComponent_connectThroughNetBeans=Connect through NetBeans (drivers and credentials live in the Services window)",
+    "DbStudioTopComponent_runInFlight=A run is in flight",
+    "DbStudioTopComponent_explainTooltip=Show the engine's query plan for the console text",
+    "DbStudioTopComponent_explainSqlOnly=EXPLAIN applies to SQL engines",
+    "DbStudioTopComponent_explainNeedsConnection=Connect first — EXPLAIN needs a live connection",
+    "DbStudioTopComponent_explainSelectOnly=EXPLAIN applies to SELECT/WITH statements",
+    "DbStudioTopComponent_addedConnection=Added \"{0}\" — Connect opens it",
+    "DbStudioTopComponent_updatedConnection=Updated \"{0}\"",
+    "DbStudioTopComponent_removeConnectionConfirm=Remove connection \"{0}\"? Its stored password is deleted too.",
+    "DbStudioTopComponent_removeConnectionTitle=Remove Connection",
+    "DbStudioTopComponent_removedConnection=Removed {0}",
+    "DbStudioTopComponent_couldNotRead=Couldn''t read {0} — starting empty",
+    "DbStudioTopComponent_backupKept=The unreadable original was kept at {0}.",
+    "DbStudioTopComponent_connectionCount={0,choice,0#{0,number,0} connections|1#{0,number,0} connection|1<{0,number,0} connections}",
+    "DbStudioTopComponent_cannotSave=DB Studio can't save its connections",
+    "DbStudioTopComponent_notPersisted=Changes are not being persisted: {0}",
+    "DbStudioTopComponent_explain=Explain…",
+    "DbStudioTopComponent_explainErrorTooltip=Ask KVASIR what this database error means (sends the statement and the error — you confirm first)",
+    "DbStudioTopComponent_kvasirDidNotRun=KVASIR did not run — needs an API key and your consent.",
+    "DbStudioTopComponent_services=Services",
+    "DbStudioTopComponent_servicesBadge=Services · {0}",
+    "DbStudioTopComponent_servicesBranch=<html><b>Services</b> <font color='#8a8a8a'>(NetBeans Database Explorer)</font></html>",
+    // the KVASIR conversation's own title; the disclosure body and question
+    // beneath it are prompt text sent to the model, not chrome.
+    "DbStudioTopComponent_kvasirTitle={0} error"
 })
 public final class DbStudioTopComponent extends TopComponent {
 
@@ -165,26 +309,26 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private final JTree tree = new JTree();
     {
-        tree.getAccessibleContext().setAccessibleName("Connections and schema");
+        tree.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_treeA11y());
     }
-    private final JButton editButton = new JButton("Edit");
-    private final JButton removeButton = new JButton("Remove");
-    private final JButton testButton = new JButton("Test");
-    private final JButton connectButton = new JButton("Connect");
+    private final JButton editButton = new JButton(Bundle.DbStudioTopComponent_edit());
+    private final JButton removeButton = new JButton(Bundle.DbStudioTopComponent_remove());
+    private final JButton testButton = new JButton(Bundle.DbStudioTopComponent_test());
+    private final JButton connectButton = new JButton(Bundle.DbStudioTopComponent_connect());
 
     private final JEditorPane console = new JEditorPane();
-    private final JButton runButton = new JButton("RUN");
-    private final JButton explainButton = new JButton("EXPLAIN");
-    private final JButton cancelButton = new JButton("Cancel");
-    private final JButton saveQueryButton = new JButton("Save…");
+    private final JButton runButton = new JButton(Bundle.DbStudioTopComponent_run());
+    private final JButton explainButton = new JButton(Bundle.DbStudioTopComponent_explainButton());
+    private final JButton cancelButton = new JButton(Bundle.DbStudioTopComponent_cancel());
+    private final JButton saveQueryButton = new JButton(Bundle.DbStudioTopComponent_saveQuery());
     private final JComboBox<Object> savedCombo = new JComboBox<>();
     /** The combo's trailing action row: opens the Manage dialog (v1.266.0). */
-    private static final String MANAGE_SAVED = "Manage\u2026";
+    private static final String MANAGE_SAVED = Bundle.DbStudioTopComponent_manageSaved();
     /** Guards the saved-combo's action listener during programmatic refills. */
     private boolean savedComboRefreshing;
     private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(200, 1, 1_000_000, 100));
     {
-        limitSpinner.getAccessibleContext().setAccessibleName("Row limit");
+        limitSpinner.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_limitA11y());
     }
     private final JLabel statusLabel = new JLabel(" ");
 
@@ -250,8 +394,8 @@ public final class DbStudioTopComponent extends TopComponent {
     private String consolePlaceholder = "SELECT \u2026;";
 
     public DbStudioTopComponent() {
-        savedCombo.getAccessibleContext().setAccessibleName("Saved queries");
-        historyList.getAccessibleContext().setAccessibleName("Query history");
+        savedCombo.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_savedComboA11y());
+        historyList.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_historyA11y());
         setName(Bundle.CTL_DbStudioTopComponent());
         setToolTipText(Bundle.HINT_DbStudioTopComponent());
         setLayout(new BorderLayout());
@@ -331,7 +475,7 @@ public final class DbStudioTopComponent extends TopComponent {
         JPanel tools = new JPanel(new java.awt.GridLayout(2, 1));
         JToolBar row1 = new JToolBar();
         row1.setFloatable(false);
-        JButton addButton = new JButton("Add");
+        JButton addButton = new JButton(Bundle.DbStudioTopComponent_add());
         addButton.addActionListener(e -> addConnection());
         editButton.addActionListener(e -> editSelected());
         removeButton.addActionListener(e -> removeSelected());
@@ -366,28 +510,28 @@ public final class DbStudioTopComponent extends TopComponent {
         bar.setLayout(new org.nmox.studio.core.util.WrapLayout(
                 java.awt.FlowLayout.LEFT, 4, 2));
         runButton.setForeground(ACCENT);
-        runButton.setToolTipText("Execute the console against the active connection");
+        runButton.setToolTipText(Bundle.DbStudioTopComponent_runTooltip());
         runButton.addActionListener(e -> run());
         bar.add(runButton);
         explainButton.setEnabled(false);
         explainButton.addActionListener(e -> explain());
         bar.add(explainButton);
         bar.addSeparator();
-        bar.add(new JLabel(" Limit: "));
+        bar.add(new JLabel(Bundle.DbStudioTopComponent_limitLabel()));
         limitSpinner.setMaximumSize(limitSpinner.getPreferredSize());
-        limitSpinner.setToolTipText("Fetch at most this many rows per result set");
+        limitSpinner.setToolTipText(Bundle.DbStudioTopComponent_limitTooltip());
         bar.add(limitSpinner);
         bar.addSeparator();
         cancelButton.setEnabled(false);
-        cancelButton.setToolTipText("Best-effort cancel of the running statement");
+        cancelButton.setToolTipText(Bundle.DbStudioTopComponent_cancelTooltip());
         cancelButton.addActionListener(e -> cancel());
         bar.add(cancelButton);
         bar.addSeparator();
-        saveQueryButton.setToolTipText("Save the console text as a named query (.nmoxdb.json)");
+        saveQueryButton.setToolTipText(Bundle.DbStudioTopComponent_saveQueryTooltip());
         saveQueryButton.addActionListener(e -> saveCurrentQuery());
         bar.add(saveQueryButton);
         savedCombo.setRenderer(new SavedQueryRenderer());
-        savedCombo.setToolTipText("Saved queries — selecting one loads it into the console");
+        savedCombo.setToolTipText(Bundle.DbStudioTopComponent_savedComboTooltip());
         savedCombo.addActionListener(e -> savedQueryPicked());
         bar.add(savedCombo);
         bar.addSeparator();
@@ -438,19 +582,19 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private JComponent buildResultsPanel() {
         historyList.setCellRenderer(new HistoryRenderer());
-        historyList.setToolTipText("Double-click an entry to load it back into the console");
+        historyList.setToolTipText(Bundle.DbStudioTopComponent_historyTooltip());
         historyList.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 int index = historyList.locationToIndex(e.getPoint());
                 if (e.getClickCount() == 2 && index >= 0) {
                     console.setText(historyModel.get(index).text());
-                    status("Loaded from history", Color.GRAY);
+                    status(Bundle.DbStudioTopComponent_loadedFromHistory(), Color.GRAY);
                 }
             }
         });
         // History stays the LAST tab; result tabs are inserted before it per run
-        resultsTabs.addTab("History", new JScrollPane(historyList));
+        resultsTabs.addTab(Bundle.DbStudioTopComponent_history(), new JScrollPane(historyList));
         return resultsTabs;
     }
 
@@ -474,8 +618,7 @@ public final class DbStudioTopComponent extends TopComponent {
         if (PeekQueries.runnableAgainst(spec, info)) {
             run();
         } else {
-            status("Console queries \"" + spec.database() + "\" — Edit the connection's "
-                    + "database to \"" + info.name() + "\" to query it", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_peekOtherDatabase(spec.database(), info.name()), FAIL_RED);
         }
     }
 
@@ -496,7 +639,7 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void run() {
         if (ConsoleMimes.isPlaceholderOrBlank(console.getText())) {
-            status("Console is empty \u2014 type a query first", Color.GRAY);
+            status(Bundle.DbStudioTopComponent_consoleEmpty(), Color.GRAY);
             return;
         }
         runText(console.getText());
@@ -523,25 +666,25 @@ public final class DbStudioTopComponent extends TopComponent {
         }
         ConnectionSpec spec = activeSpec();
         if (spec == null) {
-            status("Select a connection first", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_selectConnectionFirst(), FAIL_RED);
             return;
         }
         if (ConsoleMimes.isPlaceholderOrBlank(text)) {
-            status("Nothing to run", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_nothingToRun(), FAIL_RED);
             return;
         }
         int limit = (Integer) limitSpinner.getValue();
         running = true;
         refreshActions();
         cancelButton.setEnabled(true);
-        status("Running…", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_running(), Color.GRAY);
         long started = System.currentTimeMillis();
         RP.post(() -> {
             DbBackend backend = backendFor(spec);
             List<QueryResult> results;
             if (backend == null) { // a Services connection that just left the explorer
                 results = List.of(new QueryResult(List.of(), List.of(), 0, -1, false, 0,
-                        "Connection no longer exists in the Services window", text));
+                        Bundle.DbStudioTopComponent_connectionGone(), text));
             } else {
                 String openError = backend.isOpen() ? null : backend.open();
                 results = openError == null
@@ -595,7 +738,7 @@ public final class DbStudioTopComponent extends TopComponent {
         DbBackend backend = spec == null ? null : backends.get(spec.id());
         if (backend != null) {
             RP.post(backend::cancel); // RP has spare threads while a run blocks one
-            status("Cancel requested…", Color.GRAY);
+            status(Bundle.DbStudioTopComponent_cancelRequested(), Color.GRAY);
         }
     }
 
@@ -626,9 +769,9 @@ public final class DbStudioTopComponent extends TopComponent {
         if (!tabs.isEmpty()) {
             resultsTabs.setSelectedIndex(0);
         }
-        String summary = tabs.size() + (tabs.size() == 1 ? " statement" : " statements")
-                + (failed > 0 ? " · " + failed + " failed" : "")
-                + " · " + totalMs + " ms";
+        String summary = Bundle.DbStudioTopComponent_statements(tabs.size())
+                + (failed > 0 ? Bundle.DbStudioTopComponent_failedCount(failed) : "")
+                + Bundle.DbStudioTopComponent_totalMs(totalMs);
         status(summary, failed > 0 ? FAIL_RED : OK_GREEN);
     }
 
@@ -638,9 +781,9 @@ public final class DbStudioTopComponent extends TopComponent {
             return base + " ✗";
         }
         if (result.isResultSet()) {
-            return base + " · " + (result.truncated() ? result.rowCount() + "+ rows" : org.nmox.studio.core.util.Plural.of(result.rowCount(), "row"));
+            return base + " · " + (result.truncated() ? Bundle.DbStudioTopComponent_rowsCapped(result.rowCount()) : Bundle.DbStudioTopComponent_rows(result.rowCount()));
         }
-        return base + " · " + result.updateCount() + " updated";
+        return base + " · " + Bundle.DbStudioTopComponent_updated(result.updateCount());
     }
 
     private JComponent resultTab(ConnectionSpec spec, TabContent content) {
@@ -672,7 +815,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         .disableHtml(new JTable(new ResultsTableModel(result)));
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
-                String reason = decision == null ? "Read-only" : decision.reason();
+                String reason = decision == null ? Bundle.DbStudioTopComponent_readOnly() : decision.reason();
                 table.setToolTipText(PlainText.plain(reason));
                 panel.add(new JScrollPane(table), BorderLayout.CENTER);
                 panel.add(readOnlyStrip(result, reason), BorderLayout.SOUTH);
@@ -680,8 +823,8 @@ public final class DbStudioTopComponent extends TopComponent {
         } else {
             JTextArea message = new JTextArea(result.isError()
                     ? result.error()
-                    : result.updateCount() + " row(s) affected");
-            message.getAccessibleContext().setAccessibleName("Statement result");
+                    : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount()));
+            message.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_statementResultA11y());
             message.setEditable(false);
             message.setFont(MONO);
             message.setLineWrap(true);
@@ -703,31 +846,31 @@ public final class DbStudioTopComponent extends TopComponent {
     /** The grid plus the edit strip: dirty-cell tint, pending chip, Apply…/Revert, exports. */
     private JComponent editableGrid(JPanel tabPanel, ConnectionSpec spec, TabContent content) {
         EditSession session = content.decision().session();
-        JLabel chip = new JLabel("No pending edits");
+        JLabel chip = new JLabel(Bundle.DbStudioTopComponent_noPendingEdits());
         chip.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-        JButton applyButton = new JButton("Apply…");
+        JButton applyButton = new JButton(Bundle.DbStudioTopComponent_apply());
         applyButton.setEnabled(false);
-        applyButton.setToolTipText("Preview and run the UPDATE statements for the pending edits");
-        JButton revertButton = new JButton("Revert");
+        applyButton.setToolTipText(Bundle.DbStudioTopComponent_applyTooltip());
+        JButton revertButton = new JButton(Bundle.DbStudioTopComponent_revert());
         revertButton.setEnabled(false);
-        revertButton.setToolTipText("Forget every pending edit");
+        revertButton.setToolTipText(Bundle.DbStudioTopComponent_revertTooltip());
         EditableResultsModel model = new EditableResultsModel(session, () -> {
             int dirty = session.dirtyCount();
-            chip.setText(PlainText.plain(dirty == 0 ? "No pending edits"
-                    : dirty + (dirty == 1 ? " edit pending" : " edits pending")));
+            chip.setText(PlainText.plain(dirty == 0 ? Bundle.DbStudioTopComponent_noPendingEdits()
+                    : Bundle.DbStudioTopComponent_editsPending(dirty)));
             chip.setForeground(dirty == 0 ? Color.GRAY : ACCENT);
             applyButton.setEnabled(dirty > 0);
             revertButton.setEnabled(dirty > 0);
         });
         JTable table = new JTable(model);
         table.setFont(MONO);
-        table.getAccessibleContext().setAccessibleName("Result rows");
+        table.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_resultRowsA11y());
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
         // editable grid shows external DB cell values — keep markup literal
         table.setDefaultRenderer(String.class,
                 org.nmox.studio.core.util.PlainTables.plain(new DirtyCellRenderer(model)));
-        table.setToolTipText("Double-click a cell to edit; Apply… previews the UPDATEs first");
+        table.setToolTipText(Bundle.DbStudioTopComponent_editableGridTooltip());
         applyButton.addActionListener(e -> applyEdits(tabPanel, spec, content, model));
         revertButton.addActionListener(e -> model.revertAll());
 
@@ -762,15 +905,15 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private void addExportButtons(JToolBar strip, QueryResult result) {
         boolean hasRows = result.rowCount() > 0;
-        JButton csvButton = new JButton("CSV");
+        JButton csvButton = new JButton(Bundle.DbStudioTopComponent_csv());
         csvButton.setEnabled(hasRows);
-        csvButton.setToolTipText(PlainText.plain(hasRows ? "Export this grid as CSV (UTF-8)"
-                : "No rows to export"));
+        csvButton.setToolTipText(PlainText.plain(hasRows ? Bundle.DbStudioTopComponent_csvTooltip()
+                : Bundle.DbStudioTopComponent_noRowsToExport()));
         csvButton.addActionListener(e -> exportResult(result, true));
-        JButton jsonButton = new JButton("JSON");
+        JButton jsonButton = new JButton(Bundle.DbStudioTopComponent_json());
         jsonButton.setEnabled(hasRows);
-        jsonButton.setToolTipText(PlainText.plain(hasRows ? "Export this grid as JSON (UTF-8)"
-                : "No rows to export"));
+        jsonButton.setToolTipText(PlainText.plain(hasRows ? Bundle.DbStudioTopComponent_jsonTooltip()
+                : Bundle.DbStudioTopComponent_noRowsToExport()));
         jsonButton.addActionListener(e -> exportResult(result, false));
         strip.add(csvButton);
         strip.add(jsonButton);
@@ -780,7 +923,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private void exportResult(QueryResult result, boolean csv) {
         String extension = csv ? ".csv" : ".json";
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle(csv ? "Export as CSV" : "Export as JSON");
+        chooser.setDialogTitle(csv ? Bundle.DbStudioTopComponent_exportCsvTitle() : Bundle.DbStudioTopComponent_exportJsonTitle());
         chooser.setSelectedFile(new File(projectDir(),
                 ResultExports.suggestedBaseName(result.statement()) + extension));
         if (chooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -792,15 +935,14 @@ public final class DbStudioTopComponent extends TopComponent {
                 String text = csv ? ResultExports.toCsv(result) : ResultExports.toJson(result);
                 Files.writeString(target.toPath(), text, StandardCharsets.UTF_8);
                 SwingUtilities.invokeLater(() -> {
-                    status("Exported " + result.rowCount() + " row(s) → "
-                            + target.getName(), OK_GREEN);
-                    balloon("Exported " + result.rowCount() + " row(s)",
+                    status(Bundle.DbStudioTopComponent_exportedTo(result.rowCount(), target.getName()), OK_GREEN);
+                    balloon(Bundle.DbStudioTopComponent_exportedRows(result.rowCount()),
                             target.getAbsolutePath(), true);
                 });
             } catch (IOException | RuntimeException ex) {
                 SwingUtilities.invokeLater(() -> {
-                    status("Export failed: " + ex.getMessage(), FAIL_RED);
-                    balloon("Export failed", ex.getMessage(), false);
+                    status(Bundle.DbStudioTopComponent_exportFailedWith(ex.getMessage()), FAIL_RED);
+                    balloon(Bundle.DbStudioTopComponent_exportFailed(), ex.getMessage(), false);
                 });
             }
         });
@@ -818,7 +960,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private void applyEdits(JPanel tabPanel, ConnectionSpec spec, TabContent content,
             EditableResultsModel model) {
         if (running) {
-            status("A run is in flight — try again when it finishes", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_runInFlightRetry(), FAIL_RED);
             return;
         }
         EditSession session = model.session();
@@ -839,13 +981,13 @@ public final class DbStudioTopComponent extends TopComponent {
         int limit = (Integer) limitSpinner.getValue();
         running = true;
         refreshActions();
-        status("Applying " + statements.size() + " update(s)…", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_applying(statements.size()), Color.GRAY);
         RP.post(() -> {
             DbBackend backend = backendFor(spec);
             String failure = null;
             int applied = 0;
             if (backend == null) {
-                failure = "Connection no longer exists in the Services window";
+                failure = Bundle.DbStudioTopComponent_connectionGone();
             } else {
                 String openError = backend.isOpen() ? null : backend.open();
                 if (openError != null) {
@@ -856,7 +998,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         QueryResult first = outcome.isEmpty() ? null : outcome.get(0);
                         if (first == null || first.isError()) {
                             failure = first == null
-                                    ? "The statement did not execute" : first.error();
+                                    ? Bundle.DbStudioTopComponent_statementDidNotExecute() : first.error();
                             break;
                         }
                         // Each UPDATE is PK-scoped to exactly one row; a
@@ -865,8 +1007,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         // "applied" would report a success the DB never
                         // performed — the edit is silently lost.
                         if (first.updateCount() == 0) {
-                            failure = "0 rows matched — the row may have changed since the "
-                                    + "grid loaded. Re-run the query and try again.";
+                            failure = Bundle.DbStudioTopComponent_zeroRowsMatched();
                             break;
                         }
                         applied++;
@@ -879,9 +1020,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 SwingUtilities.invokeLater(() -> {
                     running = false;
                     refreshActions();
-                    status("Apply stopped: " + reason, FAIL_RED);
-                    balloon("Apply stopped after " + done + " of " + statements.size()
-                            + " update(s)", reason + " — your edits are kept; fix and retry.",
+                    status(Bundle.DbStudioTopComponent_applyStopped(reason), FAIL_RED);
+                    balloon(Bundle.DbStudioTopComponent_applyStoppedAfter(done, statements.size()),
+                            Bundle.DbStudioTopComponent_editsKept(reason),
                             false);
                     recheckDeferredExternal();
                 });
@@ -895,10 +1036,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 running = false;
                 refreshActions();
                 fillResultPanel(tabPanel, spec, regated.get(0));
-                status("Applied " + statements.size() + " update(s) — grid refreshed",
+                status(Bundle.DbStudioTopComponent_appliedRefreshed(statements.size()),
                         OK_GREEN);
-                balloon("Applied " + statements.size() + " update(s) to "
-                        + session.table().name(), null, true);
+                balloon(Bundle.DbStudioTopComponent_appliedTo(statements.size(), session.table().name()), null, true);
                 recheckDeferredExternal();
             });
         });
@@ -911,9 +1051,9 @@ public final class DbStudioTopComponent extends TopComponent {
             statement = statement.substring(0, 77) + "…";
         }
         StringBuilder sb = new StringBuilder(statement);
-        sb.append("   ·   ").append(result.elapsedMs()).append(" ms");
+        sb.append(Bundle.DbStudioTopComponent_headerMs(result.elapsedMs()));
         if (result.isResultSet() && result.truncated()) {
-            sb.append("   ·   first ").append(result.rowCount()).append(" rows only");
+            sb.append(Bundle.DbStudioTopComponent_headerFirstRows(result.rowCount()));
         }
         return sb.toString();
     }
@@ -936,18 +1076,18 @@ public final class DbStudioTopComponent extends TopComponent {
     private void saveCurrentQuery() {
         String text = console.getText();
         if (ConsoleMimes.isPlaceholderOrBlank(text)) {
-            status("Nothing to save — the console is empty", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_nothingToSave(), FAIL_RED);
             return;
         }
         NotifyDescriptor.InputLine input =
-                new NotifyDescriptor.InputLine("Name:", "Save Query");
+                new NotifyDescriptor.InputLine(Bundle.DbStudioTopComponent_nameInput(), Bundle.DbStudioTopComponent_saveQueryTitle());
         input.setInputText(WorkspaceEdits.defaultName(text));
         if (DialogDisplayer.getDefault().notify(input) != NotifyDescriptor.OK_OPTION) {
             return;
         }
         String name = input.getInputText().strip();
         if (name.isEmpty()) {
-            status("A saved query needs a name", FAIL_RED);
+            status(Bundle.DbStudioTopComponent_savedQueryNeedsName(), FAIL_RED);
             return;
         }
         ConnectionSpec spec = activeSpec();
@@ -955,7 +1095,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 new DbWorkspaceIO.SavedQuery(name, text, spec == null ? "" : engineLabel(spec)));
         saveWorkspace();
         refreshSavedCombo();
-        status("Saved \"" + name + "\"", OK_GREEN);
+        status(Bundle.DbStudioTopComponent_saved(name), OK_GREEN);
     }
 
     /** Selecting a saved query loads it into the console; the combo snaps back to its label. */
@@ -966,7 +1106,7 @@ public final class DbStudioTopComponent extends TopComponent {
         Object picked = savedCombo.getSelectedItem();
         if (picked instanceof DbWorkspaceIO.SavedQuery query) {
             console.setText(query.text());
-            status("Loaded \"" + query.name() + "\"", Color.GRAY);
+            status(Bundle.DbStudioTopComponent_loaded(query.name()), Color.GRAY);
         } else if (MANAGE_SAVED.equals(picked)) {
             SwingUtilities.invokeLater(this::manageSavedQueries);
         }
@@ -999,8 +1139,8 @@ public final class DbStudioTopComponent extends TopComponent {
         if (!model.isEmpty()) {
             list.setSelectedIndex(0);
         }
-        JButton rename = new JButton("Rename\u2026");
-        JButton delete = new JButton("Delete\u2026");
+        JButton rename = new JButton(Bundle.DbStudioTopComponent_rename());
+        JButton delete = new JButton(Bundle.DbStudioTopComponent_delete());
         Runnable syncButtons = () -> {
             boolean has = list.getSelectedValue() != null;
             rename.setEnabled(has);
@@ -1014,7 +1154,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 return;
             }
             NotifyDescriptor.InputLine input =
-                    new NotifyDescriptor.InputLine("New name:", "Rename Saved Query");
+                    new NotifyDescriptor.InputLine(Bundle.DbStudioTopComponent_newNameInput(), Bundle.DbStudioTopComponent_renameSavedQueryTitle());
             input.setInputText(q.name());
             if (DialogDisplayer.getDefault().notify(input) != NotifyDescriptor.OK_OPTION) {
                 return;
@@ -1026,7 +1166,7 @@ public final class DbStudioTopComponent extends TopComponent {
             java.util.List<DbWorkspaceIO.SavedQuery> renamed =
                     WorkspaceEdits.withRenamed(savedQueries, q.name(), newName);
             if (renamed.equals(savedQueries)) {
-                status("A saved query named \"" + newName + "\" already exists", FAIL_RED);
+                status(Bundle.DbStudioTopComponent_savedQueryExists(newName), FAIL_RED);
                 return;
             }
             savedQueries = renamed;
@@ -1036,7 +1176,7 @@ public final class DbStudioTopComponent extends TopComponent {
             model.clear();
             savedQueries.forEach(model::addElement);
             list.setSelectedIndex(Math.min(index, model.size() - 1));
-            status("Renamed to \"" + newName + "\"", OK_GREEN);
+            status(Bundle.DbStudioTopComponent_renamedTo(newName), OK_GREEN);
         });
         delete.addActionListener(e -> {
             DbWorkspaceIO.SavedQuery q = list.getSelectedValue();
@@ -1045,8 +1185,8 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             // full ctor so Enter lands on the SAFE option (v1.98.0 law)
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain("Delete saved query \"" + q.name() + "\"?", "Message"),
-                    "Delete Saved Query",
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.DbStudioTopComponent_deleteSavedQueryConfirm(q.name()), Bundle.DbStudioTopComponent_messageA11y()),
+                    Bundle.DbStudioTopComponent_deleteSavedQueryTitle(),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
                     null,
@@ -1063,7 +1203,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 list.setSelectedIndex(Math.min(index, model.size() - 1));
             }
             syncButtons.run();
-            status("Deleted \"" + q.name() + "\"", Color.GRAY);
+            status(Bundle.DbStudioTopComponent_deleted(q.name()), Color.GRAY);
         });
         JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
         south.add(rename);
@@ -1071,7 +1211,7 @@ public final class DbStudioTopComponent extends TopComponent {
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
-        DialogDescriptor dd = new DialogDescriptor(panel, "Manage Saved Queries",
+        DialogDescriptor dd = new DialogDescriptor(panel, Bundle.DbStudioTopComponent_manageSavedQueriesTitle(),
                 true, new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
         DialogDisplayer.getDefault().notify(dd);
@@ -1082,7 +1222,7 @@ public final class DbStudioTopComponent extends TopComponent {
         try {
             savedCombo.removeAllItems();
             savedCombo.addItem(savedQueries.isEmpty()
-                    ? "No saved queries" : "Saved queries…");
+                    ? Bundle.DbStudioTopComponent_noSavedQueries() : Bundle.DbStudioTopComponent_savedQueriesPrompt());
             for (DbWorkspaceIO.SavedQuery query : savedQueries) {
                 savedCombo.addItem(query);
             }
@@ -1145,11 +1285,9 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         org.openide.awt.NotificationDisplayer.getDefault().notify(
-                "Found database config in .env",
+                Bundle.DbStudioTopComponent_envConfigFound(),
                 javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                "Create a \"" + suggestion.database() + "\" ("
-                + suggestion.engine().displayName()
-                + ") connection? Click to review — nothing is saved until you confirm.",
+                Bundle.DbStudioTopComponent_envOffer(suggestion.database(), suggestion.engine().displayName()),
                 e -> createFromSuggestion(suggestion),
                 org.openide.awt.NotificationDisplayer.Priority.LOW);
     }
@@ -1164,7 +1302,7 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         selectConnection(spec.id());
-        status("Added " + spec.name() + " from .env", OK_GREEN);
+        status(Bundle.DbStudioTopComponent_addedFromEnv(spec.name()), OK_GREEN);
     }
 
     // ---- the Docker connection offer ----
@@ -1220,10 +1358,10 @@ public final class DbStudioTopComponent extends TopComponent {
                         containers, existing, dockerOfferedContainers)) {
             dockerOfferedContainers.add(offer.containerId());
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Database container running in Docker",
+                    Bundle.DbStudioTopComponent_dockerContainerRunning(),
                     javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
                     org.nmox.studio.dbstudio.io.DockerDbOffers.offerText(offer)
-                    + " Click to review — nothing is saved until you confirm.",
+                    + Bundle.DbStudioTopComponent_clickToReview(),
                     e -> createFromDockerOffer(offer),
                     org.openide.awt.NotificationDisplayer.Priority.LOW);
         }
@@ -1241,7 +1379,7 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         selectConnection(spec.id());
-        status("Added " + spec.name() + " from Docker", OK_GREEN);
+        status(Bundle.DbStudioTopComponent_addedFromDocker(spec.name()), OK_GREEN);
     }
 
     // ---- .env changes re-arm the offer ----
@@ -1360,9 +1498,8 @@ public final class DbStudioTopComponent extends TopComponent {
             case RELOAD -> {
                 deferredExternalStamp = null;
                 reloadWorkspace();
-                balloon("Reloaded " + org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME,
-                        "The file changed outside DB Studio — connections, history and "
-                        + "saved queries follow it.", true);
+                balloon(Bundle.DbStudioTopComponent_reloaded(org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME),
+                        Bundle.DbStudioTopComponent_reloadedDetail(), true);
             }
             case DEFER -> deferredExternalStamp = onDisk;
             case NONE -> {
@@ -1472,10 +1609,10 @@ public final class DbStudioTopComponent extends TopComponent {
             backends.remove(spec.id());
             RP.post(backend::close);
             if (node != null) {
-                setPlaceholder(node, "Loading…");
+                setPlaceholder(node, Bundle.DbStudioTopComponent_loading());
                 tree.collapsePath(new TreePath(node.getPath()));
             }
-            status("Disconnected " + spec.name(), Color.GRAY);
+            status(Bundle.DbStudioTopComponent_disconnected(spec.name()), Color.GRAY);
             refreshActions();
             tree.repaint();
         } else {
@@ -1491,7 +1628,7 @@ public final class DbStudioTopComponent extends TopComponent {
         if (!connecting.add(spec.id())) {
             return; // already on its way
         }
-        status("Connecting to " + spec.name() + "…", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_connectingTo(spec.name()), Color.GRAY);
         RP.post(() -> {
             // a remote engine can take seconds to answer: a real
             // ProgressHandle in the status line, not just label text
@@ -1500,7 +1637,7 @@ public final class DbStudioTopComponent extends TopComponent {
             // button here would be a lie.
             org.netbeans.api.progress.ProgressHandle progress =
                     org.netbeans.api.progress.ProgressHandle.createHandle(
-                            "Connecting to " + spec.name() + "…");
+                            Bundle.DbStudioTopComponent_connectingTo(spec.name()));
             progress.start();
             DbBackend backend;
             String error;
@@ -1508,7 +1645,7 @@ public final class DbStudioTopComponent extends TopComponent {
             try {
                 backend = backendFor(spec);
                 if (backend == null) { // a Services connection that just left the explorer
-                    error = "Connection no longer exists in the Services window";
+                    error = Bundle.DbStudioTopComponent_connectionGone();
                     containers = List.of();
                 } else {
                     error = backend.open();
@@ -1520,10 +1657,10 @@ public final class DbStudioTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 connecting.remove(spec.id());
                 if (error != null) {
-                    status("Connect failed: " + error, FAIL_RED);
-                    balloon("Connect failed: " + spec.name(), error, false);
+                    status(Bundle.DbStudioTopComponent_connectFailed(error), FAIL_RED);
+                    balloon(Bundle.DbStudioTopComponent_connectFailed(spec.name()), error, false);
                     if (node != null) {
-                        setPlaceholder(node, "not connected");
+                        setPlaceholder(node, Bundle.DbStudioTopComponent_notConnected());
                     }
                 } else {
                     containerCache.put(spec.id(), containers);
@@ -1536,10 +1673,10 @@ public final class DbStudioTopComponent extends TopComponent {
                     // the engine's own noun, never the internal word
                     // "containers" — beside a Docker-sourced connection
                     // that word reads as a Docker statement (v1.274.0)
-                    status("Connected: " + spec.name() + " — " + containers.size()
-                            + " " + (spec.engine() != null
+                    status(Bundle.DbStudioTopComponent_connected(spec.name(), containers.size(),
+                            spec.engine() != null
                                     ? spec.engine().containerNoun(containers.size())
-                                    : (containers.size() == 1 ? "table" : "tables")),
+                                    : Bundle.DbStudioTopComponent_tableNoun(containers.size())),
                             OK_GREEN);
                     publishSearch();
                 }
@@ -1554,7 +1691,7 @@ public final class DbStudioTopComponent extends TopComponent {
         if (spec == null || isServicesSpec(spec)) {
             return; // Services entries: Test is disabled, NetBeans owns the probe
         }
-        status("Testing " + spec.name() + "…", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_testing(spec.name()), Color.GRAY);
         RP.post(() -> {
             char[] password = Passwords.read(spec.id());
             DbBackend backend = DbBackend.create(spec, password);
@@ -1565,9 +1702,9 @@ public final class DbStudioTopComponent extends TopComponent {
             backend.close();
             SwingUtilities.invokeLater(() -> {
                 status(error == null
-                        ? "OK: " + spec.name() + " is reachable"
-                        : "Test failed: " + error, error == null ? OK_GREEN : FAIL_RED);
-                balloon("Test " + spec.name() + (error == null ? ": reachable" : ": failed"),
+                        ? Bundle.DbStudioTopComponent_reachable(spec.name())
+                        : Bundle.DbStudioTopComponent_testFailed(error), error == null ? OK_GREEN : FAIL_RED);
+                balloon(error == null ? Bundle.DbStudioTopComponent_testReachable(spec.name()) : Bundle.DbStudioTopComponent_testFailedFor(spec.name()),
                         error, error == null);
             });
         });
@@ -1608,23 +1745,21 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- tree building and lazy loading ----
 
     private void rebuildTree() {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Connections");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_connectionsRoot());
         for (ConnectionSpec spec : specs) {
             DefaultMutableTreeNode node = new DefaultMutableTreeNode(spec);
-            node.add(new DefaultMutableTreeNode("Loading…"));
+            node.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_loading()));
             root.add(node);
         }
         if (specs.isEmpty()) {
             // first-run guidance: an empty tree with greyed buttons reads as
             // broken; say what to do instead
-            root.add(new DefaultMutableTreeNode(
-                    "No connections yet — click Add below to create one"));
-            status("Add a connection, then double-click a table to peek at its data",
-                    Color.GRAY);
+            root.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_noConnectionsYet()));
+            status(Bundle.DbStudioTopComponent_firstRunHint(), Color.GRAY);
         }
         // the Services branch always trails the workspace connections
         servicesBranchNode = new DefaultMutableTreeNode(ServicesBranch.INSTANCE);
-        servicesBranchNode.add(new DefaultMutableTreeNode("Loading…"));
+        servicesBranchNode.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_loading()));
         root.add(servicesBranchNode);
         tree.setModel(new DefaultTreeModel(root));
         refreshActions();
@@ -1665,12 +1800,11 @@ public final class DbStudioTopComponent extends TopComponent {
                 }
                 branch.removeAllChildren();
                 if (synthesized.isEmpty()) {
-                    branch.add(new DefaultMutableTreeNode(
-                            "No connections in the Services window yet"));
+                    branch.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_noServicesConnections()));
                 } else {
                     for (ConnectionSpec spec : synthesized) {
                         DefaultMutableTreeNode node = new DefaultMutableTreeNode(spec);
-                        node.add(new DefaultMutableTreeNode("Loading…"));
+                        node.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_loading()));
                         branch.add(node);
                     }
                 }
@@ -1712,11 +1846,11 @@ public final class DbStudioTopComponent extends TopComponent {
     private void fillContainers(DefaultMutableTreeNode node, List<TableInfo> containers) {
         node.removeAllChildren();
         if (containers.isEmpty()) {
-            node.add(new DefaultMutableTreeNode("(empty)"));
+            node.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_empty()));
         }
         for (TableInfo container : containers) {
             DefaultMutableTreeNode child = new DefaultMutableTreeNode(container);
-            child.add(new DefaultMutableTreeNode("Loading…"));
+            child.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_loading()));
             node.add(child);
         }
         ((DefaultTreeModel) tree.getModel()).nodeStructureChanged(node);
@@ -1734,7 +1868,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 loadingNodes.remove(node);
                 node.removeAllChildren();
                 if (columns.isEmpty()) {
-                    node.add(new DefaultMutableTreeNode("(no columns)"));
+                    node.add(new DefaultMutableTreeNode(Bundle.DbStudioTopComponent_noColumns()));
                 } else {
                     columns.forEach(column -> node.add(new DefaultMutableTreeNode(column)));
                 }
@@ -1821,7 +1955,7 @@ public final class DbStudioTopComponent extends TopComponent {
         editButton.setEnabled(selected && !services);
         removeButton.setEnabled(selected && !services);
         testButton.setEnabled(selected && !services);
-        String managedElsewhere = services ? "Managed in the Services window" : null;
+        String managedElsewhere = services ? Bundle.DbStudioTopComponent_managedInServices() : null;
         editButton.setToolTipText(PlainText.plain(managedElsewhere));
         removeButton.setToolTipText(PlainText.plain(managedElsewhere));
         testButton.setToolTipText(PlainText.plain(managedElsewhere));
@@ -1829,9 +1963,9 @@ public final class DbStudioTopComponent extends TopComponent {
         DbBackend backend = selected ? backends.get(spec.id()) : null;
         // Services connections never show Disconnect: NetBeans owns the lifecycle
         connectButton.setText(PlainText.plain(!services && backend != null && backend.isOpen()
-                ? "Disconnect" : "Connect"));
+                ? Bundle.DbStudioTopComponent_disconnect() : Bundle.DbStudioTopComponent_connect()));
         connectButton.setToolTipText(PlainText.plain(services
-                ? "Connect through NetBeans (drivers and credentials live in the Services window)"
+                ? Bundle.DbStudioTopComponent_connectThroughNetBeans()
                 : null));
         // RUN gates on having a target: an always-armed button that silently
         // no-ops reads as broken. The tooltip says why it's off.
@@ -1839,8 +1973,8 @@ public final class DbStudioTopComponent extends TopComponent {
         boolean runnable = !running && active != null;
         runButton.setEnabled(runnable);
         runButton.setToolTipText(PlainText.plain(runnable
-                ? "Execute the console against the active connection"
-                : running ? "A run is in flight" : "Select a connection first"));
+                ? Bundle.DbStudioTopComponent_runTooltip()
+                : running ? Bundle.DbStudioTopComponent_runInFlight() : Bundle.DbStudioTopComponent_selectConnectionFirst()));
         refreshExplain(active);
     }
 
@@ -1856,18 +1990,18 @@ public final class DbStudioTopComponent extends TopComponent {
                 && ExplainQueries.explainable(active.engine(), console.getText());
         explainButton.setEnabled(explainable);
         if (explainable) {
-            explainButton.setToolTipText("Show the engine's query plan for the console text");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_explainTooltip());
         } else if (running) {
-            explainButton.setToolTipText("A run is in flight");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_runInFlight());
         } else if (active == null) {
-            explainButton.setToolTipText("Select a connection first");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_selectConnectionFirst());
         } else if (active.engine() == null
                 || active.engine().kind() != DbEngine.Kind.SQL) {
-            explainButton.setToolTipText("EXPLAIN applies to SQL engines");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_explainSqlOnly());
         } else if (!open) {
-            explainButton.setToolTipText("Connect first — EXPLAIN needs a live connection");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_explainNeedsConnection());
         } else {
-            explainButton.setToolTipText("EXPLAIN applies to SELECT/WITH statements");
+            explainButton.setToolTipText(Bundle.DbStudioTopComponent_explainSelectOnly());
         }
     }
 
@@ -1899,7 +2033,7 @@ public final class DbStudioTopComponent extends TopComponent {
         selectConnection(spec.id());
         // the v2.18.0 law: gestures speak — Remove always did, Add and
         // Edit were the silent two (the 2026-08-20 DBA walk's find)
-        status("Added \"" + spec.name() + "\" — Connect opens it", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_addedConnection(spec.name()), Color.GRAY);
     }
 
     private void editSelected() {
@@ -1922,7 +2056,7 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         selectConnection(spec.id());
-        status("Updated \"" + updated.name() + "\"", Color.GRAY);
+        status(Bundle.DbStudioTopComponent_updatedConnection(updated.name()), Color.GRAY);
     }
 
     private void removeSelected() {
@@ -1934,8 +2068,8 @@ public final class DbStudioTopComponent extends TopComponent {
         // hard-codes initialValue=OK_OPTION): a reflexive Enter must not
         // delete the connection and its keychain password.
         NotifyDescriptor confirm = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain("Remove connection \"" + spec.name() + "\"? Its stored password is deleted too.", "Message"),
-                "Remove Connection", NotifyDescriptor.OK_CANCEL_OPTION,
+                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.DbStudioTopComponent_removeConnectionConfirm(spec.name()), Bundle.DbStudioTopComponent_messageA11y()),
+                Bundle.DbStudioTopComponent_removeConnectionTitle(), NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
                 NotifyDescriptor.CANCEL_OPTION);
@@ -1957,7 +2091,7 @@ public final class DbStudioTopComponent extends TopComponent {
         saveWorkspace();
         rebuildTree();
         publishSearch();
-        status("Removed " + spec.name(), Color.GRAY);
+        status(Bundle.DbStudioTopComponent_removedConnection(spec.name()), Color.GRAY);
     }
 
     // ---- Quick Search entry points ----
@@ -2077,9 +2211,9 @@ public final class DbStudioTopComponent extends TopComponent {
             // empty fallback (the next save can't clobber it) — say so
             try {
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "Couldn't read " + DbWorkspaceIO.FILENAME + " — starting empty",
+                        Bundle.DbStudioTopComponent_couldNotRead(DbWorkspaceIO.FILENAME),
                         javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                        "The unreadable original was kept at " + outcome.backup().getName() + ".",
+                        Bundle.DbStudioTopComponent_backupKept(outcome.backup().getName()),
                         null);
             } catch (RuntimeException | LinkageError ignored) {
                 // notifications unavailable (tests, stripped platform)
@@ -2100,7 +2234,7 @@ public final class DbStudioTopComponent extends TopComponent {
         rebuildTree();
         publishSearch();
         status(specs.isEmpty() ? " "
-                : specs.size() + (specs.size() == 1 ? " connection" : " connections"), Color.GRAY);
+                : Bundle.DbStudioTopComponent_connectionCount(specs.size()), Color.GRAY);
         // the freshly loaded version is now "ours" — only later foreign
         // writes should trigger the external-reload flow. The stamp was
         // computed off-EDT right after the read (same file, same moment).
@@ -2152,9 +2286,9 @@ public final class DbStudioTopComponent extends TopComponent {
             if (!saveFailureNotified) {
                 saveFailureNotified = true;
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "DB Studio can't save its connections",
+                        Bundle.DbStudioTopComponent_cannotSave(),
                         javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                        "Changes are not being persisted: " + ex.getMessage(),
+                        Bundle.DbStudioTopComponent_notPersisted(ex.getMessage()),
                         null);
             }
         }
@@ -2170,24 +2304,25 @@ public final class DbStudioTopComponent extends TopComponent {
      */
     private JComponent explainStrip(ConnectionSpec spec, QueryResult result) {
         JPanel strip = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 4));
-        JButton explain = new JButton("Explain…");
-        explain.setToolTipText("Ask KVASIR what this database error means"
-                + " (sends the statement and the error — you confirm first)");
+        JButton explain = new JButton(Bundle.DbStudioTopComponent_explain());
+        explain.setToolTipText(Bundle.DbStudioTopComponent_explainErrorTooltip());
         explain.addActionListener(e -> {
             org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
             if (kvasir == null) {
                 return;
             }
+            // the engine slug also rides the wire body — a raw literal,
+            // never a translated one
             String engine = spec == null || spec.engine() == null
                     ? "unknown" : spec.engine().name().toLowerCase(java.util.Locale.ROOT);
             boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
-                    "db.error", engine + " error",
+                    "db.error", Bundle.DbStudioTopComponent_kvasirTitle(engine),
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.what(engine),
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.body(
                             engine, result.statement(), result.error()),
                     "What does this error mean, and how do I fix the statement?"));
             if (!started) {
-                status("KVASIR did not run — needs an API key and your consent.", Color.GRAY);
+                status(Bundle.DbStudioTopComponent_kvasirDidNotRun(), Color.GRAY);
             }
         });
         strip.add(explain);
@@ -2325,15 +2460,14 @@ public final class DbStudioTopComponent extends TopComponent {
                 boolean connected = backend != null && backend.isOpen();
                 String badge = isServicesSpec(spec)
                         ? (spec.engine() != null
-                                ? "Services · " + spec.engine().displayName() : "Services")
+                                ? Bundle.DbStudioTopComponent_servicesBadge(spec.engine().displayName()) : Bundle.DbStudioTopComponent_services())
                         : spec.engine().displayName();
                 setText("<html>" + (connected ? "<b>" : "") + esc(spec.name())
                         + (connected ? "</b>" : "")
                         + " <font color='#8a8a8a'>(" + esc(badge)
                         + ")</font></html>");
             } else if (userObject instanceof ServicesBranch) {
-                setText("<html><b>Services</b> <font color='#8a8a8a'>"
-                        + "(NetBeans Database Explorer)</font></html>");
+                setText(Bundle.DbStudioTopComponent_servicesBranch());
             } else if (userObject instanceof TableInfo info) {
                 String kind = info.type() == null || "TABLE".equalsIgnoreCase(info.type())
                         ? "" : " <font color='#8a8a8a'>(" + esc(info.type().toLowerCase(java.util.Locale.ROOT)) + ")</font>";

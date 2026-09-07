@@ -25,6 +25,10 @@ import org.netbeans.api.keyring.Keyring;
  * <p>All methods are thread-safe and callable from any thread except
  * the EDT (the keyring may block on OS calls).
  */
+@org.openide.util.NbBundle.Messages({
+    "RpcSecrets_keychainUnavailableTitle=Keychain unavailable",
+    "RpcSecrets_keychainUnavailableDetail=Secret RPC URLs will not be saved this session."
+})
 public final class RpcSecrets {
 
     private static final Logger LOG = Logger.getLogger(RpcSecrets.class.getName());
@@ -131,9 +135,9 @@ public final class RpcSecrets {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.RpcSecrets_keychainUnavailableTitle(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "Secret RPC URLs will not be saved this session.", null);
+                    Bundle.RpcSecrets_keychainUnavailableDetail(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

@@ -24,6 +24,13 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * {@code Authorization: Bearer/Basic} header is lifted into the Auth
  * field, same as the curl import (the v1.97.0 secrets law).
  */
+@org.openide.util.NbBundle.Messages({
+    "HttpFileCodec_malformedVariable=Ignored malformed variable line: {0}",
+    "HttpFileCodec_malformedHeader=Ignored malformed header line: {0}",
+    "HttpFileCodec_trailingText=Ignored trailing text on request line: {0}",
+    "HttpFileCodec_authorizationKept=Authorization header kept as a header — consider the Auth field, which stores the secret in the OS keychain.",
+    "HttpFileCodec_bodyFileReference=Body file reference ({0}) not imported — paste the payload into the request."
+})
 public final class HttpFileCodec {
 
     private HttpFileCodec() {
@@ -70,7 +77,7 @@ public final class HttpFileCodec {
                     if (eq > 1) {
                         variables.put(t.substring(1, eq).trim(), t.substring(eq + 1).trim());
                     } else {
-                        notes.add("Ignored malformed variable line: " + t);
+                        notes.add(Bundle.HttpFileCodec_malformedVariable(t));
                     }
                     continue;
                 }
@@ -90,7 +97,7 @@ public final class HttpFileCodec {
                 }
                 int colon = line.indexOf(':');
                 if (colon < 1) {
-                    notes.add("Ignored malformed header line: " + line.trim());
+                    notes.add(Bundle.HttpFileCodec_malformedHeader(line.trim()));
                     continue;
                 }
                 liftOrAdd(cur, line.substring(0, colon).trim(),
@@ -114,7 +121,7 @@ public final class HttpFileCodec {
             r.method = parts[0].toUpperCase(java.util.Locale.ROOT);
             r.url = parts[1];
             if (parts.length > 2 && !parts[2].toUpperCase(java.util.Locale.ROOT).startsWith("HTTP/")) {
-                notes.add("Ignored trailing text on request line: " + parts[2]);
+                notes.add(Bundle.HttpFileCodec_trailingText(parts[2]));
             }
         } else {
             // the dialect allows a bare URL line meaning GET
@@ -159,8 +166,7 @@ public final class HttpFileCodec {
                     // fall through: may be a {{var}} — keep as a header
                 }
             }
-            notes.add("Authorization header kept as a header — consider the Auth "
-                    + "field, which stores the secret in the OS keychain.");
+            notes.add(Bundle.HttpFileCodec_authorizationKept());
         }
         r.headers.add(new Pair(name, value));
     }
@@ -247,8 +253,7 @@ public final class HttpFileCodec {
         // XML/HTML body and must import as one (2026-07-26 review find:
         // startsWith("<") refused every XML payload)
         if (b.startsWith("< ") || b.startsWith("<@")) {
-            notes.add("Body file reference (" + b.split("\n", 2)[0]
-                    + ") not imported — paste the payload into the request.");
+            notes.add(Bundle.HttpFileCodec_bodyFileReference(b.split("\n", 2)[0]));
             b = "";
         }
         cur.body = b;

@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * keeps its own .rkt grammar.
  */
 @GrammarRegistration(grammar = "scheme.tmLanguage.json", mimeType = "text/x-scheme")
-@MIMEResolver.ExtensionRegistration(displayName = "Scheme", mimeType = "text/x-scheme", extension = {"scm", "ss", "sld", "sps"}, position = 2444)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_SchemeGrammar_LOADER", mimeType = "text/x-scheme", extension = {"scm", "ss", "sld", "sps"}, position = 2444)
+@org.openide.util.NbBundle.Messages("LBL_SchemeGrammar_LOADER=Scheme")
 public final class SchemeGrammar {
 
     private SchemeGrammar() {

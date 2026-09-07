@@ -11,6 +11,21 @@ import java.util.Set;
  * not recompute), and the column disappears when all five are ticked or
  * when the user hides it.
  */
+@org.openide.util.NbBundle.Messages({
+    "GettingStarted_projectLabel=Open a project",
+    "GettingStarted_projectGesture=Open Folder…  ⌥⌘O",
+    "GettingStarted_runLabel=Run something",
+    "GettingStarted_runGesture=▶ (F6), or GO on a rack device  ⌘9",
+    "GettingStarted_serveLabel=See a server go live",
+    "GettingStarted_serveGesture=a serve device lights the ⇄ chip",
+    "GettingStarted_kvasirLabel=Ask KVASIR about code",
+    "GettingStarted_kvasirGesture=select code → right-click → Ask KVASIR",
+    "GettingStarted_learnLabel=Try a learning space",
+    "GettingStarted_learnGesture=New Learning Space…  ⇧⌘L",
+    "GettingStarted_agentLabel=Point an agent at the IDE",
+    "GettingStarted_agentGesture=Tools ▸ Agent Port (MCP)…",
+    "GettingStarted_progress={0} of {1}"
+})
 public final class GettingStarted {
 
     /** One step: a stable key, what the user does, where the gesture lives. */
@@ -42,20 +57,20 @@ public final class GettingStarted {
 
     /** The five, in the order a first session naturally takes them. */
     public static final List<Step> STEPS = List.of(
-            new Step("project", "Open a project", "Open Folder…  ⌥⌘O",
+            new Step("project", Bundle.GettingStarted_projectLabel(), Bundle.GettingStarted_projectGesture(),
                     Target.action("File", "org.nmox.studio.ui.actions.OpenFolderAction")),
-            new Step("run", "Run something", "▶ (F6), or GO on a rack device  ⌘9",
+            new Step("run", Bundle.GettingStarted_runLabel(), Bundle.GettingStarted_runGesture(),
                     Target.window("RackTopComponent")),
-            new Step("serve", "See a server go live", "a serve device lights the ⇄ chip",
+            new Step("serve", Bundle.GettingStarted_serveLabel(), Bundle.GettingStarted_serveGesture(),
                     Target.window("RackTopComponent")),
-            new Step("kvasir", "Ask KVASIR about code", "select code → right-click → Ask KVASIR",
+            new Step("kvasir", Bundle.GettingStarted_kvasirLabel(), Bundle.GettingStarted_kvasirGesture(),
                     Target.guide("#kvasir--explain-the-last-failure")),
-            new Step("learn", "Try a learning space", "New Learning Space…  ⇧⌘L",
+            new Step("learn", Bundle.GettingStarted_learnLabel(), Bundle.GettingStarted_learnGesture(),
                     Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")),
             // v2.84.0: the Agent Port had eight releases and no place on the
             // first-run checklist; the door is this module's thin action over
             // the rack's, so the door gate can see it in the ui layer
-            new Step("agent", "Point an agent at the IDE", "Tools ▸ Agent Port (MCP)…",
+            new Step("agent", Bundle.GettingStarted_agentLabel(), Bundle.GettingStarted_agentGesture(),
                     Target.action("Tools", "org.nmox.studio.ui.gettingstarted.PointAnAgentAction")));
 
     private GettingStarted() {
@@ -74,7 +89,7 @@ public final class GettingStarted {
 
     /** "2 of 5" — the heading's count. */
     public static String progress(Set<String> done) {
-        return done(done) + " of " + STEPS.size();
+        return Bundle.GettingStarted_progress(String.valueOf(done(done)), String.valueOf(STEPS.size()));
     }
 
     /** Whether every step is ticked. */

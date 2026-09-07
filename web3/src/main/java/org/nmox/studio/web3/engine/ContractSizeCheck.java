@@ -9,6 +9,10 @@ import org.nmox.studio.web3.model.ContractArtifact;
  * over it, mainnet-shaped chains refuse the deployment outright — and
  * EIP-3860 caps <em>initcode</em> at 49,152 bytes.
  */
+@org.openide.util.NbBundle.Messages({
+    "ContractSizeCheck_verdict={0}: {1} / {2} bytes ({3}%)",
+    "ContractSizeCheck_verdictOverLimit={0} \u2014 over the {1} limit"
+})
 public final class ContractSizeCheck {
 
     /** EIP-170: max deployed bytecode, bytes. */
@@ -50,10 +54,12 @@ public final class ContractSizeCheck {
     private static Verdict verdict(String name, int size, int limit, String eip) {
         double pct = size * 100.0 / limit;
         boolean over = size > limit;
-        String message = String.format(Locale.ROOT, "%s: %,d / %,d bytes (%.1f%%)",
-                name, size, limit, pct);
+        String message = Bundle.ContractSizeCheck_verdict(name,
+                String.format(Locale.ROOT, "%,d", size),
+                String.format(Locale.ROOT, "%,d", limit),
+                String.format(Locale.ROOT, "%.1f", pct));
         if (over) {
-            message += " — over the " + eip + " limit";
+            message = Bundle.ContractSizeCheck_verdictOverLimit(message, eip);
         }
         return new Verdict(name, size, limit, pct, over, message);
     }

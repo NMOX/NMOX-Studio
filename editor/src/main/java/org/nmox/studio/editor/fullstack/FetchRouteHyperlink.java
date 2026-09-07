@@ -17,6 +17,10 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
     @MimeRegistration(mimeType = "text/javascript", service = HyperlinkProviderExt.class, position = 17),
     @MimeRegistration(mimeType = "text/typescript", service = HyperlinkProviderExt.class, position = 17)
 })
+@org.openide.util.NbBundle.Messages({
+    "FetchRouteHyperlink_tooltip=Go to the route that serves this path",
+    "FetchRouteHyperlink_noRoute=No route registers {0} in this project''s JS/TS sources"
+})
 public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
 
     @Override
@@ -26,7 +30,7 @@ public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
 
     @Override
     protected String tooltip() {
-        return "Go to the route that serves this path";
+        return Bundle.FetchRouteHyperlink_tooltip();
     }
 
     @Override
@@ -34,8 +38,7 @@ public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
         String path = text.substring(span[0], span[1]);
         Routes.Route found = Routes.findRoute(projectDir, path);
         if (found == null) {
-            status("No route registers " + path
-                    + " in this project's JS/TS sources");
+            status(Bundle.FetchRouteHyperlink_noRoute(path));
         } else {
             openAt(found.file(), found.offset());
         }

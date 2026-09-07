@@ -57,7 +57,8 @@ public class DeviceSearchProvider implements SearchProvider {
                         RackService.getDefault().getRack().addDevice(type.create());
                     } catch (Exception | LinkageError ex) {
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                "Could not add " + type.title() + ": " + ex);
+                                org.openide.util.NbBundle.getMessage(DeviceSearchProvider.class,
+                                        "DeviceSearchProvider_addFailed", type.title(), String.valueOf(ex)));
                         return;
                     }
                     org.openide.windows.TopComponent rack = org.openide.windows.WindowManager
@@ -66,7 +67,8 @@ public class DeviceSearchProvider implements SearchProvider {
                         rack.open();
                         rack.requestActive();
                     }
-                }), type.title() + "  —  " + type.description());
+                }), org.openide.util.NbBundle.getMessage(DeviceSearchProvider.class,
+                        "DeviceSearchProvider_result", type.title(), type.description()));
                 if (!more) {
                     return;
                 }

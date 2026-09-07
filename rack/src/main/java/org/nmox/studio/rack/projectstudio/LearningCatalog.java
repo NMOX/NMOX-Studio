@@ -33,6 +33,9 @@ import org.json.JSONObject;
  * warning naming the file — a broken drop-in never blocks the picker.
  * See {@code docs/learning-spaces.md} for the schema.
  */
+@org.openide.util.NbBundle.Messages({
+    "LearningCatalog_skippedDropIn=Learning catalog: skipped malformed {0} in {1}"
+})
 public final class LearningCatalog {
 
     /** What kind of thing you're learning — groups the picker. */
@@ -214,8 +217,8 @@ public final class LearningCatalog {
         LOG.log(Level.WARNING, "Skipping malformed learning-catalog drop-in {0}: {1}",
                 new Object[]{file.getAbsolutePath(), ex.toString()});
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                "Learning catalog: skipped malformed " + file.getName()
-                        + " in " + file.getParentFile().getName());
+                Bundle.LearningCatalog_skippedDropIn(
+                        file.getName(), file.getParentFile().getName()));
     }
 
     public static List<Space> byCategory(Category category) {

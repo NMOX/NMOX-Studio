@@ -46,7 +46,23 @@ import org.openide.util.RequestProcessor;
     @ActionReference(path = "Editors/Popup", position = 1961),
     @ActionReference(path = "Menu/Edit", position = 1371)
 })
-@Messages("CTL_CopyAsMarkdownWithLink=Copy as Markdown with Link")
+@Messages({
+    "CTL_CopyAsMarkdownWithLink=Copy as Markdown with Link",
+    "CopyAsMarkdownWithLinkAction_noFocus=Copy as Markdown with Link: no editor has focus",
+    "CopyAsMarkdownWithLinkAction_noFile=Copy as Markdown with Link: the buffer has no file on disk to link",
+    "CopyAsMarkdownWithLinkAction_unsaved=Copy as Markdown with Link: {0} has unsaved changes — save first, so the block matches what the link shows",
+    "CopyAsMarkdownWithLinkAction_couldNotRead=Copy as Markdown with Link: could not read the buffer",
+    "CopyAsMarkdownWithLinkAction_refused=Copy as Markdown with Link: {0}",
+    "CopyAsMarkdownWithLinkAction_copied=Copied {0} as Markdown with a GitHub link — {1} in a ```{2} block, {3} (the link shows the branch as pushed)",
+    "CopyAsMarkdownWithLinkAction_wholeOf=the whole of {0}",
+    "CopyAsMarkdownWithLinkAction_theSelection=the selection",
+    "CopyAsMarkdownWithLinkAction_notInRepo={0} is not inside a git repository",
+    "CopyAsMarkdownWithLinkAction_noOrigin=the repository has no origin remote",
+    "CopyAsMarkdownWithLinkAction_notGitHub=origin is not a GitHub remote ({0})",
+    "CopyAsMarkdownWithLinkAction_noHead=HEAD could not be read",
+    "CopyAsMarkdownWithLinkAction_pathUnresolved=the file's path inside the repository could not be resolved",
+    "CopyAsMarkdownWithLinkAction_outsideRepo=the file is not inside the repository"
+})
 public final class CopyAsMarkdownWithLinkAction implements ActionListener {
 
     private static final RequestProcessor RP = new RequestProcessor("nmox-share-link", 1, true);
@@ -55,22 +71,21 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         JTextComponent editor = CopyAsMarkdownAction.focusedEditor();
         if (editor == null) {
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: no editor has focus");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_noFocus());
             return;
         }
         Document doc = editor.getDocument();
         Object sd = doc.getProperty(Document.StreamDescriptionProperty);
         File file = sd instanceof DataObject dob ? FileUtil.toFile(dob.getPrimaryFile()) : null;
         if (file == null) {
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: the buffer has no file on disk to link");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_noFile());
             return;
         }
         if (unsaved(sd)) {
             // the block would be the BUFFER while the link names the file as committed: a block
             // that does not match its link is a lie, so the gesture waits for a save (the
             // review's find; the disk-vs-remote gap it cannot see is named in the status)
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: " + file.getName()
-                    + " has unsaved changes — save first, so the block matches what the link shows");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_unsaved(file.getName()));
             return;
         }
         int selStart = editor.getSelectionStart();
@@ -79,7 +94,7 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
         try {
             code = selEnd > selStart ? doc.getText(selStart, selEnd - selStart) : doc.getText(0, doc.getLength());
         } catch (BadLocationException ex) {
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown with Link: could not read the buffer");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_couldNotRead());
             return;
         }
         int[] lines = CopyAsMarkdown.lineRange(doc, selStart, selEnd);
@@ -91,15 +106,15 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
             Outcome out = resolve(file, lines[0], lines[1]);
             SwingUtilities.invokeLater(() -> {
                 if (out.refusal != null) {
-                    StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copy as Markdown with Link: " + out.refusal));
+                    StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.CopyAsMarkdownWithLinkAction_refused(out.refusal)));
                     return;
                 }
                 String text = block + "\n" + GitLink.linkLine(out.relPath, lines[0], lines[1], out.url) + "\n";
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
-                StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copied "
-                        + (lines[0] == 0 ? "the whole of " + name : "the selection") + " as Markdown with a GitHub link — "
-                        + Plural.of(CopyAsMarkdown.lineCount(code), "line") + " in a ```" + CopyAsMarkdown.fence(mime, name)
-                        + " block, " + out.slug + "@" + out.ref + " (the link shows the branch as pushed)"));
+                StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.CopyAsMarkdownWithLinkAction_copied(
+                        lines[0] == 0 ? Bundle.CopyAsMarkdownWithLinkAction_wholeOf(name) : Bundle.CopyAsMarkdownWithLinkAction_theSelection(),
+                        Plural.of(CopyAsMarkdown.lineCount(code), "line"), CopyAsMarkdown.fence(mime, name),
+                        out.slug + "@" + out.ref)));
             });
         });
     }
@@ -120,28 +135,28 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
     static Outcome resolve(File file, int startLine, int endLine) {
         File root = GitFacts.repoRoot(file.getParentFile());
         if (root == null) {
-            return Outcome.refuse(file.getName() + " is not inside a git repository");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_notInRepo(file.getName()));
         }
         String origin = GitFacts.originUrl(root);
         if (origin == null) {
-            return Outcome.refuse("the repository has no origin remote");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_noOrigin());
         }
         GitLink.Remote remote = GitLink.parseRemote(origin);
         if (remote == null) {
-            return Outcome.refuse("origin is not a GitHub remote (" + origin + ")");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_notGitHub(origin));
         }
         String ref = GitFacts.branch(root);
         if (ref == null) {
-            return Outcome.refuse("HEAD could not be read");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_noHead());
         }
         String rel;
         try {
             rel = root.toPath().toRealPath().relativize(file.toPath().toRealPath()).toString().replace(File.separatorChar, '/');
         } catch (java.io.IOException | IllegalArgumentException ex) {
-            return Outcome.refuse("the file's path inside the repository could not be resolved");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_pathUnresolved());
         }
         if (rel.isEmpty() || rel.startsWith("..")) {
-            return Outcome.refuse("the file is not inside the repository");
+            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_outsideRepo());
         }
         return new Outcome(GitLink.blobUrl(remote, ref, rel, startLine, endLine), rel, remote.slug(), ref, null);
     }

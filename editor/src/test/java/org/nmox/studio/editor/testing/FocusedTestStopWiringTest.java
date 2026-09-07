@@ -24,7 +24,8 @@ class FocusedTestStopWiringTest {
         assertThat(src).as("the toolbar ■ finds the run").contains("LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill))");
         assertThat(src).as("the exit handler withdraws it").contains("LiveRuns.remove(runId);");
         assertThat(src).as("a stopped test reads stopped, never FAILED [143] (v2.73.0)")
-                .contains("LiveRuns.wasStoppedByUser(runId)").contains("\"Focused test stopped\"");
+                .contains("LiveRuns.wasStoppedByUser(runId)")
+                .contains("\"RunFocusedTestAction_stopped\"");
         assertThat(src).as("the Tests window's Run rides the same registered path")
                 .contains("public static boolean runDiscovered(");
     }

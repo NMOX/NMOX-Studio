@@ -109,7 +109,7 @@ class UserPresetsTest {
                 .as("a preset click destroys the current wiring with undo"
                         + " powerless (v1.280.0) — customs need the same"
                         + " confirm the built-ins have")
-                .contains("confirmReplace(\"the \" + custom.name()");
+                .contains("confirmReplace(Bundle.RackTopComponent_thePreset(custom.name())"); // v2.97.0: the sentence is a bundle value now; the confirm is the law
         assertThat(src)
                 .as("the drop-in scan is file IO and stays off the EDT")
                 .contains("RequestProcessor.getDefault().post");

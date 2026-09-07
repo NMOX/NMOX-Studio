@@ -45,6 +45,10 @@ import org.nmox.studio.editor.outline.StickyScope;
  * zero height when nothing encloses the top line or the View ▸ Sticky
  * Scroll preference is off, so it costs nothing when it says nothing.
  */
+@org.openide.util.NbBundle.Messages({
+    "StickyScrollSideBar_accessibleName=Sticky scroll",
+    "StickyScrollSideBar_accessibleDescription=The declarations enclosing the top of the view; click a row to jump to it"
+})
 public final class StickyScrollSideBar extends JComponent {
 
     static final int MAX_ROWS = 3;
@@ -301,12 +305,12 @@ public final class StickyScrollSideBar extends JComponent {
             accessibleContext = new AccessibleJComponent() {
                 @Override
                 public String getAccessibleName() {
-                    return "Sticky scroll";
+                    return Bundle.StickyScrollSideBar_accessibleName();
                 }
 
                 @Override
                 public String getAccessibleDescription() {
-                    return "The declarations enclosing the top of the view; click a row to jump to it";
+                    return Bundle.StickyScrollSideBar_accessibleDescription();
                 }
             };
         }

@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "json.tmLanguage.json", mimeType = "text/x-json")
-@MIMEResolver.ExtensionRegistration(displayName = "Json", mimeType = "text/x-json", extension = {"json"}, position = 2180)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_JsonGrammar_LOADER", mimeType = "text/x-json", extension = {"json"}, position = 2180)
+@org.openide.util.NbBundle.Messages("LBL_JsonGrammar_LOADER=Json")
 public final class JsonGrammar {
 
     private JsonGrammar() {

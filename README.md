@@ -234,6 +234,15 @@ VITALS' GATE knob makes **WCAG a shipping gate**: an inaccessible page
 closes the deploy gate exactly like a slow one.
 
 ### ⚡ Built to live in all day
+**In your language.** The IDE's own chrome — menus, dialogs, tooltips,
+status lines, Welcome, Options — speaks English, Español, Français,
+Deutsch, Русский and हिन्दी; pick yours in Options ▸ General ▸ Language
+and restart. Rack faceplates keep their panel vocabulary on purpose.
+
+![NMOX Studio running in French: the Welcome reading DÉMARRER, RÉCENTS and OUTILS, tabs for Rack de tâches and Navigateur, and the project pane's Nouveau / Ouvrir / Récents menu](docs/images/i18n-welcome-fr.png)
+
+![The same product started in Russian: НАЧАЛО, НЕДАВНИЕ and ИНСТРУМЕНТЫ on the Welcome, Добро пожаловать and Стойка задач as tab names, Рабочее место and Браузер in the tooling column](docs/images/i18n-welcome-ru.png)
+
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
   you (the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an

@@ -36,14 +36,22 @@ import org.openide.util.NbBundle.Messages;
     @ActionReference(path = "Editors/Popup", position = 1960),
     @ActionReference(path = "Menu/Edit", position = 1370)
 })
-@Messages("CTL_CopyAsMarkdown=Copy as Markdown")
+@Messages({
+    "CTL_CopyAsMarkdown=Copy as Markdown",
+    "CopyAsMarkdownAction_noFocus=Copy as Markdown: no editor has focus",
+    "CopyAsMarkdownAction_couldNotRead=Copy as Markdown: could not read the buffer",
+    "CopyAsMarkdownAction_copied=Copied {0} as Markdown — {1} in a ```{2} block",
+    "CopyAsMarkdownAction_wholeOf=the whole of {0}",
+    "CopyAsMarkdownAction_theSelection=the selection",
+    "CopyAsMarkdownAction_theBuffer=the buffer"
+})
 public final class CopyAsMarkdownAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
         JTextComponent editor = focusedEditor();
         if (editor == null) {
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown: no editor has focus");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownAction_noFocus());
             return;
         }
         Document doc = editor.getDocument();
@@ -53,16 +61,16 @@ public final class CopyAsMarkdownAction implements ActionListener {
         try {
             code = whole ? doc.getText(0, doc.getLength()) : selection;
         } catch (BadLocationException ex) {
-            StatusDisplayer.getDefault().setStatusText("Copy as Markdown: could not read the buffer");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownAction_couldNotRead());
             return;
         }
         String mime = mimeOf(doc);
         String name = fileName(doc);
         String block = CopyAsMarkdown.block(code, mime, name);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(block), null);
-        StatusDisplayer.getDefault().setStatusText("Copied " + (whole ? "the whole of " + name : "the selection")
-                + " as Markdown — " + Plural.of(CopyAsMarkdown.lineCount(code), "line")
-                + " in a ```" + CopyAsMarkdown.fence(mime, name) + " block");
+        StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownAction_copied(
+                whole ? Bundle.CopyAsMarkdownAction_wholeOf(name) : Bundle.CopyAsMarkdownAction_theSelection(),
+                Plural.of(CopyAsMarkdown.lineCount(code), "line"), CopyAsMarkdown.fence(mime, name)));
     }
 
     static JTextComponent focusedEditor() {
@@ -77,6 +85,6 @@ public final class CopyAsMarkdownAction implements ActionListener {
 
     static String fileName(Document doc) {
         Object sd = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        return sd instanceof DataObject dob ? dob.getPrimaryFile().getNameExt() : "the buffer";
+        return sd instanceof DataObject dob ? dob.getPrimaryFile().getNameExt() : Bundle.CopyAsMarkdownAction_theBuffer();
     }
 }

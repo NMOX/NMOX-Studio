@@ -61,6 +61,167 @@ import org.openide.util.RequestProcessor;
  * marshals) and the lists coalesce re-renders with a short timer so a
  * console storm cannot pin the paint thread.
  */
+@org.openide.util.NbBundle.Messages({
+    "DevToolsPanel_colMethod=Method",
+    "DevToolsPanel_colUrl=URL",
+    "DevToolsPanel_colStatus=Status",
+    "DevToolsPanel_colOk=OK",
+    "DevToolsPanel_colMs=ms",
+    "DevToolsPanel_colSize=Size",
+    "DevToolsPanel_colArea=Area",
+    "DevToolsPanel_colKey=Key",
+    "DevToolsPanel_colValue=Value",
+    "DevToolsPanel_colKind=Kind",
+    "DevToolsPanel_colName=Name",
+    "DevToolsPanel_pressRefresh=(press Refresh)",
+    "DevToolsPanel_domDetailsName=DOM element details",
+    "DevToolsPanel_svelteDetailsName=Svelte component details",
+    "DevToolsPanel_tabConsole=Console",
+    "DevToolsPanel_tabDom=DOM",
+    "DevToolsPanel_tabMotion=Motion",
+    "DevToolsPanel_tabNetwork=Network",
+    "DevToolsPanel_tabStorage=Storage",
+    "DevToolsPanel_consoleOutputName=Console output",
+    "DevToolsPanel_consoleInputName=Console input",
+    "DevToolsPanel_consolePlaceholder=Run JavaScript in the page\u2026",
+    "DevToolsPanel_clear=Clear",
+    "DevToolsPanel_explainButton=Explain error\u2026",
+    "DevToolsPanel_explainTip=Ask KVASIR about the page's last runtime error"
+        + " \u2014 sends the message and, when it resolved to your project,"
+        + " a few source lines around the failing line",
+    "DevToolsPanel_explainName=Explain the last runtime error",
+    "DevToolsPanel_kvasirAbsent=KVASIR is not available (rack module absent).",
+    "DevToolsPanel_noErrorToExplain=No runtime error to explain yet \u2014 the console is clean.",
+    "DevToolsPanel_errorTitle=Runtime error \u2014 {0}",
+    "DevToolsPanel_errorTitlePage=page",
+    "DevToolsPanel_explainDeclined=Explain declined or no API key \u2014 nothing was sent.",
+    "DevToolsPanel_consoleDropped={0} older entries dropped (cap {1})",
+    "DevToolsPanel_domTreeName=DOM tree",
+    "DevToolsPanel_networkTableName=Network requests",
+    "DevToolsPanel_refresh=Refresh",
+    "DevToolsPanel_pickElement=Pick element",
+    "DevToolsPanel_openSource=Open Source",
+    "DevToolsPanel_editStyle=Edit Style\u2026",
+    "DevToolsPanel_pickArmed=Click an element in the page\u2026",
+    "DevToolsPanel_pickFailed=Pick failed: {0}",
+    "DevToolsPanel_selectElementFirst=Select an element first",
+    "DevToolsPanel_valueName=Value",
+    "DevToolsPanel_propertyLabel=Property:",
+    "DevToolsPanel_valueLabel=Value:",
+    "DevToolsPanel_editStyleTitle=Edit Style on <{0}>",
+    "DevToolsPanel_propertyValueRequired=Property and value are both required",
+    "DevToolsPanel_noPage=No page: {0}",
+    "DevToolsPanel_appliedNoRule=Applied in page only \u2014 no stylesheet rule matches this element",
+    "DevToolsPanel_reasonInlineStyle=rule lives in an inline <style>, not a stylesheet file",
+    "DevToolsPanel_reasonNotServed=stylesheet {0} is not served from a project here",
+    "DevToolsPanel_reasonCompiled={0} is compiled output \u2014 edit the preprocessor source instead",
+    "DevToolsPanel_reasonUnsaved={0} has unsaved editor changes \u2014 save it first",
+    "DevToolsPanel_savedTo=Saved to {0}  ({1})",
+    "DevToolsPanel_appliedOnly=Applied in page only \u2014 {0}",
+    "DevToolsPanel_reasonNoWritable=no writable stylesheet rule found",
+    "DevToolsPanel_motionNameName=Animation name",
+    "DevToolsPanel_motionDurationName=Duration in milliseconds",
+    "DevToolsPanel_motionEasingName=Easing function",
+    "DevToolsPanel_motionIterationsName=Iteration count",
+    "DevToolsPanel_presetName=DHTML preset",
+    "DevToolsPanel_loadButton=Load",
+    "DevToolsPanel_loadName=Load preset",
+    "DevToolsPanel_loadedPreset=Loaded \u201c{0}\u201d \u2014 select an element in the DOM tab, then Play",
+    "DevToolsPanel_trackPropertyName=Track property",
+    "DevToolsPanel_addTrack=Add Track",
+    "DevToolsPanel_addTrackName=Add property track",
+    "DevToolsPanel_trackAdded=Double-click the {0} track to add keyframes",
+    "DevToolsPanel_removeTrack=Remove Track",
+    "DevToolsPanel_removeTrackName=Remove property track",
+    "DevToolsPanel_trackRemoved=Removed the {0} track",
+    "DevToolsPanel_noTrackNamed=No track named \"{0}\" \u2014 select a track or pick its exact name",
+    "DevToolsPanel_play=Play",
+    "DevToolsPanel_playName=Play animation preview",
+    "DevToolsPanel_stop=Stop",
+    "DevToolsPanel_stopName=Stop animation preview",
+    "DevToolsPanel_applyToSource=Apply to Source",
+    "DevToolsPanel_applyName=Apply animation to source stylesheet",
+    "DevToolsPanel_presetLabel=Preset:",
+    "DevToolsPanel_nameLabel=Name:",
+    "DevToolsPanel_durationLabel=Duration (ms):",
+    "DevToolsPanel_easingLabel=Easing:",
+    "DevToolsPanel_runsLabel=Runs:",
+    "DevToolsPanel_trackLabel=Track:",
+    "DevToolsPanel_selectInDomFirst=Select an element in the DOM tab first (Pick element works too)",
+    "DevToolsPanel_refused=Refused: {0}",
+    "DevToolsPanel_playing=Playing: {0}",
+    "DevToolsPanel_holdingAt=Holding at {0}% \u2014 press Play to run",
+    "DevToolsPanel_keyframeValueName=Keyframe value",
+    "DevToolsPanel_stopDialogTitle={0} at {1}%",
+    "DevToolsPanel_pickedNotInSnapshot=Picked element not in the snapshot (page changed?)",
+    "DevToolsPanel_noLocalSource=No local source for {0} (not served from a project here)",
+    "DevToolsPanel_cannotRead=Cannot read {0}: {1}",
+    "DevToolsPanel_notFoundInSource=<{0}> not found in {1} \u2014 likely script-generated",
+    "DevToolsPanel_noPageUrl=No page URL: {0}",
+    "DevToolsPanel_fileVanished=File vanished: {0}",
+    "DevToolsPanel_cannotOpen=Cannot open {0}: {1}",
+    "DevToolsPanel_detailId=id: {0}",
+    "DevToolsPanel_detailClass=class: {0}",
+    "DevToolsPanel_detailComputedStyle=Computed style:",
+    "DevToolsPanel_detailContrast=Contrast: {0}",
+    "DevToolsPanel_noPageParen=(no page: {0})",
+    "DevToolsPanel_networkNote=Requests made after DevTools injection (fetch/XHR); bodies not captured (v1)",
+    "DevToolsPanel_statusOk=ok",
+    "DevToolsPanel_statusFailed=failed",
+    "DevToolsPanel_networkDropped={0} older dropped (cap {1})",
+    "DevToolsPanel_storageNote=localStorage \u00b7 sessionStorage \u00b7 cookies \u2014 read-only (v1)",
+    "DevToolsPanel_kindProp=prop",
+    "DevToolsPanel_kindState=state",
+    "DevToolsPanel_kindDirective=directive",
+    "DevToolsPanel_noComponents=(no components)",
+    "DevToolsPanel_vueProduction=Vue {0} \u2014 production build, no component tree",
+    "DevToolsPanel_vueProductionTip=A production Vue build exposes neither "
+        + "app._instance nor __vueParentComponent, so no inspector "
+        + "can walk its components \u2014 the official Vue DevTools is "
+        + "limited the same way. Run a development build to inspect.",
+    "DevToolsPanel_noVue=No Vue detected \u2014 Vue 2 and 3 supported",
+    "DevToolsPanel_noVueTip=Angular has its own tab; React is not inspected.",
+    "DevToolsPanel_vueApp=Vue {0} app",
+    "DevToolsPanel_vueSummary=Vue {0} \u2014 {1} {2}",
+    "DevToolsPanel_componentOne=component",
+    "DevToolsPanel_componentMany=components",
+    "DevToolsPanel_lineAt=line {0}:{1}",
+    "DevToolsPanel_elementsOne={0} element",
+    "DevToolsPanel_elementsMany={0} elements",
+    "DevToolsPanel_filesOne={0} file",
+    "DevToolsPanel_filesMany={0} files",
+    "DevToolsPanel_noSvelte=(no Svelte)",
+    "DevToolsPanel_noSvelteDetected=No Svelte detected (dev builds only)",
+    "DevToolsPanel_noSvelteTip=Svelte compiles components away \u2014 no "
+        + "component instances, props, or state exist at runtime. "
+        + "A DEV build (vite dev) plants __svelte_meta source "
+        + "locations on rendered elements, which is what this pane "
+        + "shows; a production build offers nothing to inspect.",
+    "DevToolsPanel_svelteSources=Svelte sources",
+    "DevToolsPanel_svelteSummary=Svelte \u2014 {0} from {1}",
+    "DevToolsPanel_svelteSummaryTip=Source mapping from dev-mode __svelte_meta: "
+        + "which .svelte file and line rendered each element. Svelte "
+        + "compiles components away, so file/line mapping is all a "
+        + "runtime inspector can offer \u2014 select a line to highlight "
+        + "its element in the page.",
+    "DevToolsPanel_ngProduction=Angular {0} \u2014 production build, no component tree",
+    "DevToolsPanel_ngProductionTip=The page carries ng-version, so Angular IS "
+        + "here \u2014 but a production build strips window.ng, the debug "
+        + "API every inspector needs (the official Angular DevTools "
+        + "is limited the same way). Run a dev build (ng serve) to "
+        + "inspect components.",
+    "DevToolsPanel_noAngular=No Angular detected (dev builds only)",
+    "DevToolsPanel_noAngularTip=Detection looks for the ng-version marker "
+        + "and window.ng.getComponent, which Angular exposes in dev "
+        + "builds (ng serve). Vue and Svelte have their own tabs; "
+        + "React is not inspected.",
+    "DevToolsPanel_ngRootApp=Angular app",
+    "DevToolsPanel_ngRootVersion=Angular {0}",
+    "DevToolsPanel_ngSummary=Angular {0} \u2014 {1} {2}",
+    "DevToolsPanel_ngSummaryTip=Component instances from window.ng.getComponent "
+        + "(dev builds). Select a component to see its fields and host "
+        + "directives, and to highlight its host element in the page."
+})
 public final class DevToolsPanel extends JPanel {
 
     private static final RequestProcessor RP = new RequestProcessor("Browser DevTools", 1);
@@ -75,13 +236,13 @@ public final class DevToolsPanel extends JPanel {
     private final javax.swing.Timer consoleSync;
 
     // Network tab
-    private final DefaultTableModel networkTable = readOnlyTable("Method", "URL", "Status", "OK", "ms", "Size");
+    private final DefaultTableModel networkTable = readOnlyTable(Bundle.DevToolsPanel_colMethod(), Bundle.DevToolsPanel_colUrl(), Bundle.DevToolsPanel_colStatus(), Bundle.DevToolsPanel_colOk(), Bundle.DevToolsPanel_colMs(), Bundle.DevToolsPanel_colSize());
     private final JLabel networkDropped = new JLabel();
     private final javax.swing.Timer networkSync;
 
     // DOM tab
-    private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea domDetails = readOnlyArea("DOM element details");
+    private final DefaultTreeModel domTree = new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.DevToolsPanel_pressRefresh()));
+    private final JTextArea domDetails = readOnlyArea(Bundle.DevToolsPanel_domDetailsName());
     private final JLabel domStatus = new JLabel(" ");
     private volatile DomNode lastDomRoot;
     private javax.swing.Timer pickPoll;
@@ -103,21 +264,21 @@ public final class DevToolsPanel extends JPanel {
             new org.nmox.studio.ui.browser.devtools.MotionTargetGuard();
 
     // Storage tab
-    private final DefaultTableModel storageTable = readOnlyTable("Area", "Key", "Value");
+    private final DefaultTableModel storageTable = readOnlyTable(Bundle.DevToolsPanel_colArea(), Bundle.DevToolsPanel_colKey(), Bundle.DevToolsPanel_colValue());
 
     // Vue tab
-    private final DefaultTreeModel vueTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final DefaultTableModel vueDetails = readOnlyTable("Kind", "Name", "Value");
+    private final DefaultTreeModel vueTree = new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.DevToolsPanel_pressRefresh()));
+    private final DefaultTableModel vueDetails = readOnlyTable(Bundle.DevToolsPanel_colKind(), Bundle.DevToolsPanel_colName(), Bundle.DevToolsPanel_colValue());
     private final JLabel vueStatus = new JLabel(" ");
 
     // Svelte tab
-    private final DefaultTreeModel svelteTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final JTextArea svelteDetails = readOnlyArea("Svelte component details");
+    private final DefaultTreeModel svelteTree = new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.DevToolsPanel_pressRefresh()));
+    private final JTextArea svelteDetails = readOnlyArea(Bundle.DevToolsPanel_svelteDetailsName());
     private final JLabel svelteStatus = new JLabel(" ");
 
     // Angular tab
-    private final DefaultTreeModel ngTree = new DefaultTreeModel(new DefaultMutableTreeNode("(press Refresh)"));
-    private final DefaultTableModel ngDetails = readOnlyTable("Kind", "Name", "Value");
+    private final DefaultTreeModel ngTree = new DefaultTreeModel(new DefaultMutableTreeNode(Bundle.DevToolsPanel_pressRefresh()));
+    private final DefaultTableModel ngDetails = readOnlyTable(Bundle.DevToolsPanel_colKind(), Bundle.DevToolsPanel_colName(), Bundle.DevToolsPanel_colValue());
     private final JLabel ngStatus = new JLabel(" ");
 
     private final RuntimeErrors runtimeErrors;
@@ -134,11 +295,11 @@ public final class DevToolsPanel extends JPanel {
         console.setListener(consoleSync::restart);
         network.setListener(networkSync::restart);
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Console", consoleTab());
-        tabs.addTab("DOM", domTab());
-        tabs.addTab("Motion", motionTab());
-        tabs.addTab("Network", networkTab());
-        tabs.addTab("Storage", storageTab());
+        tabs.addTab(Bundle.DevToolsPanel_tabConsole(), consoleTab());
+        tabs.addTab(Bundle.DevToolsPanel_tabDom(), domTab());
+        tabs.addTab(Bundle.DevToolsPanel_tabMotion(), motionTab());
+        tabs.addTab(Bundle.DevToolsPanel_tabNetwork(), networkTab());
+        tabs.addTab(Bundle.DevToolsPanel_tabStorage(), storageTab());
         tabs.addTab("Vue", vueTab());
         tabs.addTab("Svelte", svelteTab());
         tabs.addTab("Angular", angularTab());
@@ -158,15 +319,15 @@ public final class DevToolsPanel extends JPanel {
     private JPanel consoleTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JList<ConsoleModel.Entry> list = new JList<>(consoleList);
-        list.getAccessibleContext().setAccessibleName("Console output");
+        list.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleOutputName());
         list.setCellRenderer(new ConsoleRenderer());
         panel.add(consoleDropped, BorderLayout.NORTH);
         consoleDropped.setVisible(false);
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel south = new JPanel(new BorderLayout(4, 0));
         JTextField repl = new JTextField();
-        repl.getAccessibleContext().setAccessibleName("Console input");
-        repl.putClientProperty("JTextField.placeholderText", "Run JavaScript in the page…");
+        repl.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleInputName());
+        repl.putClientProperty("JTextField.placeholderText", Bundle.DevToolsPanel_consolePlaceholder());
         repl.addActionListener(e -> {
             String expr = repl.getText();
             if (expr == null || expr.isBlank()) {
@@ -191,16 +352,14 @@ public final class DevToolsPanel extends JPanel {
                     error -> runner.run(DevScripts.statementScript(expr), render,
                             error2 -> console.add("error", error2, System.currentTimeMillis())));
         });
-        JButton clear = new JButton("Clear");
+        JButton clear = new JButton(Bundle.DevToolsPanel_clear());
         clear.addActionListener(e -> console.clear());
         // the learning multiplier (v2.39.2): the located error the page
         // just threw, explained — through the KvasirAsk seam with its
         // own consent kind; a beginner's broken page becomes a lesson
-        JButton explain = new JButton("Explain error…");
-        explain.setToolTipText("Ask KVASIR about the page's last runtime error"
-                + " — sends the message and, when it resolved to your project,"
-                + " a few source lines around the failing line");
-        explain.getAccessibleContext().setAccessibleName("Explain the last runtime error");
+        JButton explain = new JButton(Bundle.DevToolsPanel_explainButton());
+        explain.setToolTipText(Bundle.DevToolsPanel_explainTip());
+        explain.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_explainName());
         explain.addActionListener(e -> explainLastError());
         javax.swing.JPanel east = new javax.swing.JPanel(
                 new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
@@ -218,7 +377,7 @@ public final class DevToolsPanel extends JPanel {
         org.nmox.studio.core.spi.KvasirAsk kvasir = org.nmox.studio.core.spi.KvasirAsk.find();
         if (kvasir == null) {
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("KVASIR is not available (rack module absent).");
+                    .setStatusText(Bundle.DevToolsPanel_kvasirAbsent());
             return;
         }
         java.util.List<String> consoleErrors = new java.util.ArrayList<>();
@@ -232,7 +391,7 @@ public final class DevToolsPanel extends JPanel {
                 consoleErrors);
         if (target == null) {
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("No runtime error to explain yet — the console is clean.");
+                    .setStatusText(Bundle.DevToolsPanel_noErrorToExplain());
             return;
         }
         String message = target.message();
@@ -240,13 +399,13 @@ public final class DevToolsPanel extends JPanel {
         int line = target.line();
         boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                 "browser.error",
-                "Runtime error — " + (file == null ? "page" : file.getName() + ":" + line),
+                Bundle.DevToolsPanel_errorTitle(file == null ? Bundle.DevToolsPanel_errorTitlePage() : file.getName() + ":" + line),
                 BrowserErrorDisclosure.what(file, line),
                 BrowserErrorDisclosure.body(message, file, line),
                 "Why does this error happen here, and what should I change?"));
         if (!started) {
             org.openide.awt.StatusDisplayer.getDefault()
-                    .setStatusText("Explain declined or no API key — nothing was sent.");
+                    .setStatusText(Bundle.DevToolsPanel_explainDeclined());
         }
     }
 
@@ -256,7 +415,7 @@ public final class DevToolsPanel extends JPanel {
             consoleList.addElement(e);
         }
         long dropped = console.droppedCount();
-        consoleDropped.setText("  " + dropped + " older entries dropped (cap " + ConsoleModel.CAP + ")");
+        consoleDropped.setText("  " + Bundle.DevToolsPanel_consoleDropped(String.valueOf(dropped), String.valueOf(ConsoleModel.CAP)));
         consoleDropped.setVisible(dropped > 0);
     }
 
@@ -285,7 +444,7 @@ public final class DevToolsPanel extends JPanel {
         // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
         // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
         JTree tree = new JTree(model);
-        tree.getAccessibleContext().setAccessibleName("DOM tree");
+        tree.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_domTreeName());
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);
         }
@@ -298,7 +457,7 @@ public final class DevToolsPanel extends JPanel {
         // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
         // (v1.206.0). The safety is identical (html.disable on the renderer).
         JTable table = new JTable(model);
-        table.getAccessibleContext().setAccessibleName("Network requests");
+        table.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_networkTableName());
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
         table.setDefaultRenderer(Object.class, plain);
@@ -343,11 +502,11 @@ public final class DevToolsPanel extends JPanel {
         domTreeView = tree;
         tree.setRootVisible(true);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshDom());
-        javax.swing.JToggleButton pick = new javax.swing.JToggleButton("Pick element");
-        JButton openSource = new JButton("Open Source");
-        JButton editStyle = new JButton("Edit Style…");
+        javax.swing.JToggleButton pick = new javax.swing.JToggleButton(Bundle.DevToolsPanel_pickElement());
+        JButton openSource = new JButton(Bundle.DevToolsPanel_openSource());
+        JButton editStyle = new JButton(Bundle.DevToolsPanel_editStyle());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
         bar.add(pick);
@@ -394,9 +553,9 @@ public final class DevToolsPanel extends JPanel {
         pickPoll.setRepeats(true);
         pick.addActionListener(e -> {
             if (pick.isSelected()) {
-                domStatus.setText("Click an element in the page…");
+                domStatus.setText(Bundle.DevToolsPanel_pickArmed());
                 runner.run(DevScripts.PICK_ARM, r -> { }, err -> {
-                    domStatus.setText("Pick failed: " + err);
+                    domStatus.setText(Bundle.DevToolsPanel_pickFailed(err));
                     SwingUtilities.invokeLater(() -> {
                         pickPoll.stop();
                         pick.setSelected(false);
@@ -433,21 +592,21 @@ public final class DevToolsPanel extends JPanel {
      */
     private void editStyle(DomNode node) {
         if (node == null || node.isPlaceholder()) {
-            domStatus.setText("Select an element first");
+            domStatus.setText(Bundle.DevToolsPanel_selectElementFirst());
             return;
         }
         javax.swing.JComboBox<String> prop = new javax.swing.JComboBox<>(
                 StyleSummary.KEYS.toArray(String[]::new));
         prop.setEditable(true);
         JTextField value = new JTextField(18);
-        value.getAccessibleContext().setAccessibleName("Value");
+        value.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_valueName());
         JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
-        form.add(new JLabel("Property:"));
+        form.add(new JLabel(Bundle.DevToolsPanel_propertyLabel()));
         form.add(prop);
-        form.add(new JLabel("Value:"));
+        form.add(new JLabel(Bundle.DevToolsPanel_valueLabel()));
         form.add(value);
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                form, "Edit Style on <" + node.tag + ">");
+                form, Bundle.DevToolsPanel_editStyleTitle(node.tag));
         if (org.openide.DialogDisplayer.getDefault().notify(dd)
                 != org.openide.DialogDescriptor.OK_OPTION) {
             return;
@@ -455,7 +614,7 @@ public final class DevToolsPanel extends JPanel {
         String property = String.valueOf(prop.getEditor().getItem()).trim();
         String newValue = value.getText().trim();
         if (property.isEmpty() || newValue.isEmpty()) {
-            domStatus.setText("Property and value are both required");
+            domStatus.setText(Bundle.DevToolsPanel_propertyValueRequired());
             return;
         }
         // live preview first — the page shows the tweak even when the
@@ -464,7 +623,7 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.applyInlineStyle(node.path, property, newValue), r -> { }, err -> { });
         runner.run(DevScripts.matchedRules(node.path),
                 json -> RP.post(() -> writeBack(json, property, newValue)),
-                err -> domStatus.setText("No page: " + err));
+                err -> domStatus.setText(Bundle.DevToolsPanel_noPage(err)));
     }
 
     /** RP-side: pick the last cascade-matching rule with a writable source. */
@@ -490,7 +649,7 @@ public final class DevToolsPanel extends JPanel {
         java.util.List<Object> rules = org.nmox.studio.ui.browser.devtools.JsonLite.asArray(
                 org.nmox.studio.ui.browser.devtools.JsonLite.parse(rulesJson));
         if (rules.isEmpty()) {
-            report.accept("Applied in page only — no stylesheet rule matches this element");
+            report.accept(Bundle.DevToolsPanel_appliedNoRule());
             return;
         }
         org.nmox.studio.core.spi.LiveServings servings = org.nmox.studio.core.spi.LiveServings.find();
@@ -513,13 +672,13 @@ public final class DevToolsPanel extends JPanel {
                 continue;
             }
             if (href.isEmpty()) {
-                firstReason = keep(firstReason, "rule lives in an inline <style>, not a stylesheet file");
+                firstReason = keep(firstReason, Bundle.DevToolsPanel_reasonInlineStyle());
                 continue;
             }
             org.nmox.studio.ui.browser.devtools.PageSourceResolver.Resolved resolved =
                     org.nmox.studio.ui.browser.devtools.PageSourceResolver.resolve(href, snapshot);
             if (resolved == null) {
-                firstReason = keep(firstReason, "stylesheet " + href + " is not served from a project here");
+                firstReason = keep(firstReason, Bundle.DevToolsPanel_reasonNotServed(href));
                 continue;
             }
             java.io.File cssFile = resolved.file();
@@ -531,8 +690,7 @@ public final class DevToolsPanel extends JPanel {
             if (new java.io.File(dir, base + ".scss").isFile()
                     || new java.io.File(dir, base + ".less").isFile()
                     || new java.io.File(dir, base + ".sass").isFile()) {
-                firstReason = keep(firstReason, cssFile.getName()
-                        + " is compiled output — edit the preprocessor source instead");
+                firstReason = keep(firstReason, Bundle.DevToolsPanel_reasonCompiled(cssFile.getName()));
                 continue;
             }
             try {
@@ -541,8 +699,7 @@ public final class DevToolsPanel extends JPanel {
                 if (fo != null) {
                     org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
                     if (dobj.isModified()) {
-                        firstReason = keep(firstReason, cssFile.getName()
-                                + " has unsaved editor changes — save it first");
+                        firstReason = keep(firstReason, Bundle.DevToolsPanel_reasonUnsaved(cssFile.getName()));
                         continue;
                     }
                 }
@@ -557,14 +714,14 @@ public final class DevToolsPanel extends JPanel {
                 if (fo != null) {
                     fo.refresh();
                 }
-                report.accept("Saved to " + cssFile.getName() + "  (" + selector + ")");
+                report.accept(Bundle.DevToolsPanel_savedTo(cssFile.getName(), selector));
                 return;
             } catch (java.io.IOException ex) {
                 firstReason = keep(firstReason, cssFile.getName() + ": " + ex.getMessage());
             }
         }
-        report.accept("Applied in page only — "
-                + (firstReason != null ? firstReason : "no writable stylesheet rule found"));
+        report.accept(Bundle.DevToolsPanel_appliedOnly(
+                firstReason != null ? firstReason : Bundle.DevToolsPanel_reasonNoWritable()));
     }
 
     // ---- Motion (v2.12.0): DHTML, reborn as a keyframe timeline ---------
@@ -581,18 +738,18 @@ public final class DevToolsPanel extends JPanel {
      */
     private JPanel motionTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        motionName.getAccessibleContext().setAccessibleName("Animation name");
-        motionDuration.getAccessibleContext().setAccessibleName("Duration in milliseconds");
-        motionEasing.getAccessibleContext().setAccessibleName("Easing function");
-        motionIterations.getAccessibleContext().setAccessibleName("Iteration count");
+        motionName.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_motionNameName());
+        motionDuration.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_motionDurationName());
+        motionEasing.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_motionEasingName());
+        motionIterations.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_motionIterationsName());
 
         javax.swing.JComboBox<String> presets = new javax.swing.JComboBox<>(
                 org.nmox.studio.ui.browser.devtools.Keyframes.presets().stream()
                         .map(org.nmox.studio.ui.browser.devtools.Keyframes.Spec::name)
                         .toArray(String[]::new));
-        presets.getAccessibleContext().setAccessibleName("DHTML preset");
-        JButton load = new JButton("Load");
-        load.getAccessibleContext().setAccessibleName("Load preset");
+        presets.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_presetName());
+        JButton load = new JButton(Bundle.DevToolsPanel_loadButton());
+        load.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_loadName());
         load.addActionListener(e -> {
             String wanted = String.valueOf(presets.getSelectedItem());
             org.nmox.studio.ui.browser.devtools.Keyframes.presets().stream()
@@ -606,8 +763,7 @@ public final class DevToolsPanel extends JPanel {
                                         : String.valueOf(spec.iterations()));
                         motionStrip.model().load(spec.frames());
                         motionStrip.refresh();
-                        motionStatus.setText("Loaded \u201c" + wanted
-                                + "\u201d — select an element in the DOM tab, then Play");
+                        motionStatus.setText(Bundle.DevToolsPanel_loadedPreset(wanted));
                         motionPreviewIfPlaying();
                     });
         });
@@ -616,19 +772,19 @@ public final class DevToolsPanel extends JPanel {
                 new String[]{"transform", "opacity", "filter", "background-color",
                     "color", "letter-spacing", "border-radius", "width"});
         trackProp.setEditable(true);
-        trackProp.getAccessibleContext().setAccessibleName("Track property");
-        JButton addTrack = new JButton("Add Track");
-        addTrack.getAccessibleContext().setAccessibleName("Add property track");
+        trackProp.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_trackPropertyName());
+        JButton addTrack = new JButton(Bundle.DevToolsPanel_addTrack());
+        addTrack.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_addTrackName());
         addTrack.addActionListener(e -> {
             String prop = String.valueOf(trackProp.getEditor().getItem()).trim();
             if (!prop.isEmpty()) {
                 motionStrip.model().addTrack(prop);
                 motionStrip.refresh();
-                motionStatus.setText("Double-click the " + prop + " track to add keyframes");
+                motionStatus.setText(Bundle.DevToolsPanel_trackAdded(prop));
             }
         });
-        JButton delTrack = new JButton("Remove Track");
-        delTrack.getAccessibleContext().setAccessibleName("Remove property track");
+        JButton delTrack = new JButton(Bundle.DevToolsPanel_removeTrack());
+        delTrack.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_removeTrackName());
         delTrack.addActionListener(e -> {
             String prop = motionStrip.selectedProperty() != null
                     ? motionStrip.selectedProperty()
@@ -638,40 +794,39 @@ public final class DevToolsPanel extends JPanel {
             if (motionStrip.model().removeTrack(prop)) {
                 motionStrip.refresh();
                 motionPreviewIfPlaying();
-                motionStatus.setText("Removed the " + prop + " track");
+                motionStatus.setText(Bundle.DevToolsPanel_trackRemoved(prop));
             } else {
-                motionStatus.setText("No track named \"" + prop
-                        + "\" — select a track or pick its exact name");
+                motionStatus.setText(Bundle.DevToolsPanel_noTrackNamed(prop));
             }
         });
 
         motionStrip = new TimelineStrip(this::motionScrub, this::motionPreviewIfPlaying,
                 this::editStopValue);
 
-        JButton play = new JButton("Play");
-        play.getAccessibleContext().setAccessibleName("Play animation preview");
+        JButton play = new JButton(Bundle.DevToolsPanel_play());
+        play.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_playName());
         play.addActionListener(e -> motionPlay());
-        JButton stop = new JButton("Stop");
-        stop.getAccessibleContext().setAccessibleName("Stop animation preview");
+        JButton stop = new JButton(Bundle.DevToolsPanel_stop());
+        stop.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_stopName());
         stop.addActionListener(e -> motionStop());
-        JButton apply = new JButton("Apply to Source");
-        apply.getAccessibleContext().setAccessibleName("Apply animation to source stylesheet");
+        JButton apply = new JButton(Bundle.DevToolsPanel_applyToSource());
+        apply.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_applyName());
         apply.addActionListener(e -> motionApply());
 
         JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        barTop.add(new JLabel("Preset:"));
+        barTop.add(new JLabel(Bundle.DevToolsPanel_presetLabel()));
         barTop.add(presets);
         barTop.add(load);
-        barTop.add(new JLabel("Name:"));
+        barTop.add(new JLabel(Bundle.DevToolsPanel_nameLabel()));
         barTop.add(motionName);
-        barTop.add(new JLabel("Duration (ms):"));
+        barTop.add(new JLabel(Bundle.DevToolsPanel_durationLabel()));
         barTop.add(motionDuration);
-        barTop.add(new JLabel("Easing:"));
+        barTop.add(new JLabel(Bundle.DevToolsPanel_easingLabel()));
         barTop.add(motionEasing);
-        barTop.add(new JLabel("Runs:"));
+        barTop.add(new JLabel(Bundle.DevToolsPanel_runsLabel()));
         barTop.add(motionIterations);
         JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        barTracks.add(new JLabel("Track:"));
+        barTracks.add(new JLabel(Bundle.DevToolsPanel_trackLabel()));
         barTracks.add(trackProp);
         barTracks.add(addTrack);
         barTracks.add(delTrack);
@@ -693,8 +848,7 @@ public final class DevToolsPanel extends JPanel {
     private DomNode motionTarget() {
         DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
         if (node == null || node.isPlaceholder()) {
-            motionStatus.setText(
-                    "Select an element in the DOM tab first (Pick element works too)");
+            motionStatus.setText(Bundle.DevToolsPanel_selectInDomFirst());
             return null;
         }
         return node;
@@ -719,7 +873,7 @@ public final class DevToolsPanel extends JPanel {
         org.nmox.studio.ui.browser.devtools.Keyframes.Spec spec = motionSpec();
         String bad = org.nmox.studio.ui.browser.devtools.Keyframes.problem(spec);
         if (bad != null) {
-            motionStatus.setText("Refused: " + bad);
+            motionStatus.setText(Bundle.DevToolsPanel_refused(bad));
             return;
         }
         motionPlaying = true;
@@ -739,7 +893,7 @@ public final class DevToolsPanel extends JPanel {
                 r -> { }, err -> { });
         runner.run(DevScripts.applyInlineStyle(node.path, "animation", spec.animationValue()),
                 r -> { }, err -> { });
-        motionStatus.setText("Playing: " + spec.animationValue());
+        motionStatus.setText(Bundle.DevToolsPanel_playing(spec.animationValue()));
     }
 
     private void motionStop() {
@@ -797,16 +951,16 @@ public final class DevToolsPanel extends JPanel {
                 r -> { }, err -> { });
         // scrubbing pauses the preview — the status must stop claiming
         // "Playing" (review find: a lying status is a small dishonesty)
-        motionStatus.setText("Holding at " + percent + "% — press Play to run");
+        motionStatus.setText(Bundle.DevToolsPanel_holdingAt(String.valueOf(percent)));
     }
 
     /** Double-click on a diamond: edit that stop's value. */
     private void editStopValue(String property, Integer percent) {
         String current = motionStrip.model().stops(property).get(percent);
         JTextField field = new JTextField(current == null ? "" : current, 18);
-        field.getAccessibleContext().setAccessibleName("Keyframe value");
+        field.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_keyframeValueName());
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                field, property + " at " + percent + "%");
+                field, Bundle.DevToolsPanel_stopDialogTitle(property, String.valueOf(percent)));
         if (org.openide.DialogDisplayer.getDefault().notify(dd)
                 == org.openide.DialogDescriptor.OK_OPTION && !field.getText().isBlank()) {
             motionStrip.model().setStop(property, percent, field.getText().trim());
@@ -829,7 +983,7 @@ public final class DevToolsPanel extends JPanel {
         org.nmox.studio.ui.browser.devtools.Keyframes.Spec spec = motionSpec();
         String bad = org.nmox.studio.ui.browser.devtools.Keyframes.problem(spec);
         if (bad != null) {
-            motionStatus.setText("Refused: " + bad);
+            motionStatus.setText(Bundle.DevToolsPanel_refused(bad));
             return;
         }
         runner.run(DevScripts.injectMotionKeyframes(spec.block()), r -> { }, err -> { });
@@ -851,7 +1005,7 @@ public final class DevToolsPanel extends JPanel {
                         },
                         text -> SwingUtilities.invokeLater(
                                 () -> motionStatus.setText(PlainText.plain(text))))),
-                err -> motionStatus.setText("No page: " + err));
+                err -> motionStatus.setText(Bundle.DevToolsPanel_noPage(err)));
     }
 
     private static String keep(String existing, String candidate) {
@@ -885,10 +1039,10 @@ public final class DevToolsPanel extends JPanel {
                     tree.scrollPathToVisible(tp);
                     domStatus.setText(" ");
                 } else {
-                    domStatus.setText("Picked element not in the snapshot (page changed?)");
+                    domStatus.setText(Bundle.DevToolsPanel_pickedNotInSnapshot());
                 }
             });
-        }), err -> domStatus.setText("Pick failed: " + err));
+        }), err -> domStatus.setText(Bundle.DevToolsPanel_pickFailed(err)));
     }
 
     private static DefaultMutableTreeNode findByPath(DefaultMutableTreeNode swingRoot, List<Integer> path) {
@@ -914,7 +1068,7 @@ public final class DevToolsPanel extends JPanel {
      */
     private void openSource(DomNode node) {
         if (node == null || node.isPlaceholder()) {
-            domStatus.setText("Select an element first");
+            domStatus.setText(Bundle.DevToolsPanel_selectElementFirst());
             return;
         }
         DomNode root = lastDomRoot;
@@ -926,24 +1080,23 @@ public final class DevToolsPanel extends JPanel {
             org.nmox.studio.ui.browser.devtools.PageSourceResolver.Resolved resolved =
                     org.nmox.studio.ui.browser.devtools.PageSourceResolver.resolve(url, snapshot);
             if (resolved == null) {
-                status("No local source for " + url + " (not served from a project here)");
+                status(Bundle.DevToolsPanel_noLocalSource(url));
                 return;
             }
             String html;
             try {
                 html = java.nio.file.Files.readString(resolved.file().toPath());
             } catch (java.io.IOException ex) {
-                status("Cannot read " + resolved.file().getName() + ": " + ex.getMessage());
+                status(Bundle.DevToolsPanel_cannotRead(resolved.file().getName(), ex.getMessage()));
                 return;
             }
             int line = org.nmox.studio.ui.browser.devtools.HtmlSourceLocator.lineOf(html, node, root);
             if (line < 0) {
-                status("<" + node.tag + "> not found in " + resolved.file().getName()
-                        + " — likely script-generated");
+                status(Bundle.DevToolsPanel_notFoundInSource(node.tag, resolved.file().getName()));
                 return;
             }
             openAt(resolved.file(), line);
-        }), err -> domStatus.setText("No page URL: " + err));
+        }), err -> domStatus.setText(Bundle.DevToolsPanel_noPageUrl(err)));
     }
 
     private void status(String text) {
@@ -958,7 +1111,7 @@ public final class DevToolsPanel extends JPanel {
                         org.openide.filesystems.FileUtil.toFileObject(
                                 org.openide.filesystems.FileUtil.normalizeFile(file));
                 if (fo == null) {
-                    domStatus.setText("File vanished: " + file.getName());
+                    domStatus.setText(Bundle.DevToolsPanel_fileVanished(file.getName()));
                     return;
                 }
                 org.openide.loaders.DataObject dobj = org.openide.loaders.DataObject.find(fo);
@@ -976,7 +1129,7 @@ public final class DevToolsPanel extends JPanel {
                     }
                 }
             } catch (org.openide.loaders.DataObjectNotFoundException | IndexOutOfBoundsException ex) {
-                domStatus.setText("Cannot open " + file.getName() + ": " + ex.getMessage());
+                domStatus.setText(Bundle.DevToolsPanel_cannotOpen(file.getName(), ex.getMessage()));
             }
         });
     }
@@ -993,17 +1146,17 @@ public final class DevToolsPanel extends JPanel {
         StringBuilder sb = new StringBuilder();
         sb.append('<').append(node.tag).append(">\n");
         if (!node.id.isEmpty()) {
-            sb.append("id: ").append(node.id).append('\n');
+            sb.append(Bundle.DevToolsPanel_detailId(node.id)).append('\n');
         }
         if (!node.classes.isEmpty()) {
-            sb.append("class: ").append(node.classes).append('\n');
+            sb.append(Bundle.DevToolsPanel_detailClass(node.classes)).append('\n');
         }
         for (String a : node.attrs) {
             sb.append(a).append('\n');
         }
         Map<String, String> style = StyleSummary.parse(styleJson);
         if (!style.isEmpty()) {
-            sb.append("\nComputed style:\n");
+            sb.append('\n').append(Bundle.DevToolsPanel_detailComputedStyle()).append('\n');
             for (Map.Entry<String, String> e : style.entrySet()) {
                 sb.append("  ").append(e.getKey()).append(": ").append(e.getValue()).append('\n');
             }
@@ -1014,7 +1167,7 @@ public final class DevToolsPanel extends JPanel {
                     org.nmox.studio.ui.browser.devtools.WcagContrast.of(
                             style.get("color"), style.get("background-color"));
             if (contrast != null) {
-                sb.append("\nContrast: ").append(contrast.summary()).append('\n');
+                sb.append('\n').append(Bundle.DevToolsPanel_detailContrast(contrast.summary())).append('\n');
             }
         }
         return sb.toString();
@@ -1028,7 +1181,7 @@ public final class DevToolsPanel extends JPanel {
                 domTree.setRoot(swingRoot);
                 lastDomRoot = root;
             });
-        }), err -> domTree.setRoot(new DefaultMutableTreeNode("(no page: " + err + ")")));
+        }), err -> domTree.setRoot(new DefaultMutableTreeNode(Bundle.DevToolsPanel_noPageParen(err))));
     }
 
     private static DefaultMutableTreeNode toSwing(DomNode node) {
@@ -1044,10 +1197,10 @@ public final class DevToolsPanel extends JPanel {
     private JPanel networkTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        JButton clear = new JButton("Clear");
+        JButton clear = new JButton(Bundle.DevToolsPanel_clear());
         clear.addActionListener(e -> network.clear());
         bar.add(clear);
-        bar.add(new JLabel("Requests made after DevTools injection (fetch/XHR); bodies not captured (v1)"));
+        bar.add(new JLabel(Bundle.DevToolsPanel_networkNote()));
         bar.add(networkDropped);
         networkDropped.setVisible(false);
         panel.add(bar, BorderLayout.NORTH);
@@ -1062,11 +1215,11 @@ public final class DevToolsPanel extends JPanel {
         for (NetworkModel.Entry e : network.entries()) {
             networkTable.addRow(new Object[]{e.method(), e.url(),
                 e.status() == 0 ? "—" : String.valueOf(e.status()),
-                e.ok() ? "ok" : "failed", String.valueOf(e.durationMillis()),
+                e.ok() ? Bundle.DevToolsPanel_statusOk() : Bundle.DevToolsPanel_statusFailed(), String.valueOf(e.durationMillis()),
                 e.sizeBytes() < 0 ? "?" : String.valueOf(e.sizeBytes())});
         }
         long dropped = network.droppedCount();
-        networkDropped.setText(PlainText.plain(dropped + " older dropped (cap " + NetworkModel.CAP + ")"));
+        networkDropped.setText(PlainText.plain(Bundle.DevToolsPanel_networkDropped(String.valueOf(dropped), String.valueOf(NetworkModel.CAP))));
         networkDropped.setVisible(dropped > 0);
     }
 
@@ -1075,10 +1228,10 @@ public final class DevToolsPanel extends JPanel {
     private JPanel storageTab() {
         JPanel panel = new JPanel(new BorderLayout());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshStorage());
         bar.add(refresh);
-        bar.add(new JLabel("localStorage · sessionStorage · cookies — read-only (v1)"));
+        bar.add(new JLabel(Bundle.DevToolsPanel_storageNote()));
         panel.add(bar, BorderLayout.NORTH);
         JTable table = safeTable(storageTable);
         table.getColumnModel().getColumn(2).setPreferredWidth(420);
@@ -1104,7 +1257,7 @@ public final class DevToolsPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         JTree tree = safeTree(vueTree);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshVue());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
@@ -1119,10 +1272,10 @@ public final class DevToolsPanel extends JPanel {
             if (last instanceof DefaultMutableTreeNode n && n.getUserObject() instanceof VueNode vn) {
                 vueDetails.setRowCount(0);
                 for (Map.Entry<String, String> p : vn.props.entrySet()) {
-                    vueDetails.addRow(new Object[]{"prop", p.getKey(), p.getValue()});
+                    vueDetails.addRow(new Object[]{Bundle.DevToolsPanel_kindProp(), p.getKey(), p.getValue()});
                 }
                 for (Map.Entry<String, String> s : vn.state.entrySet()) {
-                    vueDetails.addRow(new Object[]{"state", s.getKey(), s.getValue()});
+                    vueDetails.addRow(new Object[]{Bundle.DevToolsPanel_kindState(), s.getKey(), s.getValue()});
                 }
                 if (!vn.domPath.isEmpty()) {
                     runner.run(DevScripts.highlight(vn.domPath), r -> { }, err -> { });
@@ -1136,13 +1289,13 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.VUE_SNAPSHOT, json -> RP.post(() -> {
             VueTree parsed = VueSnapshotParser.parse(json);
             SwingUtilities.invokeLater(() -> applyVue(parsed));
-        }), err -> vueStatus.setText("(no page: " + err + ")"));
+        }), err -> vueStatus.setText(Bundle.DevToolsPanel_noPageParen(err)));
     }
 
     private void applyVue(VueTree parsed) {
         vueDetails.setRowCount(0);
         if (parsed.empty()) {
-            vueTree.setRoot(new DefaultMutableTreeNode("(no components)"));
+            vueTree.setRoot(new DefaultMutableTreeNode(Bundle.DevToolsPanel_noComponents()));
             if (!parsed.productionOnly.isEmpty()) {
                 // Vue IS here, but a production build hides its component
                 // tree from every inspector — say that instead of "no Vue",
@@ -1152,26 +1305,22 @@ public final class DevToolsPanel extends JPanel {
                 // height hides — an over-long status reads as no status at
                 // all (found live in the v1.206.0 gauntlet). The full
                 // explanation rides the tooltip.
-                vueStatus.setText("Vue " + parsed.productionOnly
-                        + " — production build, no component tree");
-                vueStatus.setToolTipText("A production Vue build exposes neither "
-                        + "app._instance nor __vueParentComponent, so no inspector "
-                        + "can walk its components — the official Vue DevTools is "
-                        + "limited the same way. Run a development build to inspect.");
+                vueStatus.setText(Bundle.DevToolsPanel_vueProduction(parsed.productionOnly));
+                vueStatus.setToolTipText(Bundle.DevToolsPanel_vueProductionTip());
             } else {
-                vueStatus.setText("No Vue detected — Vue 2 and 3 supported");
-                vueStatus.setToolTipText("Angular has its own tab; React is not inspected.");
+                vueStatus.setText(Bundle.DevToolsPanel_noVue());
+                vueStatus.setToolTipText(Bundle.DevToolsPanel_noVueTip());
             }
             return;
         }
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Vue " + parsed.version + " app");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(Bundle.DevToolsPanel_vueApp(String.valueOf(parsed.version)));
         int[] count = {0};
         for (VueNode r : parsed.roots) {
             root.add(toSwing(r, count));
         }
         vueTree.setRoot(root);
-        vueStatus.setText("Vue " + parsed.version + " — " + count[0] + " component"
-                + (count[0] == 1 ? "" : "s"));
+        vueStatus.setText(Bundle.DevToolsPanel_vueSummary(String.valueOf(parsed.version), String.valueOf(count[0]),
+                count[0] == 1 ? Bundle.DevToolsPanel_componentOne() : Bundle.DevToolsPanel_componentMany()));
     }
 
     private static DefaultMutableTreeNode toSwing(VueNode node, int[] count) {
@@ -1189,7 +1338,7 @@ public final class DevToolsPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         JTree tree = safeTree(svelteTree);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshSvelte());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
@@ -1208,13 +1357,14 @@ public final class DevToolsPanel extends JPanel {
                 Object parent = ((DefaultMutableTreeNode) n.getParent()).getUserObject();
                 String file = parent instanceof SvelteSnapshotParser.SvelteFile sf
                         ? sf.file : "";
-                svelteDetails.setText(file + "\nline " + loc.line + ":" + loc.column);
+                svelteDetails.setText(file + "\n" + Bundle.DevToolsPanel_lineAt(String.valueOf(loc.line), String.valueOf(loc.column)));
                 if (!loc.path.isEmpty()) {
                     runner.run(DevScripts.highlight(loc.path), r -> { }, err -> { });
                 }
             } else if (n.getUserObject() instanceof SvelteSnapshotParser.SvelteFile sf) {
-                svelteDetails.setText(sf.file + "\n" + sf.count + " element"
-                        + (sf.count == 1 ? "" : "s"));
+                svelteDetails.setText(sf.file + "\n" + (sf.count == 1
+                        ? Bundle.DevToolsPanel_elementsOne(String.valueOf(sf.count))
+                        : Bundle.DevToolsPanel_elementsMany(String.valueOf(sf.count))));
             }
         });
         return panel;
@@ -1224,25 +1374,21 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.SVELTE_SNAPSHOT, json -> RP.post(() -> {
             SvelteSnapshotParser.SvelteTree parsed = SvelteSnapshotParser.parse(json);
             SwingUtilities.invokeLater(() -> applySvelte(parsed));
-        }), err -> svelteStatus.setText("(no page: " + err + ")"));
+        }), err -> svelteStatus.setText(Bundle.DevToolsPanel_noPageParen(err)));
     }
 
     private void applySvelte(SvelteSnapshotParser.SvelteTree parsed) {
         svelteDetails.setText("");
         if (parsed.empty()) {
-            svelteTree.setRoot(new DefaultMutableTreeNode("(no Svelte)"));
+            svelteTree.setRoot(new DefaultMutableTreeNode(Bundle.DevToolsPanel_noSvelte()));
             // Keep the status SHORT (a FlowLayout label wider than the
             // panel wraps to a hidden second row — the v1.206.0 Vue-tab
             // lesson); the honest limits ride the tooltip.
-            svelteStatus.setText("No Svelte detected (dev builds only)");
-            svelteStatus.setToolTipText("Svelte compiles components away — no "
-                    + "component instances, props, or state exist at runtime. "
-                    + "A DEV build (vite dev) plants __svelte_meta source "
-                    + "locations on rendered elements, which is what this pane "
-                    + "shows; a production build offers nothing to inspect.");
+            svelteStatus.setText(Bundle.DevToolsPanel_noSvelteDetected());
+            svelteStatus.setToolTipText(Bundle.DevToolsPanel_noSvelteTip());
             return;
         }
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode("Svelte sources");
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(Bundle.DevToolsPanel_svelteSources());
         for (SvelteSnapshotParser.SvelteFile f : parsed.files) {
             DefaultMutableTreeNode fileNode = new DefaultMutableTreeNode(f);
             for (SvelteSnapshotParser.Loc loc : f.locs) {
@@ -1251,14 +1397,15 @@ public final class DevToolsPanel extends JPanel {
             root.add(fileNode);
         }
         svelteTree.setRoot(root);
-        svelteStatus.setText("Svelte — " + parsed.total + " element"
-                + (parsed.total == 1 ? "" : "s") + " from " + parsed.files.size()
-                + " file" + (parsed.files.size() == 1 ? "" : "s"));
-        svelteStatus.setToolTipText("Source mapping from dev-mode __svelte_meta: "
-                + "which .svelte file and line rendered each element. Svelte "
-                + "compiles components away, so file/line mapping is all a "
-                + "runtime inspector can offer — select a line to highlight "
-                + "its element in the page.");
+        int files = parsed.files.size();
+        svelteStatus.setText(Bundle.DevToolsPanel_svelteSummary(
+                parsed.total == 1
+                        ? Bundle.DevToolsPanel_elementsOne(String.valueOf(parsed.total))
+                        : Bundle.DevToolsPanel_elementsMany(String.valueOf(parsed.total)),
+                files == 1
+                        ? Bundle.DevToolsPanel_filesOne(String.valueOf(files))
+                        : Bundle.DevToolsPanel_filesMany(String.valueOf(files))));
+        svelteStatus.setToolTipText(Bundle.DevToolsPanel_svelteSummaryTip());
     }
 
     // ---- Angular -------------------------------------------------------
@@ -1267,7 +1414,7 @@ public final class DevToolsPanel extends JPanel {
         JPanel panel = new JPanel(new BorderLayout());
         JTree tree = safeTree(ngTree);
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        JButton refresh = new JButton("Refresh");
+        JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshAngular());
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         bar.add(refresh);
@@ -1282,10 +1429,10 @@ public final class DevToolsPanel extends JPanel {
             if (last instanceof DefaultMutableTreeNode n && n.getUserObject() instanceof NgNode ng) {
                 ngDetails.setRowCount(0);
                 for (Map.Entry<String, String> s : ng.state.entrySet()) {
-                    ngDetails.addRow(new Object[]{"state", s.getKey(), s.getValue()});
+                    ngDetails.addRow(new Object[]{Bundle.DevToolsPanel_kindState(), s.getKey(), s.getValue()});
                 }
                 for (String d : ng.directives) {
-                    ngDetails.addRow(new Object[]{"directive", d, ""});
+                    ngDetails.addRow(new Object[]{Bundle.DevToolsPanel_kindDirective(), d, ""});
                 }
                 if (!ng.domPath.isEmpty()) {
                     runner.run(DevScripts.highlight(ng.domPath), r -> { }, err -> { });
@@ -1299,45 +1446,35 @@ public final class DevToolsPanel extends JPanel {
         runner.run(DevScripts.ANGULAR_SNAPSHOT, json -> RP.post(() -> {
             NgTree parsed = AngularSnapshotParser.parse(json);
             SwingUtilities.invokeLater(() -> applyAngular(parsed));
-        }), err -> ngStatus.setText("(no page: " + err + ")"));
+        }), err -> ngStatus.setText(Bundle.DevToolsPanel_noPageParen(err)));
     }
 
     private void applyAngular(NgTree parsed) {
         ngDetails.setRowCount(0);
         if (parsed.empty()) {
-            ngTree.setRoot(new DefaultMutableTreeNode("(no components)"));
+            ngTree.setRoot(new DefaultMutableTreeNode(Bundle.DevToolsPanel_noComponents()));
             // Keep the status SHORT (a FlowLayout label wider than the
             // panel wraps to a hidden second row — the v1.206.0 Vue-tab
             // lesson); the honest limits ride the tooltip.
             if (!parsed.productionOnly.isEmpty()) {
-                ngStatus.setText("Angular " + parsed.productionOnly
-                        + " — production build, no component tree");
-                ngStatus.setToolTipText("The page carries ng-version, so Angular IS "
-                        + "here — but a production build strips window.ng, the debug "
-                        + "API every inspector needs (the official Angular DevTools "
-                        + "is limited the same way). Run a dev build (ng serve) to "
-                        + "inspect components.");
+                ngStatus.setText(Bundle.DevToolsPanel_ngProduction(parsed.productionOnly));
+                ngStatus.setToolTipText(Bundle.DevToolsPanel_ngProductionTip());
             } else {
-                ngStatus.setText("No Angular detected (dev builds only)");
-                ngStatus.setToolTipText("Detection looks for the ng-version marker "
-                        + "and window.ng.getComponent, which Angular exposes in dev "
-                        + "builds (ng serve). Vue and Svelte have their own tabs; "
-                        + "React is not inspected.");
+                ngStatus.setText(Bundle.DevToolsPanel_noAngular());
+                ngStatus.setToolTipText(Bundle.DevToolsPanel_noAngularTip());
             }
             return;
         }
         DefaultMutableTreeNode root = new DefaultMutableTreeNode(
-                "Angular " + (parsed.version.isEmpty() ? "app" : parsed.version));
+                parsed.version.isEmpty() ? Bundle.DevToolsPanel_ngRootApp() : Bundle.DevToolsPanel_ngRootVersion(parsed.version));
         int[] count = {0};
         for (NgNode r : parsed.roots) {
             root.add(toSwing(r, count));
         }
         ngTree.setRoot(root);
-        ngStatus.setText("Angular " + parsed.version + " — " + count[0] + " component"
-                + (count[0] == 1 ? "" : "s"));
-        ngStatus.setToolTipText("Component instances from window.ng.getComponent "
-                + "(dev builds). Select a component to see its fields and host "
-                + "directives, and to highlight its host element in the page.");
+        ngStatus.setText(Bundle.DevToolsPanel_ngSummary(parsed.version, String.valueOf(count[0]),
+                count[0] == 1 ? Bundle.DevToolsPanel_componentOne() : Bundle.DevToolsPanel_componentMany()));
+        ngStatus.setToolTipText(Bundle.DevToolsPanel_ngSummaryTip());
     }
 
     private static DefaultMutableTreeNode toSwing(NgNode node, int[] count) {

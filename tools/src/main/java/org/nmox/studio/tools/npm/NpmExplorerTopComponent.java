@@ -161,18 +161,18 @@ public final class NpmExplorerTopComponent extends TopComponent {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         
-        JButton refreshButton = new JButton("Refresh");
+        JButton refreshButton = new JButton(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_refresh"));
         refreshButton.addActionListener(e -> refreshProjectView());
         toolbar.add(refreshButton);
         
-        installButton = new JButton("Install");
+        installButton = new JButton(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_install"));
         installButton.addActionListener(e -> runNpmCommand("install"));
         toolbar.add(installButton);
         
         add(toolbar, BorderLayout.NORTH);
         
         // Create tree
-        rootNode = new DefaultMutableTreeNode("NPM Project");
+        rootNode = new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_npmProject"));
         treeModel = new DefaultTreeModel(rootNode);
         tree = new JTree(treeModel);
         // Script and package names are package.json CONTENT — a cloned
@@ -191,7 +191,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
                                 && n.getUserObject() instanceof ScriptInfo s
                                 && runningScripts.contains(s.name)) {
                             String since = currentProjectDir == null ? "" : NpmService.runningSince(currentProjectDir, s.name);
-                            setText(s.name + "  ● running" + (since.isEmpty() ? "" : " " + since));
+                            setText(s.name + "  " + org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_runningMarker") + (since.isEmpty() ? "" : " " + since));
                         }
                         return this;
                     }
@@ -222,7 +222,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
 
         // Add popup menu
         JPopupMenu popup = new JPopupMenu();
-        JMenuItem runItem = new JMenuItem("Run Script");
+        JMenuItem runItem = new JMenuItem(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_runScript"));
         runItem.addActionListener(e -> {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             if (node != null) {
@@ -232,13 +232,13 @@ public final class NpmExplorerTopComponent extends TopComponent {
         popup.add(runItem);
         // Stop Script: the row's own ■ (v2.70.0) — enabled only while the
         // clicked script is running; the toolbar ■ stops everything at once
-        JMenuItem stopItem = new JMenuItem("Stop Script");
+        JMenuItem stopItem = new JMenuItem(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_stopScript"));
         stopItem.addActionListener(e -> {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
             if (node != null && node.getUserObject() instanceof ScriptInfo s && currentProjectDir != null) {
                 boolean stopped = NpmService.stopScript(currentProjectDir, s.name);
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        org.nmox.studio.core.util.PlainStatus.text(stopped ? "Stopped " + s.name : s.name + " is not running"));
+                        org.nmox.studio.core.util.PlainStatus.text(stopped ? org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_stopped", s.name) : org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_notRunning", s.name)));
             }
         });
         popup.add(stopItem);
@@ -288,7 +288,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
             return;
         }
         installButton.setEnabled(true);
-        installButton.setToolTipText("npm install in the project");
+        installButton.setToolTipText(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_installTooltip"));
         // publish the project as this window's selection (ledger 29). The
         // publisher resolves the DataObject node off-EDT and equality-guards,
         // so re-aim storms cost compares, not disk walks. Refresh only runs
@@ -301,11 +301,11 @@ public final class NpmExplorerTopComponent extends TopComponent {
             JSONObject json = new JSONObject(content);
             
             rootNode.removeAllChildren();
-            rootNode.setUserObject(json.optString("name", "NPM Project"));
+            rootNode.setUserObject(json.optString("name", org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_npmProject")));
             
             // Add scripts node
             if (json.has("scripts")) {
-                DefaultMutableTreeNode scriptsNode = new DefaultMutableTreeNode("Scripts");
+                DefaultMutableTreeNode scriptsNode = new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_scripts"));
                 JSONObject scripts = json.getJSONObject("scripts");
                 for (String key : scripts.keySet()) {
                     DefaultMutableTreeNode scriptNode = new DefaultMutableTreeNode(key);
@@ -317,7 +317,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
             
             // Add dependencies node
             if (json.has("dependencies")) {
-                DefaultMutableTreeNode depsNode = new DefaultMutableTreeNode("Dependencies");
+                DefaultMutableTreeNode depsNode = new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_dependencies"));
                 JSONObject deps = json.getJSONObject("dependencies");
                 for (String key : deps.keySet()) {
                     DefaultMutableTreeNode depNode = new DefaultMutableTreeNode(key + " " + deps.getString(key));
@@ -328,7 +328,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
             
             // Add devDependencies node
             if (json.has("devDependencies")) {
-                DefaultMutableTreeNode devDepsNode = new DefaultMutableTreeNode("Dev Dependencies");
+                DefaultMutableTreeNode devDepsNode = new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_devDependencies"));
                 JSONObject devDeps = json.getJSONObject("devDependencies");
                 for (String key : devDeps.keySet()) {
                     DefaultMutableTreeNode depNode = new DefaultMutableTreeNode(key + " " + devDeps.getString(key));
@@ -350,7 +350,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
             // exception dialog over their typing
             LOG.log(Level.INFO, "package.json unreadable: {0}", ex.getMessage());
             rootNode.removeAllChildren();
-            rootNode.setUserObject("Error reading package.json: " + ex.getMessage());
+            rootNode.setUserObject(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_errorReading", ex.getMessage()));
             treeModel.reload();
         }
     }
@@ -371,10 +371,10 @@ public final class NpmExplorerTopComponent extends TopComponent {
         lastPublished = null;
         setActivatedNodes(null);
         installButton.setEnabled(false);
-        installButton.setToolTipText("Open a project to install its dependencies");
+        installButton.setToolTipText(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_installTooltipNoProject"));
         rootNode.removeAllChildren();
-        rootNode.setUserObject("Global packages (npm -g)");
-        rootNode.add(new DefaultMutableTreeNode("Loading…"));
+        rootNode.setUserObject(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_globalPackages"));
+        rootNode.add(new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_loading")));
         treeModel.reload();
         npmService.listGlobalPackages().whenComplete((packages, error) ->
             SwingUtilities.invokeLater(() -> {
@@ -385,18 +385,17 @@ public final class NpmExplorerTopComponent extends TopComponent {
                 }
                 rootNode.removeAllChildren();
                 if (error != null) {
-                    rootNode.setUserObject("Global packages (npm -g)");
+                    rootNode.setUserObject(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_globalPackages"));
                     rootNode.add(new DefaultMutableTreeNode(
-                            "npm not found — install Node.js (brew install node)"));
+                            org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_npmNotFound")));
                 } else {
-                    rootNode.setUserObject("Global packages (npm -g) — "
-                            + packages.size());
+                    rootNode.setUserObject(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_globalPackagesCount", String.valueOf(packages.size())));
                     for (NpmService.GlobalPackage pkg : packages) {
                         rootNode.add(new DefaultMutableTreeNode(
                                 pkg.name() + "  " + pkg.version()));
                     }
                     if (packages.isEmpty()) {
-                        rootNode.add(new DefaultMutableTreeNode("(none installed)"));
+                        rootNode.add(new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_noneInstalled")));
                     }
                 }
                 treeModel.reload();
@@ -480,7 +479,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
                 // a second copy of a running dev server only fights for
                 // the port — refuse out loud and name the way to stop it
                 org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                        org.nmox.studio.core.util.PlainStatus.text(script.name + " is already running — Stop Script (right-click) or the toolbar ■ stops it"));
+                        org.nmox.studio.core.util.PlainStatus.text(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_alreadyRunning", script.name)));
                 return;
             }
             runNpmCommand("run " + script.name);
@@ -502,7 +501,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
     private void runNpmCommand(String command) {
         if (currentProjectDir == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No project directory found", NotifyDescriptor.INFORMATION_MESSAGE));
+                    org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_noProjectDir"), NotifyDescriptor.INFORMATION_MESSAGE));
             return;
         }
         

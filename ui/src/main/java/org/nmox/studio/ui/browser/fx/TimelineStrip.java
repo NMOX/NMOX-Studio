@@ -34,6 +34,12 @@ import org.nmox.studio.ui.browser.devtools.Keyframes;
  *       holds the live page at that moment.</li>
  * </ul>
  */
+@org.openide.util.NbBundle.Messages({
+    "TimelineStrip_accessibleName=Animation timeline",
+    "TimelineStrip_accessibleDescription=Tracks of keyframes from 0 to 100 percent; drag diamonds to move,"
+        + " double-click to add, Delete removes the selected keyframe",
+    "TimelineStrip_emptyHint=Add a property track to begin"
+})
 public final class TimelineStrip extends JPanel {
 
     /**
@@ -164,10 +170,9 @@ public final class TimelineStrip extends JPanel {
         registerKeyboardAction(e -> deleteSelected(),
                 javax.swing.KeyStroke.getKeyStroke("BACK_SPACE"),
                 javax.swing.JComponent.WHEN_FOCUSED);
-        getAccessibleContext().setAccessibleName("Animation timeline");
+        getAccessibleContext().setAccessibleName(Bundle.TimelineStrip_accessibleName());
         getAccessibleContext().setAccessibleDescription(
-                "Tracks of keyframes from 0 to 100 percent; drag diamonds to move,"
-                + " double-click to add, Delete removes the selected keyframe");
+                Bundle.TimelineStrip_accessibleDescription());
     }
 
     public Model model() {
@@ -331,7 +336,7 @@ public final class TimelineStrip extends JPanel {
         }
         if (props.isEmpty()) {
             g.setColor(DIM);
-            g.drawString("Add a property track to begin", LABEL_W + 12, RULER_H + 16);
+            g.drawString(Bundle.TimelineStrip_emptyHint(), LABEL_W + 12, RULER_H + 16);
         }
         // scrubber
         g.setColor(new Color(0xE0, 0x60, 0x60));

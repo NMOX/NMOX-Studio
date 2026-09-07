@@ -65,10 +65,11 @@ public class BlockSearchProvider implements SearchProvider {
 
     static String label(Snapshot snap) {
         if (snap == null) {
-            return "Block Studio — compose a web component";
+            return org.openide.util.NbBundle.getMessage(BlockSearchProvider.class, "BlockSearchProvider_empty");
         }
-        return "Block Studio — <" + snap.tag() + "> (" + snap.pieces()
-                + (snap.pieces() == 1 ? " piece)" : " pieces)");
+        return org.openide.util.NbBundle.getMessage(BlockSearchProvider.class,
+                snap.pieces() == 1 ? "BlockSearchProvider_labelOne" : "BlockSearchProvider_labelMany",
+                snap.tag(), String.valueOf(snap.pieces()));
     }
 
     /** The published snapshot, else a best-effort read of the aimed workspace. */

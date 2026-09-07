@@ -17,6 +17,10 @@ import org.openide.util.NbPreferences;
  * switches would make the transcript lie about who answered what); the
  * choice only steers the NEXT Ask.
  */
+@org.openide.util.NbBundle.Messages({
+    "AskKvasirModel_fast=Fast ({0})",
+    "AskKvasirModel_deep=Deep ({0})"
+})
 public final class AskKvasirModel {
 
     // userdir-scoped since v2.63.0 (see KvasirConsent.migrated): the remembered
@@ -36,8 +40,8 @@ public final class AskKvasirModel {
     public static String[] labels() {
         KvasirProvider p = KvasirProvider.configured();
         return new String[] {
-            "Fast (" + p.depthLabel(Depth.FAST) + ")",
-            "Deep (" + p.depthLabel(Depth.DEEP) + ")"};
+            Bundle.AskKvasirModel_fast(p.depthLabel(Depth.FAST)),
+            Bundle.AskKvasirModel_deep(p.depthLabel(Depth.DEEP))};
     }
 
     /**

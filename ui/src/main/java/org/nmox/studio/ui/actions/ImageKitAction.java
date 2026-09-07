@@ -34,7 +34,39 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ImageKitAction")
 @ActionRegistration(displayName = "#CTL_ImageKitAction")
 @ActionReference(path = "Menu/File", position = 121)
-@Messages("CTL_ImageKitAction=Image Kit (Web)…")
+@Messages({
+    "CTL_ImageKitAction=Image Kit (Web)…",
+    "ImageKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",
+    "ImageKitAction_noImages=No .jpg/.jpeg/.png images found in {0} (node_modules and build outputs are skipped).",
+    "ImageKitAction_messageName=Message",
+    "ImageKitAction_jpegBox=Re-encode JPEGs/PNGs → .min.jpg siblings (pure Java, kept only if smaller)",
+    "ImageKitAction_quality85=85 — visually lossless for photos",
+    "ImageKitAction_quality80=80 — the web default",
+    "ImageKitAction_quality70=70 — aggressive, check the results",
+    "ImageKitAction_qualityName=JPEG quality",
+    "ImageKitAction_noResize=No resize",
+    "ImageKitAction_max2560=Max 2560 px wide (retina hero)",
+    "ImageKitAction_max1600=Max 1600 px wide (content images)",
+    "ImageKitAction_max800=Max 800 px wide (thumbnails)",
+    "ImageKitAction_downscaleName=Downscale",
+    "ImageKitAction_webpFound=WebP siblings via cwebp (found at {0})",
+    "ImageKitAction_webpMissing=WebP siblings — cwebp not on PATH (brew install webp), lane disabled",
+    "ImageKitAction_imageSingular=image",
+    "ImageKitAction_imagePlural=images",
+    "ImageKitAction_scanSummary={0}, {1} — outputs are siblings; originals untouched.",
+    "ImageKitAction_qualityLabel=    JPEG quality:",
+    "ImageKitAction_downscaleLabel=    Downscale:",
+    "ImageKitAction_title=Image Kit (Web) — {0}",
+    "ImageKitAction_pressing=Pressing images…",
+    "ImageKitAction_fileSingular=file",
+    "ImageKitAction_filePlural=files",
+    "ImageKitAction_summary={0} written, {1} saved. Originals untouched.\nServe the smallest per browser:\n\n{2}\n\n",
+    "ImageKitAction_reportName=Image Kit report",
+    "ImageKitAction_lineNote={0} → {1}",
+    "ImageKitAction_lineWritten={0} → {1} ({2} → {3})",
+    "ImageKitAction_sizeMb={0} MB",
+    "ImageKitAction_sizeKb={0} KB"
+})
 public final class ImageKitAction implements ActionListener {
 
     private static final RequestProcessor RP =
@@ -45,7 +77,7 @@ public final class ImageKitAction implements ActionListener {
         File project = RackService.getDefault().getRack().getProjectDir();
         if (project == null || !project.isDirectory()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Aim the studio at a project first (open a folder or project)."));
+                    Bundle.ImageKitAction_aimFirst()));
             return;
         }
 
@@ -66,48 +98,50 @@ public final class ImageKitAction implements ActionListener {
     private void showDialog(File project, List<ImagePress.Candidate> found, File cwebp) {
         if (found.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain("No .jpg/.jpeg/.png images found in " + project.getName()
-                    + " (node_modules and build outputs are skipped).", "Message")));
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ImageKitAction_noImages(project.getName()),
+                    Bundle.ImageKitAction_messageName())));
             return;
         }
         long totalBytes = found.stream().mapToLong(ImagePress.Candidate::bytes).sum();
 
         JCheckBox jpeg = new JCheckBox(
-                "Re-encode JPEGs/PNGs → .min.jpg siblings (pure Java, kept only if smaller)", true);
+                Bundle.ImageKitAction_jpegBox(), true);
         JComboBox<String> quality = new JComboBox<>(new String[]{
-            "85 — visually lossless for photos",
-            "80 — the web default",
-            "70 — aggressive, check the results"
+            Bundle.ImageKitAction_quality85(),
+            Bundle.ImageKitAction_quality80(),
+            Bundle.ImageKitAction_quality70()
         });
-        quality.getAccessibleContext().setAccessibleName("JPEG quality");
+        quality.getAccessibleContext().setAccessibleName(Bundle.ImageKitAction_qualityName());
         quality.setSelectedIndex(1);
         JComboBox<String> maxWidth = new JComboBox<>(new String[]{
-            "No resize",
-            "Max 2560 px wide (retina hero)",
-            "Max 1600 px wide (content images)",
-            "Max 800 px wide (thumbnails)"
+            Bundle.ImageKitAction_noResize(),
+            Bundle.ImageKitAction_max2560(),
+            Bundle.ImageKitAction_max1600(),
+            Bundle.ImageKitAction_max800()
         });
-        maxWidth.getAccessibleContext().setAccessibleName("Downscale");
+        maxWidth.getAccessibleContext().setAccessibleName(Bundle.ImageKitAction_downscaleName());
         JCheckBox webp = new JCheckBox(PlainText.plain(cwebp != null
-                ? "WebP siblings via cwebp (found at " + cwebp.getName() + ")"
-                : "WebP siblings — cwebp not on PATH (brew install webp), lane disabled"),
+                ? Bundle.ImageKitAction_webpFound(cwebp.getName())
+                : Bundle.ImageKitAction_webpMissing()),
                 cwebp != null);
         webp.setEnabled(cwebp != null);
 
         JPanel rows = new JPanel(new GridLayout(0, 1, 0, 4));
-        rows.add(new JLabel(PlainText.plain(found.size() + " image" + (found.size() == 1 ? "" : "s")
-                + ", " + mb(totalBytes) + " — outputs are siblings; originals untouched.")));
+        rows.add(new JLabel(PlainText.plain(Bundle.ImageKitAction_scanSummary(
+                org.nmox.studio.core.util.Plural.of(found.size(),
+                        Bundle.ImageKitAction_imageSingular(), Bundle.ImageKitAction_imagePlural()),
+                mb(totalBytes)))));
         rows.add(jpeg);
-        rows.add(new JLabel("    JPEG quality:"));
+        rows.add(new JLabel(Bundle.ImageKitAction_qualityLabel()));
         rows.add(quality);
-        rows.add(new JLabel("    Downscale:"));
+        rows.add(new JLabel(Bundle.ImageKitAction_downscaleLabel()));
         rows.add(maxWidth);
         rows.add(webp);
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(rows, BorderLayout.CENTER);
 
-        DialogDescriptor dd = new DialogDescriptor(panel, "Image Kit (Web) — "
-                + project.getName());
+        DialogDescriptor dd = new DialogDescriptor(panel,
+                Bundle.ImageKitAction_title(project.getName()));
         if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
             return;
         }
@@ -120,7 +154,7 @@ public final class ImageKitAction implements ActionListener {
         RP.post(() -> {
             org.netbeans.api.progress.ProgressHandle handle =
                     org.netbeans.api.progress.ProgressHandle.createHandle(
-                            "Pressing images…");
+                            Bundle.ImageKitAction_pressing());
             handle.start(found.size());
             StringBuilder report = new StringBuilder();
             long saved = 0;
@@ -149,14 +183,14 @@ public final class ImageKitAction implements ActionListener {
             } finally {
                 handle.finish();
             }
-            String summary = wrote + " file" + (wrote == 1 ? "" : "s") + " written, "
-                    + mb(saved) + " saved. Originals untouched.\n"
-                    + "Serve the smallest per browser:\n\n"
-                    + ImagePress.pictureSnippet("example.jpg") + "\n\n";
+            String summary = Bundle.ImageKitAction_summary(
+                    org.nmox.studio.core.util.Plural.of(wrote,
+                            Bundle.ImageKitAction_fileSingular(), Bundle.ImageKitAction_filePlural()),
+                    mb(saved), ImagePress.pictureSnippet("example.jpg"));
             String body = summary + report;
             java.awt.EventQueue.invokeLater(() -> {
                 JTextArea area = new JTextArea(body, 24, 78);
-                area.getAccessibleContext().setAccessibleName("Image Kit report");
+                area.getAccessibleContext().setAccessibleName(Bundle.ImageKitAction_reportName());
                 area.setEditable(false);
                 area.setCaretPosition(0);
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
@@ -186,15 +220,16 @@ public final class ImageKitAction implements ActionListener {
 
     /** One report row: the written sibling with sizes, or the honest refusal note. */
     static String line(ImagePress.Candidate c, ImagePress.Result r) {
-        return c.file().getName() + " → "
-                + (r.output() == null ? r.note()
-                        : r.output().getName() + " (" + mb(r.before()) + " → "
-                        + mb(r.after()) + ")") + "\n";
+        return (r.output() == null
+                ? Bundle.ImageKitAction_lineNote(c.file().getName(), r.note())
+                : Bundle.ImageKitAction_lineWritten(c.file().getName(), r.output().getName(),
+                        mb(r.before()), mb(r.after()))) + "\n";
     }
 
     /** Human sizes: MB with one decimal above a megabyte, else KB (floor 1). */
     static String mb(long bytes) {
-        return bytes >= 1_000_000 ? String.format("%.1f MB", bytes / 1_000_000.0)
-                : String.format("%d KB", Math.max(1, bytes / 1_000));
+        return bytes >= 1_000_000
+                ? Bundle.ImageKitAction_sizeMb(String.format("%.1f", bytes / 1_000_000.0))
+                : Bundle.ImageKitAction_sizeKb(String.format("%d", Math.max(1, bytes / 1_000)));
     }
 }

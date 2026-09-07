@@ -23,7 +23,11 @@ import org.openide.windows.WindowManager;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.CopyEditorScreenshotAction")
 @ActionRegistration(displayName = "#CTL_CopyEditorScreenshot", lazy = true)
 @ActionReference(path = "Menu/Tools", position = 102)
-@Messages("CTL_CopyEditorScreenshot=Copy Editor Screenshot")
+@Messages({
+    "CTL_CopyEditorScreenshot=Copy Editor Screenshot",
+    "CopyEditorScreenshotAction_nothingOpen=Not copied — nothing is open in the editor area",
+    "CopyEditorScreenshotAction_what=editor screenshot"
+})
 public final class CopyEditorScreenshotAction implements ActionListener {
 
     @Override
@@ -35,9 +39,9 @@ public final class CopyEditorScreenshotAction implements ActionListener {
                 activated != null && wm.isOpenedEditorTopComponent(activated),
                 editorMode == null ? null : editorMode.getSelectedTopComponent());
         if (tab == null) {
-            StatusDisplayer.getDefault().setStatusText("Not copied — nothing is open in the editor area");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyEditorScreenshotAction_nothingOpen());
             return;
         }
-        ShotSaver.copy(tab, "editor screenshot");
+        ShotSaver.copy(tab, Bundle.CopyEditorScreenshotAction_what());
     }
 }

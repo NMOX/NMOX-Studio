@@ -24,6 +24,9 @@ import org.openide.windows.WindowManager;
  * paints only what {@link KeystrokeHud} hands it — text that is, by that
  * class's rule, a chord and never typed characters.
  */
+@org.openide.util.NbBundle.Messages({
+    "KeystrokeOverlay_accessibleName=Keystroke display"
+})
 final class KeystrokeOverlay {
 
     /** How long a chord stays on screen. */
@@ -44,7 +47,7 @@ final class KeystrokeOverlay {
     }
 
     private final JWindow window;
-    private final JLabel label = new JLabel("", SwingConstants.CENTER);
+    private final JLabel label = new JLabel();
     private final Timer hide = new Timer(lingerMs(), e -> hideNow());
     private String last = "";
     private int repeats;
@@ -72,9 +75,10 @@ final class KeystrokeOverlay {
         pill.setOpaque(false);
         pill.setLayout(new java.awt.BorderLayout());
         pill.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 26, 10, 26));
+        label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setForeground(Color.WHITE);
         label.setFont(label.getFont().deriveFont(Font.BOLD, 34f));
-        label.getAccessibleContext().setAccessibleName("Keystroke display");
+        label.getAccessibleContext().setAccessibleName(Bundle.KeystrokeOverlay_accessibleName());
         pill.add(label, java.awt.BorderLayout.CENTER);
         window.setContentPane(pill);
         hide.setRepeats(false);

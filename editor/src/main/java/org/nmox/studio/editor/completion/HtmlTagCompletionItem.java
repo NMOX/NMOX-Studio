@@ -19,6 +19,10 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * tag name either way so attributes can follow. Constructed per
  * query by {@link HtmlCompletionProvider} from the HTML5 tag table.
  */
+@org.openide.util.NbBundle.Messages({
+    "HtmlTagCompletionItem_voidHint=[void]",
+    "HtmlTagCompletionItem_tagHint=[tag]"
+})
 public class HtmlTagCompletionItem implements CompletionItem {
     
     private final String tagName;
@@ -63,7 +67,7 @@ public class HtmlTagCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             tagName,
-            isVoid ? "[void]" : "[tag]",
+            isVoid ? Bundle.HtmlTagCompletionItem_voidHint() : Bundle.HtmlTagCompletionItem_tagHint(),
             g,
             defaultFont,
             selected ? Color.WHITE : defaultColor,

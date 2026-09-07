@@ -45,6 +45,11 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 140),
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 140)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssVarHyperlink_tooltip=Go to the token's declaration",
+    "CssVarHyperlink_notDeclared={0} is not declared in this project''s stylesheets",
+    "CssVarHyperlink_couldNotOpen=Could not open {0}: {1}"
+})
 public final class CssVarHyperlink implements HyperlinkProviderExt {
 
     private static final RequestProcessor RP =
@@ -68,7 +73,7 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Go to the token's declaration";
+        return Bundle.CssVarHyperlink_tooltip();
     }
 
     @Override
@@ -102,7 +107,7 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
             java.awt.EventQueue.invokeLater(() -> {
                 if (found == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            org.nmox.studio.core.util.PlainStatus.text(name + " is not declared in this project's stylesheets"));
+                            org.nmox.studio.core.util.PlainStatus.text(Bundle.CssVarHyperlink_notDeclared(name)));
                 } else {
                     openAt(found.file(), found.offset());
                 }
@@ -228,7 +233,7 @@ public final class CssVarHyperlink implements HyperlinkProviderExt {
             }
         } catch (Exception ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + file.getName() + ": " + ex.getMessage());
+                    Bundle.CssVarHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
         }
     }
 }

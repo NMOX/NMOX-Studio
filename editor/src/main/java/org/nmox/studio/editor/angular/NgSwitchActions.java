@@ -17,6 +17,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -59,8 +60,7 @@ public final class NgSwitchActions {
                 File template = NgSwitch.templateFor(component, readQuietly(component));
                 if (template == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No template file for " + component.getName()
-                            + " (inline template, or none on disk)");
+                            NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_noTemplate", component.getName()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(template));
@@ -84,7 +84,7 @@ public final class NgSwitchActions {
                 File component = NgSwitch.componentFor(template, NgSwitchActions::readQuietly);
                 if (component == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No component class found beside " + template.getName());
+                            NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_noComponentForTemplate", template.getName()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(component));
@@ -108,8 +108,7 @@ public final class NgSwitchActions {
                 File styles = NgSwitch.stylesFor(component, readQuietly(component));
                 if (styles == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No stylesheet for " + component.getName()
-                            + " (inline styles, or none on disk)");
+                            NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_noStyles", component.getName()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(styles));
@@ -133,8 +132,7 @@ public final class NgSwitchActions {
                 File spec = NgSwitch.specFor(component);
                 if (spec == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No spec beside " + component.getName()
-                            + " (generated with --skip-tests, or this IS the spec)");
+                            NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_noSpec", component.getName()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(spec));
@@ -180,7 +178,7 @@ public final class NgSwitchActions {
                 File component = NgSwitch.componentForSibling(styles);
                 if (component == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No component class beside " + styles.getName());
+                            NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_noComponentForStyles", styles.getName()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> open(component));
@@ -222,7 +220,7 @@ public final class NgSwitchActions {
             }
         } catch (IOException ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + file.getName() + ": " + ex.getMessage());
+                    NbBundle.getMessage(NgSwitchActions.class, "NgSwitchActions_couldNotOpen", file.getName(), ex.getMessage()));
         }
     }
 }

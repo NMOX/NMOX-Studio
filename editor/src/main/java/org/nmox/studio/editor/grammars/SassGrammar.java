@@ -23,7 +23,8 @@ import org.openide.filesystems.MIMEResolver;
  * cannot parse is noise, not lint).
  */
 @GrammarRegistration(grammar = "sass.tmLanguage.json", mimeType = "text/x-sass")
-@MIMEResolver.ExtensionRegistration(displayName = "Sass (indented)", mimeType = "text/x-sass", extension = {"sass"}, position = 2379)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_SassGrammar_LOADER", mimeType = "text/x-sass", extension = {"sass"}, position = 2379)
+@org.openide.util.NbBundle.Messages("LBL_SassGrammar_LOADER=Sass (indented)")
 public final class SassGrammar {
 
     private SassGrammar() {

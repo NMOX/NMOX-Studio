@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "svelte.tmLanguage.json", mimeType = "text/x-svelte")
-@MIMEResolver.ExtensionRegistration(displayName = "Svelte", mimeType = "text/x-svelte", extension = {"svelte"}, position = 2400)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_SvelteGrammar_LOADER", mimeType = "text/x-svelte", extension = {"svelte"}, position = 2400)
+@org.openide.util.NbBundle.Messages("LBL_SvelteGrammar_LOADER=Svelte")
 public final class SvelteGrammar {
 
     private SvelteGrammar() {

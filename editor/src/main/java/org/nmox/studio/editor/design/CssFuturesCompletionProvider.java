@@ -35,6 +35,9 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
     @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class, position = 552),
     @MimeRegistration(mimeType = "text/x-less", service = CompletionProvider.class, position = 552)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssFuturesCompletionProvider_atRule=at-rule"
+})
 public class CssFuturesCompletionProvider implements CompletionProvider {
 
     @Override
@@ -86,7 +89,7 @@ public class CssFuturesCompletionProvider implements CompletionProvider {
                     for (String rule : CssFutures.AT_RULES) {
                         if (rule.startsWith(prefix)) {
                             result.addItem(new CssFuturesCompletionItem(rule,
-                                    "at-rule", anchor, prefix.length()));
+                                    Bundle.CssFuturesCompletionProvider_atRule(), anchor, prefix.length()));
                         }
                     }
                     return;

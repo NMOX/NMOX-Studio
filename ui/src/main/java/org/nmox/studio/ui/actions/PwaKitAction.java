@@ -35,7 +35,40 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.PwaKitAction")
 @ActionRegistration(displayName = "#CTL_PwaKitAction")
 @ActionReference(path = "Menu/File", position = 118)
-@Messages("CTL_PwaKitAction=PWA Kit…")
+@Messages({
+    "CTL_PwaKitAction=PWA Kit…",
+    "PwaKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",
+    "PwaKitAction_appNameField=App name",
+    "PwaKitAction_shortNameField=Short name",
+    "PwaKitAction_themeField=Theme color",
+    "PwaKitAction_backgroundField=Background color",
+    "PwaKitAction_monogramField=Icon monogram",
+    "PwaKitAction_artworkField=Icon artwork path",
+    "PwaKitAction_browse=Browse…",
+    "PwaKitAction_artworkChooserTitle=Icon artwork (square PNG works best)",
+    "PwaKitAction_strategyAppShell=App shell — cache first, instant loads, offline-ready",
+    "PwaKitAction_strategyNetworkFirst=Network first — always-fresh content, cache fallback",
+    "PwaKitAction_strategyField=Caching strategy",
+    "PwaKitAction_iconsBox=Icons — icon-192/512, maskable pair, apple-touch-icon",
+    "PwaKitAction_manifestBox=site.webmanifest — W3C manifest, installability-complete",
+    "PwaKitAction_serviceWorkerBox=sw.js + offline.html — service worker precaching this project's files",
+    "PwaKitAction_wireBox=Wire index.html — manifest link, theme-color, registration (idempotent)",
+    "PwaKitAction_appNameLabel=App name:",
+    "PwaKitAction_shortNameLabel=Short name (12 chars max, shown under the icon):",
+    "PwaKitAction_colorsLabel=Theme color / background color:",
+    "PwaKitAction_monogramLabel=Icon monogram (1–2 letters) — or pick artwork below:",
+    "PwaKitAction_strategyLabel=Caching strategy:",
+    "PwaKitAction_note=<html><small>Existing files are never overwritten; wiring only adds what's missing.</small></html>",
+    "PwaKitAction_title=PWA Kit — {0}",
+    "PwaKitAction_artworkUnreadable=Icon artwork not readable: {0}",
+    "PwaKitAction_messageName=Message",
+    "PwaKitAction_needsName=Give the app a name — it goes into the manifest and offline page.",
+    "PwaKitAction_lineWritten=  ✓ {0}",
+    "PwaKitAction_lineKept=  – {0}",
+    "PwaKitAction_lineStatus=  ({0})",
+    "PwaKitAction_report=PWA Kit:\n\n{0}",
+    "PwaKitAction_couldNotWrite=Could not write: {0}"
+})
 public final class PwaKitAction implements ActionListener {
 
     @Override
@@ -51,78 +84,73 @@ public final class PwaKitAction implements ActionListener {
         File project = RackService.getDefault().getRack().getProjectDir();
         if (project == null || !project.isDirectory()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Aim the studio at a project first (open a folder or project)."));
+                    Bundle.PwaKitAction_aimFirst()));
             return;
         }
 
         String projectName = project.getName();
         JTextField name = new JTextField(projectName);
-        name.getAccessibleContext().setAccessibleName("App name");
+        name.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_appNameField());
         JTextField shortName = new JTextField(projectName.length() > 12
                 ? projectName.substring(0, 12) : projectName);
-        shortName.getAccessibleContext().setAccessibleName("Short name");
+        shortName.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_shortNameField());
         JTextField theme = new JTextField("#1a1a1e");
-        theme.getAccessibleContext().setAccessibleName("Theme color");
+        theme.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_themeField());
         JTextField background = new JTextField("#1a1a1e");
-        background.getAccessibleContext().setAccessibleName("Background color");
+        background.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_backgroundField());
         JTextField monogram = new JTextField(projectName.isEmpty() ? "A"
                 : projectName.substring(0, 1).toUpperCase(Locale.ROOT));
-        monogram.getAccessibleContext().setAccessibleName("Icon monogram");
+        monogram.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_monogramField());
         JTextField artwork = new JTextField();
-        artwork.getAccessibleContext().setAccessibleName("Icon artwork path");
-        JButton browse = new JButton("Browse…");
+        artwork.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_artworkField());
+        JButton browse = new JButton(Bundle.PwaKitAction_browse());
         browse.addActionListener(ev -> {
             JFileChooser chooser = new JFileChooser(project);
-            chooser.setDialogTitle("Icon artwork (square PNG works best)");
+            chooser.setDialogTitle(Bundle.PwaKitAction_artworkChooserTitle());
             if (chooser.showOpenDialog(browse) == JFileChooser.APPROVE_OPTION) {
                 artwork.setText(chooser.getSelectedFile().getAbsolutePath());
             }
         });
         JComboBox<String> strategy = new JComboBox<>(new String[]{
-            "App shell — cache first, instant loads, offline-ready",
-            "Network first — always-fresh content, cache fallback"
+            Bundle.PwaKitAction_strategyAppShell(),
+            Bundle.PwaKitAction_strategyNetworkFirst()
         });
-        strategy.getAccessibleContext().setAccessibleName("Caching strategy");
-        JCheckBox icons = new JCheckBox(
-                "Icons — icon-192/512, maskable pair, apple-touch-icon", true);
-        JCheckBox manifest = new JCheckBox(
-                "site.webmanifest — W3C manifest, installability-complete", true);
-        JCheckBox serviceWorker = new JCheckBox(
-                "sw.js + offline.html — service worker precaching this project's files", true);
-        JCheckBox wire = new JCheckBox(
-                "Wire index.html — manifest link, theme-color, registration (idempotent)", true);
+        strategy.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_strategyField());
+        JCheckBox icons = new JCheckBox(Bundle.PwaKitAction_iconsBox(), true);
+        JCheckBox manifest = new JCheckBox(Bundle.PwaKitAction_manifestBox(), true);
+        JCheckBox serviceWorker = new JCheckBox(Bundle.PwaKitAction_serviceWorkerBox(), true);
+        JCheckBox wire = new JCheckBox(Bundle.PwaKitAction_wireBox(), true);
 
         JPanel rows = new JPanel(new GridLayout(0, 1, 0, 4));
-        rows.add(new JLabel("App name:"));
+        rows.add(new JLabel(Bundle.PwaKitAction_appNameLabel()));
         rows.add(name);
-        rows.add(new JLabel("Short name (12 chars max, shown under the icon):"));
+        rows.add(new JLabel(Bundle.PwaKitAction_shortNameLabel()));
         rows.add(shortName);
-        rows.add(new JLabel("Theme color / background color:"));
+        rows.add(new JLabel(Bundle.PwaKitAction_colorsLabel()));
         JPanel colors = new JPanel(new GridLayout(1, 2, 6, 0));
         colors.add(theme);
         colors.add(background);
         rows.add(colors);
-        rows.add(new JLabel("Icon monogram (1–2 letters) — or pick artwork below:"));
+        rows.add(new JLabel(Bundle.PwaKitAction_monogramLabel()));
         rows.add(monogram);
         JPanel art = new JPanel(new BorderLayout(6, 0));
         art.add(artwork, BorderLayout.CENTER);
         art.add(browse, BorderLayout.EAST);
         rows.add(art);
-        rows.add(new JLabel("Caching strategy:"));
+        rows.add(new JLabel(Bundle.PwaKitAction_strategyLabel()));
         rows.add(strategy);
         rows.add(new JLabel(" "));
         rows.add(icons);
         rows.add(manifest);
         rows.add(serviceWorker);
         rows.add(wire);
-        rows.add(new JLabel("<html><small>Existing files are never overwritten; "
-                + "wiring only adds what's missing.</small></html>"));
+        rows.add(new JLabel(Bundle.PwaKitAction_note()));
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(rows, BorderLayout.CENTER);
 
         DialogDescriptor descriptor = new DialogDescriptor(panel,
-                "PWA Kit — " + projectName);
+                Bundle.PwaKitAction_title(projectName));
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -131,14 +159,14 @@ public final class PwaKitAction implements ActionListener {
             File artFile = new File(artPath);
             if (!artFile.isFile() || !artFile.canRead()) {
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("Icon artwork not readable: "
-                                + artFile.getAbsolutePath(), "Message"), NotifyDescriptor.WARNING_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.PwaKitAction_artworkUnreadable(
+                                artFile.getAbsolutePath()), Bundle.PwaKitAction_messageName()), NotifyDescriptor.WARNING_MESSAGE)));
                 return;
             }
         }
         if (name.getText().isBlank()) {
             SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                    new NotifyDescriptor.Message("Give the app a name — it goes into the manifest and offline page.",
+                    new NotifyDescriptor.Message(Bundle.PwaKitAction_needsName(),
                             NotifyDescriptor.WARNING_MESSAGE)));
             return;
         }
@@ -158,19 +186,20 @@ public final class PwaKitAction implements ActionListener {
                 List<PwaKit.Outcome> outcomes = PwaKit.write(project, opts);
                 StringBuilder report = new StringBuilder();
                 for (PwaKit.Outcome o : outcomes) {
-                    report.append(o.written() ? "  ✓ " : "  – ").append(o.path());
+                    report.append(o.written() ? Bundle.PwaKitAction_lineWritten(o.path())
+                            : Bundle.PwaKitAction_lineKept(o.path()));
                     if (!"written".equals(o.status())) {
-                        report.append("  (").append(o.status()).append(')');
+                        report.append(Bundle.PwaKitAction_lineStatus(o.status()));
                     }
                     report.append('\n');
                 }
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain("PWA Kit:\n\n" + report, "Message"),
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(Bundle.PwaKitAction_report(report), Bundle.PwaKitAction_messageName()),
                                 NotifyDescriptor.INFORMATION_MESSAGE)));
             } catch (Exception ex) {
-                String message = "Could not write: " + ex.getMessage();
+                String message = Bundle.PwaKitAction_couldNotWrite(ex.getMessage());
                 SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE)));
+                        new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.PwaKitAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
             }
         });
     }

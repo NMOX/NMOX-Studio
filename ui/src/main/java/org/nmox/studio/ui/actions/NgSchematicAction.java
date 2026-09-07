@@ -45,7 +45,24 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.NgSchematicAction")
 @ActionRegistration(displayName = "#CTL_NgSchematicAction")
 @ActionReference(path = "Menu/File", position = 122)
-@Messages("CTL_NgSchematicAction=New Angular Schematic…")
+@Messages({
+    "CTL_NgSchematicAction=New Angular Schematic…",
+    "NgSchematicAction_notAngular=Aim the studio at an Angular workspace first — this dialog drives `ng generate`, and it needs the project's own angular.json (the rack's HALO device carries the same GEN control).",
+    "NgSchematicAction_schematicName=Schematic",
+    "NgSchematicAction_nameName=Name",
+    "NgSchematicAction_folderName=In folder (under the workspace)",
+    "NgSchematicAction_schematicLabel=Schematic:",
+    "NgSchematicAction_nameLabel=Name:",
+    "NgSchematicAction_folderLabel=In folder (under the workspace):",
+    "NgSchematicAction_title=New Angular Schematic — {0}",
+    "NgSchematicAction_invalidName=Name must be a single identifier — no spaces or slashes (the folder field owns placement).",
+    "NgSchematicAction_folderMissing=That folder doesn''t exist inside the workspace — pick a directory under {0}.",
+    "NgSchematicAction_messageName=Message",
+    "NgSchematicAction_runLabel=Angular: generate {0} — {1}",
+    "NgSchematicAction_generatedOpened=ng generate {0} {1} — opened {2}",
+    "NgSchematicAction_generatedDone=ng generate {0} {1} — done.",
+    "NgSchematicAction_generateFailed=ng generate failed (exit {0}) — see Output."
+})
 public final class NgSchematicAction implements ActionListener {
 
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
@@ -60,31 +77,28 @@ public final class NgSchematicAction implements ActionListener {
         File root = NgSchematic.angularRoot(aim);
         if (root == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Aim the studio at an Angular workspace first — this dialog "
-                    + "drives `ng generate`, and it needs the project's own "
-                    + "angular.json (the rack's HALO device carries the same "
-                    + "GEN control)."));
+                    Bundle.NgSchematicAction_notAngular()));
             return;
         }
 
         JComboBox<String> type = new JComboBox<>(NgSchematic.SCHEMATICS);
-        type.getAccessibleContext().setAccessibleName("Schematic");
+        type.getAccessibleContext().setAccessibleName(Bundle.NgSchematicAction_schematicName());
         JTextField name = new JTextField("widget", 24);
-        name.getAccessibleContext().setAccessibleName("Name");
+        name.getAccessibleContext().setAccessibleName(Bundle.NgSchematicAction_nameName());
         // ng resolves against its cwd, so the folder field IS the target
         JTextField folder = new JTextField(
                 new File(root, "src/app").isDirectory() ? "src/app" : "", 24);
-        folder.getAccessibleContext().setAccessibleName("In folder (under the workspace)");
+        folder.getAccessibleContext().setAccessibleName(Bundle.NgSchematicAction_folderName());
         JPanel panel = new JPanel(new GridLayout(0, 2, 8, 6));
-        panel.add(new JLabel("Schematic:"));
+        panel.add(new JLabel(Bundle.NgSchematicAction_schematicLabel()));
         panel.add(type);
-        panel.add(new JLabel("Name:"));
+        panel.add(new JLabel(Bundle.NgSchematicAction_nameLabel()));
         panel.add(name);
-        panel.add(new JLabel("In folder (under the workspace):"));
+        panel.add(new JLabel(Bundle.NgSchematicAction_folderLabel()));
         panel.add(folder);
 
         DialogDescriptor dd = new DialogDescriptor(panel,
-                "New Angular Schematic — " + root.getName());
+                Bundle.NgSchematicAction_title(root.getName()));
         if (DialogDisplayer.getDefault().notify(dd) != NotifyDescriptor.OK_OPTION) {
             return;
         }
@@ -92,15 +106,14 @@ public final class NgSchematicAction implements ActionListener {
         String rawName = name.getText();
         if (!NgSchematic.validName(rawName)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Name must be a single identifier — no spaces or slashes "
-                    + "(the folder field owns placement)."));
+                    Bundle.NgSchematicAction_invalidName()));
             return;
         }
         File target = NgSchematic.targetFolder(root, folder.getText());
         if (target == null) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain("That folder doesn't exist inside the workspace — pick a "
-                    + "directory under " + root.getName() + '.', "Message")));
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.NgSchematicAction_folderMissing(root.getName()),
+                    Bundle.NgSchematicAction_messageName())));
             return;
         }
 
@@ -119,7 +132,7 @@ public final class NgSchematicAction implements ActionListener {
             // the generate joins the toolbar ■ (v2.71.0): a schematic that
             // stalls (a prompt with no TTY, a hung registry fetch) had NO
             // stop on screen — the third lane after the ▶ and the NPM runs
-            String runLabel = "Angular: generate " + schematic + " — " + rawName.trim();
+            String runLabel = Bundle.NgSchematicAction_runLabel(schematic, rawName.trim());
             String runId = "ng-generate:" + root.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
             CommandExecutor.Handle handle = CommandExecutor.run(runLabel,
                     target, Map.of(), NgSchematic.argv(schematic, rawName),
@@ -147,11 +160,11 @@ public final class NgSchematicAction implements ActionListener {
                         boolean opened = createdFile != null
                                 && openInEditor(createdFile);
                         StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(exit == 0
-                                ? "ng generate " + schematic + " " + rawName.trim()
-                                        + (opened
-                                                ? " — opened " + new File(created).getName()
-                                                : " — done.")
-                                : "ng generate failed (exit " + exit + ") — see Output."));
+                                ? (opened
+                                        ? Bundle.NgSchematicAction_generatedOpened(schematic,
+                                                rawName.trim(), new File(created).getName())
+                                        : Bundle.NgSchematicAction_generatedDone(schematic, rawName.trim()))
+                                : Bundle.NgSchematicAction_generateFailed(String.valueOf(exit))));
                     }));
             LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         });

@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "erlang.tmLanguage.json", mimeType = "text/x-erlang")
-@MIMEResolver.ExtensionRegistration(displayName = "Erlang", mimeType = "text/x-erlang", extension = {"erl", "hrl"}, position = 2090)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ErlangGrammar_LOADER", mimeType = "text/x-erlang", extension = {"erl", "hrl"}, position = 2090)
+@org.openide.util.NbBundle.Messages("LBL_ErlangGrammar_LOADER=Erlang")
 public final class ErlangGrammar {
 
     private ErlangGrammar() {

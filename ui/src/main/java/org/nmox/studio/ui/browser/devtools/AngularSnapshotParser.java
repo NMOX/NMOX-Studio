@@ -19,6 +19,9 @@ import java.util.Map;
  * stamp — a prod build strips {@code window.ng}, so no inspector can
  * walk it; the official Angular DevTools is limited the same way).
  */
+@org.openide.util.NbBundle.Messages({
+    "AngularSnapshotParser_anonymous=Anonymous"
+})
 public final class AngularSnapshotParser {
 
     /** One Angular component node: class name, state, host directives. */
@@ -110,9 +113,9 @@ public final class AngularSnapshotParser {
     }
 
     private static NgNode shallow(Map<String, Object> o) {
-        String name = JsonLite.str(o, "n", "Anonymous");
+        String name = JsonLite.str(o, "n", Bundle.AngularSnapshotParser_anonymous());
         if (name.isBlank()) {
-            name = "Anonymous";
+            name = Bundle.AngularSnapshotParser_anonymous();
         }
         name = cap(name, 200);
         Map<String, String> state = stringBag(o.get("s"));

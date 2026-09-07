@@ -41,7 +41,10 @@ class OutputFontTest {
         String mode = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/present/PresentationMode.java"));
         assertThat(mode).contains("String outputNote = OutputFont.follow(enable)");
         // the mode's status is composed after the follow, so a refusal rides along instead of being overwritten
-        assertThat(mode.indexOf("OutputFont.follow(enable)")).isLessThan(mode.indexOf("\"Presentation Mode on"));
+        // v2.97.0 (the l10n arc): the sentence is a bundle value; the ORDER is
+        // the law — the follow runs first so its refusal rides along
+        assertThat(mode.indexOf("OutputFont.follow(enable)"))
+                .isLessThan(mode.indexOf("Bundle.PresentationMode_on("));
         assertThat(mode).contains("(outputNote == null ? \"\" : \"; \" + outputNote)");
     }
 }

@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extension.
  */
 @GrammarRegistration(grammar = "gleam.tmLanguage.json", mimeType = "text/x-gleam")
-@MIMEResolver.ExtensionRegistration(displayName = "Gleam", mimeType = "text/x-gleam", extension = {"gleam"}, position = 2431)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_GleamGrammar_LOADER", mimeType = "text/x-gleam", extension = {"gleam"}, position = 2431)
+@org.openide.util.NbBundle.Messages("LBL_GleamGrammar_LOADER=Gleam")
 public final class GleamGrammar {
 
     private GleamGrammar() {

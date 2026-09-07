@@ -29,7 +29,14 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.CopyProjectTreeAction")
 @ActionRegistration(displayName = "#CTL_CopyProjectTree", lazy = true)
 @ActionReference(path = "Menu/Tools", position = 103)
-@Messages("CTL_CopyProjectTree=Copy Project Tree as Markdown")
+@Messages({
+    "CTL_CopyProjectTree=Copy Project Tree as Markdown",
+    "CopyProjectTreeAction_noProject=Copy Project Tree: no project is aimed",
+    "CopyProjectTreeAction_entry=entry",
+    "CopyProjectTreeAction_entries=entries",
+    "CopyProjectTreeAction_copied=Copied the project tree of {0} as Markdown — {1}",
+    "CopyProjectTreeAction_copiedElided=Copied the project tree of {0} as Markdown — {1} ({2} more not shown)"
+})
 public final class CopyProjectTreeAction implements ActionListener {
 
     static final int MAX_DEPTH = 4;
@@ -41,7 +48,7 @@ public final class CopyProjectTreeAction implements ActionListener {
         ProjectAim aim = ProjectAim.find();
         File dir = aim == null ? null : aim.projectDir();
         if (dir == null || !dir.isDirectory()) {
-            StatusDisplayer.getDefault().setStatusText("Copy Project Tree: no project is aimed");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CopyProjectTreeAction_noProject());
             return;
         }
         RP.post(() -> {
@@ -51,9 +58,10 @@ public final class CopyProjectTreeAction implements ActionListener {
             SwingUtilities.invokeLater(() -> {
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(block), null);
                 long lines = tree.text().lines().count() - 1 - (tree.elided() > 0 ? 1 : 0);
-                StatusDisplayer.getDefault().setStatusText(PlainStatus.text("Copied the project tree of " + dir.getName()
-                        + " as Markdown — " + Plural.of(lines, "entry", "entries")
-                        + (tree.elided() > 0 ? " (" + tree.elided() + " more not shown)" : "")));
+                String count = Plural.of(lines, Bundle.CopyProjectTreeAction_entry(), Bundle.CopyProjectTreeAction_entries());
+                StatusDisplayer.getDefault().setStatusText(PlainStatus.text(tree.elided() > 0
+                        ? Bundle.CopyProjectTreeAction_copiedElided(dir.getName(), count, String.valueOf(tree.elided()))
+                        : Bundle.CopyProjectTreeAction_copied(dir.getName(), count)));
             });
         });
     }

@@ -9,6 +9,11 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * checkbox, a name, and a value, with a blank trailing row that
  * materializes a new Pair the moment you type in it.
  */
+@org.openide.util.NbBundle.Messages({
+    "PairTableModel_on=On",
+    "PairTableModel_name=Name",
+    "PairTableModel_value=Value"
+})
 final class PairTableModel extends AbstractTableModel {
 
     private final List<Pair> pairs;
@@ -32,9 +37,9 @@ final class PairTableModel extends AbstractTableModel {
     @Override
     public String getColumnName(int col) {
         return switch (col) {
-            case 0 -> "On";
-            case 1 -> "Name";
-            default -> "Value";
+            case 0 -> Bundle.PairTableModel_on();
+            case 1 -> Bundle.PairTableModel_name();
+            default -> Bundle.PairTableModel_value();
         };
     }
 

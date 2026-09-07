@@ -119,8 +119,7 @@ public class ExpandAbbreviationAction extends BaseAction {
                         .spanAt(doc.getText(0, doc.getLength()), caret);
                 if (span == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "Emmet expands inside a component's inline"
-                            + " template: `...` literal");
+                            org.openide.util.NbBundle.getMessage(ExpandAbbreviationAction.class, "ExpandAbbreviationAction_inlineTemplateOnly"));
                     return;
                 }
                 // clip the caret's line to the literal so the abbreviation
@@ -137,7 +136,7 @@ public class ExpandAbbreviationAction extends BaseAction {
             Emmet.AtCaret at = Emmet.abbreviationAt(before, after);
             if (at == null) {
                 StatusDisplayer.getDefault().setStatusText(
-                        "No abbreviation at the caret (try ul>li*3)");
+                        org.openide.util.NbBundle.getMessage(ExpandAbbreviationAction.class, "ExpandAbbreviationAction_noAbbreviation"));
                 return;
             }
             String abbrev = at.abbrev();
@@ -188,7 +187,7 @@ public class ExpandAbbreviationAction extends BaseAction {
         String abbrev = CssEmmet.abbreviationIn(before);
         if (abbrev == null) {
             StatusDisplayer.getDefault().setStatusText(
-                    "No CSS abbreviation at the caret (try m10, df, c#f00)");
+                    org.openide.util.NbBundle.getMessage(ExpandAbbreviationAction.class, "ExpandAbbreviationAction_noCssAbbreviation"));
             return;
         }
         CssEmmet.Expansion e = CssEmmet.expand(abbrev);

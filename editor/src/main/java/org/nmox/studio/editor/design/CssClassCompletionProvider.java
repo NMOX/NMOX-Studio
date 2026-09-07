@@ -38,6 +38,9 @@ import org.openide.filesystems.FileUtil;
     @MimeRegistration(mimeType = "text/x-svelte", service = CompletionProvider.class, position = 540),
     @MimeRegistration(mimeType = "text/x-ng-template", service = CompletionProvider.class, position = 540)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssClassCompletionProvider_thisFile=this file"
+})
 public class CssClassCompletionProvider implements CompletionProvider {
 
     @Override
@@ -73,7 +76,7 @@ public class CssClassCompletionProvider implements CompletionProvider {
         if (localRegions) {
             for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(fullText)) {
                 CssClasses.selectors(fullText.substring(r.start(), r.end()))
-                        .forEach((name, s) -> classes.putIfAbsent(name, "this file"));
+                        .forEach((name, s) -> classes.putIfAbsent(name, Bundle.CssClassCompletionProvider_thisFile()));
             }
         }
         for (CssClasses.ProjectSelector s : CssClasses.scanProject(root)) {

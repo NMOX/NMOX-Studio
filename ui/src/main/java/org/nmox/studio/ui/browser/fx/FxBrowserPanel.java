@@ -58,6 +58,21 @@ import org.nmox.studio.ui.browser.devtools.NetworkModel;
  * (see {@link JsBridge}). The bridge is re-installed on every
  * successful load because each new document is a fresh JS world.
  */
+@org.openide.util.NbBundle.Messages({
+    "FxBrowserPanel_addressField=Address",
+    "FxBrowserPanel_devToolsToggle=DevTools",
+    "FxBrowserPanel_devToolsTip=Show or hide the developer tools",
+    "FxBrowserPanel_backTip=Back",
+    "FxBrowserPanel_forwardTip=Forward",
+    "FxBrowserPanel_reloadTip=Reload",
+    "FxBrowserPanel_stopTip=Stop",
+    "FxBrowserPanel_zoomOutTip=Zoom out",
+    "FxBrowserPanel_zoomInTip=Zoom in",
+    "FxBrowserPanel_resetZoomTip=Reset zoom",
+    "FxBrowserPanel_viewportTip=Responsive preview: constrain the page to a device "
+        + "viewport (CSS pixels). Full uses the whole window.",
+    "FxBrowserPanel_loadFailed=Load failed: {0}"
+})
 public final class FxBrowserPanel extends JPanel {
 
     /** Hears page-title changes on the EDT (the TC renames its tab). */
@@ -75,11 +90,11 @@ public final class FxBrowserPanel extends JPanel {
     private final JSplitPane split;
     private final JTextField urlField = new JTextField();
     {
-        urlField.getAccessibleContext().setAccessibleName("Address");
+        urlField.getAccessibleContext().setAccessibleName(Bundle.FxBrowserPanel_addressField());
     }
     private final JProgressBar progress = new JProgressBar(0, 100);
     private final JLabel zoomLabel = new JLabel("100%");
-    private final JToggleButton devToolsToggle = new JToggleButton("DevTools");
+    private final JToggleButton devToolsToggle = new JToggleButton(Bundle.FxBrowserPanel_devToolsToggle());
     private final TitleListener titleListener;
 
     /** FX-thread-only after init. */
@@ -123,10 +138,10 @@ public final class FxBrowserPanel extends JPanel {
     private JPanel toolbar() {
         JPanel bar = new JPanel(new BorderLayout(4, 0));
         JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-        left.add(navButton("←", "Back", () -> history(-1)));
-        left.add(navButton("→", "Forward", () -> history(+1)));
-        left.add(navButton("⟳", "Reload", () -> onFx(() -> engine.reload())));
-        left.add(navButton("✕", "Stop", () -> onFx(() -> engine.getLoadWorker().cancel())));
+        left.add(navButton("←", Bundle.FxBrowserPanel_backTip(), () -> history(-1)));
+        left.add(navButton("→", Bundle.FxBrowserPanel_forwardTip(), () -> history(+1)));
+        left.add(navButton("⟳", Bundle.FxBrowserPanel_reloadTip(), () -> onFx(() -> engine.reload())));
+        left.add(navButton("✕", Bundle.FxBrowserPanel_stopTip(), () -> onFx(() -> engine.getLoadWorker().cancel())));
         bar.add(left, BorderLayout.WEST);
 
         urlField.addActionListener(e -> {
@@ -146,8 +161,7 @@ public final class FxBrowserPanel extends JPanel {
         javax.swing.JComboBox<ViewportPresets.Preset> viewport =
                 new javax.swing.JComboBox<>(
                         ViewportPresets.ALL.toArray(new ViewportPresets.Preset[0]));
-        viewport.setToolTipText("Responsive preview: constrain the page to a device "
-                + "viewport (CSS pixels). Full uses the whole window.");
+        viewport.setToolTipText(Bundle.FxBrowserPanel_viewportTip());
         viewport.addActionListener(e -> {
             ViewportPresets.Preset p =
                     (ViewportPresets.Preset) viewport.getSelectedItem();
@@ -156,11 +170,11 @@ public final class FxBrowserPanel extends JPanel {
             }
         });
         right.add(viewport);
-        right.add(navButton("−", "Zoom out", () -> setZoom(zoom / 1.2)));
+        right.add(navButton("−", Bundle.FxBrowserPanel_zoomOutTip(), () -> setZoom(zoom / 1.2)));
         right.add(zoomLabel);
-        right.add(navButton("+", "Zoom in", () -> setZoom(zoom * 1.2)));
-        right.add(navButton("1:1", "Reset zoom", () -> setZoom(1.0)));
-        devToolsToggle.setToolTipText("Show or hide the developer tools");
+        right.add(navButton("+", Bundle.FxBrowserPanel_zoomInTip(), () -> setZoom(zoom * 1.2)));
+        right.add(navButton("1:1", Bundle.FxBrowserPanel_resetZoomTip(), () -> setZoom(1.0)));
+        devToolsToggle.setToolTipText(Bundle.FxBrowserPanel_devToolsTip());
         devToolsToggle.addActionListener(e -> setDevToolsVisible(devToolsToggle.isSelected()));
         right.add(devToolsToggle);
         bar.add(right, BorderLayout.EAST);
@@ -202,7 +216,7 @@ public final class FxBrowserPanel extends JPanel {
                 String loc = engine.getLocation();
                 long at = System.currentTimeMillis();
                 SwingUtilities.invokeLater(()
-                        -> console.add("error", "Load failed: " + loc, at));
+                        -> console.add("error", Bundle.FxBrowserPanel_loadFailed(loc), at));
             }
         });
         // the WebView sits centered in a neutral backdrop so a viewport

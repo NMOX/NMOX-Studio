@@ -29,20 +29,29 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  * Drag one onto the rack to mount it (or double-click to add at the
  * bottom).
  */
+@org.openide.util.NbBundle.Messages({
+    "PalettePanel_header=DEVICE SHELF",
+    "PalettePanel_searchTooltip=Filter devices by name or task",
+    "PalettePanel_searchPlaceholder=Search devices…",
+    "PalettePanel_listName=Device shelf",
+    "PalettePanel_addFailed=Could not add {0}: {1}",
+    "PalettePanel_hint=<html>Drag a device onto the rack &middot; Tab flips the rack &middot; drag or click jacks to patch cables</html>",
+    "PalettePanel_entryTooltip=<html><b>{0}</b> — {1}<br><i>{2}</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>"
+})
 public class PalettePanel extends JPanel {
 
     public PalettePanel(Rack rack) {
         super(new BorderLayout());
         setBackground(RackStyle.RACK_BG);
 
-        JLabel header = new JLabel("DEVICE SHELF");
+        JLabel header = new JLabel(Bundle.PalettePanel_header());
         header.setForeground(RackStyle.SILKSCREEN_DIM);
         header.setFont(RackStyle.LABEL_FONT);
         header.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 10));
 
         javax.swing.JTextField search = new javax.swing.JTextField();
-        search.setToolTipText("Filter devices by name or task");
-        search.putClientProperty("JTextField.placeholderText", "Search devices…");
+        search.setToolTipText(Bundle.PalettePanel_searchTooltip());
+        search.putClientProperty("JTextField.placeholderText", Bundle.PalettePanel_searchPlaceholder());
         search.setBackground(new java.awt.Color(34, 34, 38));
         search.setForeground(RackStyle.SILKSCREEN);
         search.setCaretColor(RackStyle.SILKSCREEN);
@@ -100,7 +109,7 @@ public class PalettePanel extends JPanel {
             }
         });
         JList<Object> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Device shelf");
+        list.getAccessibleContext().setAccessibleName(Bundle.PalettePanel_listName());
         list.setBackground(RackStyle.RACK_BG);
         list.setCellRenderer(new DeviceRenderer());
         // setDragEnabled throws HeadlessException by spec; headless JVMs
@@ -133,7 +142,7 @@ public class PalettePanel extends JPanel {
                             rack.addDevice(t.create());
                         } catch (Exception | LinkageError ex) {
                             org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                    "Could not add " + t.title() + ": " + ex);
+                                    Bundle.PalettePanel_addFailed(t.title(), String.valueOf(ex)));
                         }
                     }
                 }
@@ -145,8 +154,7 @@ public class PalettePanel extends JPanel {
         scroll.getViewport().setBackground(RackStyle.RACK_BG);
         add(scroll, BorderLayout.CENTER);
 
-        JLabel hint = new JLabel("<html>Drag a device onto the rack &middot; Tab flips the rack"
-                + " &middot; drag or click jacks to patch cables</html>");
+        JLabel hint = new JLabel(Bundle.PalettePanel_hint());
         hint.setForeground(RackStyle.SILKSCREEN_DIM);
         hint.setFont(RackStyle.TINY_FONT);
         hint.setBorder(BorderFactory.createEmptyBorder(6, 10, 8, 10));
@@ -169,9 +177,7 @@ public class PalettePanel extends JPanel {
                 this.selected = isSelected;
                 setPreferredSize(new Dimension(210, 52));
                 String firstRecipeLine = t.usage().split("\\n")[0];
-                setToolTipText("<html><b>" + t.title() + "</b> — "
-                        + t.description() + "<br><i>" + firstRecipeLine
-                        + "</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>");
+                setToolTipText(Bundle.PalettePanel_entryTooltip(t.title(), t.description(), firstRecipeLine));
             } else {
                 this.type = null;
                 this.headerText = String.valueOf(value);

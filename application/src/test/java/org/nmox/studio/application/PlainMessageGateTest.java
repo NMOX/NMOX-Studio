@@ -64,7 +64,12 @@ class PlainMessageGateTest {
                             String arg = body.substring(firstArg[0], firstArg[1])
                                     .replaceAll("//[^\n]*", "").strip(); // a comment above the argument is not the argument
                             if (arg.isEmpty() || LITERALS_ONLY.matcher(arg).matches() || isComponent(arg)
-                                    || arg.startsWith("\"<html>")) {
+                                    || arg.startsWith("\"<html>")
+                                    // a bundle value is the product's own authored sentence (v2.97.0, the
+                                    // l10n arc); an argument spliced into an html-led value is escaped at
+                                    // the call site — the review's lens, as for the html-led literal
+                                    || arg.startsWith("Bundle.") || arg.startsWith("NbBundle.")
+                                    || arg.startsWith("org.openide.util.NbBundle.")) {
                                 // an html-led literal is a deliberately AUTHORED HTML message; its
                                 // interpolations must be the product's own tokens — the review's lens,
                                 // not this gate's (NewProjectDialog's install dialog names the package manager)

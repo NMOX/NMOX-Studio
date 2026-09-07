@@ -42,7 +42,11 @@ class TestRunsStopTest {
         int hidden = src.indexOf("protected void componentHidden()");
         assertThat(src.indexOf("LiveRuns.addListener(runsListener)")).isGreaterThan(showing).isLessThan(hidden);
         assertThat(src.indexOf("LiveRuns.removeListener(runsListener)")).isGreaterThan(hidden);
-        assertThat(src).contains("setAccessibleName(\"Stop running test\")").contains("TestRunsStop.stopAll()");
+        // v2.97.0 (the l10n arc): the name is a bundle value, so a screen
+        // reader speaks it in the user's language; the law is that the Stop
+        // HAS a name and still stops every run
+        assertThat(src).contains("setAccessibleName(Bundle.TestsExplorerTopComponent_stopName())")
+                .contains("TestRunsStop.stopAll()");
         String lane = Files.readString(Path.of("src/main/java/org/nmox/studio/editor/testing/RunFocusedTestAction.java"));
         assertThat(lane).as("the lane's ids carry the prefix the Stop selects on").contains("\"" + TestRunsStop.PREFIX + "\"");
     }

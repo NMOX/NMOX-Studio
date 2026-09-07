@@ -34,7 +34,21 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.CheckMyWorkAction")
 @ActionRegistration(displayName = "#CTL_CheckMyWorkAction")
 @ActionReference(path = "Menu/File", position = 139)
-@Messages("CTL_CheckMyWorkAction=Check My Work")
+@Messages({
+    "CTL_CheckMyWorkAction=Check My Work",
+    "CheckMyWorkAction_notASpace=Check My Work verifies a learning space's exercises — aim the studio at one first (File ▸ New Learning Space…).",
+    "CheckMyWorkAction_noCheckpoints=This space has no checkpoints yet — the flagship spaces (Your First Web Page, Go, Rust, Playwright) check work today, and any catalog entry can declare its own.",
+    "CheckMyWorkAction_linePassed=  ✓ {0}",
+    "CheckMyWorkAction_lineFailed=  ✗ {0}",
+    "CheckMyWorkAction_checkSingular=check",
+    "CheckMyWorkAction_checkPlural=checks",
+    "CheckMyWorkAction_allPass=All {0} pass — nicely done.\n\n",
+    "CheckMyWorkAction_somePass={0} of {1} pass.\n\n",
+    "CheckMyWorkAction_explain=Explain with KVASIR…",
+    "CheckMyWorkAction_title=Check My Work — {0}",
+    "CheckMyWorkAction_failedChecks=Failed checks — {0}",
+    "CheckMyWorkAction_explainDeclined=Explain declined or no API key — nothing was sent."
+})
 public final class CheckMyWorkAction implements ActionListener {
 
     @Override
@@ -42,8 +56,7 @@ public final class CheckMyWorkAction implements ActionListener {
         File dir = RackService.getDefault().getRack().getProjectDir();
         if (dir == null || !LearningSpace.isLearningSpace(dir)) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Check My Work verifies a learning space's exercises — aim the"
-                    + " studio at one first (File ▸ New Learning Space…)."));
+                    Bundle.CheckMyWorkAction_notASpace()));
             return;
         }
         String slug = LearningSpace.info(dir).slug();
@@ -52,9 +65,7 @@ public final class CheckMyWorkAction implements ActionListener {
                 space == null ? List.of() : space.checkpoints();
         if (checks.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "This space has no checkpoints yet — the flagship spaces"
-                    + " (Your First Web Page, Go, Rust, Playwright) check work"
-                    + " today, and any catalog entry can declare its own."));
+                    Bundle.CheckMyWorkAction_noCheckpoints()));
             return;
         }
         // file checks read disk, command checks spawn — off the EDT
@@ -76,7 +87,8 @@ public final class CheckMyWorkAction implements ActionListener {
             java.util.List<Checkpoints.Result> failedResults = new java.util.ArrayList<>();
             for (Checkpoints.Checkpoint c : checks) {
                 Checkpoints.Result r = Checkpoints.run(dir, c, runner);
-                report.append(r.passed() ? "  ✓ " : "  ✗ ").append(r.label()).append('\n');
+                report.append(r.passed() ? Bundle.CheckMyWorkAction_linePassed(r.label())
+                        : Bundle.CheckMyWorkAction_lineFailed(r.label())).append('\n');
                 if (!r.passed() && !r.detail().isBlank()) {
                     report.append("      ").append(r.detail()).append('\n');
                 }
@@ -87,9 +99,11 @@ public final class CheckMyWorkAction implements ActionListener {
                     failedResults.add(r);
                 }
             }
+            String checkCount = org.nmox.studio.core.util.Plural.of(checks.size(),
+                    Bundle.CheckMyWorkAction_checkSingular(), Bundle.CheckMyWorkAction_checkPlural());
             String head = passed == checks.size()
-                    ? "All " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass — nicely done.\n\n"
-                    : passed + " of " + org.nmox.studio.core.util.Plural.of(checks.size(), "check") + " pass.\n\n";
+                    ? Bundle.CheckMyWorkAction_allPass(checkCount)
+                    : Bundle.CheckMyWorkAction_somePass(String.valueOf(passed), checkCount);
             // the tutor half of the checkpoint loop (v2.39.5): a stuck
             // learner gets more than the hint — the failed checks and
             // their own file, explained. The option appears only when
@@ -105,17 +119,17 @@ public final class CheckMyWorkAction implements ActionListener {
                                     NotifyDescriptor.INFORMATION_MESSAGE));
                     return;
                 }
-                Object explain = "Explain with KVASIR…";
+                Object explain = Bundle.CheckMyWorkAction_explain();
                 org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
-                        org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"), "Check My Work — " + dir.getName(), true,
+                        org.nmox.studio.core.util.PlainDialogs.plain(head + report, "Check My Work report"), Bundle.CheckMyWorkAction_title(dir.getName()), true,
                         new Object[] {explain, NotifyDescriptor.OK_OPTION},
                         NotifyDescriptor.OK_OPTION,
                         org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
-                if (DialogDisplayer.getDefault().notify(dd) == explain) {
+                if (explain.equals(DialogDisplayer.getDefault().notify(dd))) {
                     boolean started = kvasir.explain(
                             new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
                                     "space.check",
-                                    "Failed checks — " + dir.getName(),
+                                    Bundle.CheckMyWorkAction_failedChecks(dir.getName()),
                                     org.nmox.studio.rack.projectstudio.CheckDisclosure
                                             .what(dir.getName(), failed),
                                     org.nmox.studio.rack.projectstudio.CheckDisclosure
@@ -123,7 +137,7 @@ public final class CheckMyWorkAction implements ActionListener {
                                     "Why do these checks fail, and what exactly should I change?"));
                     if (!started) {
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                "Explain declined or no API key — nothing was sent.");
+                                Bundle.CheckMyWorkAction_explainDeclined());
                     }
                 }
             });

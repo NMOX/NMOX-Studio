@@ -41,7 +41,13 @@ import org.openide.windows.WindowManager;
     @ActionReference(path = "Menu/File", position = 65),
     @ActionReference(path = "Shortcuts", name = "DS-P")
 })
-@Messages("CTL_SwitchProjectAction=Switch Project…")
+@Messages({
+    "CTL_SwitchProjectAction=Switch Project…",
+    "SwitchProjectAction_noRecents=No recent projects yet — open a folder or create a project first.",
+    "SwitchProjectAction_listName=Recent projects",
+    "SwitchProjectAction_filterName=Filter projects",
+    "SwitchProjectAction_title=Switch Project"
+})
 public final class SwitchProjectAction implements ActionListener {
 
     @Override
@@ -49,14 +55,14 @@ public final class SwitchProjectAction implements ActionListener {
         List<File> recents = RackService.getDefault().getRecentProjects();
         if (recents.isEmpty()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "No recent projects yet — open a folder or create a project first."));
+                    Bundle.SwitchProjectAction_noRecents()));
             return;
         }
 
         DefaultListModel<File> model = new DefaultListModel<>();
         recents.forEach(model::addElement);
         JList<File> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Recent projects");
+        list.getAccessibleContext().setAccessibleName(Bundle.SwitchProjectAction_listName());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setVisibleRowCount(Math.min(10, recents.size()));
@@ -72,7 +78,7 @@ public final class SwitchProjectAction implements ActionListener {
         });
 
         JTextField filter = new JTextField();
-        filter.getAccessibleContext().setAccessibleName("Filter projects");
+        filter.getAccessibleContext().setAccessibleName(Bundle.SwitchProjectAction_filterName());
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {
                 String needle = filter.getText().toLowerCase(java.util.Locale.ROOT);
@@ -124,7 +130,7 @@ public final class SwitchProjectAction implements ActionListener {
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         panel.setPreferredSize(new java.awt.Dimension(520, 280));
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Switch Project");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.SwitchProjectAction_title());
         java.awt.Dialog[] dialog = new java.awt.Dialog[1];
         Runnable open = () -> {
             File chosen = list.getSelectedValue();

@@ -19,6 +19,13 @@ import java.util.List;
  * need the viewport wrapped in a scroll pane; not worth the chrome
  * until a height-dependent media query matters to someone.
  */
+@org.openide.util.NbBundle.Messages({
+    "ViewportPresets_full=Full",
+    "ViewportPresets_iphone=iPhone · 390×844",
+    "ViewportPresets_android=Android · 412×915",
+    "ViewportPresets_tablet=Tablet · 768×1024",
+    "ViewportPresets_laptop=Laptop · 1366×768"
+})
 public final class ViewportPresets {
 
     /** One preset; width/height ≤ 0 means "fill the window" (Full). */
@@ -41,11 +48,11 @@ public final class ViewportPresets {
      * the same ones browser devtools ship.
      */
     public static final List<Preset> ALL = List.of(
-            new Preset("Full", -1, -1),
-            new Preset("iPhone · 390×844", 390, 844),
-            new Preset("Android · 412×915", 412, 915),
-            new Preset("Tablet · 768×1024", 768, 1024),
-            new Preset("Laptop · 1366×768", 1366, 768));
+            new Preset(Bundle.ViewportPresets_full(), -1, -1),
+            new Preset(Bundle.ViewportPresets_iphone(), 390, 844),
+            new Preset(Bundle.ViewportPresets_android(), 412, 915),
+            new Preset(Bundle.ViewportPresets_tablet(), 768, 1024),
+            new Preset(Bundle.ViewportPresets_laptop(), 1366, 768));
 
     private ViewportPresets() {
     }

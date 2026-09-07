@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * these files, so the editor must speak them.
  */
 @GrammarRegistration(grammar = "aiken.tmLanguage.json", mimeType = "text/x-aiken")
-@MIMEResolver.ExtensionRegistration(displayName = "Aiken", mimeType = "text/x-aiken", extension = {"ak"}, position = 2453)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_AikenGrammar_LOADER", mimeType = "text/x-aiken", extension = {"ak"}, position = 2453)
+@org.openide.util.NbBundle.Messages("LBL_AikenGrammar_LOADER=Aiken")
 public final class AikenGrammar {
 
     private AikenGrammar() {

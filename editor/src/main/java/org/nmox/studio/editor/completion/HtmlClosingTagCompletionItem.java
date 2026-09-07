@@ -18,6 +18,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * of these — {@link HtmlCompletionProvider} filters them out because they
  * have no closing form to offer.
  */
+@org.openide.util.NbBundle.Messages({
+    "HtmlClosingTagCompletionItem_hint=[close]"
+})
 public class HtmlClosingTagCompletionItem implements CompletionItem {
     
     private final String tagName;
@@ -57,7 +60,7 @@ public class HtmlClosingTagCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             "/" + tagName + ">",
-            "[close]",
+            Bundle.HtmlClosingTagCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : defaultColor,

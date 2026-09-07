@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "python.tmLanguage.json", mimeType = "text/x-python")
-@MIMEResolver.ExtensionRegistration(displayName = "Python", mimeType = "text/x-python", extension = {"py", "pyw"}, position = 2330)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_PythonGrammar_LOADER", mimeType = "text/x-python", extension = {"py", "pyw"}, position = 2330)
+@org.openide.util.NbBundle.Messages("LBL_PythonGrammar_LOADER=Python")
 public final class PythonGrammar {
 
     private PythonGrammar() {

@@ -24,6 +24,10 @@ import org.openide.util.Utilities;
  * while the mode is on, removed the moment it is off; non-persistent,
  * like Presentation Mode — a presentation is temporary.
  */
+@org.openide.util.NbBundle.Messages({
+    "KeystrokeHud_on=Show Keystrokes on — chords with ⌘, ⌃ or ⌥ and function keys appear at the bottom of the window; plain typing never does",
+    "KeystrokeHud_off=Show Keystrokes off"
+})
 public final class KeystrokeHud {
 
     private static final AWTEventListener LISTENER = KeystrokeHud::onEvent;
@@ -50,14 +54,14 @@ public final class KeystrokeHud {
         if (enable) {
             overlay = new KeystrokeOverlay(); // built here on the EDT, never lazily on the event path (SpotBugs LI_LAZY_INIT_STATIC, verify #9)
             Toolkit.getDefaultToolkit().addAWTEventListener(LISTENER, AWTEvent.KEY_EVENT_MASK);
-            StatusDisplayer.getDefault().setStatusText("Show Keystrokes on — chords with ⌘, ⌃ or ⌥ and function keys appear at the bottom of the window; plain typing never does");
+            StatusDisplayer.getDefault().setStatusText(Bundle.KeystrokeHud_on());
         } else {
             Toolkit.getDefaultToolkit().removeAWTEventListener(LISTENER);
             if (overlay != null) {
                 overlay.dispose();
                 overlay = null;
             }
-            StatusDisplayer.getDefault().setStatusText("Show Keystrokes off");
+            StatusDisplayer.getDefault().setStatusText(Bundle.KeystrokeHud_off());
         }
     }
 

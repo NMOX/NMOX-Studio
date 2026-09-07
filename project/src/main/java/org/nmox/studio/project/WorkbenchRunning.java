@@ -18,6 +18,10 @@ import org.nmox.studio.core.spi.LiveServings;
  * behind it — a rack device's server — is a row of its own. Pure, so
  * the join and the order are unit tests; the window paints the rows.
  */
+@org.openide.util.NbBundle.Messages({
+    "WorkbenchRunning_running=running",
+    "WorkbenchRunning_runningSince=running {0}"
+})
 final class WorkbenchRunning {
 
     /** One row: a run (stoppable, id non-null) or a bare serving (openable, url non-null). */
@@ -84,6 +88,6 @@ final class WorkbenchRunning {
         if (row.openable()) {
             return since.isEmpty() ? row.url() : row.url() + "  " + since;
         }
-        return since.isEmpty() ? "running" : "running " + since;
+        return since.isEmpty() ? Bundle.WorkbenchRunning_running() : Bundle.WorkbenchRunning_runningSince(since);
     }
 }

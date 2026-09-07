@@ -22,6 +22,17 @@ import org.openide.util.RequestProcessor;
  * last-seen version lives in the userdir (NbPreferences), so a fresh
  * userdir records silently instead of greeting a new user with a diff.
  */
+@org.openide.util.NbBundle.Messages({
+    "WhatsNew_titleSince=What''s new since {0}",
+    "WhatsNew_title=What's new",
+    "WhatsNew_missing=The release notes are missing from this install.",
+    "WhatsNew_none=No release notes between {0} and {1}.",
+    "WhatsNew_areaName=Release notes",
+    "WhatsNew_copy=Copy as Markdown",
+    "WhatsNew_github=Full notes on GitHub",
+    "WhatsNew_close=Close",
+    "WhatsNew_copied=Release notes copied as Markdown."
+})
 public final class WhatsNew {
 
     private static final RequestProcessor RP = new RequestProcessor("What's New", 1, true);
@@ -68,7 +79,7 @@ public final class WhatsNew {
             case RECORD_ONLY -> prefs().put(LAST_SEEN, running);
             case SHOW -> {
                 prefs().put(LAST_SEEN, running);
-                show(lastSeen, running, "What's new since " + lastSeen, true);
+                show(lastSeen, running, Bundle.WhatsNew_titleSince(lastSeen), true);
             }
         }
     }
@@ -76,7 +87,7 @@ public final class WhatsNew {
     /** Help ▸ What's New…: the running version's entry (or the head, on a dev build). */
     public static void showCurrent() {
         String running = runningVersion();
-        show(null, Versions.isStamped(running) ? running : null, "What's new", false);
+        show(null, Versions.isStamped(running) ? running : null, Bundle.WhatsNew_title(), false);
     }
 
     /** Off-EDT read of the bundle, EDT dialog; the first-boot one waits for the main window (MainWindowUp). */
@@ -87,7 +98,7 @@ public final class WhatsNew {
             List<ReleaseNotes.Entry> shown = List.of();
             int omitted = 0;
             if (all.isEmpty()) {
-                text = "The release notes are missing from this install.";
+                text = Bundle.WhatsNew_missing();
             } else if (running == null) {
                 shown = List.of(ReleaseNotes.head(all));
                 text = ReleaseNotes.render(shown, 0);
@@ -100,7 +111,7 @@ public final class WhatsNew {
                 shown = unseen;
                 omitted = ReleaseNotes.omitted(all, lastSeen, running);
                 text = unseen.isEmpty()
-                        ? "No release notes between " + lastSeen + " and " + running + "."
+                        ? Bundle.WhatsNew_none(lastSeen, running)
                         : ReleaseNotes.render(unseen, omitted);
             }
             String finalText = text;
@@ -118,23 +129,23 @@ public final class WhatsNew {
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setCaretPosition(0);
-        area.getAccessibleContext().setAccessibleName("Release notes");
+        area.getAccessibleContext().setAccessibleName(Bundle.WhatsNew_areaName());
         JScrollPane scroll = org.nmox.studio.ui.util.DialogFit.toScreen(new JScrollPane(area));
-        Object copy = "Copy as Markdown";
-        Object github = "Full notes on GitHub";
-        Object close = "Close";
+        Object copy = Bundle.WhatsNew_copy();
+        Object github = Bundle.WhatsNew_github();
+        Object close = Bundle.WhatsNew_close();
         Object[] options = markdown == null ? new Object[]{github, close} : new Object[]{copy, github, close};
         NotifyDescriptor nd = new NotifyDescriptor(scroll, title, NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, options, close);
         Object answer = DialogDisplayer.getDefault().notify(nd);
-        if (answer == copy) {
+        if (copy.equals(answer)) {
             // the release post starts from exactly these notes (v2.88.0, the evangelist's motion)
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                     new java.awt.datatransfer.StringSelection(markdown), null);
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText("Release notes copied as Markdown.");
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(Bundle.WhatsNew_copied());
             return;
         }
-        if (answer == github) {
+        if (github.equals(answer)) {
             try {
                 java.awt.Desktop.getDesktop().browse(java.net.URI.create(
                         "https://github.com/NMOX/NMOX-Studio/releases"));

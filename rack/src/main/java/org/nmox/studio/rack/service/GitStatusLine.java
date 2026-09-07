@@ -42,6 +42,66 @@ import org.openide.windows.TopComponent;
  * reimplementation.
  */
 @ServiceProvider(service = StatusLineElementProvider.class, position = 590)
+@org.openide.util.NbBundle.Messages({
+    "GitStatusLine_chipTooltip=<html>git — {0}<br>click for Show Changes / Diff / Annotate / History</html>",
+    "GitStatusLine_aimFirst=Aim a project first.",
+    "GitStatusLine_ghNotFound=GitHub CLI (gh) not found — install it (brew install gh) and run gh auth login.",
+    "GitStatusLine_exitCode=exit {0}",
+    "GitStatusLine_ghListFailed=gh could not list pull requests — {0}",
+    "GitStatusLine_ghNotPrList=gh answered with something that is not a PR list.",
+    "GitStatusLine_noOpenPulls=No open pull requests.",
+    "GitStatusLine_colNumber=#",
+    "GitStatusLine_colTitle=Title",
+    "GitStatusLine_colAuthor=Author",
+    "GitStatusLine_colBranch=Branch",
+    "GitStatusLine_pullsTableName=Open pull requests",
+    "GitStatusLine_openInBrowser=Open in Browser",
+    "GitStatusLine_reviewThreads=Review Threads…",
+    "GitStatusLine_checkout=Checkout…",
+    "GitStatusLine_close=Close",
+    "GitStatusLine_pullsDialogTitle=Open pull requests",
+    "GitStatusLine_prOpenFailed=Could not open the PR in the Browser.",
+    "GitStatusLine_ghThreadsFailed=gh could not read the review threads — {0}",
+    "GitStatusLine_ghNotCommentList=gh returned something that is not a comment list.",
+    "GitStatusLine_noReviewComments=No review comments on #{0}.",
+    "GitStatusLine_showingFirstComments=[showing the first {0} comments]",
+    "GitStatusLine_threadsAreaName=Review threads of pull request {0}",
+    "GitStatusLine_threadsDialogTitle=Review threads — #{0} {1}",
+    "GitStatusLine_gitNotFoundCheckout=git not found — nothing was checked out.",
+    "GitStatusLine_gitStatusFailedCheckout=git status failed — nothing was checked out.",
+    "GitStatusLine_checkoutRefused=Checkout refused: {0}",
+    "GitStatusLine_checkoutConfirm=Check out pull request #{0} ({1}) into the aimed project?\nThe working tree switches branches; nothing is committed or pushed.{2}",
+    "GitStatusLine_checkoutTitle=Checkout pull request",
+    "GitStatusLine_checkoutCancelled=Checkout cancelled — nothing changed.",
+    "GitStatusLine_ghNotFoundCheckout=GitHub CLI (gh) not found — nothing was checked out.",
+    "GitStatusLine_leftoversReset=; the attempt's leftovers were reset, the tree is as it was",
+    "GitStatusLine_leftoversStaged=; the attempt left staged changes (git reset --hard restores them)",
+    "GitStatusLine_ghCheckoutFailed=gh could not check out #{0} — {1}",
+    "GitStatusLine_checkedOut=Checked out #{0} ({1}).",
+    "GitStatusLine_diffReadFailed=Could not read the staged diff: {0}",
+    "GitStatusLine_notARepo=Not a git repository, or git failed — nothing was sent.",
+    "GitStatusLine_nothingStaged=Nothing staged — stage changes first (git add), then draft.",
+    "GitStatusLine_diffConsentDetail=the STAGED diff of {0} (up to {1} characters) and its changed-file list",
+    "GitStatusLine_draftAreaName=Drafted commit message",
+    "GitStatusLine_draftHint=Edit as needed, then Copy — committing stays yours.",
+    "GitStatusLine_copy=Copy",
+    "GitStatusLine_draftTitle=KVASIR commit message — draft",
+    "GitStatusLine_draftCopied=Commit message copied — paste it into your commit.",
+    "GitStatusLine_showChanges=Show Changes",
+    "GitStatusLine_diffProject=Diff Project",
+    "GitStatusLine_annotate=Annotate",
+    "GitStatusLine_history=History",
+    "GitStatusLine_pullRequests=Pull Requests…",
+    "GitStatusLine_draftCommit=Draft Commit Message with KVASIR…",
+    "GitStatusLine_refresh=Refresh",
+    "GitStatusLine_whyNoEditorFile=no file is open in the editor",
+    "GitStatusLine_whyNoFolder=the project folder did not resolve",
+    "GitStatusLine_whyNoGitModule=the git module is not installed",
+    "GitStatusLine_whyRejectedContext=git rejected this context",
+    "GitStatusLine_verbUnavailable={0} unavailable ({1}) — use the Team menu",
+    "GitStatusLine_noRepository=Git: no repository",
+    "GitStatusLine_historyUnavailable=Git history unavailable: {0}"
+})
 public class GitStatusLine implements StatusLineElementProvider {
 
     // Pinned from org-netbeans-modules-git's layer (git-layer.xml shadows
@@ -158,8 +218,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                 // the tooltip MEANS its <br>; the repo path is the one external piece and rides
                 // PLAIN-TOOLTIP-EXEMPT: PlainText.escape (a directory can be named <img src=…>)
                 chipLabel.setToolTipText(label == null ? null
-                        : "<html>git — " + PlainText.escape(String.valueOf(root))
-                        + "<br>click for Show Changes / Diff / Annotate / History</html>");
+                        : Bundle.GitStatusLine_chipTooltip(PlainText.escape(String.valueOf(root))));
                 if (label != null && isDisplayable()) {
                     if (!poll.isRunning()) {
                         poll.start();
@@ -195,7 +254,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir == null) {
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Aim a project first.");
+                        .setStatusText(Bundle.GitStatusLine_aimFirst());
                 return;
             }
             RP.post(() -> {
@@ -208,21 +267,20 @@ public class GitStatusLine implements StatusLineElementProvider {
                                     "--json", "number,title,author,headRefName,url"),
                             dir, java.time.Duration.ofSeconds(10));
                 } catch (java.io.IOException ex) {
-                    status("GitHub CLI (gh) not found \u2014 install it "
-                            + "(brew install gh) and run gh auth login.");
+                    status(Bundle.GitStatusLine_ghNotFound());
                     return;
                 }
                 if (r.exitCode() != 0) {
                     String first = (r.stderr() == null ? "" : r.stderr())
-                            .lines().findFirst().orElse("exit " + r.exitCode());
-                    status("gh could not list pull requests \u2014 " + first);
+                            .lines().findFirst().orElse(Bundle.GitStatusLine_exitCode(String.valueOf(r.exitCode())));
+                    status(Bundle.GitStatusLine_ghListFailed(first));
                     return;
                 }
                 java.util.List<org.nmox.studio.rack.engine.GitPulls.Pull> pulls;
                 try {
                     pulls = org.nmox.studio.rack.engine.GitPulls.parse(r.stdout());
                 } catch (RuntimeException notJson) {
-                    status("gh answered with something that is not a PR list.");
+                    status(Bundle.GitStatusLine_ghNotPrList());
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> showPullsDialog(pulls));
@@ -233,10 +291,10 @@ public class GitStatusLine implements StatusLineElementProvider {
                 java.util.List<org.nmox.studio.rack.engine.GitPulls.Pull> pulls) {
             if (pulls.isEmpty()) {
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("No open pull requests.");
+                        .setStatusText(Bundle.GitStatusLine_noOpenPulls());
                 return;
             }
-            String[] cols = {"#", "Title", "Author", "Branch"};
+            String[] cols = {Bundle.GitStatusLine_colNumber(), Bundle.GitStatusLine_colTitle(), Bundle.GitStatusLine_colAuthor(), Bundle.GitStatusLine_colBranch()};
             Object[][] rows = new Object[pulls.size()][];
             for (int i = 0; i < pulls.size(); i++) {
                 var p = pulls.get(i);
@@ -249,37 +307,37 @@ public class GitStatusLine implements StatusLineElementProvider {
                             return false;
                         }
                     });
-            table.getAccessibleContext().setAccessibleName("Open pull requests");
+            table.getAccessibleContext().setAccessibleName(Bundle.GitStatusLine_pullsTableName());
             table.setRowSelectionInterval(0, 0);
             javax.swing.JScrollPane scroll = new javax.swing.JScrollPane(table);
             scroll.setPreferredSize(new java.awt.Dimension(560, 260));
-            Object open = "Open in Browser";
-            Object threads = "Review Threads\u2026";
-            Object checkout = "Checkout\u2026";
-            Object close = "Close";
+            Object open = Bundle.GitStatusLine_openInBrowser();
+            Object threads = Bundle.GitStatusLine_reviewThreads();
+            Object checkout = Bundle.GitStatusLine_checkout();
+            Object close = Bundle.GitStatusLine_close();
             org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(
-                    scroll, "Open pull requests",
+                    scroll, Bundle.GitStatusLine_pullsDialogTitle(),
                     org.openide.NotifyDescriptor.DEFAULT_OPTION,
                     org.openide.NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{open, threads, checkout, close}, open);
             Object choice = org.openide.DialogDisplayer.getDefault().notify(nd);
             int row = table.getSelectedRow();
-            if (row < 0 || choice == close) {
+            if (row < 0 || close.equals(choice)) {
                 return;
             }
             var pull = pulls.get(row);
-            if (choice == open) {
+            if (open.equals(choice)) {
                 String url = pull.url();
                 org.nmox.studio.core.spi.EmbeddedBrowser browser =
                         org.nmox.studio.core.spi.EmbeddedBrowser.find();
                 if (url.isBlank()
                         || browser == null || !browser.open(url)) {
                     org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Could not open the PR in the Browser.");
+                            .setStatusText(Bundle.GitStatusLine_prOpenFailed());
                 }
-            } else if (choice == threads) {
+            } else if (threads.equals(choice)) {
                 showReviewThreads(pull);
-            } else if (choice == checkout) {
+            } else if (checkout.equals(choice)) {
                 checkoutPull(pull);
             }
         }
@@ -298,7 +356,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             }
             java.io.File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir == null) {
-                status("Aim a project first.");
+                status(Bundle.GitStatusLine_aimFirst());
                 return;
             }
             RP.post(() -> {
@@ -309,44 +367,43 @@ public class GitStatusLine implements StatusLineElementProvider {
                                     "repos/{owner}/{repo}/pulls/" + pull.number() + "/comments"),
                             dir, java.time.Duration.ofSeconds(15));
                 } catch (java.io.IOException ex) {
-                    status("GitHub CLI (gh) not found \u2014 install it "
-                            + "(brew install gh) and run gh auth login.");
+                    status(Bundle.GitStatusLine_ghNotFound());
                     return;
                 }
                 if (r.exitCode() != 0) {
                     String first = (r.stderr() == null ? "" : r.stderr())
-                            .lines().findFirst().orElse("exit " + r.exitCode());
-                    status("gh could not read the review threads \u2014 " + first);
+                            .lines().findFirst().orElse(Bundle.GitStatusLine_exitCode(String.valueOf(r.exitCode())));
+                    status(Bundle.GitStatusLine_ghThreadsFailed(first));
                     return;
                 }
                 java.util.List<org.nmox.studio.rack.engine.GitReviews.Comment> comments;
                 try {
                     comments = org.nmox.studio.rack.engine.GitReviews.parse(r.stdout());
                 } catch (RuntimeException ex) {
-                    status("gh returned something that is not a comment list.");
+                    status(Bundle.GitStatusLine_ghNotCommentList());
                     return;
                 }
                 if (comments.isEmpty()) {
-                    status("No review comments on #" + pull.number() + ".");
+                    status(Bundle.GitStatusLine_noReviewComments(String.valueOf(pull.number())));
                     return;
                 }
                 boolean truncated = org.nmox.studio.rack.engine.GitReviews.truncated(r.stdout());
                 String text = org.nmox.studio.rack.engine.GitReviews.render(comments)
-                        + (truncated ? "\n\n[showing the first "
-                                + org.nmox.studio.rack.engine.GitReviews.LIMIT + " comments]" : "");
+                        + (truncated ? "\n\n" + Bundle.GitStatusLine_showingFirstComments(
+                                String.valueOf(org.nmox.studio.rack.engine.GitReviews.LIMIT)) : "");
                 java.awt.EventQueue.invokeLater(() -> {
                     javax.swing.JTextArea area = new javax.swing.JTextArea(text, 24, 80);
                     area.setEditable(false);
                     area.setLineWrap(true);
                     area.setWrapStyleWord(true);
                     area.getAccessibleContext().setAccessibleName(
-                            "Review threads of pull request " + pull.number());
+                            Bundle.GitStatusLine_threadsAreaName(String.valueOf(pull.number())));
                     org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor(
                             new javax.swing.JScrollPane(area),
-                            "Review threads \u2014 #" + pull.number() + " " + pull.title(),
+                            Bundle.GitStatusLine_threadsDialogTitle(String.valueOf(pull.number()), pull.title()),
                             org.openide.NotifyDescriptor.DEFAULT_OPTION,
                             org.openide.NotifyDescriptor.PLAIN_MESSAGE,
-                            new Object[]{"Close"}, "Close"));
+                            new Object[]{Bundle.GitStatusLine_close()}, Bundle.GitStatusLine_close()));
                 });
             });
         }
@@ -367,7 +424,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             }
             java.io.File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir == null) {
-                status("Aim a project first.");
+                status(Bundle.GitStatusLine_aimFirst());
                 return;
             }
             RP.post(() -> {
@@ -377,26 +434,24 @@ public class GitStatusLine implements StatusLineElementProvider {
                             java.util.List.of("git", "status", "--porcelain"),
                             dir, java.time.Duration.ofSeconds(10));
                 } catch (java.io.IOException ex) {
-                    status("git not found \u2014 nothing was checked out.");
+                    status(Bundle.GitStatusLine_gitNotFoundCheckout());
                     return;
                 }
                 if (st.exitCode() != 0) {
-                    status("git status failed \u2014 nothing was checked out.");
+                    status(Bundle.GitStatusLine_gitStatusFailedCheckout());
                     return;
                 }
                 org.nmox.studio.rack.engine.GitCheckoutGuard.Verdict verdict =
                         org.nmox.studio.rack.engine.GitCheckoutGuard.judge(st.stdout());
                 if (!verdict.allowed()) {
-                    status("Checkout refused: " + verdict.reason());
+                    status(Bundle.GitStatusLine_checkoutRefused(verdict.reason()));
                     return;
                 }
                 java.awt.EventQueue.invokeLater(() -> {
                     String note = verdict.reason().isBlank() ? "" : "\n\n" + verdict.reason();
                     org.openide.NotifyDescriptor confirm = new org.openide.NotifyDescriptor(
-                            "Check out pull request #" + pull.number() + " (" + pull.branch()
-                            + ") into the aimed project?\nThe working tree switches branches;"
-                            + " nothing is committed or pushed." + note,
-                            "Checkout pull request",
+                            Bundle.GitStatusLine_checkoutConfirm(String.valueOf(pull.number()), pull.branch(), note),
+                            Bundle.GitStatusLine_checkoutTitle(),
                             org.openide.NotifyDescriptor.YES_NO_OPTION,
                             org.openide.NotifyDescriptor.QUESTION_MESSAGE,
                             new Object[]{org.openide.NotifyDescriptor.YES_OPTION,
@@ -404,7 +459,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                             org.openide.NotifyDescriptor.NO_OPTION);
                     if (org.openide.DialogDisplayer.getDefault().notify(confirm)
                             != org.openide.NotifyDescriptor.YES_OPTION) {
-                        status("Checkout cancelled \u2014 nothing changed.");
+                        status(Bundle.GitStatusLine_checkoutCancelled());
                         return;
                     }
                     RP.post(() -> {
@@ -415,12 +470,12 @@ public class GitStatusLine implements StatusLineElementProvider {
                                             String.valueOf(pull.number())),
                                     dir, java.time.Duration.ofSeconds(60));
                         } catch (java.io.IOException ex) {
-                            status("GitHub CLI (gh) not found \u2014 nothing was checked out.");
+                            status(Bundle.GitStatusLine_ghNotFoundCheckout());
                             return;
                         }
                         if (co.exitCode() != 0) {
                             String first = (co.stderr() == null ? "" : co.stderr())
-                                    .lines().findFirst().orElse("exit " + co.exitCode());
+                                    .lines().findFirst().orElse(Bundle.GitStatusLine_exitCode(String.valueOf(co.exitCode())));
                             // gh can die AFTER staging the PR's files (measured on a
                             // shallow clone: "cannot set up tracking information") —
                             // a tree the guard proved clean must not stay dirty from
@@ -434,18 +489,16 @@ public class GitStatusLine implements StatusLineElementProvider {
                                     org.nmox.studio.core.process.ProcessSupport.runBounded(
                                             java.util.List.of("git", "reset", "--hard"),
                                             dir, java.time.Duration.ofSeconds(30));
-                                    first += "; the attempt's leftovers were reset, "
-                                            + "the tree is as it was";
+                                    first += Bundle.GitStatusLine_leftoversReset();
                                 } catch (java.io.IOException ex) {
-                                    first += "; the attempt left staged changes "
-                                            + "(git reset --hard restores them)";
+                                    first += Bundle.GitStatusLine_leftoversStaged();
                                 }
                                 java.awt.EventQueue.invokeLater(() -> refreshCount());
                             }
-                            status("gh could not check out #" + pull.number() + " \u2014 " + first);
+                            status(Bundle.GitStatusLine_ghCheckoutFailed(String.valueOf(pull.number()), first));
                             return;
                         }
-                        status("Checked out #" + pull.number() + " (" + pull.branch() + ").");
+                        status(Bundle.GitStatusLine_checkedOut(String.valueOf(pull.number()), pull.branch()));
                         java.awt.EventQueue.invokeLater(() -> refreshCount());
                     });
                 });
@@ -472,7 +525,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             File dir = RackService.getDefault().getRack().getProjectDir();
             if (dir == null) {
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Aim a project first.");
+                        .setStatusText(Bundle.GitStatusLine_aimFirst());
                 return;
             }
             RP.post(() -> {
@@ -486,16 +539,16 @@ public class GitStatusLine implements StatusLineElementProvider {
                             java.util.List.of("git", "diff", "--staged"),
                             dir, java.time.Duration.ofSeconds(5));
                 } catch (java.io.IOException ex) {
-                    status("Could not read the staged diff: " + ex.getMessage());
+                    status(Bundle.GitStatusLine_diffReadFailed(ex.getMessage()));
                     return;
                 }
                 if (stat.exitCode() != 0 || diff.exitCode() != 0) {
-                    status("Not a git repository, or git failed — nothing was sent.");
+                    status(Bundle.GitStatusLine_notARepo());
                     return;
                 }
                 String rawDiff = diff.stdout();
                 if (rawDiff == null || rawDiff.isBlank()) {
-                    status("Nothing staged — stage changes first (git add), then draft.");
+                    status(Bundle.GitStatusLine_nothingStaged());
                     return;
                 }
                 org.nmox.studio.rack.engine.KvasirCommitEngine engine =
@@ -503,10 +556,9 @@ public class GitStatusLine implements StatusLineElementProvider {
                                 new org.nmox.studio.rack.engine.KvasirClient(),
                                 KvasirKeys::read,
                                 project -> KvasirConsent.requestKindConsent("git.diff",
-                                        "the STAGED diff of " + project + " (up to "
-                                        + org.nmox.studio.rack.engine
-                                                .KvasirCommitMessage.MAX_DIFF_CHARS
-                                        + " characters) and its changed-file list"));
+                                        Bundle.GitStatusLine_diffConsentDetail(project,
+                                                String.valueOf(org.nmox.studio.rack.engine
+                                                        .KvasirCommitMessage.MAX_DIFF_CHARS))));
                 org.nmox.studio.rack.engine.KvasirCommitEngine.Draft drafted =
                         engine.draft(dir.getName(), stat.stdout(), rawDiff,
                                 AskKvasirModel.chosen());
@@ -544,25 +596,25 @@ public class GitStatusLine implements StatusLineElementProvider {
             area.setWrapStyleWord(true);
             area.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,
                     java.awt.Font.PLAIN, 12));
-            area.getAccessibleContext().setAccessibleName("Drafted commit message");
+            area.getAccessibleContext().setAccessibleName(Bundle.GitStatusLine_draftAreaName());
             javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(0, 6));
             panel.add(new javax.swing.JLabel(
-                    "Edit as needed, then Copy — committing stays yours."),
+                    Bundle.GitStatusLine_draftHint()),
                     java.awt.BorderLayout.NORTH);
             panel.add(new javax.swing.JScrollPane(area), java.awt.BorderLayout.CENTER);
-            Object copy = "Copy";
-            Object close = "Close";
+            Object copy = Bundle.GitStatusLine_copy();
+            Object close = Bundle.GitStatusLine_close();
             org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(panel,
-                    "KVASIR commit message \u2014 draft",
+                    Bundle.GitStatusLine_draftTitle(),
                     org.openide.NotifyDescriptor.DEFAULT_OPTION,
                     org.openide.NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{copy, close}, copy);
-            if (org.openide.DialogDisplayer.getDefault().notify(nd) == copy) {
+            if (copy.equals(org.openide.DialogDisplayer.getDefault().notify(nd))) {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                         .setContents(new java.awt.datatransfer
                                 .StringSelection(area.getText()), null);
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Commit message copied \u2014 paste it into your commit.");
+                        .setStatusText(Bundle.GitStatusLine_draftCopied());
             }
         }
 
@@ -577,35 +629,35 @@ public class GitStatusLine implements StatusLineElementProvider {
             // the git NodeActions finally have real context — the chip hands
             // them the SAME node explicitly via createContextAwareInstance,
             // so they work even when a non-publishing window is active.
-            JMenuItem changes = new JMenuItem("Show Changes");
-            changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, "Show Changes", null));
+            JMenuItem changes = new JMenuItem(Bundle.GitStatusLine_showChanges());
+            changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, Bundle.GitStatusLine_showChanges(), null));
             menu.add(changes);
-            JMenuItem diff = new JMenuItem("Diff Project");
-            diff.addActionListener(e -> runGitAction(DIFF_INSTANCE, "Diff Project", null));
+            JMenuItem diff = new JMenuItem(Bundle.GitStatusLine_diffProject());
+            diff.addActionListener(e -> runGitAction(DIFF_INSTANCE, Bundle.GitStatusLine_diffProject(), null));
             menu.add(diff);
-            JMenuItem annotate = new JMenuItem("Annotate");
+            JMenuItem annotate = new JMenuItem(Bundle.GitStatusLine_annotate());
             annotate.addActionListener(e -> {
                 // registry read must happen on the EDT, before RP work
                 File editorFile = currentEditorFile();
                 if (editorFile == null) {
-                    teamMenuFallback("Annotate", "no file is open in the editor");
+                    teamMenuFallback(Bundle.GitStatusLine_annotate(), Bundle.GitStatusLine_whyNoEditorFile());
                     return;
                 }
-                runGitAction(ANNOTATE_INSTANCE, "Annotate", editorFile);
+                runGitAction(ANNOTATE_INSTANCE, Bundle.GitStatusLine_annotate(), editorFile);
             });
             menu.add(annotate);
-            JMenuItem history = new JMenuItem("History");
+            JMenuItem history = new JMenuItem(Bundle.GitStatusLine_history());
             history.addActionListener(e -> openHistory());
             menu.add(history);
-            JMenuItem pulls = new JMenuItem("Pull Requests\u2026");
+            JMenuItem pulls = new JMenuItem(Bundle.GitStatusLine_pullRequests());
             pulls.addActionListener(e -> showPullRequests());
             menu.add(pulls);
             menu.addSeparator();
-            JMenuItem draft = new JMenuItem("Draft Commit Message with KVASIR\u2026");
+            JMenuItem draft = new JMenuItem(Bundle.GitStatusLine_draftCommit());
             draft.addActionListener(e -> draftCommitMessage());
             menu.add(draft);
             menu.addSeparator();
-            JMenuItem refresh = new JMenuItem("Refresh");
+            JMenuItem refresh = new JMenuItem(Bundle.GitStatusLine_refresh());
             refresh.addActionListener(e -> RP.post(this::refreshCount));
             menu.add(refresh);
             menu.show(chipLabel, 0, -menu.getPreferredSize().height);
@@ -625,14 +677,14 @@ public class GitStatusLine implements StatusLineElementProvider {
                 Lookup context = contextFor(focusFile);
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     if (context == null) {
-                        teamMenuFallback(verb, "the project folder did not resolve");
+                        teamMenuFallback(verb, Bundle.GitStatusLine_whyNoFolder());
                         return;
                     }
                     Action action = resolveGitAction(instancePath, context);
                     if (action == null || !action.isEnabled()) {
                         teamMenuFallback(verb, action == null
-                                ? "the git module is not installed"
-                                : "git rejected this context");
+                                ? Bundle.GitStatusLine_whyNoGitModule()
+                                : Bundle.GitStatusLine_whyRejectedContext());
                         return;
                     }
                     action.actionPerformed(new ActionEvent(chipLabel,
@@ -683,7 +735,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** The honest refusal: name where the verb still works, never a dead click. */
         private static void teamMenuFallback(String verb, String why) {
             StatusDisplayer.getDefault().setStatusText(
-                    org.nmox.studio.core.util.PlainStatus.text(verb + " unavailable (" + why + ") — use the Team menu"));
+                    org.nmox.studio.core.util.PlainStatus.text(Bundle.GitStatusLine_verbUnavailable(verb, why)));
         }
 
         /**
@@ -697,7 +749,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         private void openHistory() {
             File root = GitFacts.repoRoot(RackService.getDefault().getRack().getProjectDir());
             if (root == null) {
-                StatusDisplayer.getDefault().setStatusText("Git: no repository");
+                StatusDisplayer.getDefault().setStatusText(Bundle.GitStatusLine_noRepository());
                 return;
             }
             try {
@@ -709,7 +761,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                         .invoke(null, root, GitFacts.branch(root));
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 StatusDisplayer.getDefault().setStatusText(
-                        "Git history unavailable: " + ex.getMessage());
+                        Bundle.GitStatusLine_historyUnavailable(ex.getMessage()));
             }
         }
 

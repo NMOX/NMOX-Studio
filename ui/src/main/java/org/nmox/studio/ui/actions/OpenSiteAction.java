@@ -27,7 +27,13 @@ import org.openide.util.NbBundle.Messages;
 @ActionReferences({
     @ActionReference(path = "Menu/Help", position = 225)
 })
-@Messages("CTL_OpenSiteAction=NMOX Studio Website (local)")
+@Messages({
+    "CTL_OpenSiteAction=NMOX Studio Website (local)",
+    "OpenSiteAction_siteMissing=The bundled website is missing from this install — browse https://github.com/NMOX/NMOX-Studio instead.",
+    "OpenSiteAction_served=The product''s own site, served by the product — {0}",
+    "OpenSiteAction_servedFallback=The product''s own site, served by the product — {0} (opened in your system browser)",
+    "OpenSiteAction_couldNotServe=Could not serve the site: {0}"
+})
 public final class OpenSiteAction implements ActionListener {
 
     private static SiteServer server;
@@ -38,8 +44,7 @@ public final class OpenSiteAction implements ActionListener {
                 "website/index.html", "org.nmox.NMOX.Studio.ui", false);
         if (index == null || !index.isFile()) {
             StatusDisplayer.getDefault().setStatusText(
-                    "The bundled website is missing from this install — "
-                    + "browse https://github.com/NMOX/NMOX-Studio instead.");
+                    Bundle.OpenSiteAction_siteMissing());
             return;
         }
         org.openide.util.RequestProcessor.getDefault().post(() -> {
@@ -53,14 +58,14 @@ public final class OpenSiteAction implements ActionListener {
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     boolean opened = new org.nmox.studio.ui.browser
                             .EmbeddedBrowserProvider().open(url);
-                    StatusDisplayer.getDefault().setStatusText(
-                            "The product's own site, served by the product — " + url
-                            + (opened ? "" : " (opened in your system browser)"));
+                    StatusDisplayer.getDefault().setStatusText(opened
+                            ? Bundle.OpenSiteAction_served(url)
+                            : Bundle.OpenSiteAction_servedFallback(url));
                 });
             } catch (Exception ex) {
                 javax.swing.SwingUtilities.invokeLater(() ->
                         StatusDisplayer.getDefault().setStatusText(
-                                "Could not serve the site: " + ex.getMessage()));
+                                Bundle.OpenSiteAction_couldNotServe(ex.getMessage())));
             }
         });
     }

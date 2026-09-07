@@ -28,6 +28,12 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * keychain-backed Auth field, never a plaintext header row, and other
  * auth types are named as not-imported rather than mangled.
  */
+@org.openide.util.NbBundle.Messages({
+    "InsomniaCodec_webSocketNotImported=WebSocket requests not imported — API Studio speaks HTTP.",
+    "InsomniaCodec_grpcNotImported=gRPC requests not imported — API Studio speaks HTTP.",
+    "InsomniaCodec_authTypeNotImported=Auth type \"{0}\" not imported — set the request''s Auth field by hand.",
+    "InsomniaCodec_multipartNotImported={0} {1}: multipart body not imported (same stance as the curl import)."
+})
 public final class InsomniaCodec {
 
     private InsomniaCodec() {
@@ -93,10 +99,8 @@ public final class InsomniaCodec {
                             && "workspace".equals(parent.optString("_type"));
                     (base ? baseEnvs : subEnvs).add(r);
                 }
-                case "websocket_request" -> note(notes,
-                        "WebSocket requests not imported — API Studio speaks HTTP.");
-                case "grpc_request" -> note(notes,
-                        "gRPC requests not imported — API Studio speaks HTTP.");
+                case "websocket_request" -> note(notes, Bundle.InsomniaCodec_webSocketNotImported());
+                case "grpc_request" -> note(notes, Bundle.InsomniaCodec_grpcNotImported());
                 default -> {
                 }
             }
@@ -167,8 +171,7 @@ public final class InsomniaCodec {
                         r.authToken = user + ":" + pass;
                     }
                 }
-                default -> note(notes, "Auth type \"" + auth.optString("type")
-                        + "\" not imported — set the request's Auth field by hand.");
+                default -> note(notes, Bundle.InsomniaCodec_authTypeNotImported(auth.optString("type")));
             }
         }
 
@@ -176,9 +179,7 @@ public final class InsomniaCodec {
         if (body != null) {
             String mime = body.optString("mimeType", "");
             if (mime.toLowerCase(Locale.ROOT).startsWith("multipart/")) {
-                note(notes, r.method + " " + r.url
-                        + ": multipart body not imported (same stance as the "
-                        + "curl import).");
+                note(notes, Bundle.InsomniaCodec_multipartNotImported(r.method, r.url));
             } else {
                 r.body = templates(body.optString("text", ""));
                 if (!mime.isBlank() && !r.body.isBlank() && r.headers.stream()

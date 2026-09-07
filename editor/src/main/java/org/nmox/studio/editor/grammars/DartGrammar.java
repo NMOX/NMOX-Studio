@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "dart.tmLanguage.json", mimeType = "text/x-dart")
-@MIMEResolver.ExtensionRegistration(displayName = "Dart", mimeType = "text/x-dart", extension = {"dart"}, position = 2070)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_DartGrammar_LOADER", mimeType = "text/x-dart", extension = {"dart"}, position = 2070)
+@org.openide.util.NbBundle.Messages("LBL_DartGrammar_LOADER=Dart")
 public final class DartGrammar {
 
     private DartGrammar() {

@@ -9,6 +9,10 @@ import org.nmox.studio.apiclient.model.ApiModel.Assertion;
  * target value per row, with a blank trailing row that adds a new
  * assertion when filled.
  */
+@org.openide.util.NbBundle.Messages({
+    "TestsTableModel_assertion=Assertion",
+    "TestsTableModel_target=Target"
+})
 final class TestsTableModel extends AbstractTableModel {
 
     private final List<Assertion> tests;
@@ -31,7 +35,7 @@ final class TestsTableModel extends AbstractTableModel {
 
     @Override
     public String getColumnName(int col) {
-        return col == 0 ? "Assertion" : "Target";
+        return col == 0 ? Bundle.TestsTableModel_assertion() : Bundle.TestsTableModel_target();
     }
 
     @Override

@@ -29,6 +29,12 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * carries the actual token, so the Auth field is left for the user's
  * own secret).
  */
+@org.openide.util.NbBundle.Messages({
+    "OpenApiCodec_multipleServers=Document lists {0,number,0} servers — imported the first as '{{'baseUrl'}}'.",
+    "OpenApiCodec_securitySchemes=The API declares security schemes — a spec never carries the actual token, so set your secret in each request's Auth field.",
+    "OpenApiCodec_schemaNoExample={0} {1}: request body has a schema but no example — imported '{}'.",
+    "OpenApiCodec_contentTypeNotImported={0} {1}: body content type {2} not imported."
+})
 public final class OpenApiCodec {
 
     private OpenApiCodec() {
@@ -88,8 +94,7 @@ public final class OpenApiCodec {
         if (servers != null && !servers.isEmpty()) {
             variables.put("baseUrl", servers.getJSONObject(0).optString("url", ""));
             if (servers.length() > 1) {
-                notes.add("Document lists " + servers.length()
-                        + " servers — imported the first as {{baseUrl}}.");
+                notes.add(Bundle.OpenApiCodec_multipleServers(servers.length()));
             }
         }
 
@@ -118,8 +123,7 @@ public final class OpenApiCodec {
         }
         if (doc.has("security") || doc.optJSONObject("components") != null
                 && doc.getJSONObject("components").has("securitySchemes")) {
-            notes.add("The API declares security schemes — a spec never carries "
-                    + "the actual token, so set your secret in each request's Auth field.");
+            notes.add(Bundle.OpenApiCodec_securitySchemes());
         }
         return new Imported(title, requests, variables, notes);
     }
@@ -150,13 +154,12 @@ public final class OpenApiCodec {
                             : String.valueOf(example);
                 } else {
                     r.body = "{}";
-                    notes.add(r.method + " " + path
-                            + ": request body has a schema but no example — imported {}.");
+                    notes.add(Bundle.OpenApiCodec_schemaNoExample(r.method, path));
                 }
                 r.headers.add(new Pair("Content-Type", "application/json"));
             } else if (content != null && !content.keySet().isEmpty()) {
-                notes.add(r.method + " " + path + ": body content type "
-                        + content.keySet().iterator().next() + " not imported.");
+                notes.add(Bundle.OpenApiCodec_contentTypeNotImported(r.method, path,
+                        content.keySet().iterator().next()));
             }
         }
         return r;

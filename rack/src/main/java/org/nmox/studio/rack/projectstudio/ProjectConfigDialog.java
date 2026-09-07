@@ -36,6 +36,53 @@ import org.openide.NotifyDescriptor;
  * fields and the scripts table write the file directly; dependency
  * changes run through npm so the lockfile stays correct.
  */
+@org.openide.util.NbBundle.Messages({
+    "ProjectConfigDialog_nameField=Name",
+    "ProjectConfigDialog_versionField=Version",
+    "ProjectConfigDialog_descriptionField=Description",
+    "ProjectConfigDialog_licenseField=License",
+    "ProjectConfigDialog_typeCombo=Module type",
+    "ProjectConfigDialog_colScript=Script",
+    "ProjectConfigDialog_colCommand=Command",
+    "ProjectConfigDialog_colPackage=Package",
+    "ProjectConfigDialog_colVersion=Version",
+    "ProjectConfigDialog_colScope=Scope",
+    "ProjectConfigDialog_title=Project Configuration",
+    "ProjectConfigDialog_tabProject=Project",
+    "ProjectConfigDialog_tabScripts=Scripts",
+    "ProjectConfigDialog_tabDependencies=Dependencies",
+    "ProjectConfigDialog_save=Save",
+    "ProjectConfigDialog_cancel=Cancel",
+    "ProjectConfigDialog_nameLabel=Name:",
+    "ProjectConfigDialog_versionLabel=Version:",
+    "ProjectConfigDialog_descriptionLabel=Description:",
+    "ProjectConfigDialog_licenseLabel=License:",
+    "ProjectConfigDialog_typeLabel=Module type:",
+    "ProjectConfigDialog_scriptsTable=Scripts",
+    "ProjectConfigDialog_addScript=Add Script",
+    "ProjectConfigDialog_remove=Remove",
+    "ProjectConfigDialog_depsTable=Dependencies",
+    "ProjectConfigDialog_addEllipsis=Add…",
+    "ProjectConfigDialog_addTooltip=npm install <package> (Alt: choose dev scope in the prompt)",
+    "ProjectConfigDialog_packageField=Package",
+    "ProjectConfigDialog_scopeField=Scope",
+    "ProjectConfigDialog_scopeDependency=dependency",
+    "ProjectConfigDialog_scopeDevDependency=devDependency",
+    "ProjectConfigDialog_packageLabel=Package:",
+    "ProjectConfigDialog_scopeLabel=Scope:",
+    "ProjectConfigDialog_addDependencyTitle=Add Dependency",
+    "ProjectConfigDialog_removeTooltip=Remove the selected package with this project's package manager",
+    "ProjectConfigDialog_removeConfirm={0}?",
+    "ProjectConfigDialog_removeDependencyTitle=Remove Dependency",
+    "ProjectConfigDialog_changesNote=Changes run your package manager and refresh when it finishes.",
+    "ProjectConfigDialog_runLabel={0} — {1}",
+    "ProjectConfigDialog_reloadFailed=Could not reload package.json: {0}",
+    "ProjectConfigDialog_exitedWith={0} exited with {1} — see the \"Rack: Project Config\" output tab.",
+    "ProjectConfigDialog_scopeRuntime=runtime",
+    "ProjectConfigDialog_scopeDev=dev",
+    "ProjectConfigDialog_duplicateScript=Two scripts are both named \"{0}\" — script names must be unique, or one of them would be silently lost. Rename one and save again.",
+    "ProjectConfigDialog_saveFailed=Could not save package.json: {0}"
+})
 public class ProjectConfigDialog extends JDialog {
 
     private final File projectDir;
@@ -49,15 +96,15 @@ public class ProjectConfigDialog extends JDialog {
     {
         // the form's labels also setLabelFor these (below); the explicit
         // names keep the law readable to the gate that enforces it (v2.85.0)
-        nameField.getAccessibleContext().setAccessibleName("Name");
-        versionField.getAccessibleContext().setAccessibleName("Version");
-        descriptionField.getAccessibleContext().setAccessibleName("Description");
-        licenseField.getAccessibleContext().setAccessibleName("License");
-        typeCombo.getAccessibleContext().setAccessibleName("Module type");
+        nameField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_nameField());
+        versionField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_versionField());
+        descriptionField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_descriptionField());
+        licenseField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_licenseField());
+        typeCombo.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_typeCombo());
     }
-    private final DefaultTableModel scriptsModel = new DefaultTableModel(new Object[]{"Script", "Command"}, 0);
+    private final DefaultTableModel scriptsModel = new DefaultTableModel(new Object[]{Bundle.ProjectConfigDialog_colScript(), Bundle.ProjectConfigDialog_colCommand()}, 0);
     private JTable scriptsTable;
-    private final DefaultTableModel depsModel = new DefaultTableModel(new Object[]{"Package", "Version", "Scope"}, 0) {
+    private final DefaultTableModel depsModel = new DefaultTableModel(new Object[]{Bundle.ProjectConfigDialog_colPackage(), Bundle.ProjectConfigDialog_colVersion(), Bundle.ProjectConfigDialog_colScope()}, 0) {
         @Override
         public boolean isCellEditable(int row, int column) {
             return false;
@@ -65,23 +112,23 @@ public class ProjectConfigDialog extends JDialog {
     };
 
     public ProjectConfigDialog(Component parent, File projectDir) throws IOException {
-        super(javax.swing.SwingUtilities.getWindowAncestor(parent), "Project Configuration",
+        super(javax.swing.SwingUtilities.getWindowAncestor(parent), Bundle.ProjectConfigDialog_title(),
                 ModalityType.APPLICATION_MODAL);
         this.projectDir = projectDir;
         this.pkg = PackageJsonFile.load(projectDir);
 
         JTabbedPane tabs = new JTabbedPane();
-        tabs.addTab("Project", buildIdentityTab());
-        tabs.addTab("Scripts", buildScriptsTab());
-        tabs.addTab("Dependencies", buildDependenciesTab());
+        tabs.addTab(Bundle.ProjectConfigDialog_tabProject(), buildIdentityTab());
+        tabs.addTab(Bundle.ProjectConfigDialog_tabScripts(), buildScriptsTab());
+        tabs.addTab(Bundle.ProjectConfigDialog_tabDependencies(), buildDependenciesTab());
 
-        JButton save = new JButton("Save");
+        JButton save = new JButton(Bundle.ProjectConfigDialog_save());
         save.addActionListener(e -> {
             if (saveAll()) {
                 dispose();
             }
         });
-        JButton cancel = new JButton("Cancel");
+        JButton cancel = new JButton(Bundle.ProjectConfigDialog_cancel());
         cancel.addActionListener(e -> dispose());
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttons.add(cancel);
@@ -104,9 +151,9 @@ public class ProjectConfigDialog extends JDialog {
         c.anchor = GridBagConstraints.WEST;
         int row = 0;
         for (Object[] pair : new Object[][]{
-            {"Name:", nameField}, {"Version:", versionField},
-            {"Description:", descriptionField}, {"License:", licenseField},
-            {"Module type:", typeCombo}}) {
+            {Bundle.ProjectConfigDialog_nameLabel(), nameField}, {Bundle.ProjectConfigDialog_versionLabel(), versionField},
+            {Bundle.ProjectConfigDialog_descriptionLabel(), descriptionField}, {Bundle.ProjectConfigDialog_licenseLabel(), licenseField},
+            {Bundle.ProjectConfigDialog_typeLabel(), typeCombo}}) {
             c.gridx = 0;
             c.gridy = row;
             c.weightx = 0;
@@ -132,14 +179,14 @@ public class ProjectConfigDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(scriptsModel));
-        table.getAccessibleContext().setAccessibleName("Scripts");
+        table.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_scriptsTable());
         scriptsTable = table;
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        JButton addBtn = new JButton("Add Script");
+        JButton addBtn = new JButton(Bundle.ProjectConfigDialog_addScript());
         addBtn.addActionListener(e -> scriptsModel.addRow(new Object[]{"new-script", ""}));
-        JButton removeBtn = new JButton("Remove");
+        JButton removeBtn = new JButton(Bundle.ProjectConfigDialog_remove());
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row >= 0) {
@@ -160,31 +207,31 @@ public class ProjectConfigDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(depsModel));
-            table.getAccessibleContext().setAccessibleName("Dependencies");
+            table.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_depsTable());
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        JButton addBtn = new JButton("Add…");
-        addBtn.setToolTipText("npm install <package> (Alt: choose dev scope in the prompt)");
+        JButton addBtn = new JButton(Bundle.ProjectConfigDialog_addEllipsis());
+        addBtn.setToolTipText(Bundle.ProjectConfigDialog_addTooltip());
         addBtn.addActionListener(e -> {
             JTextField pkgField = new JTextField(20);
-            pkgField.getAccessibleContext().setAccessibleName("Package");
-            JComboBox<String> scope = new JComboBox<>(new String[]{"dependency", "devDependency"});
-            scope.getAccessibleContext().setAccessibleName("Scope");
+            pkgField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_packageField());
+            JComboBox<String> scope = new JComboBox<>(new String[]{Bundle.ProjectConfigDialog_scopeDependency(), Bundle.ProjectConfigDialog_scopeDevDependency()});
+            scope.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_scopeField());
             JPanel form = new JPanel(new GridBagLayout());
             GridBagConstraints c = new GridBagConstraints();
             c.insets = new Insets(2, 4, 2, 4);
             c.gridx = 0;
             c.gridy = 0;
-            form.add(new JLabel("Package:"), c);
+            form.add(new JLabel(Bundle.ProjectConfigDialog_packageLabel()), c);
             c.gridx = 1;
             form.add(pkgField, c);
             c.gridx = 0;
             c.gridy = 1;
-            form.add(new JLabel("Scope:"), c);
+            form.add(new JLabel(Bundle.ProjectConfigDialog_scopeLabel()), c);
             c.gridx = 1;
             form.add(scope, c);
-            DialogDescriptor dd = new DialogDescriptor(form, "Add Dependency");
+            DialogDescriptor dd = new DialogDescriptor(form, Bundle.ProjectConfigDialog_addDependencyTitle());
             if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                 return;
             }
@@ -203,8 +250,8 @@ public class ProjectConfigDialog extends JDialog {
                     .add(mgr, name, dev));
         });
 
-        JButton removeBtn = new JButton("Remove");
-        removeBtn.setToolTipText("Remove the selected package with this project's package manager");
+        JButton removeBtn = new JButton(Bundle.ProjectConfigDialog_remove());
+        removeBtn.setToolTipText(Bundle.ProjectConfigDialog_removeTooltip());
         removeBtn.addActionListener(e -> {
             int row = table.getSelectedRow();
             if (row < 0) {
@@ -220,8 +267,8 @@ public class ProjectConfigDialog extends JDialog {
             // with NO as the initial value — a reflexive Enter must not
             // remove a dependency (v1.98.0)
             if (DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain(org.nmox.studio.rack.devices.NodePackageCommands.describe(argv) + "?", "Message"),
-                    "Remove Dependency",
+                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ProjectConfigDialog_removeConfirm(org.nmox.studio.rack.devices.NodePackageCommands.describe(argv)), "Message"),
+                    Bundle.ProjectConfigDialog_removeDependencyTitle(),
                     NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
                     null, NotifyDescriptor.NO_OPTION)) == NotifyDescriptor.YES_OPTION) {
                 runPackageManager(argv);
@@ -231,7 +278,7 @@ public class ProjectConfigDialog extends JDialog {
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
         buttons.add(addBtn);
         buttons.add(removeBtn);
-        buttons.add(new JLabel("Changes run your package manager and refresh when it finishes."));
+        buttons.add(new JLabel(Bundle.ProjectConfigDialog_changesNote()));
         panel.add(buttons, BorderLayout.SOUTH);
         return panel;
     }
@@ -247,7 +294,7 @@ public class ProjectConfigDialog extends JDialog {
         }
         // the mutation joins the toolbar ■ (v2.71.0) — an add/remove is an
         // install under the hood, and a hung one had no stop on screen
-        String runLabel = String.join(" ", command) + " — " + projectDir.getName();
+        String runLabel = Bundle.ProjectConfigDialog_runLabel(String.join(" ", command), projectDir.getName());
         String runId = "project-config:" + projectDir.getAbsolutePath() + "#" + System.nanoTime();
         CommandExecutor.Handle handle = CommandExecutor.run("Project Config", projectDir, Map.of(), command,
                 line -> {
@@ -257,11 +304,10 @@ public class ProjectConfigDialog extends JDialog {
                         pkg = PackageJsonFile.load(projectDir);
                         loadFields();
                     } catch (IOException ex) {
-                        error("Could not reload package.json: " + ex.getMessage());
+                        error(Bundle.ProjectConfigDialog_reloadFailed(ex.getMessage()));
                     }
                     if (code != 0) {
-                        warn(command.get(0) + " exited with " + code
-                                + " — see the \"Rack: Project Config\" output tab.");
+                        warn(Bundle.ProjectConfigDialog_exitedWith(command.get(0), String.valueOf(code)));
                     }
                 }));
         LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
@@ -278,8 +324,8 @@ public class ProjectConfigDialog extends JDialog {
         pkg.getScripts().forEach((k, v) -> scriptsModel.addRow(new Object[]{k, v}));
 
         depsModel.setRowCount(0);
-        pkg.getDependencies().forEach((k, v) -> depsModel.addRow(new Object[]{k, v, "runtime"}));
-        pkg.getDevDependencies().forEach((k, v) -> depsModel.addRow(new Object[]{k, v, "dev"}));
+        pkg.getDependencies().forEach((k, v) -> depsModel.addRow(new Object[]{k, v, Bundle.ProjectConfigDialog_scopeRuntime()}));
+        pkg.getDevDependencies().forEach((k, v) -> depsModel.addRow(new Object[]{k, v, Bundle.ProjectConfigDialog_scopeDev()}));
     }
 
     /**
@@ -315,9 +361,7 @@ public class ProjectConfigDialog extends JDialog {
         }
         String dup = duplicateScriptName(scriptsModel);
         if (dup != null) {
-            error("Two scripts are both named \"" + dup + "\" — script"
-                    + " names must be unique, or one of them would be"
-                    + " silently lost. Rename one and save again.");
+            error(Bundle.ProjectConfigDialog_duplicateScript(dup));
             return false;
         }
         pkg.setName(nameField.getText());
@@ -340,7 +384,7 @@ public class ProjectConfigDialog extends JDialog {
             pkg.save();
             return true;
         } catch (IOException ex) {
-            error("Could not save package.json: " + ex.getMessage());
+            error(Bundle.ProjectConfigDialog_saveFailed(ex.getMessage()));
             return false;
         }
     }

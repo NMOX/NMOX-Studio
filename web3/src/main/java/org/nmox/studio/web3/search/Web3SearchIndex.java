@@ -86,16 +86,19 @@ public final class Web3SearchIndex {
         ContractSizeCheck.Verdict verdict = ContractSizeCheck.check(artifact);
         String pct = String.format(Locale.ROOT, "%.1f%%", verdict.pct());
         if (verdict.over()) {
-            return artifact.name() + " — contract, OVER the size limit (" + pct + ")";
+            return org.openide.util.NbBundle.getMessage(Web3SearchIndex.class,
+                    "Web3SearchIndex_contractLabelOverLimit", artifact.name(), pct);
         }
-        return artifact.name() + " — contract, " + pct + " of size limit";
+        return org.openide.util.NbBundle.getMessage(Web3SearchIndex.class,
+                "Web3SearchIndex_contractLabel", artifact.name(), pct);
     }
 
     /** "Counter @ 0x5FbDB231…0aa3 — Local (anvil)". */
     static String deploymentLabel(DeploymentRecord deployment) {
-        return deployment.contractName() + " @ "
-                + DisplayValues.shortAddress(deployment.address())
-                + " — " + deployment.networkName();
+        return org.openide.util.NbBundle.getMessage(Web3SearchIndex.class,
+                "Web3SearchIndex_deploymentLabel", deployment.contractName(),
+                DisplayValues.shortAddress(deployment.address()),
+                deployment.networkName());
     }
 
     /**

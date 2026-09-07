@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "cobol.tmLanguage.json", mimeType = "text/x-cobol")
-@MIMEResolver.ExtensionRegistration(displayName = "COBOL", mimeType = "text/x-cobol", extension = {"cob", "cbl", "cpy"}, position = 2448)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_CobolGrammar_LOADER", mimeType = "text/x-cobol", extension = {"cob", "cbl", "cpy"}, position = 2448)
+@org.openide.util.NbBundle.Messages("LBL_CobolGrammar_LOADER=COBOL")
 public final class CobolGrammar {
 
     private CobolGrammar() {

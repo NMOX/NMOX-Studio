@@ -123,7 +123,82 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_IrcAction=IRC",
     "CTL_IrcTopComponent=IRC",
-    "HINT_IrcTopComponent=IRC chat client"
+    "HINT_IrcTopComponent=IRC chat client",
+    "IrcTopComponent_connect=Connect",
+    "IrcTopComponent_disconnect=Disconnect",
+    "IrcTopComponent_addNetwork=Add Network…",
+    "IrcTopComponent_editNetwork=Edit Network…",
+    "IrcTopComponent_deleteNetwork=Delete Network…",
+    "IrcTopComponent_gapMarker=— view was closed; the full record is in ~/.nmox/irc-logs —",
+    "IrcTopComponent_couldNotOpen=Could not open {0}",
+    "IrcTopComponent_findLabel=Find:",
+    "IrcTopComponent_findMatchesCapped={0}+ matches",
+    "IrcTopComponent_findMatchOne=match",
+    "IrcTopComponent_findMatchMany=matches",
+    "IrcTopComponent_findPosition={0} of {1}",
+    "IrcTopComponent_connectedRegistering=Connected to server, registering…",
+    "IrcTopComponent_registeredAs=Registered as {0}",
+    "IrcTopComponent_disconnected=Disconnected: {0}",
+    "IrcTopComponent_ctcpFrom=CTCP {0} from {1}",
+    "IrcTopComponent_queryOverflow=(query overflow) <{0}> {1}",
+    "IrcTopComponent_youJoined=You joined {0}",
+    "IrcTopComponent_joined=→ {0} joined",
+    "IrcTopComponent_youLeft=You left {0}",
+    "IrcTopComponent_left=← {0} left",
+    "IrcTopComponent_kicked={0} was kicked by {1}",
+    "IrcTopComponent_quit=← {0} quit",
+    "IrcTopComponent_nowKnownAs={0} is now known as {1}",
+    "IrcTopComponent_setTopic={0} set the topic: {1}",
+    "IrcTopComponent_isAway={0} is away: {1}",
+    "IrcTopComponent_welcome=Welcome",
+    "IrcTopComponent_nickInUse=Nickname in use — trying an alternate",
+    "IrcTopComponent_notConnected=Not connected — press Connect or use /connect",
+    "IrcTopComponent_noSavedNetwork=No saved network named {0}",
+    "IrcTopComponent_connectingTls=Connecting to {0}:{1} (TLS)…",
+    "IrcTopComponent_connecting=Connecting to {0}:{1}…",
+    "IrcTopComponent_noLongerAway=You are no longer marked away",
+    "IrcTopComponent_nowAway=You are now marked away: {0}",
+    "IrcTopComponent_noticeSent=-{0} → {1}- {2}",
+    "IrcTopComponent_ctcpSent=CTCP {0} sent to {1}",
+    "IrcTopComponent_unknownCommand=Unknown command: /{0} — /help lists everything",
+    "IrcTopComponent_fetchingList=Fetching channel list…",
+    "IrcTopComponent_nobodyIgnored=Nobody is ignored on {0}",
+    "IrcTopComponent_ignoredOn=Ignored on {0}: {1}",
+    "IrcTopComponent_ignoring=Ignoring {0} — messages are dropped silently (/unignore {0} to undo)",
+    "IrcTopComponent_noLongerIgnoring=No longer ignoring {0}",
+    "IrcTopComponent_loggingOn=Logging ON → {0}",
+    "IrcTopComponent_loggingOff=Logging OFF",
+    "IrcTopComponent_loggingIs=Logging is {0} — files under {1} (services queries are never logged)",
+    "IrcTopComponent_on=ON",
+    "IrcTopComponent_off=OFF",
+    "IrcTopComponent_filterAddUsage=Usage: /filter add <name> <#channel|*> <regex>",
+    "IrcTopComponent_filterRefused=Filter refused: {0}",
+    "IrcTopComponent_filterAdded=Filter ''{0}'' hides lines matching /{1}/ in {2} (logs keep everything; /filter del {0} removes it)",
+    "IrcTopComponent_everyChannel=every channel",
+    "IrcTopComponent_filterRemoved=Filter removed: {0}",
+    "IrcTopComponent_noFilterNamed=No filter named ''{0}'' (/filter list)",
+    "IrcTopComponent_filterToggled=Filter ''{0}'' {1}",
+    "IrcTopComponent_enabled=enabled",
+    "IrcTopComponent_disabled=disabled",
+    "IrcTopComponent_noCustomFilters=No custom filters: /filter add <name> <#channel|*> <regex>",
+    "IrcTopComponent_filterRowOn=[on]  {0}  {1}  /{2}/",
+    "IrcTopComponent_filterRowOff=[off] {0}  {1}  /{2}/",
+    "IrcTopComponent_smartFilterStatus=Smart join/part/quit filter is {0} (/filter smart on|off). Joins, parts,"
+        + " quits, and renames from nicks silent for 5 minutes are hidden;"
+        + " kicks and your own lines always show, and logs keep everything."
+        + " Custom filters: {1} (/filter add|del|enable|disable|list).",
+    "IrcTopComponent_lastlogUsage=Usage: /lastlog <text> [count]",
+    "IrcTopComponent_lastlogOne=— lastlog: {0} match for \"{1}\" —",
+    "IrcTopComponent_lastlogMany=— lastlog: {0} matches for \"{1}\" —",
+    "IrcTopComponent_noAliases=No aliases yet: /alias name command defines one",
+    "IrcTopComponent_aliasLine=/{0} = /{1}",
+    "IrcTopComponent_aliasRemoved=Alias removed: /{0}",
+    "IrcTopComponent_aliasUsage=Usage: /alias name command, /alias -name removes, /alias lists",
+    "IrcTopComponent_aliasNameRule=Alias names are letters and digits only",
+    "IrcTopComponent_aliasBuiltIn=/{0} is built in; an alias may not shadow it",
+    "IrcTopComponent_closeUsage=/close closes a channel or query tab",
+    "IrcTopComponent_notAPort=Not a port: {0}",
+    "IrcTopComponent_pickTargetFirst=Pick a channel or query first (or /join one)"
 })
 public final class IrcTopComponent extends TopComponent {
 
@@ -384,7 +459,7 @@ public final class IrcTopComponent extends TopComponent {
         input = new JTextField();
         input.addActionListener(e -> onInput());
         installInputKeys();
-        connectButton = new JButton("Connect");
+        connectButton = new JButton(Bundle.IrcTopComponent_connect());
         connectButton.addActionListener(e -> onConnectButton());
 
         JPanel bottom = new JPanel(new BorderLayout(4, 0));
@@ -597,7 +672,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         TargetRef ref = selectedRef();
         JPopupMenu menu = new JPopupMenu();
-        JMenuItem add = new JMenuItem("Add Network…");
+        JMenuItem add = new JMenuItem(Bundle.IrcTopComponent_addNetwork());
         add.addActionListener(a -> {
             String name = NetworkEditorDialog.show(IrcConfig.getDefault(), null);
             if (name != null) {
@@ -608,7 +683,7 @@ public final class IrcTopComponent extends TopComponent {
         menu.add(add);
         if (ref != null) {
             String network = ref.network();
-            JMenuItem edit = new JMenuItem("Edit Network…");
+            JMenuItem edit = new JMenuItem(Bundle.IrcTopComponent_editNetwork());
             edit.addActionListener(a -> {
                 IrcConfig config = IrcConfig.getDefault();
                 IrcConfig.Network existing = config.network(network);
@@ -617,7 +692,7 @@ public final class IrcTopComponent extends TopComponent {
                 }
             });
             menu.add(edit);
-            JMenuItem delete = new JMenuItem("Delete Network…");
+            JMenuItem delete = new JMenuItem(Bundle.IrcTopComponent_deleteNetwork());
             delete.addActionListener(a -> deleteNetwork(network));
             menu.add(delete);
         }
@@ -706,8 +781,7 @@ public final class IrcTopComponent extends TopComponent {
      * so the marker is pinnable headless (the class's UI paths are
      * source-gated, not driven, in tests).
      */
-    static final String GAP_MARKER =
-            "— view was closed; the full record is in ~/.nmox/irc-logs —";
+    static final String GAP_MARKER = Bundle.IrcTopComponent_gapMarker();
 
     /**
      * Appends {@link #GAP_MARKER} to the network's status transcript and
@@ -917,7 +991,7 @@ public final class IrcTopComponent extends TopComponent {
             }
         } catch (Exception ex) {
             appendStatus(activeKey != null ? activeKey : key(activeNetwork(), ""),
-                    "Could not open " + url);
+                    Bundle.IrcTopComponent_couldNotOpen(url));
         }
     }
 
@@ -928,7 +1002,7 @@ public final class IrcTopComponent extends TopComponent {
         findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         findField = new JTextField();
         findCount = new JLabel(" ");
-        findBar.add(new JLabel("Find:"), BorderLayout.WEST);
+        findBar.add(new JLabel(Bundle.IrcTopComponent_findLabel()), BorderLayout.WEST);
         findBar.add(findField, BorderLayout.CENTER);
         findBar.add(findCount, BorderLayout.EAST);
         findBar.setVisible(false);
@@ -1000,7 +1074,10 @@ public final class IrcTopComponent extends TopComponent {
             }
         }
         boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
-        findCount.setText(PlainText.plain(capped ? findMatches.size() + "+ matches" : org.nmox.studio.core.util.Plural.of(findMatches.size(), "match", "matches")));
+        findCount.setText(PlainText.plain(capped
+                ? Bundle.IrcTopComponent_findMatchesCapped(String.valueOf(findMatches.size()))
+                : org.nmox.studio.core.util.Plural.of(findMatches.size(),
+                        Bundle.IrcTopComponent_findMatchOne(), Bundle.IrcTopComponent_findMatchMany())));
         findNext();
     }
 
@@ -1016,7 +1093,8 @@ public final class IrcTopComponent extends TopComponent {
         transcript.setCaretPosition(end);
         int idx = findMatches.indexOf(next) + 1;
         boolean capped = findMatches.size() >= IrcSearch.MAX_MATCHES;
-        findCount.setText(PlainText.plain(idx + " of " + findMatches.size() + (capped ? "+" : "")));
+        findCount.setText(PlainText.plain(Bundle.IrcTopComponent_findPosition(
+                String.valueOf(idx), findMatches.size() + (capped ? "+" : ""))));
     }
 
     private String transcriptText() {
@@ -1179,7 +1257,7 @@ public final class IrcTopComponent extends TopComponent {
         @Override
         public void connected() {
             SwingUtilities.invokeLater(() -> {
-                appendStatus(key(network, ""), "Connected to server, registering…");
+                appendStatus(key(network, ""), Bundle.IrcTopComponent_connectedRegistering());
                 refreshConnectButton();
             });
         }
@@ -1187,7 +1265,7 @@ public final class IrcTopComponent extends TopComponent {
         @Override
         public void registered(String nick) {
             SwingUtilities.invokeLater(() -> {
-                appendStatus(key(network, ""), "Registered as " + nick);
+                appendStatus(key(network, ""), Bundle.IrcTopComponent_registeredAs(nick));
                 refreshConnectButton();
             });
         }
@@ -1200,7 +1278,7 @@ public final class IrcTopComponent extends TopComponent {
         @Override
         public void disconnected(String reason) {
             SwingUtilities.invokeLater(() -> {
-                appendStatus(key(network, ""), "Disconnected: " + reason);
+                appendStatus(key(network, ""), Bundle.IrcTopComponent_disconnected(reason));
                 refreshConnectButton();
             });
         }
@@ -1235,7 +1313,7 @@ public final class IrcTopComponent extends TopComponent {
                         action = true;
                         body = ctcp.argument();
                     } else {
-                        appendStatus(statusKey, "CTCP " + ctcp.command() + " from " + sender);
+                        appendStatus(statusKey, Bundle.IrcTopComponent_ctcpFrom(ctcp.command(), sender));
                         return;
                     }
                 }
@@ -1273,7 +1351,7 @@ public final class IrcTopComponent extends TopComponent {
                         && targetNodes.get(k) == null
                         && queryTabCount(network) >= QUERY_TAB_CAP) {
                     appendStatus(key(network, ""),
-                            "(query overflow) <" + MircFormat.stripToText(sender) + "> " + body,
+                            Bundle.IrcTopComponent_queryOverflow(MircFormat.stripToText(sender), body),
                             stamp);
                     break; // (logged by IrcLogTap)
                 }
@@ -1305,7 +1383,7 @@ public final class IrcTopComponent extends TopComponent {
                 if (who.equalsIgnoreCase(me)) {
                     ensureTargetNode(network, chan);
                     selectTarget(network, chan);
-                    appendStatus(k, "You joined " + chan, stamp);
+                    appendStatus(k, Bundle.IrcTopComponent_youJoined(chan), stamp);
                 } else {
                     capPut(nickLists.computeIfAbsent(k, x -> new HashMap<>()),
                             who.toLowerCase(Locale.ROOT), who);
@@ -1313,7 +1391,7 @@ public final class IrcTopComponent extends TopComponent {
                         rebuildNickModel();
                     }
                     if (showPresence(network, chan, who)) {
-                        appendStatus(k, "→ " + who + " joined", stamp);
+                        appendStatus(k, Bundle.IrcTopComponent_joined(who), stamp);
                     }
                 }
             }
@@ -1323,9 +1401,9 @@ public final class IrcTopComponent extends TopComponent {
                 String k = key(network, chan);
                 removeNick(k, who);
                 if (who.equalsIgnoreCase(me)) {
-                    appendStatus(k, "You left " + chan, stamp);
+                    appendStatus(k, Bundle.IrcTopComponent_youLeft(chan), stamp);
                 } else if (showPresence(network, chan, who)) {
-                    appendStatus(k, "← " + who + " left", stamp);
+                    appendStatus(k, Bundle.IrcTopComponent_left(who), stamp);
                 }
             }
             case "KICK" -> {
@@ -1333,8 +1411,8 @@ public final class IrcTopComponent extends TopComponent {
                 String victim = msg.param(1);
                 String k = key(network, chan);
                 removeNick(k, victim);
-                appendStatus(k, victim + " was kicked by "
-                        + (msg.nick() == null ? "?" : msg.nick()), stamp);
+                appendStatus(k, Bundle.IrcTopComponent_kicked(victim,
+                        msg.nick() == null ? "?" : msg.nick()), stamp);
             }
             case "QUIT" -> {
                 String who = msg.nick() == null ? "?" : msg.nick();
@@ -1343,7 +1421,7 @@ public final class IrcTopComponent extends TopComponent {
                     if (e.getKey().startsWith(network + '\u0000')
                             && e.getValue().remove(lowerWho) != null) {
                         if (showPresence(network, targetOfKey(e.getKey()), who)) {
-                            appendStatus(e.getKey(), "← " + who + " quit", stamp);
+                            appendStatus(e.getKey(), Bundle.IrcTopComponent_quit(who), stamp);
                         }
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
@@ -1366,7 +1444,7 @@ public final class IrcTopComponent extends TopComponent {
                         e.getValue().put(now.toLowerCase(Locale.ROOT), prefix + now);
                         if (who.equalsIgnoreCase(me) || now.equalsIgnoreCase(me)
                                 || showPresence(network, targetOfKey(e.getKey()), who)) {
-                            appendStatus(e.getKey(), who + " is now known as " + now, stamp);
+                            appendStatus(e.getKey(), Bundle.IrcTopComponent_nowKnownAs(who, now), stamp);
                         }
                         if (e.getKey().equals(activeKey)) {
                             rebuildNickModel();
@@ -1393,8 +1471,8 @@ public final class IrcTopComponent extends TopComponent {
                 if (k.equals(activeKey)) {
                     topicLabel.setText(PlainText.plain(topics.get(k)));
                 }
-                appendStatus(k, (msg.nick() == null ? "?" : msg.nick())
-                        + " set the topic: " + topicText, stamp);
+                appendStatus(k, Bundle.IrcTopComponent_setTopic(
+                        msg.nick() == null ? "?" : msg.nick(), topicText), stamp);
             }
             default ->
                 handleNumeric(network, statusKey, msg);
@@ -1472,8 +1550,8 @@ public final class IrcTopComponent extends TopComponent {
         if ("301".equals(msg.command())) {
             String k = activeKey != null && activeKey.startsWith(network + '\u0000')
                     ? activeKey : statusKey;
-            appendStatus(k, msg.param(1) + " is away: "
-                    + (msg.trailing() == null ? "" : msg.trailing()));
+            appendStatus(k, Bundle.IrcTopComponent_isAway(msg.param(1),
+                    msg.trailing() == null ? "" : msg.trailing()));
             Set<String> away = awayNicks.computeIfAbsent(network, x -> new HashSet<>());
             capAdd(away, msg.param(1).toLowerCase(Locale.ROOT));
             nickList.repaint();
@@ -1481,7 +1559,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         switch (Numerics.classify(msg.command())) {
             case WELCOME ->
-                appendStatus(statusKey, msg.trailing() == null ? "Welcome" : msg.trailing());
+                appendStatus(statusKey, msg.trailing() == null ? Bundle.IrcTopComponent_welcome() : msg.trailing());
             case NAMES -> {
                 // params: me, symbol, channel; trailing: "@op +voiced plain"
                 String chan = msg.param(2);
@@ -1523,7 +1601,7 @@ public final class IrcTopComponent extends TopComponent {
                 // who-set-it + when: transcript noise; skip
             }
             case NICK_IN_USE ->
-                appendStatus(statusKey, "Nickname in use — trying an alternate");
+                appendStatus(statusKey, Bundle.IrcTopComponent_nickInUse());
             case MOTD, WHOIS, ERROR, OTHER ->
                 appendStatus(statusKey, tailOf(msg));
             case NOT_NUMERIC -> {
@@ -1580,7 +1658,7 @@ public final class IrcTopComponent extends TopComponent {
     private IrcClient liveClient() {
         IrcClient client = SESSIONS.get(activeNetwork());
         if (client == null || client.state() == IrcClient.State.CLOSED) {
-            appendStatus(feedbackKey(), "Not connected — press Connect or use /connect");
+            appendStatus(feedbackKey(), Bundle.IrcTopComponent_notConnected());
             return null;
         }
         return client;
@@ -1602,7 +1680,7 @@ public final class IrcTopComponent extends TopComponent {
         IrcConfig config = IrcConfig.getDefault();
         IrcConfig.Network saved = config.network(network);
         if (saved == null) {
-            appendStatus(key(network, ""), "No saved network named " + network);
+            appendStatus(key(network, ""), Bundle.IrcTopComponent_noSavedNetwork(network));
             return;
         }
         IrcClient client = SESSIONS.get(network);
@@ -1621,8 +1699,9 @@ public final class IrcTopComponent extends TopComponent {
         client.setIgnoredNicks(config.ignoredNicks(network));
         attachBridge(network, client);
         ensureNetworkNode(network);
-        appendStatus(key(network, ""), "Connecting to " + saved.host() + ":" + saved.port()
-                + (saved.tls() ? " (TLS)…" : "…"));
+        appendStatus(key(network, ""), saved.tls()
+                ? Bundle.IrcTopComponent_connectingTls(saved.host(), String.valueOf(saved.port()))
+                : Bundle.IrcTopComponent_connecting(saved.host(), String.valueOf(saved.port())));
         client.connect();
         for (String chan : saved.autojoin()) {
             client.join(chan);
@@ -1636,7 +1715,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         IrcClient client = SESSIONS.get(activeNetwork());
         boolean live = client != null && client.state() != IrcClient.State.CLOSED;
-        connectButton.setText(PlainText.plain(live ? "Disconnect" : "Connect"));
+        connectButton.setText(PlainText.plain(live ? Bundle.IrcTopComponent_disconnect() : Bundle.IrcTopComponent_connect()));
     }
 
     private void onInput() {
@@ -1734,8 +1813,8 @@ public final class IrcTopComponent extends TopComponent {
                 if (c != null) {
                     c.sendRaw(args.isEmpty() ? "AWAY" : "AWAY :" + args);
                     appendStatus(feedbackKey(), args.isEmpty()
-                            ? "You are no longer marked away"
-                            : "You are now marked away: " + args);
+                            ? Bundle.IrcTopComponent_noLongerAway()
+                            : Bundle.IrcTopComponent_nowAway(args));
                 }
             }
             case "log" -> commandLog(args);
@@ -1746,8 +1825,8 @@ public final class IrcTopComponent extends TopComponent {
                     String to = args.substring(0, sp2);
                     String text = args.substring(sp2 + 1);
                     c.notice(to, text);
-                    appendStatus(feedbackKey(), "-" + c.currentNick()
-                            + " → " + to + "- " + text);
+                    appendStatus(feedbackKey(), Bundle.IrcTopComponent_noticeSent(
+                            c.currentNick(), to, text));
                 }
             }
             case "ctcp" -> {
@@ -1758,7 +1837,7 @@ public final class IrcTopComponent extends TopComponent {
                     String arg = parts.length > 2 ? parts[2] : "";
                     c.privmsg(parts[0], Ctcp.wrap(verb, arg));
                     appendStatus(feedbackKey(),
-                            "CTCP " + verb + " sent to " + parts[0]);
+                            Bundle.IrcTopComponent_ctcpSent(verb, parts[0]));
                 }
             }
             case "quit" -> {
@@ -1833,14 +1912,13 @@ public final class IrcTopComponent extends TopComponent {
                 IrcClient c = liveClient();
                 if (c != null) {
                     c.sendRaw("AWAY");
-                    appendStatus(feedbackKey(), "You are no longer marked away");
+                    appendStatus(feedbackKey(), Bundle.IrcTopComponent_noLongerAway());
                 }
             }
             case "close" -> commandClose();
             case "help" -> commandHelp();
             default ->
-                appendStatus(feedbackKey(), "Unknown command: /" + cmd
-                        + " — /help lists everything");
+                appendStatus(feedbackKey(), Bundle.IrcTopComponent_unknownCommand(cmd));
         }
     }
 
@@ -1852,7 +1930,7 @@ public final class IrcTopComponent extends TopComponent {
         }
         listCollectors.put(activeNetwork(), new ChannelListCollector());
         c.sendRaw(args.isEmpty() ? "LIST" : "LIST " + args);
-        appendStatus(feedbackKey(), "Fetching channel list…");
+        appendStatus(feedbackKey(), Bundle.IrcTopComponent_fetchingList());
     }
 
     /** {@code /ignore} lists; {@code /ignore nick} adds + applies live. */
@@ -1863,15 +1941,14 @@ public final class IrcTopComponent extends TopComponent {
         if (args.isEmpty()) {
             List<String> ignored = config.ignoredNicks(network);
             appendStatus(statusKey, ignored.isEmpty()
-                    ? "Nobody is ignored on " + network
-                    : "Ignored on " + network + ": " + String.join(", ", ignored));
+                    ? Bundle.IrcTopComponent_nobodyIgnored(network)
+                    : Bundle.IrcTopComponent_ignoredOn(network, String.join(", ", ignored)));
             return;
         }
         String nick = args.split(" ")[0];
         config.addIgnored(network, nick);
         applyIgnores(network);
-        appendStatus(statusKey, "Ignoring " + nick
-                + " — messages are dropped silently (/unignore " + nick + " to undo)");
+        appendStatus(statusKey, Bundle.IrcTopComponent_ignoring(nick));
     }
 
     private void commandUnignore(String args) {
@@ -1883,7 +1960,7 @@ public final class IrcTopComponent extends TopComponent {
         String nick = args.split(" ")[0];
         config.removeIgnored(network, nick);
         applyIgnores(network);
-        appendStatus(key(network, ""), "No longer ignoring " + nick);
+        appendStatus(key(network, ""), Bundle.IrcTopComponent_noLongerIgnoring(nick));
     }
 
     private void applyIgnores(String network) {
@@ -1900,17 +1977,17 @@ public final class IrcTopComponent extends TopComponent {
             case "on" -> {
                 logger.setEnabled(true);
                 IrcConfig.getDefault().setLoggingEnabled(true);
-                appendStatus(statusKey, "Logging ON → " + logger.root());
+                appendStatus(statusKey, Bundle.IrcTopComponent_loggingOn(logger.root()));
             }
             case "off" -> {
                 logger.setEnabled(false);
                 IrcConfig.getDefault().setLoggingEnabled(false);
-                appendStatus(statusKey, "Logging OFF");
+                appendStatus(statusKey, Bundle.IrcTopComponent_loggingOff());
             }
             default ->
-                appendStatus(statusKey, "Logging is " + (logger.isEnabled() ? "ON" : "OFF")
-                        + " — files under " + logger.root()
-                        + " (services queries are never logged)");
+                appendStatus(statusKey, Bundle.IrcTopComponent_loggingIs(
+                        logger.isEnabled() ? Bundle.IrcTopComponent_on() : Bundle.IrcTopComponent_off(),
+                        logger.root()));
         }
     }
 
@@ -1962,26 +2039,25 @@ public final class IrcTopComponent extends TopComponent {
             case "add" -> {
                 String[] a = rest.split("\\s+", 3);
                 if (a.length < 3) {
-                    appendStatus(statusKey, "Usage: /filter add <name> <#channel|*> <regex>");
+                    appendStatus(statusKey, Bundle.IrcTopComponent_filterAddUsage());
                     return;
                 }
                 String problem = textFilters.add(a[0], a[1], a[2], true);
                 if (problem != null) {
-                    appendStatus(statusKey, "Filter refused: " + problem);
+                    appendStatus(statusKey, Bundle.IrcTopComponent_filterRefused(problem));
                     return;
                 }
                 TextFilters.Filter f = textFilters.list().get(textFilters.list().size() - 1);
                 config.saveTextFilter(f.name(), f.stringForm());
-                appendStatus(statusKey, "Filter '" + f.name() + "' hides lines matching /"
-                        + f.regex() + "/ in " + ("*".equals(f.scope()) ? "every channel" : f.scope())
-                        + " (logs keep everything; /filter del " + f.name() + " removes it)");
+                appendStatus(statusKey, Bundle.IrcTopComponent_filterAdded(f.name(), f.regex(),
+                        "*".equals(f.scope()) ? Bundle.IrcTopComponent_everyChannel() : f.scope()));
             }
             case "del" -> {
                 if (textFilters.remove(rest)) {
                     config.removeTextFilter(rest);
-                    appendStatus(statusKey, "Filter removed: " + rest.toLowerCase(Locale.ROOT));
+                    appendStatus(statusKey, Bundle.IrcTopComponent_filterRemoved(rest.toLowerCase(Locale.ROOT)));
                 } else {
-                    appendStatus(statusKey, "No filter named '" + rest + "' (/filter list)");
+                    appendStatus(statusKey, Bundle.IrcTopComponent_noFilterNamed(rest));
                 }
             }
             case "enable", "disable" -> {
@@ -1991,20 +2067,22 @@ public final class IrcTopComponent extends TopComponent {
                             .filter(f -> f.name().equalsIgnoreCase(rest))
                             .findFirst()
                             .ifPresent(f -> config.saveTextFilter(f.name(), f.stringForm()));
-                    appendStatus(statusKey, "Filter '" + rest.toLowerCase(Locale.ROOT)
-                            + "' " + (on ? "enabled" : "disabled"));
+                    appendStatus(statusKey, Bundle.IrcTopComponent_filterToggled(
+                            rest.toLowerCase(Locale.ROOT),
+                            on ? Bundle.IrcTopComponent_enabled() : Bundle.IrcTopComponent_disabled()));
                 } else {
-                    appendStatus(statusKey, "No filter named '" + rest + "' (/filter list)");
+                    appendStatus(statusKey, Bundle.IrcTopComponent_noFilterNamed(rest));
                 }
             }
             case "list" -> {
                 var all = textFilters.list();
                 if (all.isEmpty()) {
-                    appendStatus(statusKey, "No custom filters: /filter add <name> <#channel|*> <regex>");
+                    appendStatus(statusKey, Bundle.IrcTopComponent_noCustomFilters());
                 } else {
                     for (TextFilters.Filter f : all) {
-                        appendStatus(statusKey, (f.enabled() ? "[on]  " : "[off] ")
-                                + f.name() + "  " + f.scope() + "  /" + f.regex() + "/");
+                        appendStatus(statusKey, f.enabled()
+                                ? Bundle.IrcTopComponent_filterRowOn(f.name(), f.scope(), f.regex())
+                                : Bundle.IrcTopComponent_filterRowOff(f.name(), f.scope(), f.regex()));
                     }
                 }
             }
@@ -2014,12 +2092,9 @@ public final class IrcTopComponent extends TopComponent {
                     smartFilterOn = a.equals("on");
                     IrcConfig.getDefault().setSmartFilterEnabled(smartFilterOn);
                 }
-                appendStatus(statusKey, "Smart join/part/quit filter is "
-                        + (smartFilterOn ? "ON" : "OFF") + " (/filter smart on|off). Joins, parts,"
-                        + " quits, and renames from nicks silent for 5 minutes are hidden;"
-                        + " kicks and your own lines always show, and logs keep everything."
-                        + " Custom filters: " + textFilters.list().size()
-                        + " (/filter add|del|enable|disable|list).");
+                appendStatus(statusKey, Bundle.IrcTopComponent_smartFilterStatus(
+                        smartFilterOn ? Bundle.IrcTopComponent_on() : Bundle.IrcTopComponent_off(),
+                        String.valueOf(textFilters.list().size())));
             }
         }
     }
@@ -2034,7 +2109,7 @@ public final class IrcTopComponent extends TopComponent {
     private void commandLastlog(String args) {
         String[] a = args.trim().split("\\s+");
         if (a.length == 0 || a[0].isEmpty()) {
-            appendStatus(feedbackKey(), "Usage: /lastlog <text> [count]");
+            appendStatus(feedbackKey(), Bundle.IrcTopComponent_lastlogUsage());
             return;
         }
         int limit = 20;
@@ -2058,9 +2133,10 @@ public final class IrcTopComponent extends TopComponent {
         java.util.List<String> hits = TextFilters.lastlog(scrollback, pattern, limit);
         SimpleAttributeSet dim = attrs(new Color(0x88, 0x88, 0x88), false, true, false);
         try {
-            doc.insertString(doc.getLength(),
-                    "— lastlog: " + hits.size() + " match" + (hits.size() == 1 ? "" : "es")
-                    + " for \"" + pattern + "\" —\n", dim);
+            doc.insertString(doc.getLength(), (hits.size() == 1
+                    ? Bundle.IrcTopComponent_lastlogOne(String.valueOf(hits.size()), pattern)
+                    : Bundle.IrcTopComponent_lastlogMany(String.valueOf(hits.size()), pattern))
+                    + "\n", dim);
             for (String hit : hits) {
                 doc.insertString(doc.getLength(), "  " + hit + "\n", dim);
             }
@@ -2078,36 +2154,35 @@ public final class IrcTopComponent extends TopComponent {
         if (args.isEmpty()) {
             var all = config.aliases();
             if (all.isEmpty()) {
-                appendStatus(statusKey, "No aliases yet: /alias name command defines one");
+                appendStatus(statusKey, Bundle.IrcTopComponent_noAliases());
             } else {
-                all.forEach((n, e) -> appendStatus(statusKey, "/" + n + " = /" + e));
+                all.forEach((n, e) -> appendStatus(statusKey, Bundle.IrcTopComponent_aliasLine(n, e)));
             }
             return;
         }
         if (args.startsWith("-")) {
             String name = args.substring(1).trim().toLowerCase(Locale.ROOT);
             config.removeAlias(name);
-            appendStatus(statusKey, "Alias removed: /" + name);
+            appendStatus(statusKey, Bundle.IrcTopComponent_aliasRemoved(name));
             return;
         }
         int sp2 = args.indexOf(' ');
         if (sp2 < 0) {
-            appendStatus(statusKey,
-                    "Usage: /alias name command, /alias -name removes, /alias lists");
+            appendStatus(statusKey, Bundle.IrcTopComponent_aliasUsage());
             return;
         }
         String name = args.substring(0, sp2).toLowerCase(Locale.ROOT).replaceFirst("^/", "");
         String body = args.substring(sp2 + 1).trim().replaceFirst("^/", "");
         if (!name.matches("[a-z0-9]+")) {
-            appendStatus(statusKey, "Alias names are letters and digits only");
+            appendStatus(statusKey, Bundle.IrcTopComponent_aliasNameRule());
             return;
         }
         if (BUILTIN_COMMANDS.contains(name)) {
-            appendStatus(statusKey, "/" + name + " is built in; an alias may not shadow it");
+            appendStatus(statusKey, Bundle.IrcTopComponent_aliasBuiltIn(name));
             return;
         }
         config.saveAlias(name, body);
-        appendStatus(statusKey, "/" + name + " = /" + body);
+        appendStatus(statusKey, Bundle.IrcTopComponent_aliasLine(name, body));
     }
 
     /** {@code /op nick...} and friends: one batched MODE line via OpModes. */
@@ -2126,7 +2201,7 @@ public final class IrcTopComponent extends TopComponent {
     private void commandClose() {
         TargetRef ref = selectedRef();
         if (ref == null || ref.target().isEmpty()) {
-            appendStatus(feedbackKey(), "/close closes a channel or query tab");
+            appendStatus(feedbackKey(), Bundle.IrcTopComponent_closeUsage());
             return;
         }
         String network = ref.network();
@@ -2193,7 +2268,7 @@ public final class IrcTopComponent extends TopComponent {
             try {
                 port = Integer.parseInt(parts[1]);
             } catch (NumberFormatException ex) {
-                appendStatus(feedbackKey(), "Not a port: " + parts[1]);
+                appendStatus(feedbackKey(), Bundle.IrcTopComponent_notAPort(parts[1]));
                 return;
             }
         }
@@ -2210,7 +2285,7 @@ public final class IrcTopComponent extends TopComponent {
     private void sayToActive(String text, boolean action) {
         String target = activeTarget();
         if (target.isEmpty()) {
-            appendStatus(feedbackKey(), "Pick a channel or query first (or /join one)");
+            appendStatus(feedbackKey(), Bundle.IrcTopComponent_pickTargetFirst());
             return;
         }
         IrcClient c = liveClient();

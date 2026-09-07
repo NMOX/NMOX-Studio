@@ -13,6 +13,24 @@ import java.util.Map;
  * Permissions-Policy, and Cross-Origin-Opener-Policy. Deterministic
  * and value-aware, so the verdicts are testable claims, not vibes.
  */
+@org.openide.util.NbBundle.Messages({
+    "HeaderGrader_present=present",
+    "HeaderGrader_hstsAbsent=absent — add max-age=31536000; includeSubDomains",
+    "HeaderGrader_hstsShort=max-age under 180 days: {0}",
+    "HeaderGrader_cspAbsent=absent — the single most effective XSS defense",
+    "HeaderGrader_cspUnsafe=present but allows unsafe-inline/unsafe-eval",
+    "HeaderGrader_xctoAbsent=absent — add: nosniff",
+    "HeaderGrader_unexpectedValue=unexpected value: {0}",
+    "HeaderGrader_clickjackingFrameAncestors=Clickjacking (frame-ancestors)",
+    "HeaderGrader_frameAncestorsPresent=CSP frame-ancestors present",
+    "HeaderGrader_clickjackingXfo=Clickjacking (X-Frame-Options)",
+    "HeaderGrader_clickjackingProtection=Clickjacking protection",
+    "HeaderGrader_noClickjackingProtection=no CSP frame-ancestors and no X-Frame-Options",
+    "HeaderGrader_referrerAbsent=absent — add: strict-origin-when-cross-origin",
+    "HeaderGrader_referrerUnsafeUrl=unsafe-url leaks full URLs",
+    "HeaderGrader_permissionsAbsent=absent — declare the features you don't use",
+    "HeaderGrader_coopAbsent=absent — same-origin isolates your window"
+})
 public final class HeaderGrader {
 
     private HeaderGrader() {
@@ -37,10 +55,10 @@ public final class HeaderGrader {
         String hsts = first(headers, "strict-transport-security");
         if (hsts == null) {
             checks.add(new Check("Strict-Transport-Security", Verdict.MISS,
-                    "absent — add max-age=31536000; includeSubDomains"));
+                    Bundle.HeaderGrader_hstsAbsent()));
         } else if (maxAge(hsts) < 15_552_000) {
             checks.add(new Check("Strict-Transport-Security", Verdict.WARN,
-                    "max-age under 180 days: " + hsts));
+                    Bundle.HeaderGrader_hstsShort(hsts)));
         } else {
             checks.add(new Check("Strict-Transport-Security", Verdict.PASS, hsts));
         }
@@ -53,12 +71,12 @@ public final class HeaderGrader {
         String csp = joined(headers, "content-security-policy");
         if (csp == null) {
             checks.add(new Check("Content-Security-Policy", Verdict.MISS,
-                    "absent — the single most effective XSS defense"));
+                    Bundle.HeaderGrader_cspAbsent()));
         } else if (csp.contains("unsafe-inline") || csp.contains("unsafe-eval")) {
             checks.add(new Check("Content-Security-Policy", Verdict.WARN,
-                    "present but allows unsafe-inline/unsafe-eval"));
+                    Bundle.HeaderGrader_cspUnsafe()));
         } else {
-            checks.add(new Check("Content-Security-Policy", Verdict.PASS, "present"));
+            checks.add(new Check("Content-Security-Policy", Verdict.PASS, Bundle.HeaderGrader_present()));
         }
 
         String xcto = first(headers, "x-content-type-options");
@@ -66,39 +84,39 @@ public final class HeaderGrader {
                 ? new Check("X-Content-Type-Options", Verdict.PASS, "nosniff")
                 : new Check("X-Content-Type-Options",
                         xcto == null ? Verdict.MISS : Verdict.WARN,
-                        xcto == null ? "absent — add: nosniff" : "unexpected value: " + xcto));
+                        xcto == null ? Bundle.HeaderGrader_xctoAbsent() : Bundle.HeaderGrader_unexpectedValue(xcto)));
 
         boolean frameAncestors = csp != null && csp.contains("frame-ancestors");
         String xfo = first(headers, "x-frame-options");
         if (frameAncestors) {
-            checks.add(new Check("Clickjacking (frame-ancestors)", Verdict.PASS,
-                    "CSP frame-ancestors present"));
+            checks.add(new Check(Bundle.HeaderGrader_clickjackingFrameAncestors(), Verdict.PASS,
+                    Bundle.HeaderGrader_frameAncestorsPresent()));
         } else if (xfo != null && (xfo.equalsIgnoreCase("DENY") || xfo.equalsIgnoreCase("SAMEORIGIN"))) {
-            checks.add(new Check("Clickjacking (X-Frame-Options)", Verdict.PASS, xfo));
+            checks.add(new Check(Bundle.HeaderGrader_clickjackingXfo(), Verdict.PASS, xfo));
         } else {
-            checks.add(new Check("Clickjacking protection", Verdict.MISS,
-                    "no CSP frame-ancestors and no X-Frame-Options"));
+            checks.add(new Check(Bundle.HeaderGrader_clickjackingProtection(), Verdict.MISS,
+                    Bundle.HeaderGrader_noClickjackingProtection()));
         }
 
         String referrer = first(headers, "referrer-policy");
         if (referrer == null) {
             checks.add(new Check("Referrer-Policy", Verdict.MISS,
-                    "absent — add: strict-origin-when-cross-origin"));
+                    Bundle.HeaderGrader_referrerAbsent()));
         } else if (referrer.toLowerCase(Locale.ROOT).contains("unsafe-url")) {
-            checks.add(new Check("Referrer-Policy", Verdict.WARN, "unsafe-url leaks full URLs"));
+            checks.add(new Check("Referrer-Policy", Verdict.WARN, Bundle.HeaderGrader_referrerUnsafeUrl()));
         } else {
             checks.add(new Check("Referrer-Policy", Verdict.PASS, referrer));
         }
 
         checks.add(first(headers, "permissions-policy") != null
-                ? new Check("Permissions-Policy", Verdict.PASS, "present")
+                ? new Check("Permissions-Policy", Verdict.PASS, Bundle.HeaderGrader_present())
                 : new Check("Permissions-Policy", Verdict.WARN,
-                        "absent — declare the features you don't use"));
+                        Bundle.HeaderGrader_permissionsAbsent()));
 
         checks.add(first(headers, "cross-origin-opener-policy") != null
-                ? new Check("Cross-Origin-Opener-Policy", Verdict.PASS, "present")
+                ? new Check("Cross-Origin-Opener-Policy", Verdict.PASS, Bundle.HeaderGrader_present())
                 : new Check("Cross-Origin-Opener-Policy", Verdict.WARN,
-                        "absent — same-origin isolates your window"));
+                        Bundle.HeaderGrader_coopAbsent()));
 
         return new Report(letter(checks), checks);
     }

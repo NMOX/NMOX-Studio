@@ -30,6 +30,10 @@ import org.netbeans.api.keyring.Keyring;
  * keyring may block on OS calls; the engine calls it on its own
  * RequestProcessor).
  */
+@org.openide.util.NbBundle.Messages({
+    "IrcSecrets_keychainUnavailable=Keychain unavailable",
+    "IrcSecrets_passwordsNotSaved=IRC NickServ passwords will not be saved this session."
+})
 public final class IrcSecrets {
 
     private static final Logger LOG = Logger.getLogger(IrcSecrets.class.getName());
@@ -125,9 +129,9 @@ public final class IrcSecrets {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.IrcSecrets_keychainUnavailable(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "IRC NickServ passwords will not be saved this session.", null);
+                    Bundle.IrcSecrets_passwordsNotSaved(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

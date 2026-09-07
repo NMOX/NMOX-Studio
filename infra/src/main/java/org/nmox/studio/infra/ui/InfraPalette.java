@@ -28,6 +28,10 @@ import org.nmox.studio.infra.model.NodeKind;
  * The node palette, Node-RED style: category-grouped entries shaped
  * like miniature nodes. Drag onto the canvas to place (or double-click).
  */
+@org.openide.util.NbBundle.Messages({
+    "InfraPalette_accessibleName=Infrastructure palette",
+    "InfraPalette_entryTooltip={0} — drag onto the canvas"
+})
 public class InfraPalette extends JPanel {
 
     /** List entries: a header (null kind) or a draggable node kind. */
@@ -44,13 +48,13 @@ public class InfraPalette extends JPanel {
         for (NodeKind kind : NodeKind.values()) {
             if (kind.getCategory() != last) {
                 last = kind.getCategory();
-                model.addElement(new Entry(null, last.name()));
+                model.addElement(new Entry(null, last.getDisplayName()));
             }
             model.addElement(new Entry(kind, null));
         }
 
         JList<Entry> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Infrastructure palette");
+        list.getAccessibleContext().setAccessibleName(Bundle.InfraPalette_accessibleName());
         list.setBackground(getBackground());
         list.setCellRenderer(new Renderer());
         // a drag needs a display: JList refuses the flag headless, and a
@@ -101,7 +105,7 @@ public class InfraPalette extends JPanel {
             this.selected = isSelected;
             setPreferredSize(new Dimension(180, value.kind() == null ? 26 : 34));
             setToolTipText(PlainText.plain(value.kind() == null ? null
-                    : value.kind().getDisplayName() + " — drag onto the canvas"));
+                    : Bundle.InfraPalette_entryTooltip(value.kind().getDisplayName())));
             return this;
         }
 

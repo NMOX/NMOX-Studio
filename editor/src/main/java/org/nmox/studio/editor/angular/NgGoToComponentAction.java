@@ -38,8 +38,7 @@ public class NgGoToComponentAction extends BaseAction {
         if (!NgSelectorHyperlink.jumpToSelector(
                 target.getDocument(), target.getCaretPosition())) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Place the caret on a component tag like <app-hero> to jump"
-                    + " to its component");
+                    org.openide.util.NbBundle.getMessage(NgGoToComponentAction.class, "NgGoToComponentAction_placeCaret"));
         }
     }
 }

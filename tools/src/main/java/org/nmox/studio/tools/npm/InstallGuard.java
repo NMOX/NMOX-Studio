@@ -66,12 +66,10 @@ final class InstallGuard {
     }
 
     static String needsInstallMessage(File projectDir) {
-        return projectDir.getName() + " declares dependencies that aren't installed — "
-                + "NPM Explorer ▸ Install first (or run npm install)";
+        return projectDir.getName() + " " + org.openide.util.NbBundle.getMessage(InstallGuard.class, "InstallGuard_needsInstall");
     }
 
     static String message(File projectDir) {
-        return "Dependencies are still installing for " + projectDir.getName()
-                + " — wait for the install, or stop it with the toolbar ■";
+        return org.openide.util.NbBundle.getMessage(InstallGuard.class, "InstallGuard_installing", projectDir.getName());
     }
 }

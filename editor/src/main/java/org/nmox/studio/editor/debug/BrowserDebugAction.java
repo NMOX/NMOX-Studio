@@ -45,11 +45,11 @@ import org.openide.util.RequestProcessor;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "nmox-debug-browser", mimeType = "text/html",
-            popupText = "Debug in Chrome (breakpoints)", popupPath = "", popupPosition = 8000),
+            popupPath = "", popupPosition = 8000),
     @EditorActionRegistration(name = "nmox-debug-browser", mimeType = "text/javascript",
-            popupText = "Debug in Chrome (breakpoints)", popupPath = "", popupPosition = 8100),
+            popupPath = "", popupPosition = 8100),
     @EditorActionRegistration(name = "nmox-debug-browser", mimeType = "text/typescript",
-            popupText = "Debug in Chrome (breakpoints)", popupPath = "", popupPosition = 8100)
+            popupPath = "", popupPosition = 8100)
 })
 public class BrowserDebugAction extends BaseAction {
 
@@ -93,29 +93,27 @@ public class BrowserDebugAction extends BaseAction {
                 // is spawned; "Keep Safe" stops the launch cold.
                 if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(root)) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "Debug cancelled — workspace not trusted.");
+                            org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_notTrusted"));
                     return;
                 }
                 File browser = BrowserLocator.find();
                 if (browser == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No Chromium-family browser found — install Google Chrome "
-                            + "(or Microsoft Edge) to debug in a browser.");
+                            org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_noBrowser"));
                     return;
                 }
                 String url = pickUrl(root, file,
                         ServingRegistry.getDefault().snapshot());
                 if (url == null) {
                     StatusDisplayer.getDefault().setStatusText(
-                            "No live server for this project — start one in the rack "
-                            + "(IGNITION, NPM) or debug the .html file directly.");
+                            org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_noServer"));
                     return;
                 }
                 debugChrome(file, root, browser, url);
                 DapDebugAction.showOutput();
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
-                        "Browser debug failed: " + ex.getMessage());
+                        org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_failed", ex.getMessage()));
             }
         });
     }

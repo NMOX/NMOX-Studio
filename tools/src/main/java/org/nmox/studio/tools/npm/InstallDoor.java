@@ -16,12 +16,11 @@ final class InstallDoor {
     }
 
     static String title(File projectDir) {
-        return projectDir.getName() + " needs its dependencies installed";
+        return projectDir.getName() + " " + org.openide.util.NbBundle.getMessage(InstallDoor.class, "InstallDoor_title");
     }
 
     static String detail(File projectDir) {
-        return "Click to run the install now (NPM Explorer ▸ Install does the same). "
-                + "Run again once it finishes.";
+        return org.openide.util.NbBundle.getMessage(InstallDoor.class, "InstallDoor_detail");
     }
 
     /** The balloon; the click installs on the NPM lane (trust-gated inside, ■-registered, progress-barred). */

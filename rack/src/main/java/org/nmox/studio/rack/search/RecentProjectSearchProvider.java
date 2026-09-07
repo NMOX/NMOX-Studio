@@ -27,7 +27,8 @@ public class RecentProjectSearchProvider implements SearchProvider {
                 boolean more = response.addResult(
                         () -> javax.swing.SwingUtilities.invokeLater(
                                 () -> RackService.getDefault().openProject(dir)),
-                        dir.getName() + "  —  " + dir.getAbsolutePath());
+                        org.openide.util.NbBundle.getMessage(RecentProjectSearchProvider.class,
+                                "RecentProjectSearchProvider_result", dir.getName(), dir.getAbsolutePath()));
                 if (!more) {
                     return;
                 }

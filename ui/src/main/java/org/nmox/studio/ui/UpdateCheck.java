@@ -26,6 +26,10 @@ import org.openide.util.NbPreferences;
  * can't be resolved does it fall back to opening the releases page.
  */
 @OnStart
+@org.openide.util.NbBundle.Messages({
+    "UpdateCheck_availableTitle=NMOX Studio {0} is available",
+    "UpdateCheck_availableBody=You''re on {0}. Click to open the Plugin Manager."
+})
 public class UpdateCheck implements Runnable {
 
     static final String RELEASES_API =
@@ -113,9 +117,9 @@ public class UpdateCheck implements Runnable {
             }
             javax.swing.SwingUtilities.invokeLater(() ->
                     org.openide.awt.NotificationDisplayer.getDefault().notify(
-                            "NMOX Studio " + latest + " is available",
+                            Bundle.UpdateCheck_availableTitle(latest),
                             javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                            "You're on " + running + ". Click to open the Plugin Manager.",
+                            Bundle.UpdateCheck_availableBody(running),
                             e -> openUpdater()));
         } catch (Exception offline) {
             // no network, rate-limited, whatever — a check must never nag

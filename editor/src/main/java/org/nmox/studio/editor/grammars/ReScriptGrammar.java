@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "rescript.tmLanguage.json", mimeType = "text/x-rescript")
-@MIMEResolver.ExtensionRegistration(displayName = "ReScript", mimeType = "text/x-rescript", extension = {"res", "resi"}, position = 2436)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ReScriptGrammar_LOADER", mimeType = "text/x-rescript", extension = {"res", "resi"}, position = 2436)
+@org.openide.util.NbBundle.Messages("LBL_ReScriptGrammar_LOADER=ReScript")
 public final class ReScriptGrammar {
 
     private ReScriptGrammar() {

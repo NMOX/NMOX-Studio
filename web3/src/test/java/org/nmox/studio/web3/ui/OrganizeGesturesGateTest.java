@@ -46,7 +46,9 @@ class OrganizeGesturesGateTest {
 
     /** The forget-deployment listener body, anchored on its menu item. */
     private static String forgetBlock(String src) {
-        int start = src.indexOf("\"Forget deployment\"");
+        // v2.97.0 (the l10n arc): the label is a bundle value; the anchor is
+        // the menu item built from its key, which is what the laws hang off
+        int start = src.indexOf("Bundle.Web3StudioTopComponent_forgetDeployment()");
         assertThat(start).as("the Forget deployment menu item exists").isPositive();
         int end = src.indexOf("popup.add(forget)", start);
         assertThat(end).as("the forget item joins the popup").isPositive();

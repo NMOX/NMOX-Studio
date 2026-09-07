@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "prisma.tmLanguage.json", mimeType = "text/x-prisma")
-@MIMEResolver.ExtensionRegistration(displayName = "Prisma", mimeType = "text/x-prisma", extension = {"prisma"}, position = 2300)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_PrismaGrammar_LOADER", mimeType = "text/x-prisma", extension = {"prisma"}, position = 2300)
+@org.openide.util.NbBundle.Messages("LBL_PrismaGrammar_LOADER=Prisma")
 public final class PrismaGrammar {
 
     private PrismaGrammar() {

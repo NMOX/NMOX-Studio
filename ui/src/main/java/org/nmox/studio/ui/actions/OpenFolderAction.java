@@ -36,13 +36,16 @@ import org.openide.windows.WindowManager;
     // a folder NMOX never creates. See WindowShortcutsTest.
     @ActionReference(path = "Shortcuts", name = "DA-O")
 })
-@Messages("CTL_OpenFolderAction=Open Folder…")
+@Messages({
+    "CTL_OpenFolderAction=Open Folder…",
+    "OpenFolderAction_chooserTitle=Open Folder"
+})
 public final class OpenFolderAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
         JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Open Folder");
+        chooser.setDialogTitle(Bundle.OpenFolderAction_chooserTitle());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         chooser.setMultiSelectionEnabled(false);
 

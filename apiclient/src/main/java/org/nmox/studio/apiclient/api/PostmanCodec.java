@@ -32,6 +32,15 @@ import org.nmox.studio.apiclient.model.ApiModel.Pair;
  * collections and environment files are refused with the fix spelled
  * out.
  */
+@org.openide.util.NbBundle.Messages({
+    "PostmanCodec_scriptsNotImported={0,choice,0#{0,number,0} Postman scripts|1#{0,number,0} Postman script|1<{0,number,0} Postman scripts} (pre-request/tests) not imported — the Postman sandbox doesn''t run here; re-create checks on the Tests tab.",
+    "PostmanCodec_secretsNotImported={0,choice,0#{0,number,0} secret-typed values|1#{0,number,0} secret-typed value|1<{0,number,0} secret-typed values} NOT imported — environments live in the committable .nmoxapi.json; put secrets in each request''s Auth field (OS keychain).",
+    "PostmanCodec_disabledSkipped={0,choice,0#{0,number,0} disabled values|1#{0,number,0} disabled value|1<{0,number,0} disabled values} skipped.",
+    "PostmanCodec_apiKeyAsRow=API-key auth imported as a plain {0} row — it will be saved in .nmoxapi.json; move real secrets to the Auth field (OS keychain).",
+    "PostmanCodec_authTypeNotImported=Auth type \"{0}\" not imported — set the request''s Auth field by hand.",
+    "PostmanCodec_formDataNotImported={0} {1}: multipart form-data body not imported (same stance as the curl import).",
+    "PostmanCodec_fileBodyNotImported={0} {1}: file body not imported — paste the payload in."
+})
 public final class PostmanCodec {
 
     private PostmanCodec() {
@@ -81,9 +90,7 @@ public final class PostmanCodec {
                     "No requests found in this collection.");
         }
         if (scripts[0] > 0) {
-            notes.add(scripts[0] + " Postman script" + (scripts[0] == 1 ? "" : "s")
-                    + " (pre-request/tests) not imported — the Postman sandbox "
-                    + "doesn't run here; re-create checks on the Tests tab.");
+            notes.add(Bundle.PostmanCodec_scriptsNotImported(scripts[0]));
         }
 
         Map<String, String> variables = new LinkedHashMap<>();
@@ -147,14 +154,10 @@ public final class PostmanCodec {
             out.put(v.getString("key"), v.optString("value", ""));
         }
         if (secrets > 0) {
-            notes.add(secrets + " secret-typed value" + (secrets == 1 ? "" : "s")
-                    + " NOT imported — environments live in the committable "
-                    + ".nmoxapi.json; put secrets in each request's Auth field "
-                    + "(OS keychain).");
+            notes.add(Bundle.PostmanCodec_secretsNotImported(secrets));
         }
         if (disabled > 0) {
-            notes.add(disabled + " disabled value" + (disabled == 1 ? "" : "s")
-                    + " skipped.");
+            notes.add(Bundle.PostmanCodec_disabledSkipped(disabled));
         }
         if (out.isEmpty()) {
             throw new IllegalArgumentException("No importable values in this "
@@ -324,12 +327,9 @@ public final class PostmanCodec {
                 } else {
                     r.headers.add(new Pair(key, value));
                 }
-                note(notes, "API-key auth imported as a plain " + key
-                        + " row — it will be saved in .nmoxapi.json; move real "
-                        + "secrets to the Auth field (OS keychain).");
+                note(notes, Bundle.PostmanCodec_apiKeyAsRow(key));
             }
-            default -> note(notes, "Auth type \"" + type
-                    + "\" not imported — set the request's Auth field by hand.");
+            default -> note(notes, Bundle.PostmanCodec_authTypeNotImported(type));
         }
     }
 
@@ -411,11 +411,8 @@ public final class PostmanCodec {
                     }
                 }
             }
-            case "formdata" -> note(notes, r.method + " " + r.url
-                    + ": multipart form-data body not imported (same stance "
-                    + "as the curl import).");
-            case "file" -> note(notes, r.method + " " + r.url
-                    + ": file body not imported — paste the payload in.");
+            case "formdata" -> note(notes, Bundle.PostmanCodec_formDataNotImported(r.method, r.url));
+            case "file" -> note(notes, Bundle.PostmanCodec_fileBodyNotImported(r.method, r.url));
             default -> {
             }
         }

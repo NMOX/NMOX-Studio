@@ -46,7 +46,27 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_ProjectStudioAction=Project Studio",
     "CTL_ProjectStudioTopComponent=Project Studio",
-    "HINT_ProjectStudioTopComponent=Start, configure and edit web projects wired to the Task Rack"
+    "HINT_ProjectStudioTopComponent=Start, configure and edit web projects wired to the Task Rack",
+    "ProjectStudioTopComponent_newButton=New…",
+    "ProjectStudioTopComponent_newTooltip=Create a project from a template, infra pre-wired in the rack",
+    "ProjectStudioTopComponent_openButton=Open…",
+    "ProjectStudioTopComponent_openTooltip=Aim the studio (and the rack) at an existing project",
+    "ProjectStudioTopComponent_openChooserTitle=Open Project Directory",
+    "ProjectStudioTopComponent_recentButton=Recent ▾",
+    "ProjectStudioTopComponent_noRecentProjects=(no recent projects)",
+    "ProjectStudioTopComponent_configureButton=Configure…",
+    "ProjectStudioTopComponent_configureTooltip=Edit package.json: identity, scripts, dependencies",
+    "ProjectStudioTopComponent_configOpenFailed=Could not open the configuration: {0}",
+    "ProjectStudioTopComponent_projectsTabButton=Projects Tab",
+    "ProjectStudioTopComponent_projectsTabTooltip=Open this folder as a platform project: git colors, history, diff and search light up in the Projects view",
+    "ProjectStudioTopComponent_noManifestStatus=No recognized project manifest in this folder",
+    "ProjectStudioTopComponent_openAsProjectFailed=Open as project failed: {0}",
+    "ProjectStudioTopComponent_terminalButton=Terminal",
+    "ProjectStudioTopComponent_terminalTooltip=Open a terminal — in the project directory when the platform supports it",
+    "ProjectStudioTopComponent_aimNoManifest=(no manifest yet)",
+    "ProjectStudioTopComponent_aimStaticSite=(static site)",
+    "ProjectStudioTopComponent_aimLearningSpace=(learning space)",
+    "ProjectStudioTopComponent_terminalFallbackStatus=Terminal: Window ▸ IDE Tools ▸ Terminal"
 })
 public final class ProjectStudioTopComponent extends TopComponent {
 
@@ -117,8 +137,8 @@ public final class ProjectStudioTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
 
-        JButton newProject = new JButton("New…");
-        newProject.setToolTipText("Create a project from a template, infra pre-wired in the rack");
+        JButton newProject = new JButton(Bundle.ProjectStudioTopComponent_newButton());
+        newProject.setToolTipText(Bundle.ProjectStudioTopComponent_newTooltip());
         newProject.addActionListener(e -> {
             NewProjectDialog dialog = new NewProjectDialog(this);
             dialog.setVisible(true);
@@ -126,24 +146,24 @@ public final class ProjectStudioTopComponent extends TopComponent {
         });
         bar.add(newProject);
 
-        JButton open = new JButton("Open…");
-        open.setToolTipText("Aim the studio (and the rack) at an existing project");
+        JButton open = new JButton(Bundle.ProjectStudioTopComponent_openButton());
+        open.setToolTipText(Bundle.ProjectStudioTopComponent_openTooltip());
         open.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(rack.getProjectDir());
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            chooser.setDialogTitle("Open Project Directory");
+            chooser.setDialogTitle(Bundle.ProjectStudioTopComponent_openChooserTitle());
             if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 RackService.getDefault().openProject(chooser.getSelectedFile());
             }
         });
         bar.add(open);
 
-        JButton recent = new JButton("Recent ▾");
+        JButton recent = new JButton(Bundle.ProjectStudioTopComponent_recentButton());
         recent.addActionListener(e -> {
             JPopupMenu menu = new JPopupMenu();
             var projects = RackService.getDefault().getRecentProjects();
             if (projects.isEmpty()) {
-                JMenuItem none = new JMenuItem("(no recent projects)");
+                JMenuItem none = new JMenuItem(Bundle.ProjectStudioTopComponent_noRecentProjects());
                 none.setEnabled(false);
                 menu.add(none);
             }
@@ -158,23 +178,22 @@ public final class ProjectStudioTopComponent extends TopComponent {
         bar.add(recent);
         bar.addSeparator();
 
-        JButton configure = new JButton("Configure…");
-        configure.setToolTipText("Edit package.json: identity, scripts, dependencies");
+        JButton configure = new JButton(Bundle.ProjectStudioTopComponent_configureButton());
+        configure.setToolTipText(Bundle.ProjectStudioTopComponent_configureTooltip());
         configure.addActionListener(e -> {
             try {
                 new ProjectConfigDialog(this, rack.getProjectDir()).setVisible(true);
             } catch (IOException ex) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                        org.nmox.studio.core.util.PlainDialogs.plain("Could not open the configuration: " + ex.getMessage(), "Message"),
+                        org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ProjectStudioTopComponent_configOpenFailed(ex.getMessage()), "Message"),
                         NotifyDescriptor.WARNING_MESSAGE));
             }
         });
         bar.add(configure);
         bar.addSeparator();
 
-        JButton asProject = new JButton("Projects Tab");
-        asProject.setToolTipText("Open this folder as a platform project: git colors, history,"
-                + " diff and search light up in the Projects view");
+        JButton asProject = new JButton(Bundle.ProjectStudioTopComponent_projectsTabButton());
+        asProject.setToolTipText(Bundle.ProjectStudioTopComponent_projectsTabTooltip());
         asProject.addActionListener(e -> {
             java.io.File projectDir = rack.getProjectDir();
             // findProject scans the folder for a manifest (disk IO) — off the
@@ -194,18 +213,18 @@ public final class ProjectStudioTopComponent extends TopComponent {
                                 .open(new org.netbeans.api.project.Project[]{project}, false, true);
                     } else {
                         org.openide.awt.StatusDisplayer.getDefault()
-                                .setStatusText("No recognized project manifest in this folder");
+                                .setStatusText(Bundle.ProjectStudioTopComponent_noManifestStatus());
                     }
                 } catch (Exception ex) {
                     org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Open as project failed: " + ex.getMessage());
+                            .setStatusText(Bundle.ProjectStudioTopComponent_openAsProjectFailed(ex.getMessage()));
                 }
             });
         });
         bar.add(asProject);
 
-        JButton terminal = new JButton("Terminal");
-        terminal.setToolTipText("Open a terminal — in the project directory when the platform supports it");
+        JButton terminal = new JButton(Bundle.ProjectStudioTopComponent_terminalButton());
+        terminal.setToolTipText(Bundle.ProjectStudioTopComponent_terminalTooltip());
         terminal.addActionListener(e -> openTerminal());
         bar.add(terminal);
         return bar;
@@ -244,11 +263,11 @@ public final class ProjectStudioTopComponent extends TopComponent {
             case NODE:
                 return "";
             case NONE:
-                return "  (no manifest yet)";
+                return "  " + Bundle.ProjectStudioTopComponent_aimNoManifest();
             case STATIC:
-                return "  (static site)";
+                return "  " + Bundle.ProjectStudioTopComponent_aimStaticSite();
             case LEARN:
-                return "  (learning space)";
+                return "  " + Bundle.ProjectStudioTopComponent_aimLearningSpace();
             default:
                 String manifest = kind.manifest();
                 return "  (" + (manifest.isEmpty()
@@ -403,6 +422,6 @@ public final class ProjectStudioTopComponent extends TopComponent {
             }
         }
         org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText("Terminal: Window ▸ IDE Tools ▸ Terminal");
+                .setStatusText(Bundle.ProjectStudioTopComponent_terminalFallbackStatus());
     }
 }

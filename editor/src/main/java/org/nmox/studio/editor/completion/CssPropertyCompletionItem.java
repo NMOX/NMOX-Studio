@@ -19,6 +19,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * the value. Plain data plus one edit; never constructed at boot, only
  * per query by {@link CssCompletionProvider}.
  */
+@org.openide.util.NbBundle.Messages({
+    "CssPropertyCompletionItem_hint=[prop]"
+})
 public class CssPropertyCompletionItem implements CompletionItem {
     
     private final String property;
@@ -58,7 +61,7 @@ public class CssPropertyCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             property,
-            "[prop]",
+            Bundle.CssPropertyCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : new Color(0, 100, 200),

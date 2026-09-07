@@ -28,6 +28,9 @@ import org.openide.util.RequestProcessor;
  * overdue by two); the design pair's migration is a review candidate,
  * not a mid-batch edit.
  */
+@org.openide.util.NbBundle.Messages({
+    "ProjectJumpHyperlink_couldNotOpen=Could not open {0}: {1}"
+})
 public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
 
     private static final RequestProcessor RP =
@@ -97,7 +100,7 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
                 }
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
-                        "Could not open " + file.getName() + ": " + ex.getMessage());
+                        Bundle.ProjectJumpHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
             }
         });
     }

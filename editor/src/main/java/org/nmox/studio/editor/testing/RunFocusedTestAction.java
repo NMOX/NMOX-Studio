@@ -28,19 +28,19 @@ import org.openide.loaders.DataObject;
  */
 @EditorActionRegistrations({
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/javascript",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/typescript",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-python",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-go",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-rust",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-elixir",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900),
+            popupPath = "", popupPosition = 7900),
     @EditorActionRegistration(name = "nmox-run-focused-test", mimeType = "text/x-php5",
-            popupText = "Run Focused Test", popupPath = "", popupPosition = 7900)
+            popupPath = "", popupPosition = 7900)
 })
 public class RunFocusedTestAction extends BaseAction {
 
@@ -91,7 +91,8 @@ public class RunFocusedTestAction extends BaseAction {
 
         if (!runDiscovered(file, mime, name, caretLine)) {
             StatusDisplayer.getDefault().setStatusText(
-                    "No test found above the caret" + (name == null ? "" : " for " + name));
+                    name == null ? org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_noTest")
+                            : org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_noTestNamed", name));
         }
     }
 
@@ -113,25 +114,27 @@ public class RunFocusedTestAction extends BaseAction {
         }
         if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(focused.dir())) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Focused test not run — workspace not trusted");
+                    org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_notTrusted"));
             return true;
         }
-        StatusDisplayer.getDefault().setStatusText("Focused test: "
-                + (name != null ? name : "line " + line));
+        StatusDisplayer.getDefault().setStatusText(org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_running",
+                name != null ? name : org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_line", String.valueOf(line))));
         CommandExecutor.showOutput("Focused Test");
         // The run joins LiveRuns (v2.70.0) so the toolbar ■ can stop it — a
         // test that opens a server and never exits, or a runner left in
         // watch mode, had NO stop on screen (the v2.69.10 law's third lane;
         // the Tests window's Run rides this same method).
         String runId = "focused-test:" + file.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
-        String runLabel = "Focused test: " + (name != null ? name : "line " + line);
+        String runLabel = org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_running",
+                name != null ? name : org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_line", String.valueOf(line)));
         CommandExecutor.Handle handle = CommandExecutor.run("Focused Test", focused.dir(), Map.of(),
                 focused.command(), l -> { }, code -> {
                     LiveRuns.remove(runId);
                     // STOP reads STOPPED (v2.69.15), one registry over
                     StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(LiveRuns.wasStoppedByUser(runId)
-                            ? "Focused test stopped"
-                            : code == 0 ? "Focused test PASSED" : "Focused test FAILED [" + code + "]"));
+                            ? org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_stopped")
+                            : code == 0 ? org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_passed")
+                            : org.openide.util.NbBundle.getMessage(RunFocusedTestAction.class, "RunFocusedTestAction_failed", String.valueOf(code))));
                 });
         LiveRuns.add(new LiveRuns.Run(runId, runLabel, handle::kill));
         return true;

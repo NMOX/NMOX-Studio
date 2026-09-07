@@ -12,6 +12,21 @@ import org.nmox.studio.apiclient.model.ApiModel.Request;
  * that turns a probe into a check. Every assertion yields one
  * {@link Result} so the panel can show green and red per line.
  */
+@org.openide.util.NbBundle.Messages({
+    "TestRunner_noTarget={0} (no target)",
+    "TestRunner_noTargetDetail=assertion has no target — fix it in the Tests tab or .nmoxapi.json",
+    "TestRunner_statusIs=Status is {0}",
+    "TestRunner_was=was {0,number,0}",
+    "TestRunner_timeUnder=Time under {0}ms",
+    "TestRunner_millis={0,number,0}ms",
+    "TestRunner_bodyContains=Body contains \"{0}\"",
+    "TestRunner_found=found",
+    "TestRunner_notFound=not found",
+    "TestRunner_jsonHas=JSON has {0}",
+    "TestRunner_present=present",
+    "TestRunner_missing=missing",
+    "TestRunner_headerPresent=Header {0} present"
+})
 public final class TestRunner {
 
     private TestRunner() {
@@ -33,32 +48,32 @@ public final class TestRunner {
             // a hand-edited .nmoxapi.json can carry "target": null — that's a
             // failed assertion with an honest message, never an NPE that kills
             // the send worker and leaves the Send button dead
-            return new Result(a.kind + " (no target)", false,
-                    "assertion has no target — fix it in the Tests tab or .nmoxapi.json");
+            return new Result(Bundle.TestRunner_noTarget(a.kind), false,
+                    Bundle.TestRunner_noTargetDetail());
         }
         return switch (a.kind) {
             case STATUS_IS -> {
                 boolean ok = String.valueOf(r.status()).equals(a.target.trim());
-                yield new Result("Status is " + a.target, ok, "was " + r.status());
+                yield new Result(Bundle.TestRunner_statusIs(a.target), ok, Bundle.TestRunner_was(r.status()));
             }
             case TIME_UNDER_MS -> {
                 long limit = parseLong(a.target, Long.MAX_VALUE);
                 boolean ok = r.millis() < limit;
-                yield new Result("Time under " + a.target + "ms", ok, r.millis() + "ms");
+                yield new Result(Bundle.TestRunner_timeUnder(a.target), ok, Bundle.TestRunner_millis(r.millis()));
             }
             case BODY_CONTAINS -> {
                 boolean ok = r.body() != null && r.body().contains(a.target);
-                yield new Result("Body contains \"" + a.target + "\"", ok,
-                        ok ? "found" : "not found");
+                yield new Result(Bundle.TestRunner_bodyContains(a.target), ok,
+                        ok ? Bundle.TestRunner_found() : Bundle.TestRunner_notFound());
             }
             case JSON_HAS_PATH -> {
                 boolean ok = jsonHasPath(r.body(), a.target);
-                yield new Result("JSON has " + a.target, ok, ok ? "present" : "missing");
+                yield new Result(Bundle.TestRunner_jsonHas(a.target), ok, ok ? Bundle.TestRunner_present() : Bundle.TestRunner_missing());
             }
             case HEADER_PRESENT -> {
                 boolean ok = r.hasHeader(a.target.trim());
-                yield new Result("Header " + a.target + " present", ok,
-                        ok ? "present" : "missing");
+                yield new Result(Bundle.TestRunner_headerPresent(a.target), ok,
+                        ok ? Bundle.TestRunner_present() : Bundle.TestRunner_missing());
             }
         };
     }

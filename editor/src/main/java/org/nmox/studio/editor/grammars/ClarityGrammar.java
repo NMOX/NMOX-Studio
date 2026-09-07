@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * these files, so the editor must speak them.
  */
 @GrammarRegistration(grammar = "clarity.tmLanguage.json", mimeType = "text/x-clarity")
-@MIMEResolver.ExtensionRegistration(displayName = "Clarity", mimeType = "text/x-clarity", extension = {"clar"}, position = 2455)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ClarityGrammar_LOADER", mimeType = "text/x-clarity", extension = {"clar"}, position = 2455)
+@org.openide.util.NbBundle.Messages("LBL_ClarityGrammar_LOADER=Clarity")
 public final class ClarityGrammar {
 
     private ClarityGrammar() {

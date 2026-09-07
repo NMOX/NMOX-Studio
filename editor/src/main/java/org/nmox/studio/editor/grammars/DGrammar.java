@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "d.tmLanguage.json", mimeType = "text/x-d")
-@MIMEResolver.ExtensionRegistration(displayName = "D", mimeType = "text/x-d", extension = {"d", "di"}, position = 2433)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_DGrammar_LOADER", mimeType = "text/x-d", extension = {"d", "di"}, position = 2433)
+@org.openide.util.NbBundle.Messages("LBL_DGrammar_LOADER=D")
 public final class DGrammar {
 
     private DGrammar() {

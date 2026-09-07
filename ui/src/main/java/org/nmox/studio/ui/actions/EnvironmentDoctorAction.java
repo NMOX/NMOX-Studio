@@ -31,20 +31,39 @@ import org.openide.util.RequestProcessor;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.actions.EnvironmentDoctorAction")
 @ActionRegistration(displayName = "#CTL_EnvironmentDoctorAction")
 @ActionReference(path = "Menu/Tools", position = 90)
-@Messages("CTL_EnvironmentDoctorAction=Environment Doctor…")
+@Messages({
+    "CTL_EnvironmentDoctorAction=Environment Doctor…",
+    "EnvironmentDoctorAction_colTool=Tool",
+    "EnvironmentDoctorAction_colStatus=Status",
+    "EnvironmentDoctorAction_colUsedFor=Used for",
+    "EnvironmentDoctorAction_colInstall=Install",
+    "EnvironmentDoctorAction_tableName=Environment Doctor probes",
+    "EnvironmentDoctorAction_probing=Probing…",
+    "EnvironmentDoctorAction_heading=Every tool the studio can drive, probed live on this machine:",
+    "EnvironmentDoctorAction_title=Environment Doctor",
+    "EnvironmentDoctorAction_foundMark=✓",
+    "EnvironmentDoctorAction_missingMark=✗",
+    "EnvironmentDoctorAction_skippedMark=—",
+    "EnvironmentDoctorAction_probingProgress=Probing…  {0}/{1}",
+    "EnvironmentDoctorAction_skipped=skipped — {0}",
+    "EnvironmentDoctorAction_present={0} of {1} tools present"
+})
 public final class EnvironmentDoctorAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
         DefaultTableModel model = new DefaultTableModel(
-                new Object[]{"", "Tool", "Status", "Used for", "Install"}, 0) {
+                new Object[]{"", Bundle.EnvironmentDoctorAction_colTool(),
+                    Bundle.EnvironmentDoctorAction_colStatus(),
+                    Bundle.EnvironmentDoctorAction_colUsedFor(),
+                    Bundle.EnvironmentDoctorAction_colInstall()}, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
                 return false;
             }
         };
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
-        table.getAccessibleContext().setAccessibleName("Environment Doctor probes");
+        table.getAccessibleContext().setAccessibleName(Bundle.EnvironmentDoctorAction_tableName());
         table.setRowHeight(22);
         table.getColumnModel().getColumn(0).setMaxWidth(28);
         table.getColumnModel().getColumn(1).setPreferredWidth(90);
@@ -52,10 +71,10 @@ public final class EnvironmentDoctorAction implements ActionListener {
         table.getColumnModel().getColumn(3).setPreferredWidth(200);
         table.getColumnModel().getColumn(4).setPreferredWidth(200);
 
-        JLabel status = new JLabel("Probing…");
+        JLabel status = new JLabel(Bundle.EnvironmentDoctorAction_probing());
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("Every tool the studio can drive, probed live on this machine:"),
+        panel.add(new JLabel(Bundle.EnvironmentDoctorAction_heading()),
                 BorderLayout.NORTH);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         panel.add(status, BorderLayout.SOUTH);
@@ -85,7 +104,7 @@ public final class EnvironmentDoctorAction implements ActionListener {
             }
         });
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Environment Doctor",
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.EnvironmentDoctorAction_title(),
                 false, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
     }
@@ -104,16 +123,19 @@ public final class EnvironmentDoctorAction implements ActionListener {
         long found = findings.stream()
                 .filter(EnvironmentDoctor.Finding::found).count();
         SwingUtilities.invokeLater(() -> {
-            model.addRow(new Object[]{f.found() ? "✓" : "✗", f.tool(),
+            model.addRow(new Object[]{f.found() ? Bundle.EnvironmentDoctorAction_foundMark()
+                : Bundle.EnvironmentDoctorAction_missingMark(), f.tool(),
                 f.detail(), f.purpose(), f.found() ? "" : f.installHint()});
             if (done < total) {
-                status.setText("Probing…  " + done + "/" + total);
+                status.setText(Bundle.EnvironmentDoctorAction_probingProgress(
+                        String.valueOf(done), String.valueOf(total)));
             } else {
                 for (String note : skipped) {
-                    model.addRow(new Object[]{"—", "doctor.d",
-                        "skipped — " + note, "", ""});
+                    model.addRow(new Object[]{Bundle.EnvironmentDoctorAction_skippedMark(), "doctor.d",
+                        Bundle.EnvironmentDoctorAction_skipped(note), "", ""});
                 }
-                status.setText(PlainText.plain(found + " of " + total + " tools present"));
+                status.setText(PlainText.plain(Bundle.EnvironmentDoctorAction_present(
+                        String.valueOf(found), String.valueOf(total))));
             }
         });
     }

@@ -32,13 +32,24 @@ class GitChipVerbsTest {
     @DisplayName("the chip menu carries all four verbs plus Refresh")
     void menuCarriesAllVerbs() throws Exception {
         String source = source();
-        for (String item : new String[]{
-            "new JMenuItem(\"Show Changes\")",
-            "new JMenuItem(\"Diff Project\")",
-            "new JMenuItem(\"Annotate\")",
-            "new JMenuItem(\"History\")",
-            "new JMenuItem(\"Refresh\")"}) {
-            assertThat(source).as(item + " is on the chip menu").contains(item);
+        // v2.97.0 (the l10n arc): the labels are bundle keys, so the menu is
+        // proven twice — the item is built from the key, and the key still
+        // reads in English exactly what the user guide promises.
+        java.util.Properties english = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(java.nio.file.Path.of(
+                "target/classes/org/nmox/studio/rack/service/Bundle.properties"))) {
+            english.load(in);
+        }
+        for (String[] verb : new String[][]{
+            {"GitStatusLine_showChanges", "Show Changes"},
+            {"GitStatusLine_diffProject", "Diff Project"},
+            {"GitStatusLine_annotate", "Annotate"},
+            {"GitStatusLine_history", "History"},
+            {"GitStatusLine_refresh", "Refresh"}}) {
+            assertThat(source).as(verb[1] + " is on the chip menu")
+                    .contains("new JMenuItem(Bundle." + verb[0] + "())");
+            assertThat(english.getProperty(verb[0])).as(verb[0] + " still reads " + verb[1])
+                    .isEqualTo(verb[1]);
         }
     }
 

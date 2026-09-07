@@ -20,6 +20,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * {@code CompletionUtilities.renderHtml} paints the row. If you are
  * writing a new completion, copy this shape before the fancier items.
  */
+@org.openide.util.NbBundle.Messages({
+    "HtmlAttributeValueCompletionItem_hint=[value]"
+})
 public class HtmlAttributeValueCompletionItem implements CompletionItem {
 
     private final String value;
@@ -54,7 +57,7 @@ public class HtmlAttributeValueCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             value,
-            "[value]",
+            Bundle.HtmlAttributeValueCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : defaultColor,

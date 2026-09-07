@@ -19,12 +19,16 @@ import org.openide.windows.WindowManager;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.SaveScreenshotAction")
 @ActionRegistration(displayName = "#CTL_SaveScreenshot", lazy = true)
 @ActionReference(path = "Menu/Tools", position = 100)
-@Messages("CTL_SaveScreenshot=Save Screenshot…")
+@Messages({
+    "CTL_SaveScreenshot=Save Screenshot…",
+    "SaveScreenshotAction_title=Save Screenshot",
+    "SaveScreenshotAction_what=screenshot"
+})
 public final class SaveScreenshotAction implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        ShotSaver.save(WindowManager.getDefault().getMainWindow(), "Save Screenshot",
-                Screenshot.defaultFileName(LocalDateTime.now()), "screenshot");
+        ShotSaver.save(WindowManager.getDefault().getMainWindow(), Bundle.SaveScreenshotAction_title(),
+                Screenshot.defaultFileName(LocalDateTime.now()), Bundle.SaveScreenshotAction_what());
     }
 }

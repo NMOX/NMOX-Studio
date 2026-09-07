@@ -21,7 +21,12 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "Tools", id = "org.nmox.studio.apiclient.ui.CopyTsTypesAction")
 @ActionRegistration(displayName = "#CTL_CopyTsTypes", lazy = true)
 @ActionReference(path = "Editors/text/x-json/Popup", position = 1876)
-@Messages("CTL_CopyTsTypes=Copy TS Types")
+@Messages({
+    "CTL_CopyTsTypes=Copy TS Types",
+    "CopyTsTypesAction_couldNotRead=Could not read {0}.",
+    "CopyTsTypesAction_notJsonObject=Not a JSON object — nothing to type.",
+    "CopyTsTypesAction_copied=TypeScript interfaces copied."
+})
 public final class CopyTsTypesAction implements ActionListener {
 
     private final DataObject context;
@@ -54,7 +59,7 @@ public final class CopyTsTypesAction implements ActionListener {
             try {
                 text = context.getPrimaryFile().asText();
             } catch (java.io.IOException ex) {
-                status("Could not read " + context.getPrimaryFile().getNameExt() + ".");
+                status(Bundle.CopyTsTypesAction_couldNotRead(context.getPrimaryFile().getNameExt()));
                 return;
             }
         }
@@ -62,12 +67,12 @@ public final class CopyTsTypesAction implements ActionListener {
         String types = org.nmox.studio.apiclient.api.JsonTypes.interfacesFor(
                 text, stem.isBlank() ? "Root" : stem);
         if (types == null) {
-            status("Not a JSON object — nothing to type.");
+            status(Bundle.CopyTsTypesAction_notJsonObject());
             return;
         }
         java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                 new java.awt.datatransfer.StringSelection(types), null);
-        status("TypeScript interfaces copied.");
+        status(Bundle.CopyTsTypesAction_copied());
     }
 
     private static void status(String message) {

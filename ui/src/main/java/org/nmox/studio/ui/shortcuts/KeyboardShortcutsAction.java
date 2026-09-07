@@ -35,7 +35,18 @@ import org.openide.util.Utilities;
 @ActionID(category = "Help", id = "org.nmox.studio.ui.shortcuts.KeyboardShortcutsAction")
 @ActionRegistration(displayName = "#CTL_KeyboardShortcutsAction", lazy = true)
 @ActionReference(path = "Menu/Help", position = 228)
-@Messages("CTL_KeyboardShortcutsAction=Keyboard Shortcuts…")
+@Messages({
+    "CTL_KeyboardShortcutsAction=Keyboard Shortcuts…",
+    "KeyboardShortcutsAction_colShortcut=Shortcut",
+    "KeyboardShortcutsAction_colAction=Action",
+    "KeyboardShortcutsAction_tableName=Keyboard shortcuts",
+    "KeyboardShortcutsAction_summary={0} NMOX shortcuts in the {1} keymap profile and the global Shortcuts folder. "
+        + "Editor-kit chords (Emmet ⌥⌘E, template Go to Declaration ⌘B) are in the user guide.",
+    "KeyboardShortcutsAction_copy=Copy as Markdown",
+    "KeyboardShortcutsAction_close=Close",
+    "KeyboardShortcutsAction_title=Keyboard Shortcuts",
+    "KeyboardShortcutsAction_copied=Shortcut sheet copied as Markdown."
+})
 public final class KeyboardShortcutsAction implements ActionListener {
 
     @Override
@@ -99,7 +110,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
     }
 
     private static void dialog(String profile, List<ShortcutSheet.Row> rows) {
-        String[] cols = {"Shortcut", "Action"};
+        String[] cols = {Bundle.KeyboardShortcutsAction_colShortcut(), Bundle.KeyboardShortcutsAction_colAction()};
         Object[][] data = new Object[rows.size()][];
         for (int i = 0; i < rows.size(); i++) {
             data[i] = new Object[]{rows.get(i).chord(), rows.get(i).action()};
@@ -110,25 +121,24 @@ public final class KeyboardShortcutsAction implements ActionListener {
                 return false;
             }
         });
-        table.getAccessibleContext().setAccessibleName("Keyboard shortcuts");
+        table.getAccessibleContext().setAccessibleName(Bundle.KeyboardShortcutsAction_tableName());
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
         table.getColumnModel().getColumn(1).setPreferredWidth(420);
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
-        panel.add(new JLabel(PlainText.plain(rows.size() + " NMOX shortcuts in the " + profile + " keymap profile and the global Shortcuts folder. "
-                + "Editor-kit chords (Emmet ⌥⌘E, template Go to Declaration ⌘B) are in the user guide.")),
+        panel.add(new JLabel(PlainText.plain(Bundle.KeyboardShortcutsAction_summary(String.valueOf(rows.size()), profile))),
                 java.awt.BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new java.awt.Dimension(560, 380));
         org.nmox.studio.ui.util.DialogFit.toScreen(scroll);
         panel.add(scroll, java.awt.BorderLayout.CENTER);
-        Object copy = "Copy as Markdown";
-        Object close = "Close";
-        NotifyDescriptor nd = new NotifyDescriptor(panel, "Keyboard Shortcuts", NotifyDescriptor.DEFAULT_OPTION,
+        Object copy = Bundle.KeyboardShortcutsAction_copy();
+        Object close = Bundle.KeyboardShortcutsAction_close();
+        NotifyDescriptor nd = new NotifyDescriptor(panel, Bundle.KeyboardShortcutsAction_title(), NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, new Object[]{copy, close}, close);
-        if (DialogDisplayer.getDefault().notify(nd) == copy) {
+        if (copy.equals(DialogDisplayer.getDefault().notify(nd))) {
             java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                     new StringSelection(ShortcutSheet.renderMarkdown(rows, profile)), null);
-            StatusDisplayer.getDefault().setStatusText("Shortcut sheet copied as Markdown.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.KeyboardShortcutsAction_copied());
         }
     }
 }

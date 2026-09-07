@@ -13,6 +13,9 @@ import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
  */
 public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
+    /** Nothing typed: the keystroke is consumed (a type-over moves the caret past the twin). */
+    private static final String NO_TEXT = "";
+
     @Override
     public boolean beforeInsert(Context context) {
         return false;
@@ -32,7 +35,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         if (PairLogic.shouldTypeOver(typed, next)) {
             // consume the keystroke, just move the caret past the twin
-            context.setText("", 0);
+            context.setText(NO_TEXT, 0);
             context.getComponent().getCaret().setDot(offset + 1);
             return;
         }

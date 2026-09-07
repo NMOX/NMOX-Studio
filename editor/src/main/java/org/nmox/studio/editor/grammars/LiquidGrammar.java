@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "liquid.tmLanguage.json", mimeType = "text/x-liquid")
-@MIMEResolver.ExtensionRegistration(displayName = "Liquid", mimeType = "text/x-liquid", extension = {"liquid"}, position = 2220)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_LiquidGrammar_LOADER", mimeType = "text/x-liquid", extension = {"liquid"}, position = 2220)
+@org.openide.util.NbBundle.Messages("LBL_LiquidGrammar_LOADER=Liquid")
 public final class LiquidGrammar {
 
     private LiquidGrammar() {

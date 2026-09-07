@@ -12,18 +12,16 @@ final class LaunchFailure {
     }
 
     static String status(String label) {
-        return label + " didn't start — see Output ▸ Rack: " + label
-                + ", or Tools ▸ Environment Doctor";
+        return label + " " + org.openide.util.NbBundle.getMessage(LaunchFailure.class, "LaunchFailure_status", label);
     }
 
     /** The balloon's title and detail (v2.73.0): a wall deserves a door, not only a status line. */
     static String title(String label) {
-        return label + " didn't start";
+        return label + " " + org.openide.util.NbBundle.getMessage(LaunchFailure.class, "LaunchFailure_title");
     }
 
     static String detail(String label) {
-        return "The tool it needs is not on your PATH. The reason is in Output ▸ Rack: " + label
-                + " — click to open the Environment Doctor.";
+        return org.openide.util.NbBundle.getMessage(LaunchFailure.class, "LaunchFailure_detail", label);
     }
 
     /** The Doctor by its action id — tools carries no dependency on the ui module that owns it. */

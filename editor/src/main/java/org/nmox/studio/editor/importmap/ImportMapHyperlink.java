@@ -21,6 +21,11 @@ import org.nmox.studio.editor.importmap.ImportMaps.PageMap;
     @MimeRegistration(mimeType = "text/typescript",
             service = HyperlinkProviderExt.class, position = 18)
 })
+@org.openide.util.NbBundle.Messages({
+    "ImportMapHyperlink_tooltip=Open this specifier's import-map entry",
+    "ImportMapHyperlink_noMap=No import map found in this project''s entry page.",
+    "ImportMapHyperlink_notMapped=''{0}'' is not in {1}''s import map."
+})
 public final class ImportMapHyperlink extends ProjectJumpHyperlink {
 
     @Override
@@ -30,7 +35,7 @@ public final class ImportMapHyperlink extends ProjectJumpHyperlink {
 
     @Override
     protected String tooltip() {
-        return "Open this specifier's import-map entry";
+        return Bundle.ImportMapHyperlink_tooltip();
     }
 
     @Override
@@ -38,13 +43,12 @@ public final class ImportMapHyperlink extends ProjectJumpHyperlink {
         String specifier = text.substring(span[0], span[1]);
         PageMap map = ImportMaps.findProjectMap(projectDir);
         if (map == null) {
-            status("No import map found in this project's entry page.");
+            status(Bundle.ImportMapHyperlink_noMap());
             return;
         }
         String key = ImportMaps.resolveKey(specifier, map.imports());
         if (key == null) {
-            status("'" + specifier + "' is not in " + map.page().getName()
-                    + "'s import map.");
+            status(Bundle.ImportMapHyperlink_notMapped(specifier, map.page().getName()));
             return;
         }
         status(specifier + " → " + map.imports().get(key));

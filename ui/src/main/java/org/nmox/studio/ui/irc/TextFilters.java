@@ -25,6 +25,12 @@ import java.util.regex.PatternSyntaxException;
  * the tested text is the displayed form {@code <nick> body} so a filter
  * can target a nick, a phrase, or both.
  */
+@org.openide.util.NbBundle.Messages({
+    "TextFilters_usage=usage: /filter add <name> <#channel|*> <regex>",
+    "TextFilters_alreadyExists=a filter named ''{0}'' already exists (/filter del {0} first)",
+    "TextFilters_regexTooLong=regex longer than {0} chars refused",
+    "TextFilters_badRegex=bad regex: {0}"
+})
 final class TextFilters {
 
     /** One named filter; {@code scope} is "*" or a channel name. */
@@ -50,19 +56,19 @@ final class TextFilters {
     String add(String name, String scope, String regex, boolean enabled) {
         String key = name.toLowerCase(Locale.ROOT);
         if (key.isEmpty() || scope.isEmpty() || regex.isEmpty()) {
-            return "usage: /filter add <name> <#channel|*> <regex>";
+            return Bundle.TextFilters_usage();
         }
         if (byName.containsKey(key)) {
-            return "a filter named '" + key + "' already exists (/filter del " + key + " first)";
+            return Bundle.TextFilters_alreadyExists(key);
         }
         if (regex.length() > MAX_REGEX) {
-            return "regex longer than " + MAX_REGEX + " chars refused";
+            return Bundle.TextFilters_regexTooLong(String.valueOf(MAX_REGEX));
         }
         Pattern p;
         try {
             p = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         } catch (PatternSyntaxException ex) {
-            return "bad regex: " + ex.getDescription();
+            return Bundle.TextFilters_badRegex(ex.getDescription());
         }
         byName.put(key, new Filter(key, scope, regex, enabled));
         compiled.put(key, p);

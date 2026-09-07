@@ -70,7 +70,21 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
-### 85. IDE string localization — English by construction, its own project if ever
+### 85. ~~IDE string localization — English by construction~~ — OPENED as the l10n arc, v2.97.0
+
+v2.97.0 (2026-09-07, David's ask: EN/FR/RU/HI/ES/DE) shipped the
+mechanism and the first tranche: Options ▸ General ▸ Language writes a
+shell-safe `--locale` block into the per-user launcher conf (restart to
+apply), the product's own chrome strings moved into NetBeans bundles
+with five translations each, the platform's top-menu names localized
+through branding+locale overlay jars, and `LocaleBundleParityTest`
+holding the assembled cluster to five-locale parity. STILL OPEN, by
+decision: the rack faceplate vocabulary (GO/STOP/EXPLAIN, knob names,
+LCD lines) stays English — the hardware panel, sized by the fit law;
+and every platform string beyond the top menus stays English until the
+community bundles for these languages exist. Windows launcher reading of
+the userdir conf is unverified. The original measurement follows.
+
 
 Measured v2.37.5 (the i18n pass): 51 of 697 main-source files touch
 Bundle/@Messages — mostly action display names the platform

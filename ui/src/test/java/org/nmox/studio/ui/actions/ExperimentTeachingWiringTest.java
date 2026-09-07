@@ -59,9 +59,12 @@ class ExperimentTeachingWiringTest {
     @Test
     @DisplayName("the dialogs' label-less inputs carry accessible names (the v1.41.0 name law)")
     void inputsNamed() throws Exception {
-        assertThat(src()).contains("setAccessibleName(\"Experiment template\")")
-                .contains("setAccessibleName(\"Experiment name (optional)\")");
-        assertThat(managerSrc()).contains("setAccessibleName(\"Experiments shelf\")");
+        // v2.97.0 (the l10n arc): the names are bundle values, so a
+        // screen-reader user hears them in their own language; the law is
+        // that every label-less input still HAS one
+        assertThat(src()).contains("setAccessibleName(Bundle.NewExperimentAction_templateA11y())")
+                .contains("setAccessibleName(Bundle.NewExperimentAction_nameA11y())");
+        assertThat(managerSrc()).contains("setAccessibleName(Bundle.ManageExperimentsAction_shelfA11y())");
     }
 
     @Test

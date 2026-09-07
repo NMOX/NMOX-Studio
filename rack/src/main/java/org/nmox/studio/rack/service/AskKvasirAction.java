@@ -34,7 +34,16 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "Edit", id = "org.nmox.studio.rack.service.AskKvasirAction")
 @ActionRegistration(displayName = "#CTL_AskKvasirAction", lazy = true)
 @ActionReference(path = "Editors/Popup", position = 1950, separatorBefore = 1940)
-@Messages("CTL_AskKvasirAction=Ask KVASIR About Selection…")
+@Messages({
+    "CTL_AskKvasirAction=Ask KVASIR About Selection…",
+    "AskKvasirAction_selectFirst=Select some code first — Ask KVASIR sends only the selection.",
+    "AskKvasirAction_questionField=Question about the selection",
+    "AskKvasirAction_modelDepth=Model depth",
+    "AskKvasirAction_sendsNote=<html><small>Sends only the selection, the file name, the language, and your question — never the rest of the file.</small></html>",
+    "AskKvasirAction_prompt=<html>Question about the selection ({0} chars of <b>{1}</b>) — empty asks for an explanation:</html>",
+    "AskKvasirAction_title=Ask KVASIR",
+    "AskKvasirAction_unsavedBuffer=(unsaved buffer)"
+})
 public final class AskKvasirAction implements ActionListener {
 
     @Override
@@ -43,7 +52,7 @@ public final class AskKvasirAction implements ActionListener {
         String selection = editor == null ? null : editor.getSelectedText();
         if (selection == null || selection.isBlank()) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "Select some code first — Ask KVASIR sends only the selection."));
+                    Bundle.AskKvasirAction_selectFirst()));
             return;
         }
         Document doc = editor.getDocument();
@@ -51,27 +60,24 @@ public final class AskKvasirAction implements ActionListener {
                 fileName(doc), language(doc), selection, "");
 
         JTextField question = new JTextField();
-        question.getAccessibleContext().setAccessibleName("Question about the selection");
+        question.getAccessibleContext().setAccessibleName(Bundle.AskKvasirAction_questionField());
         javax.swing.JComboBox<String> model =
                 new javax.swing.JComboBox<>(AskKvasirModel.labels());
         model.setSelectedIndex(AskKvasirModel.chosenIndex());
-        model.getAccessibleContext().setAccessibleName("Model depth");
+        model.getAccessibleContext().setAccessibleName(Bundle.AskKvasirAction_modelDepth());
         JPanel south = new JPanel(new BorderLayout(8, 0));
-        south.add(new JLabel("<html><small>Sends only the selection, the file name, "
-                + "the language, and your question — never the rest of the file.</small></html>"),
+        south.add(new JLabel(Bundle.AskKvasirAction_sendsNote()),
                 BorderLayout.CENTER);
         south.add(model, BorderLayout.EAST);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel("<html>Question about the selection ("
-                + preview.code().length() + " chars of <b>"
-                + PlainText.escape(preview.fileName()) + "</b>) — empty asks for an explanation:</html>"),
+        panel.add(new JLabel(Bundle.AskKvasirAction_prompt(String.valueOf(preview.code().length()), PlainText.escape(preview.fileName()))),
                 BorderLayout.NORTH);
         panel.add(question, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
 
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Ask KVASIR");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.AskKvasirAction_title());
         if (DialogDisplayer.getDefault().notify(descriptor) != DialogDescriptor.OK_OPTION) {
             return;
         }
@@ -103,7 +109,7 @@ public final class AskKvasirAction implements ActionListener {
         if (sd instanceof DataObject dob) {
             return dob.getPrimaryFile().getNameExt();
         }
-        return "(unsaved buffer)";
+        return Bundle.AskKvasirAction_unsavedBuffer();
     }
 
     /** The document's mime — every NetBeans editor document carries it. */

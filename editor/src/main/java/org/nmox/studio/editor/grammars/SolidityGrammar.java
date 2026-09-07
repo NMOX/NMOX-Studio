@@ -14,7 +14,8 @@ import org.openide.filesystems.MIMEResolver;
  * {@code OutlineModel}, all keyed on {@code text/x-solidity}.
  */
 @GrammarRegistration(grammar = "solidity.tmLanguage.json", mimeType = "text/x-solidity")
-@MIMEResolver.ExtensionRegistration(displayName = "Solidity", mimeType = "text/x-solidity", extension = {"sol"}, position = 2500)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_SolidityGrammar_LOADER", mimeType = "text/x-solidity", extension = {"sol"}, position = 2500)
+@org.openide.util.NbBundle.Messages("LBL_SolidityGrammar_LOADER=Solidity")
 public final class SolidityGrammar {
 
     private SolidityGrammar() {

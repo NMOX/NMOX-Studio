@@ -14,6 +14,11 @@ import java.util.Map;
  * class's own iterative walk (an explicit work list, not recursion —
  * a 10k-deep hostile document cannot StackOverflow the EDT).
  */
+@org.openide.util.NbBundle.Messages({
+    "DomSnapshotParser_attrsOne={0} attr",
+    "DomSnapshotParser_attrsMany={0} attrs",
+    "DomSnapshotParser_noSnapshot=(no DOM snapshot)"
+})
 public final class DomSnapshotParser {
 
     /** One DOM tree node. A placeholder ("…N more") has an empty path. */
@@ -52,7 +57,9 @@ public final class DomSnapshotParser {
                 sb.append('.').append(classes.replace(' ', '.'));
             }
             if (!attrs.isEmpty()) {
-                sb.append("  [").append(attrs.size()).append(" attr").append(attrs.size() == 1 ? "" : "s").append(']');
+                sb.append("  [").append(attrs.size() == 1
+                        ? Bundle.DomSnapshotParser_attrsOne(String.valueOf(attrs.size()))
+                        : Bundle.DomSnapshotParser_attrsMany(String.valueOf(attrs.size()))).append(']');
             }
             return sb.toString();
         }
@@ -74,7 +81,7 @@ public final class DomSnapshotParser {
     public static DomNode parse(String json) {
         Object v = JsonLite.parse(json);
         if (!(v instanceof Map) || JsonLite.asObject(v).isEmpty()) {
-            return new DomNode("(no DOM snapshot)", "", "", List.of(), List.of());
+            return new DomNode(Bundle.DomSnapshotParser_noSnapshot(), "", "", List.of(), List.of());
         }
         // Iterative walk: pairs of (source map, target parent).
         DomNode root = shallow(JsonLite.asObject(v));

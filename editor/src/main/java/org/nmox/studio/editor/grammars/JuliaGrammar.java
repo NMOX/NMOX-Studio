@@ -8,7 +8,8 @@ import org.openide.filesystems.MIMEResolver;
  * provenance) and its file extensions.
  */
 @GrammarRegistration(grammar = "julia.tmLanguage.json", mimeType = "text/x-julia")
-@MIMEResolver.ExtensionRegistration(displayName = "Julia", mimeType = "text/x-julia", extension = {"jl"}, position = 2190)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_JuliaGrammar_LOADER", mimeType = "text/x-julia", extension = {"jl"}, position = 2190)
+@org.openide.util.NbBundle.Messages("LBL_JuliaGrammar_LOADER=Julia")
 public final class JuliaGrammar {
 
     private JuliaGrammar() {

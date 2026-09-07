@@ -13,6 +13,7 @@ import javax.swing.ImageIcon;
 import org.nmox.studio.editor.lsp.LanguageServerCatalog.Server;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * Turns a missing language server from silence into a one-line answer.
@@ -61,17 +62,17 @@ public final class LanguageServerHealth {
         // the refusal speaks in the log too (a walk reads logs, not balloons)
         java.util.logging.Logger.getLogger(LanguageServerHealth.class.getName()).info(
                 "TypeScript " + version + " ships no tsserver; the TypeScript server was not started — " + install);
-        NotificationDisplayer.getDefault().notify("TypeScript intelligence unavailable", ICON,
-                "TypeScript " + version + " is installed, and TypeScript 7 (the Go port) ships no tsserver — "
-                + "the editor's TypeScript server needs typescript 5. "
-                + (clickInstalls(s) ? "Click to install it — runs: " + install : "Run: " + install),
+        NotificationDisplayer.getDefault().notify(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsTitle"), ICON,
+                NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsBody", version,
+                        clickInstalls(s) ? NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsClickInstall", install)
+                                : NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsRun", install)),
                 e -> {
                     if (clickInstalls(s)) {
                         runInstall(s);
                     } else {
                         Toolkit.getDefaultToolkit().getSystemClipboard()
                                 .setContents(new StringSelection(install), null);
-                        StatusDisplayer.getDefault().setStatusText("Copied: " + install);
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_copied", install));
                     }
                 });
     }
@@ -86,7 +87,7 @@ public final class LanguageServerHealth {
         String language = s != null ? s.language() : binary;
         String install = s != null ? s.install()
                 : "install " + binary + " and put it on your PATH";
-        String title = language + " intelligence unavailable";
+        String title = NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_title", language);
         NotificationDisplayer.getDefault().notify(title, ICON, detail(s, binary, install),
                 e -> {
                     if (clickInstalls(s)) {
@@ -94,7 +95,7 @@ public final class LanguageServerHealth {
                     } else {
                         Toolkit.getDefaultToolkit().getSystemClipboard()
                                 .setContents(new StringSelection(install), null);
-                        StatusDisplayer.getDefault().setStatusText("Copied: " + install);
+                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_copied", install));
                     }
                 });
     }
@@ -115,20 +116,18 @@ public final class LanguageServerHealth {
     /** The notification body, matched to what the click will actually do. */
     static String detail(Server s, String binary, String install) {
         if (clickInstalls(s)) {
-            return "Click to install " + binary
-                    + (s.projectLocal() ? " into the project" : "")
-                    + " — runs: " + install;
+            return s.projectLocal()
+                    ? NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_clickInstallProject", binary, install)
+                    : NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_clickInstall", binary, install);
         }
-        return "Install " + binary
-                + " for go-to-definition, hover, rename and live errors  —  click to copy: "
-                + install;
+        return NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_clickCopy", binary, install);
     }
 
     private static void runInstall(Server s) {
         LanguageServerInstaller.install(s, new LanguageServerInstaller.Listener() {
             @Override
             public void onStarted(Server server) {
-                status("Installing " + server.binary() + "…");
+                status(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_installing", server.binary()));
             }
 
             @Override
@@ -139,15 +138,11 @@ public final class LanguageServerHealth {
                         // the LSP client resolves servers per open file, so a
                         // reopen is what actually starts the fresh install
                         REPORTED.remove(server.binary());
-                        status("Installed " + server.binary()
-                                + " — reopen the file to start it");
+                        status(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_installed", server.binary()));
                     }
-                    case NEEDS_PROJECT -> status("Open the project first — "
-                            + server.binary() + " installs into the project");
-                    case NEEDS_TOOLCHAIN -> status(server.installer()
-                            + " not found — install it first");
-                    default -> status("Install of " + server.binary()
-                            + " failed (exit " + exitCode + ") — see Output");
+                    case NEEDS_PROJECT -> status(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_needsProject", server.binary()));
+                    case NEEDS_TOOLCHAIN -> status(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_needsToolchain", server.installer()));
+                    default -> status(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_installFailed", server.binary(), String.valueOf(exitCode)));
                 }
             }
 

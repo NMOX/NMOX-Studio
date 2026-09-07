@@ -1,5 +1,7 @@
 package org.nmox.studio.dbstudio.engine;
 
+import org.openide.util.NbBundle.Messages;
+
 /**
  * Assembles what DB Studio is willing to send KVASIR about a failed
  * statement — and what it will not.
@@ -17,6 +19,11 @@ package org.nmox.studio.dbstudio.engine;
  * password (which is keychain-only and never leaves the OS store), any
  * result rows, and the schema.
  */
+@Messages({
+    // chrome (shift-2970): the consent dialog shows this line verbatim.
+    "SqlErrorDisclosure_what=the SQL statement you ran (including any literal values in it), the database''s error message, and the engine kind ({0}) \u2014 no connection details, no password, and no result rows",
+    "SqlErrorDisclosure_unknownEngine=unknown"
+})
 public final class SqlErrorDisclosure {
 
     /** Enough SQL to diagnose any hand-written statement. */
@@ -45,10 +52,9 @@ public final class SqlErrorDisclosure {
      * masked.
      */
     public static String what(String engineKind) {
-        return "the SQL statement you ran (including any literal values in it),"
-                + " the database's error message, and the engine kind ("
-                + (engineKind == null || engineKind.isBlank() ? "unknown" : engineKind)
-                + ") — no connection details, no password, and no result rows";
+        return Bundle.SqlErrorDisclosure_what(
+                engineKind == null || engineKind.isBlank()
+                        ? Bundle.SqlErrorDisclosure_unknownEngine() : engineKind);
     }
 
     /** The conversation's opening turn. */

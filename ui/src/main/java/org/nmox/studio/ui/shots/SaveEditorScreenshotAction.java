@@ -27,7 +27,12 @@ import org.openide.windows.WindowManager;
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.SaveEditorScreenshotAction")
 @ActionRegistration(displayName = "#CTL_SaveEditorScreenshot", lazy = true)
 @ActionReference(path = "Menu/Tools", position = 101)
-@Messages("CTL_SaveEditorScreenshot=Save Editor Screenshot…")
+@Messages({
+    "CTL_SaveEditorScreenshot=Save Editor Screenshot…",
+    "SaveEditorScreenshotAction_nothingOpen=Not saved — nothing is open in the editor area",
+    "SaveEditorScreenshotAction_title=Save Editor Screenshot",
+    "SaveEditorScreenshotAction_what=editor screenshot"
+})
 public final class SaveEditorScreenshotAction implements ActionListener {
 
     @Override
@@ -39,11 +44,11 @@ public final class SaveEditorScreenshotAction implements ActionListener {
                 activated != null && wm.isOpenedEditorTopComponent(activated),
                 editorMode == null ? null : editorMode.getSelectedTopComponent());
         if (tab == null) {
-            StatusDisplayer.getDefault().setStatusText("Not saved — nothing is open in the editor area");
+            StatusDisplayer.getDefault().setStatusText(Bundle.SaveEditorScreenshotAction_nothingOpen());
             return;
         }
-        ShotSaver.save(tab, "Save Editor Screenshot",
-                Screenshot.editorFileName(documentName(tab), LocalDateTime.now()), "editor screenshot");
+        ShotSaver.save(tab, Bundle.SaveEditorScreenshotAction_title(),
+                Screenshot.editorFileName(documentName(tab), LocalDateTime.now()), Bundle.SaveEditorScreenshotAction_what());
     }
 
     /** The tab to paint: the activated window when it is an editor tab, else the editor area's selection. */

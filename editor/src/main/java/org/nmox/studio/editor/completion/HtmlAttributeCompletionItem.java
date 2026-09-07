@@ -18,6 +18,9 @@ import org.netbeans.spi.editor.completion.support.CompletionUtilities;
  * (and its own completion popup) comes next. Constructed per query by
  * {@link HtmlCompletionProvider} from its per-tag attribute tables.
  */
+@org.openide.util.NbBundle.Messages({
+    "HtmlAttributeCompletionItem_hint=[attr]"
+})
 public class HtmlAttributeCompletionItem implements CompletionItem {
     
     private final String attributeName;
@@ -57,7 +60,7 @@ public class HtmlAttributeCompletionItem implements CompletionItem {
         CompletionUtilities.renderHtml(
             null,
             attributeName,
-            "[attr]",
+            Bundle.HtmlAttributeCompletionItem_hint(),
             g,
             defaultFont,
             selected ? Color.WHITE : defaultColor,

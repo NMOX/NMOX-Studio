@@ -48,7 +48,15 @@ import org.openide.util.RequestProcessor;
     // did). The chord also lives in every Keymaps profile (layer.xml).
     @ActionReference(path = "Shortcuts", name = "DA-G")
 })
-@Messages("CTL_CompleteWithKvasir=Complete with KVASIR")
+@Messages({
+    "CTL_CompleteWithKvasir=Complete with KVASIR",
+    "CompleteWithKvasirAction_needsFocus=Complete with KVASIR needs an editor with focus.",
+    "CompleteWithKvasirAction_noGhostLayer=This editor has no ghost-text layer yet — reopen the file.",
+    "CompleteWithKvasirAction_couldNotRead=Complete with KVASIR could not read the editor.",
+    "CompleteWithKvasirAction_nothingToContinue=Nothing to continue — write something first.",
+    "CompleteWithKvasirAction_drafting=KVASIR is drafting a completion…",
+    "CompleteWithKvasirAction_caretMoved=The caret moved while KVASIR was drafting — completion dropped."
+})
 public final class CompleteWithKvasirAction implements ActionListener {
 
     private static final RequestProcessor RP = new RequestProcessor("KVASIR Complete", 1, true);
@@ -57,12 +65,12 @@ public final class CompleteWithKvasirAction implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         JTextComponent target = EditorRegistry.lastFocusedComponent();
         if (target == null || target.getDocument() == null) {
-            StatusDisplayer.getDefault().setStatusText("Complete with KVASIR needs an editor with focus.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CompleteWithKvasirAction_needsFocus());
             return;
         }
         GhostText ghost = GhostText.of(target);
         if (ghost == null) {
-            StatusDisplayer.getDefault().setStatusText("This editor has no ghost-text layer yet — reopen the file.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CompleteWithKvasirAction_noGhostLayer());
             return;
         }
         Document doc = target.getDocument();
@@ -83,11 +91,11 @@ public final class CompleteWithKvasirAction implements ActionListener {
                     doc.getDefaultRootElement().getElementIndex(caret));
             lineHead = doc.getText(line.getStartOffset(), caret - line.getStartOffset());
         } catch (BadLocationException ex) {
-            StatusDisplayer.getDefault().setStatusText("Complete with KVASIR could not read the editor.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CompleteWithKvasirAction_couldNotRead());
             return;
         }
         if (before.isBlank()) {
-            StatusDisplayer.getDefault().setStatusText("Nothing to continue — write something first.");
+            StatusDisplayer.getDefault().setStatusText(Bundle.CompleteWithKvasirAction_nothingToContinue());
             return;
         }
         Object mime = doc.getProperty("mimeType");
@@ -96,7 +104,7 @@ public final class CompleteWithKvasirAction implements ActionListener {
         String fileName = title == null ? "" : title.toString();
         CompletionRequest request = CompletionRequest.around(fileName, language, before, after);
         String model = AskKvasirModel.chosen();
-        StatusDisplayer.getDefault().setStatusText("KVASIR is drafting a completion…");
+        StatusDisplayer.getDefault().setStatusText(Bundle.CompleteWithKvasirAction_drafting());
         RP.post(() -> {
             KvasirCompleteEngine engine = new KvasirCompleteEngine(new KvasirClient(),
                     KvasirKeys::read,
@@ -115,7 +123,7 @@ public final class CompleteWithKvasirAction implements ActionListener {
         }
         if (target.getCaretPosition() != caret) {
             StatusDisplayer.getDefault().setStatusText(
-                    "The caret moved while KVASIR was drafting — completion dropped.");
+                    Bundle.CompleteWithKvasirAction_caretMoved());
             return;
         }
         GhostText ghost = GhostText.of(target);

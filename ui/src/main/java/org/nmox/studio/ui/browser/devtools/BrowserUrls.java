@@ -6,13 +6,16 @@ package org.nmox.studio.ui.browser.devtools;
  * (page titles are page-authored, i.e. untrusted — capped at
  * {@link #TITLE_CAP} chars, blank falls back to "Browser").
  */
+@org.openide.util.NbBundle.Messages({
+    "BrowserUrls_fallbackTitle=Browser"
+})
 public final class BrowserUrls {
 
     /** Max chars of page title shown on the tab. */
     public static final int TITLE_CAP = 30;
 
     /** The tab name when the page has none. */
-    public static final String FALLBACK_TITLE = "Browser";
+    public static final String FALLBACK_TITLE = Bundle.BrowserUrls_fallbackTitle();
 
     private BrowserUrls() {
     }

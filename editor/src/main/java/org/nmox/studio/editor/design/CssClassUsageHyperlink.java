@@ -42,6 +42,13 @@ import org.openide.util.RequestProcessor;
     @MimeRegistration(mimeType = "text/x-less", service = HyperlinkProviderExt.class, position = 155),
     @MimeRegistration(mimeType = "text/x-sass", service = HyperlinkProviderExt.class, position = 155)
 })
+@org.openide.util.NbBundle.Messages({
+    "CssClassUsageHyperlink_tooltip=Go to the class's usages in markup",
+    "CssClassUsageHyperlink_noUsages=.{0} has no class=\"\" usages in this project''s markup",
+    "CssClassUsageHyperlink_openedFirst={0} usages in {1} file(s) — opened the first",
+    "CssClassUsageHyperlink_listCapped=(list capped)",
+    "CssClassUsageHyperlink_couldNotOpen=Could not open {0}: {1}"
+})
 public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
 
     private static final RequestProcessor RP =
@@ -66,7 +73,7 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
 
     @Override
     public String getTooltipText(Document doc, int offset, HyperlinkType type) {
-        return "Go to the class's usages in markup";
+        return Bundle.CssClassUsageHyperlink_tooltip();
     }
 
     @Override
@@ -83,8 +90,7 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
                     CssClasses.findUsages(dir, name, USAGE_CAP);
             java.awt.EventQueue.invokeLater(() -> {
                 if (usages.isEmpty()) {
-                    StatusDisplayer.getDefault().setStatusText("." + name
-                            + " has no class=\"\" usages in this project's markup");
+                    StatusDisplayer.getDefault().setStatusText(Bundle.CssClassUsageHyperlink_noUsages(name));
                     return;
                 }
                 CssClasses.Usage first = usages.get(0);
@@ -95,9 +101,8 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
                         files.add(u.file().getName());
                     }
                     StatusDisplayer.getDefault().setStatusText(
-                            org.nmox.studio.core.util.PlainStatus.text(usages.size() + " usages in " + files.size()
-                            + " file(s) — opened the first"
-                            + (usages.size() >= USAGE_CAP ? " (list capped)" : "")));
+                            org.nmox.studio.core.util.PlainStatus.text(Bundle.CssClassUsageHyperlink_openedFirst(usages.size(), files.size())
+                            + (usages.size() >= USAGE_CAP ? " " + Bundle.CssClassUsageHyperlink_listCapped() : "")));
                 }
             });
         });
@@ -194,7 +199,7 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
             }
         } catch (Exception ex) {
             StatusDisplayer.getDefault().setStatusText(
-                    "Could not open " + file.getName() + ": " + ex.getMessage());
+                    Bundle.CssClassUsageHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
         }
     }
 }

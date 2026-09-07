@@ -23,6 +23,14 @@ import org.nmox.studio.rack.service.WorkspaceTrust;
  * to run — so the moment the space opens you can press START and type.
  * Spaces live under {@code ~/.nmox/learn}, marked and pre-trusted.
  */
+@org.openide.util.NbBundle.Messages({
+    "LearningSpace_sizeGb={0} GB",
+    "LearningSpace_sizeMb={0} MB",
+    "LearningSpace_sizeKb={0} KB",
+    "LearningSpace_sizeB={0} B",
+    "LearningSpace_shelfOne={0} space · {1} on disk — discard what you''ve finished, promote what grew up.",
+    "LearningSpace_shelfMany={0} spaces · {1} on disk — discard what you''ve finished, promote what grew up."
+})
 public final class LearningSpace {
 
     public static final String MARKER = ".nmox-learn";
@@ -132,11 +140,11 @@ public final class LearningSpace {
      */
     public static String shelfSummary(int count, long bytes) {
         String size = bytes >= 1024L * 1024 * 1024
-                ? String.format(java.util.Locale.ROOT, "%.1f GB", bytes / (1024.0 * 1024 * 1024))
-                : bytes >= 1024L * 1024 ? (bytes / (1024 * 1024)) + " MB"
-                : bytes >= 1024 ? (bytes / 1024) + " KB" : bytes + " B";
-        return count + (count == 1 ? " space · " : " spaces · ") + size
-                + " on disk — discard what you've finished, promote what grew up.";
+                ? Bundle.LearningSpace_sizeGb(String.format(java.util.Locale.ROOT, "%.1f", bytes / (1024.0 * 1024 * 1024)))
+                : bytes >= 1024L * 1024 ? Bundle.LearningSpace_sizeMb(String.valueOf(bytes / (1024 * 1024)))
+                : bytes >= 1024 ? Bundle.LearningSpace_sizeKb(String.valueOf(bytes / 1024)) : Bundle.LearningSpace_sizeB(String.valueOf(bytes));
+        return count == 1 ? Bundle.LearningSpace_shelfOne(String.valueOf(count), size)
+                : Bundle.LearningSpace_shelfMany(String.valueOf(count), size);
     }
 
     /**

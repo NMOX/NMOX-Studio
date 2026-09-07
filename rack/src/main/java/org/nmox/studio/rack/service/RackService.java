@@ -19,6 +19,17 @@ import org.openide.util.lookup.ServiceProvider;
  * project and the same patch.
  */
 @ServiceProvider(service = RackService.class)
+@org.openide.util.NbBundle.Messages({
+    "RackService_resumeTitle=Resume last session?",
+    "RackService_resumeOne={0} was running when the IDE closed — click to bring it back",
+    "RackService_resumeMany={0} were running when the IDE closed — click to bring them back",
+    "RackService_theCurrentProject=the current project",
+    "RackService_switchOne={0} is still running in {1}.\nStop and switch to {2}?",
+    "RackService_switchMany={0} are still running in {1}.\nStop and switch to {2}?",
+    "RackService_stoppingOne=Stopping {0} tool…",
+    "RackService_stoppingMany=Stopping {0} tools…",
+    "RackService_switchTitle=Switch Project"
+})
 public class RackService {
 
     private static final String PREF_RECENT = "recentProjects";
@@ -323,11 +334,10 @@ public class RackService {
         javax.swing.SwingUtilities.invokeLater(() -> {
             try {
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "Resume last session?",
+                        Bundle.RackService_resumeTitle(),
                         javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                        names + (count == 1 ? " was" : " were")
-                        + " running when the IDE closed — click to bring "
-                        + (count == 1 ? "it" : "them") + " back",
+                        count == 1 ? Bundle.RackService_resumeOne(names.toString())
+                                : Bundle.RackService_resumeMany(names.toString()),
                         e -> resumeSession(rack, matches, recreate));
             } catch (RuntimeException | LinkageError ignored) {
                 // notifications unavailable (tests, stripped platform)
@@ -567,13 +577,14 @@ public class RackService {
             }
             names.append(d.getTitle());
         }
-        String oldName = r.getProjectDir() != null ? r.getProjectDir().getName() : "the current project";
-        String message = names + (live.size() == 1 ? " is" : " are") + " still running in "
-                + oldName + ".\nStop and switch to " + newDir.getName() + "?";
+        String oldName = r.getProjectDir() != null ? r.getProjectDir().getName() : Bundle.RackService_theCurrentProject();
+        String message = live.size() == 1
+                ? Bundle.RackService_switchOne(names.toString(), oldName, newDir.getName())
+                : Bundle.RackService_switchMany(names.toString(), oldName, newDir.getName());
         if (!switchConfirmer.test(message)) {
             return; // user chose to stay
         }
-        status("Stopping " + live.size() + (live.size() == 1 ? " tool…" : " tools…"));
+        status(live.size() == 1 ? Bundle.RackService_stoppingOne(String.valueOf(live.size())) : Bundle.RackService_stoppingMany(String.valueOf(live.size())));
         r.stopAsync(live, proceed);
     }
 
@@ -591,7 +602,7 @@ public class RackService {
             return true; // no dialog possible; behave as before, but deterministically
         }
         Object answer = org.openide.DialogDisplayer.getDefault().notify(
-                new org.openide.NotifyDescriptor.Confirmation(message, "Switch Project",
+                new org.openide.NotifyDescriptor.Confirmation(message, Bundle.RackService_switchTitle(),
                         org.openide.NotifyDescriptor.OK_CANCEL_OPTION,
                         org.openide.NotifyDescriptor.WARNING_MESSAGE));
         return answer == org.openide.NotifyDescriptor.OK_OPTION;

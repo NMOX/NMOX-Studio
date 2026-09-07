@@ -66,7 +66,46 @@ import org.openide.windows.WindowManager;
 @Messages({
     "CTL_ProjectExplorerAction=Workbench",
     "CTL_ProjectExplorerTopComponent=Workbench",
-    "HINT_ProjectExplorerTopComponent=Your home base: current project, open and recent files, projects and tooling"
+    "HINT_ProjectExplorerTopComponent=Your home base: current project, open and recent files, projects and tooling",
+    "ProjectExplorerTopComponent_detecting=detecting…",
+    "ProjectExplorerTopComponent_newProject=New Project…",
+    "ProjectExplorerTopComponent_open=Open…",
+    "ProjectExplorerTopComponent_openTooltip=Aim the whole IDE — rack, studio, workbench — at a project directory",
+    "ProjectExplorerTopComponent_noToolchain=no toolchain yet",
+    "ProjectExplorerTopComponent_running=RUNNING",
+    "ProjectExplorerTopComponent_clickToOpen=— click to open in the Browser",
+    "ProjectExplorerTopComponent_runningStopEnds=running — Stop ends it",
+    "ProjectExplorerTopComponent_openButton=Open",
+    "ProjectExplorerTopComponent_openIn=Open {0} in the Browser",
+    "ProjectExplorerTopComponent_stopButton=Stop",
+    "ProjectExplorerTopComponent_stopRun=Stop {0}",
+    "ProjectExplorerTopComponent_stoppedStatus=Stopped: {0}",
+    "ProjectExplorerTopComponent_openFiles=OPEN FILES",
+    "ProjectExplorerTopComponent_nothingOpen=nothing open — pick up where you left off below",
+    "ProjectExplorerTopComponent_recentFiles=RECENT FILES",
+    "ProjectExplorerTopComponent_forgetFile=Forget — the file stays on disk",
+    "ProjectExplorerTopComponent_filesGather=files you open will gather here",
+    "ProjectExplorerTopComponent_projects=PROJECTS",
+    "ProjectExplorerTopComponent_aimed=(aimed)",
+    "ProjectExplorerTopComponent_clickToAim=— click to aim the IDE here",
+    "ProjectExplorerTopComponent_forgetProject=Forget — the project stays on disk",
+    "ProjectExplorerTopComponent_tooling=TOOLING",
+    "ProjectExplorerTopComponent_taskRack=Task Rack",
+    "ProjectExplorerTopComponent_taskRackSub=devices, cables, pipelines — Tab flips it",
+    "ProjectExplorerTopComponent_taskRackTip=The Reason-style rack of task devices",
+    "ProjectExplorerTopComponent_projectStudio=Project Studio",
+    "ProjectExplorerTopComponent_projectStudioSub=templates, file CRUD, package.json",
+    "ProjectExplorerTopComponent_projectStudioTip=Create and configure projects",
+    "ProjectExplorerTopComponent_infraDesigner=Infra Designer",
+    "ProjectExplorerTopComponent_infraDesignerSub=DigitalOcean · Hetzner · Cloudflare flows",
+    "ProjectExplorerTopComponent_infraDesignerTip=Design and deploy infrastructure Node-RED style",
+    "ProjectExplorerTopComponent_dockerManager=Docker Manager",
+    "ProjectExplorerTopComponent_dockerManagerSub=containers, images, disk reclaim, dockerize",
+    "ProjectExplorerTopComponent_dockerManagerTip=The Docker Panel — HARBOR's control room",
+    "ProjectExplorerTopComponent_terminal=Terminal",
+    "ProjectExplorerTopComponent_terminalSub=phosphor shell in the project directory",
+    "ProjectExplorerTopComponent_terminalTip=Black glass, lime text",
+    "ProjectExplorerTopComponent_openProjectDir=Open Project Directory"
 })
 public final class ProjectExplorerTopComponent extends TopComponent {
 
@@ -313,7 +352,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         JPanel chips = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         chips.setBackground(BG);
         chips.setAlignmentX(LEFT_ALIGNMENT);
-        chips.add(chip("detecting…", TEXT_DIM));
+        chips.add(chip(Bundle.ProjectExplorerTopComponent_detecting(), TEXT_DIM));
         header.add(chips);
         // Toolchain detection walks the project directory (File.list on every
         // manifest lane), which on a fresh $HOME aim would touch the
@@ -331,10 +370,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         actions.setBackground(BG);
         actions.setAlignmentX(LEFT_ALIGNMENT);
-        JButton fresh = new JButton("New Project…");
+        JButton fresh = new JButton(Bundle.ProjectExplorerTopComponent_newProject());
         fresh.addActionListener(e -> newProject());
-        JButton open = new JButton("Open…");
-        open.setToolTipText("Aim the whole IDE — rack, studio, workbench — at a project directory");
+        JButton open = new JButton(Bundle.ProjectExplorerTopComponent_open());
+        open.setToolTipText(Bundle.ProjectExplorerTopComponent_openTooltip());
         open.addActionListener(e -> openProjectDialog());
         actions.add(fresh);
         actions.add(open);
@@ -382,7 +421,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             chips.removeAll();
             if (kinds.isEmpty()) {
-                chips.add(chip("no toolchain yet", TEXT_DIM));
+                chips.add(chip(Bundle.ProjectExplorerTopComponent_noToolchain(), TEXT_DIM));
             } else {
                 for (String kind : kinds) {
                     chips.add(chip(kind, ACCENT));
@@ -412,13 +451,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         if (rows.isEmpty()) {
             return;
         }
-        section("RUNNING");
+        section(Bundle.ProjectExplorerTopComponent_running());
         for (WorkbenchRunning.Row r : rows) {
             Runnable open = r.openable()
                     ? () -> org.nmox.studio.rack.service.ServingLinks.open(r.url())
                     : () -> { };
             JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), false, ACCENT,
-                    r.openable() ? r.url() + "  — click to open in the Browser" : "running — Stop ends it",
+                    r.openable() ? r.url() + "  " + Bundle.ProjectExplorerTopComponent_clickToOpen() : Bundle.ProjectExplorerTopComponent_runningStopEnds(),
                     open);
             if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
                 // the row itself is named for assistive technology; its
@@ -427,16 +466,16 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 rowPanel.getAccessibleContext().setAccessibleName(
                         r.title() + " — " + WorkbenchRunning.subtitle(r));
                 if (r.openable()) {
-                    javax.swing.JButton openButton = flatButton("Open", "Open " + r.url() + " in the Browser");
+                    javax.swing.JButton openButton = flatButton(Bundle.ProjectExplorerTopComponent_openButton(), Bundle.ProjectExplorerTopComponent_openIn(r.url()));
                     openButton.addActionListener(e -> open.run());
                     rowPanel.add(openButton);
                 }
             }
             if (r.stoppable() && sub != null && sub.getParent() instanceof JPanel rowPanel) {
-                javax.swing.JButton stop = flatButton("Stop", "Stop " + r.title());
+                javax.swing.JButton stop = flatButton(Bundle.ProjectExplorerTopComponent_stopButton(), Bundle.ProjectExplorerTopComponent_stopRun(r.title()));
                 stop.addActionListener(e -> {
                     LiveRuns.stop(r.runId());
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText("Stopped: " + r.title());
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(Bundle.ProjectExplorerTopComponent_stoppedStatus(r.title()));
                 });
                 rowPanel.add(stop);
             }
@@ -456,7 +495,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     /** Editor tabs open right now; the active one leads in bold. */
     private void addOpenFiles() {
-        section("OPEN FILES");
+        section(Bundle.ProjectExplorerTopComponent_openFiles());
         TopComponent active = TopComponent.getRegistry().getActivated();
         int count = 0;
         java.util.Set<String> listed = new java.util.HashSet<>();
@@ -489,7 +528,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             count++;
         }
         if (count == 0) {
-            emptyRow("nothing open — pick up where you left off below");
+            emptyRow(Bundle.ProjectExplorerTopComponent_nothingOpen());
         }
     }
 
@@ -510,7 +549,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     /** The trail: recently touched files not currently open. */
     private void addRecentFiles() {
-        section("RECENT FILES");
+        section(Bundle.ProjectExplorerTopComponent_recentFiles());
         java.util.Set<String> openPaths = new java.util.HashSet<>();
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
             DataObject dob = tc.getLookup().lookup(DataObject.class);
@@ -533,18 +572,18 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             row(file.getName(), file.getParent(), false, null,
                     file.getAbsolutePath(), () -> openFile(file),
-                    "Forget — the file stays on disk",
+                    Bundle.ProjectExplorerTopComponent_forgetFile(),
                     () -> RecentFiles.forget(file, refreshCoalescer::request));
         }
         if (count == 0) {
-            emptyRow("files you open will gather here");
+            emptyRow(Bundle.ProjectExplorerTopComponent_filesGather());
         }
         RecentFiles.pruneAsync(refreshCoalescer::request);
     }
 
     /** Recent projects; the aimed one carries the green dot. */
     private void addProjects() {
-        section("PROJECTS");
+        section(Bundle.ProjectExplorerTopComponent_projects());
         File current = projectDir();
         org.nmox.studio.core.spi.ProjectAim aim =
                 org.nmox.studio.core.spi.ProjectAim.find();
@@ -559,11 +598,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // walks the directory) resolves off the EDT and refines it
             JLabel sub = row(dir.getName(), dir.getParent(),
                     aimed, aimed ? ACCENT : null,
-                    dir.getAbsolutePath() + (aimed ? "  (aimed)" : "  — click to aim the IDE here"),
+                    dir.getAbsolutePath() + "  " + (aimed ? Bundle.ProjectExplorerTopComponent_aimed() : Bundle.ProjectExplorerTopComponent_clickToAim()),
                     () -> aimAt(dir),
                     // the aimed project re-adds itself to the list head, so
                     // forgetting it would be a lie — no menu on that row
-                    aimed ? null : "Forget — the project stays on disk",
+                    aimed ? null : Bundle.ProjectExplorerTopComponent_forgetProject(),
                     aimed ? null : () -> org.openide.util.RequestProcessor.getDefault().post(() -> {
                         // prefs flush is file I/O; keep it off the EDT
                         org.nmox.studio.core.spi.ProjectAim a =
@@ -589,18 +628,18 @@ public final class ProjectExplorerTopComponent extends TopComponent {
 
     /** The shelf: every workshop in the building, one click each. */
     private void addTooling() {
-        section("TOOLING");
-        row("Task Rack", "devices, cables, pipelines — Tab flips it",
-                false, null, "The Reason-style rack of task devices",
+        section(Bundle.ProjectExplorerTopComponent_tooling());
+        row(Bundle.ProjectExplorerTopComponent_taskRack(), Bundle.ProjectExplorerTopComponent_taskRackSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_taskRackTip(),
                 () -> openWindow("RackTopComponent"));
-        row("Project Studio", "templates, file CRUD, package.json",
-                false, null, "Create and configure projects",
+        row(Bundle.ProjectExplorerTopComponent_projectStudio(), Bundle.ProjectExplorerTopComponent_projectStudioSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_projectStudioTip(),
                 () -> openWindow("ProjectStudioTopComponent"));
-        row("Infra Designer", "DigitalOcean · Hetzner · Cloudflare flows",
-                false, null, "Design and deploy infrastructure Node-RED style",
+        row(Bundle.ProjectExplorerTopComponent_infraDesigner(), Bundle.ProjectExplorerTopComponent_infraDesignerSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_infraDesignerTip(),
                 () -> openWindow("InfraDesignerTopComponent"));
-        row("Docker Manager", "containers, images, disk reclaim, dockerize",
-                false, null, "The Docker Panel — HARBOR's control room",
+        row(Bundle.ProjectExplorerTopComponent_dockerManager(), Bundle.ProjectExplorerTopComponent_dockerManagerSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_dockerManagerTip(),
                 () -> {
                     try {
                         org.nmox.studio.rack.docker.DockerPanelTopComponent.openPanel();
@@ -609,8 +648,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                         // init needs the window system; nothing to open
                     }
                 });
-        row("Terminal", "phosphor shell in the project directory",
-                false, null, "Black glass, lime text", this::openTerminal);
+        row(Bundle.ProjectExplorerTopComponent_terminal(), Bundle.ProjectExplorerTopComponent_terminalSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_terminalTip(), this::openTerminal);
     }
 
     // ---- actions ----
@@ -634,7 +673,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private void openProjectDialog() {
         JFileChooser chooser = new JFileChooser(projectDir());
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle("Open Project Directory");
+        chooser.setDialogTitle(Bundle.ProjectExplorerTopComponent_openProjectDir());
         if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             aimAt(chooser.getSelectedFile());
         }

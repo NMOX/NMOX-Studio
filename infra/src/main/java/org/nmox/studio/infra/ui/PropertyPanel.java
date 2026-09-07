@@ -25,6 +25,13 @@ import org.nmox.studio.infra.model.NodeKind;
  * immediately and nudge the graph so persistence and the cost total
  * follow along.
  */
+@org.openide.util.NbBundle.Messages({
+    "PropertyPanel_noSelection=No selection",
+    "PropertyPanel_nameRow=Name",
+    "PropertyPanel_labelFieldName=Node label",
+    "PropertyPanel_liveId=live: {0}",
+    "PropertyPanel_nodeCost=≈ ${0}/mo   (design: ${1}/mo)"
+})
 public class PropertyPanel extends JPanel {
 
     private final InfraGraph graph;
@@ -67,7 +74,7 @@ public class PropertyPanel extends JPanel {
     }
 
     private final JPanel form = new ViewportWidthForm();
-    private final JLabel header = new JLabel("No selection");
+    private final JLabel header = new JLabel(Bundle.PropertyPanel_noSelection());
     private final JLabel costLabel = new JLabel(" ");
     private InfraNode current;
 
@@ -100,7 +107,7 @@ public class PropertyPanel extends JPanel {
         this.current = node;
         form.removeAll();
         if (node == null) {
-            header.setText("No selection");
+            header.setText(Bundle.PropertyPanel_noSelection());
             costLabel.setText(" ");
         } else {
             header.setText(PlainText.plain(node.kind.getDisplayName()));
@@ -111,12 +118,12 @@ public class PropertyPanel extends JPanel {
             gc.fill = GridBagConstraints.HORIZONTAL;
             gc.insets = new Insets(3, 12, 3, 12);
 
-            addRow(gc, "Name", labelField(node));
+            addRow(gc, Bundle.PropertyPanel_nameRow(), labelField(node));
             for (NodeKind.Prop prop : node.kind.getProps()) {
                 addRow(gc, prop.label(), editorFor(node, prop));
             }
             if (node.doId != null) {
-                JLabel live = new JLabel("live: " + node.doId);
+                JLabel live = new JLabel(Bundle.PropertyPanel_liveId(node.doId));
                 live.setForeground(new Color(0x4E, 0xC9, 0x8B));
                 gc.gridwidth = 2;
                 form.add(live, gc);
@@ -141,7 +148,7 @@ public class PropertyPanel extends JPanel {
 
     private JTextField labelField(InfraNode node) {
         JTextField field = new JTextField(node.label);
-        field.getAccessibleContext().setAccessibleName("Node label");
+        field.getAccessibleContext().setAccessibleName(Bundle.PropertyPanel_labelFieldName());
         field.getDocument().addDocumentListener(new SimpleDocListener(() -> {
             node.label = field.getText().trim();
             graph.touch();
@@ -188,8 +195,9 @@ public class PropertyPanel extends JPanel {
 
     private void refreshCost() {
         if (current != null) {
-            costLabel.setText(PlainText.plain(String.format("≈ $%.2f/mo   (design: $%.2f/mo)",
-                    current.monthlyUsd(), graph.totalMonthlyUsd())));
+            costLabel.setText(PlainText.plain(Bundle.PropertyPanel_nodeCost(
+                    String.format("%.2f", current.monthlyUsd()),
+                    String.format("%.2f", graph.totalMonthlyUsd()))));
         }
     }
 

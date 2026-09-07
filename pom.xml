@@ -218,6 +218,13 @@
                 -->
                 <configuration>
                     <excludes>
+                        <!-- Generated message accessors (v2.97.0, the l10n arc):
+                             the NbBundle annotation processor emits one method
+                             per key — 2,826 of them across the product — each a
+                             one-line lookup with no branch. They are generated
+                             code, not logic: counting them measures how many
+                             sentences a module ships, not how well it is tested. -->
+                        <exclude>**/Bundle.class</exclude>
                         <!-- Dockable windows and modal dialogs (NetBeans window system) -->
                         <exclude>**/*TopComponent.class</exclude>
                         <exclude>**/*TopComponent$*.class</exclude>

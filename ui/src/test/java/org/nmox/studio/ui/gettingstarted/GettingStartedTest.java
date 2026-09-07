@@ -111,7 +111,15 @@ class GettingStartedTest {
     void firstStepsAndTheServeListener() throws Exception {
         String src = Files.readAllLines(Path.of("src/main/java/org/nmox/studio/ui/MainWindow.java"))
                 .stream().filter(l -> !l.strip().startsWith("//") && !l.strip().startsWith("*")).collect(java.util.stream.Collectors.joining("\n"));
-        assertThat(src).contains("\"FIRST STEPS\"").doesNotContain("\"GETTING STARTED\"");
+        // v2.97.0 (the l10n arc): the heading is a bundle value; read it there
+        java.util.Properties english = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(
+                Path.of("target/classes/org/nmox/studio/ui/Bundle.properties"))) {
+            english.load(in);
+        }
+        assertThat(english.getProperty("MainWindow_columnFirstSteps", ""))
+                .isEqualTo("FIRST STEPS");
+        assertThat(english.values()).as("the old heading is gone").doesNotContain("GETTING STARTED");
         assertThat(src).as("a server goes live while the user looks at the editor: the Welcome listens for its whole OPEN life")
                 .contains("live.addListener(servingsListener)").contains("liveClosed.removeListener(servingsListener)")
                 .contains("GettingStartedSignals.serverAppeared()");

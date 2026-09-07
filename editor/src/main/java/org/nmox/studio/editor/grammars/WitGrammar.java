@@ -12,7 +12,8 @@ import org.openide.filesystems.MIMEResolver;
  * sha256-pinned.
  */
 @GrammarRegistration(grammar = "wit.tmLanguage.json", mimeType = "text/x-wit")
-@MIMEResolver.ExtensionRegistration(displayName = "WIT", mimeType = "text/x-wit", extension = {"wit"}, position = 2458)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_WitGrammar_LOADER", mimeType = "text/x-wit", extension = {"wit"}, position = 2458)
+@org.openide.util.NbBundle.Messages("LBL_WitGrammar_LOADER=WIT")
 public final class WitGrammar {
 
     private WitGrammar() {

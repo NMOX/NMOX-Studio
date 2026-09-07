@@ -19,6 +19,10 @@ import java.util.List;
  * (which file and line rendered each element) is the whole story, and
  * a production build offers nothing at all.
  */
+@org.openide.util.NbBundle.Messages({
+    "SvelteSnapshotParser_lineAt=line {0}:{1}",
+    "SvelteSnapshotParser_unknownFile=(unknown)"
+})
 public final class SvelteSnapshotParser {
 
     /** One rendered source location: line/column plus the element's DOM path. */
@@ -36,7 +40,7 @@ public final class SvelteSnapshotParser {
 
         @Override
         public String toString() {
-            return "line " + line + ":" + column;
+            return Bundle.SvelteSnapshotParser_lineAt(String.valueOf(line), String.valueOf(column));
         }
     }
 
@@ -107,9 +111,9 @@ public final class SvelteSnapshotParser {
     }
 
     private static SvelteFile file(java.util.Map<String, Object> o) {
-        String name = JsonLite.str(o, "file", "(unknown)");
+        String name = JsonLite.str(o, "file", Bundle.SvelteSnapshotParser_unknownFile());
         if (name.isBlank()) {
-            name = "(unknown)";
+            name = Bundle.SvelteSnapshotParser_unknownFile();
         }
         if (name.length() > 500) {
             name = name.substring(0, 500);

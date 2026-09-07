@@ -13,6 +13,7 @@ import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.dbstudio.model.TableInfo;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The bridge to the NetBeans Database Explorer (the Services window):
@@ -38,6 +39,13 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * lock against), never throws, never on the EDT —
  * {@code ConnectionManager.connect} itself refuses the EDT.
  */
+@Messages({
+    // chrome (shift-2970): the reasons this backend speaks to the user.
+    "ServicesBackend_servicesHint=connect \"{0}\" once in the Services window \u2014 NetBeans keeps its driver and credentials",
+    "ServicesBackend_notConnected=Not connected: {0}",
+    "ServicesBackend_causeWithHint={0} \u2014 {1}",
+    "ServicesBackend_couldNotOpen=Could not open connection: {0}"
+})
 public final class ServicesBackend implements DbBackend {
 
     /**
@@ -125,11 +133,10 @@ public final class ServicesBackend implements DbBackend {
     }
 
     private String notConnectedMessage(Exception cause) {
-        String hint = "connect \"" + connection.getDisplayName()
-                + "\" once in the Services window — NetBeans keeps its driver and credentials";
+        String hint = Bundle.ServicesBackend_servicesHint(connection.getDisplayName());
         return cause == null
-                ? "Not connected: " + hint
-                : JdbcCore.humanize(cause) + " — " + hint;
+                ? Bundle.ServicesBackend_notConnected(hint)
+                : Bundle.ServicesBackend_causeWithHint(JdbcCore.humanize(cause), hint);
     }
 
     /** True while the explorer's shared connection is up and not known-dead. */
@@ -204,7 +211,7 @@ public final class ServicesBackend implements DbBackend {
         String openError = open();
         if (openError != null) {
             results.add(JdbcCore.errorResult(statements.get(0), 0,
-                    "Could not open connection: " + openError));
+                    Bundle.ServicesBackend_couldNotOpen(openError)));
             return results;
         }
         return JdbcCore.runStatements(connection.getJDBCConnection(),

@@ -9,7 +9,8 @@ import org.openide.filesystems.MIMEResolver;
  * textmate-lexer module does the tokenizing and theme mapping.
  */
 @GrammarRegistration(grammar = "proto.tmLanguage.json", mimeType = "text/x-protobuf")
-@MIMEResolver.ExtensionRegistration(displayName = "Protocol Buffers", mimeType = "text/x-protobuf", extension = {"proto"}, position = 2310)
+@MIMEResolver.ExtensionRegistration(displayName = "#LBL_ProtoGrammar_LOADER", mimeType = "text/x-protobuf", extension = {"proto"}, position = 2310)
+@org.openide.util.NbBundle.Messages("LBL_ProtoGrammar_LOADER=Protocol Buffers")
 public final class ProtoGrammar {
 
     private ProtoGrammar() {
