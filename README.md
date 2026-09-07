@@ -48,7 +48,9 @@ with KVASIR** (⌥⌘G) paints a completion as ghost text, Tab inserts;
 **Draft Commit Message** writes from your staged diff; and the rack's
 KVASIR device explains a failed run, API response, SQL error or page
 error. Every flow earns its own consent naming exactly what leaves;
-nothing is sent without a gesture; keys live in the OS keychain.
+nothing is sent without a gesture; keys live in the OS keychain. **Works
+with Claude, ChatGPT or Gemini** — your key, your pick, one switch for
+every face.
 
 **A polyglot editor that came to work.** 87 TextMate grammars through
 NetBeans CSL, LSP with ordered fallbacks, project-wide Go to Symbol
@@ -403,6 +405,10 @@ CHECK verdict that reads gofmt's file list, since gofmt itself exits 0
 even when files need formatting.
 
 ### 🤖 The AI faces
+**Your AI, your key.** KVASIR speaks three wires — Claude (Anthropic),
+ChatGPT (OpenAI) and Gemini (Google); pick one with **KEY…** on the
+device or in Options ▸ Rack & Cloud, and every face below follows.
+Consent is granted per provider; keys never cross providers.
 **Ask KVASIR** — select code in any editor, right-click, and hold a
 conversation about it; follow-ups carry the full history. **Edit with
 KVASIR** — say what to change and approve the rewrite in a before/after

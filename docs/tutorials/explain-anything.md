@@ -13,9 +13,11 @@ credential headers dropped and passwords never in reach).
 
 ## Before you start
 
-One Anthropic API key covers all four faces: set it with **KEY…** on
-the KVASIR faceplate (it goes to your OS keychain), or export
-`ANTHROPIC_API_KEY`. No key, no call — every face says so honestly.
+One key covers all four faces — from whichever provider you choose:
+Claude (Anthropic), ChatGPT (OpenAI) or Gemini (Google). Press **KEY…**
+on the KVASIR faceplate to pick the provider and store its key in your
+OS keychain, or export `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or
+`GEMINI_API_KEY`. No key, no call — every face says so honestly.
 
 ## The four faces
 

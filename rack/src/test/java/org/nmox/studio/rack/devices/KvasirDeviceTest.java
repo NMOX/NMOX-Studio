@@ -157,6 +157,39 @@ class KvasirDeviceTest {
         assertThat(seenModel[0]).isEqualTo(KvasirClient.MODEL_SONNET);
     }
 
+    @Test
+    @DisplayName("v2.96.0: the knob's depth resolves through the configured provider — DEEP on ChatGPT is gpt-5 at the OpenAI endpoint")
+    void knobResolvesThroughProvider() throws IOException {
+        String[] seenUrl = new String[1];
+        String[] seenModel = new String[1];
+        KvasirClient.Transport capturing = (url, body, key) -> {
+            seenUrl[0] = url;
+            seenModel[0] = new JSONObject(body).getString("model");
+            return new JSONObject().put("choices", new org.json.JSONArray().put(new JSONObject()
+                    .put("message", new JSONObject().put("content", "GPT says X"))
+                    .put("finish_reason", "stop"))).toString();
+        };
+        org.nmox.studio.rack.engine.KvasirProvider.remember(
+                org.nmox.studio.rack.engine.KvasirProvider.OPENAI);
+        try {
+            KvasirDevice device = new KvasirDevice();
+            device.client = new KvasirClient(capturing,
+                    org.nmox.studio.rack.engine.KvasirProvider::configured);
+            device.failureSource = () -> Optional.of(ctx());
+            device.keySource = () -> "sk-test".toCharArray();
+            device.applyState(java.util.Map.of("model", "1"));
+            String verdict = device.consult(true);
+            assertThat(seenUrl[0]).isEqualTo(org.nmox.studio.rack.engine.KvasirProvider.OPENAI.endpoint("gpt-5"))
+                    .endsWith("/v1/chat/completions");
+            assertThat(seenModel[0]).isEqualTo(org.nmox.studio.rack.engine.KvasirProvider.OPENAI
+                    .model(org.nmox.studio.rack.engine.KvasirProvider.Depth.DEEP));
+            assertThat(verdict).isEqualTo("GPT says X");
+        } finally {
+            org.nmox.studio.rack.engine.KvasirProvider.remember(
+                    org.nmox.studio.rack.engine.KvasirProvider.ANTHROPIC);
+        }
+    }
+
     // ---- v1.91.0: auto-explain by cable ----
 
     @Test

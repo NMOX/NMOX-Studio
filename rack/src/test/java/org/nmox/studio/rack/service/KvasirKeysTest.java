@@ -5,6 +5,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.nmox.studio.rack.engine.KvasirProvider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,14 +21,57 @@ class KvasirKeysTest {
     @BeforeEach
     void forceFallbacks() {
         KvasirKeys.keyringUsable = false;
-        KvasirKeys.delete();
+        KvasirProvider.remember(KvasirProvider.ANTHROPIC);
+        KvasirKeys.deleteAllForTest();
         KvasirKeys.env = name -> null; // no env keys unless a test adds them
     }
 
     @AfterEach
     void restore() {
-        KvasirKeys.delete();
+        KvasirKeys.deleteAllForTest();
+        KvasirProvider.remember(KvasirProvider.ANTHROPIC);
         KvasirKeys.env = System::getenv;
+    }
+
+    // ---- v2.96.0: one key per provider ----
+
+    @Test
+    @DisplayName("v2.96.0: keys never cross providers — an OpenAI key is never Google's or Claude's")
+    void keysNeverCrossProviders() {
+        KvasirKeys.save(KvasirProvider.OPENAI, "sk-openai".toCharArray());
+        KvasirKeys.save(KvasirProvider.GOOGLE, "AIza-google".toCharArray());
+        assertThat(KvasirKeys.read(KvasirProvider.ANTHROPIC)).isNull();
+        assertThat(KvasirKeys.read(KvasirProvider.OPENAI)).isEqualTo("sk-openai".toCharArray());
+        assertThat(KvasirKeys.read(KvasirProvider.GOOGLE)).isEqualTo("AIza-google".toCharArray());
+        KvasirKeys.delete(KvasirProvider.OPENAI);
+        assertThat(KvasirKeys.read(KvasirProvider.OPENAI)).isNull();
+        assertThat(KvasirKeys.read(KvasirProvider.GOOGLE)).as("a delete is per provider")
+                .isEqualTo("AIza-google".toCharArray());
+    }
+
+    @Test
+    @DisplayName("v2.96.0: each provider reads only its own environment variables")
+    void envPerProvider() {
+        KvasirKeys.env = Map.of("GEMINI_API_KEY", "AIza-env", "OPENAI_API_KEY", "sk-env")::get;
+        assertThat(KvasirKeys.read(KvasirProvider.GOOGLE)).isEqualTo("AIza-env".toCharArray());
+        assertThat(KvasirKeys.read(KvasirProvider.OPENAI)).isEqualTo("sk-env".toCharArray());
+        assertThat(KvasirKeys.read(KvasirProvider.ANTHROPIC)).as("no Anthropic var set").isNull();
+        KvasirKeys.env = Map.of("GOOGLE_API_KEY", "AIza-google-var")::get;
+        assertThat(KvasirKeys.read(KvasirProvider.GOOGLE)).as("the second Google name").isEqualTo("AIza-google-var".toCharArray());
+    }
+
+    @Test
+    @DisplayName("v2.96.0: the no-argument read follows the configured provider")
+    void readFollowsConfiguredProvider() {
+        KvasirKeys.save(KvasirProvider.ANTHROPIC, "sk-ant".toCharArray());
+        KvasirKeys.save(KvasirProvider.GOOGLE, "AIza".toCharArray());
+        assertThat(KvasirKeys.read()).isEqualTo("sk-ant".toCharArray());
+        KvasirProvider.remember(KvasirProvider.GOOGLE);
+        assertThat(KvasirKeys.read()).isEqualTo("AIza".toCharArray());
+        assertThat(KvasirKeys.hasKey()).isTrue();
+        KvasirProvider.remember(KvasirProvider.OPENAI);
+        assertThat(KvasirKeys.read()).as("no OpenAI key stored").isNull();
+        assertThat(KvasirKeys.hasKey()).isFalse();
     }
 
     @Test

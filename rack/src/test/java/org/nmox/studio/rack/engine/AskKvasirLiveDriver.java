@@ -16,6 +16,87 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AskKvasirLiveDriver {
 
+    /** A client pinned to one provider over the real HTTP transport. */
+    private static KvasirClient live(KvasirProvider p) {
+        return new KvasirClient(KvasirClient.httpTransport(), () -> p);
+    }
+
+    /**
+     * v2.96.0: the Gemini wire, live ({@code -Dnmox.kvasir.live.google=1}
+     * with GEMINI_API_KEY/GOOGLE_API_KEY in the environment): a code
+     * question, then a two-turn conversation whose follow-up only resolves
+     * if the user/model role mapping kept the history intact.
+     */
+    @Test
+    @EnabledIfSystemProperty(named = "nmox.kvasir.live.google", matches = ".+")
+    void liveGemini() {
+        AskKvasirEngine engine = new AskKvasirEngine(live(KvasirProvider.GOOGLE),
+                () -> KvasirKeys.read(KvasirProvider.GOOGLE), unused -> true);
+        KvasirConversation convo = new KvasirConversation(new CodeQuestion(
+                "counter.clar", "text/x-clarity",
+                "(define-constant err-owner-only (err u100))\n"
+                + "(define-public (reset)\n  (begin\n"
+                + "    (asserts! (is-eq tx-sender contract-owner) err-owner-only)\n"
+                + "    (var-set count u0)\n    (ok true)))",
+                ""));
+        AskKvasirEngine.Result first = engine.converse(convo,
+                "What does a non-owner get back from this call?",
+                KvasirProvider.GOOGLE.model(KvasirProvider.Depth.FAST));
+        System.out.println("LIVE GEMINI T1: " + first.status() + "\n" + first.text());
+        assertThat(first.status()).isEqualTo(AskKvasirEngine.Status.ANSWERED);
+        AskKvasirEngine.Result second = engine.converse(convo,
+                "What is the numeric code inside that error, as a bare number?",
+                KvasirProvider.GOOGLE.model(KvasirProvider.Depth.FAST));
+        System.out.println("LIVE GEMINI T2: " + second.status() + "\n" + second.text());
+        assertThat(second.status()).isEqualTo(AskKvasirEngine.Status.ANSWERED);
+        assertThat(second.text()).contains("100");
+        assertThat(convo.exchanges()).isEqualTo(2);
+    }
+
+    /** The Gemini DEEP model and a pinned newer FAST id, live, one question each. */
+    @Test
+    @EnabledIfSystemProperty(named = "nmox.kvasir.live.google", matches = ".+")
+    void liveGeminiModels() {
+        AskKvasirEngine engine = new AskKvasirEngine(live(KvasirProvider.GOOGLE),
+                () -> KvasirKeys.read(KvasirProvider.GOOGLE), unused -> true);
+        CodeQuestion q = new CodeQuestion("a.js", "text/javascript",
+                "const n = [1,2,3].reduce((a, b) => a + b, 0);", "What is n? Answer with the number only.");
+        for (String model : new String[] {
+            KvasirProvider.GOOGLE.model(KvasirProvider.Depth.DEEP),
+            System.getProperty("nmox.kvasir.live.google.fast", KvasirProvider.GOOGLE.model(KvasirProvider.Depth.FAST))}) {
+            AskKvasirEngine.Result r = engine.answer(q, model);
+            System.out.println("LIVE GEMINI " + model + ": " + r.status() + " -> " + r.text());
+            assertThat(r.status()).as(model).isEqualTo(AskKvasirEngine.Status.ANSWERED);
+            assertThat(r.text()).contains("6");
+        }
+    }
+
+    /** v2.96.0: the OpenAI wire, live ({@code -Dnmox.kvasir.live.openai=1} with OPENAI_API_KEY). */
+    @Test
+    @EnabledIfSystemProperty(named = "nmox.kvasir.live.openai", matches = ".+")
+    void liveOpenAi() {
+        AskKvasirEngine engine = new AskKvasirEngine(live(KvasirProvider.OPENAI),
+                () -> KvasirKeys.read(KvasirProvider.OPENAI), unused -> true);
+        KvasirConversation convo = new KvasirConversation(new CodeQuestion(
+                "counter.clar", "text/x-clarity",
+                "(define-constant err-owner-only (err u100))\n"
+                + "(define-public (reset)\n  (begin\n"
+                + "    (asserts! (is-eq tx-sender contract-owner) err-owner-only)\n"
+                + "    (var-set count u0)\n    (ok true)))",
+                ""));
+        AskKvasirEngine.Result first = engine.converse(convo,
+                "What does a non-owner get back from this call?",
+                KvasirProvider.OPENAI.model(KvasirProvider.Depth.FAST));
+        System.out.println("LIVE OPENAI T1: " + first.status() + "\n" + first.text());
+        assertThat(first.status()).isEqualTo(AskKvasirEngine.Status.ANSWERED);
+        AskKvasirEngine.Result second = engine.converse(convo,
+                "What is the numeric code inside that error, as a bare number?",
+                KvasirProvider.OPENAI.model(KvasirProvider.Depth.FAST));
+        System.out.println("LIVE OPENAI T2: " + second.status() + "\n" + second.text());
+        assertThat(second.status()).isEqualTo(AskKvasirEngine.Status.ANSWERED);
+        assertThat(second.text()).contains("100");
+    }
+
     @Test
     @EnabledIfSystemProperty(named = "nmox.kvasir.live", matches = ".+")
     void liveAsk() {

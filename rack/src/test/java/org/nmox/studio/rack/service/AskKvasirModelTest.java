@@ -13,6 +13,23 @@ class AskKvasirModelTest {
     @AfterEach
     void reset() {
         AskKvasirModel.resetForTest();
+        org.nmox.studio.rack.engine.KvasirProvider.remember(
+                org.nmox.studio.rack.engine.KvasirProvider.ANTHROPIC);
+    }
+
+    @Test
+    @DisplayName("v2.96.0: the depth is provider-neutral — Deep on Claude is Deep on Gemini, in Gemini's words")
+    void depthFollowsProvider() {
+        AskKvasirModel.remember(1);
+        assertThat(AskKvasirModel.chosen()).isEqualTo(KvasirClient.MODEL_SONNET);
+        org.nmox.studio.rack.engine.KvasirProvider.remember(
+                org.nmox.studio.rack.engine.KvasirProvider.GOOGLE);
+        assertThat(AskKvasirModel.chosen()).isEqualTo(
+                org.nmox.studio.rack.engine.KvasirProvider.GOOGLE.model(
+                        org.nmox.studio.rack.engine.KvasirProvider.Depth.DEEP));
+        assertThat(AskKvasirModel.chosenIndex()).isEqualTo(1);
+        assertThat(AskKvasirModel.labels()[1]).isEqualTo("Deep (Pro)");
+        assertThat(AskKvasirModel.labels()[0]).isEqualTo("Fast (Flash)");
     }
 
     @Test

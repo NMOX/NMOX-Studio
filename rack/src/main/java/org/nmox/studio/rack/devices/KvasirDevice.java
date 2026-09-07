@@ -3,6 +3,7 @@ package org.nmox.studio.rack.devices;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -13,6 +14,8 @@ import javax.swing.SwingUtilities;
 import org.nmox.studio.rack.engine.FlightRecorder;
 import org.nmox.studio.rack.engine.KvasirClient;
 import org.nmox.studio.rack.engine.KvasirClient.FailureContext;
+import org.nmox.studio.rack.engine.KvasirProvider;
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.service.KvasirConsent;
 import org.nmox.studio.rack.service.KvasirKeys;
@@ -25,8 +28,9 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
 /**
  * KVASIR: AI assistance through the rack's metaphor. It taps the flight
  * recorder for the error currently on the MONITOR bus and, on an explicit
- * EXPLAIN press, asks the Anthropic Messages API what went wrong and how
- * to fix it — visible, wired, unpluggable.
+ * EXPLAIN press, asks the configured AI — Claude (Anthropic), ChatGPT
+ * (OpenAI) or Gemini (Google), see {@link KvasirProvider} — what went
+ * wrong and how to fix it — visible, wired, unpluggable.
  *
  * <p><b>The laws it lives inside:</b> zero boot cost (attach only
  * registers a recorder change-listener; no keyring read, no network);
@@ -95,7 +99,7 @@ public class KvasirDevice extends RackDevice {
         super("kvasir", "KVASIR", "ERROR EXPLAINER", new Color(120, 90, 220), 2);
 
         explain = place(new RackButton("EXPLAIN", RackStyle.QUERY), RackStyle.TRANSPORT_X, 46);
-        explain.setToolTipText("Ask KVASIR to explain the last failed run (sends it to the Anthropic API)");
+        explain.setToolTipText("Ask KVASIR to explain the last failed run (sends it to your chosen AI — Claude, ChatGPT or Gemini)");
         explain.addActionListener(e -> onExplain());
 
         view = place(new RackButton("VIEW", RackStyle.QUERY), 110, 46);
@@ -110,12 +114,14 @@ public class KvasirDevice extends RackDevice {
         verdict.appendLine(IDLE_NOTHING);
 
         RackButton key = place(new RackButton("KEY…", RackStyle.MUTATE), 676, 46);
-        key.setToolTipText("Set the Anthropic API key — stored in the OS keychain, never on disk");
+        key.setToolTipText("Pick the AI (Claude, ChatGPT or Gemini) and set its API key — stored in the OS keychain, never on disk");
         key.addActionListener(e -> promptForKey());
 
-        // HAIKU is the cheap default (index 0); SONNET upgrades the model.
-        modelKnob = place(new Knob("MODEL", new String[]{"HAIKU", "SONNET"}, 0), 760, 26);
-        modelKnob.setToolTipText("Which model answers: HAIKU (cheap, fast) or SONNET (stronger)");
+        // FAST is the cheap default (index 0); DEEP upgrades the model. The
+        // positions persist by INDEX (append-only law), so the v1.52.0 patch
+        // values HAIKU/SONNET read as FAST/DEEP; the provider names the ids.
+        modelKnob = place(new Knob("MODEL", new String[]{"FAST", "DEEP"}, 0), 760, 26);
+        modelKnob.setToolTipText("Which model answers: FAST (Haiku / GPT-5 mini / Gemini Flash) or DEEP (Sonnet / GPT-5 / Gemini Pro)");
         param("model", modelKnob);
 
         // v1.91.0: auto-explain by cable — patch VERITAS FAIL → EXPLAIN and
@@ -333,9 +339,10 @@ public class KvasirDevice extends RackDevice {
         return lastConversation;
     }
 
+    /** The knob's depth as the CONFIGURED provider's model id — read per press. */
     private String currentModel() {
-        return modelKnob.getSelectedIndex() == 1
-                ? KvasirClient.MODEL_SONNET : KvasirClient.MODEL_HAIKU;
+        return KvasirProvider.configured().model(modelKnob.getSelectedIndex() == 1
+                ? KvasirProvider.Depth.DEEP : KvasirProvider.Depth.FAST);
     }
 
     private void thinking(boolean on) {
@@ -379,35 +386,73 @@ public class KvasirDevice extends RackDevice {
     // ---- the key dialog (password field, never InputLine) ------------------
 
     /**
-     * A password dialog for the API key — never the LcdDisplay double-click
-     * editor, whose {@code InputLine} echoes plaintext. On OK the key goes
-     * straight to the keychain off the EDT; an empty value clears it.
+     * The provider-and-key dialog: which AI answers (Claude, ChatGPT or
+     * Gemini — remembered for every KVASIR face) and that provider's key
+     * in a password field — never the LcdDisplay double-click editor,
+     * whose {@code InputLine} echoes plaintext. On OK the key goes straight
+     * to the keychain off the EDT. A blank key keeps the one already
+     * stored (switching providers must not demand retyping); the checkbox
+     * is the explicit way to forget one.
      */
     private void promptForKey() {
+        KvasirProvider[] providers = KvasirProvider.values();
+        String[] labels = new String[providers.length];
+        for (int i = 0; i < providers.length; i++) {
+            labels[i] = providers[i].label();
+        }
+        javax.swing.JComboBox<String> provider = new javax.swing.JComboBox<>(labels);
+        provider.setSelectedIndex(KvasirProvider.configured().ordinal());
+        provider.getAccessibleContext().setAccessibleName("AI provider");
         javax.swing.JPasswordField field = new javax.swing.JPasswordField(28);
-        javax.swing.JPanel panel = new javax.swing.JPanel(new BorderLayout(8, 8));
-        panel.add(new javax.swing.JLabel("Anthropic API key (stored in the OS keychain):"),
-                BorderLayout.NORTH);
-        panel.add(field, BorderLayout.CENTER);
+        field.getAccessibleContext().setAccessibleName("API key");
+        javax.swing.JCheckBox forget = new javax.swing.JCheckBox(
+                "Forget the stored key for this provider");
+        javax.swing.JLabel keyLabel = new javax.swing.JLabel(
+                keyPrompt(providers[provider.getSelectedIndex()]));
+        provider.addActionListener(e -> keyLabel.setText(
+                keyPrompt(providers[provider.getSelectedIndex()])));
+
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 1, 0, 6));
+        panel.add(new javax.swing.JLabel("Which AI answers KVASIR (every face follows this choice):"));
+        panel.add(provider);
+        panel.add(keyLabel);
+        panel.add(field);
+        panel.add(forget);
+        panel.add(new javax.swing.JLabel(
+                "Leave the key blank to keep the one already stored. Keys live in the OS keychain, never on disk."));
         org.openide.NotifyDescriptor nd = new org.openide.NotifyDescriptor(
-                panel, "KVASIR — set API key",
+                panel, "KVASIR — provider and API key",
                 org.openide.NotifyDescriptor.OK_CANCEL_OPTION,
                 org.openide.NotifyDescriptor.PLAIN_MESSAGE, null, null);
         if (org.openide.DialogDisplayer.getDefault().notify(nd)
                 != org.openide.NotifyDescriptor.OK_OPTION) {
             return;
         }
+        KvasirProvider chosen = providers[provider.getSelectedIndex()];
         char[] entered = field.getPassword();
+        boolean drop = forget.isSelected();
+        KvasirProvider.remember(chosen);
         offEdt(() -> {
             try {
-                KvasirKeys.save(entered); // null/empty is a delete
+                if (drop) {
+                    KvasirKeys.delete(chosen);
+                } else if (entered.length > 0) {
+                    KvasirKeys.save(chosen, entered);
+                }
             } finally {
                 Arrays.fill(entered, '\0');
             }
-            onEdt(() -> setVerdict(
-                    KvasirKeys.hasKey() ? "KEY SET — PRESS EXPLAIN" : NO_KEY,
-                    RackStyle.LCD_TEXT));
+            boolean has = KvasirKeys.hasKey(chosen);
+            onEdt(() -> setVerdict(has
+                    ? chosen.product().toUpperCase(Locale.ROOT) + " KEY SET — PRESS EXPLAIN"
+                    : NO_KEY, RackStyle.LCD_TEXT));
         });
+    }
+
+    /** The key field's caption, guarded as plain text (the markup-render law). */
+    private static String keyPrompt(KvasirProvider p) {
+        return PlainText.plain(p.vendor() + " API key for " + p.product()
+                + " (stored in the OS keychain):");
     }
 
     // ---- the full-text popup (BLACKBOX dialog shape) -----------------------

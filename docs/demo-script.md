@@ -30,8 +30,9 @@ Do all of this before the audience is watching. Two minutes, once.
       just created it) and proves the port is free.
 - [ ] **KVASIR has a key and its consent.** In the Task Rack (⌘9),
       mount KVASIR and press **KEY…** on its faceplate (keychain-only),
-      or have `ANTHROPIC_API_KEY` in the environment the app was
-      launched from. Then press **EXPLAIN** once and answer the consent
+      or have the provider's key (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`
+      or `GEMINI_API_KEY`) in the environment the app was launched
+      from. Then press **EXPLAIN** once and answer the consent
       dialog with **Send to KVASIR** — a cable-triggered consult never
       prompts, so beat 4 needs that grant to exist already. Do **not**
       pre-answer the editor's *Ask KVASIR About Selection…* consent —
@@ -50,7 +51,8 @@ Do all of this before the audience is watching. Two minutes, once.
 - [ ] **The Welcome tab is frontmost** — that is beat 1's opening shot.
 - [ ] **Wifi:** everything runs on localhost — the dev server, the
       Browser, the rack, the Task Board, the Agent Port. The one
-      exception is KVASIR, which is a real call to the Anthropic API:
+      exception is KVASIR, which is a real call to your AI provider's
+      API (Anthropic, OpenAI or Google — whichever you chose):
       beats 3 and 4 need a network. If the room has none, both degrade
       honestly (see *When something goes wrong*) and the rest of the
       demo is untouched.

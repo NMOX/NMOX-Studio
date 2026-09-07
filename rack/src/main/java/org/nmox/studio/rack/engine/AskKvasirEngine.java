@@ -63,8 +63,9 @@ public final class AskKvasirEngine {
         try {
             if (key == null || key.length == 0) {
                 return new Result(Status.NO_KEY,
-                        "No API key. Set one on the KVASIR device (KEY…) or export "
-                        + "ANTHROPIC_API_KEY / CLAUDE_API_KEY.");
+                        "No API key for " + client.provider().label()
+                        + ". Set one on the KVASIR device (KEY…) or export "
+                        + client.provider().envHint() + ".");
             }
             if (!consentGate.test(convo)) {
                 return new Result(Status.NO_CONSENT, "Kept local — nothing was sent.");
