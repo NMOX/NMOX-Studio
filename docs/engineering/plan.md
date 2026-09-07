@@ -4213,3 +4213,41 @@ cosmetic hat.
 addenda and the version list keep the name that shipped. ⌘I answers
 to "oracle" through the vocabulary synonym so muscle memory lands.
 
+
+## Addendum — 2026-09-07 morning, KVASIR speaks three wires (v2.96.0)
+
+David: "Make Kvasir work with Claude (already does), ChatGPT, and
+Gemini." The design question was where the choice lives. Per patch (a
+knob) would let project A use Claude and project B Gemini, but the
+editor faces have no rack aimed and the key lives in the keychain per
+install — so the provider is ONE preference for the whole product, set
+from the device's KEY… dialog or Options, and every face reads it at
+send time. The depth (FAST/DEEP) stays the user's vocabulary; each
+vendor names its own pair.
+
+**What had to stay true on every wire.** The three laws the original
+KVASIR paid for are each provider-shaped now: the key in exactly one
+header, named per vendor (`authHeaders` carries the key once, and a
+test counts); keys that never cross providers (one keychain entry and
+one env set each — the ORACLE-era fallback stays Anthropic-only); and
+consent that names its recipient (the grant keys carry the provider id
+for OpenAI and Google, bare for Anthropic so nothing already given is
+re-asked). Each of the three got a mutant that dies by name.
+
+**Recon paid before code.** Listing Gemini's models with the real key
+and probing five candidates with a 64-token cap found that
+`gemini-2.5-pro` answers 404 "no longer available to new users" (a
+default that would have shipped dead), that the 3.x Flash line spends
+a small cap entirely on thinking (so the cap is 4096 and thought parts
+are skipped in the parse), and that `gemini-3.1-pro-preview` answers.
+Model ids rot; the `kvasir.model.<provider>.<depth>` preference is the
+door for a user whose vendor retires one, proven live by pinning
+`gemini-3.8-flash` through it.
+
+**Harness law recorded.** Inside `zsh -ilc '…'`, `$3:generateContent`
+is a parameter with a modifier; `${3}:generateContent` is the model.
+Two rounds of empty 404s were the harness, not the API.
+
+**Honest ceiling.** OpenAI is proven over the canned transport only —
+this machine holds no OpenAI key. `liveOpenAi` is written and gated
+(`-Dnmox.kvasir.live.openai=1`) for the first box that has one.

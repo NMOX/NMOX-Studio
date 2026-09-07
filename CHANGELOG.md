@@ -4,6 +4,89 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.96.0] - 2026-09-07
+
+**KVASIR speaks Claude, ChatGPT and Gemini.** David's ask: "Make
+Kvasir work with Claude (already does), ChatGPT, and Gemini." One
+provider is chosen for the whole product — with **KEY…** on the device
+or in Options ▸ Rack & Cloud — and every KVASIR face follows it on its
+next send: EXPLAIN, Ask, Edit, Complete, Draft Commit Message, and the
+studio explainers (API responses, SQL errors, page errors, checkpoint
+reports). The house laws hold across all three vendors: the key is
+keychain-only and travels in one request header, nothing leaves without
+a gesture, and consent names its recipient.
+
+1. **Three wires, one client** — `KvasirProvider` (ANTHROPIC / OPENAI /
+   GOOGLE) owns each vendor's endpoint, auth header (`x-api-key` +
+   `anthropic-version`; `Authorization: Bearer`; `x-goog-api-key`),
+   request envelope built from the same `Turn` list every engine
+   already produces (Messages; Chat Completions with
+   `max_completion_tokens`, the name the reasoning models accept; Gemini
+   `contents` with the assistant side named `model`, the model id in the
+   URL path), and response parse with the same honest failure modes — a
+   refusal (OpenAI's `refusal` field or `content_filter` finish; Gemini's
+   `SAFETY`-family finish with no text or a blocked prompt), an API
+   error's own message, an empty answer, a non-JSON body — each an
+   `IOException` the UI turns into a status line. Gemini thought parts
+   are skipped. `KvasirClient` reads the provider at SEND time (a switch
+   needs no new client and no restart) and routes every send through
+   `endpoint → requestBody → parse`; the transport seam gained a
+   provider-aware four-argument form with a default that folds to the
+   three-argument one, so every existing test spy still works.
+   `KvasirProviderTest` (12).
+2. **A depth, not a model** — FAST and DEEP are the vocabulary now (the
+   device's MODEL knob reads FAST / DEEP; positions persist by index so
+   a v1.52.0 patch's HAIKU/SONNET read as FAST/DEEP), and each provider
+   names its own pair: Haiku / Sonnet, GPT-5 mini / GPT-5, Gemini
+   Flash / Pro. `AskKvasirModel` stores `fast`/`deep` (a stored Sonnet
+   id still reads as Deep) and answers with the configured provider's
+   id; the Ask/Edit combos label the pair in the vendor's words. A
+   requested model that belongs to another provider resolves to the
+   SAME depth on the configured one — a remembered Claude depth becomes
+   the matching Gemini depth, never a Claude id inside a Gemini request.
+   Mutant (the cross-provider mapping removed) dies by name.
+3. **Keys never cross providers** — one keychain entry per provider
+   (`nmox.kvasir.apikey` stays Anthropic's, with the v2.95.0 ORACLE-era
+   fallback; `nmox.kvasir.openai.apikey`; `nmox.kvasir.google.apikey`),
+   each with its own environment fallbacks (`ANTHROPIC_API_KEY` /
+   `CLAUDE_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY` /
+   `GOOGLE_API_KEY`); the no-argument `KvasirKeys.read()` every engine's
+   key seam calls answers for the configured provider. Mutant (`read`
+   ignoring the provider) dies by name.
+4. **Consent names its recipient** — every grant (failure, code, and
+   per-kind) is scoped to the configured provider; the Anthropic grants
+   keep their pre-v2.96.0 keys so nothing already given is asked for
+   again, the other vendors' keys carry the provider id, and the three
+   dialogs say which vendor's API receives the data. A yes given for
+   Anthropic is not a yes for Google or OpenAI. `KvasirProviderConsentTest`;
+   mutant (the scoping removed) dies by name.
+5. **The provider-and-key dialog** — KEY… now offers the provider combo,
+   that provider's key in a password field (blank keeps the stored key,
+   so switching never demands retyping), and a checkbox to forget one;
+   the LCD confirms "GEMINI KEY SET — PRESS EXPLAIN". Options ▸ Rack &
+   Cloud carries the same combo. Every "No API key" refusal names the
+   provider and its own env vars.
+6. **Model ids rot** — the shipped ids are the vendors' stable aliases
+   at ship time, measured live (Gemini's `gemini-2.5-pro` answers 404
+   "no longer available to new users" today, so DEEP is
+   `gemini-3.1-pro-preview`); the preference
+   `kvasir.model.<provider>.<fast|deep>` pins another without a release,
+   URL-safe ids only, so a typo can never build a bad request.
+7. **Proof** — the Gemini wire live through the real transport: a
+   two-turn code conversation whose follow-up ("the numeric code inside
+   that error, as a bare number") answered `100` only because the
+   user/model role mapping kept the history, plus one question each on
+   the DEEP model and on a pinned `gemini-3.8-flash` through the
+   override preference (`AskKvasirLiveDriver.liveGemini` /
+   `liveGeminiModels`, `-Dnmox.kvasir.live.google=1`). The OpenAI wire
+   is proven over the canned transport only — no OpenAI key on this
+   machine; `liveOpenAi` (`-Dnmox.kvasir.live.openai=1`) is written for
+   the first one. Claude unchanged, its 14 client tests untouched.
+   Docs: user guide, the KVASIR and Explain-anything tutorials, the
+   Kitchen Sink station, README, the demo script, the codebase guide,
+   `docs/devices.md` regenerated, the website's rack paragraph in both
+   locales.
+
 ## [2.95.0] - 2026-09-06
 
 **ORACLE is now KVASIR.** David's call: the AI device's name collided
