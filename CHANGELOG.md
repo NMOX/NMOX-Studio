@@ -72,6 +72,19 @@ into Swing, with no way for a user to choose anything else.
    values, and DB Studio's CRUD gestures are checked to still say what
    happened.
 
+**Walked in the shipped build.** The assembled app was started with
+`--locale fr` and again with `--locale ru`, each on a throwaway userdir.
+French: the launchpad reads DÉMARRER / RÉCENTS / OUTILS, the tabs are
+Bienvenue and Rack de tâches, the project pane offers Nouveau… /
+Ouvrir… / Récents…, and the platform's own menu bar reads Fichier,
+Édition, Affichage, Naviguer, Source, Exécuter, Déboguer, Équipe,
+Outils, Fenêtre, Aide. Russian: НАЧАЛО / НЕДАВНИЕ / ИНСТРУМЕНТЫ, Добро
+пожаловать and Стойка задач on the tabs, and Файл, Правка, Вид,
+Переход, Сервис on the menu bar. Both are photographed in the README
+and the user guide. Walk law recorded: the Options window's category
+strip cannot be driven from the background — like the Open Folder
+chooser and Swing popups before it.
+
 Every one of the 2,826 keys is translated in all five languages —
 14,130 strings across 71 packages, held to key-set, placeholder and
 non-blank parity by the gate. Untranslated keys would fall back to

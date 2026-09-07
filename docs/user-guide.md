@@ -1551,6 +1551,14 @@ keymaps never costs you the studio chords.
   and Options. What stays: the rack faceplates' panel vocabulary (GO,
   STOP, EXPLAIN — the hardware labels, like a synth's), and the platform's
   own deeper dialogs, which have no bundles in these languages yet.
+
+![NMOX Studio started with the French locale: the whole launchpad, the tab
+names and the project pane's own menu are French, and the menu bar reads
+Fichier, Édition, Affichage, Naviguer, Source, Exécuter, Déboguer, Équipe,
+Outils, Fenêtre, Aide](images/i18n-welcome-fr.png)
+
+![The same build started in Russian, with Файл, Правка, Вид, Переход and
+Сервис on the menu bar and Добро пожаловать as the Welcome tab](images/i18n-welcome-ru.png)
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place
