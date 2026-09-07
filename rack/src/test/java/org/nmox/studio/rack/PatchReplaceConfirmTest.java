@@ -43,11 +43,15 @@ class PatchReplaceConfirmTest {
                 "nmox", "studio", "rack", "RackTopComponent.java"),
                 StandardCharsets.UTF_8);
 
-        int preset = src.indexOf("Could not wire the preset");
-        assertThat(preset).isPositive();
-        assertThat(src.substring(Math.max(0, preset - 500), preset))
+        // v2.97.0 (the l10n arc): the sentences moved into the class's
+        // bundle, so the anchor is the CALL, which is the law — a preset
+        // and a saved patch each replace the rack, so each asks first.
+        assertThat(src)
                 .as("a preset replaces the rack — it must ask first")
-                .contains("confirmReplace(");
+                .contains("confirmReplace(Bundle.RackTopComponent_thePreset(");
+        assertThat(src)
+                .as("a saved patch replaces the rack — it must ask first")
+                .contains("confirmReplace(Bundle.RackTopComponent_theSavedPatch(");
 
         int load = src.indexOf("loadPatch(source);");
         assertThat(load).isPositive();
@@ -64,7 +68,17 @@ class PatchReplaceConfirmTest {
                         + " hard-codes OK, so a reflexive Enter would destroy")
                 .contains("NotifyDescriptor.NO_OPTION)")
                 .doesNotContain("new NotifyDescriptor.Confirmation(");
+        // v2.97.0 (the l10n arc): the sentence is a bundle value, so the
+        // promise is read where it now SHIPS — the English bundle itself.
+        java.util.Properties english = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(
+                Path.of("target/classes/org/nmox/studio/rack/Bundle.properties"))) {
+            english.load(in);
+        }
         assertThat(body)
+                .as("the confirm renders the bundle's sentence")
+                .contains("Bundle.RackTopComponent_replaceConfirm(");
+        assertThat(english.getProperty("RackTopComponent_replaceConfirm", ""))
                 .as("the message must say undo cannot bring it back —"
                         + " fromJson clears the history")
                 .contains("cannot be undone");

@@ -155,6 +155,6 @@ class UserProbesTest {
         assertThat(src)
                 .as("a refused drop-in becomes a VISIBLE row — the"
                         + " skip-with-note law, rendered where the user looks")
-                .contains("\"skipped — \" + note");
+                .contains("Bundle.EnvironmentDoctorAction_skipped(note)"); // v2.97.0: the sentence is a bundle value; the visible row is the law
     }
 }

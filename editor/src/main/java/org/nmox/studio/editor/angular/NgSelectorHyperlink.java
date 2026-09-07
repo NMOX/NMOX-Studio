@@ -17,6 +17,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**

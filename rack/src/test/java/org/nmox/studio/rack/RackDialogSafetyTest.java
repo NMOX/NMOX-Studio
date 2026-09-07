@@ -41,7 +41,9 @@ class RackDialogSafetyTest {
     void removeDependencyConfirmIsSafe() throws Exception {
         String src = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/rack/projectstudio/ProjectConfigDialog.java"));
-        int confirm = src.indexOf("\"Remove Dependency\"");
+        // v2.97.0 (the l10n arc): the title is a bundle value; the anchor is
+        // its CALL SITE, where the safe default has to be
+        int confirm = src.indexOf("Bundle.ProjectConfigDialog_removeDependencyTitle()");
         assertThat(confirm).as("the remove confirm still exists as written").isPositive();
         String around = src.substring(Math.max(0, confirm - 400), confirm + 400);
         assertThat(around)
