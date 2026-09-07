@@ -26,6 +26,7 @@ import org.nmox.studio.infra.model.InfraGraph;
 import org.nmox.studio.infra.model.InfraGraph.InfraNode;
 import org.nmox.studio.infra.model.InfraGraph.Wire;
 import org.nmox.studio.infra.model.NodeKind;
+import org.nmox.studio.core.util.PlainText;
 
 /**
  * The flow canvas, Node-RED style: a dotted dark grid, rounded nodes
@@ -34,6 +35,13 @@ import org.nmox.studio.infra.model.NodeKind;
  * nub to wire, drag empty space to pan, scroll to zoom, Delete to
  * remove, double-click to configure.
  */
+@org.openide.util.NbBundle.Messages({
+    "FlowCanvas_lockedBanner=CLOUD OPERATION RUNNING — canvas locked until it finishes",
+    "FlowCanvas_liveStatus=live",
+    "FlowCanvas_nodeTooltip=<html><b>{0}</b> {1}<br>${2}/mo{3}</html>",
+    "FlowCanvas_tooltipLive=<br>live: {0}",
+    "FlowCanvas_tooltipDesignOnly=<br>design only"
+})
 public class FlowCanvas extends JPanel {
 
     /** What the host window wants to know about. */
@@ -449,8 +457,7 @@ public class FlowCanvas extends JPanel {
             banner.fillRect(0, 0, getWidth(), 26);
             banner.setColor(Color.WHITE);
             banner.setFont(banner.getFont().deriveFont(Font.BOLD, 12f));
-            banner.drawString("CLOUD OPERATION RUNNING — canvas locked until it finishes",
-                    12, 18);
+            banner.drawString(Bundle.FlowCanvas_lockedBanner(), 12, 18);
             banner.dispose();
         }
         g.dispose();
@@ -517,7 +524,8 @@ public class FlowCanvas extends JPanel {
             g.fill(new Ellipse2D.Double(node.x + 4, node.y + NODE_H + 5, 7, 7));
             g.setColor(new Color(0x9A, 0x9D, 0xA4));
             g.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 10));
-            String status = node.doId != null && node.status.isEmpty() ? "live" : node.status;
+            String status = node.doId != null && node.status.isEmpty()
+                    ? Bundle.FlowCanvas_liveStatus() : node.status;
             g.drawString(status, node.x + 15, node.y + NODE_H + 12);
         }
     }
@@ -540,10 +548,13 @@ public class FlowCanvas extends JPanel {
         if (node == null) {
             return null;
         }
-        return "<html><b>" + node.kind.getDisplayName() + "</b> " + node.label
-                + "<br>$" + String.format("%.2f", node.monthlyUsd()) + "/mo"
-                + (node.doId != null ? "<br>live: " + node.doId : "<br>design only")
-                + "</html>";
+        return Bundle.FlowCanvas_nodeTooltip(
+                PlainText.escape(node.kind.getDisplayName()),
+                PlainText.escape(node.label),
+                String.format("%.2f", node.monthlyUsd()),
+                node.doId != null
+                        ? Bundle.FlowCanvas_tooltipLive(PlainText.escape(node.doId))
+                        : Bundle.FlowCanvas_tooltipDesignOnly());
     }
 
     // ---- interaction ----

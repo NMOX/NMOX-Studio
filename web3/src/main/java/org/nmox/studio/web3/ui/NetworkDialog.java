@@ -35,6 +35,39 @@ import org.openide.NotifyDescriptor;
  * {@link Network} carries {@code plainUrl == null} — the workspace file
  * never sees it. There is no private-key field here and never will be.
  */
+@org.openide.util.NbBundle.Messages({
+    "NetworkDialog_title=Add Network",
+    "NetworkDialog_detect=Detect",
+    "NetworkDialog_secretCheck=URL contains a secret (store in Keyring)",
+    "NetworkDialog_nameA11y=Network name",
+    "NetworkDialog_urlA11y=RPC URL",
+    "NetworkDialog_chainIdA11y=Chain id",
+    "NetworkDialog_presetA11y=Network preset",
+    "NetworkDialog_presetTip=Fill the fields from a known public gateway "
+        + "\u2014 read-only engagement, no keys, still editable",
+    "NetworkDialog_presetNote=Public gateway \u2014 reads work with no keys; "
+        + "sends need a devnet or your own wallet",
+    "NetworkDialog_presetCustom=(custom)",
+    "NetworkDialog_presetMainnet=Ethereum Mainnet \u2014 public gateway",
+    "NetworkDialog_presetSepolia=Sepolia testnet \u2014 public gateway",
+    "NetworkDialog_presetAnvil8546=Local anvil on 8546",
+    "NetworkDialog_rowPreset=Preset:",
+    "NetworkDialog_rowName=Name:",
+    "NetworkDialog_rowUrl=RPC URL:",
+    "NetworkDialog_rowChainId=Chain id:",
+    "NetworkDialog_detectTip=Ask the node (eth_chainId) and fill this in",
+    "NetworkDialog_secretTip=The URL goes to the OS keychain only \u2014 "
+        + ".nmoxweb3.json will carry no url field for this network",
+    "NetworkDialog_enterUrlFirst=Enter the RPC URL first.",
+    "NetworkDialog_asking=Asking the node\u2026",
+    "NetworkDialog_detected=The node reports chain {0}.",
+    "NetworkDialog_needName=Every network needs a name.",
+    "NetworkDialog_nameTaken=A network named \"{0}\" already exists.",
+    "NetworkDialog_needUrl=Enter the node's RPC URL, like http://127.0.0.1:8545.",
+    "NetworkDialog_needHttpUrl=The RPC URL must be an http(s) endpoint with a host.",
+    "NetworkDialog_chainIdPositive=The chain id must be a positive number \u2014 Detect asks the node.",
+    "NetworkDialog_chainIdWhole=The chain id must be a whole number \u2014 Detect asks the node."
+})
 final class NetworkDialog extends JPanel {
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
@@ -52,9 +85,9 @@ final class NetworkDialog extends JPanel {
     private final JTextField nameField = new JTextField(22);
     private final JTextField urlField = new JTextField("http://127.0.0.1:8545", 22);
     private final JTextField chainIdField = new JTextField(8);
-    private final JButton detectButton = new JButton("Detect");
+    private final JButton detectButton = new JButton(Bundle.NetworkDialog_detect());
     private final JCheckBox secretCheck =
-            new JCheckBox("URL contains a secret (store in Keyring)");
+            new JCheckBox(Bundle.NetworkDialog_secretCheck());
     private final JLabel noteLabel = new JLabel(" ");
 
     /**
@@ -74,12 +107,12 @@ final class NetworkDialog extends JPanel {
     }
 
     private static final Preset[] PRESETS = {
-        new Preset("(custom)", "", "", 0),
-        new Preset("Ethereum Mainnet — public gateway",
+        new Preset(Bundle.NetworkDialog_presetCustom(), "", "", 0),
+        new Preset(Bundle.NetworkDialog_presetMainnet(),
                 "Ethereum Mainnet", "https://ethereum-rpc.publicnode.com", 1),
-        new Preset("Sepolia testnet — public gateway",
+        new Preset(Bundle.NetworkDialog_presetSepolia(),
                 "Sepolia", "https://ethereum-sepolia-rpc.publicnode.com", 11155111),
-        new Preset("Local anvil on 8546",
+        new Preset(Bundle.NetworkDialog_presetAnvil8546(),
                 "Anvil 8546", "http://127.0.0.1:8546", 31337),
     };
 
@@ -89,13 +122,12 @@ final class NetworkDialog extends JPanel {
     private NetworkDialog() {
         super(new BorderLayout(0, 6));
         setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
-        nameField.getAccessibleContext().setAccessibleName("Network name");
-        urlField.getAccessibleContext().setAccessibleName("RPC URL");
-        chainIdField.getAccessibleContext().setAccessibleName("Chain id");
+        nameField.getAccessibleContext().setAccessibleName(Bundle.NetworkDialog_nameA11y());
+        urlField.getAccessibleContext().setAccessibleName(Bundle.NetworkDialog_urlA11y());
+        chainIdField.getAccessibleContext().setAccessibleName(Bundle.NetworkDialog_chainIdA11y());
 
-        presetCombo.getAccessibleContext().setAccessibleName("Network preset");
-        presetCombo.setToolTipText("Fill the fields from a known public gateway "
-                + "\u2014 read-only engagement, no keys, still editable");
+        presetCombo.getAccessibleContext().setAccessibleName(Bundle.NetworkDialog_presetA11y());
+        presetCombo.setToolTipText(Bundle.NetworkDialog_presetTip());
         presetCombo.addActionListener(e -> {
             Preset preset = (Preset) presetCombo.getSelectedItem();
             if (preset != null && preset.chainId() != 0) {
@@ -103,23 +135,21 @@ final class NetworkDialog extends JPanel {
                 urlField.setText(preset.url());
                 chainIdField.setText(String.valueOf(preset.chainId()));
                 noteLabel.setForeground(OK_GREEN);
-                noteLabel.setText("Public gateway \u2014 reads work with no keys; "
-                        + "sends need a devnet or your own wallet");
+                noteLabel.setText(Bundle.NetworkDialog_presetNote());
             }
         });
 
         JPanel grid = new JPanel(new GridBagLayout());
-        addRow(grid, 0, "Preset:", presetCombo);
-        addRow(grid, 1, "Name:", nameField);
-        addRow(grid, 2, "RPC URL:", urlField);
+        addRow(grid, 0, Bundle.NetworkDialog_rowPreset(), presetCombo);
+        addRow(grid, 1, Bundle.NetworkDialog_rowName(), nameField);
+        addRow(grid, 2, Bundle.NetworkDialog_rowUrl(), urlField);
         JPanel chainRow = new JPanel(new BorderLayout(6, 0));
         chainRow.add(chainIdField, BorderLayout.CENTER);
-        detectButton.setToolTipText("Ask the node (eth_chainId) and fill this in");
+        detectButton.setToolTipText(Bundle.NetworkDialog_detectTip());
         detectButton.addActionListener(e -> detect());
         chainRow.add(detectButton, BorderLayout.EAST);
-        addRow(grid, 3, "Chain id:", chainRow);
-        secretCheck.setToolTipText("The URL goes to the OS keychain only — "
-                + ".nmoxweb3.json will carry no url field for this network");
+        addRow(grid, 3, Bundle.NetworkDialog_rowChainId(), chainRow);
+        secretCheck.setToolTipText(Bundle.NetworkDialog_secretTip());
         addRow(grid, 4, "", secretCheck);
         add(grid, BorderLayout.CENTER);
 
@@ -136,7 +166,7 @@ final class NetworkDialog extends JPanel {
      */
     static Result show(Set<String> takenNames) {
         NetworkDialog panel = new NetworkDialog();
-        DialogDescriptor descriptor = new DialogDescriptor(panel, "Add Network");
+        DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.NetworkDialog_title());
         while (true) {
             if (DialogDisplayer.getDefault().notify(descriptor)
                     != NotifyDescriptor.OK_OPTION) {
@@ -156,17 +186,17 @@ final class NetworkDialog extends JPanel {
     private void detect() {
         String url = urlField.getText().trim();
         if (url.isEmpty()) {
-            note("Enter the RPC URL first.", FAIL_RED);
+            note(Bundle.NetworkDialog_enterUrlFirst(), FAIL_RED);
             return;
         }
         detectButton.setEnabled(false);
-        note("Asking the node…", Color.GRAY);
+        note(Bundle.NetworkDialog_asking(), Color.GRAY);
         Web3StudioTopComponent.RP.post(() -> {
             try {
                 long chainId = new JsonRpcClient(url).chainId();
                 SwingUtilities.invokeLater(() -> {
                     chainIdField.setText(String.valueOf(chainId));
-                    note("The node reports chain " + chainId + ".", OK_GREEN);
+                    note(Bundle.NetworkDialog_detected(String.valueOf(chainId)), OK_GREEN);
                     detectButton.setEnabled(true);
                 });
             } catch (IOException | RuntimeException unreachable) {
@@ -191,26 +221,26 @@ final class NetworkDialog extends JPanel {
     private String validateFields(Set<String> takenNames) {
         String name = nameField.getText().trim();
         if (name.isEmpty()) {
-            return "Every network needs a name.";
+            return Bundle.NetworkDialog_needName();
         }
         if (takenNames != null
                 && takenNames.contains(name.toLowerCase(Locale.ROOT))) {
-            return "A network named \"" + name + "\" already exists.";
+            return Bundle.NetworkDialog_nameTaken(name);
         }
         String url = urlField.getText().trim();
         if (url.isEmpty()) {
-            return "Enter the node's RPC URL, like http://127.0.0.1:8545.";
+            return Bundle.NetworkDialog_needUrl();
         }
         if (!isHttpUrl(url)) {
-            return "The RPC URL must be an http(s) endpoint with a host.";
+            return Bundle.NetworkDialog_needHttpUrl();
         }
         String chainText = chainIdField.getText().trim();
         try {
             if (Integer.parseInt(chainText) <= 0) {
-                return "The chain id must be a positive number — Detect asks the node.";
+                return Bundle.NetworkDialog_chainIdPositive();
             }
         } catch (NumberFormatException notANumber) {
-            return "The chain id must be a whole number — Detect asks the node.";
+            return Bundle.NetworkDialog_chainIdWhole();
         }
         return null;
     }

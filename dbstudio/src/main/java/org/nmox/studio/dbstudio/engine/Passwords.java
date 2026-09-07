@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.keyring.Keyring;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Where connection passwords actually live: the OS keychain, via the
@@ -26,6 +27,11 @@ import org.netbeans.api.keyring.Keyring;
  * the EDT (the keyring may block on OS calls; UI code should call
  * through a worker, same as every other engine entry point).
  */
+@Messages({
+    // chrome (shift-2970): the one balloon this class raises.
+    "Passwords_keychainUnavailableTitle=Keychain unavailable",
+    "Passwords_keychainUnavailableDetail=Database passwords will not be saved this session."
+})
 public final class Passwords {
 
     private static final Logger LOG = Logger.getLogger(Passwords.class.getName());
@@ -132,9 +138,9 @@ public final class Passwords {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.Passwords_keychainUnavailableTitle(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "Database passwords will not be saved this session.", null);
+                    Bundle.Passwords_keychainUnavailableDetail(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

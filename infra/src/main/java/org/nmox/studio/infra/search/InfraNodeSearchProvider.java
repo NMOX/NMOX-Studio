@@ -45,8 +45,14 @@ public class InfraNodeSearchProvider implements SearchProvider {
         }
         for (InfraNode node : graph.getNodes()) {
             if (matches(node, needle)) {
-                String display = node.label + "  —  " + node.kind.getDisplayName()
-                        + (node.doId != null ? "  (live)" : "");
+                // this package carries a hand-written Bundle.properties (the
+                // QuickSearch category name), so its keys live there too — a
+                // hand file and a generated one collide (v1.79.0)
+                String display = org.openide.util.NbBundle.getMessage(
+                        InfraNodeSearchProvider.class,
+                        node.doId != null ? "InfraNodeSearchProvider_resultLive"
+                                : "InfraNodeSearchProvider_result",
+                        node.label, node.kind.getDisplayName());
                 if (!addResult.test(() -> focus(node), display)) {
                     return;
                 }

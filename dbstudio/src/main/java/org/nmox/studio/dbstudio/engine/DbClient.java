@@ -15,6 +15,7 @@ import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.dbstudio.model.TableInfo;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The JDBC wrapper: one client per connection spec, holding at most one
@@ -43,6 +44,10 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * — the older names remain the implementation (and API) because the
  * JDBC-aware call sites and tests predate the interface.
  */
+@Messages({
+    // chrome (shift-2970): the one reason this client speaks to the user.
+    "DbClient_couldNotOpen=Could not open connection: {0}"
+})
 public final class DbClient implements DbBackend {
 
     private static final Logger LOG = Logger.getLogger(DbClient.class.getName());
@@ -208,7 +213,7 @@ public final class DbClient implements DbBackend {
         String openError = open();
         if (openError != null) {
             results.add(JdbcCore.errorResult(statements.get(0), 0,
-                    "Could not open connection: " + openError));
+                    Bundle.DbClient_couldNotOpen(openError)));
             return results;
         }
         return JdbcCore.runStatements(connection, statements, rowLimit, cancelHook);

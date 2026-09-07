@@ -21,6 +21,7 @@ import org.nmox.studio.core.util.JsonUtil;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
+import org.openide.util.NbBundle.Messages;
 import org.nmox.studio.dbstudio.model.TableInfo;
 
 /**
@@ -51,6 +52,12 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * {@link #parseFindDocs}, ...) so tests feed canned JSON without a
  * server — the {@code DigitalOceanClient} idiom.
  */
+@Messages({
+    // chrome (shift-2970): the reasons this backend speaks to the user.
+    "CouchBackend_noDatabase=No database set \u2014 CouchDB queries need a database name in the connection settings (query \"_all_dbs\" to list what the server has).",
+    "CouchBackend_notCouchDb=The server answered but does not look like CouchDB (no welcome document)",
+    "CouchBackend_notMango=Not a Mango query (expected a JSON selector): {0}"
+})
 public final class CouchBackend implements DbBackend {
 
     private static final Logger LOG = Logger.getLogger(CouchBackend.class.getName());
@@ -66,9 +73,7 @@ public final class CouchBackend implements DbBackend {
      */
     static final int MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
 
-    private static final String NO_DATABASE =
-            "No database set — CouchDB queries need a database name in the "
-            + "connection settings (query \"_all_dbs\" to list what the server has).";
+    private static final String NO_DATABASE = Bundle.CouchBackend_noDatabase();
 
     private final ConnectionSpec spec;
     private final char[] password;
@@ -105,7 +110,7 @@ public final class CouchBackend implements DbBackend {
         try {
             String body = get("/");
             if (parseWelcome(body) == null) {
-                return "The server answered but does not look like CouchDB (no welcome document)";
+                return Bundle.CouchBackend_notCouchDb();
             }
             return null;
         } catch (Exception e) {
@@ -221,7 +226,7 @@ public final class CouchBackend implements DbBackend {
             mango = mangoBody(trimmed, rowLimit);
         } catch (RuntimeException e) {
             results.add(errorResult(trimmed, elapsedMs(start),
-                    "Not a Mango query (expected a JSON selector): " + humanize(e)));
+                    Bundle.CouchBackend_notMango(humanize(e))));
             return results;
         }
         try {

@@ -6,6 +6,7 @@ import java.util.function.Function;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.dbstudio.model.TableInfo;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * Decides whether a result grid may be edited in place — and when it
@@ -38,6 +39,17 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * is unit-tested with canned metadata while the UI passes
  * {@code backend::columns} (already off-EDT when the gate runs).
  */
+@Messages({
+    // chrome (shift-2970): the honest read-only reasons this gate speaks.
+    "EditGate_notAResultGrid=Read-only \u2014 not a result grid",
+    "EditGate_documentEngine=Read-only \u2014 document engine",
+    "EditGate_dialectNotModeled=Read-only \u2014 SQL dialect not modeled",
+    "EditGate_notSingleTableSelect=Read-only \u2014 not a single-table SELECT",
+    "EditGate_isAView=Read-only \u2014 {0} is a view",
+    "EditGate_noColumnMetadata=Read-only \u2014 no column metadata for {0}",
+    "EditGate_noPrimaryKey=Read-only \u2014 no primary key on {0}",
+    "EditGate_pkNotInResult=Read-only \u2014 primary key column {0} not in the result (SELECT * always works)"
+})
 public final class EditGate {
 
     /**
@@ -83,34 +95,33 @@ public final class EditGate {
     public static Decision decide(DbEngine engine, DbEngine.Kind kind, QueryResult result,
             List<TableInfo> containers, Function<TableInfo, List<ColumnInfo>> columnsOf) {
         if (result == null || !result.isResultSet()) {
-            return Decision.readOnly("Read-only — not a result grid");
+            return Decision.readOnly(Bundle.EditGate_notAResultGrid());
         }
         if (kind != DbEngine.Kind.SQL) {
-            return Decision.readOnly("Read-only — document engine");
+            return Decision.readOnly(Bundle.EditGate_documentEngine());
         }
         if (engine == null) {
-            return Decision.readOnly("Read-only — SQL dialect not modeled");
+            return Decision.readOnly(Bundle.EditGate_dialectNotModeled());
         }
         Optional<String> parsed = SimpleSelectParser.singleTable(result.statement());
         if (parsed.isEmpty()) {
-            return Decision.readOnly("Read-only — not a single-table SELECT");
+            return Decision.readOnly(Bundle.EditGate_notSingleTableSelect());
         }
         TableInfo table = resolve(parsed.get(), containers);
         if (table.isView()) {
-            return Decision.readOnly("Read-only — " + table.name() + " is a view");
+            return Decision.readOnly(Bundle.EditGate_isAView(table.name()));
         }
         List<ColumnInfo> columns = columnsOf.apply(table);
         if (columns == null || columns.isEmpty()) {
-            return Decision.readOnly("Read-only — no column metadata for " + table.name());
+            return Decision.readOnly(Bundle.EditGate_noColumnMetadata(table.name()));
         }
         List<ColumnInfo> pkColumns = columns.stream().filter(ColumnInfo::primaryKey).toList();
         if (pkColumns.isEmpty()) {
-            return Decision.readOnly("Read-only — no primary key on " + table.name());
+            return Decision.readOnly(Bundle.EditGate_noPrimaryKey(table.name()));
         }
         for (ColumnInfo pk : pkColumns) {
             if (!gridHas(result.columnNames(), pk.name())) {
-                return Decision.readOnly("Read-only — primary key column " + pk.name()
-                        + " not in the result (SELECT * always works)");
+                return Decision.readOnly(Bundle.EditGate_pkNotInResult(pk.name()));
             }
         }
         return new Decision(new EditSession(result, table, columns), null);

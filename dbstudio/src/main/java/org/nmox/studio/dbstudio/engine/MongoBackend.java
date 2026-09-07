@@ -20,6 +20,7 @@ import org.bson.types.ObjectId;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
+import org.openide.util.NbBundle.Messages;
 import org.nmox.studio.dbstudio.model.TableInfo;
 
 /**
@@ -46,6 +47,12 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * <p>The connection string carries URL-encoded credentials and is
  * never logged.
  */
+@Messages({
+    // chrome (shift-2970): the reasons this backend speaks to the user.
+    "MongoBackend_noDatabase=No database set \u2014 MongoDB connections need a database name in the connection settings.",
+    "MongoBackend_notACommand=Not a MongoDB command document: {0}",
+    "MongoBackend_couldNotOpen=Could not open connection: {0}"
+})
 public final class MongoBackend implements DbBackend {
 
     private static final Logger LOG = Logger.getLogger(MongoBackend.class.getName());
@@ -53,9 +60,7 @@ public final class MongoBackend implements DbBackend {
     /** Connect and server-selection timeout, as connection-string options. */
     private static final int TIMEOUT_MS = 5_000;
 
-    private static final String NO_DATABASE =
-            "No database set — MongoDB connections need a database name "
-            + "in the connection settings.";
+    private static final String NO_DATABASE = Bundle.MongoBackend_noDatabase();
 
     private final ConnectionSpec spec;
     private final char[] password;
@@ -212,13 +217,13 @@ public final class MongoBackend implements DbBackend {
             command = Document.parse(text);
         } catch (RuntimeException e) {
             results.add(errorResult(text, elapsedMs(start),
-                    "Not a MongoDB command document: " + humanize(e)));
+                    Bundle.MongoBackend_notACommand(humanize(e))));
             return results;
         }
         String openError = open();
         if (openError != null) {
             results.add(errorResult(text, elapsedMs(start),
-                    "Could not open connection: " + openError));
+                    Bundle.MongoBackend_couldNotOpen(openError)));
             return results;
         }
         try {

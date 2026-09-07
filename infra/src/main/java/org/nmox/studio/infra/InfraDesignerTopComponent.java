@@ -62,7 +62,90 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_InfraAction=Infra Designer",
     "CTL_InfraTopComponent=Infra Designer",
-    "HINT_InfraTopComponent=Drag-and-drop DigitalOcean infrastructure designer"
+    "HINT_InfraTopComponent=Drag-and-drop DigitalOcean infrastructure designer",
+    // toolbar
+    "InfraDesigner_syncButton=Sync from cloud",
+    "InfraDesigner_refreshButton=Refresh",
+    "InfraDesigner_destroyStackButton=Destroy stack…",
+    "InfraDesigner_deployButton=DEPLOY",
+    "InfraDesigner_tokensButton=Tokens…",
+    "InfraDesigner_tokensTooltip=Set API tokens: DigitalOcean / Hetzner Cloud / Cloudflare "
+        + "(or export DIGITALOCEAN_TOKEN / HCLOUD_TOKEN / CLOUDFLARE_API_TOKEN)",
+    "InfraDesigner_refreshTooltip=Ask the cloud whether every deployed node still exists — deletions show as drifted",
+    "InfraDesigner_destroyStackTooltip=Tear down every deployed resource in reverse dependency order",
+    "InfraDesigner_zoomOutTooltip=Zoom out",
+    "InfraDesigner_fitButton=Fit",
+    "InfraDesigner_fitTooltip=Fit the whole design in view",
+    "InfraDesigner_zoomInTooltip=Zoom in",
+    "InfraDesigner_deployTooltip=Create everything in this design via each node's cloud API",
+    "InfraDesigner_tokenLabelTooltip=DigitalOcean / Hetzner / Cloudflare",
+    "InfraDesigner_syncTooltip=Import existing cloud resources as live nodes — {0}",
+    "InfraDesigner_syncTooltipNoTokens=no tokens set (use Tokens…)",
+    "InfraDesigner_syncTooltipList=syncs: {0}",
+    "InfraDesigner_cloudsConnected={0}/3 clouds",
+    "InfraDesigner_noTokens=no tokens (dry-run)",
+    "InfraDesigner_costLabel=≈ ${0}/mo",
+    // the token dialog
+    "InfraDesigner_tokenFieldName={0} API token",
+    "InfraDesigner_tokenRowSet={0}  (token set)",
+    "InfraDesigner_tokenRowAbsent={0}  (no token)",
+    "InfraDesigner_tokensDialogTitle=Cloud API tokens (stored in the OS keychain; blank = keep current)",
+    // wiring
+    "InfraDesigner_wireAlreadyWired=already wired",
+    "InfraDesigner_wireRuleRefused={0} doesn''t wire into {1} — a wire reads \"serves\"",
+    "InfraDesigner_wireRefused=Wire refused: {0}",
+    // deploy
+    "InfraDesigner_nothingToDeploy=Nothing to deploy - the design is empty or all live.",
+    "InfraDesigner_planSkip=SKIP",
+    "InfraDesigner_estimatedMonthlyCost=Estimated monthly cost: ${0}",
+    "InfraDesigner_missingTokens=MISSING API TOKENS: {0} — set them via the Tokens button to go live.",
+    "InfraDesigner_deployLogName=Deploy log",
+    "InfraDesigner_deployTitle=Deploy?",
+    "InfraDesigner_dryRunTitle=Dry run (missing tokens: {0})",
+    "InfraDesigner_deployOption=Deploy",
+    "InfraDesigner_cancelOption=Cancel",
+    "InfraDesigner_closeOption=Close",
+    "InfraDesigner_deployComplete=Deploy complete - nodes are live. Log: .nmox/deploy-log",
+    "InfraDesigner_deployStopped=Deploy stopped on a failure; see node status and .nmox/deploy-log.",
+    // sync
+    "InfraDesigner_noTokenYet=Set a cloud API token first (DigitalOcean, Hetzner, or Cloudflare).",
+    "InfraDesigner_syncProgress=Syncing {0}…",
+    "InfraDesigner_syncFromProvider=Syncing from {0}…",
+    "InfraDesigner_syncFailed=failed ({0})",
+    "InfraDesigner_syncNodeSingular=node",
+    "InfraDesigner_syncNodePlural=nodes",
+    "InfraDesigner_syncFinished=Cloud sync finished",
+    "InfraDesigner_syncWithFailures=Sync finished with failures — {0}",
+    "InfraDesigner_syncImported=Imported live resources — {0}",
+    "InfraDesigner_refreshFailed=Refresh failed: {0}",
+    // destroy
+    "InfraDesigner_nothingToDestroy=Nothing deployed to destroy.",
+    "InfraDesigner_destroyRow=• {0}  {1}",
+    "InfraDesigner_destroyStackQuestionOne=Destroy 1 cloud resource, saving ~${0}/month?",
+    "InfraDesigner_destroyStackQuestion=Destroy {0} cloud resources, saving ~${1}/month?",
+    "InfraDesigner_destroyStackNote=Reverse dependency order. The design stays on the canvas.",
+    "InfraDesigner_destroyStackTitle=Destroy stack",
+    "InfraDesigner_destroyFailures={0} resource(s) could not be destroyed — check their status lines.",
+    "InfraDesigner_messageName=Message",
+    // the node popup
+    "InfraDesigner_destroyInCloud=Destroy in cloud ({0})",
+    "InfraDesigner_destroyNodeQuestion=Really destroy {0} {1} on {2}?",
+    "InfraDesigner_destroyNodeTitle=Destroy resource",
+    "InfraDesigner_statusDestroyed=destroyed",
+    "InfraDesigner_statusDestroyFailed=destroy failed: {0}",
+    "InfraDesigner_copySsh=Copy SSH command  (root@{0})",
+    "InfraDesigner_copiedSsh=Copied: ssh root@{0}",
+    "InfraDesigner_removeFromDesign=Remove from design",
+    // the design file
+    "InfraDesigner_readFailedTitle=Couldn''t read {0} — starting empty",
+    "InfraDesigner_readFailedDetail=The unreadable original was kept at {0}.",
+    "InfraDesigner_reloadedTitle=Reloaded {0}",
+    "InfraDesigner_reloadedDetail=The file changed outside the designer — the canvas follows it.",
+    "InfraDesigner_conflictTitle={0} changed on disk — Reload?",
+    "InfraDesigner_conflictDetail=Click to reload; unsaved canvas edits are discarded. "
+        + "Keep editing to keep your version instead.",
+    "InfraDesigner_saveFailedTitle=Couldn''t save {0}",
+    "InfraDesigner_saveFailedDetail=Changes are not being persisted: {0}"
 })
 public final class InfraDesignerTopComponent extends TopComponent {
 
@@ -72,10 +155,10 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final PropertyPanel properties;
     private final JLabel tokenLabel = new JLabel();
     private final JLabel costLabel = new JLabel();
-    private final JButton syncButton = new JButton("Sync from cloud");
-    private final JButton refreshButton = new JButton("Refresh");
-    private final JButton destroyStackButton = new JButton("Destroy stack…");
-    private final JButton deployButton = new JButton("DEPLOY");
+    private final JButton syncButton = new JButton(Bundle.InfraDesigner_syncButton());
+    private final JButton refreshButton = new JButton(Bundle.InfraDesigner_refreshButton());
+    private final JButton destroyStackButton = new JButton(Bundle.InfraDesigner_destroyStackButton());
+    private final JButton deployButton = new JButton(Bundle.InfraDesigner_deployButton());
     private final Timer saveDebounce;
     private final InfraGraph.Listener graphListener;
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
@@ -135,11 +218,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the ghost wire vanishing silently read exactly like a
                 // misdrop — say WHY it refused (v1.271.0)
                 String why = duplicate
-                        ? "already wired"
-                        : from.kind.getDisplayName() + " doesn't wire into "
-                        + to.kind.getDisplayName() + " — a wire reads \"serves\"";
+                        ? Bundle.InfraDesigner_wireAlreadyWired()
+                        : Bundle.InfraDesigner_wireRuleRefused(
+                                from.kind.getDisplayName(), to.kind.getDisplayName());
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Wire refused: " + why);
+                        .setStatusText(Bundle.InfraDesigner_wireRefused(why));
             }
         });
 
@@ -210,9 +293,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
 
-        JButton token = new JButton("Tokens…");
-        token.setToolTipText("Set API tokens: DigitalOcean / Hetzner Cloud / Cloudflare "
-                + "(or export DIGITALOCEAN_TOKEN / HCLOUD_TOKEN / CLOUDFLARE_API_TOKEN)");
+        JButton token = new JButton(Bundle.InfraDesigner_tokensButton());
+        token.setToolTipText(Bundle.InfraDesigner_tokensTooltip());
         token.addActionListener(e -> {
             var providers = org.nmox.studio.infra.api.CloudProvider.values();
             JPasswordField[] fields = new JPasswordField[providers.length];
@@ -221,13 +303,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
             for (int i = 0; i < providers.length; i++) {
                 fields[i] = new JPasswordField(32);
                 fields[i].getAccessibleContext().setAccessibleName(
-                        providers[i].displayName() + " API token");
-                String current = providers[i].hasToken() ? "  (token set)" : "  (no token)";
-                panel.add(new JLabel(PlainText.plain(providers[i].displayName() + current)));
+                        Bundle.InfraDesigner_tokenFieldName(providers[i].displayName()));
+                String row = providers[i].hasToken()
+                        ? Bundle.InfraDesigner_tokenRowSet(providers[i].displayName())
+                        : Bundle.InfraDesigner_tokenRowAbsent(providers[i].displayName());
+                panel.add(new JLabel(PlainText.plain(row)));
                 panel.add(fields[i]);
             }
             DialogDescriptor dd = new DialogDescriptor(panel,
-                    "Cloud API tokens (stored in the OS keychain; blank = keep current)");
+                    Bundle.InfraDesigner_tokensDialogTitle());
             if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
                 java.util.Map<org.nmox.studio.infra.api.CloudProvider, String> entered =
                         new java.util.LinkedHashMap<>();
@@ -253,27 +337,27 @@ public final class InfraDesignerTopComponent extends TopComponent {
         syncButton.addActionListener(e -> syncFromCloud());
         bar.add(syncButton);
 
-        refreshButton.setToolTipText("Ask the cloud whether every deployed node still exists — deletions show as drifted");
+        refreshButton.setToolTipText(Bundle.InfraDesigner_refreshTooltip());
         refreshButton.addActionListener(e -> refreshDrift());
         bar.add(refreshButton);
 
         destroyStackButton.setForeground(new Color(0xC6, 0x2B, 0x2B));
-        destroyStackButton.setToolTipText("Tear down every deployed resource in reverse dependency order");
+        destroyStackButton.setToolTipText(Bundle.InfraDesigner_destroyStackTooltip());
         destroyStackButton.addActionListener(e -> destroyStack());
         bar.add(destroyStackButton);
 
         JButton zoomOut = new JButton("−");
-        zoomOut.setToolTipText("Zoom out");
+        zoomOut.setToolTipText(Bundle.InfraDesigner_zoomOutTooltip());
         zoomOut.addActionListener(e -> canvas.zoomOut());
         bar.add(zoomOut);
 
-        JButton fit = new JButton("Fit");
-        fit.setToolTipText("Fit the whole design in view");
+        JButton fit = new JButton(Bundle.InfraDesigner_fitButton());
+        fit.setToolTipText(Bundle.InfraDesigner_fitTooltip());
         fit.addActionListener(e -> canvas.fit());
         bar.add(fit);
 
         JButton zoomIn = new JButton("+");
-        zoomIn.setToolTipText("Zoom in");
+        zoomIn.setToolTipText(Bundle.InfraDesigner_zoomInTooltip());
         zoomIn.addActionListener(e -> canvas.zoomIn());
         bar.add(zoomIn);
 
@@ -290,7 +374,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         deployButton.setOpaque(true);
         deployButton.setBorderPainted(false);
         deployButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        deployButton.setToolTipText("Create everything in this design via each node's cloud API");
+        deployButton.setToolTipText(Bundle.InfraDesigner_deployTooltip());
         deployButton.addActionListener(e -> deploy());
         bar.add(deployButton);
         return bar;
@@ -376,18 +460,19 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void deploy() {
         List<DoRequest> plan = DeployPlanner.plan(graph);
         if (plan.isEmpty()) {
-            info("Nothing to deploy - the design is empty or all live.");
+            info(Bundle.InfraDesigner_nothingToDeploy());
             return;
         }
         StringBuilder text = new StringBuilder();
         int step = 1;
         for (DoRequest request : plan) {
             text.append(String.format("%2d. %s %s%n      %s%n", step++,
-                    request.skipped() ? "SKIP" : request.method(),
+                    request.skipped() ? Bundle.InfraDesigner_planSkip() : request.method(),
                     request.skipped() ? "" : request.path(),
                     request.description()));
         }
-        text.append(String.format("%nEstimated monthly cost: $%.2f", graph.totalMonthlyUsd()));
+        text.append(String.format("%n")).append(Bundle.InfraDesigner_estimatedMonthlyCost(
+                String.format("%.2f", graph.totalMonthlyUsd())));
 
         // every provider this plan touches must have a token BEFORE the
         // worker starts - failing on node 7 of 12 leaves half a deployment
@@ -400,12 +485,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         }
         if (names.length() > 0) {
-            text.insert(0, "MISSING API TOKENS: " + names
-                    + " — set them via the Tokens button to go live.\n\n");
+            text.insert(0, Bundle.InfraDesigner_missingTokens(names) + "\n\n");
         }
 
         JTextArea area = new JTextArea(text.toString(), 18, 64);
-        area.getAccessibleContext().setAccessibleName("Deploy log");
+        area.getAccessibleContext().setAccessibleName(Bundle.InfraDesigner_deployLogName());
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 
@@ -413,10 +497,11 @@ public final class InfraDesignerTopComponent extends TopComponent {
         // pure-Hetzner or pure-Cloudflare stack needs no DigitalOcean key
         boolean live = DeployPlanner.liveEligible(used,
                 org.nmox.studio.infra.api.CloudProvider::hasToken);
-        String title = live ? "Deploy?" : "Dry run (missing tokens: " + names + ")";
+        String title = live ? Bundle.InfraDesigner_deployTitle()
+                : Bundle.InfraDesigner_dryRunTitle(names);
         if (live) {
-            Object deploy = "Deploy";
-            Object cancel = "Cancel";
+            Object deploy = Bundle.InfraDesigner_deployOption();
+            Object cancel = Bundle.InfraDesigner_cancelOption();
             // Cancel is the DEFAULT button (Enter/Space), so a reflexive
             // keypress on the plan-review dialog never fires a live
             // multi-resource deploy. setValue() writes only `value`, not
@@ -430,7 +515,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         } else {
             DialogDescriptor dd = new DialogDescriptor(new JScrollPane(area), title);
-            dd.setOptions(new Object[]{"Close"});
+            dd.setOptions(new Object[]{Bundle.InfraDesigner_closeOption()});
             DialogDisplayer.getDefault().notify(dd);
             return;
         }
@@ -448,9 +533,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 save();
                 if (ok) {
-                    info("Deploy complete - nodes are live. Log: .nmox/deploy-log");
+                    info(Bundle.InfraDesigner_deployComplete());
                 } else {
-                    error("Deploy stopped on a failure; see node status and .nmox/deploy-log.");
+                    error(Bundle.InfraDesigner_deployStopped());
                 }
             });
         });
@@ -466,7 +551,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
                         org.nmox.studio.infra.api.CloudProvider::hasToken);
         if (syncing.isEmpty()) {
-            info("Set a cloud API token first (DigitalOcean, Hetzner, or Cloudflare).");
+            info(Bundle.InfraDesigner_noTokenYet());
             return;
         }
         runExclusive(syncButton, () -> {
@@ -474,19 +559,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
             // ProgressHandle in the status line, ticking per provider
             // (debt #34). No Cancellable — syncAll has no interrupt seam.
             org.netbeans.api.progress.ProgressHandle progress =
-                    org.netbeans.api.progress.ProgressHandle.createHandle("Syncing "
-                            + syncing.stream()
+                    org.netbeans.api.progress.ProgressHandle.createHandle(
+                            Bundle.InfraDesigner_syncProgress(syncing.stream()
                                     .map(org.nmox.studio.infra.api.CloudProvider::displayName)
-                                    .collect(java.util.stream.Collectors.joining("/"))
-                            + "…");
+                                    .collect(java.util.stream.Collectors.joining("/"))));
             progress.start();
             java.util.Map<org.nmox.studio.infra.api.CloudProvider,
                     org.nmox.studio.infra.api.DigitalOceanClient.SyncOutcome> outcomes;
             try {
                 outcomes = client.syncAll(syncing, graph, provider -> {
-                    progress.progress("Syncing from " + provider.displayName() + "…");
+                    progress.progress(Bundle.InfraDesigner_syncFromProvider(provider.displayName()));
                     SwingUtilities.invokeLater(() -> org.openide.awt.StatusDisplayer.getDefault()
-                            .setStatusText("Syncing from " + provider.displayName() + "…"));
+                            .setStatusText(Bundle.InfraDesigner_syncFromProvider(provider.displayName())));
                 });
             } finally {
                 progress.finish();
@@ -505,20 +589,23 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     var outcome = entry.getValue();
                     if (outcome.failed()) {
                         anyFailed = true;
-                        summary.append("failed (").append(outcome.error()).append(')');
+                        summary.append(Bundle.InfraDesigner_syncFailed(outcome.error()));
                     } else {
                         summary.append(outcome.imported());
                         if (firstCount) {
-                            summary.append(outcome.imported() == 1 ? " node" : " nodes");
+                            summary.append(' ').append(outcome.imported() == 1
+                                    ? Bundle.InfraDesigner_syncNodeSingular()
+                                    : Bundle.InfraDesigner_syncNodePlural());
                             firstCount = false;
                         }
                     }
                 }
-                org.openide.awt.StatusDisplayer.getDefault().setStatusText("Cloud sync finished");
+                org.openide.awt.StatusDisplayer.getDefault()
+                        .setStatusText(Bundle.InfraDesigner_syncFinished());
                 if (anyFailed) {
-                    error("Sync finished with failures — " + summary);
+                    error(Bundle.InfraDesigner_syncWithFailures(summary));
                 } else {
-                    info("Imported live resources — " + summary);
+                    info(Bundle.InfraDesigner_syncImported(summary));
                 }
             });
         });
@@ -532,7 +619,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                         SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
                 SwingUtilities.invokeLater(this::save);
             } catch (Exception ex) {
-                SwingUtilities.invokeLater(() -> error("Refresh failed: " + ex.getMessage()));
+                SwingUtilities.invokeLater(() -> error(Bundle.InfraDesigner_refreshFailed(ex.getMessage())));
             }
         });
     }
@@ -545,21 +632,24 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void destroyStack() {
         java.util.List<InfraNode> order = DeployPlanner.teardownOrder(graph);
         if (order.isEmpty()) {
-            info("Nothing deployed to destroy.");
+            info(Bundle.InfraDesigner_nothingToDestroy());
             return;
         }
         double monthly = 0;
         StringBuilder names = new StringBuilder();
         for (InfraNode node : order) {
             monthly += node.monthlyUsd();
-            names.append("  • ").append(node.kind.getDisplayName())
-                    .append("  ").append(node.label).append('\n');
+            names.append("  ").append(Bundle.InfraDesigner_destroyRow(
+                    node.kind.getDisplayName(), node.label)).append('\n');
         }
-        boolean go = confirm("Destroy " + order.size() + " cloud resource"
-                + (order.size() == 1 ? "" : "s")
-                + ", saving ~$" + String.format("%.2f", monthly) + "/month?\n\n" + names
-                + "\nReverse dependency order. The design stays on the canvas.",
-                "Destroy stack");
+        String money = String.format("%.2f", monthly);
+        String question = order.size() == 1
+                ? Bundle.InfraDesigner_destroyStackQuestionOne(money)
+                : Bundle.InfraDesigner_destroyStackQuestion(
+                        String.valueOf(order.size()), money);
+        boolean go = confirm(question + "\n\n" + names + "\n"
+                + Bundle.InfraDesigner_destroyStackNote(),
+                Bundle.InfraDesigner_destroyStackTitle());
         if (!go) {
             return;
         }
@@ -569,7 +659,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             SwingUtilities.invokeLater(() -> {
                 save();
                 if (failures > 0) {
-                    error(failures + " resource(s) could not be destroyed — check their status lines.");
+                    error(Bundle.InfraDesigner_destroyFailures(String.valueOf(failures)));
                 }
             });
         });
@@ -579,12 +669,14 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     private void info(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.INFORMATION_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message,
+                        Bundle.InfraDesigner_messageName()), NotifyDescriptor.INFORMATION_MESSAGE));
     }
 
     private void error(String message) {
         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), NotifyDescriptor.ERROR_MESSAGE));
+                org.nmox.studio.core.util.PlainDialogs.plain(message,
+                        Bundle.InfraDesigner_messageName()), NotifyDescriptor.ERROR_MESSAGE));
     }
 
     /**
@@ -597,7 +689,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * constructor's {@code initialValue} argument (v1.98.0, ledger 53).
      */
     private boolean confirm(String message, String title) {
-        NotifyDescriptor d = new NotifyDescriptor(org.nmox.studio.core.util.PlainDialogs.plain(message, "Message"), title,
+        NotifyDescriptor d = new NotifyDescriptor(org.nmox.studio.core.util.PlainDialogs.plain(
+                message, Bundle.InfraDesigner_messageName()), title,
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                 NotifyDescriptor.NO_OPTION);
@@ -625,23 +718,25 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void showNodeMenu(InfraNode node, Point screenPoint) {
         JPopupMenu menu = new JPopupMenu();
         if (node.doId != null) {
-            JMenuItem destroy = new JMenuItem("Destroy in cloud (" + node.doId + ")");
+            JMenuItem destroy = new JMenuItem(Bundle.InfraDesigner_destroyInCloud(node.doId));
             destroy.addActionListener(e -> {
-                if (confirm("Really destroy " + node.kind.getDisplayName() + " "
-                        + node.label + " on " + node.kind.provider().displayName() + "?",
-                        "Destroy resource")) {
+                if (confirm(Bundle.InfraDesigner_destroyNodeQuestion(
+                        node.kind.getDisplayName(), node.label,
+                        node.kind.provider().displayName()),
+                        Bundle.InfraDesigner_destroyNodeTitle())) {
                     // the menu item dies with the menu, so there is no button to
                     // grey — RP's throughput 1 still serializes repeated clicks
                     runExclusive(null, () -> {
                         try {
                             client.destroy(node);
                             SwingUtilities.invokeLater(() -> {
-                                graph.setStatus(node, "destroyed");
+                                graph.setStatus(node, Bundle.InfraDesigner_statusDestroyed());
                                 save();
                             });
                         } catch (Exception ex) {
                             SwingUtilities.invokeLater(() ->
-                                    graph.setStatus(node, "destroy failed: " + ex.getMessage()));
+                                    graph.setStatus(node, Bundle.InfraDesigner_statusDestroyFailed(
+                                            ex.getMessage())));
                         }
                     });
                 }
@@ -650,18 +745,18 @@ public final class InfraDesignerTopComponent extends TopComponent {
             menu.addSeparator();
         }
         if (node.ip != null && !node.ip.isBlank()) {
-            JMenuItem ssh = new JMenuItem("Copy SSH command  (root@" + node.ip + ")");
+            JMenuItem ssh = new JMenuItem(Bundle.InfraDesigner_copySsh(node.ip));
             ssh.addActionListener(e -> {
                 java.awt.datatransfer.StringSelection sel =
                         new java.awt.datatransfer.StringSelection("ssh root@" + node.ip);
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(sel, null);
                 org.openide.awt.StatusDisplayer.getDefault()
-                        .setStatusText("Copied: ssh root@" + node.ip);
+                        .setStatusText(Bundle.InfraDesigner_copiedSsh(node.ip));
             });
             menu.add(ssh);
             menu.addSeparator();
         }
-        JMenuItem remove = new JMenuItem("Remove from design");
+        JMenuItem remove = new JMenuItem(Bundle.InfraDesigner_removeFromDesign());
         remove.addActionListener(e -> graph.removeNode(node));
         menu.add(remove);
         Point local = new Point(screenPoint);
@@ -732,8 +827,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // user's only copy
                 File backup = GraphIO.loadGuarded(graph, file);
                 if (backup != null) {
-                    balloon("Couldn't read " + GraphIO.DEFAULT_FILENAME + " — starting empty",
-                            "The unreadable original was kept at " + backup.getName() + ".",
+                    balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
+                            Bundle.InfraDesigner_readFailedDetail(backup.getName()),
                             null);
                 }
             } else {
@@ -786,9 +881,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 saveFailureNotified = true;
                 try {
                     org.openide.awt.NotificationDisplayer.getDefault().notify(
-                            "Couldn't save " + GraphIO.DEFAULT_FILENAME,
+                            Bundle.InfraDesigner_saveFailedTitle(GraphIO.DEFAULT_FILENAME),
                             javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                            "Changes are not being persisted: " + ex.getMessage(), null);
+                            Bundle.InfraDesigner_saveFailedDetail(ex.getMessage()), null);
                 } catch (RuntimeException | LinkageError ignored) {
                     // notifications unavailable (tests, stripped platform)
                 }
@@ -839,8 +934,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the graphChanged it fires never schedules a spurious save
                 // (the v1.33.2 guard stays intact).
                 load();
-                balloon("Reloaded " + GraphIO.DEFAULT_FILENAME,
-                        "The file changed outside the designer — the canvas follows it.",
+                balloon(Bundle.InfraDesigner_reloadedTitle(GraphIO.DEFAULT_FILENAME),
+                        Bundle.InfraDesigner_reloadedDetail(),
                         null);
             }
             case CONFLICT -> {
@@ -851,9 +946,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // NEXT canvas change restarts the debounce and that save wins —
                 // the pre-existing last-writer-wins behavior, unchanged.
                 saveDebounce.stop();
-                balloon(GraphIO.DEFAULT_FILENAME + " changed on disk — Reload?",
-                        "Click to reload; unsaved canvas edits are discarded. "
-                        + "Keep editing to keep your version instead.",
+                balloon(Bundle.InfraDesigner_conflictTitle(GraphIO.DEFAULT_FILENAME),
+                        Bundle.InfraDesigner_conflictDetail(),
                         e -> load());
             }
             case NONE -> {
@@ -892,23 +986,27 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 sb.append(has ? "●" : "○");
             }
             boolean any = connected > 0;
-            String label = sb + (any ? " " + connected + "/3 clouds" : " no tokens (dry-run)");
+            String label = sb + " " + (any
+                    ? Bundle.InfraDesigner_cloudsConnected(String.valueOf(connected))
+                    : Bundle.InfraDesigner_noTokens());
             String tokened = org.nmox.studio.infra.api.DigitalOceanClient.providersToSync(
                             org.nmox.studio.infra.api.CloudProvider::hasToken).stream()
                     .map(org.nmox.studio.infra.api.CloudProvider::displayName)
                     .collect(java.util.stream.Collectors.joining(", "));
             SwingUtilities.invokeLater(() -> {
                 tokenLabel.setText(PlainText.plain(label));
-                tokenLabel.setToolTipText("DigitalOcean / Hetzner / Cloudflare");
+                tokenLabel.setToolTipText(Bundle.InfraDesigner_tokenLabelTooltip());
                 tokenLabel.setForeground(any ? new Color(0x4E, 0xC9, 0x8B) : new Color(0xE8, 0xC4, 0x4A));
-                syncButton.setToolTipText("Import existing cloud resources as live nodes — "
-                        + (tokened.isEmpty() ? "no tokens set (use Tokens…)" : "syncs: " + tokened));
+                syncButton.setToolTipText(Bundle.InfraDesigner_syncTooltip(tokened.isEmpty()
+                        ? Bundle.InfraDesigner_syncTooltipNoTokens()
+                        : Bundle.InfraDesigner_syncTooltipList(tokened)));
             });
         });
     }
 
     private void refreshCost() {
-        costLabel.setText(PlainText.plain(String.format("≈ $%.2f/mo", graph.totalMonthlyUsd())));
+        costLabel.setText(PlainText.plain(Bundle.InfraDesigner_costLabel(
+                String.format("%.2f", graph.totalMonthlyUsd()))));
     }
 
     void writeProperties(java.util.Properties p) {

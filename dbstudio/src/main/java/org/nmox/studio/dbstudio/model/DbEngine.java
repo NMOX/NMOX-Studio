@@ -1,5 +1,7 @@
 package org.nmox.studio.dbstudio.model;
 
+import org.openide.util.NbBundle.Messages;
+
 /**
  * The database engines DB Studio speaks, each carrying what its access
  * layer needs: a display name for the UI, the conventional default
@@ -20,6 +22,12 @@ package org.nmox.studio.dbstudio.model;
  * server. Two enum constants remain so the UI can say what the user
  * means and so a future engine-specific quirk has a seam to live in.
  */
+@Messages({
+    // chrome (shift-2970): the user-facing word for what a tree lists.
+    "DbEngine_collections={0,choice,0#collections|1#collection|1<collections}",
+    "DbEngine_databases={0,choice,0#databases|1#database|1<databases}",
+    "DbEngine_tables={0,choice,0#tables|1#table|1<tables}"
+})
 public enum DbEngine {
 
     MYSQL("MySQL", 3306, "org.mariadb.jdbc.Driver"),
@@ -50,9 +58,9 @@ public enum DbEngine {
      */
     public String containerNoun(int count) {
         return switch (this) {
-            case MONGODB -> count == 1 ? "collection" : "collections";
-            case COUCHDB -> count == 1 ? "database" : "databases";
-            default -> count == 1 ? "table" : "tables";
+            case MONGODB -> Bundle.DbEngine_collections(count);
+            case COUCHDB -> Bundle.DbEngine_databases(count);
+            default -> Bundle.DbEngine_tables(count);
         };
     }
 

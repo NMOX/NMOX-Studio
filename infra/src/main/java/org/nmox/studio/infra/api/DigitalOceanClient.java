@@ -24,6 +24,23 @@ import org.nmox.studio.infra.model.NodeKind;
  * imports existing resources, and destroys per node. Without a token
  * everything stays in dry-run; with one, DEPLOY is real.
  */
+@org.openide.util.NbBundle.Messages({
+    "DigitalOceanClient_statusCheckFailed=check failed: {0}",
+    "DigitalOceanClient_statusCreated=created",
+    "DigitalOceanClient_statusCreatedNoId=created (id not parsed — destroy/sync unavailable)",
+    "DigitalOceanClient_statusCreating=creating…",
+    "DigitalOceanClient_statusDestroyFailed=destroy failed: {0}",
+    "DigitalOceanClient_statusDestroyed=destroyed",
+    "DigitalOceanClient_statusDestroying=destroying…",
+    "DigitalOceanClient_statusDrifted=drifted: deleted in cloud",
+    "DigitalOceanClient_statusFailed=FAILED: {0}",
+    "DigitalOceanClient_statusLive=live",
+    "DigitalOceanClient_statusNoDeleteApi=no delete API — remove manually",
+    "DigitalOceanClient_statusSkipped=skipped: {0}",
+    "DigitalOceanClient_statusUnverifiable=unverifiable (no read API)",
+    "DigitalOceanClient_statusWaitingForIp=waiting for IP of {0}…",
+    "DigitalOceanClient_syncInterrupted=interrupted"
+})
 public final class DigitalOceanClient {
 
     public static final String API = "https://api.digitalocean.com";
@@ -87,10 +104,10 @@ public final class DigitalOceanClient {
         for (DoRequest step : plan) {
             InfraNode node = graph.node(step.nodeId());
             if (step.skipped()) {
-                onStep.accept(node, "skipped: " + step.description());
+                onStep.accept(node, Bundle.DigitalOceanClient_statusSkipped(step.description()));
                 continue;
             }
-            onStep.accept(node, "creating…");
+            onStep.accept(node, Bundle.DigitalOceanClient_statusCreating());
             try {
                 String bodyText = step.body() == null ? "" : step.body().toString();
                 bodyText = resolvePlaceholders(bodyText, graph, ids, ips, onStep, node);
@@ -109,10 +126,10 @@ public final class DigitalOceanClient {
                 // honesty over green lights: a created resource whose id we
                 // could not parse cannot be synced or destroyed later
                 onStep.accept(node, node != null && node.doId == null
-                        ? "created (id not parsed — destroy/sync unavailable)"
-                        : "created");
+                        ? Bundle.DigitalOceanClient_statusCreatedNoId()
+                        : Bundle.DigitalOceanClient_statusCreated());
             } catch (Exception ex) {
-                onStep.accept(node, "FAILED: " + compact(ex.getMessage()));
+                onStep.accept(node, Bundle.DigitalOceanClient_statusFailed(compact(ex.getMessage())));
                 return false;
             }
         }
@@ -136,7 +153,7 @@ public final class DigitalOceanClient {
             } else {
                 value = ips.computeIfAbsent(nodeId, k -> null);
                 if (value == null) {
-                    onStep.accept(forNode, "waiting for IP of " + nodeId + "…");
+                    onStep.accept(forNode, Bundle.DigitalOceanClient_statusWaitingForIp(nodeId));
                     InfraNode source = graph.node(nodeId);
                     value = source != null && source.kind.provider() == CloudProvider.HETZNER
                             ? waitForHetznerIp(ids.get(nodeId))
@@ -442,7 +459,7 @@ public final class DigitalOceanClient {
                 outcomes.put(provider, new SyncOutcome(fn.sync(provider, graph), null));
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-                outcomes.put(provider, new SyncOutcome(0, "interrupted"));
+                outcomes.put(provider, new SyncOutcome(0, Bundle.DigitalOceanClient_syncInterrupted()));
                 break;
             } catch (Exception ex) {
                 outcomes.put(provider, new SyncOutcome(0, compact(ex.getMessage())));
@@ -555,7 +572,7 @@ public final class DigitalOceanClient {
                     existing.props.put(k, v);
                 }
             });
-            graph.setStatus(existing, "live");
+            graph.setStatus(existing, Bundle.DigitalOceanClient_statusLive());
             return false;
         }
         InfraNode node = graph.addNode(record.kind(), grid.x, grid.y);
@@ -563,7 +580,7 @@ public final class DigitalOceanClient {
         node.doId = record.doId();
         node.ip = record.ip();
         node.props.putAll(record.props());
-        graph.setStatus(node, "live");
+        graph.setStatus(node, Bundle.DigitalOceanClient_statusLive());
         grid.advance();
         return true;
     }
@@ -663,7 +680,7 @@ public final class DigitalOceanClient {
             }
             String path = resourcePath(node.kind, node.doId, node.props);
             if (path == null) {
-                onStatus.accept(node, "unverifiable (no read API)");
+                onStatus.accept(node, Bundle.DigitalOceanClient_statusUnverifiable());
                 continue;
             }
             try {
@@ -673,14 +690,15 @@ public final class DigitalOceanClient {
                     // ssh parity: the context menu offers root@ip
                     onModel(() -> node.ip = ip);
                 }
-                onStatus.accept(node, "live");
+                onStatus.accept(node, Bundle.DigitalOceanClient_statusLive());
             } catch (IOException ex) {
                 String msg = ex.getMessage() == null ? "" : ex.getMessage();
                 if (deletedInCloud(msg)) {
                     onModel(() -> node.doId = null); // the cloud is the truth: it is gone
-                    onStatus.accept(node, "drifted: deleted in cloud");
+                    onStatus.accept(node, Bundle.DigitalOceanClient_statusDrifted());
                 } else {
-                    onStatus.accept(node, "check failed: " + (msg.length() > 60 ? msg.substring(0, 60) : msg));
+                    onStatus.accept(node, Bundle.DigitalOceanClient_statusCheckFailed(
+                            msg.length() > 60 ? msg.substring(0, 60) : msg));
                 }
             }
         }
@@ -697,17 +715,17 @@ public final class DigitalOceanClient {
         int failures = 0;
         for (InfraNode node : nodes) {
             try {
-                onStep.accept(node, "destroying…");
+                onStep.accept(node, Bundle.DigitalOceanClient_statusDestroying());
                 destroy(node);
                 if (node.doId == null) {
-                    onStep.accept(node, "destroyed");
+                    onStep.accept(node, Bundle.DigitalOceanClient_statusDestroyed());
                 } else {
                     failures++;
-                    onStep.accept(node, "no delete API — remove manually");
+                    onStep.accept(node, Bundle.DigitalOceanClient_statusNoDeleteApi());
                 }
             } catch (Exception ex) {
                 failures++;
-                onStep.accept(node, "destroy failed: " + ex.getMessage());
+                onStep.accept(node, Bundle.DigitalOceanClient_statusDestroyFailed(ex.getMessage()));
             }
         }
         return failures;

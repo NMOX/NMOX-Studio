@@ -24,15 +24,21 @@ import org.nmox.studio.web3.model.ContractArtifact;
  * <p>Immutable — connection refreshes swap in a new session via
  * {@link #withAccounts}, a successful deploy via {@link #attachedTo}.
  */
+@org.openide.util.NbBundle.Messages({
+    "InteractSession_readOnlyReason=Read-only network \u2014 no unlocked accounts. "
+        + "Deploys and sends need a local devnet (ANVIL) or your own wallet/CLI.",
+    "InteractSession_noConstructorParams=Constructor has no parameters",
+    "InteractSession_noCreationBytecode={0} has no creation bytecode \u2014 interfaces "
+        + "and abstract contracts can''t be deployed."
+})
 public final class InteractSession {
 
     /** Why SEND/Deploy are off on a network without unlocked accounts. */
-    public static final String READ_ONLY_REASON =
-            "Read-only network — no unlocked accounts. Deploys and sends need "
-            + "a local devnet (ANVIL) or your own wallet/CLI.";
+    public static final String READ_ONLY_REASON = Bundle.InteractSession_readOnlyReason();
 
     /** The deploy-form hint when the constructor takes nothing. */
-    public static final String NO_CONSTRUCTOR_PARAMS = "Constructor has no parameters";
+    public static final String NO_CONSTRUCTOR_PARAMS =
+            Bundle.InteractSession_noConstructorParams();
 
     private final ContractArtifact artifact;
     private final String address;
@@ -100,7 +106,7 @@ public final class InteractSession {
                 .orElse(false);
     }
 
-    /** {@value #NO_CONSTRUCTOR_PARAMS} when the form has no fields; else null. */
+    /** {@link #NO_CONSTRUCTOR_PARAMS} when the form has no fields; else null. */
     public String constructorHint() {
         return constructorParams().isEmpty() ? NO_CONSTRUCTOR_PARAMS : null;
     }
@@ -129,8 +135,7 @@ public final class InteractSession {
             return READ_ONLY_REASON;
         }
         if (!hasBytecode()) {
-            return artifact.name() + " has no creation bytecode — interfaces and "
-                    + "abstract contracts can't be deployed.";
+            return Bundle.InteractSession_noCreationBytecode(artifact.name());
         }
         return null;
     }

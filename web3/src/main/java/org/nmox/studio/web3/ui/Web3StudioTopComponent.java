@@ -129,7 +129,244 @@ import org.openide.windows.TopComponent;
 @Messages({
     "CTL_Web3StudioAction=Contract Studio",
     "CTL_Web3StudioTopComponent=Contract Studio",
-    "HINT_Web3StudioTopComponent=Smart contracts: compile, deploy, interact, watch, oversee (EVM)"
+    "HINT_Web3StudioTopComponent=Smart contracts: compile, deploy, interact, watch, oversee (EVM)",
+    "Web3StudioTopComponent_notConnected=not connected \u2014 start a local chain (ANVIL in the rack)",
+    "Web3StudioTopComponent_forgeHint=forge not found \u2014 install Foundry: curl -L https://foundry.paradigm.xyz | bash",
+    "Web3StudioTopComponent_noProjectHint=No project aimed \u2014 aim the rack at a Foundry or Hardhat project first",
+    "Web3StudioTopComponent_compile=Compile",
+    "Web3StudioTopComponent_rescan=Rescan",
+    "Web3StudioTopComponent_treeA11y=Contract artifacts and networks",
+    "Web3StudioTopComponent_watchStart=START",
+    "Web3StudioTopComponent_watchStop=STOP",
+    "Web3StudioTopComponent_runGasReport=Run gas report",
+    "Web3StudioTopComponent_networkA11y=Network",
+    "Web3StudioTopComponent_fromAccountA11y=From account",
+    "Web3StudioTopComponent_watchFilterA11y=Watch filter",
+    "Web3StudioTopComponent_eventLogA11y=Event log",
+    "Web3StudioTopComponent_tabInteract=Interact",
+    "Web3StudioTopComponent_tabWatch=Watch",
+    "Web3StudioTopComponent_tabOversight=Oversight",
+    "Web3StudioTopComponent_logTitle=Log",
+    "Web3StudioTopComponent_networkComboTip=The network every call, send, and watch targets",
+    "Web3StudioTopComponent_addNetwork=Add Network\u2026",
+    "Web3StudioTopComponent_addNetworkTip=Add an RPC endpoint \u2014 secret URLs go to the OS keychain",
+    "Web3StudioTopComponent_removeNetwork=Remove Network\u2026",
+    "Web3StudioTopComponent_removeNetworkTip=Removes the selected network \u2014 a secret RPC URL's keychain entry is deleted too",
+    "Web3StudioTopComponent_importAbi=Import ABI\u2026",
+    "Web3StudioTopComponent_importAbiTip=Interact with any deployed contract \u2014 paste "
+        + "its ABI; attach by address; no build needed",
+    "Web3StudioTopComponent_importAbiA11y=Import an ABI",
+    "Web3StudioTopComponent_removeImported=Remove Imported\u2026",
+    "Web3StudioTopComponent_removeImportedTip=Forget an imported ABI \u2014 the chain is untouched",
+    "Web3StudioTopComponent_removeImportedA11y=Remove an imported ABI",
+    "Web3StudioTopComponent_rescanTip=Re-scan out/ and artifacts/ for compiled contracts",
+    "Web3StudioTopComponent_noArtifacts=No artifacts found \u2014 Compile (forge build), Rescan, "
+        + "or Import ABI\u2026",
+    "Web3StudioTopComponent_noDeployments=No deployments yet \u2014 deploy a contract from Interact",
+    "Web3StudioTopComponent_selectSomething=Select a contract or a deployment in the tree.",
+    "Web3StudioTopComponent_deployTitle=Deploy {0}",
+    "Web3StudioTopComponent_valueEthA11y=Value in ETH",
+    "Web3StudioTopComponent_valueEthTip=ETH to send with the deployment, like 0.5",
+    "Web3StudioTopComponent_valueEthRow=Value (ETH):",
+    "Web3StudioTopComponent_fromRow=From:",
+    "Web3StudioTopComponent_deploy=Deploy",
+    "Web3StudioTopComponent_sendTip=eth_sendTransaction with the node's unlocked account",
+    "Web3StudioTopComponent_attachToAddress=Attach to address\u2026",
+    "Web3StudioTopComponent_attachTip=Interact with an already-deployed instance",
+    "Web3StudioTopComponent_noFunctions=This ABI declares no functions.",
+    "Web3StudioTopComponent_eventsHeader=Events (decoded live in the Watch tab):",
+    "Web3StudioTopComponent_valueEthInline=value (ETH):",
+    "Web3StudioTopComponent_call=CALL",
+    "Web3StudioTopComponent_send=SEND",
+    "Web3StudioTopComponent_callTip=eth_call \u2014 free, read-only",
+    "Web3StudioTopComponent_argFallbackName=arg",
+    "Web3StudioTopComponent_paramLabel={0} ({1}):",
+    "Web3StudioTopComponent_remoteEndpoint=a remote endpoint",
+    "Web3StudioTopComponent_broadcastQuestion={0} will broadcast a REAL transaction to {1}"
+        + " \u2014 a non-local endpoint. There is no undo.",
+    "Web3StudioTopComponent_broadcastTitle=Broadcast transaction?",
+    "Web3StudioTopComponent_txInFlight=A transaction is in flight \u2014 wait for its receipt",
+    "Web3StudioTopComponent_deployingVerb=Deploying {0}",
+    "Web3StudioTopComponent_deployCancelled=Deploy cancelled",
+    "Web3StudioTopComponent_deploying=Deploying\u2026",
+    "Web3StudioTopComponent_deployingStatus=Deploying {0}\u2026",
+    "Web3StudioTopComponent_deployedHeadline={0} deployed at {1} (block {2})",
+    "Web3StudioTopComponent_calling=calling\u2026",
+    "Web3StudioTopComponent_callNoReturn=OK (no return value)",
+    "Web3StudioTopComponent_callResult=\u2192 {0}",
+    "Web3StudioTopComponent_sendVerb=SEND {0}()",
+    "Web3StudioTopComponent_sendCancelled=Send cancelled",
+    "Web3StudioTopComponent_sending=sending\u2026",
+    "Web3StudioTopComponent_sendingStatus=Sending {0}()\u2026",
+    "Web3StudioTopComponent_sendResult={0}(): {1}",
+    "Web3StudioTopComponent_attachPrompt=Contract address (0x\u2026):",
+    "Web3StudioTopComponent_attachDialogTitle=Attach {0} to Address",
+    "Web3StudioTopComponent_attachedStatus=Attached {0} to {1}",
+    "Web3StudioTopComponent_notAnAddressLong=That isn't an address \u2014 expected 0x followed by 40 hex digits.",
+    "Web3StudioTopComponent_noArtifactNamed=No artifact named {0} in this project \u2014 Compile or "
+        + "Rescan first, then select the deployment again.",
+    "Web3StudioTopComponent_deploymentOnOtherNetwork=Note: this deployment was recorded on {0}"
+        + " \u2014 calls go to {1}",
+    "Web3StudioTopComponent_watchTip=Poll the chain every 2 s: new blocks plus decoded "
+        + "events of your deployed contracts",
+    "Web3StudioTopComponent_watchContractLabel= Contract: ",
+    "Web3StudioTopComponent_watchFilterTip=Whose events to fetch \u2014 blocks always show",
+    "Web3StudioTopComponent_inspectTx=Inspect tx\u2026",
+    "Web3StudioTopComponent_inspectTxTip=Decode a transaction by hash against your "
+        + "artifacts' ABIs \u2014 read-only",
+    "Web3StudioTopComponent_inspectTxA11y=Inspect a transaction by hash",
+    "Web3StudioTopComponent_history=History\u2026",
+    "Web3StudioTopComponent_historyTip=Fetch and decode past events for an address "
+        + "over a bounded block range \u2014 exportable as CSV",
+    "Web3StudioTopComponent_historyA11y=Query event history",
+    "Web3StudioTopComponent_watchTableA11y=Watched blocks and events",
+    "Web3StudioTopComponent_watchStopped=Watch stopped",
+    "Web3StudioTopComponent_watchingStatus=Watching {0} \u2014 polling every 2 s",
+    "Web3StudioTopComponent_theChain=the chain",
+    "Web3StudioTopComponent_chipChainBlock=chain {0} \u00b7 block {1}",
+    "Web3StudioTopComponent_chipChainExpectedBlock=chain {0} (expected {1}) \u00b7 block {2}",
+    "Web3StudioTopComponent_chipGas={0} \u00b7 gas {1}",
+    "Web3StudioTopComponent_chipConnecting=connecting\u2026",
+    "Web3StudioTopComponent_chipNoRpcUrl=no RPC URL stored for {0} \u2014 remove and re-add the network",
+    "Web3StudioTopComponent_allDeployedContracts=All deployed contracts",
+    "Web3StudioTopComponent_sizeTableA11y=Contract sizes",
+    "Web3StudioTopComponent_sizeTableTitle=Contract sizes \u2014 EIP-170 caps deployed bytecode at 24,576 bytes",
+    "Web3StudioTopComponent_gasButtonTip=forge test --gas-report, parsed into the table",
+    "Web3StudioTopComponent_gasTableA11y=Gas report",
+    "Web3StudioTopComponent_gasPanelTitle=Gas report",
+    "Web3StudioTopComponent_deploymentsTableA11y=Deployment address book",
+    "Web3StudioTopComponent_copyAddress=Copy address",
+    "Web3StudioTopComponent_copiedStatus=Copied {0}",
+    "Web3StudioTopComponent_forgetDeployment=Forget deployment",
+    "Web3StudioTopComponent_forgetQuestion=Forget {0} at {1}? Only this address-book row is removed"
+        + " \u2014 the contract on chain is untouched.",
+    "Web3StudioTopComponent_forgetTitle=Forget Deployment",
+    "Web3StudioTopComponent_forgotStatus=Forgot {0}",
+    "Web3StudioTopComponent_deploymentsTableTip=Double-click to open in Interact; right-click to copy the address or forget the row",
+    "Web3StudioTopComponent_deploymentsTitle=Deployments (address book)",
+    "Web3StudioTopComponent_gasReportRunning=Running forge test --gas-report\u2026",
+    "Web3StudioTopComponent_noGasTable=No gas table in the output \u2014 does the project have tests?",
+    "Web3StudioTopComponent_forgeTestFailed=forge test failed (exit {0}) \u2014 see the log",
+    "Web3StudioTopComponent_gasRowsOne={0} function row",
+    "Web3StudioTopComponent_gasRowsMany={0} function rows",
+    "Web3StudioTopComponent_gasRowsExit={0} \u00b7 forge exit {1}",
+    "Web3StudioTopComponent_forgeNotFound=forge not found",
+    "Web3StudioTopComponent_gasReportInterrupted=Gas report interrupted",
+    "Web3StudioTopComponent_forgeBuilding=forge build\u2026",
+    "Web3StudioTopComponent_forgeBuildOk=forge build OK",
+    "Web3StudioTopComponent_forgeBuildFailed=forge build failed (exit {0}) \u2014 see the log",
+    "Web3StudioTopComponent_compileInterrupted=Compile interrupted",
+    "Web3StudioTopComponent_notTrusted=Not run \u2014 workspace not trusted",
+    "Web3StudioTopComponent_scanningArtifacts=Scanning artifacts\u2026",
+    "Web3StudioTopComponent_artifactsFoundOne={0} contract artifact",
+    "Web3StudioTopComponent_artifactsFoundMany={0} contract artifacts",
+    "Web3StudioTopComponent_scanProgress=Scanning contract artifacts\u2026",
+    "Web3StudioTopComponent_fromComboTip=The node's unlocked accounts (eth_accounts) \u2014 it signs, the IDE never can",
+    "Web3StudioTopComponent_addedNetwork=Added network {0}",
+    "Web3StudioTopComponent_anvilBuiltIn=The local Anvil network is built in \u2014 select an added network to remove",
+    "Web3StudioTopComponent_removeNetworkQuestion=Remove network \"{0}\"?",
+    "Web3StudioTopComponent_removeNetworkKeychain= Its keychain RPC URL is deleted too.",
+    "Web3StudioTopComponent_removeNetworkTitle=Remove Network",
+    "Web3StudioTopComponent_removedNetwork=Removed network {0}",
+    "Web3StudioTopComponent_workspaceUnreadable=Couldn''t read {0} \u2014 starting empty",
+    "Web3StudioTopComponent_workspaceBackupKept=The unreadable original was kept at {0}.",
+    "Web3StudioTopComponent_contractNameA11y=Contract name",
+    "Web3StudioTopComponent_deployedAddressA11y=Deployed address, optional",
+    "Web3StudioTopComponent_abiJsonA11y=ABI JSON array",
+    "Web3StudioTopComponent_nameRow=Name:",
+    "Web3StudioTopComponent_addressRow=Address:",
+    "Web3StudioTopComponent_importAbiHint=Paste the ABI JSON array \u2014 from a block explorer's "
+        + "Contract tab, an artifact's abi field, or a teammate.",
+    "Web3StudioTopComponent_importAbiTitle=Import ABI",
+    "Web3StudioTopComponent_importNeedsName=Import needs a name",
+    "Web3StudioTopComponent_importNameTaken=\"{0}\" already exists \u2014 imported names can''t "
+        + "shadow an artifact",
+    "Web3StudioTopComponent_notAnAddress=Not an address \u2014 expected 0x + 40 hex characters",
+    "Web3StudioTopComponent_importCapReached=Import cap reached ({0}) \u2014 remove one first",
+    "Web3StudioTopComponent_abiDidNotParse=ABI didn''t parse: {0}",
+    "Web3StudioTopComponent_abiEmpty=That ABI has no functions or events \u2014 nothing to interact with",
+    "Web3StudioTopComponent_importedStatus=Imported \"{0}\" \u2014 {1} functions, {2} events",
+    "Web3StudioTopComponent_noImportedAbis=No imported ABIs to remove",
+    "Web3StudioTopComponent_importedToRemoveA11y=Imported contract to remove",
+    "Web3StudioTopComponent_removeImportedTitle=Remove imported ABI",
+    "Web3StudioTopComponent_removedImported=Removed imported \"{0}\" \u2014 the chain is untouched",
+    "Web3StudioTopComponent_saveFailedTitle=Contract Studio can't save its workspace",
+    "Web3StudioTopComponent_saveFailedDetail=Changes are not being persisted: {0}",
+    "Web3StudioTopComponent_reloadedTitle=Reloaded {0}",
+    "Web3StudioTopComponent_reloadedDetail=Picked up changes made outside the studio",
+    "Web3StudioTopComponent_erc20Reading={0} \u2014 reading token metadata\u2026",
+    "Web3StudioTopComponent_tokenLabel={0} token",
+    "Web3StudioTopComponent_tokenSummaryA11y={0} token summary",
+    "Web3StudioTopComponent_ownerOf=Owner of\u2026",
+    "Web3StudioTopComponent_ownerOfTip=eth_call ownerOf(tokenId) \u2014 read-only; "
+        + "shows tokenURI too when the ABI carries it",
+    "Web3StudioTopComponent_ownerOfA11y=Look up a token's owner",
+    "Web3StudioTopComponent_balanceOf=Balance of\u2026",
+    "Web3StudioTopComponent_balanceOfTip=eth_call balanceOf(address) \u2014 read-only",
+    "Web3StudioTopComponent_balanceOfA11y=Look up a token balance",
+    "Web3StudioTopComponent_erc721NotConnected=\u2b21 ERC-721 token \u2014 connect to a network to "
+        + "read its name and symbol",
+    "Web3StudioTopComponent_nameSymbolAbsent=  \u00b7 name/symbol not in ABI",
+    "Web3StudioTopComponent_tokenIdPrompt=Token id:",
+    "Web3StudioTopComponent_ownerOfDialogTitle=Owner of \u2014 read-only eth_call",
+    "Web3StudioTopComponent_notATokenId=Not a token id \u2014 expected a whole number",
+    "Web3StudioTopComponent_connectFirst=Connect to a network first",
+    "Web3StudioTopComponent_ownerOfLine=Owner of #{0}: {1}",
+    "Web3StudioTopComponent_tokenUriPart=  \u00b7 tokenURI: {0}",
+    "Web3StudioTopComponent_ownerLookupFailed=Owner lookup failed: {0}",
+    "Web3StudioTopComponent_erc20NotConnected=\u2b21 ERC-20 \u2014 connect to a network to read "
+        + "the token's name, symbol and supply",
+    "Web3StudioTopComponent_decimalsPart=  \u00b7 {0} decimals",
+    "Web3StudioTopComponent_supplyPart=  \u00b7 supply {0}",
+    "Web3StudioTopComponent_supplyRawPart=  \u00b7 supply {0} (raw \u2014 decimals not in ABI)",
+    "Web3StudioTopComponent_addressPrompt=Address:",
+    "Web3StudioTopComponent_balanceDialogTitle=Token balance \u2014 read-only eth_call",
+    "Web3StudioTopComponent_balanceLine=Balance of {0}: {1}",
+    "Web3StudioTopComponent_balanceLineRaw=Balance of {0}: {1} (raw)",
+    "Web3StudioTopComponent_balanceLookupFailed=Balance lookup failed: {0}",
+    "Web3StudioTopComponent_contractAddressA11y=Contract address",
+    "Web3StudioTopComponent_fromBlockA11y=From block",
+    "Web3StudioTopComponent_toBlockA11y=To block, or latest",
+    "Web3StudioTopComponent_blocksRow=Blocks:",
+    "Web3StudioTopComponent_blockRangeTo= to ",
+    "Web3StudioTopComponent_blockRangeHint= (blank = last 1000, cap {0})",
+    "Web3StudioTopComponent_historyDialogTitle=Event history",
+    "Web3StudioTopComponent_fetchingHistory=Fetching history\u2026",
+    "Web3StudioTopComponent_historyFailed=History failed: {0}",
+    "Web3StudioTopComponent_noEventsFor=No events for {0} in blocks {1}\u2013{2}",
+    "Web3StudioTopComponent_historyAreaA11y=Event history",
+    "Web3StudioTopComponent_saveCsv=Save CSV\u2026",
+    "Web3StudioTopComponent_saveCsvA11y=Save history as CSV",
+    "Web3StudioTopComponent_saveCsvTitle=Save event history",
+    "Web3StudioTopComponent_savedEvents=Saved {0} events to {1}",
+    "Web3StudioTopComponent_saveFailed=Save failed: {0}",
+    "Web3StudioTopComponent_historyWindowTitle=Events \u2014 {0} \u00b7 blocks {1}\u2013{2} \u00b7 {3} found",
+    "Web3StudioTopComponent_txHashPrompt=Transaction hash:",
+    "Web3StudioTopComponent_inspectDialogTitle=Inspect transaction",
+    "Web3StudioTopComponent_notATxHash=Not a transaction hash \u2014 expected 0x + 64 hex characters",
+    "Web3StudioTopComponent_txNotFound=Transaction not found on this network",
+    "Web3StudioTopComponent_inspectFailed=Inspect failed: {0}",
+    "Web3StudioTopComponent_inspectionA11y=Transaction inspection",
+    "Web3StudioTopComponent_inspectionWindowTitle=Transaction {0}",
+    "Web3StudioTopComponent_branchNetworks=Networks",
+    "Web3StudioTopComponent_branchContracts=Contracts",
+    "Web3StudioTopComponent_branchDeployments=Deployments",
+    "Web3StudioTopComponent_keyringBadge=\u00b7 keyring",
+    "Web3StudioTopComponent_chainBadge=chain {0}",
+    "Web3StudioTopComponent_columnContract=Contract",
+    "Web3StudioTopComponent_columnBytes=Bytes",
+    "Web3StudioTopComponent_columnOfLimit=Of limit",
+    "Web3StudioTopComponent_columnVerdict=Verdict",
+    "Web3StudioTopComponent_columnFunction=Function",
+    "Web3StudioTopComponent_columnMin=Min",
+    "Web3StudioTopComponent_columnAvg=Avg",
+    "Web3StudioTopComponent_columnMedian=Median",
+    "Web3StudioTopComponent_columnMax=Max",
+    "Web3StudioTopComponent_columnCalls=Calls",
+    "Web3StudioTopComponent_columnAddress=Address",
+    "Web3StudioTopComponent_columnNetwork=Network",
+    "Web3StudioTopComponent_columnBlock=Block",
+    "Web3StudioTopComponent_columnAge=Age"
 })
 public final class Web3StudioTopComponent extends TopComponent {
 
@@ -149,12 +386,9 @@ public final class Web3StudioTopComponent extends TopComponent {
     static final Network LOCAL_ANVIL =
             new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545");
 
-    static final String NOT_CONNECTED =
-            "not connected — start a local chain (ANVIL in the rack)";
-    static final String FORGE_HINT =
-            "forge not found — install Foundry: curl -L https://foundry.paradigm.xyz | bash";
-    static final String NO_PROJECT_HINT =
-            "No project aimed — aim the rack at a Foundry or Hardhat project first";
+    static final String NOT_CONNECTED = Bundle.Web3StudioTopComponent_notConnected();
+    static final String FORGE_HINT = Bundle.Web3StudioTopComponent_forgeHint();
+    static final String NO_PROJECT_HINT = Bundle.Web3StudioTopComponent_noProjectHint();
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
@@ -198,13 +432,13 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final JComboBox<Network> networkCombo = new JComboBox<>();
     private boolean networkComboRefreshing;
     private final JLabel chipLabel = new JLabel(PlainText.plain(NOT_CONNECTED));
-    private final JButton compileButton = new JButton("Compile");
-    private final JButton rescanButton = new JButton("Rescan");
+    private final JButton compileButton = new JButton(Bundle.Web3StudioTopComponent_compile());
+    private final JButton rescanButton = new JButton(Bundle.Web3StudioTopComponent_rescan());
     private final JLabel statusLabel = new JLabel(" ");
 
     private final JTree tree = new JTree();
     {
-        tree.getAccessibleContext().setAccessibleName("Contract artifacts and networks");
+        tree.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_treeA11y());
     }
     private final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("");
     private final DefaultMutableTreeNode networksNode =
@@ -220,7 +454,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private final WatchFeed feed = new WatchFeed();
     private final WatchModel watchModel = new WatchModel();
-    private final JButton watchButton = new JButton("START");
+    private final JButton watchButton = new JButton(Bundle.Web3StudioTopComponent_watchStart());
     private final JComboBox<Object> watchFilterCombo = new JComboBox<>();
     private boolean watchFilterRefreshing;
     private ScheduledExecutorService watchExec;
@@ -244,7 +478,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final SizeModel sizeModel = new SizeModel();
     private final GasModel gasModel = new GasModel();
     private final DeploymentsModel deploymentsModel = new DeploymentsModel();
-    private final JButton gasButton = new JButton("Run gas report");
+    private final JButton gasButton = new JButton(Bundle.Web3StudioTopComponent_runGasReport());
 
     private final JTextArea logArea = new JTextArea(5, 40);
 
@@ -264,29 +498,29 @@ public final class Web3StudioTopComponent extends TopComponent {
             new org.nmox.studio.core.util.SelfWriteTracker();
 
     public Web3StudioTopComponent() {
-        networkCombo.getAccessibleContext().setAccessibleName("Network");
-        fromCombo.getAccessibleContext().setAccessibleName("From account");
+        networkCombo.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_networkA11y());
+        fromCombo.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_fromAccountA11y());
         // a list renderer paints <html>-led item text as markup; a plain
         // default renderer html-disables it (accounts are hex today, but the
         // guard costs nothing and holds if the model ever carries a name)
         fromCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
-        watchFilterCombo.getAccessibleContext().setAccessibleName("Watch filter");
-        logArea.getAccessibleContext().setAccessibleName("Event log");
+        watchFilterCombo.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_watchFilterA11y());
+        logArea.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_eventLogA11y());
         setName(Bundle.CTL_Web3StudioTopComponent());
         setToolTipText(Bundle.HINT_Web3StudioTopComponent());
         setLayout(new BorderLayout());
 
         add(buildToolbar(), BorderLayout.NORTH);
 
-        tabs.addTab("Interact", buildInteractTab());
-        tabs.addTab("Watch", buildWatchTab());
-        tabs.addTab("Oversight", buildOversightTab());
+        tabs.addTab(Bundle.Web3StudioTopComponent_tabInteract(), buildInteractTab());
+        tabs.addTab(Bundle.Web3StudioTopComponent_tabWatch(), buildWatchTab());
+        tabs.addTab(Bundle.Web3StudioTopComponent_tabOversight(), buildOversightTab());
 
         logArea.setEditable(false);
         logArea.setFont(MONO);
         logArea.setLineWrap(false);
         JScrollPane logScroll = new JScrollPane(logArea);
-        logScroll.setBorder(BorderFactory.createTitledBorder("Log"));
+        logScroll.setBorder(BorderFactory.createTitledBorder(Bundle.Web3StudioTopComponent_logTitle()));
         JSplitPane rightSplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabs, logScroll);
         rightSplit.setResizeWeight(1.0);
         rightSplit.setDividerLocation(430);
@@ -313,7 +547,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         networkCombo.setRenderer(new NetworkRenderer());
-        networkCombo.setToolTipText("The network every call, send, and watch targets");
+        networkCombo.setToolTipText(Bundle.Web3StudioTopComponent_networkComboTip());
         networkCombo.setMaximumSize(new java.awt.Dimension(240, 60));
         networkCombo.addActionListener(e -> {
             if (!networkComboRefreshing) {
@@ -321,27 +555,24 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
         });
         bar.add(networkCombo);
-        JButton addNetworkButton = new JButton("Add Network…");
-        addNetworkButton.setToolTipText("Add an RPC endpoint — secret URLs go to the OS keychain");
+        JButton addNetworkButton = new JButton(Bundle.Web3StudioTopComponent_addNetwork());
+        addNetworkButton.setToolTipText(Bundle.Web3StudioTopComponent_addNetworkTip());
         addNetworkButton.addActionListener(e -> addNetwork());
         bar.add(addNetworkButton);
-        JButton removeNetworkButton = new JButton("Remove Network\u2026");
-        removeNetworkButton.setToolTipText(
-                "Removes the selected network \u2014 a secret RPC URL's keychain entry is deleted too");
+        JButton removeNetworkButton = new JButton(Bundle.Web3StudioTopComponent_removeNetwork());
+        removeNetworkButton.setToolTipText(Bundle.Web3StudioTopComponent_removeNetworkTip());
         removeNetworkButton.addActionListener(e -> removeSelectedNetwork());
         bar.add(removeNetworkButton);
         bar.addSeparator();
-        JButton importAbiButton = new JButton("Import ABI\u2026");
-        importAbiButton.setToolTipText("Interact with any deployed contract — paste "
-                + "its ABI; attach by address; no build needed");
-        importAbiButton.getAccessibleContext().setAccessibleName("Import an ABI");
+        JButton importAbiButton = new JButton(Bundle.Web3StudioTopComponent_importAbi());
+        importAbiButton.setToolTipText(Bundle.Web3StudioTopComponent_importAbiTip());
+        importAbiButton.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_importAbiA11y());
         importAbiButton.addActionListener(e -> importAbi());
         bar.add(importAbiButton);
-        JButton removeImportedButton = new JButton("Remove Imported\u2026");
-        removeImportedButton.setToolTipText(
-                "Forget an imported ABI \u2014 the chain is untouched");
+        JButton removeImportedButton = new JButton(Bundle.Web3StudioTopComponent_removeImported());
+        removeImportedButton.setToolTipText(Bundle.Web3StudioTopComponent_removeImportedTip());
         removeImportedButton.getAccessibleContext().setAccessibleName(
-                "Remove an imported ABI");
+                Bundle.Web3StudioTopComponent_removeImportedA11y());
         removeImportedButton.addActionListener(e -> removeImported());
         bar.add(removeImportedButton);
         bar.addSeparator();
@@ -352,7 +583,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         compileButton.setForeground(ACCENT);
         compileButton.addActionListener(e -> compile());
         bar.add(compileButton);
-        rescanButton.setToolTipText("Re-scan out/ and artifacts/ for compiled contracts");
+        rescanButton.setToolTipText(Bundle.Web3StudioTopComponent_rescanTip());
         rescanButton.addActionListener(e -> rescan());
         bar.add(rescanButton);
         bar.addSeparator();
@@ -391,9 +622,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (projectDirOrNull() == null) {
             contractsNode.add(new DefaultMutableTreeNode(NO_PROJECT_HINT));
         } else if (allArtifacts().isEmpty()) {
-            contractsNode.add(new DefaultMutableTreeNode(
-                    "No artifacts found — Compile (forge build), Rescan, "
-                    + "or Import ABI…"));
+            contractsNode.add(new DefaultMutableTreeNode(Bundle.Web3StudioTopComponent_noArtifacts()));
         } else {
             for (ContractArtifact artifact : allArtifacts()) {
                 DefaultMutableTreeNode node = new DefaultMutableTreeNode(artifact);
@@ -414,8 +643,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void rebuildDeploymentsBranch() {
         deploymentsNode.removeAllChildren();
         if (deployments.isEmpty()) {
-            deploymentsNode.add(new DefaultMutableTreeNode(
-                    "No deployments yet — deploy a contract from Interact"));
+            deploymentsNode.add(new DefaultMutableTreeNode(Bundle.Web3StudioTopComponent_noDeployments()));
         } else {
             for (DeploymentRecord record : deployments) {
                 deploymentsNode.add(new DefaultMutableTreeNode(record));
@@ -454,7 +682,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     // ---- Interact -------------------------------------------------------------
 
     private JComponent buildInteractTab() {
-        showInteractHint("Select a contract or a deployment in the tree.");
+        showInteractHint(Bundle.Web3StudioTopComponent_selectSomething());
         return interactPanel;
     }
 
@@ -478,7 +706,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void rebuildInteract() {
         InteractSession s = session;
         if (s == null) {
-            showInteractHint("Select a contract or a deployment in the tree.");
+            showInteractHint(Bundle.Web3StudioTopComponent_selectSomething());
             return;
         }
         interactPanel.removeAll();
@@ -500,7 +728,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         form.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         int row = 0;
 
-        JLabel title = new JLabel("Deploy " + s.artifact().name());
+        JLabel title = new JLabel(Bundle.Web3StudioTopComponent_deployTitle(s.artifact().name()));
         title.setFont(title.getFont().deriveFont(Font.BOLD, 14f));
         addFormRow(form, row++, title);
         if (!s.artifact().sourcePath().isEmpty()) {
@@ -534,21 +762,21 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (s.constructorPayable()) {
             valueField = new JTextField(10);
             valueField.setFont(MONO);
-            valueField.getAccessibleContext().setAccessibleName("Value in ETH");
-            valueField.setToolTipText("ETH to send with the deployment, like 0.5");
-            addLabeledRow(form, row++, "Value (ETH):", valueField);
+            valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
+            valueField.setToolTipText(Bundle.Web3StudioTopComponent_valueEthTip());
+            addLabeledRow(form, row++, Bundle.Web3StudioTopComponent_valueEthRow(), valueField);
         }
 
-        addLabeledRow(form, row++, "From:", fromCombo);
+        addLabeledRow(form, row++, Bundle.Web3StudioTopComponent_fromRow(), fromCombo);
 
-        JButton deployButton = new JButton("Deploy");
+        JButton deployButton = new JButton(Bundle.Web3StudioTopComponent_deploy());
         deployButton.setForeground(ACCENT);
         deployButton.setEnabled(reason == null && connected);
         deployButton.setToolTipText(PlainText.plain(reason != null ? reason
-                : connected ? "eth_sendTransaction with the node's unlocked account"
+                : connected ? Bundle.Web3StudioTopComponent_sendTip()
                         : NOT_CONNECTED));
-        JButton attachButton = new JButton("Attach to address…");
-        attachButton.setToolTipText("Interact with an already-deployed instance");
+        JButton attachButton = new JButton(Bundle.Web3StudioTopComponent_attachToAddress());
+        attachButton.setToolTipText(Bundle.Web3StudioTopComponent_attachTip());
         JLabel result = new JLabel(" ");
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
         buttons.add(deployButton);
@@ -583,7 +811,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             list.add(leftAligned(why));
         } else if (!s.writeFunctions().isEmpty()) {
             JPanel fromRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-            fromRow.add(new JLabel("From:"));
+            fromRow.add(new JLabel(Bundle.Web3StudioTopComponent_fromRow()));
             fromRow.add(fromCombo); // single-parented: only one form shows at a time
             list.add(leftAligned(fromRow));
         }
@@ -596,14 +824,14 @@ public final class Web3StudioTopComponent extends TopComponent {
             list.add(leftAligned(functionRow(s, function, sendReason)));
         }
         if (s.artifact().functions().isEmpty()) {
-            JLabel none = new JLabel("This ABI declares no functions.");
+            JLabel none = new JLabel(Bundle.Web3StudioTopComponent_noFunctions());
             none.setForeground(Color.GRAY);
             list.add(leftAligned(none));
         }
 
         if (!s.artifact().events().isEmpty()) {
             list.add(Box.createVerticalStrut(8));
-            JLabel eventsHeader = new JLabel("Events (decoded live in the Watch tab):");
+            JLabel eventsHeader = new JLabel(Bundle.Web3StudioTopComponent_eventsHeader());
             eventsHeader.setForeground(Color.GRAY);
             list.add(leftAligned(eventsHeader));
             for (AbiEntry event : s.artifact().events()) {
@@ -642,24 +870,24 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         JTextField valueField = null;
         if (!read && "payable".equals(function.stateMutability())) {
-            JLabel valueLabel = new JLabel("value (ETH):");
+            JLabel valueLabel = new JLabel(Bundle.Web3StudioTopComponent_valueEthInline());
             valueLabel.setForeground(Color.GRAY);
             rowPanel.add(valueLabel);
             valueField = new JTextField(6);
             valueField.setFont(MONO);
-            valueField.getAccessibleContext().setAccessibleName("Value in ETH");
+            valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
             rowPanel.add(valueField);
         }
 
-        JButton action = new JButton(PlainText.plain(read ? "CALL" : "SEND"));
+        JButton action = new JButton(PlainText.plain(read ? Bundle.Web3StudioTopComponent_call() : Bundle.Web3StudioTopComponent_send()));
         JLabel result = new JLabel(" ");
         if (read) {
-            action.setToolTipText("eth_call — free, read-only");
+            action.setToolTipText(Bundle.Web3StudioTopComponent_callTip());
             action.addActionListener(e -> call(s, function, argFields, result));
         } else {
             action.setEnabled(sendReason == null && connected);
             action.setToolTipText(PlainText.plain(sendReason != null ? sendReason
-                    : connected ? "eth_sendTransaction with the node's unlocked account"
+                    : connected ? Bundle.Web3StudioTopComponent_sendTip()
                             : NOT_CONNECTED));
             JTextField valueRef = valueField;
             action.addActionListener(e -> send(s, function, argFields, valueRef, result));
@@ -671,8 +899,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private static String paramLabel(AbiParam param) {
         String name = param.name() == null || param.name().isBlank()
-                ? "arg" : param.name();
-        return name + " (" + param.type() + "):";
+                ? Bundle.Web3StudioTopComponent_argFallbackName() : param.name();
+        return Bundle.Web3StudioTopComponent_paramLabel(name, param.type());
     }
 
     // ---- deploy / call / send -----------------------------------------------
@@ -693,11 +921,12 @@ public final class Web3StudioTopComponent extends TopComponent {
             return true;
         }
         Network network = selectedNetwork();
-        String where = network == null ? "a remote endpoint" : "\"" + network.name() + "\"";
+        String where = network == null ? Bundle.Web3StudioTopComponent_remoteEndpoint()
+                : "\"" + network.name() + "\"";
         NotifyDescriptor d = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain(verb + " will broadcast a REAL transaction to " + where
-                + " — a non-local endpoint. There is no undo.", "Message"),
-                "Broadcast transaction?",
+                org.nmox.studio.core.util.PlainDialogs.plain(
+                        Bundle.Web3StudioTopComponent_broadcastQuestion(verb, where), "Message"),
+                Bundle.Web3StudioTopComponent_broadcastTitle(),
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{NotifyDescriptor.YES_OPTION, NotifyDescriptor.NO_OPTION},
                 NotifyDescriptor.NO_OPTION);
@@ -707,7 +936,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void deploy(InteractSession s, List<JTextField> argFields,
             JTextField valueField, JLabel result) {
         if (running) {
-            status("A transaction is in flight — wait for its receipt", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_txInFlight(), FAIL_RED);
             return;
         }
         JsonRpcClient c = client;
@@ -732,13 +961,13 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(refusal.getMessage(), FAIL_RED);
             return;
         }
-        if (!confirmRemoteBroadcast("Deploying " + s.artifact().name())) {
-            status("Deploy cancelled", Color.GRAY);
+        if (!confirmRemoteBroadcast(Bundle.Web3StudioTopComponent_deployingVerb(s.artifact().name()))) {
+            status(Bundle.Web3StudioTopComponent_deployCancelled(), Color.GRAY);
             return;
         }
         running = true;
-        setResult(result, "Deploying…", Color.GRAY);
-        status("Deploying " + s.artifact().name() + "…", Color.GRAY);
+        setResult(result, Bundle.Web3StudioTopComponent_deploying(), Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_deployingStatus(s.artifact().name()), Color.GRAY);
         RP.post(() -> {
             try {
                 String txHash = c.sendTransaction(from, null, data, valueHex);
@@ -778,9 +1007,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             refreshWatchFilter();
             updateWatchAddresses();
             publishSearch();
-            String headline = s.artifact().name() + " deployed at "
-                    + DisplayValues.shortAddress(address)
-                    + " (block " + receipt.blockNumber() + ")";
+            String headline = Bundle.Web3StudioTopComponent_deployedHeadline(s.artifact().name(),
+                    DisplayValues.shortAddress(address),
+                    String.valueOf(receipt.blockNumber()));
             status(headline, OK_GREEN);
             balloon(headline, address, true);
             openInteractFor(s.attachedTo(address));
@@ -806,14 +1035,15 @@ public final class Web3StudioTopComponent extends TopComponent {
             return;
         }
         String to = s.address();
-        setResult(result, "calling…", Color.GRAY);
+        setResult(result, Bundle.Web3StudioTopComponent_calling(), Color.GRAY);
         RP.post(() -> {
             try {
                 String returned = c.ethCall(to, data);
                 List<String> decoded = AbiCodec.decodeReturn(function, returned);
                 String text = decoded.isEmpty()
-                        ? "OK (no return value)" : String.join(", ", decoded);
-                SwingUtilities.invokeLater(() -> setResult(result, "→ " + text, OK_GREEN));
+                        ? Bundle.Web3StudioTopComponent_callNoReturn() : String.join(", ", decoded);
+                SwingUtilities.invokeLater(() ->
+                        setResult(result, Bundle.Web3StudioTopComponent_callResult(text), OK_GREEN));
             } catch (JsonRpcClient.RpcException rpc) {
                 String reason = revertReason(rpc, s);
                 SwingUtilities.invokeLater(() -> setResult(result, reason, FAIL_RED));
@@ -853,7 +1083,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void send(InteractSession s, AbiEntry function, List<JTextField> argFields,
             JTextField valueField, JLabel result) {
         if (running) {
-            status("A transaction is in flight — wait for its receipt", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_txInFlight(), FAIL_RED);
             return;
         }
         JsonRpcClient c = client;
@@ -877,13 +1107,13 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(refusal.getMessage(), FAIL_RED);
             return;
         }
-        if (!confirmRemoteBroadcast("SEND " + function.name() + "()")) {
-            status("Send cancelled", Color.GRAY);
+        if (!confirmRemoteBroadcast(Bundle.Web3StudioTopComponent_sendVerb(function.name()))) {
+            status(Bundle.Web3StudioTopComponent_sendCancelled(), Color.GRAY);
             return;
         }
         running = true;
-        setResult(result, "sending…", Color.GRAY);
-        status("Sending " + function.name() + "()…", Color.GRAY);
+        setResult(result, Bundle.Web3StudioTopComponent_sending(), Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_sendingStatus(function.name()), Color.GRAY);
         RP.post(() -> {
             try {
                 String txHash = c.sendTransaction(from, s.address(), data, valueHex);
@@ -893,8 +1123,8 @@ public final class Web3StudioTopComponent extends TopComponent {
                     running = false;
                     setResult(result, outcome.decision().message(),
                             ok ? OK_GREEN : FAIL_RED);
-                    status(function.name() + "(): " + outcome.decision().message(),
-                            ok ? OK_GREEN : FAIL_RED);
+                    status(Bundle.Web3StudioTopComponent_sendResult(function.name(),
+                            outcome.decision().message()), ok ? OK_GREEN : FAIL_RED);
                 });
             } catch (JsonRpcClient.RpcException rpc) {
                 String reason = revertReason(rpc, s);
@@ -950,7 +1180,8 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void attachToAddress(InteractSession s) {
         NotifyDescriptor.InputLine input = new NotifyDescriptor.InputLine(
-                "Contract address (0x…):", "Attach " + s.artifact().name() + " to Address");
+                Bundle.Web3StudioTopComponent_attachPrompt(),
+                Bundle.Web3StudioTopComponent_attachDialogTitle(s.artifact().name()));
         while (true) {
             if (DialogDisplayer.getDefault().notify(input) != NotifyDescriptor.OK_OPTION) {
                 return;
@@ -958,12 +1189,12 @@ public final class Web3StudioTopComponent extends TopComponent {
             String text = input.getInputText().trim();
             if (DisplayValues.isAddress(text)) {
                 openInteractFor(s.attachedTo(text));
-                status("Attached " + s.artifact().name() + " to "
-                        + DisplayValues.shortAddress(text), OK_GREEN);
+                status(Bundle.Web3StudioTopComponent_attachedStatus(s.artifact().name(),
+                        DisplayValues.shortAddress(text)), OK_GREEN);
                 return;
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    "That isn't an address — expected 0x followed by 40 hex digits.",
+                    Bundle.Web3StudioTopComponent_notAnAddressLong(),
                     NotifyDescriptor.WARNING_MESSAGE));
         }
     }
@@ -971,17 +1202,15 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void attachDeployment(DeploymentRecord record) {
         ContractArtifact artifact = artifactByName(record.contractName());
         if (artifact == null) {
-            showInteractHint("No artifact named " + record.contractName()
-                    + " in this project — Compile or Rescan first, then select the "
-                    + "deployment again.");
+            showInteractHint(Bundle.Web3StudioTopComponent_noArtifactNamed(record.contractName()));
             tabs.setSelectedIndex(0);
             return;
         }
         openInteractFor(InteractSession.attached(artifact, record.address(), hasAccounts()));
         Network current = selectedNetwork();
         if (current != null && !current.name().equals(record.networkName())) {
-            status("Note: this deployment was recorded on " + record.networkName()
-                    + " — calls go to " + current.name(), AMBER);
+            status(Bundle.Web3StudioTopComponent_deploymentOnOtherNetwork(record.networkName(),
+                    current.name()), AMBER);
         }
     }
 
@@ -1025,14 +1254,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
         watchButton.setForeground(ACCENT);
-        watchButton.setToolTipText("Poll the chain every 2 s: new blocks plus decoded "
-                + "events of your deployed contracts");
+        watchButton.setToolTipText(Bundle.Web3StudioTopComponent_watchTip());
         watchButton.addActionListener(e -> toggleWatch());
         bar.add(watchButton);
         bar.addSeparator();
-        bar.add(new JLabel(" Contract: "));
+        bar.add(new JLabel(Bundle.Web3StudioTopComponent_watchContractLabel()));
         watchFilterCombo.setRenderer(new WatchFilterRenderer());
-        watchFilterCombo.setToolTipText("Whose events to fetch — blocks always show");
+        watchFilterCombo.setToolTipText(Bundle.Web3StudioTopComponent_watchFilterTip());
         watchFilterCombo.addActionListener(e -> {
             if (!watchFilterRefreshing) {
                 updateWatchAddresses();
@@ -1040,25 +1268,23 @@ public final class Web3StudioTopComponent extends TopComponent {
         });
         bar.add(watchFilterCombo);
         bar.addSeparator();
-        JButton inspectButton = new JButton("Inspect tx\u2026");
-        inspectButton.setToolTipText("Decode a transaction by hash against your "
-                + "artifacts' ABIs \u2014 read-only");
+        JButton inspectButton = new JButton(Bundle.Web3StudioTopComponent_inspectTx());
+        inspectButton.setToolTipText(Bundle.Web3StudioTopComponent_inspectTxTip());
         inspectButton.getAccessibleContext().setAccessibleName(
-                "Inspect a transaction by hash");
+                Bundle.Web3StudioTopComponent_inspectTxA11y());
         inspectButton.addActionListener(e -> inspectTransaction());
         bar.add(inspectButton);
-        JButton historyButton = new JButton("History\u2026");
-        historyButton.setToolTipText("Fetch and decode past events for an address "
-                + "over a bounded block range \u2014 exportable as CSV");
+        JButton historyButton = new JButton(Bundle.Web3StudioTopComponent_history());
+        historyButton.setToolTipText(Bundle.Web3StudioTopComponent_historyTip());
         historyButton.getAccessibleContext().setAccessibleName(
-                "Query event history");
+                Bundle.Web3StudioTopComponent_historyA11y());
         historyButton.addActionListener(e -> eventHistory());
         bar.add(historyButton);
         panel.add(bar, BorderLayout.NORTH);
 
         JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(watchModel));
         table.setFont(MONO);
-        table.getAccessibleContext().setAccessibleName("Watched blocks and events");
+        table.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_watchTableA11y());
         table.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
         table.getColumnModel().getColumn(0).setPreferredWidth(70);
         table.getColumnModel().getColumn(1).setPreferredWidth(120);
@@ -1071,7 +1297,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void toggleWatch() {
         if (watchExec != null) {
             stopWatch();
-            status("Watch stopped", Color.GRAY);
+            status(Bundle.Web3StudioTopComponent_watchStopped(), Color.GRAY);
             return;
         }
         if (client == null || !connected) {
@@ -1088,10 +1314,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             return t;
         });
         watchExec.scheduleWithFixedDelay(this::watchTick, 0, 2, TimeUnit.SECONDS);
-        watchButton.setText("STOP");
+        watchButton.setText(Bundle.Web3StudioTopComponent_watchStop());
         Network network = selectedNetwork();
-        status("Watching " + (network == null ? "the chain" : network.name())
-                + " — polling every 2 s", Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_watchingStatus(network == null
+                ? Bundle.Web3StudioTopComponent_theChain() : network.name()), Color.GRAY);
     }
 
     private void stopWatch() {
@@ -1100,7 +1326,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             watchExec.shutdownNow();
             watchExec = null;
         }
-        watchButton.setText("START");
+        watchButton.setText(Bundle.Web3StudioTopComponent_watchStart());
     }
 
     /**
@@ -1151,7 +1377,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             lastWatchedBlock = current;
             SwingUtilities.invokeLater(() -> {
                 watchModel.refresh();
-                chip("chain " + liveChainId + " · block " + current, OK_GREEN);
+                chip(Bundle.Web3StudioTopComponent_chipChainBlock(String.valueOf(liveChainId),
+                        String.valueOf(current)), OK_GREEN);
             });
         } catch (IOException | RuntimeException pollFailed) {
             SwingUtilities.invokeLater(() -> chip(NOT_CONNECTED, Color.GRAY));
@@ -1205,12 +1432,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         try {
             Object selected = watchFilterCombo.getSelectedItem();
             watchFilterCombo.removeAllItems();
-            watchFilterCombo.addItem("All deployed contracts");
+            watchFilterCombo.addItem(Bundle.Web3StudioTopComponent_allDeployedContracts());
             for (DeploymentRecord record : deployments) {
                 watchFilterCombo.addItem(record);
             }
             watchFilterCombo.setSelectedItem(
-                    selected instanceof DeploymentRecord ? selected : "All deployed contracts");
+                    selected instanceof DeploymentRecord ? selected
+                            : Bundle.Web3StudioTopComponent_allDeployedContracts());
             watchFilterCombo.setMaximumSize(watchFilterCombo.getPreferredSize());
         } finally {
             watchFilterRefreshing = false;
@@ -1224,32 +1452,32 @@ public final class Web3StudioTopComponent extends TopComponent {
         JPanel panel = new JPanel(new java.awt.GridLayout(3, 1));
 
         JTable sizeTable = new JTable(sizeModel);
-        sizeTable.getAccessibleContext().setAccessibleName("Contract sizes");
+        sizeTable.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_sizeTableA11y());
         sizeTable.setFont(MONO);
         sizeTable.setDefaultRenderer(Object.class,
                 org.nmox.studio.core.util.PlainTables.plain(new SizeCellRenderer()));
         sizeTable.getColumnModel().getColumn(2).setCellRenderer(new HeadroomBarRenderer());
         JScrollPane sizeScroll = new JScrollPane(sizeTable);
         sizeScroll.setBorder(BorderFactory.createTitledBorder(
-                "Contract sizes — EIP-170 caps deployed bytecode at 24,576 bytes"));
+                Bundle.Web3StudioTopComponent_sizeTableTitle()));
         panel.add(sizeScroll);
 
         JPanel gasPanel = new JPanel(new BorderLayout());
         JToolBar gasBar = new JToolBar();
         gasBar.setFloatable(false);
-        gasButton.setToolTipText("forge test --gas-report, parsed into the table");
+        gasButton.setToolTipText(Bundle.Web3StudioTopComponent_gasButtonTip());
         gasButton.addActionListener(e -> runGasReport());
         gasBar.add(gasButton);
         gasPanel.add(gasBar, BorderLayout.NORTH);
         JTable gasTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(gasModel));
-        gasTable.getAccessibleContext().setAccessibleName("Gas report");
+        gasTable.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_gasTableA11y());
         gasTable.setFont(MONO);
         gasPanel.add(new JScrollPane(gasTable), BorderLayout.CENTER);
-        gasPanel.setBorder(BorderFactory.createTitledBorder("Gas report"));
+        gasPanel.setBorder(BorderFactory.createTitledBorder(Bundle.Web3StudioTopComponent_gasPanelTitle()));
         panel.add(gasPanel);
 
         JTable deployTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(deploymentsModel));
-        deployTable.getAccessibleContext().setAccessibleName("Deployment address book");
+        deployTable.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_deploymentsTableA11y());
         deployTable.setFont(MONO);
         deployTable.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -1263,18 +1491,18 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
         });
         JPopupMenu popup = new JPopupMenu();
-        javax.swing.JMenuItem copy = new javax.swing.JMenuItem("Copy address");
+        javax.swing.JMenuItem copy = new javax.swing.JMenuItem(Bundle.Web3StudioTopComponent_copyAddress());
         copy.addActionListener(e -> {
             int row = deployTable.getSelectedRow();
             if (row >= 0 && row < deployments.size()) {
                 String address = deployments.get(row).address();
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
                         new java.awt.datatransfer.StringSelection(address), null);
-                status("Copied " + address, OK_GREEN);
+                status(Bundle.Web3StudioTopComponent_copiedStatus(address), OK_GREEN);
             }
         });
         popup.add(copy);
-        javax.swing.JMenuItem forget = new javax.swing.JMenuItem("Forget deployment");
+        javax.swing.JMenuItem forget = new javax.swing.JMenuItem(Bundle.Web3StudioTopComponent_forgetDeployment());
         forget.addActionListener(e -> {
             int row = deployTable.getSelectedRow();
             if (row < 0 || row >= deployments.size()) {
@@ -1286,11 +1514,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             // per the v1.98.0 law (v1.269.0 — the organize sweep's fourth
             // surface: deployments accumulated forever with no gesture)
             NotifyDescriptor confirm = new NotifyDescriptor(
-                    org.nmox.studio.core.util.PlainDialogs.plain("Forget " + record.contractName() + " at "
-                            + record.address() + "? Only this address-book row"
-                            + " is removed \u2014 the contract on chain is"
-                            + " untouched.", "Message"),
-                    "Forget Deployment",
+                    org.nmox.studio.core.util.PlainDialogs.plain(
+                            Bundle.Web3StudioTopComponent_forgetQuestion(record.contractName(),
+                                    record.address()), "Message"),
+                    Bundle.Web3StudioTopComponent_forgetTitle(),
                     NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
                     null,
@@ -1303,16 +1530,16 @@ public final class Web3StudioTopComponent extends TopComponent {
             saveWorkspace();
             deploymentsModel.fireTableDataChanged();
             rebuildDeploymentsBranch();
-            status("Forgot " + record.contractName(), Color.GRAY);
+            status(Bundle.Web3StudioTopComponent_forgotStatus(record.contractName()), Color.GRAY);
         });
         popup.add(forget);
         // the menu's verbs read getSelectedRow(); make the CLICKED row
         // the selected row before the menu opens (v1.270.0 arc review)
         org.nmox.studio.core.util.Popups.selectOnTrigger(deployTable);
         deployTable.setComponentPopupMenu(popup);
-        deployTable.setToolTipText("Double-click to open in Interact; right-click to copy the address or forget the row");
+        deployTable.setToolTipText(Bundle.Web3StudioTopComponent_deploymentsTableTip());
         JScrollPane deployScroll = new JScrollPane(deployTable);
-        deployScroll.setBorder(BorderFactory.createTitledBorder("Deployments (address book)"));
+        deployScroll.setBorder(BorderFactory.createTitledBorder(Bundle.Web3StudioTopComponent_deploymentsTitle()));
         panel.add(deployScroll);
 
         return panel;
@@ -1333,7 +1560,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         gasRunning = true;
         gasButton.setEnabled(false);
         appendLog("$ forge test --gas-report\n");
-        status("Running forge test --gas-report…", Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_gasReportRunning(), Color.GRAY);
         RP.post(() -> {
             try {
                 StringBuilder output = new StringBuilder();
@@ -1347,13 +1574,15 @@ public final class Web3StudioTopComponent extends TopComponent {
                     gasModel.set(rows);
                     if (rows.isEmpty()) {
                         status(exit == 0
-                                ? "No gas table in the output — does the project have tests?"
-                                : "forge test failed (exit " + exit + ") — see the log",
+                                ? Bundle.Web3StudioTopComponent_noGasTable()
+                                : Bundle.Web3StudioTopComponent_forgeTestFailed(String.valueOf(exit)),
                                 FAIL_RED);
                     } else {
-                        status(rows.size() + " function row"
-                                + (rows.size() == 1 ? "" : "s")
-                                + (exit == 0 ? "" : " · forge exit " + exit),
+                        String rowText = rows.size() == 1
+                                ? Bundle.Web3StudioTopComponent_gasRowsOne(String.valueOf(rows.size()))
+                                : Bundle.Web3StudioTopComponent_gasRowsMany(String.valueOf(rows.size()));
+                        status(exit == 0 ? rowText
+                                : Bundle.Web3StudioTopComponent_gasRowsExit(rowText, String.valueOf(exit)),
                                 exit == 0 ? OK_GREEN : AMBER);
                     }
                 });
@@ -1362,14 +1591,14 @@ public final class Web3StudioTopComponent extends TopComponent {
                     gasRunning = false;
                     gasButton.setEnabled(true);
                     status(FORGE_HINT, FAIL_RED);
-                    balloon("forge not found", FORGE_HINT, false);
+                    balloon(Bundle.Web3StudioTopComponent_forgeNotFound(), FORGE_HINT, false);
                 });
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
                 SwingUtilities.invokeLater(() -> {
                     gasRunning = false;
                     gasButton.setEnabled(true);
-                    status("Gas report interrupted", FAIL_RED);
+                    status(Bundle.Web3StudioTopComponent_gasReportInterrupted(), FAIL_RED);
                 });
             }
         });
@@ -1392,7 +1621,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         compiling = true;
         compileButton.setEnabled(false);
         appendLog("$ forge build\n");
-        status("forge build…", Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_forgeBuilding(), Color.GRAY);
         RP.post(() -> {
             try {
                 StringBuilder ignored = new StringBuilder(0);
@@ -1401,10 +1630,10 @@ public final class Web3StudioTopComponent extends TopComponent {
                     compiling = false;
                     compileButton.setEnabled(true);
                     if (exit == 0) {
-                        status("forge build OK", OK_GREEN);
+                        status(Bundle.Web3StudioTopComponent_forgeBuildOk(), OK_GREEN);
                         rescan();
                     } else {
-                        status("forge build failed (exit " + exit + ") — see the log",
+                        status(Bundle.Web3StudioTopComponent_forgeBuildFailed(String.valueOf(exit)),
                                 FAIL_RED);
                     }
                 });
@@ -1414,14 +1643,14 @@ public final class Web3StudioTopComponent extends TopComponent {
                     compileButton.setEnabled(true);
                     appendLog(FORGE_HINT + "\n");
                     status(FORGE_HINT, FAIL_RED);
-                    balloon("forge not found", FORGE_HINT, false);
+                    balloon(Bundle.Web3StudioTopComponent_forgeNotFound(), FORGE_HINT, false);
                 });
             } catch (InterruptedException interrupted) {
                 Thread.currentThread().interrupt();
                 SwingUtilities.invokeLater(() -> {
                     compiling = false;
                     compileButton.setEnabled(true);
-                    status("Compile interrupted", FAIL_RED);
+                    status(Bundle.Web3StudioTopComponent_compileInterrupted(), FAIL_RED);
                 });
             }
         });
@@ -1449,7 +1678,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         org.nmox.studio.core.spi.TrustGate gate =
                 org.nmox.studio.core.spi.TrustGate.find();
         if (gate != null && !gate.requestTrust(dir)) {
-            status("Not run — workspace not trusted", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notTrusted(), FAIL_RED);
             return false;
         }
         return true;
@@ -1506,14 +1735,16 @@ public final class Web3StudioTopComponent extends TopComponent {
             rescanPending = true;
             return;
         }
-        status("Scanning artifacts…", Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_scanningArtifacts(), Color.GRAY);
         RP.post(() -> {
             List<ContractArtifact> found = scanWithProgress(dir);
             EventMatcher matcher = EventMatcher.build(found);
             SwingUtilities.invokeLater(() -> {
                 applyArtifacts(found, matcher);
-                status(found.size() + (found.size() == 1
-                        ? " contract artifact" : " contract artifacts"), Color.GRAY);
+                status(found.size() == 1
+                        ? Bundle.Web3StudioTopComponent_artifactsFoundOne(String.valueOf(found.size()))
+                        : Bundle.Web3StudioTopComponent_artifactsFoundMany(String.valueOf(found.size())),
+                        Color.GRAY);
             });
         });
     }
@@ -1559,7 +1790,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private static List<ContractArtifact> scanWithProgress(File dir) {
         org.netbeans.api.progress.ProgressHandle progress =
                 org.netbeans.api.progress.ProgressHandle.createHandle(
-                        "Scanning contract artifacts…");
+                        Bundle.Web3StudioTopComponent_scanProgress());
         progress.start();
         try {
             return ArtifactScanner.scan(dir.toPath());
@@ -1624,14 +1855,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         connected = false;
         accounts = List.of();
         updateWatchAddresses();
-        chip("connecting…", Color.GRAY);
+        chip(Bundle.Web3StudioTopComponent_chipConnecting(), Color.GRAY);
         RP.post(() -> {
             String url = urlFor(network);
             if (url == null) {
                 SwingUtilities.invokeLater(() -> {
                     if (seq == connectSeq) {
-                        chip("no RPC URL stored for " + network.name()
-                                + " — remove and re-add the network", FAIL_RED);
+                        chip(Bundle.Web3StudioTopComponent_chipNoRpcUrl(network.name()), FAIL_RED);
                     }
                 });
                 return;
@@ -1673,10 +1903,11 @@ public final class Web3StudioTopComponent extends TopComponent {
         liveChainId = chainId;
         accounts = unlocked;
         if (network.chainId() > 0 && chainId != network.chainId()) {
-            chip("chain " + chainId + " (expected " + network.chainId()
-                    + ") · block " + block, AMBER);
+            chip(Bundle.Web3StudioTopComponent_chipChainExpectedBlock(String.valueOf(chainId),
+                    String.valueOf(network.chainId()), String.valueOf(block)), AMBER);
         } else {
-            chip("chain " + chainId + " · block " + block, OK_GREEN);
+            chip(Bundle.Web3StudioTopComponent_chipChainBlock(String.valueOf(chainId),
+                    String.valueOf(block)), OK_GREEN);
         }
         refreshFromCombo();
         refreshSessionAccounts();
@@ -1688,8 +1919,8 @@ public final class Web3StudioTopComponent extends TopComponent {
                 java.math.BigInteger price = probe.gasPrice();
                 SwingUtilities.invokeLater(() -> {
                     if (seq == connectSeq && connected) {
-                        chip(chipLabel.getText() + " · gas "
-                                + org.nmox.studio.web3.engine.Units.formatWei(price),
+                        chip(Bundle.Web3StudioTopComponent_chipGas(chipLabel.getText(),
+                                org.nmox.studio.web3.engine.Units.formatWei(price)),
                                 chipLabel.getForeground());
                     }
                 });
@@ -1707,7 +1938,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         fromCombo.setEnabled(!accounts.isEmpty());
         fromCombo.setToolTipText(PlainText.plain(accounts.isEmpty()
                 ? InteractSession.READ_ONLY_REASON
-                : "The node's unlocked accounts (eth_accounts) — it signs, the IDE never can"));
+                : Bundle.Web3StudioTopComponent_fromComboTip()));
     }
 
     /** Re-arms or disables the write surface after an accounts refresh. */
@@ -1771,7 +2002,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         saveWorkspace();
         rebuildNetworksBranch();
         refreshNetworkCombo(result.network());
-        status("Added network " + result.network().name(), OK_GREEN);
+        status(Bundle.Web3StudioTopComponent_addedNetwork(result.network().name()), OK_GREEN);
     }
 
     /**
@@ -1786,15 +2017,16 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void removeSelectedNetwork() {
         Object selected = networkCombo.getSelectedItem();
         if (!(selected instanceof Network network) || LOCAL_ANVIL.equals(network)) {
-            status("The local Anvil network is built in \u2014 select an added network to remove", Color.GRAY);
+            status(Bundle.Web3StudioTopComponent_anvilBuiltIn(), Color.GRAY);
             return;
         }
         NotifyDescriptor confirm = new NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain("Remove network \"" + network.name() + "\"?"
+                org.nmox.studio.core.util.PlainDialogs.plain(
+                        Bundle.Web3StudioTopComponent_removeNetworkQuestion(network.name())
                         + (network.secretUrl()
-                                ? " Its keychain RPC URL is deleted too."
+                                ? Bundle.Web3StudioTopComponent_removeNetworkKeychain()
                                 : ""), "Message"),
-                "Remove Network",
+                Bundle.Web3StudioTopComponent_removeNetworkTitle(),
                 NotifyDescriptor.YES_NO_OPTION,
                 NotifyDescriptor.QUESTION_MESSAGE,
                 null,
@@ -1810,7 +2042,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         saveWorkspace();
         rebuildNetworksBranch();
         refreshNetworkCombo(LOCAL_ANVIL);
-        status("Removed network " + network.name(), Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_removedNetwork(network.name()), Color.GRAY);
     }
 
     // ---- persistence (.nmoxweb3.json, the RackService idiom) ---------------------
@@ -1874,9 +2106,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             // empty fallback — the address book survives in the .bak
             try {
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "Couldn't read " + Web3WorkspaceIO.FILENAME + " — starting empty",
+                        Bundle.Web3StudioTopComponent_workspaceUnreadable(Web3WorkspaceIO.FILENAME),
                         javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                        "The unreadable original was kept at " + outcome.backup().getName() + ".",
+                        Bundle.Web3StudioTopComponent_workspaceBackupKept(outcome.backup().getName()),
                         null);
             } catch (RuntimeException | LinkageError ignored) {
                 // notifications unavailable (tests, stripped platform)
@@ -1933,33 +2165,32 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** Import ABI… — any deployed contract becomes interactable (v2.45.0). */
     private void importAbi() {
         JTextField nameField = new JTextField(24);
-        nameField.getAccessibleContext().setAccessibleName("Contract name");
+        nameField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractNameA11y());
         JTextField addressField = new JTextField(44);
         addressField.getAccessibleContext().setAccessibleName(
-                "Deployed address, optional");
+                Bundle.Web3StudioTopComponent_deployedAddressA11y());
         javax.swing.JTextArea abiArea = new javax.swing.JTextArea(12, 48);
         abiArea.setFont(MONO);
         abiArea.setLineWrap(true);
-        abiArea.getAccessibleContext().setAccessibleName("ABI JSON array");
+        abiArea.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_abiJsonA11y());
         JPanel form = new JPanel(new BorderLayout(0, 6));
         JPanel top = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
         gc.insets = new java.awt.Insets(2, 2, 2, 6);
-        top.add(new JLabel("Name:"), gc);
+        top.add(new JLabel(Bundle.Web3StudioTopComponent_nameRow()), gc);
         gc.gridx = 1;
         top.add(nameField, gc);
         gc.gridx = 0; gc.gridy = 1;
-        top.add(new JLabel("Address:"), gc);
+        top.add(new JLabel(Bundle.Web3StudioTopComponent_addressRow()), gc);
         gc.gridx = 1;
         top.add(addressField, gc);
         form.add(top, BorderLayout.NORTH);
         form.add(new JScrollPane(abiArea), BorderLayout.CENTER);
-        JLabel hint = new JLabel("Paste the ABI JSON array — from a block explorer's "
-                + "Contract tab, an artifact's abi field, or a teammate.");
+        JLabel hint = new JLabel(Bundle.Web3StudioTopComponent_importAbiHint());
         hint.setForeground(Color.GRAY);
         form.add(hint, BorderLayout.SOUTH);
-        NotifyDescriptor descriptor = new NotifyDescriptor(form, "Import ABI",
+        NotifyDescriptor descriptor = new NotifyDescriptor(form, Bundle.Web3StudioTopComponent_importAbiTitle(),
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE,
                 null, NotifyDescriptor.OK_OPTION);
         if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
@@ -1969,21 +2200,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         String address = addressField.getText().trim();
         String abiJson = abiArea.getText().trim();
         if (name.isEmpty()) {
-            status("Import needs a name", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_importNeedsName(), FAIL_RED);
             return;
         }
         if (artifactByName(name) != null) {
-            status("\"" + name + "\" already exists — imported names can't "
-                    + "shadow an artifact", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_importNameTaken(name), FAIL_RED);
             return;
         }
         if (!address.isEmpty() && !address.matches("0x[0-9a-fA-F]{40}")) {
-            status("Not an address — expected 0x + 40 hex characters", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notAnAddress(), FAIL_RED);
             return;
         }
         if (importedContracts.size() >= Web3WorkspaceIO.IMPORTED_CAP) {
-            status("Import cap reached (" + Web3WorkspaceIO.IMPORTED_CAP
-                    + ") — remove one first", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_importCapReached(
+                    String.valueOf(Web3WorkspaceIO.IMPORTED_CAP)), FAIL_RED);
             return;
         }
         org.nmox.studio.web3.model.ImportedContract record;
@@ -1993,12 +2223,11 @@ public final class Web3StudioTopComponent extends TopComponent {
                     name, abiJson, address);
             artifact = org.nmox.studio.web3.engine.ArtifactScanner.fromImported(record);
         } catch (RuntimeException bad) {
-            status("ABI didn't parse: " + bad.getMessage(), FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_abiDidNotParse(bad.getMessage()), FAIL_RED);
             return;
         }
         if (artifact.abi().isEmpty()) {
-            status("That ABI has no functions or events — nothing to interact with",
-                    FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_abiEmpty(), FAIL_RED);
             return;
         }
         List<org.nmox.studio.web3.model.ImportedContract> grown =
@@ -2007,8 +2236,9 @@ public final class Web3StudioTopComponent extends TopComponent {
         applyImported(grown);
         saveWorkspace();
         publishSearch();
-        status("Imported \"" + name + "\" — " + artifact.functions().size()
-                + " functions, " + artifact.events().size() + " events", ACCENT);
+        status(Bundle.Web3StudioTopComponent_importedStatus(name,
+                String.valueOf(artifact.functions().size()),
+                String.valueOf(artifact.events().size())), ACCENT);
         if (!address.isEmpty()) {
             openInteractFor(InteractSession.attached(artifact, address, hasAccounts()));
         }
@@ -2017,16 +2247,16 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The inverse gesture (the organize law): imports can be removed. */
     private void removeImported() {
         if (importedContracts.isEmpty()) {
-            status("No imported ABIs to remove", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_noImportedAbis(), FAIL_RED);
             return;
         }
         javax.swing.JComboBox<String> which = new javax.swing.JComboBox<>(
                 importedContracts.stream()
                         .map(org.nmox.studio.web3.model.ImportedContract::name)
                         .toArray(String[]::new));
-        which.getAccessibleContext().setAccessibleName("Imported contract to remove");
+        which.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_importedToRemoveA11y());
         NotifyDescriptor descriptor = new NotifyDescriptor(which,
-                "Remove imported ABI", NotifyDescriptor.OK_CANCEL_OPTION,
+                Bundle.Web3StudioTopComponent_removeImportedTitle(), NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, null, NotifyDescriptor.CANCEL_OPTION);
         if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
             return;
@@ -2042,7 +2272,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             session = null;
             rebuildInteract();
         }
-        status("Removed imported \"" + name + "\" — the chain is untouched", ACCENT);
+        status(Bundle.Web3StudioTopComponent_removedImported(name), ACCENT);
     }
 
     /**
@@ -2074,9 +2304,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             if (!saveFailureNotified) {
                 saveFailureNotified = true;
                 org.openide.awt.NotificationDisplayer.getDefault().notify(
-                        "Contract Studio can't save its workspace",
+                        Bundle.Web3StudioTopComponent_saveFailedTitle(),
                         javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                        "Changes are not being persisted: " + ex.getMessage(),
+                        Bundle.Web3StudioTopComponent_saveFailedDetail(ex.getMessage()),
                         null);
             }
         }
@@ -2281,8 +2511,8 @@ public final class Web3StudioTopComponent extends TopComponent {
                     // networks and deployments persist the moment they change —
                     // there is no dirty in-memory state to clobber, so reload silently
                     reloadWorkspace();
-                    balloon("Reloaded " + Web3WorkspaceIO.FILENAME,
-                            "Picked up changes made outside the studio", true);
+                    balloon(Bundle.Web3StudioTopComponent_reloadedTitle(Web3WorkspaceIO.FILENAME),
+                            Bundle.Web3StudioTopComponent_reloadedDetail(), true);
                 });
             });
         }
@@ -2325,21 +2555,21 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (standard == null) {
             return null;
         }
-        JLabel strip = new JLabel("\u2b21 " + standard.label()
+        JLabel strip = new JLabel("\u2b21 "
                 + (standard == ErcStandards.Standard.ERC20
-                        ? " — reading token metadata\u2026" : " token"));
+                        ? Bundle.Web3StudioTopComponent_erc20Reading(standard.label())
+                        : Bundle.Web3StudioTopComponent_tokenLabel(standard.label())));
         strip.setBorder(BorderFactory.createEmptyBorder(6, 12, 6, 12));
         strip.setForeground(ACCENT);
         strip.getAccessibleContext().setAccessibleName(
-                standard.label() + " token summary");
+                Bundle.Web3StudioTopComponent_tokenSummaryA11y(standard.label()));
         JPanel panel = new JPanel(new BorderLayout());
         panel.add(strip, BorderLayout.CENTER);
         if (standard == ErcStandards.Standard.ERC721) {
-            JButton ownerButton = new JButton("Owner of\u2026");
-            ownerButton.setToolTipText("eth_call ownerOf(tokenId) \u2014 read-only; "
-                    + "shows tokenURI too when the ABI carries it");
+            JButton ownerButton = new JButton(Bundle.Web3StudioTopComponent_ownerOf());
+            ownerButton.setToolTipText(Bundle.Web3StudioTopComponent_ownerOfTip());
             ownerButton.getAccessibleContext().setAccessibleName(
-                    "Look up a token's owner");
+                    Bundle.Web3StudioTopComponent_ownerOfA11y());
             ownerButton.addActionListener(e -> lookupTokenOwner(s));
             JPanel east721 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
             east721.add(ownerButton);
@@ -2347,11 +2577,10 @@ public final class Web3StudioTopComponent extends TopComponent {
             readNftMetadata(s, strip);
         }
         if (standard == ErcStandards.Standard.ERC20) {
-            JButton balanceButton = new JButton("Balance of\u2026");
-            balanceButton.setToolTipText(
-                    "eth_call balanceOf(address) \u2014 read-only");
+            JButton balanceButton = new JButton(Bundle.Web3StudioTopComponent_balanceOf());
+            balanceButton.setToolTipText(Bundle.Web3StudioTopComponent_balanceOfTip());
             balanceButton.getAccessibleContext().setAccessibleName(
-                    "Look up a token balance");
+                    Bundle.Web3StudioTopComponent_balanceOfA11y());
             balanceButton.addActionListener(e -> lookupTokenBalance(s));
             JPanel east = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
             east.add(balanceButton);
@@ -2368,8 +2597,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void readNftMetadata(InteractSession s, JLabel strip) {
         JsonRpcClient c = client;
         if (c == null || s.address() == null) {
-            strip.setText("\u2b21 ERC-721 token \u2014 connect to a network to "
-                    + "read its name and symbol");
+            strip.setText(Bundle.Web3StudioTopComponent_erc721NotConnected());
             return;
         }
         RP.post(() -> {
@@ -2387,7 +2615,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                     b.append(" (").append(symbol).append(')');
                 }
                 if (name == null && symbol == null) {
-                    b.append("  \u00b7 name/symbol not in ABI");
+                    b.append(Bundle.Web3StudioTopComponent_nameSymbolAbsent());
                 }
                 strip.setText(PlainText.plain(b.toString()));
                 strip.setToolTipText(PlainText.plain(b.toString()));
@@ -2397,18 +2625,18 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void lookupTokenOwner(InteractSession s) {
         NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
-                "Token id:", "Owner of \u2014 read-only eth_call");
+                Bundle.Web3StudioTopComponent_tokenIdPrompt(), Bundle.Web3StudioTopComponent_ownerOfDialogTitle());
         if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
             return;
         }
         String tokenId = ask.getInputText().trim();
         if (!tokenId.matches("[0-9]+")) {
-            status("Not a token id \u2014 expected a whole number", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notATokenId(), FAIL_RED);
             return;
         }
         JsonRpcClient c = client;
         if (c == null) {
-            status("Connect to a network first", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_connectFirst(), FAIL_RED);
             return;
         }
         RP.post(() -> {
@@ -2420,16 +2648,16 @@ public final class Web3StudioTopComponent extends TopComponent {
                 String owner = AbiCodec.decodeReturn(ownerOf,
                         c.ethCall(s.address(),
                                 AbiCodec.encodeCall(ownerOf, List.of(tokenId)))).get(0);
-                String line = "Owner of #" + tokenId + ": " + owner;
+                String line = Bundle.Web3StudioTopComponent_ownerOfLine(tokenId, owner);
                 org.nmox.studio.web3.model.AbiEntry tokenUri = s.artifact().abi().stream()
                         .filter(e2 -> "tokenURI".equals(e2.name())
                                 && e2.inputs().size() == 1)
                         .findFirst().orElse(null);
                 if (tokenUri != null) {
                     try {
-                        line += "  \u00b7 tokenURI: " + AbiCodec.decodeReturn(tokenUri,
+                        line += Bundle.Web3StudioTopComponent_tokenUriPart(AbiCodec.decodeReturn(tokenUri,
                                 c.ethCall(s.address(), AbiCodec.encodeCall(
-                                        tokenUri, List.of(tokenId)))).get(0);
+                                        tokenUri, List.of(tokenId)))).get(0));
                     } catch (Exception absent) {
                         // a burned/absent token's URI reverts — the owner line stands
                     }
@@ -2438,7 +2666,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 javax.swing.SwingUtilities.invokeLater(() -> status(shown, ACCENT));
             } catch (Exception failure) {
                 javax.swing.SwingUtilities.invokeLater(() -> status(
-                        "Owner lookup failed: " + failure.getMessage(), FAIL_RED));
+                        Bundle.Web3StudioTopComponent_ownerLookupFailed(failure.getMessage()), FAIL_RED));
             }
         });
     }
@@ -2446,8 +2674,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private void readTokenMetadata(InteractSession s, JLabel strip) {
         JsonRpcClient c = client;
         if (c == null || s.address() == null) {
-            strip.setText("\u2b21 ERC-20 \u2014 connect to a network to read "
-                    + "the token's name, symbol and supply");
+            strip.setText(Bundle.Web3StudioTopComponent_erc20NotConnected());
             return;
         }
         RP.post(() -> {
@@ -2491,21 +2718,20 @@ public final class Web3StudioTopComponent extends TopComponent {
                 b.append(" (").append(m.symbol()).append(')');
             }
         } else {
-            b.append("  \u00b7 name/symbol not in ABI");
+            b.append(Bundle.Web3StudioTopComponent_nameSymbolAbsent());
         }
         if (m.decimals() != null) {
-            b.append("  \u00b7 ").append(m.decimals()).append(" decimals");
+            b.append(Bundle.Web3StudioTopComponent_decimalsPart(String.valueOf(m.decimals())));
         }
         if (m.totalSupply() != null) {
             if (m.decimals() != null) {
-                b.append("  \u00b7 supply ").append(TokenAmounts.toHuman(
-                        m.totalSupply(), m.decimals()));
+                b.append(Bundle.Web3StudioTopComponent_supplyPart(TokenAmounts.toHuman(
+                        m.totalSupply(), m.decimals())));
                 if (m.symbol() != null) {
                     b.append(' ').append(m.symbol());
                 }
             } else {
-                b.append("  \u00b7 supply ").append(m.totalSupply())
-                        .append(" (raw \u2014 decimals not in ABI)");
+                b.append(Bundle.Web3StudioTopComponent_supplyRawPart(String.valueOf(m.totalSupply())));
             }
         }
         return b.toString();
@@ -2529,18 +2755,18 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void lookupTokenBalance(InteractSession s) {
         NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
-                "Address:", "Token balance \u2014 read-only eth_call");
+                Bundle.Web3StudioTopComponent_addressPrompt(), Bundle.Web3StudioTopComponent_balanceDialogTitle());
         if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
             return;
         }
         String address = ask.getInputText().trim();
         if (!address.matches("0x[0-9a-fA-F]{40}")) {
-            status("Not an address \u2014 expected 0x + 40 hex characters", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notAnAddress(), FAIL_RED);
             return;
         }
         JsonRpcClient c = client;
         if (c == null) {
-            status("Connect to a network first", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_connectFirst(), FAIL_RED);
             return;
         }
         RP.post(() -> {
@@ -2556,16 +2782,16 @@ public final class Web3StudioTopComponent extends TopComponent {
                 String decimalsText = callOptionalReader(c, s, "decimals");
                 String line;
                 if (decimalsText != null) {
-                    line = "Balance of " + address + ": " + TokenAmounts.toHuman(
+                    line = Bundle.Web3StudioTopComponent_balanceLine(address, TokenAmounts.toHuman(
                             new java.math.BigInteger(raw),
-                            Integer.parseInt(decimalsText));
+                            Integer.parseInt(decimalsText)));
                 } else {
-                    line = "Balance of " + address + ": " + raw + " (raw)";
+                    line = Bundle.Web3StudioTopComponent_balanceLineRaw(address, raw);
                 }
                 javax.swing.SwingUtilities.invokeLater(() -> status(line, ACCENT));
             } catch (Exception failure) {
                 javax.swing.SwingUtilities.invokeLater(() ->
-                        status("Balance lookup failed: " + failure.getMessage(),
+                        status(Bundle.Web3StudioTopComponent_balanceLookupFailed(failure.getMessage()),
                                 FAIL_RED));
             }
         });
@@ -2584,29 +2810,29 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (session != null && session.address() != null) {
             addressField.setText(session.address());
         }
-        addressField.getAccessibleContext().setAccessibleName("Contract address");
+        addressField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractAddressA11y());
         JTextField fromField = new JTextField(10);
-        fromField.getAccessibleContext().setAccessibleName("From block");
+        fromField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_fromBlockA11y());
         JTextField toField = new JTextField(10);
-        toField.getAccessibleContext().setAccessibleName("To block, or latest");
+        toField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_toBlockA11y());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
         gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
         gc.insets = new java.awt.Insets(2, 2, 2, 6);
-        form.add(new JLabel("Address:"), gc);
+        form.add(new JLabel(Bundle.Web3StudioTopComponent_addressRow()), gc);
         gc.gridx = 1;
         form.add(addressField, gc);
         gc.gridx = 0; gc.gridy = 1;
-        form.add(new JLabel("Blocks:"), gc);
+        form.add(new JLabel(Bundle.Web3StudioTopComponent_blocksRow()), gc);
         gc.gridx = 1;
         JPanel rangeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
         rangeRow.add(fromField);
-        rangeRow.add(new JLabel(" to "));
+        rangeRow.add(new JLabel(Bundle.Web3StudioTopComponent_blockRangeTo()));
         rangeRow.add(toField);
-        rangeRow.add(new JLabel(" (blank = last 1000, cap "
-                + org.nmox.studio.web3.engine.EventHistory.SPAN_CAP + ")"));
+        rangeRow.add(new JLabel(Bundle.Web3StudioTopComponent_blockRangeHint(String.valueOf(
+                org.nmox.studio.web3.engine.EventHistory.SPAN_CAP))));
         form.add(rangeRow, gc);
-        NotifyDescriptor descriptor = new NotifyDescriptor(form, "Event history",
+        NotifyDescriptor descriptor = new NotifyDescriptor(form, Bundle.Web3StudioTopComponent_historyDialogTitle(),
                 NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.PLAIN_MESSAGE,
                 null, NotifyDescriptor.OK_OPTION);
         if (DialogDisplayer.getDefault().notify(descriptor) != NotifyDescriptor.OK_OPTION) {
@@ -2614,13 +2840,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         String address = addressField.getText().trim();
         if (!address.matches("0x[0-9a-fA-F]{40}")) {
-            status("Not an address \u2014 expected 0x + 40 hex characters", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notAnAddress(), FAIL_RED);
             return;
         }
         String fromText = fromField.getText();
         String toText = toField.getText();
         List<ContractArtifact> known = allArtifacts();
-        status("Fetching history\u2026", Color.GRAY);
+        status(Bundle.Web3StudioTopComponent_fetchingHistory(), Color.GRAY);
         RP.post(() -> {
             try {
                 long latest = c.blockNumber();
@@ -2637,7 +2863,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                         status(refusal.getMessage(), FAIL_RED));
             } catch (Exception failure) {
                 SwingUtilities.invokeLater(() ->
-                        status("History failed: " + failure.getMessage(), FAIL_RED));
+                        status(Bundle.Web3StudioTopComponent_historyFailed(failure.getMessage()), FAIL_RED));
             }
         });
     }
@@ -2651,21 +2877,20 @@ public final class Web3StudioTopComponent extends TopComponent {
                     row.block(), row.event(), row.txHash(), row.details()));
         }
         if (rows.isEmpty()) {
-            text.append("No events for ").append(address)
-                    .append(" in blocks ").append(range.from())
-                    .append("\u2013").append(range.to());
+            text.append(Bundle.Web3StudioTopComponent_noEventsFor(address,
+                    String.valueOf(range.from()), String.valueOf(range.to())));
         }
         javax.swing.JTextArea area = new javax.swing.JTextArea(
                 text.toString(), 16, 80);
         area.setEditable(false);
         area.setFont(MONO);
-        area.getAccessibleContext().setAccessibleName("Event history");
-        javax.swing.JButton save = new javax.swing.JButton("Save CSV\u2026");
-        save.getAccessibleContext().setAccessibleName("Save history as CSV");
+        area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_historyAreaA11y());
+        javax.swing.JButton save = new javax.swing.JButton(Bundle.Web3StudioTopComponent_saveCsv());
+        save.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_saveCsvA11y());
         save.addActionListener(e -> {
             java.io.File file = new org.openide.filesystems.FileChooserBuilder(
                     Web3StudioTopComponent.class)
-                    .setTitle("Save event history")
+                    .setTitle(Bundle.Web3StudioTopComponent_saveCsvTitle())
                     .showSaveDialog();
             if (file == null) {
                 return;
@@ -2675,17 +2900,17 @@ public final class Web3StudioTopComponent extends TopComponent {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(),
                         org.nmox.studio.web3.engine.EventHistory.toCsv(rows));
-                status("Saved " + rows.size() + " events to "
-                        + target.getName(), ACCENT);
+                status(Bundle.Web3StudioTopComponent_savedEvents(String.valueOf(rows.size()),
+                        target.getName()), ACCENT);
             } catch (Exception failure) {
-                status("Save failed: " + failure.getMessage(), FAIL_RED);
+                status(Bundle.Web3StudioTopComponent_saveFailed(failure.getMessage()), FAIL_RED);
             }
         });
         javax.swing.JDialog dialog = new javax.swing.JDialog(
                 (java.awt.Frame) null,
-                "Events \u2014 " + address + " \u00b7 blocks "
-                + range.from() + "\u2013" + range.to() + " \u00b7 "
-                + rows.size() + " found", false);
+                Bundle.Web3StudioTopComponent_historyWindowTitle(address, String.valueOf(range.from()),
+                        String.valueOf(range.to()), String.valueOf(rows.size())),
+                false);
         dialog.setLayout(new BorderLayout(0, 4));
         dialog.add(new JScrollPane(area), BorderLayout.CENTER);
         JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
@@ -2698,19 +2923,18 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     private void inspectTransaction() {
         NotifyDescriptor.InputLine ask = new NotifyDescriptor.InputLine(
-                "Transaction hash:", "Inspect transaction");
+                Bundle.Web3StudioTopComponent_txHashPrompt(), Bundle.Web3StudioTopComponent_inspectDialogTitle());
         if (DialogDisplayer.getDefault().notify(ask) != NotifyDescriptor.OK_OPTION) {
             return;
         }
         String hash = ask.getInputText().trim();
         if (!hash.matches("0x[0-9a-fA-F]{64}")) {
-            status("Not a transaction hash \u2014 expected 0x + 64 hex characters",
-                    FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_notATxHash(), FAIL_RED);
             return;
         }
         JsonRpcClient c = client;
         if (c == null) {
-            status("Connect to a network first", FAIL_RED);
+            status(Bundle.Web3StudioTopComponent_connectFirst(), FAIL_RED);
             return;
         }
         List<ContractArtifact> known = allArtifacts();
@@ -2719,7 +2943,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 org.json.JSONObject tx = c.getTransactionRaw(hash);
                 if (tx == null) {
                     javax.swing.SwingUtilities.invokeLater(() -> status(
-                            "Transaction not found on this network", FAIL_RED));
+                            Bundle.Web3StudioTopComponent_txNotFound(), FAIL_RED));
                     return;
                 }
                 org.json.JSONObject receipt = c.getTransactionReceiptRaw(hash);
@@ -2727,7 +2951,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 javax.swing.SwingUtilities.invokeLater(() -> showInspection(hash, report));
             } catch (Exception failure) {
                 javax.swing.SwingUtilities.invokeLater(() ->
-                        status("Inspect failed: " + failure.getMessage(), FAIL_RED));
+                        status(Bundle.Web3StudioTopComponent_inspectFailed(failure.getMessage()), FAIL_RED));
             }
         });
     }
@@ -2737,9 +2961,9 @@ public final class Web3StudioTopComponent extends TopComponent {
                 String.join("\n", report.lines()), 14, 78);
         area.setEditable(false);
         area.setFont(MONO);
-        area.getAccessibleContext().setAccessibleName("Transaction inspection");
+        area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_inspectionA11y());
         javax.swing.JDialog dialog = new javax.swing.JDialog(
-                (java.awt.Frame) null, "Transaction " + hash, false);
+                (java.awt.Frame) null, Bundle.Web3StudioTopComponent_inspectionWindowTitle(hash), false);
         dialog.add(new JScrollPane(area));
         dialog.pack();
         dialog.setLocationRelativeTo(this);
@@ -2809,7 +3033,9 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     /** The three fixed branches of the tree. */
     private enum Branch {
-        NETWORKS("Networks"), CONTRACTS("Contracts"), DEPLOYMENTS("Deployments");
+        NETWORKS(Bundle.Web3StudioTopComponent_branchNetworks()),
+        CONTRACTS(Bundle.Web3StudioTopComponent_branchContracts()),
+        DEPLOYMENTS(Bundle.Web3StudioTopComponent_branchDeployments());
 
         final String label;
 
@@ -2835,8 +3061,11 @@ public final class Web3StudioTopComponent extends TopComponent {
                 boolean active = network.equals(selectedNetwork());
                 setText("<html>" + (active ? "<b>" : "") + esc(network.name())
                         + (active ? "</b>" : "")
-                        + " <font color='#8a8a8a'>(chain " + network.chainId()
-                        + (network.secretUrl() ? " · keyring" : "") + ")</font></html>");
+                        + " <font color='#8a8a8a'>("
+                        + Bundle.Web3StudioTopComponent_chainBadge(String.valueOf(network.chainId()))
+                        + (network.secretUrl()
+                                ? " " + Bundle.Web3StudioTopComponent_keyringBadge() : "")
+                        + ")</font></html>");
             } else if (userObject instanceof ContractArtifact artifact) {
                 ContractSizeCheck.Verdict verdict = ContractSizeCheck.check(artifact);
                 String dot = verdict.over() ? "#E24B4A"
@@ -2874,7 +3103,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof Network network) {
                 setText("<html>" + esc(network.name())
-                        + " <font color='#8a8a8a'>(chain " + network.chainId()
+                        + " <font color='#8a8a8a'>("
+                        + Bundle.Web3StudioTopComponent_chainBadge(String.valueOf(network.chainId()))
                         + ")</font></html>");
             }
             return this;
@@ -2943,7 +3173,8 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The Oversight size table over {@link ContractSizeCheck} verdicts. */
     private final class SizeModel extends AbstractTableModel {
 
-        private static final String[] COLUMNS = {"Contract", "Bytes", "Of limit", "Verdict"};
+        private final String[] columns = {Bundle.Web3StudioTopComponent_columnContract(),
+            Bundle.Web3StudioTopComponent_columnBytes(), Bundle.Web3StudioTopComponent_columnOfLimit(), Bundle.Web3StudioTopComponent_columnVerdict()};
 
         private List<ContractSizeCheck.Verdict> verdicts = List.of();
 
@@ -2967,12 +3198,12 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         @Override
         public int getColumnCount() {
-            return COLUMNS.length;
+            return columns.length;
         }
 
         @Override
         public String getColumnName(int column) {
-            return COLUMNS[column];
+            return columns[column];
         }
 
         @Override
@@ -2990,8 +3221,9 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The gas-report table over {@link GasReportParser} rows. */
     private static final class GasModel extends AbstractTableModel {
 
-        private static final String[] COLUMNS =
-                {"Contract", "Function", "Min", "Avg", "Median", "Max", "Calls"};
+        private final String[] columns = {Bundle.Web3StudioTopComponent_columnContract(),
+            Bundle.Web3StudioTopComponent_columnFunction(), Bundle.Web3StudioTopComponent_columnMin(), Bundle.Web3StudioTopComponent_columnAvg(),
+            Bundle.Web3StudioTopComponent_columnMedian(), Bundle.Web3StudioTopComponent_columnMax(), Bundle.Web3StudioTopComponent_columnCalls()};
 
         private List<GasReportParser.FunctionGas> rows = List.of();
 
@@ -3007,12 +3239,12 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         @Override
         public int getColumnCount() {
-            return COLUMNS.length;
+            return columns.length;
         }
 
         @Override
         public String getColumnName(int column) {
-            return COLUMNS[column];
+            return columns[column];
         }
 
         @Override
@@ -3033,8 +3265,9 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The address book table; ages via {@link DisplayValues#age}. */
     private final class DeploymentsModel extends AbstractTableModel {
 
-        private static final String[] COLUMNS =
-                {"Contract", "Address", "Network", "Block", "Age"};
+        private final String[] columns = {Bundle.Web3StudioTopComponent_columnContract(),
+            Bundle.Web3StudioTopComponent_columnAddress(), Bundle.Web3StudioTopComponent_columnNetwork(), Bundle.Web3StudioTopComponent_columnBlock(),
+            Bundle.Web3StudioTopComponent_columnAge()};
 
         void refresh() {
             fireTableDataChanged();
@@ -3047,12 +3280,12 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         @Override
         public int getColumnCount() {
-            return COLUMNS.length;
+            return columns.length;
         }
 
         @Override
         public String getColumnName(int column) {
-            return COLUMNS[column];
+            return columns[column];
         }
 
         @Override

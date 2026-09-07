@@ -14,6 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.nmox.studio.dbstudio.model.ColumnInfo;
 import org.nmox.studio.dbstudio.model.TableInfo;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The shared JDBC core: everything DB Studio does with a live
@@ -36,6 +37,12 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * The corresponding find-sec-bugs exclusion is scoped to this class in
  * {@code config/spotbugs-exclude.xml}.
  */
+@Messages({
+    // chrome (shift-2970): the honest markers an oversize cell carries.
+    // {n,number,0} keeps the digits ungrouped, as the concatenation printed them.
+    "JdbcCore_cellTruncated={0} \u2026[{1,number,0} chars, truncated]",
+    "JdbcCore_binaryCell=[{0,number,0} bytes]"
+})
 final class JdbcCore {
 
     private static final Logger LOG = Logger.getLogger(JdbcCore.class.getName());
@@ -173,7 +180,7 @@ final class JdbcCore {
             }
             long len = clob.length();
             String prefix = clob.getSubString(1, (int) Math.min(len, MAX_CELL_CHARS));
-            return len > MAX_CELL_CHARS ? prefix + " …[" + len + " chars, truncated]" : prefix;
+            return len > MAX_CELL_CHARS ? Bundle.JdbcCore_cellTruncated(prefix, len) : prefix;
         }
         if (type == java.sql.Types.BLOB || type == java.sql.Types.LONGVARBINARY
                 || type == java.sql.Types.VARBINARY || type == java.sql.Types.BINARY) {
@@ -181,15 +188,15 @@ final class JdbcCore {
             if (blob == null) {
                 return "NULL";
             }
-            return "[" + blob.length() + " bytes]"; // never stringify binary
+            return Bundle.JdbcCore_binaryCell(blob.length()); // never stringify binary
         }
         String value = rs.getString(c);
         if (value == null) {
             return "NULL";
         }
         return value.length() > MAX_CELL_CHARS
-                ? value.substring(0, MAX_CELL_CHARS) + " …[" + value.length()
-                        + " chars, truncated]"
+                ? Bundle.JdbcCore_cellTruncated(
+                        value.substring(0, MAX_CELL_CHARS), value.length())
                 : value;
     }
 

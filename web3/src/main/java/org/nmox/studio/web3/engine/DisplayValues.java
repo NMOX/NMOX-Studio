@@ -9,6 +9,12 @@ import org.nmox.studio.web3.model.AbiEntry;
  * book, and Quick Search labels — pure so every one of them is pinned
  * by a test instead of living inside a renderer.
  */
+@org.openide.util.NbBundle.Messages({
+    "DisplayValues_ageJustNow=just now",
+    "DisplayValues_ageMinutes={0} min ago",
+    "DisplayValues_ageHours={0} h ago",
+    "DisplayValues_ageDays={0} d ago"
+})
 public final class DisplayValues {
 
     private DisplayValues() {
@@ -84,16 +90,16 @@ public final class DisplayValues {
     public static String age(long thenMillis, long nowMillis) {
         long seconds = (nowMillis - thenMillis) / 1000;
         if (seconds < 60) {
-            return "just now";
+            return Bundle.DisplayValues_ageJustNow();
         }
         long minutes = seconds / 60;
         if (minutes < 60) {
-            return minutes + " min ago";
+            return Bundle.DisplayValues_ageMinutes(String.valueOf(minutes));
         }
         long hours = minutes / 60;
         if (hours < 24) {
-            return hours + " h ago";
+            return Bundle.DisplayValues_ageHours(String.valueOf(hours));
         }
-        return (hours / 24) + " d ago";
+        return Bundle.DisplayValues_ageDays(String.valueOf(hours / 24));
     }
 }

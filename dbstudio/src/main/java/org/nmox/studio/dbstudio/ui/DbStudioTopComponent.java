@@ -268,7 +268,10 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_kvasirDidNotRun=KVASIR did not run — needs an API key and your consent.",
     "DbStudioTopComponent_services=Services",
     "DbStudioTopComponent_servicesBadge=Services · {0}",
-    "DbStudioTopComponent_servicesBranch=<html><b>Services</b> <font color='#8a8a8a'>(NetBeans Database Explorer)</font></html>"
+    "DbStudioTopComponent_servicesBranch=<html><b>Services</b> <font color='#8a8a8a'>(NetBeans Database Explorer)</font></html>",
+    // the KVASIR conversation's own title; the disclosure body and question
+    // beneath it are prompt text sent to the model, not chrome.
+    "DbStudioTopComponent_kvasirTitle={0} error"
 })
 public final class DbStudioTopComponent extends TopComponent {
 
@@ -2308,10 +2311,12 @@ public final class DbStudioTopComponent extends TopComponent {
             if (kvasir == null) {
                 return;
             }
+            // the engine slug also rides the wire body — a raw literal,
+            // never a translated one
             String engine = spec == null || spec.engine() == null
                     ? "unknown" : spec.engine().name().toLowerCase(java.util.Locale.ROOT);
             boolean started = kvasir.explain(new org.nmox.studio.core.spi.KvasirAsk.Disclosure(
-                    "db.error", engine + " error",
+                    "db.error", Bundle.DbStudioTopComponent_kvasirTitle(engine),
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.what(engine),
                     org.nmox.studio.dbstudio.engine.SqlErrorDisclosure.body(
                             engine, result.statement(), result.error()),

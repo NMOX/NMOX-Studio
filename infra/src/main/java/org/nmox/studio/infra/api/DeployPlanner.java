@@ -21,6 +21,41 @@ import org.nmox.studio.infra.model.NodeKind;
  * droplet only after both exist). Pure function of the graph - the
  * dry-run plan and the live deploy run the identical list.
  */
+@org.openide.util.NbBundle.Messages({
+    "DeployPlanner_createVpc=Create VPC {0}",
+    "DeployPlanner_createDroplet=Create {0} {1} ({2}, {3})",
+    "DeployPlanner_createKubernetes=Create Kubernetes cluster {0}",
+    "DeployPlanner_createLoadBalancer=Create load balancer {0}",
+    "DeployPlanner_createFirewall=Create firewall {0}",
+    "DeployPlanner_createVolume=Create {0}GiB volume {1}",
+    "DeployPlanner_reserveIp=Reserve IP",
+    "DeployPlanner_createDomain=Create domain {0} -> {1}",
+    "DeployPlanner_createCdn=Create CDN endpoint for {0}",
+    "DeployPlanner_spacesSkipped=Spaces bucket ''{0}'' uses the S3 protocol - create via s3cmd/aws-cli against {1}.digitaloceanspaces.com",
+    "DeployPlanner_createRegistry=Create container registry {0}",
+    "DeployPlanner_createDatabase=Create managed {0} {1}",
+    "DeployPlanner_createApp=Create App Platform app {0}",
+    "DeployPlanner_createFunctions=Create Functions namespace {0}",
+    "DeployPlanner_createAgent=Create Gradient AI agent {0}",
+    "DeployPlanner_registerSshKey=Register SSH key {0}",
+    "DeployPlanner_createCertificate=Create certificate {0}",
+    "DeployPlanner_createAlert=Create alert {0}",
+    "DeployPlanner_createHzNetwork=Create Hetzner network {0}",
+    "DeployPlanner_createHzServer=Create Hetzner server {0}",
+    "DeployPlanner_createHzLb=Create Hetzner load balancer {0}",
+    "DeployPlanner_createHzVolume=Create Hetzner volume {0}",
+    "DeployPlanner_createHzFirewall=Create Hetzner firewall {0}",
+    "DeployPlanner_createHzFloatingIp=Create Hetzner floating IP",
+    "DeployPlanner_createCfDnsRecord=Create Cloudflare DNS record {0}",
+    "DeployPlanner_createR2Bucket=Create R2 bucket {0}",
+    "DeployPlanner_attach=Attach {0} to {1}",
+    "DeployPlanner_attachVolume=Attach volume {0} to {1}",
+    "DeployPlanner_assignReservedIp=Assign reserved IP to {0}",
+    "DeployPlanner_applyFirewall=Apply firewall {0} to {1}",
+    "DeployPlanner_assignFloatingIp=Assign floating IP to {0}",
+    "DeployPlanner_apply=Apply {0} to {1}",
+    "DeployPlanner_noAttachment=No attachment for {0}"
+})
 public final class DeployPlanner {
 
     private DeployPlanner() {
@@ -140,7 +175,7 @@ public final class DeployPlanner {
             case VPC -> {
                 body.put("name", node.label).put("region", p.get("region"))
                         .put("ip_range", p.get("ipRange"));
-                yield DoRequest.post("/v2/vpcs", body, node.id, "Create VPC " + node.label);
+                yield DoRequest.post("/v2/vpcs", body, node.id, Bundle.DeployPlanner_createVpc(node.label));
             }
             case DROPLET, GPU_DROPLET -> {
                 body.put("name", node.label)
@@ -167,8 +202,8 @@ public final class DeployPlanner {
                     body.put("ssh_keys", keys);
                 }
                 yield DoRequest.post("/v2/droplets", body, node.id,
-                        "Create " + node.kind.getDisplayName() + " " + node.label
-                        + " (" + p.get("size") + ", " + p.get("region") + ")");
+                        Bundle.DeployPlanner_createDroplet(node.kind.getDisplayName(), node.label,
+                                p.get("size"), p.get("region")));
             }
             case KUBERNETES -> {
                 JSONObject pool = new JSONObject()
@@ -186,7 +221,7 @@ public final class DeployPlanner {
                     }
                 }
                 yield DoRequest.post("/v2/kubernetes/clusters", body, node.id,
-                        "Create Kubernetes cluster " + node.label);
+                        Bundle.DeployPlanner_createKubernetes(node.label));
             }
             case LOAD_BALANCER -> {
                 String[] rule = p.getOrDefault("forwardingRule", "http-80").split("-");
@@ -215,25 +250,25 @@ public final class DeployPlanner {
                     body.put("droplet_ids", dropletIds);
                 }
                 yield DoRequest.post("/v2/load_balancers", body, node.id,
-                        "Create load balancer " + node.label);
+                        Bundle.DeployPlanner_createLoadBalancer(node.label));
             }
             case FIREWALL -> {
                 body.put("name", node.label)
                         .put("inbound_rules", rules(p.getOrDefault("inbound", ""), "sources"))
                         .put("outbound_rules", rules(p.getOrDefault("outbound", "all/0.0.0.0/0"), "destinations"));
                 yield DoRequest.post("/v2/firewalls", body, node.id,
-                        "Create firewall " + node.label);
+                        Bundle.DeployPlanner_createFirewall(node.label));
             }
             case VOLUME -> {
                 body.put("name", node.label).put("region", p.get("region"))
                         .put("size_gigabytes", Integer.parseInt(p.getOrDefault("sizeGb", "100")))
                         .put("filesystem_type", p.getOrDefault("fs", "ext4"));
                 yield DoRequest.post("/v2/volumes", body, node.id,
-                        "Create " + p.get("sizeGb") + "GiB volume " + node.label);
+                        Bundle.DeployPlanner_createVolume(p.get("sizeGb"), node.label));
             }
             case RESERVED_IP -> {
                 body.put("region", p.get("region"));
-                yield DoRequest.post("/v2/reserved_ips", body, node.id, "Reserve IP");
+                yield DoRequest.post("/v2/reserved_ips", body, node.id, Bundle.DeployPlanner_reserveIp());
             }
             case DOMAIN -> {
                 String target = "192.0.2.1";
@@ -243,7 +278,7 @@ public final class DeployPlanner {
                 }
                 body.put("name", p.get("name")).put("ip_address", target);
                 yield DoRequest.post("/v2/domains", body, node.id,
-                        "Create domain " + p.get("name") + " -> " + target);
+                        Bundle.DeployPlanner_createDomain(p.get("name"), target));
             }
             case CDN -> {
                 String origin = node.label + ".nyc3.digitaloceanspaces.com";
@@ -261,17 +296,16 @@ public final class DeployPlanner {
                     }
                 }
                 yield DoRequest.post("/v2/cdn/endpoints", body, node.id,
-                        "Create CDN endpoint for " + origin);
+                        Bundle.DeployPlanner_createCdn(origin));
             }
             case SPACES -> DoRequest.skip(node.id,
-                    "Spaces bucket '" + p.get("bucket") + "' uses the S3 protocol - create via "
-                    + "s3cmd/aws-cli against " + p.get("region") + ".digitaloceanspaces.com");
+                    Bundle.DeployPlanner_spacesSkipped(p.get("bucket"), p.get("region")));
             case CONTAINER_REGISTRY -> {
                 body.put("name", node.label)
                         .put("subscription_tier_slug", p.getOrDefault("tier", "basic"))
                         .put("region", p.get("region"));
                 yield DoRequest.post("/v2/registry", body, node.id,
-                        "Create container registry " + node.label);
+                        Bundle.DeployPlanner_createRegistry(node.label));
             }
             case DB_POSTGRES, DB_MYSQL, DB_MONGODB, DB_VALKEY, DB_KAFKA, DB_OPENSEARCH -> {
                 body.put("name", node.label)
@@ -286,7 +320,7 @@ public final class DeployPlanner {
                     }
                 }
                 yield DoRequest.post("/v2/databases", body, node.id,
-                        "Create managed " + node.kind.getDisplayName() + " " + node.label);
+                        Bundle.DeployPlanner_createDatabase(node.kind.getDisplayName(), node.label));
             }
             case APP_PLATFORM -> {
                 JSONObject service = new JSONObject()
@@ -315,13 +349,13 @@ public final class DeployPlanner {
                 }
                 body.put("spec", spec);
                 yield DoRequest.post("/v2/apps", body, node.id,
-                        "Create App Platform app " + node.label);
+                        Bundle.DeployPlanner_createApp(node.label));
             }
             case FUNCTIONS -> {
                 body.put("label", p.getOrDefault("namespaceLabel", node.label))
                         .put("region", p.get("region"));
                 yield DoRequest.post("/v2/functions/namespaces", body, node.id,
-                        "Create Functions namespace " + node.label);
+                        Bundle.DeployPlanner_createFunctions(node.label));
             }
             case GRADIENT_AI -> {
                 body.put("name", p.getOrDefault("agentName", node.label))
@@ -329,20 +363,20 @@ public final class DeployPlanner {
                         .put("region", p.getOrDefault("region", "tor1"))
                         .put("instruction", "You are a helpful assistant.");
                 yield DoRequest.post("/v2/gen-ai/agents", body, node.id,
-                        "Create Gradient AI agent " + node.label);
+                        Bundle.DeployPlanner_createAgent(node.label));
             }
             case SSH_KEY -> {
                 body.put("name", p.getOrDefault("name", node.label))
                         .put("public_key", p.getOrDefault("publicKey", ""));
                 yield DoRequest.post("/v2/account/keys", body, node.id,
-                        "Register SSH key " + p.get("name"));
+                        Bundle.DeployPlanner_registerSshKey(p.get("name")));
             }
             case CERTIFICATE -> {
                 body.put("name", p.getOrDefault("name", node.label))
                         .put("type", p.getOrDefault("certType", "lets_encrypt"))
                         .put("dns_names", new JSONArray(p.getOrDefault("dnsNames", "").split(",\\s*")));
                 yield DoRequest.post("/v2/certificates", body, node.id,
-                        "Create certificate " + p.get("name"));
+                        Bundle.DeployPlanner_createCertificate(p.get("name")));
             }
             case MONITOR_ALERT -> {
                 JSONArray entities = new JSONArray();
@@ -361,7 +395,7 @@ public final class DeployPlanner {
                         .put("enabled", true)
                         .put("description", node.label);
                 yield DoRequest.post("/v2/monitoring/alerts", body, node.id,
-                        "Create alert " + node.label);
+                        Bundle.DeployPlanner_createAlert(node.label));
             }
 
             // ---- Hetzner Cloud (paths are relative to api.hetzner.cloud/v1) ----
@@ -373,7 +407,7 @@ public final class DeployPlanner {
                                 .put("type", "cloud")
                                 .put("network_zone", "eu-central")
                                 .put("ip_range", range)));
-                yield DoRequest.post("/networks", body, node.id, "Create Hetzner network " + node.label);
+                yield DoRequest.post("/networks", body, node.id, Bundle.DeployPlanner_createHzNetwork(node.label));
             }
             case HZ_SERVER -> {
                 body.put("name", node.label)
@@ -393,7 +427,7 @@ public final class DeployPlanner {
                 if (!networks.isEmpty()) {
                     body.put("networks", networks);
                 }
-                yield DoRequest.post("/servers", body, node.id, "Create Hetzner server " + node.label);
+                yield DoRequest.post("/servers", body, node.id, Bundle.DeployPlanner_createHzServer(node.label));
             }
             case HZ_LB -> {
                 body.put("name", node.label)
@@ -415,14 +449,14 @@ public final class DeployPlanner {
                     body.put("targets", targets);
                 }
                 yield DoRequest.post("/load_balancers", body, node.id,
-                        "Create Hetzner load balancer " + node.label);
+                        Bundle.DeployPlanner_createHzLb(node.label));
             }
             case HZ_VOLUME -> {
                 body.put("name", node.label)
                         .put("size", Integer.parseInt(p.getOrDefault("sizeGb", "50")))
                         .put("location", p.getOrDefault("location", "fsn1"))
                         .put("format", p.getOrDefault("format", "ext4"));
-                yield DoRequest.post("/volumes", body, node.id, "Create Hetzner volume " + node.label);
+                yield DoRequest.post("/volumes", body, node.id, Bundle.DeployPlanner_createHzVolume(node.label));
             }
             case HZ_FIREWALL -> {
                 JSONArray rules = new JSONArray();
@@ -437,13 +471,13 @@ public final class DeployPlanner {
                     }
                 }
                 body.put("name", node.label).put("rules", rules);
-                yield DoRequest.post("/firewalls", body, node.id, "Create Hetzner firewall " + node.label);
+                yield DoRequest.post("/firewalls", body, node.id, Bundle.DeployPlanner_createHzFirewall(node.label));
             }
             case HZ_FLOATING_IP -> {
                 body.put("type", "ipv4")
                         .put("home_location", p.getOrDefault("homeLocation", "fsn1"))
                         .put("name", node.label);
-                yield DoRequest.post("/floating_ips", body, node.id, "Create Hetzner floating IP");
+                yield DoRequest.post("/floating_ips", body, node.id, Bundle.DeployPlanner_createHzFloatingIp());
             }
 
             // ---- Cloudflare ----
@@ -461,12 +495,12 @@ public final class DeployPlanner {
                         .put("content", content.isEmpty() ? "192.0.2.1" : content)
                         .put("proxied", Boolean.parseBoolean(p.getOrDefault("proxied", "true")));
                 yield DoRequest.post("/zones/" + p.getOrDefault("zoneId", "") + "/dns_records",
-                        body, node.id, "Create Cloudflare DNS record " + p.get("name"));
+                        body, node.id, Bundle.DeployPlanner_createCfDnsRecord(p.get("name")));
             }
             case CF_R2_BUCKET -> {
                 body.put("name", p.getOrDefault("bucket", node.label));
                 yield DoRequest.post("/accounts/" + p.getOrDefault("accountId", "") + "/r2/buckets",
-                        body, node.id, "Create R2 bucket " + p.get("bucket"));
+                        body, node.id, Bundle.DeployPlanner_createR2Bucket(p.get("bucket")));
             }
         };
     }
@@ -476,33 +510,33 @@ public final class DeployPlanner {
             case HZ_VOLUME -> DoRequest.post(
                     "/volumes/" + idOf(from) + "/actions/attach",
                     new JSONObject().put("server", idOf(to)).put("automount", true),
-                    from.id, "Attach " + from.label + " to " + to.label);
+                    from.id, Bundle.DeployPlanner_attach(from.label, to.label));
             case HZ_FLOATING_IP -> DoRequest.post(
                     "/floating_ips/" + idOf(from) + "/actions/assign",
                     new JSONObject().put("server", idOf(to)),
-                    from.id, "Assign floating IP to " + to.label);
+                    from.id, Bundle.DeployPlanner_assignFloatingIp(to.label));
             case HZ_FIREWALL -> DoRequest.post(
                     "/firewalls/" + idOf(from) + "/actions/apply_to_resources",
                     new JSONObject().put("apply_to", new JSONArray().put(new JSONObject()
                             .put("type", "server")
                             .put("server", new JSONObject().put("id", idOf(to))))),
-                    from.id, "Apply " + from.label + " to " + to.label);
+                    from.id, Bundle.DeployPlanner_apply(from.label, to.label));
             case VOLUME -> DoRequest.post(
                     "/v2/volumes/" + idOf(from) + "/actions",
                     new JSONObject().put("type", "attach")
                             .put("droplet_id", idOf(to))
                             .put("region", from.props.get("region")),
-                    from.id, "Attach volume " + from.label + " to " + to.label);
+                    from.id, Bundle.DeployPlanner_attachVolume(from.label, to.label));
             case RESERVED_IP -> DoRequest.post(
                     "/v2/reserved_ips/" + idOf(from) + "/actions",
                     new JSONObject().put("type", "assign").put("droplet_id", idOf(to)),
-                    from.id, "Assign reserved IP to " + to.label);
+                    from.id, Bundle.DeployPlanner_assignReservedIp(to.label));
             case FIREWALL -> DoRequest.post(
                     "/v2/firewalls/" + idOf(from) + "/droplets",
                     new JSONObject().put("droplet_ids",
                             new JSONArray().put(idOf(to))),
-                    from.id, "Apply firewall " + from.label + " to " + to.label);
-            default -> DoRequest.skip(from.id, "No attachment for " + from.kind);
+                    from.id, Bundle.DeployPlanner_applyFirewall(from.label, to.label));
+            default -> DoRequest.skip(from.id, Bundle.DeployPlanner_noAttachment(from.kind));
         };
     }
 

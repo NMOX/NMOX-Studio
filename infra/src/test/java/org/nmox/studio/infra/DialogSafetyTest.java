@@ -49,7 +49,9 @@ class DialogSafetyTest {
     @DisplayName("The live Deploy dialog defaults to Cancel via the initialValue ctor, not setValue")
     void deployDefaultsToCancel() throws Exception {
         String src = source();
-        int m = src.indexOf("String title = live ? \"Deploy?\"");
+        // v2.97.0 (the l10n arc): the title is a bundle value; the anchor is
+        // the branch itself, which is what the safe default hangs off
+        int m = src.indexOf("String title = live ? Bundle.InfraDesigner_deployTitle()");
         assertThat(m).as("deploy dialog block exists").isPositive();
         String block = src.substring(m, src.indexOf("runExclusive(deployButton", m));
         assertThat(block)

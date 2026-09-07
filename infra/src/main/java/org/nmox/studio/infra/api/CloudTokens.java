@@ -35,6 +35,10 @@ import org.openide.util.NbPreferences;
  * block on OS calls — {@link CloudProvider} caches the resolved value,
  * and the designer primes that cache off the EDT.
  */
+@org.openide.util.NbBundle.Messages({
+    "CloudTokens_keychainUnavailableTitle=Keychain unavailable",
+    "CloudTokens_keychainUnavailableDetail=Cloud API tokens will not be saved this session."
+})
 final class CloudTokens {
 
     private static final Logger LOG = Logger.getLogger(CloudTokens.class.getName());
@@ -191,9 +195,9 @@ final class CloudTokens {
         }
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    "Keychain unavailable",
+                    Bundle.CloudTokens_keychainUnavailableTitle(),
                     javax.swing.UIManager.getIcon("OptionPane.warningIcon"),
-                    "Cloud API tokens will not be saved this session.", null);
+                    Bundle.CloudTokens_keychainUnavailableDetail(), null);
         } catch (RuntimeException | LinkageError ignored) {
             // notifications unavailable (tests, stripped platform)
         }

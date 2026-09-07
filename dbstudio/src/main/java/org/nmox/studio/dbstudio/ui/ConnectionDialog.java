@@ -28,6 +28,7 @@ import org.nmox.studio.dbstudio.model.DbEngine;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The add/edit dialog for one database connection. Server engines
@@ -42,6 +43,43 @@ import org.openide.NotifyDescriptor;
  * stored one". The in-dialog Test button probes with exactly the
  * credentials the connection would use, asynchronously.
  */
+@Messages({
+    // chrome (shift-2970): every user-visible English string of this dialog.
+    "ConnectionDialog_nameA11y=Connection name",
+    "ConnectionDialog_engineA11y=Database engine",
+    "ConnectionDialog_hostA11y=Host",
+    "ConnectionDialog_portA11y=Port",
+    "ConnectionDialog_databaseA11y=Database",
+    "ConnectionDialog_userA11y=User",
+    "ConnectionDialog_passwordA11y=Password",
+    "ConnectionDialog_fileA11y=Database file path",
+    "ConnectionDialog_messageA11y=Message",
+    "ConnectionDialog_nameLabel=Name:",
+    "ConnectionDialog_engineLabel=Engine:",
+    "ConnectionDialog_hostLabel=Host:",
+    "ConnectionDialog_portLabel=Port:",
+    "ConnectionDialog_databaseLabel=Database:",
+    "ConnectionDialog_userLabel=User:",
+    "ConnectionDialog_passwordLabel=Password:",
+    "ConnectionDialog_fileLabel=File:",
+    "ConnectionDialog_useTls=Use TLS (https)",
+    "ConnectionDialog_tlsTooltip=CouchDB only: speak https to the server (port 6984 by convention)",
+    "ConnectionDialog_test=Test",
+    "ConnectionDialog_testTooltip=Probe the server with these settings (async)",
+    "ConnectionDialog_keepStoredPassword=Leave blank to keep the stored password",
+    "ConnectionDialog_keychainHint=<html><small>Stored in the OS keychain \u2014 never in .nmoxdb.json.</small></html>",
+    "ConnectionDialog_browse=Browse\u2026",
+    "ConnectionDialog_chooserTitle=SQLite database file",
+    "ConnectionDialog_fileHint=<html><small>Path to the database file; it is created on first use if missing.</small></html>",
+    "ConnectionDialog_needName=Give the connection a name.",
+    "ConnectionDialog_needFile=Pick the SQLite database file.",
+    "ConnectionDialog_needHost=Enter the server host.",
+    "ConnectionDialog_testing=Testing\u2026",
+    "ConnectionDialog_okDatabaseOpens=OK \u2014 database opens",
+    "ConnectionDialog_okServerReachable=OK \u2014 server reachable",
+    "ConnectionDialog_addTitle=Add Database Connection",
+    "ConnectionDialog_editTitle=Edit Database Connection"
+})
 final class ConnectionDialog extends JPanel {
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
@@ -57,7 +95,7 @@ final class ConnectionDialog extends JPanel {
     private final JTextField fileField = new JTextField(24);
     /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
     private final javax.swing.JCheckBox secureBox =
-            new javax.swing.JCheckBox("Use TLS (https)");
+            new javax.swing.JCheckBox(Bundle.ConnectionDialog_useTls());
     private final JLabel testLabel = new JLabel(" ");
     private final JPanel cards = new JPanel(new CardLayout());
 
@@ -67,22 +105,22 @@ final class ConnectionDialog extends JPanel {
     private ConnectionDialog(ConnectionSpec existing) {
         super(new BorderLayout(0, 6));
         this.existing = existing;
-        nameField.getAccessibleContext().setAccessibleName("Connection name");
-        engineCombo.getAccessibleContext().setAccessibleName("Database engine");
-        hostField.getAccessibleContext().setAccessibleName("Host");
-        portField.getAccessibleContext().setAccessibleName("Port");
-        databaseField.getAccessibleContext().setAccessibleName("Database");
-        userField.getAccessibleContext().setAccessibleName("User");
-        passwordField.getAccessibleContext().setAccessibleName("Password");
-        fileField.getAccessibleContext().setAccessibleName("Database file path");
+        nameField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_nameA11y());
+        engineCombo.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_engineA11y());
+        hostField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_hostA11y());
+        portField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_portA11y());
+        databaseField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_databaseA11y());
+        userField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_userA11y());
+        passwordField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_passwordA11y());
+        fileField.getAccessibleContext().setAccessibleName(Bundle.ConnectionDialog_fileA11y());
         setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
 
         engineCombo.setRenderer(new EngineRenderer());
         engineCombo.addActionListener(e -> engineChanged());
 
         JPanel top = grid();
-        addRow(top, 0, "Name:", nameField);
-        addRow(top, 1, "Engine:", engineCombo);
+        addRow(top, 0, Bundle.ConnectionDialog_nameLabel(), nameField);
+        addRow(top, 1, Bundle.ConnectionDialog_engineLabel(), engineCombo);
         add(top, BorderLayout.NORTH);
 
         cards.add(buildServerCard(), "server");
@@ -90,8 +128,8 @@ final class ConnectionDialog extends JPanel {
         add(cards, BorderLayout.CENTER);
 
         JPanel south = new JPanel(new BorderLayout());
-        JButton testButton = new JButton("Test");
-        testButton.setToolTipText("Probe the server with these settings (async)");
+        JButton testButton = new JButton(Bundle.ConnectionDialog_test());
+        testButton.setToolTipText(Bundle.ConnectionDialog_testTooltip());
         testButton.addActionListener(e -> testConnection());
         south.add(testButton, BorderLayout.WEST);
         testLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
@@ -107,7 +145,7 @@ final class ConnectionDialog extends JPanel {
             userField.setText(existing.user());
             fileField.setText(existing.filePath());
             secureBox.setSelected(existing.secure());
-            passwordField.setToolTipText("Leave blank to keep the stored password");
+            passwordField.setToolTipText(Bundle.ConnectionDialog_keepStoredPassword());
         }
         lastDefaultPort = selectedEngine().defaultPort();
         if (portField.getText().isBlank() && lastDefaultPort > 0) {
@@ -141,16 +179,14 @@ final class ConnectionDialog extends JPanel {
 
     private JPanel buildServerCard() {
         JPanel panel = grid();
-        addRow(panel, 0, "Host:", hostField);
-        addRow(panel, 1, "Port:", portField);
-        addRow(panel, 2, "Database:", databaseField);
-        addRow(panel, 3, "User:", userField);
-        addRow(panel, 4, "Password:", passwordField);
-        JLabel hint = new JLabel("<html><small>Stored in the OS keychain — never in "
-                + ".nmoxdb.json.</small></html>");
+        addRow(panel, 0, Bundle.ConnectionDialog_hostLabel(), hostField);
+        addRow(panel, 1, Bundle.ConnectionDialog_portLabel(), portField);
+        addRow(panel, 2, Bundle.ConnectionDialog_databaseLabel(), databaseField);
+        addRow(panel, 3, Bundle.ConnectionDialog_userLabel(), userField);
+        addRow(panel, 4, Bundle.ConnectionDialog_passwordLabel(), passwordField);
+        JLabel hint = new JLabel(Bundle.ConnectionDialog_keychainHint());
         addRow(panel, 5, "", hint);
-        secureBox.setToolTipText(
-                "CouchDB only: speak https to the server (port 6984 by convention)");
+        secureBox.setToolTipText(Bundle.ConnectionDialog_tlsTooltip());
         addRow(panel, 6, "", secureBox);
         return panel;
     }
@@ -159,11 +195,11 @@ final class ConnectionDialog extends JPanel {
         JPanel panel = grid();
         JPanel row = new JPanel(new BorderLayout(6, 0));
         row.add(fileField, BorderLayout.CENTER);
-        JButton browse = new JButton("Browse…");
+        JButton browse = new JButton(Bundle.ConnectionDialog_browse());
         browse.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser(fileField.getText().isBlank()
                     ? System.getProperty("user.home") : fileField.getText());
-            chooser.setDialogTitle("SQLite database file");
+            chooser.setDialogTitle(Bundle.ConnectionDialog_chooserTitle());
             // save-style dialog: an Open dialog can't pick a file that doesn't
             // exist yet, but "point at a NEW db file" is the normal first use
             if (chooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
@@ -171,9 +207,8 @@ final class ConnectionDialog extends JPanel {
             }
         });
         row.add(browse, BorderLayout.EAST);
-        addRow(panel, 0, "File:", row);
-        addRow(panel, 1, "", new JLabel("<html><small>Path to the database file; it is "
-                + "created on first use if missing.</small></html>"));
+        addRow(panel, 0, Bundle.ConnectionDialog_fileLabel(), row);
+        addRow(panel, 1, "", new JLabel(Bundle.ConnectionDialog_fileHint()));
         return panel;
     }
 
@@ -226,14 +261,14 @@ final class ConnectionDialog extends JPanel {
     /** A human-readable problem with the current fields, or null when OK. */
     private String validateFields() {
         if (nameField.getText().isBlank()) {
-            return "Give the connection a name.";
+            return Bundle.ConnectionDialog_needName();
         }
         if (selectedEngine() == DbEngine.SQLITE) {
             if (fileField.getText().isBlank()) {
-                return "Pick the SQLite database file.";
+                return Bundle.ConnectionDialog_needFile();
             }
         } else if (hostField.getText().isBlank()) {
-            return "Enter the server host.";
+            return Bundle.ConnectionDialog_needHost();
         }
         return null;
     }
@@ -243,7 +278,7 @@ final class ConnectionDialog extends JPanel {
         char[] typed = passwordField.getPassword();
         String storedId = existing != null ? existing.id() : null;
         testLabel.setForeground(Color.GRAY);
-        testLabel.setText("Testing…");
+        testLabel.setText(Bundle.ConnectionDialog_testing());
         DbStudioTopComponent.RP.post(() -> {
             char[] password = typed.length > 0 ? typed
                     : (storedId != null ? Passwords.read(storedId) : null);
@@ -259,7 +294,8 @@ final class ConnectionDialog extends JPanel {
                 // (v1.266.0, a DBA-persona copy nit)
                 testLabel.setText(PlainText.plain(error != null ? error
                         : selectedEngine() == DbEngine.SQLITE
-                                ? "OK — database opens" : "OK — server reachable"));
+                                ? Bundle.ConnectionDialog_okDatabaseOpens()
+                                : Bundle.ConnectionDialog_okServerReachable()));
             });
         });
     }
@@ -315,7 +351,7 @@ final class ConnectionDialog extends JPanel {
             org.nmox.studio.dbstudio.io.EnvConnections.Suggestion suggestion) {
         ConnectionDialog panel = new ConnectionDialog(null);
         panel.prefill(suggestion);
-        return show(panel, "Add Database Connection");
+        return show(panel, Bundle.ConnectionDialog_addTitle());
     }
 
     /**
@@ -329,7 +365,7 @@ final class ConnectionDialog extends JPanel {
         ConnectionDialog panel = new ConnectionDialog(null);
         panel.prefill(suggestion);
         panel.nameField.setText(name);
-        return show(panel, "Add Database Connection");
+        return show(panel, Bundle.ConnectionDialog_addTitle());
     }
 
     /**
@@ -339,7 +375,8 @@ final class ConnectionDialog extends JPanel {
      */
     static ConnectionSpec show(ConnectionSpec existing) {
         return show(new ConnectionDialog(existing),
-                existing == null ? "Add Database Connection" : "Edit Database Connection");
+                existing == null ? Bundle.ConnectionDialog_addTitle()
+                        : Bundle.ConnectionDialog_editTitle());
     }
 
     private static ConnectionSpec show(ConnectionDialog panel, String title) {
@@ -353,7 +390,7 @@ final class ConnectionDialog extends JPanel {
                 return panel.commit();
             }
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain(problem, "Message"), NotifyDescriptor.WARNING_MESSAGE));
+                    org.nmox.studio.core.util.PlainDialogs.plain(problem, Bundle.ConnectionDialog_messageA11y()), NotifyDescriptor.WARNING_MESSAGE));
         }
     }
 

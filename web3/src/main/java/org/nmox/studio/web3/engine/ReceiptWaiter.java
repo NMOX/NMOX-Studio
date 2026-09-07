@@ -17,6 +17,12 @@ import java.util.Locale;
  *
  * <p>Not thread-safe; one waiter per transaction, used from one thread.
  */
+@org.openide.util.NbBundle.Messages({
+    "ReceiptWaiter_mined=Mined in block {0} \u00b7 gas used {1}",
+    "ReceiptWaiter_reverted=Reverted in block {0}.",
+    "ReceiptWaiter_timedOut=No receipt after {0} s \u2014 the transaction may still be pending on the node.",
+    "ReceiptWaiter_waiting=Waiting for the receipt\u2026 (poll {0})"
+})
 public final class ReceiptWaiter {
 
     /** Total waiting budget: 30 seconds. */
@@ -80,22 +86,21 @@ public final class ReceiptWaiter {
         if (receipt != null) {
             if (receipt.success()) {
                 return new Decision(State.SUCCESS,
-                        "Mined in block " + receipt.blockNumber() + " · gas used "
-                        + String.format(Locale.ROOT, "%,d", receipt.gasUsed()), 0);
+                        Bundle.ReceiptWaiter_mined(String.valueOf(receipt.blockNumber()),
+                                String.format(Locale.ROOT, "%,d", receipt.gasUsed())), 0);
             }
             return new Decision(State.REVERTED,
-                    "Reverted in block " + receipt.blockNumber() + ".", 0);
+                    Bundle.ReceiptWaiter_reverted(String.valueOf(receipt.blockNumber())), 0);
         }
         if (waitedMillis >= budgetMillis) {
             return new Decision(State.TIMED_OUT,
-                    "No receipt after " + (budgetMillis / 1000)
-                    + " s — the transaction may still be pending on the node.", 0);
+                    Bundle.ReceiptWaiter_timedOut(String.valueOf(budgetMillis / 1000)), 0);
         }
         long delay = Math.min(nextDelayMillis, budgetMillis - waitedMillis);
         waitedMillis += delay;
         nextDelayMillis = Math.min(nextDelayMillis * 2, MAX_DELAY_MILLIS);
         return new Decision(State.WAITING,
-                "Waiting for the receipt… (poll " + polls + ")", delay);
+                Bundle.ReceiptWaiter_waiting(String.valueOf(polls)), delay);
     }
 
     /** How many polls this waiter has judged. */

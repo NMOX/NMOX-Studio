@@ -11,6 +11,7 @@ import java.util.regex.Pattern;
 import org.nmox.studio.dbstudio.model.ConnectionSpec;
 import org.nmox.studio.dbstudio.model.DbEngine;
 import org.nmox.studio.rack.docker.DockerClient.ContainerInfo;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The pure decision core behind "a database is running in Docker —
@@ -43,6 +44,11 @@ import org.nmox.studio.rack.docker.DockerClient.ContainerInfo;
  *       storms; the rest surface on the next refresh.</li>
  * </ol>
  */
+@Messages({
+    // chrome (shift-2970): the balloon's one-liner.
+    // {2,number,0} keeps the port ungrouped, as the concatenation printed it.
+    "DockerDbOffers_offerText={0} container \"{1}\" publishes {2,number,0} \u2014 create a connection?"
+})
 public final class DockerDbOffers {
 
     /** Balloon cap per refresh — the rest wait for the next one. */
@@ -166,8 +172,8 @@ public final class DockerDbOffers {
 
     /** The balloon's one-liner: what runs where, and the question. */
     public static String offerText(Offer offer) {
-        return offer.engine().displayName() + " container \"" + offer.containerName()
-                + "\" publishes " + offer.hostPort() + " — create a connection?";
+        return Bundle.DockerDbOffers_offerText(offer.engine().displayName(),
+                offer.containerName(), offer.hostPort());
     }
 
     /** The conventional maintenance database, where the engine has one. */
