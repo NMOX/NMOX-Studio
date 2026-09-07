@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -77,6 +78,73 @@ class BundleHeadGateTest {
             }
         }
         return keys;
+    }
+
+    /** The Welcome's launchpad link -> the key that owns that window's real title. */
+    private static final Map<String, String> WELCOME_LINKS = Map.of(
+            "MainWindow_workbench", "CTL_ProjectExplorerTopComponent",
+            "MainWindow_taskRack", "CTL_RackTopComponent",
+            "MainWindow_tasks", "CTL_TasksTopComponent");
+
+    /** Every value for a key, per locale, across every module's bundles. */
+    private static Map<String, Map<String, String>> valuesByLocale(String key) throws IOException {
+        Map<String, Map<String, String>> out = new java.util.HashMap<>();
+        for (String module : MODULES) {
+            for (String where : new String[] {"target/classes", "src/main"}) {
+                Path root = Path.of("..", module, where);
+                if (!Files.isDirectory(root)) {
+                    continue;
+                }
+                try (Stream<Path> files = Files.walk(root)) {
+                    for (Path p : files.filter(f -> f.getFileName().toString().startsWith("Bundle")
+                            && f.getFileName().toString().endsWith(".properties")).toList()) {
+                        String name = p.getFileName().toString();
+                        String locale = name.equals("Bundle.properties") ? "en"
+                                : name.substring("Bundle_".length(), name.length() - ".properties".length());
+                        Properties props = new Properties();
+                        try (InputStream in = Files.newInputStream(p)) {
+                            props.load(in);
+                        }
+                        String v = props.getProperty(key);
+                        if (v != null) {
+                            out.computeIfAbsent(locale, k -> new java.util.HashMap<>()).put(module, v);
+                        }
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    @Test
+    @DisplayName("the Welcome's window links say the same words as the windows they open, in every language")
+    void welcomeLinksMatchWindowTitles() throws IOException {
+        // Found by the l10n arc (v2.97.0): a Spanish user clicked "Workbench"
+        // on the Welcome and a window called "Banco de trabajo" opened. The
+        // link and the title are written in different modules, so only a gate
+        // keeps them saying the same thing.
+        List<String> offenders = new ArrayList<>();
+        for (Map.Entry<String, String> pair : WELCOME_LINKS.entrySet()) {
+            Map<String, Map<String, String>> links = valuesByLocale(pair.getKey());
+            Map<String, Map<String, String>> titles = valuesByLocale(pair.getValue());
+            for (Map.Entry<String, Map<String, String>> byLocale : links.entrySet()) {
+                String locale = byLocale.getKey();
+                String link = byLocale.getValue().values().iterator().next();
+                Map<String, String> title = titles.get(locale);
+                if (title == null || title.isEmpty()) {
+                    continue; // that window's title is not translated in this locale
+                }
+                String window = title.values().iterator().next();
+                // the link carries the window's name plus its chord, two spaces on
+                String named = link.contains("  ") ? link.substring(0, link.indexOf("  ")) : link;
+                if (!named.equals(window)) {
+                    offenders.add(locale + ": Welcome says \"" + named + "\" but the window is called \""
+                            + window + "\" (" + pair.getKey() + " vs " + pair.getValue() + ")");
+                }
+            }
+        }
+        assertThat(offenders).as("a launchpad link that names its window differently from the window itself")
+                .isEmpty();
     }
 
     @Test
