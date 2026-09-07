@@ -4,6 +4,80 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.97.0] - 2026-09-07
+
+**NMOX Studio speaks six languages.** David's ask: "internationalize
+NMOX Studio itself, so the buttons can be in any language the user
+wants. Let's start with English, French, Russian, Hindi, and Spanish
+and German." Ledger 85 had measured this as its own project, and it
+was: the product's chrome was ~970 English literals built straight
+into Swing, with no way for a user to choose anything else.
+
+1. **Options ▸ General ▸ Language** — English, Español, Français,
+   Deutsch, Русский and हिन्दी, each listed in its own name so a user
+   who landed in the wrong language can still find their own. The
+   locale is not a preference the IDE reads: it is a launcher
+   argument, so the choice is written as a `--locale` line into the
+   per-user `etc/nmoxstudio.conf` that the launcher already sources,
+   and a balloon says plainly that it takes effect on the next start.
+   `core.util.UiLocale` owns a marker block in that file and writes
+   nothing else: the file is SOURCED BY A SHELL, so only a
+   `[a-z]{2}(:[A-Z]{2})?` code is ever emitted, every other line
+   survives byte for byte, and choosing the system default removes the
+   block rather than writing an empty one. `UiLocaleTest` proves the
+   shell-safety refusals, the round trip and the never-doubled block.
+2. **2,937 chrome strings became bundle keys** across all ten modules
+   — menus, dialogs, tooltips, status lines, notifications, table
+   headers, tab titles, wizard captions, refusal messages and
+   accessible names — through the platform's own `@NbBundle.Messages`
+   idiom (and the hand-written `Bundle.properties` where a package
+   already owned one, because a hand file and a generated one collide:
+   the v1.79.0 lesson). What deliberately stayed English: the rack's
+   device faceplates (GO, STOP, EXPLAIN, the knob names, the LCD
+   lines — the hardware panel, sized by the fit law), and everything
+   that is protocol rather than prose (SQL, ABI and JSON-RPC names,
+   command lines, wire strings, preference and keychain keys,
+   generated code and exported bytes).
+3. **The platform's own menu bar follows** — File, Edit, View, Tools,
+   Help, Window, Source, Navigate, Run, Debug, Refactor and Team are
+   localized through branding+locale overlay jars, the mechanism
+   NbBundle looks in first for a branded, localized string.
+4. **The markup-render law survives the move.** The `Plain*` gates
+   accept a `Bundle.X(…)` call where they refuse a bare variable,
+   because a bundle value is the product's own authored sentence — but
+   only while the value's HEAD is the product's own words. A value
+   beginning with `{0}` puts an ARGUMENT first, and an argument can be
+   a file name or tool output beginning with `<html>`. New
+   `BundleHeadGateTest` derives its population from the BUILT bundles
+   and refuses any placeholder-headed value painted straight into a
+   Swing sink.
+5. **`LocaleBundleParityTest`** reads the ASSEMBLED cluster and fails
+   the build when a localized package is missing a language, carries a
+   key English does not, drops one English has, changes a message's
+   placeholder set, or ships a blank value — a `{0}` lost in French is
+   a MessageFormat exception in French only. The branding overlays are
+   held to the same shape across all five locale jars.
+6. **`ChromeLiteralRatchetTest`** counts the Swing sinks still fed a
+   bare English word, per module, and fails when any module GROWS its
+   count: new UI text rides a bundle. The pins are the measured
+   remainder — seven strings product-wide, each one furniture rather
+   than prose (a wordmark, two `<html>` heads of data-built
+   composites, the faceplate's own LCD vocabulary).
+7. **Ten source-grep gates were taught the new lawful form.** Each had
+   pinned an English literal at a call site as a proxy for a law, and
+   the literal moved into an annotation while the law stayed put. Most
+   came back stronger: the patch-replace confirm now checks its
+   "cannot be undone" promise in the shipped bundle itself, the git
+   chip's menu is proven both by construction and by its English
+   values, and DB Studio's CRUD gestures are checked to still say what
+   happened.
+
+Untranslated keys fall back to English automatically, so a partial
+translation degrades to the original sentence rather than to a key
+name. Ledger 85 stays open for the honest remainder: the faceplate
+vocabulary by decision, and the platform's deeper dialogs, which have
+no community bundles in these languages.
+
 ## [2.96.1] - 2026-09-07
 
 **The ChatGPT key by the name people export.** David: "This machine
