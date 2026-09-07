@@ -53,7 +53,7 @@ public final class AskKvasirAction implements ActionListener {
         JTextField question = new JTextField();
         question.getAccessibleContext().setAccessibleName("Question about the selection");
         javax.swing.JComboBox<String> model =
-                new javax.swing.JComboBox<>(AskKvasirModel.LABELS);
+                new javax.swing.JComboBox<>(AskKvasirModel.labels());
         model.setSelectedIndex(AskKvasirModel.chosenIndex());
         model.getAccessibleContext().setAccessibleName("Model depth");
         JPanel south = new JPanel(new BorderLayout(8, 0));

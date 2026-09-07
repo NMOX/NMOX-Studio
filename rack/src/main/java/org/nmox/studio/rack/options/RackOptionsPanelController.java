@@ -30,7 +30,7 @@ import org.openide.util.NbPreferences;
 )
 @org.openide.util.NbBundle.Messages({
     "RackOptions_DisplayName=Rack & Cloud",
-    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare browser run serve"
+    "RackOptions_Keywords=rack reflex token digitalocean hetzner cloudflare browser run serve kvasir ai claude chatgpt gemini openai google anthropic"
 })
 public class RackOptionsPanelController extends OptionsPanelController {
 
@@ -38,6 +38,7 @@ public class RackOptionsPanelController extends OptionsPanelController {
     private JPanel panel;
     private JSpinner reflexInterval;
     private javax.swing.JCheckBox openServedPage;
+    private javax.swing.JComboBox<String> kvasirProvider;
     private JPasswordField doToken;
     private JPasswordField hetznerToken;
     private JPasswordField cloudflareToken;
@@ -51,6 +52,8 @@ public class RackOptionsPanelController extends OptionsPanelController {
         openServedPage.setSelected(NbPreferences
                 .forModule(org.nmox.studio.rack.service.OpenOnServe.class)
                 .getBoolean(org.nmox.studio.rack.service.OpenOnServe.PREF_OPEN_ON_RUN, true));
+        kvasirProvider.setSelectedIndex(
+                org.nmox.studio.rack.engine.KvasirProvider.configured().ordinal());
         doToken.setText("");
         hetznerToken.setText("");
         cloudflareToken.setText("");
@@ -63,6 +66,10 @@ public class RackOptionsPanelController extends OptionsPanelController {
         NbPreferences.forModule(org.nmox.studio.rack.service.OpenOnServe.class)
                 .putBoolean(org.nmox.studio.rack.service.OpenOnServe.PREF_OPEN_ON_RUN,
                         openServedPage.isSelected());
+        // the KVASIR provider is a plain preference (a vendor name is not a
+        // secret); its keys are set on the device's KEY… dialog, per provider
+        org.nmox.studio.rack.engine.KvasirProvider.remember(
+                org.nmox.studio.rack.engine.KvasirProvider.values()[kvasirProvider.getSelectedIndex()]);
         // Keychain writes may block on an OS unlock prompt — off the EDT,
         // like every other keyring user in the suite.
         char[] doTok = doToken.getPassword();
@@ -141,6 +148,14 @@ public class RackOptionsPanelController extends OptionsPanelController {
         // monitor; closing the loop for them would be taking the wheel.
         openServedPage = new javax.swing.JCheckBox(
                 "Open the served page in the Browser tab after Run", true);
+        org.nmox.studio.rack.engine.KvasirProvider[] providers =
+                org.nmox.studio.rack.engine.KvasirProvider.values();
+        String[] providerLabels = new String[providers.length];
+        for (int i = 0; i < providers.length; i++) {
+            providerLabels[i] = providers[i].label();
+        }
+        kvasirProvider = new javax.swing.JComboBox<>(providerLabels);
+        kvasirProvider.getAccessibleContext().setAccessibleName("KVASIR AI provider");
         doToken = new JPasswordField(28);
         hetznerToken = new JPasswordField(28);
         cloudflareToken = new JPasswordField(28);
@@ -153,6 +168,12 @@ public class RackOptionsPanelController extends OptionsPanelController {
         panel.add(new JLabel("REFLEX poll interval (ms):"), c);
         c.gridx = 1;
         panel.add(reflexInterval, c);
+
+        c.gridx = 0;
+        c.gridy++;
+        panel.add(new JLabel("KVASIR answers with:"), c);
+        c.gridx = 1;
+        panel.add(kvasirProvider, c);
 
         c.gridx = 0;
         c.gridy++;
@@ -177,6 +198,7 @@ public class RackOptionsPanelController extends OptionsPanelController {
         c.gridwidth = 2;
         panel.add(new JLabel("<html><i>Blank token fields keep the stored value. Env vars"
                 + " (DIGITALOCEAN_TOKEN, HCLOUD_TOKEN, CLOUDFLARE_API_TOKEN) act as fallbacks."
+                + " KVASIR keys are set per provider on the device's KEY\u2026 button."
                 + "</i></html>"), c);
         return panel;
     }

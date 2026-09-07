@@ -6,6 +6,7 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.nmox.studio.rack.engine.KvasirClient;
 import org.nmox.studio.rack.engine.KvasirClient.FailureContext;
+import org.nmox.studio.rack.engine.KvasirProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbPreferences;
@@ -19,6 +20,13 @@ import org.openide.util.NbPreferences;
  * is an <em>outward</em> data flow that trust neither describes nor
  * covers. So KVASIR asks its own question, once, spelling out exactly
  * what leaves the machine — and, just as importantly, what does not.
+ *
+ * <p><b>One grant per provider.</b> A yes given to send output to
+ * Anthropic's API is not a yes to send it to Google's or OpenAI's: every
+ * grant key below is scoped to the {@link KvasirProvider#configured()
+ * configured provider} (the Anthropic keys keep their original bare
+ * names, so every grant given before v2.96.0 still holds for Claude),
+ * and the dialogs name the vendor that will receive the data.
  *
  * <p>The grant is a preference, not a secret, so it lives in ordinary
  * {@link Preferences} under the userdir via NbPreferences (unlike the API
@@ -100,19 +108,36 @@ public final class KvasirConsent {
         return node;
     }
 
-    /** True once the user has agreed to send failure context to the API. */
+    /**
+     * A grant key for the configured provider: the bare pre-v2.96.0 name
+     * for Anthropic (so existing grants keep holding for Claude), the name
+     * suffixed with the provider id for every other vendor — a consent
+     * names its recipient.
+     */
+    static String scoped(String baseKey) {
+        KvasirProvider p = KvasirProvider.configured();
+        return p == KvasirProvider.ANTHROPIC ? baseKey : baseKey + "." + p.id();
+    }
+
+    /** The vendor the configured provider's request goes to, for the dialogs. */
+    private static String recipient() {
+        KvasirProvider p = KvasirProvider.configured();
+        return escape(p.vendor()) + "'s API (" + escape(p.product()) + ")";
+    }
+
+    /** True once the user has agreed to send failure context to the configured provider. */
     public static boolean isGranted() {
-        return PREFS.getBoolean(GRANTED_KEY, false);
+        return PREFS.getBoolean(scoped(GRANTED_KEY), false);
     }
 
     /** Records consent (used after the dialog is accepted). */
     static void grant() {
-        PREFS.putBoolean(GRANTED_KEY, true);
+        PREFS.putBoolean(scoped(GRANTED_KEY), true);
     }
 
-    /** Test hook: forget the grant. */
+    /** Test hook: forget the configured provider's grant. */
     static void revokeForTest() {
-        PREFS.remove(GRANTED_KEY);
+        PREFS.remove(scoped(GRANTED_KEY));
     }
 
     /**
@@ -132,7 +157,7 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this failure to Anthropic's API for an explanation?</b>"
+        String message = "<html><b>Send this failure to " + recipient() + " for an explanation?</b>"
                 + "<br><br>KVASIR will send <b>only</b> the following, and nothing else:"
                 + "<ul>"
                 + "<li>the failing command: <code>" + escape(ctx.command()) + "</code></li>"
@@ -164,16 +189,16 @@ public final class KvasirConsent {
     /** True once this flow kind has been granted. Package-visible key shape
      *  mirrors the two named grants above: one preference per disclosure. */
     public static boolean isKindGranted(String kind) {
-        return PREFS.getBoolean(kindKey(kind), false);
+        return PREFS.getBoolean(scoped(kindKey(kind)), false);
     }
 
     static void grantKind(String kind) {
-        PREFS.putBoolean(kindKey(kind), true);
+        PREFS.putBoolean(scoped(kindKey(kind)), true);
     }
 
-    /** Test hook: forget one kind's grant. */
+    /** Test hook: forget one kind's grant for the configured provider. */
     static void revokeKindForTest(String kind) {
-        PREFS.remove(kindKey(kind));
+        PREFS.remove(scoped(kindKey(kind)));
     }
 
     private static String kindKey(String kind) {
@@ -197,7 +222,7 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this to Anthropic's API for an explanation?</b>"
+        String message = "<html><b>Send this to " + recipient() + " for an explanation?</b>"
                 + "<br><br>KVASIR will send <b>only</b> the following, and nothing else:"
                 + "<ul><li>" + escape(what) + "</li></ul>"
                 // the disclosure line above is the whole truth — some kinds
@@ -230,16 +255,16 @@ public final class KvasirConsent {
 
     /** True once the user has agreed to send SELECTED CODE to the API. */
     public static boolean isCodeGranted() {
-        return PREFS.getBoolean(CODE_GRANTED_KEY, false);
+        return PREFS.getBoolean(scoped(CODE_GRANTED_KEY), false);
     }
 
     static void grantCode() {
-        PREFS.putBoolean(CODE_GRANTED_KEY, true);
+        PREFS.putBoolean(scoped(CODE_GRANTED_KEY), true);
     }
 
-    /** Test hook: forget the code grant. */
+    /** Test hook: forget the configured provider's code grant. */
     static void revokeCodeForTest() {
-        PREFS.remove(CODE_GRANTED_KEY);
+        PREFS.remove(scoped(CODE_GRANTED_KEY));
     }
 
     /**
@@ -259,7 +284,7 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = "<html><b>Send this code selection to Anthropic's API?</b>"
+        String message = "<html><b>Send this code selection to " + recipient() + "?</b>"
                 + "<br><br>Ask KVASIR will send <b>only</b> the following, and nothing else:"
                 + "<ul>"
                 + "<li>the code you selected (" + q.code().length() + " characters)</li>"

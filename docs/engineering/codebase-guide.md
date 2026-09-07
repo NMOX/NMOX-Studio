@@ -194,8 +194,9 @@ it is almost always this law.
    onto the **RackBus**, where MONITOR displays it and the
    **FlightRecorder** journals it.
 4. Exit fires the device's `onFinished`: LEDs update, gates drop, and a
-   failure becomes structured context ORACLE's EXPLAIN can send to the
-   Anthropic API — but only after its own explicit consent dialog,
+   failure becomes structured context KVASIR's EXPLAIN can send to the
+   configured AI provider's API (Anthropic, OpenAI or Google) — but only
+   after its own explicit, per-provider consent dialog,
    because *outbound data* needs a different permission than *inbound
    execution*.
 

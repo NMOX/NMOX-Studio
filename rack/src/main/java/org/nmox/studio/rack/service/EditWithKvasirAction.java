@@ -80,7 +80,7 @@ public final class EditWithKvasirAction implements ActionListener {
 
         JTextField instruction = new JTextField();
         javax.swing.JComboBox<String> model =
-                new javax.swing.JComboBox<>(AskKvasirModel.LABELS);
+                new javax.swing.JComboBox<>(AskKvasirModel.labels());
         model.setSelectedIndex(AskKvasirModel.chosenIndex());
         model.getAccessibleContext().setAccessibleName("Model depth");
         instruction.getAccessibleContext().setAccessibleName("Edit instruction");

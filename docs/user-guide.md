@@ -338,22 +338,35 @@ refresh buttons.
 
 **KVASIR** is AI assistance the rack way: a device that explains the error
 currently on the MONITOR bus, not a chat sidebar. When a run fails, press
-**EXPLAIN** and KVASIR asks Anthropic's API what went wrong and the
-concrete next step to fix it. A short verdict lands on the display; **VIEW**
-opens the full answer. **MODEL** dials **HAIKU** (cheap, fast — the default)
-or **SONNET** (stronger). EXPLAIN is blue: it reads and asks, it never
-touches your project.
+**EXPLAIN** and KVASIR asks your AI what went wrong and the concrete next
+step to fix it. A short verdict lands on the display; **VIEW** opens the
+full answer. **MODEL** dials **FAST** (cheap, quick — the default) or
+**DEEP** (stronger). EXPLAIN is blue: it reads and asks, it never touches
+your project.
 
-**Set your key** with **KEY…** — it is stored in your OS keychain (macOS
-Keychain, GNOME Keyring, Windows Credential Vault), never on disk and never
-in any project file. Alternatively, KVASIR reads the environment variable
-**`ANTHROPIC_API_KEY`**, or **`CLAUDE_API_KEY`** if the first is unset (a
-stored key wins over both). No key, no call — KVASIR just says so.
+**Pick your AI, set your key.** KVASIR works with **Claude (Anthropic)**,
+**ChatGPT (OpenAI)** or **Gemini (Google)** — your key, your pick. Press
+**KEY…** to choose the provider and paste its key; the choice is remembered
+for every KVASIR face (EXPLAIN, Ask, Edit, Complete, Draft Commit Message,
+the studio explainers) and also sits in Options ▸ Rack & Cloud. FAST and
+DEEP map onto each vendor's own pair: Haiku / Sonnet, GPT-5 mini / GPT-5,
+Gemini Flash / Pro. The key is stored in your OS keychain (macOS Keychain,
+GNOME Keyring, Windows Credential Vault), one entry per provider, never on
+disk and never in any project file. Alternatively, KVASIR reads the
+provider's environment variable — **`ANTHROPIC_API_KEY`** (or
+**`CLAUDE_API_KEY`**), **`OPENAI_API_KEY`**, **`GEMINI_API_KEY`** (or
+**`GOOGLE_API_KEY`**) — a stored key winning over the environment. Keys
+never cross providers, and a vendor that retires a model id can be
+answered without waiting for a release: the preference
+`kvasir.model.<anthropic|openai|google>.<fast|deep>` pins another. No key,
+no call — KVASIR just says so.
 
 **What KVASIR sends, and the whole of it.** The first time you press
 EXPLAIN, KVASIR asks for a one-time consent, because sending your build
-output to an external service is a choice only you can make. It sends
-**only**:
+output to an external service is a choice only you can make. The dialog
+names the vendor that will receive it, and the consent is **per
+provider** — a yes given for Anthropic is not a yes for Google or OpenAI;
+switching providers asks once more. It sends **only**:
 
 - the failing command (e.g. `npm test`);
 - its exit code;

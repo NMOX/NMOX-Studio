@@ -1,7 +1,7 @@
 # Tutorial: KVASIR — the AI error explainer
 
-KVASIR is a rack device that reads your last failed run and asks the
-Anthropic API what went wrong. It's AI assistance through the rack's
+KVASIR is a rack device that reads your last failed run and asks your
+AI — Claude, ChatGPT or Gemini — what went wrong. It's AI assistance through the rack's
 metaphor: one button, a clear consent gate, and an honest LCD — no
 project files or secrets are sent, only the bounded failure context.
 
@@ -9,9 +9,13 @@ project files or secrets are sent, only the bounded failure context.
 
 ## Before you start
 
-You need an Anthropic API key. KVASIR reads it from the OS keychain
-(set it with the **KEY…** button on the faceplate) or from the
-`ANTHROPIC_API_KEY` / `CLAUDE_API_KEY` environment variable.
+You need an API key from one of the three providers KVASIR speaks:
+Anthropic (Claude), OpenAI (ChatGPT) or Google (Gemini). Press **KEY…**
+on the faceplate to pick the provider and store its key in the OS
+keychain, or export the provider's environment variable —
+`ANTHROPIC_API_KEY` / `CLAUDE_API_KEY`, `OPENAI_API_KEY`, or
+`GEMINI_API_KEY` / `GOOGLE_API_KEY`. The provider choice covers every
+KVASIR face and also lives in Options ▸ Rack & Cloud.
 
 ## Steps
 
@@ -23,7 +27,8 @@ You need an Anthropic API key. KVASIR reads it from the OS keychain
    **EXPLAIN**.
 
 3. **Grant consent (first time).** KVASIR has its own one-time consent
-   dialog spelling out exactly what leaves your machine: the failing
+   dialog, per provider, naming the vendor that receives the data and
+   spelling out exactly what leaves your machine: the failing
    command, its exit code, ≤5 error lines, the device name, and the
    project name — and nothing else (no source, no environment, no
    secrets). Workspace Trust guards *running* code; this outward data
@@ -31,13 +36,17 @@ You need an Anthropic API key. KVASIR reads it from the OS keychain
 
 4. **Read the verdict.** A short diagnosis appears on the multi-line LCD;
    the full explanation opens in a popup. The **MODEL** knob picks
-   Haiku (fast, default) or Sonnet (stronger).
+   FAST (default) or DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, or
+   Gemini Flash / Pro, whichever provider you chose.
 
 ## What you just learned
 
 - KVASIR costs nothing at boot and makes no network call without the
   button press — both the key gate and the consent gate are enforced.
-- The key rides the `x-api-key` header only — never a URL, body, or log.
+- The key rides the provider's auth header only (`x-api-key`,
+  `Authorization: Bearer`, `x-goog-api-key`) — never a URL, body, or log.
+- Keys never cross providers, and consent is per provider: a yes for
+  Anthropic is not a yes for Google or OpenAI.
 - Degradation is honest: no-key, no-consent, nothing-to-explain, offline,
   and refusal each show a clear LCD message.
 

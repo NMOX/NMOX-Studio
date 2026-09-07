@@ -485,14 +485,16 @@ without losing the first.
 Selection…**. Or mount KVASIR in the rack and press EXPLAIN after a
 failed run.
 
-**See:** Claude explains your selection or your failure — as a
-conversation, with follow-ups riding the full history. Both flows earn
-**their own consent** (a dialog that names exactly what is sent and
-what never leaves the machine) and need an API key (keychain-only, or
-`ANTHROPIC_API_KEY`). No key, no consent, offline? The LCD says so
-honestly; nothing phones home without the button press. Fast/Deep
-picks the model, fixed per conversation so the transcript never lies
-about who answered.
+**See:** your AI — Claude, ChatGPT or Gemini, picked once with
+**KEY…** or in Options ▸ Rack & Cloud — explains your selection or your
+failure as a conversation, with follow-ups riding the full history.
+Both flows earn **their own consent, per provider** (a dialog that
+names the vendor and exactly what is sent and what never leaves the
+machine) and need that provider's API key (keychain-only, or
+`ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY`). No key, no
+consent, offline? The LCD says so honestly; nothing phones home without
+the button press. Fast/Deep picks the model in the provider's own pair,
+fixed per conversation so the transcript never lies about who answered.
 
 ## 21. Angular, first-class
 

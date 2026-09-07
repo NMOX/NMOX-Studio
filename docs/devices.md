@@ -364,8 +364,8 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### KVASIR — Error Explainer — AI explains the last failed run, on a button press
 
-> EXPLAIN reads the last failed run off the flight recorder and asks the Anthropic API what went wrong and how to fix it — QUERY-blue, no project mutation.
-> Set the key with KEY… (OS keychain, or ANTHROPIC_API_KEY/CLAUDE_API_KEY); first press asks a one-time consent naming exactly what's sent; MODEL dials HAIKU or SONNET; VIEW opens the full answer.
+> EXPLAIN reads the last failed run off the flight recorder and asks your AI — Claude (Anthropic), ChatGPT (OpenAI) or Gemini (Google) — what went wrong and how to fix it — QUERY-blue, no project mutation.
+> KEY… picks the provider and sets its key (OS keychain, or ANTHROPIC_API_KEY/CLAUDE_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY/GOOGLE_API_KEY); first press asks a one-time consent per provider naming exactly what's sent; MODEL dials FAST or DEEP; VIEW opens the full answer.
 
 - **In:** `EXPLAIN` (trigger)
 - **Out:** `OUT` (data)

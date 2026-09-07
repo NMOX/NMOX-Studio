@@ -8,23 +8,31 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nmox.studio.core.http.HttpClientFactory;
 
 /**
- * The KVASIR model call: it asks the Anthropic Messages API to explain a
+ * The KVASIR model call: it asks the configured {@link KvasirProvider} —
+ * Claude (Anthropic), ChatGPT (OpenAI) or Gemini (Google) — to explain a
  * failed run, in plain HTTPS+JSON over the IDE's shared HTTP pool. No SDK,
- * no key material held here beyond the single call.
+ * no key material held here beyond the single call. The prompt assembly
+ * and the Anthropic envelope/parse live here as the original wire; the
+ * other two vendors' shapes live on the enum, and every send routes
+ * through the provider read at send time so a switch in Options takes
+ * effect on the next press without a restart.
  *
  * <p><b>The seam</b> ({@link Transport}) is the {@code JsonRpcClient}
  * idiom: production posts over {@link HttpClientFactory#shared()}; tests
  * inject a canned transport that never opens a socket, so prompt assembly
  * and response parsing are unit-testable with zero network.
  *
- * <p><b>The key</b> travels only in the {@code x-api-key} request header,
- * never in the URL (the endpoint is a fixed HTTPS constant) and never in
+ * <p><b>The key</b> travels only in the provider's auth header
+ * ({@code x-api-key}, {@code Authorization: Bearer}, {@code x-goog-api-key}),
+ * never in the URL (the endpoints are fixed HTTPS constants) and never in
  * the request body (which carries only the failure context). It is never
  * logged, thrown, or {@link #toString()}ed. The prompt sent to the model
  * is exactly {@link FailureContext} — a failing command, its exit code,
@@ -131,25 +139,49 @@ public final class KvasirClient {
     public interface Transport {
 
         /**
-         * POSTs the JSON body with the API key in the {@code x-api-key}
-         * header, returning the response body.
+         * POSTs the JSON body with the API key in the provider's auth
+         * header, returning the response body. Test spies implement this
+         * three-argument form; the URL tells them which provider posted.
          *
          * @throws IOException when the API can't be reached — the message
          *         must never contain the key
          */
         String post(String url, String jsonBody, char[] apiKey) throws IOException;
+
+        /**
+         * The provider-aware post the client actually calls: production
+         * places the key in {@link KvasirProvider#authHeaders}; the
+         * default folds down to the spy form above.
+         */
+        default String post(KvasirProvider provider, String url, String jsonBody, char[] apiKey)
+                throws IOException {
+            return post(url, jsonBody, apiKey);
+        }
     }
 
     private final Transport transport;
+    /** Read at SEND time, so a provider switch needs no new client. */
+    private final Supplier<KvasirProvider> provider;
 
-    /** Production client over the IDE's shared HTTP pool. */
+    /** Production client over the IDE's shared HTTP pool, following the configured provider. */
     public KvasirClient() {
-        this(httpTransport());
+        this(httpTransport(), KvasirProvider::configured);
     }
 
-    /** Seam constructor — tests hand in a canned transport. */
+    /** Seam constructor — tests hand in a canned transport; the provider is Claude. */
     public KvasirClient(Transport transport) {
+        this(transport, () -> KvasirProvider.ANTHROPIC);
+    }
+
+    /** Seam constructor with an explicit provider source. */
+    public KvasirClient(Transport transport, Supplier<KvasirProvider> provider) {
         this.transport = Objects.requireNonNull(transport, "transport");
+        this.provider = Objects.requireNonNull(provider, "provider");
+    }
+
+    /** The provider the next send will use. */
+    public KvasirProvider provider() {
+        return provider.get();
     }
 
     /**
@@ -161,9 +193,7 @@ public final class KvasirClient {
      *         refusal — the device turns each into an honest status line
      */
     public String explain(FailureContext ctx, String model, char[] apiKey) throws IOException {
-        String body = requestBody(model, assemblePrompt(ctx));
-        String response = transport.post(ENDPOINT, body, apiKey);
-        return parseExplanation(response);
+        return send(List.of(new Turn("user", assemblePrompt(ctx))), model, apiKey);
     }
 
     /**
@@ -173,9 +203,21 @@ public final class KvasirClient {
      * turns into an honest message.
      */
     public String ask(CodeQuestion q, String model, char[] apiKey) throws IOException {
-        String body = requestBody(model, assembleCodePrompt(q));
-        String response = transport.post(ENDPOINT, body, apiKey);
-        return parseExplanation(response);
+        return send(List.of(new Turn("user", assembleCodePrompt(q))), model, apiKey);
+    }
+
+    /**
+     * The one path to the network: the provider read now, the model
+     * resolved to that provider's own id (a remembered Claude depth
+     * becomes the Gemini depth — never a Claude id in a Gemini request),
+     * the vendor's envelope, the vendor's parse.
+     */
+    private String send(List<Turn> turns, String model, char[] apiKey) throws IOException {
+        KvasirProvider p = provider.get();
+        String resolved = p.resolve(model);
+        String response = transport.post(p, p.endpoint(resolved),
+                p.requestBody(resolved, turns), apiKey);
+        return p.parse(response);
     }
 
     // ---- pure, unit-testable core -----------------------------------------
@@ -266,9 +308,7 @@ public final class KvasirClient {
      * caller owns the key array; failures are honest {@link IOException}s.
      */
     public String converse(List<Turn> turns, String model, char[] apiKey) throws IOException {
-        String response = transport.post(ENDPOINT,
-                requestBodyConversation(model, turns), apiKey);
-        return parseExplanation(response);
+        return send(turns, model, apiKey);
     }
 
     /**
@@ -311,16 +351,35 @@ public final class KvasirClient {
 
     /** POST over the shared pool; failures never echo the key. */
     static Transport httpTransport() {
-        return (url, jsonBody, apiKey) -> {
+        return new Transport() {
+            @Override
+            public String post(String url, String jsonBody, char[] apiKey) throws IOException {
+                return post(KvasirProvider.ANTHROPIC, url, jsonBody, apiKey);
+            }
+
+            @Override
+            public String post(KvasirProvider p, String url, String jsonBody, char[] apiKey)
+                    throws IOException {
+                return httpPost(p, url, jsonBody, apiKey);
+            }
+        };
+    }
+
+    private static String httpPost(KvasirProvider p, String url, String jsonBody, char[] apiKey)
+            throws IOException {
+        {
             // The header API takes a String; the key is stringified only for
             // the lifetime of this request and never stored, logged, or
-            // returned. It rides x-api-key only — never the URL or the body.
+            // returned. It rides the provider's auth header only — never the
+            // URL or the body.
             String keyHeader = apiKey == null ? "" : new String(apiKey);
-            HttpRequest request = HttpRequest.newBuilder(URI.create(url))
+            HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(url))
                     .timeout(Duration.ofSeconds(TIMEOUT_SECONDS))
-                    .header("content-type", "application/json")
-                    .header("anthropic-version", API_VERSION)
-                    .header("x-api-key", keyHeader)
+                    .header("content-type", "application/json");
+            for (Map.Entry<String, String> h : p.authHeaders(keyHeader).entrySet()) {
+                builder.header(h.getKey(), h.getValue());
+            }
+            HttpRequest request = builder
                     .POST(HttpRequest.BodyPublishers.ofString(jsonBody, StandardCharsets.UTF_8))
                     .build();
             HttpResponse<java.io.InputStream> response;
@@ -338,11 +397,11 @@ public final class KvasirClient {
             // misbehaving or hostile endpoint could OOM the IDE. A real
             // Messages response is tiny; 8 MB is orders of magnitude past it.
             try (java.io.InputStream in = response.body()) {
-                // 4xx/5xx bodies from Anthropic carry a JSON error we parse
+                // 4xx/5xx bodies from every vendor carry a JSON error we parse
                 // for a real message; hand the body up rather than a status.
                 return org.nmox.studio.core.http.HttpBodies.readUtf8(in,
                         org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES).text();
             }
-        };
+        }
     }
 }

@@ -6,14 +6,23 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.keyring.Keyring;
+import org.nmox.studio.rack.engine.KvasirProvider;
 
 /**
- * Where the KVASIR API key actually lives: the OS keychain, via the
- * platform {@link Keyring}, under {@code "nmox.kvasir.apikey"}. No
- * preference and no workspace file ever carries it — this class and the
- * {@code ANTHROPIC_API_KEY} / {@code CLAUDE_API_KEY} environment variables
- * are the only doors (the {@code RpcSecrets}/{@code Passwords} idiom,
- * verbatim).
+ * Where the KVASIR API keys actually live: the OS keychain, via the
+ * platform {@link Keyring}, one entry per provider ({@code
+ * "nmox.kvasir.apikey"} for Anthropic — the original name —
+ * {@code "nmox.kvasir.openai.apikey"}, {@code "nmox.kvasir.google.apikey"}).
+ * No preference and no workspace file ever carries a key — this class
+ * and each provider's environment variables ({@code ANTHROPIC_API_KEY} /
+ * {@code CLAUDE_API_KEY}, {@code OPENAI_API_KEY}, {@code GEMINI_API_KEY} /
+ * {@code GOOGLE_API_KEY}) are the only doors (the
+ * {@code RpcSecrets}/{@code Passwords} idiom, verbatim).
+ *
+ * <p>The no-argument methods act on the {@link KvasirProvider#configured()
+ * configured provider}, which is what every engine's {@code keySource}
+ * seam wants: the key for whoever is answering right now. Keys never
+ * cross providers — an OpenAI key is never offered to Google's API.
  *
  * <p><b>Honest fallback:</b> when no keyring backend is reachable
  * (headless test runs, a platform without a provider, a broken keychain),
@@ -29,19 +38,15 @@ import org.netbeans.api.keyring.Keyring;
 public final class KvasirKeys {
 
     private static final Logger LOG = Logger.getLogger(KvasirKeys.class.getName());
+    /** The Anthropic entry — the name every key had before v2.96.0's providers. */
     private static final String KEY = "nmox.kvasir.apikey";
     /**
      * The key's name before the v2.95.0 rename (ORACLE → KVASIR). Read as
      * a fallback and moved under {@link #KEY} on first use, so a key a
-     * user stored under the old name is never silently lost.
+     * user stored under the old name is never silently lost. Anthropic
+     * only: the other providers never had an ORACLE-era entry.
      */
     static final String LEGACY_KEY = "nmox.oracle.apikey";
-    /**
-     * The environment fallbacks, tried in order — first non-blank wins.
-     * {@code CLAUDE_API_KEY} is honored because it is what the Claude CLI
-     * exports; {@code ANTHROPIC_API_KEY} is the canonical SDK name.
-     */
-    private static final String[] ENV_VARS = {"ANTHROPIC_API_KEY", "CLAUDE_API_KEY"};
 
     /**
      * The environment reader. Package-private and swappable so key-gating
@@ -64,60 +69,97 @@ public final class KvasirKeys {
     private KvasirKeys() {
     }
 
-    /** Stores the API key. A null or empty value is a {@link #delete()}. */
+    // ---- the configured provider (what every engine's keySource wants) ----
+
+    /** Stores the configured provider's key. A null or empty value is a {@link #delete()}. */
     public static void save(char[] apiKey) {
+        save(KvasirProvider.configured(), apiKey);
+    }
+
+    /**
+     * The configured provider's key: its keychain entry (or in-memory
+     * fallback) if one was stored, else its environment variables in
+     * order, else null. The returned array is the caller's copy — wipe it
+     * after use.
+     */
+    public static char[] read() {
+        return read(KvasirProvider.configured());
+    }
+
+    /** True when the configured provider has a key from any source. */
+    public static boolean hasKey() {
+        return hasKey(KvasirProvider.configured());
+    }
+
+    /** Removes the configured provider's stored key, if any. Env fallbacks are untouched. */
+    public static void delete() {
+        delete(KvasirProvider.configured());
+    }
+
+    // ---- per provider ------------------------------------------------------
+
+    /** Stores one provider's key. A null or empty value deletes it. */
+    public static void save(KvasirProvider provider, char[] apiKey) {
         if (apiKey == null || apiKey.length == 0) {
-            delete();
+            delete(provider);
             return;
         }
+        String name = provider.keyringName();
         if (keyringUsable) {
             try {
-                Keyring.save(KEY, apiKey.clone(), "NMOX Studio KVASIR — Anthropic API key");
-                MEMORY.remove(KEY);
+                Keyring.save(name, apiKey.clone(), description(provider));
+                MEMORY.remove(name);
                 return;
             } catch (Throwable t) {
                 degrade(t);
             }
         }
-        MEMORY.put(KEY, apiKey.clone());
+        MEMORY.put(name, apiKey.clone());
     }
 
     /**
-     * The API key: the keychain (or in-memory fallback) if one was stored,
-     * else {@code ANTHROPIC_API_KEY}, else {@code CLAUDE_API_KEY}, else
-     * null. The returned array is the caller's copy — wipe it after use.
+     * One provider's key: the keychain (or in-memory fallback) if one was
+     * stored, else that provider's environment variables in order, else
+     * null. Never another provider's key. The returned array is the
+     * caller's copy — wipe it after use.
      */
-    public static char[] read() {
+    public static char[] read(KvasirProvider provider) {
+        String name = provider.keyringName();
+        boolean legacyEligible = provider == KvasirProvider.ANTHROPIC;
         if (keyringUsable) {
             try {
-                char[] fromKeyring = Keyring.read(KEY);
+                char[] fromKeyring = Keyring.read(name);
                 if (fromKeyring != null && fromKeyring.length > 0) {
                     return fromKeyring;
                 }
-                char[] legacy = Keyring.read(LEGACY_KEY);
-                if (legacy != null && legacy.length > 0) {
-                    // migrate once: the new name owns it from now on
-                    Keyring.save(KEY, legacy.clone(), "NMOX Studio KVASIR — Anthropic API key");
-                    Keyring.delete(LEGACY_KEY);
-                    return legacy;
+                if (legacyEligible) {
+                    char[] legacy = Keyring.read(LEGACY_KEY);
+                    if (legacy != null && legacy.length > 0) {
+                        // migrate once: the new name owns it from now on
+                        Keyring.save(KEY, legacy.clone(), description(provider));
+                        Keyring.delete(LEGACY_KEY);
+                        return legacy;
+                    }
                 }
             } catch (Throwable t) {
                 degrade(t);
             }
         }
-        char[] fromMemory = MEMORY.get(KEY);
+        char[] fromMemory = MEMORY.get(name);
         if (fromMemory != null && fromMemory.length > 0) {
             return fromMemory.clone();
         }
-        char[] legacyMemory = MEMORY.remove(LEGACY_KEY);
-        if (legacyMemory != null && legacyMemory.length > 0) {
-            MEMORY.put(KEY, legacyMemory);
-            return legacyMemory.clone();
+        if (legacyEligible) {
+            char[] legacyMemory = MEMORY.remove(LEGACY_KEY);
+            if (legacyMemory != null && legacyMemory.length > 0) {
+                MEMORY.put(KEY, legacyMemory);
+                return legacyMemory.clone();
+            }
         }
         // Env fallbacks, first non-blank wins. The value is never logged or
         // echoed — the redaction rule covers env-sourced keys too.
-        for (String name : ENV_VARS) {
-            String value = env.apply(name);
+        for (String var : provider.envVars()) {
+            String value = env.apply(var);
             if (value != null && !value.isBlank()) {
                 return value.toCharArray();
             }
@@ -125,9 +167,9 @@ public final class KvasirKeys {
         return null;
     }
 
-    /** True when a key is available from any source (keychain, memory, or env). */
-    public static boolean hasKey() {
-        char[] k = read();
+    /** True when a key is available for the provider from any source. */
+    public static boolean hasKey(KvasirProvider provider) {
+        char[] k = read(provider);
         if (k == null) {
             return false;
         }
@@ -135,22 +177,34 @@ public final class KvasirKeys {
         return true;
     }
 
-    /** Removes the stored key, if any. The env-var fallback is untouched. */
-    public static void delete() {
+    /** Removes one provider's stored key, if any. Its env fallbacks are untouched. */
+    public static void delete(KvasirProvider provider) {
+        String name = provider.keyringName();
+        boolean legacyEligible = provider == KvasirProvider.ANTHROPIC;
         if (keyringUsable) {
             try {
-                Keyring.delete(KEY);
-                Keyring.delete(LEGACY_KEY);
+                Keyring.delete(name);
+                if (legacyEligible) {
+                    Keyring.delete(LEGACY_KEY);
+                }
             } catch (Throwable t) {
                 degrade(t);
             }
         }
-        for (String name : new String[] {KEY, LEGACY_KEY}) {
-            char[] stale = MEMORY.remove(name);
-            if (stale != null) {
-                java.util.Arrays.fill(stale, '\0');
+        char[] stale = MEMORY.remove(name);
+        if (stale != null) {
+            java.util.Arrays.fill(stale, '\0');
+        }
+        if (legacyEligible) {
+            char[] staleLegacy = MEMORY.remove(LEGACY_KEY);
+            if (staleLegacy != null) {
+                java.util.Arrays.fill(staleLegacy, '\0');
             }
         }
+    }
+
+    private static String description(KvasirProvider provider) {
+        return "NMOX Studio KVASIR — " + provider.vendor() + " API key";
     }
 
     /** Test seam: a key stored under the pre-rename name, in the in-memory fallback. */
@@ -161,6 +215,13 @@ public final class KvasirKeys {
     /** Test seam: whether the in-memory fallback still holds the pre-rename entry. */
     static boolean legacyPresentForTest() {
         return MEMORY.containsKey(LEGACY_KEY);
+    }
+
+    /** Test seam: every provider's stored key forgotten. */
+    static void deleteAllForTest() {
+        for (KvasirProvider p : KvasirProvider.values()) {
+            delete(p);
+        }
     }
 
     private static void degrade(Throwable t) {
