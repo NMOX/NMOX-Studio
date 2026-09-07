@@ -80,6 +80,38 @@ class BundleHeadGateTest {
     }
 
     @Test
+    @DisplayName("no bundle key carries whitespace — such a key can never be looked up")
+    void keysAreLookupable() throws IOException {
+        // Found by the l10n arc (v2.97.0): rack's Quick Search bundle carried
+        // "\\nQuickSearch/LiveRuns", whose key really began with a newline, so
+        // the Running category's name had never resolved since it shipped.
+        List<String> offenders = new ArrayList<>();
+        for (String module : MODULES) {
+            for (String where : new String[] {"target/classes", "src/main"}) {
+                Path root = Path.of("..", module, where);
+                if (!Files.isDirectory(root)) {
+                    continue;
+                }
+                try (Stream<Path> files = Files.walk(root)) {
+                    for (Path p : files.filter(f -> f.getFileName().toString().startsWith("Bundle")
+                            && f.getFileName().toString().endsWith(".properties")).toList()) {
+                        Properties props = new Properties();
+                        try (InputStream in = Files.newInputStream(p)) {
+                            props.load(in);
+                        }
+                        for (String key : props.stringPropertyNames()) {
+                            if (!key.equals(key.strip()) || key.chars().anyMatch(Character::isWhitespace)) {
+                                offenders.add(module + " " + p.getFileName() + ": " + key.strip());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(offenders).as("keys with whitespace — the lookup can never match them").isEmpty();
+    }
+
+    @Test
     @DisplayName("no bundle value that begins with a placeholder is painted straight into a Swing sink")
     void placeholderHeadNeverPainted() throws IOException {
         Set<String> risky = placeholderHeadKeys();
