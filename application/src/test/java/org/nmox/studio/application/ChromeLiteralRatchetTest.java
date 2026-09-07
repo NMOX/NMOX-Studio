@@ -27,14 +27,22 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ChromeLiteralRatchetTest {
 
-    /** A Swing text sink handed a string literal. */
+    /** A Swing text sink handed a string literal, capturing the literal. */
     private static final Pattern LITERAL_SINK = Pattern.compile(
-            "\\bnew\\s+(?:javax\\.swing\\.)?J(?:Label|Button|CheckBox|RadioButton|MenuItem|ToggleButton)\\s*\\(\\s*\""
-            + "|\\.setToolTipText\\s*\\(\\s*\""
-            + "|\\.setText\\s*\\(\\s*\""
-            + "|StatusDisplayer\\.getDefault\\(\\)\\.setStatusText\\s*\\(\\s*\""
-            + "|\\.setAccessibleName\\s*\\(\\s*\""
-            + "|\\.setAccessibleDescription\\s*\\(\\s*\"");
+            "(?:\\bnew\\s+(?:javax\\.swing\\.)?J(?:Label|Button|CheckBox|RadioButton|MenuItem|ToggleButton)\\s*\\(\\s*"
+            + "|\\.setToolTipText\\s*\\(\\s*"
+            + "|\\.setText\\s*\\(\\s*"
+            + "|StatusDisplayer\\.getDefault\\(\\)\\.setStatusText\\s*\\(\\s*"
+            + "|\\.setAccessibleName\\s*\\(\\s*"
+            + "|\\.setAccessibleDescription\\s*\\(\\s*)"
+            + "\"((?:[^\"\\\\\\n]|\\\\.)*)\"");
+
+    /**
+     * Words, not furniture. A blank spacer, a clear, a glyph, a percentage
+     * or a wordmark carries nothing to translate; only a literal holding a
+     * run of letters is a sentence a user reads in English.
+     */
+    private static final Pattern HAS_WORDS = Pattern.compile("[A-Za-z]{2,}");
 
     /** Measured 2026-09-07 after the first extraction tranche; only ever lowered. */
     static final Map<String, Integer> PINNED = Map.of(
@@ -63,7 +71,9 @@ class ChromeLiteralRatchetTest {
                         }
                         Matcher m = LITERAL_SINK.matcher(Files.readString(p));
                         while (m.find()) {
-                            n++;
+                            if (HAS_WORDS.matcher(m.group(1)).find()) {
+                                n++;
+                            }
                         }
                     }
                 }

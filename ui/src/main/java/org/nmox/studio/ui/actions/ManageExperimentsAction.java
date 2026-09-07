@@ -44,6 +44,7 @@ import org.openide.util.NbBundle.Messages;
 })
 @Messages({
     "CTL_ManageExperimentsAction=Experiments…",
+    "ManageExperimentsAction_shelfA11y=Experiments shelf",
     "ManageExperimentsAction_startOne=Start an Experiment…",
     "ManageExperimentsAction_ageToday= · today",
     "ManageExperimentsAction_ageDay= · {0} day ago",
@@ -130,7 +131,7 @@ public final class ManageExperimentsAction implements ActionListener {
         }
 
         JList<File> list = new JList<>(model);
-        list.getAccessibleContext().setAccessibleName("Experiments shelf");
+        list.getAccessibleContext().setAccessibleName(Bundle.ManageExperimentsAction_shelfA11y());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);
         list.setCellRenderer(new DefaultListCellRenderer() {

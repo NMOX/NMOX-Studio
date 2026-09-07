@@ -39,7 +39,9 @@ class DbStudioSafetyGateTest {
     @DisplayName("Remove-connection defaults to Cancel via the full ctor, not the OK-defaulting shortcut")
     void removeConnectionDefaultsToCancel() throws Exception {
         String src = read("src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java");
-        int m = src.indexOf("\"Remove connection \\\"\"");
+        // v2.97.0 (the l10n arc): the question is a bundle value; the anchor
+        // is its CALL SITE, which is where the safe default has to be
+        int m = src.indexOf("Bundle.DbStudioTopComponent_removeConnectionConfirm(");
         assertThat(m).as("the remove confirm exists").isPositive();
         String around = src.substring(m, m + 500);
         assertThat(around)
@@ -61,6 +63,14 @@ class DbStudioSafetyGateTest {
         assertThat(loop)
                 .as("a 0-row match aborts with an honest message before counting applied")
                 .contains("first.updateCount() == 0")
+                .contains("Bundle.DbStudioTopComponent_zeroRowsMatched()");
+        java.util.Properties english = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(
+                Path.of("target/classes/org/nmox/studio/dbstudio/ui/Bundle.properties"))) {
+            english.load(in);
+        }
+        assertThat(english.getProperty("DbStudioTopComponent_zeroRowsMatched", ""))
+                .as("and the message is honest about what happened")
                 .contains("0 rows matched");
     }
 }

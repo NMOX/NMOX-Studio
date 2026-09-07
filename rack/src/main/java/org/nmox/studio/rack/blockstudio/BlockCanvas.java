@@ -33,6 +33,15 @@ import javax.swing.TransferHandler;
  * Delete removes. Illegal targets simply never light up — the
  * interlock law shows itself.
  */
+@org.openide.util.NbBundle.Messages({
+    "BlockCanvas_a11yName=Block canvas",
+    "BlockCanvas_a11yDescription=Interlocking web-component pieces. Arrows traverse (Left parent,"
+        + " Right child), Alt+Up/Down reorder, Enter adds a child piece,"
+        + " Shift+Enter a sibling, F2 edits, F3 jumps to the named sibling component,"
+        + " Delete removes, Escape clears; or drag from the palette",
+    "BlockCanvas_addPiece=Add piece",
+    "BlockCanvas_addA11y=Add {0}"
+})
 final class BlockCanvas extends JComponent {
 
     /**
@@ -78,13 +87,8 @@ final class BlockCanvas extends JComponent {
     BlockCanvas(Host host) {
         this.host = host;
         setFocusable(true);
-        getAccessibleContext().setAccessibleName("Block canvas");
-        getAccessibleContext().setAccessibleDescription(
-                "Interlocking web-component pieces. Arrows traverse (Left parent,"
-                + " Right child), Alt+Up/Down reorder, Enter adds a child piece,"
-                + " Shift+Enter a sibling, F2 edits, F3 jumps to the named sibling component,"
-                + " Delete removes, Escape clears;"
-                + " or drag from the palette");
+        getAccessibleContext().setAccessibleName(Bundle.BlockCanvas_a11yName());
+        getAccessibleContext().setAccessibleDescription(Bundle.BlockCanvas_a11yDescription());
         MouseAdapter mouse = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -368,10 +372,10 @@ final class BlockCanvas extends JComponent {
         if (kinds.isEmpty()) {
             return;
         }
-        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu("Add piece");
+        javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu(Bundle.BlockCanvas_addPiece());
         for (BlockKind k : kinds) {
             javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(k.display()));
-            item.getAccessibleContext().setAccessibleName("Add " + k.display());
+            item.getAccessibleContext().setAccessibleName(Bundle.BlockCanvas_addA11y(k.display()));
             item.addActionListener(ev -> insertKind(k, parent, index));
             menu.add(item);
         }

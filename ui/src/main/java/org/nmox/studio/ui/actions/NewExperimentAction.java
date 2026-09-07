@@ -47,6 +47,8 @@ import org.openide.util.NbBundle.Messages;
 })
 @Messages({
     "CTL_NewExperimentAction=New Experiment…",
+    "NewExperimentAction_templateA11y=Experiment template",
+    "NewExperimentAction_nameA11y=Experiment name (optional)",
     "NewExperimentAction_installBox=Install dependencies so the first Run just works",
     "NewExperimentAction_templateLabel=Template:",
     "NewExperimentAction_nameLabel=Name (optional — a throwaway name is fine):",
@@ -78,9 +80,9 @@ public final class NewExperimentAction implements ActionListener {
                         t.getDisplayName() + "  —  " + t.getDescription(), i, s, f);
             }
         });
-        template.getAccessibleContext().setAccessibleName("Experiment template");
+        template.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_templateA11y());
         JTextField name = new JTextField();
-        name.getAccessibleContext().setAccessibleName("Experiment name (optional)");
+        name.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_nameA11y());
         JCheckBox installBox = new JCheckBox(
                 Bundle.NewExperimentAction_installBox(), true);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
