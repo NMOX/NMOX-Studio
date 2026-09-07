@@ -63,8 +63,19 @@ class StopRunWiringTest {
         int closed = src.indexOf("public void componentClosed()");
         assertThat(src.indexOf("LiveRuns.addListener(liveRunsListener)")).isGreaterThan(opened).isLessThan(closed);
         assertThat(src.indexOf("LiveRuns.removeListener(liveRunsListener)")).isGreaterThan(closed);
-        assertThat(src).contains("new JMenuItem(\"Stop Script\")").contains("NpmService.stopScript(currentProjectDir, s.name)");
-        assertThat(src).as("a second copy is refused out loud").contains("is already running");
+        // v2.97.0 (the l10n arc): the label and the refusal are bundle values —
+        // the row still OFFERS the stop, and a second copy is still refused
+        assertThat(src).contains("\"NpmExplorerTopComponent_stopScript\"")
+                .contains("NpmService.stopScript(currentProjectDir, s.name)");
+        java.util.Properties english = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(
+                Path.of("target/classes/org/nmox/studio/tools/npm/Bundle.properties"))) {
+            english.load(in);
+        }
+        assertThat(src).as("a second copy is refused out loud")
+                .contains("\"NpmExplorerTopComponent_alreadyRunning\"");
+        assertThat(english.getProperty("NpmExplorerTopComponent_alreadyRunning", ""))
+                .as("and the refusal says so").contains("is already running");
         assertThat(src).as("the marker says since when (v2.76.0)").contains("NpmService.runningSince(currentProjectDir, s.name)");
         assertThat(src).as("Enter is the keyboard's double-click (v2.74.0)")
                 .contains("KeyStroke.getKeyStroke(\"ENTER\"), javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT");
