@@ -24,6 +24,8 @@ class MainWindowUpTest {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/whatsnew/WhatsNew.java"));
         assertThat(src).as("the first-boot dialog waits for the main window — shown earlier it is created but never visible")
                 .contains("MainWindowUp.whenUp(");
-        assertThat(src).as("firstBoot passes the flag").contains("\"What's new since \" + lastSeen, true)");
+        // v2.97.0 (the l10n arc): the title is a bundle value; the flag is the law
+        assertThat(src).as("firstBoot passes the flag")
+                .contains("Bundle.WhatsNew_titleSince(lastSeen), true)");
     }
 }

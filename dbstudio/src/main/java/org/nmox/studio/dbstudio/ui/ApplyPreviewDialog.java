@@ -70,6 +70,6 @@ final class ApplyPreviewDialog {
         DialogDescriptor descriptor = new DialogDescriptor(panel, Bundle.ApplyPreviewDialog_title(), true,
                 new Object[]{applyOption, NotifyDescriptor.CANCEL_OPTION},
                 NotifyDescriptor.CANCEL_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        return DialogDisplayer.getDefault().notify(descriptor) == applyOption;
+        return applyOption.equals(DialogDisplayer.getDefault().notify(descriptor));
     }
 }

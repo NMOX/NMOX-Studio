@@ -211,7 +211,7 @@ public final class WorkspaceTrust {
                 NotifyDescriptor.WARNING_MESSAGE,
                 new Object[]{trustOption, keepSafe},
                 keepSafe);
-        if (DialogDisplayer.getDefault().notify(nd) == trustOption) {
+        if (trustOption.equals(DialogDisplayer.getDefault().notify(nd))) {
             trust(dir);
             return true;
         }

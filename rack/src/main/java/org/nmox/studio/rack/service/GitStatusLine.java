@@ -322,11 +322,11 @@ public class GitStatusLine implements StatusLineElementProvider {
                     new Object[]{open, threads, checkout, close}, open);
             Object choice = org.openide.DialogDisplayer.getDefault().notify(nd);
             int row = table.getSelectedRow();
-            if (row < 0 || choice == close) {
+            if (row < 0 || close.equals(choice)) {
                 return;
             }
             var pull = pulls.get(row);
-            if (choice == open) {
+            if (open.equals(choice)) {
                 String url = pull.url();
                 org.nmox.studio.core.spi.EmbeddedBrowser browser =
                         org.nmox.studio.core.spi.EmbeddedBrowser.find();
@@ -335,9 +335,9 @@ public class GitStatusLine implements StatusLineElementProvider {
                     org.openide.awt.StatusDisplayer.getDefault()
                             .setStatusText(Bundle.GitStatusLine_prOpenFailed());
                 }
-            } else if (choice == threads) {
+            } else if (threads.equals(choice)) {
                 showReviewThreads(pull);
-            } else if (choice == checkout) {
+            } else if (checkout.equals(choice)) {
                 checkoutPull(pull);
             }
         }
@@ -609,7 +609,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                     org.openide.NotifyDescriptor.DEFAULT_OPTION,
                     org.openide.NotifyDescriptor.PLAIN_MESSAGE,
                     new Object[]{copy, close}, copy);
-            if (org.openide.DialogDisplayer.getDefault().notify(nd) == copy) {
+            if (copy.equals(org.openide.DialogDisplayer.getDefault().notify(nd))) {
                 java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
                         .setContents(new java.awt.datatransfer
                                 .StringSelection(area.getText()), null);

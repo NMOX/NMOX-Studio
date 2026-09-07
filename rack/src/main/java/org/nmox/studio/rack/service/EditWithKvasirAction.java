@@ -179,7 +179,7 @@ public final class EditWithKvasirAction implements ActionListener {
                 Bundle.EditWithKvasirAction_previewTitle(), NotifyDescriptor.DEFAULT_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE,
                 new Object[]{applyOption, keep}, keep);
-        return DialogDisplayer.getDefault().notify(nd) == applyOption;
+        return applyOption.equals(DialogDisplayer.getDefault().notify(nd));
     }
 
     private static JScrollPane titled(String title, String text) {

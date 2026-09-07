@@ -31,7 +31,9 @@ class ImageTransferableTest {
         String saver = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/shots/ShotSaver.java"));
         int copy = saver.indexOf("static void copy(");
         String body = saver.substring(copy, saver.indexOf("static File defaultDir()"));
-        assertThat(body).contains("Screenshot.paint2x(target)").contains("new ImageTransferable(img)").contains("Not copied");
+        assertThat(body).contains("Screenshot.paint2x(target)").contains("new ImageTransferable(img)")
+                .as("the no-size case still refuses out loud")
+                .contains("Bundle.ShotSaver_copyNoSize(");
         assertThat(body).doesNotContain("JFileChooser").doesNotContain("ImageIO");
         String action = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/shots/CopyEditorScreenshotAction.java"));
         assertThat(action).contains("path = \"Menu/Tools\", position = 102")

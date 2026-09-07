@@ -26,7 +26,7 @@ into Swing, with no way for a user to choose anything else.
    survives byte for byte, and choosing the system default removes the
    block rather than writing an empty one. `UiLocaleTest` proves the
    shell-safety refusals, the round trip and the never-doubled block.
-2. **2,937 chrome strings became bundle keys** across all ten modules
+2. **2,826 chrome strings became bundle keys** across all ten modules
    — menus, dialogs, tooltips, status lines, notifications, table
    headers, tab titles, wizard captions, refusal messages and
    accessible names — through the platform's own `@NbBundle.Messages`
@@ -72,9 +72,23 @@ into Swing, with no way for a user to choose anything else.
    values, and DB Studio's CRUD gestures are checked to still say what
    happened.
 
-Untranslated keys fall back to English automatically, so a partial
-translation degrades to the original sentence rather than to a key
-name. Ledger 85 stays open for the honest remainder: the faceplate
+Every one of the 2,826 keys is translated in all five languages —
+14,130 strings across 71 packages, held to key-set, placeholder and
+non-blank parity by the gate. Untranslated keys would fall back to
+English automatically, so a future key added without its translations
+degrades to the original sentence rather than to a key name.
+
+Two defects in the ENGLISH source surfaced only because five
+translators read every line: a Quick Search category key that began
+with a literal newline, so the Running category's name had never
+resolved since it shipped; and the Navigator's detail row quoting its
+colour with single apostrophes inside a MessageFormat pattern, so the
+quotes were eaten before Swing saw them. Both are fixed, and a gate
+now refuses any bundle key carrying whitespace. A third came from the
+translations themselves: the Welcome's launchpad said "Workbench"
+while the window it opened was called "Banco de trabajo", because the
+link and the title are written in different modules — now aligned in
+every language and held there by a gate. Ledger 85 stays open for the honest remainder: the faceplate
 vocabulary by decision, and the platform's deeper dialogs, which have
 no community bundles in these languages.
 

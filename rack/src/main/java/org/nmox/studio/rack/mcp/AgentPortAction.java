@@ -163,7 +163,7 @@ public final class AgentPortAction implements ActionListener {
         DialogDescriptor descriptor = new DialogDescriptor(panel,
                 Bundle.AgentPortAction_title(), true, new Object[]{close, stopOption},
                 close, DialogDescriptor.DEFAULT_ALIGN, null, null);
-        if (DialogDisplayer.getDefault().notify(descriptor) == stopOption) {
+        if (stopOption.equals(DialogDisplayer.getDefault().notify(descriptor))) {
             port.stop();
             RUNNING.set(null);
             StatusDisplayer.getDefault().setStatusText(

@@ -177,8 +177,10 @@ class WindowShortcutsTest {
         assertThat(m.find()).as("Open Folder registers a shortcut").isTrue();
         assertThat(m.group(1)).isEqualTo("DA-O");
         assertThat(RESERVED).doesNotContain(m.group(1));
-        assertThat(read("src/main/java/org/nmox/studio/ui/MainWindow.java"))
-                .contains("\"Open Folder…  ⌥⌘O\"");
+        // v2.97.0 (the l10n arc): the launchpad's labels are bundle values —
+        // read the label where it now ships, so the chord it advertises is
+        // still checked against the chord that is registered
+        assertThat(welcomeLabels().values()).contains("Open Folder…  ⌥⌘O");
         // and the File-menu item shows the chord — same mechanism as the
         // windows (debt #28), same drift gate
         assertShadow("src/main/resources/org/nmox/studio/ui/layer.xml", "DA-O",
@@ -188,17 +190,17 @@ class WindowShortcutsTest {
     @Test
     @DisplayName("the Welcome launchpad advertises exactly the chord that is registered")
     void welcomeLabelsMatchRegistrations() throws Exception {
-        String welcome = read("src/main/java/org/nmox/studio/ui/MainWindow.java");
+        java.util.Collection<Object> welcome = welcomeLabels().values();
         for (String[] v : WINDOWS.values()) {
             assertThat(welcome)
                     .as("Welcome must advertise the real chord for " + v[0])
-                    .contains("\"" + v[1] + "\"");
+                    .contains(v[1]);
         }
         // and it must not still be advertising any of the chords we lost
         for (String stale : new String[] {"Workbench  ⌘0", "DB Studio  ⇧⌘7",
                 "Contract Studio  ⇧⌘6", "API Studio  ⇧⌘8"}) {
             assertThat(welcome).as("stale chord still advertised: " + stale)
-                    .doesNotContain("\"" + stale + "\"");
+                    .doesNotContain(stale);
         }
     }
 
@@ -226,5 +228,15 @@ class WindowShortcutsTest {
         // (released there by the editor module, v1.216.0), and a mask
         // here would only LOOK like protection
         assertThat(layer).doesNotContain("D-P.shadow_hidden");
+    }
+
+    /** The Welcome launchpad's labels, where they now ship: its own bundle. */
+    private static java.util.Properties welcomeLabels() throws Exception {
+        java.util.Properties p = new java.util.Properties();
+        try (java.io.InputStream in = java.nio.file.Files.newInputStream(
+                java.nio.file.Path.of("target/classes/org/nmox/studio/ui/Bundle.properties"))) {
+            p.load(in);
+        }
+        return p;
     }
 }

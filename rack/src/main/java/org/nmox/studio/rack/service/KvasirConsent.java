@@ -180,7 +180,7 @@ public final class KvasirConsent {
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{sendOption, keepLocal},
                 keepLocal);
-        if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
+        if (sendOption.equals(DialogDisplayer.getDefault().notify(nd))) {
             grant();
             return true;
         }
@@ -241,7 +241,7 @@ public final class KvasirConsent {
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{sendOption, keepLocal},
                 keepLocal);
-        if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
+        if (sendOption.equals(DialogDisplayer.getDefault().notify(nd))) {
             grantKind(kind);
             return true;
         }
@@ -292,7 +292,7 @@ public final class KvasirConsent {
                 NotifyDescriptor.QUESTION_MESSAGE,
                 new Object[]{sendOption, keepLocal},
                 keepLocal);
-        if (DialogDisplayer.getDefault().notify(nd) == sendOption) {
+        if (sendOption.equals(DialogDisplayer.getDefault().notify(nd))) {
             grantCode();
             return true;
         }
