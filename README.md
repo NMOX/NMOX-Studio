@@ -247,6 +247,10 @@ Language and restart. Rack faceplates keep their panel vocabulary on purpose.
 
 ![The same build in Hindi: शुरुआत, हाल के and टूलिंग on the Welcome, with स्वागत, टास्क रैक, डेटाबेस स्टूडियो and कॉन्ट्रैक्ट स्टूडियो as tabs](docs/images/i18n-welcome-hi.png)
 
+![The same build in Spanish: INICIO, RECIENTES and HERRAMIENTAS on the Welcome, with Bienvenida, Rack de tareas, Estudio de bases de datos and Diseñador de infraestructura as tabs](docs/images/i18n-welcome-es.png)
+
+![The same build in German: START, ZULETZT and WERKZEUGE on the Welcome, with Willkommen, Task-Rack, Datenbank-Studio, Smart-Contract-Studio and Infrastruktur-Designer as tabs](docs/images/i18n-welcome-de.png)
+
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
   you (the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an

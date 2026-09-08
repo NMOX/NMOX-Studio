@@ -1559,6 +1559,10 @@ keymaps never costs you the studio chords.
 ![The same build in Ukrainian: ПОЧАТОК, НЕДАВНІ and ІНСТРУМЕНТИ, with Ласкаво просимо, Стійка задач, Студія баз даних and Конструктор інфраструктури as tabs](images/i18n-welcome-uk.png)
 
 ![The same build in Hindi: शुरुआत, हाल के and टूलिंग on the Welcome, with स्वागत, टास्क रैक, डेटाबेस स्टूडियो and कॉन्ट्रैक्ट स्टूडियो as tabs](images/i18n-welcome-hi.png)
+
+![The same build in Spanish: INICIO, RECIENTES and HERRAMIENTAS on the Welcome, with Bienvenida, Rack de tareas, Estudio de bases de datos and Diseñador de infraestructura as tabs](images/i18n-welcome-es.png)
+
+![The same build in German: START, ZULETZT and WERKZEUGE on the Welcome, with Willkommen, Task-Rack, Datenbank-Studio, Smart-Contract-Studio and Infrastruktur-Designer as tabs](images/i18n-welcome-de.png)
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place

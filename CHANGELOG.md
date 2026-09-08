@@ -70,6 +70,17 @@ this entry is mostly about what a language costs once the road is built.
    find-and-replace would have shipped fluent-looking nonsense in the two
    languages that inflect.
 
+8. **All six languages are photographed**, each from the shipped bytes:
+   French, Spanish, German, Russian, Ukrainian and Hindi, in the README
+   and the user guide. Taking them was not decoration — each new shot
+   found a straggler the gates could not see, because a window whose link
+   and title are BOTH still English is self-consistent and passes. Hindi's
+   caught the NPM Explorer window untranslated in Hindi and German;
+   German's caught Workbench untranslated in German alone, and Check My
+   Work untranslated in Hindi. A census across all six languages then
+   confirmed the rest: "Tests" in French and "Browser" in German are the
+   real words, not stragglers.
+
 **One find, from the gate that spans modules.** The Welcome's Workbench
 link and the window it opens are written in different modules, and the
 brief handed to the translators wrongly listed Workbench as a product
