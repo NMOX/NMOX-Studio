@@ -80,11 +80,40 @@ class BundleHeadGateTest {
         return keys;
     }
 
-    /** The Welcome's launchpad link -> the key that owns that window's real title. */
-    private static final Map<String, String> WELCOME_LINKS = Map.of(
-            "MainWindow_workbench", "CTL_ProjectExplorerTopComponent",
-            "MainWindow_taskRack", "CTL_RackTopComponent",
-            "MainWindow_tasks", "CTL_TasksTopComponent");
+    /**
+     * Two windows whose title key is not {@code CTL_<the id the Welcome opens>}:
+     * the Infra Designer's component id and its bundle key disagree, and the
+     * Docker panel's title lives on its ACTION. Written down rather than
+     * guessed — an id that resolves to no title key at all fails the build.
+     */
+    private static final Map<String, String> TITLE_KEY_ALIASES = Map.of(
+            "InfraDesignerTopComponent", "CTL_InfraTopComponent",
+            "DockerPanelTopComponent", "CTL_DockerPanelAction");
+
+    /**
+     * The Welcome's launchpad link -> the key that owns that window's real
+     * title, DERIVED from the Welcome's own source: every
+     * {@code windowLink(Bundle.MainWindow_x(), "YTopComponent")} it builds.
+     *
+     * <p>v2.98.0 widened this from a hand-kept three to all thirteen after the
+     * Ukrainian walk found the Welcome offering «Конструктор інфраструктури»
+     * for a window titled "Infra Designer" — in Russian too, shipped since
+     * v2.97.0. A hand-kept map only ever gates the rows someone remembered.
+     */
+    private static final Pattern WINDOW_LINK = Pattern.compile(
+            "windowLink\\(Bundle\\.(MainWindow_\\w+)\\(\\),\\s*\"(\\w+)\"");
+
+    private static Map<String, String> welcomeLinks() throws IOException {
+        String src = Files.readString(Path.of("..", "ui", "src", "main", "java",
+                "org", "nmox", "studio", "ui", "MainWindow.java"));
+        Map<String, String> pairs = new java.util.LinkedHashMap<>();
+        Matcher m = WINDOW_LINK.matcher(src);
+        while (m.find()) {
+            String id = m.group(2);
+            pairs.put(m.group(1), TITLE_KEY_ALIASES.getOrDefault(id, "CTL_" + id));
+        }
+        return pairs;
+    }
 
     /** Every value for a key, per locale, across every module's bundles. */
     private static Map<String, Map<String, String>> valuesByLocale(String key) throws IOException {
@@ -124,7 +153,15 @@ class BundleHeadGateTest {
         // link and the title are written in different modules, so only a gate
         // keeps them saying the same thing.
         List<String> offenders = new ArrayList<>();
-        for (Map.Entry<String, String> pair : WELCOME_LINKS.entrySet()) {
+        Map<String, String> pairs = welcomeLinks();
+        assertThat(pairs).as("window links derived from the Welcome's own source").hasSizeGreaterThanOrEqualTo(13);
+        for (Map.Entry<String, String> pair : pairs.entrySet()) {
+            assertThat(valuesByLocale(pair.getValue()))
+                    .as("no window title found for " + pair.getValue() + " — the Welcome opens "
+                            + "a window whose title key this gate cannot resolve; add it to TITLE_KEY_ALIASES")
+                    .isNotEmpty();
+        }
+        for (Map.Entry<String, String> pair : pairs.entrySet()) {
             Map<String, Map<String, String>> links = valuesByLocale(pair.getKey());
             Map<String, Map<String, String>> titles = valuesByLocale(pair.getValue());
             for (Map.Entry<String, Map<String, String>> byLocale : links.entrySet()) {

@@ -40,9 +40,13 @@ public final class UiLocale {
     public static final Choice SYSTEM = new Choice("", "System default");
 
     /**
-     * The languages the product ships bundles for (v2.97.0): English, Spanish,
-     * French, German, Russian, Hindi — each named in itself so a user who
-     * landed in the wrong language can still find their own.
+     * The languages the product ships bundles for: English, Spanish, French,
+     * German, Russian, Hindi (v2.97.0) and Ukrainian (v2.98.0) — each named in
+     * itself so a user who landed in the wrong language can still find their
+     * own. Ukrainian sits beside Russian rather than inside it: the two are
+     * separate languages with separate bundles, and a Ukrainian speaker is
+     * never served Russian by fallback (an absent key falls back to ENGLISH,
+     * the bundle's own parent).
      */
     public static final List<Choice> SUPPORTED = List.of(
             SYSTEM,
@@ -51,6 +55,7 @@ public final class UiLocale {
             new Choice("fr", "Français"),
             new Choice("de", "Deutsch"),
             new Choice("ru", "Русский"),
+            new Choice("uk", "Українська"),
             new Choice("hi", "हिन्दी"));
 
     /** A launcher locale code: {@code fr} or {@code fr:CA}. Nothing else is ever written. */

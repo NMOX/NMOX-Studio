@@ -72,6 +72,15 @@ user-visible weight:
 
 ### 85. ~~IDE string localization — English by construction~~ — OPENED as the l10n arc, v2.97.0
 
+v2.98.0 (2026-09-08) added UKRAINIAN as the seventh language on the road
+v2.97.0 built: one entry in `UiLocale.SUPPORTED`, one in the parity gate's
+locale list, 2,830 translated keys across the same 71 packages, and a
+seventh set of branding+locale overlays for the platform menu bar. The
+cost of a language is now the translation and nothing else — which was
+the point of the mechanism. Ukrainian also closed the MessageFormat
+apostrophe hazard by construction: its values use `’` (U+2019), correct
+typography and inert to the format parser.
+
 v2.97.0 (2026-09-07, David's ask: EN/FR/RU/HI/ES/DE) shipped the
 mechanism and the first tranche: Options ▸ General ▸ Language writes a
 shell-safe `--locale` block into the per-user launcher conf (restart to
@@ -83,7 +92,8 @@ decision: the rack faceplate vocabulary (GO/STOP/EXPLAIN, knob names,
 LCD lines) stays English — the hardware panel, sized by the fit law;
 and every platform string beyond the top menus stays English until the
 community bundles for these languages exist. Windows launcher reading of
-the userdir conf is unverified. The original measurement follows.
+the userdir conf is unverified — still true at v2.98.0, and the same
+remainder now applies to Ukrainian. The original measurement follows.
 
 
 Measured v2.37.5 (the i18n pass): 51 of 697 main-source files touch
