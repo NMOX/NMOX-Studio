@@ -47,6 +47,29 @@ this entry is mostly about what a language costs once the road is built.
    localized packages is unchanged; `BundleHeadGateTest` checks the
    Welcome's launchpad links against the window titles in Ukrainian too.
 
+7. **The studio names are translated now, in every language** (David,
+   watching the Ukrainian build: "Translate them all"). Project Studio,
+   Block Studio, DB Studio, Contract Studio, API Studio and Infra Designer
+   had kept their English names in all six translations — treated as
+   product sub-brands, while equally house-coined names like Task Rack and
+   Workbench were translated. That line was inconsistent and a Ukrainian
+   user met six English tabs in an otherwise Ukrainian IDE. All 246
+   occurrences across 60 files now read in their own language: Студія баз
+   даних, Studio de bases de données, Estudio de bases de datos,
+   Datenbank-Studio, डेटाबेस स्टूडियो. IRC keeps its name — it is a protocol,
+   not a window we named. The docs stay English, so they now describe the
+   English UI; a localized docs pass is not attempted here and is written
+   down as owed.
+
+   Two hazards the sweep had to avoid, both caught before shipping: every
+   inserted name uses `’` for its apostrophe (Studio d’API), so dropping a
+   name into a message carrying `{0}` can never open a MessageFormat
+   quote; and Ukrainian and Russian decline, so the 26 values that put a
+   name after a preposition or in a genitive were corrected by hand —
+   "Відкрити у Студії API", not "в Студія API". A mechanical
+   find-and-replace would have shipped fluent-looking nonsense in the two
+   languages that inflect.
+
 **One find, from the gate that spans modules.** The Welcome's Workbench
 link and the window it opens are written in different modules, and the
 brief handed to the translators wrongly listed Workbench as a product
