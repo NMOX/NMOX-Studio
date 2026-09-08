@@ -239,11 +239,13 @@ status lines, Welcome, Options — speaks English, Español, Français,
 Deutsch, Русский, Українська and हिन्दी; pick yours in Options ▸ General ▸
 Language and restart. Rack faceplates keep their panel vocabulary on purpose.
 
-![NMOX Studio running in French: the Welcome reading DÉMARRER, RÉCENTS and OUTILS, tabs for Rack de tâches and Navigateur, and the project pane's Nouveau / Ouvrir / Récents menu](docs/images/i18n-welcome-fr.png)
+![NMOX Studio in French: the launchpad reads DÉMARRER, RÉCENTS and OUTILS, and the tabs read Bienvenue, Rack de tâches, Studio de bases de données, Studio de contrats and Concepteur d’infrastructure](docs/images/i18n-welcome-fr.png)
 
-![The same product started in Russian: НАЧАЛО, НЕДАВНИЕ and ИНСТРУМЕНТЫ on the Welcome, Добро пожаловать and Стойка задач as tab names, Рабочее место and Браузер in the tooling column](docs/images/i18n-welcome-ru.png)
+![The same build in Russian: НАЧАЛО, НЕДАВНИЕ and ИНСТРУМЕНТЫ on the Welcome, with Добро пожаловать, Стойка задач, Студия баз данных and Студия контрактов as tabs](docs/images/i18n-welcome-ru.png)
 
-![The same build started in Ukrainian: ПОЧАТОК, НЕДАВНІ and ІНСТРУМЕНТИ on the Welcome, Ласкаво просимо and Стійка задач as tabs, and the studios reading Студія баз даних, Студія контрактів and Конструктор інфраструктури](docs/images/i18n-welcome-uk.png)
+![The same build in Ukrainian: ПОЧАТОК, НЕДАВНІ and ІНСТРУМЕНТИ, with Ласкаво просимо, Стійка задач, Студія баз даних and Конструктор інфраструктури as tabs](docs/images/i18n-welcome-uk.png)
+
+![The same build in Hindi: शुरुआत, हाल के and टूलिंग on the Welcome, with स्वागत, टास्क रैक, डेटाबेस स्टूडियो and कॉन्ट्रैक्ट स्टूडियो as tabs](docs/images/i18n-welcome-hi.png)
 
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
