@@ -1559,6 +1559,8 @@ Outils, Fenêtre, Aide](images/i18n-welcome-fr.png)
 
 ![The same build started in Russian, with Файл, Правка, Вид, Переход and
 Сервис on the menu bar and Добро пожаловать as the Welcome tab](images/i18n-welcome-ru.png)
+
+![The same build started in Ukrainian, with Файл, Редагування, Вигляд, Перехід and Інструменти on the menu bar and the studios reading Студія баз даних and Студія контрактів](images/i18n-welcome-uk.png)
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place

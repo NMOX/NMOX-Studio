@@ -243,6 +243,8 @@ Language and restart. Rack faceplates keep their panel vocabulary on purpose.
 
 ![The same product started in Russian: НАЧАЛО, НЕДАВНИЕ and ИНСТРУМЕНТЫ on the Welcome, Добро пожаловать and Стойка задач as tab names, Рабочее место and Браузер in the tooling column](docs/images/i18n-welcome-ru.png)
 
+![The same build started in Ukrainian: ПОЧАТОК, НЕДАВНІ and ІНСТРУМЕНТИ on the Welcome, Ласкаво просимо and Стійка задач as tabs, and the studios reading Студія баз даних, Студія контрактів and Конструктор інфраструктури](docs/images/i18n-welcome-uk.png)
+
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
   you (the ▶'s runs, NPM Explorer scripts, a Focused Test, an install, an
