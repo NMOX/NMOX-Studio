@@ -4279,6 +4279,47 @@ myself:** checking an env var's presence with zsh's
 session transcript and had to be rotated. The safe form is a test,
 never an expansion: `[[ -n ${(P)v} ]] && echo set`.
 
+## Addendum — 2026-09-08, the seventh language (v2.98.0)
+
+David: "Add Ukrainian localization." One line, and the point of the
+release is what it did NOT cost. The v2.97.0 arc built the road —
+`UiLocale.SUPPORTED`, the launcher-conf `--locale` block, the
+branding+locale overlay shape, and a parity gate that reads the assembled
+cluster — so Ukrainian was one entry in a list, one entry in the gate's
+locale list, 2,830 translated keys and thirteen menu strings. No
+mechanism moved. That is the test of an extensibility seam: the second
+customer is cheap.
+
+**Two things worth keeping.**
+
+*A hazard can be designed out of a language.* Ukrainian needs an
+apostrophe constantly, and a lone ASCII `'` in a MessageFormat pattern
+opens a quote that swallows the message — exactly the defect v2.97.0
+found in the Navigator's colour attribute. Rather than police it, the
+translation brief required `’` (U+2019) everywhere: it is the correct
+Ukrainian typographic form AND inert to the format parser, so the class
+cannot recur in this language. Prefer the input that makes the bug
+impossible over the check that catches it.
+
+*A gate that spans modules can be green and still wrong.* The Welcome's
+Workbench link lives in `ui` and the window's title lives in `project`,
+and `BundleHeadGateTest` compares them per locale. The brief handed to
+the translators wrongly listed Workbench as a product name, so BOTH
+halves stayed English — self-consistent, gate green, and the only
+language in the product shipping an English window name in a fully
+translated IDE. The gate enforces agreement, not correctness; agreement
+between two wrong halves reads the same as agreement between two right
+ones. What caught it was comparing the new locale against the five that
+already shipped.
+
+**Method note.** Eleven translation agents, one per module-sized batch,
+each writing its own files. Two costs to remember: the batch manifest
+carried REPO-RELATIVE paths while the agents' working directory is the
+main checkout, so all 71 files landed in the wrong tree and had to be
+moved (main stayed clean — they were untracked); and a shared brief is a
+single point of failure, since one wrong line in it (Workbench) produced
+the same wrong answer in every batch that touched it.
+
 ## Addendum — 2026-09-07 afternoon, the IDE speaks six languages (v2.97.0)
 
 David: "internationalize NMOX Studio itself, so the buttons can be in
