@@ -54,7 +54,7 @@ class UiLocaleTest {
         assertThat(UiLocale.choiceFor("xx")).isEqualTo(UiLocale.SYSTEM);
         assertThat(UiLocale.choiceFor(null)).isEqualTo(UiLocale.SYSTEM);
         assertThat(UiLocale.SUPPORTED).extracting(UiLocale.Choice::code)
-                .containsExactly("", "en", "es", "fr", "de", "ru", "hi");
+                .containsExactly("", "en", "es", "fr", "de", "ru", "uk", "hi");
         assertThat(UiLocale.toLocale("de")).isEqualTo(java.util.Locale.GERMAN);
         assertThat(UiLocale.userConf(java.nio.file.Path.of("/u")))
                 .isEqualTo(java.nio.file.Path.of("/u/etc/nmoxstudio.conf"));

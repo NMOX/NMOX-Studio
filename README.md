@@ -236,8 +236,8 @@ closes the deploy gate exactly like a slow one.
 ### ⚡ Built to live in all day
 **In your language.** The IDE's own chrome — menus, dialogs, tooltips,
 status lines, Welcome, Options — speaks English, Español, Français,
-Deutsch, Русский and हिन्दी; pick yours in Options ▸ General ▸ Language
-and restart. Rack faceplates keep their panel vocabulary on purpose.
+Deutsch, Русский, Українська and हिन्दी; pick yours in Options ▸ General ▸
+Language and restart. Rack faceplates keep their panel vocabulary on purpose.
 
 ![NMOX Studio running in French: the Welcome reading DÉMARRER, RÉCENTS and OUTILS, tabs for Rack de tâches and Navigateur, and the project pane's Nouveau / Ouvrir / Récents menu](docs/images/i18n-welcome-fr.png)
 

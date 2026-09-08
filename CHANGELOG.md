@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.98.0] - 2026-09-08
+
+**Ukrainian.** David's ask, one line: "Add Ukrainian localization." The
+seventh language, and the first added after the mechanism existed — so
+this entry is mostly about what a language costs once the road is built.
+
+1. **Options ▸ General ▸ Language offers Українська**, listed in its own
+   name beside Русский. The two sit side by side as separate languages
+   with separate bundles: a Ukrainian speaker is never served Russian by
+   fallback, because an absent key falls back to ENGLISH, the bundle's own
+   parent. `UiLocale` needed one line.
+
+2. **2,830 chrome keys translated across all 71 localized packages** —
+   every menu, dialog, tooltip, status line, wizard and report the product
+   owns. That takes the translated total to 16,980 strings in six
+   languages beside English.
+
+3. **The platform's top menu bar** gains its seventh overlay: Файл,
+   Редагування, Вигляд, Перехід, Вихідний код, Запуск, Налагодження,
+   Рефакторинг, Команда, Інструменти, Вікно, Довідка — thirteen strings
+   across the same seven branding+locale jars, with mnemonics chosen to
+   be unique across the one bar.
+
+4. **The apostrophe was designed out of the hazard.** Ukrainian needs an
+   apostrophe constantly (ім'я, з'єднання, об'єкт), and in a
+   MessageFormat pattern a lone ASCII `'` opens a quote that swallows the
+   rest of the message — the defect this arc found in the Navigator's
+   colour attribute in v2.97.0. Every Ukrainian value uses `’` (U+2019),
+   which is both the correct typographic form and inert to MessageFormat.
+   The class cannot recur in this language.
+
+5. **Slavic plurals are honest.** English writes two branches, Ukrainian
+   needs four (1 / 2–4 / 5+ / 0), so the `{n,choice,…}` messages carry
+   them — 5 рядків and 2 рядки decline correctly, the treatment the
+   Russian bundles already used.
+
+6. **The gates absorbed the language without being rewritten.**
+   `LocaleBundleParityTest` took one entry in its locale list and now
+   holds all six translations of all 71 packages to key-set, placeholder
+   and non-blank parity against the assembled cluster; the floor of 71
+   localized packages is unchanged; `BundleHeadGateTest` checks the
+   Welcome's launchpad links against the window titles in Ukrainian too.
+
+**One find, from the gate that spans modules.** The Welcome's Workbench
+link and the window it opens are written in different modules, and the
+brief handed to the translators wrongly listed Workbench as a product
+name — so Ukrainian alone would have shipped an English window name in a
+Ukrainian IDE, self-consistently enough that the cross-module gate stayed
+green. Every other language translates it. It now reads Робоче місце, in
+both homes and in the sentence that names it.
+
 ## [2.97.0] - 2026-09-07
 
 **NMOX Studio speaks six languages.** David's ask: "internationalize

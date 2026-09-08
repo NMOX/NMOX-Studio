@@ -1542,7 +1542,7 @@ keymaps never costs you the studio chords.
   default from 23.6 and 22.18 LTS). An older Node's refusal is translated
   into the sentence that names the floor.
 - **Your language** — NMOX Studio speaks English, Español, Français,
-  Deutsch, Русский and हिन्दी. Pick one in **Options ▸ General ▸
+  Deutsch, Русский, Українська and हिन्दी. Pick one in **Options ▸ General ▸
   Language** (each listed in its own name, so you can always find yours);
   the choice is written into your per-user launcher settings
   (`etc/nmoxstudio.conf` under the userdir, as a `--locale` argument) and
