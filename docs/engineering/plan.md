@@ -4279,6 +4279,83 @@ myself:** checking an env var's presence with zsh's
 session transcript and had to be rotated. The safe form is a test,
 never an expansion: `[[ -n ${(P)v} ]] && echo set`.
 
+## Addendum — 2026-09-08, six more languages (v2.99.0)
+
+David asked which other languages the product could reasonably speak,
+and framed it by market: the countries most often hired as offshore and
+nearshore software contractors, each given its own language rather than
+English with a different flag. Six chosen and shipped: **Polski**
+(Poland, the largest developer market in Central and Eastern Europe),
+**Português do Brasil** (the biggest nearshore market for the United
+States), **Bahasa Indonesia**, **Filipino** (the Philippines is the
+largest outsourcing country by headcount), **Tiếng Việt**, and
+**简体中文**. Thirteen languages now, 33,960 translated strings in twelve
+beside English.
+
+The seam held again. Six languages cost six `UiLocale.SUPPORTED`
+entries, six entries in the parity gate's locale list, six sets of
+branding overlays, and the translations themselves. `BundleHeadGateTest`
+was the only gate that needed real work, and that was widening it, not
+rewriting it: it now derives all thirteen Welcome-link/window-title pairs
+from `MainWindow.java` rather than naming them.
+
+**Three decisions worth keeping.**
+
+*Ship a language without a country code until the variants must
+diverge.* `pt` holds Brazilian Portuguese and `zh` holds Simplified
+Chinese, and the menu names them that way. A plain language bundle is
+what every regional variant falls back to, so a user in Portugal or
+Singapore gets a usable IDE instead of English. `pt_BR` and `zh_CN`
+would have been more precise and strictly worse for everyone outside
+those two countries. The country bundle can be added the day the
+divergence is real; the reverse — splitting a country bundle after the
+fact — leaves every other region on English in the meantime.
+
+*Plural rules are honored, not imitated.* Polish carries three forms in
+its `{n,choice,…}` messages. Indonesian, Filipino, Vietnamese and
+Chinese have no grammatical plural at all, so their singular and plural
+keys hold the same words **on purpose** — plurality rides a numeral or a
+separate particle, and an invented inflected branch would have been
+wrong in four languages at once. A reviewer seeing two identical values
+should read the brief before "fixing" them.
+
+*The apostrophe rule carried forward.* Every value uses `’` (U+2019)
+where a language needs one, so the v2.97.0 eaten-quote class stays
+impossible by construction rather than by inspection. Six languages
+added and zero new instances of it.
+
+**The defect the pipeline found twice, and what that means.** The
+Welcome's Docker Panel link and the window it opens are written in
+different modules, and the brief handed to the translators was wrong
+about Docker Panel until it was corrected mid-run. Polish and Portuguese
+were translated under both briefs at once, so their halves disagreed and
+the verifier caught each; Indonesian, Filipino, Vietnamese and Chinese
+ran entirely under the corrected brief and came back clean on the first
+pass. This is the v2.98.0 Workbench lesson with its cause made visible:
+the shared brief is the single point of failure, and a wrong line in it
+reproduces itself in every batch that reads it. Correct the brief and
+the instances stop appearing — the four clean languages are the proof.
+
+**Method notes.** The v2.98.0 wrong-tree cost was paid once: the batch
+manifests now carry ABSOLUTE paths, because an agent's working directory
+is the main checkout and not the worktree the release is being built in.
+Menu bars were read live per locale from the running cluster rather than
+from the overlay files, since an overlay that fails to load is silent.
+And the verifier does more than key parity — it compares placeholder
+index sets, scans for unterminated MessageFormat quotes, and derives the
+cross-module Welcome-link agreement from `MainWindow.java`, which is what
+turned the Docker Panel disagreement into a build-time finding instead of
+a screenshot someone had to notice.
+
+**One honest remainder — ledger 88.** `LiveRuns.since()` splices the
+English word "since" into every translated build as a MessageFormat
+argument. It has shipped that way since v2.73.0 and is invisible to every
+bundle gate, because the bundle value is a well-formed `{0}` pattern and
+the English leaks in through the argument. Deferred deliberately: fixing
+it properly means 36 new strings across twelve languages, and writing
+those without review would trade a visible small defect for an
+unreviewed larger one.
+
 ## Addendum — 2026-09-08, the seventh language (v2.98.0)
 
 David: "Add Ukrainian localization." One line, and the point of the

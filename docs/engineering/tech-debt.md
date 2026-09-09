@@ -70,6 +70,29 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
+### 88. An English word reaches every translated build through an ARGUMENT
+
+Found by a Chinese translator agent reading the call site rather than the
+string (v2.99.0). `core.spi.LiveRuns.since(id)` returns the literal
+`"since " + HH:mm`, and three user-visible surfaces splice that whole
+phrase in as `{0}`: the Workbench's RUNNING row
+(`WorkbenchRunning_runningSince=running {0}`), the ⌘I live-run result
+(`LiveRunSearchProvider_stop`), and the NPM Explorer's marker. So a
+Ukrainian, Chinese or Polish user reads «виконується since 14:32»,
+「正在运行 since 14:32」, "działa since 14:32". Shipped since v2.73.0 and
+invisible to every gate here, because the bundles are all correct — the
+English enters BELOW them, as data.
+
+The fix is small but crosses twelve languages: add `LiveRuns.sinceTime`
+returning the bare `HH:mm`, move the word "since" into each of the three
+keys' English text, and have the translators supply the three phrases per
+language. Deliberately NOT done inside v2.99.0: authoring 36 strings in
+languages without a translator pass would be exactly the shortcut this
+arc has avoided. It is its own unit, and the fourth member of the
+argument-carries-untranslated-text class worth a gate — any string handed
+to a bundle as `{0}` should be data (a name, a path, a number), never
+prose.
+
 ### 85. ~~IDE string localization — English by construction~~ — OPENED as the l10n arc, v2.97.0
 
 v2.98.0 (2026-09-08) added UKRAINIAN as the seventh language on the road

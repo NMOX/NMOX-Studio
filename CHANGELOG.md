@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.99.0] - 2026-09-08
+
+**Six more languages, chosen where the work is.** David's ask: cover the
+countries most often hired as offshore and nearshore software
+contractors, and give each its own language rather than English with a
+different flag. NMOX Studio now speaks thirteen.
+
+**The six**: Polski (Poland, the largest developer market in Central and
+Eastern Europe), Português do Brasil (the biggest nearshore market for
+the United States), Bahasa Indonesia, Filipino (the Philippines is the
+largest outsourcing country by headcount), Tiếng Việt, and 简体中文.
+Each is a full translation of the product's own chrome — 2,830 keys
+across all 71 localized packages, 16,980 new strings, taking the
+translated total to 33,960 in twelve languages beside English.
+
+1. **A seventh through twelfth set of platform menu-bar overlays**, 78
+   strings across the same seven branding jars. Mnemonics are validated
+   unique within each menu bar by the script that writes them, so no two
+   menus in one language can claim the same access key. Chinese uses the
+   CJK convention — 文件(&F) — keeping the Latin access letter beside the
+   translated name.
+
+2. **Two languages ship without a country code, deliberately.** `pt` is
+   written in Brazilian Portuguese and `zh` in Simplified Chinese, and
+   both are named that way in the menu. A plain language bundle is what
+   every regional variant falls back to, so Portugal and Singapore get a
+   usable IDE rather than English. A country bundle can be added the day
+   the variants must actually diverge.
+
+3. **Plural rules are honored, not imitated.** Polish carries three forms
+   in its `{n,choice,…}` messages. Indonesian, Filipino, Vietnamese and
+   Chinese have no grammatical plural, so their singular and plural keys
+   hold the same words on purpose — plurality is carried by a numeral or
+   a separate particle, and inventing an inflected branch would have been
+   wrong in all four.
+
+4. **The apostrophe rule carried forward.** No translation introduces a
+   bare ASCII `'`, which in a MessageFormat pattern opens a quote that
+   swallows the rest of the message. Where a language needs one it uses
+   `’`; where English used one for a contraction the translations simply
+   do without.
+
+**The defect the pipeline found twice.** The Welcome's Docker Panel link
+and the window it opens are written in different modules, and the brief
+handed to the translators was wrong about Docker Panel until it was
+corrected mid-run. Polish and Portuguese were translated under the old
+brief and the new one at once, so their two halves disagreed and the
+verifier caught it; Indonesian, Filipino, Vietnamese and Chinese ran
+entirely under the corrected brief and came back clean on the first pass.
+Fixing the cause is worth more than fixing the instances.
+
 ## [2.98.0] - 2026-09-08
 
 **Ukrainian.** David's ask, one line: "Add Ukrainian localization." The

@@ -235,9 +235,11 @@ closes the deploy gate exactly like a slow one.
 
 ### ⚡ Built to live in all day
 **In your language.** The IDE's own chrome — menus, dialogs, tooltips,
-status lines, Welcome, Options — speaks English, Español, Français,
-Deutsch, Русский, Українська and हिन्दी; pick yours in Options ▸ General ▸
-Language and restart. Rack faceplates keep their panel vocabulary on purpose.
+status lines, Welcome, Options — speaks thirteen languages: English, Español, Français, Deutsch, Русский, Українська, Polski,
+Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 and
+हिन्दी.
+Pick yours in Options ▸ General ▸ Language and restart. Rack faceplates keep
+their panel vocabulary on purpose.
 
 ![NMOX Studio in French: the launchpad reads DÉMARRER, RÉCENTS and OUTILS, and the tabs read Bienvenue, Rack de tâches, Studio de bases de données, Studio de contrats and Concepteur d’infrastructure](docs/images/i18n-welcome-fr.png)
 
@@ -250,6 +252,18 @@ Language and restart. Rack faceplates keep their panel vocabulary on purpose.
 ![The same build in Spanish: INICIO, RECIENTES and HERRAMIENTAS on the Welcome, with Bienvenida, Rack de tareas, Estudio de bases de datos and Diseñador de infraestructura as tabs](docs/images/i18n-welcome-es.png)
 
 ![The same build in German: START, ZULETZT and WERKZEUGE on the Welcome, with Willkommen, Task-Rack, Datenbank-Studio, Smart-Contract-Studio and Infrastruktur-Designer as tabs](docs/images/i18n-welcome-de.png)
+
+![The same build in Polish: START, OSTATNIE and NARZĘDZIA on the Welcome, with Witamy, Stojak zadań, Studio baz danych, Studio kontraktów and Projektant infrastruktury as tabs](docs/images/i18n-welcome-pl.png)
+
+![The same build in Brazilian Portuguese: INÍCIO, RECENTES and FERRAMENTAS on the Welcome, with Bem-vindo, Rack de tarefas, Estúdio de banco de dados, Estúdio de contratos and Designer de infraestrutura as tabs](docs/images/i18n-welcome-pt.png)
+
+![The same build in Indonesian: MULAI, TERBARU and PERKAKAS on the Welcome, with Selamat Datang, Rak Tugas, Studio Basis Data, Studio Kontrak and Perancang Infrastruktur as tabs](docs/images/i18n-welcome-id.png)
+
+![The same build in Filipino: SIMULAN, KAMAKAILAN and MGA KASANGKAPAN on the Welcome, with Maligayang Pagdating, Rack ng Gawain, Studio ng Database, Studio ng Kontrata and Taga-disenyo ng Infrastructure as tabs](docs/images/i18n-welcome-tl.png)
+
+![The same build in Vietnamese: BẮT ĐẦU, GẦN ĐÂY and CÔNG CỤ on the Welcome, with Chào mừng, Giá tác vụ, Studio cơ sở dữ liệu, Studio hợp đồng and Trình thiết kế hạ tầng as tabs](docs/images/i18n-welcome-vi.png)
+
+![The same build in Simplified Chinese: 开始, 最近 and 工具 on the Welcome, with 欢迎, 任务机架, 数据库工作室, 合约工作室 and 基础设施设计器 as tabs](docs/images/i18n-welcome-zh.png)
 
 - **The toolbar's ▶** runs the aimed project the way its toolchain runs,
   and **the ■ beside Debug** stops every command the product started for
