@@ -1,6 +1,8 @@
 # The Plan
 
-*Currency addendum 2026-09-06, at v2.95.0, after two lenses, one
+*Currency addendum 2026-09-09, at v2.100.1 — the l10n arc closed out
+(v2.96.0–v2.100.1; see the dated addenda below). Written 2026-09-06 at
+v2.95.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
 in-repo, the keyboard day, and the day shift that walked the rack by
 accessibility (v2.44.0–v2.75.0, ~48 releases in seven days). **The
@@ -4278,6 +4280,77 @@ myself:** checking an env var's presence with zsh's
 `${${(P)v}:-unset}` PRINTS THE VALUE when set — two keys landed in a
 session transcript and had to be rotated. The safe form is a test,
 never an expansion: `[[ -n ${(P)v} ]] && echo set`.
+
+## Addendum — 2026-09-09, the argument is data (v2.99.1, v2.100.0, v2.100.1)
+
+Three releases that were all the same lesson from different angles: a
+claim nobody was checking.
+
+**v2.99.1 — a test that raced the thing it measured.** The v2.99.0 gate
+failed once on `McpSubscriptionsTest`, a DIFFERENT test on each of two
+operating systems, while ubuntu and the local verify were green; a rerun
+of the failed jobs on the same commit went green everywhere. Two flakes
+in one class in one run is a signal. Both were asserting against a
+deadline while a scheduler they did not own decided the tick count. The
+cure was to stop racing: `fileSubscriptionFollowsTheFile` drives
+`pollFiles()` itself with the period out of reach, which made the counts
+a function of the change just made and let the assertions get STRONGER —
+one change announces exactly once, a settled file announces nothing
+further, the drop is final. The property that removal would have lost
+(that the schedule is armed at all) became its own existence test rather
+than disappearing. *A determinism fix that weakens what a test proves has
+not fixed the test.*
+
+**v2.100.0 — ledger 88, and the finding the opening missed.**
+`LiveRuns.since()` returned the phrase `"since 14:32"` and the surfaces
+that show a running command handed it to a bundle as `{0}`, so twelve
+complete, correct translations still rendered an English word: the
+English entered BELOW the bundles, as data. Every l10n gate was green and
+right. `LocaleBundleParityTest` compares key sets and placeholders — both
+correct. `ChromeLiteralRatchetTest` looks for a literal AT a sink — this
+one was two modules away inside a helper.
+
+What the closing found: **Hindi was broken the other way round.** Its
+translator had already read `{0}` as a bare time and supplied the
+postposition (`{0} से चल रहा है`), so Hindi rendered the preposition twice
+while the other eleven rendered an English word. One key, one ambiguity,
+two opposite defects, seven releases. *When translators disagree about
+what an argument is, the code never told them* — and the answer is always
+that an argument is data: a name, a path, a number, never prose.
+
+Two gate lessons came out of it. The ratchet had never known
+`putValue(SHORT_DESCRIPTION, …)` — a Swing `Action` sets its tooltip
+through `putValue`, not a setter — so an English tooltip could be written
+straight past it. And the new gate's FIRST cut was too weak to catch the
+real regression: checking that a value is more than its placeholder
+cannot tell `działa {0}` (the defect) from `działa od {0}` (the fix). It
+pins the reviewed since-word per language instead. *Test the guard with
+the input only it refuses* — the mutation that survived was the pre-fix
+state itself.
+
+The verify then caught three more claims that were not true: the Agent
+Port's structured field, a Workbench test that reproduced the Hindi
+doubling on a machine with no Hindi in it, and a changelog sentence
+asserting the human-readable text still said the word when the renderer
+had been taking that word from the field. *A claim in a changelog is a
+claim a test should hold.*
+
+**v2.100.1 — the count no census could read.** The docs say "thirteen
+languages" and every matcher in `DocsCountGateTest` parses digits, so the
+one number the l10n arc introduced was the one number nothing checked.
+This is the gate's third blind spot (v2.18.0 lost three, v2.34.2 lost
+two more), and they rhyme: the census sees the shapes it was taught, and
+a claim written in an unanticipated shape rots silently. Ground truth is
+`UiLocale.SUPPORTED` less the System row, proven in both directions — a
+stale doc fails, and adding a language without touching the docs fails.
+
+**What stays open, deliberately.** Ledger 89: the ■'s own tooltip and
+status line are assembled as whole English sentences inside `LiveRuns`
+and are English in every language. ~72 values with real plural forms
+across Slavic and plural-less languages — a translator pass, not an
+author with a dictionary. The boundary is the one v2.99.0 drew and
+v2.100.0 kept: a preposition inserted into a phrase a translator already
+wrote is grounded; six new sentences per language are not.
 
 ## Addendum — 2026-09-08, six more languages (v2.99.0)
 
