@@ -46,9 +46,9 @@ import org.openide.util.RequestProcessor;
     "GeneralOptions_UpdateCheck=Check for updates on startup (once daily)",
     "GeneralOptions_Language=Language:",
     "GeneralOptions_LanguageNote=<html><i>Menus, dialogs and messages of NMOX Studio itself. "
-        + "Takes effect after a restart. Rack faceplates keep their panel vocabulary.</i></html>",
-    "GeneralOptions_RestartTitle=Language changes on the next start",
-    "GeneralOptions_RestartBody=Quit and start NMOX Studio again to switch the language.",
+        + "Takes effect at once; the editor’s menu bar follows on the next start. Rack faceplates keep their panel vocabulary.</i></html>",
+    "GeneralOptions_RestartTitle=Language switched",
+    "GeneralOptions_RestartBody=NMOX Studio’s own windows switch now. The editor’s menu bar and toolbar keep their language until you restart.",
     "GeneralOptions_WriteFailed=The language could not be saved: the launcher settings file is not writable."
 })
 public class GeneralOptionsPanelController extends OptionsPanelController {
@@ -125,7 +125,10 @@ public class GeneralOptionsPanelController extends OptionsPanelController {
             try {
                 writeLanguage(conf, chosen);
                 languageOnDisk = chosen;
-                notifyRestart();
+                // the conf is the durable half — it survives the restart; the
+                // live half switches the running IDE now (v2.103.0)
+                org.nmox.studio.core.util.UiLocale.applyLive(chosen);
+                notifySwitched();
             } catch (IOException e) {
                 LOG.log(Level.WARNING, "language not saved", e);
                 javax.swing.SwingUtilities.invokeLater(() -> org.openide.DialogDisplayer.getDefault().notify(
@@ -135,8 +138,8 @@ public class GeneralOptionsPanelController extends OptionsPanelController {
         });
     }
 
-    /** One balloon: the choice is saved, the language changes when the app next starts. */
-    private static void notifyRestart() {
+    /** One balloon: the choice is saved AND live; the platform's own chrome follows on the next start. */
+    private static void notifySwitched() {
         try {
             org.openide.awt.NotificationDisplayer.getDefault().notify(
                     Bundle.GeneralOptions_RestartTitle(),
