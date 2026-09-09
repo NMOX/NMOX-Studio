@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.102.0] - 2026-09-09
+
+**The platform toolbar speaks the user's language** — and this release
+corrects a claim v2.101.1 shipped one release ago.
+
+v2.101.1 recorded the toolbar as English in translated builds and argued
+it should stay that way: four of the twelve buttons, it said, were
+"composed at runtime" and existed in no bundle, so only eight could be
+overlaid, and two thirds of a toolbar reads worse than a consistent one.
+
+**That was wrong, and it was wrong in an instructive way.** The keys
+exist — `LBL_RunMainProjectAction_Name`, `LBL_BuildMainProjectAction_Name`
+and their siblings — and the composition lives *inside* the value, as a
+MessageFormat `choice` that an overlay replaces wholesale. The search that
+"proved" their absence had a filter in it: it skipped values longer than
+sixty characters, and these are longer. A search with a filter has not
+proved an absence, and the conclusion resting on it was an argument
+dressed as a finding.
+
+1. **144 overlay values across five platform jars in twelve languages**,
+   plus Save All in three more. Eleven of the twelve toolbar controls now
+   speak the user's language: `&Створити файл...`, `Зберегти &все`,
+   `&Скасувати`, `&Повернути`, `&Зібрати головний проєкт`,
+   `&Запустити головний проєкт`, `&Налагодити головний проєкт`,
+   `Профілювати застосунок`. The Run and Debug verbs come from the menu
+   overlays already shipped, so the toolbar and the menu agree.
+
+2. **The platform's own `-1` branch is the one that mattered.** These
+   patterns render "Main Project" when no main project is set, which is
+   what a fresh start shows — and precisely the branch that read English
+   in every translated build. Slavic carries the extra 2 and 5 branches
+   because the noun inflects across 1 / 2–4 / 5+.
+
+3. **`ToolbarOverlayGateTest`** renders every pattern in every language at
+   −1, 0, 1, 2, 3, 5 and 11 and fails on a malformed `choice`, an
+   unresolved placeholder, a missing language, or a bare ASCII apostrophe.
+   These are overlays over someone else's bundles — no compiler can see
+   them, so rendering them is the only proof.
+
+**The walk caught a second mistake before it shipped.** `Save &All` did
+not change on the first pass: the overlay had gone to `versioning-util`'s
+`LBL_SaveAll`, which belongs to a diff dialog. Four jars hold that string.
+
+**The honest remainder, measured rather than asserted this time:** the
+project-configuration combo still reads `Set Project Configuration`. That
+string is absent from every entry of all 520 jars — not only the
+properties files, and with no length filter — so it is built
+programmatically and no overlay can reach it. One control.
+
 ## [2.101.1] - 2026-09-09
 
 **The Ukrainian walk** (docs only). Two releases changed user-visible
