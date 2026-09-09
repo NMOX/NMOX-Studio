@@ -70,6 +70,48 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
+### 90. The platform toolbar is English in every translated build — and only two thirds of it can be overlaid
+
+Found by walking the shipped 2.101.0 in Ukrainian (2026-09-09), reading the
+main window's accessibility tree. Our own actions are correct — the ■ reads
+`Зупинити виконувану команду` — while the platform's toolbar buttons read
+`&New File...`, `Ne&w Project...`, `Open Proj&ect...`, `Save &All`,
+`&Undo`, `&Redo`, `&Build Main Project`, `&Clean and Build Main Project`,
+`&Run Main Project`, `&Debug Main Project`, `Set Project Configuration`,
+`Profile the Application`. Two defects in one reading: the words are
+English, and the raw `&` mnemonic marker is exposed in the ACCESSIBLE
+name, which a screen reader will pronounce — that half is wrong in English
+too, and it is the platform's own doing.
+
+This is not an oversight. Ledger 85 records the position deliberately:
+v2.97.0 overlaid the top MENU BAR through branding+locale jars and left the
+rest of the platform English. The toolbar is simply the most visible
+surface on the other side of that line.
+
+**Why it is recorded rather than done.** Eight of the twelve resolve to
+ordinary bundle keys the existing overlay mechanism could carry
+(`LBL_NewFileAction_Name`, `LBL_NewProjectAction_Name`,
+`LBL_OpenProjectAction_Name` in projectui; `LBL_SaveAll` in
+versioning-util; `UndoSimple`/`RedoSimple` in openide-actions;
+`SelfSamplerAction_ActionNameStart` in core-ui). The four Main Project
+verbs are **composed at runtime** — no bundle in the whole 520-jar cluster
+holds the string `&Run Main Project`; the nearest is
+`LBL_RunProjectAction_Name = Run {0,choice,0#Project|1#"{1}" Project|1<{0} Projects}`.
+So the overlay route covers two thirds of one toolbar and leaves four
+buttons English beside eight translated ones, which reads worse than a
+consistently English toolbar. Finishing this needs recon into how the
+platform builds those names, not another 96 values.
+
+**One hypothesis measured and killed, so nobody re-runs it.** The cluster
+does contain localized bundles for `it`, `ja`, `ko`, `pt_BR`, `zh_CN` and
+`zh_TW`, which looks like the platform shipping its own l10n — and would
+have meant our plain `zh` and `pt` locales were missing it (a real cost of
+the v2.99.0 no-country-code decision). They are all third-party:
+`flatlaf` (de/es/fr), `jaxb-xjc` (the XML binder's error text) and
+`simplevalidation`. **The NetBeans Platform ships no UI localization at
+all**, so there is nothing for a `zh` user to miss and the v2.99.0
+decision costs nothing here.
+
 ### 89. ~~The ■ tooltip and its status line are English in every language~~ — CLOSED v2.101.0
 
 Closed the day it was opened, on David's call: *don't half-do things.*

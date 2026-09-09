@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.101.1] - 2026-09-09
+
+**The Ukrainian walk** (docs only). Two releases changed user-visible
+strings today and neither had been seen in the running product, which is
+the one thing this house's method insists on. So the shipped 2.101.0 was
+launched with `--locale uk` on a real Node project and read through the
+main window's accessibility tree.
+
+**What held.** `System Locale; Encoding = uk (nmoxstudio)` in the log; the
+whole chrome in Ukrainian — `ПОЧАТОК` / `НЕЩОДАВНІ` / `ІНСТРУМЕНТИ` on the
+Welcome, `ПЕРШІ КРОКИ · 4 з 6` ticking itself, the studio tabs, the serving
+chip reading `⇄ обслуговує: http://localhost:54922/`. A real `npm run dev`
+started, the Workbench grew its `ВИКОНУЄТЬСЯ` section, and the ■ — reading
+`Зупинити виконувану команду`, v2.101.0's own work — stopped it: `[exit
+143] stopped`, and the section went away.
+
+**What the walk found — ledger 90.** Our actions are translated; the
+PLATFORM's toolbar buttons are not. In a Ukrainian build they read `&New
+File...`, `Save &All`, `&Run Main Project`, `Profile the Application` —
+English, and with the raw `&` mnemonic marker exposed in the accessible
+name, which a screen reader pronounces. That second half is wrong in
+English too.
+
+It is recorded rather than fixed, and the reason is the same principle
+that closed ledger 89 the other way. Eight of the twelve are ordinary
+bundle keys the existing overlay mechanism could carry; the four Main
+Project verbs are composed at runtime and exist in no bundle in the
+520-jar cluster. Overlaying two thirds of one toolbar leaves four English
+buttons beside eight translated ones, which reads worse than a
+consistently English toolbar.
+
+**A hypothesis measured and killed**, so it is not chased again: the
+cluster does hold localized bundles for `it`, `ja`, `ko`, `pt_BR`, `zh_CN`
+and `zh_TW`. That looked like the platform shipping l10n our plain `zh`
+and `pt` locales would miss — a real cost of the v2.99.0 no-country-code
+decision. They are all third-party (`flatlaf`, `jaxb-xjc`,
+`simplevalidation`). The NetBeans Platform ships no UI localization at
+all, so there is nothing to miss and that decision costs nothing.
+
 ## [2.101.0] - 2026-09-09
 
 **The ■ speaks every language.** David's call on the deferral: *don't
