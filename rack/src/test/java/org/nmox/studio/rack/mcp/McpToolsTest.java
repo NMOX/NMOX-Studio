@@ -174,7 +174,11 @@ class McpToolsTest {
         JSONObject s = McpTools.liveRuns(LiveRuns.live());
         JSONObject run = s.getJSONArray("runs").getJSONObject(0);
         assertThat(run.getString("label")).isEqualTo("Run \u2014 shop");
-        assertThat(run.getString("since")).startsWith("since ");
+        // the structured field is DATA under a key already named "since"
+        // (v2.100.0, ledger 88): an agent reading it should not have to strip
+        // a word, and startedAt beside it is the exact machine value. The
+        // human-readable text keeps the word, because a person reads that one.
+        assertThat(run.getString("since")).matches("\\d{2}:\\d{2}");
         assertThat(run.getLong("startedAt")).isPositive();
         assertThat(Texts.of(s)).startsWith("Run \u2014 shop (since ");
         assertThat(Texts.of(McpTools.liveRuns(List.of()))).isEqualTo("Nothing is running.");

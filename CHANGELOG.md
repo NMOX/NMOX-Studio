@@ -26,9 +26,13 @@ never said what the argument was; the answer is that an argument is data.
    where a translator can choose it: `desde`, `depuis`, `seit`, `с`, `з`,
    `od`, `sejak`, `mula`, `từ`, `自`, and Hindi's `से` — which was
    already right and is now read once. Five surfaces follow the new
-   contract, including the served row's address suffix and the
-   agent-facing `live_runs` field, where a bare time under a key already
-   named `since` is what a reader wanted anyway.
+   contract, including the served row's address suffix. **One observable
+   change for agents**: the Agent Port's `live_runs` `since` field now
+   holds `"14:32"` rather than `"since 14:32"` — a bare time under a key
+   already named `since`, beside the exact `startedAt` millis it has
+   always carried. The declared schema (`string`) is unchanged and the
+   human-readable tool text still says the word, because a person reads
+   that one.
 
 2. **The ratchet learned the sink it was blind to.** A Swing `Action`
    sets its tooltip through `putValue(SHORT_DESCRIPTION, …)`, not a
