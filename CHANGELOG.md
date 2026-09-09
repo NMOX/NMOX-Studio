@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.100.1] - 2026-09-09
+
+**The one number in the docs that nothing could check.** README and the
+user guide say "thirteen languages", and every matcher in
+`DocsCountGateTest` parses digits — so the count the l10n arc introduced
+was the only count in the live docs with no ground truth behind it. This
+is the census's third blind spot (v2.18.0 lost three, v2.34.2 lost two
+more), and they rhyme: a gate sees the shapes it was taught, and a claim
+written in an unanticipated shape rots quietly under a green build.
+
+Ground truth is `UiLocale.SUPPORTED` less the System row, which is what
+the Options combo actually offers. Proven in both directions: a doc that
+says twelve fails naming the line, and adding a fourteenth language
+without touching the docs fails too.
+
+**Docs truth.** `plan.md`'s currency header had been claiming v2.95.0
+through five releases; it now says where the project stands and carries a
+dated addendum for v2.99.1, v2.100.0 and v2.100.1 — the flake that was
+racing its own scheduler, the argument that was carrying prose, and the
+count nothing could read. Ledger 89 stays open with its reason.
+
 ## [2.100.0] - 2026-09-09
 
 **An English word was reaching every translated build, underneath every
