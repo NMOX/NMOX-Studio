@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.103.0] - 2026-09-09
+
+**Switch language without restarting** (David's call, over the safer
+option).
+
+The mechanism turned out to be one line, and the reason is worth
+recording: `ResourceBundle.getBundle` keys its cache on the CURRENT
+default locale, so moving the default is not a stale-cache problem — it is
+a different cache entry. Probed against the real platform before anything
+was written: `Locale.setDefault(uk)` and the very next lookup answers
+`Нічого не виконується`, with nothing cleared.
+
+1. **`UiLocale.applyLive(code)`** moves the default and tells listeners.
+   The conf is still written, so the choice survives a restart too — the
+   durable half and the live half are both there.
+
+2. **Open windows re-read their own titles.** `LocaleRefresher` walks the
+   window registry and renames each from `CTL_<window id>` — the
+   convention twelve of the fifteen registered windows already follow. The
+   three that do not are the same three `BundleHeadGateTest` has aliased
+   since v2.98.0, and `LocaleRefresherKeysTest` fails if the two maps ever
+   disagree: one vocabulary, not two.
+
+3. **A latent bug the feature exposed.** `UiLocale.toLocale("")` — the
+   "System default" row — read `Locale.getDefault()`. That was harmless
+   while the default never moved and wrong the moment it could: after
+   switching to Ukrainian, "System default" would have meant Ukrainian, a
+   row that can never take you home. It reads the locale the JVM STARTED
+   in now.
+
+**The honest limit, twice over.** The platform's own menu bar and toolbar
+are built once at startup from the layer and keep their language until a
+restart; the Options panel says so plainly rather than letting a user
+discover it. And the live relabel of open windows is **not walked**: the
+language picker is a `JComboBox`, whose popup this automation cannot drive
+from the background, and taking over the screen was not on offer. What is
+proven is the core (locale moves, bundles follow, listeners fire and
+detach, the system row goes home — four mutants by name) and that every
+registered window's title key resolves. The `setDisplayName` sweep itself
+is pinned by construction, not by a click — the v1.324.0 precedent, stated
+rather than papered over.
+
 ## [2.102.1] - 2026-09-09
 
 **Following the platform's idiom, and the package's** (David's ask: do
