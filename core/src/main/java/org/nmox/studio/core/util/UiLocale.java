@@ -3,6 +3,7 @@ package org.nmox.studio.core.util;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -125,6 +126,47 @@ public final class UiLocale {
         return base + replacement;
     }
 
+    /**
+     * The JVM's own language at startup — what the "System default" row means.
+     * Captured once, before anything can change it, so that row can be
+     * returned to rather than approximated.
+     */
+    private static final Locale STARTED_AS = Locale.getDefault();
+
+    /** Listeners told, on the caller's thread, that the language just changed. */
+    private static final List<Runnable> LISTENERS = new CopyOnWriteArrayList<>();
+
+    /**
+     * Switch the running IDE's language, without a restart.
+     *
+     * <p>Measured before it was built: {@code ResourceBundle.getBundle} keys
+     * its cache on the CURRENT default locale, so moving the default is
+     * enough — every later lookup resolves against the new language with no
+     * cache to clear. What does not follow by itself is text a component has
+     * already painted, which is what the listeners are for: each surface
+     * re-reads its own names.
+     *
+     * <p>The platform's own menus and toolbars are built once at startup from
+     * the layer and keep their language until a restart. The conf is still
+     * written, so the choice survives one either way.
+     */
+    public static void applyLive(String code) {
+        Locale.setDefault(toLocale(code));
+        for (Runnable l : LISTENERS) {
+            l.run();
+        }
+    }
+
+    /** Told after {@link #applyLive}, so a surface can re-read its own names. */
+    public static void addListener(Runnable listener) {
+        LISTENERS.add(listener);
+    }
+
+    /** Symmetric with {@link #addListener} — a surface that closes stops listening. */
+    public static void removeListener(Runnable listener) {
+        LISTENERS.remove(listener);
+    }
+
     /** The code the conf currently pins, if its block is present and well-formed. */
     public static Optional<String> current(String existingConf) {
         if (existingConf == null) {
@@ -152,9 +194,17 @@ public final class UiLocale {
         return SYSTEM;
     }
 
-    /** The JVM locale a code selects, for tests and previews. */
+    /**
+     * The JVM locale a code selects.
+     *
+     * <p>The system row means the language the JVM STARTED in, not whatever is
+     * current. Before v2.103.0 those were the same thing and this read
+     * {@code Locale.getDefault()}; live switching moves the default, so that
+     * reading would have made "System default" mean "whatever I last picked" —
+     * a row that could never take you home.
+     */
     public static Locale toLocale(String code) {
         Choice c = choiceFor(code);
-        return c.isSystem() ? Locale.getDefault() : Locale.forLanguageTag(c.code());
+        return c.isSystem() ? STARTED_AS : Locale.forLanguageTag(c.code());
     }
 }
