@@ -97,7 +97,10 @@ final class Texts {
             }
             sb.append(r.getString("label"));
             if (!r.getString("since").isEmpty()) {
-                sb.append(" (").append(r.getString("since")).append(')');
+                // the field is a bare time (v2.100.0, ledger 88); the word
+                // belongs to whoever renders it — here, English prose for an
+                // agent to read, which is never translated
+                sb.append(" (since ").append(r.getString("since")).append(')');
             }
         }
         return sb.toString();
