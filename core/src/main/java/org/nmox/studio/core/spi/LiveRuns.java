@@ -124,16 +124,28 @@ public final class LiveRuns {
         }
     }
 
-    /** "since HH:mm" for a live run, in the local zone; empty when not live. */
-    public static String since(String id) {
-        return since(startedAt(id), java.time.ZoneId.systemDefault());
+    /**
+     * "HH:mm" for a live run, in the local zone; empty when not live.
+     *
+     * <p>The bare time is DATA, and that is the whole point (ledger 88,
+     * closed v2.100.0). This used to return the phrase {@code "since HH:mm"},
+     * which every caller then handed to a bundle as {@code {0}} — so an
+     * English word rode into all twelve translated builds underneath every
+     * l10n gate, because the bundles themselves were correct. The word that
+     * introduces the time belongs to each language's own key, where a
+     * translator can choose it; Hindi had already written its postposition
+     * that way and was reading it twice. A string handed to a bundle as an
+     * argument is a name, a path, or a number — never prose.
+     */
+    public static String sinceTime(String id) {
+        return sinceTime(startedAt(id), java.time.ZoneId.systemDefault());
     }
 
-    static String since(long startedAt, java.time.ZoneId zone) {
+    static String sinceTime(long startedAt, java.time.ZoneId zone) {
         if (startedAt < 0) {
             return "";
         }
-        return "since " + java.time.Instant.ofEpochMilli(startedAt).atZone(zone)
+        return java.time.Instant.ofEpochMilli(startedAt).atZone(zone)
                 .toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
     }
 
@@ -215,9 +227,9 @@ public final class LiveRuns {
                 sb.append(", ");
             }
             sb.append(live.get(i).label());
-            String since = since(live.get(i).id());
-            if (!since.isEmpty()) {
-                sb.append(" (").append(since).append(')');
+            String at = sinceTime(live.get(i).id());
+            if (!at.isEmpty()) {
+                sb.append(" (since ").append(at).append(')');
             }
         }
         return sb.toString();

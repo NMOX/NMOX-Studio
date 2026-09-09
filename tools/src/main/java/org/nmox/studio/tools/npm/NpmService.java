@@ -335,12 +335,12 @@ public class NpmService {
         return running;
     }
 
-    /** "since HH:mm" for the live run of {@code script} in {@code dir}, or empty (v2.76.0 — the explorer's marker says since when). */
+    /** The bare "HH:mm" the live run of {@code script} in {@code dir} started at, or empty (v2.76.0; data since v2.100.0 — ledger 88). */
     public static String runningSince(File dir, String script) {
         String prefix = runIdPrefix(dir);
         for (LiveRuns.Run r : LiveRuns.live()) {
             if (r.id().startsWith(prefix) && script.equals(SCRIPT_BY_RUN.get(r.id()))) {
-                return LiveRuns.since(r.id());
+                return LiveRuns.sinceTime(r.id());
             }
         }
         return "";

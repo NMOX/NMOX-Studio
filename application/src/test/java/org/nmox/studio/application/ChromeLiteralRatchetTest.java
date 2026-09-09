@@ -34,7 +34,10 @@ class ChromeLiteralRatchetTest {
             + "|\\.setText\\s*\\(\\s*"
             + "|StatusDisplayer\\.getDefault\\(\\)\\.setStatusText\\s*\\(\\s*"
             + "|\\.setAccessibleName\\s*\\(\\s*"
-            + "|\\.setAccessibleDescription\\s*\\(\\s*)"
+            + "|\\.setAccessibleDescription\\s*\\(\\s*"
+            // a Swing Action's tooltip and name are set through putValue, not a
+            // setter — the sink this gate was blind to until ledger 88 (v2.100.0)
+            + "|putValue\\s*\\(\\s*(?:Action\\.)?(?:SHORT_DESCRIPTION|NAME)\\s*,\\s*)"
             + "\"((?:[^\"\\\\\\n]|\\\\.)*)\"");
 
     /**

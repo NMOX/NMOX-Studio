@@ -96,11 +96,29 @@ class LiveRunsTest {
             LiveRuns.clockForTest(null);
         }
         assertThat(LiveRuns.startedAt("s1")).isEqualTo(1_000_000L);
-        assertThat(LiveRuns.since(1_000_000L, java.time.ZoneId.of("UTC"))).isEqualTo("since 00:16");
-        assertThat(LiveRuns.since(-1L, java.time.ZoneId.of("UTC"))).isEmpty();
+        assertThat(LiveRuns.sinceTime(1_000_000L, java.time.ZoneId.of("UTC"))).isEqualTo("00:16");
+        assertThat(LiveRuns.sinceTime(-1L, java.time.ZoneId.of("UTC"))).isEmpty();
         LiveRuns.remove("s1");
         assertThat(LiveRuns.startedAt("s1")).as("gone with the run").isEqualTo(-1L);
-        assertThat(LiveRuns.since("s1")).isEmpty();
+        assertThat(LiveRuns.sinceTime("s1")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("the start time is DATA in every zone and hour — a bundle argument is never prose (ledger 88, v2.100.0)")
+    void sinceTimeIsDataNotProse() {
+        // this is the whole contract: three surfaces hand this value to a
+        // bundle as {0}, so a single letter here is a letter that no
+        // translation can reach. It shipped as "since HH:mm" for seven
+        // releases and read «正在运行 since 14:32» in Chinese.
+        for (String zone : new String[] {"UTC", "America/Denver", "Asia/Kolkata", "Pacific/Kiritimati"}) {
+            java.time.ZoneId z = java.time.ZoneId.of(zone);
+            for (long hour = 0; hour < 24; hour++) {
+                String v = LiveRuns.sinceTime(hour * 3_600_000L + 61_000L, z);
+                assertThat(v).as("%s at hour %d is a bare time", zone, hour).matches("\\d{2}:\\d{2}");
+            }
+        }
+        assertThat(LiveRuns.sinceTime(-1L, java.time.ZoneId.of("UTC")))
+                .as("not live: empty, so the caller picks the wordless message").isEmpty();
     }
 
     @Test

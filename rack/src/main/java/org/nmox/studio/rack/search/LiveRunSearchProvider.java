@@ -23,8 +23,12 @@ public class LiveRunSearchProvider implements SearchProvider {
         }
         for (LiveRuns.Run run : LiveRuns.live()) {
             if (matches(needle, run.label())) {
-                String label = org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class,
-                        "LiveRunSearchProvider_stop", run.label(), LiveRuns.since(run.id()));
+                String at = LiveRuns.sinceTime(run.id());
+                String label = at.isEmpty()
+                        ? org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class,
+                                "LiveRunSearchProvider_stop", run.label())
+                        : org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class,
+                                "LiveRunSearchProvider_stopSince", run.label(), at);
                 if (!response.addResult(() -> stop(run.id(), run.label()), label.trim())) {
                     return;
                 }
