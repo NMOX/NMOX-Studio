@@ -70,47 +70,54 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
-### 90. The platform toolbar is English in every translated build — and only two thirds of it can be overlaid
+### 90. ~~The platform toolbar is English in every translated build~~ — CLOSED v2.102.0
 
-Found by walking the shipped 2.101.0 in Ukrainian (2026-09-09), reading the
-main window's accessibility tree. Our own actions are correct — the ■ reads
-`Зупинити виконувану команду` — while the platform's toolbar buttons read
-`&New File...`, `Ne&w Project...`, `Open Proj&ect...`, `Save &All`,
-`&Undo`, `&Redo`, `&Build Main Project`, `&Clean and Build Main Project`,
-`&Run Main Project`, `&Debug Main Project`, `Set Project Configuration`,
-`Profile the Application`. Two defects in one reading: the words are
-English, and the raw `&` mnemonic marker is exposed in the ACCESSIBLE
-name, which a screen reader will pronounce — that half is wrong in English
-too, and it is the platform's own doing.
+Found by walking shipped 2.101.0 in Ukrainian and read out of the main
+window's accessibility tree: our own actions were translated, the
+platform's toolbar buttons were not — `&New File...`, `Save &All`,
+`&Run Main Project`, `Profile the Application`.
 
-This is not an oversight. Ledger 85 records the position deliberately:
-v2.97.0 overlaid the top MENU BAR through branding+locale jars and left the
-rest of the platform English. The toolbar is simply the most visible
-surface on the other side of that line.
+**This entry's first version was wrong, and the way it was wrong is the
+point.** It claimed the four Main Project verbs were "composed at runtime"
+and existed in no bundle, so only eight of twelve could be overlaid — and
+concluded that two thirds of a toolbar reads worse than a consistent one.
+Every part of that was reasoning built on a search that had not been
+finished. The keys exist:
 
-**Why it is recorded rather than done.** Eight of the twelve resolve to
-ordinary bundle keys the existing overlay mechanism could carry
-(`LBL_NewFileAction_Name`, `LBL_NewProjectAction_Name`,
-`LBL_OpenProjectAction_Name` in projectui; `LBL_SaveAll` in
-versioning-util; `UndoSimple`/`RedoSimple` in openide-actions;
-`SelfSamplerAction_ActionNameStart` in core-ui). The four Main Project
-verbs are **composed at runtime** — no bundle in the whole 520-jar cluster
-holds the string `&Run Main Project`; the nearest is
-`LBL_RunProjectAction_Name = Run {0,choice,0#Project|1#"{1}" Project|1<{0} Projects}`.
-So the overlay route covers two thirds of one toolbar and leaves four
-buttons English beside eight translated ones, which reads worse than a
-consistently English toolbar. Finishing this needs recon into how the
-platform builds those names, not another 96 values.
+```
+LBL_RunMainProjectAction_Name = &Run {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
+```
 
-**One hypothesis measured and killed, so nobody re-runs it.** The cluster
-does contain localized bundles for `it`, `ja`, `ko`, `pt_BR`, `zh_CN` and
-`zh_TW`, which looks like the platform shipping its own l10n — and would
-have meant our plain `zh` and `pt` locales were missing it (a real cost of
-the v2.99.0 no-country-code decision). They are all third-party:
-`flatlaf` (de/es/fr), `jaxb-xjc` (the XML binder's error text) and
-`simplevalidation`. **The NetBeans Platform ships no UI localization at
-all**, so there is nothing for a `zh` user to miss and the v2.99.0
-decision costs nothing here.
+The composition lives INSIDE the value, which an overlay replaces
+wholesale. The earlier search missed them because it filtered values to
+under sixty characters and these are longer. **A search with a filter in
+it has not proved an absence** — and a conclusion resting on one is an
+argument, not a finding. The pattern to watch for: when the reasoning
+sounds principled and the measurement was cheap to redo, redo the
+measurement.
+
+**Closed:** 144 overlay values across five platform jars in twelve
+languages, plus Save All in three more. Eleven of the twelve toolbar
+controls now speak the user's language, verified by relaunching and
+reading the accessibility tree, not by inspecting the files:
+`&Створити файл...`, `Зберегти &все`, `&Скасувати`, `&Повернути`,
+`&Зібрати головний проєкт`, `&Очистити та зібрати головний проєкт`,
+`&Запустити головний проєкт`, `&Налагодити головний проєкт`,
+`Профілювати застосунок`. The verbs are taken from the menu overlays we
+already ship, so the toolbar and the menu agree. Slavic carries the extra
+2/5 branches; the platform's own `-1` branch — what a fresh start shows —
+is the one that used to read English.
+
+**The walk found the second mistake too.** `Save &All` did not change on
+the first pass, because the overlay went to `versioning-util`'s
+`LBL_SaveAll`, which belongs to a diff dialog. Four jars hold that string;
+all three plausible ones are overlaid now.
+
+**The honest remainder, this time actually measured:** the toolbar's
+project-configuration combo still reads `Set Project Configuration`. That
+string is absent from *every entry of every one of the 520 jars* — not
+just the properties files, and not filtered by length — so it is built
+programmatically and no overlay can reach it. One control.
 
 ### 89. ~~The ■ tooltip and its status line are English in every language~~ — CLOSED v2.101.0
 
