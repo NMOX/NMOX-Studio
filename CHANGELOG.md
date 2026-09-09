@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.99.1] - 2026-09-09
+
+**Two timing tests stop racing the thing they measure.** The v2.99.0 ship
+gate failed once on `McpSubscriptionsTest` — a different test on each of
+two operating systems, with ubuntu and the local macOS verify green — and
+a rerun of the failed jobs on the same commit turned all three green. That
+is a flake, and two flakes in one class in one run is a signal rather than
+noise: both tests were asserting against a deadline while a scheduler they
+did not control decided how many times to tick.
+
+1. **`fileSubscriptionFollowsTheFile` drives the poll instead of racing
+   it.** The test watched a file on a 30 ms schedule and then counted
+   announcements, so a tick landing between the content rewrite and the
+   mtime bump announced that half-change on its own and made the final
+   count 3 instead of 2. The poll period is now out of reach on purpose
+   and the test calls `pollFiles()` itself, which makes every count a
+   function of the change just made. The assertions got STRONGER, not
+   looser: one change announces exactly once, a settled file announces
+   nothing further, and the drop of a vanished file is final.
+
+2. **The property that removal would have lost is now its own test.**
+   `fileWatchesRideThePollSchedule` pins that `subscribeFile` arms the
+   schedule at all — an existence property, never a count, because how
+   many ticks a loaded runner fits around one change is the runner's
+   business.
+
+3. **`stuckStreamIsIsolated` rendezvous with both writers.** It waits for
+   the stuck client to be provably inside its first byte, then awaits the
+   LIVE stream's own writer through a new per-stream `awaitIdle(out)`
+   barrier — `awaitIdle()` over every stream cannot serve a test that
+   deliberately wedges one, since it would wait on the wedged writer and
+   time out. It also stops asserting WHICH lines survived past the cap: a
+   producer that outruns any consumer may reach that consumer's cap too,
+   and dropping there is the behaviour the cap exists for.
+
+The only production change is that test barrier — `awaitIdle()`'s own
+behaviour is byte-identical, and the shared body moved into one private
+`await(Sink)`. No shipped behaviour changes in this release.
+
 ## [2.99.0] - 2026-09-08
 
 **Six more languages, chosen where the work is.** David's ask: cover the
