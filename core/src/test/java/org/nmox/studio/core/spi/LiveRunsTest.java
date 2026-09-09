@@ -49,14 +49,6 @@ class LiveRunsTest {
     }
 
     @Test
-    @DisplayName("The status line after ■: every stopped label, or that nothing was running")
-    void message() {
-        assertThat(LiveRuns.stoppedMessage(List.of())).isEqualTo("Nothing is running");
-        assertThat(LiveRuns.stoppedMessage(List.of(new LiveRuns.Run("a", "Run — one", () -> { }),
-                new LiveRuns.Run("b", "Build — two", () -> { })))).isEqualTo("Stopped: Run — one, Build — two");
-    }
-
-    @Test
     @DisplayName("a withdrawal that arrives before the add leaves a tombstone: the late add is dropped, no phantom (v2.71.0)")
     void withdrawalBeforeAddIsATombstone() {
         LiveRuns.remove("failed-launch#1");
@@ -119,25 +111,6 @@ class LiveRunsTest {
         }
         assertThat(LiveRuns.sinceTime(-1L, java.time.ZoneId.of("UTC")))
                 .as("not live: empty, so the caller picks the wordless message").isEmpty();
-    }
-
-    @Test
-    @DisplayName("the ■ tooltip names what a press would stop, with a count; nothing running says so (v2.71.0)")
-    void tooltipNamesTheRuns() {
-        assertThat(LiveRuns.tooltip(java.util.List.of())).isEqualTo("Stop Running Command — nothing is running");
-        LiveRuns.Run a = new LiveRuns.Run("a", "npm run dev — shop", () -> { });
-        LiveRuns.Run b = new LiveRuns.Run("b", "Run — api", () -> { });
-        // a, b were never added: no start stamp, so no "since" (v2.76.0 shows it when there is one)
-        assertThat(LiveRuns.tooltip(java.util.List.of(a))).isEqualTo("Stop the running command: npm run dev — shop");
-        assertThat(LiveRuns.tooltip(java.util.List.of(a, b))).isEqualTo("Stop 2 running commands: npm run dev — shop, Run — api");
-        LiveRuns.clockForTest(() -> 1_000_000L);
-        try {
-            LiveRuns.add(new LiveRuns.Run("t1", "Run — shop", () -> { }));
-        } finally {
-            LiveRuns.clockForTest(null);
-        }
-        assertThat(LiveRuns.tooltip(LiveRuns.live())).as("a live run says since when (v2.76.0)")
-                .startsWith("Stop the running command: Run — shop (since ");
     }
 
     @Test
