@@ -354,13 +354,34 @@ final class McpSubscriptions {
     /** Test barrier: every queued write on every stream has run. */
     void awaitIdle() throws InterruptedException {
         for (Sink s : sinks) {
-            try {
-                s.writer.submit(() -> { }).get(5, TimeUnit.SECONDS);
-            } catch (java.util.concurrent.RejectedExecutionException dropped) {
-                // dropped meanwhile: nothing left to wait for
-            } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
-                throw new IllegalStateException(e);
+            await(s);
+        }
+    }
+
+    /**
+     * Test barrier for ONE stream: every frame queued for {@code out} has
+     * been written. A test that deliberately wedges one client cannot use
+     * {@link #awaitIdle()} — it would wait on the wedged writer and time
+     * out — so it rendezvous with the stream it asserts on instead of
+     * racing a deadline against a frame the cap may legitimately drop.
+     * A stream already dropped has nothing left to wait for.
+     */
+    void awaitIdle(OutputStream out) throws InterruptedException {
+        for (Sink s : sinks) {
+            if (s.out == out) {
+                await(s);
+                return;
             }
+        }
+    }
+
+    private void await(Sink s) throws InterruptedException {
+        try {
+            s.writer.submit(() -> { }).get(5, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.RejectedExecutionException dropped) {
+            // dropped meanwhile: nothing left to wait for
+        } catch (java.util.concurrent.ExecutionException | java.util.concurrent.TimeoutException e) {
+            throw new IllegalStateException(e);
         }
     }
 

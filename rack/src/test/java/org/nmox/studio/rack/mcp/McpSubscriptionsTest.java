@@ -101,9 +101,11 @@ class McpSubscriptionsTest {
     void stuckStreamIsIsolated() throws Exception {
         McpSubscriptions subs = new McpSubscriptions(40);
         java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        java.util.concurrent.CountDownLatch wedged = new java.util.concurrent.CountDownLatch(1);
         OutputStream stuck = new OutputStream() {
             @Override
             public void write(int b) throws IOException {
+                wedged.countDown();
                 try {
                     gate.await();
                 } catch (InterruptedException e) {
@@ -116,21 +118,40 @@ class McpSubscriptionsTest {
         subs.attach(live, () -> { });
         subs.subscribe("nmox://runs");
         subs.setLevel("debug");
+
+        // the isolation itself, as a rendezvous and not a race: wait for
+        // the stuck writer to be provably INSIDE its first byte, then
+        // await the live stream's OWN writer. awaitIdle() over every
+        // stream cannot serve here — it would wait on the wedged one and
+        // time out — and awaiting the frame by deadline cannot either,
+        // because a frame the cap legitimately drops never arrives at all
+        subs.log("debug", "Run — x", "first line");
+        subs.updated("nmox://runs");
+        assertThat(wedged.await(30, java.util.concurrent.TimeUnit.SECONDS))
+                .as("the stuck client is wedged inside its first byte").isTrue();
+        subs.awaitIdle(live);
+        assertThat(live.toString(StandardCharsets.UTF_8))
+                .as("the live stream wrote both frames while the other stream's writer is wedged")
+                .contains("first line").contains("resources/updated");
+
+        // now saturate the wedged stream past the cap: it stays attached
+        // (alive, just slow) and its keepalive is skipped there, while the
+        // live stream's own writer keeps draining. Nothing is asserted
+        // about WHICH of these lines the live stream kept: a producer that
+        // outruns any consumer may reach that consumer's cap too, and
+        // dropping there is the behaviour the cap exists for
         for (int i = 0; i < McpSubscriptions.MAX_PENDING + 5; i++) {
             subs.log("debug", "Run — x", "line " + i);
         }
-        subs.updated("nmox://runs");
-        // the live stream saw every line and the update while the stuck one has written nothing
-        long deadline = System.currentTimeMillis() + 5_000;
-        while (!live.toString(StandardCharsets.UTF_8).contains("resources/updated") && System.currentTimeMillis() < deadline) {
-            Thread.sleep(10);
-        }
-        String text = live.toString(StandardCharsets.UTF_8);
-        assertThat(text).contains("line " + (McpSubscriptions.MAX_PENDING + 4)).contains("resources/updated");
+        subs.awaitIdle(live);
         assertThat(subs.attachedCount()).as("the stuck stream is not dropped — it is alive, just slow").isEqualTo(2);
+
         // poll, never a fixed sleep: a loaded CI runner can starve a 40 ms
-        // scheduler for longer than any single window (the flake class)
-        deadline = System.currentTimeMillis() + 5_000;
+        // scheduler for longer than any single window (the flake class).
+        // The live stream's backlog has drained above, so this condition
+        // can only become true — the leash names a real failure, never a
+        // slow one
+        long deadline = System.currentTimeMillis() + 30_000;
         while (!live.toString(StandardCharsets.UTF_8).contains(McpSubscriptions.KEEPALIVE) && System.currentTimeMillis() < deadline) {
             Thread.sleep(10);
         }
@@ -271,7 +292,7 @@ class McpSubscriptionsTest {
     }
 
     @Test
-    @DisplayName("an outline subscription follows its file: a change on disk announces the URI, a vanished file announces once and is dropped (v2.84.0)")
+    @DisplayName("an outline subscription follows its file: a change on disk announces the URI ONCE, a vanished file announces once and is dropped (v2.84.0)")
     void fileSubscriptionFollowsTheFile(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root,
             @org.junit.jupiter.api.io.TempDir java.nio.file.Path elsewhere) throws Exception {
         java.nio.file.Files.createDirectories(root.resolve("src"));
@@ -283,10 +304,18 @@ class McpSubscriptionsTest {
         assertThat(escape).startsWith("..");
         java.nio.file.Path app = root.resolve("src/app.js");
         java.nio.file.Files.writeString(app, "const a = 1;\n");
-        McpSubscriptions subs = new McpSubscriptions(60_000, 30);
+        // the poll period is out of reach ON PURPOSE: this test drives
+        // pollFiles() itself, so each count below is a function of the
+        // change it just made and not of how many ticks a loaded runner
+        // fitted around it. Racing a 30 ms schedule made the end count
+        // 3 whenever a tick landed between the rewrite and the mtime bump
+        // and announced that half-change on its own. That the schedule is
+        // armed at all is pinned by fileWatchesRideThePollSchedule
+        McpSubscriptions subs = new McpSubscriptions(60_000, 60_000);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         subs.attach(out, () -> { });
-        assertThat(subs.subscribeFile("nmox://outline/src/app.js", root.toFile(), "src/app.js")).isNull();
+        String uri = "nmox://outline/src/app.js";
+        assertThat(subs.subscribeFile(uri, root.toFile(), "src/app.js")).isNull();
         assertThat(subs.subscribeFile("nmox://outline/../x", root.toFile(), "../x")).startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/" + escape, root.toFile(), escape))
                 .as("an existing file outside the aim is refused by containment").startsWith("not found");
@@ -300,24 +329,61 @@ class McpSubscriptionsTest {
         assertThat(subs.subscribeFile("nmox://outline/src", root.toFile(), "src")).as("a directory is not a file").startsWith("not found");
         assertThat(subs.subscribeFile("nmox://outline/none.js", root.toFile(), "none.js")).startsWith("not found");
         assertThat(subs.watchedFiles()).isEqualTo(1);
-        Thread.sleep(80);
+
+        subs.pollFiles();
+        subs.pollFiles();
+        subs.awaitIdle();
         assertThat(out.toString(StandardCharsets.UTF_8)).as("unchanged: silence").isEmpty();
+
         java.nio.file.Files.writeString(app, "const a = 1;\nconst b = 2;\n");
         java.nio.file.Files.setLastModifiedTime(app, java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis() + 5_000));
-        long deadline = System.currentTimeMillis() + 5_000;
-        while (!out.toString(StandardCharsets.UTF_8).contains("nmox://outline/src/app.js") && System.currentTimeMillis() < deadline) {
-            Thread.sleep(10);
-        }
-        assertThat(out.toString(StandardCharsets.UTF_8)).contains("resources/updated").contains("nmox://outline/src/app.js");
-        java.nio.file.Files.delete(app);
-        deadline = System.currentTimeMillis() + 5_000;
-        while (subs.watchedFiles() != 0 && System.currentTimeMillis() < deadline) {
-            Thread.sleep(10);
-        }
-        assertThat(subs.watchedFiles()).as("a vanished file is dropped after one announcement").isZero();
+        subs.pollFiles();
         subs.awaitIdle();
-        assertThat(out.toString(StandardCharsets.UTF_8).split("nmox://outline/src/app.js").length - 1).isEqualTo(2);
+        assertThat(out.toString(StandardCharsets.UTF_8)).contains("resources/updated").contains(uri);
+        assertThat(announcements(out, uri)).as("one change, one announcement").isEqualTo(1);
+        subs.pollFiles();
+        subs.awaitIdle();
+        assertThat(announcements(out, uri)).as("a settled file announces nothing further").isEqualTo(1);
+
+        java.nio.file.Files.delete(app);
+        subs.pollFiles();
+        subs.awaitIdle();
+        assertThat(subs.watchedFiles()).as("a vanished file is dropped after one announcement").isZero();
+        assertThat(subs.isSubscribed(uri)).as("and its subscription goes with it").isFalse();
+        assertThat(announcements(out, uri)).as("the vanishing is the second and last announcement").isEqualTo(2);
+        subs.pollFiles();
+        subs.awaitIdle();
+        assertThat(announcements(out, uri)).as("the drop is final: a gone file is never announced twice").isEqualTo(2);
         subs.close();
+    }
+
+    @Test
+    @DisplayName("file watches ride the poll schedule: a change announces with nobody calling the poll")
+    void fileWatchesRideThePollSchedule(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root) throws Exception {
+        java.nio.file.Path app = java.nio.file.Files.writeString(root.resolve("app.js"), "const a = 1;\n");
+        McpSubscriptions subs = new McpSubscriptions(60_000, 20);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        subs.attach(out, () -> { });
+        assertThat(subs.subscribeFile("nmox://outline/app.js", root.toFile(), "app.js")).isNull();
+        java.nio.file.Files.writeString(app, "const a = 1;\nconst b = 2;\n");
+        java.nio.file.Files.setLastModifiedTime(app, java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis() + 5_000));
+        // an EXISTENCE property, never a count: the schedule being armed is
+        // what is under test, and how many ticks a loaded runner fits around
+        // one change is the runner's business. Waiting can only end one way
+        // here, so a long leash costs nothing but names a real failure
+        long deadline = System.currentTimeMillis() + 30_000;
+        while (!out.toString(StandardCharsets.UTF_8).contains("nmox://outline/app.js") && System.currentTimeMillis() < deadline) {
+            Thread.sleep(10);
+        }
+        assertThat(out.toString(StandardCharsets.UTF_8))
+                .as("subscribeFile armed the poll schedule — nothing else could have announced this")
+                .contains("resources/updated").contains("nmox://outline/app.js");
+        subs.close();
+    }
+
+    /** How many times {@code uri} was announced on this stream. */
+    private static int announcements(ByteArrayOutputStream out, String uri) {
+        return out.toString(StandardCharsets.UTF_8).split(java.util.regex.Pattern.quote(uri), -1).length - 1;
     }
 
     @Test
