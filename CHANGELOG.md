@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.100.0] - 2026-09-09
+
+**An English word was reaching every translated build, underneath every
+gate that exists to stop exactly that.** `LiveRuns.since()` returned the
+phrase `"since 14:32"`, and the surfaces that show a running command
+handed it to a bundle as `{0}`. So the bundles were all correct and
+complete in twelve languages, and a Chinese user still read
+「正在运行 since 14:32」, a Pole "działa since 14:32", a Ukrainian
+«виконується since 14:32». Shipped that way since v2.73.0 (ledger 88).
+
+**Hindi is what made the contract obvious, and it was broken the other
+way round.** Its translator had already read `{0}` as a bare time and
+supplied the postposition — `{0} से चल रहा है` — so Hindi rendered the
+preposition TWICE while the other eleven rendered an English word. One
+key, one ambiguity, two opposite defects, seven releases. The code had
+never said what the argument was; the answer is that an argument is data.
+
+1. **`sinceTime()` returns the bare `HH:mm`** and `since()` is gone. The
+   word that introduces the time moved into each language's own key,
+   where a translator can choose it: `desde`, `depuis`, `seit`, `с`, `з`,
+   `od`, `sejak`, `mula`, `từ`, `自`, and Hindi's `से` — which was
+   already right and is now read once. Five surfaces follow the new
+   contract, including the served row's address suffix. **One observable
+   change for agents**: the Agent Port's `live_runs` `since` field now
+   holds `"14:32"` rather than `"since 14:32"` — a bare time under a key
+   already named `since`, beside the exact `startedAt` millis it has
+   always carried. The declared schema (`string`) is unchanged and the
+   human-readable tool text still says the word, because a person reads
+   that one.
+
+2. **The ratchet learned the sink it was blind to.** A Swing `Action`
+   sets its tooltip through `putValue(SHORT_DESCRIPTION, …)`, not a
+   setter, so `ChromeLiteralRatchetTest` had never looked there. Planting
+   one English tooltip now moves `tools` to 1 against a pin of 0.
+
+3. **`BundleArgumentIsDataTest` pins the rest**, and its first cut was
+   too weak to catch the real thing: checking that a value is more than
+   its placeholder cannot tell `działa {0}` — the defect — from
+   `działa od {0}`. It pins the reviewed since-word per language instead,
+   which is the property that matters and the one no general rule can
+   derive. Four mutants die by name.
+
+**Not done here, and recorded as ledger 89**: the ■'s own tooltip and its
+status line are assembled as whole English sentences inside `LiveRuns`
+and are English in every language. That is ~72 values with real plural
+forms across Slavic and plural-less languages — a translator pass, not an
+author with a dictionary. The boundary is the same one v2.99.0 drew.
+
 ## [2.99.1] - 2026-09-09
 
 **Two timing tests stop racing the thing they measure.** The v2.99.0 ship

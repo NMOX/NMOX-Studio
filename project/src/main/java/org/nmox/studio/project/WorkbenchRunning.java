@@ -20,7 +20,9 @@ import org.nmox.studio.core.spi.LiveServings;
  */
 @org.openide.util.NbBundle.Messages({
     "WorkbenchRunning_running=running",
-    "WorkbenchRunning_runningSince=running {0}"
+    "WorkbenchRunning_runningSince=running since {0}",
+    // the served row already shows its address; this only adds when
+    "WorkbenchRunning_since=since {0}"
 })
 final class WorkbenchRunning {
 
@@ -81,13 +83,15 @@ final class WorkbenchRunning {
 
     /** The row's subtitle: the address when it serves, else since when it runs (v2.73.0), else that it runs. */
     static String subtitle(Row row) {
-        return subtitle(row, row.stoppable() ? LiveRuns.since(row.runId()) : "");
+        return subtitle(row, row.stoppable() ? LiveRuns.sinceTime(row.runId()) : "");
     }
 
-    static String subtitle(Row row, String since) {
+    static String subtitle(Row row, String sinceTime) {
         if (row.openable()) {
-            return since.isEmpty() ? row.url() : row.url() + "  " + since;
+            return sinceTime.isEmpty() ? row.url()
+                    : row.url() + "  " + Bundle.WorkbenchRunning_since(sinceTime);
         }
-        return since.isEmpty() ? Bundle.WorkbenchRunning_running() : Bundle.WorkbenchRunning_runningSince(since);
+        return sinceTime.isEmpty() ? Bundle.WorkbenchRunning_running()
+                : Bundle.WorkbenchRunning_runningSince(sinceTime);
     }
 }

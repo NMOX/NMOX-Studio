@@ -70,14 +70,67 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
-### 88. An English word reaches every translated build through an ARGUMENT
+### 89. The ■ tooltip and its status line are English in every language
+
+Found while closing 88 (v2.100.0), by reading the same call site one layer
+out. `core.spi.LiveRuns` does not just leak a word — `tooltip(List<Run>)`
+and `stoppedMessage(List<Run>)` assemble whole English sentences in a pure
+core and hand them straight to a Swing sink: "Stop the running command: ",
+"Stop 3 running commands: ", "Stop Running Command — nothing is running",
+"Nothing is running", "Stopped: ". `StopRunAction` sets the first as the
+toolbar ■'s `SHORT_DESCRIPTION` and the second on the status line, so a
+Ukrainian user hovering the ■ reads English, in a build where every bundle
+is complete.
+
+Not taken inside v2.100.0, and the reason is the boundary that release was
+about. Ledger 88 was a preposition per language inserted into a phrase a
+translator had already written — grounded in reviewed vocabulary. This is
+roughly six new keys carrying real sentences, ~72 values, and plural forms
+(«Stop {0} running commands» inflects in Polish, Russian and Ukrainian and
+does not exist in Indonesian, Filipino, Vietnamese or Chinese — the
+v2.99.0 plural rules apply). That wants a translator pass, not an author
+with a dictionary.
+
+The shape of the fix is known: the pure core returns the DATA (the runs and
+their times) and the consumer renders with its own bundle, which is the
+house pattern everywhere else — the law is the string that reaches the
+label. `ChromeLiteralRatchetTest` now sees the `putValue` sink, so a
+regression here is caught the moment the prose moves to a literal; what it
+still cannot see is prose assembled in a helper, which is what this is.
+
+### 88. ~~An English word reaches every translated build through an ARGUMENT~~ — CLOSED v2.100.0
+
+`LiveRuns.since()` is gone; `sinceTime()` returns the bare `HH:mm` and the
+word that introduces it lives in each language's own key. Twelve languages
+read correctly, and the fix is gated three ways: the time is data
+(`LiveRunsTest.sinceTimeIsDataNotProse`, over four zones and every hour),
+no production source can call the prose form again, and each language's
+value must carry its own reviewed since-word
+(`BundleArgumentIsDataTest`). All four mutants die by name.
+
+**What the closing found that the opening did not.** Hindi was not just
+also-broken — it was broken the OTHER way. Its translator had already read
+`{0}` as a bare time and supplied the postposition (`{0} से चल रहा है`), so
+Hindi rendered the preposition twice («since 14:32 से चल रहा है») while the
+other eleven rendered an English word. The two halves of one ambiguity, in
+one key, shipped together for seven releases. **When translators disagree
+about what an argument is, the code never told them** — and the answer is
+always that an argument is data.
+
+The class remains worth watching: prose assembled in a helper and handed to
+a sink is invisible to a gate that reads literals at the sink. Ledger 89 is
+the standing instance.
+
+*The original entry (v2.99.0), kept as the diagnosis it was:*
 
 Found by a Chinese translator agent reading the call site rather than the
 string (v2.99.0). `core.spi.LiveRuns.since(id)` returns the literal
 `"since " + HH:mm`, and three user-visible surfaces splice that whole
 phrase in as `{0}`: the Workbench's RUNNING row
 (`WorkbenchRunning_runningSince=running {0}`), the ⌘I live-run result
-(`LiveRunSearchProvider_stop`), and the NPM Explorer's marker. So a
+(`LiveRunSearchProvider_stop`), and the NPM Explorer's marker — plus,
+the closing found, the served row's address suffix and the agent-facing
+`live_runs` JSON field. So a
 Ukrainian, Chinese or Polish user reads «виконується since 14:32»,
 「正在运行 since 14:32」, "działa since 14:32". Shipped since v2.73.0 and
 invisible to every gate here, because the bundles are all correct — the

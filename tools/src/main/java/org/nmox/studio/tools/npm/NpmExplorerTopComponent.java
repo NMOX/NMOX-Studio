@@ -191,7 +191,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
                                 && n.getUserObject() instanceof ScriptInfo s
                                 && runningScripts.contains(s.name)) {
                             String since = currentProjectDir == null ? "" : NpmService.runningSince(currentProjectDir, s.name);
-                            setText(s.name + "  " + org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_runningMarker") + (since.isEmpty() ? "" : " " + since));
+                            setText(s.name + "  " + org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_runningMarker") + (since.isEmpty() ? "" : " " + org.openide.util.NbBundle.getMessage(
+                                    NpmExplorerTopComponent.class, "NpmExplorerTopComponent_since", since)));
                         }
                         return this;
                     }
