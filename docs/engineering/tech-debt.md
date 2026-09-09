@@ -70,7 +70,51 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
-### 89. The ■ tooltip and its status line are English in every language
+### 89. ~~The ■ tooltip and its status line are English in every language~~ — CLOSED v2.101.0
+
+Closed the day it was opened, on David's call: *don't half-do things.*
+
+The rendering left `core.spi` entirely. A pure core has no bundle and can
+have none — it is the seam every module depends on, below the UI — so a
+sentence written there is a sentence no translation can reach. `LiveRuns`
+returns the data now and `tools.npm.StopRunText` renders it, which is the
+house pattern already written down: **the law is the string that reaches
+the label.**
+
+Six keys, twelve languages, 72 values. What made that defensible without a
+translator pass, where v2.99.0 and v2.100.0 had drawn the line, is that
+almost none of it was new prose: `CTL_StopRun` already carried the singular
+sentence in every language, `LiveRunSearchProvider_stopped` already carried
+"Stopped: {0}", the NPM marker carried the "running" verb, and v2.100.0 had
+just landed each language's word for "since". Only "nothing is running" and
+the plural noun were authored, and both are built from vocabulary sitting
+in the same bundles.
+
+The plural is real, not imitated. Polish, Russian and Ukrainian inflect
+across 1 / 2–4 / 5+ and carry the four-branch `choice` this codebase uses
+everywhere (`Zatrzymaj 3 działające polecenia` → `Zatrzymaj 5 działających
+poleceń`); Indonesian, Filipino, Vietnamese and Chinese say the same words
+in every branch, on purpose.
+
+**The gate is upstream of the sink, because that is where this class
+lives.** `ChromeLiteralRatchetTest` watches literals AT a Swing sink and
+could never have seen these — they were two modules away inside a helper
+and arrived at the sink as a variable. `SpiHoldsNoProseTest` bans sentences
+from `core.spi` at all, wherever they were headed, with exactly one blessed
+exception written down: KVASIR's neutral default question is the payload of
+a request, not chrome.
+
+**Two lessons, both from mutants that survived.** The plural assertion
+first asked whether `2 działające polecenia` equals `5 działające
+polecenia` — never true, because the digit differs — so Polish could have
+stopped inflecting and the test would have passed; it normalises the digit
+and compares the words now. And the incremental-build trap: `tools.npm`
+keeps a hand-written `Bundle.properties`, the annotation processor MERGES
+into it at compile time, and a bare `mvn test` re-copies the hand file
+without recompiling — so a mutation proof in this package must run `clean`
+or it measures the copy, not the code.
+
+*The original entry, kept as the diagnosis it was:*
 
 Found while closing 88 (v2.100.0), by reading the same call site one layer
 out. `core.spi.LiveRuns` does not just leak a word — `tooltip(List<Run>)`
@@ -89,7 +133,8 @@ roughly six new keys carrying real sentences, ~72 values, and plural forms
 («Stop {0} running commands» inflects in Polish, Russian and Ukrainian and
 does not exist in Indonesian, Filipino, Vietnamese or Chinese — the
 v2.99.0 plural rules apply). That wants a translator pass, not an author
-with a dictionary.
+with a dictionary. *(Closed the same day: the vocabulary turned out to be
+already in the bundles — see the close above.)*
 
 The shape of the fix is known: the pure core returns the DATA (the runs and
 their times) and the consumer renders with its own bundle, which is the
