@@ -41,12 +41,21 @@ public final class UiLocale {
 
     /**
      * The languages the product ships bundles for: English, Spanish, French,
-     * German, Russian, Hindi (v2.97.0) and Ukrainian (v2.98.0) — each named in
-     * itself so a user who landed in the wrong language can still find their
-     * own. Ukrainian sits beside Russian rather than inside it: the two are
-     * separate languages with separate bundles, and a Ukrainian speaker is
-     * never served Russian by fallback (an absent key falls back to ENGLISH,
-     * the bundle's own parent).
+     * German, Russian, Hindi (v2.97.0), Ukrainian (v2.98.0), and Polish,
+     * Portuguese, Indonesian, Filipino, Vietnamese and Simplified Chinese
+     * (v2.99.0, the offshore-market tranche) — each named in itself so a user
+     * who landed in the wrong language can still find their own. Ukrainian
+     * sits beside Russian rather than inside it: the two are separate
+     * languages with separate bundles, and a Ukrainian speaker is never served
+     * Russian by fallback (an absent key falls back to ENGLISH, the bundle's
+     * own parent).
+     *
+     * <p>Two are written for a market rather than a country: {@code pt} is
+     * Brazilian Portuguese (named so in the menu) because Brazil is the market
+     * this serves, and {@code zh} is Simplified Chinese. Neither carries a
+     * country code — a plain language bundle is what every regional variant
+     * falls back to, so pt_PT and zh_SG get a usable IDE instead of English.
+     * Add a country bundle the day the variants must diverge, not before.
      */
     public static final List<Choice> SUPPORTED = List.of(
             SYSTEM,
@@ -56,6 +65,12 @@ public final class UiLocale {
             new Choice("de", "Deutsch"),
             new Choice("ru", "Русский"),
             new Choice("uk", "Українська"),
+            new Choice("pl", "Polski"),
+            new Choice("pt", "Português (Brasil)"),
+            new Choice("id", "Bahasa Indonesia"),
+            new Choice("tl", "Filipino"),
+            new Choice("vi", "Tiếng Việt"),
+            new Choice("zh", "简体中文"),
             new Choice("hi", "हिन्दी"));
 
     /** A launcher locale code: {@code fr} or {@code fr:CA}. Nothing else is ever written. */
