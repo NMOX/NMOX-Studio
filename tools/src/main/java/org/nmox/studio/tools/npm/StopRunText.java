@@ -2,7 +2,7 @@ package org.nmox.studio.tools.npm;
 
 import java.util.List;
 import org.nmox.studio.core.spi.LiveRuns;
-import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbBundle;
 
 /**
  * What the ■ says: its tooltip, and the status line after a press
@@ -23,34 +23,39 @@ import org.openide.util.NbBundle.Messages;
  * in every branch, on purpose. The separator between names stays a bare
  * ", " — punctuation is furniture, not words.
  */
-@Messages({
-    "StopRunText_tooltipIdle=Stop Running Command — nothing is running",
-    "StopRunText_tooltipOne=Stop the running command: {0}",
-    "StopRunText_tooltipMany=Stop {0} running commands: {1}",
-    "StopRunText_runSince={0} (since {1})",
-    "StopRunText_stoppedNone=Nothing is running",
-    "StopRunText_stopped=Stopped: {0}"
-})
 final class StopRunText {
 
     private StopRunText() {
     }
 
+    /**
+     * This package keeps its English in a hand-written {@code Bundle.properties}
+     * and reads it with {@link NbBundle#getMessage} — 44 call sites do it that
+     * way. Following the local convention is not only tidiness here: the
+     * annotation processor MERGES generated keys into that hand file at compile
+     * time, so an incremental build that re-copies resources without
+     * recompiling serves the hand file alone and the generated keys vanish.
+     */
+    private static String msg(String key, Object... args) {
+        return args.length == 0 ? NbBundle.getMessage(StopRunText.class, key)
+                : NbBundle.getMessage(StopRunText.class, key, args);
+    }
+
     /** The ■'s tooltip: what a press would stop, and since when. */
     static String tooltip(List<LiveRuns.Run> live) {
         if (live.isEmpty()) {
-            return Bundle.StopRunText_tooltipIdle();
+            return msg("StopRunText_tooltipIdle");
         }
         String named = named(live);
         return live.size() == 1
-                ? Bundle.StopRunText_tooltipOne(named)
-                : Bundle.StopRunText_tooltipMany(live.size(), named);
+                ? msg("StopRunText_tooltipOne", named)
+                : msg("StopRunText_tooltipMany", live.size(), named);
     }
 
     /** The status line after a press: what was stopped, or that nothing was. */
     static String stopped(List<LiveRuns.Run> stopped) {
         if (stopped.isEmpty()) {
-            return Bundle.StopRunText_stoppedNone();
+            return msg("StopRunText_stoppedNone");
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < stopped.size(); i++) {
@@ -59,7 +64,7 @@ final class StopRunText {
             }
             sb.append(stopped.get(i).label());
         }
-        return Bundle.StopRunText_stopped(sb.toString());
+        return msg("StopRunText_stopped", sb.toString());
     }
 
     /** Each run's label, carrying its start time where it has one. */
@@ -71,7 +76,7 @@ final class StopRunText {
             }
             LiveRuns.Run run = runs.get(i);
             String at = LiveRuns.sinceTime(run.id());
-            sb.append(at.isEmpty() ? run.label() : Bundle.StopRunText_runSince(run.label(), at));
+            sb.append(at.isEmpty() ? run.label() : msg("StopRunText_runSince", run.label(), at));
         }
         return sb.toString();
     }
