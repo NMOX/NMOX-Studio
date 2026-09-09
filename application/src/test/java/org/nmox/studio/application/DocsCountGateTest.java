@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -161,5 +162,54 @@ class DocsCountGateTest {
         assertThat(found)
                 .as("stale grammar counts (truth is %d): %s", grammars, where)
                 .allMatch(n -> n == grammars);
+    }
+
+    /**
+     * Spelled numbers, because the docs write "thirteen languages" and not
+     * "13 languages" — which is exactly why the digit-matching census above
+     * could never see this count. The gate's third blind spot (v2.18.0 lost
+     * three, v2.34.2 lost two more): a claim the census cannot parse is a
+     * claim that rots silently.
+     */
+    private static final Map<String, Integer> SPELLED = Map.ofEntries(
+            Map.entry("one", 1), Map.entry("two", 2), Map.entry("three", 3),
+            Map.entry("four", 4), Map.entry("five", 5), Map.entry("six", 6),
+            Map.entry("seven", 7), Map.entry("eight", 8), Map.entry("nine", 9),
+            Map.entry("ten", 10), Map.entry("eleven", 11), Map.entry("twelve", 12),
+            Map.entry("thirteen", 13), Map.entry("fourteen", 14), Map.entry("fifteen", 15),
+            Map.entry("sixteen", 16), Map.entry("seventeen", 17), Map.entry("eighteen", 18),
+            Map.entry("nineteen", 19), Map.entry("twenty", 20));
+
+    @Test
+    @DisplayName("every live doc that counts languages agrees with UiLocale.SUPPORTED")
+    void languageCountsAreCurrent() throws IOException {
+        // ground truth: the choices the Options combo really offers, less the
+        // "System default" row, which is not a language
+        String uiLocale = Files.readString(Path.of("..", "core", "src", "main", "java", "org",
+                "nmox", "studio", "core", "util", "UiLocale.java"));
+        long languages = Pattern.compile("new Choice\\(\"[a-z]{2}\"").matcher(uiLocale).results().count();
+        assertThat(languages).as("UiLocale should offer languages").isGreaterThan(5);
+
+        Pattern claim = Pattern.compile("(?i)\\b([a-z]+) languages\\b");
+        List<String> stale = new ArrayList<>();
+        int seen = 0;
+        for (Path doc : liveDocs()) {
+            List<String> lines = Files.readAllLines(doc);
+            for (int i = 0; i < lines.size(); i++) {
+                Matcher m = claim.matcher(lines.get(i));
+                while (m.find()) {
+                    Integer n = SPELLED.get(m.group(1).toLowerCase(java.util.Locale.ROOT));
+                    if (n == null) {
+                        continue;   // "many languages", "these languages" — not a count
+                    }
+                    seen++;
+                    if (n != languages) {
+                        stale.add(doc.getFileName() + ":" + (i + 1) + " — " + m.group());
+                    }
+                }
+            }
+        }
+        assertThat(seen).as("no live doc counts languages at all — did the phrasing change?").isPositive();
+        assertThat(stale).as("stale language counts (truth is %d)", languages).isEmpty();
     }
 }
