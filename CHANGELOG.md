@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.102.1] - 2026-09-09
+
+**Following the platform's idiom, and the package's** (David's ask: do
+things the idiomatic NetBeans RCP way).
+
+Two questions, one answered by research and one by reading our own code.
+
+**Is carrying translations in branding jars right?** Yes, and it is the
+documented Maven path. The NetBeans FAQ on localization modules says the
+`nbm:branding` goal "despite its name can handle localization as well as
+branding" and that the two are "nearly interchangeable in the NB
+Platform". The platform confirmed the mechanics when asked directly:
+with branding `nmoxstudio` and locale `uk`, `NbBundle.getLocalizingSuffixes()`
+returns `Bundle_nmoxstudio_uk` → `Bundle_nmoxstudio` → `Bundle_uk` →
+`Bundle`. Our overlays sit in the branding+locale slot, which is the right
+one for these: they are product decisions, not a general NetBeans language
+pack. `&Запустити` was chosen so the toolbar agrees with our own
+`Menu/BuildProject` overlay.
+
+**Was `StopRunText` written the way its package writes things?** No.
+`tools.npm` keeps its English in a hand-written `Bundle.properties` and
+reads it with `NbBundle.getMessage` — 44 call sites do that, 4 use
+`@Messages`. v2.101.0 added `StopRunText` with the minority idiom, and
+that is precisely what produced the bogus `MissingResource` errors during
+its own mutation proofs: the annotation processor MERGES generated keys
+into the hand file at compile time, so an incremental `mvn test` that
+re-copies resources without recompiling serves the hand file alone and the
+generated keys disappear. Following the local convention removes the trap
+rather than documenting it.
+
+**One correction to the record.** While moving the keys, a clean build
+failed once and it was attributed to a raw em dash needing `\uXXXX`
+escaping. Three clean runs with the raw character show it passes; the
+failure was transient state and the attribution was wrong. The escape is
+kept because the same file writes `\u25cf` two lines away — convention,
+not a repair.
+
 ## [2.102.0] - 2026-09-09
 
 **The platform toolbar speaks the user's language** — and this release
