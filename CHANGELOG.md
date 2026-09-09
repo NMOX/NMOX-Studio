@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.101.0] - 2026-09-09
+
+**The ■ speaks every language.** David's call on the deferral: *don't
+half-do things.* Ledger 89 is closed the day it was opened.
+
+The toolbar's ■ — the button that stops every running command — had its
+tooltip and its status line assembled as whole English sentences inside
+`core.spi.LiveRuns` and handed straight to Swing. "Stop 3 running
+commands: …", "Stopped: …", "Nothing is running". A pure core has no
+bundle and can have none, so those sentences were English in all twelve
+translated builds while every bundle in the product was complete and
+correct.
+
+1. **The rendering moved to the consumer**, which is the house pattern
+   already written down: the core returns the data, the consumer renders
+   it — the law is the string that reaches the label. `LiveRuns` is data
+   now; `tools.npm.StopRunText` says the words.
+
+2. **Six keys, twelve languages, 72 values** — and almost none of it new
+   prose, which is what made it defensible where v2.99.0 and v2.100.0 had
+   drawn the line. `CTL_StopRun` already carried the singular sentence in
+   every language, `LiveRunSearchProvider_stopped` already carried
+   "Stopped: {0}", the NPM Explorer's marker carried the "running" verb,
+   and v2.100.0 had just landed each language's word for "since". Only
+   "nothing is running" and the plural noun were authored.
+
+3. **The plural is real, not imitated.** Polish, Russian and Ukrainian
+   inflect across 1 / 2–4 / 5+ and carry the four-branch `choice` this
+   codebase uses everywhere — `Zatrzymaj 3 działające polecenia` becomes
+   `Zatrzymaj 5 działających poleceń`, `Остановить 3 выполняемые команды`
+   becomes `5 выполняемых команд`. Indonesian, Filipino, Vietnamese and
+   Chinese say the same words in every branch, on purpose.
+
+4. **The gate sits upstream of the sink**, because that is where this
+   class lives. `ChromeLiteralRatchetTest` watches literals AT a Swing
+   sink and could never have seen these: they were two modules away
+   inside a helper and reached the sink as a variable.
+   `SpiHoldsNoProseTest` bans sentences from `core.spi` at all, wherever
+   they were headed, with one blessed exception written down — KVASIR's
+   default question is the payload of a request, not chrome.
+
+**Two mutants survived before they died**, and both are worth keeping.
+The plural assertion first asked whether `2 działające polecenia` equals
+`5 działające polecenia` — never true, because the digit differs — so
+Polish could have stopped inflecting entirely with the test still green;
+it normalises the digit and compares the words now. And a mutation proof
+in `tools.npm` must run `clean`: that package keeps a hand-written
+`Bundle.properties`, the annotation processor merges into it at compile
+time, and a bare `mvn test` re-copies the hand file without recompiling,
+so the proof measures the copy instead of the code.
+
 ## [2.100.1] - 2026-09-09
 
 **The one number in the docs that nothing could check.** README and the

@@ -210,45 +210,12 @@ public final class LiveRuns {
         return stopped;
     }
 
-    /**
-     * The ■'s tooltip (and accessible description) BEFORE a press: what it
-     * would stop, by label, with a count — a disabled button that only says
-     * "Stop Running Command" leaves the user guessing which command
-     * (v2.71.0). Pure; the toolbar action re-reads it on every change.
-     */
-    public static String tooltip(List<Run> live) {
-        if (live.isEmpty()) {
-            return "Stop Running Command — nothing is running";
-        }
-        StringBuilder sb = new StringBuilder(live.size() == 1
-                ? "Stop the running command: " : "Stop " + live.size() + " running commands: ");
-        for (int i = 0; i < live.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(live.get(i).label());
-            String at = sinceTime(live.get(i).id());
-            if (!at.isEmpty()) {
-                sb.append(" (since ").append(at).append(')');
-            }
-        }
-        return sb.toString();
-    }
+    // The ■'s tooltip and its status line USED to be assembled here, in
+    // English, and handed to a Swing sink — so they were English in every
+    // translated build while every bundle in the product was complete
+    // (ledger 89, closed v2.101.0). They live in the consumer now, with a
+    // bundle behind them: the core returns the data, the consumer renders it.
 
-    /** The status line after a ■ press: what was stopped, or that nothing was running. */
-    public static String stoppedMessage(List<Run> stopped) {
-        if (stopped.isEmpty()) {
-            return "Nothing is running";
-        }
-        StringBuilder sb = new StringBuilder("Stopped: ");
-        for (int i = 0; i < stopped.size(); i++) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(stopped.get(i).label());
-        }
-        return sb.toString();
-    }
 
     public static void addListener(Runnable l) {
         LISTENERS.add(l);

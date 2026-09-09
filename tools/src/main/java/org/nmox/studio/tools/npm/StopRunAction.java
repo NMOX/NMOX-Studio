@@ -36,11 +36,11 @@ public final class StopRunAction extends AbstractAction {
     private void follow() {
         List<LiveRuns.Run> live = LiveRuns.live();
         setEnabled(!live.isEmpty());
-        putValue(SHORT_DESCRIPTION, LiveRuns.tooltip(live));
+        putValue(SHORT_DESCRIPTION, StopRunText.tooltip(live));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(LiveRuns.stoppedMessage(LiveRuns.stopAll())));
+        StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(StopRunText.stopped(LiveRuns.stopAll())));
     }
 }
