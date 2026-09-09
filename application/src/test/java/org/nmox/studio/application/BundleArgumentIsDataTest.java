@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -42,8 +43,17 @@ class BundleArgumentIsDataTest {
             "LiveRunSearchProvider_stopSince",
             "NpmExplorerTopComponent_since");
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    /**
+     * The word each language introduces a point in time with — the reviewed
+     * vocabulary, pinned here because no general rule can derive it. A value
+     * that has lost its own word is a value whose meaning can only be arriving
+     * inside the argument, which is the defect. Add a language, add its word.
+     */
+    private static final Map<String, String> SINCE_WORD = Map.ofEntries(
+            Map.entry("es", "desde"), Map.entry("fr", "depuis"), Map.entry("de", "seit"),
+            Map.entry("ru", "с"), Map.entry("uk", "з"), Map.entry("pl", "od"),
+            Map.entry("pt", "desde"), Map.entry("id", "sejak"), Map.entry("tl", "mula"),
+            Map.entry("vi", "từ"), Map.entry("zh", "自"), Map.entry("hi", "से"));
 
     private static List<Path> sources() throws IOException {
         List<Path> all = new ArrayList<>();
@@ -80,17 +90,20 @@ class BundleArgumentIsDataTest {
     void everyLanguageOwnsItsPreposition() throws IOException {
         List<String> wrong = new ArrayList<>();
         for (String key : TIME_KEYS) {
-            for (String locale : LOCALES) {
+            for (Map.Entry<String, String> e : SINCE_WORD.entrySet()) {
+                String locale = e.getKey();
                 String value = value(key, "Bundle_" + locale + ".properties");
                 if (value == null) {
                     wrong.add(key + " [" + locale + "]: absent");
                     continue;
                 }
-                // the argument is the ONLY thing the value should borrow; if the
-                // value is nothing but the placeholder, the word it needs can
-                // only be arriving inside that placeholder — the defect itself
-                if (value.replace("{0}", "").replace("{1}", "").trim().isEmpty()) {
-                    wrong.add(key + " [" + locale + "]: placeholder only — the word must be riding the argument");
+                // the value must be able to introduce the time BY ITSELF. A
+                // placeholder with no word of its own is the pre-fix state:
+                // "działa {0}" reads correctly only while the argument smuggles
+                // an English preposition in, which is the whole defect.
+                if (!value.contains(e.getValue())) {
+                    wrong.add(key + " [" + locale + "]: \"" + value + "\" lacks its own word for since ("
+                            + e.getValue() + ") — the time can only be introduced by the argument");
                 }
                 if (value.matches("(?s).*\\bsince\\b.*")) {
                     wrong.add(key + " [" + locale + "]: carries the English word \"since\"");
