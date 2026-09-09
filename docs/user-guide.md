@@ -1565,6 +1565,19 @@ keymaps never costs you the studio chords.
 ![The same build in Spanish: INICIO, RECIENTES and HERRAMIENTAS on the Welcome, with Bienvenida, Rack de tareas, Estudio de bases de datos and Diseñador de infraestructura as tabs](images/i18n-welcome-es.png)
 
 ![The same build in German: START, ZULETZT and WERKZEUGE on the Welcome, with Willkommen, Task-Rack, Datenbank-Studio, Smart-Contract-Studio and Infrastruktur-Designer as tabs](images/i18n-welcome-de.png)
+
+![The same build in Polish: START, OSTATNIE and NARZĘDZIA on the Welcome, with Witamy, Stojak zadań, Studio baz danych, Studio kontraktów and Projektant infrastruktury as tabs](images/i18n-welcome-pl.png)
+
+![The same build in Brazilian Portuguese: INÍCIO, RECENTES and FERRAMENTAS on the Welcome, with Bem-vindo, Rack de tarefas, Estúdio de banco de dados, Estúdio de contratos and Designer de infraestrutura as tabs](images/i18n-welcome-pt.png)
+
+![The same build in Indonesian: MULAI, TERBARU and PERKAKAS on the Welcome, with Selamat Datang, Rak Tugas, Studio Basis Data, Studio Kontrak and Perancang Infrastruktur as tabs](images/i18n-welcome-id.png)
+
+![The same build in Filipino: SIMULAN, KAMAKAILAN and MGA KASANGKAPAN on the Welcome, with Maligayang Pagdating, Rack ng Gawain, Studio ng Database, Studio ng Kontrata and Taga-disenyo ng Infrastructure as tabs](images/i18n-welcome-tl.png)
+
+![The same build in Vietnamese: BẮT ĐẦU, GẦN ĐÂY and CÔNG CỤ on the Welcome, with Chào mừng, Giá tác vụ, Studio cơ sở dữ liệu, Studio hợp đồng and Trình thiết kế hạ tầng as tabs](images/i18n-welcome-vi.png)
+
+![The same build in Simplified Chinese: 开始, 最近 and 工具 on the Welcome, with 欢迎, 任务机架, 数据库工作室, 合约工作室 and 基础设施设计器 as tabs](images/i18n-welcome-zh.png)
+
 - **Daily update check** — quiet, once a day; a newer release shows a
   notification whose click opens the Plugin Manager on its Updates tab,
   where the update center installs the new modules in place
