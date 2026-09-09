@@ -35,8 +35,12 @@ class WorkbenchRunningTest {
         assertThat(rows.get(0).stoppable()).isTrue();
         assertThat(rows.get(1).url()).as("a test run serves nothing").isNull();
         assertThat(WorkbenchRunning.subtitle(rows.get(1), "")).isEqualTo("running");
-        assertThat(WorkbenchRunning.subtitle(rows.get(1), "since 10:41")).isEqualTo("running since 10:41");
-        assertThat(WorkbenchRunning.subtitle(rows.get(0), "since 10:41")).isEqualTo("http://localhost:3000/  since 10:41");
+        // the argument is the bare time (v2.100.0, ledger 88) and the word
+        // comes from the message — passing the old prose form here rendered
+        // "running since since 10:41", which is precisely what Hindi was
+        // reading in the shipped builds
+        assertThat(WorkbenchRunning.subtitle(rows.get(1), "10:41")).isEqualTo("running since 10:41");
+        assertThat(WorkbenchRunning.subtitle(rows.get(0), "10:41")).isEqualTo("http://localhost:3000/  since 10:41");
         assertThat(rows.get(2).stoppable()).as("a rack device's server has its own STOP").isFalse();
         assertThat(rows.get(2).openable()).isTrue();
         assertThat(WorkbenchRunning.rows(List.of(), List.of())).isEmpty();
