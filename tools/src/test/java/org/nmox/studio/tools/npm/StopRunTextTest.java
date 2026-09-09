@@ -89,7 +89,12 @@ class StopRunTextTest {
         // Russian and Ukrainian, and are deliberately identical in the four
         // languages with no grammatical plural (v2.99.0's rule)
         for (String slavic : List.of("pl", "ru", "uk")) {
-            assertThat(render(slavic, 2)).as("%s inflects 2 vs 5", slavic).isNotEqualTo(render(slavic, 5));
+            // normalise the digit away first: the question is whether the WORDS
+            // change, and "2 polecenia" vs "5 polecenia" differ by the number
+            // alone — which is how the first cut of this assertion passed while
+            // Polish had stopped inflecting
+            assertThat(render(slavic, 2).replace("2", "#")).as("%s inflects 2 vs 5", slavic)
+                    .isNotEqualTo(render(slavic, 5).replace("5", "#"));
         }
         for (String none : List.of("id", "tl", "vi", "zh")) {
             assertThat(render(none, 2).replace("2", "#")).as("%s has no grammatical plural — same words", none)
