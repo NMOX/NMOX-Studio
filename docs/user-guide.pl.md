@@ -313,7 +313,7 @@ Projekt, którego wejściem jest `index.ts`, `main.ts` albo `src/index.ts`, uruc
 
 ### Twój język
 
-NMOX Studio mówi trzynastoma językami: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 i हिन्दी. Wybierz swój w **Opcje ▸ Ogólne ▸ Język** — każdy zapisany własną nazwą, żebyś zawsze znalazł swój. Wybór trafia do twoich ustawień uruchamiania (`etc/nmoxstudio.conf`, jako argument `--locale`) i działa też od razu. Zmieniają się menu, okna dialogowe, podpowiedzi, paski stanu, ekran powitalny i opcje. Zostaje słownictwo płyt czołowych stojaka (GO, STOP, EXPLAIN — to napisy na urządzeniu, jak na syntezatorze) oraz głębsze okna samej platformy, dla których tłumaczenia jeszcze nie ma.
+NMOX Studio mówi trzynastoma językami: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 i हिन्दी. Wybierz swój w **Opcje ▸ Ogólne ▸ Język** — każdy zapisany własną nazwą, żebyś zawsze znalazł swój. Wybór trafia do twoich ustawień uruchamiania (`etc/nmoxstudio.conf`, jako argument `--locale`) i działa też od razu. Zmieniają się menu, okna dialogowe, podpowiedzi, paski stanu, ekran powitalny i opcje. Zostaje słownictwo płyt czołowych stojaka (GO, STOP, EXPLAIN — to napisy na urządzeniu, jak na syntezatorze) oraz głębsze okna samej platformy, dla których tłumaczenia jeszcze nie ma. Być może nigdy nie będziesz musiał wybierać: świeża instalacja mówi już językiem twojego systemu, i to z kraju, którego nigdy nie wymieniliśmy — Tajwan, Singapur, Portugalia i Quebec lądują we własnym języku, a nie po angielsku, bo katalogi noszą nazwę języka, nigdy kraju.
 
 ### Codzienne sprawdzanie aktualizacji
 

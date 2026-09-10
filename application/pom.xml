@@ -263,6 +263,7 @@
                                 <exclude>**/PackagedSiteGateTest.java</exclude>
                                 <exclude>**/LocaleBundleParityTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
+                                <exclude>**/SystemLocaleReachTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -282,6 +283,7 @@
                                 <include>**/PackagedSiteGateTest.java</include>
                                 <include>**/LocaleBundleParityTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
+                                <include>**/SystemLocaleReachTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
