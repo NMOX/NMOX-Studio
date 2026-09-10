@@ -88,7 +88,22 @@ class LiveRunsTest {
             LiveRuns.clockForTest(null);
         }
         assertThat(LiveRuns.startedAt("s1")).isEqualTo(1_000_000L);
-        assertThat(LiveRuns.sinceTime(1_000_000L, java.time.ZoneId.of("UTC"))).isEqualTo("00:16");
+        java.util.Locale was = java.util.Locale.getDefault();
+        try {
+            // the clock a person reads follows their language (v2.104.0):
+            // a 24-hour locale and a 12-hour one, from the same instant
+            java.util.Locale.setDefault(java.util.Locale.GERMANY);
+            assertThat(LiveRuns.sinceTime(1_000_000L, java.time.ZoneId.of("UTC"))).isEqualTo("00:16");
+            java.util.Locale.setDefault(java.util.Locale.US);
+            // NOT compared to a literal: CLDR separates the day period with a
+            // NARROW NO-BREAK SPACE (U+202F), which is invisible in a diff and
+            // makes "12:16 AM" != "12:16 AM" for reasons no one can see
+            assertThat(LiveRuns.sinceTime(1_000_000L, java.time.ZoneId.of("UTC")))
+                    .as("the US writes the same instant with a day period")
+                    .startsWith("12:16").endsWith("AM");
+        } finally {
+            java.util.Locale.setDefault(was);
+        }
         assertThat(LiveRuns.sinceTime(-1L, java.time.ZoneId.of("UTC"))).isEmpty();
         LiveRuns.remove("s1");
         assertThat(LiveRuns.startedAt("s1")).as("gone with the run").isEqualTo(-1L);
@@ -106,8 +121,25 @@ class LiveRunsTest {
             java.time.ZoneId z = java.time.ZoneId.of(zone);
             for (long hour = 0; hour < 24; hour++) {
                 String v = LiveRuns.sinceTime(hour * 3_600_000L + 61_000L, z);
-                assertThat(v).as("%s at hour %d is a bare time", zone, hour).matches("\\d{2}:\\d{2}");
+                // DATA, in whatever shape the reader's language writes a time:
+                // digits and separators, plus at most a short day-period mark
+                // (AM/PM, 2 letters). What must never appear is a WORD — that
+                // is what "since" was, and what no translation could reach.
+                assertThat(v).as("%s at hour %d has digits", zone, hour).containsPattern("\\d");
+                assertThat(v).as("%s at hour %d carries a word, not just a time", zone, hour)
+                        .doesNotContainPattern("[\\p{L}]{3,}");
             }
+        }
+        java.util.Locale was = java.util.Locale.getDefault();
+        try {
+            for (String tag : new String[] {"en-US", "uk", "de", "hi", "zh", "pl", "vi"}) {
+                java.util.Locale.setDefault(java.util.Locale.forLanguageTag(tag));
+                assertThat(LiveRuns.sinceTime(50_000_000L, java.time.ZoneId.of("UTC")))
+                        .as("%s writes a time, never a word", tag)
+                        .containsPattern("\\d").doesNotContainPattern("[\\p{L}]{3,}");
+            }
+        } finally {
+            java.util.Locale.setDefault(was);
         }
         assertThat(LiveRuns.sinceTime(-1L, java.time.ZoneId.of("UTC")))
                 .as("not live: empty, so the caller picks the wordless message").isEmpty();

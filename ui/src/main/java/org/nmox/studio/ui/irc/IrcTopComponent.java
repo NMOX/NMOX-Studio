@@ -210,7 +210,14 @@ public final class IrcTopComponent extends TopComponent {
      */
     private static final ConcurrentMap<String, IrcClient> SESSIONS = new ConcurrentHashMap<>();
 
-    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("HH:mm");
+    /**
+     * A transcript stamp is read by a person, so it follows their language
+     * (v2.104.0) — resolved per call, so a live language switch is picked
+     * up. The on-disk log keeps its stable stamp; that one is a record.
+     */
+    private static DateTimeFormatter stamp() {
+        return org.nmox.studio.core.util.Clocks.displayFormatter();
+    }
 
     /** The mIRC 16-color palette, tuned to read on the dark theme. */
     private static final Color[] MIRC_COLORS = {
@@ -863,12 +870,12 @@ public final class IrcTopComponent extends TopComponent {
     /** The transcript timestamp: the server's {@code @time} tag when present, else now. */
     private static String stampOf(IrcMessage msg) {
         return ServerTime.localTime(msg.tags().get("time"))
-                .map(STAMP::format)
-                .orElseGet(() -> STAMP.format(LocalTime.now()));
+                .map(stamp()::format)
+                .orElseGet(() -> stamp().format(LocalTime.now()));
     }
 
     private static String stampNow() {
-        return STAMP.format(LocalTime.now());
+        return stamp().format(LocalTime.now());
     }
 
     private List<Object[]> stampedRuns(String stamp) {

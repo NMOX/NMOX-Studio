@@ -145,8 +145,7 @@ public final class LiveRuns {
         if (startedAt < 0) {
             return "";
         }
-        return java.time.Instant.ofEpochMilli(startedAt).atZone(zone)
-                .toLocalTime().format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+        return org.nmox.studio.core.util.Clocks.display(startedAt, zone);
     }
 
     public static void remove(String id) {
