@@ -11,6 +11,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.Threads;
@@ -281,16 +283,32 @@ final class McpSubscriptions {
             return;
         }
         sinks.add(new Sink(out, onClose));
+        // PAST THIS LINE ATTACH MUST NOT THROW (v2.114.0, the v2.109.0 arc
+        // review). The sink is in the list now, so its onClose belongs to
+        // the drop that will remove it — and AgentPort's caller releases the
+        // stream slot in its own catch. If a throw escaped here, BOTH would
+        // run for one reservation, and a counter walked below the number of
+        // live streams stops being a cap. The keepalive is a convenience:
+        // it drops ghosts early, and without it a ghost is still found on
+        // the next real write, so a stream that works is never thrown away
+        // because its timer would not start.
         if (keepalive == null) {
             synchronized (this) {
                 if (keepalive == null && !closed) {
-                    // schedule on the LOCAL, publish after (SpotBugs
-                    // DC_PARTIALLY_CONSTRUCTED: a field read between the
-                    // assignment and the schedule would see an idle executor)
-                    java.util.concurrent.ScheduledExecutorService k = Executors.newSingleThreadScheduledExecutor(
-                            r -> Threads.daemon(r, "nmox-agent-port-keepalive"));
-                    k.scheduleAtFixedRate(this::keepalive, keepaliveMillis, keepaliveMillis, TimeUnit.MILLISECONDS);
-                    keepalive = k;
+                    try {
+                        // schedule on the LOCAL, publish after (SpotBugs
+                        // DC_PARTIALLY_CONSTRUCTED: a field read between the
+                        // assignment and the schedule would see an idle executor)
+                        java.util.concurrent.ScheduledExecutorService k = Executors.newSingleThreadScheduledExecutor(
+                                r -> Threads.daemon(r, "nmox-agent-port-keepalive"));
+                        k.scheduleAtFixedRate(this::keepalive, keepaliveMillis, keepaliveMillis, TimeUnit.MILLISECONDS);
+                        keepalive = k;
+                    } catch (RuntimeException e) {
+                        // refusals speak: the stream stays, the ghost sweep
+                        // is the next write instead of a timer
+                        Logger.getLogger(McpSubscriptions.class.getName()).log(Level.INFO,
+                                "agent port: no keepalive timer; ghost streams drop on the next write", e);
+                    }
                 }
             }
         }

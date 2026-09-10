@@ -194,6 +194,44 @@ class SearchTermsTest {
     }
 
     @Nested
+    @DisplayName("a word is whole in every script")
+    class WholeWords {
+
+        /**
+         * A Devanagari word carries its vowels as combining marks, and
+         * {@code Character.isLetterOrDigit} says a mark is neither — so the
+         * tokenizer cut टास्क into ट, स and क, three one-letter tokens that
+         * match almost anything. Since v1.215.0, in a language shipped
+         * since v2.97.0. v2.106.0 taught the FOLDER that an Indic mark is
+         * part of the word and stopped stripping it; the tokenizer one
+         * layer up was never told, so the marks it now preserves are
+         * exactly the characters it splits on.
+         */
+        @Test
+        @DisplayName("Devanagari vowel signs belong to the word, not between words")
+        void indicMarksDoNotSplitAWord() {
+            assertThat(SearchTerms.words("टास्क")).containsExactly("टास्क");
+            assertThat(SearchTerms.words("टास्क बोर्ड")).containsExactly("टास्क", "बोर्ड");
+            assertThat(SearchTerms.score("टास्क", "टास्क बोर्ड"))
+                    .as("a Hindi reader searching for the word they see")
+                    .isEqualTo(SearchTerms.EXACT);
+            assertThat(SearchTerms.score("ट", "टास्क बोर्ड"))
+                    .as("one letter of a Devanagari word is not the word — which is what "
+                            + "the split made every search look like")
+                    .isNotEqualTo(SearchTerms.EXACT);
+        }
+
+        @Test
+        @DisplayName("a mark with nothing to attach to is still a separator, and Latin is unchanged")
+        void aLeadingMarkIsNotAWord() {
+            assertThat(SearchTerms.words("\u0301")).isEmpty();
+            assertThat(SearchTerms.words("caf\u00e9 na\u00efve"))
+                    .as("Latin accents are folded away before the split, so this is untouched")
+                    .containsExactly("cafe", "naive");
+        }
+    }
+
+    @Nested
     @DisplayName("the same name spelled two ways is one name")
     class Normalization {
 
