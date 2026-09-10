@@ -1,7 +1,11 @@
 # The Plan
 
-*Currency addendum 2026-09-10, at v2.116.0 — the night shift ran to ELEVEN
-releases. The method note worth keeping: FEEDING HOSTILE UNICODE TO THE
+*Currency addendum 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
+releases, closed by the walk it owed: the assembled app booted with
+`user.language=zh user.country=TW` and no `--locale` comes up Chinese, tabs
+and toolbars and balloons, zero SEVERE — and DB Studio's history pane reads
+下午11:14, so the display clock followed the reader too. A lookup is not a
+product; the boot is what proves it. The method note worth keeping: FEEDING HOSTILE UNICODE TO THE
 NEWEST PURE CORE found a 900-release-old bug in the language least able to
 report it — `words("cafe 😀 Übersetzung टास्क")` came back with three
 one-letter Devanagari tokens, and nothing in nine hundred releases had asked.
