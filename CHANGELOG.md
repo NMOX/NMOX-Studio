@@ -4,6 +4,72 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.104.0] - 2026-09-09
+
+**The other half of internationalization** — the half that is not words.
+
+Thirteen languages of chrome had been shipped, and two things a translated
+build still got wrong were both about SHAPE rather than vocabulary: a time
+written the way one country writes times, and a manual that existed only in
+English. Neither is visible to a bundle gate, because neither is a bundle.
+
+1. **Two clocks, and every site says which one it is.** The product had one
+   hard-coded `HH:mm`, so every Hindi user was reading a German clock —
+   Hindi writes `2:32 pm`. `core.util.Clocks` splits the two readers apart:
+   `display` follows the reader's language and is built per call so it
+   follows a live switch, `stable` is `Locale.ROOT` and never moves, because
+   a filename, a log line or a field an agent parses must line up between
+   two people's machines. The display sites were rewired (the ■ tooltip, API
+   Studio and DB Studio history, the IRC screen stamp) and the record sites
+   were left alone deliberately.
+
+   `ClockSiteLedgerTest` is ledger 91: a hand-rolled date pattern either
+   lives in `Clocks` or is named STABLE with its reason, and a new one fails
+   the build until someone decides. The IRC pair is the clearest case in the
+   list — the on-disk transcript is a record, the stamp beside it on screen
+   is a reading, and they are now formatted by different clocks on purpose.
+
+2. **The user guide, in every language the IDE speaks.** Install and first
+   launch — the two chapters a new user actually reads — in all twelve
+   translated languages. Generated from one structure, so headings, links,
+   images, paths, chords and the install commands are identical to English
+   and only the prose is translated: a helpfully localized flag is a command
+   that fails, and it fails only for readers the author cannot read.
+
+   The words come from `docs/i18n/glossary.json`, extracted from the shipped
+   bundles, so the guide calls each window what the window answers to. A
+   guide that named a window something else would be worse than English,
+   because the reader would be hunting for a thing that is not there.
+
+3. **One click to switch, and one address per chapter.** A language bar
+   under every guide's title names each language in its own words, with the
+   page you are on unlinked. And because a heading's generated anchor comes
+   from its own words, every translated chapter carries the ENGLISH anchor
+   id above it — so a link into §2 reaches §2 in all thirteen guides.
+
+4. **The manual follows the language.** `UiLocale.guideDoc` picks the guide
+   for the language the IDE is currently speaking, so the Welcome's User
+   Guide link and every FIRST STEPS chapter link land in the reader's own
+   language. A country variant falls to its language's guide (pt_PT and
+   zh_SG reach the guides their bundles already reach), and a language we do
+   not ship falls to English — never a dead link. This was the wall the
+   whole arc exists to remove, standing one click past where the translation
+   stopped.
+
+5. **The changelog's link block had dead-ended again.** Fourteen versions
+   back to v2.96.0 had no link definition, so their headings rendered as
+   literal brackets and their diffs were unreachable — the same silent rot
+   found at v1.2.1 and regenerated in v1.176.0. Twice is a class, so
+   `ChangelogLinkBlockTest` makes it a build law instead of a habit.
+
+`TranslatedGuideGateTest` derives its population from `UiLocale.SUPPORTED`
+rather than a hand-kept list: a fourteenth language fails the build until
+someone writes for it. Seven mutants died by name — a localized command, a
+guide naming a window something the app does not, a language with no guide,
+a partial translation that never says where the rest is, a language bar
+that links to the page you are on, a bar that drops a language, and a
+changelog link block that dead-ends.
+
 ## [2.103.0] - 2026-09-09
 
 **Switch language without restarting** (David's call, over the safer
@@ -18446,6 +18512,20 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.104.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.103.0...v2.104.0
+[2.103.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.1...v2.103.0
+[2.102.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.0...v2.102.1
+[2.102.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.101.1...v2.102.0
+[2.101.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.101.0...v2.101.1
+[2.101.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.100.1...v2.101.0
+[2.100.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.100.0...v2.100.1
+[2.100.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.99.1...v2.100.0
+[2.99.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.99.0...v2.99.1
+[2.99.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.98.0...v2.99.0
+[2.98.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.97.0...v2.98.0
+[2.97.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.96.1...v2.97.0
+[2.96.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.96.0...v2.96.1
+[2.96.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.95.0...v2.96.0
 [2.95.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.94.0...v2.95.0
 [2.94.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.93.0...v2.94.0
 [2.93.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.92.0...v2.93.0
