@@ -84,7 +84,7 @@ public final class SearchTerms {
         for (String h : haystacks) {
             if (h != null && !h.isEmpty()) {
                 hay.addAll(words(h));
-                raw.append(h.toLowerCase(Locale.ROOT)).append('\n');
+                raw.append(fold(h.toLowerCase(Locale.ROOT))).append('\n');
             }
         }
         if (hay.isEmpty()) {
@@ -207,11 +207,93 @@ public final class SearchTerms {
      * uppercase step also splits, so camelCase identifiers
      * ({@code getUserById}) are searchable by their parts.
      */
+    /**
+     * The letters that carry no Unicode decomposition, and so survive
+     * {@link java.text.Normalizer} untouched.
+     *
+     * <p>Stripping combining marks handles {@code Ü} and {@code á} because
+     * those decompose into a letter plus a mark. These do not: Polish
+     * {@code ł}, Vietnamese {@code đ} and German {@code ß} are single
+     * code points with no decomposition at all, and they are exactly the
+     * letters whose languages this product now speaks. Without them,
+     * {@code Lacze} would still miss {@code Łącze}.
+     */
+    private static final String[][] UNDECOMPOSABLE = {
+        {"ß", "ss"}, {"ł", "l"}, {"đ", "d"}, {"ø", "o"},
+        {"æ", "ae"}, {"œ", "oe"}, {"ħ", "h"}, {"ı", "i"},
+    };
+
+    /**
+     * Text with its accents removed, for MATCHING only — never for
+     * display, and never for anything stored.
+     *
+     * <p>People type without accents. A German in a hurry types
+     * {@code ubersetzung}; a Vietnamese speaker types without tone marks
+     * as a matter of course, which is how Vietnamese is normally entered.
+     * Before v2.106.0 neither found the thing they were naming, in a
+     * product that had just learned to name it in their language — the
+     * v1.215.0 findability class, one shape over, and created by the
+     * translations themselves.
+     *
+     * <p>Both sides are folded, so a name typed exactly as written still
+     * matches: folding widens what is found, it never narrows it. This is
+     * the input side of what {@link org.nmox.studio.core.util.Collate}
+     * does for ordering — the same idea that a reader's accents should
+     * not decide whether they can reach a thing.
+     */
+    static String fold(String text) {
+        if (text == null || text.isEmpty()) {
+            return text;
+        }
+        boolean ascii = true;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) > 0x7F) {
+                ascii = false;
+                break;
+            }
+        }
+        if (ascii) {
+            return text;              // the common path allocates nothing
+        }
+        String out = text;
+        for (String[] pair : UNDECOMPOSABLE) {
+            if (out.indexOf(pair[0].charAt(0)) >= 0) {
+                out = out.replace(pair[0], pair[1]);
+            }
+        }
+        String decomposed = java.text.Normalizer.normalize(out, java.text.Normalizer.Form.NFD);
+        StringBuilder kept = new StringBuilder(decomposed.length());
+        boolean afterLatin = false;
+        for (int i = 0; i < decomposed.length(); i++) {
+            char c = decomposed.charAt(i);
+            if (Character.getType(c) == Character.NON_SPACING_MARK
+                    || Character.getType(c) == Character.COMBINING_SPACING_MARK) {
+                // A combining mark is an ACCENT only over a Latin letter.
+                // Over Devanagari it is a vowel sign — भाग without its
+                // matras is a different word, not the same word typed
+                // plainly — and the same is true of every Indic, Thai and
+                // Hebrew mark. The first cut here stripped them all and
+                // turned टास्क into टसक; the test said so.
+                if (afterLatin) {
+                    continue;
+                }
+                kept.append(c);
+                continue;
+            }
+            afterLatin = Character.UnicodeScript.of(c) == Character.UnicodeScript.LATIN;
+            kept.append(c);
+        }
+        return kept.toString();
+    }
+
     static List<String> words(String text) {
         List<String> out = new ArrayList<>();
         if (text == null || text.isEmpty()) {
             return out;
         }
+        // fold FIRST: a combining mark is not a letter or digit, so
+        // decomposing without stripping would split every accented word
+        text = fold(text);
         StringBuilder current = new StringBuilder();
         char previous = 0;
         for (int i = 0; i < text.length(); i++) {
