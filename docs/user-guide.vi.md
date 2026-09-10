@@ -10,6 +10,7 @@ Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo th�
 
 ---
 
+<a id="1-install"></a>
 ## 1. Cài đặt
 
 **macOS (khuyến nghị):**
@@ -29,6 +30,7 @@ Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap củ
 
 IDE tự cập nhật: **Công cụ ▸ Trình cắm ▸ Cập nhật** đưa ra các mô-đun của mọi bản phát hành mới hơn. Cài, khởi động lại khi được nhắc, xong — không phải tải lại toàn bộ ứng dụng. Một lưu ý thẳng thắn: môi trường chạy Java đi kèm và trình khởi chạy chỉ đổi cùng một bộ cài đầy đủ, nên với những bước nhảy lớn của nền tảng, cài lại từ một tệp phát hành vẫn là cách đúng.
 
+<a id="2-first-launch"></a>
 ## 2. Lần chạy đầu tiên
 
 Từ dòng lệnh, `nmoxstudio --open <thư-mục>` khởi động ứng dụng với thư mục đó mở ra như một dự án và giá hướng vào nó — cùng một cánh cửa mà “Mở thư mục…” trên trang chào mừng mở ra.

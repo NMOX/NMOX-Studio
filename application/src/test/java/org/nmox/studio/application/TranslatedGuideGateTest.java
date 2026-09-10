@@ -264,6 +264,48 @@ class TranslatedGuideGateTest {
         return a < 0 || b < a ? "" : body.substring(a + open.length(), b);
     }
 
+    @Test
+    @DisplayName("a cross-reference lands on the same chapter in every language")
+    void anchorsSurviveTranslation() throws IOException {
+        // a heading's generated anchor comes from its own words, so a
+        // translated chapter would answer to a different address and every
+        // link written against the English guide would land at the top of
+        // the page instead. An explicit anchor above each chapter keeps ONE
+        // address per chapter across all thirteen guides — which is what
+        // lets the product link a reader straight to their own §1.
+        Map<String, String> english = englishAnchors();
+        assertThat(english).as("the English chapter anchors")
+                .containsEntry("1", "1-install").containsEntry("2", "2-first-launch");
+
+        List<String> adrift = new ArrayList<>();
+        for (String lang : translatedLanguages()) {
+            String body = Files.readString(docs().resolve("user-guide." + lang + ".md"),
+                    StandardCharsets.UTF_8);
+            for (String chapter : chapters(docs().resolve("user-guide." + lang + ".md"))) {
+                String wanted = "<a id=\"" + english.get(chapter) + "\"></a>";
+                if (!body.contains(wanted)) {
+                    adrift.add(lang + " chapter " + chapter + ": no " + wanted);
+                }
+            }
+        }
+        assertThat(adrift)
+                .as("a link into a chapter must reach that chapter in the reader's own guide")
+                .isEmpty();
+    }
+
+    /** The English guide's chapter number to its anchor id. */
+    private static Map<String, String> englishAnchors() throws IOException {
+        Map<String, String> out = new LinkedHashMap<>();
+        Matcher m = Pattern.compile("(?m)^## (\\d+)\\. (.+)$")
+                .matcher(Files.readString(docs().resolve("user-guide.md"), StandardCharsets.UTF_8));
+        while (m.find()) {
+            String slug = (m.group(1) + ". " + m.group(2)).toLowerCase(java.util.Locale.ROOT)
+                    .replaceAll("[^\\w\\s-]", "").replaceAll("\\s+", "-");
+            out.put(m.group(1), slug);
+        }
+        return out;
+    }
+
     private static List<String> chapters(Path guide) throws IOException {
         List<String> out = new ArrayList<>();
         Matcher m = CHAPTER.matcher(Files.readString(guide, StandardCharsets.UTF_8));

@@ -10,6 +10,7 @@ Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je nap
 
 ---
 
+<a id="1-install"></a>
 ## 1. Instalacja
 
 **macOS (zalecane):**
@@ -29,6 +30,7 @@ Wiersz `brew trust` to jednorazowe potwierdzenie Homebrew dla dowolnego zewnętr
 
 IDE aktualizuje się samo: **Narzędzia ▸ Wtyczki ▸ Aktualizacje** proponuje moduły każdego nowszego wydania. Zainstaluj, uruchom ponownie na żądanie i gotowe — bez pobierania całej aplikacji od nowa. Uczciwe zastrzeżenie: dołączone środowisko Javy i program uruchamiający zmieniają się tylko z pełnym instalatorem, więc przy dużych skokach platformy nadal właściwa jest instalacja od nowa z pliku wydania.
 
+<a id="2-first-launch"></a>
 ## 2. Pierwsze uruchomienie
 
 Z terminala `nmoxstudio --open <katalog>` uruchamia aplikację z tym katalogiem otwartym jako projekt i wycelowanym w niego stojakiem — te same drzwi, które otwiera „Otwórz katalog…” na stronie powitalnej.

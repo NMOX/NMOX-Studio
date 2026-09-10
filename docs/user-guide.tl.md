@@ -10,6 +10,7 @@ Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pa
 
 ---
 
+<a id="1-install"></a>
 ## 1. Pag-install
 
 **macOS (inirerekomenda):**
@@ -29,6 +30,7 @@ Ang linyang `brew trust` ang minsanang kumpirmasyon ng Homebrew para sa anumang 
 
 Ini-update ng IDE ang sarili nito: nag-aalok ang **Mga Kasangkapan ▸ Mga Plugin ▸ Mga Update** ng mga modyul mula sa anumang mas bagong bersyon. I-install, i-restart kapag hiniling, tapos na — walang muling pag-download ng buong app. Isang tapat na paalala: ang kasamang Java runtime at ang launcher ay nagbabago lamang sa isang buong installer, kaya para sa malalaking paglipat ng plataporma, tama pa ring mag-install muli mula sa isang file ng bersyon.
 
+<a id="2-first-launch"></a>
 ## 2. Unang pagbukas
 
 Mula sa terminal, sinisimulan ng `nmoxstudio --open <folder>` ang app kasama ang folder na iyon na bukas bilang proyekto at nakaturo dito ang rack — ang parehong pinto na binubuksan ng “Buksan ang folder…” sa welcome page.

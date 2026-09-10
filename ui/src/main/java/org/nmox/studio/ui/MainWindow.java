@@ -196,7 +196,7 @@ public final class MainWindow extends TopComponent {
             JButton whatsNew = textButton(Bundle.MainWindow_whatsNew(), DIM);
             whatsNew.setToolTipText(Bundle.MainWindow_whatsNewTip());
             whatsNew.addActionListener(e -> org.nmox.studio.ui.whatsnew.WhatsNew.showCurrent());
-            // v1.216.0 (arc review): v1.210.0 declared USER_GUIDE_URL and
+            // v1.216.0 (arc review): v1.210.0 declared the guide URL and
             // its changelog said the Welcome screen offers the User Guide
             // — but the button was never built. The constant sat unused
             // for six releases: the v1.38.1 lesson (an affordance
@@ -204,7 +204,7 @@ public final class MainWindow extends TopComponent {
             // review's dead-reference sweep.
             JButton userGuide = textButton(Bundle.MainWindow_userGuide(), DIM);
             userGuide.setToolTipText(Bundle.MainWindow_userGuideTip());
-            userGuide.addActionListener(e -> browse(USER_GUIDE_URL));
+            userGuide.addActionListener(e -> browse(userGuideUrl()));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
             // the product's own site, served by the product (v2.40.0)
@@ -316,9 +316,16 @@ public final class MainWindow extends TopComponent {
             return label;
         }
 
-        /** The newcomer's door: the guide's first chapter is "First launch". */
-        static final String USER_GUIDE_URL =
-                "https://github.com/NMOX/NMOX-Studio/blob/main/docs/user-guide.md";
+        /**
+         * The newcomer's door: the guide's first chapter is "First launch" —
+         * in the language the IDE is speaking, because a reader who set the
+         * IDE to their own language and then landed on an English manual has
+         * been handed exactly the wall this feature exists to remove.
+         */
+        static String userGuideUrl() {
+            return "https://github.com/NMOX/NMOX-Studio/blob/main/"
+                    + org.nmox.studio.core.util.UiLocale.guideDoc();
+        }
 
         private static JButton textButton(String text, Color color) {
             JButton button = new JButton(PlainText.plain(text));
@@ -375,7 +382,7 @@ public final class MainWindow extends TopComponent {
                     }
                     case GUIDE -> {
                         org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(step.gesture()));
-                        browse(USER_GUIDE_URL + t.id());
+                        browse(userGuideUrl() + t.id());
                     }
                 }
             });

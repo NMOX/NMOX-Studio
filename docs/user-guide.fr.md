@@ -10,6 +10,7 @@ Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où
 
 ---
 
+<a id="1-install"></a>
 ## 1. Installation
 
 **macOS (recommandé) :**
@@ -29,6 +30,7 @@ La ligne `brew trust` est la confirmation unique de Homebrew pour tout tap tiers
 
 L’IDE se met à jour lui-même : **Outils ▸ Plugins ▸ Mises à jour** propose les modules de toute version plus récente. Installez, redémarrez quand on vous le demande, c’est fait — sans retélécharger l’application entière. Une réserve honnête : l’environnement Java embarqué et le lanceur ne changent qu’avec un installateur complet, donc pour les sauts de plateforme importants, une installation neuve depuis un fichier de version reste la bonne solution.
 
+<a id="2-first-launch"></a>
 ## 2. Premier lancement
 
 Depuis un terminal, `nmoxstudio --open <dossier>` lance l’application avec ce dossier ouvert comme projet et le rack pointé dessus — la même porte que « Ouvrir un dossier… » sur la page d’accueil.

@@ -180,6 +180,37 @@ public final class UiLocale {
         return l.find() ? Optional.of(l.group(1)) : Optional.empty();
     }
 
+    /**
+     * The user guide, in the language the IDE is currently speaking.
+     *
+     * <p>A reader who set the IDE to Ukrainian and then clicked "User Guide"
+     * used to land on the English manual — the half of internationalization
+     * that lives outside the bundles. The translated guides are named after
+     * the same codes this class offers, and a build law
+     * ({@code TranslatedGuideGateTest}) keeps one on disk for every language
+     * here, so the name can be derived rather than looked up.
+     *
+     * <p>Falls back to the English guide for any language we do not ship,
+     * which is also what a country variant of a language we do ship gets when
+     * only the plain language bundle exists.
+     *
+     * @return a repository-relative path, always an existing document
+     */
+    public static String guideDoc(Locale locale) {
+        String lang = locale == null ? "" : locale.getLanguage();
+        for (Choice c : SUPPORTED) {
+            if (!c.isSystem() && !"en".equals(c.code()) && c.code().equals(lang)) {
+                return "docs/user-guide." + c.code() + ".md";
+            }
+        }
+        return "docs/user-guide.md";
+    }
+
+    /** {@link #guideDoc(Locale)} for the language the IDE is speaking right now. */
+    public static String guideDoc() {
+        return guideDoc(Locale.getDefault());
+    }
+
     /** The offered row for a code (the language part matches; a country is ignored). */
     public static Choice choiceFor(String code) {
         if (code == null || code.isEmpty()) {

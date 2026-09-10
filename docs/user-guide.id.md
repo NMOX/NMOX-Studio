@@ -10,6 +10,7 @@ Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan And
 
 ---
 
+<a id="1-install"></a>
 ## 1. Pemasangan
 
 **macOS (disarankan):**
@@ -29,6 +30,7 @@ Baris `brew trust` adalah konfirmasi sekali jalan dari Homebrew untuk tap pihak 
 
 IDE memperbarui dirinya sendiri: **Alat ▸ Plugin ▸ Pembaruan** menawarkan modul dari rilis mana pun yang lebih baru. Pasang, mulai ulang saat diminta, selesai — tanpa mengunduh ulang seluruh aplikasi. Satu catatan jujur: lingkungan Java bawaan dan peluncurnya hanya berubah lewat pemasang lengkap, jadi untuk lompatan platform yang besar memasang ulang dari berkas rilis tetap langkah yang benar.
 
+<a id="2-first-launch"></a>
 ## 2. Peluncuran pertama
 
 Dari terminal, `nmoxstudio --open <folder>` menjalankan aplikasi dengan folder itu terbuka sebagai proyek dan rak yang mengarah ke sana — pintu yang sama dengan “Buka folder…” di halaman selamat datang.
