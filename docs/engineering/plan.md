@@ -1,6 +1,14 @@
 # The Plan
 
-*Currency addendum 2026-09-10, at v2.112.0 — the night shift ran to SEVEN
+*Currency addendum 2026-09-10, at v2.116.0 — the night shift ran to ELEVEN
+releases. The method note worth keeping: FEEDING HOSTILE UNICODE TO THE
+NEWEST PURE CORE found a 900-release-old bug in the language least able to
+report it — `words("cafe 😀 Übersetzung टास्क")` came back with three
+one-letter Devanagari tokens, and nothing in nine hundred releases had asked.
+The same probe over Numbers, Clocks and Collate came back CLEAN (NaN and
+Infinity render honestly, epoch extremes do not throw, Collate is null-safe),
+which is what makes the one find worth trusting. Earlier in the shift it ran
+to SEVEN
 releases (v2.104.0 through v2.112.0): the half of internationalization that
 is not words (Clocks, Collate, Numbers, accent folding), then the user guide
 finished in all thirteen languages, then the two properties that were true
