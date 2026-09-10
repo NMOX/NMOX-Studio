@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.114.0] - 2026-09-10
+
+**The arc review of the night’s own code, and it found a word we had been
+cutting in half.**
+
+1. **Devanagari search never matched a whole word.** A Hindi word carries
+   its vowels as combining marks, and `Character.isLetterOrDigit` says a
+   mark is neither a letter nor a digit — so the one term matcher cut
+   टास्क into ट, स and क, three one-letter tokens that match almost
+   anything. Measured by feeding hostile Unicode to the folder and reading
+   what came back: `[cafe, ubersetzung, ट, स, क]`.
+
+   It has been that way since the matcher shipped in v1.215.0, in a
+   language the product has spoken since v2.97.0 — and last night’s accent
+   work walked straight past it. v2.106.0 taught the FOLDER that an Indic
+   mark is part of the word and stopped stripping it; the tokenizer one
+   layer up was never told, so the marks the folder now carefully preserves
+   were exactly the characters the tokenizer split on. The comment above
+   that split even explained the Latin case correctly.
+
+   A mark now joins the word in front of it, and a mark with no word in
+   front of it stays a separator. Both halves die alone under mutation, and
+   Latin is untouched because its accents are folded away before the split
+   ever runs.
+
+2. **One slot, two releases.** v2.109.0’s stream cap reserves a slot before
+   the response headers and gives it back through the sink’s own close
+   callback. But `attach` adds the sink and THEN schedules the keepalive —
+   so a scheduling failure left the sink in the list while the caller’s
+   catch released the slot, and the sink’s eventual drop released it again.
+   Two releases for one reservation walks the counter below the number of
+   live streams, and enough of them turn the cap off entirely.
+
+   Reachable, and driven in the test by the shape any scheduling failure
+   takes: a period the scheduler refuses. `attach` no longer throws past
+   the line that adds the sink — the keepalive is a convenience that drops
+   ghosts early, and without it a ghost is still found on the next real
+   write, so a working stream is never thrown away because its timer would
+   not start. The refusal is logged rather than swallowed.
+
 ## [2.113.0] - 2026-09-10
 
 **The night’s close proof, and the line in it that argued with its own
@@ -18969,6 +19009,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.114.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.113.0...v2.114.0
 [2.113.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.112.0...v2.113.0
 [2.112.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.111.0...v2.112.0
 [2.111.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.110.0...v2.111.0
