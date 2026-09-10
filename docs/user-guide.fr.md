@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–6 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
-
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
 ---
@@ -230,3 +228,155 @@ Un client complet dans l’IDE : TLS avec vraie vérification du nom, SASL, exte
 ### Navigateur (⌥⌘4)
 
 Un vrai navigateur dans l’IDE, avec ses propres outils de développement — console, DOM, réseau, stockage, et des panneaux pour Vue, Svelte et Angular — parce que le moteur n’embarque aucun inspecteur et que celui-ci est le nôtre. Il connaît vos sources : désignez un élément, ouvrez la ligne qui l’a produit, restylez-le sur place, et la déclaration atterrit dans la feuille de style d’origine. Enregistrer un fichier recharge la page, et des tailles d’appareil réelles servent à éprouver votre mise en page adaptative.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+L’onglet Docker est un tableau de bord : état du moteur, conteneurs, images, volumes et réseaux, avec démarrer, arrêter, consulter les journaux et nettoyer. Le module HARBOR du rack vous donne la même chose d’un coup d’œil. Et comme dit plus haut : lancez un conteneur Postgres, MySQL ou Mongo, et le Studio de bases de données vous propose une connexion toute prête.
+
+L’onglet **Dockerize** génère un `Dockerfile` de qualité production, un `.dockerignore` et un fichier de composition taillés pour la chaîne d’outils de votre projet — Node, PHP-FPM avec nginx, et d’autres.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Assistants et kits
+
+Tous se trouvent dans *Nouveau fichier…* et dans le menu contextuel du projet, et tous sont **idempotents et n’écrasent jamais rien** : relancer l’un d’eux met à jour ce qui lui appartient et laisse vos modifications tranquilles ; ce qu’il ne peut pas réécrire atterrit à côté sous la forme d’un fichier `.suggested`.
+
+### Kit des standards
+
+`robots.txt`, `sitemap.xml`, le manifeste web, le `security.txt` du RFC 9116 et `humans.txt`, générés à partir de vos réponses.
+
+### Kit PWA
+
+Un jeu complet d’icônes forgé à partir d’une seule image, variantes masquables comprises ; un service worker lisible — coquille d’application ou réseau d’abord, à vous de choisir —, une page hors ligne, et le câblage de `index.html` qui relie le tout.
+
+### Kit d’accessibilité
+
+L’accessibilité comme point de départ, pas comme audit d’après-coup : `a11y.css` (un anneau de focus visible, un utilitaire pour le texte réservé aux lecteurs d’écran, des styles de lien d’évitement et un bloc pour qui préfère moins de mouvement), `A11Y-NOTES.md` avec le parcours au clavier et les questions qu’aucune automatisation ne tranche, et le câblage idempotent de `index.html` — la langue, le lien d’évitement, la feuille de style. Un viewport qui empêche le zoom est signalé, jamais réécrit ; ce que le kit ne peut pas réparer, il le dit sans y toucher.
+
+### Kit d’internationalisation
+
+Traduisible dès le premier jour, le frère du kit d’accessibilité : `locales/en.json` et `locales/es.json` (un catalogue par langue, les mêmes clés), un `i18n.js` sans dépendances qui applique le catalogue au balisage `data-i18n`, garde `<html lang>` honnête et affiche une clé manquante telle quelle plutôt qu’un blanc silencieux ; plus `I18N-NOTES.md` — pas de fragments concaténés, `Intl` pour les dates et les nombres, le parcours de droite à gauche et la pseudo-localisation.
+
+### Kit de contrats (Web3)
+
+Choisissez une chaîne — Solidity avec Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin avec Miniscript, Clarity sur Stacks, Cardano avec Aiken ou TON avec Tact — et un nom de contrat, et le kit échafaude le démarrage éprouvé en conditions réelles : manifeste, contrat, test natif et un CONTRACT-NOTES.md qui nomme les modules du rack et les étapes à faire une seule fois. Les clés ne touchent jamais l’IDE.
+
+### Kit classique
+
+Ajoutez à n’importe quel code jQuery, MooTools, Prototype, Backbone avec Underscore ou Knockout, soit versionnés dans le dépôt (versions figées, sha256 consigné), soit en dépendances npm ; plus les échafaudages webpack, grunt, gulp ou bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Recherche rapide, barre d’état et garder le cap
+
+### La pastille ⇄ sert
+
+Une pastille **⇄ sert** apparaît dans la barre d’état dès que des serveurs tournent : l’exécution de l’IDE lui-même, les modules qui servent, et toute commande ayant imprimé une adresse locale. Cliquez et choisissez-en une : elle s’ouvre dans le navigateur intégré, ou dans celui du système quand cet onglet ne peut pas la prendre.
+
+### ⌘I, le chercheur universel
+
+Une seule boîte atteint vos projets (récents et connus), chaque module du rack — en sautant droit à ses commandes —, les **serveurs en marche** (Entrée l’ouvre dans le navigateur), les requêtes du Studio d’API, les connexions et les tables du Studio de bases de données, les contrats, les nœuds d’infrastructure et les cartes du Tableau des tâches, dont le résultat nomme la colonne où elles se trouvent.
+
+### La barre d’état dit ce qui est vivant
+
+À côté de la pastille des serveurs : le projet visé et sa chaîne d’outils, et la branche Git avec le nombre de fichiers modifiés. Tout cela se lit sur le disque ou dans des registres que le produit tient déjà — regarder ne coûte aucun processus.
+
+### Le Plan de travail
+
+C’est le port d’attache : projet courant, fichiers ouverts et récents, projets récents, et un lanceur pour chaque surface. Tant que quelque chose tourne, la section **EN COURS** ouvre la page — chaque commande que le produit a lancée pour vous, avec son adresse si elle en a annoncé une et depuis quelle heure elle tourne, plus chaque serveur qu’un module du rack fait tourner. Chaque ligne porte de vrais boutons **Ouvrir** et **Arrêter**, accessibles au clavier et au lecteur d’écran, si bien qu’une exécution peut être arrêtée sans abattre les autres. Tous les titres du Plan de travail sont de vrais boutons : Tab y arrive, Entrée ouvre. ⌘I atteint les mêmes exécutions : tapez « arrêter » et Entrée arrête exactement celle-là. Ce que vous avez arrêté vous-même se lit *arrêté* partout où son issue est rapportée, jamais comme un échec.
+
+### Les raccourcis d’Emacs (et d’Eclipse, et d’IntelliJ)
+
+Outils ▸ Options ▸ Raccourcis clavier change tout le profil : les déplacements et le couper-coller d’Emacs dans chaque éditeur, ou les jeux Eclipse et IDEA si c’est votre mémoire des doigts. Chaque raccourci NMOX est enregistré dans les cinq profils, si bien que changer de profil ne vous coûte jamais les raccourcis des studios.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Les filets de sécurité (ce que vous n’avez rien à faire pour avoir)
+
+### La résurrection de la session
+
+Le rack photographie ce qui tourne toutes les quelques secondes. Un arrêt forcé, un plantage, un `kill -9` — au redémarrage, une bulle vous propose de relancer exactement la session perdue, en un clic.
+
+### La garantie anti-orphelins
+
+Quitter l’IDE tue tous les processus qu’il a lancés — serveurs de développement, interpréteurs, chaînes, surveillants —, TERM d’abord, KILL s’ils résistent, descendants compris.
+
+### BLACKBOX et SONAR
+
+Ajoutez **BLACKBOX** à votre rack et vous avez une boîte noire : chaque lancement et chaque sortie, avec les durées, les tendances et ce qui a changé depuis la dernière compilation au vert. Ce que vous avez arrêté vous-même se lit ARRÊTÉ — ni vert ni échec, et jamais ce qu’on demande à KVASIR d’expliquer. **SONAR** montre qui occupe vos ports, recoupé avec Docker, et tue d’un clic le squatteur du 3000.
+
+### Des fichiers jamais écrasés
+
+Les quatre fichiers de travail des studios (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) se rechargent quand vous les modifiez hors de l’IDE — mais si vous avez des changements non enregistrés, on vous demande ; rien n’est écrasé. Un fichier corrompu est mis de côté en `.bak` et signalé, jamais remplacé en silence.
+
+### TypeScript sans compilation
+
+Un projet dont l’entrée est `index.ts`, `main.ts` ou `src/index.ts` s’exécute depuis IGNITION avec le retrait de types de Node lui-même (`--experimental-strip-types`, dès Node 22.6 ; par défaut depuis 23.6 et 22.18 LTS). Le refus d’un Node plus ancien est traduit en la phrase qui nomme ce plancher.
+
+### Votre langue
+
+NMOX Studio parle treize langues : English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 et हिन्दी. Choisissez la vôtre dans **Options ▸ Général ▸ Langue** — chacune est écrite dans son propre nom, pour que vous trouviez toujours la vôtre. Le choix est inscrit dans vos réglages de lancement (`etc/nmoxstudio.conf`, sous forme d’argument `--locale`) et s’applique aussi à chaud. Ce qui change : les menus, les boîtes de dialogue, les infobulles, les barres d’état, l’accueil et les Options. Ce qui reste : le vocabulaire des façades du rack (GO, STOP, EXPLAIN — des étiquettes d’appareil, comme sur un synthétiseur), et les dialogues plus profonds de la plateforme, qui n’ont pas encore de traduction.
+
+### La vérification quotidienne des mises à jour
+
+Discrète, une fois par jour : s’il existe une version plus récente, une notification vous mène au gestionnaire de modules, sur son onglet des mises à jour, où le centre de mise à jour installe les nouveaux modules sur place. Se coupe dans Options ▸ Général.
+
+<a id="11-learning-spaces"></a>
+## 11. Espaces d’apprentissage
+
+### Vérifier votre travail
+
+Certains espaces portent des points de contrôle : choisissez-en un et **Fichier ▸ Vérifier mon travail** vérifie vraiment les exercices — ce que disent les fichiers est contrôlé en Java pur, y compris les contrôles d’*absence*, qui sont la façon de vérifier « vous avez changé le titre » : le texte original de l’exemple doit avoir disparu. Ce que disent les commandes passe par la chaîne d’outils de l’espace lui-même. Chaque ✗ répond avec l’indice de l’espace, et en cas d’échec le rapport propose **Expliquer avec KVASIR…** : les points échoués et, pour un contrôle de fichier, votre propre fichier, plafonnés, sous un consentement qui dit exactement ce qui part. La réponse se lit comme celle d’un tuteur : quoi changer, puis relancez les contrôles.
+
+### Vos propres tutoriels
+
+Déposez un fichier `*.json` dans `~/.nmox/learn-catalog.d/` et il rejoint le sélecteur, avec le même schéma que ceux livrés ; un `slug` identique remplace celui de la maison. Vous enseignez ? Écrivez en construisant : faites de l’exercice un projet normal, et **Fichier ▸ Exporter comme espace d’apprentissage…** produit ce fichier pour vous — les fichiers d’exemple, votre `TUTORIAL.md`, le pilote d’exécution et vos points de contrôle —, validé contre l’analyseur du sélecteur avant d’être écrit, si bien que ce que vous remettez à vos élèves est exactement ce que leur sélecteur chargera.
+
+### Le catalogue
+
+*Nouvel espace d’apprentissage…* propose 93 tutoriels livrés — langages, cadres et bibliothèques. Chacun engendre un petit projet d’exemple, un tutoriel guidé et un rack déjà câblé avec un **vrai interpréteur** : vous tapez dans le rack et un interpréteur vivant répond. Le bouton ENGINE choisit parmi 37 interpréteurs ; s’il en manque un, le bouton INSTALL l’installe sur place en affichant l’avancement à l’écran. Les espaces vivent dans `~/.nmox/learn`, à l’écart de votre vrai travail.
+
+### Premiers pas, sur l’accueil
+
+Une quatrième colonne liste les six premiers gestes — ouvrir un projet, lancer quelque chose dans le rack, voir un serveur s’allumer, interroger KVASIR sur du code, essayer un espace d’apprentissage, pointer un agent vers l’IDE — et coche chacun à partir de registres que le produit tient déjà. Chaque ligne est une porte : un clic ouvre la fenêtre ou l’action. Une coche ne se décoche jamais ; la colonne disparaît quand les six sont faits, ou quand vous appuyez sur **Masquer cette liste**.
+
+### Les trois réponses du menu Aide
+
+**Nouveautés…** donne les notes de la version que vous exécutez, incluses dans la compilation ; au premier démarrage après une mise à jour, elles s’ouvrent seules sur ce que votre installation n’avait pas vu. **Signaler un problème…** compose un rapport avec votre environnement et les quarante dernières lignes du journal, déjà caviardées — votre dossier personnel devient `~`, votre identifiant `<user>`, tout ce qui ressemble à un secret `[redacted]` — ; vous l’éditez, puis **Ouvrir sur GitHub** préremplit un ticket que vous envoyez vous-même, ou vous le copiez. Le produit n’envoie jamais rien de lui-même. **Raccourcis clavier…** liste chaque raccourci NMOX de votre profil actif, lu sur le clavier en marche, de sorte qu’il ne peut pas dériver de ce que font les menus.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Quand quelque chose ne va pas
+
+### Le Docteur de l’environnement
+
+Dans le menu Outils, il sonde en direct 66 outils externes — node, npm, docker, forge, composer, gopls… — et montre la version trouvée ainsi que la commande d’installation de ce qui manque.
+
+### Des murs avec une porte
+
+S’il manque un serveur de langage ou un outil, l’IDE vous dit quelle commande lancer, ou propose de la lancer ; jamais un échec sec. Un mur a sa propre porte : TypeScript 7 ne livre pas de tsserver, donc si le TypeScript trouvé est le 7, l’éditeur le dit une fois et propose d’installer la série 5 — celle qu’il installe lui-même pour la même raison. Si un port est pris, l’erreur nomme le processus qui s’y est installé, et SONAR le déloge.
+
+### Un GO qui ne fait rien
+
+Regardez son écran : les modules s’expliquent avec des mots, et l’infobulle du bouton GO montre la commande exacte qu’il lancerait, pour que vous puissiez l’essayer dans un terminal.
+
+### L’application s’ouvre sur rien (macOS)
+
+Ni fenêtre ni erreur, au premier lancement après l’installation : c’est la quarantaine de Gatekeeper — voyez la note du chapitre 1. Un clic droit puis Ouvrir, une seule fois, et c’est réglé pour de bon. Les journaux vivent sous `~/Library/Application Support/nmoxstudio/…/var/log/` si vous devez ouvrir un ticket.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Annexe : les fichiers que NMOX Studio écrit (et ceux à versionner)
+
+Tout ce que l’IDE conserve d’un projet est un fichier JSON lisible à la racine du projet, conçu pour être partagé avec votre équipe.
+
+| Fichier | Ce qu’il contient | Le versionner ? |
+|---|---|---|
+| `.nmoxapi.json` | Collections, requêtes, environnements et tests du Studio d’API | **Oui** — votre collègue reçoit tout votre plan de travail |
+| `.nmoxdb.json` | Connexions, requêtes enregistrées et historique | **Oui** — les mots de passe n’y sont *jamais* (trousseau seulement) |
+| `.nmoxweb3.json` | Réseaux et carnet d’adresses du Studio de contrats | **Oui** — les URL secrètes n’y sont *jamais* (trousseau seulement) |
+| `.nmoxinfra.json` | La toile d’infrastructure : nœuds, câblage, propriétés | **Oui** — les jetons n’y sont *jamais* (trousseau seulement) |
+| `.nmoxtasks.json` | Le Tableau des tâches : colonnes, cartes, limites | **Oui** — l’équipe partage un tableau ; ignorez-le pour le garder personnel |
+| `.gas-snapshot` | Les références de gaz de Foundry (GOVERNOR y veille) | **Oui** — c’est ainsi que les régressions de gaz sont vues en revue |
+| `.env` | Vos variables d’environnement | **Non** — c’est tout l’objet de `.env` |
+| `*.bak` | Un fichier de travail illisible, gardé pour vous | Non — récupérez ce qu’il vous faut, puis supprimez |
+
+Modifiez l’un des quatre fichiers `.nmox*.json` hors de l’IDE, ou tirez les changements d’un collègue, et le studio correspondant se recharge tout seul — sauf si vous avez des changements non enregistrés, auquel cas il demande d’abord.
+
+Hors du projet : `~/NMOX` est le plan de travail par défaut, les expériences vivent dans `~/.nmox/experiments`, les espaces d’apprentissage dans `~/.nmox/learn`, et l’état de l’IDE lui-même — disposition des fenêtres, patches du rack, préférences — dans le dossier utilisateur de la plateforme.

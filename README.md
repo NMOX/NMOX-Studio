@@ -241,8 +241,8 @@ Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 an
 Pick yours in Options ▸ General ▸ Language and the open windows rename
 themselves on the spot — no restart, and the choice survives one anyway.
 Times follow the language too, so a Hindi reader gets a 12-hour clock while
-a record an agent parses stays fixed. The user guide's opening chapters are
-translated to match, and the Welcome's guide link lands in your language:
+a record an agent parses stays fixed. The user guide is translated in full — every chapter, in every one of
+them — and the Welcome's guide link lands in your language:
 [Español](docs/user-guide.es.md) · [Français](docs/user-guide.fr.md) ·
 [Deutsch](docs/user-guide.de.md) · [Русский](docs/user-guide.ru.md) ·
 [Українська](docs/user-guide.uk.md) · [Polski](docs/user-guide.pl.md) ·

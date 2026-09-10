@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–6 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
-
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
 ---
@@ -230,3 +228,155 @@ Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SAS
 ### Peramban (⌥⌘4)
 
 Sebuah peramban sungguhan di dalam IDE, dengan perkakas pengembangnya sendiri — konsol, DOM, jaringan, penyimpanan, dan panel untuk Vue, Svelte, dan Angular — sebab mesinnya tak membawa pemeriksa apa pun, dan yang ini milik kita. Ia sadar akan sumbernya: pilih sebuah elemen, buka baris yang melahirkannya, ubah gayanya di tempat, dan deklarasinya mendarat di lembar gaya asalnya. Menyimpan sebuah berkas memuat ulang halamannya, dan ada ukuran perangkat yang sungguhan untuk menguji tata letak Anda yang lentur.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Tab Docker adalah panel kendali: keadaan mesin, kontainer, image, volume, dan jaringan, lengkap dengan mulai, henti, log, dan bersih-bersih. Perangkat HARBOR di rak menunjukkan hal yang sama dalam sekali pandang. Dan seperti sudah disebut: jalankan kontainer Postgres, MySQL, atau Mongo, dan Studio Basis Data menawarkan sambungan yang sudah jadi.
+
+Tab **Dockerize** membuat `Dockerfile` kelas produksi, `.dockerignore`, dan berkas komposisi yang disesuaikan dengan rantai perkakas proyek Anda — Node, PHP-FPM dengan nginx, dan lainnya.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Pemandu dan kit
+
+Semuanya ada di *Berkas Baru…* dan di menu konteks proyek, dan semuanya **idempoten serta tidak pernah menimpa**: menjalankannya lagi hanya memperbarui apa yang menjadi miliknya sendiri dan membiarkan suntingan Anda; apa yang tidak boleh ditulis ulang mendarat di sebelahnya sebagai berkas `.suggested`.
+
+### Kit standar
+
+`robots.txt`, `sitemap.xml`, manifes web, `security.txt` sesuai RFC 9116, dan `humans.txt`, dibuat dari jawaban Anda.
+
+### Kit PWA
+
+Satu set ikon lengkap yang ditempa dari satu gambar, termasuk varian yang dapat dimasker; service worker yang mudah dibaca — cangkang aplikasi atau jaringan dahulu, Anda yang memilih —, halaman untuk saat tanpa jaringan, dan sambungan di `index.html` yang mengikat semuanya.
+
+### Kit aksesibilitas
+
+Aksesibilitas sebagai titik awal, bukan audit setelah semuanya jadi: `a11y.css` (cincin fokus yang terlihat, alat bantu untuk teks yang hanya dibaca pembaca layar, gaya untuk tautan lompat, dan blok bagi yang memilih lebih sedikit gerak), `A11Y-NOTES.md` berisi penelusuran lewat papan ketik dan pertanyaan yang tidak bisa dijawab otomatisasi mana pun, serta sambungan idempoten di `index.html` — bahasa, tautan lompat, lembar gaya. Viewport yang melarang perbesaran diperingatkan, tidak pernah ditulis ulang; apa yang tidak bisa diperbaiki kit ini disebutkan, bukan disentuh.
+
+### Kit internasionalisasi
+
+Dapat diterjemahkan sejak hari pertama, saudara kit aksesibilitas: `locales/en.json` dan `locales/es.json` (satu katalog per bahasa, kunci yang sama), `i18n.js` tanpa ketergantungan yang menerapkan katalog pada markah `data-i18n`, menjaga `<html lang>` tetap jujur, dan menampilkan kunci yang hilang sebagai dirinya sendiri, bukan sebagai kekosongan yang diam; ditambah `I18N-NOTES.md` — tanpa potongan yang disambung, `Intl` untuk tanggal dan angka, penelusuran kanan ke kiri, dan pseudolokalisasi.
+
+### Kit kontrak (Web3)
+
+Pilih satu rantai — Solidity dengan Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin dengan Miniscript, Clarity di Stacks, Cardano dengan Aiken, atau TON dengan Tact — dan sebuah nama kontrak, lalu kit menyiapkan awalan yang sudah terbukti langsung: manifes, kontrak, uji bawaan, dan CONTRACT-NOTES.md yang menyebut perangkat rak dan langkah sekali jalan. Kunci tidak pernah menyentuh IDE.
+
+### Kit klasik
+
+Tambahkan ke kode mana pun jQuery, MooTools, Prototype, Backbone dengan Underscore, atau Knockout, entah disertakan di dalam repositori (versi dipatok, sha256 dicatat) atau sebagai ketergantungan npm; ditambah kerangka webpack, grunt, gulp, atau bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Pencarian cepat, baris status, dan tetap tahu arah
+
+### Tanda ⇄ melayani
+
+Di baris status muncul tanda **⇄ melayani** setiap kali ada peladen yang hidup: jalannya IDE sendiri, perangkat yang melayani, dan perintah apa pun yang telah mencetak alamat lokal. Klik dan pilih satu: ia terbuka di peramban bawaan, atau di peramban sistem bila tab itu tidak sanggup menerimanya.
+
+### ⌘I, pencari untuk segalanya
+
+Satu kotak menjangkau proyek Anda (yang terkini dan yang dikenal), setiap perangkat rak — langsung ke kendalinya —, **peladen yang sedang hidup** (Enter membukanya di peramban), permintaan Studio API, sambungan dan tabel Studio Basis Data, kontrak, simpul infrastruktur, serta kartu Papan Tugas, dan hasilnya menyebut kolom tempat kartu itu berada.
+
+### Baris status memberi tahu apa yang hidup
+
+Di sebelah tanda peladen ada proyek yang sedang dibidik beserta rantai perkakasnya, dan cabang Git dengan jumlah berkas yang Anda ubah. Semua itu dibaca dari cakram atau dari catatan yang memang sudah disimpan produk ini: melihatnya tidak memakan proses sama sekali.
+
+### Meja Kerja
+
+Inilah pangkalan: proyek berjalan, berkas yang terbuka dan yang terkini, proyek terkini, dan peluncur untuk setiap permukaan. Selama ada yang berjalan, bagian **SEDANG BERJALAN** memimpin halaman — setiap perintah yang produk ini mulai untuk Anda, dengan alamatnya bila ia mengumumkan satu dan sejak jam berapa ia berjalan, ditambah setiap peladen yang dilayani perangkat rak. Setiap baris punya tombol **Buka** dan **Hentikan** yang sungguhan, terjangkau papan ketik maupun pembaca layar, sehingga satu jalan dapat dihentikan tanpa menjatuhkan yang lain. Semua judul di Meja Kerja adalah tombol sungguhan: Tab sampai ke sana, Enter membukanya. ⌘I menjangkau jalan yang sama: ketik «hentikan» lalu Enter menghentikan tepat yang itu. Yang Anda hentikan sendiri terbaca *dihentikan* di mana pun hasilnya dilaporkan, tidak pernah sebagai kegagalan.
+
+### Pintasan Emacs (juga Eclipse dan IntelliJ)
+
+Alat ▸ Opsi ▸ Peta Tombol mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Jaring pengaman (yang tidak perlu Anda lakukan apa-apa untuk mendapatkannya)
+
+### Kebangkitan sesi
+
+Rak memotret apa yang sedang berjalan setiap beberapa detik. Penutupan paksa, kegagalan, `kill -9` — saat dijalankan lagi, sebuah pesan menawarkan untuk memulihkan persis sesi yang hilang, dengan satu klik.
+
+### Jaminan tanpa yatim
+
+Keluar dari IDE mematikan setiap proses yang ia mulai — peladen pengembangan, REPL, rantai, pengawas —, TERM dahulu, KILL kalau membangkang, keturunannya sekalian.
+
+### BLACKBOX dan SONAR
+
+Pasang **BLACKBOX** di rak Anda dan Anda punya perekam penerbangan: setiap awal dan setiap akhir, dengan lamanya, kecenderungannya, dan apa yang berubah sejak bangunan hijau terakhir. Yang Anda hentikan sendiri terbaca DIHENTIKAN — bukan hijau, bukan kegagalan, dan tidak pernah menjadi hal yang diminta dijelaskan kepada KVASIR. **SONAR** menunjukkan siapa yang menguasai porta Anda, disilangkan dengan Docker, dan dengan satu klik mengusir yang menduduki 3000.
+
+### Berkas yang tidak pernah ditimpa
+
+Keempat berkas kerja studio (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) dimuat ulang bila Anda menyuntingnya di luar IDE — tetapi bila ada perubahan yang belum disimpan, Anda ditanya, bukan ditimpa. Berkas yang rusak disingkirkan sebagai `.bak` dan dilaporkan, tidak pernah diganti diam-diam.
+
+### TypeScript tanpa membangun
+
+Proyek yang pintu masuknya `index.ts`, `main.ts`, atau `src/index.ts` berjalan dari IGNITION dengan pelucutan tipe milik Node sendiri (`--experimental-strip-types`, sejak Node 22.6; bawaan sejak 23.6 dan 22.18 LTS). Penolakan dari Node yang lebih tua diterjemahkan menjadi kalimat yang menyebut ambang itu.
+
+### Bahasa Anda
+
+NMOX Studio berbicara dalam tiga belas bahasa: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, dan हिन्दी. Pilih bahasa Anda di **Opsi ▸ Umum ▸ Bahasa** — masing-masing tertulis dengan namanya sendiri, agar Anda selalu menemukan milik Anda. Pilihan itu ditulis ke pengaturan peluncuran Anda (`etc/nmoxstudio.conf`, sebagai argumen `--locale`) dan juga berlaku seketika. Yang berubah: menu, dialog, tip alat, baris status, layar sambutan, dan opsi. Yang tetap: kosakata panel depan rak (GO, STOP, EXPLAIN — itu label perangkat, seperti pada synthesizer), serta dialog platform yang lebih dalam, yang belum punya terjemahan.
+
+### Pemeriksaan pembaruan harian
+
+Tenang, sekali sehari: bila ada rilis yang lebih baru, sebuah pemberitahuan membawa Anda ke pengelola modul, pada tab pembaruannya, tempat pusat pembaruan memasang modul baru di tempatnya. Matikan di Opsi ▸ Umum.
+
+<a id="11-learning-spaces"></a>
+## 11. Ruang belajar
+
+### Periksa pekerjaan Anda
+
+Sebagian ruang membawa titik pemeriksaan: pilih salah satunya, dan **Berkas ▸ Periksa Pekerjaan Saya** benar-benar memeriksa latihannya — apa yang dinyatakan berkas diperiksa dengan Java murni, termasuk pemeriksaan *ketidakhadiran*, satu-satunya cara memastikan «Anda mengubah judulnya»: teks asli contoh itu harus sudah lenyap. Apa yang dinyatakan perintah lewat rantai perkakas ruang itu sendiri. Setiap ✗ menjawab dengan petunjuk ruang itu, dan bila gagal laporannya menawarkan **Jelaskan dengan KVASIR…**: titik yang gagal dan, untuk pemeriksaan berkas, berkas Anda sendiri, dibatasi dan di bawah izin yang menyebut persis apa yang keluar. Jawabannya terbaca seperti seorang tutor: apa yang harus diubah, lalu periksa lagi.
+
+### Tutorial Anda sendiri
+
+Letakkan berkas `*.json` di `~/.nmox/learn-catalog.d/` dan ia ikut masuk ke pemilih, dengan skema yang sama dengan bawaan; `slug` yang sama menggantikan yang bawaan. Sedang mengajar? Menulislah sambil membangun: jadikan latihan itu proyek biasa, lalu **Berkas ▸ Ekspor sebagai Ruang Belajar…** menyusun berkas itu untuk Anda — berkas contoh, `TUTORIAL.md` Anda, penggerak jalannya, dan titik pemeriksaan Anda — sudah diuji dengan pengurai milik pemilih itu sendiri sebelum ditulis, sehingga yang Anda serahkan kepada murid persis sama dengan yang akan dimuat pemilih mereka.
+
+### Katalognya
+
+*Ruang Belajar Baru…* menawarkan 93 tutorial bawaan — bahasa, kerangka kerja, dan pustaka. Masing-masing membuat proyek contoh kecil, tutorial yang dituntun, dan rak yang sudah terpasang **penafsir sungguhan**: Anda mengetik di rak dan penafsir yang hidup menjawab. Kenop ENGINE memilih di antara 37 penafsir; bila salah satu tidak ada, tombol INSTALL memasangnya di tempat itu juga sambil menampilkan kemajuannya di layar. Ruang-ruang itu tinggal di `~/.nmox/learn`, terpisah dari pekerjaan Anda yang sebenarnya.
+
+### Langkah pertama, di layar sambutan
+
+Kolom keempat mendaftar enam gerakan pertama — membuka proyek, menjalankan sesuatu di rak, melihat sebuah peladen hidup, bertanya kepada KVASIR tentang kode, mencoba ruang belajar, mengarahkan agen ke IDE — dan mencentang masing-masing dari catatan yang memang sudah disimpan produk ini. Setiap baris adalah pintu: sekali klik, jendela atau tindakan itu terbuka. Centang tidak pernah kembali kosong; kolomnya hilang bila keenamnya sudah selesai, atau bila Anda menekan **Sembunyikan daftar ini**.
+
+### Tiga jawaban menu Bantuan
+
+**Apa yang Baru…** memuat catatan rilis yang sedang Anda jalankan, disertakan dalam bangunannya sendiri; pada mula pertama setelah pembaruan, catatan itu terbuka sendiri berisi rilis yang belum pernah dilihat pemasangan Anda. **Laporkan Masalah…** menyusun laporan berisi lingkungan Anda dan empat puluh baris terakhir log, sudah disunting — folder rumah Anda menjadi `~`, nama masuk Anda `<user>`, dan apa pun yang menyerupai kredensial menjadi `[redacted]` —; Anda menyuntingnya, lalu **Buka di GitHub** mengisikan sebuah isu yang Anda kirim sendiri, atau Anda salin. Produk ini tidak pernah mengirim apa pun atas kemauannya sendiri. **Pintasan Papan Ketik…** mendaftar setiap pintasan NMOX di profil Anda yang aktif, dibaca dari peta tombol yang sedang berjalan, sehingga ia tidak mungkin menyimpang dari apa yang dilakukan menu.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Ketika ada yang tidak beres
+
+### Dokter Lingkungan
+
+Di menu Alat, ia menjajaki langsung 66 perkakas luar — node, npm, docker, forge, composer, gopls… — dan menunjukkan versi yang ditemukan serta perintah pemasangan bagi yang tidak ada.
+
+### Tembok yang punya pintu
+
+Bila peladen bahasa atau sebuah perkakas tidak ada, IDE memberi tahu perintah mana yang harus dijalankan, atau menawarkan menjalankannya; tidak pernah sekadar kegagalan. Satu tembok punya pintunya sendiri: TypeScript 7 tidak membawa tsserver, jadi bila TypeScript yang ditemukan adalah 7, penyunting mengatakannya sekali dan menawarkan jalur 5 — jalur yang ia pasang sendiri karena alasan yang sama. Bila sebuah porta sudah terpakai, pesan galat menyebut proses yang menduduki, dan SONAR mengusirnya.
+
+### GO yang tidak melakukan apa-apa
+
+Lihat layarnya: perangkat menjelaskan dirinya dengan kata-kata, dan tip pada tombol GO menampilkan perintah persis yang akan ia jalankan, supaya Anda bisa mencobanya di terminal.
+
+### Aplikasi terbuka tanpa apa pun (macOS)
+
+Tanpa jendela, tanpa galat, pada mula pertama setelah pemasangan: itu karantina Gatekeeper — lihat catatan di bab 1. Klik kanan lalu Buka, cukup sekali, dan beres selamanya. Log berada di bawah `~/Library/Application Support/nmoxstudio/…/var/log/` bila Anda perlu membuka isu.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Lampiran: berkas yang ditulis NMOX Studio (dan mana yang layak dikomit)
+
+Semua yang disimpan IDE tentang sebuah proyek adalah berkas JSON yang terbaca di akar proyek, dirancang untuk dibagi dengan tim Anda.
+
+| Berkas | Isinya | Dikomit? |
+|---|---|---|
+| `.nmoxapi.json` | Koleksi, permintaan, lingkungan, dan uji Studio API | **Ya** — rekan Anda menerima seluruh meja kerja Anda |
+| `.nmoxdb.json` | Sambungan, kueri tersimpan, dan riwayat | **Ya** — kata sandi *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxweb3.json` | Jaringan dan buku alamat Studio Kontrak | **Ya** — alamat rahasia *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxinfra.json` | Kanvas infrastruktur: simpul, sambungan, sifat | **Ya** — token *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxtasks.json` | Papan Tugas: kolom, kartu, batas | **Ya** — tim berbagi satu papan; abaikan bila ingin pribadi |
+| `.gas-snapshot` | Patokan gas per uji dari Foundry (GOVERNOR menjaganya) | **Ya** — begitulah kemunduran gas tertangkap saat tinjauan |
+| `.env` | Peubah lingkungan Anda | **Tidak** — justru itulah gunanya `.env` |
+| `*.bak` | Berkas kerja yang gagal diurai, disimpan untuk Anda | Tidak — ambil yang Anda perlukan, lalu hapus |
+
+Sunting salah satu dari empat berkas `.nmox*.json` di luar IDE, atau tarik perubahan rekan Anda, dan studio yang bersangkutan memuat ulang dengan sendirinya — kecuali bila Anda punya perubahan yang belum disimpan di sana, maka ia bertanya lebih dahulu.
+
+Di luar proyek: `~/NMOX` adalah meja kerja bawaan, percobaan tinggal di `~/.nmox/experiments`, ruang belajar di `~/.nmox/learn`, dan keadaan IDE sendiri — tata letak jendela, patch rak, preferensi — di direktori pengguna platform.

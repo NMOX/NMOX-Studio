@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–6 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
-
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
 ---
@@ -230,3 +228,155 @@ Pełny klient wewnątrz IDE: TLS z prawdziwym sprawdzeniem nazwy, SASL, rozszerz
 ### Przeglądarka (⌥⌘4)
 
 Prawdziwa przeglądarka wewnątrz IDE, z własnymi narzędziami deweloperskimi — konsolą, DOM-em, siecią, magazynem i panelami dla Vue, Svelte i Angulara — bo silnik nie niesie własnego inspektora, a ten jest nasz. Zna twoje źródła: wskaż element, otwórz wiersz, który go wytworzył, zmień jego styl na miejscu, a deklaracja wyląduje w źródłowym arkuszu stylów. Zapisanie pliku przeładowuje stronę, a prawdziwe rozmiary urządzeń służą do sprawdzania układu responsywnego.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Karta Docker to pulpit sterowniczy: stan silnika, kontenery, obrazy, wolumeny i sieci, z uruchamianiem, zatrzymywaniem, dziennikami i sprzątaniem. Urządzenie HARBOR na stojaku pokazuje to samo jednym spojrzeniem. I jak już powiedziano: uruchom kontener Postgresa, MySQL-a albo Mongo, a Studio baz danych zaproponuje ci gotowe połączenie.
+
+Karta **Dockerize** tworzy `Dockerfile` klasy produkcyjnej, `.dockerignore` oraz plik kompozycji dopasowane do łańcucha narzędzi twojego projektu — Node, PHP-FPM z nginksem i inne.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Kreatory i zestawy
+
+Wszystkie mieszkają w *Nowy plik…* oraz w menu kontekstowym projektu i wszystkie są **idempotentne i nigdy nie nadpisują**: kolejne uruchomienie odświeża to, co należy do samego zestawu, a twoje zmiany zostawia w spokoju; czego przepisać nie wolno, ląduje obok jako plik `.suggested`.
+
+### Zestaw standardów
+
+`robots.txt`, `sitemap.xml`, manifest sieciowy, `security.txt` zgodny z RFC 9116 oraz `humans.txt`, utworzone z twoich odpowiedzi.
+
+### Zestaw PWA
+
+Pełny komplet ikon wykuty z jednego obrazu, wraz z wariantami maskowalnymi; czytelny service worker — powłoka aplikacji albo sieć najpierw, twój wybór — strona na czas bez sieci i okablowanie w `index.html`, które wiąże to wszystko razem.
+
+### Zestaw dostępności
+
+Dostępność jako punkt wyjścia, a nie audyt po fakcie: `a11y.css` (widoczny pierścień fokusa, narzędzie dla tekstu czytanego tylko przez czytniki ekranu, style odnośnika pomijającego i blok dla tych, którzy wolą mniej ruchu), `A11Y-NOTES.md` z przejściem po klawiaturze i pytaniami, na które żadna automatyka nie odpowie, oraz idempotentne okablowanie `index.html` — język, odnośnik pomijający, arkusz stylów. O viewporcie zakazującym powiększania dostaniesz ostrzeżenie, ale nikt go nie przepisze; czego zestaw naprawić nie umie, to nazywa, a nie rusza.
+
+### Zestaw internacjonalizacji
+
+Przetłumaczalny od pierwszego dnia, brat zestawu dostępności: `locales/en.json` i `locales/es.json` (po jednym katalogu na język, te same klucze), `i18n.js` bez zależności, który stosuje katalog do znaczników `data-i18n`, pilnuje, by `<html lang>` mówił prawdę, i pokazuje brakujący klucz jako jego samego, nigdy jako cichą pustkę; do tego `I18N-NOTES.md` — żadnych sklejanych fragmentów, `Intl` do dat i liczb, przejście od prawej do lewej i pseudolokalizacja.
+
+### Zestaw kontraktów (Web3)
+
+Wybierz łańcuch — Solidity z Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin z Miniscriptem, Clarity na Stacks, Cardano z Aikenem albo TON z Tactem — oraz nazwę kontraktu, a zestaw postawi sprawdzony na żywo początek: manifest, kontrakt, natywny test i CONTRACT-NOTES.md nazywający urządzenia stojaka i kroki jednorazowe. Klucze nigdy nie dotykają środowiska.
+
+### Zestaw klasyczny
+
+Dodaj do dowolnego kodu jQuery, MooTools, Prototype, Backbone z Underscore albo Knockout — czy to w samym repozytorium (przypięte wersje, zapisany sha256), czy jako zależności npm; do tego rusztowania webpacka, grunta, gulpa lub bowera.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Szybkie wyszukiwanie, pasek stanu i trzymanie się kursu
+
+### Znacznik ⇄ obsługuje
+
+Na pasku stanu pojawia się znacznik **⇄ obsługuje**, gdy tylko działają serwery: uruchomienie samego środowiska, urządzenia obsługujące oraz każde polecenie, które wypisało lokalny adres. Kliknij i wybierz jeden — otworzy się we wbudowanej przeglądarce albo w przeglądarce systemu, gdy tamta karta go nie przyjmie.
+
+### ⌘I, wyszukiwarka do wszystkiego
+
+Jedno pole sięga twoich projektów (ostatnich i znanych), każdego urządzenia na stojaku — prosto do jego pokręteł —, **działających serwerów** (Enter otwiera je w przeglądarce), żądań Studia API, połączeń i tabel Studia baz danych, kontraktów, węzłów infrastruktury oraz kart Tablicy zadań, a trafienie nazywa kolumnę, w której karta stoi.
+
+### Pasek stanu mówi, co żyje
+
+Obok znacznika serwerów stoi wycelowany projekt ze swoim łańcuchem narzędzi oraz gałąź Gita wraz z liczbą zmienionych plików. Wszystko to czyta się z dysku albo z zapisów, które produkt i tak prowadzi — spojrzenie nie kosztuje ani jednego procesu.
+
+### Stanowisko pracy
+
+To macierzysty port: bieżący projekt, pliki otwarte i ostatnie, ostatnie projekty oraz uruchomienie każdej powierzchni. Dopóki coś działa, stronę otwiera sekcja **DZIAŁA** — każde polecenie, które produkt uruchomił za ciebie, z jego adresem, jeśli go ogłosiło, i od której godziny idzie, a do tego każdy serwer obsługiwany przez urządzenie ze stojaka. W każdym wierszu są prawdziwe przyciski **Otwórz** i **Zatrzymaj**, dosięgalne z klawiatury i przez czytnik ekranu, więc jedno uruchomienie można zatrzymać, nie kładąc reszty. Wszystkie tytuły na Stanowisku pracy to prawdziwe przyciski: Tab tam dochodzi, Enter otwiera. ⌘I sięga tych samych uruchomień: wpisz „zatrzymaj”, a Enter zatrzyma dokładnie to jedno. To, co zatrzymałeś sam, czyta się jako *zatrzymane* wszędzie tam, gdzie mowa o wyniku, i nigdy jako porażka.
+
+### Skróty Emacsa (a także Eclipse i IntelliJ)
+
+Narzędzia ▸ Opcje ▸ Skróty klawiszowe przełącza cały profil: ruchy oraz wycinanie i wklejanie Emacsa w każdym edytorze, albo zestawy Eclipse i IDEA, jeśli tam siedzi twoja pamięć mięśniowa. Każdy skrót NMOX jest zapisany we wszystkich pięciu profilach, więc zmiana profilu nigdy nie kosztuje cię skrótów studiów.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Siatki bezpieczeństwa (to, po co nie trzeba nic robić)
+
+### Wskrzeszenie sesji
+
+Stojak co kilka sekund robi zdjęcie temu, co działa. Wymuszone zamknięcie, awaria, `kill -9` — przy następnym starcie dymek proponuje wznowić dokładnie tę utraconą sesję, jednym kliknięciem.
+
+### Gwarancja bez sierot
+
+Wyjście ze środowiska zabija każdy proces, który ono uruchomiło — serwery deweloperskie, interpretery, łańcuchy, obserwatorów — najpierw TERM, potem KILL, gdy się opierają, wraz z potomkami.
+
+### BLACKBOX i SONAR
+
+Wstaw **BLACKBOX** na stojak, a masz rejestrator lotu: każdy start i każde wyjście, z czasami trwania, tendencjami i tym, co zmieniło się od ostatniej zielonej kompilacji. To, co zatrzymałeś sam, czyta się jako ZATRZYMANE — ani zielone, ani porażka, i nigdy to, co prosi się KVASIRa wyjaśnić. **SONAR** pokazuje, kto zajmuje twoje porty, zestawiając to z Dockerem, i jednym kliknięciem wyrzuca tego, kto rozsiadł się na 3000.
+
+### Pliki, których nikt nie nadpisuje
+
+Cztery pliki robocze studiów (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) wczytują się ponownie, gdy zmienisz je poza środowiskiem — ale jeśli masz niezapisane zmiany, dostaniesz pytanie, a nie nadpisanie. Uszkodzony plik odkłada się jako `.bak` i mówi ci o tym; nigdy nie podmienia się go po cichu.
+
+### TypeScript bez budowania
+
+Projekt, którego wejściem jest `index.ts`, `main.ts` albo `src/index.ts`, uruchamia się z IGNITION przy pomocy własnego zdejmowania typów Node-a (`--experimental-strip-types`, od Node 22.6; domyślnie od 23.6 i 22.18 LTS). Odmowa starszego Node-a zostaje przetłumaczona na zdanie, które nazywa ten próg.
+
+### Twój język
+
+NMOX Studio mówi trzynastoma językami: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 i हिन्दी. Wybierz swój w **Opcje ▸ Ogólne ▸ Język** — każdy zapisany własną nazwą, żebyś zawsze znalazł swój. Wybór trafia do twoich ustawień uruchamiania (`etc/nmoxstudio.conf`, jako argument `--locale`) i działa też od razu. Zmieniają się menu, okna dialogowe, podpowiedzi, paski stanu, ekran powitalny i opcje. Zostaje słownictwo płyt czołowych stojaka (GO, STOP, EXPLAIN — to napisy na urządzeniu, jak na syntezatorze) oraz głębsze okna samej platformy, dla których tłumaczenia jeszcze nie ma.
+
+### Codzienne sprawdzanie aktualizacji
+
+Ciche, raz dziennie: jeśli jest nowsze wydanie, powiadomienie prowadzi cię do menedżera modułów, na jego kartę aktualizacji, gdzie centrum aktualizacji instaluje nowe moduły na miejscu. Wyłącza się w Opcje ▸ Ogólne.
+
+<a id="11-learning-spaces"></a>
+## 11. Przestrzenie nauki
+
+### Sprawdź swoją pracę
+
+Niektóre przestrzenie mają punkty kontrolne: wybierz taką, a **Plik ▸ Sprawdź moją pracę** naprawdę sprawdzi ćwiczenia — to, co twierdzą pliki, jest sprawdzane w czystej Javie, wraz ze sprawdzeniami *nieobecności*, którymi jedynie da się sprawdzić „zmieniłeś nagłówek”: pierwotny tekst przykładu musi zniknąć. To, co twierdzą polecenia, przechodzi przez własny łańcuch narzędzi przestrzeni. Każdy ✗ odpowiada podpowiedzią samej przestrzeni, a przy niepowodzeniu raport proponuje **Wyjaśnij z KVASIR-em…**: punkty, które padły, oraz — przy sprawdzeniu pliku — twój własny plik, przycięte i pod zgodą, która wprost nazywa, co wychodzi. Odpowiedź czyta się jak odpowiedź korepetytora: co zmienić, a potem sprawdź jeszcze raz.
+
+### Twoje własne kursy
+
+Wrzuć plik `*.json` do `~/.nmox/learn-catalog.d/`, a dołączy on do wyboru, w tym samym schemacie co wbudowane; zgodny `slug` zastępuje domowy. Uczysz? Pisz, budując: zrób z ćwiczenia zwykły projekt, a **Plik ▸ Wyeksportuj jako przestrzeń nauki…** złoży ten plik za ciebie — pliki przykładowe, twój `TUTORIAL.md`, sterownik uruchomienia i twoje punkty kontrolne — sprawdzony parserem samego wyboru, zanim zostanie zapisany, więc to, co wręczysz uczniom, jest dokładnie tym, co wczyta ich wybór.
+
+### Katalog
+
+*Nowa przestrzeń nauki…* oferuje 93 wbudowane kursy — języki, szkielety i biblioteki. Każdy tworzy mały projekt przykładowy, prowadzony kurs i stojak, na którym wisi już **prawdziwy interpreter**: piszesz na stojaku, a żywy interpreter odpowiada. Pokrętło ENGINE wybiera spośród 37 interpreterów, a gdy któregoś brak, przycisk INSTALL stawia go na miejscu, pokazując postęp na ekranie. Przestrzenie mieszkają w `~/.nmox/learn`, z dala od twojej prawdziwej pracy.
+
+### Pierwsze kroki, na ekranie powitalnym
+
+Czwarta kolumna wymienia sześć pierwszych gestów — otworzyć projekt, uruchomić coś na stojaku, zobaczyć wstający serwer, zapytać KVASIR-a o kod, spróbować przestrzeni nauki, wycelować agenta w środowisko — i odhacza każdy na podstawie zapisów, które produkt i tak prowadzi. Każdy wiersz to drzwi: kliknięcie otwiera to okno albo tę czynność. Odhaczenie nigdy się nie cofa; kolumna znika, gdy sześć jest gotowych albo gdy naciśniesz **Ukryj tę listę**.
+
+### Trzy odpowiedzi menu Pomoc
+
+**Co nowego…** pokazuje notatki wydania, które uruchamiasz, dołączone do samej kompilacji; przy pierwszym starcie po aktualizacji otwierają się same z tym, czego twoja instalacja jeszcze nie widziała. **Zgłoś problem…** składa raport z twojego środowiska i ostatnich czterdziestu wierszy dziennika, już zamazanych — katalog domowy staje się `~`, login `<user>`, a wszystko, co wygląda na sekret, `[redacted]`; edytujesz go, a **Otwórz na GitHubie** wypełnia zgłoszenie, które wysyłasz sam, albo je kopiujesz. Produkt nigdy niczego nie wysyła z własnej woli. **Skróty klawiszowe…** wymienia każdy skrót NMOX z twojego czynnego profilu, odczytany z działającej mapy klawiszy, więc nie może się rozminąć z tym, co robią menu.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Kiedy coś jest nie tak
+
+### Doktor środowiska
+
+W menu Narzędzia bada na żywo 66 zewnętrznych narzędzi — node, npm, docker, forge, composer, gopls… — i pokazuje znalezioną wersję, a dla brakujących polecenie instalacji.
+
+### Mury z drzwiami
+
+Gdy brak serwera języka albo narzędzia, środowisko mówi, jakie polecenie uruchomić, albo proponuje, że uruchomi je samo; nigdy samą porażkę. Jeden mur ma własne drzwi: TypeScript 7 nie niesie tsservera, więc jeśli znaleziony TypeScript to siódemka, edytor mówi o tym raz i proponuje linię piątą — tę samą, którą sam instaluje z tego samego powodu. Gdy port jest zajęty, błąd nazywa proces, który się na nim rozsiadł, a SONAR go wyrzuca.
+
+### GO, które nic nie robi
+
+Spójrz na jego wyświetlacz: urządzenia tłumaczą się słowami, a podpowiedź przy przycisku GO pokazuje dokładne polecenie, które by uruchomiło, żebyś mógł spróbować go w terminalu.
+
+### Aplikacja otwiera się w pustkę (macOS)
+
+Ani okna, ani błędu, przy pierwszym starcie po instalacji: to kwarantanna Gatekeepera — zobacz notkę w rozdziale 1. Prawy klik i Otwórz, jeden raz, i sprawa załatwiona na dobre. Dzienniki leżą pod `~/Library/Application Support/nmoxstudio/…/var/log/`, gdybyś musiał założyć zgłoszenie.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Dodatek: pliki, które pisze NMOX Studio (i co z nich wrzucać do repozytorium)
+
+Wszystko, co środowisko przechowuje o projekcie, to czytelny plik JSON w korzeniu projektu, zrobiony po to, by dzielić się nim z zespołem.
+
+| Plik | Co jest w środku | Wrzucać do repozytorium? |
+|---|---|---|
+| `.nmoxapi.json` | Kolekcje, żądania, środowiska i testy Studia API | **Tak** — kolega dostaje całe twoje stanowisko pracy |
+| `.nmoxdb.json` | Połączenia, zapisane zapytania i historia | **Tak** — haseł tam *nigdy* nie ma (tylko w pęku kluczy) |
+| `.nmoxweb3.json` | Sieci i książka adresowa Studia kontraktów | **Tak** — tajnych adresów tam *nigdy* nie ma (tylko w pęku) |
+| `.nmoxinfra.json` | Płótno infrastruktury: węzły, okablowanie, właściwości | **Tak** — żetonów tam *nigdy* nie ma (tylko w pęku kluczy) |
+| `.nmoxtasks.json` | Tablica zadań: kolumny, karty, limity | **Tak** — zespół dzieli jedną tablicę; pomiń, jeśli ma być osobista |
+| `.gas-snapshot` | Wzorce zużycia gazu z Foundry (pilnuje ich GOVERNOR) | **Tak** — tak łapie się regresje gazu podczas przeglądu |
+| `.env` | Twoje zmienne środowiskowe | **Nie** — po to właśnie jest `.env` |
+| `*.bak` | Plik roboczy, którego nie dało się odczytać, zachowany dla ciebie | Nie — odzyskaj, co trzeba, i skasuj |
+
+Zmień którykolwiek z czterech plików `.nmox*.json` poza środowiskiem albo ściągnij zmiany kolegi, a odpowiednie studio wczyta je samo — chyba że masz tam niezapisane zmiany, wtedy najpierw zapyta.
+
+Poza projektem: `~/NMOX` to domyślne stanowisko pracy, eksperymenty mieszkają w `~/.nmox/experiments`, przestrzenie nauki w `~/.nmox/learn`, a stan samego środowiska — układ okien, patche stojaka, ustawienia — w katalogu użytkownika platformy.

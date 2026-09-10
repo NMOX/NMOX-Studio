@@ -158,6 +158,43 @@ class TranslatedGuideGateTest {
                 .isEmpty();
     }
 
+    @Test
+    @DisplayName("a complete guide says nothing about being partial — and really is complete")
+    void completeGuidesDropTheNotice() throws IOException {
+        // v2.110.0 made every guide complete, which fires the "owes no
+        // notice" branch of the test above for the first time. That branch
+        // is now the only thing standing between a guide and silence, so it
+        // needs its own law in the other direction: a guide that claims
+        // completeness by covering every chapter must not ALSO carry the
+        // sentence saying it stops early. Both halves are checked here, so
+        // neither a lost chapter nor a stale notice can hide behind a skip.
+        List<String> english = chapters(docs().resolve("user-guide.md"));
+        List<String> lying = new ArrayList<>();
+        List<String> short_ = new ArrayList<>();
+        for (String lang : translatedLanguages()) {
+            Path p = docs().resolve("user-guide." + lang + ".md");
+            List<String> mine = chapters(p);
+            if (mine.size() < english.size()) {
+                short_.add(lang + ": " + mine.size() + " of " + english.size() + " chapters");
+                continue;
+            }
+            for (String line : read(p).split("\n", -1)) {
+                if (line.startsWith("> ") && line.contains("](user-guide.md)")) {
+                    lying.add(lang + ": " + line);
+                    break;
+                }
+            }
+        }
+        assertThat(short_)
+                .as("every language the product speaks has the WHOLE guide (v2.110.0); "
+                        + "a language that falls behind is named here rather than quietly excused")
+                .isEmpty();
+        assertThat(lying)
+                .as("a complete guide that still says it is partial sends its reader to English "
+                        + "for chapters it already has")
+                .isEmpty();
+    }
+
     /** The blockquote notice under the language bar. */
     private static String noticeLine(String body) {
         for (String line : body.split("\n", -1)) {

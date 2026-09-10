@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–6 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
-
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
 ---
@@ -230,3 +228,155 @@ Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật s
 ### Trình duyệt (⌥⌘4)
 
 Một trình duyệt thật ngay trong IDE, với bộ công cụ nhà phát triển của riêng nó — bảng điều khiển, DOM, mạng, kho lưu, và các khung cho Vue, Svelte và Angular — bởi bộ máy không mang theo trình kiểm tra nào, và cái này là của chúng tôi. Nó biết mã nguồn của bạn: chọn một phần tử, mở đúng dòng đã sinh ra nó, đổi kiểu ngay tại chỗ, và khai báo ấy sẽ nằm vào đúng tệp kiểu gốc. Lưu một tệp là trang tự tải lại, và có sẵn những kích thước thiết bị thật để thử bố cục co giãn của bạn.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Thẻ Docker là một bảng điều khiển: trạng thái của máy, các thùng chứa, ảnh, ổ đĩa và mạng, cùng với khởi động, dừng, nhật ký và dọn dẹp. Thiết bị HARBOR trên giá cho bạn ngần ấy chỉ trong một cái nhìn. Và như đã nói: chạy một thùng chứa Postgres, MySQL hay Mongo, và Xưởng cơ sở dữ liệu sẽ mời bạn một kết nối đã sẵn sàng.
+
+Thẻ **Dockerize** sinh ra một `Dockerfile` đạt chuẩn sản xuất, một `.dockerignore` và một tệp soạn thảo hợp với bộ công cụ của dự án bạn — Node, PHP-FPM cùng nginx, và nhiều thứ khác.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Trình hướng dẫn và bộ công cụ
+
+Tất cả nằm trong *Tệp mới…* và trong trình đơn ngữ cảnh của dự án, và tất cả đều **luỹ đẳng và không bao giờ ghi đè**: chạy lại một bộ chỉ làm mới những gì thuộc về chính nó và để yên các sửa đổi của bạn; thứ không được phép viết lại sẽ đáp xuống bên cạnh dưới dạng tệp `.suggested`.
+
+### Bộ chuẩn mực
+
+`robots.txt`, `sitemap.xml`, bản kê khai web, `security.txt` theo RFC 9116 và `humans.txt`, được sinh ra từ những câu trả lời của bạn.
+
+### Bộ PWA
+
+Một bộ biểu tượng đầy đủ rèn từ một tấm ảnh duy nhất, kể cả các biến thể che được; một service worker dễ đọc — vỏ ứng dụng hoặc mạng trước, bạn chọn —, một trang cho lúc mất mạng, và phần nối dây trong `index.html` buộc tất cả lại với nhau.
+
+### Bộ tiếp cận
+
+Khả năng tiếp cận là điểm khởi đầu, không phải cuộc kiểm tra muộn màng: `a11y.css` (một vòng tiêu điểm nhìn thấy được, một tiện ích cho phần chữ chỉ trình đọc màn hình mới đọc, kiểu dáng cho liên kết nhảy qua, và một khối cho ai muốn ít chuyển động hơn), `A11Y-NOTES.md` với lượt đi bằng bàn phím và những câu hỏi không máy móc nào trả lời được, cùng phần nối dây luỹ đẳng trong `index.html` — ngôn ngữ, liên kết nhảy qua, bảng kiểu. Một viewport cấm phóng to sẽ được cảnh báo chứ không bao giờ bị viết lại; điều bộ này không sửa được thì nó nói ra, chứ không đụng vào.
+
+### Bộ quốc tế hoá
+
+Dịch được ngay từ ngày đầu, anh em với bộ tiếp cận: `locales/en.json` và `locales/es.json` (mỗi ngôn ngữ một danh mục, cùng bộ khoá), một `i18n.js` không phụ thuộc gì, áp danh mục lên phần đánh dấu `data-i18n`, giữ cho `<html lang>` nói thật, và hiện một khoá thiếu bằng chính nó chứ không phải một khoảng trống lặng lẽ; thêm `I18N-NOTES.md` — không ghép mảnh, `Intl` cho ngày tháng và con số, lượt đi từ phải sang trái, và giả bản địa hoá.
+
+### Bộ hợp đồng (Web3)
+
+Chọn một chuỗi — Solidity với Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin với Miniscript, Clarity trên Stacks, Cardano với Aiken hoặc TON với Tact — và một tên hợp đồng, rồi bộ sẽ dựng phần khởi đầu đã được chứng thực trực tiếp: bản kê khai, hợp đồng, bài kiểm tra bản địa và một CONTRACT-NOTES.md gọi tên các thiết bị trên giá cùng những bước chỉ làm một lần. Khoá không bao giờ chạm tới IDE.
+
+### Bộ cổ điển
+
+Thêm vào bất cứ mã nguồn nào jQuery, MooTools, Prototype, Backbone cùng Underscore, hoặc Knockout, hoặc để ngay trong kho (phiên bản ghim chặt, sha256 ghi lại) hoặc làm phụ thuộc npm; thêm khung sườn của webpack, grunt, gulp hay bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Tìm nhanh, thanh trạng thái, và giữ được phương hướng
+
+### Dấu ⇄ đang phục vụ
+
+Trên thanh trạng thái hiện dấu **⇄ đang phục vụ** mỗi khi có máy chủ đang chạy: lượt chạy của chính IDE, các thiết bị đang phục vụ, và bất cứ lệnh nào đã in ra một địa chỉ nội bộ. Bấm rồi chọn một cái: nó mở trong trình duyệt tích hợp, hoặc trong trình duyệt của hệ thống khi thẻ kia không kham nổi.
+
+### ⌘I, cái tìm cho mọi thứ
+
+Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Xưởng API, tới các kết nối và bảng của Xưởng cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, và tới các thẻ của Bảng công việc, mà kết quả còn gọi tên cột thẻ đang đứng.
+
+### Thanh trạng thái cho biết cái gì còn sống
+
+Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ của nó, và nhánh Git kèm số tệp bạn đã đổi. Tất cả đọc từ đĩa hoặc từ những ghi chép mà sản phẩm vốn đã giữ: nhìn một cái không tốn tiến trình nào.
+
+### Bàn làm việc
+
+Đây là bến nhà: dự án hiện thời, các tệp đang mở và gần đây, các dự án gần đây, và lối vào cho từng bề mặt. Chừng nào còn thứ gì chạy, mục **ĐANG CHẠY** dẫn đầu trang — mỗi lệnh mà sản phẩm đã khởi động thay bạn, kèm địa chỉ nếu nó có báo, và từ mấy giờ nó chạy, cộng thêm mọi máy chủ mà một thiết bị trên giá đang phục vụ. Mỗi dòng có nút **Mở** và **Dừng** thật, với tới được bằng bàn phím lẫn trình đọc màn hình, nên một lượt chạy có thể dừng mà không kéo đổ những lượt còn lại. Mọi tiêu đề trên Bàn làm việc đều là nút thật: Tab tới được, Enter mở ra. ⌘I cũng với tới đúng những lượt chạy ấy: gõ «dừng» rồi Enter dừng đúng cái đó. Cái bạn tự tay dừng sẽ đọc là *đã dừng* ở bất cứ đâu kết cục của nó được kể lại, chứ không bao giờ là thất bại.
+
+### Phím tắt của Emacs (và của Eclipse, và của IntelliJ)
+
+Công cụ ▸ Tuỳ chọn ▸ Sơ đồ phím đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Những tấm lưới an toàn (thứ bạn chẳng phải làm gì để có)
+
+### Hồi sinh phiên làm việc
+
+Cứ vài giây một lần, giá lại chụp lại những gì đang chạy. Một lần tắt cưỡng bức, một lần sập, một `kill -9` — lần mở sau, một lời nhắn mời bạn dựng lại đúng phiên đã mất, chỉ một cú bấm.
+
+### Bảo đảm không để lại mồ côi
+
+Thoát khỏi IDE là giết mọi tiến trình mà nó đã khởi động — máy chủ phát triển, REPL, chuỗi lệnh, kẻ canh chừng —, TERM trước, KILL nếu chúng cứng đầu, kể cả con cháu.
+
+### BLACKBOX và SONAR
+
+Đặt **BLACKBOX** lên giá và bạn có một hộp đen: mỗi lần khởi động và mỗi lần thoát, kèm thời lượng, xu hướng, và những gì đã đổi kể từ lần dựng xanh gần nhất. Cái bạn tự tay dừng đọc là ĐÃ DỪNG — không xanh, không thất bại, và không bao giờ là thứ đem hỏi KVASIR. **SONAR** cho thấy ai đang giữ các cổng của bạn, đối chiếu với Docker, và một cú bấm là đuổi kẻ ngồi lì trên 3000.
+
+### Những tệp không bao giờ bị đè
+
+Bốn tệp làm việc của các xưởng (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) sẽ nạp lại khi bạn sửa chúng bên ngoài IDE — nhưng nếu bạn còn thay đổi chưa lưu thì bạn được hỏi, chứ không bị đè. Một tệp hỏng được để riêng thành `.bak` và báo cho bạn biết, không bao giờ bị thay lặng lẽ.
+
+### TypeScript không cần dựng
+
+Dự án có cửa vào là `index.ts`, `main.ts` hay `src/index.ts` chạy thẳng từ IGNITION bằng chính cơ chế bóc kiểu của Node (`--experimental-strip-types`, từ Node 22.6; mặc định từ 23.6 và 22.18 LTS). Lời từ chối của một Node cũ hơn được dịch thành câu gọi tên đúng cái ngưỡng ấy.
+
+### Ngôn ngữ của bạn
+
+NMOX Studio nói mười ba thứ tiếng: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 và हिन्दी. Chọn tiếng của bạn ở **Tuỳ chọn ▸ Chung ▸ Ngôn ngữ** — mỗi thứ tiếng viết bằng chính tên nó, để bạn luôn tìm được tiếng mình. Lựa chọn ấy được ghi vào phần cài đặt khởi động của bạn (`etc/nmoxstudio.conf`, dưới dạng đối số `--locale`) và cũng có hiệu lực ngay. Thay đổi: trình đơn, hộp thoại, chú giải, thanh trạng thái, màn hình chào và phần tuỳ chọn. Giữ nguyên: từ vựng trên mặt các thiết bị của giá (GO, STOP, EXPLAIN — đó là nhãn máy, như trên một cây đàn tổng hợp), và những hộp thoại sâu hơn của nền tảng, vốn chưa có bản dịch.
+
+### Việc dò bản mới mỗi ngày
+
+Lặng lẽ, mỗi ngày một lần: nếu có bản mới hơn, một thông báo dẫn bạn tới trình quản lý mô-đun, ở thẻ cập nhật của nó, nơi trung tâm cập nhật cài các mô-đun mới ngay tại chỗ. Tắt nó ở Tuỳ chọn ▸ Chung.
+
+<a id="11-learning-spaces"></a>
+## 11. Không gian học
+
+### Kiểm bài của bạn
+
+Một số không gian có điểm kiểm: chọn lấy một, rồi **Tệp ▸ Kiểm bài của tôi** sẽ kiểm các bài tập thật sự — điều các tệp khẳng định được kiểm bằng Java thuần, kể cả các phép kiểm *vắng mặt*, thứ duy nhất chứng thực được «bạn đã đổi tiêu đề»: chữ gốc trong mẫu phải biến mất. Điều các lệnh khẳng định thì đi qua chính bộ công cụ của không gian ấy. Mỗi dấu ✗ đáp lại bằng gợi ý của chính không gian đó, và khi có chỗ hỏng, bản báo mời **Nhờ KVASIR giải thích…**: những điểm hỏng và, với phép kiểm tệp, chính tệp của bạn, có giới hạn và dưới một lời đồng ý nói rõ cái gì rời đi. Câu trả lời đọc như của một gia sư: đổi gì, rồi kiểm lại.
+
+### Bài học của riêng bạn
+
+Thả một tệp `*.json` vào `~/.nmox/learn-catalog.d/` là nó gia nhập bảng chọn, cùng một lược đồ với những bài có sẵn; một `slug` trùng sẽ thay thế bài của nhà. Bạn đang dạy? Hãy viết bằng cách dựng: biến bài tập thành một dự án bình thường, rồi **Tệp ▸ Xuất thành Không gian học…** sẽ soạn tệp ấy hộ bạn — các tệp mẫu, `TUTORIAL.md` của bạn, trình chạy, và các điểm kiểm của bạn — đã được thẩm lại bằng chính bộ phân tích của bảng chọn trước khi ghi, nên thứ bạn trao cho học trò đúng là thứ bảng chọn của họ sẽ nạp.
+
+### Danh mục
+
+*Không gian học mới…* mời bạn 93 bài có sẵn — ngôn ngữ, khung làm việc và thư viện. Mỗi bài sinh ra một dự án mẫu nhỏ, một bài hướng dẫn có dắt tay, và một giá đã gắn sẵn **một trình thông dịch thật**: bạn gõ vào giá và một trình thông dịch đang sống trả lời. Núm ENGINE chọn trong 37 trình thông dịch; thiếu cái nào thì nút INSTALL cài ngay tại chỗ, tiến độ hiện lên màn hình. Các không gian ở trong `~/.nmox/learn`, tách khỏi công việc thật của bạn.
+
+### Những bước đầu, trên màn hình chào
+
+Một cột thứ tư liệt kê sáu động tác đầu tiên — mở một dự án, chạy thứ gì đó trên giá, thấy một máy chủ sống dậy, hỏi KVASIR về mã, thử một không gian học, chĩa một tác nhân vào IDE — và đánh dấu từng cái dựa trên những ghi chép mà sản phẩm vốn đã giữ. Mỗi dòng là một cánh cửa: bấm vào là cửa sổ hay hành động ấy mở ra. Dấu đã đánh không bao giờ mất đi; cột ấy biến mất khi cả sáu đã xong, hoặc khi bạn bấm **Ẩn danh sách này**.
+
+### Ba câu trả lời của trình đơn Trợ giúp
+
+**Có gì mới…** đưa ra ghi chú của bản bạn đang chạy, gói ngay trong bản dựng; lần khởi động đầu sau một lần cập nhật, nó tự mở với những bản mà máy bạn chưa từng thấy. **Báo lỗi…** soạn một bản báo gồm môi trường của bạn và bốn mươi dòng nhật ký cuối, đã che bớt — thư mục nhà của bạn thành `~`, tên đăng nhập thành `<user>`, thứ gì trông như một bí mật thành `[redacted]` —; bạn sửa lại, rồi **Mở trên GitHub** điền sẵn một phiếu mà chính bạn gửi đi, hoặc bạn sao chép nó. Sản phẩm không bao giờ tự mình gửi gì cả. **Phím tắt…** liệt kê mọi phím tắt của NMOX trong hồ sơ đang dùng, đọc từ sơ đồ phím đang chạy, nên nó không thể lệch khỏi những gì trình đơn làm.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Khi có gì đó không ổn
+
+### Bác sĩ môi trường
+
+Trong trình đơn Công cụ, nó dò trực tiếp 66 công cụ bên ngoài — node, npm, docker, forge, composer, gopls… — và cho thấy bản đã tìm ra cùng câu lệnh cài đặt cho những thứ còn thiếu.
+
+### Những bức tường có cửa
+
+Thiếu một máy chủ ngôn ngữ hay một công cụ, IDE nói cho bạn biết phải chạy lệnh nào, hoặc đề nghị chạy hộ; không bao giờ là một lời từ chối trơ trọi. Một bức tường có cửa riêng: TypeScript 7 không mang theo tsserver, nên nếu TypeScript tìm được là bản 7, trình soạn thảo nói một lần rồi mời cài dòng 5 — cũng chính là dòng nó tự cài vì lẽ ấy. Nếu một cổng đã bị chiếm, thông báo lỗi gọi tên tiến trình đang ngồi đó, và SONAR đuổi kẻ ấy đi.
+
+### Một nút GO chẳng làm gì
+
+Hãy nhìn màn hình của nó: các thiết bị tự giải thích bằng lời, và chú giải trên nút GO cho thấy đúng câu lệnh nó sẽ chạy, để bạn có thể thử nó trong một cửa sổ dòng lệnh.
+
+### Ứng dụng mở ra chẳng có gì (macOS)
+
+Không cửa sổ, không lỗi, ở lần chạy đầu sau khi cài: đó là kiểm dịch của Gatekeeper — xem ghi chú ở chương 1. Bấm chuột phải rồi Mở, một lần thôi, là xong vĩnh viễn. Nhật ký nằm dưới `~/Library/Application Support/nmoxstudio/…/var/log/` nếu bạn cần mở một phiếu báo.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Phụ lục: những tệp NMOX Studio ghi ra (và tệp nào nên đưa vào kho)
+
+Tất cả những gì IDE giữ lại về một dự án đều là tệp JSON đọc được nằm ở gốc dự án, làm ra để chia sẻ với đội của bạn.
+
+| Tệp | Bên trong có gì | Đưa vào kho? |
+|---|---|---|
+| `.nmoxapi.json` | Bộ sưu tập, yêu cầu, môi trường và bài kiểm của Xưởng API | **Có** — đồng đội nhận được trọn bàn làm việc của bạn |
+| `.nmoxdb.json` | Kết nối, truy vấn đã lưu và lịch sử | **Có** — mật khẩu *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
+| `.nmoxweb3.json` | Mạng lưới và sổ địa chỉ của Xưởng hợp đồng | **Có** — địa chỉ bí mật *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
+| `.nmoxinfra.json` | Khung vẽ hạ tầng: nút, dây nối, thuộc tính | **Có** — mã thông hành *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
+| `.nmoxtasks.json` | Bảng công việc: cột, thẻ, hạn mức | **Có** — cả đội dùng chung một bảng; bỏ ra nếu muốn giữ riêng |
+| `.gas-snapshot` | Mốc gas theo từng bài kiểm của Foundry (GOVERNOR canh nó) | **Có** — đó là cách bắt được gas đi lùi lúc duyệt mã |
+| `.env` | Các biến môi trường của bạn | **Không** — đó chính là lý do `.env` tồn tại |
+| `*.bak` | Một tệp làm việc không đọc nổi, được giữ lại cho bạn | Không — lấy ra thứ cần rồi xoá |
+
+Sửa bất kỳ tệp nào trong bốn tệp `.nmox*.json` ở ngoài IDE, hoặc kéo về thay đổi của đồng đội, và xưởng tương ứng sẽ tự nạp lại — trừ khi bạn còn thay đổi chưa lưu ở đó, khi ấy nó hỏi trước.
+
+Ngoài dự án: `~/NMOX` là bàn làm việc mặc định, các thí nghiệm ở trong `~/.nmox/experiments`, các không gian học ở `~/.nmox/learn`, còn trạng thái của chính IDE — cách bày cửa sổ, các bản vá của giá, các tuỳ chọn — nằm trong thư mục người dùng của nền tảng.
