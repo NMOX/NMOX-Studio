@@ -551,7 +551,7 @@ public class FlowCanvas extends JPanel {
         return Bundle.FlowCanvas_nodeTooltip(
                 PlainText.escape(node.kind.getDisplayName()),
                 PlainText.escape(node.label),
-                String.format("%.2f", node.monthlyUsd()),
+                org.nmox.studio.core.util.Numbers.display(node.monthlyUsd(), 2),
                 node.doId != null
                         ? Bundle.FlowCanvas_tooltipLive(PlainText.escape(node.doId))
                         : Bundle.FlowCanvas_tooltipDesignOnly());

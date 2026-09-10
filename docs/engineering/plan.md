@@ -1,6 +1,8 @@
 # The Plan
 
-*Currency addendum 2026-09-09, at v2.100.1 — the l10n arc closed out
+*Currency addendum 2026-09-10, at v2.105.0 — the night shift's two releases
+(v2.104.0, v2.105.0) are recorded in the dated section below. Earlier:
+v2.100.1 — the l10n arc closed out
 (v2.96.0–v2.100.1; see the dated addenda below). Written 2026-09-06 at
 v2.95.0, after two lenses, one
 editor day, the senior-RCP and PM passes, the night the pipeline moved
@@ -870,6 +872,57 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-09/10 — the night shift: the half of i18n that is not words
+
+Thirteen languages of chrome had shipped and the product was still wrong
+for most of its readers in ways no bundle gate could see, because the
+defects were not strings. They were the SHAPE of values, and the pattern
+that came out of the night generalizes:
+
+**For each shape, build ONE seam that names the reader, wire the display
+sites, then a file-keyed ledger so a new site fails the build until someone
+decides which reader it serves.** Three shipped — `Clocks` (ledger 91),
+`Collate` (ledger 92), `Numbers` (ledger 93) — and the blessings in each
+ledger carry as much weight as the fixes: a collator over version
+directories would select the wrong toolchain, and a drop-in read in
+collated order would stop being predictable.
+
+Measure before writing. Every one of the three started as a measurement
+(Hindi writes `2:32 pm`; `Ćwiczenie` sorts after `Zamknij` under code
+points; the ten number sites were already correct and got a name rather
+than a change), and the third would have been a wasted rewrite if the
+survey had been skipped.
+
+**Gates covered mechanisms, not populations — four times in one night.**
+`LayerPositionCensusTest` read only our own modules' layers while the boot
+log named a collision with a platform row. `ClockSiteLedgerTest` hunted
+`ofPattern` while a `LocalDate` renders through `toString()`. `SiteShipsTest`
+named `en` and `es` while the site's whole gap was that it spoke two of
+thirteen. `TranslatedGuideGateTest` proved a notice EXISTS while all twelve
+said "chapters 1–2" after chapter 3 landed. Each widening found something on
+its first run. The rule already written down — derive the population from
+the artifact — needs a companion: **when a gate blesses a shape, ask what
+OTHER shape produces the same outcome.**
+
+A count floor cannot serve a ledger whose goal is zero. `NumberSiteLedgerTest`
+proves its own regex on planted lines instead, because a pattern that matched
+nothing would otherwise make it pass forever.
+
+**Surfaces outside the app are surfaces.** The installer is the first text a
+user sees and cannot be corrected by a later release; the Linux menu entry is
+what a session shows before the app is even started; the website is the front
+door. All three were English. The installer's translations are Inno's own
+reviewed files and five languages are named as a deliberate absence, because
+an unreviewed community file would put text nobody here can read in front of
+every user of that language.
+
+Two process scars: `git checkout --` after a mutation ate uncommitted work
+twice in one shift (commit before EVERY mutation, not once per shift), and a
+background `mvn verify` running beside a foreground `mvn test` in the same
+checkout corrupted both — the one-tree-one-chain law reaches Maven, not just
+git.
+
 
 ## Addendum — 2026-08-06, the two-shift persona day (v1.278–v1.287)
 

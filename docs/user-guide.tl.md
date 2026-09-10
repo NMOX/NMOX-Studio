@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–2. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–3. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -57,3 +57,22 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 | **⌘7** | Balangkas ng kasalukuyang file |
 | **⇧⌘N / ⌥⌘O** | Bagong proyekto… / Buksan ang folder… |
 | **⇧⌘E / ⇧⌘L** | Bagong eksperimento… / Bagong espasyo ng pagkatuto… |
+
+<a id="3-projects"></a>
+## 3. Mga Proyekto
+
+**Pagbubukas:** anumang folder na may isa sa 60 kinikilalang manifest ay bumubukas bilang tunay na proyekto — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js`, at mga kauri — kasama na ang mga manifest ng mga contract chain: ang isang Aiken (`aiken.toml`) o Clarinet (`Clarinet.toml`) na repositoryo ay bumubukas na nakakabit na ang tunay nitong mga linya. Bumubukas din ang payak na folder ng HTML na may `<script>` at **walang** manifest, bilang proyektong STATIC: ang klasikong web ay first-class dito, hindi isang mali.
+
+**Paglikha:** nag-aalok ang *Bagong proyekto…* ng tunay na mga balangkas — Angular, Vue, Svelte, payak na JavaScript, Elixir/Phoenix, PHP Web (LEMP), at Klasikong web (jQuery). Bawat isa ay dumarating na nakakabit na ang mga setting para sa lint, format at pagsusulit, at may nakahandang git na repositoryo: iisang commit ng balangkas na, kapag pinatakbo ng wizard ang pag-install para sa iyo, dala rin ang lockfile — kaya malinis ang iyong unang `git status`.
+
+**Ligtas ang paglipat:** kung may tumatakbong mga kagamitan (isang development server, isang tagamasid), nagtatanong ang IDE bago lumipat at malinis itong pinapatay. Walang patuloy na tumatakbo sa likod mo — kailanman. Kahit ang sapilitang pagsasara ng IDE ay hindi makakaiwan ng ulilang proseso.
+
+**Ang mga eksperimento** ang pinakamabilis na paraan para subukan ang isang stack. Ang **File ▸ Bagong eksperimento…** (⇧⌘E) ay pumipili ng template at gumagawa ng pansamantalang proyekto sa `~/.nmox/experiments`: walang git, walang kamakailan, pinagkakatiwalaan na, nakainstall na ang mga dependency — para **gumana agad ang unang Patakbuhin**. Bumubukas ito sa sarili nitong gabay na `EXPERIMENT.md`, na nagsasabi kung ano ang pipindutin, aling file ang babaguhin, at kung saan naroon ang talino ng IDE para sa stack na iyon. Itago ang nagiging kapaki-pakinabang: **File ▸ Mga eksperimento…** ▸ **Itaas** ang naglalabas nito at nag-uumpisa ng git, **Doblehin** ang gumagawa ng kopya sa tabi para sa pangalawang paraan, at **Itapon** ang nag-aalis ng iba. Ipinapakita ng istante ang edad ng bawat isa at ang nasukat nitong laki sa disk. Mas gusto mo ang gabay na landas? Inuuna ng dialog ang 93 espasyo ng pagkatuto.
+
+![Ang istante ng mga espasyo ng pagkatuto — bilang, laki sa disk, edad, at ang buong siklo](images/spaces-shelf.png)
+
+![Isang bagong eksperimentong Express: bukas ang gabay, nakainstall ang mga dependency, naghahain na ang API](images/experiment-walkthrough.png)
+
+**Patakbuhin, buuin, subukin — at itigil:** ang ▶ sa toolbar (F6) ay pinapatakbo ang proyekto gaya ng pagpapatakbo ng sarili nitong mga kasangkapan: isang `start` na script kung mayroon ang package.json, `cargo run`, `go run`, `dotnet run`, at para sa folder ng HTML ay isang maliit na static na server sa unang bakanteng port mula 8080. Katabi nito at nasa menu ng Patakbuhin ang Buuin, Subukin at Linisin. Ang development server na nag-aanunsyo ng address nito ay nagpapailaw sa ⇄ sa status bar at binubuksan ang pahina sa nakapaloob na browser. Ang lahat ay dumadaan muna sa pagtatanong ng tiwala sa workspace. Ang pagtakbong hindi makasimula ay tapat na sinasabi ito at nag-aalok buksan ang Doktor ng kapaligiran. Para huminto: ang ■ sa kanan ng Debug (⌥⌘.) ay pinapatigil ang lahat ng tumatakbong utos nang sabay at sinasabi kung ano ang pinatigil; ang **Patakbuhin ▸ Itigil** ay pinapatigil ang isa at pagkatapos ay nag-aalok ng **Ulitin**. Nakikita ng ■ ang lahat ng sinisimulan ng produkto para sa iyo, pati na ang mga pag-install; kapag inilapit ang cursor, pinangangalanan ng tooltip nang eksakto kung ano ang ititigil ng isang pindot, at kung mula kailan tumatakbo ang bawat isa.
+
+**`.env` saanman:** kung may `.env` ang iyong proyekto, natatanggap ng mga kagamitang inilunsad mula sa rack ang mga variable na iyon. Baguhin ito at tatalâ ang status bar na kukunin ito ng mga muling pagsisimula — tapat na pinapanatili ng tumatakbong proseso ang lumang kapaligiran nito.

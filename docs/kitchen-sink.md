@@ -517,7 +517,7 @@ footer's **Website ⇄**).
 
 **See:** The app serves its own site to you on localhost — the ⇄
 serving chip lights on the product's own story, and the hero note
-says so because it's true. The EN/ES buttons ride the I18n Kit's own
+says so because it's true. The thirteen language buttons ride the I18n Kit's own
 helper; the a11y stylesheet IS the A11y Kit's output, byte-for-byte,
 build-gated. The same bytes are deployed publicly at
 <https://nmox.github.io/NMOX-Studio/>. And every release download is

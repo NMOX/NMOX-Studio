@@ -2520,7 +2520,7 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     private static String humanBytes(long b) {
-        return b >= 1_000_000 ? String.format("%.1f MB", b / 1_000_000.0)
+        return b >= 1_000_000 ? org.nmox.studio.core.util.Numbers.display(b / 1_000_000.0, 1) + " MB"
                 : b >= 1_000 ? (b / 1_000) + " KB" : b + " B";
     }
 

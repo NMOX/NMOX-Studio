@@ -4,6 +4,103 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.105.0] - 2026-09-10
+
+**The same half, three more surfaces** — the night shift's second release,
+carrying on from v2.104.0's clock and order.
+
+1. **A number a person reads, and a number a machine reads.**
+   `core.util.Numbers` completes the family. The display half was already
+   right — a bare `String.format` follows `Locale.Category.FORMAT`, so a
+   German correctly reads `17,8 MB` — and the product's ten sites were
+   measured correct before anything changed; they get a name rather than a
+   change. The half that had no name is the record: a German locale writes
+   `1,5` into a project file, a command argument or a wire field, and the
+   next reader gets a different number or an error.
+
+   `NumberSiteLedgerTest` is ledger 93, and its shape had to change to stay
+   honest. A count floor guards nothing when zero unclassified sites is the
+   goal, so the census proves itself on planted lines instead — a regex that
+   matched nothing would otherwise make the ledger pass forever.
+
+2. **The clock ledger sees a date with no pattern in it.** A `LocalDate`
+   handed to a string builder renders through `toString()`: ISO-8601 by
+   construction, with no `DateTimeFormatter` anywhere, and therefore
+   invisible to a census built around one. The ledger covered a MECHANISM
+   rather than its population. It now sees that shape too, and the Sprint
+   Report, the Standup and the board's day buckets are classified STABLE
+   with their reasons — a report pasted into a channel is read by people who
+   may be anywhere, and an ISO date is unambiguous to all of them.
+
+3. **The user guide's chapter 3, Projects, in all twelve languages** —
+   opening a folder, the scaffolds, safe switching, experiments,
+   Run/Build/Test/Stop and `.env`, with the images, paths, chords and the
+   English anchor id shared so a cross-reference still lands.
+
+   And the gate learned what it had not been able to see. After chapter 3
+   landed, all twelve notices still said "chapters 1–2" and every check
+   stayed green, because the gate proved the notice EXISTS, not that it is
+   true. It now requires the notice to name its last translated chapter — a
+   claim in prose is a test not yet written.
+
+4. **The product's own website speaks every language the product does.**
+   The IDE offered thirteen; the site the app serves on localhost, and
+   publishes to Pages, offered two. Twenty-eight keys in eleven more
+   languages, and a footer picker naming each in its own words.
+
+   `SiteShipsTest` now derives its population from the locales directory
+   instead of naming `en` and `es`, so a catalog shipped without a button,
+   a button with no catalog, a blank value or a stale count all fail. Its
+   first widened run found a bare ASCII apostrophe in the ENGLISH catalog
+   and its matching inline fallback, unnoticed since the site shipped —
+   and three live documents still telling readers about "the EN/ES
+   buttons".
+
+5. **The Windows installer speaks eight of the thirteen, and says why not
+   five.** The setup wizard is the first text a user ever sees — before any
+   preference of theirs exists to consult — and it is the one surface a later
+   release cannot correct, because an installer that already ran ran in
+   whatever language it had. It had English.
+
+   The translations are Inno Setup's own bundled message files, and the three
+   strings the product contributes now resolve through `{cm:…}` so they come
+   from those same reviewed files: no installer text is written by us in any
+   language. Five of the thirteen ship no official `.isl` — Bahasa Indonesia,
+   Filipino, Tiếng Việt, 简体中文 and हिन्दी — and are named as a deliberate
+   absence rather than left to be rediscovered, because vendoring an
+   unreviewed community file would put text nobody here can read in front of
+   every user of that language.
+
+   `InstallerLanguagesTest` holds the shape and catches a misspelled message
+   file here instead of on the Windows runner hours later; that the script
+   compiles stays the `windows-installer-check` workflow's proof, since
+   `iscc` does not run on this machine and the gate does not pretend
+   otherwise. The same file had also been telling users to install a JDK 17
+   first — untrue since v1.4.x, when the installers began carrying their own
+   runtime.
+
+6. **The Linux menu entry, too.** `Comment=` is the line a GNOME or KDE
+   menu shows under the application's name and `GenericName=` is what an
+   overview shows instead of the brand; both were English for every user of
+   the other twelve languages. freedesktop reads `Comment[xx]` for the
+   session locale, so this is a dozen lines rather than a mechanism — and
+   the sharp edge is that they live inside an UNQUOTED shell heredoc, where
+   a `$` or a backtick in a translation would be expanded at build time and
+   ship something other than what is written. `DesktopEntryLanguagesTest`
+   checks that instead of trusting anyone to remember it.
+
+Walked in the assembled app in Ukrainian: **Довідка ▸ Сайт NMOX Studio
+(локально)** served the page from the product's own rack, and all thirteen
+catalogs answered 200 with 28 keys each — fetched from the running build,
+not the source tree. The boot logged zero SEVERE and no warning naming an
+NMOX row, so v2.104.0's Menu/Tools fix still holds.
+
+Ten mutants died by name: an unclassified number, a blinded census, a
+notice that lied about how far it went, an unclassified date, a catalog
+with no button, a button with no catalog, a message file Inno does not
+ship, an IDE language dropped from the wizard, a translation the heredoc
+would have expanded, and a menu line left in English.
+
 ## [2.104.0] - 2026-09-09
 
 **The other half of internationalization** — the half that is not words.
@@ -18562,6 +18659,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.105.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.104.0...v2.105.0
 [2.104.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.103.0...v2.104.0
 [2.103.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.1...v2.103.0
 [2.102.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.0...v2.102.1

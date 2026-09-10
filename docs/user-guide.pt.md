@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–2 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–3 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -57,3 +57,22 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌘7** | Estrutura do arquivo atual |
 | **⇧⌘N / ⌥⌘O** | Novo projeto… / Abrir pasta… |
 | **⇧⌘E / ⇧⌘L** | Novo experimento… / Novo espaço de aprendizado… |
+
+<a id="3-projects"></a>
+## 3. Projetos
+
+**Abrir:** qualquer pasta com um dos 60 manifestos reconhecidos abre como um projeto de verdade — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` e afins — incluindo os manifestos das redes de contratos: um repositório Aiken (`aiken.toml`) ou Clarinet (`Clarinet.toml`) abre com suas trilhas reais já ligadas. Uma pasta simples de HTML com tags `<script>` e **sem** manifesto também abre, como projeto STATIC: a web clássica é de primeira classe, não um erro.
+
+**Criar:** *Novo projeto…* oferece andaimes de verdade — Angular, Vue, Svelte, JavaScript puro, Elixir/Phoenix, PHP Web (LEMP) e Web clássica (jQuery). Cada um chega com as configurações de lint, formatação e testes já ligadas e um repositório git iniciado: um único commit de andaime que, quando o assistente roda a instalação para você, também carrega o arquivo de bloqueio — de modo que seu primeiro `git status` vem limpo.
+
+**Trocar de projeto é seguro:** se há dispositivos rodando (um servidor de desenvolvimento, um observador), a IDE pergunta antes de trocar e os desliga com limpeza. Nada continua rodando pelas suas costas, nunca. Nem forçar o encerramento da IDE deixa um processo órfão.
+
+**Experimentos** são o jeito mais rápido de experimentar uma pilha. **Arquivo ▸ Novo experimento…** (⇧⌘E) escolhe um modelo e gera um projeto descartável em `~/.nmox/experiments`: sem git, sem recentes, já confiado, dependências instaladas — para que a **primeira execução simplesmente funcione**. Ele abre no próprio roteiro `EXPERIMENT.md`, que diz o que apertar, qual arquivo mudar e onde mora a inteligência da IDE para aquela pilha. Guarde o que virar alguma coisa: **Arquivo ▸ Experimentos…** ▸ **Promover** o tira de lá e inicia o git, **Duplicar** cria uma cópia ao lado para uma segunda abordagem, **Descartar** limpa o resto. A prateleira mostra a idade de cada um e seu custo medido em disco. Prefere o caminho guiado? A caixa de diálogo põe à frente os 93 espaços de aprendizado.
+
+![A prateleira de espaços de aprendizado — quantidade, custo em disco, idade e todo o ciclo de vida](images/spaces-shelf.png)
+
+![Um experimento Express recém-criado: o roteiro aberto, as dependências instaladas, a API já servindo](images/experiment-walkthrough.png)
+
+**Executar, construir, testar — e parar:** o ▶ da barra (F6) executa o projeto do jeito que a cadeia de ferramentas dele executa: um script `start` se o package.json tiver um, `cargo run`, `go run`, `dotnet run`, e para uma pasta de HTML um pequeno servidor estático na primeira porta livre a partir de 8080. Construir, Testar e Limpar ficam ao lado e no menu Executar. Um servidor de desenvolvimento que anuncia seu endereço acende o indicador ⇄ na barra de status e abre a página no navegador embutido. Tudo passa, na primeira vez, pela confirmação de confiança do espaço de trabalho. Uma execução que não conseguiu começar diz isso e oferece abrir o Doutor do ambiente. Para parar: o ■ à direita de Depurar (⌥⌘.) para todos os comandos em execução de uma vez e diz o que parou; **Executar ▸ Parar** para um e depois oferece **Repetir**. O ■ enxerga tudo que o produto inicia para você, instalações incluídas; ao passar o cursor, a dica nomeia exatamente o que uma pressão pararia, e desde quando cada coisa está rodando.
+
+**`.env` em todo lugar:** se seu projeto tem um `.env`, os dispositivos lançados a partir do rack recebem essas variáveis. Edite-o e a barra de status anota que reinícios vão pegá-lo — processos em execução mantêm honestamente o ambiente antigo.

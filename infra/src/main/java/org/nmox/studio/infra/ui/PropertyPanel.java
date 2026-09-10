@@ -196,8 +196,8 @@ public class PropertyPanel extends JPanel {
     private void refreshCost() {
         if (current != null) {
             costLabel.setText(PlainText.plain(Bundle.PropertyPanel_nodeCost(
-                    String.format("%.2f", current.monthlyUsd()),
-                    String.format("%.2f", graph.totalMonthlyUsd()))));
+                    org.nmox.studio.core.util.Numbers.display(current.monthlyUsd(), 2),
+                    org.nmox.studio.core.util.Numbers.display(graph.totalMonthlyUsd(), 2))));
         }
     }
 
