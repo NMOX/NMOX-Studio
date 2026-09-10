@@ -25,17 +25,81 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class NpmRunLaneTest {
 
+    /**
+     * The file the long-lived script waits on. It is how the fixture stays
+     * alive WITHOUT a child process: a {@code sleep} would be a grandchild
+     * of the JVM, and where the parent-PID chain is broken — Git Bash on
+     * Windows, ledger 38 — the tree kill cannot see it, so it outlives the
+     * test holding this {@code @TempDir} as its working directory. Windows
+     * refuses to remove a directory that is a live process's cwd, JUnit's
+     * cleanup then fails the method with "Failed to close extension
+     * context", and the whole CI cycle is spent on a flake. A shell looping
+     * on a builtin test spawns nothing, so the kill always reaches it — and
+     * if it ever did not, deleting this file ends the loop anyway.
+     */
+    private static final String KEEPALIVE = "keepalive";
+
+    /** The unique argument that identifies this fixture's own shell. */
+    private static final String MARKER = "my dev";
+
     @TempDir
     Path dir;
+
+    /** The one long-lived run; awaited in {@link #stopEverything} before cleanup. */
+    private CompletableFuture<String> longRun;
 
     @AfterEach
     void stopEverything() {
         LiveRuns.stopAll();
+        try {
+            // belt and braces: any shell that outlived the kill ends itself
+            // on its next turn round the loop
+            Files.deleteIfExists(dir.resolve(KEEPALIVE));
+        } catch (java.io.IOException ignored) {
+            // the dir is about to be deleted anyway; the await below is the real barrier
+        }
+        if (longRun != null) {
+            // @TempDir cleanup runs immediately after this method returns, and
+            // it must not race a dying child: on Windows a process keeps its
+            // working directory locked until it is truly gone (the same reason
+            // ProcessSupport.killTreeAndWait exists). This future completes
+            // from CommandExecutor's pump AFTER process.waitFor() returns, so
+            // waiting on it means the OS has already reaped the process.
+            // A killed run completes exceptionally — the wait is the point,
+            // not the value.
+            try {
+                longRun.get(30, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (Exception expected) {
+                // a killed run completes exceptionally; a timeout here would
+                // mean a child we cannot reach, which is what the fixture's
+                // shape exists to prevent
+            } finally {
+                longRun = null;
+            }
+        }
         for (ServingRegistry.Serving s : ServingRegistry.getDefault().snapshot()) {
             if (s.deviceId().startsWith("npm-run:")) {
                 ServingRegistry.getDefault().deregister(s.deviceId());
             }
         }
+    }
+
+    /**
+     * This fixture's own shell, found among the JVM's children by the unique
+     * argument the test passes it.
+     */
+    private static java.util.Optional<ProcessHandle> ourShell() {
+        return ProcessHandle.current().descendants()
+                .filter(h -> h.info().arguments()
+                        .map(args -> java.util.Arrays.asList(args).contains(MARKER))
+                        .orElse(false))
+                .findFirst();
+    }
+
+    private static boolean windows() {
+        return System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win");
     }
 
     private static boolean poll(java.util.function.BooleanSupplier ok, long millis) throws InterruptedException {
@@ -56,13 +120,44 @@ class NpmRunLaneTest {
     @Test
     @DisplayName("run <script> announces its printed server, joins LiveRuns, and the ■ stops it; the exit withdraws both")
     void runAnnouncesAndStops() throws Exception {
-        Files.writeString(dir.resolve("run"), "echo \"  Local:   http://localhost:45671/\"\nsleep 30\n");
+        // The script must outlive the assertions below WITHOUT spawning
+        // anything: it prints its address and then spins on a shell builtin
+        // until the test drops the keepalive file. `sleep 30` here used to be
+        // a grandchild of the JVM, and the tree kill is blind to those
+        // wherever the parent-PID chain is broken (see KEEPALIVE).
+        Files.writeString(dir.resolve(KEEPALIVE), "");
+        Files.writeString(dir.resolve("run"),
+                "echo \"  Local:   http://localhost:45671/\"\n"
+                + "while [ -e " + KEEPALIVE + " ]; do :; done\n");
         // the script is named WITH A SPACE on purpose (v2.71.0): legal in package.json,
         // and the one shape a label-parsing marker could never find
-        CompletableFuture<String> done = new NpmService().runCommand(dir.toFile(), "sh", "run", "my dev");
+        longRun = new NpmService().runCommand(dir.toFile(), "sh", "run", MARKER);
 
         assertThat(poll(() -> announced("http://localhost:45671/"), 5_000))
                 .as("the printed address is a serving (⇄ chip, Live Servers)").isTrue();
+        // The law this fixture has to keep, and the one the flake broke: the
+        // run is ONE process. A child of the script is a grandchild of the
+        // JVM; where the PID chain is broken (Git Bash, ledger 38) the tree
+        // kill never reaches it, it holds the pipe open so the run's exit
+        // never arrives, and it holds this @TempDir as its cwd so Windows
+        // refuses to delete it and JUnit fails the method on cleanup.
+        ourShell().ifPresentOrElse(
+                shell -> {
+                    try {
+                        // 300ms is generous: a script's child is forked in the same
+                        // breath as the echo the announce above already saw
+                        assertThat(poll(() -> shell.descendants().findAny().isPresent(), 300))
+                                .as("the run is ONE process — the script spawned a child the "
+                                        + "tree kill cannot promise to reach (ledger 38)")
+                                .isFalse();
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                },
+                () -> assertThat(windows())
+                        .as("the fixture's own shell is among the JVM's children; only "
+                                + "Windows hides a process's arguments from ProcessHandle")
+                        .isTrue());
         assertThat(LiveRuns.live()).as("the toolbar ■ can see the run").anyMatch(r -> r.id().startsWith("npm-run:")
                 && r.label().equals("sh run my dev — " + dir.toFile().getName()));
 
@@ -74,17 +169,20 @@ class NpmRunLaneTest {
         assertThat(NpmService.runningSince(dir.toFile(), "build")).as("a script that isn't running").isEmpty();
         assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
         assertThat(NpmService.stopScript(dir.toFile(), "my dev")).as("the row's own Stop").isTrue();
-        // The exit half is POSIX-only (ledger 38, v1.42.0): under Git Bash the
-        // Windows PID chain breaks, the `sleep` grandchild outlives the tree
-        // kill and holds the pipe open, so the run's exit arrives only when
-        // sleep ends — the windows lane timed out here on the batch's first
-        // gate. The announce and stop halves above run everywhere.
-        org.junit.jupiter.api.Assumptions.assumeFalse(
-                System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
+        // The exit half stays POSIX-only (ledger 38, v1.42.0): under Git Bash
+        // the Windows PID chain breaks, and this lane has never been run there
+        // to prove otherwise. What the windows lane gives up is only the three
+        // assertions below — that a killed run completes exceptionally, that
+        // the serving is withdrawn, and that LiveRuns empties; the announce,
+        // the ■'s view, the explorer's marker and the row's own Stop above are
+        // asserted on every platform. The abort is now SAFE: with no child to
+        // outlive the kill, nothing holds this @TempDir when cleanup runs, and
+        // stopEverything waits for the process to be reaped before it returns.
+        org.junit.jupiter.api.Assumptions.assumeFalse(windows(),
                 "tree-kill exit is POSIX-only (ledger 38)");
         Throwable exit = null;
         try {
-            done.get(5, TimeUnit.SECONDS);
+            longRun.get(5, TimeUnit.SECONDS);
         } catch (java.util.concurrent.ExecutionException e) {
             exit = e.getCause();
         }
@@ -92,6 +190,13 @@ class NpmRunLaneTest {
         assertThat(poll(() -> !announced("http://localhost:45671/"), 5_000))
                 .as("the serving died with the process").isTrue();
         assertThat(LiveRuns.live()).as("the exit withdrew the run").isEmpty();
+        // the property stopEverything leans on before @TempDir cleanup: the
+        // future completes from the pump's process.waitFor(), so by the time
+        // it hands back a value the OS has reaped the process and released
+        // the working directory. (On POSIX a cwd never blocked a delete, so
+        // dropping the await in stopEverything cannot fail a test here — this
+        // is where the property itself is pinned instead.)
+        assertThat(ourShell()).as("a completed run has no process left").isEmpty();
     }
 
     @Test

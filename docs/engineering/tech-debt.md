@@ -1573,12 +1573,24 @@ Windows lane; the launcher work is its own small sprint.
 On Windows, MSYS breaks the parent-PID chain at exec, so a grandchild
 spawned via Git Bash sh is invisible to ProcessHandle.descendants() —
 the same reason taskkill /T fails on such trees. Proven on the runner
-(the one Windows test disable, evidence in the test's comment).
+(evidence in each carve-out's comment: ProcessSupportTest's disable
+since v1.42.0, and the POSIX-only exit halves of NpmRunLaneTest,
+DeviceRunsJoinTheStopTest and StopAllReadsStoppedTest).
 runBounded still returns bounded (worst case the drain tail waits
 2×5s). The real fix is Windows Job Objects via JNA/FFM. **Deferred**:
 matters only if rack/SOLDER-style Git-Bash commands run under
 runBounded timeouts on Windows; no such path ships today. Documented
 in killTree's javadoc so nobody trusts the sweep there.
+
+A second cost, closed rather than deferred: those three fixtures each
+spawned a `sleep` and then aborted on the assumption, so on Windows an
+unreachable grandchild outlived the method holding its `@TempDir` as a
+working directory — Windows will not remove a directory that is a live
+process's cwd, and JUnit failed the method with "Failed to close
+extension context". An intermittent red on a green sha, one full CI
+cycle each time. The fixtures now hold themselves alive on a shell
+builtin and spawn nothing, so the abort has nothing to strand; the
+kill's blindness is unchanged.
 
 ## Open — deferred deliberately, with reasons (added v1.37.0)
 
