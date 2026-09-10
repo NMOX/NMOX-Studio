@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–3 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–4 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -76,3 +76,60 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 **Exécuter, construire, tester — et arrêter :** le ▶ de la barre (F6) exécute le projet comme sa chaîne d’outils l’exécute : un script `start` si package.json en a un, `cargo run`, `go run`, `dotnet run`, et pour un dossier de HTML un petit serveur statique sur le premier port libre à partir de 8080. Construire, Tester et Nettoyer sont à côté et dans le menu Exécuter. Un serveur de développement qui annonce son adresse allume le témoin ⇄ de la barre d’état et ouvre la page dans le navigateur intégré. Tout passe la première fois par la confirmation de confiance de l’espace de travail. Une exécution qui n’a pas pu démarrer le dit et propose d’ouvrir le Docteur d’environnement. Pour arrêter : le ■ à droite de Déboguer (⌥⌘.) arrête d’un coup toutes les commandes en cours et dit ce qu’il a arrêté ; **Exécuter ▸ Arrêter** en arrête une et propose ensuite **Répéter**. Le ■ voit tout ce que le produit lance pour vous, installations comprises ; au survol, l’infobulle nomme exactement ce qu’une pression arrêterait, et depuis quand chaque chose tourne.
 
 **`.env` partout :** si votre projet a un `.env`, les appareils lancés depuis le rack reçoivent ces variables. Modifiez-le et la barre d’état note que les redémarrages le prendront en compte — les processus en cours gardent honnêtement leur ancien environnement.
+
+<a id="4-the-task-rack"></a>
+## 4. Le rack de tâches
+
+![Le rack de tâches](images/tabs/the-task-rack.png)
+
+Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, l’empaqueteur, le lanceur de tests, le serveur de développement, le linter, git, le déploiement — est un appareil matériel dans un rack : les boutons rotatifs choisissent la tâche, GO l’exécute, les LED montrent l’état, et un afficheur vous dit avec des mots ce qui s’est passé.
+
+![Le rack pointé sur un site jQuery classique — le préréglage Classic Web Bench : MAESTRO, CRATE, DYNAMO (son bouton TASK a analysé le vrai Gruntfile), IGNITION servant du statique, VITALS veillant sur la qualité](images/task-rack.png)
+
+**Les bases :**
+
+- **Ajoutez des appareils** en les faisant glisser depuis la palette (elle a des catégories et un filtre de recherche). Chaque appareil porte sa fiche *Comment s’en servir*.
+- **Lancez quelque chose** en pressant le bouton GO d’un appareil. Survolez-le d’abord : l’infobulle montre la ligne de commande exacte qui sera exécutée. Aucune magie.
+- **Câblez un pipeline :** pressez **Tab** pour retourner le rack et voir sa face arrière. Tirez un cordon depuis la prise **OK** d’un appareil vers la prise **GO** du suivant. Désormais `installer → construire → tester` tient en une frappe : la chaîne se déroule seule et s’arrête au premier échec. La sortie défile sur l’écran phosphore de l’appareil MONITOR.
+- **Annulez toute modification de structure** avec **⌘Z** — ajouts, retraits et recâblages. Retirer un appareil en marche arrête d’abord son processus.
+- **Les préréglages** vous donnent un rack entier déjà câblé en un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Les montages sont enregistrés par projet automatiquement.
+
+![Tab retourne le rack — les cordons relient MAESTRO à travers CRATE, DYNAMO et IGNITION jusqu’à VITALS](images/rack-rear.png)
+
+**La coordination, quand votre pipeline grandit :**
+
+- **QUORUM** réunit des voies : il ne se déclenche que lorsque *toutes* ses entrées câblées ont réussi — le classique « attends le lint ET les tests ET le typage ».
+- **Les portes ENABLE** sur les processus longs : l’entrée ENABLE d’un serveur de développement veut dire « ne démarre pas avant que ceci se déclenche ».
+- **REFLEX** surveille les fichiers et route par motif — `src/**/*.css` vers une chaîne, `**/*.ts` vers une autre, par voie dans un monorepo.
+- **ROSETTA** choisit la voie d’outillage dans les dépôts mixtes (le rack détecte Node/Rust/Go/PHP/… par répertoire et pointe chaque appareil en conséquence).
+
+**Des voies natives à votre outillage.** En AUTO, les appareils de lint et de format (PURITY, GLOSS) parlent l’outillage du projet lui-même plutôt que de recourir partout aux outils Node : un espace de travail Deno utilise `deno lint` et `deno fmt`, un projet Cargo `cargo clippy` et `cargo fmt`, un module Go `go vet` (ou `golangci-lint` si le projet porte sa configuration) et `gofmt`. Un `biome.json` bascule les voies Node vers Biome, et les positions explicites du bouton l’emportent toujours sur AUTO.
+
+**Vos propres appareils.** L’étagère s’étend avec un éditeur de texte : n’importe quel `*.json` dans `~/.nmox/devices.d/` devient un véritable appareil — boutons, LED, prises et cordons, enregistré dans le montage et accessible depuis ⌘I. Déclarez une commande comme un tableau d’arguments, nommez un bouton, et `{{bouton}}` s’y substitue à la pression. Les lois restent chez l’hôte, pas dans votre fichier : **la confiance de l’espace de travail garde le premier lancement exactement comme pour un appareil intégré**.
+
+**Les portes de qualité** transforment le « ça a l’air fini » en « c’est fini » :
+
+- **VITALS** lance Lighthouse contre votre serveur vivant et exige un plancher de performance, d’accessibilité, de bonnes pratiques ou de référencement.
+- **VERITAS** impose un plancher de couverture et relance exactement les tests qui ont échoué, nommément.
+- **GAUNTLET** met un point d’entrée en charge et exige un débit minimal. **PRISM** veille sur la taille du paquet, **BEACON** sur le certificat et la disponibilité d’une URL, et **PREFLIGHT** est la liste de contrôle avant expédition — câblez son OK vers votre appareil de déploiement et les déploiements ne peuvent physiquement pas partir tant que tout n’est pas au vert.
+- **GOVERNOR** surveille les régressions de gaz sur le travail Solidity (`.gas-snapshot`).
+
+**Tout le reste :** **SOLDER** habille n’importe quelle commande shell en appareil à part entière — et le rack entier **s’exporte vers GitHub Actions** (votre pipeline local et votre intégration continue sont le même câblage). **HELM** exécute des commandes sur un serveur distant en ssh, **TAIL** suit n’importe quel journal, et **PHOSPHOR** est un terminal dans le rack. Si la commande imprime une adresse locale, le témoin ⇄ s’allume comme pour tout appareil qui sert, et s’éteint à la fin de l’exécution.
+
+**Le rack reste synchronisé tout seul.** Modifiez `package.json` et le bouton de scripts de NPM-9000 se met à jour sur place. Modifiez un `Gruntfile` et DYNAMO relit ses tâches. Ajoutez une dépendance et l’affichage de CRATE se rafraîchit. Sans repointer, sans bouton de rafraîchissement.
+
+### KVASIR — expliquer le dernier échec
+
+![KVASIR expliquant un échec réel : le diagnostic consenti sur la façade et les étapes complètes de correction dans la visionneuse](images/kvasir-explain.png)
+
+**KVASIR** est l’assistance par IA à la manière du rack : un appareil qui explique l’erreur présente sur le bus MONITOR, pas une barre latérale de discussion. Quand une exécution échoue, pressez **EXPLAIN** et KVASIR demande à votre IA ce qui a mal tourné et quelle est l’étape suivante concrète. Un verdict court s’affiche ; **VIEW** ouvre la réponse entière. **MODEL** choisit entre **FAST** (rapide et économique, par défaut) et **DEEP** (plus puissant). EXPLAIN est bleu : il lit et demande, il ne touche jamais à votre projet.
+
+**Choisissez votre IA, posez votre clé.** KVASIR fonctionne avec **Claude (Anthropic)**, **ChatGPT (OpenAI)** ou **Gemini (Google)** — votre clé, votre choix. Pressez **KEY…** pour choisir le fournisseur et coller sa clé ; le choix est mémorisé et la clé ne vit que dans le trousseau du système. Les variables d’environnement habituelles de chaque fournisseur sont lues aussi, et une clé enregistrée l’emporte sur une clé d’environnement.
+
+**Ce que KVASIR envoie, et tout ce qu’il envoie.** La première fois que vous pressez EXPLAIN, une boîte de dialogue énumère exactement ce qui quittera votre machine et ce qui n’en sortira pas ; rien n’est envoyé sans ce consentement, et le consentement vaut par fournisseur. Après un EXPLAIN réussi, le bouton **VIEW** ouvre la réponse comme une conversation : vous pouvez continuer à poser des questions sur le même échec.
+
+**Interrogez KVASIR sur votre code.** Le même assistant atteint l’éditeur : sélectionnez du code et choisissez **Interroger KVASIR sur la sélection…**, ou **Modifier avec KVASIR…** pour dire quoi changer et voir un avant et un après avant d’appliquer quoi que ce soit. **⌥⌘G** complète au curseur en texte fantôme qui ne s’insère que si vous pressez Tab, et la pastille de branche git peut rédiger votre message de commit.
+
+**Pointez un agent sur votre IDE.** Outils ▸ Agent Port (MCP)… ouvre un point d’accès MCP qu’un assistant extérieur peut interroger : il est **en lecture seule par construction**, éteint tant que vous ne l’allumez pas, à l’écoute de la seule interface locale, et exige le jeton engendré à son démarrage.
+
+Le rack est extensible : des greffons tiers peuvent ajouter des appareils (installez leur NBM depuis Outils ▸ Greffons). Pour en écrire un, voyez [device-spi.md](device-spi.md).

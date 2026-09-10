@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.107.0] - 2026-09-10
+
+**The night's close proof, and the guide's fourth chapter.**
+
+1. **The update gauntlet across the whole shift.** Run after v2.106.0 landed,
+   so it belongs here rather than to the release it proves:
+   `scripts/update-gauntlet.sh v2.103.0` → **GAUNTLET-PASS v2.103.0 →
+   2.106.0**. A stock pre-shift install updated itself in-app across all
+   three of the night's releases through the real update centre; every one of
+   the eleven cluster jars reads specification version 2.106.0, all eleven
+   modules turn on from a fresh cache, and the boot logs zero SEVERE. The two
+   update iterations the run reports are the headless CLI's known loop, which
+   is what the script waits on `update_tracking` to see through — not a
+   fault.
+
+2. **The user guide's chapter 4, The Task Rack, in all twelve languages** —
+   the product's signature chapter, and the one most worth having in your own
+   language: what a device is, running one, wiring a pipeline on the rack's
+   rear, undo, presets, the coordination devices, the toolchain-native lanes,
+   your own JSON devices, the quality gates, KVASIR and the Agent Port. Same
+   structure as English, so the images, chords, paths and the English anchor
+   id are shared and a cross-reference still lands.
+
 ## [2.106.0] - 2026-09-10
 
 **Being able to type it** — the night shift's third release. The first two
@@ -18722,6 +18745,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.107.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.106.0...v2.107.0
 [2.106.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.105.0...v2.106.0
 [2.105.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.104.0...v2.105.0
 [2.104.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.103.0...v2.104.0
