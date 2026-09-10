@@ -401,4 +401,39 @@ class McpSubscriptionsTest {
         assertThat(subs.subscribeFile("nmox://outline/more.js", root.toFile(), "more.js")).isNull();
         subs.close();
     }
+
+    @Test
+    @DisplayName("a keepalive that cannot be scheduled does not cost the stream, nor its slot twice")
+    void attachSurvivesAKeepaliveThatCannotStart() throws Exception {
+        // The arc review of v2.109.0 (v2.114.0): attach() adds the sink and
+        // THEN schedules the keepalive. If that scheduling throws, the sink
+        // is already in the list — so AgentPort.openStream releases the slot
+        // in its catch, and the sink's own drop releases it AGAIN later. Two
+        // releases for one reservation walks the counter below the number of
+        // live streams, and enough of them turn the cap off entirely.
+        //
+        // A negative period is the reachable trigger: scheduleAtFixedRate
+        // refuses it, which is exactly the shape of any scheduling failure.
+        McpSubscriptions subs = new McpSubscriptions(-1L);
+        try {
+            assertThat(subs.reserve(8)).isTrue();
+            java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+            java.util.concurrent.atomic.AtomicInteger closed = new java.util.concurrent.atomic.AtomicInteger();
+            subs.attach(out, () -> {
+                subs.release();
+                closed.incrementAndGet();
+            });
+            assertThat(subs.attachedCount())
+                    .as("a stream that works is not thrown away because its keepalive would not start")
+                    .isEqualTo(1);
+            assertThat(subs.slotsTaken()).as("still exactly one slot, taken once").isEqualTo(1);
+            subs.close();
+            assertThat(closed.get()).as("the sink is dropped exactly once").isEqualTo(1);
+            assertThat(subs.slotsTaken())
+                    .as("one reservation, one release — never two, or the cap stops being a cap")
+                    .isZero();
+        } finally {
+            subs.close();
+        }
+    }
 }

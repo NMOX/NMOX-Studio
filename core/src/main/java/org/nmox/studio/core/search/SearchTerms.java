@@ -299,6 +299,21 @@ public final class SearchTerms {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if (!Character.isLetterOrDigit(c)) {
+                // A combining mark is not a letter, but in Devanagari,
+                // Thai and their neighbours it is part of one — टास्क is
+                // a word, and cutting it at every vowel sign left ट, स
+                // and क, three one-letter tokens that match almost
+                // anything. fold() learned this in v2.106.0 and stopped
+                // stripping those marks; the marks it now preserves were
+                // exactly the characters this loop split on. A mark with
+                // no letter in front of it has nothing to belong to, so
+                // it stays a separator.
+                if (current.length() > 0
+                        && (Character.getType(c) == Character.NON_SPACING_MARK
+                        || Character.getType(c) == Character.COMBINING_SPACING_MARK)) {
+                    current.append(c);
+                    continue;
+                }
                 flush(current, out);
                 previous = 0;
                 continue;
