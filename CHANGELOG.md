@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.108.0] - 2026-09-10
+
+**The guide's chapter 5, The editor, in all twelve languages** — the
+longest chapter, and the one a reader spends the most hours inside.
+
+Highlighting for seventy-plus languages, the classic-library-aware
+completion, the Navigator outline, the minimap and sticky scroll, Go to
+Symbol and the Tests window; then Emmet, design tokens with their colour
+swatches and picker, the class attribute that knows your stylesheets and
+its project-wide rename, Run Script from the caret, env keys, Angular
+templates, Vue and Svelte, real breakpoints in both the editor and the
+browser, and the whole presenting-and-sharing family.
+
+Same structure as English, so the image, the chords, the paths and the
+English anchor id are shared and a cross-reference still lands in every
+language. The partial-translation notices move to chapters 1–5 — which
+the gate requires rather than trusts, after v2.106.0 caught all twelve
+still claiming 1–2 while every check stayed green.
+
 ## [2.107.0] - 2026-09-10
 
 **The night's close proof, and the guide's fourth chapter.**
@@ -18745,6 +18764,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.108.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.107.0...v2.108.0
 [2.107.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.106.0...v2.107.0
 [2.106.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.105.0...v2.106.0
 [2.105.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.104.0...v2.105.0

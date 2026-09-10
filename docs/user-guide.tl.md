@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–4. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–5. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -133,3 +133,53 @@ Ang **KVASIR** ay tulong ng AI sa paraan ng rack: isang kagamitang nagpapaliwana
 **Itutok ang isang ahente sa iyong IDE.** Ang Mga Kasangkapan ▸ Agent Port (MCP)… ay nagbubukas ng dulong MCP na maaaring tanungin ng katulong mula sa labas: ito ay **basahin-lamang ayon sa pagkakagawa**, patay hangga’t hindi mo binubuksan, nakikinig lamang sa lokal na interface, at humihingi ng tokeng nilikha nang buksan ito.
 
 Napapalawak ang rack: maaaring magdagdag ng kagamitan ang mga plugin ng iba (i-install ang NBM nila sa Mga Kasangkapan ▸ Mga Plugin). Upang sumulat ng isa, tingnan ang [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. Ang editor
+
+![Kodigong jQuery sa paleta ng NMOX Phosphor, ang balangkas sa Navigator](images/editor.png)
+
+Mahigit 70 wika ang nakukulayan nang wasto — ang makabagong salansan, ang klasiko (kasama ang CoffeeScript), at ang buong patong ng kompigurasyon, hanggang sa `.env`, `.editorconfig`, mga kompigurasyon ng nginx at Apache, mga Dockerfile, at mga lockfile.
+
+- **Ang pagkumpleto** ay may malay sa konteksto, at may malay din sa *klasikong aklatan*: kung may dalang jQuery, MooTools, Prototype, Backbone/Underscore, o Knockout ang iyong proyekto (sa pamamagitan ng mga dependency ng npm *o* payak na tag na `<script>`), lumilitaw ang kanilang mga API sa pagkumpleto. Ang mga proyektong jQuery 1.x at 2.x ay binibigyan ng tapat na tanda ng katapusan ng buhay, hindi ng paulit-ulit na paalala.
+- **Ang balangkas ng Navigator (⌘7)** ay nagpapakita ng istruktura ng file para sa 58 uri; pindutin upang tumalon.
+- **Ang minimap** — isang anyo ng buong file sa tabi ng scrollbar ng bawat editor; pindutin o hilahin upang mag-scroll. Laging kasya ang buong dokumento sa guhit: umuurong ang mga hanay habang lumalaki ang file. Ang Tanaw ▸ Minimap ay binubuksan at sinasara ito nang sabay para sa lahat ng bukás na editor.
+- **Ang dumidikit na scroll** — ang mga deklarasyong bumabalot sa itaas ng tanaw (ang klase, saka ang paraang pinasok mo) ay nananatiling nakapaskil sa ibabaw ng teksto, hanggang tatlong hanay ng mismong kodigo; pindutin ang isa upang tumalon doon. Nawawala ang guhit kapag walang bumabalot sa pinakaunang nakikitang hanay.
+- **Pumunta sa simbolo (⌥⇧⌘O)** ay tumatalon sa anumang function, klase, tuntunin, o pamagat sa buong proyekto sa pagta-type ng pangalan nito — may tugma ayon sa unlapi, sa malalaking titik sa gitna ng salita, o sa panghalili. Nakatakda at tapat ang indeks: nilalaktawan ang `node_modules`, at sa napakalaking proyekto sinasabi ng dayalogo na na-indeks nito ang unang 2,000 file sa halip na magkunwaring nabasa ang lahat.
+- **Ang bintana ng pagsusulit (⌥⌘2)** ay nagpapakita ng bawat pagsusulit sa proyekto *bago pa may tumakbo*, at pinapatakbo ang isa, isang file, o lahat.
+
+### Buksan ang daglat (⌥⌘E)
+
+Mag-type ng daglat ng Emmet at pindutin ang **⌥⌘E**: nagiging buong talaan ang `ul>li*3`. Gumagana ito sa HTML, sa mga template ng Angular, at — sa anyong CSS nito — sa loob ng mga bloke ng `<style>` at mga katangiang `style`, kung saan nakakulong ang hiwa sa rehiyon upang hindi nito kailanman malulon ang markup sa paligid. Ang daglat na hindi kilala ng produkto ay tinatanggihan at iniiwan nang buo ang iyong teksto.
+
+### Mga token ng disenyo (mga sariling katangian)
+
+Ang pag-type ng `var(` ay nag-aalok ng mga tokeng idineklara sa tunay na mga stylesheet ng iyong proyekto, bawat isa may sariling patse ng kulay at kung saan idineklara. Ang **⌘-pindot** sa isang paggamit ng `var(--token)` ay tumatalon sa deklarasyon nito. Ipininta ang mga kulay bilang ang kulay na sila nga — hex, `rgb()`, `hsl()`, mga pangalan, at pati `oklch()`, `lab()` at `color-mix()` — at ang **⌘-pindot** sa isang literal ng kulay ay nagbubukas ng pampili na papalit dito sa mismong anyong isinulat mo.
+
+### Kilala ng katangiang class ang iyong mga stylesheet
+
+Ang pag-type sa loob ng `class="…"` ay nag-aalok ng mga klaseng tunay na tinutukoy ng iyong proyekto, sabay sabi kung saang stylesheet nanggaling; ang **⌘-pindot** sa isang klase ay tumatalon sa tuntunin nito, at ang **⌘-pindot** sa isang pampiling `.klase` ay tumatalon sa unang paggamit nito sa markup. Ang **Palitan ang pangalan ng klase…** ay nagpapalit sa buong proyekto — buong token lamang, may bilang kada file — at tumatangging malakas kung nagagamit na ang bagong pangalan o may hindi pa naise-save na pagbabago.
+
+### Patakbuhin ang script, mula sa cursor
+
+Sa bahaging `scripts` ng isang `package.json`, pinapatakbo ng **Patakbuhin ang script** ang hanay na kinalalagyan ng cursor — sa parehong pagtatanong ng tiwala sa workspace at sa parehong ■ gaya ng anumang ibang pagtakbo.
+
+### Mga susi ng kapaligiran, first-class
+
+Ang pag-type ng `process.env.` o `import.meta.env.` ay nag-aalok ng mga susing talagang tinutukoy ng iyong pamilya ng mga file na `.env`, at ang **⌘-pindot** ay tumatalon sa hanay na nagdedeklara ng susi. Pinuputol ang mga halagang ipinapakita: naroon ang paalala, wala ang lihim.
+
+### Mga template ng Angular, first-class
+
+Bumubukas ang mga file na `.component.html` na may sariling pangkukulay ng template, may mga blokeng `@if`/`@for` at mga direktibang pang-istruktura sa pagkumpleto. I-install ang Angular Language Service at talagang dumarating ang pagsusuri ng uri sa template: mali ang pangalan ng isang katangian at ang mismong compiler ng Angular ang magmumungkahi ng tama. Ang **⌘B** sa loob ng isang template ay tumatalon sa deklarasyon, at ang menu ng konteksto ay lumilipat sa pagitan ng komponente, ng template nito, ng mga estilo nito, at ng pagsusulit nito.
+
+### Mga komponente ng Vue at Svelte, first-class
+
+Bumubukas ang mga file na `.vue` at `.svelte` na may sariling pangkukulay, sariling pagkumpleto (kasama ang tuldok na mga rune ng Svelte 5), at Emmet sa loob ng mga blokeng template nila. Talagang dumarating sa editor ang mga diyagnostiko ng Vue, sa pamamagitan ng sariling language server ng Vue.
+
+### Pag-debug gamit ang tunay na breakpoint
+
+Pindutin ang kaliwang gilid, piliin ang **I-debug ang file (mga breakpoint)**, at hihinto roon ang programa — kasama ang salansan, ang mga variable, at ang pagtaya ng mga ekspresyon. Gumagana ang JavaScript at TypeScript mula sa pabrika dahil sa kasamang adapter; gumagamit ang Python ng debugpy at ang Go ng delve, na ikaw ang mag-i-install. Ganoon din ang ginagawa ng **I-debug sa Chrome** para sa isang pahina: humihinto sa loob ng IDE ang mga breakpoint sa iyong pinagmulan habang tumatakbo ang browser sa isang pansamantalang profile. Dumadaan muna ang lahat sa pagtatanong ng tiwala sa workspace.
+
+### Pagpapakita at pagbabahagi
+
+Ang **Tanaw ▸ Presentation Mode** ay sabay-sabay na nagpapalaki sa bawat bukás na editor, sa pahina sa nakapaloob na browser, sa bintana ng Output, at sa Terminal — at ibinabalik ang lahat nang eksakto pagkalabas mo. Ang **Tanaw ▸ Ipakita ang mga Pindot** ay ipinapakitang malaki ang kombinasyong katatapos mong pindutin, ngunit hindi kailanman ang tinitipa mo. Ang **I-edit ▸ Kopyahin bilang Markdown** ay kinokopya ang pinili bilang nakabakod na bloke na may tamang tatak ng wika, at ang bersyong **may link** ay idinadagdag ang link ng GitHub sa mismong mga hanay na iyon. Ang **Mga Kasangkapan ▸ I-save ang screenshot…** ay ipininta ang buong bintana sa doble ang laki, may mga bersyon para sa tab ng editor lamang, para sa clipboard, at para kopyahin ang puno ng proyekto bilang Markdown.

@@ -4,7 +4,7 @@
 [English](user-guide.md) · **Español** · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traducción parcial: los capítulos 1–4 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
+> Traducción parcial: los capítulos 1–5 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
 
 Cómo usar el producto. Esta guía recorre las funciones en el orden en que las encontrarás: instalación, primer arranque, proyectos, el rack, los estudios, los asistentes y las redes de seguridad.
 
@@ -133,3 +133,53 @@ El rack es el corazón del producto. Cada herramienta de tu flujo de trabajo —
 **Apunta un agente a tu IDE.** Herramientas ▸ Agent Port (MCP)… abre un extremo MCP que un asistente externo puede consultar: es **de solo lectura por construcción**, está apagado hasta que tú lo enciendes, escucha únicamente en la interfaz local y exige el token que se genera al arrancarlo.
 
 El rack es ampliable: los complementos de terceros pueden añadir dispositivos (instala su NBM desde Herramientas ▸ Complementos). Para escribir uno, consulta [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. El editor
+
+![Código jQuery en la paleta NMOX Phosphor, con la estructura en el Navegador](images/editor.png)
+
+Más de 70 lenguajes se resaltan como es debido — la pila moderna, la clásica (CoffeeScript incluido) y toda la capa de configuración, hasta `.env`, `.editorconfig`, las configuraciones de nginx y Apache, los Dockerfile y los archivos de bloqueo.
+
+- **El autocompletado** conoce el contexto y también *las bibliotecas clásicas*: si tu proyecto lleva jQuery, MooTools, Prototype, Backbone/Underscore o Knockout (por dependencias de npm *o* por simples etiquetas `<script>`), sus API aparecen al completar. Los proyectos con jQuery 1.x o 2.x reciben una etiqueta honesta de fin de vida, no una regañina.
+- **El esquema del Navegador (⌘7)** muestra la estructura del archivo para 58 tipos distintos; pulsa para saltar.
+- **El minimapa** — una silueta del archivo entero junto a la barra de desplazamiento de cada editor; pulsa o arrastra para desplazarte. El documento completo siempre cabe en la tira: las filas se encogen a medida que el archivo crece. Ver ▸ Minimapa lo enciende y apaga en todos los editores abiertos a la vez.
+- **El desplazamiento adherente** — las declaraciones que encierran la parte alta de la vista (la clase, y luego el método al que has bajado) quedan fijadas sobre el texto, hasta tres líneas del propio código; pulsa una para saltar allí. La barra desaparece cuando nada encierra la primera línea visible.
+- **Ir al símbolo (⌥⇧⌘O)** salta a cualquier función, clase, regla o encabezado de todo el proyecto escribiendo su nombre, con coincidencia por prefijo, por mayúsculas internas o por comodín. El índice es acotado y honesto: se omite `node_modules` y, en un proyecto muy grande, el diálogo dice que indexó los primeros 2.000 archivos en vez de fingir que lo leyó todo.
+- **La ventana de pruebas (⌥⌘2)** muestra todas las pruebas del proyecto *antes de ejecutar nada*, y ejecuta una, un archivo o todas.
+
+### Expandir abreviatura (⌥⌘E)
+
+Escribe una abreviatura de Emmet y pulsa **⌥⌘E**: `ul>li*3` se convierte en la lista completa. Funciona en HTML, en las plantillas de Angular y — en su forma de CSS — dentro de bloques `<style>` y atributos `style`, donde el recorte está limitado a la región para que jamás se trague el marcado que la rodea. Una abreviatura que el producto no reconoce se rechaza y deja tu texto intacto.
+
+### Tokens de diseño (propiedades personalizadas)
+
+Al escribir `var(` aparecen los tokens declarados en las hojas de estilo reales de tu proyecto, cada uno con su muestra de color y con la indicación de dónde está declarado. **⌘-clic** sobre un uso de `var(--token)` salta a su declaración. Los colores se pintan como el color que son — hex, `rgb()`, `hsl()`, nombres y también `oklch()`, `lab()` y `color-mix()` — y **⌘-clic** sobre un literal de color abre un selector que lo reemplaza en la forma en que lo escribiste.
+
+### El atributo class conoce tus hojas de estilo
+
+Al escribir dentro de `class="…"` se ofrecen las clases que tu proyecto realmente define, indicando de qué hoja vienen; **⌘-clic** sobre una clase salta a su regla, y **⌘-clic** sobre un selector `.clase` salta a su primer uso en el marcado. **Renombrar clase…** cambia el nombre en todo el proyecto — solo tokens completos, con la cuenta por archivo — y se niega en voz alta si el nombre nuevo ya existe o si hay cambios sin guardar.
+
+### Ejecutar script, desde el cursor
+
+En la sección `scripts` de un `package.json`, **Ejecutar script** ejecuta la línea donde está el cursor — a través de la misma confirmación de confianza del espacio de trabajo y del mismo ■ que cualquier otra ejecución.
+
+### Las claves de entorno, de primera clase
+
+Al escribir `process.env.` o `import.meta.env.` se ofrecen las claves que tu familia de archivos `.env` define de verdad, y **⌘-clic** salta a la línea que declara la clave. Los valores se muestran truncados: el recordatorio está ahí, el secreto no.
+
+### Plantillas de Angular, de primera clase
+
+Los archivos `.component.html` se abren con resaltado propio de plantilla, con las llaves de bloque `@if`/`@for` y las directivas estructurales al completar. Instala el Angular Language Service y la comprobación de tipos de plantilla llega de verdad: escribe mal el nombre de una propiedad y el propio compilador de Angular te sugiere la correcta. **⌘B** en una plantilla salta a la definición, y el menú contextual pasa entre el componente, su plantilla, sus estilos y su prueba.
+
+### Componentes de Vue y Svelte, de primera clase
+
+Los archivos `.vue` y `.svelte` se abren con su propio resaltado, su propio autocompletado (las runas de Svelte 5 con notación de punto incluidas) y Emmet dentro de sus bloques de plantilla. Los diagnósticos de Vue llegan de verdad al editor a través del servidor de lenguaje de Vue.
+
+### Depuración con puntos de interrupción reales
+
+Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupción)** y el programa se detiene ahí — con la pila, las variables y la evaluación de expresiones. JavaScript y TypeScript funcionan de fábrica gracias al adaptador incluido; Python usa debugpy y Go usa delve, que instalas tú. **Depurar en Chrome** hace lo mismo con una página: los puntos de interrupción de tu código fuente se detienen dentro del IDE mientras el navegador corre en un perfil desechable. Todo pasa antes por la confirmación de confianza del espacio de trabajo.
+
+### Presentar y compartir
+
+**Ver ▸ Modo presentación** agranda de una vez todos los editores, la página del navegador integrado, la ventana de salida y la terminal — y lo devuelve todo exactamente como estaba al salir. **Ver ▸ Mostrar pulsaciones** muestra en grande el atajo que acabas de pulsar, pero nunca lo que escribes. **Editar ▸ Copiar como Markdown** copia la selección como un bloque delimitado con la etiqueta de lenguaje correcta, y su variante **con enlace** añade el enlace de GitHub a esas mismas líneas. **Herramientas ▸ Guardar captura…** pinta la ventana entera al doble de tamaño, y hay variantes para la pestaña del editor sola, para el portapapeles y para copiar el árbol del proyecto como Markdown.

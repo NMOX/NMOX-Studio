@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–4 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–5 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -133,3 +133,53 @@ Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, 
 **Pointez un agent sur votre IDE.** Outils ▸ Agent Port (MCP)… ouvre un point d’accès MCP qu’un assistant extérieur peut interroger : il est **en lecture seule par construction**, éteint tant que vous ne l’allumez pas, à l’écoute de la seule interface locale, et exige le jeton engendré à son démarrage.
 
 Le rack est extensible : des greffons tiers peuvent ajouter des appareils (installez leur NBM depuis Outils ▸ Greffons). Pour en écrire un, voyez [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. L’éditeur
+
+![Du code jQuery dans la palette NMOX Phosphor, la structure dans le Navigateur](images/editor.png)
+
+Plus de 70 langages sont colorés comme il faut — la pile moderne, la pile classique (CoffeeScript compris) et toute la couche de configuration, jusqu’aux `.env`, `.editorconfig`, configurations nginx et Apache, Dockerfiles et fichiers de verrouillage.
+
+- **La complétion** connaît le contexte et aussi *les bibliothèques classiques* : si votre projet porte jQuery, MooTools, Prototype, Backbone/Underscore ou Knockout (par des dépendances npm *ou* de simples balises `<script>`), leurs API apparaissent à la complétion. Les projets en jQuery 1.x ou 2.x reçoivent une pastille honnête de fin de vie, pas un rappel insistant.
+- **Le plan du Navigateur (⌘7)** montre la structure du fichier pour 58 types ; cliquez pour y sauter.
+- **La minicarte** — une silhouette du fichier entier le long de la barre de défilement de chaque éditeur ; cliquez ou faites glisser pour défiler. Le document entier tient toujours dans la bande : les lignes rétrécissent à mesure que le fichier grandit. Affichage ▸ Minicarte l’allume et l’éteint d’un coup pour tous les éditeurs ouverts.
+- **Le défilement collant** — les déclarations qui englobent le haut de la vue (la classe, puis la méthode dans laquelle vous êtes descendu) restent épinglées au-dessus du texte, jusqu’à trois lignes du code lui-même ; cliquez-en une pour y sauter. La barre disparaît quand rien n’englobe la première ligne visible.
+- **Aller au symbole (⌥⇧⌘O)** saute vers n’importe quelle fonction, classe, règle ou titre de tout le projet en tapant son nom, avec correspondance par préfixe, par majuscules internes ou par joker. L’index est borné et honnête : `node_modules` est ignoré, et sur un très gros projet la boîte de dialogue dit qu’elle a indexé les 2 000 premiers fichiers plutôt que de faire croire qu’elle a tout lu.
+- **La fenêtre des tests (⌥⌘2)** montre tous les tests du projet *avant que quoi que ce soit ne s’exécute*, et lance un test, un fichier ou la totalité.
+
+### Développer l’abréviation (⌥⌘E)
+
+Tapez une abréviation Emmet et pressez **⌥⌘E** : `ul>li*3` devient la liste complète. Cela marche en HTML, dans les gabarits Angular et — dans sa forme CSS — à l’intérieur des blocs `<style>` et des attributs `style`, où la découpe est bornée à la région pour qu’elle n’avale jamais le balisage autour. Une abréviation que le produit ne reconnaît pas est refusée et laisse votre texte intact.
+
+### Jetons de conception (propriétés personnalisées)
+
+Taper `var(` propose les jetons déclarés dans les vraies feuilles de style de votre projet, chacun avec sa pastille de couleur et l’endroit où il est déclaré. **⌘-clic** sur un usage de `var(--jeton)` saute à sa déclaration. Les couleurs sont peintes telles qu’elles sont — hex, `rgb()`, `hsl()`, noms, et aussi `oklch()`, `lab()` et `color-mix()` — et **⌘-clic** sur un littéral de couleur ouvre un sélecteur qui le remplace dans la forme où vous l’avez écrit.
+
+### L’attribut class connaît vos feuilles de style
+
+Taper dans `class="…"` propose les classes que votre projet définit réellement, en indiquant de quelle feuille elles viennent ; **⌘-clic** sur une classe saute à sa règle, et **⌘-clic** sur un sélecteur `.classe` saute à son premier usage dans le balisage. **Renommer la classe…** renomme dans tout le projet — jetons entiers seulement, avec le compte par fichier — et refuse à voix haute si le nouveau nom existe déjà ou s’il reste des modifications non enregistrées.
+
+### Lancer le script, depuis le curseur
+
+Dans la section `scripts` d’un `package.json`, **Lancer le script** exécute la ligne où se trouve le curseur — via la même confirmation de confiance de l’espace de travail et le même ■ que n’importe quelle autre exécution.
+
+### Les clés d’environnement, de plein droit
+
+Taper `process.env.` ou `import.meta.env.` propose les clés que votre famille de fichiers `.env` définit vraiment, et **⌘-clic** saute à la ligne qui déclare la clé. Les valeurs sont affichées tronquées : le rappel est là, le secret non.
+
+### Les gabarits Angular, de plein droit
+
+Les fichiers `.component.html` s’ouvrent avec leur propre coloration de gabarit, les blocs `@if`/`@for` et les directives structurelles à la complétion. Installez l’Angular Language Service et le typage des gabarits arrive vraiment : écrivez mal un nom de propriété et le compilateur d’Angular lui-même vous propose le bon. **⌘B** dans un gabarit saute à la définition, et le menu contextuel passe entre le composant, son gabarit, ses styles et son test.
+
+### Les composants Vue et Svelte, de plein droit
+
+Les fichiers `.vue` et `.svelte` s’ouvrent avec leur propre coloration, leur propre complétion (les runes pointées de Svelte 5 comprises) et Emmet dans leurs blocs de gabarit. Les diagnostics de Vue arrivent réellement dans l’éditeur, par le serveur de langage de Vue.
+
+### Le débogage avec de vrais points d’arrêt
+
+Cliquez dans la marge, choisissez **Déboguer le fichier (points d’arrêt)** et le programme s’arrête là — avec la pile, les variables et l’évaluation d’expressions. JavaScript et TypeScript marchent d’origine grâce à l’adaptateur embarqué ; Python passe par debugpy et Go par delve, que vous installez vous-même. **Déboguer dans Chrome** fait de même pour une page : les points d’arrêt de votre source s’arrêtent dans l’IDE pendant que le navigateur tourne sur un profil jetable. Tout passe d’abord par la confirmation de confiance de l’espace de travail.
+
+### Présenter et partager
+
+**Affichage ▸ Mode présentation** agrandit d’un coup tous les éditeurs, la page du navigateur intégré, la fenêtre de sortie et le terminal — et remet tout exactement comme c’était en sortant. **Affichage ▸ Afficher les frappes** montre en grand l’accord que vous venez de presser, mais jamais ce que vous tapez. **Édition ▸ Copier comme Markdown** copie la sélection en bloc délimité avec la bonne étiquette de langage, et sa variante **avec lien** ajoute le lien GitHub vers ces mêmes lignes. **Outils ▸ Enregistrer une capture…** peint la fenêtre entière au double de la taille, avec des variantes pour l’onglet d’édition seul, pour le presse-papiers, et pour copier l’arborescence du projet en Markdown.
