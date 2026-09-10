@@ -124,20 +124,48 @@ class TranslatedGuideGateTest {
     }
 
     @Test
-    @DisplayName("a partial translation says so and links back to the English guide")
+    @DisplayName("a partial translation says so, says how far it goes, and links back to English")
     void partialTranslationsAreHonest() throws IOException {
         List<String> english = chapters(docs().resolve("user-guide.md"));
         List<String> silent = new ArrayList<>();
+        List<String> stale = new ArrayList<>();
         for (String lang : translatedLanguages()) {
             Path p = docs().resolve("user-guide." + lang + ".md");
             String body = read(p);
-            if (chapters(p).size() < english.size() && !body.contains("](user-guide.md)")) {
+            List<String> mine = chapters(p);
+            if (mine.size() >= english.size()) {
+                continue;             // a complete guide owes no notice
+            }
+            if (!body.contains("](user-guide.md)")) {
                 silent.add(lang);
+                continue;
+            }
+            // and the notice must be TRUE, not merely present: the first run
+            // after chapter 3 landed had all twelve still claiming "1–2",
+            // which this gate could not see (v2.105.0). A claim in prose is
+            // a test not yet written — so the notice names its last chapter.
+            String notice = noticeLine(body);
+            String last = mine.get(mine.size() - 1);
+            if (!notice.contains(last)) {
+                stale.add(lang + ": notice does not name chapter " + last + " — “" + notice + "”");
             }
         }
         assertThat(silent)
                 .as("a guide that stops early without naming where the rest is strands its reader")
                 .isEmpty();
+        assertThat(stale)
+                .as("the notice tells the reader how far the translation goes; it must stay true")
+                .isEmpty();
+    }
+
+    /** The blockquote notice under the language bar. */
+    private static String noticeLine(String body) {
+        for (String line : body.split("\n", -1)) {
+            if (line.startsWith("> ")) {
+                return line;
+            }
+        }
+        return "";
     }
 
     @Test
