@@ -33,7 +33,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.CheckMyWorkAction")
 @ActionRegistration(displayName = "#CTL_CheckMyWorkAction")
-@ActionReference(path = "Menu/File", position = 139)
+@ActionReference(path = "Menu/File", position = 115)
 @Messages({
     "CTL_CheckMyWorkAction=Check My Work",
     "CheckMyWorkAction_notASpace=Check My Work verifies a learning space's exercises — aim the studio at one first (File ▸ New Learning Space…).",

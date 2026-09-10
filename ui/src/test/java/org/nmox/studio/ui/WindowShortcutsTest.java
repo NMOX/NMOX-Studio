@@ -66,7 +66,7 @@ class WindowShortcutsTest {
         WINDOWS.put("src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java",
                 new String[] {"DA-3", "IRC  ⌥⌘3"});
         WINDOWS.put("src/main/java/org/nmox/studio/ui/tasks/TasksTopComponent.java",
-                new String[] {"DA-1", "Tasks  ⌥⌘1"});
+                new String[] {"DA-1", "Task Board  ⌥⌘1"});
         WINDOWS.put("../editor/src/main/java/org/nmox/studio/editor/testing/explorer/TestsExplorerTopComponent.java",
                 new String[] {"DA-2", "Tests  ⌥⌘2"});
     }

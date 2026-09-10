@@ -80,7 +80,7 @@ itself across every release since v1.51.
 
 | | |
 |---|---|
-| ![Welcome screen](docs/images/welcome.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
+| ![Welcome screen](docs/images/tabs/workbench.png) | ![Rack rear — patch cables](docs/images/rack-rear.png) |
 | *The Welcome launchpad — start actions, recent projects, First Steps* | *Flip the rack (Tab) and patch task pipelines by cable* |
 | ![Editor](docs/images/editor.png) | ![API Studio](docs/images/api-studio.png) |
 | *An Angular template in the editor — oklch() swatches inside the style block, minimap, outline, the run in the Output* | *API Studio — a live response, graded on its security headers* |
@@ -403,7 +403,7 @@ Completion knows the classic APIs (`$.ajax`, `_.debounce`,
 MooTools, Prototype, Backbone, Underscore, or Knockout — and a project
 still on jQuery 1.x wears an honest **EOL** chip. CoffeeScript
 highlights and outlines like any other language. Want to go the other
-way? The **Classic Kit** (File → Classic Kit…) extends any codebase with
+way? The **Classic Kit** (File → Add to Project → Classic Kit…) extends any codebase with
 pinned vendored builds (script tags wired idempotently) or npm deps, and
 generates webpack/Grunt/gulp/bower scaffolds without ever clobbering a
 file you wrote. There are even **Classic Web (jQuery)** and **Classic Web
@@ -703,7 +703,7 @@ LSP (served by scarb itself), and every Run/Build/Test lane — and Move
 speaks **both dialects**: a `Move.toml` naming AptosFramework flips
 every lane to `aptos move compile/test` automatically. The
 **Multi-Chain Bench** preset racks all three chains on one MONITOR,
-and the **Contract Kit** (File → Contract Kit (Web3)…) scaffolds a
+and the **Contract Kit** (File → Add to Project → Contract Kit (Web3)…) scaffolds a
 live-proven starter for any of **eleven chains** — Solidity/Foundry,
 Soroban, Solana, CosmWasm, ink!, Cairo, Move, **Bitcoin**
 (spending conditions as Miniscript policies compiled to consensus
@@ -730,10 +730,10 @@ that embed API keys live only in the OS keychain, never on disk.
 applies the spec for real (trim_trailing_whitespace,
 insert_final_newline, glob sections, root stopping, closer-file
 precedence) with a minimal edit so the caret stays put. The
-**Standards Kit wizard** (File → Standards Kit…) generates the web's
+**Standards Kit wizard** (File → Add to Project → Standards Kit…) generates the web's
 well-known files, each correct to its spec: robots.txt (RFC 9309),
 sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
-RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → PWA Kit…)
+RFC 3339 Expires, humans.txt. The **PWA Kit wizard** (File → Add to Project → PWA Kit…)
 makes the project installable in one dialog: a generated icon set
 (monogram or your own artwork — icon-192/512, W3C-safe-zone maskable
 pair, apple-touch-icon, rendered in-process with zero external tools),
@@ -744,10 +744,10 @@ idempotent index.html wiring. Every API Studio response is graded on a
 **Standards tab** — HSTS, CSP, nosniff, clickjacking, Referrer-Policy,
 Permissions-Policy, COOP — value-aware, letter-graded, a named fix for
 every miss. Neither wizard ever overwrites an existing file.
-The **A11y Kit wizard** (File → A11y Kit (Web)…) makes accessibility
+The **A11y Kit wizard** (File → Add to Project → A11y Kit (Web)…) makes accessibility
 the starting point — focus-visible styles, a skip link, `lang`,
 reduced-motion support, a keyboard-walk checklist — and the **I18n Kit
-wizard** (File → I18n Kit (Web)…) makes it translatable: locale
+wizard** (File → Add to Project → I18n Kit (Web)…) makes it translatable: locale
 catalogs, a dependency-free `data-i18n` applier that keeps
 `<html lang>` truthful, and the checklist of rules tooling can't
 enforce. Both idempotent, never clobbering.

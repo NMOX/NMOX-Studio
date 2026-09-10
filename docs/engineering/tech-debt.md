@@ -22,6 +22,64 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
+### 96. The first-launch surface: (a) DECIDED and shipped, (b)+(c) left to the owner (2026-09-10, v2.118.0)
+
+Three things the first-time walk measured but did not change on its own,
+because each reverses a decision the owner made by name. Numbers first, so
+the call could be made on evidence rather than taste. David read them and
+took (a) the same day; (b) and (c) stand as recorded.
+
+**a. Thirteen windows open before the user has done anything — CLOSED
+(David's call, same day).** Ten in the editor area (Welcome, Task Rack, DB
+Studio, Contract Studio, Infra Designer, API Studio, Browser, IRC, Task
+Board, Docker Panel) and three docked (Project Studio, Workbench, NPM
+Explorer). Opening an ordinary Node/Express project, **four of the ten were
+for technologies the project cannot use** — DB Studio with no database,
+Contract Studio announcing "0 contract artifacts" for a bakery API, the
+Infra Designer, the Docker Panel with no Dockerfile — a fifth was a chat
+client, and a sixth an empty kanban board whose first touch writes
+`.nmoxtasks.json` into someone else's repository. They consumed 56% of the
+tab strip at the forge's 1600 px window before a single file was opened,
+and the editor tab for the file the user came to read arrived eleventh.
+
+The counter-argument was on the record: v1.29.0 chose "every major surface
+one click away from minute one", and `DiscoveryTabsGateTest` pinned the
+Browser and IRC as *"David's call"*. What settled it was that **discovery
+already has three surfaces that cost nothing** — the Welcome's TOOLING
+column lists every window with its chord, on screen at first launch; the
+Window menu lists them again; the ⌥⌘ chords open them directly. The tab
+strip was the fourth copy, and the only one with a price.
+
+Seven closed: DB Studio, Contract Studio, Infra Designer, API Studio, IRC,
+Task Board, Docker Panel. A first launch is Welcome → Task Rack → Browser,
+plus the three docked panes. The Browser stayed because a Run arms
+OpenOnServe and the served page lands there. `openAtStartup` seeds only a
+userdir with no saved layout, so no existing install's arrangement moved.
+
+`FirstLaunchWindowsLedgerTest` now derives the population from every
+`@TopComponent.Registration` in the product's sources: a new window fails
+the build until it states, with a reason, whether a newcomer meets it, and
+a second assertion pins the editor strip at exactly three. The decision is
+no longer whatever each window chose on the day it was written.
+
+**b. The in-app Browser's bare home is a news site.** With nothing serving,
+`⌥⌘4` loads `https://news.ycombinator.com/` and the tab renames itself
+"Hacker News" — an outbound request and a third-party page inside a work
+IDE, sitting between API Studio and IRC in the tab strip. The logic is
+already half right (a live serving wins, v1.204.0/v1.212.0); only the
+no-serving case is a stranger's website. A local start page naming the
+project's servings would be the honest empty state. Deferred: HOME_URL is
+recorded as "David's pick".
+
+**c. The Tools menu's two NMOX groups are split by seven platform rows.**
+Environment Doctor and Agent Port sit at 90/95; Save Screenshot, Save Editor
+Screenshot, Copy Editor Screenshot and Copy Project Tree as Markdown at
+105–108, with the platform's file verbs between them and no separator. Not
+a defect, just the same next-free-position drift the File menu had. Left
+alone because repositioning into the platform's own range is how v2.104.0
+found a real collision; the File menu was worth that risk and this is not.
+
+
 ### 87. Two stop registries, two populations — BLESSED (2026-09-05, v2.72.0; amended v2.74.0: the ■ is TOTAL)
 
 *Amendment (v2.74.0):* the rack's device runs joined `LiveRuns` too —

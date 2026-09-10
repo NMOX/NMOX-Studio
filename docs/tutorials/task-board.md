@@ -19,7 +19,7 @@ read your commits; if not, that section simply never appears.
 
 ## Steps
 
-1. **Open the board.** `⌥⌘1` (or `Window ▸ Tasks`). Press **New
+1. **Open the board.** `⌥⌘1` (or `Window ▸ Task Board`). Press **New
    Card…** three times and give each card a title. Cards move by
    drag, or by keyboard: with a card selected, **⌘←/⌘→** moves it a
    column over and **⌘↑/⌘↓** reorders it; **Enter** edits, **Delete**

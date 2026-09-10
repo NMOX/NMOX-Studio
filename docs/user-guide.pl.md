@@ -33,9 +33,9 @@ IDE aktualizuje się samo: **Narzędzia ▸ Wtyczki ▸ Aktualizacje** proponuje
 
 Z terminala `nmoxstudio --open <katalog>` uruchamia aplikację z tym katalogiem otwartym jako projekt i wycelowanym w niego stojakiem — te same drzwi, które otwiera „Otwórz katalog…” na stronie powitalnej.
 
-IDE otwiera się ze wszystkimi kartami zestawu przy obszarze edytora: **Witamy → Stojak zadań → Studio baz danych → Studio kontraktów → Projektant infrastruktury → Studio API → Panel Dockera** — każda główna powierzchnia o jedno kliknięcie od pierwszej minuty. W lewym doku: **Studio projektu** (drzewo plików i szablony), baza **Stanowisko pracy** oraz **Eksplorator NPM**. Powstaje katalog `~/NMOX` jako domyślna przestrzeń robocza; stojak wskazuje tam, dopóki nie otworzysz projektu.
+IDE otwiera się z trzema kartami przy obszarze edytora: **Witamy → Stojak zadań → Przeglądarka**. Każde inne okno jest o jeden skrót ⌥⌘ i figuruje w kolumnie TOOLING strony powitalnej. W lewym doku: **Studio projektu** (drzewo plików i szablony), baza **Stanowisko pracy** oraz **Eksplorator NPM**. Powstaje katalog `~/NMOX` jako domyślna przestrzeń robocza; stojak wskazuje tam, dopóki nie otworzysz projektu.
 
-![Pierwsze uruchomienie — strona powitalna ze wszystkimi otwartymi kartami](images/welcome.png)
+![Pierwsze uruchomienie — strona powitalna z trzema kartami](images/tabs/workbench.png)
 
 Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na karcie powitalnej):
 
@@ -44,6 +44,8 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 | **⌘I** | Szybkie wyszukiwanie — sięga wszędzie |
 | **⌘9** | Stojak zadań |
 | **⌥⌘0** | Stanowisko pracy |
+| **⌥⌘1** | Tablica zadań |
+| **⌥⌘2** | Testy |
 | **⌥⌘3** | Klient czatu IRC |
 | **⌥⌘4** | Przeglądarka (wbudowany WebKit, z DevTools) |
 | **⌥⌘5** | Studio bloków |

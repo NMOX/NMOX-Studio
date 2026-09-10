@@ -113,7 +113,13 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "Web3StudioTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 275)
+        // v2.118.0, David's call after the coherence pass measured the
+        // first launch: a bakery API opened Contract Studio and it announced "0 contract artifacts".
+        // The window is one ⌥⌘ chord, one Welcome link and one Window-menu
+        // row away — discovery keeps three surfaces, and the tab strip stops
+        // being one of them. Only a userdir with no saved layout is affected;
+        // an existing install keeps the layout it has (ledger 96a).
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 275)
 @ActionID(category = "Window", id = "org.nmox.studio.web3.ui.Web3StudioTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 259),

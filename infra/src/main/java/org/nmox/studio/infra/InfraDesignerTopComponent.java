@@ -46,7 +46,13 @@ import org.openide.windows.TopComponent;
 @ConvertAsProperties(dtd = "-//org.nmox.studio.infra//InfraDesigner//EN", autostore = false)
 @TopComponent.Description(preferredID = "InfraDesignerTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 300)
+        // v2.118.0, David's call after the coherence pass measured the
+        // first launch: a project that deploys nowhere opened the Infra Designer.
+        // The window is one ⌥⌘ chord, one Welcome link and one Window-menu
+        // row away — discovery keeps three surfaces, and the tab strip stops
+        // being one of them. Only a userdir with no saved layout is affected;
+        // an existing install keeps the layout it has (ledger 96a).
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 300)
 @ActionID(category = "Window", id = "org.nmox.studio.infra.InfraDesignerTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 260),

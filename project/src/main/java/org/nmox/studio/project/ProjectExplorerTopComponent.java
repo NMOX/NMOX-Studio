@@ -99,9 +99,9 @@ import org.openide.windows.WindowManager;
     "ProjectExplorerTopComponent_infraDesigner=Infra Designer",
     "ProjectExplorerTopComponent_infraDesignerSub=DigitalOcean · Hetzner · Cloudflare flows",
     "ProjectExplorerTopComponent_infraDesignerTip=Design and deploy infrastructure Node-RED style",
-    "ProjectExplorerTopComponent_dockerManager=Docker Manager",
-    "ProjectExplorerTopComponent_dockerManagerSub=containers, images, disk reclaim, dockerize",
-    "ProjectExplorerTopComponent_dockerManagerTip=The Docker Panel — HARBOR's control room",
+    "ProjectExplorerTopComponent_dockerPanel=Docker Panel",
+    "ProjectExplorerTopComponent_dockerPanelSub=containers, images, disk reclaim, dockerize",
+    "ProjectExplorerTopComponent_dockerPanelTip=The Docker Panel — HARBOR's control room",
     "ProjectExplorerTopComponent_terminal=Terminal",
     "ProjectExplorerTopComponent_terminalSub=phosphor shell in the project directory",
     "ProjectExplorerTopComponent_terminalTip=Black glass, lime text",
@@ -638,8 +638,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         row(Bundle.ProjectExplorerTopComponent_infraDesigner(), Bundle.ProjectExplorerTopComponent_infraDesignerSub(),
                 false, null, Bundle.ProjectExplorerTopComponent_infraDesignerTip(),
                 () -> openWindow("InfraDesignerTopComponent"));
-        row(Bundle.ProjectExplorerTopComponent_dockerManager(), Bundle.ProjectExplorerTopComponent_dockerManagerSub(),
-                false, null, Bundle.ProjectExplorerTopComponent_dockerManagerTip(),
+        row(Bundle.ProjectExplorerTopComponent_dockerPanel(), Bundle.ProjectExplorerTopComponent_dockerPanelSub(),
+                false, null, Bundle.ProjectExplorerTopComponent_dockerPanelTip(),
                 () -> {
                     try {
                         org.nmox.studio.rack.docker.DockerPanelTopComponent.openPanel();

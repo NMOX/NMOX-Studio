@@ -22,7 +22,7 @@ install), optional downscaling, and `.webp` siblings through your own
 
 ## Steps
 
-1. **Aim at a project** and choose **File ▸ Image Kit (Web)…**. The
+1. **Aim at a project** and choose **File ▸ Add to Project ▸ Image Kit (Web)…**. The
    dialog tells you how many images it found and their total weight
    (node_modules and build outputs are skipped, and so are its own
    `.min.` outputs — pressing a press would compound loss).

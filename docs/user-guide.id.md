@@ -33,9 +33,9 @@ IDE memperbarui dirinya sendiri: **Alat ▸ Plugin ▸ Pembaruan** menawarkan mo
 
 Dari terminal, `nmoxstudio --open <folder>` menjalankan aplikasi dengan folder itu terbuka sebagai proyek dan rak yang mengarah ke sana — pintu yang sama dengan “Buka folder…” di halaman selamat datang.
 
-IDE terbuka dengan semua tab rangkaian di samping area editor: **Selamat Datang → Rak Tugas → Studio Basis Data → Studio Kontrak → Perancang Infrastruktur → Studio API → Panel Docker** — setiap permukaan utama berjarak satu klik sejak menit pertama. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
+IDE terbuka dengan tiga tab di samping area editor: **Selamat Datang → Rak Tugas → Peramban**. Setiap jendela lain berjarak satu pintasan ⌥⌘ dan tercantum di kolom TOOLING halaman selamat datang. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
 
-![Peluncuran pertama — halaman selamat datang dengan semua tab terbuka](images/welcome.png)
+![Peluncuran pertama — halaman selamat datang dengan tiga tab](images/tabs/workbench.png)
 
 Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab selamat datang):
 
@@ -44,6 +44,8 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 | **⌘I** | Pencarian cepat — menjangkau segalanya |
 | **⌘9** | Rak Tugas |
 | **⌥⌘0** | Meja Kerja |
+| **⌥⌘1** | Papan Tugas |
+| **⌥⌘2** | Pengujian |
 | **⌥⌘3** | Klien obrolan IRC |
 | **⌥⌘4** | Peramban (WebKit bawaan, dengan DevTools) |
 | **⌥⌘5** | Studio Blok |

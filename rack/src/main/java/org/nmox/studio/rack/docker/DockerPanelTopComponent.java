@@ -62,7 +62,13 @@ import org.openide.windows.TopComponent;
         // content is rebuilt from the live Docker daemon on show anyway.
         persistenceType = TopComponent.PERSISTENCE_ALWAYS
 )
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 400)
+        // v2.118.0, David's call after the coherence pass measured the
+        // first launch: a project with no Dockerfile opened the Docker Panel.
+        // The window is one ⌥⌘ chord, one Welcome link and one Window-menu
+        // row away — discovery keeps three surfaces, and the tab strip stops
+        // being one of them. Only a userdir with no saved layout is affected;
+        // an existing install keeps the layout it has (ledger 96a).
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 400)
 @org.openide.awt.ActionID(category = "Window",
         id = "org.nmox.studio.rack.docker.DockerPanelTopComponent")
 @org.openide.awt.ActionReferences({

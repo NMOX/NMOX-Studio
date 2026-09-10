@@ -11,16 +11,25 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The discovery-tab law (v1.211.0, David's call): the Browser and IRC open
- * by DEFAULT so a newcomer finds out the IDE has them — and, because a
- * default-open tab's {@code componentOpened} fires during startup, neither
- * may do its work there.
+ * The Browser is open on first launch; IRC is not (v2.118.0, David's call
+ * after the coherence pass, amending v1.211.0).
  *
- * <p>These two are the expensive cases: the Browser boots the whole JavaFX
- * platform and fetches its home page, and IRC builds a large Swing tree.
- * Doing either at boot would undo the v1.38.0 startup work (window paints
- * in 1.4–2.7s, ZERO processes spawned, no network at boot). Both build on
- * first SHOW instead — the idiom DB Studio has used since v1.35.1.
+ * <p>v1.211.0 opened both so a newcomer would find out the IDE has them.
+ * The coherence pass measured what that cost by first launch: ten editor
+ * tabs, four of them for technologies the opened project cannot use and a
+ * fifth a chat client, with the user's own file arriving eleventh. It also
+ * measured that discovery already has three surfaces — the Welcome's
+ * TOOLING column, the Window menu, and the ⌥⌘ chords — so the tab strip was
+ * the redundant one. Seven tabs closed; the Browser stayed, because a Run
+ * lands a serving in it (OpenOnServe, v1.212.0) and it is where the page
+ * the user just started appears.
+ *
+ * <p>The rest of the law is unchanged and now covers a wider population: a
+ * default-open tab's {@code componentOpened} fires during startup, so
+ * neither the Browser (which boots the whole JavaFX platform and fetches a
+ * page) nor IRC (a large Swing tree) may do its work there. Both build on
+ * first SHOW — the idiom DB Studio has used since v1.35.1 — which is also
+ * what makes a now-closed tab cost nothing when the user opens it.
  */
 class DiscoveryTabsGateTest {
 
@@ -34,18 +43,23 @@ class DiscoveryTabsGateTest {
             "src/main/java/org/nmox/studio/ui/irc/IrcTopComponent.java";
 
     @Test
-    @DisplayName("the Browser and IRC are open on first launch — that is the discovery decision")
-    void bothOpenAtStartup() throws IOException {
+    @DisplayName("the Browser opens on first launch — a Run has to land somewhere")
+    void browserOpensAtStartup() throws IOException {
         assertThat(src(BROWSER))
-                .as("a newcomer should find the in-app browser without reading docs")
-                .contains("openAtStartup = true");
-        assertThat(src(IRC))
-                .as("same for the chat client")
+                .as("Run arms OpenOnServe and the served page appears here")
                 .contains("openAtStartup = true");
     }
 
     @Test
-    @DisplayName("neither builds in componentOpened — a default-open tab must cost nothing at boot")
+    @DisplayName("IRC does not open on first launch — a chat client is not the first thing a work IDE shows")
+    void ircDoesNotOpenAtStartup() throws IOException {
+        assertThat(src(IRC))
+                .as("⌥⌘3, the Welcome's TOOLING column and the Window menu are the three doors")
+                .contains("openAtStartup = false");
+    }
+
+    @Test
+    @DisplayName("neither builds in componentOpened — an open tab must cost nothing at boot")
     void neitherWorksAtBoot() throws IOException {
         String browser = src(BROWSER);
         // the FX panel (which boots the JavaFX platform) and the home-page

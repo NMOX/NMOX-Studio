@@ -93,7 +93,14 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "TasksTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 357)
+        // v2.118.0, David's call after the coherence pass measured the
+        // first launch: an empty three-column board opened on a project that has none, and touching
+        // it writes .nmoxtasks.json into someone else's repository.
+        // The window is one ⌥⌘ chord, one Welcome link and one Window-menu
+        // row away — discovery keeps three surfaces, and the tab strip stops
+        // being one of them. Only a userdir with no saved layout is affected;
+        // an existing install keeps the layout it has (ledger 96a).
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 357)
 @ActionID(category = "Window", id = "org.nmox.studio.ui.tasks.TasksTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 269),
@@ -102,8 +109,8 @@ import org.openide.windows.TopComponent;
 @TopComponent.OpenActionRegistration(displayName = "#CTL_TasksAction",
         preferredID = "TasksTopComponent")
 @Messages({
-    "CTL_TasksAction=Tasks",
-    "CTL_TasksTopComponent=Tasks",
+    "CTL_TasksAction=Task Board",
+    "CTL_TasksTopComponent=Task Board",
     "TasksTopComponent_tooltip=Per-project task board (.nmoxtasks.json)",
     "TasksTopComponent_changedOutside={0} changed outside the IDE — reloaded; repeat your change",
     "TasksTopComponent_newCard=New Card…",

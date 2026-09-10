@@ -42,7 +42,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.NewExperimentAction")
 @ActionRegistration(displayName = "#CTL_NewExperimentAction")
 @ActionReferences({
-    @ActionReference(path = "Menu/File", position = 115),
+    @ActionReference(path = "Menu/File", position = 120),
     @ActionReference(path = "Shortcuts", name = "DS-E")
 })
 @Messages({

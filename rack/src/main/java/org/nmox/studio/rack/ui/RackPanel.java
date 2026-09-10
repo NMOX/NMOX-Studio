@@ -559,9 +559,13 @@ public class RackPanel extends JPanel implements Rack.Listener {
         g.drawRect(railX1, -1, 10, getHeight() + 1);
         g.drawRect(railX2 - 10, -1, 10, getHeight() + 1);
         paintRailHardware(g, railX1, railX2);
-        if (rack.getDevices().isEmpty()) {
-            paintEmptyRack(g, railX1, railX2);
-        }
+        // The invitation belongs on any bare rail, not only on a rack with
+        // nothing in it. The starter rack mounts one MONITOR (v1.278.0), so
+        // getDevices().isEmpty() was false from the first launch and this
+        // silkscreen — the only place the rack says where devices come from —
+        // had never been seen by a new user. It now paints in whatever space
+        // is left below the stack, and retires as the rack fills.
+        paintEmptyRack(g, railX1, railX2, stackBottom());
         g.dispose();
     }
 
@@ -589,19 +593,44 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
     }
 
-    /** An empty rack invites: etched silkscreen between bare rails. */
-    private void paintEmptyRack(Graphics2D g, int railX1, int railX2) {
+    /** The bottom of the mounted stack: where the bare rails begin. */
+    int stackBottom() {
+        int bottom = 0;
+        for (java.awt.Component c : getComponents()) {
+            bottom = Math.max(bottom, c.getY() + c.getHeight());
+        }
+        return bottom;
+    }
+
+    /**
+     * Bare rails invite: etched silkscreen in the space below the stack.
+     * "RACK EMPTY" is only true of an empty rack, so a rack with devices
+     * gets the hint alone — the line that names the two doors devices come
+     * through, the shelf and the Presets menu.
+     */
+    private void paintEmptyRack(Graphics2D g, int railX1, int railX2, int stackBottom) {
+        boolean empty = rack.getDevices().isEmpty();
+        int free = getHeight() - stackBottom;
+        if (!empty && free < BARE_RAIL_MIN) {
+            return; // a full rack has nothing to explain
+        }
         int cx = (railX1 + railX2) / 2;
-        int cy = Math.max(70, getHeight() / 3);
-        g.setFont(RackStyle.TITLE_FONT);
-        g.setColor(new Color(255, 255, 255, 40));
-        String big = Bundle.RackPanel_rackEmpty();
-        g.drawString(big, cx - g.getFontMetrics().stringWidth(big) / 2, cy);
+        int cy = empty ? Math.max(70, getHeight() / 3) : stackBottom + Math.min(free / 2, 90);
+        if (empty) {
+            g.setFont(RackStyle.TITLE_FONT);
+            g.setColor(new Color(255, 255, 255, 40));
+            String big = Bundle.RackPanel_rackEmpty();
+            g.drawString(big, cx - g.getFontMetrics().stringWidth(big) / 2, cy);
+            cy += 22;
+        }
         g.setFont(RackStyle.LABEL_FONT);
         g.setColor(new Color(255, 255, 255, 30));
         String hint = Bundle.RackPanel_rackEmptyHint();
-        g.drawString(hint, cx - g.getFontMetrics().stringWidth(hint) / 2, cy + 22);
+        g.drawString(hint, cx - g.getFontMetrics().stringWidth(hint) / 2, cy);
     }
+
+    /** Two rack units of bare rail: less than that and the line would crowd the stack. */
+    static final int BARE_RAIL_MIN = RackStyle.UNIT * 2;
 
     @Override
     public void paint(Graphics gr) {

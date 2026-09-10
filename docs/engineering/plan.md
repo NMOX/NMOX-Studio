@@ -1,5 +1,12 @@
 # The Plan
 
+*Currency addendum 2026-09-10, at v2.118.0 — the coherence pass (no new
+capability; one vocabulary, one door per idea) is the first dated section
+below, and it carries the walk method that works with no screen access:
+the product's own screenshot forge, the running menu bar read by pid, and
+censuses over the assembled cluster. Earlier the same day the night shift
+ran to twelve releases; its own currency block follows.*
+
 *Currency addendum 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
 releases, closed by the walk it owed: the assembled app booted with
 `user.language=zh user.country=TW` and no `--locale` comes up Chinese, tabs
@@ -23,8 +30,7 @@ work rather than about the product: a gate can pass on a stale build artifact
 a CI lane that fails where two others pass is worth reading as a defect before
 a flake (the Agent Port's stream cap was a real check-then-act race), and a
 hypothesis is cheaper to measure than to argue (Swing wraps CJK between
-ideographs, so the width-bounded dialogs were clean in Chinese all along).
-Earlier:
+ideographs, so the width-bounded dialogs were clean in Chinese all along). Earlier:
 v2.100.1 — the l10n arc closed out
 (v2.96.0–v2.100.1; see the dated addenda below). Written 2026-09-06 at
 v2.95.0, after two lenses, one
@@ -895,6 +901,92 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-10 — the coherence pass: one vocabulary, one door per idea (v2.118.0)
+
+The brief: no new capability; make the product make more sense. A
+first-time walk of the whole path on the shipped 2.108.0 build, then fixes
+only where the product disagreed with itself.
+
+**How it was measured, with no screen.** Screen control was unavailable this
+session, so the walk used three instruments the product already has, and
+they turned out to be better than a screenshot for this kind of work:
+
+- **The product's own screenshot forge.** `DocsShots` paints windows with
+  Swing straight into 2× PNGs — no OS screen-recording permission, no
+  compositor. Booted with `--open ~/NMOX/pastry-shop` (a purpose-built
+  Node/Express fixture the IDE had never seen: server, catalogue module,
+  three node:test tests, a static front end, a git history, and no
+  `node_modules`), it produced twelve real pictures of the shipping UI.
+  Temporarily extending its shot list captured the six surfaces it does not
+  normally photograph (Welcome, Task Board, Tests, IRC, Browser, NPM
+  Explorer) plus four dialogs; the extension was reverted before any fix.
+- **The running menu bar, read by pid.** `System Events` can read another
+  process's menus by unix id without any grant to that app:
+  `get name of menu items of menu 1 of menu bar item "File" of menu bar 1`.
+  This is the channel that found the two rows both called "Tasks", and the
+  one that verified the new submenu renders and is named. It works from the
+  background; the AX *contents* of a Swing window remain unreadable, but the
+  menu bar is native and fully legible. **Record this: it is the cheapest
+  live-verification channel found so far, and it needed no permission.**
+- **Censuses over the assembled cluster** — layers, bundles, branding
+  overlays — which is where the 73 wayfinding defects and the Docker naming
+  came from, and where the three new gates read their populations.
+
+**What the walk found, in the order a newcomer meets it.** Launch: thirteen
+windows, four irrelevant to the project — measured, written up as ledger 96a
+with the counter-argument, and taken by David the same day: seven closed, a
+first launch is now Welcome → Task Rack → Browser plus the three docked
+panes, and `FirstLaunchWindowsLedgerTest` makes the set a stated decision
+instead of whatever each window chose on the day it was written. The thing
+that settled it was not taste but redundancy: discovery already had three
+surfaces (the Welcome's TOOLING column, the Window menu, the chords) and the
+tab strip was the fourth copy, the only one with a price.
+Open: five doors to "aim a project", all funnelling through one
+`RackService.openProject`, so coherent underneath even where the chooser's
+start directory differs. Read: the file tree is in "Project Studio", the
+recents in "Workbench", the scripts in "NPM Explorer" — three docked windows
+about the project, none named after what it holds. Run: the beginner walls
+hold. Rack: one MONITOR, eleven bare units, and an invitation the code has
+painted since v1.0 that nobody has ever seen. Menus: the File dumping
+ground, the duplicate "Tasks".
+
+**The findings that became fixes** are in the CHANGELOG entry. Three lessons
+worth keeping:
+
+1. **A translator cannot know which names the product translates.** The
+   wayfinding defects split perfectly both ways: names we DO localize left
+   in English, and a platform window we DON'T localize translated anyway.
+   Neither is carelessness; it is an un-answerable question, and the answer
+   lives in the assembled cluster. That is what the gate reads.
+2. **A gate that measures zero cases passes for the wrong reason.** Two of
+   the six mutation proofs killed gate bugs, not product bugs — an assumed
+   layer attribute order that matched nothing, and a `Window` folder name
+   that appears twice per layer (the Menu shadows and the Actions instances)
+   so the first match lost three studios. Both were invisible until a mutant
+   failed to die. Every derived population in the new gates now carries a
+   floor.
+3. **`git checkout --` during a mutation proof eats anything committed
+   later than the last commit — including a file you edited in a *different*
+   unit.** It bit twice in one shift: restoring `layer.xml` after a
+   Window-menu mutant silently removed the File submenu's folder declaration
+   from an earlier, uncommitted unit. The build stayed green (the folder is
+   created implicitly by the action references) and a full `mvn verify`
+   passed — the menu simply painted the raw layer name `AddToProject` at the
+   top of the File menu, which only the LIVE menu read caught. The standing
+   law says commit before mutating; the amendment is **commit before
+   mutating a file any other open unit has touched, and re-read the live
+   surface after every restore**. A layer folder needs BOTH its attributes,
+   and both failure modes are now written at the declaration.
+
+4. **An affordance can exist, be correct, and never be reachable.** The
+   rack's invitation was gated on `getDevices().isEmpty()`, which stopped
+   being true the day the starter rack gained its MONITOR (v1.278.0). No
+   test failed, no code was wrong, and the feature was gone. The v1.38.1
+   law — *an affordance documented but never exercised is untested* — has a
+   sibling: **an affordance whose condition another release falsified is
+   deleted without anyone editing it.** Worth a review lens: after changing
+   a default, grep for what the old default made true.
 
 ## 2026-09-09/10 — the night shift: the half of i18n that is not words
 

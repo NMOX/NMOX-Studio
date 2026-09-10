@@ -44,7 +44,7 @@ import org.openide.util.RequestProcessor;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.NgSchematicAction")
 @ActionRegistration(displayName = "#CTL_NgSchematicAction")
-@ActionReference(path = "Menu/File", position = 122)
+@ActionReference(path = "Menu/File/AddToProject", position = 70)
 @Messages({
     "CTL_NgSchematicAction=New Angular Schematic…",
     "NgSchematicAction_notAngular=Aim the studio at an Angular workspace first — this dialog drives `ng generate`, and it needs the project's own angular.json (the rack's HALO device carries the same GEN control).",

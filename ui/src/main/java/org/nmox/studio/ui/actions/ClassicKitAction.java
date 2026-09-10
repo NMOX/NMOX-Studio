@@ -36,7 +36,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ClassicKitAction")
 @ActionRegistration(displayName = "#CTL_ClassicKitAction")
-@ActionReference(path = "Menu/File", position = 119)
+@ActionReference(path = "Menu/File/AddToProject", position = 60)
 @Messages({
     "CTL_ClassicKitAction=Classic Kit…",
     "ClassicKitAction_libraryWithUnderscore={0} (+ {1} — hard dependency, wired first)",
