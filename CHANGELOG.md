@@ -29,7 +29,26 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
    list — the on-disk transcript is a record, the stamp beside it on screen
    is a reading, and they are now formatted by different clocks on purpose.
 
-2. **The user guide, in every language the IDE speaks.** Install and first
+2. **Alphabetical order belongs to the reader's language.** The same
+   class, one shape over — and measured before anything was written:
+   sorting by code point put `Ćwiczenie` after `Zamknij` in Polish,
+   `Ändern` after `Zoom` in German, `Ідея` after `Явище` in Ukrainian and
+   `Ăn` after `Xem` in Vietnamese. Every accented word was exiled to the end
+   of the list, which is where a reader will not look for it.
+
+   `core.util.Collate` splits the two readers the way `Clocks` does, built
+   per call so it follows a live switch. The lists a person reads now use
+   it: the Keyboard Shortcuts sheet — whose action names ARE translated, so
+   it was a list of the reader's own words in nobody's order — the board's
+   epic legend, saved IRC networks, the channel nick list and its tab
+   completion, and the SCRIPT knob. `SortSiteLedgerTest` is ledger 92.
+
+   The blessings matter as much as the fixes. Version directories stay on
+   code points because a collator over version numbers would select the
+   wrong toolchain, and the drop-in reading order stays fixed so a user can
+   predict which of their own files wins on any machine.
+
+3. **The user guide, in every language the IDE speaks.** Install and first
    launch — the two chapters a new user actually reads — in all twelve
    translated languages. Generated from one structure, so headings, links,
    images, paths, chords and the install commands are identical to English
@@ -41,13 +60,13 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
    guide that named a window something else would be worse than English,
    because the reader would be hunting for a thing that is not there.
 
-3. **One click to switch, and one address per chapter.** A language bar
+4. **One click to switch, and one address per chapter.** A language bar
    under every guide's title names each language in its own words, with the
    page you are on unlinked. And because a heading's generated anchor comes
    from its own words, every translated chapter carries the ENGLISH anchor
    id above it — so a link into §2 reaches §2 in all thirteen guides.
 
-4. **The manual follows the language.** `UiLocale.guideDoc` picks the guide
+5. **The manual follows the language.** `UiLocale.guideDoc` picks the guide
    for the language the IDE is currently speaking, so the Welcome's User
    Guide link and every FIRST STEPS chapter link land in the reader's own
    language. A country variant falls to its language's guide (pt_PT and
@@ -56,7 +75,7 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
    whole arc exists to remove, standing one click past where the translation
    stopped.
 
-5. **The changelog's link block had dead-ended again.** Fourteen versions
+6. **The changelog's link block had dead-ended again.** Fourteen versions
    back to v2.96.0 had no link definition, so their headings rendered as
    literal brackets and their diffs were unreachable — the same silent rot
    found at v1.2.1 and regenerated in v1.176.0. Twice is a class, so
@@ -64,11 +83,13 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
 
 `TranslatedGuideGateTest` derives its population from `UiLocale.SUPPORTED`
 rather than a hand-kept list: a fourteenth language fails the build until
-someone writes for it. Seven mutants died by name — a localized command, a
+someone writes for it. Ten mutants died by name — a localized command, a
 guide naming a window something the app does not, a language with no guide,
 a partial translation that never says where the rest is, a language bar
-that links to the page you are on, a bar that drops a language, and a
-changelog link block that dead-ends.
+that links to the page you are on, a bar that drops a language, a changelog
+link block that dead-ends, a guide link hard-coded back to English, a
+shortcut sheet back on code points (which failed showing `Zamknij` before
+`Ćwiczenie`), and a sort shipped unclassified.
 
 ## [2.103.0] - 2026-09-09
 
