@@ -81,15 +81,36 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
    found at v1.2.1 and regenerated in v1.176.0. Twice is a class, so
    `ChangelogLinkBlockTest` makes it a build law instead of a habit.
 
+7. **The walk's own find.** Walked in the assembled app in Polish and then
+   Ukrainian. The Ukrainian shortcut sheet is the discriminating proof the
+   Polish one could not be: it shows `Стійка задач` above `Студія API`,
+   which is Ukrainian order and the exact reverse of what code points give,
+   because `і` (U+0456) sorts after `у` (U+0443) by number and before it by
+   alphabet.
+
+   The boot log named something else: our Save Screenshot sat at Menu/Tools
+   position 100, where the platform's own Tools row already sat, and it had
+   been saying so. `LayerPositionCensusTest` could not see it — the gate read
+   only OUR modules' layers, and its javadoc called a platform collision the
+   boot log's to name. It now reads the platform, ide, java and extra
+   clusters too, for the folders NMOX writes into, and named this collision
+   on its first widened run. The screenshot family moved to 105–108; the
+   rebuilt boot logs zero warnings naming our rows and zero SEVERE.
+
+   A gate that reads half the population is a gate that goes green on a real
+   collision — the same lesson as v2.19.1, where the population came from
+   the mechanism instead of the outcome.
+
 `TranslatedGuideGateTest` derives its population from `UiLocale.SUPPORTED`
 rather than a hand-kept list: a fourteenth language fails the build until
-someone writes for it. Ten mutants died by name — a localized command, a
+someone writes for it. Eleven mutants died by name — a localized command, a
 guide naming a window something the app does not, a language with no guide,
 a partial translation that never says where the rest is, a language bar
 that links to the page you are on, a bar that drops a language, a changelog
 link block that dead-ends, a guide link hard-coded back to English, a
 shortcut sheet back on code points (which failed showing `Zamknij` before
-`Ćwiczenie`), and a sort shipped unclassified.
+`Ćwiczenie`), a sort shipped unclassified, and the screenshot row put back
+on the platform's position.
 
 ## [2.103.0] - 2026-09-09
 
