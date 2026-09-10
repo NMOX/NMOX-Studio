@@ -56,11 +56,40 @@ exec /opt/nmox-studio/bin/nmoxstudio "$@"
 WRAPPER
 chmod 755 "$DEB_STAGE/usr/bin/nmox-studio"
 
+# The menu entry speaks every language the IDE speaks: freedesktop reads
+# Comment[xx]/GenericName[xx] for the session locale and falls back to the
+# bare key. The heredoc is unquoted, so no value here may carry $ or a
+# backtick — DesktopEntryLanguagesTest holds that along with the coverage.
 cat > "$DEB_STAGE/usr/share/applications/nmox-studio.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
 Name=NMOX Studio
+GenericName=Web IDE
+GenericName[es]=IDE web
+GenericName[fr]=EDI web
+GenericName[de]=Web-IDE
+GenericName[ru]=Веб-IDE
+GenericName[uk]=Веб-IDE
+GenericName[pl]=Webowe IDE
+GenericName[pt]=IDE web
+GenericName[id]=IDE web
+GenericName[tl]=Web IDE
+GenericName[vi]=IDE web
+GenericName[zh]=Web 集成开发环境
+GenericName[hi]=वेब IDE
 Comment=The web development task rack
+Comment[es]=El rack de tareas para el desarrollo web
+Comment[fr]=Le rack de tâches pour le développement web
+Comment[de]=Das Task-Rack für die Webentwicklung
+Comment[ru]=Стойка задач для веб-разработки
+Comment[uk]=Стійка задач для веброзробки
+Comment[pl]=Stojak zadań dla programowania webowego
+Comment[pt]=O rack de tarefas para o desenvolvimento web
+Comment[id]=Rak tugas untuk pengembangan web
+Comment[tl]=Ang rack ng gawain para sa web development
+Comment[vi]=Giá tác vụ cho phát triển web
+Comment[zh]=面向 Web 开发的任务机架
+Comment[hi]=वेब विकास के लिए टास्क रैक
 Exec=/usr/bin/nmox-studio %F
 Icon=nmox-studio
 Terminal=false
