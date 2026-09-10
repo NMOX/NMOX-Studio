@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.113.0] - 2026-09-10
+
+**The night’s close proof, and the line in it that argued with its own
+verdict.**
+
+1. **The gauntlet passed twice.** A stock v2.108.0 install updated itself
+   in-app across the whole night — four releases — to v2.112.0: all eleven
+   modules byte-verified at the new version, a clean boot with zero SEVERE,
+   and the first-boot half recording `lastSeenVersion=2.112.0`. Re-run from
+   v2.111.0 after the change below, same result.
+
+2. **A harness line that narrated where it should have checked.** It
+   printed the count of `update_tracking` entries labelled *1 expected;
+   more = the updater looped* — and then the run passed with three. Both
+   halves of that label were wrong. `update_tracking` is a HISTORY, so a
+   clean single update leaves TWO entries for a module, never one; and the
+   loop it warns about is documented six lines above it as inherent to the
+   headless CLI, which is why the harness TERMs the JVM after the tracking
+   wait. Measured this run: 2.108.0, then 2.112.0 installed three times,
+   six seconds apart.
+
+   So a reader saw numbers that contradicted the PASS beside them, which is
+   how a harness loses the benefit of the doubt it needs. The line states
+   the history semantics now, and checks the thing that actually matters
+   instead of describing it: the `last="true"` entry is what the platform
+   reads, so it must agree with the installed jars. A disagreement exits
+   non-zero — the shape the old line could not fail on. Both the new guard
+   and the retirement of the old label are pinned by `ShipScriptsGateTest`.
+
 ## [2.112.0] - 2026-09-10
 
 **Two properties that were true and unheld, and the docs the shift owed.**
@@ -18940,6 +18969,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.113.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.112.0...v2.113.0
 [2.112.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.111.0...v2.112.0
 [2.111.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.110.0...v2.111.0
 [2.110.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.109.0...v2.110.0
