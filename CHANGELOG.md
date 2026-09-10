@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.111.0] - 2026-09-10
+
+**A fresh install already speaks your language, and now that is held
+rather than remembered.**
+
+1. **The property, measured.** Nobody configures an IDE they cannot read,
+   so the question worth asking about thirteen languages is what happens
+   before anyone visits Options. Measured against the assembled cluster:
+   `ResourceBundle.getBundle` keys on the JVM default locale, the JVM
+   default is the operating system’s, and a first launch on a Chinese
+   desktop answers Chinese with no `--locale` and no Options visit. It has
+   worked that way since v2.97.0 and was written down nowhere.
+
+   The half worth gating is the regional one. Bundles are named for a
+   language and never a country — `Bundle_zh`, `Bundle_pt` — a deliberate
+   v2.99.0 decision so Taiwan, Singapore, Portugal and Quebec fall back to
+   a usable IDE instead of to English. That decision lives in a FILE NAME,
+   which no compiler reads. Renaming one bundle to `Bundle_zh_CN` would
+   strand every Chinese reader outside the mainland and nothing in the
+   build would notice.
+
+   `SystemLocaleReachTest` asks the real JDK lookup, over the shipped jars,
+   from a country we do not ship for, once per language — and carries its
+   own control: an unshipped locale (Japanese) must land on English, or the
+   gate would be measuring nothing. Mutation-proven by renaming the Chinese
+   bundle inside the assembled jar: `zh-TW read "Welcome"`, by name.
+
+   The guide says it now too, in all thirteen languages.
+
+2. **A hypothesis measured and killed.** The width-bounded dialog bodies
+   (the Agent Port disclosure, the Browser unavailable note) rely on
+   wrapping, and Chinese text has no spaces to wrap at — which looked like
+   a defect in exactly the language that cannot report it. Probed instead
+   of assumed: Swing breaks between ideographs, so the Chinese sentence
+   wrapped at the same bound in fewer lines than the English one. Recorded
+   clean rather than fixed. The probe’s control found the real edge, which
+   is Latin: the same English sentence with its spaces removed does not
+   wrap at all. No shipped string has that shape.
+
 ## [2.110.0] - 2026-09-10
 
 **The user guide is finished in every language the product speaks.**
@@ -18861,6 +18900,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.111.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.110.0...v2.111.0
 [2.110.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.109.0...v2.110.0
 [2.109.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.108.0...v2.109.0
 [2.108.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.107.0...v2.108.0

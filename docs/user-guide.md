@@ -1550,7 +1550,11 @@ keymaps never costs you the studio chords.
   Español, Français, Deutsch, Русский, Українська, Polski, Português
   (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 and हिन्दी. Pick
   one in **Options ▸ General ▸ Language** (each listed in its own name, so
-  you can always find yours);
+  you can always find yours) — though you may never need to, because a
+  fresh install already speaks your system's language, and does so from a
+  country we never named: Taiwan, Singapore, Portugal and Quebec land on
+  their own language rather than on English, because the catalogs are named
+  for a language and never for a country;
   the choice is written into your per-user launcher settings
   (`etc/nmoxstudio.conf` under the userdir, as a `--locale` argument) and
   takes effect the next time you start the app — the balloon says so.
