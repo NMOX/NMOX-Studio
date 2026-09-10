@@ -56,15 +56,39 @@ carrying on from v2.104.0's clock and order.
    and three live documents still telling readers about "the EN/ES
    buttons".
 
+5. **The Windows installer speaks eight of the thirteen, and says why not
+   five.** The setup wizard is the first text a user ever sees — before any
+   preference of theirs exists to consult — and it is the one surface a later
+   release cannot correct, because an installer that already ran ran in
+   whatever language it had. It had English.
+
+   The translations are Inno Setup's own bundled message files, and the three
+   strings the product contributes now resolve through `{cm:…}` so they come
+   from those same reviewed files: no installer text is written by us in any
+   language. Five of the thirteen ship no official `.isl` — Bahasa Indonesia,
+   Filipino, Tiếng Việt, 简体中文 and हिन्दी — and are named as a deliberate
+   absence rather than left to be rediscovered, because vendoring an
+   unreviewed community file would put text nobody here can read in front of
+   every user of that language.
+
+   `InstallerLanguagesTest` holds the shape and catches a misspelled message
+   file here instead of on the Windows runner hours later; that the script
+   compiles stays the `windows-installer-check` workflow's proof, since
+   `iscc` does not run on this machine and the gate does not pretend
+   otherwise. The same file had also been telling users to install a JDK 17
+   first — untrue since v1.4.x, when the installers began carrying their own
+   runtime.
+
 Walked in the assembled app in Ukrainian: **Довідка ▸ Сайт NMOX Studio
 (локально)** served the page from the product's own rack, and all thirteen
 catalogs answered 200 with 28 keys each — fetched from the running build,
 not the source tree. The boot logged zero SEVERE and no warning naming an
 NMOX row, so v2.104.0's Menu/Tools fix still holds.
 
-Six mutants died by name: an unclassified number, a blinded census, a
+Eight mutants died by name: an unclassified number, a blinded census, a
 notice that lied about how far it went, an unclassified date, a catalog
-with no button, and a button with no catalog.
+with no button, a button with no catalog, a message file Inno does not
+ship, and an IDE language dropped from the wizard.
 
 ## [2.104.0] - 2026-09-09
 
