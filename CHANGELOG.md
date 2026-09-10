@@ -43,6 +43,22 @@ changelog line a merge landed without.
    shape cannot come back silently. Ledger 38's limit is untouched: this does
    not pretend tree-kill works on Windows.
 
+3. **The Agent Port's stream cap is claimed, not merely counted.** The
+   release gate failed on the ubuntu lane where the other two passed, and the
+   assertion it failed was reading the attached-stream count — so the first
+   read was that a test raced the server. It did, but only because the code
+   under it does: `openStream` compared `attachedCount()` against the limit
+   and attached AFTER sending the 200, and nothing joins those two steps.
+   Two GETs arriving together both see room and both take it, and each stream
+   owns a writer thread, so the cap that exists to bound them does not.
+
+   The slot is now reserved in one atomic step before any byte goes out, and
+   given back on every route a stream can leave by, including a client that
+   disappears between the reservation and the first write. Nine simultaneous
+   clients get eight streams and one 503. The test that flaked now reads the
+   reservation, which is taken before the client is told 200 and is therefore
+   the thing an observer can rely on.
+
 ## [2.108.0] - 2026-09-10
 
 **The guide's chapter 5, The editor, in all twelve languages** — the
