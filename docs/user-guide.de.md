@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–10 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
-
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
 ---
@@ -320,3 +318,65 @@ NMOX Studio spricht dreizehn Sprachen: English, Español, Français, Deutsch, Р
 ### Die tägliche Prüfung auf Aktualisierungen
 
 Leise, einmal am Tag: Gibt es eine neuere Ausgabe, führt dich eine Meldung in die Modulverwaltung auf deren Aktualisierungsreiter, wo das Aktualisierungszentrum die neuen Module an Ort und Stelle einspielt. Abschalten unter Optionen ▸ Allgemein.
+
+<a id="11-learning-spaces"></a>
+## 11. Lernräume
+
+### Deine Arbeit prüfen
+
+Manche Räume tragen Prüfpunkte: wähle einen davon, und **Datei ▸ Meine Arbeit prüfen** prüft die Übungen wirklich — was die Dateien behaupten, wird in reinem Java geprüft, samt der *Abwesenheits*-Prüfungen, mit denen sich „du hast die Überschrift geändert“ überhaupt prüfen lässt: der ursprüngliche Text des Beispiels muss verschwunden sein. Was die Befehle behaupten, geht durch die Werkzeugkette des Raums selbst. Jedes ✗ antwortet mit dem eigenen Hinweis des Raums, und bei Fehlschlägen bietet der Bericht **Mit KVASIR erklären…** an: die gescheiterten Punkte und, bei einer Dateiprüfung, deine eigene Datei, begrenzt und unter einer Einwilligung, die genau benennt, was hinausgeht. Die Antwort liest sich wie ein Tutor: was zu ändern ist, und dann noch einmal prüfen.
+
+### Deine eigenen Anleitungen
+
+Lege eine `*.json`-Datei in `~/.nmox/learn-catalog.d/`, und sie tritt der Auswahl bei, mit demselben Schema wie die mitgelieferten; ein gleicher `slug` ersetzt einen davon. Du unterrichtest? Schreibe, indem du baust: mach die Übung zu einem gewöhnlichen Projekt, und **Datei ▸ Als Lernraum ausgeben…** erzeugt diese Datei für dich — die Beispieldateien, deine `TUTORIAL.md`, den Starter und deine Prüfpunkte —, geprüft am Parser der Auswahl selbst, bevor sie geschrieben wird, damit das, was du deinen Lernenden gibst, genau das ist, was ihre Auswahl lädt.
+
+### Der Katalog
+
+*Neuer Lernraum…* bietet 93 mitgelieferte Anleitungen — Sprachen, Rahmenwerke und Bibliotheken. Jede erzeugt ein kleines Beispielprojekt, eine begleitete Anleitung und ein Rack, in dem schon ein **echter Interpreter** hängt: du tippst ins Rack, und ein lebendiger Interpreter antwortet. Der ENGINE-Knopf wählt unter 37 Interpretern; fehlt einer, holt ihn der INSTALL-Knopf gleich dort, mit dem Fortschritt auf dem Schirm. Die Räume wohnen in `~/.nmox/learn`, abseits deiner richtigen Arbeit.
+
+### Erste Schritte, auf dem Willkommensschirm
+
+Eine vierte Spalte listet die sechs ersten Handgriffe — ein Projekt öffnen, etwas im Rack laufen lassen, einen Server hochkommen sehen, KVASIR nach Code fragen, einen Lernraum ausprobieren, einen Agenten auf die IDE richten — und hakt jeden aus Aufzeichnungen ab, die das Produkt ohnehin führt. Jede Zeile ist eine Tür: ein Klick öffnet das Fenster oder die Aktion. Ein Haken verschwindet nie wieder; die Spalte geht, wenn alle sechs stehen oder du **Diese Liste ausblenden** drückst.
+
+### Die drei Antworten des Hilfemenüs
+
+**Neuerungen…** zeigt die Anmerkungen zu der Ausgabe, die du fährst, im Bau mitgeliefert; beim ersten Start nach einer Aktualisierung öffnen sie sich von selbst mit dem, was deine Installation noch nicht gesehen hat. **Ein Problem melden…** setzt einen Bericht aus deiner Umgebung und den letzten vierzig Zeilen des Protokolls zusammen, schon geschwärzt — dein Heimverzeichnis wird `~`, dein Anmeldename `<user>`, alles, was nach einem Geheimnis aussieht, `[redacted]` —; du bearbeitest ihn, dann füllt **Auf GitHub öffnen** ein Ticket vor, das du selbst absendest, oder du kopierst ihn. Das Produkt schickt nie etwas von sich aus. **Tastenkürzel…** listet jedes NMOX-Kürzel deines aktiven Profils, gelesen aus der laufenden Belegung, sodass es nicht von dem abweichen kann, was die Menüs tun.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Wenn etwas nicht stimmt
+
+### Der Umgebungs-Doktor
+
+Im Werkzeugmenü prüft er 66 äußere Werkzeuge im Betrieb — node, npm, docker, forge, composer, gopls… — und zeigt die gefundene Fassung sowie den Installationsbefehl für alles, was fehlt.
+
+### Mauern mit Tür
+
+Fehlt ein Sprachserver oder ein Werkzeug, sagt dir die IDE, welchen Befehl du ausführen sollst, oder bietet an, ihn auszuführen; nie ein blanker Fehlschlag. Eine Mauer hat ihre eigene Tür: TypeScript 7 liefert keinen tsserver, also sagt der Editor einmal Bescheid, wenn das gefundene TypeScript die 7 ist, und bietet die Reihe 5 an — die er aus demselben Grund selbst installiert. Ist ein Port belegt, benennt der Fehler den Prozess, der sich daraufgesetzt hat, und SONAR wirft ihn hinaus.
+
+### Ein GO, das nichts tut
+
+Sieh auf seinen Schirm: Geräte erklären sich mit Worten, und der Kurzhinweis am GO-Knopf zeigt genau den Befehl, den er ausführen würde, damit du ihn im Terminal versuchen kannst.
+
+### Die Anwendung öffnet ins Leere (macOS)
+
+Kein Fenster, kein Fehler, beim ersten Start nach der Installation: das ist die Quarantäne von Gatekeeper — siehe die Anmerkung in Kapitel 1. Einmal Rechtsklick und Öffnen, und es ist für immer erledigt. Die Protokolle liegen unter `~/Library/Application Support/nmoxstudio/…/var/log/`, falls du ein Ticket aufmachen musst.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Anhang: die Dateien, die NMOX Studio schreibt (und was davon ins Repository gehört)
+
+Alles, was die IDE zu einem Projekt aufbewahrt, ist eine lesbare JSON-Datei in der Projektwurzel, gemacht zum Teilen mit deinem Team.
+
+| Datei | Was darin steht | Einchecken? |
+|---|---|---|
+| `.nmoxapi.json` | Sammlungen, Anfragen, Umgebungen und Tests des API-Studios | **Ja** — dein Gegenüber bekommt deinen ganzen Arbeitsstand |
+| `.nmoxdb.json` | Verbindungen, gespeicherte Abfragen und Verlauf | **Ja** — Passwörter stehen *nie* darin (nur im Schlüsselbund) |
+| `.nmoxweb3.json` | Netze und Adressbuch des Vertrags-Studios | **Ja** — geheime URLs stehen *nie* darin (nur im Schlüsselbund) |
+| `.nmoxinfra.json` | Die Infrastruktur-Leinwand: Knoten, Verdrahtung, Eigenschaften | **Ja** — Zugriffsmarken stehen *nie* darin (nur im Schlüsselbund) |
+| `.nmoxtasks.json` | Die Aufgabentafel: Spalten, Karten, Grenzen | **Ja** — das Team teilt eine Tafel; ignoriere sie, wenn sie persönlich bleiben soll |
+| `.gas-snapshot` | Foundrys Gas-Bezugswerte (GOVERNOR wacht darüber) | **Ja** — so werden Gas-Rückschritte in der Durchsicht gefunden |
+| `.env` | Deine Umgebungsvariablen | **Nein** — genau dafür gibt es `.env` |
+| `*.bak` | Eine Arbeitsdatei, die sich nicht lesen ließ, für dich aufbewahrt | Nein — hol dir heraus, was du brauchst, dann löschen |
+
+Ändere eine der vier `.nmox*.json`-Dateien außerhalb der IDE, oder hol die Änderungen einer Kollegin, und das zugehörige Studio lädt von selbst neu — es sei denn, du hast dort ungesicherte Änderungen, dann fragt es vorher.
+
+Außerhalb des Projekts: `~/NMOX` ist der voreingestellte Arbeitsplatz, Versuche wohnen in `~/.nmox/experiments`, Lernräume in `~/.nmox/learn`, und der Zustand der IDE selbst — Fensteranordnung, Rack-Patches, Einstellungen — im Benutzerverzeichnis der Plattform.

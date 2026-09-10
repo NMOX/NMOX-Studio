@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–10 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
-
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
 ---
@@ -320,3 +318,65 @@ NMOX Studio berbicara dalam tiga belas bahasa: English, Español, Français, Deu
 ### Pemeriksaan pembaruan harian
 
 Tenang, sekali sehari: bila ada rilis yang lebih baru, sebuah pemberitahuan membawa Anda ke pengelola modul, pada tab pembaruannya, tempat pusat pembaruan memasang modul baru di tempatnya. Matikan di Opsi ▸ Umum.
+
+<a id="11-learning-spaces"></a>
+## 11. Ruang belajar
+
+### Periksa pekerjaan Anda
+
+Sebagian ruang membawa titik pemeriksaan: pilih salah satunya, dan **Berkas ▸ Periksa Pekerjaan Saya** benar-benar memeriksa latihannya — apa yang dinyatakan berkas diperiksa dengan Java murni, termasuk pemeriksaan *ketidakhadiran*, satu-satunya cara memastikan «Anda mengubah judulnya»: teks asli contoh itu harus sudah lenyap. Apa yang dinyatakan perintah lewat rantai perkakas ruang itu sendiri. Setiap ✗ menjawab dengan petunjuk ruang itu, dan bila gagal laporannya menawarkan **Jelaskan dengan KVASIR…**: titik yang gagal dan, untuk pemeriksaan berkas, berkas Anda sendiri, dibatasi dan di bawah izin yang menyebut persis apa yang keluar. Jawabannya terbaca seperti seorang tutor: apa yang harus diubah, lalu periksa lagi.
+
+### Tutorial Anda sendiri
+
+Letakkan berkas `*.json` di `~/.nmox/learn-catalog.d/` dan ia ikut masuk ke pemilih, dengan skema yang sama dengan bawaan; `slug` yang sama menggantikan yang bawaan. Sedang mengajar? Menulislah sambil membangun: jadikan latihan itu proyek biasa, lalu **Berkas ▸ Ekspor sebagai Ruang Belajar…** menyusun berkas itu untuk Anda — berkas contoh, `TUTORIAL.md` Anda, penggerak jalannya, dan titik pemeriksaan Anda — sudah diuji dengan pengurai milik pemilih itu sendiri sebelum ditulis, sehingga yang Anda serahkan kepada murid persis sama dengan yang akan dimuat pemilih mereka.
+
+### Katalognya
+
+*Ruang Belajar Baru…* menawarkan 93 tutorial bawaan — bahasa, kerangka kerja, dan pustaka. Masing-masing membuat proyek contoh kecil, tutorial yang dituntun, dan rak yang sudah terpasang **penafsir sungguhan**: Anda mengetik di rak dan penafsir yang hidup menjawab. Kenop ENGINE memilih di antara 37 penafsir; bila salah satu tidak ada, tombol INSTALL memasangnya di tempat itu juga sambil menampilkan kemajuannya di layar. Ruang-ruang itu tinggal di `~/.nmox/learn`, terpisah dari pekerjaan Anda yang sebenarnya.
+
+### Langkah pertama, di layar sambutan
+
+Kolom keempat mendaftar enam gerakan pertama — membuka proyek, menjalankan sesuatu di rak, melihat sebuah peladen hidup, bertanya kepada KVASIR tentang kode, mencoba ruang belajar, mengarahkan agen ke IDE — dan mencentang masing-masing dari catatan yang memang sudah disimpan produk ini. Setiap baris adalah pintu: sekali klik, jendela atau tindakan itu terbuka. Centang tidak pernah kembali kosong; kolomnya hilang bila keenamnya sudah selesai, atau bila Anda menekan **Sembunyikan daftar ini**.
+
+### Tiga jawaban menu Bantuan
+
+**Apa yang Baru…** memuat catatan rilis yang sedang Anda jalankan, disertakan dalam bangunannya sendiri; pada mula pertama setelah pembaruan, catatan itu terbuka sendiri berisi rilis yang belum pernah dilihat pemasangan Anda. **Laporkan Masalah…** menyusun laporan berisi lingkungan Anda dan empat puluh baris terakhir log, sudah disunting — folder rumah Anda menjadi `~`, nama masuk Anda `<user>`, dan apa pun yang menyerupai kredensial menjadi `[redacted]` —; Anda menyuntingnya, lalu **Buka di GitHub** mengisikan sebuah isu yang Anda kirim sendiri, atau Anda salin. Produk ini tidak pernah mengirim apa pun atas kemauannya sendiri. **Pintasan Papan Ketik…** mendaftar setiap pintasan NMOX di profil Anda yang aktif, dibaca dari peta tombol yang sedang berjalan, sehingga ia tidak mungkin menyimpang dari apa yang dilakukan menu.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Ketika ada yang tidak beres
+
+### Dokter Lingkungan
+
+Di menu Alat, ia menjajaki langsung 66 perkakas luar — node, npm, docker, forge, composer, gopls… — dan menunjukkan versi yang ditemukan serta perintah pemasangan bagi yang tidak ada.
+
+### Tembok yang punya pintu
+
+Bila peladen bahasa atau sebuah perkakas tidak ada, IDE memberi tahu perintah mana yang harus dijalankan, atau menawarkan menjalankannya; tidak pernah sekadar kegagalan. Satu tembok punya pintunya sendiri: TypeScript 7 tidak membawa tsserver, jadi bila TypeScript yang ditemukan adalah 7, penyunting mengatakannya sekali dan menawarkan jalur 5 — jalur yang ia pasang sendiri karena alasan yang sama. Bila sebuah porta sudah terpakai, pesan galat menyebut proses yang menduduki, dan SONAR mengusirnya.
+
+### GO yang tidak melakukan apa-apa
+
+Lihat layarnya: perangkat menjelaskan dirinya dengan kata-kata, dan tip pada tombol GO menampilkan perintah persis yang akan ia jalankan, supaya Anda bisa mencobanya di terminal.
+
+### Aplikasi terbuka tanpa apa pun (macOS)
+
+Tanpa jendela, tanpa galat, pada mula pertama setelah pemasangan: itu karantina Gatekeeper — lihat catatan di bab 1. Klik kanan lalu Buka, cukup sekali, dan beres selamanya. Log berada di bawah `~/Library/Application Support/nmoxstudio/…/var/log/` bila Anda perlu membuka isu.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Lampiran: berkas yang ditulis NMOX Studio (dan mana yang layak dikomit)
+
+Semua yang disimpan IDE tentang sebuah proyek adalah berkas JSON yang terbaca di akar proyek, dirancang untuk dibagi dengan tim Anda.
+
+| Berkas | Isinya | Dikomit? |
+|---|---|---|
+| `.nmoxapi.json` | Koleksi, permintaan, lingkungan, dan uji Studio API | **Ya** — rekan Anda menerima seluruh meja kerja Anda |
+| `.nmoxdb.json` | Sambungan, kueri tersimpan, dan riwayat | **Ya** — kata sandi *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxweb3.json` | Jaringan dan buku alamat Studio Kontrak | **Ya** — alamat rahasia *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxinfra.json` | Kanvas infrastruktur: simpul, sambungan, sifat | **Ya** — token *tidak pernah* ada di sana (hanya di gantungan kunci) |
+| `.nmoxtasks.json` | Papan Tugas: kolom, kartu, batas | **Ya** — tim berbagi satu papan; abaikan bila ingin pribadi |
+| `.gas-snapshot` | Patokan gas per uji dari Foundry (GOVERNOR menjaganya) | **Ya** — begitulah kemunduran gas tertangkap saat tinjauan |
+| `.env` | Peubah lingkungan Anda | **Tidak** — justru itulah gunanya `.env` |
+| `*.bak` | Berkas kerja yang gagal diurai, disimpan untuk Anda | Tidak — ambil yang Anda perlukan, lalu hapus |
+
+Sunting salah satu dari empat berkas `.nmox*.json` di luar IDE, atau tarik perubahan rekan Anda, dan studio yang bersangkutan memuat ulang dengan sendirinya — kecuali bila Anda punya perubahan yang belum disimpan di sana, maka ia bertanya lebih dahulu.
+
+Di luar proyek: `~/NMOX` adalah meja kerja bawaan, percobaan tinggal di `~/.nmox/experiments`, ruang belajar di `~/.nmox/learn`, dan keadaan IDE sendiri — tata letak jendela, patch rak, preferensi — di direktori pengguna platform.

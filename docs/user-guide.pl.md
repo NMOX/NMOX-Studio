@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–10 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
-
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
 ---
@@ -320,3 +318,65 @@ NMOX Studio mówi trzynastoma językami: English, Español, Français, Deutsch, 
 ### Codzienne sprawdzanie aktualizacji
 
 Ciche, raz dziennie: jeśli jest nowsze wydanie, powiadomienie prowadzi cię do menedżera modułów, na jego kartę aktualizacji, gdzie centrum aktualizacji instaluje nowe moduły na miejscu. Wyłącza się w Opcje ▸ Ogólne.
+
+<a id="11-learning-spaces"></a>
+## 11. Przestrzenie nauki
+
+### Sprawdź swoją pracę
+
+Niektóre przestrzenie mają punkty kontrolne: wybierz taką, a **Plik ▸ Sprawdź moją pracę** naprawdę sprawdzi ćwiczenia — to, co twierdzą pliki, jest sprawdzane w czystej Javie, wraz ze sprawdzeniami *nieobecności*, którymi jedynie da się sprawdzić „zmieniłeś nagłówek”: pierwotny tekst przykładu musi zniknąć. To, co twierdzą polecenia, przechodzi przez własny łańcuch narzędzi przestrzeni. Każdy ✗ odpowiada podpowiedzią samej przestrzeni, a przy niepowodzeniu raport proponuje **Wyjaśnij z KVASIR-em…**: punkty, które padły, oraz — przy sprawdzeniu pliku — twój własny plik, przycięte i pod zgodą, która wprost nazywa, co wychodzi. Odpowiedź czyta się jak odpowiedź korepetytora: co zmienić, a potem sprawdź jeszcze raz.
+
+### Twoje własne kursy
+
+Wrzuć plik `*.json` do `~/.nmox/learn-catalog.d/`, a dołączy on do wyboru, w tym samym schemacie co wbudowane; zgodny `slug` zastępuje domowy. Uczysz? Pisz, budując: zrób z ćwiczenia zwykły projekt, a **Plik ▸ Wyeksportuj jako przestrzeń nauki…** złoży ten plik za ciebie — pliki przykładowe, twój `TUTORIAL.md`, sterownik uruchomienia i twoje punkty kontrolne — sprawdzony parserem samego wyboru, zanim zostanie zapisany, więc to, co wręczysz uczniom, jest dokładnie tym, co wczyta ich wybór.
+
+### Katalog
+
+*Nowa przestrzeń nauki…* oferuje 93 wbudowane kursy — języki, szkielety i biblioteki. Każdy tworzy mały projekt przykładowy, prowadzony kurs i stojak, na którym wisi już **prawdziwy interpreter**: piszesz na stojaku, a żywy interpreter odpowiada. Pokrętło ENGINE wybiera spośród 37 interpreterów, a gdy któregoś brak, przycisk INSTALL stawia go na miejscu, pokazując postęp na ekranie. Przestrzenie mieszkają w `~/.nmox/learn`, z dala od twojej prawdziwej pracy.
+
+### Pierwsze kroki, na ekranie powitalnym
+
+Czwarta kolumna wymienia sześć pierwszych gestów — otworzyć projekt, uruchomić coś na stojaku, zobaczyć wstający serwer, zapytać KVASIR-a o kod, spróbować przestrzeni nauki, wycelować agenta w środowisko — i odhacza każdy na podstawie zapisów, które produkt i tak prowadzi. Każdy wiersz to drzwi: kliknięcie otwiera to okno albo tę czynność. Odhaczenie nigdy się nie cofa; kolumna znika, gdy sześć jest gotowych albo gdy naciśniesz **Ukryj tę listę**.
+
+### Trzy odpowiedzi menu Pomoc
+
+**Co nowego…** pokazuje notatki wydania, które uruchamiasz, dołączone do samej kompilacji; przy pierwszym starcie po aktualizacji otwierają się same z tym, czego twoja instalacja jeszcze nie widziała. **Zgłoś problem…** składa raport z twojego środowiska i ostatnich czterdziestu wierszy dziennika, już zamazanych — katalog domowy staje się `~`, login `<user>`, a wszystko, co wygląda na sekret, `[redacted]`; edytujesz go, a **Otwórz na GitHubie** wypełnia zgłoszenie, które wysyłasz sam, albo je kopiujesz. Produkt nigdy niczego nie wysyła z własnej woli. **Skróty klawiszowe…** wymienia każdy skrót NMOX z twojego czynnego profilu, odczytany z działającej mapy klawiszy, więc nie może się rozminąć z tym, co robią menu.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Kiedy coś jest nie tak
+
+### Doktor środowiska
+
+W menu Narzędzia bada na żywo 66 zewnętrznych narzędzi — node, npm, docker, forge, composer, gopls… — i pokazuje znalezioną wersję, a dla brakujących polecenie instalacji.
+
+### Mury z drzwiami
+
+Gdy brak serwera języka albo narzędzia, środowisko mówi, jakie polecenie uruchomić, albo proponuje, że uruchomi je samo; nigdy samą porażkę. Jeden mur ma własne drzwi: TypeScript 7 nie niesie tsservera, więc jeśli znaleziony TypeScript to siódemka, edytor mówi o tym raz i proponuje linię piątą — tę samą, którą sam instaluje z tego samego powodu. Gdy port jest zajęty, błąd nazywa proces, który się na nim rozsiadł, a SONAR go wyrzuca.
+
+### GO, które nic nie robi
+
+Spójrz na jego wyświetlacz: urządzenia tłumaczą się słowami, a podpowiedź przy przycisku GO pokazuje dokładne polecenie, które by uruchomiło, żebyś mógł spróbować go w terminalu.
+
+### Aplikacja otwiera się w pustkę (macOS)
+
+Ani okna, ani błędu, przy pierwszym starcie po instalacji: to kwarantanna Gatekeepera — zobacz notkę w rozdziale 1. Prawy klik i Otwórz, jeden raz, i sprawa załatwiona na dobre. Dzienniki leżą pod `~/Library/Application Support/nmoxstudio/…/var/log/`, gdybyś musiał założyć zgłoszenie.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Dodatek: pliki, które pisze NMOX Studio (i co z nich wrzucać do repozytorium)
+
+Wszystko, co środowisko przechowuje o projekcie, to czytelny plik JSON w korzeniu projektu, zrobiony po to, by dzielić się nim z zespołem.
+
+| Plik | Co jest w środku | Wrzucać do repozytorium? |
+|---|---|---|
+| `.nmoxapi.json` | Kolekcje, żądania, środowiska i testy Studia API | **Tak** — kolega dostaje całe twoje stanowisko pracy |
+| `.nmoxdb.json` | Połączenia, zapisane zapytania i historia | **Tak** — haseł tam *nigdy* nie ma (tylko w pęku kluczy) |
+| `.nmoxweb3.json` | Sieci i książka adresowa Studia kontraktów | **Tak** — tajnych adresów tam *nigdy* nie ma (tylko w pęku) |
+| `.nmoxinfra.json` | Płótno infrastruktury: węzły, okablowanie, właściwości | **Tak** — żetonów tam *nigdy* nie ma (tylko w pęku kluczy) |
+| `.nmoxtasks.json` | Tablica zadań: kolumny, karty, limity | **Tak** — zespół dzieli jedną tablicę; pomiń, jeśli ma być osobista |
+| `.gas-snapshot` | Wzorce zużycia gazu z Foundry (pilnuje ich GOVERNOR) | **Tak** — tak łapie się regresje gazu podczas przeglądu |
+| `.env` | Twoje zmienne środowiskowe | **Nie** — po to właśnie jest `.env` |
+| `*.bak` | Plik roboczy, którego nie dało się odczytać, zachowany dla ciebie | Nie — odzyskaj, co trzeba, i skasuj |
+
+Zmień którykolwiek z czterech plików `.nmox*.json` poza środowiskiem albo ściągnij zmiany kolegi, a odpowiednie studio wczyta je samo — chyba że masz tam niezapisane zmiany, wtedy najpierw zapyta.
+
+Poza projektem: `~/NMOX` to domyślne stanowisko pracy, eksperymenty mieszkają w `~/.nmox/experiments`, przestrzenie nauki w `~/.nmox/learn`, a stan samego środowiska — układ okien, patche stojaka, ustawienia — w katalogu użytkownika platformy.

@@ -4,8 +4,6 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–10. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
-
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
 ---
@@ -320,3 +318,65 @@ Nagsasalita ang NMOX Studio ng labintatlong wika: English, Español, Français, 
 ### Ang pang-araw-araw na tingin sa pagbabago
 
 Tahimik, minsan sa isang araw: kung may mas bagong labas, may abisong maghahatid sa inyo sa tagapamahala ng modyul, sa tab nito ng mga pagbabago, kung saan inilalagay ng sentro ng pagbabago ang mga bagong modyul sa kinalalagyan nila. Patayin ito sa Mga Pagpipilian ▸ Pangkalahatan.
+
+<a id="11-learning-spaces"></a>
+## 11. Mga espasyo ng pagkatuto
+
+### Suriin ang inyong gawa
+
+May ilang espasyong may mga hintuan ng pagsusuri: pumili ng gayon at ang **Talaksan ▸ Suriin ang Aking Gawa** ay tunay na sumusuri sa mga pagsasanay — ang sinasabi ng mga talaksan ay sinusuri sa purong Java, kasama ang pagsusuri ng *kawalan*, na siyang tanging paraan upang mapatunayan ang «binago ninyo ang pamagat»: kailangang mawala na ang orihinal na teksto ng halimbawa. Ang sinasabi ng mga utos ay dumadaan sa sariling hanay ng kasangkapan ng espasyo. Bawat ✗ ay sumasagot gamit ang sariling pahiwatig ng espasyo, at kapag may pumalya, nag-aalok ang ulat ng **Ipaliwanag sa KVASIR…**: ang mga hintuang pumalya at, sa pagsusuri ng talaksan, ang inyong sariling talaksan, may hangganan at sa ilalim ng pahintulot na nagsasabi mismo kung ano ang lumalabas. Ang sagot ay parang sa isang tagapagturo: kung ano ang babaguhin, at pagkatapos ay suriin muli.
+
+### Ang inyong sariling mga aralin
+
+Maglagay ng talaksang `*.json` sa `~/.nmox/learn-catalog.d/` at sasama ito sa pampili, sa gayon ding balangkas ng mga likas; ang tumutugmang `slug` ay humahalili sa likas. Nagtuturo kayo? Sumulat sa pamamagitan ng paggawa: gawing pangkaraniwang proyekto ang pagsasanay, at ang **Talaksan ▸ Iluwas bilang Espasyo ng Pagkatuto…** ang bubuo ng talaksang iyon para sa inyo — ang mga halimbawa, ang inyong `TUTORIAL.md`, ang tagapagpatakbo, at ang inyong mga hintuan — na pinatunayan laban sa sariling tagabasa ng pampili bago isulat, kaya ang ibibigay ninyo sa inyong mga mag-aaral ay eksaktong ilalapag ng kanilang pampili.
+
+### Ang katalogo
+
+Ang *Bagong Espasyo ng Pagkatuto…* ay nag-aalok ng 93 likas na aralin — mga wika, balangkas, at aklatan. Bawat isa ay bumubuo ng maliit na halimbawang proyekto, isang giniyahang aralin, at isang rak na nakakabit na ang **tunay na tagapagsalin**: nagtatipa kayo sa rak at sumasagot ang buhay na tagapagsalin. Ang pihit na ENGINE ay pumipili sa 37 tagapagsalin; kung wala ang isa, inilalagay ito ng butones na INSTALL doon din, habang ipinapakita ang usad sa tabing. Nakatira ang mga espasyo sa `~/.nmox/learn`, hiwalay sa inyong tunay na gawain.
+
+### Mga unang hakbang, sa pagsalubong
+
+Isang ikaapat na hanay ang naglilista ng anim na unang kilos — magbukas ng proyekto, magpatakbo ng isang bagay sa rak, makita ang isang tagapaglingkod na magising, magtanong sa KVASIR tungkol sa kodigo, sumubok ng espasyo ng pagkatuto, at ituro ang isang ahente sa IDE — at minamarkahan ang bawat isa mula sa mga talang itinatago na ng produkto. Bawat hanay ay pintuan: isang pindot at bumubukas ang bintana o ang kilos. Hindi na nawawala ang marka; naglalaho ang hanay kapag tapos na ang anim, o kapag pinindot ninyo ang **Itago ang listahang ito**.
+
+### Ang tatlong sagot ng menu ng Tulong
+
+Ang **Ano ang Bago…** ay nagdadala ng mga tala ng bersiyong pinapatakbo ninyo, kasama sa mismong pagbuo; sa unang pagbukas matapos ang pagbabago, kusa itong bumubukas dala ang mga labas na hindi pa nakikita ng inyong instalasyon. Ang **Mag-ulat ng Suliranin…** ay bumubuo ng ulat mula sa inyong kapaligiran at sa huling apatnapung guhit ng talaan, sinala na — ang inyong sariling tahanan ay nagiging `~`, ang inyong pangalan sa pagpasok ay `<user>`, at anumang mukhang lihim ay `[redacted]` —; inaayos ninyo ito, at ang **Buksan sa GitHub** ang magpupuno ng isang isyung kayo mismo ang magpapadala, o kokopyahin ninyo. Hindi kailanman nagpapadala ng anuman ang produkto sa sarili nitong pasya. Ang **Mga Daglat sa Teklado…** ay naglilista ng bawat daglat ng NMOX sa inyong gamit na hanay, binasa mula sa buhay na mapa ng teklado, kaya hindi ito maaaring lumihis sa ginagawa ng mga menu.
+
+<a id="12-when-somethings-wrong"></a>
+## 12. Kapag may mali
+
+### Ang Manggagamot ng Kapaligiran
+
+Nasa menu ng Mga Kasangkapan, sinisiyasat nito nang buhay ang 66 panlabas na kasangkapan — node, npm, docker, forge, composer, gopls… — at ipinapakita ang natagpuang bersiyon at ang utos ng pag-instala para sa nawawala.
+
+### Mga pader na may pinto
+
+Kapag walang tagapaglingkod ng wika o kasangkapan, sinasabi ng IDE kung anong utos ang patatakbuhin, o nag-aalok itong patakbuhin mismo; hindi kailanman basta kabiguan. May sariling pinto ang isang pader: walang dalang tsserver ang TypeScript 7, kaya kung ang natagpuang TypeScript ay ika-7, minsang sasabihin ito ng patnugot at ihahain ang linyang ika-5 — ang siya ring inilalagay nito sa gayon ding dahilan. Kapag may kumuha na sa isang daungan, pinapangalanan ng mali ang prosesong nakaupo roon, at pinapaalis ito ng SONAR.
+
+### Isang GO na walang ginagawa
+
+Tingnan ang tabing nito: nagpapaliwanag ang mga kagamitan sa pamamagitan ng salita, at ipinapakita ng paalala sa butones na GO ang eksaktong utos na patatakbuhin sana nito, upang masubok ninyo ito sa isang terminal.
+
+### Bumubukas ang aplikasyon sa wala (macOS)
+
+Walang bintana at walang mali, sa unang pagbukas matapos mag-instala: kuwarentenas iyon ng Gatekeeper — tingnan ang paalala sa kabanata 1. Kanang pindot at Buksan, minsan lamang, at ayos na habambuhay. Nakatira ang mga talaan sa ilalim ng `~/Library/Application Support/nmoxstudio/…/var/log/` sakaling kailanganin ninyong magbukas ng isyu.
+
+<a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
+## Dagdag: ang mga talaksang isinusulat ng NMOX Studio (at kung alin ang isasama sa imbakan)
+
+Lahat ng itinatago ng IDE tungkol sa isang proyekto ay mababasang talaksang JSON sa ugat ng proyekto, ginawa upang maibahagi sa inyong pangkat.
+
+| Talaksan | Ano ang laman | Isama sa imbakan? |
+|---|---|---|
+| `.nmoxapi.json` | Mga koleksyon, kahilingan, kapaligiran, at pagsubok ng Studio ng API | **Oo** — makukuha ng kasama ninyo ang buong lugar ng inyong trabaho |
+| `.nmoxdb.json` | Mga koneksyon, naitagong tanong, at kasaysayan | **Oo** — *hindi kailanman* naroon ang mga hudyat (nasa susian lamang) |
+| `.nmoxweb3.json` | Mga network at aklat ng adres ng Studio ng Kontrata | **Oo** — *hindi kailanman* naroon ang lihim na adres (nasa susian lamang) |
+| `.nmoxinfra.json` | Ang lienso ng imprastruktura: buko, kableng, at katangian | **Oo** — *hindi kailanman* naroon ang mga token (nasa susian lamang) |
+| `.nmoxtasks.json` | Ang Pisara ng Gawain: hanay, kard, at hangganan | **Oo** — iisang pisara ang hawak ng pangkat; huwag isama kung nais pansarili |
+| `.gas-snapshot` | Ang panukat ng gas ng Foundry (binabantayan ito ng GOVERNOR) | **Oo** — gayon nahuhuli ang paurong na gas sa pagsusuri |
+| `.env` | Ang inyong mga pabago ng kapaligiran | **Hindi** — iyan mismo ang dahilan ng `.env` |
+| `*.bak` | Isang talaksang gawaing hindi nabasa, itinago para sa inyo | Hindi — kunin ang kailangan, saka burahin |
+
+Baguhin ang alinman sa apat na talaksang `.nmox*.json` sa labas ng IDE, o hilahin ang mga pagbabago ng kasama, at kusang magbabasang muli ang katumbas na studio — maliban kung may hindi pa naitalang pagbabago kayo roon, at magtatanong muna ito.
+
+Sa labas ng proyekto: ang `~/NMOX` ang likas na lugar ng trabaho, ang mga pagsubok ay nasa `~/.nmox/experiments`, ang mga espasyo ng pagkatuto ay nasa `~/.nmox/learn`, at ang kalagayan ng IDE mismo — ang ayos ng mga bintana, ang mga patch ng rak, ang mga pagpipilian — ay nasa direktoryo ng gumagamit ng plataporma.
