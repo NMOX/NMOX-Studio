@@ -100,7 +100,8 @@ class SortSiteLedgerTest {
         List<String> unclassified = new ArrayList<>();
         int found = 0;
         for (Path p : sources()) {
-            String body = Files.readString(p, StandardCharsets.UTF_8);
+            // CRLF on the Windows lane would put a \r on every window boundary
+            String body = Files.readString(p, StandardCharsets.UTF_8).replace("\r\n", "\n");
             String[] lines = body.split("\n", -1);
             for (int i = 0; i < lines.length; i++) {
                 if (!SORT.matcher(lines[i]).find()) {

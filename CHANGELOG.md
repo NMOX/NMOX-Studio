@@ -103,7 +103,15 @@ English. Neither is visible to a bundle gate, because neither is a bundle.
 
 `TranslatedGuideGateTest` derives its population from `UiLocale.SUPPORTED`
 rather than a hand-kept list: a fourteenth language fails the build until
-someone writes for it. Eleven mutants died by name — a localized command, a
+someone writes for it. The gate's own first CI run failed on the Windows lane, on a correct file:
+its fence pattern was written with `\n`, and Windows checks these documents
+out with CRLF, so the install block simply was not there. Reproduced locally
+by re-reading the same bytes with `\r\n` before fixing it. Every read in
+these three new gates now goes through one normalizing helper. That is the
+third time the Windows lane has been the binding measurement, and each time
+the shape was the same: a pattern written for the author's own line endings.
+
+Eleven mutants died by name — a localized command, a
 guide naming a window something the app does not, a language with no guide,
 a partial translation that never says where the rest is, a language bar
 that links to the page you are on, a bar that drops a language, a changelog

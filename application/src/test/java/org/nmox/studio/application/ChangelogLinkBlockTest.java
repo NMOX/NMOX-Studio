@@ -35,7 +35,8 @@ class ChangelogLinkBlockTest {
     @Test
     @DisplayName("every version heading has a link definition, and every definition has a heading")
     void headingsAndLinksAgree() throws IOException {
-        String body = Files.readString(Path.of("..", "CHANGELOG.md"), StandardCharsets.UTF_8);
+        String body = Files.readString(Path.of("..", "CHANGELOG.md"), StandardCharsets.UTF_8)
+                .replace("\r\n", "\n");
 
         Set<String> headings = new LinkedHashSet<>();
         Matcher h = HEADING.matcher(body);

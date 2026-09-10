@@ -62,7 +62,7 @@ class TranslatedGuideGateTest {
     private static List<String> translatedLanguages() throws IOException {
         Path src = Path.of("..", "core", "src", "main", "java", "org", "nmox", "studio",
                 "core", "util", "UiLocale.java");
-        String body = Files.readString(src, StandardCharsets.UTF_8);
+        String body = read(src);
         String list = body.substring(body.indexOf("SUPPORTED = List.of("));
         list = list.substring(0, list.indexOf(";"));
         List<String> out = new ArrayList<>();
@@ -130,7 +130,7 @@ class TranslatedGuideGateTest {
         List<String> silent = new ArrayList<>();
         for (String lang : translatedLanguages()) {
             Path p = docs().resolve("user-guide." + lang + ".md");
-            String body = Files.readString(p, StandardCharsets.UTF_8);
+            String body = read(p);
             if (chapters(p).size() < english.size() && !body.contains("](user-guide.md)")) {
                 silent.add(lang);
             }
@@ -162,7 +162,7 @@ class TranslatedGuideGateTest {
     @DisplayName("the guide calls each window what the window calls itself")
     void wordsMatchTheApp() throws IOException {
         JSONObject glossary = new JSONObject(
-                Files.readString(docs().resolve("i18n/glossary.json"), StandardCharsets.UTF_8));
+                read(docs().resolve("i18n/glossary.json")));
         // the terms tranche 1 actually names; the list grows with the tranches
         List<String> named = List.of("Welcome", "Task Rack", "DB Studio", "Contract Studio",
                 "Infra Designer", "API Studio", "Project Studio", "Workbench", "NPM Explorer");
@@ -172,8 +172,7 @@ class TranslatedGuideGateTest {
         for (String lang : translatedLanguages()) {
             JSONObject mine = glossary.optJSONObject(lang);
             assertThat(mine).as("glossary entry for %s", lang).isNotNull();
-            String body = Files.readString(docs().resolve("user-guide." + lang + ".md"),
-                    StandardCharsets.UTF_8);
+            String body = read(docs().resolve("user-guide." + lang + ".md"));
             for (String term : named) {
                 String word = mine.getString(term);
                 checked++;
@@ -215,7 +214,7 @@ class TranslatedGuideGateTest {
         for (String lang : names.keySet()) {
             Path p = "en".equals(lang) ? docs().resolve("user-guide.md")
                     : docs().resolve("user-guide." + lang + ".md");
-            String bar = between(Files.readString(p, StandardCharsets.UTF_8),
+            String bar = between(read(p),
                     "<!-- languages -->", "<!-- /languages -->");
             if (bar.isEmpty()) {
                 broken.add(lang + ": no language bar at all");
@@ -247,7 +246,7 @@ class TranslatedGuideGateTest {
     private static Map<String, String> nativeNames() throws IOException {
         Path src = Path.of("..", "core", "src", "main", "java", "org", "nmox", "studio",
                 "core", "util", "UiLocale.java");
-        String body = Files.readString(src, StandardCharsets.UTF_8);
+        String body = read(src);
         String list = body.substring(body.indexOf("SUPPORTED = List.of("));
         list = list.substring(0, list.indexOf(";"));
         Map<String, String> out = new LinkedHashMap<>();
@@ -279,8 +278,7 @@ class TranslatedGuideGateTest {
 
         List<String> adrift = new ArrayList<>();
         for (String lang : translatedLanguages()) {
-            String body = Files.readString(docs().resolve("user-guide." + lang + ".md"),
-                    StandardCharsets.UTF_8);
+            String body = read(docs().resolve("user-guide." + lang + ".md"));
             for (String chapter : chapters(docs().resolve("user-guide." + lang + ".md"))) {
                 String wanted = "<a id=\"" + english.get(chapter) + "\"></a>";
                 if (!body.contains(wanted)) {
@@ -297,7 +295,7 @@ class TranslatedGuideGateTest {
     private static Map<String, String> englishAnchors() throws IOException {
         Map<String, String> out = new LinkedHashMap<>();
         Matcher m = Pattern.compile("(?m)^## (\\d+)\\. (.+)$")
-                .matcher(Files.readString(docs().resolve("user-guide.md"), StandardCharsets.UTF_8));
+                .matcher(read(docs().resolve("user-guide.md")));
         while (m.find()) {
             String slug = (m.group(1) + ". " + m.group(2)).toLowerCase(java.util.Locale.ROOT)
                     .replaceAll("[^\\w\\s-]", "").replaceAll("\\s+", "-");
@@ -306,9 +304,22 @@ class TranslatedGuideGateTest {
         return out;
     }
 
+    /**
+     * A document's text with line endings normalized.
+     *
+     * <p>The Windows lane checks these files out with CRLF
+     * ({@code .gitattributes text=auto}), so a pattern written with
+     * {@code \n} matches nothing there and the gate goes green on an empty
+     * parse — or, as it did on its first CI run, red on a correct file. Every
+     * read here goes through one place so the hazard has one home.
+     */
+    private static String read(Path p) throws IOException {
+        return Files.readString(p, StandardCharsets.UTF_8).replace("\r\n", "\n");
+    }
+
     private static List<String> chapters(Path guide) throws IOException {
         List<String> out = new ArrayList<>();
-        Matcher m = CHAPTER.matcher(Files.readString(guide, StandardCharsets.UTF_8));
+        Matcher m = CHAPTER.matcher(read(guide));
         while (m.find()) {
             out.add(m.group(1));
         }
@@ -316,7 +327,7 @@ class TranslatedGuideGateTest {
     }
 
     private static String firstFence(Path guide) throws IOException {
-        Matcher m = FENCE.matcher(Files.readString(guide, StandardCharsets.UTF_8));
+        Matcher m = FENCE.matcher(read(guide));
         return m.find() ? m.group(1) : "";
     }
 }
