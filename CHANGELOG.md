@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.115.0] - 2026-09-10
+
+**The sweep after the find: every word boundary in the product now says
+whose word it is.**
+
+v2.114.0 fixed one place that cut टास्क into three letters. The question a
+sweep asks is where else the product decides where a word ends — twenty-six
+files, as it turns out — and the answer is not "keep the marks everywhere".
+It is that the right rule depends on WHOSE text is being split, and the two
+answers are opposite.
+
+- **Human text** — what a person typed in their own language. A combining
+  mark belongs to the word in front of it, or the reader cannot find what
+  they wrote.
+- **Code syntax** — an identifier, a selector, a property, an Emmet
+  abbreviation. The LANGUAGE decides what a name may contain, not the
+  reader’s script. Twenty-five files are this, and they are right as they
+  are; widening them would break the editor for everyone.
+
+`WordBoundaryLedgerTest` names every site as one or the other with its
+reason, and a new one fails the build until someone decides — proven by
+planting an unclassified boundary and watching it be named.
+
+**The sweep also found where the same rule is the RIGHT one.** The
+spellchecker scans comments for runs of letters and needs two in a row, so
+a Devanagari word yields no token at all and nothing is checked or flagged.
+That looks like the search bug and is the opposite: we ship no dictionary
+for those languages, so teaching that scan the marks would hand every Hindi
+word to a dictionary that does not have it and squiggle the lot. The rule
+that broke search protects this consumer, because what tokenizing COSTS
+differs by consumer. The gate would not accept that site until the reason
+was written into the file — it failed on its own author first.
+
 ## [2.114.0] - 2026-09-10
 
 **The arc review of the night’s own code, and it found a word we had been
@@ -19009,6 +19042,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.115.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.114.0...v2.115.0
 [2.114.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.113.0...v2.114.0
 [2.113.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.112.0...v2.113.0
 [2.112.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.111.0...v2.112.0
