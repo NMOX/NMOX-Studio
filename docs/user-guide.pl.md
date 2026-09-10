@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–5 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–6 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -183,3 +183,50 @@ Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrz
 ### Pokazywanie i dzielenie się
 
 **Widok ▸ Tryb prezentacji** naraz powiększa każdy otwarty edytor, stronę we wbudowanej przeglądarce, okno wyjścia i terminal — i przy wyjściu przywraca wszystko dokładnie tak, jak było. **Widok ▸ Pokaż naciśnięcia** wyświetla wielkim drukiem właśnie naciśnięty skrót, ale nigdy tego, co piszesz. **Edycja ▸ Kopiuj jako Markdown** kopiuje zaznaczenie jako ogrodzony blok z właściwą etykietą języka, a wariant **z odnośnikiem** dokłada odnośnik GitHub do tych samych wierszy. **Narzędzia ▸ Zapisz zrzut…** maluje całe okno w podwójnym rozmiarze, a warianty obejmują samą kartę edytora, schowek i drzewo projektu jako Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Studia
+
+### Dostęp z klawiatury i przez czytnik ekranu
+
+Każdy element sterujący w stojaku ma dostępną nazwę, a sprawdza się to przy każdej budowie. Pokrętła są suwakami, które słuchają strzałek, Home i End; przyciski słuchają spacji i Entera, także te przygaszone, które mówią, dlaczego odmawiają; diody i wyświetlacze ogłaszają swój stan. Tab obraca stojak — poza sytuacją, gdy ognisko jest na elemencie sterującym, gdzie ustępuje zwykłemu przechodzeniu.
+
+### Git na pasku stanu
+
+Plakietka **⎇ gałąź** pokazuje, na której gałęzi jesteś i ile plików się zmieniło; czyta się ją z dysku, więc nie kosztuje żadnego procesu. Kliknięcie otwiera pełną historię, a menu niesie **Różnice projektu**, **Adnotuj**, żądania scalenia przez twoje własne `gh` oraz **Napisz opis commita z KVASIR**.
+
+### Tablica zadań (⌥⌘1)
+
+Kanban per projekt zapisany w `.nmoxtasks.json` — obok twojego kodu i wersjonowany razem z nim. Przeciągaj karty albo przesuwaj je klawiaturą: **⌘↑/⌘↓** zmienia kolejność, a przesunięta karta zachowuje ognisko. Limity pracy w toku są radą, nie zaporą: nagłówek czerwienieje i nic cię nie zatrzymuje. Przycisk **Przegląd** zamienia kolumny na pulpit — co w toku, zrobione dziś i w tym tygodniu, przepływ dzienny, starzejące się karty — a zegar (**Odbij kartę**) mierzy prawdziwy czas na kartę, przy czym na całej tablicy chodzi tylko jeden zegar. **Standup** zamienia to wszystko w raport gotowy do wklejenia.
+
+### Studio bloków (⌥⌘5)
+
+Składaj prawdziwe Web Components z typowanych, zazębiających się elementów, na sposób Scratcha: niedozwolone zagnieżdżenia są odrzucane, kod powstaje jako samodzielny element własny, a kliknięcie elementu podświetla jego wiersze. Serwer podglądu w pamięci pokazuje komponent naprawdę, złożony z pozostałymi poprawnymi komponentami twojej biblioteki. Obieg jest dokładny: ponowne wygenerowanie tego, co właśnie wczytano, daje bajt w bajt ten sam plik.
+
+### Studio API (⌥⌘8)
+
+Kolekcje, żądania, środowiska ze `{{zmiennymi}}` i testy, zapisywane w `.nmoxapi.json` — sekrety wyłącznie w pęku kluczy, nigdy w tym pliku. Każda odpowiedź dostaje ocenę bezpieczeństwa ze swoich nagłówków. Import z curl, `.http`, OpenAPI, Postmana, Insomnii i HAR; eksport do `.http` oraz kopiowanie jako curl albo jako `fetch`, z już podstawionymi zmiennymi.
+
+### Studio baz danych (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB i CouchDB, ze sterownikami w komplecie i hasłami wyłącznie w pęku kluczy. Konsola zna silnik, każde polecenie ma własną siatkę wyników, a wiersze edytuje się w samej siatce, gdy jest klucz główny — z podglądem dokładnych UPDATE przed zastosowaniem i uczciwym powodem, gdy coś jest tylko do odczytu. Eksport do CSV albo JSON, z unieszkodliwionymi formułami.
+
+### Studio kontraktów (⌥⌘6)
+
+Drzewo artefaktów Foundry i Hardhata, **Interakcja** prowadzona przez ABI z rozszyfrowanymi zwrotami i wycofaniami, panel **Obserwuj** śledzący bloki i zdarzenia, oraz **Nadzór** z tabelą gazu, werdyktami rozmiaru EIP-170 i książką adresową. **Nigdy żadnych kluczy prywatnych**: wysyłki idą przez odblokowane konta sieci lokalnej, a tajne adresy mieszkają w pęku kluczy.
+
+### Projektant infrastruktury (⌥⌘9)
+
+Płótno dla DigitalOcean, Hetznera i Cloudflare: zsynchronizuj to, co istnieje naprawdę, odśwież, by zobaczyć rozbieżności, i zniszcz stos, mając jego koszt przed oczami. Niedozwolone połączenia odmawiają na głos i mówią dlaczego, a póki trwa operacja w chmurze, płótno blokuje się z paskiem, który to oznajmia.
+
+### IRC (⌥⌘3)
+
+Pełny klient wewnątrz IDE: TLS z prawdziwym sprawdzeniem nazwy, SASL, rozszerzenia IRCv3, uzupełnianie tabulatorem, podświetlenia, odnośniki otwierające się we wbudowanej przeglądarce, zapis na dysk, własne filtry i lista kanałów, którą przesiewasz w trakcie pisania.
+
+### Dołączona witryna
+
+**Pomoc ▸ Witryna NMOX Studio (lokalnie)** podaje witrynę produktu z jego własnego stojaka, na interfejsie lokalnym. Mówi tymi samymi trzynastoma językami co IDE; przełącznik jest w stopce.
+
+### Przeglądarka (⌥⌘4)
+
+Prawdziwa przeglądarka wewnątrz IDE, z własnymi narzędziami deweloperskimi — konsolą, DOM-em, siecią, magazynem i panelami dla Vue, Svelte i Angulara — bo silnik nie niesie własnego inspektora, a ten jest nasz. Zna twoje źródła: wskaż element, otwórz wiersz, który go wytworzył, zmień jego styl na miejscu, a deklaracja wyląduje w źródłowym arkuszu stylów. Zapisanie pliku przeładowuje stronę, a prawdziwe rozmiary urządzeń służą do sprawdzania układu responsywnego.

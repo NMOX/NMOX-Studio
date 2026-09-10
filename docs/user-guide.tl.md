@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–5. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–6. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -183,3 +183,50 @@ Pindutin ang kaliwang gilid, piliin ang **I-debug ang file (mga breakpoint)**, a
 ### Pagpapakita at pagbabahagi
 
 Ang **Tanaw ▸ Presentation Mode** ay sabay-sabay na nagpapalaki sa bawat bukás na editor, sa pahina sa nakapaloob na browser, sa bintana ng Output, at sa Terminal — at ibinabalik ang lahat nang eksakto pagkalabas mo. Ang **Tanaw ▸ Ipakita ang mga Pindot** ay ipinapakitang malaki ang kombinasyong katatapos mong pindutin, ngunit hindi kailanman ang tinitipa mo. Ang **I-edit ▸ Kopyahin bilang Markdown** ay kinokopya ang pinili bilang nakabakod na bloke na may tamang tatak ng wika, at ang bersyong **may link** ay idinadagdag ang link ng GitHub sa mismong mga hanay na iyon. Ang **Mga Kasangkapan ▸ I-save ang screenshot…** ay ipininta ang buong bintana sa doble ang laki, may mga bersyon para sa tab ng editor lamang, para sa clipboard, at para kopyahin ang puno ng proyekto bilang Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Ang mga studio
+
+### Pag-abot gamit ang teklado at ang screen reader
+
+Bawat kontrol sa rack ay may pangalang naaabot, at sinusuri iyon sa bawat pagbuo. Ang mga knob ay mga slider na sumusunod sa mga arrow, sa Home at sa End; ang mga pindutan ay sumusunod sa Espasyo at Enter, pati na ang mga nakadimm na nagsasabi kung bakit sila tumatanggi; ang mga LED at pantalan ay ipinapahayag ang kanilang kalagayan. Ibinabaling ng Tab ang rack — maliban kung nasa isang kontrol ang pokus, kung saan ito ay nagbibigay-daan sa karaniwang paglipat.
+
+### Git, sa status bar
+
+Ipinapakita ng tandang **⎇ sanga** kung nasaang sanga ka at kung ilang file ang nabago; binabasa ito mula sa disk, kaya wala itong gastos na proseso. Ang isang pindot ay nagbubukas ng buong kasaysayan, at ang menu ay may **Pagkakaiba ng proyekto**, **Anotasyon**, ang mga pull request sa iyong sariling `gh`, at **Isulat ang mensahe ng commit gamit ang KVASIR**.
+
+### Pisara ng Gawain (⌥⌘1)
+
+Isang kanban kada proyekto na naka-imbak sa `.nmoxtasks.json` — katabi ng iyong kodigo at kasama nitong binibersyon. Hilahin ang mga kard o igalaw ang mga ito sa teklado: ang **⌘↑/⌘↓** ang nag-aayos muli, at ang inilipat na kard ay hawak pa rin ang pokus. Ang mga hangganan ng kasalukuyang gawain ay payo, hindi harang: nagpupula ang ulunan at walang pumipigil sa iyo. Ang pindutang **Pangkalahatang tanaw** ay pinapalitan ang mga hanay ng isang dashboard — kasalukuyang ginagawa, tapos ngayon at ngayong linggo, daloy kada araw, mga kard na tumatanda — at ang orasan (**Mag-time in**) ay sinusukat ang tunay na oras kada kard, na may iisang orasang umaandar sa buong pisara. Ang **Standup** ay ginagawang isang ulat na handang idikit ang lahat ng iyon.
+
+### Studio ng Block (⌥⌘5)
+
+Bumuo ng tunay na Web Components mula sa mga piyesang may uri na nagkakabit-kabit, sa paraang Scratch: tinatanggihan ang mga bawal na pagpapasok, isinisilang ang kodigo bilang isang custom element na nakatayo mag-isa, at ang pagpindot sa isang piyesa ay nagpapaliwanag sa mga hanay nito. Isang preview server sa memorya ang nagpapakita ng komponente nang totoo, kasama ng ibang mga wastong komponente sa iyong aklatan. Eksakto ang balikan: ang muling paglikha ng kabababasa lamang ay nagbibigay ng parehong file, byte kada byte.
+
+### Studio ng API (⌥⌘8)
+
+Mga koleksyon, kahilingan, kapaligirang may `{{variable}}`, at pagsusulit, na naka-imbak sa `.nmoxapi.json` — ang mga lihim ay nasa keychain lamang, hindi kailanman sa file na iyon. Bawat tugon ay binibigyan ng marka ng seguridad mula sa sarili nitong mga header. Mag-import mula sa curl, `.http`, OpenAPI, Postman, Insomnia at HAR; mag-export sa `.http`, at kopyahin bilang curl o bilang `fetch`, na nakalagay na ang mga variable.
+
+### Studio ng Database (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB at CouchDB, kasama na ang mga driver at ang mga password sa keychain lamang. Kilala ng console ang makina, may sariling grid ng resulta ang bawat pahayag, at ang mga hanay ay ine-edit sa mismong grid kapag may pangunahing susi — may silip sa mismong mga UPDATE bago ilapat, at may tapat na dahilan kapag basahin-lamang ang isang bagay. Mag-export sa CSV o JSON, na pinawalang-bisa ang mga pormula.
+
+### Studio ng Kontrata (⌥⌘6)
+
+Ang puno ng mga artefact ng Foundry at Hardhat, isang **Makipag-ugnayan** na ginagabayan ng ABI na may nabasang mga balik at pagbawi, isang paneling **Bantayan** na sumusunod sa mga bloke at pangyayari, at ang **Pangangasiwa** na may talaan ng gas, mga hatol sa laking EIP-170, at ang aklat ng mga address. **Kailanma’y walang pribadong susi**: ang mga padala ay dumadaan sa mga hindi nakakandadong account ng isang lokal na network, at ang mga lihim na URL ay nakatira sa keychain.
+
+### Taga-disenyo ng Infrastructure (⌥⌘9)
+
+Isang lienzo para sa DigitalOcean, Hetzner at Cloudflare: itugma sa kung ano ang tunay na umiiral, i-refresh upang makita ang pagkakaiba, at gibain ang isang salansan habang nakalantad ang halaga nito. Ang mga bawal na kabit ay tumatanggi nang malakas at sinasabi kung bakit, at habang tumatakbo ang isang gawain sa ulap, nakakandado ang lienzo na may guhit na nagsasabi nito.
+
+### IRC (⌥⌘3)
+
+Isang buong kliyente sa loob ng IDE: TLS na may tunay na pagsusuri ng pangalan, SASL, mga pagpapalawig ng IRCv3, pagkumpleto sa Tab, mga pagtatampok, mga URL na bumubukas sa nakapaloob na browser, pagtatala sa disk, sarili mong mga panala, at isang talaan ng mga channel na sinasala mo habang nagta-type.
+
+### Ang kasamang websayt
+
+Ang **Tulong ▸ Websayt ng NMOX Studio (lokal)** ay naghahain ng websayt ng produkto mula sa sarili nitong rack, sa lokal na interface. Nagsasalita ito ng parehong labintatlong wika na sinasalita ng IDE; nasa paanan ng pahina ang pampili.
+
+### Browser (⌥⌘4)
+
+Isang tunay na browser sa loob ng IDE, na may sariling mga kasangkapan ng developer — console, DOM, network, imbakan, at mga panel para sa Vue, Svelte at Angular — dahil walang dalang inspektor ang makina, at atin itong isa. May malay ito sa iyong pinagmulan: pumili ng elemento, buksan ang hanay na lumikha nito, baguhin ang estilo nito sa mismong kinaroroonan, at ang deklarasyon ay dadapo sa pinagmulang stylesheet. Ang pag-save ng file ay muling nagkakarga ng pahina, at may tunay na sukat ng kagamitan upang subukin ang iyong nakikiayong ayos.
