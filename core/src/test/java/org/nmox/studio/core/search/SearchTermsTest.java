@@ -139,4 +139,57 @@ class SearchTermsTest {
         assertThat(SearchTerms.score("docker compose", "HARBOR", "Docker Engine", "docker compose")).isEqualTo(SearchTerms.EXACT);
         assertThat(SearchTerms.score("docker composer", "HARBOR", "Docker Engine", "docker compose")).isEqualTo(SearchTerms.NO_MATCH);
     }
+
+    @org.junit.jupiter.api.Nested
+    @DisplayName("accents are not a barrier to finding a thing")
+    class AccentFolding {
+
+        @Test
+        @DisplayName("a name typed without its accents still finds it")
+        void typedWithoutAccents() {
+            assertThat(SearchTerms.matches("ubersetzung", "Übersetzung starten")).isTrue();
+            assertThat(SearchTerms.matches("Uber", "Übersetzung starten")).isTrue();
+            // Polish ł carries no Unicode decomposition — it needs naming
+            assertThat(SearchTerms.matches("lacze", "Łącze do projektu")).isTrue();
+            assertThat(SearchTerms.matches("cwiczenie", "Ćwiczenie w Studio")).isTrue();
+            // German ß folds to ss, the way people type it
+            assertThat(SearchTerms.matches("strasse", "Straße")).isTrue();
+        }
+
+        @Test
+        @DisplayName("Vietnamese without tone marks — how Vietnamese is normally typed")
+        void vietnameseWithoutTones() {
+            assertThat(SearchTerms.matches("gia tac vu", "Giá tác vụ")).isTrue();
+            assertThat(SearchTerms.matches("du an", "Studio dự án")).isTrue();
+            // đ carries no decomposition either, and Vietnamese leans on it
+            assertThat(SearchTerms.matches("dong", "Đóng cửa sổ")).isTrue();
+        }
+
+        @Test
+        @DisplayName("folding widens what is found; it never narrows it")
+        void theExactSpellingStillWorks() {
+            assertThat(SearchTerms.matches("Übersetzung", "Übersetzung starten")).isTrue();
+            assertThat(SearchTerms.matches("Ćwiczenie", "Ćwiczenie w Studio")).isTrue();
+            assertThat(SearchTerms.matches("Giá", "Giá tác vụ")).isTrue();
+            assertThat(SearchTerms.matches("проєкту", "Студія проєкту")).isTrue();
+        }
+
+        @Test
+        @DisplayName("folding does not invent matches out of unrelated words")
+        void noFalseHits() {
+            assertThat(SearchTerms.matches("ubersetzung", "Projekt starten")).isFalse();
+            assertThat(SearchTerms.matches("lacze", "Studio kontraktów")).isFalse();
+            // the v1.215.0 junk rule survives folding: a short term must
+            // still start a word, so "ai" cannot reach inside "TAIL"
+            assertThat(SearchTerms.matches("ai", "Log Follower TAIL")).isFalse();
+        }
+
+        @Test
+        @DisplayName("scripts with no combining marks are untouched")
+        void otherScriptsAreLeftAlone() {
+            assertThat(SearchTerms.fold("任务机架")).isEqualTo("任务机架");
+            assertThat(SearchTerms.fold("टास्क रैक")).isEqualTo("टास्क रैक");
+            assertThat(SearchTerms.fold("plain ascii")).isEqualTo("plain ascii");
+        }
+    }
 }

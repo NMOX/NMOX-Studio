@@ -78,11 +78,17 @@ public class TasksSearchProvider implements SearchProvider {
      * to the register (v2.7.0).
      */
     private static boolean matches(TaskBoard.Card c, String needle) {
-        if (c.title().toLowerCase(Locale.ROOT).contains(needle)) {
+        // through the product's one matcher (v2.106.0): this window shipped
+        // in v1.323.0, after the v1.215.0 findability sprint routed every
+        // OTHER search surface here, so it had kept the raw
+        // toLowerCase().contains() that sprint existed to replace — phrases
+        // in the wrong order missed, and a card titled "Ćwiczenie" could not
+        // be found by typing "cwiczenie"
+        if (org.nmox.studio.core.search.SearchTerms.matches(needle, c.title())) {
             return true;
         }
         if (!c.label().isEmpty()
-                && c.label().toLowerCase(Locale.ROOT).contains(needle)) {
+                && org.nmox.studio.core.search.SearchTerms.matches(needle, c.label())) {
             return true;
         }
         return c.blocked() && "blocked".equals(needle);

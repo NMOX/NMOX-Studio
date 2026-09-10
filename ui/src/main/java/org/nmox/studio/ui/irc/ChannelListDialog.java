@@ -78,8 +78,11 @@ final class ChannelListDialog {
                     @Override
                     public boolean include(Entry<? extends Model, ? extends Integer> entry) {
                         ChannelListCollector.Row r = rows.get(entry.getIdentifier());
-                        return r.name().toLowerCase(Locale.ROOT).contains(q)
-                                || r.topic().toLowerCase(Locale.ROOT).contains(q);
+                        // one matcher, v2.106.0: a channel topic is prose,
+                        // often not in English, and typing two of its words
+                        // in the wrong order used to find nothing
+                        return org.nmox.studio.core.search.SearchTerms.matches(
+                                q, r.name(), r.topic());
                     }
                 });
             }

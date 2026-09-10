@@ -163,12 +163,20 @@ public final class SwitchProjectAction implements ActionListener {
 
     /**
      * The pure filter discipline: a recent project matches the typed
-     * needle if the needle appears in its directory name or its full
-     * path (both lower-cased; an empty needle matches everything).
+     * needle in its directory name or its full path. An empty needle
+     * matches everything — the list starts whole and narrows as you type.
+     *
+     * <p>Through the product's one matcher since v2.106.0. This filter
+     * shipped before the v1.215.0 findability sprint and was never moved
+     * across, so it kept the raw {@code contains} that sprint replaced:
+     * a project directory named {@code Ćwiczenie} could not be reached by
+     * typing {@code cwiczenie}, and a path fragment in the wrong order
+     * missed entirely.
      */
     static boolean matches(File dir, String needle) {
-        return dir.getName().toLowerCase(java.util.Locale.ROOT).contains(needle)
-                || dir.getAbsolutePath().toLowerCase(java.util.Locale.ROOT).contains(needle);
+        return needle == null || needle.isEmpty()
+                || org.nmox.studio.core.search.SearchTerms.matches(
+                        needle, dir.getName(), dir.getAbsolutePath());
     }
 
     private void switchTo(File dir) {

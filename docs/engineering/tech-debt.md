@@ -70,6 +70,49 @@ user-visible weight:
   KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
   first post-2.43.0 update walk.
 
+### 94. macOS cannot set the app's language, and saying it could would be a lie
+
+Measured 2026-09-10 while looking for the last monolingual surfaces. The
+bundle's `Info.plist` carries no `CFBundleLocalizations`, so macOS treats
+NMOX Studio as an English-only application and it does not appear under
+**System Settings ▸ General ▸ Language & Region ▸ Applications**.
+
+The tempting fix is to declare the key. **Do not** — it would advertise a
+control that does nothing.
+
+The probe, kept because the conclusion is not obvious: a minimal `.app`
+bundle declaring `CFBundleLocalizations` for `en`/`uk`/`de`, whose executable
+is a shell script that execs `java` exactly the way our launcher does, was
+given a per-app language the way System Settings sets one:
+
+```
+defaults write org.nmox.locprobe AppleLanguages -array uk
+open -W Probe.app
+```
+
+The JVM reported `Locale.getDefault() = en_US`, `user.language = en` — with
+and without the preference set, byte-identical. macOS passes the choice as
+an `-AppleLanguages` argument to the bundle's own executable and exposes it
+through that application's `CFPreferences`; a shell wrapper drops the
+argument, and the `java` child process is a different application as far as
+`CFPreferences` is concerned. Declaring the key would put a language menu in
+System Settings that the IDE ignores.
+
+**What closing it would take**, if anyone wants it: the launcher reads the
+per-app preference itself and translates it into the `--locale` the platform
+already understands — `defaults read org.nmox.studio AppleLanguages`, first
+entry, accepted only when it names one of `UiLocale.SUPPORTED`, and only when
+the user has NOT pinned a language in Options (the conf block must keep
+winning; an explicit choice outranks an ambient one). It is macOS-only, it is
+shell-quoting-sensitive in a launcher that already sources a conf, and the
+product already offers the same control in Options with a live switch — so
+the value is convenience, not capability.
+
+Deferred, not forgotten: the measurement is recorded so the next author does
+not add the plist key on the reasonable-sounding assumption that it works.
+A comment sits at the `Info.plist` heredoc in `packaging/macos/build-dmg.sh`
+pointing here.
+
 ### 90. ~~The platform toolbar is English in every translated build~~ — CLOSED v2.102.0
 
 Found by walking shipped 2.101.0 in Ukrainian and read out of the main

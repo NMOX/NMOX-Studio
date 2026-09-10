@@ -4,6 +4,69 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.106.0] - 2026-09-10
+
+**Being able to type it** — the night shift's third release. The first two
+made the product speak thirteen languages properly; this one is about
+reaching the things it now names.
+
+1. **Search finds a name typed without its accents.** Measured against the
+   shipped bytes before anything changed: a German typing `ubersetzung` did
+   not find `Übersetzung`, a Pole typing `cwiczenie` did not find
+   `Ćwiczenie`, and a Vietnamese speaker typing without tone marks — which
+   is how Vietnamese is normally entered — found nothing at all. The
+   v1.215.0 findability class, one shape over, and created by the
+   translations themselves: the product had just learned to name things in
+   these languages and could not then be searched in them.
+
+   Folding happens at the one place text is tokenized, so `terms`, `matches`
+   and `score` all get it, and both sides are folded — an exactly-typed name
+   still matches, because folding widens what is found rather than narrowing
+   it. Polish `ł`, Vietnamese `đ` and German `ß` carry no Unicode
+   decomposition and are named explicitly; without them `Lacze` would still
+   miss `Łącze`.
+
+   **The first cut was Latin-centric and its own test caught it.** Devanagari
+   matras are combining marks too, and stripping every mark turned टास्क into
+   टसक — a different word, not the same word typed plainly. A mark is an
+   accent only over a Latin base now, and every Indic, Thai and Hebrew mark
+   is left exactly where it is. Transliteration stays out of scope and says
+   so: `proyekt` still does not find `проєкту`.
+
+2. **Ledger 95: every search surface goes through the product's one
+   matcher.** v1.215.0 replaced the raw `toLowerCase().contains()`
+   everywhere and left no way to notice a surface that arrived afterwards.
+   Four had kept it — the Task Board's Quick Search provider, the project
+   switcher's filter, the learning-space picker and the IRC channel list —
+   so each missed a two-word query in the wrong order, and none could be
+   reached by typing an accented name plainly. The machine-text sites are
+   blessed with reasons instead of converted: a dev server's own output, a
+   layer registration id, an HTTP header token, an IRC `/filter` the user
+   wrote themselves, and the Agent Port's deliberately literal search.
+
+   The census's first cut flagged a duplicate-name set-membership check as a
+   search. A census that reports things it cannot judge trains people to
+   ignore it, so it no longer matches that shape.
+
+3. **Ledger 94: macOS cannot set the app's language, and the bundle must not
+   say it can.** Declaring `CFBundleLocalizations` lists an app under System
+   Settings ▸ Language & Region ▸ Applications. Measured with a probe bundle
+   of the launcher's exact shape — a shell wrapper that execs `java` — the
+   per-app `AppleLanguages` preference never reaches the JVM: `en_US` with
+   the preference set and without it, byte-identical, because macOS passes
+   the choice to the bundle's own executable and through that application's
+   `CFPreferences`, and a `java` child process is neither.
+
+   So the key would advertise a control the IDE ignores, which is worse than
+   its absence. `BundleLocalizationsTest` is the unusual gate that exists to
+   keep something OUT: a reasonable-looking one-line addition, by someone who
+   had not run the probe, would otherwise ship a language menu that does
+   nothing. The ledger keeps the reproduction and what closing it would take.
+
+Four mutants died by name: the plist key added, the folding removed, the
+Latin guard removed (Hindi mangled again), and a new surface bypassing the
+matcher.
+
 ## [2.105.0] - 2026-09-10
 
 **The same half, three more surfaces** — the night shift's second release,
@@ -18659,6 +18722,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.106.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.105.0...v2.106.0
 [2.105.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.104.0...v2.105.0
 [2.104.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.103.0...v2.104.0
 [2.103.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.1...v2.103.0

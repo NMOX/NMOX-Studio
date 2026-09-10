@@ -103,6 +103,13 @@ exit 1
 LAUNCHER
 chmod +x "$BUNDLE/Contents/MacOS/nmox-studio"
 
+# NO CFBundleLocalizations here, on purpose. Declaring it would list the
+# app under System Settings > Language & Region > Applications and let a
+# user pick a language the IDE would then ignore: measured 2026-09-10
+# with a probe bundle of this exact shape (a shell wrapper exec'ing java)
+# — the per-app AppleLanguages preference never reaches the JVM, whose
+# default stayed en_US. Options > General > Language is the control that
+# works. See ledger 94 in docs/engineering/tech-debt.md.
 echo "==> Writing Info.plist"
 cat > "$BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
