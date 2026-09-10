@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–4 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–5 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -133,3 +133,53 @@ O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — n
 **Aponte um agente para a sua IDE.** Ferramentas ▸ Agent Port (MCP)… abre um endpoint MCP que um assistente de fora pode consultar: ele é **somente leitura por construção**, fica desligado até você ligar, escuta apenas na interface local e exige o token gerado na partida.
 
 O rack é extensível: plugins de terceiros podem acrescentar dispositivos (instale o NBM deles por Ferramentas ▸ Plugins). Para escrever um, veja [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. O editor
+
+![Código jQuery na paleta NMOX Phosphor, a estrutura no Navegador](images/editor.png)
+
+Mais de 70 linguagens são realçadas como devem — a pilha moderna, a clássica (CoffeeScript incluído) e toda a camada de configuração, até `.env`, `.editorconfig`, configurações do nginx e do Apache, Dockerfiles e arquivos de bloqueio.
+
+- **O autocompletar** conhece o contexto e também *as bibliotecas clássicas*: se o seu projeto carrega jQuery, MooTools, Prototype, Backbone/Underscore ou Knockout (por dependências do npm *ou* por simples tags `<script>`), as APIs delas aparecem ao completar. Projetos em jQuery 1.x ou 2.x ganham uma etiqueta honesta de fim de vida, não uma cobrança.
+- **O esquema do Navegador (⌘7)** mostra a estrutura do arquivo para 58 tipos; clique para saltar.
+- **O minimapa** — uma silhueta do arquivo inteiro ao lado da barra de rolagem de cada editor; clique ou arraste para rolar. O documento sempre cabe inteiro na faixa: as linhas encolhem à medida que o arquivo cresce. Ver ▸ Minimapa liga e desliga em todos os editores abertos de uma vez.
+- **A rolagem fixa** — as declarações que envolvem o topo da vista (a classe e depois o método em que você desceu) ficam presas acima do texto, até três linhas do próprio código; clique numa para saltar. A barra some quando nada envolve a primeira linha visível.
+- **Ir para símbolo (⌥⇧⌘O)** salta para qualquer função, classe, regra ou título de todo o projeto digitando o nome, com correspondência por prefixo, por maiúsculas internas ou por curinga. O índice é limitado e honesto: `node_modules` é pulado e, num projeto muito grande, a caixa diz que indexou os primeiros 2.000 arquivos em vez de fingir que leu tudo.
+- **A janela de testes (⌥⌘2)** mostra todos os testes do projeto *antes de qualquer coisa rodar*, e roda um teste, um arquivo ou todos.
+
+### Expandir abreviação (⌥⌘E)
+
+Digite uma abreviação do Emmet e aperte **⌥⌘E**: `ul>li*3` vira a lista pronta. Funciona em HTML, nos modelos do Angular e — na forma CSS — dentro de blocos `<style>` e atributos `style`, onde o recorte fica preso à região para que nunca engula a marcação em volta. Uma abreviação que o produto não reconhece é recusada e deixa o seu texto intacto.
+
+### Tokens de design (propriedades personalizadas)
+
+Digitar `var(` sugere os tokens declarados nas folhas de estilo reais do seu projeto, cada um com sua amostra de cor e o lugar onde está declarado. **⌘-clique** num uso de `var(--token)` salta para a declaração. As cores são pintadas como a cor que são — hex, `rgb()`, `hsl()`, nomes, e também `oklch()`, `lab()` e `color-mix()` — e **⌘-clique** num literal de cor abre um seletor que o substitui na mesma forma em que você escreveu.
+
+### O atributo class conhece suas folhas de estilo
+
+Digitar dentro de `class="…"` sugere as classes que o seu projeto realmente define, dizendo de qual folha vieram; **⌘-clique** numa classe salta para a regra dela, e **⌘-clique** num seletor `.classe` salta para o primeiro uso na marcação. **Renomear classe…** renomeia no projeto inteiro — só tokens completos, com a contagem por arquivo — e recusa em voz alta se o nome novo já existe ou se há mudanças não salvas.
+
+### Rodar script, a partir do cursor
+
+Na seção `scripts` de um `package.json`, **Rodar script** executa a linha onde está o cursor — pela mesma confirmação de confiança do espaço de trabalho e pelo mesmo ■ de qualquer outra execução.
+
+### Chaves de ambiente, de primeira classe
+
+Digitar `process.env.` ou `import.meta.env.` sugere as chaves que a sua família de arquivos `.env` realmente define, e **⌘-clique** salta para a linha que declara a chave. Os valores aparecem truncados: o lembrete está lá, o segredo não.
+
+### Modelos do Angular, de primeira classe
+
+Arquivos `.component.html` abrem com realce próprio de modelo, com os blocos `@if`/`@for` e as diretivas estruturais no autocompletar. Instale o Angular Language Service e a checagem de tipos do modelo chega de verdade: erre o nome de uma propriedade e o próprio compilador do Angular sugere o certo. **⌘B** num modelo salta para a definição, e o menu de contexto alterna entre o componente, seu modelo, seus estilos e seu teste.
+
+### Componentes Vue e Svelte, de primeira classe
+
+Arquivos `.vue` e `.svelte` abrem com realce próprio, autocompletar próprio (as runas pontuadas do Svelte 5 incluídas) e Emmet dentro dos blocos de modelo. Os diagnósticos do Vue chegam de verdade ao editor, pelo servidor de linguagem do próprio Vue.
+
+### Depuração com pontos de parada de verdade
+
+Clique na margem esquerda, escolha **Depurar arquivo (pontos de parada)** e o programa para ali — com a pilha, as variáveis e a avaliação de expressões. JavaScript e TypeScript funcionam de fábrica pelo adaptador embutido; Python usa debugpy e Go usa delve, que você instala. **Depurar no Chrome** faz o mesmo com uma página: os pontos de parada do seu código param dentro da IDE enquanto o navegador roda num perfil descartável. Tudo passa antes pela confirmação de confiança do espaço de trabalho.
+
+### Apresentar e compartilhar
+
+**Ver ▸ Modo apresentação** aumenta de uma vez todos os editores, a página do navegador embutido, a janela de saída e o terminal — e devolve tudo exatamente como estava ao sair. **Ver ▸ Mostrar teclas** mostra em tamanho grande o atalho que você acabou de apertar, mas nunca o que você digita. **Editar ▸ Copiar como Markdown** copia a seleção como bloco cercado com a etiqueta de linguagem certa, e a variante **com link** acrescenta o link do GitHub para as mesmas linhas. **Ferramentas ▸ Salvar captura…** pinta a janela inteira no dobro do tamanho, com variantes para a aba do editor sozinha, para a área de transferência e para copiar a árvore do projeto como Markdown.

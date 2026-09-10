@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–4 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–5 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -133,3 +133,53 @@ Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bu
 **Wyceluj agenta w swoje IDE.** Narzędzia ▸ Agent Port (MCP)… otwiera punkt końcowy MCP, który zewnętrzny asystent może odpytywać: jest **tylko do odczytu z konstrukcji**, wyłączony, dopóki go nie włączysz, nasłuchuje wyłącznie na interfejsie lokalnym i wymaga tokenu utworzonego przy starcie.
 
 Stojak jest rozszerzalny: wtyczki innych osób mogą dodawać urządzenia (zainstaluj ich NBM przez Narzędzia ▸ Wtyczki). Aby napisać własne, zobacz [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. Edytor
+
+![Kod jQuery w palecie NMOX Phosphor, struktura w Nawigatorze](images/editor.png)
+
+Ponad 70 języków jest kolorowanych jak należy — nowoczesny zestaw, klasyczny (razem z CoffeeScriptem) i cała warstwa konfiguracji, aż po `.env`, `.editorconfig`, konfiguracje nginksa i Apache, pliki Dockerfile oraz pliki blokad.
+
+- **Uzupełnianie** zna kontekst, a także *klasyczne biblioteki*: jeśli twój projekt niesie jQuery, MooTools, Prototype, Backbone/Underscore albo Knockout (przez zależności npm *lub* zwykłe znaczniki `<script>`), ich API pojawiają się przy uzupełnianiu. Projekty na jQuery 1.x i 2.x dostają uczciwą plakietkę o końcu wsparcia, a nie natrętne przypomnienie.
+- **Struktura w Nawigatorze (⌘7)** pokazuje budowę pliku dla 58 rodzajów; kliknięcie przenosi na miejsce.
+- **Minimapa** — sylwetka całego pliku obok paska przewijania każdego edytora; kliknij albo pociągnij, żeby przewinąć. Cały dokument zawsze mieści się w pasku: wiersze kurczą się, gdy plik rośnie. Widok ▸ Minimapa włącza ją i wyłącza naraz we wszystkich otwartych edytorach.
+- **Lepkie przewijanie** — deklaracje obejmujące górę widoku (klasa, a potem metoda, do której zjechałeś) zostają przypięte nad tekstem, do trzech wierszy samego kodu; kliknięcie przenosi do wiersza. Pasek znika, gdy nic nie obejmuje pierwszego widocznego wiersza.
+- **Idź do symbolu (⌥⇧⌘O)** przenosi do dowolnej funkcji, klasy, reguły albo nagłówka w całym projekcie po wpisaniu nazwy — z dopasowaniem po przedrostku, po wielkich literach wewnątrz słowa albo po masce. Indeks jest ograniczony i uczciwy: `node_modules` jest pomijany, a przy bardzo dużym projekcie okno mówi, że zindeksowało pierwsze 2000 plików, zamiast udawać, że przeczytało wszystko.
+- **Okno testów (⌥⌘2)** pokazuje wszystkie testy projektu *zanim cokolwiek się uruchomi*, i uruchamia jeden test, plik albo całość.
+
+### Rozwiń skrót (⌥⌘E)
+
+Wpisz skrót Emmeta i naciśnij **⌥⌘E**: `ul>li*3` zamienia się w gotową listę. Działa w HTML-u, w szablonach Angulara i — w postaci CSS — wewnątrz bloków `<style>` i atrybutów `style`, gdzie wycinek jest ograniczony do regionu, więc nigdy nie połknie otaczającego znacznika. Skrót, którego produkt nie zna, zostaje odrzucony i zostawia twój tekst nietknięty.
+
+### Tokeny projektowe (właściwości własne)
+
+Wpisanie `var(` podpowiada tokeny zadeklarowane w prawdziwych arkuszach stylów twojego projektu, każdy z próbką koloru i miejscem deklaracji. **⌘-kliknięcie** na użyciu `var(--token)` przenosi do jego deklaracji. Kolory są malowane tym kolorem, którym są — hex, `rgb()`, `hsl()`, nazwy, a także `oklch()`, `lab()` i `color-mix()` — a **⌘-kliknięcie** na literale koloru otwiera wybierak, który zastąpi go dokładnie w tym zapisie, w jakim go napisałeś.
+
+### Atrybut class zna twoje arkusze stylów
+
+Pisanie wewnątrz `class="…"` podpowiada klasy, które twój projekt naprawdę definiuje, wraz z arkuszem, z którego pochodzą; **⌘-kliknięcie** na klasie przenosi do jej reguły, a **⌘-kliknięcie** na selektorze `.klasa` do jej pierwszego użycia w znaczniku. **Zmień nazwę klasy…** zmienia nazwę w całym projekcie — tylko całe tokeny, z liczbą na plik — i odmawia na głos, jeśli nowa nazwa jest już zajęta albo zostały niezapisane zmiany.
+
+### Uruchom skrypt, prosto od kursora
+
+W sekcji `scripts` pliku `package.json` polecenie **Uruchom skrypt** wykonuje wiersz, w którym stoi kursor — przez to samo pytanie o zaufanie do przestrzeni roboczej i to samo ■, co każde inne uruchomienie.
+
+### Klucze środowiska, pełnoprawne
+
+Wpisanie `process.env.` albo `import.meta.env.` podpowiada klucze, które twoja rodzina plików `.env` naprawdę definiuje, a **⌘-kliknięcie** przenosi do wiersza z deklaracją. Wartości pokazywane są przycięte: przypomnienie jest, sekretu nie ma.
+
+### Szablony Angulara, pełnoprawne
+
+Pliki `.component.html` otwierają się z własnym kolorowaniem szablonu, z blokami `@if`/`@for` i dyrektywami strukturalnymi w uzupełnianiu. Zainstaluj Angular Language Service, a sprawdzanie typów w szablonie naprawdę dociera: pomyl nazwę właściwości, a własny kompilator Angulara podpowie właściwą. **⌘B** w szablonie przenosi do deklaracji, a menu kontekstowe przechodzi między komponentem, jego szablonem, stylami i testem.
+
+### Komponenty Vue i Svelte, pełnoprawne
+
+Pliki `.vue` i `.svelte` otwierają się z własnym kolorowaniem, własnym uzupełnianiem (łącznie z kropkowanymi runami Svelte 5) i Emmetem wewnątrz bloków szablonu. Diagnostyka Vue naprawdę dociera do edytora — przez własny serwer języka Vue.
+
+### Debugowanie z prawdziwymi pułapkami
+
+Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrzyma się w tym miejscu — ze stosem, zmiennymi i obliczaniem wyrażeń. JavaScript i TypeScript działają od razu dzięki dołączonemu adapterowi; Python używa debugpy, a Go delve, które instalujesz sam. **Debuguj w Chrome** robi to samo dla strony: pułapki w twoim źródle zatrzymują się w IDE, podczas gdy przeglądarka chodzi na jednorazowym profilu. Wszystko najpierw przechodzi przez pytanie o zaufanie do przestrzeni roboczej.
+
+### Pokazywanie i dzielenie się
+
+**Widok ▸ Tryb prezentacji** naraz powiększa każdy otwarty edytor, stronę we wbudowanej przeglądarce, okno wyjścia i terminal — i przy wyjściu przywraca wszystko dokładnie tak, jak było. **Widok ▸ Pokaż naciśnięcia** wyświetla wielkim drukiem właśnie naciśnięty skrót, ale nigdy tego, co piszesz. **Edycja ▸ Kopiuj jako Markdown** kopiuje zaznaczenie jako ogrodzony blok z właściwą etykietą języka, a wariant **z odnośnikiem** dokłada odnośnik GitHub do tych samych wierszy. **Narzędzia ▸ Zapisz zrzut…** maluje całe okno w podwójnym rozmiarze, a warianty obejmują samą kartę edytora, schowek i drzewo projektu jako Markdown.

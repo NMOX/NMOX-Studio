@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–4 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
+> Bản dịch một phần: chương 1–5 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
@@ -133,3 +133,53 @@ Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việ
 **Hướng một tác nhân vào IDE của bạn.** Công cụ ▸ Agent Port (MCP)… mở một điểm cuối MCP mà một trợ lý bên ngoài có thể hỏi: nó **chỉ đọc theo thiết kế**, tắt cho tới khi bạn bật, chỉ lắng nghe trên giao diện cục bộ, và đòi đúng thẻ được sinh ra lúc khởi động.
 
 Giá có thể mở rộng: các trình cắm của bên thứ ba có thể thêm thiết bị (cài tệp NBM của họ qua Công cụ ▸ Trình cắm). Để tự viết một cái, xem [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. Trình soạn thảo
+
+![Mã jQuery trong bảng màu NMOX Phosphor, cấu trúc nằm trong Trình duyệt cấu trúc](images/editor.png)
+
+Hơn 70 ngôn ngữ được tô màu đúng cách — bộ hiện đại, bộ cổ điển (kể cả CoffeeScript) và trọn lớp cấu hình, xuống tới `.env`, `.editorconfig`, cấu hình nginx và Apache, các tệp Dockerfile và các tệp khóa phiên bản.
+
+- **Gợi ý hoàn thành** hiểu ngữ cảnh, và cũng hiểu *các thư viện cổ điển*: nếu dự án của bạn mang jQuery, MooTools, Prototype, Backbone/Underscore hay Knockout (qua phụ thuộc npm *hoặc* thẻ `<script>` thuần), API của chúng sẽ xuất hiện khi gợi ý. Dự án dùng jQuery 1.x hay 2.x nhận một dấu hết vòng đời trung thực, chứ không phải một lời nhắc dai dẳng.
+- **Dàn ý trong Trình duyệt cấu trúc (⌘7)** cho thấy cấu trúc tệp với 58 kiểu tệp; nhấp để nhảy tới.
+- **Bản đồ thu nhỏ** — bóng dáng của cả tệp nằm cạnh thanh cuộn của mỗi trình soạn thảo; nhấp hoặc kéo để cuộn. Cả tài liệu luôn vừa trong dải đó: các hàng co lại khi tệp lớn dần. Xem ▸ Bản đồ thu nhỏ bật tắt nó cho mọi trình soạn thảo đang mở cùng lúc.
+- **Cuộn dính** — những khai báo bao lấy phần trên của khung nhìn (lớp, rồi tới phương thức bạn vừa cuộn vào) được ghim lại phía trên phần chữ, tối đa ba dòng của chính mã nguồn; nhấp một dòng để nhảy tới đó. Thanh này biến mất khi không có gì bao lấy dòng trên cùng.
+- **Tới ký hiệu (⌥⇧⌘O)** nhảy tới bất kỳ hàm, lớp, quy tắc hay tiêu đề nào trong cả dự án bằng cách gõ tên nó — khớp theo tiền tố, theo chữ hoa giữa từ, hoặc theo ký tự đại diện. Chỉ mục có giới hạn và trung thực: `node_modules` bị bỏ qua, và với một dự án rất lớn hộp thoại nói rằng nó đã lập chỉ mục 2.000 tệp đầu tiên thay vì giả vờ đã đọc hết.
+- **Cửa sổ kiểm thử (⌥⌘2)** cho thấy mọi bài kiểm thử trong dự án *trước khi bất cứ gì chạy*, và chạy một bài, một tệp, hoặc tất cả.
+
+### Bung tắt tự (⌥⌘E)
+
+Gõ một tắt tự Emmet rồi nhấn **⌥⌘E**: `ul>li*3` trở thành cả danh sách. Nó chạy trong HTML, trong khuôn mẫu Angular, và — ở dạng CSS — bên trong khối `<style>` và thuộc tính `style`, nơi phần cắt bị giới hạn trong vùng đó nên không bao giờ nuốt mất phần đánh dấu xung quanh. Một tắt tự mà sản phẩm không nhận ra sẽ bị từ chối và để nguyên chữ bạn đã gõ.
+
+### Token thiết kế (thuộc tính tùy biến)
+
+Gõ `var(` sẽ đưa ra những token được khai báo trong chính các tệp kiểu của dự án bạn, mỗi cái kèm ô màu và nơi nó được khai báo. **⌘-nhấp** vào một chỗ dùng `var(--token)` sẽ nhảy tới khai báo của nó. Màu được vẽ đúng như màu chúng là — hex, `rgb()`, `hsl()`, tên màu, và cả `oklch()`, `lab()` lẫn `color-mix()` — còn **⌘-nhấp** vào một giá trị màu sẽ mở bảng chọn thay nó vào đúng dạng bạn đã viết.
+
+### Thuộc tính class biết các tệp kiểu của bạn
+
+Gõ bên trong `class="…"` sẽ đưa ra những lớp mà dự án bạn thực sự định nghĩa, kèm tệp kiểu chúng đến từ đâu; **⌘-nhấp** vào một lớp nhảy tới quy tắc của nó, còn **⌘-nhấp** vào bộ chọn `.lớp` nhảy tới chỗ dùng đầu tiên trong phần đánh dấu. **Đổi tên lớp…** đổi tên trong cả dự án — chỉ những token trọn vẹn, kèm số lượng theo từng tệp — và từ chối ra tiếng nếu tên mới đã có hoặc còn thay đổi chưa lưu.
+
+### Chạy kịch bản, ngay từ con trỏ
+
+Trong phần `scripts` của một `package.json`, lệnh **Chạy kịch bản** chạy đúng dòng có con trỏ — qua cùng lời hỏi tin cậy không gian làm việc và cùng nút ■ như mọi lần chạy khác.
+
+### Khóa môi trường, hạng nhất
+
+Gõ `process.env.` hay `import.meta.env.` sẽ đưa ra những khóa mà họ tệp `.env` của bạn thực sự định nghĩa, và **⌘-nhấp** nhảy tới dòng khai báo khóa ấy. Giá trị hiển thị bị cắt bớt: lời nhắc thì có, bí mật thì không.
+
+### Khuôn mẫu Angular, hạng nhất
+
+Tệp `.component.html` mở ra với cách tô màu khuôn mẫu riêng, với các khối `@if`/`@for` và các chỉ thị cấu trúc trong gợi ý. Hãy cài Angular Language Service và việc kiểm kiểu cho khuôn mẫu thực sự tới nơi: gõ sai tên một thuộc tính, chính trình biên dịch của Angular sẽ gợi tên đúng. **⌘B** trong khuôn mẫu nhảy tới khai báo, còn trình đơn ngữ cảnh chuyển qua lại giữa thành phần, khuôn mẫu, tệp kiểu và bài kiểm thử của nó.
+
+### Thành phần Vue và Svelte, hạng nhất
+
+Tệp `.vue` và `.svelte` mở ra với cách tô màu riêng, gợi ý riêng (kể cả các rune có dấu chấm của Svelte 5) và Emmet bên trong khối khuôn mẫu của chúng. Chẩn đoán của Vue thực sự tới được trình soạn thảo, qua chính máy chủ ngôn ngữ của Vue.
+
+### Gỡ lỗi với điểm dừng thật
+
+Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chương trình sẽ dừng ngay đó — kèm ngăn xếp, các biến và việc tính biểu thức. JavaScript và TypeScript chạy được ngay nhờ bộ chuyển đi kèm; Python dùng debugpy còn Go dùng delve, do bạn tự cài. **Gỡ lỗi trong Chrome** làm y như vậy với một trang: các điểm dừng trong mã nguồn của bạn dừng lại ngay trong IDE trong khi trình duyệt chạy trên một hồ sơ dùng một lần. Mọi thứ đều đi qua lời hỏi tin cậy không gian làm việc trước.
+
+### Trình bày và chia sẻ
+
+**Xem ▸ Chế độ trình bày** phóng to cùng lúc mọi trình soạn thảo đang mở, trang trong trình duyệt tích hợp, cửa sổ kết xuất và cửa sổ dòng lệnh — rồi trả lại mọi thứ đúng như cũ khi bạn thoát. **Xem ▸ Hiện phím bấm** hiện thật lớn tổ hợp phím bạn vừa bấm, nhưng không bao giờ hiện thứ bạn gõ. **Sửa ▸ Chép dạng Markdown** chép phần đã chọn thành khối có rào kèm đúng nhãn ngôn ngữ, còn biến thể **kèm liên kết** thêm liên kết GitHub tới chính những dòng ấy. **Công cụ ▸ Lưu ảnh chụp…** vẽ cả cửa sổ ở kích thước gấp đôi, cùng các biến thể cho riêng thẻ soạn thảo, cho khay nhớ tạm, và để chép cây dự án ra dạng Markdown.

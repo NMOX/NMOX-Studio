@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–4 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
+> Teilübersetzung: Die Kapitel 1–5 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
@@ -133,3 +133,53 @@ Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm,
 **Richten Sie einen Agenten auf Ihre IDE.** Werkzeuge ▸ Agent Port (MCP)… öffnet einen MCP-Zugang, den ein fremder Assistent abfragen kann: **von Bauart nur lesend**, aus, bis Sie ihn einschalten, nur auf der lokalen Schnittstelle lauschend und auf das beim Start erzeugte Token angewiesen.
 
 Das Rack ist erweiterbar: Erweiterungen von Dritten können Geräte hinzufügen (deren NBM über Werkzeuge ▸ Plugins installieren). Zum Selberschreiben siehe [device-spi.md](device-spi.md).
+
+<a id="5-the-editor"></a>
+## 5. Der Editor
+
+![jQuery-Code in der NMOX-Phosphor-Palette, die Struktur im Navigator](images/editor.png)
+
+Über 70 Sprachen werden richtig eingefärbt — der moderne Stapel, der klassische (CoffeeScript eingeschlossen) und die ganze Konfigurationsschicht bis hinunter zu `.env`, `.editorconfig`, nginx- und Apache-Konfigurationen, Dockerfiles und Sperrdateien.
+
+- **Die Vervollständigung** kennt den Zusammenhang und auch *die klassischen Bibliotheken*: Trägt Ihr Projekt jQuery, MooTools, Prototype, Backbone/Underscore oder Knockout (über npm-Abhängigkeiten *oder* schlichte `<script>`-Tags), erscheinen deren APIs beim Vervollständigen. Projekte mit jQuery 1.x oder 2.x bekommen einen ehrlichen Hinweis auf das Lebensende, keine Ermahnung.
+- **Die Navigator-Gliederung (⌘7)** zeigt die Struktur der Datei für 58 Dateitypen; ein Klick springt hin.
+- **Die Übersichtskarte** — ein Umriss der ganzen Datei neben der Bildlaufleiste jedes Editors; klicken oder ziehen bewegt den Ausschnitt. Das ganze Dokument passt immer in den Streifen: Die Zeilen schrumpfen, während die Datei wächst. Ansicht ▸ Übersichtskarte schaltet sie für alle offenen Editoren auf einmal.
+- **Die klebende Gliederung** — die Deklarationen, die den oberen Rand der Ansicht umschließen (die Klasse, dann die Methode, in die Sie gescrollt sind), bleiben über dem Text angeheftet, bis zu drei Zeilen des Quelltexts selbst; ein Klick springt dorthin. Die Leiste verschwindet, wenn nichts die oberste sichtbare Zeile umschließt.
+- **Gehe zu Symbol (⌥⇧⌘O)** springt zu jeder Funktion, Klasse, Regel oder Überschrift im ganzen Projekt, indem Sie den Namen tippen — mit Treffern nach Präfix, Binnenmajuskel oder Platzhalter. Der Index ist begrenzt und ehrlich: `node_modules` wird übersprungen, und bei einem sehr großen Projekt sagt der Dialog, dass er die ersten 2.000 Dateien erfasst hat, statt vorzugeben, alles gelesen zu haben.
+- **Das Testfenster (⌥⌘2)** zeigt jeden Test des Projekts, *bevor irgendetwas läuft*, und startet einen, eine Datei oder alle.
+
+### Abkürzung ausschreiben (⌥⌘E)
+
+Tippen Sie eine Emmet-Abkürzung und drücken Sie **⌥⌘E**: Aus `ul>li*3` wird die fertige Liste. Das gilt in HTML, in Angular-Vorlagen und — in seiner CSS-Form — auch in `<style>`-Blöcken und `style`-Attributen, wo der Ausschnitt auf die Region begrenzt bleibt und deshalb nie das umgebende Markup verschlingt. Eine Abkürzung, die das Produkt nicht kennt, wird abgelehnt und lässt Ihren Text unberührt.
+
+### Gestaltungsmarken (eigene Eigenschaften)
+
+`var(` zu tippen bietet die Marken an, die in den echten Stilvorlagen Ihres Projekts erklärt sind — jede mit ihrem Farbfeld und dem Ort ihrer Erklärung. **⌘-Klick** auf eine Verwendung von `var(--marke)` springt zu ihrer Erklärung. Farben werden als die Farbe gemalt, die sie sind — hex, `rgb()`, `hsl()`, Namen und auch `oklch()`, `lab()` und `color-mix()` — und **⌘-Klick** auf ein Farbliteral öffnet einen Wähler, der es in genau der Schreibweise ersetzt, in der Sie es geschrieben haben.
+
+### Das class-Attribut kennt Ihre Stilvorlagen
+
+In `class="…"` zu tippen bietet die Klassen an, die Ihr Projekt wirklich erklärt, samt der Stilvorlage, aus der sie stammen; **⌘-Klick** auf eine Klasse springt zu ihrer Regel, **⌘-Klick** auf einen `.klasse`-Selektor zu ihrer ersten Verwendung im Markup. **Klasse umbenennen…** benennt im ganzen Projekt um — nur ganze Bezeichner, mit der Anzahl je Datei — und verweigert laut, wenn der neue Name schon vergeben ist oder ungespeicherte Änderungen offen sind.
+
+### Skript ausführen, von der Schreibmarke aus
+
+Im `scripts`-Abschnitt einer `package.json` führt **Skript ausführen** die Zeile aus, in der die Schreibmarke steht — durch dieselbe Arbeitsbereichs-Vertrauensabfrage und dasselbe ■ wie jeder andere Lauf.
+
+### Umgebungsschlüssel, vollwertig
+
+`process.env.` oder `import.meta.env.` zu tippen bietet die Schlüssel an, die Ihre `.env`-Familie tatsächlich erklärt, und **⌘-Klick** springt zu der Zeile, die den Schlüssel erklärt. Werte werden gekürzt angezeigt: Die Erinnerung ist da, das Geheimnis nicht.
+
+### Angular-Vorlagen, vollwertig
+
+`.component.html`-Dateien öffnen mit eigener Vorlagen-Einfärbung, mit `@if`/`@for`-Blöcken und Strukturdirektiven in der Vervollständigung. Installieren Sie den Angular Language Service, und die Typprüfung der Vorlagen kommt wirklich an: Schreiben Sie einen Eigenschaftsnamen falsch, schlägt Angulars eigener Compiler den richtigen vor. **⌘B** in einer Vorlage springt zur Deklaration, und das Kontextmenü wechselt zwischen der Komponente, ihrer Vorlage, ihren Stilen und ihrem Test.
+
+### Vue- und Svelte-Komponenten, vollwertig
+
+`.vue`- und `.svelte`-Dateien öffnen mit eigener Einfärbung, eigener Vervollständigung (die gepunkteten Runen von Svelte 5 eingeschlossen) und Emmet in ihren Vorlagenblöcken. Vues Diagnosen erreichen den Editor wirklich, über Vues eigenen Sprachserver.
+
+### Fehlersuche mit echten Haltepunkten
+
+Klicken Sie in den Rand, wählen Sie **Datei debuggen (Haltepunkte)**, und das Programm hält dort an — mit Aufrufliste, Variablen und Ausdrucksauswertung. JavaScript und TypeScript laufen ab Werk über den mitgelieferten Adapter; Python nutzt debugpy und Go delve, die Sie selbst installieren. **In Chrome debuggen** tut dasselbe für eine Seite: Die Haltepunkte in Ihrem Quelltext halten in der IDE, während der Browser mit einem Wegwerfprofil läuft. Alles geht zuerst durch die Arbeitsbereichs-Vertrauensabfrage.
+
+### Vorführen und Weitergeben
+
+**Ansicht ▸ Präsentationsmodus** vergrößert auf einen Schlag jeden Editor, die Seite im eingebauten Browser, das Ausgabefenster und das Terminal — und stellt beim Verlassen alles genau wieder her. **Ansicht ▸ Tastengriffe zeigen** blendet den eben gedrückten Tastengriff groß ein, aber nie das, was Sie tippen. **Bearbeiten ▸ Als Markdown kopieren** kopiert die Auswahl als abgegrenzten Block mit der richtigen Sprachmarke, und die Variante **mit Link** hängt den GitHub-Link auf dieselben Zeilen an. **Werkzeuge ▸ Bildschirmfoto sichern…** malt das ganze Fenster in doppelter Größe, mit Varianten für den Editor-Tab allein, für die Zwischenablage und für den Projektbaum als Markdown.
