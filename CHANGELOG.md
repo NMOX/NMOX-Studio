@@ -4,6 +4,29 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.116.0] - 2026-09-10
+
+**Docs truth, and the review lenses that came back clean** (docs only).
+
+`CLAUDE.md` and `docs/engineering/plan.md` carry the whole eleven-release
+night, and the plan records the method note the shift earned: feeding
+hostile Unicode to the newest pure core found a nine-hundred-release-old
+bug in the language least able to report it. Asking one function what
+`cafe 😀 Übersetzung टास्क` tokenized to was cheaper than any amount of
+reasoning about it, and nothing had asked.
+
+The same probe over the night’s other pure cores came back CLEAN, which is
+what makes the one find worth trusting rather than a lucky grep: `Numbers`
+renders NaN and Infinity honestly and clamps a negative decimal count,
+`Clocks` survives both epoch extremes without throwing, and `Collate` is
+null-safe by construction. Recorded as verified, not fixed.
+
+Two more lenses over the night’s code, also clean: no module configures
+parallel test execution, so the locale-mutating gates restore the default
+in a finally without poisoning a sibling; and the folder handles a leading
+combining mark, a lone surrogate and an emoji without an index error,
+because it carries a running flag rather than looking backwards.
+
 ## [2.115.0] - 2026-09-10
 
 **The sweep after the find: every word boundary in the product now says
@@ -19042,6 +19065,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.116.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.115.0...v2.116.0
 [2.115.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.114.0...v2.115.0
 [2.114.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.113.0...v2.114.0
 [2.113.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.112.0...v2.113.0
