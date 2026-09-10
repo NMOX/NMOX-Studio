@@ -56,6 +56,12 @@ carrying on from v2.104.0's clock and order.
    and three live documents still telling readers about "the EN/ES
    buttons".
 
+Walked in the assembled app in Ukrainian: **Довідка ▸ Сайт NMOX Studio
+(локально)** served the page from the product's own rack, and all thirteen
+catalogs answered 200 with 28 keys each — fetched from the running build,
+not the source tree. The boot logged zero SEVERE and no warning naming an
+NMOX row, so v2.104.0's Menu/Tools fix still holds.
+
 Six mutants died by name: an unclassified number, a blinded census, a
 notice that lied about how far it went, an unclassified date, a catalog
 with no button, and a button with no catalog.
