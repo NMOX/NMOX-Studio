@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–5 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
+> Bản dịch một phần: chương 1–6 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
@@ -183,3 +183,50 @@ Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chươn
 ### Trình bày và chia sẻ
 
 **Xem ▸ Chế độ trình bày** phóng to cùng lúc mọi trình soạn thảo đang mở, trang trong trình duyệt tích hợp, cửa sổ kết xuất và cửa sổ dòng lệnh — rồi trả lại mọi thứ đúng như cũ khi bạn thoát. **Xem ▸ Hiện phím bấm** hiện thật lớn tổ hợp phím bạn vừa bấm, nhưng không bao giờ hiện thứ bạn gõ. **Sửa ▸ Chép dạng Markdown** chép phần đã chọn thành khối có rào kèm đúng nhãn ngôn ngữ, còn biến thể **kèm liên kết** thêm liên kết GitHub tới chính những dòng ấy. **Công cụ ▸ Lưu ảnh chụp…** vẽ cả cửa sổ ở kích thước gấp đôi, cùng các biến thể cho riêng thẻ soạn thảo, cho khay nhớ tạm, và để chép cây dự án ra dạng Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Các studio
+
+### Dùng bằng bàn phím và trình đọc màn hình
+
+Mọi nút điều khiển trên giá đều có một tên đọc được, và điều đó được kiểm tra ở mỗi lần dựng. Các núm là thanh trượt nghe theo phím mũi tên, Home và End; các nút nghe theo phím cách và Enter, kể cả những nút đang mờ, vốn nói rõ vì sao chúng từ chối; đèn LED và màn hình đều công bố trạng thái của mình. Tab lật giá lại — trừ khi tiêu điểm đang nằm trên một nút điều khiển, lúc đó nó nhường cho việc chuyển tiêu điểm thông thường.
+
+### Git, trên thanh trạng thái
+
+Dấu **⎇ nhánh** cho biết bạn đang ở nhánh nào và bao nhiêu tệp đã đổi; nó được đọc từ đĩa nên không tốn một tiến trình nào. Một cú nhấp mở ra toàn bộ lịch sử, còn trình đơn mang theo **So sánh dự án**, **Chú giải**, các yêu cầu kéo qua chính `gh` của bạn, và **Soạn lời nhắn commit bằng KVASIR**.
+
+### Bảng tác vụ (⌥⌘1)
+
+Một bảng kanban cho mỗi dự án, lưu trong `.nmoxtasks.json` — nằm cạnh mã của bạn và được quản lý phiên bản cùng nó. Kéo các thẻ hoặc dời chúng bằng bàn phím: **⌘↑/⌘↓** sắp xếp lại, và thẻ vừa dời vẫn giữ tiêu điểm. Giới hạn việc đang làm là lời khuyên chứ không phải rào chắn: phần đầu cột đỏ lên, nhưng không có gì ngăn bạn. Nút **Tổng quan** đổi các cột lấy một bảng theo dõi — việc đang làm, xong hôm nay và trong tuần, dòng chảy theo ngày, những thẻ đang cũ dần — còn đồng hồ bấm giờ (**Chấm công**) đo thời gian thật theo từng thẻ, và cả bảng chỉ có duy nhất một đồng hồ chạy. **Họp nhanh** biến tất cả những thứ đó thành một bản báo cáo dán được ngay.
+
+### Studio khối (⌥⌘5)
+
+Ghép các Web Component thật từ những mảnh có kiểu khớp vào nhau, theo lối Scratch: những cách lồng không hợp lệ bị từ chối, mã sinh ra là một phần tử tùy biến đứng độc lập, và nhấp vào một mảnh sẽ tô sáng những dòng của nó. Một máy chủ xem trước trong bộ nhớ cho thấy thành phần ấy thật sự, ghép cùng những thành phần hợp lệ khác trong thư viện của bạn. Vòng đi về là chính xác: sinh lại thứ vừa đọc cho ra đúng cùng một tệp, từng byte một.
+
+### Studio API (⌥⌘8)
+
+Bộ sưu tập, yêu cầu, môi trường với `{{biến}}` và các bài kiểm thử, lưu trong `.nmoxapi.json` — còn bí mật thì chỉ nằm trong chùm khóa, không bao giờ trong tệp ấy. Mỗi phản hồi được chấm một điểm an toàn từ chính các tiêu đề của nó. Nhập từ curl, `.http`, OpenAPI, Postman, Insomnia và HAR; xuất ra `.http`, và chép thành curl hoặc thành `fetch`, với các biến đã được thay sẵn.
+
+### Studio cơ sở dữ liệu (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB và CouchDB, với trình điều khiển đi kèm và mật khẩu chỉ nằm trong chùm khóa. Bảng điều khiển hiểu từng loại máy, mỗi câu lệnh có lưới kết quả riêng, và các hàng sửa được ngay trong lưới khi có khóa chính — kèm bản xem trước đúng những câu UPDATE trước khi áp dụng, và một lý do trung thực khi thứ gì đó chỉ đọc được. Xuất ra CSV hoặc JSON, với công thức đã bị vô hiệu.
+
+### Studio hợp đồng (⌥⌘6)
+
+Cây tạo phẩm của Foundry và Hardhat, phần **Tương tác** do ABI dẫn đường với giá trị trả về và các lần hoàn tác đã giải mã, khung **Theo dõi** bám các khối và sự kiện, cùng phần **Giám sát** với bảng phí gas, phán quyết kích thước EIP-170 và sổ địa chỉ. **Không bao giờ có khóa riêng**: việc gửi đi dùng các tài khoản đã mở khóa của một mạng cục bộ, còn những địa chỉ bí mật thì sống trong chùm khóa.
+
+### Trình thiết kế hạ tầng (⌥⌘9)
+
+Một khung vẽ cho DigitalOcean, Hetzner và Cloudflare: đồng bộ với thứ thật sự đang tồn tại, làm mới để thấy chỗ lệch, và phá bỏ cả một chồng tài nguyên với chi phí bày ngay trước mắt. Những đường nối không hợp lệ từ chối ra tiếng và nói rõ vì sao, còn trong lúc một thao tác trên đám mây đang chạy thì khung vẽ khóa lại kèm một dải chữ nói đúng điều đó.
+
+### IRC (⌥⌘3)
+
+Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật sự, SASL, các mở rộng IRCv3, hoàn thành bằng phím Tab, các điểm nhấn, những địa chỉ mở ra trong trình duyệt tích hợp, ghi nhật ký xuống đĩa, bộ lọc của riêng bạn, và một danh sách kênh mà bạn lọc dần trong lúc gõ.
+
+### Trang web đi kèm
+
+**Trợ giúp ▸ Trang NMOX Studio (cục bộ)** phục vụ trang web của sản phẩm từ chính giá của nó, trên giao diện cục bộ. Nó nói đúng mười ba thứ tiếng mà IDE nói; bộ chọn nằm ở chân trang.
+
+### Trình duyệt (⌥⌘4)
+
+Một trình duyệt thật ngay trong IDE, với bộ công cụ nhà phát triển của riêng nó — bảng điều khiển, DOM, mạng, kho lưu, và các khung cho Vue, Svelte và Angular — bởi bộ máy không mang theo trình kiểm tra nào, và cái này là của chúng tôi. Nó biết mã nguồn của bạn: chọn một phần tử, mở đúng dòng đã sinh ra nó, đổi kiểu ngay tại chỗ, và khai báo ấy sẽ nằm vào đúng tệp kiểu gốc. Lưu một tệp là trang tự tải lại, và có sẵn những kích thước thiết bị thật để thử bố cục co giãn của bạn.

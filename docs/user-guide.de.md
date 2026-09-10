@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–5 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
+> Teilübersetzung: Die Kapitel 1–6 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
@@ -183,3 +183,50 @@ Klicken Sie in den Rand, wählen Sie **Datei debuggen (Haltepunkte)**, und das P
 ### Vorführen und Weitergeben
 
 **Ansicht ▸ Präsentationsmodus** vergrößert auf einen Schlag jeden Editor, die Seite im eingebauten Browser, das Ausgabefenster und das Terminal — und stellt beim Verlassen alles genau wieder her. **Ansicht ▸ Tastengriffe zeigen** blendet den eben gedrückten Tastengriff groß ein, aber nie das, was Sie tippen. **Bearbeiten ▸ Als Markdown kopieren** kopiert die Auswahl als abgegrenzten Block mit der richtigen Sprachmarke, und die Variante **mit Link** hängt den GitHub-Link auf dieselben Zeilen an. **Werkzeuge ▸ Bildschirmfoto sichern…** malt das ganze Fenster in doppelter Größe, mit Varianten für den Editor-Tab allein, für die Zwischenablage und für den Projektbaum als Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Die Studios
+
+### Zugang über Tastatur und Bildschirmleser
+
+Jedes Bedienelement im Rack trägt einen zugänglichen Namen, und das wird bei jedem Bauen geprüft. Drehregler sind Schieberegler, die auf Pfeiltasten, Pos1 und Ende hören; Knöpfe hören auf Leertaste und Eingabe, auch die abgeblendeten, die sagen, warum sie ablehnen; LEDs und Anzeigen melden ihren Zustand. Tab dreht das Rack — außer wenn der Fokus auf einem Bedienelement liegt, wo es dem gewohnten Weiterspringen den Vortritt lässt.
+
+### Git, in der Statusleiste
+
+Das Zeichen **⎇ Zweig** zeigt, auf welchem Zweig Sie sind und wie viele Dateien sich geändert haben; es wird von der Platte gelesen und kostet daher keinen Prozess. Ein Klick öffnet die vollständige Geschichte, und das Menü trägt **Projektunterschiede**, **Anmerken**, die Pull Requests über Ihr eigenes `gh` und **Commit-Nachricht mit KVASIR entwerfen**.
+
+### Aufgabenbrett (⌥⌘1)
+
+Ein Kanban je Projekt, gesichert in `.nmoxtasks.json`, neben Ihrem Code und mit ihm versioniert. Ziehen Sie Karten oder bewegen Sie sie mit der Tastatur: **⌘↑/⌘↓** ordnet um, und die bewegte Karte behält den Fokus. Grenzen für angefangene Arbeit sind Ratschläge, keine Schranken: Die Kopfzeile wird rot, und nichts hält Sie auf. Der Knopf **Überblick** tauscht die Spalten gegen eine Übersicht — angefangen, heute und diese Woche fertig, Fluss je Tag, alternde Karten — und die Stechuhr (**Einstempeln**) misst die wirkliche Zeit je Karte, mit genau einer laufenden Uhr auf dem ganzen Brett. **Standup** macht daraus einen Bericht zum Einfügen.
+
+### Block-Studio (⌥⌘5)
+
+Setzen Sie echte Web Components aus typisierten, ineinandergreifenden Teilen zusammen, nach Art von Scratch: unerlaubte Schachtelungen werden abgelehnt, der Code entsteht als eigenständiges Custom Element, und ein Klick auf ein Teil hebt seine Zeilen hervor. Ein Vorschauserver im Speicher zeigt die Komponente wirklich, zusammengesetzt mit den anderen gültigen Komponenten Ihrer Bibliothek. Der Hin- und Rückweg ist genau: das eben Gelesene neu zu erzeugen ergibt Byte für Byte dieselbe Datei.
+
+### API-Studio (⌥⌘8)
+
+Sammlungen, Anfragen, Umgebungen mit `{{Variablen}}` und Tests, gesichert in `.nmoxapi.json` — die Geheimnisse allein im Schlüsselbund, nie in dieser Datei. Jede Antwort bekommt eine Sicherheitsnote aus ihren Kopfzeilen. Einlesen aus curl, `.http`, OpenAPI, Postman, Insomnia und HAR; Ausgabe als `.http` und Kopieren als curl oder als `fetch`, mit bereits aufgelösten Variablen.
+
+### Datenbank-Studio (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB und CouchDB, mit mitgelieferten Treibern und Kennwörtern allein im Schlüsselbund. Die Konsole kennt die Maschine, jede Anweisung hat ihr eigenes Ergebnisgitter, und Zeilen lassen sich im Gitter selbst bearbeiten, sofern ein Primärschlüssel da ist — mit einer Vorschau der genauen UPDATEs vor dem Anwenden und einem ehrlichen Grund, wenn etwas nur lesbar ist. Ausgabe als CSV oder JSON, Formeln entschärft.
+
+### Smart-Contract-Studio (⌥⌘6)
+
+Der Artefaktbaum von Foundry und Hardhat, ein von der ABI geführtes **Interagieren** mit entschlüsselten Rückgaben und Rücknahmen, eine **Beobachten**-Ansicht für Blöcke und Ereignisse, und **Aufsicht** mit der Gastabelle, den EIP-170-Größenurteilen und dem Adressbuch. **Niemals private Schlüssel**: Sendungen laufen über die entsperrten Konten eines lokalen Netzes, und geheime URLs wohnen im Schlüsselbund.
+
+### Infrastruktur-Designer (⌥⌘9)
+
+Eine Fläche für DigitalOcean, Hetzner und Cloudflare: gleichen Sie ab, was wirklich existiert, frischen Sie auf, um Abweichungen zu sehen, und zerstören Sie einen Stapel mit seinen Kosten vor Augen. Unerlaubte Verbindungen lehnen laut ab und sagen warum, und solange eine Wolkenoperation läuft, sperrt sich die Fläche mit einem Band, das genau das sagt.
+
+### IRC (⌥⌘3)
+
+Ein vollständiger Client in der IDE: TLS mit echter Namensprüfung, SASL, IRCv3-Erweiterungen, Vervollständigung per Tabulator, Hervorhebungen, URLs, die im eingebauten Browser öffnen, Mitschrift auf Platte, eigene Filter und eine Kanalliste, die Sie beim Tippen filtern.
+
+### Die mitgelieferte Website
+
+**Hilfe ▸ NMOX-Studio-Website (lokal)** liefert die Seite des Produkts aus seinem eigenen Rack aus, auf der lokalen Schnittstelle. Sie spricht die dreizehn Sprachen, die die IDE spricht; der Wähler steht im Fuß der Seite.
+
+### Browser (⌥⌘4)
+
+Ein echter Browser in der IDE, mit eigenen Entwicklerwerkzeugen — Konsole, DOM, Netzwerk, Speicher und Ansichten für Vue, Svelte und Angular — weil die Maschine keinen Inspektor mitbringt und dieser hier unserer ist. Er kennt Ihre Quellen: Wählen Sie ein Element, öffnen Sie die Zeile, die es erzeugt hat, gestalten Sie es an Ort und Stelle um, und die Deklaration landet in der Quell-Stilvorlage. Eine gesicherte Datei lädt die Seite neu, und echte Gerätegrößen dienen dazu, Ihr anpassungsfähiges Layout zu erproben.

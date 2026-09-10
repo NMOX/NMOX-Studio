@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–5 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
+> Terjemahan sebagian: bab 1–6 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
@@ -183,3 +183,50 @@ Klik di margin kiri, pilih **Awakutu berkas (titik henti)**, dan programnya berh
 ### Mempertunjukkan dan berbagi
 
 **Tampilan ▸ Mode presentasi** sekaligus memperbesar setiap penyunting yang terbuka, halaman di peramban bawaan, jendela keluaran, dan terminal — lalu mengembalikan semuanya persis seperti semula saat Anda keluar. **Tampilan ▸ Tampilkan ketikan tombol** menampilkan besar-besar kombinasi yang baru Anda tekan, tetapi tidak pernah apa yang Anda ketik. **Sunting ▸ Salin sebagai Markdown** menyalin pilihan sebagai blok berpagar dengan label bahasa yang tepat, dan variannya **dengan tautan** menambahkan tautan GitHub ke baris yang sama. **Alat ▸ Simpan tangkapan layar…** melukis seluruh jendela pada ukuran ganda, dengan varian untuk tab penyunting saja, untuk papan klip, dan untuk menyalin pohon proyek sebagai Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Studio-studio
+
+### Akses lewat papan tik dan pembaca layar
+
+Setiap kendali di rak punya nama yang terbaca, dan itu diperiksa pada setiap kali membangun. Kenop adalah penggeser yang menuruti tombol panah, Home dan End; tombol menuruti spasi dan Enter, termasuk yang diredupkan, yang mengatakan mengapa ia menolak; LED dan layar mengumumkan keadaannya. Tab memutar rak — kecuali ketika fokus ada pada sebuah kendali, di situ ia mengalah pada penelusuran biasa.
+
+### Git, di bilah status
+
+Tanda **⎇ cabang** menunjukkan Anda di cabang mana dan berapa berkas yang berubah; ia dibaca dari cakram, jadi tak memakan proses sama sekali. Sekali klik membuka riwayat lengkapnya, dan menunya membawa **Beda proyek**, **Anotasi**, permintaan tarik lewat `gh` milik Anda sendiri, serta **Susun pesan komit dengan KVASIR**.
+
+### Papan Tugas (⌥⌘1)
+
+Sebuah kanban per proyek yang tersimpan di `.nmoxtasks.json` — di samping kode Anda dan berversi bersamanya. Seret kartunya atau pindahkan dengan papan tik: **⌘↑/⌘↓** mengurutkan ulang, dan kartu yang dipindahkan tetap memegang fokus. Batas pekerjaan berjalan itu nasihat, bukan penghalang: kepalanya memerah dan tak ada yang menahan Anda. Tombol **Ikhtisar** menukar kolomnya dengan sebuah dasbor — yang sedang berjalan, selesai hari ini dan pekan ini, alir per hari, kartu yang menua — dan jam kerjanya (**Absen masuk**) mengukur waktu yang sebenarnya per kartu, dengan hanya satu jam berjalan di seluruh papan. **Standup** mengubah semua itu menjadi laporan siap tempel.
+
+### Studio Blok (⌥⌘5)
+
+Susunlah Web Component yang sungguhan dari kepingan bertipe yang saling mengunci, dengan cara Scratch: sarang yang tak sah ditolak, kodenya lahir sebagai elemen kustom yang berdiri sendiri, dan mengeklik sebuah kepingan menyorot baris-barisnya. Sebuah server pratinjau di memori memperlihatkan komponennya sungguh-sungguh, tersusun bersama komponen sah lainnya di pustaka Anda. Bolak-baliknya persis: membangkitkan ulang apa yang baru dibaca menghasilkan berkas yang sama, bita demi bita.
+
+### Studio API (⌥⌘8)
+
+Koleksi, permintaan, lingkungan dengan `{{variabel}}`, dan uji, tersimpan di `.nmoxapi.json` — rahasianya hanya di gantungan kunci, tak pernah di berkas itu. Setiap tanggapan mendapat nilai keamanan dari tajuknya sendiri. Impor dari curl, `.http`, OpenAPI, Postman, Insomnia, dan HAR; ekspor ke `.http`, dan salin sebagai curl atau sebagai `fetch`, dengan variabelnya sudah terisi.
+
+### Studio Basis Data (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB, dan CouchDB, dengan penggeraknya sudah menyatu dan kata sandinya hanya di gantungan kunci. Konsolnya mengenali mesinnya, tiap pernyataan punya kisi hasilnya sendiri, dan barisnya disunting di dalam kisi itu bila ada kunci utama — dengan pratinjau UPDATE yang persis sebelum diterapkan, dan alasan yang jujur ketika sesuatu hanya bisa dibaca. Ekspor ke CSV atau JSON, dengan rumusnya dijinakkan.
+
+### Studio Kontrak (⌥⌘6)
+
+Pohon artefak Foundry dan Hardhat, **Berinteraksi** yang dituntun ABI dengan kembalian dan pembatalan yang terbaca, panel **Awasi** yang mengikuti blok dan peristiwa, serta **Pengawasan** dengan tabel gas, putusan ukuran EIP-170, dan buku alamat. **Tidak pernah ada kunci privat**: pengiriman memakai akun tak terkunci sebuah jaringan lokal, dan URL rahasia tinggal di gantungan kunci.
+
+### Perancang Infrastruktur (⌥⌘9)
+
+Sebuah kanvas untuk DigitalOcean, Hetzner, dan Cloudflare: selaraskan dengan apa yang benar-benar ada, segarkan untuk melihat selisihnya, dan hancurkan setumpuk sumber daya dengan biayanya terpampang. Sambungan yang tak sah menolak dengan lantang dan menyebut sebabnya, dan selama sebuah operasi awan berjalan, kanvasnya terkunci dengan pita yang mengatakannya.
+
+### IRC (⌥⌘3)
+
+Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SASL, perluasan IRCv3, pelengkapan dengan Tab, penyorotan, URL yang terbuka di peramban bawaan, pencatatan ke cakram, penyaring milik Anda sendiri, dan daftar kanal yang Anda saring sambil mengetik.
+
+### Situs web yang menyertai
+
+**Bantuan ▸ Situs NMOX Studio (lokal)** menyajikan situs produk ini dari raknya sendiri, pada antarmuka lokal. Ia berbicara dalam tiga belas bahasa yang sama seperti IDE-nya; pemilihnya ada di kaki halaman.
+
+### Peramban (⌥⌘4)
+
+Sebuah peramban sungguhan di dalam IDE, dengan perkakas pengembangnya sendiri — konsol, DOM, jaringan, penyimpanan, dan panel untuk Vue, Svelte, dan Angular — sebab mesinnya tak membawa pemeriksa apa pun, dan yang ini milik kita. Ia sadar akan sumbernya: pilih sebuah elemen, buka baris yang melahirkannya, ubah gayanya di tempat, dan deklarasinya mendarat di lembar gaya asalnya. Menyimpan sebuah berkas memuat ulang halamannya, dan ada ukuran perangkat yang sungguhan untuk menguji tata letak Anda yang lentur.

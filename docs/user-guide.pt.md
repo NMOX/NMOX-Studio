@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–5 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–6 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -183,3 +183,50 @@ Clique na margem esquerda, escolha **Depurar arquivo (pontos de parada)** e o pr
 ### Apresentar e compartilhar
 
 **Ver ▸ Modo apresentação** aumenta de uma vez todos os editores, a página do navegador embutido, a janela de saída e o terminal — e devolve tudo exatamente como estava ao sair. **Ver ▸ Mostrar teclas** mostra em tamanho grande o atalho que você acabou de apertar, mas nunca o que você digita. **Editar ▸ Copiar como Markdown** copia a seleção como bloco cercado com a etiqueta de linguagem certa, e a variante **com link** acrescenta o link do GitHub para as mesmas linhas. **Ferramentas ▸ Salvar captura…** pinta a janela inteira no dobro do tamanho, com variantes para a aba do editor sozinha, para a área de transferência e para copiar a árvore do projeto como Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Os estúdios
+
+### Acesso pelo teclado e por leitor de tela
+
+Todo controle do rack tem um nome acessível, e isso é conferido a cada compilação. Os botões giratórios são controles deslizantes que respondem às setas, ao Início e ao Fim; os botões respondem a Espaço e Enter, inclusive os apagados, que dizem por que recusam; os LEDs e visores anunciam seu estado. Tab gira o rack — exceto quando o foco está num controle, onde ele cede lugar à navegação normal.
+
+### Git, na barra de status
+
+O indicador **⎇ ramo** mostra em que ramo você está e quantos arquivos mudaram; ele é lido do disco, então não custa processo nenhum. Um clique abre o histórico completo, e o menu traz **Diferenças do projeto**, **Anotar**, os pull requests pelo seu próprio `gh` e **Redigir mensagem de commit com o KVASIR**.
+
+### Quadro de tarefas (⌥⌘1)
+
+Um kanban por projeto salvo em `.nmoxtasks.json` — ao lado do seu código e versionado junto com ele. Arraste os cartões ou mova-os pelo teclado: **⌘↑/⌘↓** reordena, e o cartão movido mantém o foco. Os limites de trabalho em andamento são conselho, não barreira: o cabeçalho fica vermelho e nada te impede. O botão **Visão geral** troca as colunas por um painel — em andamento, concluído hoje e na semana, fluxo por dia, cartões envelhecendo — e o relógio de ponto (**Bater ponto**) mede o tempo real por cartão, com um único relógio correndo no quadro inteiro. O **Standup** transforma tudo isso num relatório pronto para colar.
+
+### Estúdio de blocos (⌥⌘5)
+
+Componha Web Components de verdade com peças tipadas que se encaixam, ao jeito do Scratch: aninhamentos ilegais são recusados, o código nasce como um elemento personalizado autossuficiente, e clicar numa peça realça as linhas dela. Um servidor de pré-visualização em memória mostra o componente de verdade, composto com os demais componentes válidos da sua biblioteca. A ida e volta é exata: gerar de novo o que acabou de ser lido devolve o mesmo arquivo, byte a byte.
+
+### Estúdio de API (⌥⌘8)
+
+Coleções, requisições, ambientes com `{{variáveis}}` e testes, salvos em `.nmoxapi.json` — com os segredos só no chaveiro, nunca nesse arquivo. Cada resposta ganha uma nota de segurança tirada dos seus cabeçalhos. Importe de curl, `.http`, OpenAPI, Postman, Insomnia e HAR; exporte para `.http` e copie como curl ou como `fetch`, com as variáveis já resolvidas.
+
+### Estúdio de banco de dados (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB e CouchDB, com os drivers inclusos e as senhas só no chaveiro. O console conhece o motor, cada instrução tem sua própria grade de resultados, e as linhas se editam na própria grade quando há chave primária — com prévia dos UPDATEs exatos antes de aplicar, e um motivo honesto quando algo é somente leitura. Exporta para CSV ou JSON, com as fórmulas neutralizadas.
+
+### Estúdio de contratos (⌥⌘6)
+
+A árvore de artefatos do Foundry e do Hardhat, um **Interagir** guiado pela ABI com retornos e reversões decodificados, um painel **Observar** que acompanha blocos e eventos, e a **Supervisão** com a tabela de gás, os veredictos de tamanho EIP-170 e a agenda de endereços. **Nunca chaves privadas**: os envios usam as contas destravadas de uma rede local, e as URLs secretas moram no chaveiro.
+
+### Designer de infraestrutura (⌥⌘9)
+
+Uma tela para DigitalOcean, Hetzner e Cloudflare: sincronize o que existe de verdade, atualize para ver as diferenças e destrua uma pilha com o custo dela à vista. Ligações ilegais recusam em voz alta e dizem por quê, e enquanto uma operação na nuvem está em curso a tela se tranca com uma faixa que avisa.
+
+### IRC (⌥⌘3)
+
+Um cliente completo dentro da IDE: TLS com verificação de nome de verdade, SASL, extensões IRCv3, completar com Tab, realces, URLs que abrem no navegador embutido, registro em disco, filtros seus e uma lista de canais que você filtra enquanto digita.
+
+### O site que vem junto
+
+**Ajuda ▸ Site do NMOX Studio (local)** serve o site do produto a partir do próprio rack dele, na interface local. Ele fala as mesmas treze línguas que a IDE; o seletor fica no rodapé.
+
+### Navegador (⌥⌘4)
+
+Um navegador de verdade dentro da IDE, com ferramentas de desenvolvedor próprias — console, DOM, rede, armazenamento e painéis para Vue, Svelte e Angular — porque o motor não traz inspetor e este aqui é nosso. Ele conhece o seu código: escolha um elemento, abra a linha que o produziu, mude o estilo ali mesmo, e a declaração vai parar na folha de estilo de origem. Salvar um arquivo recarrega a página, e há tamanhos de aparelho de verdade para testar o seu layout responsivo.

@@ -4,7 +4,7 @@
 [English](user-guide.md) · **Español** · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traducción parcial: los capítulos 1–5 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
+> Traducción parcial: los capítulos 1–6 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
 
 Cómo usar el producto. Esta guía recorre las funciones en el orden en que las encontrarás: instalación, primer arranque, proyectos, el rack, los estudios, los asistentes y las redes de seguridad.
 
@@ -183,3 +183,50 @@ Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupció
 ### Presentar y compartir
 
 **Ver ▸ Modo presentación** agranda de una vez todos los editores, la página del navegador integrado, la ventana de salida y la terminal — y lo devuelve todo exactamente como estaba al salir. **Ver ▸ Mostrar pulsaciones** muestra en grande el atajo que acabas de pulsar, pero nunca lo que escribes. **Editar ▸ Copiar como Markdown** copia la selección como un bloque delimitado con la etiqueta de lenguaje correcta, y su variante **con enlace** añade el enlace de GitHub a esas mismas líneas. **Herramientas ▸ Guardar captura…** pinta la ventana entera al doble de tamaño, y hay variantes para la pestaña del editor sola, para el portapapeles y para copiar el árbol del proyecto como Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Los estudios
+
+### Acceso por teclado y con lector de pantalla
+
+Cada control del rack tiene un nombre accesible, y esto se comprueba en cada compilación. Las ruedas son deslizadores que responden a las flechas, Inicio y Fin; los botones responden a Espacio y Entrar, incluidos los que están atenuados, que dicen por qué se niegan; los LED y las pantallas anuncian su estado. Tab gira el rack, salvo cuando el foco está en un control, donde cede el paso al recorrido normal.
+
+### Git, en la barra de estado
+
+El indicador **⎇ rama** muestra en qué rama estás y cuántos archivos has cambiado; se lee del disco, así que no cuesta procesos. Un clic abre el historial completo, y el menú lleva **Diferencias del proyecto**, **Anotar**, las solicitudes de incorporación de tu propio `gh` y **Redactar mensaje de commit con KVASIR**.
+
+### Tablero de tareas (⌥⌘1)
+
+Un kanban por proyecto guardado en `.nmoxtasks.json`, junto a tu código y versionado con él. Arrastra tarjetas o muévelas con el teclado: **⌘↑/⌘↓** las reordena y la tarjeta movida conserva el foco. Los límites de trabajo en curso son consejos, no barreras: la cabecera se pone roja y nada te lo impide. El botón **Resumen** cambia las columnas por un panel — trabajo en curso, terminado hoy y esta semana, flujo por día, tarjetas que envejecen — y el reloj de tiempo (**Fichar**) mide el trabajo real por tarjeta, con un solo reloj corriendo en todo el tablero. **Standup** convierte todo eso en un informe listo para pegar.
+
+### Estudio de bloques (⌥⌘5)
+
+Compone Componentes Web reales con piezas encajables y tipadas, como Scratch: las anidaciones ilegales se rechazan, el código se genera en un elemento personalizado autónomo, y al pulsar una pieza se resaltan sus líneas. Un servidor de vista previa en memoria muestra el componente de verdad, compuesto junto a los demás componentes válidos de tu biblioteca. La ida y vuelta es exacta: volver a generar lo que se acaba de leer da byte por byte el mismo archivo.
+
+### Estudio de API (⌥⌘8)
+
+Colecciones, peticiones, entornos con `{{variables}}` y pruebas, guardado en `.nmoxapi.json` — con los secretos solo en el llavero, nunca en ese archivo. Cada respuesta recibe una nota de seguridad de sus cabeceras. Importa desde curl, `.http`, OpenAPI, Postman, Insomnia y HAR; exporta a `.http` y copia como curl o como `fetch`, con las variables ya resueltas.
+
+### Estudio de bases de datos (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB y CouchDB, con sus controladores incluidos y las contraseñas solo en el llavero. La consola conoce el motor, cada sentencia trae su propia rejilla de resultados, y las filas se editan en la propia rejilla cuando hay clave primaria — con vista previa de las UPDATE exactas antes de aplicarlas, y una razón honesta cuando algo es de solo lectura. Exporta a CSV o JSON, con las fórmulas neutralizadas.
+
+### Estudio de contratos (⌥⌘6)
+
+El árbol de artefactos de Foundry y Hardhat, **Interactuar** guiado por la ABI con retornos y reversiones decodificados, un panel **Vigilar** que sigue bloques y eventos, y **Supervisión** con la tabla de gas, los veredictos de tamaño EIP-170 y la libreta de direcciones. **Nunca hay claves privadas**: los envíos usan las cuentas desbloqueadas de una red local, y las URL secretas viven en el llavero.
+
+### Diseñador de infraestructura (⌥⌘9)
+
+Un lienzo para DigitalOcean, Hetzner y Cloudflare: sincroniza lo que existe de verdad, refresca para ver las diferencias y destruye una pila con su coste delante. Los cables ilegales se niegan en voz alta explicando por qué, y mientras una operación en la nube está en marcha el lienzo se bloquea con un aviso que lo dice.
+
+### IRC (⌥⌘3)
+
+Un cliente completo dentro del IDE: TLS con verificación real del nombre, SASL, extensiones IRCv3, completado con tabulador, resaltados, URL que se abren en el navegador integrado, registro en disco, filtros propios y una lista de canales que puedes filtrar mientras escribes.
+
+### El sitio web incluido
+
+**Ayuda ▸ Sitio de NMOX Studio (local)** sirve el sitio del producto desde el propio rack, en la interfaz local. Habla las trece lenguas que habla el IDE; el selector está al pie de la página.
+
+### Navegador (⌥⌘4)
+
+Un navegador de verdad dentro del IDE, con sus propias herramientas de desarrollo — consola, DOM, red, almacenamiento y paneles para Vue, Svelte y Angular — porque el motor no trae inspector y aquí lo ponemos nosotros. Es consciente del código fuente: elige un elemento, abre la línea que lo produjo y cambia su estilo ahí mismo, y el cambio aterriza en la hoja de estilo de origen. Guardar un archivo recarga la página, y hay tamaños de dispositivo reales para probar tu diseño adaptable.

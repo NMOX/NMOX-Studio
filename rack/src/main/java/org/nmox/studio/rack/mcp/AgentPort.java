@@ -268,20 +268,33 @@ public final class AgentPort {
      * URIs. Chunked, kept open until the client leaves or the port stops.
      */
     private void openStream(HttpExchange exchange) throws IOException {
-        if (subs.attachedCount() >= MAX_STREAMS) {
+        // claimed, not merely counted: two GETs arriving together would both
+        // read room under a bare count and both take it (v2.109.0)
+        if (!subs.reserve(MAX_STREAMS)) {
             // refused out loud, with the reason a client can read
             try (exchange) {
                 exchange.sendResponseHeaders(503, -1);
             }
             return;
         }
-        exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
-        exchange.getResponseHeaders().set("Cache-Control", "no-cache");
-        exchange.sendResponseHeaders(200, 0);
-        OutputStream out = exchange.getResponseBody();
-        out.write(": connected\n\n".getBytes(StandardCharsets.UTF_8));
-        out.flush();
-        subs.attach(out, exchange::close);
+        try {
+            exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+            exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStream out = exchange.getResponseBody();
+            out.write(": connected\n\n".getBytes(StandardCharsets.UTF_8));
+            out.flush();
+            // the slot goes back when the stream goes, whichever way it goes:
+            // dropped, or refused by a subscriptions registry already closed
+            subs.attach(out, () -> {
+                subs.release();
+                exchange.close();
+            });
+        } catch (IOException | RuntimeException e) {
+            // the client left between the reservation and the first byte
+            subs.release();
+            throw e;
+        }
     }
 
     private boolean authorized(HttpExchange exchange) {

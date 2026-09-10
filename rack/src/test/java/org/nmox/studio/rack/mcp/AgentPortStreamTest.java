@@ -50,13 +50,84 @@ class AgentPortStreamTest {
             assertThat(r.statusCode()).isEqualTo(200);
             open.add(r);
         }
-        assertThat(port.subscriptions().attachedCount()).isEqualTo(AgentPort.MAX_STREAMS);
+        // the SLOT, not the attach: the server sends 200 and only then adds
+        // the sink, so a client holding its response can be ahead of the
+        // registry. The reservation is taken before the 200 goes out, which
+        // is why it is the thing an observer can rely on (v2.109.0 — this
+        // assertion failed on a loaded ubuntu runner reading the attach)
+        assertThat(port.subscriptions().slotsTaken()).isEqualTo(AgentPort.MAX_STREAMS);
         HttpResponse<Void> ninth = http.send(HttpRequest.newBuilder(URI.create(port.url()))
                 .header("Authorization", "Bearer " + port.token())
                 .header("Accept", "text/event-stream").GET()
                 .timeout(java.time.Duration.ofSeconds(5)).build(),
                 HttpResponse.BodyHandlers.discarding());
         assertThat(ninth.statusCode()).isEqualTo(503);
+        for (HttpResponse<java.io.InputStream> r : open) {
+            r.body().close();
+        }
+    }
+
+    @Test
+    @DisplayName("eight GETs arriving together take eight slots, not nine (v2.109.0)")
+    void theCapHoldsUnderASimultaneousRush() throws Exception {
+        // the defect the ubuntu lane exposed: the cap read the attached count
+        // and attached afterwards, so callers racing through that window all
+        // saw room. Nine clients starting at once is the shape that proves it
+        port = AgentPort.start(new McpTools(List.of()), "2.109.0");
+        HttpClient http = HttpClient.newHttpClient();
+        int rush = AgentPort.MAX_STREAMS + 1;
+        java.util.concurrent.CountDownLatch go = new java.util.concurrent.CountDownLatch(1);
+        List<CompletableFuture<Integer>> codes = new java.util.ArrayList<>();
+        List<HttpResponse<java.io.InputStream>> got = java.util.Collections
+                .synchronizedList(new java.util.ArrayList<>());
+        for (int i = 0; i < rush; i++) {
+            codes.add(CompletableFuture.supplyAsync(() -> {
+                try {
+                    go.await();
+                    HttpResponse<java.io.InputStream> r = http.send(
+                            HttpRequest.newBuilder(URI.create(port.url()))
+                                    .header("Authorization", "Bearer " + port.token())
+                                    .header("Accept", "text/event-stream").GET()
+                                    .timeout(java.time.Duration.ofSeconds(20)).build(),
+                            HttpResponse.BodyHandlers.ofInputStream());
+                    got.add(r);
+                    return r.statusCode();
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            }));
+        }
+        go.countDown();
+        long accepted = codes.stream().map(CompletableFuture::join).filter(c -> c == 200).count();
+        assertThat(accepted).as("the cap is a cap, however many arrive at once")
+                .isEqualTo(AgentPort.MAX_STREAMS);
+        assertThat(port.subscriptions().slotsTaken()).isEqualTo(AgentPort.MAX_STREAMS);
+        for (HttpResponse<java.io.InputStream> r : got) {
+            r.body().close();
+        }
+    }
+
+    @Test
+    @DisplayName("a stream that goes gives its slot back — a reservation is not a leak")
+    void aDroppedStreamFreesItsSlot() throws Exception {
+        port = AgentPort.start(new McpTools(List.of()), "2.109.0");
+        HttpClient http = HttpClient.newHttpClient();
+        List<HttpResponse<java.io.InputStream>> open = new java.util.ArrayList<>();
+        for (int i = 0; i < AgentPort.MAX_STREAMS; i++) {
+            open.add(http.send(HttpRequest.newBuilder(URI.create(port.url()))
+                    .header("Authorization", "Bearer " + port.token())
+                    .header("Accept", "text/event-stream").GET().build(),
+                    HttpResponse.BodyHandlers.ofInputStream()));
+        }
+        assertThat(port.subscriptions().slotsTaken()).isEqualTo(AgentPort.MAX_STREAMS);
+        // every drop route runs the onClose the port handed to attach, and
+        // that is where the slot goes back; stopping drops all of them at
+        // once, which is the route a test can drive without asking a client
+        // socket to die on cue
+        port.stop();
+        assertThat(port.subscriptions().slotsTaken())
+                .as("a slot that is never released is a leak: the port fills up for good")
+                .isZero();
         for (HttpResponse<java.io.InputStream> r : open) {
             r.body().close();
         }

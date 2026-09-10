@@ -121,6 +121,9 @@ final class McpSubscriptions {
 
     private final Set<String> subscribed = ConcurrentHashMap.newKeySet();
     private final List<Sink> sinks = new CopyOnWriteArrayList<>();
+    /** Stream slots claimed: reserved-but-not-yet-attached plus attached. */
+    private final java.util.concurrent.atomic.AtomicInteger taken =
+            new java.util.concurrent.atomic.AtomicInteger();
     private final long keepaliveMillis;
     private final long filePollMillis;
     private final java.util.Map<String, Watched> watched = new ConcurrentHashMap<>();
@@ -295,6 +298,40 @@ final class McpSubscriptions {
 
     int attachedCount() {
         return sinks.size();
+    }
+
+    /**
+     * Takes one of {@code max} stream slots, or refuses because they are all
+     * taken (v2.109.0).
+     *
+     * <p>The cap has to be decided and CLAIMED in one step. Reading
+     * {@link #attachedCount()} and attaching afterwards leaves a window
+     * between the two in which a second GET reads the same room and takes it
+     * as well, so the port can end up carrying more streams than the cap
+     * exists to allow — and each one owns a writer thread. Reserving first
+     * also means the slot is counted BEFORE the client is told 200, which is
+     * the order an observer needs to see.
+     */
+    boolean reserve(int max) {
+        while (true) {
+            int now = taken.get();
+            if (now >= max) {
+                return false;
+            }
+            if (taken.compareAndSet(now, now + 1)) {
+                return true;
+            }
+        }
+    }
+
+    /** Gives a slot back: the stream is gone, or never attached at all. */
+    void release() {
+        taken.decrementAndGet();
+    }
+
+    /** Slots taken right now — reservations included, so it leads the attach. */
+    int slotsTaken() {
+        return taken.get();
     }
 
     /**

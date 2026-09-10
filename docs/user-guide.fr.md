@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–5 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–6 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -183,3 +183,50 @@ Cliquez dans la marge, choisissez **Déboguer le fichier (points d’arrêt)** e
 ### Présenter et partager
 
 **Affichage ▸ Mode présentation** agrandit d’un coup tous les éditeurs, la page du navigateur intégré, la fenêtre de sortie et le terminal — et remet tout exactement comme c’était en sortant. **Affichage ▸ Afficher les frappes** montre en grand l’accord que vous venez de presser, mais jamais ce que vous tapez. **Édition ▸ Copier comme Markdown** copie la sélection en bloc délimité avec la bonne étiquette de langage, et sa variante **avec lien** ajoute le lien GitHub vers ces mêmes lignes. **Outils ▸ Enregistrer une capture…** peint la fenêtre entière au double de la taille, avec des variantes pour l’onglet d’édition seul, pour le presse-papiers, et pour copier l’arborescence du projet en Markdown.
+
+<a id="6-the-studios"></a>
+## 6. Les studios
+
+### Accès au clavier et au lecteur d’écran
+
+Chaque commande du rack porte un nom accessible, et cela est vérifié à chaque compilation. Les boutons rotatifs sont des curseurs qui répondent aux flèches, à Début et à Fin ; les boutons répondent à Espace et Entrée, y compris ceux qui sont grisés, qui disent pourquoi ils refusent ; les LED et les afficheurs annoncent leur état. Tab retourne le rack, sauf quand le focus est sur une commande, où il cède la place au parcours normal.
+
+### Git, sur la barre d’état
+
+La pastille **⎇ branche** montre sur quelle branche vous êtes et combien de fichiers ont changé ; elle se lit sur le disque, donc elle ne coûte aucun processus. Un clic ouvre l’historique complet, et le menu porte **Différences du projet**, **Annoter**, les demandes de tirage via votre propre `gh`, et **Rédiger le message de commit avec KVASIR**.
+
+### Tableau de tâches (⌥⌘1)
+
+Un kanban par projet enregistré dans `.nmoxtasks.json`, à côté de votre code et versionné avec lui. Faites glisser les cartes ou déplacez-les au clavier : **⌘↑/⌘↓** les réordonne et la carte déplacée garde le focus. Les limites d’en-cours sont des conseils, pas des barrières : l’en-tête rougit et rien ne vous arrête. Le bouton **Vue d’ensemble** échange les colonnes contre un tableau de bord — en-cours, terminé aujourd’hui et cette semaine, flux par jour, cartes qui vieillissent — et l’horloge (**Pointer**) mesure le temps réel par carte, avec une seule horloge en marche sur tout le tableau. **Standup** transforme tout cela en un rapport prêt à coller.
+
+### Studio de blocs (⌥⌘5)
+
+Composez de vrais Web Components avec des pièces typées qui s’emboîtent, à la manière de Scratch : les imbrications illégales sont refusées, le code est engendré en un élément personnalisé autonome, et cliquer une pièce surligne ses lignes. Un serveur d’aperçu en mémoire montre le composant pour de vrai, composé avec les autres composants valides de votre bibliothèque. L’aller-retour est exact : réengendrer ce qui vient d’être lu redonne le même fichier, octet pour octet.
+
+### Studio d’API (⌥⌘8)
+
+Collections, requêtes, environnements à `{{variables}}` et tests, enregistrés dans `.nmoxapi.json` — les secrets restant dans le trousseau, jamais dans ce fichier. Chaque réponse reçoit une note de sécurité tirée de ses en-têtes. Importez depuis curl, `.http`, OpenAPI, Postman, Insomnia et HAR ; exportez en `.http` et copiez en curl ou en `fetch`, variables déjà résolues.
+
+### Studio de bases de données (⌥⌘7)
+
+SQLite, PostgreSQL, MySQL, MariaDB, MongoDB et CouchDB, pilotes inclus et mots de passe uniquement dans le trousseau. La console connaît le moteur, chaque instruction a sa propre grille de résultats, et les lignes s’éditent dans la grille même lorsqu’il y a une clé primaire — avec un aperçu des UPDATE exactes avant de les appliquer, et une raison honnête quand quelque chose est en lecture seule. Export en CSV ou JSON, formules neutralisées.
+
+### Studio de contrats (⌥⌘6)
+
+L’arbre des artefacts Foundry et Hardhat, un **Interagir** guidé par l’ABI avec retours et annulations décodés, un panneau **Surveiller** qui suit blocs et événements, et **Supervision** avec la table de gaz, les verdicts de taille EIP-170 et le carnet d’adresses. **Jamais de clés privées** : les envois passent par les comptes déverrouillés d’un réseau local, et les URL secrètes vivent dans le trousseau.
+
+### Concepteur d’infrastructure (⌥⌘9)
+
+Une toile pour DigitalOcean, Hetzner et Cloudflare : synchronisez ce qui existe réellement, rafraîchissez pour voir les écarts, détruisez une pile avec son coût sous les yeux. Les câbles illégaux refusent à voix haute en expliquant pourquoi, et pendant qu’une opération dans le nuage tourne, la toile se verrouille avec un bandeau qui le dit.
+
+### IRC (⌥⌘3)
+
+Un client complet dans l’IDE : TLS avec vraie vérification du nom, SASL, extensions IRCv3, complétion par tabulation, surlignages, URL qui s’ouvrent dans le navigateur intégré, journalisation sur disque, filtres à vous, et une liste de canaux que vous filtrez en tapant.
+
+### Le site web embarqué
+
+**Aide ▸ Site NMOX Studio (local)** sert le site du produit depuis son propre rack, sur l’interface locale. Il parle les treize langues que parle l’IDE ; le sélecteur est en pied de page.
+
+### Navigateur (⌥⌘4)
+
+Un vrai navigateur dans l’IDE, avec ses propres outils de développement — console, DOM, réseau, stockage, et des panneaux pour Vue, Svelte et Angular — parce que le moteur n’embarque aucun inspecteur et que celui-ci est le nôtre. Il connaît vos sources : désignez un élément, ouvrez la ligne qui l’a produit, restylez-le sur place, et la déclaration atterrit dans la feuille de style d’origine. Enregistrer un fichier recharge la page, et des tailles d’appareil réelles servent à éprouver votre mise en page adaptative.

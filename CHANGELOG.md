@@ -4,6 +4,61 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.109.0] - 2026-09-10
+
+**The guide's chapter 6, The studios, in all twelve languages** — plus the
+changelog line a merge landed without.
+
+1. **Chapter 6** covers all eleven of its sections rather than a summary:
+   keyboard and screen-reader access, the git chip on the status line, the
+   Task Board with its overview and time clock, Block Studio, API Studio,
+   DB Studio, Contract Studio, the Infra Designer, IRC, the bundled website,
+   and the source-aware Browser. The refusals travel with it — no private
+   keys in Contract Studio, secrets in the keychain and never in a project
+   file, an illegal wire that says why, and a canvas that locks while a
+   cloud operation runs.
+
+   Notices move to chapters 1–6. Six of thirteen chapters now exist in every
+   language the IDE speaks.
+
+2. **The Windows `@TempDir` flake is fixed** (PR #729, merged separately and
+   without a changelog entry of its own, so it belongs here).
+   `NpmRunLaneTest.runAnnouncesAndStops` had been failing intermittently on
+   the windows lane with `JUnit Failed to close extension context`, costing a
+   full CI cycle each time — most recently on the PR for v2.104.0, which
+   passed on a rerun of the same sha.
+
+   Both halves were reproduced before anything changed: with the parent-PID
+   chain broken the way MSYS breaks it, `ProcessHandle.descendants()` reports
+   zero while a live `sleep` still holds the test's working directory, and
+   Windows will not remove a directory that is a live process's current
+   directory. The assumption that carves the exit half out of the windows
+   lane fires AFTER the spawn, so the method aborted while its own
+   unreachable grandchild held the directory open.
+
+   The fix is none of the four obvious ones: the fixture no longer creates a
+   process the tree kill can miss. It waits on a shell builtin until the test
+   drops a keepalive file, so the only process is the direct child the JVM
+   holds a handle on — and the run is asserted to BE one process, so the
+   shape cannot come back silently. Ledger 38's limit is untouched: this does
+   not pretend tree-kill works on Windows.
+
+3. **The Agent Port's stream cap is claimed, not merely counted.** The
+   release gate failed on the ubuntu lane where the other two passed, and the
+   assertion it failed was reading the attached-stream count — so the first
+   read was that a test raced the server. It did, but only because the code
+   under it does: `openStream` compared `attachedCount()` against the limit
+   and attached AFTER sending the 200, and nothing joins those two steps.
+   Two GETs arriving together both see room and both take it, and each stream
+   owns a writer thread, so the cap that exists to bound them does not.
+
+   The slot is now reserved in one atomic step before any byte goes out, and
+   given back on every route a stream can leave by, including a client that
+   disappears between the reservation and the first write. Nine simultaneous
+   clients get eight streams and one 503. The test that flaked now reads the
+   reservation, which is taken before the client is told 200 and is therefore
+   the thing an observer can rely on.
+
 ## [2.108.0] - 2026-09-10
 
 **The guide's chapter 5, The editor, in all twelve languages** — the
@@ -18764,6 +18819,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.109.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.108.0...v2.109.0
 [2.108.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.107.0...v2.108.0
 [2.107.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.106.0...v2.107.0
 [2.106.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.105.0...v2.106.0
