@@ -79,16 +79,27 @@ carrying on from v2.104.0's clock and order.
    first — untrue since v1.4.x, when the installers began carrying their own
    runtime.
 
+6. **The Linux menu entry, too.** `Comment=` is the line a GNOME or KDE
+   menu shows under the application's name and `GenericName=` is what an
+   overview shows instead of the brand; both were English for every user of
+   the other twelve languages. freedesktop reads `Comment[xx]` for the
+   session locale, so this is a dozen lines rather than a mechanism — and
+   the sharp edge is that they live inside an UNQUOTED shell heredoc, where
+   a `$` or a backtick in a translation would be expanded at build time and
+   ship something other than what is written. `DesktopEntryLanguagesTest`
+   checks that instead of trusting anyone to remember it.
+
 Walked in the assembled app in Ukrainian: **Довідка ▸ Сайт NMOX Studio
 (локально)** served the page from the product's own rack, and all thirteen
 catalogs answered 200 with 28 keys each — fetched from the running build,
 not the source tree. The boot logged zero SEVERE and no warning naming an
 NMOX row, so v2.104.0's Menu/Tools fix still holds.
 
-Eight mutants died by name: an unclassified number, a blinded census, a
+Ten mutants died by name: an unclassified number, a blinded census, a
 notice that lied about how far it went, an unclassified date, a catalog
 with no button, a button with no catalog, a message file Inno does not
-ship, and an IDE language dropped from the wizard.
+ship, an IDE language dropped from the wizard, a translation the heredoc
+would have expanded, and a menu line left in English.
 
 ## [2.104.0] - 2026-09-09
 
