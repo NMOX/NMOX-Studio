@@ -161,6 +161,17 @@ public class CodeSpellTokenListProvider implements TokenListProvider {
                 CharSequence text = token.text();
                 int base = ts.offset();
                 int from = Math.max(0, offset - base);
+                // LETTERS ONLY, on purpose (v2.115.0). A combining mark is
+                // not a letter, so a Devanagari or Thai word breaks at every
+                // vowel sign and each piece falls under the two-character
+                // minimum below — which means such a word yields no token at
+                // all, and nothing gets checked or flagged. That is the right
+                // outcome here: we ship no dictionary for those languages, so
+                // teaching this scan the marks would hand every Hindi word to
+                // a dictionary that does not have it and squiggle the lot.
+                // The identical rule was a real bug in search (v2.114.0, टास्क
+                // cut into ट स क) — what tokenizing COSTS differs by consumer,
+                // which is why both sites are named in WordBoundaryLedgerTest.
                 for (int i = from; i < text.length(); i++) {
                     if (Character.isLetter(text.charAt(i))) {
                         int start = i;
