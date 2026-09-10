@@ -291,8 +291,8 @@ public final class DbStudioTopComponent extends TopComponent {
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
     private static final Color ACCENT = new Color(0x1D, 0x9E, 0x75);
     private static final Font MONO = new Font(Font.MONOSPACED, Font.PLAIN, 12);
-    private static final DateTimeFormatter TIME =
-            DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
+    // a history row is read by a person, so its clock follows their language
+    // (v2.104.0) — resolved per paint, so a live switch is picked up
 
     private final List<ConnectionSpec> specs = new ArrayList<>();
     /** Synthesized display specs for the Services branch, ids prefixed {@code nb:} — never persisted. */
@@ -2554,7 +2554,7 @@ public final class DbStudioTopComponent extends TopComponent {
                 if (firstLine.length() > 90) {
                     firstLine = firstLine.substring(0, 87) + "…";
                 }
-                setText(TIME.format(Instant.ofEpochMilli(entry.timestamp()))
+                setText(org.nmox.studio.core.util.Clocks.display(entry.timestamp())
                         + "  [" + entry.engine() + "]  " + firstLine);
                 setFont(MONO);
             }

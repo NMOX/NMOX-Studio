@@ -519,7 +519,7 @@ public final class McpTools {
         for (LiveRuns.Run r : live) {
             runs.put(new JSONObject()
                     .put("label", r.label())
-                    .put("since", LiveRuns.sinceTime(r.id()))
+                    .put("since", org.nmox.studio.core.util.Clocks.stable(LiveRuns.startedAt(r.id())))
                     .put("startedAt", LiveRuns.startedAt(r.id())));
         }
         return new JSONObject().put("runs", runs);

@@ -36,7 +36,7 @@ class ImageTransferableTest {
                 .contains("Bundle.ShotSaver_copyNoSize(");
         assertThat(body).doesNotContain("JFileChooser").doesNotContain("ImageIO");
         String action = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/shots/CopyEditorScreenshotAction.java"));
-        assertThat(action).contains("path = \"Menu/Tools\", position = 102")
+        assertThat(action).contains("path = \"Menu/Tools\", position = 107")
                 .contains("SaveEditorScreenshotAction.selectedEditor(")
                 .contains("ShotSaver.copy(");
     }

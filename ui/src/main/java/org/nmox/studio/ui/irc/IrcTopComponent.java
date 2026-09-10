@@ -210,7 +210,14 @@ public final class IrcTopComponent extends TopComponent {
      */
     private static final ConcurrentMap<String, IrcClient> SESSIONS = new ConcurrentHashMap<>();
 
-    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("HH:mm");
+    /**
+     * A transcript stamp is read by a person, so it follows their language
+     * (v2.104.0) — resolved per call, so a live language switch is picked
+     * up. The on-disk log keeps its stable stamp; that one is a record.
+     */
+    private static DateTimeFormatter stamp() {
+        return org.nmox.studio.core.util.Clocks.displayFormatter();
+    }
 
     /** The mIRC 16-color palette, tuned to read on the dark theme. */
     private static final Color[] MIRC_COLORS = {
@@ -652,9 +659,13 @@ public final class IrcTopComponent extends TopComponent {
             return;
         }
         List<String> sorted = new ArrayList<>(nicks.values());
+        // ops and voiced first, then the reader's own alphabetical order:
+        // a nick list is scanned by eye, and a UTF-8 nick sorted by code
+        // point lands nowhere a reader would look for it
         sorted.sort(Comparator
                 .comparingInt((String s) -> NickPrefix.rank(s))
-                .thenComparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
+                .thenComparing(org.nmox.studio.core.util.Collate.byDisplayName(
+                        NickPrefix::strip)));
         for (String n : sorted) {
             nickModel.addElement(n);
         }
@@ -863,12 +874,12 @@ public final class IrcTopComponent extends TopComponent {
     /** The transcript timestamp: the server's {@code @time} tag when present, else now. */
     private static String stampOf(IrcMessage msg) {
         return ServerTime.localTime(msg.tags().get("time"))
-                .map(STAMP::format)
-                .orElseGet(() -> STAMP.format(LocalTime.now()));
+                .map(stamp()::format)
+                .orElseGet(() -> stamp().format(LocalTime.now()));
     }
 
     private static String stampNow() {
-        return STAMP.format(LocalTime.now());
+        return stamp().format(LocalTime.now());
     }
 
     private List<Object[]> stampedRuns(String stamp) {
@@ -1209,7 +1220,7 @@ public final class IrcTopComponent extends TopComponent {
         Map<String, String> nicks = nickLists.get(activeKey);
         if (nicks != null) {
             List<String> sorted = new ArrayList<>(nicks.values());
-            sorted.sort(Comparator.comparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
+            sorted.sort(org.nmox.studio.core.util.Collate.byDisplayName(NickPrefix::strip));
             for (String display : sorted) {
                 out.add(NickPrefix.strip(display));
             }

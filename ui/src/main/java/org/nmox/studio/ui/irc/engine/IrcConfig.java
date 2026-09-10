@@ -115,7 +115,9 @@ public final class IrcConfig {
         List<Network> out = new ArrayList<>();
         try {
             String[] names = root.node(NETWORKS).childrenNames();
-            Arrays.sort(names);
+            // a network name is a word the user typed, and this list is read
+            // in a menu — so it is ordered the way their language orders words
+            Arrays.sort(names, org.nmox.studio.core.util.Collate.byDisplayName(n -> n));
             for (String name : names) {
                 Network n = network(name);
                 if (n != null) {

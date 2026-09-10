@@ -68,8 +68,9 @@ class NpmRunLaneTest {
 
         assertThat(NpmService.runningScripts(dir.toFile())).as("the explorer's marker sees it, space and all").containsExactly("my dev");
         assertThat(NpmService.runningSince(dir.toFile(), "my dev"))
-                .as("… and since when — a bare time, so the marker's own message says the word (v2.76.0; data since v2.100.0)")
-                .matches("\\d{2}:\\d{2}");
+                .as("… and since when — a time in the reader's own language, never a word "
+                        + "(v2.76.0; data since v2.100.0; localized since v2.104.0)")
+                .containsPattern("\\d").doesNotContainPattern("[\\p{L}]{3,}");
         assertThat(NpmService.runningSince(dir.toFile(), "build")).as("a script that isn't running").isEmpty();
         assertThat(NpmService.stopScript(dir.toFile(), "build")).as("a script that isn't running").isFalse();
         assertThat(NpmService.stopScript(dir.toFile(), "my dev")).as("the row's own Stop").isTrue();

@@ -309,8 +309,11 @@ final class BoardStats {
         blockers.sort(Comparator.comparingLong(b -> -b.sinceDays()));
         List<LabelCount> labels = new ArrayList<>();
         labelCounts.forEach((l, n) -> labels.add(new LabelCount(l, n)));
+        // busiest first; ties in the reader's own alphabetical order, because
+        // an epic label is a word the user typed in their own language
         labels.sort(Comparator.comparingInt((LabelCount l) -> -l.count())
-                .thenComparing(LabelCount::label));
+                .thenComparing(org.nmox.studio.core.util.Collate.byDisplayName(
+                        LabelCount::label)));
         time.sort(Comparator.comparingLong((TimeEntry t) -> -t.todayMs())
                 .thenComparingLong(t -> -t.weekMs()));
         return new BoardStats(total, wip, dToday, dWeek,

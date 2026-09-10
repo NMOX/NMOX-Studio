@@ -1221,10 +1221,7 @@ public final class ApiClientTopComponent extends TopComponent {
                     Object value, int index, boolean selected, boolean focus) {
                 super.getListCellRendererComponent(list, value, index, selected, focus);
                 if (value instanceof org.nmox.studio.apiclient.model.SendHistory.Entry e) {
-                    String when = java.time.LocalTime.ofInstant(
-                            java.time.Instant.ofEpochMilli(e.timestamp),
-                            java.time.ZoneId.systemDefault())
-                            .format(java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+                    String when = org.nmox.studio.core.util.Clocks.display(e.timestamp);
                     String outcome = e.status == 0 ? Bundle.ApiClientTopComponent_historyFailed() : String.valueOf(e.status);
                     setText(when + "  " + e.method + " " + e.url
                             + "  → " + outcome
