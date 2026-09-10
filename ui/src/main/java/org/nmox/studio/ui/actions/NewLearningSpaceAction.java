@@ -282,10 +282,14 @@ public final class NewLearningSpaceAction implements ActionListener {
      * or blurb (slug is already lower-cased, so it matches literally).
      */
     static boolean matches(String name, String family, String slug, String blurb, String q) {
-        return name.toLowerCase(Locale.ROOT).contains(q)
-                || family.toLowerCase(Locale.ROOT).contains(q)
-                || slug.contains(q)
-                || blurb.toLowerCase(Locale.ROOT).contains(q);
+        // through the product's one matcher since v2.106.0 — this picker
+        // predates the v1.215.0 findability sprint and kept the raw
+        // contains it replaced, so a two-word query in the wrong order
+        // missed and an accented space name could not be typed plainly.
+        // The slug keeps its literal check beside it: it is a machine id,
+        // and pasting one is a real habit.
+        return org.nmox.studio.core.search.SearchTerms.matches(q, name, family, blurb)
+                || slug.contains(q);
     }
 
     static String escape(String s) {
