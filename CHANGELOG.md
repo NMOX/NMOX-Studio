@@ -33,6 +33,11 @@ rather than remembered.**
 
    The guide says it now too, in all thirteen languages.
 
+   The clean verify then caught the gate itself: it asserted against a
+   cluster that does not exist until `package`, and had been passing only
+   because a stale one sat on disk. It joins the packaged-result gates at
+   integration-test phase, where the same trap is already written down.
+
 2. **A hypothesis measured and killed.** The width-bounded dialog bodies
    (the Agent Port disclosure, the Browser unavailable note) rely on
    wrapping, and Chinese text has no spaces to wrap at — which looked like

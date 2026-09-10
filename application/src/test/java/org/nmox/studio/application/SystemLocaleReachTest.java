@@ -38,6 +38,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the mainland, and nothing in the build would notice. So this gate asks
  * the real JDK lookup, over the assembled cluster, from a country we do
  * not ship for.
+ *
+ * <p>Runs at integration-test phase, with the other packaged-result gates:
+ * {@code target/nmoxstudio} exists only after {@code package}, and a clean
+ * build caught this gate asserting against a cluster that was not there
+ * yet — it had passed until then only because a stale one was on disk.
  */
 class SystemLocaleReachTest {
 
