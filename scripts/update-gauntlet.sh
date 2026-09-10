@@ -58,7 +58,18 @@ kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null; echo "update RC=$? (TERM
 grep -E 'updates=|Will update' "$G/update.log" | head -3
 LATEST=$(for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 OpenIDE-Module-Specification-Version | tr -d '\r' | awk '{print $2}'; done | sort -V | tail -1)
 echo "after: $(census) -> installed $LATEST"
-echo "installs recorded per module (1 expected; more = the updater looped): $(grep -c '<module_version' "$CL"/nmoxstudio/update_tracking/org-nmox-NMOX-Studio-core.xml) entries in core's update_tracking; update iterations: $(grep -c 'updates=' "$G/update.log")"
+# update_tracking is a HISTORY, so a clean single update leaves TWO entries
+# for core (the from-version, then the to-version) and the headless CLI's
+# known loop re-installs the SAME version every ~6 s until the TERM above
+# adds more — measured 2026-09-10: 2.108.0 then 2.112.0 three times, six
+# seconds apart. The old line here called one entry expected and any repeat
+# a fault, which made every healthy PASS read as suspicious. What actually
+# matters is the entry the platform reads: last="true" must carry the
+# version that got installed, so that is checked rather than narrated.
+TRK="$CL"/nmoxstudio/update_tracking/org-nmox-NMOX-Studio-core.xml
+LASTV=$(grep -oE '<module_version [^>]*last="true"[^>]*' "$TRK" | grep -oE 'specification_version="[^"]*"' | cut -d'"' -f2)
+echo "core update_tracking: $(grep -c '<module_version' "$TRK") entries (a history; >2 is the known headless loop), last=\"true\" is $LASTV; update iterations: $(grep -c 'updates=' "$G/update.log")"
+[ "$LASTV" = "$LATEST" ] || { echo "GAUNTLET-FAIL: last=\"true\" says $LASTV but the installed jars say $LATEST"; exit 1; }
 [ "$n" -ge 11 ] && [ "$LATEST" != "$FROMV" ] || { echo "GAUNTLET-FAIL: the updater did not move 11 modules off $FROMV"; exit 1; }
 rm -rf "$G/cd2"; timeout 300 "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd2" --nosplash -J-Dplugin.manager.check.updates=false -J-Dnetbeans.close=true > "$G/boot.log" 2>&1; echo "boot RC=$?"
 L="$G/ud/var/log/messages.log"; ON=$(grep -oE "org\.nmox\.NMOX\.Studio\.[a-z0-9]+ \[$LATEST" "$L" | sort -u | wc -l | tr -d ' '); SEV=$(grep -c SEVERE "$L")
