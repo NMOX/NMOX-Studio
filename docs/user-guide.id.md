@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–8 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
+> Terjemahan sebagian: bab 1–9 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
@@ -266,3 +266,26 @@ Pilih satu rantai — Solidity dengan Foundry, Soroban, Solana, CosmWasm, ink!, 
 ### Kit klasik
 
 Tambahkan ke kode mana pun jQuery, MooTools, Prototype, Backbone dengan Underscore, atau Knockout, entah disertakan di dalam repositori (versi dipatok, sha256 dicatat) atau sebagai ketergantungan npm; ditambah kerangka webpack, grunt, gulp, atau bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Pencarian cepat, baris status, dan tetap tahu arah
+
+### Tanda ⇄ melayani
+
+Di baris status muncul tanda **⇄ melayani** setiap kali ada peladen yang hidup: jalannya IDE sendiri, perangkat yang melayani, dan perintah apa pun yang telah mencetak alamat lokal. Klik dan pilih satu: ia terbuka di peramban bawaan, atau di peramban sistem bila tab itu tidak sanggup menerimanya.
+
+### ⌘I, pencari untuk segalanya
+
+Satu kotak menjangkau proyek Anda (yang terkini dan yang dikenal), setiap perangkat rak — langsung ke kendalinya —, **peladen yang sedang hidup** (Enter membukanya di peramban), permintaan Studio API, sambungan dan tabel Studio Basis Data, kontrak, simpul infrastruktur, serta kartu Papan Tugas, dan hasilnya menyebut kolom tempat kartu itu berada.
+
+### Baris status memberi tahu apa yang hidup
+
+Di sebelah tanda peladen ada proyek yang sedang dibidik beserta rantai perkakasnya, dan cabang Git dengan jumlah berkas yang Anda ubah. Semua itu dibaca dari cakram atau dari catatan yang memang sudah disimpan produk ini: melihatnya tidak memakan proses sama sekali.
+
+### Meja Kerja
+
+Inilah pangkalan: proyek berjalan, berkas yang terbuka dan yang terkini, proyek terkini, dan peluncur untuk setiap permukaan. Selama ada yang berjalan, bagian **SEDANG BERJALAN** memimpin halaman — setiap perintah yang produk ini mulai untuk Anda, dengan alamatnya bila ia mengumumkan satu dan sejak jam berapa ia berjalan, ditambah setiap peladen yang dilayani perangkat rak. Setiap baris punya tombol **Buka** dan **Hentikan** yang sungguhan, terjangkau papan ketik maupun pembaca layar, sehingga satu jalan dapat dihentikan tanpa menjatuhkan yang lain. Semua judul di Meja Kerja adalah tombol sungguhan: Tab sampai ke sana, Enter membukanya. ⌘I menjangkau jalan yang sama: ketik «hentikan» lalu Enter menghentikan tepat yang itu. Yang Anda hentikan sendiri terbaca *dihentikan* di mana pun hasilnya dilaporkan, tidak pernah sebagai kegagalan.
+
+### Pintasan Emacs (juga Eclipse dan IntelliJ)
+
+Alat ▸ Opsi ▸ Peta Tombol mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.

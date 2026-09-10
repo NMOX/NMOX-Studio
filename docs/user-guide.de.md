@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–8 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
+> Teilübersetzung: Die Kapitel 1–9 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
@@ -266,3 +266,26 @@ Wähle eine Kette — Solidity mit Foundry, Soroban, Solana, CosmWasm, ink!, Cai
 ### Klassik-Kit
 
 Ergänze beliebigen Code um jQuery, MooTools, Prototype, Backbone mit Underscore oder Knockout, entweder mitgeliefert im Repository (feste Versionen, sha256 vermerkt) oder als npm-Abhängigkeiten; dazu Gerüste für webpack, grunt, gulp oder bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Schnellsuche, Statuszeile und die Orientierung behalten
+
+### Das Zeichen ⇄ bedient
+
+In der Statuszeile erscheint ein **⇄ bedient**-Zeichen, sobald Server laufen: der Lauf der IDE selbst, die bedienenden Geräte und jeder Befehl, der eine lokale Adresse ausgegeben hat. Klicke und wähle einen aus — er öffnet sich im eingebauten Browser, oder im Browser des Systems, wenn jener Reiter ihn nicht nehmen kann.
+
+### ⌘I, der allgemeine Finder
+
+Ein einziges Feld erreicht deine Projekte (die zuletzt benutzten und die bekannten), jedes Rack-Gerät — samt Sprung zu seinen Bedienelementen —, die **laufenden Server** (Eingabe öffnet sie im Browser), die Anfragen des API-Studios, die Verbindungen und Tabellen des DB-Studios, die Verträge, die Infrastrukturknoten und die Karten der Aufgabentafel, deren Treffer die Spalte nennt, in der sie stehen.
+
+### Die Statuszeile sagt, was lebt
+
+Neben dem Server-Zeichen stehen das angepeilte Projekt mit seiner Werkzeugkette und der Git-Zweig samt der Zahl geänderter Dateien. All das wird von der Platte oder aus Aufzeichnungen gelesen, die das Produkt ohnehin führt — Hinsehen kostet keine Prozesse.
+
+### Der Arbeitsplatz
+
+Das ist der Heimathafen: das laufende Projekt, offene und zuletzt benutzte Dateien, zuletzt benutzte Projekte und ein Starter für jede Oberfläche. Solange etwas läuft, führt der Abschnitt **LÄUFT** die Seite an — jeder Befehl, den das Produkt für dich gestartet hat, mit seiner Adresse, sofern er eine genannt hat, und seit wann er läuft, dazu jeder Server, den ein Rack-Gerät bedient. Jede Zeile trägt echte Knöpfe **Öffnen** und **Anhalten**, mit Tastatur und Screenreader erreichbar, sodass ein einzelner Lauf angehalten werden kann, ohne die übrigen mitzunehmen. Jeder Titel auf dem Arbeitsplatz ist ein echter Knopf: Tab kommt hin, Eingabe öffnet. ⌘I erreicht dieselben Läufe: tippe „anhalten“, und Eingabe hält genau diesen an. Was du selbst angehalten hast, liest sich überall dort *angehalten*, wo sein Ausgang berichtet wird — nie als Fehlschlag.
+
+### Die Tastenkürzel von Emacs (und Eclipse und IntelliJ)
+
+Werkzeuge ▸ Optionen ▸ Tastaturbelegung wechselt das ganze Profil: die Bewegungs- und Ausschneidekürzel von Emacs in jedem Editor, oder die Sätze von Eclipse und IDEA, wenn dort dein Muskelgedächtnis liegt. Jedes NMOX-Kürzel ist in allen fünf Profilen eingetragen, ein Profilwechsel kostet dich also nie die Studio-Kürzel.

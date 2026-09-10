@@ -4,7 +4,7 @@
 [English](user-guide.md) · **Español** · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traducción parcial: los capítulos 1–8 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
+> Traducción parcial: los capítulos 1–9 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
 
 Cómo usar el producto. Esta guía recorre las funciones en el orden en que las encontrarás: instalación, primer arranque, proyectos, el rack, los estudios, los asistentes y las redes de seguridad.
 
@@ -266,3 +266,26 @@ Elige una cadena — Solidity con Foundry, Soroban, Solana, CosmWasm, ink!, Cair
 ### Kit clásico
 
 Añade a cualquier código jQuery, MooTools, Prototype, Backbone con Underscore o Knockout, ya sea incluido en el repositorio (versiones fijadas, con su sha256 anotado) o como dependencias de npm; más andamiajes de webpack, grunt, gulp o bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Búsqueda rápida, barra de estado y no perder el norte
+
+### El indicador ⇄ sirviendo
+
+En la barra de estado aparece un indicador **⇄ sirviendo** siempre que hay servidores en marcha: la ejecución del propio IDE, los dispositivos que sirven, y cualquier orden que haya impreso una dirección local. Pulsa y elige una: se abre en el navegador integrado, o en el del sistema cuando esa pestaña no puede con ella.
+
+### ⌘I, el buscador universal
+
+Una sola caja alcanza tus proyectos (los recientes y los conocidos), todos los dispositivos del rack — saltando directamente a sus controles —, los **servidores en marcha** (Entrar lo abre en el navegador), las peticiones del Estudio de API, las conexiones y tablas del Estudio de bases de datos, los contratos, los nodos de infraestructura y las tarjetas del Tablero de tareas, cuyo resultado nombra la columna en que están.
+
+### La barra de estado dice qué está vivo
+
+Junto al indicador de servidores están el proyecto apuntado y su cadena de herramientas, y la rama de Git con cuántos archivos has cambiado. Todo se lee del disco o de registros que el producto ya lleva: mirar no cuesta procesos.
+
+### El Banco de trabajo
+
+Es la base: el proyecto actual, los archivos abiertos y recientes, los proyectos recientes y los accesos a cada superficie. Mientras algo corre, la sección **EJECUTÁNDOSE** encabeza la página — cada orden que el producto arrancó por ti, con su dirección si la anunció y desde qué hora corre, más cada servidor que sirve un dispositivo del rack. Cada fila lleva botones **Abrir** y **Detener** de verdad, alcanzables con teclado y con lector de pantalla, así que puedes parar una sola ejecución sin tumbar el resto. Todos los títulos del Banco de trabajo son botones reales: Tab llega, Entrar abre. ⌘I alcanza esas mismas ejecuciones: escribe «detener» y Entrar detiene exactamente esa. Lo que detuviste tú se lee *detenido* allí donde se cuente su desenlace, nunca como un fallo.
+
+### Atajos de Emacs (y de Eclipse, y de IntelliJ)
+
+Herramientas ▸ Opciones ▸ Combinaciones de teclas cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios.

@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–8 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
+> Bản dịch một phần: chương 1–9 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
@@ -266,3 +266,26 @@ Chọn một chuỗi — Solidity với Foundry, Soroban, Solana, CosmWasm, ink!
 ### Bộ cổ điển
 
 Thêm vào bất cứ mã nguồn nào jQuery, MooTools, Prototype, Backbone cùng Underscore, hoặc Knockout, hoặc để ngay trong kho (phiên bản ghim chặt, sha256 ghi lại) hoặc làm phụ thuộc npm; thêm khung sườn của webpack, grunt, gulp hay bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Tìm nhanh, thanh trạng thái, và giữ được phương hướng
+
+### Dấu ⇄ đang phục vụ
+
+Trên thanh trạng thái hiện dấu **⇄ đang phục vụ** mỗi khi có máy chủ đang chạy: lượt chạy của chính IDE, các thiết bị đang phục vụ, và bất cứ lệnh nào đã in ra một địa chỉ nội bộ. Bấm rồi chọn một cái: nó mở trong trình duyệt tích hợp, hoặc trong trình duyệt của hệ thống khi thẻ kia không kham nổi.
+
+### ⌘I, cái tìm cho mọi thứ
+
+Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Xưởng API, tới các kết nối và bảng của Xưởng cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, và tới các thẻ của Bảng công việc, mà kết quả còn gọi tên cột thẻ đang đứng.
+
+### Thanh trạng thái cho biết cái gì còn sống
+
+Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ của nó, và nhánh Git kèm số tệp bạn đã đổi. Tất cả đọc từ đĩa hoặc từ những ghi chép mà sản phẩm vốn đã giữ: nhìn một cái không tốn tiến trình nào.
+
+### Bàn làm việc
+
+Đây là bến nhà: dự án hiện thời, các tệp đang mở và gần đây, các dự án gần đây, và lối vào cho từng bề mặt. Chừng nào còn thứ gì chạy, mục **ĐANG CHẠY** dẫn đầu trang — mỗi lệnh mà sản phẩm đã khởi động thay bạn, kèm địa chỉ nếu nó có báo, và từ mấy giờ nó chạy, cộng thêm mọi máy chủ mà một thiết bị trên giá đang phục vụ. Mỗi dòng có nút **Mở** và **Dừng** thật, với tới được bằng bàn phím lẫn trình đọc màn hình, nên một lượt chạy có thể dừng mà không kéo đổ những lượt còn lại. Mọi tiêu đề trên Bàn làm việc đều là nút thật: Tab tới được, Enter mở ra. ⌘I cũng với tới đúng những lượt chạy ấy: gõ «dừng» rồi Enter dừng đúng cái đó. Cái bạn tự tay dừng sẽ đọc là *đã dừng* ở bất cứ đâu kết cục của nó được kể lại, chứ không bao giờ là thất bại.
+
+### Phím tắt của Emacs (và của Eclipse, và của IntelliJ)
+
+Công cụ ▸ Tuỳ chọn ▸ Sơ đồ phím đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.

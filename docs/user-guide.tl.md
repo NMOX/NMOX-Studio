@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–8. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–9. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -266,3 +266,26 @@ Pumili ng kadena — Solidity kasama ang Foundry, Soroban, Solana, CosmWasm, ink
 ### Klasikong kit
 
 Idagdag sa anumang kodigo ang jQuery, MooTools, Prototype, Backbone kasama ang Underscore, o Knockout, maging nasa mismong imbakan (nakapakong bersiyon, nakatalang sha256) o bilang kailangan ng npm; kasama ang mga balangkas ng webpack, grunt, gulp, o bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Mabilisang paghahanap, guhit ng kalagayan, at hindi pagkaligaw
+
+### Ang tanda na ⇄ naglilingkod
+
+Lumilitaw sa guhit ng kalagayan ang tandang **⇄ naglilingkod** tuwing may mga tagapaglingkod na gising: ang pagtakbo ng IDE mismo, ang mga kagamitang naglilingkod, at anumang utos na nagpalimbag ng lokal na adres. Pindutin at pumili ng isa: bubukas ito sa nakapaloob na pantingin, o sa pantingin ng sistema kapag hindi ito kaya ng tab na iyon.
+
+### ⌘I, ang pangkalahatang tagahanap
+
+Isang kahon lamang ang umaabot sa inyong mga proyekto (ang kamakailan at ang kilala), sa bawat kagamitan ng rak — tuwid sa mga kontrol nito —, sa mga **tagapaglingkod na gising** (Enter ang magbubukas nito sa pantingin), sa mga kahilingan ng Studio ng API, sa mga koneksyon at talahanayan ng Studio ng Database, sa mga kontrata, sa mga buko ng imprastruktura, at sa mga kard ng Pisara ng Gawain, at pinapangalanan ng hanap ang hanay na kinalalagyan ng kard.
+
+### Sinasabi ng guhit ng kalagayan kung ano ang buhay
+
+Katabi ng tanda ng mga tagapaglingkod ay ang tinutukang proyekto kasama ang hanay ng kasangkapan nito, at ang sanga ng Git kasama ang bilang ng talaksang binago ninyo. Lahat ito ay binabasa mula sa disk o mula sa mga talaang itinatago na ng produkto: ang pagtingin ay walang halagang proseso.
+
+### Ang Lugar ng Trabaho
+
+Ito ang tahanan: kasalukuyang proyekto, mga talaksang bukas at kamakailan, mga kamakailang proyekto, at panimula para sa bawat ibabaw. Habang may tumatakbo, ang bahaging **TUMATAKBO** ang nangunguna sa pahina — bawat utos na sinimulan ng produkto para sa inyo, kasama ang adres nito kung nagbigay ito ng isa at kung mula anong oras ito tumatakbo, dagdag pa ang bawat tagapaglingkod na hawak ng isang kagamitan ng rak. May tunay na butones na **Buksan** at **Ihinto** ang bawat hanay, naaabot ng teklado at ng tagabasa ng tabing, kaya maaaring ihinto ang isang pagtakbo nang hindi ibinabagsak ang iba. Tunay na butones ang lahat ng pamagat sa Lugar ng Trabaho: naaabot ng Tab, binubuksan ng Enter. Umaabot din ang ⌘I sa gayon ding mga pagtakbo: itipa ang «ihinto» at ihihinto ng Enter ang eksaktong iyon. Ang inyong ihininto mismo ay mababasang *ihininto* saanman iulat ang kinalabasan nito, hindi kailanman bilang kabiguan.
+
+### Mga daglat ng Emacs (at ng Eclipse, at ng IntelliJ)
+
+Ang Mga Kasangkapan ▸ Mga Pagpipilian ▸ Mapa ng Teklado ay nagpapalit ng buong hanay: ang mga galaw at ang gupit at dikit ng Emacs sa bawat patnugot, o ang mga hanay ng Eclipse at IDEA kung doon nakatira ang alaala ng inyong mga daliri. Nakatala sa lahat ng limang hanay ang bawat daglat ng NMOX, kaya hindi kailanman nagagastos ng pagpapalit ang mga daglat ng mga studio.

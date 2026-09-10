@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–8 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–9 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -266,3 +266,26 @@ Wybierz łańcuch — Solidity z Foundry, Soroban, Solana, CosmWasm, ink!, Cairo
 ### Zestaw klasyczny
 
 Dodaj do dowolnego kodu jQuery, MooTools, Prototype, Backbone z Underscore albo Knockout — czy to w samym repozytorium (przypięte wersje, zapisany sha256), czy jako zależności npm; do tego rusztowania webpacka, grunta, gulpa lub bowera.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Szybkie wyszukiwanie, pasek stanu i trzymanie się kursu
+
+### Znacznik ⇄ obsługuje
+
+Na pasku stanu pojawia się znacznik **⇄ obsługuje**, gdy tylko działają serwery: uruchomienie samego środowiska, urządzenia obsługujące oraz każde polecenie, które wypisało lokalny adres. Kliknij i wybierz jeden — otworzy się we wbudowanej przeglądarce albo w przeglądarce systemu, gdy tamta karta go nie przyjmie.
+
+### ⌘I, wyszukiwarka do wszystkiego
+
+Jedno pole sięga twoich projektów (ostatnich i znanych), każdego urządzenia na stojaku — prosto do jego pokręteł —, **działających serwerów** (Enter otwiera je w przeglądarce), żądań Studia API, połączeń i tabel Studia baz danych, kontraktów, węzłów infrastruktury oraz kart Tablicy zadań, a trafienie nazywa kolumnę, w której karta stoi.
+
+### Pasek stanu mówi, co żyje
+
+Obok znacznika serwerów stoi wycelowany projekt ze swoim łańcuchem narzędzi oraz gałąź Gita wraz z liczbą zmienionych plików. Wszystko to czyta się z dysku albo z zapisów, które produkt i tak prowadzi — spojrzenie nie kosztuje ani jednego procesu.
+
+### Stanowisko pracy
+
+To macierzysty port: bieżący projekt, pliki otwarte i ostatnie, ostatnie projekty oraz uruchomienie każdej powierzchni. Dopóki coś działa, stronę otwiera sekcja **DZIAŁA** — każde polecenie, które produkt uruchomił za ciebie, z jego adresem, jeśli go ogłosiło, i od której godziny idzie, a do tego każdy serwer obsługiwany przez urządzenie ze stojaka. W każdym wierszu są prawdziwe przyciski **Otwórz** i **Zatrzymaj**, dosięgalne z klawiatury i przez czytnik ekranu, więc jedno uruchomienie można zatrzymać, nie kładąc reszty. Wszystkie tytuły na Stanowisku pracy to prawdziwe przyciski: Tab tam dochodzi, Enter otwiera. ⌘I sięga tych samych uruchomień: wpisz „zatrzymaj”, a Enter zatrzyma dokładnie to jedno. To, co zatrzymałeś sam, czyta się jako *zatrzymane* wszędzie tam, gdzie mowa o wyniku, i nigdy jako porażka.
+
+### Skróty Emacsa (a także Eclipse i IntelliJ)
+
+Narzędzia ▸ Opcje ▸ Skróty klawiszowe przełącza cały profil: ruchy oraz wycinanie i wklejanie Emacsa w każdym edytorze, albo zestawy Eclipse i IDEA, jeśli tam siedzi twoja pamięć mięśniowa. Każdy skrót NMOX jest zapisany we wszystkich pięciu profilach, więc zmiana profilu nigdy nie kosztuje cię skrótów studiów.

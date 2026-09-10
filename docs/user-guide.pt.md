@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–8 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–9 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -266,3 +266,26 @@ Escolha uma cadeia — Solidity com Foundry, Soroban, Solana, CosmWasm, ink!, Ca
 ### Kit clássico
 
 Acrescente a qualquer código jQuery, MooTools, Prototype, Backbone com Underscore ou Knockout, seja versionado no repositório (versões fixadas, sha256 registrado) ou como dependências do npm; mais andaimes de webpack, grunt, gulp ou bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Busca rápida, barra de estado e não perder o rumo
+
+### O selo ⇄ servindo
+
+Na barra de estado aparece um selo **⇄ servindo** sempre que há servidores no ar: a execução do próprio IDE, os dispositivos que servem e qualquer comando que tenha impresso um endereço local. Clique e escolha um: ele abre no navegador embutido, ou no do sistema quando aquela aba não dá conta dele.
+
+### ⌘I, o localizador universal
+
+Uma única caixa alcança seus projetos (os recentes e os conhecidos), cada dispositivo do rack — pulando direto para os seus controles —, os **servidores no ar** (Enter abre no navegador), as requisições do Estúdio de API, as conexões e tabelas do Estúdio de banco de dados, os contratos, os nós de infraestrutura e os cartões do Quadro de tarefas, cujo resultado nomeia a coluna em que o cartão está.
+
+### A barra de estado diz o que está vivo
+
+Ao lado do selo dos servidores estão o projeto mirado com sua cadeia de ferramentas e o ramo do Git com quantos arquivos você mudou. Tudo isso é lido do disco ou de registros que o produto já mantém: olhar não custa processo nenhum.
+
+### A Bancada
+
+É o porto seguro: projeto atual, arquivos abertos e recentes, projetos recentes e um atalho para cada superfície. Enquanto algo roda, a seção **EM EXECUÇÃO** abre a página — cada comando que o produto começou por você, com o endereço se ele anunciou um e desde que hora está rodando, mais cada servidor que um dispositivo do rack está servindo. Cada linha tem botões **Abrir** e **Parar** de verdade, alcançáveis pelo teclado e por leitor de tela, de modo que uma execução pode ser parada sem derrubar as outras. Todos os títulos da Bancada são botões de verdade: Tab chega, Enter abre. ⌘I alcança as mesmas execuções: digite «parar» e Enter para exatamente aquela. O que você mesmo parou se lê *parado* onde quer que o desfecho seja relatado, nunca como falha.
+
+### Os atalhos do Emacs (e do Eclipse, e do IntelliJ)
+
+Ferramentas ▸ Opções ▸ Mapa de teclado troca o perfil inteiro: os movimentos e o recortar e colar do Emacs em todo editor, ou os conjuntos do Eclipse e do IDEA se é ali que mora a sua memória muscular. Todo atalho do NMOX está registrado nos cinco perfis, então trocar de perfil nunca lhe custa os atalhos dos estúdios.

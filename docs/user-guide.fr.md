@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–8 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–9 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -266,3 +266,26 @@ Choisissez une chaîne — Solidity avec Foundry, Soroban, Solana, CosmWasm, ink
 ### Kit classique
 
 Ajoutez à n’importe quel code jQuery, MooTools, Prototype, Backbone avec Underscore ou Knockout, soit versionnés dans le dépôt (versions figées, sha256 consigné), soit en dépendances npm ; plus les échafaudages webpack, grunt, gulp ou bower.
+
+<a id="9-quick-search-status-line-and-staying-oriented"></a>
+## 9. Recherche rapide, barre d’état et garder le cap
+
+### La pastille ⇄ sert
+
+Une pastille **⇄ sert** apparaît dans la barre d’état dès que des serveurs tournent : l’exécution de l’IDE lui-même, les modules qui servent, et toute commande ayant imprimé une adresse locale. Cliquez et choisissez-en une : elle s’ouvre dans le navigateur intégré, ou dans celui du système quand cet onglet ne peut pas la prendre.
+
+### ⌘I, le chercheur universel
+
+Une seule boîte atteint vos projets (récents et connus), chaque module du rack — en sautant droit à ses commandes —, les **serveurs en marche** (Entrée l’ouvre dans le navigateur), les requêtes du Studio d’API, les connexions et les tables du Studio de bases de données, les contrats, les nœuds d’infrastructure et les cartes du Tableau des tâches, dont le résultat nomme la colonne où elles se trouvent.
+
+### La barre d’état dit ce qui est vivant
+
+À côté de la pastille des serveurs : le projet visé et sa chaîne d’outils, et la branche Git avec le nombre de fichiers modifiés. Tout cela se lit sur le disque ou dans des registres que le produit tient déjà — regarder ne coûte aucun processus.
+
+### Le Plan de travail
+
+C’est le port d’attache : projet courant, fichiers ouverts et récents, projets récents, et un lanceur pour chaque surface. Tant que quelque chose tourne, la section **EN COURS** ouvre la page — chaque commande que le produit a lancée pour vous, avec son adresse si elle en a annoncé une et depuis quelle heure elle tourne, plus chaque serveur qu’un module du rack fait tourner. Chaque ligne porte de vrais boutons **Ouvrir** et **Arrêter**, accessibles au clavier et au lecteur d’écran, si bien qu’une exécution peut être arrêtée sans abattre les autres. Tous les titres du Plan de travail sont de vrais boutons : Tab y arrive, Entrée ouvre. ⌘I atteint les mêmes exécutions : tapez « arrêter » et Entrée arrête exactement celle-là. Ce que vous avez arrêté vous-même se lit *arrêté* partout où son issue est rapportée, jamais comme un échec.
+
+### Les raccourcis d’Emacs (et d’Eclipse, et d’IntelliJ)
+
+Outils ▸ Options ▸ Raccourcis clavier change tout le profil : les déplacements et le couper-coller d’Emacs dans chaque éditeur, ou les jeux Eclipse et IDEA si c’est votre mémoire des doigts. Chaque raccourci NMOX est enregistré dans les cinq profils, si bien que changer de profil ne vous coûte jamais les raccourcis des studios.
