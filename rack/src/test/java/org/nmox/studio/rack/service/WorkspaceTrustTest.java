@@ -96,4 +96,33 @@ class WorkspaceTrustTest {
             WorkspaceTrust.clearForTest();
         }
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a grant covers the path the user was shown, not a symlink resolving to it")
+    void trustIsKeyedOnTheShownPathNotTheCanonicalOne(@org.junit.jupiter.api.io.TempDir
+            java.nio.file.Path tmp) throws Exception {
+        // Why WorkspaceTrust keys on the ABSOLUTE path and not the
+        // canonical one, pinned so a later tidy-up cannot quietly widen the
+        // gate: canonicalizing resolves symlinks, and a grant on a real
+        // directory would then cover every link anyone drops beside it.
+        java.nio.file.Path real = java.nio.file.Files.createDirectory(tmp.resolve("real"));
+        java.nio.file.Path link = tmp.resolve("link");
+        try {
+            java.nio.file.Files.createSymbolicLink(link, real);
+        } catch (UnsupportedOperationException | java.io.IOException e) {
+            org.junit.jupiter.api.Assumptions.abort("no symlinks here: " + e.getMessage());
+        }
+        WorkspaceTrust.clearForTest();
+        try {
+            WorkspaceTrust.trust(real.toFile());
+            org.assertj.core.api.Assertions.assertThat(WorkspaceTrust.isTrusted(real.toFile()))
+                    .as("the granted path itself").isTrue();
+            org.assertj.core.api.Assertions.assertThat(WorkspaceTrust.isTrusted(link.toFile()))
+                    .as("a symlink is a DIFFERENT path to the user; canonicalizing here would "
+                            + "hand it a grant nobody gave")
+                    .isFalse();
+        } finally {
+            WorkspaceTrust.clearForTest();
+        }
+    }
 }

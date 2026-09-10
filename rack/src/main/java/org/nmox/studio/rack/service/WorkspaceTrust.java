@@ -158,6 +158,14 @@ public final class WorkspaceTrust {
         if (dir == null) {
             return false;
         }
+        // ABSOLUTE, not canonical, and that is the security-side choice
+        // (blessed in writing v2.112.0): canonicalizing would resolve
+        // symlinks, so a grant on a real directory would silently cover
+        // every link pointing at it — the user grants the path they were
+        // SHOWN. The cost is an i18n one and it errs safe: on macOS the
+        // same accented directory can be spelled composed or decomposed,
+        // and the two spellings are two strings here, so the worst case is
+        // a second trust prompt rather than a grant the user never gave.
         String absolute = dir.getAbsolutePath();
         for (String path : trustedPaths) {
             // match on a path boundary, so trusting /a/foo doesn't also

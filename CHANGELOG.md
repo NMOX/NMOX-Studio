@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.112.0] - 2026-09-10
+
+**Two properties that were true and unheld, and the docs the shift owed.**
+
+1. **Search already saw one name where macOS keeps two spellings.** A
+   folder can reach the IDE DECOMPOSED — `U` plus a combining diaeresis —
+   while the user types it COMPOSED from their keyboard, and those are
+   different strings. Measured on a real APFS directory: a folder created
+   decomposed reads its name back decomposed, so both forms genuinely
+   arrive. Accent folding (v2.106.0) has normalized them to one word ever
+   since it shipped, as a consequence of how it works rather than a
+   decision anyone recorded — so it is pinned now, and removing the
+   normalization kills the new test alongside the accent ones.
+
+2. **Workspace Trust keys on the path the user was SHOWN.** It uses the
+   absolute path, never the canonical one, and that reads like an
+   oversight until you canonicalize: symlinks resolve, so a grant on a
+   real directory would silently cover every link anyone drops beside it.
+   Blessed in writing at the code, and pinned by a test that trusts a real
+   directory and asserts a symlink to it is still untrusted — swapping in
+   `getCanonicalPath` fails it by name.
+
+   The internationalization cost of that choice is stated rather than
+   hidden: the same accented directory has two spellings, so the worst
+   case is a second trust prompt. That errs toward asking, which is the
+   side a security gate should err on.
+
+3. **Docs truth.** The read-this-first files had gone five releases stale.
+   `CLAUDE.md` and `docs/engineering/plan.md` now carry the whole
+   seven-release night — and, in the plan, the three things the shift
+   learned about its own work rather than about the product: a gate can
+   pass on a stale build artifact, a lane that fails where two others pass
+   is worth reading as a defect before a flake, and a hypothesis is
+   cheaper to measure than to argue.
+
 ## [2.111.0] - 2026-09-10
 
 **A fresh install already speaks your language, and now that is held
@@ -18905,6 +18940,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.112.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.111.0...v2.112.0
 [2.111.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.110.0...v2.111.0
 [2.110.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.109.0...v2.110.0
 [2.109.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.108.0...v2.109.0

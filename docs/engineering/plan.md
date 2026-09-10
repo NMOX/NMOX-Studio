@@ -1,7 +1,18 @@
 # The Plan
 
-*Currency addendum 2026-09-10, at v2.105.0 — the night shift's two releases
-(v2.104.0, v2.105.0) are recorded in the dated section below. Earlier:
+*Currency addendum 2026-09-10, at v2.112.0 — the night shift ran to SEVEN
+releases (v2.104.0 through v2.112.0): the half of internationalization that
+is not words (Clocks, Collate, Numbers, accent folding), then the user guide
+finished in all thirteen languages, then the two properties that were true
+and unheld (the system locale reaches the bundles on its own; search folding
+is normalization-insensitive). Three things the shift found about its own
+work rather than about the product: a gate can pass on a stale build artifact
+(the reach gate asserted against a cluster that only exists after `package`),
+a CI lane that fails where two others pass is worth reading as a defect before
+a flake (the Agent Port's stream cap was a real check-then-act race), and a
+hypothesis is cheaper to measure than to argue (Swing wraps CJK between
+ideographs, so the width-bounded dialogs were clean in Chinese all along).
+Earlier:
 v2.100.1 — the l10n arc closed out
 (v2.96.0–v2.100.1; see the dated addenda below). Written 2026-09-06 at
 v2.95.0, after two lenses, one
