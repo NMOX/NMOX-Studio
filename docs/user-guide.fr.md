@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–6 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–8 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -230,3 +230,39 @@ Un client complet dans l’IDE : TLS avec vraie vérification du nom, SASL, exte
 ### Navigateur (⌥⌘4)
 
 Un vrai navigateur dans l’IDE, avec ses propres outils de développement — console, DOM, réseau, stockage, et des panneaux pour Vue, Svelte et Angular — parce que le moteur n’embarque aucun inspecteur et que celui-ci est le nôtre. Il connaît vos sources : désignez un élément, ouvrez la ligne qui l’a produit, restylez-le sur place, et la déclaration atterrit dans la feuille de style d’origine. Enregistrer un fichier recharge la page, et des tailles d’appareil réelles servent à éprouver votre mise en page adaptative.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+L’onglet Docker est un tableau de bord : état du moteur, conteneurs, images, volumes et réseaux, avec démarrer, arrêter, consulter les journaux et nettoyer. Le module HARBOR du rack vous donne la même chose d’un coup d’œil. Et comme dit plus haut : lancez un conteneur Postgres, MySQL ou Mongo, et le Studio de bases de données vous propose une connexion toute prête.
+
+L’onglet **Dockerize** génère un `Dockerfile` de qualité production, un `.dockerignore` et un fichier de composition taillés pour la chaîne d’outils de votre projet — Node, PHP-FPM avec nginx, et d’autres.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Assistants et kits
+
+Tous se trouvent dans *Nouveau fichier…* et dans le menu contextuel du projet, et tous sont **idempotents et n’écrasent jamais rien** : relancer l’un d’eux met à jour ce qui lui appartient et laisse vos modifications tranquilles ; ce qu’il ne peut pas réécrire atterrit à côté sous la forme d’un fichier `.suggested`.
+
+### Kit des standards
+
+`robots.txt`, `sitemap.xml`, le manifeste web, le `security.txt` du RFC 9116 et `humans.txt`, générés à partir de vos réponses.
+
+### Kit PWA
+
+Un jeu complet d’icônes forgé à partir d’une seule image, variantes masquables comprises ; un service worker lisible — coquille d’application ou réseau d’abord, à vous de choisir —, une page hors ligne, et le câblage de `index.html` qui relie le tout.
+
+### Kit d’accessibilité
+
+L’accessibilité comme point de départ, pas comme audit d’après-coup : `a11y.css` (un anneau de focus visible, un utilitaire pour le texte réservé aux lecteurs d’écran, des styles de lien d’évitement et un bloc pour qui préfère moins de mouvement), `A11Y-NOTES.md` avec le parcours au clavier et les questions qu’aucune automatisation ne tranche, et le câblage idempotent de `index.html` — la langue, le lien d’évitement, la feuille de style. Un viewport qui empêche le zoom est signalé, jamais réécrit ; ce que le kit ne peut pas réparer, il le dit sans y toucher.
+
+### Kit d’internationalisation
+
+Traduisible dès le premier jour, le frère du kit d’accessibilité : `locales/en.json` et `locales/es.json` (un catalogue par langue, les mêmes clés), un `i18n.js` sans dépendances qui applique le catalogue au balisage `data-i18n`, garde `<html lang>` honnête et affiche une clé manquante telle quelle plutôt qu’un blanc silencieux ; plus `I18N-NOTES.md` — pas de fragments concaténés, `Intl` pour les dates et les nombres, le parcours de droite à gauche et la pseudo-localisation.
+
+### Kit de contrats (Web3)
+
+Choisissez une chaîne — Solidity avec Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin avec Miniscript, Clarity sur Stacks, Cardano avec Aiken ou TON avec Tact — et un nom de contrat, et le kit échafaude le démarrage éprouvé en conditions réelles : manifeste, contrat, test natif et un CONTRACT-NOTES.md qui nomme les modules du rack et les étapes à faire une seule fois. Les clés ne touchent jamais l’IDE.
+
+### Kit classique
+
+Ajoutez à n’importe quel code jQuery, MooTools, Prototype, Backbone avec Underscore ou Knockout, soit versionnés dans le dépôt (versions figées, sha256 consigné), soit en dépendances npm ; plus les échafaudages webpack, grunt, gulp ou bower.

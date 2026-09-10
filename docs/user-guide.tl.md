@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–6. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–8. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -230,3 +230,39 @@ Ang **Tulong ▸ Websayt ng NMOX Studio (lokal)** ay naghahain ng websayt ng pro
 ### Browser (⌥⌘4)
 
 Isang tunay na browser sa loob ng IDE, na may sariling mga kasangkapan ng developer — console, DOM, network, imbakan, at mga panel para sa Vue, Svelte at Angular — dahil walang dalang inspektor ang makina, at atin itong isa. May malay ito sa iyong pinagmulan: pumili ng elemento, buksan ang hanay na lumikha nito, baguhin ang estilo nito sa mismong kinaroroonan, at ang deklarasyon ay dadapo sa pinagmulang stylesheet. Ang pag-save ng file ay muling nagkakarga ng pahina, at may tunay na sukat ng kagamitan upang subukin ang iyong nakikiayong ayos.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Ang tab na Docker ay isang panel ng kontrol: kalagayan ng makina, mga lalagyan, imahen, volume, at network, kasama ang pagsisimula, paghinto, mga tala, at paglilinis. Ang kagamitang HARBOR sa rak ay nagpapakita ng gayon din sa isang sulyap. At gaya ng nasabi na: patakbuhin ang isang lalagyan ng Postgres, MySQL, o Mongo, at mag-aalok sa inyo ang Studio ng Database ng handa nang koneksyon.
+
+Ang tab na **Dockerize** ay gumagawa ng `Dockerfile` na pang-produksiyon, ng `.dockerignore`, at ng talaksang pangkomposisyon na akma sa hanay ng kasangkapan ng inyong proyekto — Node, PHP-FPM kasama ang nginx, at iba pa.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Mga pantulong at kit
+
+Nasa *Bagong Talaksan…* silang lahat at nasa menu ng proyekto, at pawang **idempotente at hindi kailanman pumapatong**: ang muling pagpapatakbo ay nagsasariwa lamang sa kung ano ang kanila, at hindi ginagalaw ang inyong mga binago; ang hindi maaaring isulat muli ay dumadapo sa tabi bilang talaksang `.suggested`.
+
+### Kit ng mga pamantayan
+
+`robots.txt`, `sitemap.xml`, ang manipesto ng web, ang `security.txt` ayon sa RFC 9116, at `humans.txt`, na ginawa mula sa inyong mga sagot.
+
+### Kit ng PWA
+
+Isang buong hanay ng mga ikon na pinanday mula sa iisang larawan, kasama ang mga uring may maskara; isang service worker na mababasa — balat ng aplikasyon o unahin ang network, kayo ang pipili —, isang pahina para sa walang network, at ang pagkakabit sa `index.html` na nagtatali sa lahat.
+
+### Kit ng aksesibilidad
+
+Aksesibilidad bilang pinagsisimulan, hindi bilang pagsusuri pagkatapos ng lahat: `a11y.css` (nakikitang singsing ng pokus, kasangkapan para sa tekstong binabasa lamang ng mga tagabasa ng tabing, mga estilo ng tumatalong kawing, at bloke para sa mga nais ng mas kaunting galaw), `A11Y-NOTES.md` na may lakad sa pamamagitan ng teklado at ang mga tanong na hindi masasagot ng anumang awtomasyon, at ang idempotenteng pagkakabit sa `index.html` — ang wika, ang tumatalong kawing, ang tabing ng estilo. Ang viewport na pumipigil sa paglaki ay binabalaan, hindi kailanman isinusulat muli; ang hindi kayang ayusin ng kit ay sinasabi, hindi hinihipo.
+
+### Kit ng internasyonalisasyon
+
+Maisasalin mula sa unang araw, kapatid ng kit ng aksesibilidad: `locales/en.json` at `locales/es.json` (isang katalogo bawat wika, magkatulad na susi), isang `i18n.js` na walang kailangang iba na naglalapat ng katalogo sa markang `data-i18n`, nagpapanatiling totoo ang `<html lang>`, at nagpapakita ng nawawalang susi bilang sarili nito, hindi bilang tahimik na puwang; kasama ang `I18N-NOTES.md` — walang pinagdugtong-dugtong na piraso, `Intl` para sa petsa at bilang, ang lakad mula kanan pakaliwa, at ang seudolokalisasyon.
+
+### Kit ng kontrata (Web3)
+
+Pumili ng kadena — Solidity kasama ang Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin kasama ang Miniscript, Clarity sa Stacks, Cardano kasama ang Aiken, o TON kasama ang Tact — at ng pangalan ng kontrata, at itatayo ng kit ang pasimulang napatunayan nang buhay: manipesto, kontrata, katutubong pagsubok, at isang CONTRACT-NOTES.md na pumapangalan sa mga kagamitan ng rak at sa mga hakbang na minsanan. Hindi kailanman nahahawakan ng IDE ang mga susi.
+
+### Klasikong kit
+
+Idagdag sa anumang kodigo ang jQuery, MooTools, Prototype, Backbone kasama ang Underscore, o Knockout, maging nasa mismong imbakan (nakapakong bersiyon, nakatalang sha256) o bilang kailangan ng npm; kasama ang mga balangkas ng webpack, grunt, gulp, o bower.

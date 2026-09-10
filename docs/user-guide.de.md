@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–6 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
+> Teilübersetzung: Die Kapitel 1–8 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
@@ -230,3 +230,39 @@ Ein vollständiger Client in der IDE: TLS mit echter Namensprüfung, SASL, IRCv3
 ### Browser (⌥⌘4)
 
 Ein echter Browser in der IDE, mit eigenen Entwicklerwerkzeugen — Konsole, DOM, Netzwerk, Speicher und Ansichten für Vue, Svelte und Angular — weil die Maschine keinen Inspektor mitbringt und dieser hier unserer ist. Er kennt Ihre Quellen: Wählen Sie ein Element, öffnen Sie die Zeile, die es erzeugt hat, gestalten Sie es an Ort und Stelle um, und die Deklaration landet in der Quell-Stilvorlage. Eine gesicherte Datei lädt die Seite neu, und echte Gerätegrößen dienen dazu, Ihr anpassungsfähiges Layout zu erproben.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Der Docker-Reiter ist eine Schaltzentrale: Zustand der Engine, Container, Images, Volumes und Netzwerke, mit Starten, Stoppen, Protokollen und Aufräumen. Das Rack-Gerät HARBOR zeigt dasselbe auf einen Blick. Und wie schon gesagt: Startest du einen Postgres-, MySQL- oder Mongo-Container, bietet dir das DB-Studio eine fertige Verbindung an.
+
+Der Reiter **Dockerize** erzeugt ein produktionstaugliches `Dockerfile`, eine `.dockerignore` und eine Compose-Datei, zugeschnitten auf die Werkzeugkette deines Projekts — Node, PHP-FPM mit nginx und weitere.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Assistenten und Kits
+
+Alle liegen unter *Neue Datei…* und im Kontextmenü des Projekts, und alle sind **idempotent und überschreiben nie**: ein zweiter Lauf aktualisiert, was ihm gehört, und lässt deine Änderungen in Ruhe; was er nicht überschreiben darf, landet daneben als `.suggested`-Datei.
+
+### Standards-Kit
+
+`robots.txt`, `sitemap.xml`, das Web-Manifest, die `security.txt` nach RFC 9116 und `humans.txt`, erzeugt aus deinen Antworten.
+
+### PWA-Kit
+
+Ein vollständiger Satz Symbole, geschmiedet aus einem einzigen Bild, maskierbare Varianten eingeschlossen; ein lesbarer Service Worker — App-Shell oder Netz zuerst, deine Wahl —, eine Offline-Seite und die Verdrahtung in `index.html`, die alles zusammenhält.
+
+### Barrierefreiheits-Kit
+
+Barrierefreiheit als Ausgangspunkt, nicht als nachträgliche Prüfung: `a11y.css` (ein sichtbarer Fokusring, ein Hilfsmittel für Text, den nur Screenreader lesen, Stile für den Sprunglink und ein Block für alle, die weniger Bewegung wünschen), `A11Y-NOTES.md` mit dem Tastaturdurchgang und den Fragen, die keine Automatik beantwortet, sowie die idempotente Verdrahtung in `index.html` — Sprache, Sprunglink, Stylesheet. Ein Viewport, der das Vergrößern verbietet, wird gemeldet, nie umgeschrieben; was das Kit nicht beheben kann, sagt es, statt es anzufassen.
+
+### Internationalisierungs-Kit
+
+Übersetzbar vom ersten Tag an, das Geschwister des Barrierefreiheits-Kits: `locales/en.json` und `locales/es.json` (ein Katalog je Sprache, dieselben Schlüssel), ein `i18n.js` ohne Abhängigkeiten, das den Katalog auf `data-i18n`-Markup anwendet, `<html lang>` ehrlich hält und einen fehlenden Schlüssel als sich selbst zeigt statt als stille Lücke; dazu `I18N-NOTES.md` — keine zusammengesetzten Fragmente, `Intl` für Datum und Zahlen, der Durchgang von rechts nach links und die Pseudolokalisierung.
+
+### Vertrags-Kit (Web3)
+
+Wähle eine Kette — Solidity mit Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin mit Miniscript, Clarity auf Stacks, Cardano mit Aiken oder TON mit Tact — und einen Vertragsnamen, und das Kit legt den live erprobten Anfang an: Manifest, Vertrag, nativer Test und eine CONTRACT-NOTES.md, die die Rack-Geräte und die einmaligen Schritte benennt. Schlüssel berühren die IDE nie.
+
+### Klassik-Kit
+
+Ergänze beliebigen Code um jQuery, MooTools, Prototype, Backbone mit Underscore oder Knockout, entweder mitgeliefert im Repository (feste Versionen, sha256 vermerkt) oder als npm-Abhängigkeiten; dazu Gerüste für webpack, grunt, gulp oder bower.

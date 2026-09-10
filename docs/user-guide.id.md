@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–6 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
+> Terjemahan sebagian: bab 1–8 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
@@ -230,3 +230,39 @@ Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SAS
 ### Peramban (⌥⌘4)
 
 Sebuah peramban sungguhan di dalam IDE, dengan perkakas pengembangnya sendiri — konsol, DOM, jaringan, penyimpanan, dan panel untuk Vue, Svelte, dan Angular — sebab mesinnya tak membawa pemeriksa apa pun, dan yang ini milik kita. Ia sadar akan sumbernya: pilih sebuah elemen, buka baris yang melahirkannya, ubah gayanya di tempat, dan deklarasinya mendarat di lembar gaya asalnya. Menyimpan sebuah berkas memuat ulang halamannya, dan ada ukuran perangkat yang sungguhan untuk menguji tata letak Anda yang lentur.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Tab Docker adalah panel kendali: keadaan mesin, kontainer, image, volume, dan jaringan, lengkap dengan mulai, henti, log, dan bersih-bersih. Perangkat HARBOR di rak menunjukkan hal yang sama dalam sekali pandang. Dan seperti sudah disebut: jalankan kontainer Postgres, MySQL, atau Mongo, dan Studio Basis Data menawarkan sambungan yang sudah jadi.
+
+Tab **Dockerize** membuat `Dockerfile` kelas produksi, `.dockerignore`, dan berkas komposisi yang disesuaikan dengan rantai perkakas proyek Anda — Node, PHP-FPM dengan nginx, dan lainnya.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Pemandu dan kit
+
+Semuanya ada di *Berkas Baru…* dan di menu konteks proyek, dan semuanya **idempoten serta tidak pernah menimpa**: menjalankannya lagi hanya memperbarui apa yang menjadi miliknya sendiri dan membiarkan suntingan Anda; apa yang tidak boleh ditulis ulang mendarat di sebelahnya sebagai berkas `.suggested`.
+
+### Kit standar
+
+`robots.txt`, `sitemap.xml`, manifes web, `security.txt` sesuai RFC 9116, dan `humans.txt`, dibuat dari jawaban Anda.
+
+### Kit PWA
+
+Satu set ikon lengkap yang ditempa dari satu gambar, termasuk varian yang dapat dimasker; service worker yang mudah dibaca — cangkang aplikasi atau jaringan dahulu, Anda yang memilih —, halaman untuk saat tanpa jaringan, dan sambungan di `index.html` yang mengikat semuanya.
+
+### Kit aksesibilitas
+
+Aksesibilitas sebagai titik awal, bukan audit setelah semuanya jadi: `a11y.css` (cincin fokus yang terlihat, alat bantu untuk teks yang hanya dibaca pembaca layar, gaya untuk tautan lompat, dan blok bagi yang memilih lebih sedikit gerak), `A11Y-NOTES.md` berisi penelusuran lewat papan ketik dan pertanyaan yang tidak bisa dijawab otomatisasi mana pun, serta sambungan idempoten di `index.html` — bahasa, tautan lompat, lembar gaya. Viewport yang melarang perbesaran diperingatkan, tidak pernah ditulis ulang; apa yang tidak bisa diperbaiki kit ini disebutkan, bukan disentuh.
+
+### Kit internasionalisasi
+
+Dapat diterjemahkan sejak hari pertama, saudara kit aksesibilitas: `locales/en.json` dan `locales/es.json` (satu katalog per bahasa, kunci yang sama), `i18n.js` tanpa ketergantungan yang menerapkan katalog pada markah `data-i18n`, menjaga `<html lang>` tetap jujur, dan menampilkan kunci yang hilang sebagai dirinya sendiri, bukan sebagai kekosongan yang diam; ditambah `I18N-NOTES.md` — tanpa potongan yang disambung, `Intl` untuk tanggal dan angka, penelusuran kanan ke kiri, dan pseudolokalisasi.
+
+### Kit kontrak (Web3)
+
+Pilih satu rantai — Solidity dengan Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin dengan Miniscript, Clarity di Stacks, Cardano dengan Aiken, atau TON dengan Tact — dan sebuah nama kontrak, lalu kit menyiapkan awalan yang sudah terbukti langsung: manifes, kontrak, uji bawaan, dan CONTRACT-NOTES.md yang menyebut perangkat rak dan langkah sekali jalan. Kunci tidak pernah menyentuh IDE.
+
+### Kit klasik
+
+Tambahkan ke kode mana pun jQuery, MooTools, Prototype, Backbone dengan Underscore, atau Knockout, entah disertakan di dalam repositori (versi dipatok, sha256 dicatat) atau sebagai ketergantungan npm; ditambah kerangka webpack, grunt, gulp, atau bower.

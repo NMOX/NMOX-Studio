@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–6 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–8 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -230,3 +230,39 @@ Um cliente completo dentro da IDE: TLS com verificação de nome de verdade, SAS
 ### Navegador (⌥⌘4)
 
 Um navegador de verdade dentro da IDE, com ferramentas de desenvolvedor próprias — console, DOM, rede, armazenamento e painéis para Vue, Svelte e Angular — porque o motor não traz inspetor e este aqui é nosso. Ele conhece o seu código: escolha um elemento, abra a linha que o produziu, mude o estilo ali mesmo, e a declaração vai parar na folha de estilo de origem. Salvar um arquivo recarrega a página, e há tamanhos de aparelho de verdade para testar o seu layout responsivo.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+A aba Docker é um painel de controle: estado do motor, contêineres, imagens, volumes e redes, com iniciar, parar, ver registros e limpar. O dispositivo HARBOR do rack mostra o mesmo de relance. E como já foi dito: suba um contêiner de Postgres, MySQL ou Mongo e o Estúdio de banco de dados lhe oferece uma conexão pronta.
+
+A aba **Dockerize** gera um `Dockerfile` de qualidade de produção, um `.dockerignore` e um arquivo de composição ajustados à cadeia de ferramentas do seu projeto — Node, PHP-FPM com nginx e outros.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Assistentes e kits
+
+Todos ficam em *Novo arquivo…* e no menu de contexto do projeto, e todos são **idempotentes e nunca sobrescrevem**: rodar de novo atualiza o que pertence ao próprio kit e deixa suas edições em paz; o que não pode ser reescrito aterrissa ao lado como um arquivo `.suggested`.
+
+### Kit de padrões
+
+`robots.txt`, `sitemap.xml`, o manifesto web, o `security.txt` do RFC 9116 e `humans.txt`, gerados a partir das suas respostas.
+
+### Kit de PWA
+
+Um conjunto completo de ícones forjado a partir de uma única imagem, variantes mascaráveis incluídas; um service worker legível — casca do aplicativo ou rede primeiro, você escolhe —, uma página para quando não há rede e a fiação do `index.html` que amarra tudo.
+
+### Kit de acessibilidade
+
+Acessibilidade como ponto de partida, não como auditoria depois do fato: `a11y.css` (um anel de foco visível, um utilitário para texto que só leitores de tela leem, estilos de link de salto e um bloco para quem prefere menos movimento), `A11Y-NOTES.md` com o percurso pelo teclado e as perguntas que nenhuma automação responde, e a fiação idempotente do `index.html` — o idioma, o link de salto, a folha de estilo. Um viewport que impede ampliar é avisado, nunca reescrito; o que o kit não consegue consertar, ele diz, sem tocar.
+
+### Kit de internacionalização
+
+Traduzível desde o primeiro dia, o irmão do kit de acessibilidade: `locales/en.json` e `locales/es.json` (um catálogo por idioma, as mesmas chaves), um `i18n.js` sem dependências que aplica o catálogo à marcação `data-i18n`, mantém `<html lang>` honesto e mostra uma chave faltante como ela mesma, nunca como um vazio silencioso; mais `I18N-NOTES.md` — nada de fragmentos concatenados, `Intl` para datas e números, o percurso da direita para a esquerda e a pseudolocalização.
+
+### Kit de contratos (Web3)
+
+Escolha uma cadeia — Solidity com Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin com Miniscript, Clarity no Stacks, Cardano com Aiken ou TON com Tact — e um nome de contrato, e o kit monta o começo já provado ao vivo: manifesto, contrato, teste nativo e um CONTRACT-NOTES.md que nomeia os dispositivos do rack e os passos de uma vez só. As chaves nunca tocam o IDE.
+
+### Kit clássico
+
+Acrescente a qualquer código jQuery, MooTools, Prototype, Backbone com Underscore ou Knockout, seja versionado no repositório (versões fixadas, sha256 registrado) ou como dependências do npm; mais andaimes de webpack, grunt, gulp ou bower.

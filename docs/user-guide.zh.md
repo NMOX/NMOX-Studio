@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · **简体中文** · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> 部分翻译：第 1–6 章为中文。其余内容请见[完整的英文指南](user-guide.md)。
+> 部分翻译：第 1–8 章为中文。其余内容请见[完整的英文指南](user-guide.md)。
 
 如何使用本产品。本指南按你会遇到的顺序介绍功能：安装、首次启动、项目、机架、各工作室、向导以及各种安全网。
 
@@ -230,3 +230,39 @@ IDE 内部的一个完整客户端：带真正主机名校验的 TLS、SASL、IR
 ### 浏览器（⌥⌘4）
 
 IDE 内部一个真正的浏览器，带有我们自己的开发者工具 — 控制台、DOM、网络、存储，以及面向 Vue、Svelte 和 Angular 的面板 — 因为它的引擎本身不带检查器，这一套是我们做的。它了解你的源码：选中一个元素，打开生成它的那一行，就地改它的样式，而这条声明会落进真正的源样式表。保存文件会重新加载页面，还有真实的设备尺寸可用来检验你的响应式布局。
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Docker 标签页是一块控制面板：引擎状态、容器、镜像、卷和网络，附带启动、停止、查看日志和清理。机架上的 HARBOR 设备一眼就能给你同样的东西。前面也说过：跑起一个 Postgres、MySQL 或 Mongo 容器，数据库工作室就会给你一个现成的连接。
+
+**Dockerize** 标签页会生成可用于生产的 `Dockerfile`、`.dockerignore` 和编排文件，并按你项目的工具链调好 — Node、PHP-FPM 配 nginx，等等。
+
+<a id="8-wizards-and-kits"></a>
+## 8. 向导与套件
+
+它们都在 *新建文件…* 和项目的右键菜单里，也都**幂等且从不覆盖**：再跑一次只会更新属于它自己的东西，你的修改原封不动；不能重写的内容会落在旁边，成为一个 `.suggested` 文件。
+
+### 标准套件
+
+`robots.txt`、`sitemap.xml`、Web 清单、符合 RFC 9116 的 `security.txt` 和 `humans.txt`，都由你的回答生成。
+
+### PWA 套件
+
+从一张图片锻造出的整套图标，包含可遮罩的变体；一个读得懂的 service worker — 应用外壳优先还是网络优先，由你决定 —，一个断网时的页面，以及把这一切串起来的 `index.html` 接线。
+
+### 无障碍套件
+
+无障碍是起点，不是事后的审查：`a11y.css`（看得见的焦点环、只给屏幕阅读器读的文本工具、跳转链接的样式，以及给偏好少动效的人的一段规则）、`A11Y-NOTES.md`（键盘走一遍的路线，以及自动化回答不了的那些问题），还有 `index.html` 的幂等接线 — 语言、跳转链接、样式表。禁止缩放的 viewport 只会得到提醒，绝不被改写；套件修不了的事情它会说出来，而不是动手。
+
+### 国际化套件
+
+从第一天起就可翻译，是无障碍套件的兄弟：`locales/en.json` 和 `locales/es.json`（每种语言一份目录，键完全相同）、一个无依赖的 `i18n.js`，把目录套到 `data-i18n` 标记上，让 `<html lang>` 说实话，并把缺失的键原样显示出来，而不是一片无声的空白；再加上 `I18N-NOTES.md` — 不拼接片段，日期和数字交给 `Intl`，从右往左的走查，以及伪本地化。
+
+### 合约套件（Web3）
+
+挑一条链 — Solidity 配 Foundry、Soroban、Solana、CosmWasm、ink!、Cairo、Move、Bitcoin 配 Miniscript、Stacks 上的 Clarity、Cardano 配 Aiken，或 TON 配 Tact — 再取个合约名，套件就会搭出经过实测的起点：清单、合约、原生测试，以及一份点名机架设备和一次性步骤的 CONTRACT-NOTES.md。密钥从不碰到 IDE。
+
+### 经典套件
+
+给任何代码加上 jQuery、MooTools、Prototype、Backbone 配 Underscore，或 Knockout，可以直接放进仓库（版本钉死，记下 sha256），也可以做成 npm 依赖；再加上 webpack、grunt、gulp 或 bower 的脚手架。

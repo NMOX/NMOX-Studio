@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–6 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
+> Bản dịch một phần: chương 1–8 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
@@ -230,3 +230,39 @@ Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật s
 ### Trình duyệt (⌥⌘4)
 
 Một trình duyệt thật ngay trong IDE, với bộ công cụ nhà phát triển của riêng nó — bảng điều khiển, DOM, mạng, kho lưu, và các khung cho Vue, Svelte và Angular — bởi bộ máy không mang theo trình kiểm tra nào, và cái này là của chúng tôi. Nó biết mã nguồn của bạn: chọn một phần tử, mở đúng dòng đã sinh ra nó, đổi kiểu ngay tại chỗ, và khai báo ấy sẽ nằm vào đúng tệp kiểu gốc. Lưu một tệp là trang tự tải lại, và có sẵn những kích thước thiết bị thật để thử bố cục co giãn của bạn.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Thẻ Docker là một bảng điều khiển: trạng thái của máy, các thùng chứa, ảnh, ổ đĩa và mạng, cùng với khởi động, dừng, nhật ký và dọn dẹp. Thiết bị HARBOR trên giá cho bạn ngần ấy chỉ trong một cái nhìn. Và như đã nói: chạy một thùng chứa Postgres, MySQL hay Mongo, và Xưởng cơ sở dữ liệu sẽ mời bạn một kết nối đã sẵn sàng.
+
+Thẻ **Dockerize** sinh ra một `Dockerfile` đạt chuẩn sản xuất, một `.dockerignore` và một tệp soạn thảo hợp với bộ công cụ của dự án bạn — Node, PHP-FPM cùng nginx, và nhiều thứ khác.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Trình hướng dẫn và bộ công cụ
+
+Tất cả nằm trong *Tệp mới…* và trong trình đơn ngữ cảnh của dự án, và tất cả đều **luỹ đẳng và không bao giờ ghi đè**: chạy lại một bộ chỉ làm mới những gì thuộc về chính nó và để yên các sửa đổi của bạn; thứ không được phép viết lại sẽ đáp xuống bên cạnh dưới dạng tệp `.suggested`.
+
+### Bộ chuẩn mực
+
+`robots.txt`, `sitemap.xml`, bản kê khai web, `security.txt` theo RFC 9116 và `humans.txt`, được sinh ra từ những câu trả lời của bạn.
+
+### Bộ PWA
+
+Một bộ biểu tượng đầy đủ rèn từ một tấm ảnh duy nhất, kể cả các biến thể che được; một service worker dễ đọc — vỏ ứng dụng hoặc mạng trước, bạn chọn —, một trang cho lúc mất mạng, và phần nối dây trong `index.html` buộc tất cả lại với nhau.
+
+### Bộ tiếp cận
+
+Khả năng tiếp cận là điểm khởi đầu, không phải cuộc kiểm tra muộn màng: `a11y.css` (một vòng tiêu điểm nhìn thấy được, một tiện ích cho phần chữ chỉ trình đọc màn hình mới đọc, kiểu dáng cho liên kết nhảy qua, và một khối cho ai muốn ít chuyển động hơn), `A11Y-NOTES.md` với lượt đi bằng bàn phím và những câu hỏi không máy móc nào trả lời được, cùng phần nối dây luỹ đẳng trong `index.html` — ngôn ngữ, liên kết nhảy qua, bảng kiểu. Một viewport cấm phóng to sẽ được cảnh báo chứ không bao giờ bị viết lại; điều bộ này không sửa được thì nó nói ra, chứ không đụng vào.
+
+### Bộ quốc tế hoá
+
+Dịch được ngay từ ngày đầu, anh em với bộ tiếp cận: `locales/en.json` và `locales/es.json` (mỗi ngôn ngữ một danh mục, cùng bộ khoá), một `i18n.js` không phụ thuộc gì, áp danh mục lên phần đánh dấu `data-i18n`, giữ cho `<html lang>` nói thật, và hiện một khoá thiếu bằng chính nó chứ không phải một khoảng trống lặng lẽ; thêm `I18N-NOTES.md` — không ghép mảnh, `Intl` cho ngày tháng và con số, lượt đi từ phải sang trái, và giả bản địa hoá.
+
+### Bộ hợp đồng (Web3)
+
+Chọn một chuỗi — Solidity với Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin với Miniscript, Clarity trên Stacks, Cardano với Aiken hoặc TON với Tact — và một tên hợp đồng, rồi bộ sẽ dựng phần khởi đầu đã được chứng thực trực tiếp: bản kê khai, hợp đồng, bài kiểm tra bản địa và một CONTRACT-NOTES.md gọi tên các thiết bị trên giá cùng những bước chỉ làm một lần. Khoá không bao giờ chạm tới IDE.
+
+### Bộ cổ điển
+
+Thêm vào bất cứ mã nguồn nào jQuery, MooTools, Prototype, Backbone cùng Underscore, hoặc Knockout, hoặc để ngay trong kho (phiên bản ghim chặt, sha256 ghi lại) hoặc làm phụ thuộc npm; thêm khung sườn của webpack, grunt, gulp hay bower.

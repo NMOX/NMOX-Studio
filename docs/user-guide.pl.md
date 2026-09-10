@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–6 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–8 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -230,3 +230,39 @@ Pełny klient wewnątrz IDE: TLS z prawdziwym sprawdzeniem nazwy, SASL, rozszerz
 ### Przeglądarka (⌥⌘4)
 
 Prawdziwa przeglądarka wewnątrz IDE, z własnymi narzędziami deweloperskimi — konsolą, DOM-em, siecią, magazynem i panelami dla Vue, Svelte i Angulara — bo silnik nie niesie własnego inspektora, a ten jest nasz. Zna twoje źródła: wskaż element, otwórz wiersz, który go wytworzył, zmień jego styl na miejscu, a deklaracja wyląduje w źródłowym arkuszu stylów. Zapisanie pliku przeładowuje stronę, a prawdziwe rozmiary urządzeń służą do sprawdzania układu responsywnego.
+
+<a id="7-docker"></a>
+## 7. Docker
+
+Karta Docker to pulpit sterowniczy: stan silnika, kontenery, obrazy, wolumeny i sieci, z uruchamianiem, zatrzymywaniem, dziennikami i sprzątaniem. Urządzenie HARBOR na stojaku pokazuje to samo jednym spojrzeniem. I jak już powiedziano: uruchom kontener Postgresa, MySQL-a albo Mongo, a Studio baz danych zaproponuje ci gotowe połączenie.
+
+Karta **Dockerize** tworzy `Dockerfile` klasy produkcyjnej, `.dockerignore` oraz plik kompozycji dopasowane do łańcucha narzędzi twojego projektu — Node, PHP-FPM z nginksem i inne.
+
+<a id="8-wizards-and-kits"></a>
+## 8. Kreatory i zestawy
+
+Wszystkie mieszkają w *Nowy plik…* oraz w menu kontekstowym projektu i wszystkie są **idempotentne i nigdy nie nadpisują**: kolejne uruchomienie odświeża to, co należy do samego zestawu, a twoje zmiany zostawia w spokoju; czego przepisać nie wolno, ląduje obok jako plik `.suggested`.
+
+### Zestaw standardów
+
+`robots.txt`, `sitemap.xml`, manifest sieciowy, `security.txt` zgodny z RFC 9116 oraz `humans.txt`, utworzone z twoich odpowiedzi.
+
+### Zestaw PWA
+
+Pełny komplet ikon wykuty z jednego obrazu, wraz z wariantami maskowalnymi; czytelny service worker — powłoka aplikacji albo sieć najpierw, twój wybór — strona na czas bez sieci i okablowanie w `index.html`, które wiąże to wszystko razem.
+
+### Zestaw dostępności
+
+Dostępność jako punkt wyjścia, a nie audyt po fakcie: `a11y.css` (widoczny pierścień fokusa, narzędzie dla tekstu czytanego tylko przez czytniki ekranu, style odnośnika pomijającego i blok dla tych, którzy wolą mniej ruchu), `A11Y-NOTES.md` z przejściem po klawiaturze i pytaniami, na które żadna automatyka nie odpowie, oraz idempotentne okablowanie `index.html` — język, odnośnik pomijający, arkusz stylów. O viewporcie zakazującym powiększania dostaniesz ostrzeżenie, ale nikt go nie przepisze; czego zestaw naprawić nie umie, to nazywa, a nie rusza.
+
+### Zestaw internacjonalizacji
+
+Przetłumaczalny od pierwszego dnia, brat zestawu dostępności: `locales/en.json` i `locales/es.json` (po jednym katalogu na język, te same klucze), `i18n.js` bez zależności, który stosuje katalog do znaczników `data-i18n`, pilnuje, by `<html lang>` mówił prawdę, i pokazuje brakujący klucz jako jego samego, nigdy jako cichą pustkę; do tego `I18N-NOTES.md` — żadnych sklejanych fragmentów, `Intl` do dat i liczb, przejście od prawej do lewej i pseudolokalizacja.
+
+### Zestaw kontraktów (Web3)
+
+Wybierz łańcuch — Solidity z Foundry, Soroban, Solana, CosmWasm, ink!, Cairo, Move, Bitcoin z Miniscriptem, Clarity na Stacks, Cardano z Aikenem albo TON z Tactem — oraz nazwę kontraktu, a zestaw postawi sprawdzony na żywo początek: manifest, kontrakt, natywny test i CONTRACT-NOTES.md nazywający urządzenia stojaka i kroki jednorazowe. Klucze nigdy nie dotykają środowiska.
+
+### Zestaw klasyczny
+
+Dodaj do dowolnego kodu jQuery, MooTools, Prototype, Backbone z Underscore albo Knockout — czy to w samym repozytorium (przypięte wersje, zapisany sha256), czy jako zależności npm; do tego rusztowania webpacka, grunta, gulpa lub bowera.
