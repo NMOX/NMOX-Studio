@@ -659,9 +659,13 @@ public final class IrcTopComponent extends TopComponent {
             return;
         }
         List<String> sorted = new ArrayList<>(nicks.values());
+        // ops and voiced first, then the reader's own alphabetical order:
+        // a nick list is scanned by eye, and a UTF-8 nick sorted by code
+        // point lands nowhere a reader would look for it
         sorted.sort(Comparator
                 .comparingInt((String s) -> NickPrefix.rank(s))
-                .thenComparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
+                .thenComparing(org.nmox.studio.core.util.Collate.byDisplayName(
+                        NickPrefix::strip)));
         for (String n : sorted) {
             nickModel.addElement(n);
         }
@@ -1216,7 +1220,7 @@ public final class IrcTopComponent extends TopComponent {
         Map<String, String> nicks = nickLists.get(activeKey);
         if (nicks != null) {
             List<String> sorted = new ArrayList<>(nicks.values());
-            sorted.sort(Comparator.comparing(s -> NickPrefix.strip(s).toLowerCase(Locale.ROOT)));
+            sorted.sort(org.nmox.studio.core.util.Collate.byDisplayName(NickPrefix::strip));
             for (String display : sorted) {
                 out.add(NickPrefix.strip(display));
             }

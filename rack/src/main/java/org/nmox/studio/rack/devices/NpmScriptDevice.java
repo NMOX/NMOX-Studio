@@ -96,7 +96,9 @@ public class NpmScriptDevice extends CommandDevice {
         if (names.isEmpty()) {
             names.add("—");
         }
-        names.sort(String::compareTo);
+        // the knob is read by eye, and a script named in the developer's own
+        // language must sit where their alphabet puts it (v2.104.0)
+        names.sort(org.nmox.studio.core.util.Collate.byDisplayName(n -> n));
         onEdt(() -> {
             // equality-guarded: setOptions always fires a knob change, and
             // a reload that found the same scripts must not re-fire (the

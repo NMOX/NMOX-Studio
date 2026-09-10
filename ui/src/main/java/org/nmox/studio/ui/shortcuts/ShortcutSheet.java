@@ -31,10 +31,17 @@ public final class ShortcutSheet {
         return org.nmox.studio.core.util.Chords.human(nbKey, mac); // one vocabulary, in core since v2.87.0
     }
 
-    /** Rows sorted by action name (case-insensitive), chords already human. */
+    /**
+     * Rows in the reader's own alphabetical order, chords already human.
+     *
+     * <p>These action names are translated, so the sheet is a list of the
+     * reader's own words and belongs in their language's order — a Polish
+     * reader looking for {@code Ćwiczenie} between C and D would have found
+     * it exiled past Z under code-point order (v2.104.0).
+     */
     public static List<Row> sorted(List<Row> rows) {
         List<Row> out = new ArrayList<>(rows);
-        out.sort(Comparator.comparing((Row r) -> r.action().toLowerCase(java.util.Locale.ROOT))
+        out.sort(org.nmox.studio.core.util.Collate.<Row>byDisplayName(Row::action)
                 .thenComparing(Row::chord));
         return out;
     }
