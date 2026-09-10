@@ -43,11 +43,37 @@ class SiteShipsTest {
         while (m.find()) {
             markup.add(m.group(1));
         }
-        JSONObject en = new JSONObject(Files.readString(SITE.resolve("locales/en.json")));
-        JSONObject es = new JSONObject(Files.readString(SITE.resolve("locales/es.json")));
-        assertThat(en.keySet()).isEqualTo(markup);
-        assertThat(es.keySet()).isEqualTo(markup);
+        // v2.105.0: the population is the DIRECTORY, not a hand-kept pair.
+        // The site spoke two languages while the IDE spoke thirteen, and a
+        // gate naming en and es could never have said so.
         assertThat(markup).isNotEmpty();
+        java.util.List<String> locales = locales();
+        assertThat(locales).as("the site's catalogs").hasSizeGreaterThanOrEqualTo(13).contains("en");
+        for (String locale : locales) {
+            JSONObject cat = new JSONObject(Files.readString(SITE.resolve("locales/" + locale + ".json")));
+            assertThat(cat.keySet()).as("%s must answer exactly the markup's keys", locale)
+                    .isEqualTo(markup);
+            for (String key : cat.keySet()) {
+                assertThat(cat.getString(key)).as("%s.%s is blank", locale, key).isNotBlank();
+                assertThat(cat.getString(key))
+                        .as("%s.%s uses a bare ASCII apostrophe — the v2.98.0 rule", locale, key)
+                        .doesNotContain("'");
+            }
+        }
+        // every catalog on disk is reachable from the page, and every button
+        // it offers has a catalog behind it — a picker that names a missing
+        // locale warns to the console and silently stays where it was
+        String footer = Files.readString(SITE.resolve("index.html"));
+        for (String locale : locales) {
+            assertThat(footer).as("no button for %s — the catalog is unreachable", locale)
+                    .contains("data-setlocale=\"" + locale + "\"");
+        }
+        java.util.regex.Matcher b = java.util.regex.Pattern
+                .compile("data-setlocale=\"([a-z]{2})\"").matcher(footer);
+        while (b.find()) {
+            assertThat(locales).as("the picker offers %s with no catalog behind it", b.group(1))
+                    .contains(b.group(1));
+        }
         // and the page carries the a11y kit's structural bits
         assertThat(html).contains("skip-link").contains("lang=\"en\"").contains("id=\"main\"");
     }
@@ -60,22 +86,42 @@ class SiteShipsTest {
      * them against the learning catalog and the generated device
      * reference exactly the way DocsCountGateTest does.
      */
+    /** Every catalog the site ships, by language tag, from the directory. */
+    private static java.util.List<String> locales() throws Exception {
+        try (java.util.stream.Stream<java.nio.file.Path> s =
+                java.nio.file.Files.list(SITE.resolve("locales"))) {
+            return s.map(p -> p.getFileName().toString())
+                    .filter(n -> n.matches("[a-z]{2}\\.json"))
+                    .map(n -> n.substring(0, 2)).sorted().toList();
+        }
+    }
+
     @org.junit.jupiter.api.Test
-    @org.junit.jupiter.api.DisplayName("the site's device and space counts, in both languages, equal the catalogs")
+    @org.junit.jupiter.api.DisplayName("the site's device and space counts equal the catalogs, in every language")
     void countsAreTrue() throws Exception {
         String catalog = java.nio.file.Files.readString(java.nio.file.Path.of("..", "rack", "src", "main", "resources",
                 "org", "nmox", "studio", "rack", "projectstudio", "learn-catalog.json"));
         long spaces = java.util.regex.Pattern.compile("\"slug\"\\s*:").matcher(catalog).results().count();
         long devices = java.nio.file.Files.readAllLines(java.nio.file.Path.of("..", "docs", "devices.md")).stream()
                 .filter(l -> l.startsWith("### ")).count();
-        for (String locale : new String[] {"en", "es"}) {
+        // the word after the numeral is different in every language, so the
+        // numeral itself is what every catalog is held to — a stale 92 fails
+        // here exactly as it did when only two languages were checked
+        for (String locale : locales()) {
             String text = java.nio.file.Files.readString(SITE.resolve("locales/" + locale + ".json"));
-            java.util.regex.Matcher d = java.util.regex.Pattern.compile("(\\d+) (?:devices|dispositivos)").matcher(text);
-            org.assertj.core.api.Assertions.assertThat(d.find()).as(locale + " names a device count").isTrue();
-            org.assertj.core.api.Assertions.assertThat(Long.parseLong(d.group(1))).as(locale + " device count").isEqualTo(devices);
-            java.util.regex.Matcher w = java.util.regex.Pattern.compile("(\\d+) (?:ways in|puertas de entrada)").matcher(text);
-            org.assertj.core.api.Assertions.assertThat(w.find()).as(locale + " names a space count").isTrue();
-            org.assertj.core.api.Assertions.assertThat(Long.parseLong(w.group(1))).as(locale + " space count").isEqualTo(spaces);
+            org.assertj.core.api.Assertions.assertThat(text)
+                    .as(locale + " names the device count").containsPattern("\\b" + devices + "\\b");
+            org.assertj.core.api.Assertions.assertThat(text)
+                    .as(locale + " names the space count").containsPattern("\\b" + spaces + "\\b");
+        }
+        // English and Spanish keep the stronger, word-anchored form they had
+        for (String[] pair : new String[][] {{"en", "devices"}, {"es", "dispositivos"}}) {
+            String text = java.nio.file.Files.readString(SITE.resolve("locales/" + pair[0] + ".json"));
+            java.util.regex.Matcher d = java.util.regex.Pattern
+                    .compile("(\\d+) " + pair[1]).matcher(text);
+            org.assertj.core.api.Assertions.assertThat(d.find()).as(pair[0] + " names a device count").isTrue();
+            org.assertj.core.api.Assertions.assertThat(Long.parseLong(d.group(1)))
+                    .as(pair[0] + " device count").isEqualTo(devices);
         }
         String html = java.nio.file.Files.readString(SITE.resolve("index.html"));
         org.assertj.core.api.Assertions.assertThat(html).contains(devices + " devices").contains(spaces + " ways in");
