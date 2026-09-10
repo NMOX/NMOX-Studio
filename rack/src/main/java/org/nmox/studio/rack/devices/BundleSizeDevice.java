@@ -79,7 +79,7 @@ public class BundleSizeDevice extends RackDevice {
 
     static String human(long bytes) {
         if (bytes >= 1_000_000) {
-            return String.format("%.1f MB", bytes / 1_000_000.0);
+            return org.nmox.studio.core.util.Numbers.display(bytes / 1_000_000.0, 1) + " MB";
         }
         return (bytes / 1_000) + " KB";
     }

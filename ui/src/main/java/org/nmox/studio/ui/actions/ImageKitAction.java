@@ -229,7 +229,7 @@ public final class ImageKitAction implements ActionListener {
     /** Human sizes: MB with one decimal above a megabyte, else KB (floor 1). */
     static String mb(long bytes) {
         return bytes >= 1_000_000
-                ? Bundle.ImageKitAction_sizeMb(String.format("%.1f", bytes / 1_000_000.0))
-                : Bundle.ImageKitAction_sizeKb(String.format("%d", Math.max(1, bytes / 1_000)));
+                ? Bundle.ImageKitAction_sizeMb(org.nmox.studio.core.util.Numbers.display(bytes / 1_000_000.0, 1))
+                : Bundle.ImageKitAction_sizeKb(String.valueOf(Math.max(1, bytes / 1_000)));
     }
 }

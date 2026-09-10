@@ -165,7 +165,7 @@ public class DockerDevice extends RackDevice {
         if (gb <= 0) {
             return "";
         }
-        return gb >= 1 ? String.format("%.1fGB", gb) : String.format("%.0fMB", gb * 1024);
+        return gb >= 1 ? org.nmox.studio.core.util.Numbers.display(gb, 1) + "GB" : org.nmox.studio.core.util.Numbers.display(gb * 1024, 0) + "MB";
     }
 
     // ---- polling lifecycle ----

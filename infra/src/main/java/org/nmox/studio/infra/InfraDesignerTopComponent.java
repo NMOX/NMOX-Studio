@@ -472,7 +472,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     request.description()));
         }
         text.append(String.format("%n")).append(Bundle.InfraDesigner_estimatedMonthlyCost(
-                String.format("%.2f", graph.totalMonthlyUsd())));
+                org.nmox.studio.core.util.Numbers.display(graph.totalMonthlyUsd(), 2)));
 
         // every provider this plan touches must have a token BEFORE the
         // worker starts - failing on node 7 of 12 leaves half a deployment
@@ -644,7 +644,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             names.append("  ").append(Bundle.InfraDesigner_destroyRow(
                     node.kind.getDisplayName(), node.label)).append('\n');
         }
-        String money = String.format("%.2f", monthly);
+        String money = org.nmox.studio.core.util.Numbers.display(monthly, 2);
         String question = order.size() == 1
                 ? Bundle.InfraDesigner_destroyStackQuestionOne(money)
                 : Bundle.InfraDesigner_destroyStackQuestion(
@@ -1008,7 +1008,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     private void refreshCost() {
         costLabel.setText(PlainText.plain(Bundle.InfraDesigner_costLabel(
-                String.format("%.2f", graph.totalMonthlyUsd()))));
+                org.nmox.studio.core.util.Numbers.display(graph.totalMonthlyUsd(), 2))));
     }
 
     void writeProperties(java.util.Properties p) {
