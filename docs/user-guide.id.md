@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–3 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
+> Terjemahan sebagian: bab 1–4 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
@@ -76,3 +76,60 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 **Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `start` bila package.json memilikinya, `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
 
 **`.env` di mana-mana:** jika proyek Anda punya `.env`, perangkat yang diluncurkan dari rak menerima variabel itu. Suntinglah, dan bilah status mencatat bahwa mulai-ulang akan mengambilnya — proses yang sedang berjalan dengan jujur mempertahankan lingkungan lamanya.
+
+<a id="4-the-task-rack"></a>
+## 4. Rak Tugas
+
+![Rak Tugas](images/tabs/the-task-rack.png)
+
+Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pembundel, penjalan uji, server pengembangan, linter, git, penerapan — adalah sebuah perangkat di dalam rak: kenop memilih tugas, GO menjalankannya, LED menunjukkan keadaan, dan sebuah layar LCD memberi tahu Anda dengan kata-kata apa yang terjadi.
+
+![Rak yang diarahkan ke situs jQuery klasik — prasetel Classic Web Bench: MAESTRO, CRATE, DYNAMO (kenop TASK-nya membaca Gruntfile yang sebenarnya), IGNITION menyajikan statis, VITALS menjaga mutu](images/task-rack.png)
+
+**Dasar-dasarnya:**
+
+- **Tambahkan perangkat** dengan menyeretnya dari palet (ada kategori dan penyaring pencarian). Setiap perangkat membawa kartu *Cara memakai*-nya sendiri.
+- **Jalankan sesuatu** dengan menekan tombol GO sebuah perangkat. Arahkan kursor dulu ke atasnya: keterangannya menampilkan baris perintah persis yang akan dijalankan. Tidak ada sihir.
+- **Rangkai sebuah alur:** tekan **Tab** untuk memutar rak ke sisi belakangnya. Tarik kabel patch dari jack **OK** satu perangkat ke jack **GO** perangkat berikutnya. Kini `pasang → bangun → uji` hanya satu tekanan: rantainya berjalan sendiri dan berhenti pada kegagalan pertama. Keluarannya bergulir di layar fosfor perangkat MONITOR.
+- **Batalkan perubahan struktur apa pun** dengan **⌘Z** — menambah, membuang, merangkai ulang. Membuang perangkat yang sedang berjalan menghentikan prosesnya lebih dulu.
+- **Prasetel** memberi Anda satu rak penuh yang sudah dirangkai dengan sekali klik — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Rangkaian tersimpan per proyek secara otomatis.
+
+![Tab memutar rak — kabel patch menuntun MAESTRO melalui CRATE, DYNAMO dan IGNITION sampai ke VITALS](images/rack-rear.png)
+
+**Koordinasi, ketika alur Anda membesar:**
+
+- **QUORUM** menyatukan jalur: ia hanya memicu ketika *semua* masukan terangkainya berhasil — klasik “tunggu lint DAN uji DAN pemeriksaan tipe”.
+- **Gerbang ENABLE** pada proses panjang: masukan ENABLE sebuah server pengembangan berarti “jangan mulai sebelum ini memicu”.
+- **REFLEX** mengawasi berkas dan mengarahkan menurut pola — `src/**/*.css` ke satu rantai, `**/*.ts` ke rantai lain, per jalur di sebuah monorepo.
+- **ROSETTA** memilih jalur perkakas di repositori campuran (rak mendeteksi Node/Rust/Go/PHP/… per direktori dan mengarahkan tiap perangkat sesuai itu).
+
+**Jalur yang berbicara dengan perkakas Anda sendiri.** Pada AUTO, perangkat lint dan format (PURITY, GLOSS) berbicara dengan perkakas proyek itu sendiri alih-alih meraih perkakas Node di mana-mana: ruang kerja Deno memakai `deno lint` dan `deno fmt`, proyek Cargo memakai `cargo clippy` dan `cargo fmt`, modul Go memakai `go vet` (atau `golangci-lint` bila proyeknya membawa konfigurasinya) dan `gofmt`. Sebuah `biome.json` mengalihkan jalur Node ke Biome, dan posisi kenop yang eksplisit selalu mengalahkan AUTO.
+
+**Perangkat Anda sendiri.** Raknya bisa diperluas dengan penyunting teks: `*.json` mana pun di `~/.nmox/devices.d/` menjadi perangkat sungguhan — kenop, tombol, LED, porta dan kabel, tersimpan dalam rangkaian dan terjangkau dari ⌘I. Nyatakan sebuah perintah sebagai larik argumen, beri nama sebuah kenop, dan `{{kenop}}` akan menggantikannya saat tombol ditekan. Hukumnya tetap pada tuan rumah, bukan pada berkas Anda: **kepercayaan ruang kerja menjaga peluncuran pertama persis seperti pada perangkat bawaan**.
+
+**Gerbang mutu** mengubah “kelihatannya selesai” menjadi “memang selesai”:
+
+- **VITALS** menjalankan Lighthouse terhadap server hidup Anda dan menuntut ambang untuk kinerja, keteraksesan, praktik baik, atau SEO.
+- **VERITAS** menegakkan ambang cakupan dan menjalankan ulang persis uji yang gagal, menurut namanya.
+- **GAUNTLET** membebani sebuah endpoint dan menuntut keluaran minimum. **PRISM** menjaga ukuran bundel, **BEACON** menjaga sertifikat dan ketersediaan sebuah URL, dan **PREFLIGHT** adalah daftar periksa sebelum berangkat — rangkaikan OK-nya ke perangkat penerapan Anda, dan penerapan secara fisik tidak bisa berjalan sebelum semuanya hijau.
+- **GOVERNOR** menjaga regresi gas dalam pekerjaan Solidity (`.gas-snapshot`).
+
+**Selebihnya:** **SOLDER** membungkus perintah shell apa pun menjadi perangkat sepenuhnya — dan seluruh rak **diekspor ke GitHub Actions** (alur lokal Anda dan integrasi Anda adalah rangkaian yang sama). **HELM** menjalankan perintah di server jauh lewat ssh, **TAIL** mengikuti berkas log mana pun, dan **PHOSPHOR** adalah terminal di dalam rak. Bila perintahnya mencetak alamat lokal, tanda ⇄ menyala seperti pada perangkat penyaji mana pun, dan padam ketika jalannya berakhir.
+
+**Rak menjaga dirinya tetap selaras.** Sunting `package.json` dan kenop skrip NPM-9000 memperbarui dirinya di tempat. Sunting sebuah `Gruntfile` dan DYNAMO membaca ulang tugas-tugasnya. Tambahkan sebuah dependensi dan tampilan CRATE menyegarkan diri. Tanpa mengarahkan ulang, tanpa tombol segarkan.
+
+### KVASIR — menjelaskan kegagalan terakhir
+
+![KVASIR menjelaskan jalannya yang benar-benar gagal: diagnosis yang telah diizinkan di panel depan dan langkah perbaikan lengkap di penampil](images/kvasir-explain.png)
+
+**KVASIR** adalah bantuan AI dengan cara rak: sebuah perangkat yang menjelaskan galat yang sedang ada di bus MONITOR, bukan bilah obrolan di samping. Ketika sebuah jalannya gagal, tekan **EXPLAIN** dan KVASIR bertanya kepada AI Anda apa yang salah dan apa langkah berikutnya yang konkret. Putusan singkat mendarat di layar; **VIEW** membuka jawaban selengkapnya. **MODEL** memilih **FAST** (cepat dan murah, bawaan) atau **DEEP** (lebih kuat). EXPLAIN berwarna biru: ia membaca dan bertanya, ia tidak pernah menyentuh proyek Anda.
+
+**Pilih AI Anda, pasang kunci Anda.** KVASIR bekerja dengan **Claude (Anthropic)**, **ChatGPT (OpenAI)** atau **Gemini (Google)** — kunci Anda, pilihan Anda. Tekan **KEY…** untuk memilih penyedia dan menempelkan kuncinya; pilihannya diingat, dan kuncinya hanya tinggal di gantungan kunci sistem operasi. Variabel lingkungan yang lazim bagi tiap penyedia juga dibaca, dan kunci yang tersimpan mengalahkan kunci dari lingkungan.
+
+**Apa yang KVASIR kirim, dan itu seluruhnya.** Pertama kali Anda menekan EXPLAIN, sebuah dialog merinci persis apa yang akan meninggalkan mesin Anda dan apa yang tidak; tidak ada yang dikirim tanpa persetujuan itu, dan persetujuannya berlaku per penyedia. Setelah EXPLAIN yang berhasil, tombol **VIEW** membuka jawabannya sebagai percakapan — Anda bisa terus bertanya tentang kegagalan yang sama.
+
+**Tanyakan kode Anda kepada KVASIR.** Asisten yang sama menjangkau penyunting: pilih kode lalu pilih **Tanya KVASIR tentang pilihan…**, atau **Sunting dengan KVASIR…** untuk mengatakan apa yang harus diubah dan melihat sebelum dan sesudahnya sebelum apa pun diterapkan. **⌥⌘G** melengkapi di kursor dengan teks bayangan yang hanya masuk bila Anda menekan Tab, dan tanda cabang git dapat menyusun pesan komit Anda.
+
+**Arahkan sebuah agen ke IDE Anda.** Alat ▸ Agent Port (MCP)… membuka titik akhir MCP yang bisa ditanyai asisten dari luar: ia **hanya-baca menurut rancangannya**, mati sampai Anda menyalakannya, hanya mendengarkan pada antarmuka lokal, dan menuntut token yang dibuat saat ia dinyalakan.
+
+Rak ini dapat diperluas: plugin pihak ketiga bisa menambahkan perangkat (pasang NBM mereka lewat Alat ▸ Plugin). Untuk menulis satu, lihat [device-spi.md](device-spi.md).

@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–3. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–4. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -76,3 +76,60 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 **Patakbuhin, buuin, subukin — at itigil:** ang ▶ sa toolbar (F6) ay pinapatakbo ang proyekto gaya ng pagpapatakbo ng sarili nitong mga kasangkapan: isang `start` na script kung mayroon ang package.json, `cargo run`, `go run`, `dotnet run`, at para sa folder ng HTML ay isang maliit na static na server sa unang bakanteng port mula 8080. Katabi nito at nasa menu ng Patakbuhin ang Buuin, Subukin at Linisin. Ang development server na nag-aanunsyo ng address nito ay nagpapailaw sa ⇄ sa status bar at binubuksan ang pahina sa nakapaloob na browser. Ang lahat ay dumadaan muna sa pagtatanong ng tiwala sa workspace. Ang pagtakbong hindi makasimula ay tapat na sinasabi ito at nag-aalok buksan ang Doktor ng kapaligiran. Para huminto: ang ■ sa kanan ng Debug (⌥⌘.) ay pinapatigil ang lahat ng tumatakbong utos nang sabay at sinasabi kung ano ang pinatigil; ang **Patakbuhin ▸ Itigil** ay pinapatigil ang isa at pagkatapos ay nag-aalok ng **Ulitin**. Nakikita ng ■ ang lahat ng sinisimulan ng produkto para sa iyo, pati na ang mga pag-install; kapag inilapit ang cursor, pinangangalanan ng tooltip nang eksakto kung ano ang ititigil ng isang pindot, at kung mula kailan tumatakbo ang bawat isa.
 
 **`.env` saanman:** kung may `.env` ang iyong proyekto, natatanggap ng mga kagamitang inilunsad mula sa rack ang mga variable na iyon. Baguhin ito at tatalâ ang status bar na kukunin ito ng mga muling pagsisimula — tapat na pinapanatili ng tumatakbong proseso ang lumang kapaligiran nito.
+
+<a id="4-the-task-rack"></a>
+## 4. Ang Rack ng Gawain
+
+![Ang Rack ng Gawain](images/tabs/the-task-rack.png)
+
+Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — npm, ang bundler, ang tagapagpatakbo ng pagsusulit, ang development server, ang linter, ang git, ang paglalagay — ay isang kagamitan sa isang rack: pumipili ng gawain ang mga knob, pinapatakbo ito ng GO, ipinapakita ng mga LED ang kalagayan, at sinasabi sa iyo ng isang LCD sa mga salita kung ano ang nangyari.
+
+![Ang rack na nakatutok sa klasikong jQuery na sityo — ang presetong Classic Web Bench: MAESTRO, CRATE, DYNAMO (binasa ng TASK knob nito ang tunay na Gruntfile), naghahain ng static ang IGNITION, binabantayan ng VITALS ang kalidad](images/task-rack.png)
+
+**Ang batayan:**
+
+- **Magdagdag ng kagamitan** sa pamamagitan ng paghila mula sa paleta (may mga kategorya at panala ito). May sariling kard na *Paano gamitin* ang bawat kagamitan.
+- **Magpatakbo ng isang bagay** sa pagpindot ng GO ng isang kagamitan. Ilapit muna ang cursor: ipinapakita ng tooltip ang eksaktong linya ng utos na tatakbo. Walang mahika.
+- **Ikabit ang isang daloy:** pindutin ang **Tab** upang ibaling ang rack sa likuran nito. Hilahin ang patch cable mula sa jack na **OK** ng isang kagamitan papunta sa jack na **GO** ng susunod. Ngayon ang `i-install → buuin → subukin` ay iisang pindot na lamang: umaandar ang tanikala nang mag-isa at humihinto sa unang pagkabigo. Umaagos ang output sa pantalang posporo ng kagamitang MONITOR.
+- **Bawiin ang anumang pagbabago sa istruktura** sa pamamagitan ng **⌘Z** — pagdaragdag, pagtatanggal, muling pagkakabit. Ang pagtanggal ng tumatakbong kagamitan ay pinapatigil muna ang proseso nito.
+- **Ang mga preset** ay nagbibigay ng buong nakakabit na rack sa isang pindot — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Kusang naiimbak ang mga kabitan kada proyekto.
+
+![Ibinabaling ng Tab ang rack — dinadala ng mga patch cable ang MAESTRO sa CRATE, DYNAMO at IGNITION hanggang sa VITALS](images/rack-rear.png)
+
+**Pag-uugnay, kapag lumaki ang iyong daloy:**
+
+- **QUORUM** ang nagtatagpo ng mga linya: pumuputok lamang ito kapag *lahat* ng nakakabit nitong pasukan ay nagtagumpay — ang klasikong “hintayin ang lint AT ang pagsusulit AT ang pagsusuri ng uri”.
+- **Ang mga tarangkahang ENABLE** sa mga matagal tumakbo: ang pasukang ENABLE ng isang development server ay nangangahulugang “huwag magsimula hangga’t hindi pumuputok ito”.
+- **REFLEX** ang nagbabantay sa mga file at nagruruta ayon sa padron — `src/**/*.css` sa isang tanikala, `**/*.ts` sa iba, kada linya sa isang monorepo.
+- **ROSETTA** ang pumipili ng linya ng kasangkapan sa mga halo-halong repositoryo (tinutukoy ng rack ang Node/Rust/Go/PHP/… kada direktoryo at itinutok ang bawat kagamitan nang naaayon).
+
+**Mga linyang nagsasalita ng sarili mong kasangkapan.** Sa AUTO, ang mga kagamitan sa lint at format (PURITY, GLOSS) ay nagsasalita ng kasangkapan ng mismong proyekto sa halip na abutin ang mga kagamitang Node saanman: ang isang workspace na Deno ay gumagamit ng `deno lint` at `deno fmt`, ang proyektong Cargo ng `cargo clippy` at `cargo fmt`, ang modyul na Go ng `go vet` (o `golangci-lint` kapag may dalang kompigurasyon ang proyekto) at `gofmt`. Binabaling ng isang `biome.json` ang mga linyang Node sa Biome, at laging nananaig sa AUTO ang tahasang posisyon ng knob.
+
+**Ang sarili mong mga kagamitan.** Napapalawak ang istante gamit ang isang editor ng teksto: anumang `*.json` sa `~/.nmox/devices.d/` ay nagiging tunay na kagamitan — mga knob, pindutan, LED, port at kable, naiimbak sa kabitan at naaabot mula sa ⌘I. Ipahayag ang isang utos bilang hanay ng mga argumento, pangalanan ang isang knob, at ihahalili ang `{{knob}}` kapag pinindot ang pindutan. Nananatili sa punong-abala ang mga batas, hindi sa iyong file: **binabantayan ng tiwala sa workspace ang unang pagtakbo nang eksakto gaya sa isang kagamitang nakapaloob**.
+
+**Ang mga tarangkahan ng kalidad** ang nagpapalit ng “mukhang tapos” sa “tapos na”:
+
+- **VITALS** ang nagpapatakbo ng Lighthouse laban sa iyong buhay na server at humihingi ng pinakamababang antas ng bilis, ng pagkamaaabot, ng mabubuting kasanayan, o ng SEO.
+- **VERITAS** ang nagpapatupad ng pinakamababang saklaw at inuulit nang eksakto ang mga pagsusulit na bumagsak, ayon sa pangalan.
+- **GAUNTLET** ang naglalagay ng bigat sa isang endpoint at humihingi ng pinakamababang daloy. **PRISM** ang nagbabantay sa laki ng bundle, **BEACON** sa sertipiko at pagkabuhay ng isang URL, at **PREFLIGHT** ang tsek-lista bago magpadala — ikabit ang OK nito sa iyong kagamitan sa paglalagay at hindi talaga makakatakbo ang paglalagay hangga’t hindi berde ang lahat.
+- **GOVERNOR** ang nagbabantay sa mga pag-urong ng gas sa gawaing Solidity (`.gas-snapshot`).
+
+**Anupaman ang iba:** binabalot ng **SOLDER** ang anumang utos sa shell bilang isang ganap na kagamitan — at ang buong rack ay **nailalabas sa GitHub Actions** (ang iyong lokal na daloy at ang iyong integrasyon ay iisang kabitan). Nagpapatakbo ang **HELM** ng mga utos sa malayong server sa pamamagitan ng ssh, sinusundan ng **TAIL** ang anumang file ng talaan, at ang **PHOSPHOR** ay isang terminal sa loob ng rack. Kung magpi-print ang utos ng lokal na address, nagliliwanag ang ⇄ gaya sa anumang naghahaing kagamitan, at namamatay ito pagkatapos ng pagtakbo.
+
+**Kusang nananatiling magkasundo ang rack.** Baguhin ang `package.json` at magsasariwa sa kinalalagyan ang knob ng mga script ng NPM-9000. Baguhin ang isang `Gruntfile` at babasahin muli ng DYNAMO ang mga gawain nito. Magdagdag ng dependency at magsasariwa ang tanaw ng CRATE. Walang muling pagtutok, walang pindutang pang-refresh.
+
+### KVASIR — ipinapaliwanag ang huling pagkabigo
+
+![KVASIR na nagpapaliwanag ng tunay na bumagsak na pagtakbo: ang pinahintulutang diyagnosis sa harapan at ang buong hakbang ng pag-aayos sa tagatanaw](images/kvasir-explain.png)
+
+Ang **KVASIR** ay tulong ng AI sa paraan ng rack: isang kagamitang nagpapaliwanag sa maling nasa MONITOR bus ngayon, hindi isang gilid na panel ng usapan. Kapag bumagsak ang isang pagtakbo, pindutin ang **EXPLAIN** at tatanungin ng KVASIR ang iyong AI kung ano ang nagkamali at kung ano ang konkretong susunod na hakbang. Isang maikling hatol ang dumadapo sa pantalan; binubuksan ng **VIEW** ang buong sagot. Pumipili ang **MODEL** ng **FAST** (mabilis at mura, ang likas) o **DEEP** (mas malakas). Asul ang EXPLAIN: nagbabasa ito at nagtatanong, hindi nito hinahawakan kailanman ang iyong proyekto.
+
+**Piliin ang iyong AI, ilagay ang iyong susi.** Gumagana ang KVASIR sa **Claude (Anthropic)**, **ChatGPT (OpenAI)** o **Gemini (Google)** — iyong susi, iyong pili. Pindutin ang **KEY…** upang piliin ang tagapaglaan at idikit ang susi nito; naaalala ang pinili, at nakatira ang susi sa keychain lamang ng operating system. Binabasa rin ang karaniwang mga environment variable ng bawat tagapaglaan, at nananaig ang naimbak na susi sa isang mula sa kapaligiran.
+
+**Kung ano ang ipinapadala ng KVASIR, at iyon na ang lahat.** Sa unang pagpindot mo sa EXPLAIN, inililista ng isang dayalogo nang eksakto kung ano ang aalis sa iyong makina at kung ano ang hindi; walang ipinapadala nang walang pahintulot na iyon, at ang pahintulot ay kada tagapaglaan. Pagkatapos ng matagumpay na EXPLAIN, binubuksan ng **VIEW** ang sagot bilang isang usapan — maaari kang magpatuloy sa pagtatanong tungkol sa parehong pagkabigo.
+
+**Tanungin ang KVASIR tungkol sa iyong kodigo.** Naaabot ng parehong katulong ang editor: pumili ng kodigo at piliin ang **Tanungin ang KVASIR tungkol sa pinili…**, o **I-edit gamit ang KVASIR…** upang sabihin kung ano ang babaguhin at makita ang bago at pagkatapos bago pa may maisagawa. Ang **⌥⌘G** ay pumupuno sa kinaroroonan ng cursor ng multong teksto na pumapasok lamang kapag pinindot mo ang Tab, at kayang isulat ng tanda ng sanga ng git ang iyong mensahe ng commit.
+
+**Itutok ang isang ahente sa iyong IDE.** Ang Mga Kasangkapan ▸ Agent Port (MCP)… ay nagbubukas ng dulong MCP na maaaring tanungin ng katulong mula sa labas: ito ay **basahin-lamang ayon sa pagkakagawa**, patay hangga’t hindi mo binubuksan, nakikinig lamang sa lokal na interface, at humihingi ng tokeng nilikha nang buksan ito.
+
+Napapalawak ang rack: maaaring magdagdag ng kagamitan ang mga plugin ng iba (i-install ang NBM nila sa Mga Kasangkapan ▸ Mga Plugin). Upang sumulat ng isa, tingnan ang [device-spi.md](device-spi.md).

@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–3 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–4 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -76,3 +76,60 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 **Uruchom, zbuduj, przetestuj — i zatrzymaj:** ▶ na pasku (F6) uruchamia projekt tak, jak uruchamia go jego zestaw narzędzi: skrypt `start`, jeśli package.json go ma, `cargo run`, `go run`, `dotnet run`, a dla katalogu z HTML-em mały serwer statyczny na pierwszym wolnym porcie od 8080. Zbuduj, Przetestuj i Wyczyść są obok i w menu Uruchom. Serwer deweloperski, który ogłosi swój adres, zapala wskaźnik ⇄ na pasku stanu i otwiera stronę we wbudowanej przeglądarce. Wszystko za pierwszym razem przechodzi przez pytanie o zaufanie do przestrzeni roboczej. Uruchomienie, które nie mogło wystartować, mówi to wprost i proponuje otwarcie Doktora środowiska. Aby zatrzymać: ■ na prawo od Debuguj (⌥⌘.) zatrzymuje naraz każde działające polecenie i mówi, co zatrzymał; **Uruchom ▸ Zatrzymaj** zatrzymuje jedno i proponuje potem **Powtórz**. ■ widzi wszystko, co produkt uruchamia za ciebie, łącznie z instalacjami; po najechaniu podpowiedź nazywa dokładnie to, co zatrzymałoby naciśnięcie, i od kiedy każde działa.
 
 **`.env` wszędzie:** jeśli twój projekt ma `.env`, urządzenia uruchamiane ze stojaka dostają te zmienne. Zmień go, a pasek stanu odnotuje, że ponowne uruchomienia je podchwycą — działające procesy uczciwie zachowują swoje dawne środowisko.
+
+<a id="4-the-task-rack"></a>
+## 4. Stojak zadań
+
+![Stojak zadań](images/tabs/the-task-rack.png)
+
+Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bundler, uruchamiacz testów, serwer deweloperski, linter, git, wdrożenie — jest urządzeniem w stojaku: pokrętła wybierają zadanie, GO je uruchamia, diody pokazują stan, a wyświetlacz mówi słowami, co się stało.
+
+![Stojak wycelowany w klasyczną stronę na jQuery — zestaw Classic Web Bench: MAESTRO, CRATE, DYNAMO (jego pokrętło TASK odczytało prawdziwy Gruntfile), IGNITION serwuje statykę, VITALS pilnuje jakości](images/task-rack.png)
+
+**Podstawy:**
+
+- **Dodawaj urządzenia**, przeciągając je z palety (ma kategorie i filtr wyszukiwania). Każde urządzenie ma swoją kartę *Jak używać*.
+- **Uruchom coś**, naciskając przycisk GO urządzenia. Najpierw najedź na niego: podpowiedź pokaże dokładny wiersz poleceń, który zostanie wykonany. Żadnej magii.
+- **Okabluj potok:** naciśnij **Tab**, aby obrócić stojak tyłem. Przeciągnij kabel krosowy z gniazda **OK** jednego urządzenia do gniazda **GO** następnego. Teraz `instalacja → budowa → testy` to jedno naciśnięcie: łańcuch idzie sam i zatrzymuje się na pierwszej porażce. Wyjście przewija się po luminoforowym ekranie urządzenia MONITOR.
+- **Cofnij dowolną zmianę struktury** przez **⌘Z** — dodanie, usunięcie, przełożenie kabli. Usunięcie działającego urządzenia najpierw zatrzymuje jego proces.
+- **Zestawy** dają cały okablowany stojak jednym kliknięciem — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Układy zapisują się per projekt automatycznie.
+
+![Tab obraca stojak — kable krosowe prowadzą MAESTRO przez CRATE, DYNAMO i IGNITION do VITALS](images/rack-rear.png)
+
+**Koordynacja, gdy potok rośnie:**
+
+- **QUORUM** łączy tory: odpala się dopiero wtedy, gdy *wszystkie* jego podłączone wejścia zakończyły się powodzeniem — klasyczne „czekaj na linter I testy I sprawdzenie typów”.
+- **Bramki ENABLE** na długo działających: wejście ENABLE serwera deweloperskiego znaczy „nie startuj, dopóki to nie odpali”.
+- **REFLEX** obserwuje pliki i rozsyła je według wzorca — `src/**/*.css` do jednego łańcucha, `**/*.ts` do drugiego, per tor w monorepozytorium.
+- **ROSETTA** wybiera tor narzędziowy w mieszanych repozytoriach (stojak wykrywa Node/Rust/Go/PHP/… per katalog i celuje każdym urządzeniem odpowiednio).
+
+**Tory mówią językiem twoich własnych narzędzi.** W położeniu AUTO urządzenia lintujące i formatujące (PURITY, GLOSS) mówią narzędziami samego projektu, zamiast wszędzie sięgać po narzędzia Node: przestrzeń robocza Deno używa `deno lint` i `deno fmt`, projekt Cargo — `cargo clippy` i `cargo fmt`, moduł Go — `go vet` (albo `golangci-lint`, gdy projekt niesie swoją konfigurację) i `gofmt`. Plik `biome.json` przestawia tory Node na Biome, a jawne położenia pokrętła zawsze wygrywają z AUTO.
+
+**Twoje własne urządzenia.** Półkę rozszerza się edytorem tekstu: dowolny `*.json` w `~/.nmox/devices.d/` staje się prawdziwym urządzeniem — pokrętła, przyciski, diody, porty i kable, zapisane w układzie i osiągalne z ⌘I. Zadeklaruj polecenie jako tablicę argumentów, nazwij pokrętło, a `{{pokrętło}}` podstawi się przy naciśnięciu przycisku. Prawa zostają u gospodarza, nie w twoim pliku: **zaufanie do przestrzeni roboczej pilnuje pierwszego uruchomienia dokładnie tak, jak przy urządzeniu wbudowanym**.
+
+**Bramki jakości** zamieniają „wygląda na skończone” w „jest skończone”:
+
+- **VITALS** puszcza Lighthouse na twój żywy serwer i wymaga progu wydajności, dostępności, dobrych praktyk albo widoczności w wyszukiwarkach.
+- **VERITAS** pilnuje progu pokrycia i powtarza dokładnie te testy, które padły, po nazwie.
+- **GAUNTLET** obciąża punkt końcowy i wymaga minimalnej przepustowości. **PRISM** pilnuje rozmiaru paczki, **BEACON** certyfikatu i dostępności adresu, a **PREFLIGHT** to lista kontrolna przed wysyłką — podłącz jego OK do urządzenia wdrożeniowego, a wdrożenia fizycznie nie ruszą, dopóki wszystko nie będzie na zielono.
+- **GOVERNOR** pilnuje regresji gazu w pracy z Solidity (`.gas-snapshot`).
+
+**Wszystko inne:** **SOLDER** opakowuje dowolne polecenie powłoki w pełnoprawne urządzenie — a cały stojak **eksportuje się do GitHub Actions** (twój lokalny potok i twoja integracja to to samo okablowanie). **HELM** wykonuje polecenia na zdalnym serwerze po ssh, **TAIL** śledzi dowolny dziennik, a **PHOSPHOR** to terminal wewnątrz stojaka. Jeśli polecenie wypisze lokalny adres, wskaźnik ⇄ zapala się jak przy każdym serwującym urządzeniu i gaśnie, gdy uruchomienie się kończy.
+
+**Stojak sam trzyma się w zgodzie.** Zmień `package.json`, a pokrętło skryptów NPM-9000 zaktualizuje się na miejscu. Zmień `Gruntfile`, a DYNAMO odczyta swoje zadania na nowo. Dodaj zależność, a wyświetlacz CRATE się odświeży. Bez ponownego celowania, bez przycisków odświeżania.
+
+### KVASIR — wyjaśnia ostatnią porażkę
+
+![KVASIR wyjaśniający prawdziwe nieudane uruchomienie: zatwierdzona diagnoza na płycie czołowej i pełne kroki naprawy w podglądzie](images/kvasir-explain.png)
+
+**KVASIR** to pomoc SI po stojakowemu: urządzenie, które wyjaśnia błąd leżący właśnie na szynie MONITOR, a nie boczny panel czatu. Gdy uruchomienie padnie, naciśnij **EXPLAIN**, a KVASIR spyta twoją SI, co poszło nie tak i jaki jest konkretny następny krok. Krótki werdykt ląduje na wyświetlaczu; **VIEW** otwiera pełną odpowiedź. **MODEL** wybiera **FAST** (szybko i tanio, domyślnie) albo **DEEP** (mocniej). EXPLAIN jest niebieski: czyta i pyta, nigdy nie dotyka twojego projektu.
+
+**Wybierz swoją SI, włóż swój klucz.** KVASIR działa z **Claude (Anthropic)**, **ChatGPT (OpenAI)** albo **Gemini (Google)** — twój klucz, twój wybór. Naciśnij **KEY…**, aby wybrać dostawcę i wkleić jego klucz; wybór jest zapamiętywany, a klucz mieszka wyłącznie w pęku kluczy systemu. Zwykłe zmienne środowiskowe każdego dostawcy też są czytane, a klucz zapisany wygrywa z kluczem ze środowiska.
+
+**Co KVASIR wysyła — i to wszystko, co wysyła.** Przy pierwszym naciśnięciu EXPLAIN okno wylicza dokładnie to, co opuści twoją maszynę, i to, co jej nie opuści; bez tej zgody nie wysyła się nic, a zgoda obowiązuje osobno dla każdego dostawcy. Po udanym EXPLAIN przycisk **VIEW** otwiera odpowiedź jako rozmowę — możesz dopytywać o tę samą porażkę.
+
+**Zapytaj KVASIR o swój kod.** Ten sam asystent sięga do edytora: zaznacz kod i wybierz **Zapytaj KVASIR o zaznaczenie…** albo **Edytuj z KVASIR…**, żeby powiedzieć, co zmienić, i zobaczyć „przed” i „po”, zanim cokolwiek zostanie zastosowane. **⌥⌘G** uzupełnia przy kursorze widmowym tekstem, który wstawi się dopiero po Tab, a wskaźnik gałęzi git potrafi napisać twój opis commita.
+
+**Wyceluj agenta w swoje IDE.** Narzędzia ▸ Agent Port (MCP)… otwiera punkt końcowy MCP, który zewnętrzny asystent może odpytywać: jest **tylko do odczytu z konstrukcji**, wyłączony, dopóki go nie włączysz, nasłuchuje wyłącznie na interfejsie lokalnym i wymaga tokenu utworzonego przy starcie.
+
+Stojak jest rozszerzalny: wtyczki innych osób mogą dodawać urządzenia (zainstaluj ich NBM przez Narzędzia ▸ Wtyczki). Aby napisać własne, zobacz [device-spi.md](device-spi.md).
