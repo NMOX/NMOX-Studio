@@ -1,5 +1,9 @@
 # NMOX Studio — Посібник користувача
 
+<!-- languages -->
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · **Українська** · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+<!-- /languages -->
+
 > Частковий переклад: розділи 1–2 українською. Решта — у [повному посібнику англійською](user-guide.md).
 
 Як користуватися продуктом. Посібник іде можливостями в тому порядку, у якому ви їх зустрінете: встановлення, перший запуск, проєкти, стійка, студії, майстри та страхувальні сітки.

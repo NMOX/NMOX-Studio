@@ -1,5 +1,9 @@
 # NMOX Studio — Руководство пользователя
 
+<!-- languages -->
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · **Русский** · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+<!-- /languages -->
+
 > Частичный перевод: главы 1–2 на русском. Остальное — в [полном руководстве на английском](user-guide.md).
 
 Как пользоваться продуктом. Руководство идёт по возможностям в том порядке, в каком вы с ними встретитесь: установка, первый запуск, проекты, стойка, студии, мастера и страховочные сетки.

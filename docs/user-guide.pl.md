@@ -1,5 +1,9 @@
 # NMOX Studio — Podręcznik użytkownika
 
+<!-- languages -->
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+<!-- /languages -->
+
 > Tłumaczenie częściowe: rozdziały 1–2 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.

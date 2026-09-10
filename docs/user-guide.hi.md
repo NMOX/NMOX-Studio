@@ -1,5 +1,9 @@
 # NMOX Studio — उपयोगकर्ता मार्गदर्शिका
 
+<!-- languages -->
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · **हिन्दी**
+<!-- /languages -->
+
 > आंशिक अनुवाद: अध्याय 1–2 हिन्दी में हैं। बाक़ी के लिए [अंग्रेज़ी की पूरी मार्गदर्शिका](user-guide.md) देखें।
 
 इस उत्पाद का उपयोग कैसे करें। यह मार्गदर्शिका सुविधाओं को उसी क्रम में देखती है जिस क्रम में वे आपको मिलेंगी: संस्थापन, पहली शुरुआत, परियोजनाएँ, रैक, स्टूडियो, विज़ार्ड और सुरक्षा-जाल।

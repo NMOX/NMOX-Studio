@@ -14,6 +14,13 @@ first launch, projects, the rack, all four studios, the wizards, Docker,
 Learning Spaces, and the safety nets. Illustrated, and written to be read
 front to back or dipped into by section.
 
+**In your language** — the guide's opening chapters, install and first
+launch, are translated into every language the IDE itself speaks. Each one
+carries a language bar at the top, so switching is one click from wherever
+you are, and says plainly where the untranslated rest of the manual lives.
+
+[Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+
 ## The rest of the docs
 
 - **[🧭 Tutorials](tutorials/README.md)** — short, do-it-yourself

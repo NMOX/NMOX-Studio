@@ -1,5 +1,9 @@
 # NMOX Studio — User Guide
 
+<!-- languages -->
+**English** · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+<!-- /languages -->
+
 > Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots (the same story in the product's own styling is the website, <https://nmox.github.io/NMOX-Studio/>). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting. Prefer a story? **[A Day at Meridian](a-day-at-meridian.md)** builds one real thing through every area, screenshots from a live session.
 
 How to actually use the thing. This guide walks the features in the order

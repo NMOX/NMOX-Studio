@@ -1,5 +1,9 @@
 # NMOX Studio — 用户指南
 
+<!-- languages -->
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · **简体中文** · [हिन्दी](user-guide.hi.md)
+<!-- /languages -->
+
 > 部分翻译：第 1–2 章为中文。其余内容请见[完整的英文指南](user-guide.md)。
 
 如何使用本产品。本指南按你会遇到的顺序介绍功能：安装、首次启动、项目、机架、各工作室、向导以及各种安全网。

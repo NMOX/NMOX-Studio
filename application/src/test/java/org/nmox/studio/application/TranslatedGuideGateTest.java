@@ -205,6 +205,65 @@ class TranslatedGuideGateTest {
         assertThat(offenders).as("use ’ (U+2019) — the v2.98.0 rule, in the docs too").isEmpty();
     }
 
+    @Test
+    @DisplayName("every guide's language bar reaches every other guide, and never links to itself")
+    void theLanguageBarIsComplete() throws IOException {
+        Map<String, String> names = nativeNames();
+        assertThat(names).as("UiLocale's own names for its languages").containsKey("en");
+
+        List<String> broken = new ArrayList<>();
+        for (String lang : names.keySet()) {
+            Path p = "en".equals(lang) ? docs().resolve("user-guide.md")
+                    : docs().resolve("user-guide." + lang + ".md");
+            String bar = between(Files.readString(p, StandardCharsets.UTF_8),
+                    "<!-- languages -->", "<!-- /languages -->");
+            if (bar.isEmpty()) {
+                broken.add(lang + ": no language bar at all");
+                continue;
+            }
+            for (Map.Entry<String, String> e : names.entrySet()) {
+                String target = "en".equals(e.getKey()) ? "user-guide.md"
+                        : "user-guide." + e.getKey() + ".md";
+                boolean self = e.getKey().equals(lang);
+                String wanted = self ? "**" + e.getValue() + "**"
+                        : "[" + e.getValue() + "](" + target + ")";
+                if (!bar.contains(wanted)) {
+                    broken.add(lang + ": bar is missing " + (self ? "its own name, unlinked" : wanted));
+                }
+                if (self && bar.contains("](" + target + ")")) {
+                    broken.add(lang + ": the bar links to the page the reader is already on");
+                }
+                if (!self && !Files.isRegularFile(docs().resolve(target))) {
+                    broken.add(lang + ": bar points at " + target + ", which does not exist");
+                }
+            }
+        }
+        assertThat(broken)
+                .as("the switcher is the only way most readers will find their language — it cannot rot")
+                .isEmpty();
+    }
+
+    /** UiLocale's own name for each language, in its declared order. */
+    private static Map<String, String> nativeNames() throws IOException {
+        Path src = Path.of("..", "core", "src", "main", "java", "org", "nmox", "studio",
+                "core", "util", "UiLocale.java");
+        String body = Files.readString(src, StandardCharsets.UTF_8);
+        String list = body.substring(body.indexOf("SUPPORTED = List.of("));
+        list = list.substring(0, list.indexOf(";"));
+        Map<String, String> out = new LinkedHashMap<>();
+        Matcher m = Pattern.compile("new Choice\\(\"([a-z]{2})\", \"([^\"]+)\"\\)").matcher(list);
+        while (m.find()) {
+            out.put(m.group(1), m.group(2));
+        }
+        return out;
+    }
+
+    private static String between(String body, String open, String close) {
+        int a = body.indexOf(open);
+        int b = body.indexOf(close);
+        return a < 0 || b < a ? "" : body.substring(a + open.length(), b);
+    }
+
     private static List<String> chapters(Path guide) throws IOException {
         List<String> out = new ArrayList<>();
         Matcher m = CHAPTER.matcher(Files.readString(guide, StandardCharsets.UTF_8));
