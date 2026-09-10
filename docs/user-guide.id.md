@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Terjemahan sebagian: bab 1–9 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
+> Terjemahan sebagian: bab 1–10 tersedia dalam bahasa Indonesia. Selebihnya, lihat [panduan lengkap dalam bahasa Inggris](user-guide.md).
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
 
@@ -289,3 +289,34 @@ Inilah pangkalan: proyek berjalan, berkas yang terbuka dan yang terkini, proyek 
 ### Pintasan Emacs (juga Eclipse dan IntelliJ)
 
 Alat ▸ Opsi ▸ Peta Tombol mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Jaring pengaman (yang tidak perlu Anda lakukan apa-apa untuk mendapatkannya)
+
+### Kebangkitan sesi
+
+Rak memotret apa yang sedang berjalan setiap beberapa detik. Penutupan paksa, kegagalan, `kill -9` — saat dijalankan lagi, sebuah pesan menawarkan untuk memulihkan persis sesi yang hilang, dengan satu klik.
+
+### Jaminan tanpa yatim
+
+Keluar dari IDE mematikan setiap proses yang ia mulai — peladen pengembangan, REPL, rantai, pengawas —, TERM dahulu, KILL kalau membangkang, keturunannya sekalian.
+
+### BLACKBOX dan SONAR
+
+Pasang **BLACKBOX** di rak Anda dan Anda punya perekam penerbangan: setiap awal dan setiap akhir, dengan lamanya, kecenderungannya, dan apa yang berubah sejak bangunan hijau terakhir. Yang Anda hentikan sendiri terbaca DIHENTIKAN — bukan hijau, bukan kegagalan, dan tidak pernah menjadi hal yang diminta dijelaskan kepada KVASIR. **SONAR** menunjukkan siapa yang menguasai porta Anda, disilangkan dengan Docker, dan dengan satu klik mengusir yang menduduki 3000.
+
+### Berkas yang tidak pernah ditimpa
+
+Keempat berkas kerja studio (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) dimuat ulang bila Anda menyuntingnya di luar IDE — tetapi bila ada perubahan yang belum disimpan, Anda ditanya, bukan ditimpa. Berkas yang rusak disingkirkan sebagai `.bak` dan dilaporkan, tidak pernah diganti diam-diam.
+
+### TypeScript tanpa membangun
+
+Proyek yang pintu masuknya `index.ts`, `main.ts`, atau `src/index.ts` berjalan dari IGNITION dengan pelucutan tipe milik Node sendiri (`--experimental-strip-types`, sejak Node 22.6; bawaan sejak 23.6 dan 22.18 LTS). Penolakan dari Node yang lebih tua diterjemahkan menjadi kalimat yang menyebut ambang itu.
+
+### Bahasa Anda
+
+NMOX Studio berbicara dalam tiga belas bahasa: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, dan हिन्दी. Pilih bahasa Anda di **Opsi ▸ Umum ▸ Bahasa** — masing-masing tertulis dengan namanya sendiri, agar Anda selalu menemukan milik Anda. Pilihan itu ditulis ke pengaturan peluncuran Anda (`etc/nmoxstudio.conf`, sebagai argumen `--locale`) dan juga berlaku seketika. Yang berubah: menu, dialog, tip alat, baris status, layar sambutan, dan opsi. Yang tetap: kosakata panel depan rak (GO, STOP, EXPLAIN — itu label perangkat, seperti pada synthesizer), serta dialog platform yang lebih dalam, yang belum punya terjemahan.
+
+### Pemeriksaan pembaruan harian
+
+Tenang, sekali sehari: bila ada rilis yang lebih baru, sebuah pemberitahuan membawa Anda ke pengelola modul, pada tab pembaruannya, tempat pusat pembaruan memasang modul baru di tempatnya. Matikan di Opsi ▸ Umum.

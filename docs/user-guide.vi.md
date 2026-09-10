@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bản dịch một phần: chương 1–9 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
+> Bản dịch một phần: chương 1–10 có tiếng Việt. Phần còn lại, xem [hướng dẫn đầy đủ bằng tiếng Anh](user-guide.md).
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
 
@@ -289,3 +289,34 @@ Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ c�
 ### Phím tắt của Emacs (và của Eclipse, và của IntelliJ)
 
 Công cụ ▸ Tuỳ chọn ▸ Sơ đồ phím đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Những tấm lưới an toàn (thứ bạn chẳng phải làm gì để có)
+
+### Hồi sinh phiên làm việc
+
+Cứ vài giây một lần, giá lại chụp lại những gì đang chạy. Một lần tắt cưỡng bức, một lần sập, một `kill -9` — lần mở sau, một lời nhắn mời bạn dựng lại đúng phiên đã mất, chỉ một cú bấm.
+
+### Bảo đảm không để lại mồ côi
+
+Thoát khỏi IDE là giết mọi tiến trình mà nó đã khởi động — máy chủ phát triển, REPL, chuỗi lệnh, kẻ canh chừng —, TERM trước, KILL nếu chúng cứng đầu, kể cả con cháu.
+
+### BLACKBOX và SONAR
+
+Đặt **BLACKBOX** lên giá và bạn có một hộp đen: mỗi lần khởi động và mỗi lần thoát, kèm thời lượng, xu hướng, và những gì đã đổi kể từ lần dựng xanh gần nhất. Cái bạn tự tay dừng đọc là ĐÃ DỪNG — không xanh, không thất bại, và không bao giờ là thứ đem hỏi KVASIR. **SONAR** cho thấy ai đang giữ các cổng của bạn, đối chiếu với Docker, và một cú bấm là đuổi kẻ ngồi lì trên 3000.
+
+### Những tệp không bao giờ bị đè
+
+Bốn tệp làm việc của các xưởng (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) sẽ nạp lại khi bạn sửa chúng bên ngoài IDE — nhưng nếu bạn còn thay đổi chưa lưu thì bạn được hỏi, chứ không bị đè. Một tệp hỏng được để riêng thành `.bak` và báo cho bạn biết, không bao giờ bị thay lặng lẽ.
+
+### TypeScript không cần dựng
+
+Dự án có cửa vào là `index.ts`, `main.ts` hay `src/index.ts` chạy thẳng từ IGNITION bằng chính cơ chế bóc kiểu của Node (`--experimental-strip-types`, từ Node 22.6; mặc định từ 23.6 và 22.18 LTS). Lời từ chối của một Node cũ hơn được dịch thành câu gọi tên đúng cái ngưỡng ấy.
+
+### Ngôn ngữ của bạn
+
+NMOX Studio nói mười ba thứ tiếng: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 và हिन्दी. Chọn tiếng của bạn ở **Tuỳ chọn ▸ Chung ▸ Ngôn ngữ** — mỗi thứ tiếng viết bằng chính tên nó, để bạn luôn tìm được tiếng mình. Lựa chọn ấy được ghi vào phần cài đặt khởi động của bạn (`etc/nmoxstudio.conf`, dưới dạng đối số `--locale`) và cũng có hiệu lực ngay. Thay đổi: trình đơn, hộp thoại, chú giải, thanh trạng thái, màn hình chào và phần tuỳ chọn. Giữ nguyên: từ vựng trên mặt các thiết bị của giá (GO, STOP, EXPLAIN — đó là nhãn máy, như trên một cây đàn tổng hợp), và những hộp thoại sâu hơn của nền tảng, vốn chưa có bản dịch.
+
+### Việc dò bản mới mỗi ngày
+
+Lặng lẽ, mỗi ngày một lần: nếu có bản mới hơn, một thông báo dẫn bạn tới trình quản lý mô-đun, ở thẻ cập nhật của nó, nơi trung tâm cập nhật cài các mô-đun mới ngay tại chỗ. Tắt nó ở Tuỳ chọn ▸ Chung.

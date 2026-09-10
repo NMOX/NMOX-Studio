@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · **Français** · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traduction partielle : les chapitres 1–9 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
+> Traduction partielle : les chapitres 1–10 sont en français. Pour le reste, voir le [guide complet en anglais](user-guide.md).
 
 Comment se servir du produit. Ce guide parcourt les fonctions dans l’ordre où vous les rencontrerez : installation, premier lancement, projets, le rack, les studios, les assistants et les filets de sécurité.
 
@@ -289,3 +289,34 @@ C’est le port d’attache : projet courant, fichiers ouverts et récents, proj
 ### Les raccourcis d’Emacs (et d’Eclipse, et d’IntelliJ)
 
 Outils ▸ Options ▸ Raccourcis clavier change tout le profil : les déplacements et le couper-coller d’Emacs dans chaque éditeur, ou les jeux Eclipse et IDEA si c’est votre mémoire des doigts. Chaque raccourci NMOX est enregistré dans les cinq profils, si bien que changer de profil ne vous coûte jamais les raccourcis des studios.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Les filets de sécurité (ce que vous n’avez rien à faire pour avoir)
+
+### La résurrection de la session
+
+Le rack photographie ce qui tourne toutes les quelques secondes. Un arrêt forcé, un plantage, un `kill -9` — au redémarrage, une bulle vous propose de relancer exactement la session perdue, en un clic.
+
+### La garantie anti-orphelins
+
+Quitter l’IDE tue tous les processus qu’il a lancés — serveurs de développement, interpréteurs, chaînes, surveillants —, TERM d’abord, KILL s’ils résistent, descendants compris.
+
+### BLACKBOX et SONAR
+
+Ajoutez **BLACKBOX** à votre rack et vous avez une boîte noire : chaque lancement et chaque sortie, avec les durées, les tendances et ce qui a changé depuis la dernière compilation au vert. Ce que vous avez arrêté vous-même se lit ARRÊTÉ — ni vert ni échec, et jamais ce qu’on demande à KVASIR d’expliquer. **SONAR** montre qui occupe vos ports, recoupé avec Docker, et tue d’un clic le squatteur du 3000.
+
+### Des fichiers jamais écrasés
+
+Les quatre fichiers de travail des studios (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) se rechargent quand vous les modifiez hors de l’IDE — mais si vous avez des changements non enregistrés, on vous demande ; rien n’est écrasé. Un fichier corrompu est mis de côté en `.bak` et signalé, jamais remplacé en silence.
+
+### TypeScript sans compilation
+
+Un projet dont l’entrée est `index.ts`, `main.ts` ou `src/index.ts` s’exécute depuis IGNITION avec le retrait de types de Node lui-même (`--experimental-strip-types`, dès Node 22.6 ; par défaut depuis 23.6 et 22.18 LTS). Le refus d’un Node plus ancien est traduit en la phrase qui nomme ce plancher.
+
+### Votre langue
+
+NMOX Studio parle treize langues : English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 et हिन्दी. Choisissez la vôtre dans **Options ▸ Général ▸ Langue** — chacune est écrite dans son propre nom, pour que vous trouviez toujours la vôtre. Le choix est inscrit dans vos réglages de lancement (`etc/nmoxstudio.conf`, sous forme d’argument `--locale`) et s’applique aussi à chaud. Ce qui change : les menus, les boîtes de dialogue, les infobulles, les barres d’état, l’accueil et les Options. Ce qui reste : le vocabulaire des façades du rack (GO, STOP, EXPLAIN — des étiquettes d’appareil, comme sur un synthétiseur), et les dialogues plus profonds de la plateforme, qui n’ont pas encore de traduction.
+
+### La vérification quotidienne des mises à jour
+
+Discrète, une fois par jour : s’il existe une version plus récente, une notification vous mène au gestionnaire de modules, sur son onglet des mises à jour, où le centre de mise à jour installe les nouveaux modules sur place. Se coupe dans Options ▸ Général.

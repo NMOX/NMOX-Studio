@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Bahagyang salin: nasa Filipino ang mga kabanata 1–9. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
+> Bahagyang salin: nasa Filipino ang mga kabanata 1–10. Para sa iba pa, tingnan ang [buong gabay sa Ingles](user-guide.md).
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
 
@@ -289,3 +289,34 @@ Ito ang tahanan: kasalukuyang proyekto, mga talaksang bukas at kamakailan, mga k
 ### Mga daglat ng Emacs (at ng Eclipse, at ng IntelliJ)
 
 Ang Mga Kasangkapan ▸ Mga Pagpipilian ▸ Mapa ng Teklado ay nagpapalit ng buong hanay: ang mga galaw at ang gupit at dikit ng Emacs sa bawat patnugot, o ang mga hanay ng Eclipse at IDEA kung doon nakatira ang alaala ng inyong mga daliri. Nakatala sa lahat ng limang hanay ang bawat daglat ng NMOX, kaya hindi kailanman nagagastos ng pagpapalit ang mga daglat ng mga studio.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Ang mga lambat ng kaligtasan (ang hindi ninyo kailangang gawin)
+
+### Muling pagkabuhay ng sesyon
+
+Kinukunan ng rak ng larawan ang tumatakbo kada ilang segundo. Isang sapilitang pagsara, isang pagbagsak, isang `kill -9` — sa muling pagbukas, may abisong nag-aalok na ibalik ang eksaktong sesyong nawala sa inyo, sa isang pindot.
+
+### Ang katiyakan laban sa mga ulila
+
+Ang paglabas sa IDE ay pumapatay sa bawat prosesong sinimulan nito — mga tagapaglingkod ng pagbuo, mga REPL, mga tanikala, mga bantay —, TERM muna at KILL kung tumatanggi, kasama ang mga inapo.
+
+### BLACKBOX at SONAR
+
+Ilagay ang **BLACKBOX** sa inyong rak at mayroon kayong itim na kahon: bawat pagsisimula at bawat paglabas, kasama ang tagal, ang takbo ng panahon, at kung ano ang nagbago mula sa huling luntiang pagbuo. Ang ihininto ninyo mismo ay mababasang IHININTO — hindi luntian, hindi kabiguan, at hindi kailanman ang bagay na ipinapaliwanag sa KVASIR. Ipinapakita ng **SONAR** kung sino ang may hawak sa inyong mga daungan, isinabay sa Docker, at sa isang pindot ay pinapaalis ang nakaupo sa 3000.
+
+### Mga talaksang hindi kailanman pinapatungan
+
+Ang apat na talaksang gawain ng mga studio (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) ay muling binabasa kapag binago ninyo ang mga ito sa labas ng IDE — ngunit kung may hindi pa naitalang pagbabago, kayo ang tatanungin, hindi papatungan. Ang talaksang sira ay inilalagay sa tabi bilang `.bak` at iniuulat, hindi kailanman pinapalitan nang tahimik.
+
+### TypeScript nang walang pagbuo
+
+Ang proyektong ang pasukan ay `index.ts`, `main.ts`, o `src/index.ts` ay tumatakbo mula sa IGNITION sa pamamagitan ng sariling paghuhubad ng uri ng Node (`--experimental-strip-types`, mula sa Node 22.6; likas na mula 23.6 at 22.18 LTS). Ang pagtanggi ng mas lumang Node ay isinasalin sa pangungusap na pumapangalan sa hangganang iyon.
+
+### Ang inyong wika
+
+Nagsasalita ang NMOX Studio ng labintatlong wika: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, at हिन्दी. Piliin ang sa inyo sa **Mga Pagpipilian ▸ Pangkalahatan ▸ Wika** — bawat isa ay nakasulat sa sarili nitong pangalan, upang matagpuan ninyo palagi ang sa inyo. Isinusulat ang pinili sa inyong mga ayos ng pagsisimula (`etc/nmoxstudio.conf`, bilang argumentong `--locale`) at umiiral din agad. Nagbabago: ang mga menu, ang mga dayalogo, ang mga paalala, ang mga guhit ng kalagayan, ang pagsalubong, at ang mga pagpipilian. Nananatili: ang bokabularyo ng mga harapan ng rak (GO, STOP, EXPLAIN — mga tatak ng kasangkapan, tulad sa isang sintesayser), at ang mas malalalim na dayalogo ng plataporma, na wala pang salin.
+
+### Ang pang-araw-araw na tingin sa pagbabago
+
+Tahimik, minsan sa isang araw: kung may mas bagong labas, may abisong maghahatid sa inyo sa tagapamahala ng modyul, sa tab nito ng mga pagbabago, kung saan inilalagay ng sentro ng pagbabago ang mga bagong modyul sa kinalalagyan nila. Patayin ito sa Mga Pagpipilian ▸ Pangkalahatan.

@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · **简体中文** · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> 部分翻译：第 1–9 章为中文。其余内容请见[完整的英文指南](user-guide.md)。
+> 部分翻译：第 1–10 章为中文。其余内容请见[完整的英文指南](user-guide.md)。
 
 如何使用本产品。本指南按你会遇到的顺序介绍功能：安装、首次启动、项目、机架、各工作室、向导以及各种安全网。
 
@@ -289,3 +289,34 @@ Docker 标签页是一块控制面板：引擎状态、容器、镜像、卷和�
 ### Emacs（还有 Eclipse、IntelliJ）的快捷键
 
 工具 ▸ 选项 ▸ 键盘映射可以整套切换：每个编辑器里都用 Emacs 的移动和剪切粘贴，或者换成 Eclipse、IDEA 那一套 — 看你的手记得哪一种。NMOX 的每个快捷键在五套配置里都注册过，所以换配置从不让你丢掉工作室的那些键。
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. 安全网（你什么都不用做就有的东西）
+
+### 会话复活
+
+机架每隔几秒就给正在跑的东西拍一张快照。强制退出、崩溃、`kill -9` — 下次打开时会有一条提示，让你一键把丢掉的那次会话原样接上。
+
+### 不留孤儿的保证
+
+退出 IDE 会杀掉它启动过的每一个进程 — 开发服务器、REPL、链条、守望者 — 先 TERM，赖着不走就 KILL，连子孙一起。
+
+### BLACKBOX 与 SONAR
+
+把 **BLACKBOX** 放上机架，你就有了一只黑匣子：每次启动和每次退出，带上时长、走势，以及自上一次绿色构建以来有什么变了。你自己停掉的读作 已停止 — 既不是绿的也不是失败，更不会成为拿去问 KVASIR 的那件事。**SONAR** 告诉你端口被谁占着，还和 Docker 对上号，一键把赖在 3000 上的那位请走。
+
+### 从不被覆盖的文件
+
+四个工作室的工作文件（`.nmoxapi.json`、`.nmoxdb.json`、`.nmoxweb3.json`、`.nmoxinfra.json`）在你于 IDE 之外编辑时会重新载入 — 但只要你有没保存的改动，就会先问你，绝不覆盖。损坏的文件会被挪到一旁存为 `.bak` 并告诉你，绝不悄悄替换。
+
+### 不用构建的 TypeScript
+
+入口是 `index.ts`、`main.ts` 或 `src/index.ts` 的项目，可以直接从 IGNITION 用 Node 自己的类型剥离跑起来（`--experimental-strip-types`，Node 22.6 起；23.6 和 22.18 LTS 起为默认）。更旧的 Node 拒绝时，那句拒绝会被翻译成点名这条门槛的话。
+
+### 你的语言
+
+NMOX Studio 会讲十三种语言：English、Español、Français、Deutsch、Русский、Українська、Polski、Português (Brasil)、Bahasa Indonesia、Filipino、Tiếng Việt、简体中文 和 हिन्दी。在**选项 ▸ 常规 ▸ 语言**里挑你的那种 — 每一种都用它自己的名字写着，好让你总能找到自己的。这个选择会写进你的启动设置（`etc/nmoxstudio.conf` 里的 `--locale` 参数），并且当场生效。会变的是：菜单、对话框、提示、状态栏、欢迎页和选项。不变的是：机架面板上的那套词（GO、STOP、EXPLAIN — 那是设备上的标签，像合成器一样），以及平台自己更深处的对话框，它们还没有译文。
+
+### 每天一次的更新检查
+
+安静地，一天一次：有更新的版本时，通知会把你带到模块管理器的更新标签页，更新中心会在原地装上新模块。可以在 选项 ▸ 常规 里关掉。

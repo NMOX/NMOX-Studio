@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · **Polski** · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tłumaczenie częściowe: rozdziały 1–9 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
+> Tłumaczenie częściowe: rozdziały 1–10 są po polsku. Resztę znajdziesz w [pełnym podręczniku po angielsku](user-guide.md).
 
 Jak używać produktu. Podręcznik omawia funkcje w kolejności, w jakiej je napotkasz: instalacja, pierwsze uruchomienie, projekty, stojak, studia, kreatory i siatki bezpieczeństwa.
 
@@ -289,3 +289,34 @@ To macierzysty port: bieżący projekt, pliki otwarte i ostatnie, ostatnie proje
 ### Skróty Emacsa (a także Eclipse i IntelliJ)
 
 Narzędzia ▸ Opcje ▸ Skróty klawiszowe przełącza cały profil: ruchy oraz wycinanie i wklejanie Emacsa w każdym edytorze, albo zestawy Eclipse i IDEA, jeśli tam siedzi twoja pamięć mięśniowa. Każdy skrót NMOX jest zapisany we wszystkich pięciu profilach, więc zmiana profilu nigdy nie kosztuje cię skrótów studiów.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Siatki bezpieczeństwa (to, po co nie trzeba nic robić)
+
+### Wskrzeszenie sesji
+
+Stojak co kilka sekund robi zdjęcie temu, co działa. Wymuszone zamknięcie, awaria, `kill -9` — przy następnym starcie dymek proponuje wznowić dokładnie tę utraconą sesję, jednym kliknięciem.
+
+### Gwarancja bez sierot
+
+Wyjście ze środowiska zabija każdy proces, który ono uruchomiło — serwery deweloperskie, interpretery, łańcuchy, obserwatorów — najpierw TERM, potem KILL, gdy się opierają, wraz z potomkami.
+
+### BLACKBOX i SONAR
+
+Wstaw **BLACKBOX** na stojak, a masz rejestrator lotu: każdy start i każde wyjście, z czasami trwania, tendencjami i tym, co zmieniło się od ostatniej zielonej kompilacji. To, co zatrzymałeś sam, czyta się jako ZATRZYMANE — ani zielone, ani porażka, i nigdy to, co prosi się KVASIRa wyjaśnić. **SONAR** pokazuje, kto zajmuje twoje porty, zestawiając to z Dockerem, i jednym kliknięciem wyrzuca tego, kto rozsiadł się na 3000.
+
+### Pliki, których nikt nie nadpisuje
+
+Cztery pliki robocze studiów (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) wczytują się ponownie, gdy zmienisz je poza środowiskiem — ale jeśli masz niezapisane zmiany, dostaniesz pytanie, a nie nadpisanie. Uszkodzony plik odkłada się jako `.bak` i mówi ci o tym; nigdy nie podmienia się go po cichu.
+
+### TypeScript bez budowania
+
+Projekt, którego wejściem jest `index.ts`, `main.ts` albo `src/index.ts`, uruchamia się z IGNITION przy pomocy własnego zdejmowania typów Node-a (`--experimental-strip-types`, od Node 22.6; domyślnie od 23.6 i 22.18 LTS). Odmowa starszego Node-a zostaje przetłumaczona na zdanie, które nazywa ten próg.
+
+### Twój język
+
+NMOX Studio mówi trzynastoma językami: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 i हिन्दी. Wybierz swój w **Opcje ▸ Ogólne ▸ Język** — każdy zapisany własną nazwą, żebyś zawsze znalazł swój. Wybór trafia do twoich ustawień uruchamiania (`etc/nmoxstudio.conf`, jako argument `--locale`) i działa też od razu. Zmieniają się menu, okna dialogowe, podpowiedzi, paski stanu, ekran powitalny i opcje. Zostaje słownictwo płyt czołowych stojaka (GO, STOP, EXPLAIN — to napisy na urządzeniu, jak na syntezatorze) oraz głębsze okna samej platformy, dla których tłumaczenia jeszcze nie ma.
+
+### Codzienne sprawdzanie aktualizacji
+
+Ciche, raz dziennie: jeśli jest nowsze wydanie, powiadomienie prowadzi cię do menedżera modułów, na jego kartę aktualizacji, gdzie centrum aktualizacji instaluje nowe moduły na miejscu. Wyłącza się w Opcje ▸ Ogólne.

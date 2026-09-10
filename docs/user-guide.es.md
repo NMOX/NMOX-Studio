@@ -4,7 +4,7 @@
 [English](user-guide.md) · **Español** · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Traducción parcial: los capítulos 1–9 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
+> Traducción parcial: los capítulos 1–10 están en español. Para el resto, consulta la [guía completa en inglés](user-guide.md).
 
 Cómo usar el producto. Esta guía recorre las funciones en el orden en que las encontrarás: instalación, primer arranque, proyectos, el rack, los estudios, los asistentes y las redes de seguridad.
 
@@ -289,3 +289,34 @@ Es la base: el proyecto actual, los archivos abiertos y recientes, los proyectos
 ### Atajos de Emacs (y de Eclipse, y de IntelliJ)
 
 Herramientas ▸ Opciones ▸ Combinaciones de teclas cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Las redes de seguridad (lo que no tienes que hacer)
+
+### Resurrección de la sesión
+
+El rack toma una instantánea de lo que corre cada pocos segundos. Un cierre forzado, un fallo, un `kill -9` — al volver a abrir, un aviso te ofrece reanudar exactamente la sesión que perdiste, con un clic.
+
+### La garantía contra huérfanos
+
+Salir del IDE mata todos los procesos que él arrancó — servidores de desarrollo, intérpretes, cadenas, vigilantes —, primero con TERM y luego con KILL si se resisten, descendientes incluidos.
+
+### BLACKBOX y SONAR
+
+Añade **BLACKBOX** a tu rack y tendrás una caja negra: cada arranque y cada salida, con duraciones, tendencias y qué cambió desde la última compilación en verde. Lo que detuviste tú se lee DETENIDO — ni verde ni fallo, y nunca lo que se le pide explicar a KVASIR. **SONAR** enseña quién ocupa tus puertos, cruzado con Docker, y mata de un clic al que se sentó en el 3000.
+
+### Archivos que nunca se pisan
+
+Los cuatro archivos de trabajo de los estudios (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) se recargan cuando los editas fuera del IDE — pero si tienes cambios sin guardar, se te pregunta; nunca se sobrescriben. Un archivo corrupto se aparta como `.bak` y se te dice, nunca se reemplaza en silencio.
+
+### TypeScript sin compilar
+
+Un proyecto cuya entrada es `index.ts`, `main.ts` o `src/index.ts` se ejecuta desde IGNITION con el propio despojado de tipos de Node (`--experimental-strip-types`, desde Node 22.6; por omisión desde 23.6 y 22.18 LTS). La negativa de un Node más viejo se traduce a la frase que nombra ese piso.
+
+### Tu lengua
+
+NMOX Studio habla trece lenguas: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 y हिन्दी. Elige la tuya en **Opciones ▸ General ▸ Idioma** — cada una aparece con su propio nombre, para que siempre encuentres la tuya. La elección se escribe en tus ajustes de arranque (`etc/nmoxstudio.conf`, como un argumento `--locale`) y también se aplica al vuelo. Cambian los menús, los diálogos, las ayudas emergentes, las barras de estado, la Bienvenida y las Opciones. No cambia el vocabulario de las carátulas del rack (GO, STOP, EXPLAIN — son etiquetas de aparato, como en un sintetizador), ni los diálogos más hondos de la plataforma, que todavía no tienen traducción.
+
+### Comprobación diaria de actualizaciones
+
+Discreta, una vez al día: si hay una versión más nueva, una notificación te lleva al Gestor de complementos, en su pestaña de actualizaciones, donde el centro de actualizaciones instala los módulos nuevos en su sitio. Se apaga en Opciones ▸ General.

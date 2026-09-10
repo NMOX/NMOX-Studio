@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Tradução parcial: os capítulos 1–9 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
+> Tradução parcial: os capítulos 1–10 estão em português. Para o resto, veja o [guia completo em inglês](user-guide.md).
 
 Como usar o produto. Este guia percorre os recursos na ordem em que você vai encontrá-los: instalação, primeira execução, projetos, o rack, os estúdios, os assistentes e as redes de segurança.
 
@@ -289,3 +289,34 @@ Ao lado do selo dos servidores estão o projeto mirado com sua cadeia de ferrame
 ### Os atalhos do Emacs (e do Eclipse, e do IntelliJ)
 
 Ferramentas ▸ Opções ▸ Mapa de teclado troca o perfil inteiro: os movimentos e o recortar e colar do Emacs em todo editor, ou os conjuntos do Eclipse e do IDEA se é ali que mora a sua memória muscular. Todo atalho do NMOX está registrado nos cinco perfis, então trocar de perfil nunca lhe custa os atalhos dos estúdios.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. As redes de segurança (aquilo pelo qual você não precisa fazer nada)
+
+### A ressurreição da sessão
+
+O rack fotografa o que está rodando a cada poucos segundos. Um fechamento forçado, uma queda, um `kill -9` — ao abrir de novo, um aviso lhe oferece retomar exatamente a sessão perdida, com um clique.
+
+### A garantia contra órfãos
+
+Sair do IDE mata todo processo que ele iniciou — servidores de desenvolvimento, interpretadores, correntes, vigias —, TERM primeiro, KILL se resistirem, descendentes incluídos.
+
+### BLACKBOX e SONAR
+
+Ponha o **BLACKBOX** no seu rack e você tem uma caixa-preta: cada partida e cada saída, com durações, tendências e o que mudou desde a última compilação no verde. O que você mesmo parou se lê PARADO — nem verde nem falha, e nunca aquilo que se pede ao KVASIR para explicar. O **SONAR** mostra quem ocupa suas portas, cruzado com o Docker, e com um clique expulsa quem se sentou na 3000.
+
+### Arquivos que nunca são pisados
+
+Os quatro arquivos de trabalho dos estúdios (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) recarregam quando você os edita fora do IDE — mas se houver mudanças por salvar, você é perguntado, nunca sobrescrito. Um arquivo corrompido é posto de lado como `.bak` e relatado, nunca trocado em silêncio.
+
+### TypeScript sem compilar
+
+Um projeto cuja entrada seja `index.ts`, `main.ts` ou `src/index.ts` roda a partir do IGNITION com a própria remoção de tipos do Node (`--experimental-strip-types`, a partir do Node 22.6; padrão desde o 23.6 e o 22.18 LTS). A recusa de um Node mais velho é traduzida na frase que nomeia esse piso.
+
+### O seu idioma
+
+O NMOX Studio fala treze idiomas: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 e हिन्दी. Escolha o seu em **Opções ▸ Geral ▸ Idioma** — cada um escrito no próprio nome, para você sempre achar o seu. A escolha vai para os seus ajustes de inicialização (`etc/nmoxstudio.conf`, como um argumento `--locale`) e também vale na hora. Mudam: menus, diálogos, dicas, barras de estado, a tela de boas-vindas e as opções. Fica: o vocabulário dos painéis do rack (GO, STOP, EXPLAIN — são etiquetas de aparelho, como num sintetizador), e os diálogos mais fundos da plataforma, que ainda não têm tradução.
+
+### A checagem diária de atualizações
+
+Discreta, uma vez por dia: se há uma versão mais nova, uma notificação leva você ao gerenciador de módulos, na aba de atualizações, onde o centro de atualizações instala os módulos novos no lugar. Desliga-se em Opções ▸ Geral.

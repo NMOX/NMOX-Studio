@@ -4,7 +4,7 @@
 [English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
 <!-- /languages -->
 
-> Teilübersetzung: Die Kapitel 1–9 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
+> Teilübersetzung: Die Kapitel 1–10 liegen auf Deutsch vor. Für den Rest siehe das [vollständige englische Handbuch](user-guide.md).
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
 
@@ -289,3 +289,34 @@ Das ist der Heimathafen: das laufende Projekt, offene und zuletzt benutzte Datei
 ### Die Tastenkürzel von Emacs (und Eclipse und IntelliJ)
 
 Werkzeuge ▸ Optionen ▸ Tastaturbelegung wechselt das ganze Profil: die Bewegungs- und Ausschneidekürzel von Emacs in jedem Editor, oder die Sätze von Eclipse und IDEA, wenn dort dein Muskelgedächtnis liegt. Jedes NMOX-Kürzel ist in allen fünf Profilen eingetragen, ein Profilwechsel kostet dich also nie die Studio-Kürzel.
+
+<a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
+## 10. Die Sicherheitsnetze (wofür du nichts tun musst)
+
+### Die Auferstehung der Sitzung
+
+Das Rack macht alle paar Sekunden eine Aufnahme dessen, was läuft. Ein erzwungenes Beenden, ein Absturz, ein `kill -9` — beim nächsten Start bietet dir eine Meldung an, genau die verlorene Sitzung mit einem Klick wieder aufzunehmen.
+
+### Die Waisen-Garantie
+
+Das Beenden der IDE tötet jeden Prozess, den sie gestartet hat — Entwicklungsserver, REPLs, Ketten, Wächter —, erst TERM, dann KILL, wenn sie sich sträuben, Nachkommen eingeschlossen.
+
+### BLACKBOX und SONAR
+
+Setz **BLACKBOX** in dein Rack, und du hast einen Flugschreiber: jeden Start und jedes Ende, mit Dauern, Verläufen und dem, was sich seit dem letzten grünen Bau geändert hat. Was du selbst angehalten hast, liest sich ANGEHALTEN — weder grün noch Fehlschlag, und nie das, was KVASIR erklären soll. **SONAR** zeigt, wer deine Ports besetzt, abgeglichen mit Docker, und wirft den Besetzer auf 3000 mit einem Klick hinaus.
+
+### Dateien, die nie überschrieben werden
+
+Die vier Arbeitsdateien der Studios (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) laden neu, wenn du sie außerhalb der IDE änderst — hast du aber ungesicherte Änderungen, wirst du gefragt und nie überschrieben. Eine beschädigte Datei wird als `.bak` beiseitegelegt und gemeldet, nie stillschweigend ersetzt.
+
+### TypeScript ohne Bauschritt
+
+Ein Projekt, dessen Einstieg `index.ts`, `main.ts` oder `src/index.ts` heißt, läuft aus IGNITION mit Nodes eigenem Entfernen der Typen (`--experimental-strip-types`, ab Node 22.6; Vorgabe seit 23.6 und 22.18 LTS). Die Weigerung eines älteren Node wird in den Satz übersetzt, der diese Untergrenze benennt.
+
+### Deine Sprache
+
+NMOX Studio spricht dreizehn Sprachen: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 und हिन्दी. Wähle deine unter **Optionen ▸ Allgemein ▸ Sprache** — jede steht in ihrem eigenen Namen, damit du deine immer findest. Die Wahl wird in deine Starteinstellungen geschrieben (`etc/nmoxstudio.conf`, als `--locale`-Argument) und greift auch sofort. Es wechseln: Menüs, Dialoge, Kurzhinweise, Statuszeilen, der Willkommensschirm und die Optionen. Es bleibt: das Vokabular der Rack-Frontplatten (GO, STOP, EXPLAIN — Gerätebeschriftungen wie an einem Synthesizer) sowie die tieferen Dialoge der Plattform, für die es noch keine Übersetzung gibt.
+
+### Die tägliche Prüfung auf Aktualisierungen
+
+Leise, einmal am Tag: Gibt es eine neuere Ausgabe, führt dich eine Meldung in die Modulverwaltung auf deren Aktualisierungsreiter, wo das Aktualisierungszentrum die neuen Module an Ort und Stelle einspielt. Abschalten unter Optionen ▸ Allgemein.
