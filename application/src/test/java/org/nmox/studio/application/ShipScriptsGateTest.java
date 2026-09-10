@@ -57,6 +57,19 @@ class ShipScriptsGateTest {
         assertThat(s).as("the update JVM never exits on its own — it is TERMed after update_tracking moves").contains("kill -TERM \"$UPD\"");
         assertThat(s).as("update_tracking keeps a history: only the last=\"true\" entry says what is installed").contains("last=\"true\"");
         assertThat(s).as("the version proven is the one that installed, read from the cluster after the update").contains("-> installed $LATEST");
+        // v2.113.0: the tracking line used to NARRATE ("1 expected; more =
+        // the updater looped") and its own numbers contradicted the PASS
+        // beside it — a history file never holds one entry, and the loop is
+        // documented behaviour six lines up. It checks something now: the
+        // entry the platform actually reads must agree with the jars.
+        assertThat(s)
+                .as("last=\"true\" is what the platform reads; it must agree with the installed jars, "
+                        + "and a harness line that only narrates cannot fail when they disagree")
+                .contains("GAUNTLET-FAIL: last=");
+        assertThat(s.lines().filter(l -> l.contains("1 expected")))
+                .as("the retired label: a history file leaves TWO entries for a clean single update, "
+                        + "so calling one expected made every healthy run read as suspicious")
+                .isEmpty();
     }
 
     @Test
