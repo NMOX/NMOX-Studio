@@ -4,6 +4,62 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.105.0] - 2026-09-10
+
+**The same half, three more surfaces** — the night shift's second release,
+carrying on from v2.104.0's clock and order.
+
+1. **A number a person reads, and a number a machine reads.**
+   `core.util.Numbers` completes the family. The display half was already
+   right — a bare `String.format` follows `Locale.Category.FORMAT`, so a
+   German correctly reads `17,8 MB` — and the product's ten sites were
+   measured correct before anything changed; they get a name rather than a
+   change. The half that had no name is the record: a German locale writes
+   `1,5` into a project file, a command argument or a wire field, and the
+   next reader gets a different number or an error.
+
+   `NumberSiteLedgerTest` is ledger 93, and its shape had to change to stay
+   honest. A count floor guards nothing when zero unclassified sites is the
+   goal, so the census proves itself on planted lines instead — a regex that
+   matched nothing would otherwise make the ledger pass forever.
+
+2. **The clock ledger sees a date with no pattern in it.** A `LocalDate`
+   handed to a string builder renders through `toString()`: ISO-8601 by
+   construction, with no `DateTimeFormatter` anywhere, and therefore
+   invisible to a census built around one. The ledger covered a MECHANISM
+   rather than its population. It now sees that shape too, and the Sprint
+   Report, the Standup and the board's day buckets are classified STABLE
+   with their reasons — a report pasted into a channel is read by people who
+   may be anywhere, and an ISO date is unambiguous to all of them.
+
+3. **The user guide's chapter 3, Projects, in all twelve languages** —
+   opening a folder, the scaffolds, safe switching, experiments,
+   Run/Build/Test/Stop and `.env`, with the images, paths, chords and the
+   English anchor id shared so a cross-reference still lands.
+
+   And the gate learned what it had not been able to see. After chapter 3
+   landed, all twelve notices still said "chapters 1–2" and every check
+   stayed green, because the gate proved the notice EXISTS, not that it is
+   true. It now requires the notice to name its last translated chapter — a
+   claim in prose is a test not yet written.
+
+4. **The product's own website speaks every language the product does.**
+   The IDE offered thirteen; the site the app serves on localhost, and
+   publishes to Pages, offered two. Twenty-eight keys in eleven more
+   languages, and a footer picker naming each in its own words.
+
+   `SiteShipsTest` now derives its population from the locales directory
+   instead of naming `en` and `es`, so a catalog shipped without a button,
+   a button with no catalog, a blank value or a stale count all fail. Its
+   first widened run found a bare ASCII apostrophe in the ENGLISH catalog
+   and its matching inline fallback, unnoticed since the site shipped —
+   and three live documents still telling readers about "the EN/ES
+   buttons".
+
+Six mutants died by name: an unclassified number, a blinded census, a
+notice that lied about how far it went, an unclassified date, a catalog
+with no button, and a button with no catalog.
+
 ## [2.104.0] - 2026-09-09
 
 **The other half of internationalization** — the half that is not words.
@@ -18562,6 +18618,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.105.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.104.0...v2.105.0
 [2.104.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.103.0...v2.104.0
 [2.103.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.1...v2.103.0
 [2.102.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.102.0...v2.102.1

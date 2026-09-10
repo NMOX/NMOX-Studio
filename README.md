@@ -250,6 +250,9 @@ translated to match, and the Welcome's guide link lands in your language:
 [Bahasa Indonesia](docs/user-guide.id.md) · [Filipino](docs/user-guide.tl.md) ·
 [Tiếng Việt](docs/user-guide.vi.md) · [简体中文](docs/user-guide.zh.md) ·
 [हिन्दी](docs/user-guide.hi.md).
+The product's own website speaks all thirteen too — the page it serves on
+localhost and publishes to <https://nmox.github.io/NMOX-Studio/>, with a
+picker naming each language in its own words.
 Rack faceplates keep their panel vocabulary on purpose.
 
 ![NMOX Studio in French: the launchpad reads DÉMARRER, RÉCENTS and OUTILS, and the tabs read Bienvenue, Rack de tâches, Studio de bases de données, Studio de contrats and Concepteur d’infrastructure](docs/images/i18n-welcome-fr.png)
