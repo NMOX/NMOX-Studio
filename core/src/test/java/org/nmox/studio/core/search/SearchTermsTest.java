@@ -192,4 +192,37 @@ class SearchTermsTest {
             assertThat(SearchTerms.fold("plain ascii")).isEqualTo("plain ascii");
         }
     }
+
+    @Nested
+    @DisplayName("the same name spelled two ways is one name")
+    class Normalization {
+
+        /**
+         * macOS can hand back a filename DECOMPOSED — {@code U} plus a
+         * combining diaeresis — while the user types it COMPOSED from their
+         * keyboard, and the two are different strings. Accent folding
+         * (v2.106.0) already normalizes as a side effect of how it works,
+         * which means search has been normalization-insensitive since then
+         * and nothing said so. Measured on a real APFS directory: a folder
+         * created decomposed reads its name back decomposed, so both forms
+         * genuinely reach this code.
+         */
+        @Test
+        @DisplayName("a composed and a decomposed spelling fold to the same word")
+        void bothNormalizationFormsFoldTheSame() {
+            String composed = "\u00dcbersetzung";
+            String decomposed = java.text.Normalizer.normalize(
+                    composed, java.text.Normalizer.Form.NFD);
+            assertThat(decomposed).as("the two really are different strings")
+                    .isNotEqualTo(composed).hasSize(composed.length() + 1);
+            assertThat(SearchTerms.score(composed, new String[] {"ubersetzung"}))
+                    .as("typed without the umlaut, composed on disk").isPositive();
+            assertThat(SearchTerms.score(decomposed, new String[] {"ubersetzung"}))
+                    .as("typed without the umlaut, decomposed on disk").isPositive();
+            assertThat(SearchTerms.score(decomposed, SearchTerms.words(composed).toArray(String[]::new)))
+                    .as("one spelling must find the other, or a project found by "
+                            + "its own name depends on which tool created the folder")
+                    .isPositive();
+        }
+    }
 }
