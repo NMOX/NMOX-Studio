@@ -4,6 +4,33 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.117.0] - 2026-09-10
+
+**The walk the night owed: the shipped app, booted as a Taiwanese
+desktop** (docs only).
+
+v2.111.0 proved by measurement that the system locale alone reaches the
+translated bundles. That is a lookup, not a product. So the assembled app
+was booted with `user.language=zh user.country=TW`, a throwaway userdir,
+and NO `--locale` flag — the situation of someone in Taipei who has just
+installed it and touched nothing.
+
+It comes up Chinese. Every tab: 欢迎, 任务机架, 数据库工作室, 合约工作室,
+基础设施设计器, API 工作室, 浏览器, IRC, 任务, Docker 面板. Project Studio’s
+chrome, DB Studio’s toolbar down to 上限 and 已保存的查询, and the Docker
+offer balloon in whole sentences. Zero SEVERE, and the log confirms the
+locale the JVM started in.
+
+Two things the walk showed that no bundle lookup could:
+
+- **The regional fallback is real, not theoretical.** Taiwan is a country
+  we never named. It lands on Chinese because the catalogs are named for a
+  language, which is the v2.99.0 decision doing its job in the only place
+  that counts.
+- **The clock came along.** DB Studio’s history pane reads 下午11:14 — a
+  Chinese twelve-hour clock, which is v2.104.0’s display clock following
+  the reader, live, in a build nobody told which language to be.
+
 ## [2.116.0] - 2026-09-10
 
 **Docs truth, and the review lenses that came back clean** (docs only).
@@ -19065,6 +19092,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.117.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.116.0...v2.117.0
 [2.116.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.115.0...v2.116.0
 [2.115.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.114.0...v2.115.0
 [2.114.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.113.0...v2.114.0
