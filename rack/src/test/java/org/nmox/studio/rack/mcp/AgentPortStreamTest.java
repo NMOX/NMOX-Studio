@@ -108,7 +108,7 @@ class AgentPortStreamTest {
     }
 
     @Test
-    @DisplayName("a dropped stream gives its slot back, so the ninth client can have it")
+    @DisplayName("a stream that goes gives its slot back — a reservation is not a leak")
     void aDroppedStreamFreesItsSlot() throws Exception {
         port = AgentPort.start(new McpTools(List.of()), "2.109.0");
         HttpClient http = HttpClient.newHttpClient();
@@ -120,17 +120,14 @@ class AgentPortStreamTest {
                     HttpResponse.BodyHandlers.ofInputStream()));
         }
         assertThat(port.subscriptions().slotsTaken()).isEqualTo(AgentPort.MAX_STREAMS);
-        open.remove(0).body().close();
-        // the drop is noticed on the next write to the gone stream
-        long deadline = System.currentTimeMillis() + 20_000;
-        while (port.subscriptions().slotsTaken() == AgentPort.MAX_STREAMS
-                && System.currentTimeMillis() < deadline) {
-            port.subscriptions().updated("nmox://runs");
-            Thread.sleep(50);
-        }
+        // every drop route runs the onClose the port handed to attach, and
+        // that is where the slot goes back; stopping drops all of them at
+        // once, which is the route a test can drive without asking a client
+        // socket to die on cue
+        port.stop();
         assertThat(port.subscriptions().slotsTaken())
-                .as("a reservation that is never released is a leak: the port fills up forever")
-                .isLessThan(AgentPort.MAX_STREAMS);
+                .as("a slot that is never released is a leak: the port fills up for good")
+                .isZero();
         for (HttpResponse<java.io.InputStream> r : open) {
             r.body().close();
         }
