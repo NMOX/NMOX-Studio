@@ -238,8 +238,19 @@ closes the deploy gate exactly like a slow one.
 status lines, Welcome, Options — speaks thirteen languages: English, Español, Français, Deutsch, Русский, Українська, Polski,
 Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 and
 हिन्दी.
-Pick yours in Options ▸ General ▸ Language and restart. Rack faceplates keep
-their panel vocabulary on purpose.
+Pick yours in Options ▸ General ▸ Language and the open windows rename
+themselves on the spot — no restart, and the choice survives one anyway.
+Times follow the language too, so a Hindi reader gets a 12-hour clock while
+a record an agent parses stays fixed. The user guide's opening chapters are
+translated to match, and the Welcome's guide link lands in your language:
+[Español](docs/user-guide.es.md) · [Français](docs/user-guide.fr.md) ·
+[Deutsch](docs/user-guide.de.md) · [Русский](docs/user-guide.ru.md) ·
+[Українська](docs/user-guide.uk.md) · [Polski](docs/user-guide.pl.md) ·
+[Português (Brasil)](docs/user-guide.pt.md) ·
+[Bahasa Indonesia](docs/user-guide.id.md) · [Filipino](docs/user-guide.tl.md) ·
+[Tiếng Việt](docs/user-guide.vi.md) · [简体中文](docs/user-guide.zh.md) ·
+[हिन्दी](docs/user-guide.hi.md).
+Rack faceplates keep their panel vocabulary on purpose.
 
 ![NMOX Studio in French: the launchpad reads DÉMARRER, RÉCENTS and OUTILS, and the tabs read Bienvenue, Rack de tâches, Studio de bases de données, Studio de contrats and Concepteur d’infrastructure](docs/images/i18n-welcome-fr.png)
 
