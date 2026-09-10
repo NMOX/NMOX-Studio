@@ -28,7 +28,7 @@ import org.openide.util.RequestProcessor;
  */
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.CopyProjectTreeAction")
 @ActionRegistration(displayName = "#CTL_CopyProjectTree", lazy = true)
-@ActionReference(path = "Menu/Tools", position = 103)
+@ActionReference(path = "Menu/Tools", position = 108)
 @Messages({
     "CTL_CopyProjectTree=Copy Project Tree as Markdown",
     "CopyProjectTreeAction_noProject=Copy Project Tree: no project is aimed",

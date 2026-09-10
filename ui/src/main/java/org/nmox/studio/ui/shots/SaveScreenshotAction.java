@@ -18,7 +18,7 @@ import org.openide.windows.WindowManager;
  */
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.SaveScreenshotAction")
 @ActionRegistration(displayName = "#CTL_SaveScreenshot", lazy = true)
-@ActionReference(path = "Menu/Tools", position = 100)
+@ActionReference(path = "Menu/Tools", position = 105)
 @Messages({
     "CTL_SaveScreenshot=Save Screenshot…",
     "SaveScreenshotAction_title=Save Screenshot",

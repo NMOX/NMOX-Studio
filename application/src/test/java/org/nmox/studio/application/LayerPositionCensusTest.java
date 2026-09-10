@@ -28,12 +28,28 @@ import static org.assertj.core.api.Assertions.assertThat;
  * looked clean alone. Per-module gates cannot see a cross-module collision,
  * so this one reads every shipped module's layers out of the assembled
  * cluster (integration-test phase, after package) and fails by folder and
- * name. Runs over the modules' own layers: a collision with a platform row
- * is still the boot log's to name.
+ * name.
+ *
+ * <p>v2.104.0 closed its own written blind spot. It used to say a collision
+ * with a PLATFORM row was "the boot log's to name" — and the boot log duly
+ * named one: our Save Screenshot sat at Menu/Tools position 100, where the
+ * platform's own Tools row already sat, and the gate could not see it
+ * because only one of the two rows was ours. The census now also reads the
+ * platform and ide clusters, but only for the folders NMOX actually writes
+ * into, so the check stays about our own registrations while seeing
+ * everything they collide with. A gate that reads half the population is a
+ * gate that goes green on a real collision.
  */
 class LayerPositionCensusTest {
 
     private static final Path MODULES = Path.of("target/nmoxstudio/nmoxstudio/modules");
+
+    /** The clusters whose rows ours land beside in the same folders. */
+    private static final List<Path> NEIGHBOUR_CLUSTERS = List.of(
+            Path.of("target/nmoxstudio/platform/modules"),
+            Path.of("target/nmoxstudio/ide/modules"),
+            Path.of("target/nmoxstudio/java/modules"),
+            Path.of("target/nmoxstudio/extra/modules"));
 
     /** folder path -> (file name -> position or null), across every module's layers. */
     private static Map<String, Map<String, Integer>> census() throws Exception {
@@ -66,7 +82,58 @@ class LayerPositionCensusTest {
                 }
             }
         }
+        // and every row the PLATFORM puts in a folder we write into: those are
+        // what our positions actually compete with at boot (v2.104.0)
+        for (Path cluster : NEIGHBOUR_CLUSTERS) {
+            if (!Files.isDirectory(cluster)) {
+                continue;
+            }
+            List<Path> theirs;
+            try (Stream<Path> s = Files.walk(cluster)) {
+                theirs = s.filter(p -> p.toString().endsWith(".jar")).sorted().toList();
+            }
+            for (Path jar : theirs) {
+                try (JarFile jf = new JarFile(jar.toFile())) {
+                    Map<String, Map<String, Integer>> mine = new LinkedHashMap<>();
+                    for (String name : layerNames(jf)) {
+                        if (jf.getEntry(name) == null) {
+                            continue;
+                        }
+                        try (InputStream in = jf.getInputStream(jf.getEntry(name))) {
+                            Element root = builder().parse(in).getDocumentElement();
+                            walk(root, "", mine, jar.getFileName().toString());
+                        }
+                    }
+                    mine.forEach((folder, rows) -> {
+                        if (folders.containsKey(folder)) {
+                            folders.get(folder).putAll(rows);
+                        }
+                    });
+                } catch (Exception unreadable) {
+                    // a platform jar with no layer, or one this parser cannot
+                    // read, is not this gate's business — it fails on OUR rows
+                }
+            }
+        }
         return folders;
+    }
+
+    private static List<String> layerNames(JarFile jf) throws Exception {
+        List<String> layers = new ArrayList<>();
+        layers.add("META-INF/generated-layer.xml");
+        String declared = jf.getManifest() == null ? null
+                : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer");
+        if (declared != null) {
+            layers.add(declared);
+        }
+        return layers;
+    }
+
+    private static javax.xml.parsers.DocumentBuilder builder() throws Exception {
+        DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
+        f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        f.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        return f.newDocumentBuilder();
     }
 
     private static void walk(Element folder, String path, Map<String, Map<String, Integer>> out, String module) {
@@ -85,6 +152,12 @@ class LayerPositionCensusTest {
                         .put(e.getAttribute("name") + " (" + module + ")", position(e));
             }
         }
+    }
+
+    /** "Foo.shadow (some-module.jar)" -> "Foo.shadow". */
+    private static String rowName(String censusKey) {
+        int paren = censusKey.indexOf(" (");
+        return paren < 0 ? censusKey : censusKey.substring(0, paren);
     }
 
     private static Integer position(Element file) {
@@ -108,7 +181,16 @@ class LayerPositionCensusTest {
             // blessed in place since v2.28.0; the mixed check reads our own rows
             Map<String, Integer> ours = new LinkedHashMap<>();
             f.getValue().forEach((name, pos) -> {
-                if (!name.startsWith("org-netbeans-")) {
+                // the marker is the OWNING JAR, not the row's own name: the CSL
+                // processor emits platform-named rows into our layer, and since
+                // v2.104.0 the census also carries the platform's own rows in
+                // folders we write into — neither is ours to position
+                // both halves matter: the row must come from one of OUR jars
+                // (since v2.104.0 the census also carries the platform's own
+                // rows in folders we write into), and it must not be one of
+                // the platform-named rows the CSL processor emits into our
+                // generated layer, which we cannot position — blessed v2.28.0
+                if (name.contains("(org-nmox-") && !name.startsWith("org-netbeans-")) {
                     ours.put(name, pos);
                 }
             });
@@ -125,18 +207,30 @@ class LayerPositionCensusTest {
     }
 
     @Test
-    @DisplayName("No two NMOX rows share a position in a folder (the Ordering warning's second shape)")
+    @DisplayName("No NMOX row shares a position with anything in its folder (the Ordering warning's second shape)")
     void noDuplicatePositions() throws Exception {
         List<String> dups = new ArrayList<>();
         for (var f : census().entrySet()) {
             Map<Integer, String> seen = new LinkedHashMap<>();
             f.getValue().forEach((name, pos) -> {
-                if (pos != null) {
-                    String other = seen.putIfAbsent(pos, name);
-                    if (other != null) {
-                        dups.add(f.getKey() + " @" + pos + ": " + other + " vs " + name);
-                    }
+                if (pos == null) {
+                    return;
                 }
+                String other = seen.putIfAbsent(pos, name);
+                if (other == null) {
+                    return;
+                }
+                // two modules declaring the same file name in the same folder
+                // is ONE row the platform merges, not two rows competing — the
+                // shared separator every CSL popup contributes is the case
+                if (rowName(other).equals(rowName(name))) {
+                    return;
+                }
+                // and a collision only matters if one of the two is ours
+                if (!other.contains("(org-nmox-") && !name.contains("(org-nmox-")) {
+                    return;
+                }
+                dups.add(f.getKey() + " @" + pos + ": " + other + " vs " + name);
             });
         }
         assertThat(dups).as("same position, same folder — the platform picks an order and warns").isEmpty();

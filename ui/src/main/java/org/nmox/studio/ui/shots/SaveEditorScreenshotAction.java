@@ -26,7 +26,7 @@ import org.openide.windows.WindowManager;
  */
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.SaveEditorScreenshotAction")
 @ActionRegistration(displayName = "#CTL_SaveEditorScreenshot", lazy = true)
-@ActionReference(path = "Menu/Tools", position = 101)
+@ActionReference(path = "Menu/Tools", position = 106)
 @Messages({
     "CTL_SaveEditorScreenshot=Save Editor Screenshot…",
     "SaveEditorScreenshotAction_nothingOpen=Not saved — nothing is open in the editor area",
