@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.110.0] - 2026-09-10
+
+**The user guide is finished in every language the product speaks.**
+Chapters 7 through 12 and the appendix land in all twelve translations,
+and the partial-translation notice comes off all twelve because it is no
+longer true.
+
+1. **What the last six chapters carry.** Docker as a control panel and the
+   Dockerize tab; the whole kit family with its never-clobber law
+   (standards, PWA, accessibility, internationalization, contracts,
+   classic); the serving chip, the universal finder, the status line, the
+   Workbench with its RUNNING section and the five keymap profiles; the
+   safety nets — session resurrection, the orphan guarantee, BLACKBOX and
+   SONAR, the four workspace files that reload but never overwrite,
+   TypeScript without a build, the thirteen languages and the daily update
+   check; Learning Spaces with Check My Work and the KVASIR tutor, the
+   drop-in catalog and the exporter a teacher builds with; the Environment
+   Doctor and the walls that carry their own door; and the appendix table
+   saying which of the files the IDE writes belong in the repository.
+
+   The file names, flags and paths stay in English throughout, because a
+   helpfully localized `--experimental-strip-types` is a command that
+   fails — and fails only for readers the author cannot read.
+
+2. **The gate that had never fired now has a law.** `TranslatedGuideGateTest`
+   has always skipped its honesty check for a guide that covers every
+   English chapter: a complete guide owes no notice. Until today no guide
+   was complete, so that branch was reasoning nobody had tested. Now
+   twelve of them take it at once, and it is the only thing standing
+   between a guide and silence.
+
+   So the branch gained its own test in the other direction. A guide that
+   covers every chapter must ALSO not carry the sentence saying it stops
+   early, and a guide that falls behind is named rather than quietly
+   excused. Both halves die under mutation: truncating one guide at
+   chapter 11 fails the pair by name, and planting the old notice back on
+   a finished guide fails the new one.
+
+3. **The README stops undercounting itself.** It had said the guide’s
+   opening chapters were translated to match. They are all translated now,
+   so it says that instead.
+
 ## [2.109.0] - 2026-09-10
 
 **The guide's chapter 6, The studios, in all twelve languages** — plus the
@@ -18819,6 +18861,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.110.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.109.0...v2.110.0
 [2.109.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.108.0...v2.109.0
 [2.108.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.107.0...v2.108.0
 [2.107.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.106.0...v2.107.0
