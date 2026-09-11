@@ -4,6 +4,69 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.128.0] - 2026-09-11
+
+**The Agent Port's disclosure renders as the paragraph it is again, and the
+guard that broke it now has a census.** The German walk that closed the
+dialog-button class photographed a second thing on its way past: the Agent
+Port dialog painting a screenful of literal
+`<html><body style='width: 720'><b>Der Agent Port lauscht auf
+127.0.0.1:57511</b> — nur Loopback.<br><br>…` on one unwrapped line behind a
+horizontal scrollbar. Not a translation bug — the German is correct. The
+markup was being shown instead of rendered, in every language including
+English.
+
+**Two releases, pulling against each other.** v2.84.0 gave that sentence a
+width-bounded HTML body *because* it had outgrown the dialog's screen clamp
+and was being clipped mid-word — the one sentence a person must read before
+connecting an agent, saying what the agent can see and that it can change
+nothing. v2.86.0's markup-render sweep then wrapped the same value in
+`PlainText.plain`, which prepends a space so Swing declines to parse the
+text. The wrap was gone and the tags were on screen.
+
+**And the sweep wrote its own exemption on the same line.** The comment at
+that site read `PLAIN-LABEL-EXEMPT: the disclosure MEANS its markup` — and
+the code guarded it anyway. Comment and code disagreed; the comment was
+right. Every gate stayed green, because `PlainLabelGateTest` asks that a
+label site be guarded *or* exempt, and this one was both.
+
+The fix drops the guard, escapes the one spliced string (the tool-name list;
+every other argument is an int) so the exemption's claim is true by
+construction rather than by inspection, and extracts `disclosureLabel` so the
+law is testable on the real component. `AgentPortDisclosureTest` asks Swing
+directly — `BasicHTML.isHTMLString` and the installed view — rather than
+asserting on a string; three mutants by name, including the shipped bug
+itself.
+
+**The class gets a gate, derived from the assembled cluster.**
+`AuthoredMarkupIsNotGuardedTest` reads every shipped module jar for keys
+whose English value begins with `<html`, about three dozen of them, and
+fails the build when any source line hands one to a markup guard. It follows
+exactly one hop, because the real instance needed one: the key lived inside
+`disclosureHtml`, not at the guard.
+
+Getting that gate honest took three corrections, each worth recording:
+
+- **A stale compile faked two dead mutants.** `surefire:test` alone does not
+  recompile; both proofs were measuring the previous class file and reported
+  green. Every mutation here reinstalls first.
+- **"Mentions the key" is not "produces the value."** The first widening
+  named the Tasks window's `editSprint`, a long method that renders a
+  velocity line somewhere in its middle and hands it to nothing. A carrier
+  now has to *return* the value.
+- **A word boundary that excluded too much let a real mutant live.** Barring
+  a preceding `.` stopped `Foo_editSprint(` reading as `editSprint(` — and
+  also stopped `Bundle.Key(`, the exact form the gate exists to catch. The
+  boundary excludes a word character only.
+
+One more thing moved, and it is the gate that was satisfied twice over:
+`PlainLabelGateTest` read its exemption marker on the construction's own line
+and exactly one line above. A reason worth writing does not fit in one line —
+this one needed three, and the gate called the site unmarked. It now reads the
+CONTIGUOUS comment block directly above, stopping at the first line that is
+not a comment, so a marker can never be borrowed from above intervening code.
+Two mutants: the comment removed, and the marker placed above a statement.
+
 ## [2.127.0] - 2026-09-11
 
 **Every dialog in the product says Cancel in the user's language.** Found by
@@ -19488,6 +19551,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.128.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.127.0...v2.128.0
 [2.127.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.126.0...v2.127.0
 [2.126.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.125.0...v2.126.0
 [2.125.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.124.0...v2.125.0

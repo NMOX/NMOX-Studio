@@ -71,8 +71,31 @@ public final class AgentPortAction implements ActionListener {
     static String disclosureHtml(int port, String tools) {
         // UNITLESS on purpose: Swing's CSS reads "width: 720" and ignores
         // "width: 720px" for a body (probed headless — 935 px one-line vs 720
-        // wrapped); a units-bearing value would silently restore the bug
-        return Bundle.AgentPortAction_disclosure(String.valueOf(LABEL_WIDTH), String.valueOf(port), tools);
+        // wrapped); a units-bearing value would silently restore the bug.
+        // The tool list is escaped rather than trusted, so the exemption at
+        // the label below is true by construction and not by inspection.
+        return Bundle.AgentPortAction_disclosure(String.valueOf(LABEL_WIDTH),
+                String.valueOf(port), PlainText.escape(tools));
+    }
+
+    /**
+     * The disclosure as the dialog builds it — extracted so the law can be
+     * tested on the real label rather than on a string.
+     *
+     * <p>NOT {@code PlainText.plain}-guarded, and that is the whole point:
+     * {@code plain} prepends a space, Swing then declines to parse the text
+     * as HTML, and the v2.84.0 width-bounded body — the wrap this value
+     * exists for — renders as a screenful of literal tags. The v2.86.0 sweep
+     * wrote the exemption comment here AND applied the guard anyway, so the
+     * comment and the code disagreed and the comment was right (the v1.189.0
+     * law: a comment claiming a property the code does not have is a test
+     * not yet written). This is that test's subject.
+     */
+    static JLabel disclosureLabel(int port, String tools) {
+        // PLAIN-LABEL-EXEMPT: the disclosure MEANS its markup (the v2.84.0
+        // width-bounded body); the one spliced string is escaped in
+        // disclosureHtml and every other argument is an int
+        return new JLabel(disclosureHtml(port, tools));
     }
 
     static String shownToken(AgentPort port) {
@@ -138,9 +161,7 @@ public final class AgentPortAction implements ActionListener {
                 }""".formatted(port.url(), shownToken(port));
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        // PLAIN-LABEL-EXEMPT: the disclosure MEANS its markup (the v2.84.0 width-bounded body); every
-        // piece of it is the product's own text plus the port number — nothing external is spliced in
-        panel.add(new JLabel(PlainText.plain(disclosureHtml(port.port(), McpProtocol.disclosure(McpTools.production())))),
+        panel.add(disclosureLabel(port.port(), McpProtocol.disclosure(McpTools.production())),
                 BorderLayout.NORTH);
         JTextArea config = new JTextArea(snippet);
         config.setEditable(false);
