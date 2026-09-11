@@ -82,4 +82,42 @@ class WorkbenchA11yContractTest {
         assertThat(unnamed).as("a button without an accessible name is invisible to assistive technology").isEmpty();
         SwingUtilities.invokeAndWait(tc[0]::componentClosed);
     }
+
+    @Test
+    @DisplayName("text the Workbench had to cut is still readable in full somewhere")
+    void cutTextIsNeverLost() throws Exception {
+        // v2.119.0, the fresh-install walk: the TOOLING descriptions were
+        // being middle-elided into gibberish, and the only full copy lived
+        // in the title button's accessible name — where a sighted user
+        // cannot get at it. The v1.282.0 law one surface over: a widget
+        // that has to cut its text carries the whole of it as a tooltip.
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        List<Component> all = new ArrayList<>();
+        SwingUtilities.invokeAndWait(() -> collect(tc[0], all));
+        List<String> silent = new ArrayList<>();
+        int cut = 0;
+        for (Component c : all) {
+            // the POPULATION is what the window says it shortened, not what
+            // happens to end in an ellipsis: "detecting…" is a progress
+            // label that was never cut, and the first cut of this gate
+            // failed the Windows lane for exactly that reason
+            if (c instanceof javax.swing.JLabel l
+                    && l.getClientProperty(ProjectExplorerTopComponent.SHORTENED) != null) {
+                cut++;
+                String full = l.getToolTipText();
+                if (full == null || full.isBlank()) {
+                    silent.add("'" + l.getText() + "'");
+                }
+            }
+        }
+        assertThat(silent)
+                .as("a row that shows an ellipsis and offers no way to read the rest "
+                        + "has simply lost the text")
+                .isEmpty();
+        assertThat(cut).as("the fresh Workbench paints at least one shortened subtitle "
+                + "(English's own longest is 51 characters against a 38 budget), "
+                + "or this gate is measuring nothing").isPositive();
+    }
 }

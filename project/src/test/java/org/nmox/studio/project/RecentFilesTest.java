@@ -32,10 +32,46 @@ class RecentFilesTest {
     @Test
     @DisplayName("Middle-ellipsis keeps both telling ends of a deep path")
     void shortenKeepsEnds() {
-        assertThat(ProjectExplorerTopComponent.shorten("short", 38)).isEqualTo("short");
-        String shortened = ProjectExplorerTopComponent.shorten(
+        assertThat(ProjectExplorerTopComponent.shortenPath("short", 38)).isEqualTo("short");
+        String shortened = ProjectExplorerTopComponent.shortenPath(
                 "/Users/dev/projects/frontend/src/components/widgets", 21);
         assertThat(shortened).hasSizeLessThanOrEqualTo(21);
         assertThat(shortened).startsWith("/Users/dev").endsWith("s/widgets").contains("…");
+    }
+
+    @Test
+    @DisplayName("A sentence keeps its beginning — a middle ellipsis makes it gibberish")
+    void proseKeepsItsHead() {
+        // the walk of a fresh install photographed this exact string as
+        // "devices, cables, p…nes — Tab flips it" (v2.119.0)
+        String prose = "devices, cables, pipelines — Tab flips it";
+        String cut = ProjectExplorerTopComponent.shortenProse(prose, 38);
+        assertThat(cut).hasSizeLessThanOrEqualTo(38)
+                .startsWith("devices, cables, pipelines").endsWith("…");
+        assertThat(cut).as("the middle must survive, or the sentence stops being one")
+                .doesNotContain("p…nes");
+        assertThat(ProjectExplorerTopComponent.shortenProse("short enough", 38))
+                .isEqualTo("short enough");
+    }
+
+    @Test
+    @DisplayName("A list drops whole items and says how many — never half a name")
+    void listDropsWholeItems() {
+        java.util.List<String> kinds = java.util.List.of(
+                "deno", "clarity", "node", "rust", "fortran", "haskell", "purescript");
+        String cut = ProjectExplorerTopComponent.shortenList(kinds, 38);
+        assertThat(cut).hasSizeLessThanOrEqualTo(38).contains("deno").contains("+");
+        for (String item : kinds) {
+            // every name present is present WHOLE: a half-written toolchain
+            // reads as one nobody has
+            int at = cut.indexOf(item);
+            if (at >= 0) {
+                assertThat(cut.substring(at)).startsWith(item);
+            }
+        }
+        assertThat(cut).as("a truncated name would leave a fragment before the count")
+                .doesNotContain("clarit ").doesNotContain("purescrip");
+        assertThat(ProjectExplorerTopComponent.shortenList(java.util.List.of("node"), 38))
+                .isEqualTo("node");
     }
 }

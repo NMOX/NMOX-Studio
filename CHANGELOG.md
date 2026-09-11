@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.119.0] - 2026-09-11
+
+**A sentence cut through the middle is not a shorter sentence.** The
+coherence pass left a lens behind — *after changing a default, grep for
+what the old default made true* — so the next walk booted a fresh install
+and photographed every surface. The Workbench’s TOOLING column read
+`devices, cables, p…nes — Tab flips it`.
+
+One helper, `shorten`, was doing the eliding, and its javadoc is right
+about what it is for: *middle-ellipsis so deep paths keep their telling
+ends.* A path does want both ends. But three different readers were being
+sent through it, and the right answer is different for each — the same
+shape as the clocks and the collation order, one function serving readers
+who need opposite things.
+
+- **A path** keeps its ends. Unchanged.
+- **A sentence** keeps its beginning, because the middle is where the
+  meaning is. `shortenProse`.
+- **A list** drops WHOLE items and counts what it dropped. Eliding a joined
+  list as prose leaves `clarit…`, which reads as a toolchain nobody has.
+  `shortenList`.
+
+**The budget was the other half.** 38 characters, measured against the
+product’s own strings in all thirteen languages: **36 of the 53 subtitle
+values were over it**, the longest 61 (Filipino). English was cut too — this
+was most rows in most languages, not an edge case. Rather than invent a
+bigger constant for a narrow pane, the cut text now has somewhere to be
+read: a subtitle that had to be shortened carries the whole of it as a
+tooltip, the v1.282.0 LCD law one surface over, and
+`WorkbenchA11yContractTest` fails the build if a row shows an ellipsis and
+offers no way to read the rest.
+
+Three mutants by name, and the fix re-photographed in a rebuilt app: every
+description now starts where the sentence does.
+
+**The gate broke the house law on its first CI run, and the Windows lane
+said so.** It had taken every label ending in an ellipsis to be truncated
+text — a MECHANISM, where the law asks for the population. `detecting…` is
+a progress label that was never shortened, and on Windows the toolchain
+detection had not finished when the assertion ran, so the gate failed on a
+string it had no business reading. macOS and Linux passed because the
+detection beat them to it.
+
+The window now SAYS what it shortened, carrying the whole text on the
+label, and the gate reads that population instead of inferring one. Two
+mutants: strip the tooltip and the law fails; strip the marker and the
+floor fails, because a gate that measures nothing passes for the wrong
+reason.
+
 ## [2.118.0] - 2026-09-10
 
 **The coherence pass: one vocabulary, one door per idea.** No new
@@ -19197,6 +19246,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.119.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.118.0...v2.119.0
 [2.118.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.117.0...v2.118.0
 [2.117.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.116.0...v2.117.0
 [2.116.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.115.0...v2.116.0
