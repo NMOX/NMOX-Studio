@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.131.0] - 2026-09-11
+
+**A plugin version with two homes, found by handling a Dependabot PR.** The
+maven group's open PR bumps surefire 3.5.6 → 3.6.0 and spotbugs-maven-plugin
+4.10.4.0 → 4.10.4.1. v2.126.0 absorbed both by hand, which is how this house
+takes Dependabot — and it absorbed them into the ROOT pom only.
+`application/pom.xml` kept a pin of its own at **3.5.6**.
+
+So for two releases the one module that runs the packaged-app gates —
+`LocaleBundleParityTest`, `SystemLocaleReachTest`, `LayerPositionCensusTest`
+and the rest — ran them on an older surefire than every other module. The
+build was green, the root pom was current, and Dependabot reported the group
+satisfied, because Dependabot reads the root and a module's own pin is simply
+a different number in a different file.
+
+The module needs the plugin block to hold its EXECUTIONS, not to hold a
+version. The `<version>` is gone and the root's `pluginManagement` is the one
+home; the effective pom resolves 3.6.0.
+
+`PluginVersionSingleHomeTest` makes that a build law, deriving its population
+from the root pom itself — every plugin the root pins is covered, including
+ones added tomorrow. It fails on a second pin **even when the two numbers
+agree today**, because the defect is the second home, not the disagreement.
+Three mutants by name: the stale pin restored (reported ALREADY DRIFTED), an
+identical pin (reported free to drift), and the population removed.
+
+This is `OrgJsonVersionGateTest`'s shape (v1.50.0, one version literal across
+eight module poms) carried from dependencies to plugins.
+
 ## [2.130.0] - 2026-09-11
 
 **Seed data is chrome until the user edits it.** The German walk opened a
@@ -19636,6 +19665,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.131.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.130.0...v2.131.0
 [2.130.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.129.0...v2.130.0
 [2.129.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.128.0...v2.129.0
 [2.128.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.127.0...v2.128.0
