@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.122.0] - 2026-09-11
+
+**The other canvas says where to start.** The walk arc’s fourth surface.
+The Infra Designer on a fresh install is a large dark rectangle with a
+DEPLOY button over it and nothing else — while the rack, one tab away, has
+silkscreened *drag a device onto the rack* since v1.0, and the coherence
+pass made that invitation reachable again only yesterday. Same idea, two
+doors, one of them silent.
+
+The canvas now says the two things a newcomer needs and nobody had written
+down: where resources come from, and what a wire between two of them
+MEANS. The second sentence reuses the vocabulary the refusal already used
+in every language — *a wire reads "serves"*, the v1.271.0 walk’s own words
+— so the hint and the refusal teach the same idea instead of two.
+
+It retires the moment a node lands, which is the half that keeps it from
+becoming furniture, and both halves die alone under mutation.
+
+**An escaping trap caught on the way past.** The new sentence wanted an
+apostrophe, and `@Messages` values are MessageFormat patterns — except a
+message with no arguments is never formatted, so the doubled quote that
+escapes one would have printed literally. It uses the typographic
+apostrophe instead, which is the v2.98.0 rule and sidesteps the question
+entirely.
+
+Translated into all twelve, because a hint that only speaks English
+teaches nobody the product is for.
+
 ## [2.121.0] - 2026-09-11
 
 **A placeholder is not a value — the Standards Kit stops taking its own
@@ -19314,6 +19342,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.122.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.121.0...v2.122.0
 [2.121.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.120.0...v2.121.0
 [2.120.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.119.0...v2.120.0
 [2.119.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.118.0...v2.119.0
