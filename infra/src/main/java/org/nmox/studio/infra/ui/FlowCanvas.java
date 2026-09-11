@@ -37,6 +37,8 @@ import org.nmox.studio.core.util.PlainText;
  */
 @org.openide.util.NbBundle.Messages({
     "FlowCanvas_lockedBanner=CLOUD OPERATION RUNNING — canvas locked until it finishes",
+    "FlowCanvas_emptyInvite=Drag a resource from the palette to begin",
+    "FlowCanvas_emptyInviteWire=A wire reads \"serves\" — drag from one resource\u2019s edge to another",
     "FlowCanvas_liveStatus=live",
     "FlowCanvas_nodeTooltip=<html><b>{0}</b> {1}<br>${2}/mo{3}</html>",
     "FlowCanvas_tooltipLive=<br>live: {0}",
@@ -450,6 +452,15 @@ public class FlowCanvas extends JPanel {
         for (InfraNode node : graph.getNodes()) {
             paintNode(g, node);
         }
+        if (graph.getNodes().isEmpty()) {
+            // THE CANVAS SAYS WHERE RESOURCES COME FROM (v2.122.0). The rack
+            // has silkscreened this since v1.0 and the coherence pass made it
+            // reachable again; its sibling canvas, which a first-time user
+            // meets from the same tab strip, said nothing at all — an empty
+            // dark rectangle with a DEPLOY button above it. Same idea, two
+            // doors, one of them silent. It retires the moment a node lands.
+            paintInvitation(g);
+        }
         if (locked) {
             // unmistakable state: a cloud op is running, edits are refused
             Graphics2D banner = (Graphics2D) gr.create();
@@ -461,6 +472,36 @@ public class FlowCanvas extends JPanel {
             banner.dispose();
         }
         g.dispose();
+    }
+
+    /**
+     * The empty canvas's invitation, centred in whatever room there is.
+     * Two lines because the palette answers "where do resources come from"
+     * and the wire answers the question the walk of v1.271.0 found people
+     * asking next — what a connection between two of them even means.
+     */
+    private void paintInvitation(Graphics2D g) {
+        Graphics2D hint = (Graphics2D) g.create();
+        hint.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        hint.setColor(new Color(0xFF, 0xFF, 0xFF, 60));
+        hint.setFont(hint.getFont().deriveFont(Font.PLAIN, 13f));
+        String first = Bundle.FlowCanvas_emptyInvite();
+        String second = Bundle.FlowCanvas_emptyInviteWire();
+        FontMetrics fm = hint.getFontMetrics();
+        int cx = getWidth() / 2;
+        int cy = getHeight() / 2;
+        hint.drawString(first, cx - fm.stringWidth(first) / 2, cy - 6);
+        hint.setColor(new Color(0xFF, 0xFF, 0xFF, 40));
+        hint.setFont(hint.getFont().deriveFont(Font.PLAIN, 11f));
+        FontMetrics fm2 = hint.getFontMetrics();
+        hint.drawString(second, cx - fm2.stringWidth(second) / 2, cy + 14);
+        hint.dispose();
+    }
+
+    /** True when the canvas is showing its invitation rather than a graph. */
+    boolean isInviting() {
+        return graph.getNodes().isEmpty();
     }
 
     private void paintGrid(Graphics2D g) {
