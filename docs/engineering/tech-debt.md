@@ -22,6 +22,41 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
+### 97. The learning-space catalog speaks English in every translated build (2026-09-11, v2.127.0)
+
+Photographed during the German walk that closed the dialog-button class: the
+New Learning Space picker's chrome is German (`Lernen durch Tun — wählen Sie
+eine Sprache, ein Framework oder eine Bibliothek:`, `benötigt npx — ✓
+gefunden`, `Abbrechen`), and every one of the 93 entries inside it is
+English — `Your First Web Page`, "Never written HTML before? Start here —
+build a real page, see it in the browser, and change it live."
+
+This is not the same class as the chrome. Those were keys in bundles; these
+are **authored prose in a data file** (`learn-catalog.json`, plus whatever a
+user drops in `~/.nmox/learn-catalog.d`), and each blurb is a sentence
+someone wrote to persuade a learner. 93 titles + 93 blurbs × twelve
+languages is 2,232 pieces of persuasion — a translator pass, not an author
+with a dictionary (the ledger-89 rule, which was right about 72 values and
+is more right about 2,232).
+
+Two further reasons to decide rather than default:
+
+- **The drop-in half has no home for a translation.** A user's own catalog
+  file carries one `title` and one `blurb`. Giving the built-ins twelve
+  languages while a drop-in has one means the picker mixes languages on the
+  same list, which reads worse than a consistent English list — the same
+  argument that held two thirds of a toolbar back in v2.101.1 until v2.102.0
+  could do all of it.
+- **The tutorials behind them are longer than the catalog.** Each space
+  generates a `TUTORIAL.md`. Translating the picker and not the tutorial
+  sends a German speaker from German prose into an English document at the
+  exact moment they start learning.
+
+The honest shape, when it is taken: a `blurb.<lang>` sibling in the catalog
+schema so built-ins and drop-ins are described by the same mechanism, a
+parity gate deriving its population from the catalog itself, and the
+tutorials in the same pass or not at all.
+
 ### 96. The first-launch surface: (a) DECIDED and shipped, (b)+(c) left to the owner (2026-09-10, v2.118.0)
 
 Three things the first-time walk measured but did not change on its own,
