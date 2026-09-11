@@ -7,10 +7,12 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.127.0 — the dialog-chrome release
-(v2.127.0) is the first dated section below: the platform's dialog buttons in
-twelve languages, and the walk lesson that a fix aims at a SINK, which only
-the surface can confirm. Below it, at v2.124.0 — the walk arc (v2.119.0–v2.123.0)
+*Currency addendum 2026-09-11, at v2.128.0 — two dated sections below open
+the day: the Agent Port disclosure showing its own tags (two laws pulling
+against each other, and three corrections that made its class gate honest),
+and the dialog-chrome release
+(v2.127.0): the platform's dialog buttons in twelve languages, and the walk
+lesson that a fix aims at a SINK, which only the surface can confirm. Below it, at v2.124.0 — the walk arc (v2.119.0–v2.123.0)
 is written up in the dated section below; a sibling session shipped the
 coherence pass (v2.118.0) alongside it. Earlier, 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
 releases, closed by the walk it owed: the assembled app booted with
@@ -906,6 +908,67 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — two laws pulling against each other (v2.128.0)
+
+The same German walk, one shot further along. The Agent Port dialog painted
+a screenful of literal `<html><body style='width: 720'><b>Der Agent Port
+lauscht auf 127.0.0.1:57511</b>…` across one unwrapped line behind a
+horizontal scrollbar. The German was correct. The markup was being shown
+instead of rendered — in every language, English included.
+
+**The shape of it.** v2.84.0 gave that sentence a width-bounded HTML body
+for a reason it had measured: a bare `<html>` label lays its whole text on
+one line, and once that line outgrew the dialog's 0.8-screen clamp the
+disclosure was clipped mid-word. The one sentence a person must read before
+connecting an agent. v2.86.0's markup-render sweep then wrapped the same
+value in `PlainText.plain`, whose whole job is to prepend a space so Swing
+declines to parse text as HTML. Correct law, wrong value: `plain` exists for
+text that might be EXTERNAL — a directory name, a branch, a tool's output —
+and this value is the product's own paragraph.
+
+**Why no gate saw it.** The sweep wrote `PLAIN-LABEL-EXEMPT: the disclosure
+MEANS its markup` on the same line as the guard. `PlainLabelGateTest` asks
+that a label site be guarded OR exempt; this one was both, so the gate was
+satisfied twice over by a line that was wrong. The comment and the code
+disagreed and the comment was right — the v1.189.0 law again, in its purest
+form yet: *a comment claiming a property the code does not have is a test
+not yet written.*
+
+**Two gates, deliberately different in kind.** The per-site one
+(`AgentPortDisclosureTest`) builds the real label and asks SWING whether it
+parsed the markup — `BasicHTML.isHTMLString` plus the installed view —
+rather than asserting on the shape of a string, because the string is not
+the outcome. The class one (`AuthoredMarkupIsNotGuardedTest`) derives its
+population from the ASSEMBLED cluster: every key whose shipped English value
+begins with `<html` is authored markup, about three dozen of them, and no
+source line may pass one through a guard.
+
+**What it cost to make the class gate honest, which is the part worth
+keeping.** Three corrections, each a general lesson:
+
+1. **A stale compile faked two dead mutants.** `surefire:test` alone does
+   not recompile, so the first two proofs measured the previous class file
+   and reported the mutants surviving when the gate had never run. The
+   memory law (*a mutation proof in a module with a hand bundle must run
+   clean*) generalizes: **a mutation proof measures whatever was last
+   built.** Every mutation here reinstalls first.
+2. **"Mentions the key" is not "produces the value."** The first widening
+   made a method a carrier if its body mentioned an authored key at all, and
+   its first run named the Tasks window's `editSprint` — a long method that
+   renders a velocity line somewhere in its middle and hands it to nothing.
+   A carrier now has to RETURN the value. A method that merely touches a
+   value does not carry that value's law.
+3. **A boundary that excludes too much lets the real thing through.** To
+   stop a key named `Foo_editSprint(` reading as a call to `editSprint(`,
+   the match barred a preceding word character *or dot* — which also barred
+   `Bundle.Key(`, the exact form the gate exists to catch. A planted direct
+   guard survived. The boundary excludes a word character only.
+
+**And the ceiling, stated rather than hidden.** The class gate follows one
+hop, because the real instance needed one and two hops is a source scan
+guessing. Past that, the per-site render test is the backstop. A gate that
+cannot see everything should say where it stops.
 
 ## 2026-09-11 — the sink is not where the key is (v2.127.0)
 

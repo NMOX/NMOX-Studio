@@ -99,11 +99,33 @@ class PlainLabelGateTest {
                 || arg.startsWith("PlainText.plain(") || arg.startsWith("org.nmox.studio.core.util.PlainText.plain(");
     }
 
+    /**
+     * The marker on the construction's own line, or anywhere in the
+     * CONTIGUOUS comment block directly above it.
+     *
+     * <p>It used to read exactly one line back, which is not enough for a
+     * reason worth writing: v2.128.0's Agent Port exemption needed three
+     * lines to say why the disclosure means its markup, and the gate called
+     * the site unmarked. The block is still strict — it stops at the first
+     * line that is not a comment, so a marker cannot be borrowed from
+     * anywhere above intervening code.
+     */
     static boolean exempt(String body, int k, int close, String marker) {
         int lineStart = body.lastIndexOf('\n', k - 1) + 1;
-        int prevStart = body.lastIndexOf('\n', lineStart - 2) + 1;
-        return body.substring(lineStart, close).contains(marker)
-                || body.substring(prevStart, lineStart).contains(marker);
+        if (body.substring(lineStart, close).contains(marker)) {
+            return true;
+        }
+        int blockStart = lineStart;
+        while (blockStart > 0) {
+            int prevStart = body.lastIndexOf('\n', blockStart - 2) + 1;
+            String previous = body.substring(prevStart, blockStart).strip();
+            if (!previous.startsWith("//") && !previous.startsWith("*")
+                    && !previous.startsWith("/*")) {
+                break;
+            }
+            blockStart = prevStart;
+        }
+        return body.substring(blockStart, lineStart).contains(marker);
     }
 
     static int line(String body, int k) {

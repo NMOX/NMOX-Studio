@@ -267,6 +267,7 @@
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
+                                <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -290,6 +291,7 @@
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
                                 <include>**/DialogChromeOverlayGateTest.java</include>
+                                <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
