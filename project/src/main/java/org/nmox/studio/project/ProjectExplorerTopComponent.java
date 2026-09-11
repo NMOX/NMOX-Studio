@@ -456,7 +456,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             Runnable open = r.openable()
                     ? () -> org.nmox.studio.rack.service.ServingLinks.open(r.url())
                     : () -> { };
-            JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), false, ACCENT,
+            JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), Sub.PROSE, false, ACCENT,
                     r.openable() ? r.url() + "  " + Bundle.ProjectExplorerTopComponent_clickToOpen() : Bundle.ProjectExplorerTopComponent_runningStopEnds(),
                     open);
             if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
@@ -521,7 +521,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             boolean isActive = tc == active;
             boolean modified = dob.isModified();
-            row(title, file != null ? file.getParent() : null,
+            row(title, file != null ? file.getParent() : null, Sub.PATH,
                     isActive, modified ? MODIFIED : null,
                     file != null ? file.getAbsolutePath() : title,
                     tc::requestActive);
@@ -570,7 +570,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             if (openPaths.contains(file.getAbsolutePath()) || ++count > 10) {
                 continue;
             }
-            row(file.getName(), file.getParent(), false, null,
+            row(file.getName(), file.getParent(), Sub.PATH, false, null,
                     file.getAbsolutePath(), () -> openFile(file),
                     Bundle.ProjectExplorerTopComponent_forgetFile(),
                     () -> RecentFiles.forget(file, refreshCoalescer::request));
@@ -596,7 +596,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             boolean aimed = dir.equals(current);
             // subtitle starts as the parent path; toolchain detection (which
             // walks the directory) resolves off the EDT and refines it
-            JLabel sub = row(dir.getName(), dir.getParent(),
+            JLabel sub = row(dir.getName(), dir.getParent(), Sub.PATH,
                     aimed, aimed ? ACCENT : null,
                     dir.getAbsolutePath() + "  " + (aimed ? Bundle.ProjectExplorerTopComponent_aimed() : Bundle.ProjectExplorerTopComponent_clickToAim()),
                     () -> aimAt(dir),
@@ -614,7 +614,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     }));
             if (sub != null) {
                 WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
-                    String kinds = shorten(String.join(" · ", names), 38);
+                    String kinds = shortenList(names, 38);
                     // idempotent: skip the setText (and the layout it triggers)
                     // when the subtitle already shows this value
                     if (!kinds.isEmpty() && sub.getParent() != null
@@ -629,16 +629,16 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     /** The shelf: every workshop in the building, one click each. */
     private void addTooling() {
         section(Bundle.ProjectExplorerTopComponent_tooling());
-        row(Bundle.ProjectExplorerTopComponent_taskRack(), Bundle.ProjectExplorerTopComponent_taskRackSub(),
+        row(Bundle.ProjectExplorerTopComponent_taskRack(), Bundle.ProjectExplorerTopComponent_taskRackSub(), Sub.PROSE,
                 false, null, Bundle.ProjectExplorerTopComponent_taskRackTip(),
                 () -> openWindow("RackTopComponent"));
-        row(Bundle.ProjectExplorerTopComponent_projectStudio(), Bundle.ProjectExplorerTopComponent_projectStudioSub(),
+        row(Bundle.ProjectExplorerTopComponent_projectStudio(), Bundle.ProjectExplorerTopComponent_projectStudioSub(), Sub.PROSE,
                 false, null, Bundle.ProjectExplorerTopComponent_projectStudioTip(),
                 () -> openWindow("ProjectStudioTopComponent"));
-        row(Bundle.ProjectExplorerTopComponent_infraDesigner(), Bundle.ProjectExplorerTopComponent_infraDesignerSub(),
+        row(Bundle.ProjectExplorerTopComponent_infraDesigner(), Bundle.ProjectExplorerTopComponent_infraDesignerSub(), Sub.PROSE,
                 false, null, Bundle.ProjectExplorerTopComponent_infraDesignerTip(),
                 () -> openWindow("InfraDesignerTopComponent"));
-        row(Bundle.ProjectExplorerTopComponent_dockerPanel(), Bundle.ProjectExplorerTopComponent_dockerPanelSub(),
+        row(Bundle.ProjectExplorerTopComponent_dockerPanel(), Bundle.ProjectExplorerTopComponent_dockerPanelSub(), Sub.PROSE,
                 false, null, Bundle.ProjectExplorerTopComponent_dockerPanelTip(),
                 () -> {
                     try {
@@ -648,7 +648,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                         // init needs the window system; nothing to open
                     }
                 });
-        row(Bundle.ProjectExplorerTopComponent_terminal(), Bundle.ProjectExplorerTopComponent_terminalSub(),
+        row(Bundle.ProjectExplorerTopComponent_terminal(), Bundle.ProjectExplorerTopComponent_terminalSub(), Sub.PROSE,
                 false, null, Bundle.ProjectExplorerTopComponent_terminalTip(), this::openTerminal);
     }
 
@@ -756,9 +756,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * subtitle label (or null when there is none) so a caller can refine it
      * later — e.g. after off-EDT toolchain detection.
      */
-    private JLabel row(String title, String subtitle, boolean bold, Color dot,
+    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick) {
-        return row(title, subtitle, bold, dot, tooltip, onClick, null, null);
+        return row(title, subtitle, kind, bold, dot, tooltip, onClick, null, null);
     }
 
     /**
@@ -773,7 +773,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * construction (no shared selection, the v1.270.0 hazard shape
      * cannot arise).
      */
-    private JLabel row(String title, String subtitle, boolean bold, Color dot,
+    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick, String forgetLabel, Runnable onForget) {
         JPanel rowPanel = new JPanel();
         rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
@@ -809,7 +809,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         rowPanel.add(titleButton);
         JLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            sub = new JLabel(PlainText.plain(shorten(subtitle, 38)));
+            String shown = kind == Sub.PATH
+                    ? shortenPath(subtitle, 38) : shortenProse(subtitle, 38);
+            sub = new JLabel(PlainText.plain(shown));
+            if (!shown.equals(subtitle)) {
+                // cut text always has somewhere to be read in full
+                sub.setToolTipText(PlainText.plain(subtitle));
+            }
             sub.setFont(TINY);
             sub.setForeground(TEXT_DIM);
             sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
@@ -859,13 +865,70 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         return sub;
     }
 
+    /**
+     * What KIND of text a row's subtitle is (v2.119.0). One eliding helper
+     * served three readers and the right answer differs for each: the walk
+     * of a fresh install photographed "devices, cables, p…nes — Tab flips
+     * it", because a middle ellipsis written for deep paths was cutting
+     * sentences. Measured at the same time: 36 of the 53 subtitle values
+     * across English and the twelve translations were over the budget, so
+     * this was most rows in most languages, not an edge.
+     */
+    enum Sub {
+        /** An absolute path: the ENDS tell you where it is. */
+        PATH,
+        /** A sentence: the BEGINNING tells you what it is. */
+        PROSE
+    }
+
     /** Middle-ellipsis so deep paths keep their telling ends. */
-    static String shorten(String s, int max) {
+    static String shortenPath(String s, int max) {
         if (s.length() <= max) {
             return s;
         }
         int keep = (max - 1) / 2;
         return s.substring(0, keep) + "…" + s.substring(s.length() - keep);
+    }
+
+    /**
+     * Head-first, because a sentence cut through the middle is not a
+     * shorter sentence — it is gibberish. The whole text stays reachable:
+     * the row's title button carries it as its accessible name, and a cut
+     * subtitle carries it as a tooltip (the v1.282.0 law, one surface over).
+     */
+    static String shortenProse(String s, int max) {
+        if (s.length() <= max) {
+            return s;
+        }
+        return s.substring(0, Math.max(1, max - 1)).stripTrailing() + "…";
+    }
+
+    /**
+     * A list drops WHOLE items and counts what it dropped: eliding a joined
+     * list as if it were prose leaves a half-written name ("clar…"), which
+     * reads as a toolchain nobody has.
+     */
+    static String shortenList(java.util.List<String> items, int max) {
+        String all = String.join(" · ", items);
+        if (all.length() <= max) {
+            return all;
+        }
+        java.util.List<String> kept = new java.util.ArrayList<>();
+        int used = 0;
+        for (String item : items) {
+            int cost = (kept.isEmpty() ? 0 : 3) + item.length();
+            // leave room for the " · +N" that names what was dropped
+            if (used + cost > max - 5) {
+                break;
+            }
+            kept.add(item);
+            used += cost;
+        }
+        int dropped = items.size() - kept.size();
+        if (kept.isEmpty()) {
+            return "+" + items.size();
+        }
+        return String.join(" · ", kept) + (dropped > 0 ? " · +" + dropped : "");
     }
 
     // ---- persistence ----
