@@ -266,6 +266,7 @@
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
+                                <exclude>**/NarrowPaneHintBudgetTest.java</exclude>
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
@@ -290,6 +291,7 @@
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
+                                <include>**/NarrowPaneHintBudgetTest.java</include>
                                 <include>**/DialogChromeOverlayGateTest.java</include>
                                 <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
                             </includes>
