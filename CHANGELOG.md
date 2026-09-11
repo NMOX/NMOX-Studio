@@ -39,6 +39,20 @@ offers no way to read the rest.
 Three mutants by name, and the fix re-photographed in a rebuilt app: every
 description now starts where the sentence does.
 
+**The gate broke the house law on its first CI run, and the Windows lane
+said so.** It had taken every label ending in an ellipsis to be truncated
+text — a MECHANISM, where the law asks for the population. `detecting…` is
+a progress label that was never shortened, and on Windows the toolchain
+detection had not finished when the assertion ran, so the gate failed on a
+string it had no business reading. macOS and Linux passed because the
+detection beat them to it.
+
+The window now SAYS what it shortened, carrying the whole text on the
+label, and the gate reads that population instead of inferring one. Two
+mutants: strip the tooltip and the law fails; strip the marker and the
+floor fails, because a gate that measures nothing passes for the wrong
+reason.
+
 ## [2.118.0] - 2026-09-10
 
 **The coherence pass: one vocabulary, one door per idea.** No new
