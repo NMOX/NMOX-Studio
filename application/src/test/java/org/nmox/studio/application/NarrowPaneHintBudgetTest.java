@@ -38,10 +38,18 @@ class NarrowPaneHintBudgetTest {
             // a node in the contract tree, which shares the studio with the
             // Interact pane and is the narrower half
             "Web3StudioTopComponent_noArtifacts", 68,
-            "Web3StudioTopComponent_noDeployments", 68);
+            "Web3StudioTopComponent_noDeployments", 68,
+            // a full-width row in the Workbench's left pane (v2.125.0): the
+            // walk in GERMAN — the first in a language longer than English —
+            // photographed this one cut at "wo Sie aufgehört hab", with no
+            // ellipsis and no tooltip, so the sentence simply ended. English
+            // is 47 characters and German was 70
+            "ProjectExplorerTopComponent_nothingOpen", 62,
+            "ProjectExplorerTopComponent_filesGather", 62);
 
     private static final List<Path> BUNDLES = List.of(
-            Path.of("..", "web3", "src", "main", "resources", "org", "nmox", "studio", "web3", "ui"));
+            Path.of("..", "web3", "src", "main", "resources", "org", "nmox", "studio", "web3", "ui"),
+            Path.of("..", "project", "src", "main", "resources", "org", "nmox", "studio", "project"));
 
     @Test
     @DisplayName("every narrow-pane hint fits its budget in every language the product speaks")
@@ -78,7 +86,7 @@ class NarrowPaneHintBudgetTest {
         assertThat(measured)
                 .as("the gate should find these hints in the translated bundles, "
                         + "or it is guarding keys nobody ships")
-                .isGreaterThan(12);
+                .isGreaterThan(36);
         assertThat(over)
                 .as("a hint wider than its pane is cut where the reader cannot get it back; "
                         + "write a shorter sentence, and put any command on the button that runs it")
