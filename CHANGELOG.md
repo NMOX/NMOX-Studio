@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.125.0] - 2026-09-11
+
+**The first walk in a language longer than English.** Ukrainian was walked
+in v2.101.1 and Chinese in v2.117.0, and neither is longer than English in
+the way that breaks layouts. German is — roughly a third longer — so the
+product was booted as a German desktop and photographed.
+
+The Workbench’s OPEN FILES section read `nichts geöffnet — machen Sie unten
+dort weiter, wo Sie aufgehört hab`. Not elided, not scrollable, no tooltip:
+the sentence simply ended at the edge of the pane. English is 47 characters
+and German is 70, and nothing in the product had ever looked at the
+difference.
+
+Three translations were over the pane’s width — German, Indonesian and
+Ukrainian — and all three now fit. The budget gate built one release ago
+for Contract Studio’s tree hints covers this window too, so it now holds
+four messages across thirteen languages, and the German going back to 70
+fails the build by name.
+
+**What the same photograph showed working.** The subtitle elision from
+v2.119.0 reads correctly in German (`Geräte, Kabel, Pipelines — Tab
+dreht…`), the rack’s canvas invitation from the coherence pass paints in
+German, and the palette footer wraps rather than clipping. The rack’s
+device descriptions stay English, which is the recorded decision about
+panel vocabulary rather than a gap.
+
 ## [2.124.0] - 2026-09-11
 
 **The walk arc, written down** (docs only).
@@ -19392,6 +19418,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.125.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.124.0...v2.125.0
 [2.124.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.123.0...v2.124.0
 [2.123.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.122.0...v2.123.0
 [2.122.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.121.0...v2.122.0
