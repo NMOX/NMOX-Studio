@@ -166,8 +166,14 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_removeImportedTip=Forget an imported ABI \u2014 the chain is untouched",
     "Web3StudioTopComponent_removeImportedA11y=Remove an imported ABI",
     "Web3StudioTopComponent_rescanTip=Re-scan out/ and artifacts/ for compiled contracts",
-    "Web3StudioTopComponent_noArtifacts=No artifacts found \u2014 Compile (forge build), Rescan, "
-        + "or Import ABI\u2026",
+    // SHORT ENOUGH FOR A TREE ROW (v2.123.0): the walk of a fresh project
+    // photographed this hint cut at "Compile (forge b", because it is a
+    // node in a narrow pane and was 60 characters in English and 106 in
+    // Russian. What it lost is not lost: "forge build" moved to the
+    // Compile button's own tooltip, which is where the v1.38.1 law says a
+    // command belongs — the button that runs it.
+    "Web3StudioTopComponent_noArtifacts=No artifacts found \u2014 Compile, Rescan or Import ABI\u2026",
+    "Web3StudioTopComponent_compileTip=Runs forge build, then rescans for artifacts",
     "Web3StudioTopComponent_noDeployments=No deployments yet \u2014 deploy a contract from Interact",
     "Web3StudioTopComponent_selectSomething=Select a contract or a deployment in the tree.",
     "Web3StudioTopComponent_deployTitle=Deploy {0}",
@@ -439,6 +445,11 @@ public final class Web3StudioTopComponent extends TopComponent {
     private boolean networkComboRefreshing;
     private final JLabel chipLabel = new JLabel(PlainText.plain(NOT_CONNECTED));
     private final JButton compileButton = new JButton(Bundle.Web3StudioTopComponent_compile());
+    {
+        // the button says what it runs (v1.38.1, the rack's GO tooltip law):
+        // it was the only control in this toolbar without one
+        compileButton.setToolTipText(Bundle.Web3StudioTopComponent_compileTip());
+    }
     private final JButton rescanButton = new JButton(Bundle.Web3StudioTopComponent_rescan());
     private final JLabel statusLabel = new JLabel(" ");
 
