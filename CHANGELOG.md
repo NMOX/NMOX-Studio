@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.124.0] - 2026-09-11
+
+**The walk arc, written down** (docs only).
+
+`docs/engineering/plan.md` carries the five releases and the five lessons:
+a picture shows what the product IS where a test shows what someone thought
+to ask; wrapping beats eliding where the text can wrap, and a shorter
+sentence beats both where it cannot; a fixed character budget is a
+measurement of English and only survives as a gate over every language; a
+gate must read the population the product STATES rather than a glyph it
+infers one from; and two doors for one idea, one of them silent, is a
+defect even when nothing is broken.
+
+It also records the instrument, because it is the cheapest one found so
+far: the product’s own screenshot forge paints windows from the background
+with no screen-recording permission, a bare boot shows what a returning
+user sees, and opening a project with a manifest shows every studio’s empty
+state — which is where four of the five findings were.
+
+`CLAUDE.md` catches up from v2.116.0.
+
 ## [2.123.0] - 2026-09-11
 
 **A hint that does not fit its pane, and the gate that stops the next
@@ -19371,6 +19392,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.124.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.123.0...v2.124.0
 [2.123.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.122.0...v2.123.0
 [2.122.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.121.0...v2.122.0
 [2.121.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.120.0...v2.121.0
