@@ -813,7 +813,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     ? shortenPath(subtitle, 38) : shortenProse(subtitle, 38);
             sub = new JLabel(PlainText.plain(shown));
             if (!shown.equals(subtitle)) {
-                // cut text always has somewhere to be read in full
+                // cut text always has somewhere to be read in full, and the
+                // label SAYS it was cut rather than leaving a reader — or a
+                // gate — to infer it from a trailing ellipsis. "detecting…"
+                // ends in one too and was never shortened; the Windows lane
+                // caught the first version of this gate believing otherwise.
+                sub.putClientProperty(SHORTENED, subtitle);
                 sub.setToolTipText(PlainText.plain(subtitle));
             }
             sub.setFont(TINY);
@@ -874,6 +879,13 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * across English and the twelve translations were over the budget, so
      * this was most rows in most languages, not an edge.
      */
+    /**
+     * Marks a subtitle this window had to shorten, carrying the whole text.
+     * The population is stated, not guessed: a trailing "…" is a glyph that
+     * unshortened labels use too.
+     */
+    static final String SHORTENED = "nmox.subtitle.full";
+
     enum Sub {
         /** An absolute path: the ENDS tell you where it is. */
         PATH,

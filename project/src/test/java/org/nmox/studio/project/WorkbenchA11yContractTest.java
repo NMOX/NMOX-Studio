@@ -99,8 +99,12 @@ class WorkbenchA11yContractTest {
         List<String> silent = new ArrayList<>();
         int cut = 0;
         for (Component c : all) {
-            if (c instanceof javax.swing.JLabel l && l.getText() != null
-                    && l.getText().endsWith("\u2026")) {
+            // the POPULATION is what the window says it shortened, not what
+            // happens to end in an ellipsis: "detecting…" is a progress
+            // label that was never cut, and the first cut of this gate
+            // failed the Windows lane for exactly that reason
+            if (c instanceof javax.swing.JLabel l
+                    && l.getClientProperty(ProjectExplorerTopComponent.SHORTENED) != null) {
                 cut++;
                 String full = l.getToolTipText();
                 if (full == null || full.isBlank()) {
@@ -112,7 +116,8 @@ class WorkbenchA11yContractTest {
                 .as("a row that shows an ellipsis and offers no way to read the rest "
                         + "has simply lost the text")
                 .isEmpty();
-        assertThat(cut).as("the fresh Workbench paints at least one cut subtitle, "
+        assertThat(cut).as("the fresh Workbench paints at least one shortened subtitle "
+                + "(English's own longest is 51 characters against a 38 budget), "
                 + "or this gate is measuring nothing").isPositive();
     }
 }
