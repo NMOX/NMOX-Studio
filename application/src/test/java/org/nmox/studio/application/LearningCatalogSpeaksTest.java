@@ -2,12 +2,16 @@ package org.nmox.studio.application;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.stream.Stream;
@@ -16,6 +20,7 @@ import org.json.JSONObject;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.core.util.UiLocale;
+import org.nmox.studio.rack.projectstudio.LearningCatalog;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -182,6 +187,104 @@ class LearningCatalogSpeaksTest {
                 + "reads as a bug in the languages it skipped").isEmpty();
     }
 
+    @Test
+    @DisplayName("every category the catalogue uses is named in every language")
+    void everyCategoryIsNamedInEveryLanguage() throws IOException {
+        // the ENUM, not the spaces: a category with no built-in space today
+        // is still a heading a drop-in can file itself under tomorrow, and
+        // the first run of this gate found exactly one (STACK)
+        List<String> categories = categories();
+        assertThat(categories).as("the picker's top-level groups").hasSizeGreaterThan(3);
+
+        List<String> silent = new ArrayList<>();
+        for (String lang : languages()) {
+            Properties words = groupingWords(lang);
+            for (String category : categories) {
+                if (words.getProperty("LearnCategory_" + category) == null) {
+                    silent.add(lang + ": " + category);
+                }
+            }
+        }
+        assertThat(silent).as("a group heading in English over translated rows").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a family translated in one language is translated in all of them")
+    void aFamilyTranslatedAnywhereIsTranslatedEverywhere() throws IOException {
+        TreeSet<String> families = new TreeSet<>();
+        for (JSONObject space : shippedSpaces()) {
+            families.add(familyKey(space.getString("family")));
+        }
+        List<String> languages = languages();
+
+        List<String> half = new ArrayList<>();
+        for (String family : families) {
+            List<String> have = new ArrayList<>();
+            for (String lang : languages) {
+                if (groupingWords(lang).getProperty("LearnFamily_" + family) != null) {
+                    have.add(lang);
+                }
+            }
+            // a family is either prose (all twelve) or a name (none of them);
+            // anything between is a reader seeing English where their
+            // neighbour sees their own language
+            if (!have.isEmpty() && have.size() != languages.size()) {
+                half.add(family + ": " + have);
+            }
+        }
+        assertThat(half).as("a family is prose in every language or a name in none")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("no grouping word is written for a group that does not exist")
+    void noGroupingKeyIsDead() throws IOException {
+        TreeSet<String> live = new TreeSet<>();
+        for (String category : categories()) {
+            live.add("LearnCategory_" + category);
+        }
+        for (JSONObject space : shippedSpaces()) {
+            live.add("LearnFamily_" + familyKey(space.getString("family")));
+        }
+
+        List<String> dead = new ArrayList<>();
+        for (String lang : languages()) {
+            for (String key : groupingWords(lang).stringPropertyNames()) {
+                if (!key.startsWith("LearnCategory_") && !key.startsWith("LearnFamily_")) {
+                    continue;
+                }
+                if (!live.contains(key)) {
+                    dead.add(lang + ": " + key);
+                }
+            }
+        }
+        assertThat(dead).as("a grouping word nobody reads usually means the group "
+                + "it was meant for is spelled differently and reads English").isEmpty();
+    }
+
+    /** Every heading the picker can group under. */
+    private static List<String> categories() {
+        return java.util.Arrays.stream(LearningCatalog.Category.values())
+                .map(Enum::name).toList();
+    }
+
+    /** {@code CatalogText.key}: the properties-safe spelling of a family. */
+    private static String familyKey(String family) {
+        return family.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_");
+    }
+
+    /** The picker's own bundle, from the assembled cluster. */
+    private static Properties groupingWords(String lang) throws IOException {
+        String entry = "org/nmox/studio/ui/actions/Bundle_" + lang + ".properties";
+        try (InputStream in = clusterResource(entry)) {
+            Properties props = new Properties();
+            // UTF-8: Properties.load(InputStream) is ISO-8859-1 by contract
+            // and these bundles ship raw UTF-8 (v2.129.0)
+            props.load(new InputStreamReader(in, StandardCharsets.UTF_8));
+            return props;
+        }
+    }
+
     /** The languages the product offers, English and System aside. */
     private static List<String> languages() {
         return UiLocale.SUPPORTED.stream()
@@ -192,30 +295,41 @@ class LearningCatalogSpeaksTest {
 
     /** The catalogue the assembled cluster ships. */
     private static List<JSONObject> shippedSpaces() throws IOException {
+        String json;
+        try (InputStream in = clusterResource(CATALOG)) {
+            json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        JSONArray arr = new JSONObject(json).getJSONArray("spaces");
+        List<JSONObject> out = new ArrayList<>();
+        for (int i = 0; i < arr.length(); i++) {
+            out.add(arr.getJSONObject(i));
+        }
+        return out;
+    }
+
+    /** One named resource, out of whichever shipped module jar carries it. */
+    private static InputStream clusterResource(String entry) throws IOException {
         assertThat(MODULES).as("the assembled cluster's modules").isDirectory();
         try (Stream<Path> jars = Files.list(MODULES)) {
             for (Path jarPath : jars.filter(p -> p.toString().endsWith(".jar")).toList()) {
-                try (JarFile jar = new JarFile(jarPath.toFile())) {
+                JarFile jar = new JarFile(jarPath.toFile());
+                boolean keep = false;
+                try {
                     Enumeration<JarEntry> entries = jar.entries();
                     while (entries.hasMoreElements()) {
                         JarEntry e = entries.nextElement();
-                        if (!e.getName().equals(CATALOG)) {
-                            continue;
+                        if (e.getName().equals(entry)) {
+                            keep = true;
+                            return jar.getInputStream(e);
                         }
-                        String json;
-                        try (InputStream in = jar.getInputStream(e)) {
-                            json = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-                        }
-                        JSONArray arr = new JSONObject(json).getJSONArray("spaces");
-                        List<JSONObject> out = new ArrayList<>();
-                        for (int i = 0; i < arr.length(); i++) {
-                            out.add(arr.getJSONObject(i));
-                        }
-                        return out;
+                    }
+                } finally {
+                    if (!keep) {
+                        jar.close();
                     }
                 }
             }
         }
-        throw new AssertionError("no shipped " + CATALOG + " — the picker lost its catalogue");
+        throw new AssertionError("no shipped " + entry + " — the picker lost a language");
     }
 }
