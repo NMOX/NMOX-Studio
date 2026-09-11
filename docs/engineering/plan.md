@@ -7,8 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.129.0 — three dated sections below open
-the day: the narrow-pane budget gate that was never measuring English (and
+*Currency addendum 2026-09-11, at v2.130.0 — four dated sections below open
+the day, all four from one German walk: seed data speaking English below the
+l10n gates, the narrow-pane budget gate that was never measuring English (and
 then measured its own decoding), the Agent Port disclosure showing its own tags (two laws pulling
 against each other, and three corrections that made its class gate honest),
 and the dialog-chrome release
@@ -909,6 +910,54 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — English below the gates, again (v2.130.0)
+
+Fourth finding from the German walk, and the one that closes a shape the
+project had already met once.
+
+**The finding.** A fresh project's Task Board: three columns reading To Do /
+Doing / Done, in a build where every other word on screen was German. API
+Studio beside it: a seeded collection `My API`, a request `Health check`, an
+environment `Local`. Every l10n gate green — `LocaleBundleParityTest`,
+`ChromeLiteralRatchetTest`, `SystemLocaleReachTest`, all of them — and all of
+them correct, because the English never passed through a bundle. It was six
+string literals inside two model classes.
+
+**The shape is ledger 88's, one layer over.** Ledger 88 (v2.100.0) was
+`LiveRuns.since()` returning the phrase "since 14:32" and handing it to a
+bundle as `{0}`: correct bundles in twelve languages, and a Chinese user
+reading 「正在运行 since 14:32」. The English entered BELOW the gates, through an
+argument. Here it enters below them through a seed. The general form is worth
+naming: **a gate over bundles can only see what reaches a bundle.**
+
+**The answer is the same rule both times.** The core returns data, the
+consumer renders it (v2.101.0). `TaskBoard.starter(todo, doing, done)` and
+`Workspace.starter(collection, request, environment)` know nothing about
+words; `TasksIO.starterBoard()` and `ApiClientTopComponent.starterWorkspace()`
+are the one place each artifact is created, and they read the bundle.
+
+**The rule that keeps it honest: only a NEW file is named this way.** A board
+or workspace already on disk keeps the names it has — in whatever language it
+was made, and however the user has since renamed its columns. Seed data is the
+product speaking *until the user edits it*, and after that it is theirs. This
+is why the translation happens at creation and never at load, and why
+switching language re-translates nothing. A test asserts exactly that, because
+the tempting alternative — re-reading the bundle on load — would silently
+rewrite a user's own column names.
+
+**Two things stay English, and one is load-bearing.** `base_url` is an
+IDENTIFIER the user types inside `{{…}}`; translating it breaks every request
+that references it. And API Studio resolves its active environment BY NAME, so
+the environment's name and `activeEnvironment` have to move together. Both are
+mutants that die by name rather than comments that hope.
+
+**Where to look for the rest of this class.** Anything the product WRITES on a
+user's behalf that a person later reads: the remaining studio seeds, scaffold
+file contents, generated comments. The gate added here
+(`SeedNamesAreNotLiteralsTest`) covers the two seed factories by name and
+carries a floor of two, so a renamed factory makes it say it has gone half
+blind rather than pass quietly.
 
 ## 2026-09-11 — the population was the bug, twice (v2.129.0)
 

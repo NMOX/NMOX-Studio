@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.130.0] - 2026-09-11
+
+**Seed data is chrome until the user edits it.** The German walk opened a
+fresh project and found two first-run surfaces speaking English inside a fully
+translated build: the Task Board's three columns as `To Do` / `Doing` / `Done`,
+and API Studio's seeded collection, request and environment as `My API` /
+`Health check` / `Local`.
+
+Every l10n gate was green, and correctly so — the English never passed through
+a bundle at all. It was six string literals inside two model classes,
+`TaskBoard.starter()` and `ApiModel.Workspace.starter()`. This is the ledger-88
+shape one layer over: English reaching a translated build through a path that
+runs BELOW the gates. Ledger 88's was an argument; this one is a seed.
+
+**The answer is the same rule.** The core returns data, the consumer renders it
+(v2.101.0). Both factories now take their names as parameters and know nothing
+about words; the one place each artifact is CREATED reads the bundle —
+`TasksIO.starterBoard()` and `ApiClientTopComponent.starterWorkspace()`. Six
+keys, twelve languages, 72 values.
+
+**Only a NEW file is named this way.** A board or workspace already on disk
+keeps the names it has, in whatever language it was made and however the user
+has since renamed things, because by then they are the user's words and not the
+product's. Switching language re-translates nothing, and a test asserts it.
+
+**Two things stay English on purpose, and one of them is load-bearing.**
+`base_url` is an identifier the user types inside `{{…}}`, not prose —
+translating it would break every request that references it, and a mutant that
+does so dies by name. And API Studio resolves its active environment BY NAME,
+so the environment's name and `activeEnvironment` had to move together; that
+mutant dies too.
+
+Four gates' worth of proof: the real factories driven under a moved default
+locale (which is exactly how the product's own live switch works — v2.103.0),
+the existing-file rule, the identifier rule, and a structural
+`SeedNamesAreNotLiteralsTest` that fails the build when a seed call site in
+shipping code spells a name as a literal. Four mutants by name, the first of
+them the shipped bug itself. Walked in German: `Meine API`, `GET Statusprüfung`,
+`Umgebung: Lokal`, with `{{base_url}}/health` untouched beside them.
+
 ## [2.129.0] - 2026-09-11
 
 **A gate that was never measuring English.** The German walk photographed DB
@@ -19596,6 +19636,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.130.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.129.0...v2.130.0
 [2.129.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.128.0...v2.129.0
 [2.128.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.127.0...v2.128.0
 [2.127.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.126.0...v2.127.0

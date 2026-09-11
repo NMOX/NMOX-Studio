@@ -144,22 +144,37 @@ public final class ApiModel {
             return null;
         }
 
-        /** A first-run workspace: one collection, one empty environment. */
-        public static Workspace starter() {
+        /**
+         * A first-run workspace: one collection, one request, one
+         * environment — named by its caller.
+         *
+         * <p>The names are PARAMETERS because a first-run workspace is chrome
+         * until the moment the user edits it, and a model has no business
+         * holding chrome: a German walk found this one reading My API /
+         * Health check / Local in a fully translated build. The core returns
+         * data, the consumer renders it (the v2.101.0 rule).
+         *
+         * <p>{@code base_url} is NOT translated and never should be: it is an
+         * identifier the user types inside {@code {{…}}}, not prose. The
+         * environment's name and {@code activeEnvironment} move together
+         * because the active one is resolved by name.
+         */
+        public static Workspace starter(String collectionName, String requestName,
+                String environmentName) {
             Workspace w = new Workspace();
             Collection c = new Collection();
-            c.name = "My API";
+            c.name = collectionName;
             Request r = new Request();
-            r.name = "Health check";
+            r.name = requestName;
             r.url = "{{base_url}}/health";
             r.tests.add(new Assertion(Assertion.Kind.STATUS_IS, "200"));
             c.requests.add(r);
             w.collections.add(c);
             Environment local = new Environment();
-            local.name = "Local";
+            local.name = environmentName;
             local.variables.put("base_url", "http://localhost:3000");
             w.environments.add(local);
-            w.activeEnvironment = "Local";
+            w.activeEnvironment = environmentName;
             return w;
         }
     }

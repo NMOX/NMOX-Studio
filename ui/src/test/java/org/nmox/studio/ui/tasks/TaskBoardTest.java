@@ -36,7 +36,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("the starter board is To Do / Doing / Done, empty")
     void starterShape() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         assertThat(b.columns()).extracting(TaskBoard.Column::name)
                 .containsExactly("To Do", "Doing", "Done");
         assertThat(b.cardCount()).isZero();
@@ -45,7 +45,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("cards add at the end, edit in place, and remove by id")
     void cardCrud() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card first = b.addCard(0, "write tests", "");
         TaskBoard.Card second = b.addCard(0, "ship", "the gated pipeline");
         assertThat(b.column(0).cards()).extracting(TaskBoard.Card::title)
@@ -62,7 +62,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("moves land where the gesture meant: clamped, order kept")
     void movesClampAndOrder() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card a = b.addCard(0, "a", "");
         TaskBoard.Card c = b.addCard(0, "c", "");
         b.addCard(1, "x", "");
@@ -89,7 +89,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("WIP limits are advisory: overLimit reports, nothing blocks")
     void wipLimits() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.setWipLimit(1, 1);
         b.addCard(1, "one", "");
         assertThat(b.column(1).overLimit()).isFalse();
@@ -104,7 +104,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("column ops: rename, reorder, and the last column survives")
     void columnOps() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         assertThat(b.renameColumn(0, "Backlog")).isTrue();
         assertThat(b.moveColumn(0, 2)).isTrue();
         assertThat(b.columns()).extracting(TaskBoard.Column::name)
@@ -120,7 +120,7 @@ class TaskBoardTest {
     @Test
     @DisplayName("JSON round-trips byte-stable: order, notes, WIP, ids")
     void jsonRoundTrip() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.setWipLimit(1, 2);
         b.addCard(0, "títle with ünïcode", "line one\nline two");
         b.addCard(1, "<html><img src=x>", "hostile title stays text");

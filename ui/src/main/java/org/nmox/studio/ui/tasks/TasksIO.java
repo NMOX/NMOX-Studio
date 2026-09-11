@@ -19,6 +19,14 @@ import org.nmox.studio.core.util.SelfWriteTracker;
  * before falling back to the starter board — user data is never
  * clobbered by a parse failure (the v1.39.0 law).
  */
+@org.openide.util.NbBundle.Messages({
+    // the fresh board a project gets on its first open; these are
+    // the product speaking, and become the user's the moment they
+    // are edited or the file is written
+    "TasksIO_starterTodo=To Do",
+    "TasksIO_starterDoing=Doing",
+    "TasksIO_starterDone=Done"
+})
 final class TasksIO {
 
     static final String FILENAME = ".nmoxtasks.json";
@@ -39,17 +47,37 @@ final class TasksIO {
      * so the next save cannot destroy what the user (or their merge)
      * wrote.
      */
+    /**
+     * The starter board in the reader's own language.
+     *
+     * <p>This is the consumer half of the v2.101.0 rule: {@code TaskBoard}
+     * returns data and knows nothing about words, and the one place a board
+     * is CREATED reads the bundle. A German walk found a fresh board's
+     * headers reading To Do / Doing / Done in a fully translated build,
+     * which no l10n gate could see — the English never passed through a
+     * bundle at all.
+     *
+     * <p>Only a NEW board is named this way. A board already on disk keeps
+     * the names it has, in whatever language it was made and however the
+     * user has since renamed its columns, because by then they are the
+     * user's words and not the product's.
+     */
+    static TaskBoard starterBoard() {
+        return TaskBoard.starter(Bundle.TasksIO_starterTodo(),
+                Bundle.TasksIO_starterDoing(), Bundle.TasksIO_starterDone());
+    }
+
     static TaskBoard load(File projectDir) {
         File f = fileFor(projectDir);
         if (!f.isFile()) {
-            return TaskBoard.starter();
+            return starterBoard();
         }
         String text;
         try {
             text = Files.readString(f.toPath());
         } catch (IOException ex) {
             LOG.log(Level.INFO, "Unreadable {0}; starting empty", f);
-            return TaskBoard.starter();
+            return starterBoard();
         }
         try {
             return TaskBoard.fromJson(text);
@@ -63,7 +91,7 @@ final class TasksIO {
             } catch (IOException io) {
                 LOG.log(Level.WARNING, "Malformed {0} and .bak failed", f);
             }
-            return TaskBoard.starter();
+            return starterBoard();
         }
     }
 

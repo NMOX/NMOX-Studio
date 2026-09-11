@@ -186,6 +186,11 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_standards=Standards",
     "ApiClientTopComponent_typeLabel=Type: ",
     "ApiClientTopComponent_tokenLabel=Token (Bearer), or user:password (Basic) — {{vars}} allowed:",
+    // the first-run workspace a project gets when it has no
+    // .nmoxapi.json yet; base_url stays an identifier and is not here
+    "ApiClientTopComponent_starterCollection=My API",
+    "ApiClientTopComponent_starterRequest=Health check",
+    "ApiClientTopComponent_starterEnvironment=Local",
     "ApiClientTopComponent_keychainNote=<html><small>Stored in the OS keychain, never in .nmoxapi.json. {{vars}} still resolve at send time.</small></html>",
     "ApiClientTopComponent_explainTooltip=Ask KVASIR what this response means (sends a redacted summary — you confirm first)",
     "ApiClientTopComponent_findLabel=Find:",
@@ -2116,10 +2121,28 @@ public final class ApiClientTopComponent extends TopComponent {
                         Bundle.ApiClientTopComponent_backupKept(backup.getName()),
                         false, null));
             }
-            return outcome.workspace() != null ? outcome.workspace() : Workspace.starter();
+            return outcome.workspace() != null ? outcome.workspace() : starterWorkspace();
         } catch (Exception ex) {
-            return Workspace.starter();
+            return starterWorkspace();
         }
+    }
+
+    /**
+     * The first-run workspace in the reader's own language.
+     *
+     * <p>The consumer half of the v2.101.0 rule: {@code ApiModel} returns
+     * data and knows nothing about words, and the one place a workspace is
+     * CREATED reads the bundle. A German walk found this one reading My API
+     * / Health check / Local in a fully translated build — English that no
+     * l10n gate could see, because it never passed through a bundle at all.
+     *
+     * <p>Only a NEW workspace is named this way. One already on disk keeps
+     * the names it has, because by then they are the user's.
+     */
+    static Workspace starterWorkspace() {
+        return Workspace.starter(Bundle.ApiClientTopComponent_starterCollection(),
+                Bundle.ApiClientTopComponent_starterRequest(),
+                Bundle.ApiClientTopComponent_starterEnvironment());
     }
 
     /** (Re)loads the bound project's workspace in place — EDT. */

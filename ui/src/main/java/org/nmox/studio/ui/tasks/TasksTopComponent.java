@@ -241,7 +241,7 @@ public final class TasksTopComponent extends TopComponent {
     private final JPanel center = new JPanel(faces);
     private javax.swing.JToggleButton overviewToggle;
 
-    private TaskBoard board = TaskBoard.starter();
+    private TaskBoard board = TasksIO.starterBoard();
     private File boundDir;
     private boolean built;
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */

@@ -30,7 +30,7 @@ class BoardStatsTest {
     @Test
     @DisplayName("Moving a card into the last column stamps done; back out clears it")
     void doneStampFollowsTheLastColumn() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "ship it", "");
         assertThat(c.done()).isZero();
         b.moveCard(c.id(), 2, 0);
@@ -42,7 +42,7 @@ class BoardStatsTest {
     @Test
     @DisplayName("A move WITHIN the last column keeps the original stamp")
     void reorderInDoneKeepsTheStamp() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "a", "");
         b.addCard(2, "b", "");
         b.moveCard(c.id(), 2, 0);
@@ -54,7 +54,7 @@ class BoardStatsTest {
     @Test
     @DisplayName("A card born in the last column counts as finished")
     void bornDoneIsStamped() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(2, "already shipped", "");
         assertThat(c.done()).isPositive();
     }
@@ -62,7 +62,7 @@ class BoardStatsTest {
     @Test
     @DisplayName("The done stamp round-trips through JSON; old files without it load fine")
     void doneStampRoundTrips() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.moveCard(c.id(), 2, 0);
         TaskBoard back = TaskBoard.fromJson(b.toJson());

@@ -49,7 +49,7 @@ class StandupReportTest {
     @Test
     @DisplayName("a midnight-spanning session splits between Yesterday and Today, like the TIME report")
     void midnightSessionSplits() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(1, "night work", "");
         b.clockIn(c.id(), NOON - 14 * HOUR);  // 22:00 yesterday
         b.clockOut(c.id(), NOON - 10 * HOUR); // 02:00 today
@@ -61,7 +61,7 @@ class StandupReportTest {
     @Test
     @DisplayName("a running clock appears under Today, marked running, counted to now")
     void runningClockMarked() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(1, "in flight", "");
         b.clockIn(c.id(), NOON - HOUR);
         String md = report(b, List.of());
@@ -72,7 +72,7 @@ class StandupReportTest {
     @Test
     @DisplayName("blockers list the register's triple; a finished blocker stays out")
     void blockersSection() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card stuck = b.addCard(1, "waiting on cert", "");
         b.block(stuck.id(), "alice", "order the cert");
         TaskBoard.Card done = b.addCard(1, "was stuck", "");
@@ -87,7 +87,7 @@ class StandupReportTest {
     @Test
     @DisplayName("commits since yesterday appear; older ones are windowed out")
     void commitsWindowed() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "keeps sections honest", "");
         String md = report(b, List.of(
                 new StandupReport.Commit("abc1234 fix the flake", NOON - 3 * HOUR),
@@ -99,7 +99,7 @@ class StandupReportTest {
     @Test
     @DisplayName("sections with nothing to say are OMITTED, never rendered empty")
     void emptySectionsOmitted() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "untouched card", "");
         String md = report(b, List.of());
         assertThat(md).startsWith("## Standup — ");

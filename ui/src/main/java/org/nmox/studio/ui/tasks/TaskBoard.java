@@ -250,12 +250,26 @@ public final class TaskBoard {
         return closed;
     }
 
-    /** The three-column starter every fresh project begins with. */
-    public static TaskBoard starter() {
+    /**
+     * The three-column starter every fresh project begins with, named by its
+     * caller.
+     *
+     * <p>The names are PARAMETERS because a fresh board is chrome until the
+     * moment the user edits it, and a model has no business holding chrome:
+     * a German walk found this board's headers reading To Do / Doing / Done
+     * in a fully translated build. The core returns data, the consumer
+     * renders it (the v2.101.0 rule) — {@code TasksIO.starterBoard()} is the
+     * consumer that reads the bundle.
+     *
+     * <p>Nothing matches a column by its name, so translating them is safe;
+     * and a board already written to {@code .nmoxtasks.json} keeps whatever
+     * it was named, because by then it is the user's.
+     */
+    public static TaskBoard starter(String todo, String doing, String done) {
         TaskBoard b = new TaskBoard();
-        b.addColumn("To Do", 0);
-        b.addColumn("Doing", 0);
-        b.addColumn("Done", 0);
+        b.addColumn(todo, 0);
+        b.addColumn(doing, 0);
+        b.addColumn(done, 0);
         return b;
     }
 
