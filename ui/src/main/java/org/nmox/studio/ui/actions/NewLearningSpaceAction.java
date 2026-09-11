@@ -69,6 +69,31 @@ import org.openide.util.NbBundle.Messages;
 })
 public final class NewLearningSpaceAction implements ActionListener {
 
+    /**
+     * One picker row, bound to the width it is given (v2.120.0).
+     *
+     * <p>An unbounded HTML label is as wide as its longest line, so the
+     * list's preferred width ran past its own viewport: the walk of the
+     * picker photographed blurbs clipped mid-word with a horizontal
+     * scrollbar under them — the ledger-75 class (v1.273.0: squeeze to the
+     * viewport, never grow a sideways scrollbar). Given a width the blurb
+     * WRAPS, so unlike an ellipsis nothing is cut at all.
+     *
+     * <p>Unitless on purpose: Swing's CSS honours {@code width: 520} and
+     * ignores {@code width: 520px} (measured v2.84.0).
+     */
+    static String cellHtml(LearningCatalog.Space s, int room) {
+        return "<html><body style='width: " + room + "'><b>"
+                + escape(s.name()) + "</b>  <font color='#888'>"
+                + s.category().label.toLowerCase(Locale.ROOT) + " · " + escape(s.family())
+                + "</font><br><font color='#aaa'><small>" + escape(s.blurb())
+                + "</small></font></body></html>";
+    }
+
+    /** Scrollbar, selection border and cell padding the text does not get. */
+    private static final int LIST_TEXT_INSET = 40;
+
+
     private static final Color TOOL_OK = new Color(96, 176, 96);
     private static final Color TOOL_MISSING = new Color(214, 143, 60);
     private static final Color TOOL_PROBING = new Color(128, 128, 128);
@@ -106,10 +131,7 @@ public final class NewLearningSpaceAction implements ActionListener {
             public Component getListCellRendererComponent(JList<?> l, Object v,
                     int i, boolean sel, boolean focus) {
                 LearningCatalog.Space s = (LearningCatalog.Space) v;
-                String label = "<html><b>" + escape(s.name()) + "</b>  <font color='#888'>"
-                        + s.category().label.toLowerCase(Locale.ROOT) + " · " + escape(s.family())
-                        + "</font><br><font color='#aaa'><small>" + escape(s.blurb())
-                        + "</small></font></html>";
+                String label = cellHtml(s, Math.max(320, l.getWidth() - LIST_TEXT_INSET));
                 return super.getListCellRendererComponent(l, label, i, sel, focus);
             }
         });
