@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.123.0] - 2026-09-11
+
+**A hint that does not fit its pane, and the gate that stops the next
+one.** The walk arc’s fifth surface, and the third time the same defect has
+turned up wearing different clothes: a message longer than the thing
+drawing it.
+
+Contract Studio, opened on a project with no contracts, said
+`No artifacts found — Compile (forge b`. The hint is a node in a tree about
+320px wide, and the sentence is 60 characters in English and **106 in
+Russian**.
+
+Unlike the two before it this one cannot be solved by wrapping — a tree row
+is a row. So the sentence got shorter, and what it gave up was not lost:
+`forge build` moved to the Compile button’s own tooltip, which is where the
+v1.38.1 law says a command belongs, and that button was the only control in
+the toolbar without one.
+
+**The gate is the part that outlives the fix.** A hint drawn in a narrow
+pane now carries a budget, and any language over it fails the build —
+because the English author cannot see the Russian overflow, and three walks
+have now proved that nobody notices until someone photographs it.
+
+It found three more on its first run: the sibling *no deployments yet* hint,
+over budget in Russian, Vietnamese and French. The French one was also
+carrying a bare ASCII apostrophe, which the house banned in v2.98.0 and
+which no gate had looked for in that bundle. All four now fit, in thirteen
+languages.
+
 ## [2.122.0] - 2026-09-11
 
 **The other canvas says where to start.** The walk arc’s fourth surface.
@@ -19342,6 +19371,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.123.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.122.0...v2.123.0
 [2.122.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.121.0...v2.122.0
 [2.121.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.120.0...v2.121.0
 [2.120.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.119.0...v2.120.0
