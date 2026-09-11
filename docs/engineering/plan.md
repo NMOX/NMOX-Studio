@@ -7,7 +7,10 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.124.0 — the walk arc (v2.119.0–v2.123.0)
+*Currency addendum 2026-09-11, at v2.127.0 — the dialog-chrome release
+(v2.127.0) is the first dated section below: the platform's dialog buttons in
+twelve languages, and the walk lesson that a fix aims at a SINK, which only
+the surface can confirm. Below it, at v2.124.0 — the walk arc (v2.119.0–v2.123.0)
 is written up in the dated section below; a sibling session shipped the
 coherence pass (v2.118.0) alongside it. Earlier, 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
 releases, closed by the walk it owed: the assembled app booted with
@@ -903,6 +906,64 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the sink is not where the key is (v2.127.0)
+
+The walk arc's own method, applied one release later, and it produced the
+cleanest example of its central lesson the project has.
+
+**The finding.** A German build's Standards Kit wizard, photographed by the
+product's own shot forge: every product string translated, `Cancel` and `OK`
+on its buttons. The same two words on every dialog and wizard in twelve
+languages, invisible to every l10n gate because `LocaleBundleParityTest` and
+its siblings derive their populations from OUR bundles, and these keys are
+the platform's.
+
+**The first fix, which was wrong and looked right.**
+`org-openide-dialogs.jar` defines `CTL_OK=OK` and `CTL_CANCEL=Cancel`. It is
+the Dialogs API. The class that paints the dialog is `DialogDescriptor`,
+which lives in that module. The keys are spelled exactly like the words on
+screen. Twelve overlays written, branding rebuilt, app reassembled, same
+dialog re-photographed: **byte-for-byte the same English buttons.**
+
+**The second fix, which the photograph chose.** A `DialogDescriptor`'s
+buttons are built by `NbPresenter`, in `org-netbeans-core-windows.jar`,
+from its own `services` bundle: `OK_OPTION_CAPTION`, `CANCEL_OPTION_CAPTION`,
+`CLOSED_OPTION_CAPTION`, and the `ACS_*` accessible names beside them. The
+Dialogs bundle is not dead — it still owns the wizard's Next / Back / Finish
+and the message-dialog titles — it simply was not the sink for the two words
+in the photograph. Both are overlaid now. The third photograph reads
+`Abbrechen`.
+
+**The law this sharpens.** *Gates gate outcomes, not mechanisms* has a
+sibling for fixes: **a fix aims at a sink, and the only thing that proves
+you found the sink is the surface.** Everything about the first attempt was
+reasonable — the right module, the right-looking keys, a green build, a gate
+that passed. It changed nothing a user would see. A grep that finds a
+plausible key has not found the key that paints; only the picture has.
+
+Practically, the recipe that found the real one is worth keeping: when an
+English word survives into a translated build, do not grep for the key
+name — **grep every bundle in every cluster for a key whose VALUE is exactly
+that word**, then ask which of the candidates the painting class can reach.
+Five modules defined a key valued `Cancel`; the one that mattered was named
+nothing like the others.
+
+**The gate.** `DialogChromeOverlayGateTest`, bound to `packaged-app-gates`
+because it reads the assembled cluster's own bundles for its key population.
+Four laws, ten mutants by name. One of them, the mnemonic law, caught the
+release's only authoring bug on its first run — a Latin `P` accelerating a
+Devanagari `< &पीछे` — and two of its complaints were **blessed in writing**
+rather than fixed: `Error` is the Spanish and Filipino word. *Equalling the
+platform's English value is evidence of an untranslated key, not proof of
+one*, and a gate that cannot say so produces translations that are worse
+than the English they replaced.
+
+**Beside it, recorded not fixed.** The same photograph showed the New
+Learning Space picker's chrome in German with all 93 catalog entries in
+English. That is authored prose in a data file, not keys in a bundle —
+2,232 pieces of persuasion across twelve languages, with a drop-in schema
+that has no place to put a translation. Ledger 97.
 
 ## 2026-09-11 — the walk arc: what a picture shows that a test cannot (v2.119.0–v2.123.0)
 

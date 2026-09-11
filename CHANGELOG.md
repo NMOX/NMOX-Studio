@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.127.0] - 2026-09-11
+
+**Every dialog in the product says Cancel in the user's language.** Found by
+photograph, not by test: the Standards Kit wizard in German read
+`Sicherheitskontakt (für security.txt)` and `Vorhandene Dateien werden nie
+überschrieben.` — every product string translated — with **Cancel** and
+**OK** on its two buttons, one tab away from our own `Abbrechen`. The same
+two words sat on every dialog and wizard in all twelve translated builds,
+and no l10n gate could see them, because they belong to the platform and
+nothing in our source reaches them.
+
+**The walk paid twice, and the second time is the lesson.** The obvious
+bundle is the Dialogs API's own — `org-openide-dialogs.jar` defines
+`CTL_OK=OK` and `CTL_CANCEL=Cancel` in plain sight. Overlaying it in twelve
+languages, rebuilding, and re-photographing the same dialog produced a shot
+identical to the first: still `Cancel`, still `OK`. **A `DialogDescriptor`
+does not paint those keys.** NbPresenter one module over, in
+`org-netbeans-core-windows.jar`, paints `OK_OPTION_CAPTION` and
+`CANCEL_OPTION_CAPTION` from its own `services` bundle. The third
+photograph reads `Abbrechen`.
+
+Both bundles are overlaid, because both are real sinks — the Dialogs one
+still owns the wizard's `Weiter >` / `< Zurück` / `Fertigstellen` and the
+message-dialog titles (`Fehler`, `Warnung`, `Frage`), and NbPresenter owns
+the buttons. 61 keys × twelve languages through the v2.102.0 branding+locale
+overlay pattern, including the accessible names and descriptions beside each
+button, so a screen reader gets the same language the screen does.
+
+`DialogChromeOverlayGateTest` holds both, bound to the `packaged-app-gates`
+execution because it derives its key population from the **assembled
+cluster's own bundles** — a gate reading `target/` in the test phase passes
+on a stale one. Four laws, ten mutants by name: every overlay key still
+exists in the platform bundle it covers (a rename by a future platform bump
+fails the build), all twelve languages carry identical key sets, the words
+that cannot coincide with English actually differ, every value renders at
+every `choice` branch with no bare ASCII apostrophe (the v2.98.0 rule), and
+a declared mnemonic letter really occurs in its own button.
+
+That last law caught the release's one authoring bug on its first run: Hindi
+had `CTL_PREVIOUS_Mnemonic=P` against a label reading `< &पीछे`, a Latin
+letter accelerating a Devanagari button. Hindi now takes the convention
+Chinese already uses in this file — the accelerator in parentheses,
+`< पीछे(&B)`. Two values it flagged are **blessed in writing** instead:
+`NTF_ErrorTitle` reads `Error` in Spanish and Filipino because that is the
+word, not an English leftover — equalling the platform's value is evidence
+of an untranslated key, not proof of one.
+
+Ledger 97 opened for what the same walk showed beside it: the learning-space
+catalog's 93 titles and blurbs are authored English prose in every
+translated build.
+
 ## [2.126.0] - 2026-09-11
 
 **Dependency housekeeping, the split way.** Two Dependabot groups absorbed
@@ -19437,6 +19488,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.127.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.126.0...v2.127.0
 [2.126.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.125.0...v2.126.0
 [2.125.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.124.0...v2.125.0
 [2.124.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.123.0...v2.124.0

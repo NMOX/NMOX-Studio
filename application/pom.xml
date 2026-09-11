@@ -266,6 +266,7 @@
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
+                                <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -288,6 +289,7 @@
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
+                                <include>**/DialogChromeOverlayGateTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
