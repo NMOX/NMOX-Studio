@@ -230,11 +230,16 @@
                     </additionalArguments>
                 </configuration>
             </plugin>
-            <!-- Permits NbModuleSuite to be run in integration-test phase: -->
+            <!-- Permits NbModuleSuite to be run in integration-test phase.
+                 NO <version> here on purpose: the root pom's pluginManagement
+                 is the one home for it. This module carried its own pin and
+                 it went stale at 3.5.6 while the root moved to 3.6.0, so the
+                 one module that runs the packaged-app gates ran them on an
+                 older surefire than every other module — a silent downgrade
+                 no gate could see (PluginVersionSingleHomeTest now can). -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.6</version>
                 <configuration>
                     <systemPropertyVariables>
                         <all.clusters>${all.clusters}</all.clusters>
