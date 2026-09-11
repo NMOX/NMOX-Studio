@@ -7,7 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
+*Currency addendum 2026-09-11, at v2.124.0 — the walk arc (v2.119.0–v2.123.0)
+is written up in the dated section below; a sibling session shipped the
+coherence pass (v2.118.0) alongside it. Earlier, 2026-09-10, at v2.117.0 — the night shift ran to TWELVE
 releases, closed by the walk it owed: the assembled app booted with
 `user.language=zh user.country=TW` and no `--locale` comes up Chinese, tabs
 and toolbars and balloons, zero SEVERE — and DB Studio's history pane reads
@@ -901,6 +903,70 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the walk arc: what a picture shows that a test cannot (v2.119.0–v2.123.0)
+
+The coherence pass (v2.118.0) left a lens behind — *after changing a
+default, grep for what the old default made true* — and that lens wants a
+picture, not a grep. Five releases came out of pointing the product's own
+screenshot forge at a fresh install and reading what came back.
+
+**The instrument.** `DocsShots` paints windows with Swing straight into 2x
+PNGs: no screen-recording permission, no compositor, works from the
+background. Boot the assembled app with a throwaway `--userdir`/`--cachedir`,
+`-J-Dplugin.manager.check.updates=false` and `-J-Dnmox.shots.dir=<dir>`, and
+it photographs every suite tab and several dialogs, then exits. Two setups
+matter: a bare boot shows the product as a returning user sees it, and
+`--open <a project with a manifest>` shows every studio's EMPTY state, which
+is where this arc found most of its work. An empty DIRECTORY is not a
+project and will not aim.
+
+**What it found, in one sentence each.**
+
+1. **v2.119.0** — the Workbench read `devices, cables, p…nes — Tab flips it`.
+   One eliding helper served three readers who need opposite things: a PATH
+   keeps its ends, a SENTENCE keeps its beginning, a LIST drops whole items
+   and counts them. Measured at the same time: 36 of 53 subtitle values
+   across thirteen languages were over the 38-character budget, English
+   included.
+2. **v2.120.0** — the learning-space picker clipped its blurbs mid-word and
+   grew a horizontal scrollbar. An unbounded HTML label is as wide as its
+   longest line; given a width it WRAPS, so nothing is cut at all.
+3. **v2.121.0** — the Standards Kit opened pre-filled with `example.com` in
+   two fields, both syntactically perfect, so pressing OK wrote a sitemap
+   for a site the user does not own and an RFC 9116 `security.txt` promising
+   a mailbox nobody reads.
+4. **v2.122.0** — the Infra Designer was a dark rectangle with a DEPLOY
+   button over it, while the rack one tab away has silkscreened its
+   invitation since v1.0. Same idea, two doors, one silent.
+5. **v2.123.0** — Contract Studio read `No artifacts found — Compile (forge
+   b`: a tree row, 60 characters in English and 106 in Russian.
+
+**The five lessons worth keeping.**
+
+1. **A picture shows what the product IS; a test shows what someone thought
+   to ask.** Every defect here was invisible to a green build and obvious in
+   a photograph. None of them were wrong logic.
+2. **Where text can wrap, wrapping beats eliding**, because nothing is cut.
+   Where it cannot — a tree row is a row — the only honest answer is a
+   shorter sentence, and the detail moves to where it belongs (a command
+   goes on the button that runs it, the v1.38.1 law).
+3. **A fixed character budget is a measurement of English.** Every instance
+   was worse in every translation, and the author cannot see it. The budget
+   that survives is the one a gate enforces in all thirteen languages —
+   `NarrowPaneHintBudgetTest` found three more instances on its first run,
+   one of them also carrying a bare ASCII apostrophe no gate had looked for
+   in that bundle.
+4. **A gate must read the population the product STATES, not a glyph it
+   infers one from.** The first cut of the cut-text law took every label
+   ending in an ellipsis to be truncated, and the Windows lane failed it on
+   `detecting…` — a progress label that was never shortened. The window
+   marks what it cut now. That is the house law about mechanisms and
+   populations, broken by its own author, caught by the lane that is the
+   binding measurement.
+5. **Two doors for one idea, one of them silent, is a defect** even though
+   nothing is broken. The rack teaches on an empty canvas; its sibling
+   canvas did not, and no test could have said so.
 
 ## 2026-09-10 — the coherence pass: one vocabulary, one door per idea (v2.118.0)
 
