@@ -33,9 +33,9 @@ IDE tự cập nhật: **Công cụ ▸ Trình cắm ▸ Cập nhật** đưa ra
 
 Từ dòng lệnh, `nmoxstudio --open <thư-mục>` khởi động ứng dụng với thư mục đó mở ra như một dự án và giá hướng vào nó — cùng một cánh cửa mà “Mở thư mục…” trên trang chào mừng mở ra.
 
-IDE mở ra với tất cả các thẻ của bộ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Studio cơ sở dữ liệu → Studio hợp đồng → Trình thiết kế hạ tầng → Studio API → Bảng Docker** — mỗi bề mặt chính chỉ cách một cú nhấp ngay từ phút đầu. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
+IDE mở ra với ba thẻ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Trình duyệt**. Mọi cửa sổ khác chỉ cách một phím tắt ⌥⌘ và đều có trong cột TOOLING của trang chào mừng. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
 
-![Lần chạy đầu tiên — trang chào mừng với mọi thẻ đang mở](images/welcome.png)
+![Lần chạy đầu tiên — trang chào mừng với ba thẻ](images/tabs/workbench.png)
 
 Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên thẻ chào mừng):
 
@@ -44,6 +44,8 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 | **⌘I** | Tìm nhanh — với tới mọi thứ |
 | **⌘9** | Giá tác vụ |
 | **⌥⌘0** | Bàn làm việc |
+| **⌥⌘1** | Bảng công việc |
+| **⌥⌘2** | Kiểm thử |
 | **⌥⌘3** | Ứng dụng trò chuyện IRC |
 | **⌥⌘4** | Trình duyệt (WebKit tích hợp, có DevTools) |
 | **⌥⌘5** | Studio khối |

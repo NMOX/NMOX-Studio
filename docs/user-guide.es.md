@@ -33,9 +33,9 @@ El IDE se actualiza solo: **Herramientas ▸ Complementos ▸ Actualizaciones** 
 
 Desde una terminal, `nmoxstudio --open <carpeta>` arranca la aplicación con esa carpeta abierta como proyecto y el rack apuntando a ella — la misma puerta que abre «Abrir carpeta…» en la página de bienvenida.
 
-El IDE se abre con todas las pestañas del conjunto junto al área del editor: **Bienvenida → Rack de tareas → Estudio de bases de datos → Estudio de contratos → Diseñador de infraestructura → Estudio de API → Panel de Docker** — cada superficie principal está a un clic desde el primer minuto. En el panel izquierdo: **Estudio de proyecto** (árbol de archivos y plantillas), la base **Banco de trabajo** y el **Explorador de NPM**. Se crea una carpeta `~/NMOX` como espacio de trabajo predeterminado; el rack apunta ahí hasta que abras un proyecto.
+El IDE se abre con tres pestañas junto al área del editor: **Bienvenida → Rack de tareas → Navegador**. Cada una de las demás ventanas está a un atajo ⌥⌘ y aparece en la columna TOOLING de la pestaña de bienvenida. En el panel izquierdo: **Estudio de proyecto** (árbol de archivos y plantillas), la base **Banco de trabajo** y el **Explorador de NPM**. Se crea una carpeta `~/NMOX` como espacio de trabajo predeterminado; el rack apunta ahí hasta que abras un proyecto.
 
-![Primer arranque — la página de bienvenida con todas las pestañas abiertas](images/welcome.png)
+![Primer arranque — la página de bienvenida con tres pestañas](images/tabs/workbench.png)
 
 Atajos que conviene aprender el primer día (también aparecen todos en la pestaña de bienvenida):
 
@@ -44,6 +44,8 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 | **⌘I** | Búsqueda rápida — llega a todo |
 | **⌘9** | Rack de tareas |
 | **⌥⌘0** | Banco de trabajo |
+| **⌥⌘1** | Tablero de tareas |
+| **⌥⌘2** | Pruebas |
 | **⌥⌘3** | Cliente de chat IRC |
 | **⌥⌘4** | Navegador (WebKit integrado, con DevTools) |
 | **⌥⌘5** | Estudio de bloques |

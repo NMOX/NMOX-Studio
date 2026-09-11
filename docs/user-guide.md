@@ -101,15 +101,16 @@ From a terminal, `nmoxstudio --open <folder>` launches the app with
 that folder opened as a project and the rack aimed at it — the same
 door the Welcome page's Open Folder… opens.
 
-The IDE opens with the full suite of tabs along the editor area:
-**Welcome → Task Rack → DB Studio → Contract Studio → Infra Designer →
-API Studio → Docker Panel** — every major surface is one click away from
-minute one. On the left dock: **Project Studio** (file tree + templates),
+The IDE opens with three tabs along the editor area: **Welcome → Task
+Rack → Browser** — the launchpad, the rack, and where a run's page
+lands. Every other window is one ⌥⌘ chord away and listed in the
+Welcome's TOOLING column. (Before v2.118.0 all ten opened at once, and
+the file you came to read arrived eleventh in the strip.) On the left dock: **Project Studio** (file tree + templates),
 the **Workbench** home base, and the **NPM Explorer**. A `~/NMOX` folder
 is created as your default workspace; the rack aims there until you open
 a project.
 
-![First launch — the Welcome launchpad with every suite tab open](images/welcome.png)
+![First launch — the Welcome launchpad, three tabs, and the TOOLING column that lists every other window](images/tabs/workbench.png)
 
 Shortcuts, worth learning on day one (they're also all listed right on
 the Welcome tab):
@@ -119,6 +120,8 @@ the Welcome tab):
 | **⌘I** | Quick Search — reaches everything (see §9) |
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
+| **⌥⌘1** | Task Board |
+| **⌥⌘2** | Tests |
 | **⌥⌘3** | IRC chat client |
 | **⌥⌘4** | Browser (in-app WebKit, with DevTools) |
 | **⌥⌘5** | Block Studio |
@@ -1434,9 +1437,11 @@ offers you a ready-made connection.
 
 ## 8. Wizards and kits
 
-All under *New File…* / the project context menu, all **idempotent and
-never-clobbering** — re-running one updates what it owns and leaves your
-edits alone; anything it won't overwrite lands as a `.suggested` sibling.
+All under **File ▸ Add to Project**, all acting on the **aimed** project,
+all **idempotent and never-clobbering** — re-running one updates what it
+owns and leaves your edits alone; anything it won't overwrite lands as a
+`.suggested` sibling. (Before v2.118.0 they sat as seven flat rows in the
+File menu; the submenu names what they have in common.)
 
 - **Standards Kit** — `robots.txt`, `sitemap.xml`, web manifest, RFC 9116
   `security.txt`, `humans.txt`, generated from your answers.

@@ -112,7 +112,13 @@ import org.openide.windows.TopComponent;
  */
 @TopComponent.Description(preferredID = "IrcTopComponent",
         persistenceType = TopComponent.PERSISTENCE_ALWAYS)
-@TopComponent.Registration(mode = "editor", openAtStartup = true, position = 356)
+        // v2.118.0, David's call after the coherence pass measured the
+        // first launch: a chat client opened in a work IDE before the user had opened a file.
+        // The window is one ⌥⌘ chord, one Welcome link and one Window-menu
+        // row away — discovery keeps three surfaces, and the tab strip stops
+        // being one of them. Only a userdir with no saved layout is affected;
+        // an existing install keeps the layout it has (ledger 96a).
+@TopComponent.Registration(mode = "editor", openAtStartup = false, position = 356)
 @ActionID(category = "Window", id = "org.nmox.studio.ui.irc.IrcTopComponent")
 @org.openide.awt.ActionReferences({
     @ActionReference(path = "Menu/Window", position = 268),

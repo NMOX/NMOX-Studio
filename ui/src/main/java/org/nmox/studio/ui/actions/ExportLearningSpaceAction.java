@@ -33,7 +33,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ExportLearningSpaceAction")
 @ActionRegistration(displayName = "#CTL_ExportLearningSpaceAction")
-@ActionReference(path = "Menu/File", position = 124)
+@ActionReference(path = "Menu/File", position = 114)
 @Messages({
     "CTL_ExportLearningSpaceAction=Export as Learning Space…",
     "ExportLearningSpaceAction_aimFirst=Aim the studio at the project you want to export first.",

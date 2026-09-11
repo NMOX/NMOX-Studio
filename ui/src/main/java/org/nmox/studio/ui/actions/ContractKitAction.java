@@ -30,7 +30,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ContractKitAction")
 @ActionRegistration(displayName = "#CTL_ContractKitAction")
-@ActionReference(path = "Menu/File", position = 120)
+@ActionReference(path = "Menu/File/AddToProject", position = 80)
 @Messages({
     "CTL_ContractKitAction=Contract Kit (Web3)…",
     "ContractKitAction_lineChanged=  ✓ {0}",

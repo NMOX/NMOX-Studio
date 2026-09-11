@@ -18,6 +18,33 @@
                  rack-aware project dialog) replace them. One entry each. -->
             <file name="org-netbeans-modules-openfile-OpenFileAction.shadow_hidden"/>
             <file name="org-netbeans-modules-project-ui-NewProject.shadow_hidden"/>
+            <!-- v2.118.0, the coherence pass: the seven kits and the Angular
+                 generator all do one thing — write files into the AIMED
+                 project — and they had spread across nine flat File-menu rows
+                 with two unrelated items interleaved, because each new one
+                 took the next free position. One submenu names the category
+                 the flat list never could, and File drops from eighteen of our
+                 rows to eleven. The actions, their ids and their Actions/File
+                 category are untouched: only where the menu shows them moved.
+                 The folder needs BOTH attributes — without the bundle it
+                 paints its raw layer name "AddToProject", and without the
+                 position it sorts to the top of the menu (measured live in
+                 both states). -->
+            <folder name="AddToProject">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.resources.Bundle"/>
+                <attr name="position" intvalue="130"/>
+            </folder>
+        </folder>
+        <folder name="Window">
+            <!-- v2.118.0, the coherence pass, measured live in the shipped
+                 2.108.0 menu bar: the Window menu carried TWO items labelled
+                 "Tasks" — ours (the per-project board on DA-1) and the
+                 platform's bug-tracking dashboard. No connector ships in this
+                 cluster (no Bugzilla, no JIRA, no issue provider of any kind),
+                 so that window can never show a task; what it could do was make
+                 our own unfindable. The v1.11 VCS-museum eviction and the
+                 v2.64.0 Help-menu hides are the same call. -->
+            <file name="org-netbeans-modules-tasks-ui-DashboardTopComponent.shadow_hidden"/>
         </folder>
         <!-- The Refactor menu is a Java-IDE organ: our languages ride
              TextMate + LSP, where rename lives on the editor context menu.

@@ -28,7 +28,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.StandardsKitAction")
 @ActionRegistration(displayName = "#CTL_StandardsKitAction")
-@ActionReference(path = "Menu/File", position = 117)
+@ActionReference(path = "Menu/File/AddToProject", position = 10)
 @Messages({
     "CTL_StandardsKitAction=Standards Kit…",
     "StandardsKitAction_needsName=Give the site a name — it goes into the manifest and humans.txt.",

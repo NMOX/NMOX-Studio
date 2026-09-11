@@ -31,7 +31,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.I18nKitAction")
 @ActionRegistration(displayName = "#CTL_I18nKitAction")
-@ActionReference(path = "Menu/File", position = 123)
+@ActionReference(path = "Menu/File/AddToProject", position = 40)
 @Messages({
     "CTL_I18nKitAction=I18n Kit (Web)…",
     "I18nKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",

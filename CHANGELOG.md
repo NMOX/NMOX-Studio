@@ -4,6 +4,111 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.118.0] - 2026-09-10
+
+**The coherence pass: one vocabulary, one door per idea.** No new
+capability. A first-time walk of the whole path — launch, open an existing
+Node project, read it, run it, edit, test, browse, the rack, stop, close —
+measured on the shipped 2.108.0 build with the product's own screenshot
+forge and a live read of the running menu bar. Seven findings, all of them
+the product disagreeing with itself.
+
+1. **The directions the product gives named doors that do not exist.**
+   Nine strings tell a user where to go ("NPM Explorer ▸ Install first",
+   "see Output ▸ Rack, or Tools ▸ Environment Doctor"). Across the twelve
+   translations, **73 of those segments pointed at the wrong name**: ten
+   languages sent the reader to "Environment Doctor" while their own menu
+   item reads *Doctor del entorno* / *Диагностика окружения* / *环境诊断*;
+   German and Hindi named a "Tools" menu that reads *Extras* / *उपकरण*;
+   and seven languages translated the **Output** window, which the platform
+   does not localize, so it is titled "Output" in every build. The
+   translators were guessing which names the product translates, because
+   nothing could tell them. All 73 corrected — 48 values across 29 bundle
+   files — and `WayfindingVocabularyTest` now derives the vocabulary from
+   the assembled cluster (product names per locale, menu names from the
+   branding overlays, the platform surfaces we deliberately leave English)
+   and fails the build on the fourth. Two hazards handled on the way: a
+   French name carrying an apostrophe is spliced as U+2019, inert to
+   MessageFormat (the v2.97.0 rule), and the gate's own first cut read
+   UTF-8 bundles as ISO-8859-1 and reported every ellipsis as a mismatch.
+
+2. **One window, two names.** The Workbench's tooling shelf called the
+   Docker Panel "Docker Manager" — in all thirteen languages, with its own
+   tooltip ("The Docker Panel — HARBOR's control room") contradicting its
+   own label. The row now carries the window's own name, taken from the
+   window's own bundle key rather than retyped. The fourth rule of the same
+   gate derives every label-to-window binding from the source lines that
+   make it and compares them per locale, so the next shelf row is covered
+   without touching the test.
+
+3. **Two rows in the Window menu answered to "Tasks".** Read live from the
+   running menu bar: ours (the per-project board) and the platform's
+   bug-tracking dashboard — and this cluster ships no issue connector, so
+   that window can never show a task. It is hidden now, the way the v1.11
+   pass hid the VCS museum. `WindowMenuIsUnambiguousTest` resolves every
+   visible Window-menu row across all five assembled clusters to the name
+   the menu bar paints and fails on a repeat; a per-module gate could never
+   have seen a collision that exists only in the assembled menu.
+
+4. **The board is called the Task Board everywhere except in its own
+   title.** Fifty-eight mentions in the docs, the user guide's own section
+   heading, the class named `TaskBoard`, the file `.nmoxtasks.json` — and a
+   window titled "Tasks", sitting one row from "Task Rack" in the same menu
+   and meaning something else entirely. The window, its Window-menu row,
+   the Welcome's link and the ⌘I category now read **Task Board**, in all
+   thirteen languages. The shortcut is unchanged.
+
+5. **The File menu was a dumping ground.** Eighteen of our rows, seven of
+   them "… Kit", in no order: New Angular Schematic and Export as Learning
+   Space had landed *between* kits because each new item took the next free
+   position, and the learning-space family was split across four places.
+   The seven kits and the Angular generator — all of which do one thing,
+   write files into the aimed project — now live under **File ▸ Add to
+   Project**, and the learning-space and experiment families are each
+   contiguous. Eighteen rows become eleven. Every action id, category and
+   chord is untouched; only where the menu shows them moved.
+
+6. **The rack's own invitation had never been seen.** The silkscreen naming
+   where devices come from — the shelf and the Presets menu — painted only
+   when the rack held nothing at all, and since v1.278.0 a project with no
+   saved patch resets to a starter rack holding one MONITOR. So the first
+   open of the product's signature window showed one console, eleven bare
+   rack units, and no hint of what to do. The line now paints on whatever
+   bare rail is left below the stack and retires as the rack fills; a render
+   probe paints the real panel and counts the pixels.
+
+7. **Thirteen windows opened before the user had done anything.** Ten
+   editor tabs and three docked panes, decided before the product knew
+   anything about the project. Walking an ordinary Node/Express project,
+   four of the ten were for technologies it cannot use — DB Studio with no
+   database, Contract Studio announcing "0 contract artifacts" for a bakery
+   API, the Infra Designer, the Docker Panel with no Dockerfile — a fifth
+   was a chat client, a sixth an empty kanban board whose first touch writes
+   a file into someone else's repository, and the file the user came to read
+   arrived eleventh in the strip. **Seven closed** on David's call. A first
+   launch is now **Welcome → Task Rack → Browser**, with Project Studio, the
+   Workbench and the NPM Explorer docked. Nothing became less discoverable:
+   the Welcome's TOOLING column lists every window with its chord, the
+   Window menu lists them again, and the ⌥⌘ chords are unchanged — three
+   surfaces, none of which costs a tab. Only a userdir with no saved layout
+   is affected, so no existing arrangement moves. `FirstLaunchWindowsLedgerTest`
+   derives the population from every `@TopComponent.Registration` and fails
+   the build until a new window states, with a reason, whether a newcomer
+   meets it; a second assertion pins the editor strip at three.
+
+8. **Recorded, not changed** (with the measurements, in
+   docs/engineering/tech-debt.md ledger 96): the in-app Browser's bare home
+   is a news site when nothing is serving, and the Tools menu's four sharing
+   verbs are split from our other two by seven platform rows. Both are
+   product decisions the owner has made by name.
+
+Nine mutants killed by name, and two of them killed gate bugs rather than
+product bugs: the window-name rule matched nothing until it stopped
+assuming the layer's attribute order, and the Window-menu census lost three
+studios to a layer that carries two folders called "Window". The
+first-launch picture in the guide is now the forge's own, so it can never
+rot again; the hand-staged one it replaces had drifted to a 2.93.0 window
+still saying "Ask ORACLE".
 ## [2.117.0] - 2026-09-10
 
 **The walk the night owed: the shipped app, booted as a Taiwanese
@@ -19092,6 +19197,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.118.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.117.0...v2.118.0
 [2.117.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.116.0...v2.117.0
 [2.116.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.115.0...v2.116.0
 [2.115.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.114.0...v2.115.0

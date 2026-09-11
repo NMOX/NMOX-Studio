@@ -33,7 +33,7 @@ import org.openide.util.RequestProcessor;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.ImageKitAction")
 @ActionRegistration(displayName = "#CTL_ImageKitAction")
-@ActionReference(path = "Menu/File", position = 121)
+@ActionReference(path = "Menu/File/AddToProject", position = 50)
 @Messages({
     "CTL_ImageKitAction=Image Kit (Web)…",
     "ImageKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",

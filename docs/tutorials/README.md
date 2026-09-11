@@ -30,7 +30,7 @@ For the wide reference (install, every menu, every safety net) see the
 | [KVASIR](kvasir.md) | Ask the AI why a run failed | Rack → KVASIR |
 | [Explain anything](explain-anything.md) | Use KVASIR's four faces: runs, code, API responses, DB errors | anywhere something fails |
 | [Migrating from Postman](migrating-from-postman.md) | Import your collections, HAR captures, and more — secrets go keychain-side | ⌥⌘8 → Import… |
-| [Image Kit (Web)](image-kit.md) | Press a project's images: smaller JPEGs, WebP siblings, honest report | File ▸ Image Kit (Web)… |
+| [Image Kit (Web)](image-kit.md) | Press a project's images: smaller JPEGs, WebP siblings, honest report | File ▸ Add to Project ▸ Image Kit (Web)… |
 | [Learning Spaces](learning-spaces.md) | Spin up a guided sandbox with a live REPL | New Learning Space… |
 | [Wizards & Kits](wizards-and-kits.md) | Add a PWA, standards files, or classic-web scaffolds | Tools menu |
 

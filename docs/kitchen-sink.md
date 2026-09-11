@@ -70,13 +70,14 @@ A useful map before you start — the window chords:
 
 **Do:** Launch the app. Then Tools ▸ **Environment Doctor**.
 
-**See:** The suite tabs are already open — Workbench, Task Rack, DB
-Studio, Contract Studio, Infra Designer, API Studio, Browser, IRC,
-Tasks, Docker Panel — and the window paints in a couple of seconds
-with **zero processes spawned at boot** (hidden tabs defer their work
-to first show; that is a tested law, not a hope). A fresh install aims
-at a created-for-you `~/NMOX` workspace, never at your home
-directory. The Doctor live-probes your toolchains — node, npm, git,
+**See:** Three tabs — Welcome, Task Rack, Browser — with Project
+Studio, the Workbench and the NPM Explorer docked on the left, and the
+window paints in a couple of seconds with **zero processes spawned at
+boot** (a tab defers its work to first show; that is a tested law, not
+a hope). Every other window is one ⌥⌘ chord away and listed in the
+Welcome's TOOLING column; until v2.118.0 all ten opened at once. A
+fresh install aims at a created-for-you `~/NMOX` workspace, never at
+your home directory. The Doctor live-probes your toolchains — node, npm, git,
 docker, sass, cargo, go, deno, and a few dozen more — with real
 versions and per-OS install hints. Your own probes can join it: drop a
 JSON file in `~/.nmox/doctor.d`.
@@ -318,7 +319,7 @@ offers a ready-made connection with the published port pre-filled.
 
 ## 11. Contract Studio (⌥⌘6) and the Contract Kit
 
-**Do:** File ▸ Contract Kit (Web3)… — pick a chain (eleven, from
+**Do:** File ▸ Add to Project ▸ Contract Kit (Web3)… — pick a chain (eleven, from
 Foundry/EVM to Clarity, Aiken, and Tact). With Foundry installed:
 scaffold, `forge test` from the rack, then ⌥⌘6.
 
@@ -505,7 +506,7 @@ The framework bet. **Do:** New Project ▸ Angular, open a
 'loggedIn'?" — the Angular Language Service installs project-local
 from a one-click prompt. ⌘B works in templates; the component ↔
 template ↔ styles ↔ spec switcher covers the four-file set; the
-Navigator outlines your routes; File ▸ New Angular Schematic… runs
+Navigator outlines your routes; File ▸ Add to Project ▸ New Angular Schematic… runs
 `ng generate` as a gesture; HALO is the rack's Angular console; and
 the DevTools Angular pane reads the live component tree of a dev
 build.

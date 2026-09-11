@@ -33,6 +33,11 @@ public class DocsShots implements Runnable {
     static {
         // the Workbench is the left-dock ProjectExplorer TC (display name
         // "Workbench") — MainWindowTopComponent is the Welcome launchpad
+        // workbench.png is taken FIRST and so is also the first-launch
+        // picture the user guide's chapter 2 shows: the Welcome filling the
+        // editor area, the Workbench docked, and only the tabs a fresh
+        // install actually opens (v2.118.0). The hand-staged welcome.png it
+        // replaced had rotted to a 2.93.0 window still saying "Ask ORACLE".
         SHOTS.put("ProjectExplorerTopComponent", "workbench.png");
         SHOTS.put("RackTopComponent", "the-task-rack.png");
         SHOTS.put("ProjectStudioTopComponent", "project-studio.png");

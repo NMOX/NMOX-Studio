@@ -154,7 +154,7 @@ clearest possible view of what a validator is.
 
 ### Path C — Solidity/Foundry (the ecosystem standard)
 
-1. In any project: **File ▸ Contract Kit (Web3)… ▸ Solidity (EVM)**,
+1. In any project: **File ▸ Add to Project ▸ Contract Kit (Web3)… ▸ Solidity (EVM)**,
    name your contract, OK.
 2. Follow `CONTRACT-NOTES.md`'s one-time line (`forge install
    foundry-rs/forge-std`), then **VERITAS ▸ GO** runs `forge test`.

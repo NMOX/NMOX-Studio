@@ -33,9 +33,9 @@ Die IDE aktualisiert sich selbst: **Werkzeuge ▸ Plugins ▸ Aktualisierungen**
 
 Aus einem Terminal startet `nmoxstudio --open <Ordner>` die Anwendung mit diesem Ordner als geöffnetem Projekt und dem darauf gerichteten Rack — dieselbe Tür, die „Ordner öffnen…“ auf der Willkommensseite öffnet.
 
-Die IDE öffnet sich mit allen Tabs der Suite am Editorbereich: **Willkommen → Task-Rack → Datenbank-Studio → Smart-Contract-Studio → Infrastruktur-Designer → API-Studio → Docker-Panel** — jede wichtige Oberfläche ist ab der ersten Minute einen Klick entfernt. Im linken Dock: **Projekt-Studio** (Dateibaum und Vorlagen), die Basis **Arbeitsplatz** und der **NPM-Explorer**. Ein Ordner `~/NMOX` wird als Standardarbeitsbereich angelegt; das Rack zeigt dorthin, bis Sie ein Projekt öffnen.
+Die IDE öffnet sich mit drei Tabs am Editorbereich: **Willkommen → Task-Rack → Browser**. Jedes weitere Fenster ist ein ⌥⌘-Kürzel entfernt und steht in der Spalte TOOLING der Willkommensseite. Im linken Dock: **Projekt-Studio** (Dateibaum und Vorlagen), die Basis **Arbeitsplatz** und der **NPM-Explorer**. Ein Ordner `~/NMOX` wird als Standardarbeitsbereich angelegt; das Rack zeigt dorthin, bis Sie ein Projekt öffnen.
 
-![Erster Start — die Willkommensseite mit allen geöffneten Tabs](images/welcome.png)
+![Erster Start — die Willkommensseite mit drei Tabs](images/tabs/workbench.png)
 
 Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willkommens-Tab):
 
@@ -44,6 +44,8 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 | **⌘I** | Schnellsuche — erreicht alles |
 | **⌘9** | Task-Rack |
 | **⌥⌘0** | Arbeitsplatz |
+| **⌥⌘1** | Aufgaben-Board |
+| **⌥⌘2** | Tests |
 | **⌥⌘3** | IRC-Chat-Client |
 | **⌥⌘4** | Browser (integriertes WebKit, mit DevTools) |
 | **⌥⌘5** | Block-Studio |

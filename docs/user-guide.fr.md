@@ -33,9 +33,9 @@ L’IDE se met à jour lui-même : **Outils ▸ Plugins ▸ Mises à jour** prop
 
 Depuis un terminal, `nmoxstudio --open <dossier>` lance l’application avec ce dossier ouvert comme projet et le rack pointé dessus — la même porte que « Ouvrir un dossier… » sur la page d’accueil.
 
-L’IDE s’ouvre avec toutes les onglets de la suite le long de la zone d’édition : **Bienvenue → Rack de tâches → Studio de bases de données → Studio de contrats → Concepteur d’infrastructure → Studio d’API → Panneau Docker** — chaque surface principale est à un clic dès la première minute. Dans le dock de gauche : **Studio de projet** (arborescence et modèles), la base **Plan de travail** et l’**Explorateur NPM**. Un dossier `~/NMOX` est créé comme espace de travail par défaut ; le rack y pointe jusqu’à ce que vous ouvriez un projet.
+L’IDE s’ouvre avec trois onglets le long de la zone d’édition : **Bienvenue → Rack de tâches → Navigateur**. Chaque autre fenêtre est à un raccourci ⌥⌘ et figure dans la colonne TOOLING de la page d’accueil. Dans le dock de gauche : **Studio de projet** (arborescence et modèles), la base **Plan de travail** et l’**Explorateur NPM**. Un dossier `~/NMOX` est créé comme espace de travail par défaut ; le rack y pointe jusqu’à ce que vous ouvriez un projet.
 
-![Premier lancement — la page d’accueil avec tous les onglets ouverts](images/welcome.png)
+![Premier lancement — la page d’accueil avec trois onglets](images/tabs/workbench.png)
 
 Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l’onglet d’accueil) :
 
@@ -44,6 +44,8 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 | **⌘I** | Recherche rapide — atteint tout |
 | **⌘9** | Rack de tâches |
 | **⌥⌘0** | Plan de travail |
+| **⌥⌘1** | Tableau des tâches |
+| **⌥⌘2** | Tests |
 | **⌥⌘3** | Client de discussion IRC |
 | **⌥⌘4** | Navigateur (WebKit intégré, avec DevTools) |
 | **⌥⌘5** | Studio de blocs |

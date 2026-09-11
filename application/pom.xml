@@ -264,6 +264,8 @@
                                 <exclude>**/LocaleBundleParityTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
+                                <exclude>**/WayfindingVocabularyTest.java</exclude>
+                                <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -284,6 +286,8 @@
                                 <include>**/LocaleBundleParityTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
+                                <include>**/WayfindingVocabularyTest.java</include>
+                                <include>**/WindowMenuIsUnambiguousTest.java</include>
                             </includes>
                         </configuration>
                     </execution>

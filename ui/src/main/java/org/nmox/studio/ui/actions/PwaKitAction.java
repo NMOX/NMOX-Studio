@@ -34,7 +34,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @ActionID(category = "File", id = "org.nmox.studio.ui.actions.PwaKitAction")
 @ActionRegistration(displayName = "#CTL_PwaKitAction")
-@ActionReference(path = "Menu/File", position = 118)
+@ActionReference(path = "Menu/File/AddToProject", position = 20)
 @Messages({
     "CTL_PwaKitAction=PWA Kit…",
     "PwaKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",

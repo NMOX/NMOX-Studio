@@ -33,9 +33,9 @@ A IDE se atualiza sozinha: **Ferramentas ▸ Plugins ▸ Atualizações** oferec
 
 No terminal, `nmoxstudio --open <pasta>` inicia o aplicativo com essa pasta aberta como projeto e o rack apontado para ela — a mesma porta que “Abrir pasta…” abre na página de boas-vindas.
 
-A IDE abre com todas as abas do conjunto ao lado da área do editor: **Bem-vindo → Rack de tarefas → Estúdio de banco de dados → Estúdio de contratos → Designer de infraestrutura → Estúdio de API → Painel do Docker** — cada superfície principal a um clique desde o primeiro minuto. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
+A IDE abre com três abas ao lado da área do editor: **Bem-vindo → Rack de tarefas → Navegador**. Cada uma das outras janelas está a um atalho ⌥⌘ e aparece na coluna TOOLING da página de boas-vindas. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
 
-![Primeira execução — a página de boas-vindas com todas as abas abertas](images/welcome.png)
+![Primeira execução — a página de boas-vindas com três abas](images/tabs/workbench.png)
 
 Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
@@ -44,6 +44,8 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌘I** | Busca rápida — alcança tudo |
 | **⌘9** | Rack de tarefas |
 | **⌥⌘0** | Bancada |
+| **⌥⌘1** | Quadro de tarefas |
+| **⌥⌘2** | Testes |
 | **⌥⌘3** | Cliente de bate-papo IRC |
 | **⌥⌘4** | Navegador (WebKit integrado, com DevTools) |
 | **⌥⌘5** | Estúdio de blocos |

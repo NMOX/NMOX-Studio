@@ -60,9 +60,10 @@ import org.openide.windows.WindowManager;
     "MainWindow_taskRack=Task Rack  ⌘9",
     "MainWindow_workbench=Workbench  ⌥⌘0",
     "MainWindow_projectStudio=Project Studio",
+    "MainWindow_npmExplorer=NPM Explorer",
     "MainWindow_browser=Browser  ⌥⌘4",
     "MainWindow_irc=IRC  ⌥⌘3",
-    "MainWindow_tasks=Tasks  ⌥⌘1",
+    "MainWindow_tasks=Task Board  ⌥⌘1",
     "MainWindow_tests=Tests  ⌥⌘2",
     "MainWindow_blockStudio=Block Studio  ⌥⌘5",
     "MainWindow_dbStudio=DB Studio  ⌥⌘7",
@@ -171,6 +172,7 @@ public final class MainWindow extends TopComponent {
             windows.add(windowLink(Bundle.MainWindow_taskRack(), "RackTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_workbench(), "ProjectExplorerTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_projectStudio(), "ProjectStudioTopComponent"));
+            windows.add(windowLink(Bundle.MainWindow_npmExplorer(), "NpmExplorerTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_browser(), "WebBrowserTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_irc(), "IrcTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_tasks(), "TasksTopComponent"));

@@ -33,9 +33,9 @@ Ini-update ng IDE ang sarili nito: nag-aalok ang **Mga Kasangkapan ▸ Mga Plugi
 
 Mula sa terminal, sinisimulan ng `nmoxstudio --open <folder>` ang app kasama ang folder na iyon na bukas bilang proyekto at nakaturo dito ang rack — ang parehong pinto na binubuksan ng “Buksan ang folder…” sa welcome page.
 
-Bumubukas ang IDE kasama ang lahat ng tab ng suite sa tabi ng lugar ng editor: **Maligayang Pagdating → Rack ng Gawain → Studio ng Database → Studio ng Kontrata → Taga-disenyo ng Infrastructure → Studio ng API → Docker Panel** — isang click ang layo ng bawat pangunahing bahagi mula sa unang minuto. Sa kaliwang dock: **Studio ng Proyekto** (puno ng mga file at mga template), ang batayang **Lugar ng Trabaho** at ang **Explorer ng NPM**. Gumagawa ng folder na `~/NMOX` bilang default na workspace; doon nakaturo ang rack hanggang magbukas ka ng proyekto.
+Bumubukas ang IDE kasama ang tatlong tab sa tabi ng lugar ng editor: **Maligayang Pagdating → Rack ng Gawain → Browser**. Isang ⌥⌘ shortcut lang ang layo ng bawat ibang window, at nakalista ang mga ito sa hanay na TOOLING ng welcome page. Sa kaliwang dock: **Studio ng Proyekto** (puno ng mga file at mga template), ang batayang **Lugar ng Trabaho** at ang **Explorer ng NPM**. Gumagawa ng folder na `~/NMOX` bilang default na workspace; doon nakaturo ang rack hanggang magbukas ka ng proyekto.
 
-![Unang pagbukas — ang welcome page na bukas ang lahat ng tab](images/welcome.png)
+![Unang pagbukas — ang welcome page na may tatlong tab](images/tabs/workbench.png)
 
 Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa welcome tab):
 
@@ -44,6 +44,8 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 | **⌘I** | Mabilisang paghahanap — naaabot ang lahat |
 | **⌘9** | Rack ng Gawain |
 | **⌥⌘0** | Lugar ng Trabaho |
+| **⌥⌘1** | Task Board |
+| **⌥⌘2** | Mga Test |
 | **⌥⌘3** | Kliyente ng chat na IRC |
 | **⌥⌘4** | Browser (nakapaloob na WebKit, may DevTools) |
 | **⌥⌘5** | Studio ng Block |

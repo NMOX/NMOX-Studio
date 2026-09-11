@@ -24,7 +24,7 @@ kept current every time the Angular surface changes.
 | **Emmet in templates** | ✅ ⌥⌘E, v1.329.0, grammar-pinned | ✅ | ✅ |
 | **Emmet in INLINE templates** (`template:` backticks in .ts) | ✅ Angular-top arc, decorator-gated, refuses outside the literal — live-proven both directions | ✅ | ⚠️ needs settings |
 | Routes outline (app.routes.ts) | ✅ v1.314.0 — eager/lazy/redirect targets, children nested | ⚠️ generic structure | ❌ |
-| `ng generate` as an IDE gesture | ✅ File ▸ New Angular Schematic…, v1.239.0; opens the created file, v1.346.0 (3 live rounds) | ✅ | ⚠️ third-party extensions |
+| `ng generate` as an IDE gesture | ✅ File ▸ Add to Project ▸ New Angular Schematic…, v1.239.0; opens the created file, v1.346.0 (3 live rounds) | ✅ | ⚠️ third-party extensions |
 | `ng serve` → browser loop in-app | ✅ v1.318.0 — Run → serving chip → in-app Browser at the CLI's own URL (loopback + h2c fixes underneath) | ⚠️ external browser | ⚠️ external browser |
 | DevTools component tree of the running app | ✅ v1.222.0 — dev builds; prod build honestly says so | ❌ (browser extension) | ❌ (browser extension) |
 | Angular-aware Run Focused Test | ✅ v1.223.0 — `ng test --include`, file-level (Karma has no name filter) | ✅ method-level where runner allows | ⚠️ extension-dependent |
