@@ -4,6 +4,105 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.133.0] - 2026-09-11
+
+**The learning catalogue speaks every language, and ledger 97 closes with its
+last clause re-decided.** The German walk that closed the dialog-button class
+photographed the New Learning Space picker with German chrome around 93
+English pitches — `Your First Web Page`, "Never written HTML before? Start
+here…" — and ledger 97 recorded why that was hard: this English is not a key
+in a bundle, it is **authored prose in a data file**, the drop-in half had
+nowhere to put a translation, and the tutorials behind the pitches are longer
+than the catalogue. The schema now carries `name.<lang>`, `blurb.<lang>` and
+`tutorial.<lang>` SIBLING keys, so built-ins and drop-ins are described by the
+same mechanism, adding a language is adding a line, and a catalogue written
+before this release parses unchanged. Ninety-three blurbs in twelve languages
+are written (1,116 values), plus the three names that were prose rather than
+technology names — `Ihre erste Webseite`, and `Solana (programas)` — while
+`Python`, `Rails` and `SQLite` stay exactly as they are, because a name must
+survive translation intact.
+
+**Where the file sits is the law, again.** A space's own words travel with the
+space, because a drop-in author writes their own and the catalogue file is
+where they belong. Its CATEGORY and FAMILY do not: those are a shared
+vocabulary the picker sorts by, so they live in a bundle beside the picker
+that renders them — the v2.132.0 placement rule one catalogue over. Four
+categories and thirty PROSE families are translated there (408 values); the
+fourteen families that are NAMES — `Python`, `BEAM`, `Web3`, `Lisp/JVM` —
+carry no key at all, so `CatalogText` returns them unchanged, and that single
+rule gives a drop-in author's own family the right behaviour for free.
+
+**A translation adds a way in and never removes one.** Pointing the search at
+the reader's language alone would have re-created the v1.215.0 findability
+defect in twelve languages at once: a German reader sent here by an English
+tutorial or a URL would type the name the doc used and find nothing. The
+filter now runs over the reader's words AND the English record the catalogue
+keeps, so both ways in work and neither language's reader is worse off than
+before. English stays the record for the same reason it always was.
+
+**The tutorials did not ride along, and that is now a decision rather than a
+reason to hold everything.** Measured: 130,863 characters of authored English
+across the 93 spaces, about 1.57 million in twelve languages. The argument
+that held two thirds of a toolbar back in v2.101.1 does not transfer, because
+the two halves are read at different moments — the picker is a catalogue you
+scan to choose, the tutorial is a document you open after choosing. A German
+reader now chooses in German and then opens an English document, the boundary
+every other IDE's docs have, instead of never seeing German at all. **A
+surface with nowhere to put a translation is unfinished; a surface with the
+slot open and the size written down is a decision.** `tutorial.<lang>` is read
+by the same parser and a drop-in author can fill it today.
+
+### Added
+
+- `LearningCatalog.Translated` and `Space.shown()`: the name, blurb and
+  tutorial a reader sees, resolved per call because the language switch is
+  LIVE (v2.103.0) and the catalogue is a cache built once. An absent language
+  falls back to English FIELD BY FIELD, so translating only the blurb is a
+  complete and correct thing to do. The parser assembles each language in two
+  passes so key order cannot decide the triple; the single-pass version is a
+  mutant that dies by name.
+- `CatalogText` (ui): the picker's grouping words, and the one rule that
+  decides which families are prose — a missing key returns the family
+  unchanged. `key()` folds with `Locale.ROOT`, because a Turkish reader's
+  dotless i would otherwise lose every key containing one (the v2.37.5 sweep's
+  class; the bare fold is a mutant that dies by name).
+- `LearningCatalogSpeaksTest` (application, bound to `packaged-app-gates`):
+  eight laws over the catalogue the ASSEMBLED cluster ships — complete in
+  every language the product offers, never still the English, rendering as
+  prose beside its English, every `field.lang` sibling naming a field the
+  parser reads and a language the product offers, names all-or-nothing, every
+  category headed in every language, a family prose everywhere or a name
+  nowhere, and no grouping word written for a group that does not exist. Nine
+  mutants by name. Its FIRST run found a real one: the category population
+  came from the spaces, and `STACK` is a heading no built-in space uses today
+  but a drop-in can file itself under tomorrow — the population is the enum.
+- `LearningCatalogShownTest` (rack) and `PickerSpeaksTest` (ui): the seam and
+  its call sites, because a seam that diverges with no consumer is a payload
+  without a gate (the v1.321.0 law). Seven more mutants by name.
+- `LearningCatalogDropInTest.theWorkedExampleIsTheFixture`: the worked example
+  in `docs/learning-spaces.md` is fed to the real parser and byte-compared
+  against the fixture beside it. The comment claiming they were "kept in sync
+  by the round-trip test" had been a claim with no test behind it — the
+  v1.189.0 law — and is now true; a one-word drift in the doc fails the build.
+
+### Changed
+
+- The picker's rows and its search read `shown()`; category and family render
+  through `CatalogText`.
+- `LocaleBundleParityTest` learns the second family of keys whose English
+  lives elsewhere by design. `DeviceDesc_*` (v2.132.0) has its English in
+  `DeviceType`; `LearnCategory_*` and `LearnFamily_*` have theirs in the
+  catalogue itself, which is why a family that is a name carries no key at
+  all. A copy in a base bundle would be the second home v2.131.0 spent a
+  release removing, and neither family goes unchecked — both are held to a
+  stricter population by the gate that owns them.
+- `docs/learning-spaces.md` documents the sibling keys, the prose-versus-name
+  rule for families, and that English stays searchable in every language.
+
+### Fixed
+
+- Ledger 97 closed.
+
 ## [2.132.0] - 2026-09-11
 
 **The device shelf is a catalogue, and a catalogue is read in the reader's
@@ -19713,6 +19812,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.133.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.132.0...v2.133.0
 [2.132.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.131.0...v2.132.0
 [2.131.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.130.0...v2.131.0
 [2.130.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.129.0...v2.130.0
