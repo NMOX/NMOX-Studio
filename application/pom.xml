@@ -272,6 +272,7 @@
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
                                 <exclude>**/NarrowPaneHintBudgetTest.java</exclude>
+                                <exclude>**/DeviceShelfSpeaksTest.java</exclude>
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
@@ -297,6 +298,7 @@
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
                                 <include>**/NarrowPaneHintBudgetTest.java</include>
+                                <include>**/DeviceShelfSpeaksTest.java</include>
                                 <include>**/DialogChromeOverlayGateTest.java</include>
                                 <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
                             </includes>

@@ -81,6 +81,22 @@ class LocaleBundleParityTest {
     }
 
     /** Drops the module-descriptor keys this arc leaves to the manifests. */
+    /**
+     * A translated key whose English is NOT in the base bundle, because it
+     * has one home somewhere better.
+     *
+     * <p>The shelf's 59 device descriptions (v2.132.0) are the only such
+     * family. Their English lives in {@code DeviceType} — the record that
+     * GENERATES {@code docs/devices.md} — so putting a copy in a base bundle
+     * would be the second home v2.131.0 spent a release removing. Skipping
+     * them here does not leave them unchecked: {@code DeviceShelfSpeaksTest}
+     * holds them to a STRICTER population than this gate could, the shipped
+     * device catalogue itself, and to the width of the card they paint on.
+     */
+    private static boolean baseLivesElsewhere(String key) {
+        return key.startsWith("DeviceDesc_");
+    }
+
     private static void stripDescriptors(Properties p) {
         p.stringPropertyNames().stream()
                 .filter(k -> k.startsWith("OpenIDE-Module-"))
@@ -153,6 +169,7 @@ class LocaleBundleParityTest {
                         stripDescriptors(t);
                         Set<String> want = new TreeSet<>(english.stringPropertyNames());
                         Set<String> have = new TreeSet<>(t.stringPropertyNames());
+                        have.removeIf(LocaleBundleParityTest::baseLivesElsewhere);
                         if (!want.equals(have)) {
                             Set<String> missing = new TreeSet<>(want);
                             missing.removeAll(have);

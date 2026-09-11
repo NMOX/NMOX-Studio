@@ -80,7 +80,7 @@ public class PalettePanel extends JPanel {
                     if (t.category() == category
                             && (query.isEmpty()
                             || org.nmox.studio.core.search.SearchTerms.matches(query,
-                                    t.title(), t.description(), t.keywords(),
+                                    t.title(), DeviceText.description(t), t.keywords(),
                                     category.label))) {
                         matches.add(t);
                     }
@@ -177,7 +177,7 @@ public class PalettePanel extends JPanel {
                 this.selected = isSelected;
                 setPreferredSize(new Dimension(210, 52));
                 String firstRecipeLine = t.usage().split("\\n")[0];
-                setToolTipText(Bundle.PalettePanel_entryTooltip(t.title(), t.description(), firstRecipeLine));
+                setToolTipText(Bundle.PalettePanel_entryTooltip(t.title(), DeviceText.description(t), firstRecipeLine));
             } else {
                 this.type = null;
                 this.headerText = String.valueOf(value);
@@ -220,10 +220,35 @@ public class PalettePanel extends JPanel {
             g.drawString(type.title(), 20, 22);
             g.setFont(RackStyle.TINY_FONT);
             g.setColor(RackStyle.SILKSCREEN_DIM);
-            String desc = type.description();
-            int dash = desc.indexOf("—");
-            g.drawString(dash > 0 ? desc.substring(dash + 1).trim() : desc, 20, 38);
+            // fit to the card, never hard-clip: a painted line that simply
+            // stops leaves the reader unable to tell a short description
+            // from a cut one. German runs ~40% longer than English here and
+            // the first German shelf photograph read "…wenn alle Spuren bes".
+            // The budget gate keeps our own glosses short; this keeps a
+            // drop-in device's authored words honest too.
+            g.drawString(fitTo(g.getFontMetrics(), DeviceText.gloss(type), w - 32), 20, 38);
             g.dispose();
         }
+    }
+
+    /**
+     * {@code text} if it fits in {@code room} pixels, else its head plus an
+     * ellipsis that does fit — the v1.282.0 LCD rule, applied to the shelf.
+     */
+    static String fitTo(java.awt.FontMetrics fm, String text, int room) {
+        if (fm.stringWidth(text) <= room) {
+            return text;
+        }
+        String ellipsis = "\u2026";
+        int budget = room - fm.stringWidth(ellipsis);
+        if (budget <= 0) {
+            return ellipsis;
+        }
+        int end = text.length();
+        while (end > 0 && fm.stringWidth(text.substring(0, end)) > budget) {
+            // step by code POINTS: a cut between surrogates is not a character
+            end = text.offsetByCodePoints(end, -1);
+        }
+        return text.substring(0, end).stripTrailing() + ellipsis;
     }
 }
