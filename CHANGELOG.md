@@ -4,6 +4,36 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.120.0] - 2026-09-11
+
+**The catalog’s front door did not fit its own window.** The walk arc’s
+second surface: the New Learning Space picker, photographed on a fresh
+install, showed its descriptions clipped mid-word with a horizontal
+scrollbar underneath them — "No installs beyond", and then nothing.
+
+The cause is one missing bound. Each row is an HTML label, and an unbounded
+HTML label is as wide as its longest line, so the list asked for more room
+than its own viewport had. That is the ledger-75 class (v1.273.0: squeeze
+to the viewport, never grow a sideways scrollbar), and it had reached the
+first screen a learner meets.
+
+Given a width, the blurb WRAPS — which beats the v2.119.0 answer one
+release earlier, because nothing is cut at all rather than cut politely.
+The row now takes the width the list actually has, and the whole catalog
+reads. Unitless on purpose: Swing’s CSS honours `width: 480` and ignores
+`width: 480px`, measured in v2.84.0 and now pinned here too, because a `px`
+is the same as no bound and looks identical in a diff.
+
+Two mutants by name — strip the width, and write it in pixels — and the
+picker re-photographed in a rebuilt app with the scrollbar gone.
+
+**Also measured, and left alone.** The same census found seven other places
+the product shortens text. Five are importers writing a capped NAME into
+the workspace, where the request’s own URL still carries the full truth.
+Two are DB Studio display cuts whose text is one click away in the console
+that produced it. Neither is the class this arc is about, and saying so is
+cheaper than changing them.
+
 ## [2.119.0] - 2026-09-11
 
 **A sentence cut through the middle is not a shorter sentence.** The
@@ -19246,6 +19276,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.120.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.119.0...v2.120.0
 [2.119.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.118.0...v2.119.0
 [2.118.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.117.0...v2.118.0
 [2.117.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.116.0...v2.117.0
