@@ -35,6 +35,8 @@ import org.openide.util.NbBundle.Messages;
     "StandardsKitAction_urlNeedsSchemeHost=The site URL needs a scheme and host, like https://example.com — got \"{0}\".",
     "StandardsKitAction_urlUnparseable=That site URL doesn''t parse: \"{0}\".",
     "StandardsKitAction_contactInvalid=security.txt needs a real contact address (RFC 9116) — \"{0}\" doesn''t look like one.",
+    "StandardsKitAction_urlStillExample=That is the example site, not yours — put your own address in the Site URL, or these files will point at a domain you do not own.",
+    "StandardsKitAction_contactStillExample=That is the example address — security.txt is a promise that someone answers it, so it needs a mailbox you actually read.",
     "StandardsKitAction_aimFirst=Aim the studio at a project first (open a folder or project).",
     "StandardsKitAction_urlField=Site URL",
     "StandardsKitAction_nameField=Site name",
@@ -73,7 +75,46 @@ public final class StandardsKitAction implements ActionListener {
         if (securityTxt && !contact.matches("[^@\\s]+@[^@\\s]+\\.[^@\\s]+")) {
             return Bundle.StandardsKitAction_contactInvalid(contact);
         }
+        // the untouched DEFAULT is the last thing to refuse (v2.121.0): the
+        // walk photographed this dialog pre-filled with example.com in two
+        // fields, and both pass every check above — they are syntactically
+        // perfect. Pressing OK without editing writes a sitemap listing a
+        // site the user does not own and a security.txt promising that
+        // someone answers a mailbox that does not exist. The v1.266.0 law
+        // from the DBA walk, one surface over: a placeholder is not a value,
+        // and the product refuses to act on one.
+        if (isExampleHost(hostOf(url))) {
+            return Bundle.StandardsKitAction_urlStillExample();
+        }
+        if (securityTxt && isExampleHost(contact.substring(contact.indexOf('@') + 1))) {
+            return Bundle.StandardsKitAction_contactStillExample();
+        }
         return null;
+    }
+
+    private static String hostOf(String url) {
+        try {
+            String host = java.net.URI.create(url).getHost();
+            return host == null ? "" : host;
+        } catch (IllegalArgumentException bad) {
+            return "";
+        }
+    }
+
+    /**
+     * RFC 2606 and RFC 6761 reserve these for documentation, so they can
+     * never be a real site — which is what makes refusing them safe rather
+     * than a guess about the user's intent.
+     */
+    static boolean isExampleHost(String host) {
+        String h = host.toLowerCase(java.util.Locale.ROOT);
+        if (h.startsWith("www.")) {
+            h = h.substring(4);
+        }
+        return h.equals("example.com") || h.equals("example.org") || h.equals("example.net")
+                || h.equals("example") || h.endsWith(".example")
+                || h.endsWith(".example.com") || h.endsWith(".example.org")
+                || h.endsWith(".example.net");
     }
 
     @Override

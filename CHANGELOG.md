@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.121.0] - 2026-09-11
+
+**A placeholder is not a value — the Standards Kit stops taking its own
+example seriously.** The walk arc’s third surface. The wizard opens with
+`https://example.com` in the Site URL and `security@example.com` as the
+security contact, and both pass every check it had, because both are
+syntactically perfect. Press OK without editing and the kit writes a
+`sitemap.xml` for a site you do not own and an RFC 9116 `security.txt`
+promising that someone answers a mailbox that does not exist.
+
+That is the v1.266.0 law from the DBA walk, one surface over: the SQL
+console’s placeholder was executed as a query and reported a failure the
+user never wrote, so RUN learned to refuse placeholder text. This is the
+same shape with a worse blast radius, because the output is a file that
+makes a promise to the public.
+
+Both fields now refuse the reserved documentation names — RFC 2606 and
+RFC 6761 keep `example.com`, `.example` and their siblings for exactly
+this purpose, which is what makes refusing them safe rather than a guess
+about what someone meant. A real site whose name merely contains the word
+(`counterexample.io`) is untouched, and the refusals say what to do instead
+of only what is wrong.
+
+**The change made an old test tell the truth.** `acceptsValidInputs` was
+titled "real name, real URL, real contact" and handed over `example.com` —
+the same substitution the wizard was inviting its users to make. It uses a
+real host now.
+
+Two mutants by name: accept the example site again, and widen the match to
+any host containing the word. The sibling kits were swept and pre-fill no
+example domain, so this class has exactly one instance.
+
+**The l10n gate caught the new refusals before CI did.** Two sentences of
+new chrome, and `LocaleBundleParityTest` failed the local verify for the
+twelve bundles that did not have them — which is the arc from last night
+still working: a refusal that only speaks English is a refusal half the
+product’s users cannot act on. Both are translated.
+
 ## [2.120.0] - 2026-09-11
 
 **The catalog’s front door did not fit its own window.** The walk arc’s
@@ -19276,6 +19314,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.121.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.120.0...v2.121.0
 [2.120.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.119.0...v2.120.0
 [2.119.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.118.0...v2.119.0
 [2.118.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.117.0...v2.118.0
