@@ -7,7 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.130.0 — four dated sections below open
+*Currency addendum 2026-09-11, at v2.132.0 — the l10n completeness inventory
+opens the dated sections below: what "100%" actually means, measured, with
+the one population too large to fake named at its size. Below it, at v2.130.0 — four dated sections below open
 the day, all four from one German walk: seed data speaking English below the
 l10n gates, the narrow-pane budget gate that was never measuring English (and
 then measured its own decoding), the Agent Port disclosure showing its own tags (two laws pulling
@@ -910,6 +912,56 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — making l10n 100% means measuring what is left (v2.132.0)
+
+David: *make sure i18n and l10n are 100%, and lean on your own judgment.* The
+first move was not translation — it was an honest inventory, because "100%"
+is a claim and a claim needs a population.
+
+**What the inventory found.** The CHROME half is done:
+`ChromeLiteralRatchetTest` counts six literals across ten modules, every one
+blessed by reason (a markup head, a wordmark, a faceplate's own LCD). What
+remains is DATA — prose the product ships in catalogues rather than in
+bundles:
+
+| population | size | verdict |
+| --- | --- | --- |
+| device shelf descriptions | 59 × 12 = 708 | shipped here |
+| learning-space blurbs | 93 × 12 = 1,116 | the next unit |
+| learning-space tutorials | 130,863 chars × 12 ≈ **1.57 M** | see below |
+| learning-space names | 93 | technology names; 1 is prose |
+
+That table is the point. Two of those rows are an afternoon's careful work.
+One is a book — fifteen times the whole user guide — and the honest answer to
+a body that size is not to pretend. The next unit gives the catalogue schema a
+`tutorial.<lang>` slot so a translation CAN exist for built-ins and drop-ins
+alike, and names the remainder with its measured size. **A surface with
+nowhere to put a translation is unfinished; a surface with the slot open and
+the size written down is a decision.**
+
+**The shelf, and what its first photograph cost.** The cards were English
+under a German heading — the v2.130.0 seed class one surface over, invisible
+to every l10n gate because the English was a constructor argument in an enum.
+The fix follows the v2.101.0 rule, and this time the rule is spelled by
+FILE PLACEMENT: `DeviceType` stays in `devices` holding the English record
+that generates `docs/devices.md`; `DeviceText` sits in `ui` beside the shelf
+that renders it. It takes a catalogue `Entry` rather than the enum, so a JSON
+drop-in passes through the same call, misses, and keeps its author's words.
+
+Then the photograph showed the second thing: `…OK auslösen, wenn alle Spuren
+bes`. German runs about 40% longer than English and a painted card line cannot
+wrap. **A walk that only confirms the fix is a walk half read.**
+
+**A lesson about gates that were right.** `LocaleBundleParityTest` failed on
+all 708 new keys, calling them "extra" — correctly, by its own rule, because
+they have no English base bundle. The tempting fix was an English copy in the
+bundle. That is exactly the second home v2.131.0 spent a release deleting, one
+day earlier. The gate was taught instead, and the exemption points at the gate
+that covers the family MORE strictly: the shelf gate reads the shipped device
+catalogue, which a base bundle could never be. *When a green gate goes red on
+new work, the first question is whether the gate is wrong or the work is —
+and the second is whether the cheap fix violates a law you just paid for.*
 
 ## 2026-09-11 — English below the gates, again (v2.130.0)
 

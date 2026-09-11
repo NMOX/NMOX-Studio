@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.132.0] - 2026-09-11
+
+**The device shelf is a catalogue, and a catalogue is read in the reader's
+language.** Fifty-three built-in devices and the six that ship installed from
+the gallery described themselves in English on every translated build — a
+German heading, a German search box, a German footer hint, and fifty-nine
+English cards under them. No l10n gate could see it: the English never passed
+through a bundle. It was a constructor argument in an enum.
+
+That is v2.130.0's seed class one surface over, and the same rule answers it.
+`DeviceType` keeps English because it IS the record — it generates
+`docs/devices.md` — and the consumer renders. `DeviceText` lives in the shelf's
+own package, which is the law spelled by where the file sits. It takes a
+catalogue `Entry` rather than the enum, so a JSON drop-in device passes through
+the same call, finds no key, and keeps the words its author wrote: **the
+product never pretends to translate a stranger's device.**
+
+**The first photograph paid twice.** It showed the shelf in German — and showed
+`QUORUM` reading `…OK auslösen, wenn alle Spuren bes`, hard-clipped with no
+ellipsis, because German runs about 40% longer than English and a painted card
+line cannot wrap. Both halves are fixed. `PalettePanel.fitTo` elides honestly
+against real font metrics, stepping by code points so a cut never lands between
+surrogates. And every gloss is written to the 42 characters the card actually
+shows, because a shelf where half the cards trail off is a worse catalogue than
+one written to fit (the v2.123.0 rule: where text cannot wrap, the sentence
+gets shorter).
+
+708 values across twelve languages. Tool names are never translated — a reader
+who types `vite` must find the Vite console in every language.
+
+`DeviceShelfSpeaksTest` holds two laws from the assembled cluster: every device
+the product ships is described in all twelve languages, with the population
+read from the catalogue itself so a device added tomorrow fails the build until
+it is described; and every gloss fits its card. Three mutants by name, one of
+them the exact clipped string the photograph caught.
+
+**And the parity gate had to be taught something true.** These keys have no
+English base bundle on purpose, so `LocaleBundleParityTest` called all 708 of
+them "extra". Adding an English copy would have been the second home v2.131.0
+spent a release removing, so the gate now knows this one family's base lives in
+the enum — and says why in place: skipping them here leaves them *more*
+checked, not less, because the shelf gate holds them to the shipped catalogue
+rather than to a bundle.
+
+Beside it: the Infra palette's four category headers read `COMPUTE` in German
+and Filipino while their three neighbours were translated. Within one palette
+that is a leftover, not a loanword. `RECHENLEISTUNG` and `PAGPROSESO`.
+
 ## [2.131.0] - 2026-09-11
 
 **A plugin version with two homes, found by handling a Dependabot PR.** The
@@ -19665,6 +19713,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.132.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.131.0...v2.132.0
 [2.131.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.130.0...v2.131.0
 [2.130.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.129.0...v2.130.0
 [2.129.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.128.0...v2.129.0
