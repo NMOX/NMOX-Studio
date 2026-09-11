@@ -4,6 +4,51 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.129.0] - 2026-09-11
+
+**A gate that was never measuring English.** The German walk photographed DB
+Studio's connection tree reading `Noch keine Verbindungen — klicken Sie unte`
+— cut at the pane edge, no ellipsis, no tooltip, the sentence simply stopping.
+That is the v2.119.0 narrow-pane class, and `NarrowPaneHintBudgetTest` exists
+to catch exactly it. It was green.
+
+**Two blind spots, both in the population.** The gate read two hand-listed
+source directories, and `dbstudio` was not one of them. Worse: it could never
+have measured **English** for any of the keys it did watch. These modules keep
+their English in `@Messages`, which the annotation processor merges into
+`Bundle.properties` at COMPILE time — so the source tree holds only
+translations, and the gate's own `"en"` branch was dead code under a javadoc
+claiming thirteen languages. An English hint too long for its pane shipped
+unmeasured.
+
+The population now comes from the **assembled cluster**: every shipped module
+jar, every bundle, every language with English among them. A key is measured
+the moment it has a budget, and no module can be missed by being unlisted.
+Bound to `packaged-app-gates`, because a gate reading `target/` in the test
+phase passes on a stale cluster.
+
+**And the widening found its own defect first.** Its first run reported every
+Cyrillic and Devanagari value over budget by two to three times.
+`Properties.load(InputStream)` is ISO-8859-1 **by contract**, and these bundles
+ship as raw UTF-8 — the em dash is `e2 80 94` in the jar. The gate was
+measuring its own decoding, not the product's prose. Read as UTF-8, the true
+list was two keys long.
+
+Both DB Studio tree placeholders are now short enough to read whole, in all
+thirteen languages: `No connections yet — use Add below` and `No connections in
+the Services window`. The button that creates one is directly beneath, which is
+why the sentence does not need to name it twice. Four mutants by name,
+including the English value going long — the case that was unprovable before
+this release.
+
+**Swept clean, recorded not changed.** v2.128.0 closed the string half of the
+over-guarding class; the renderer half was swept in the same pass. Three files
+both author `<html>` values and html-disable a component — the Tasks window, API
+Studio, DB Studio — and in all three the guard and the authored value sit on
+different components: a card renderer beside a sprint dialog, a history list
+beside a keychain note, a results grid beside a tree renderer that authors its
+own markup with every external piece escaped. Nothing to change.
+
 ## [2.128.0] - 2026-09-11
 
 **The Agent Port's disclosure renders as the paragraph it is again, and the
@@ -19551,6 +19596,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.129.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.128.0...v2.129.0
 [2.128.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.127.0...v2.128.0
 [2.127.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.126.0...v2.127.0
 [2.126.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.125.0...v2.126.0

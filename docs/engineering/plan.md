@@ -7,8 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.128.0 — two dated sections below open
-the day: the Agent Port disclosure showing its own tags (two laws pulling
+*Currency addendum 2026-09-11, at v2.129.0 — three dated sections below open
+the day: the narrow-pane budget gate that was never measuring English (and
+then measured its own decoding), the Agent Port disclosure showing its own tags (two laws pulling
 against each other, and three corrections that made its class gate honest),
 and the dialog-chrome release
 (v2.127.0): the platform's dialog buttons in twelve languages, and the walk
@@ -908,6 +909,69 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the population was the bug, twice (v2.129.0)
+
+Third finding from the same German walk, and the one that says most about how
+this house writes gates.
+
+**The photograph.** DB Studio's connection tree: `Noch keine Verbindungen —
+klicken Sie unte`, cut at the pane edge, no ellipsis, no tooltip. The sentence
+simply stopped. This is the v2.119.0 narrow-pane class, and
+`NarrowPaneHintBudgetTest` was written in v2.123.0 to catch exactly it. It was
+green.
+
+**Blind spot one: the module was not on the list.** The gate read two
+hand-listed source directories — web3 and project, the two modules whose walks
+had produced findings. dbstudio was not among them, so a hint there was
+invisible. *A gate whose population is a list covers the cases that were known
+when it was written.*
+
+**Blind spot two, which is worse: English was never measured at all.** These
+modules keep their English in `@Messages` annotations, which the annotation
+processor merges into `Bundle.properties` at COMPILE time. The source tree
+holds only the translated files. So the gate's `lang.isEmpty() ? "en"` branch
+was dead code, under a javadoc claiming it covered thirteen languages. An
+English hint too long for its pane would ship unmeasured — and English is the
+value every translation is written from.
+
+**The fix is the house rule applied one level up.** The population comes from
+the assembled cluster: every shipped module jar, every bundle in it, every
+language with English among them. The directory list is gone. A key is
+measured the moment it has a budget, and the budget stays a hand-kept
+judgement because a pane's width is a judgement, not something a test can
+derive.
+
+**And then the widened gate reported its own decoding.** Its first run named
+every Cyrillic and Devanagari value over budget by two to three times.
+`Properties.load(InputStream)` is ISO-8859-1 **by contract** — an old and
+correct contract — and these bundles ship as raw UTF-8; the em dash is
+`e2 80 94` in the jar. Each multi-byte character counted as two or three, so
+the gate was measuring the width of its own mistake. The previous version had
+been right by accident: it read source files with an explicit
+`StandardCharsets.UTF_8`.
+
+The lesson generalizes past this file: **when a measurement gate suddenly
+indicts a whole class of input, suspect the measurement.** Every Cyrillic
+value and every Devanagari value failing at once is not thirteen translators
+being verbose; it is one decode being wrong. Read as UTF-8, the true list was
+two keys.
+
+**What shipped.** Both DB Studio tree placeholders short enough to read whole
+in thirteen languages, and the button that creates a connection is directly
+beneath — which is why the sentence no longer names it twice (the v2.123.0
+rule: put the command on the button that runs it). Four mutants by name,
+including the English value going long, a case that could not be written
+before this release.
+
+**Swept clean beside it.** v2.128.0 closed the string half of the
+over-guarding class. The renderer half — a component html-disabled while its
+cell values are authored markup — was swept in the same pass: three files both
+author `<html>` and call `PlainTables.plain`, and in all three the guard and
+the authored value sit on different components (a card renderer beside a
+sprint dialog; a history list beside a keychain note; a results grid beside a
+tree renderer that authors its own markup with every external piece escaped).
+Recorded rather than changed, because the right answer was already in place.
 
 ## 2026-09-11 — two laws pulling against each other (v2.128.0)
 
