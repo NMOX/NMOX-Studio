@@ -36,6 +36,12 @@ Two mutants by name: accept the example site again, and widen the match to
 any host containing the word. The sibling kits were swept and pre-fill no
 example domain, so this class has exactly one instance.
 
+**The l10n gate caught the new refusals before CI did.** Two sentences of
+new chrome, and `LocaleBundleParityTest` failed the local verify for the
+twelve bundles that did not have them — which is the arc from last night
+still working: a refusal that only speaks English is a refusal half the
+product’s users cannot act on. Both are translated.
+
 ## [2.120.0] - 2026-09-11
 
 **The catalog’s front door did not fit its own window.** The walk arc’s
