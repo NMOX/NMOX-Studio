@@ -24,7 +24,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LearningCatalogDropInTest {
 
     /** A complete, schema-faithful drop-in space — the worked example
-     * from docs/learning-spaces.md, kept in sync by the round-trip test. */
+     * from docs/learning-spaces.md verbatim, which
+     * {@link #theWorkedExampleIsTheFixture} proves it still is. */
     private static String zigSpaceJson() {
         return """
             {
@@ -50,11 +51,47 @@ class LearningCatalogDropInTest {
                     { "path": "hello.zig",
                       "content": "const std = @import(\\"std\\");\\npub fn main() !void {\\n    std.debug.print(\\"Hello, Zig!\\\\n\\", .{});\\n}\\n" }
                   ],
-                  "tutorial": "# Zig\\n\\nPress GO to run hello.zig."
+                  "tutorial": "# Zig\\n\\nPress GO to run hello.zig.",
+                  "blurb.de": "Handbetriebener Speicher ohne Fu\u00dfangeln."
                 }
               ]
             }
             """;
+    }
+
+    @Test
+    @DisplayName("the worked example in the docs IS this fixture, and the parser accepts it")
+    void theWorkedExampleIsTheFixture() throws Exception {
+        String doc = Files.readString(new File("../docs/learning-spaces.md").toPath(),
+                StandardCharsets.UTF_8);
+        int at = doc.indexOf("## A complete worked example");
+        assertThat(at).as("the docs still carry a worked example").isGreaterThan(0);
+        int open = doc.indexOf("```json", at);
+        int close = doc.indexOf("```", open + 7);
+        assertThat(open).isGreaterThan(0);
+        assertThat(close).isGreaterThan(open);
+        String published = doc.substring(open + "```json".length(), close);
+
+        // a worked example is a fixture, not prose: the bytes a reader copies
+        // are the bytes this test feeds to the real parser (the v2.0.0
+        // DeviceFileDocsTest law, one catalogue over). Whitespace is the only
+        // difference allowed — the doc indents two spaces, the text block four.
+        assertThat(published.replaceAll("\\s+", " ").strip())
+                .as("docs/learning-spaces.md and this fixture have drifted apart")
+                .isEqualTo(zigSpaceJson().replaceAll("\\s+", " ").strip());
+
+        List<LearningCatalog.Space> parsed =
+                LearningCatalog.parse(new org.json.JSONObject(published));
+        assertThat(parsed).hasSize(1);
+        LearningCatalog.Space zig = parsed.get(0);
+        assertThat(zig.slug()).isEqualTo("zig");
+        assertThat(zig.translations()).containsKey("de");
+        assertThat(zig.translations().get("de").blurb())
+                .as("the example's own translation, through the real parser")
+                .startsWith("Handbetriebener");
+        assertThat(zig.translations().get("de").name())
+                .as("an untranslated field falls back to English, field by field")
+                .isEqualTo("Zig");
     }
 
     private static void write(File dir, String name, String content) throws Exception {
