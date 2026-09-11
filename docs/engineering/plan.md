@@ -7,8 +7,10 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.132.0 — the l10n completeness inventory
-opens the dated sections below: what "100%" actually means, measured, with
+*Currency addendum 2026-09-11, at v2.133.0 — the learning catalogue in
+twelve languages closes ledger 97 and is the first dated section below;
+under it the l10n completeness inventory that scoped it. The inventory
+opens with what "100%" actually means, measured: what "100%" actually means, measured, with
 the one population too large to fake named at its size. Below it, at v2.130.0 — four dated sections below open
 the day, all four from one German walk: seed data speaking English below the
 l10n gates, the narrow-pane budget gate that was never measuring English (and
@@ -913,6 +915,80 @@ a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
 
+## 2026-09-11 — a catalogue is read in the reader's language, twice (v2.133.0)
+
+The inventory below scoped this unit and the one before it. The shelf was
+v2.132.0; the learning catalogue is this one, and it is the harder half,
+because ledger 97 had already written down three good reasons not to do it.
+Each survived contact with the work in a different way, and that is the part
+worth keeping.
+
+**"The drop-in half has no home for a translation" — answered by the schema,
+not by a list.** A `blurb.de` sibling gives the built-ins and a stranger's
+`~/.nmox/learn-catalog.d` file the same mechanism. Siblings rather than a
+nested object, so adding a language is adding a line and a catalogue written
+before this release parses unchanged; and an absent field falls back to
+English ONE FIELD AT A TIME, so a drop-in author who translates only the
+blurb has done a complete, correct thing rather than a half thing. The parser
+assembles each language in two passes, because a single pass makes key order
+decide the triple — a mutant that dies by name in the test that exists for it.
+
+**"The tutorials are longer than the catalogue" — re-decided, with the number
+in front of it.** 130,863 characters of English, about 1.57 million in twelve
+languages. The argument that held two thirds of a toolbar back in v2.101.1
+does not transfer, and finding out WHY is the lesson: those were two halves of
+one toolbar, read in one glance. A catalogue and a tutorial are read at
+different moments — you scan a catalogue to CHOOSE and open a document AFTER
+choosing. A German reader now chooses in German and then meets an English
+document, the same boundary every other IDE's documentation has, instead of
+never seeing German at all. The slot is open (`tutorial.<lang>`, same parser,
+a drop-in author can fill it today) and the size is written down. **A surface
+with nowhere to put a translation is unfinished; a surface with the slot open
+and the size written down is a decision.**
+
+**"Each blurb is a sentence someone wrote to persuade a learner" — still
+true, and it is why the names were the hard part, not the prose.** Ninety-three
+names, and only three carry a translatable word: `Your First Web Page`,
+`Solana (programs)`, `Sass (indented)`. `Python`, `Rails`, `SQLite` and
+`BEAM` must survive intact — a name a person types is a way in, and
+translating it closes that door. The same question decided the families:
+thirty are prose (`Start Here`, `Data stores`) and fourteen are names, so a
+family carries a key when somebody wrote one and is returned unchanged when
+nobody did. That one rule also gives a drop-in author's own family the right
+behaviour with no code at all.
+
+**Where the file sits is the law, and it cuts a second way here.** v2.132.0
+split `DeviceType` (the record) from `DeviceText` (the renderer). This
+catalogue splits the same line in a different place: a space's own words
+travel WITH the space, because their author is whoever wrote the catalogue
+file; its category and family do NOT, because those are a shared vocabulary
+the picker sorts by and no single space owns them. So blurbs live in
+`learn-catalog.json` and grouping words live in a bundle beside the picker.
+
+**The finding that only the gate could make.** `LearningCatalogSpeaksTest`
+derived its category population from the SPACES, and failed on its first run:
+`STACK` is a heading no built-in space uses today, and a drop-in can file
+itself under it tomorrow. The population is the ENUM — the closed set the
+picker can render — while families stay open because they are free strings.
+*A population drawn from today's data is a population that a stranger's file
+can fall outside of.*
+
+**And a finding that was a comment.** `docs/learning-spaces.md` carries a
+worked example, and the fixture beside it said it was "kept in sync by the
+round-trip test." No test read the doc. That is the v1.189.0 law — *a comment
+claiming a property is a test not yet written* — and it is now written: the
+published bytes are fed to the real parser and byte-compared against the
+fixture, so a one-word drift in the documentation fails the build.
+
+**The half that would have quietly regressed.** Pointing the picker's search
+at `shown()` alone is the obvious change and it is wrong: a German reader sent
+here by an English tutorial, a README or a URL types the name the doc used and
+finds nothing — v1.215.0's findability defect, re-created in twelve languages
+at once by the very release that translated them. The filter runs over the
+reader's words AND the English record, both mutants die by name, and the rule
+is general enough to keep: **a translation adds a way in and never removes
+one.**
+
 ## 2026-09-11 — making l10n 100% means measuring what is left (v2.132.0)
 
 David: *make sure i18n and l10n are 100%, and lean on your own judgment.* The
@@ -928,7 +1004,7 @@ bundles:
 | population | size | verdict |
 | --- | --- | --- |
 | device shelf descriptions | 59 × 12 = 708 | shipped here |
-| learning-space blurbs | 93 × 12 = 1,116 | the next unit |
+| learning-space blurbs | 93 × 12 = 1,116 | shipped in v2.133.0 |
 | learning-space tutorials | 130,863 chars × 12 ≈ **1.57 M** | see below |
 | learning-space names | 93 | technology names; 1 is prose |
 

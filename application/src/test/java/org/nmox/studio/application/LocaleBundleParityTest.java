@@ -85,16 +85,23 @@ class LocaleBundleParityTest {
      * A translated key whose English is NOT in the base bundle, because it
      * has one home somewhere better.
      *
-     * <p>The shelf's 59 device descriptions (v2.132.0) are the only such
-     * family. Their English lives in {@code DeviceType} — the record that
-     * GENERATES {@code docs/devices.md} — so putting a copy in a base bundle
-     * would be the second home v2.131.0 spent a release removing. Skipping
-     * them here does not leave them unchecked: {@code DeviceShelfSpeaksTest}
-     * holds them to a STRICTER population than this gate could, the shipped
-     * device catalogue itself, and to the width of the card they paint on.
+     * <p>Two families, and both are the same shape. The shelf's 59 device
+     * descriptions (v2.132.0) have their English in {@code DeviceType}, the
+     * record that GENERATES {@code docs/devices.md}. The learning
+     * catalogue's grouping words (v2.133.0) have theirs in the catalogue
+     * itself — {@code Category.label} and a space's own {@code family}
+     * string — which is why a family that is a NAME carries no key at all
+     * and {@code CatalogText} returns it unchanged. In both cases a copy in
+     * a base bundle would be the second home v2.131.0 spent a release
+     * removing. Skipping them here does not leave them unchecked:
+     * {@code DeviceShelfSpeaksTest} and {@code LearningCatalogSpeaksTest}
+     * hold them to a STRICTER population than this gate could — the shipped
+     * catalogues themselves — and to the space they are painted in.
      */
     private static boolean baseLivesElsewhere(String key) {
-        return key.startsWith("DeviceDesc_");
+        return key.startsWith("DeviceDesc_")
+                || key.startsWith("LearnCategory_")
+                || key.startsWith("LearnFamily_");
     }
 
     private static void stripDescriptors(Properties p) {

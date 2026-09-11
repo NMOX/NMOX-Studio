@@ -69,10 +69,26 @@ public final class LearningCatalog {
     public record SampleFile(String path, String content) {
     }
 
+    /**
+     * One language's words for a space.
+     *
+     * <p>Three fields because a catalogue entry has three kinds of prose and
+     * they are not the same job. The {@code name} is usually a TECHNOLOGY and
+     * must not be translated — Python is Python in every language — so only
+     * the handful that read as a sentence carry one. The {@code blurb} is the
+     * sentence a learner reads to choose, and is translated. The
+     * {@code tutorial} is a document: the slot exists so a translation CAN
+     * live here, for a drop-in author as much as for us, and the built-ins
+     * ship it empty with the size of that job written down in plan.md rather
+     * than faked.
+     */
+    public record Translated(String name, String blurb, String tutorial) {
+    }
+
     public record Space(String slug, String name, Category category, String family,
             String blurb, Driver driver, Map<String, String> install,
             List<SampleFile> files, String tutorial,
-            List<Checkpoints.Checkpoint> checkpoints) {
+            List<Checkpoints.Checkpoint> checkpoints, Map<String, Translated> translations) {
 
         public Space {
             // the catalog is a shared 52-space cache handed to every caller;
@@ -81,6 +97,35 @@ public final class LearningCatalog {
             install = java.util.Collections.unmodifiableMap(new LinkedHashMap<>(install));
             files = List.copyOf(files);
             checkpoints = checkpoints == null ? List.of() : List.copyOf(checkpoints);
+            translations = translations == null ? Map.of() : Map.copyOf(translations);
+        }
+
+        /**
+         * An untranslated space — the shape every caller used before
+         * v2.133.0, kept because translations are ADDITIVE: a test that
+         * pins how a space behaves has no business naming its languages.
+         */
+        public Space(String slug, String name, Category category, String family,
+                String blurb, Driver driver, Map<String, String> install,
+                List<SampleFile> files, String tutorial,
+                List<Checkpoints.Checkpoint> checkpoints) {
+            this(slug, name, category, family, blurb, driver, install, files,
+                    tutorial, checkpoints, Map.of());
+        }
+
+        /**
+         * The name and blurb a picker shows, in the reader's language.
+         *
+         * <p>Read per call rather than fixed at parse time, because the
+         * language switch is LIVE (v2.103.0) and the catalogue is a cache
+         * built once. English is the fallback and also the record: the
+         * catalogue's own {@code name}/{@code blurb} never move, so the
+         * picker's search can still match what a doc or a URL calls this
+         * space.
+         */
+        public Translated shown() {
+            Translated t = translations.get(java.util.Locale.getDefault().getLanguage());
+            return t == null ? new Translated(name, blurb, tutorial) : t;
         }
 
         /** The file a fresh space should open first: the tutorial. */
@@ -284,15 +329,54 @@ public final class LearningCatalog {
                     files.add(new SampleFile(f.getString("path"), f.getString("content")));
                 }
             }
+            String name = o.getString("name");
+            String blurb = o.optString("blurb", "");
+            String tutorial = o.optString("tutorial", "");
             spaces.add(new Space(
-                    o.getString("slug"), o.getString("name"),
+                    o.getString("slug"), name,
                     Category.valueOf(o.getString("category").toUpperCase(java.util.Locale.ROOT)),
-                    o.optString("family", ""), o.optString("blurb", ""),
-                    driver, install, files, o.optString("tutorial", ""),
+                    o.optString("family", ""), blurb,
+                    driver, install, files, tutorial,
                     Checkpoints.parse(o.optJSONArray("checkpoints"),
-                            new java.util.ArrayList<>())));
+                            new java.util.ArrayList<>()),
+                    translations(o, name, blurb, tutorial)));
         }
         return spaces;
+    }
+
+    /**
+     * Sibling keys — {@code blurb.de}, {@code name.fr}, {@code tutorial.uk} —
+     * collected per language, each falling back to the English it sits beside.
+     *
+     * <p>Siblings rather than a nested object so a drop-in author adds one
+     * language by adding one line, and so a catalogue written before this
+     * release parses unchanged.
+     */
+    private static Map<String, Translated> translations(JSONObject o,
+            String name, String blurb, String tutorial) {
+        Map<String, Translated> out = new LinkedHashMap<>();
+        for (String key : o.keySet()) {
+            int dot = key.indexOf('.');
+            if (dot <= 0) {
+                continue;
+            }
+            String field = key.substring(0, dot);
+            String lang = key.substring(dot + 1);
+            if (!field.equals("name") && !field.equals("blurb") && !field.equals("tutorial")) {
+                continue;
+            }
+            out.computeIfAbsent(lang, l -> new Translated(name, blurb, tutorial));
+        }
+        // second pass: every language now exists, so each field lands on the
+        // triple it belongs to without depending on key order
+        for (Map.Entry<String, Translated> e : out.entrySet()) {
+            String lang = e.getKey();
+            e.setValue(new Translated(
+                    o.optString("name." + lang, name),
+                    o.optString("blurb." + lang, blurb),
+                    o.optString("tutorial." + lang, tutorial)));
+        }
+        return out;
     }
 
     private static List<String> strings(JSONArray arr) {

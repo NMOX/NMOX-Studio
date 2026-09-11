@@ -22,7 +22,7 @@ guess. These are decisions.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
-### 97. The learning-space catalog speaks English in every translated build (2026-09-11, v2.127.0)
+### 97. ~~The learning-space catalog speaks English in every translated build~~ — CLOSED v2.133.0
 
 Photographed during the German walk that closed the dialog-button class: the
 New Learning Space picker's chrome is German (`Lernen durch Tun — wählen Sie
@@ -56,6 +56,32 @@ The honest shape, when it is taken: a `blurb.<lang>` sibling in the catalog
 schema so built-ins and drop-ins are described by the same mechanism, a
 parity gate deriving its population from the catalog itself, and the
 tutorials in the same pass or not at all.
+
+**v2.133.0 took that shape, and re-decided the last clause.** The schema
+gained `name.<lang>`, `blurb.<lang>` and `tutorial.<lang>` siblings — one
+mechanism for built-ins and drop-ins alike, a language added by adding a
+line, a catalogue written before this release parsing unchanged. 93 blurbs
+× twelve languages are written (1,116 values), plus the three names that
+were prose rather than technology names, plus the picker's grouping words
+(four categories and thirty prose families × twelve, in a bundle beside the
+picker that renders them — the v2.132.0 placement law; the fourteen
+families that are NAMES carry no key and survive translation intact).
+`LearningCatalogSpeaksTest` derives its population from the catalogue the
+assembled cluster ships, so a space added tomorrow — or a fourteenth
+language — fails the build until it speaks.
+
+The tutorials did not ride along, and that is now a written decision rather
+than a reason to hold everything. Measured: 130,863 characters of authored
+English across the 93 spaces, about 1.57 million characters in twelve
+languages. The argument that stopped v2.101.1 shipping two thirds of a
+toolbar does not transfer, because the two halves are read at different
+moments: the picker is a catalogue you scan to choose, the tutorial is a
+document you open after choosing. A German reader now chooses in German and
+then opens an English document — the same boundary every other IDE's docs
+have — instead of never seeing German at all. **A surface with nowhere to
+put a translation is unfinished; a surface with the slot open and the size
+written down is a decision.** The slot is `tutorial.<lang>`, it is read by
+the same parser, and a drop-in author can fill it today.
 
 ### 96. The first-launch surface: (a) DECIDED and shipped, (b)+(c) left to the owner (2026-09-10, v2.118.0)
 

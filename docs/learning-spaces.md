@@ -98,7 +98,8 @@ this exact space).
         { "path": "hello.zig",
           "content": "const std = @import(\"std\");\npub fn main() !void {\n    std.debug.print(\"Hello, Zig!\\n\", .{});\n}\n" }
       ],
-      "tutorial": "# Zig\n\nPress GO to run hello.zig."
+      "tutorial": "# Zig\n\nPress GO to run hello.zig.",
+      "blurb.de": "Handbetriebener Speicher ohne Fußangeln."
     }
   ]
 }

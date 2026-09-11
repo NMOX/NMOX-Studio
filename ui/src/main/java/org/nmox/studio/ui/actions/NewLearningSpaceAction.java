@@ -84,9 +84,10 @@ public final class NewLearningSpaceAction implements ActionListener {
      */
     static String cellHtml(LearningCatalog.Space s, int room) {
         return "<html><body style='width: " + room + "'><b>"
-                + escape(s.name()) + "</b>  <font color='#888'>"
-                + s.category().label.toLowerCase(Locale.ROOT) + " · " + escape(s.family())
-                + "</font><br><font color='#aaa'><small>" + escape(s.blurb())
+                + escape(s.shown().name()) + "</b>  <font color='#888'>"
+                + CatalogText.category(s.category()).toLowerCase(Locale.ROOT)
+                + " · " + escape(CatalogText.family(s.family()))
+                + "</font><br><font color='#aaa'><small>" + escape(s.shown().blurb())
                 + "</small></font></body></html>";
     }
 
@@ -294,8 +295,17 @@ public final class NewLearningSpaceAction implements ActionListener {
         return tool.isEmpty() || tool.contains("/") || tool.contains("\\") ? null : tool;
     }
 
-    private static boolean matches(LearningCatalog.Space s, String q) {
-        return matches(s.name(), s.family(), s.slug(), s.blurb(), q);
+    /**
+     * A translation adds a way in and never removes one: the reader's own
+     * words are searched, and so is the English record the catalogue keeps,
+     * because a doc, a tutorial or a URL may have sent them here by its
+     * English name (the v1.215.0 findability class, which a translation
+     * would otherwise re-create in twelve languages at once).
+     */
+    static boolean matches(LearningCatalog.Space s, String q) {
+        return matches(s.shown().name(), CatalogText.family(s.family()), s.slug(),
+                s.shown().blurb(), q)
+                || matches(s.name(), s.family(), s.slug(), s.blurb(), q);
     }
 
     /**
