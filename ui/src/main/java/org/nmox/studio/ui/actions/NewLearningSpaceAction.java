@@ -84,9 +84,10 @@ public final class NewLearningSpaceAction implements ActionListener {
      */
     static String cellHtml(LearningCatalog.Space s, int room) {
         return "<html><body style='width: " + room + "'><b>"
-                + escape(s.name()) + "</b>  <font color='#888'>"
-                + s.category().label.toLowerCase(Locale.ROOT) + " · " + escape(s.family())
-                + "</font><br><font color='#aaa'><small>" + escape(s.blurb())
+                + escape(s.shown().name()) + "</b>  <font color='#888'>"
+                + CatalogText.category(s.category()).toLowerCase(Locale.ROOT)
+                + " · " + escape(CatalogText.family(s.family()))
+                + "</font><br><font color='#aaa'><small>" + escape(s.shown().blurb())
                 + "</small></font></body></html>";
     }
 
@@ -295,7 +296,8 @@ public final class NewLearningSpaceAction implements ActionListener {
     }
 
     private static boolean matches(LearningCatalog.Space s, String q) {
-        return matches(s.name(), s.family(), s.slug(), s.blurb(), q);
+        return matches(s.shown().name(), CatalogText.family(s.family()), s.slug(),
+                s.shown().blurb(), q);
     }
 
     /**
