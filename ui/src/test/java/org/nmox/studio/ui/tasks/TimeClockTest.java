@@ -24,7 +24,7 @@ class TimeClockTest {
     @Test
     @DisplayName("Clock in, clock out: the session is recorded with both stamps")
     void basicSession() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "write the report", "");
         assertThat(b.clockIn(c.id(), NOON)).isTrue();
         assertThat(c.clockedIn()).isTrue();
@@ -38,7 +38,7 @@ class TimeClockTest {
     @Test
     @DisplayName("One clock on the whole board: clocking in elsewhere closes the running session")
     void switchingClocksOutTheOldCard() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card first = b.addCard(0, "first", "");
         TaskBoard.Card second = b.addCard(1, "second", "");
         b.clockIn(first.id(), NOON);
@@ -51,7 +51,7 @@ class TimeClockTest {
     @Test
     @DisplayName("A double clock-in on the same card is refused; so is a clock-out with no clock")
     void doubleVerbsRefused() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.clockIn(c.id(), NOON);
         assertThat(b.clockIn(c.id(), NOON + HOUR)).isFalse();
@@ -63,7 +63,7 @@ class TimeClockTest {
     @Test
     @DisplayName("A session under a minute is dropped whole — an accidental click is not work")
     void blipSessionsDropped() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.clockIn(c.id(), NOON);
         assertThat(b.clockOut(c.id(), NOON + 30_000L)).isTrue();
@@ -75,7 +75,7 @@ class TimeClockTest {
     @Test
     @DisplayName("Sessions — including a still-running one — survive the JSON round trip")
     void sessionsRoundTrip() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.clockIn(c.id(), NOON - 3 * HOUR);
         b.clockOut(c.id(), NOON - HOUR);
@@ -98,7 +98,7 @@ class TimeClockTest {
     @Test
     @DisplayName("The report says what you worked on and for how long, most-today first")
     void reportListsWork() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card big = b.addCard(0, "the big feature", "");
         TaskBoard.Card small = b.addCard(1, "a quick fix", "");
         b.clockIn(big.id(), NOON - 4 * HOUR);
@@ -116,7 +116,7 @@ class TimeClockTest {
     @Test
     @DisplayName("A session spanning midnight is clipped: only its today part counts today")
     void midnightSessionClipped() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "night shift", "");
         // NOON is 12:00 UTC; a session from 22:00 yesterday to 02:00 today
         long start = NOON - 14 * HOUR;
@@ -130,7 +130,7 @@ class TimeClockTest {
     @Test
     @DisplayName("A running clock counts up to NOW in the report")
     void runningSessionCounts() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "in progress", "");
         b.clockIn(c.id(), NOON - HOUR);
         BoardStats s = statsAt(b, NOON);

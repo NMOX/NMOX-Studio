@@ -53,7 +53,7 @@ class TasksIOTest {
     @DisplayName("our own save is not a foreign edit; an outside write is")
     void foreignEditDiscrimination(@TempDir File dir) throws Exception {
         SelfWriteTracker tracker = new SelfWriteTracker();
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "mine", "");
         TasksIO.save(dir, b, tracker);
         assertThat(TasksIO.foreignEdit(dir, tracker))
@@ -61,7 +61,7 @@ class TasksIOTest {
                 .isFalse();
         // an outside writer (git pull, editor) replaces the file
         Files.writeString(TasksIO.fileFor(dir).toPath(),
-                TaskBoard.starter().toJson() + "\n");
+                TaskBoard.starter("To Do", "Doing", "Done").toJson() + "\n");
         assertThat(TasksIO.foreignEdit(dir, tracker))
                 .as("a write we did not stamp is foreign — the board must"
                         + " reload rather than clobber it")

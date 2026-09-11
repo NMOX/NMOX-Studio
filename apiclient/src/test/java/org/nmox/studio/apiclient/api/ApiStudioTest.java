@@ -121,7 +121,7 @@ class ApiStudioTest {
     @Test
     @DisplayName("A workspace round-trips through JSON with all its parts")
     void workspaceRoundTrips(@TempDir Path dir) throws Exception {
-        Workspace w = Workspace.starter();
+        Workspace w = Workspace.starter("My API", "Health check", "Local");
         w.collections.get(0).requests.get(0).headers.add(new Pair("X-Api-Key", "k"));
         w.collections.get(0).requests.get(0).method = "POST";
 

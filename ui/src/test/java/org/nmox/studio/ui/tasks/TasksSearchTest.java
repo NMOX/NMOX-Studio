@@ -23,7 +23,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("a card title matches case-insensitively, and the hit names its column")
     void matchesTitleWithColumn() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "Ship the kanban", "");
         b.addCard(1, "review PR", "");
         List<String> labels = new ArrayList<>();
@@ -35,7 +35,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("a substring anywhere in the title matches; the column travels with it")
     void substringAndColumnTravel() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(1, "drag me to Done", "");
         List<String> labels = new ArrayList<>();
         new TasksSearchProvider().evaluate("drag me", b,
@@ -49,7 +49,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("searching an epic label finds the epic's cards (v2.7.0)")
     void matchesLabel() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "Ship the client", "");
         b.setLabel(c.id(), "auth");
         b.addCard(1, "unrelated", "");
@@ -63,7 +63,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("the literal query 'blocked' surfaces every blocked card (v2.7.0)")
     void blockedQueryFindsTheRegister() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card stuck = b.addCard(1, "waiting on cert", "");
         b.block(stuck.id(), "alice", "order the cert");
         b.addCard(0, "free card", "");
@@ -77,7 +77,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("under two characters, or no board, yields nothing")
     void guards() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "a card", "");
         List<String> labels = new ArrayList<>();
         new TasksSearchProvider().evaluate("a", b,
@@ -91,7 +91,7 @@ class TasksSearchTest {
     @Test
     @DisplayName("the sink returning false stops the walk (SPI back-pressure)")
     void stopsWhenSinkFull() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "match one", "");
         b.addCard(0, "match two", "");
         List<String> labels = new ArrayList<>();

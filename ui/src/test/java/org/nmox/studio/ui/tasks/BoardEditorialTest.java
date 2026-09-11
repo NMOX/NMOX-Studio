@@ -26,7 +26,7 @@ class BoardEditorialTest {
     @Test
     @DisplayName("Blocking stamps since ONCE; re-blocking updates the triple but keeps it")
     void blockStampsOnce() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "stuck", "");
         assertThat(b.block(c.id(), "alice", "needs the cert")).isTrue();
         long since = c.blockedSince();
@@ -40,7 +40,7 @@ class BoardEditorialTest {
     @Test
     @DisplayName("A blank unblock action is refused — the register must stay actionable")
     void blankActionRefused() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         assertThat(b.block(c.id(), "alice", "   ")).isFalse();
         assertThat(c.blocked()).isFalse();
@@ -49,7 +49,7 @@ class BoardEditorialTest {
     @Test
     @DisplayName("Unblock clears the WHOLE triple — owner, action, and since")
     void unblockClearsAll() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.block(c.id(), "alice", "waiting on review");
         assertThat(b.unblock(c.id())).isTrue();
@@ -63,7 +63,7 @@ class BoardEditorialTest {
     @Test
     @DisplayName("Label, blocker triple, and retro all round-trip through JSON")
     void editorialFieldsRoundTrip() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card c = b.addCard(0, "x", "");
         b.setLabel(c.id(), "auth");
         b.block(c.id(), "alice", "needs the cert");
@@ -80,7 +80,7 @@ class BoardEditorialTest {
     @Test
     @DisplayName("A v2.4.0 file without the new keys loads clean — nothing blocked, no retro")
     void oldFilesLoadClean() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         b.addCard(0, "plain", "");
         TaskBoard back = TaskBoard.fromJson(b.toJson()
                 .replace("\"label\"", "\"ignored\"")); // no-op safety
@@ -93,7 +93,7 @@ class BoardEditorialTest {
     // ---- stats -----------------------------------------------------------
 
     private static TaskBoard richBoard() {
-        TaskBoard b = TaskBoard.starter();
+        TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card oldBlock = b.addCard(0, "waiting on infra", "");
         TaskBoard.Card newBlock = b.addCard(1, "waiting on design", "");
         TaskBoard.Card doneBlock = b.addCard(0, "was stuck, now done", "");

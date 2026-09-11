@@ -32,7 +32,7 @@ class OverviewRenderProbeTest {
     @Test
     @DisplayName("show() builds the whole face — tiles, columns, flow, attention")
     void overviewBuildsWhole() throws Exception {
-        TaskBoard board = TaskBoard.starter();
+        TaskBoard board = TaskBoard.starter("To Do", "Doing", "Done");
         TaskBoard.Card w = board.addCard(0, "waiting card", "");
         TaskBoard.Card c = board.addCard(1, "moving card", "");
         board.moveCard(c.id(), 2, 0); // stamps done → the flow strip has history
@@ -58,7 +58,7 @@ class OverviewRenderProbeTest {
     void emptyBoardBuilds() throws Exception {
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             OverviewPanel panel = new OverviewPanel(() -> { });
-            panel.show(TaskBoard.starter(), null);
+            panel.show(TaskBoard.starter("To Do", "Doing", "Done"), null);
             assertThat(deepCount(panel)).isGreaterThan(10);
         });
     }
