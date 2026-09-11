@@ -295,9 +295,17 @@ public final class NewLearningSpaceAction implements ActionListener {
         return tool.isEmpty() || tool.contains("/") || tool.contains("\\") ? null : tool;
     }
 
-    private static boolean matches(LearningCatalog.Space s, String q) {
+    /**
+     * A translation adds a way in and never removes one: the reader's own
+     * words are searched, and so is the English record the catalogue keeps,
+     * because a doc, a tutorial or a URL may have sent them here by its
+     * English name (the v1.215.0 findability class, which a translation
+     * would otherwise re-create in twelve languages at once).
+     */
+    static boolean matches(LearningCatalog.Space s, String q) {
         return matches(s.shown().name(), CatalogText.family(s.family()), s.slug(),
-                s.shown().blurb(), q);
+                s.shown().blurb(), q)
+                || matches(s.name(), s.family(), s.slug(), s.blurb(), q);
     }
 
     /**
