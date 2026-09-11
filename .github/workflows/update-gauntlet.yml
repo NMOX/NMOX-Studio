@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v6
@@ -54,7 +54,7 @@ jobs:
         run: xvfb-run -a scripts/update-gauntlet.sh "${{ steps.from.outputs.from }}" "$RUNNER_TEMP/nmox-gauntlet"
       - name: Keep the logs
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: update-gauntlet-logs
           path: |

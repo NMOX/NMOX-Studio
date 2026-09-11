@@ -4,6 +4,25 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.126.0] - 2026-09-11
+
+**Dependency housekeeping, the split way.** Two Dependabot groups absorbed
+by hand rather than merged, which is how this house takes them: surefire
+3.5.6 → 3.6.0 and spotbugs-maven-plugin 4.10.4.0 → 4.10.4.1, plus
+`actions/checkout` and `actions/upload-artifact` v6 → v7.
+
+The actions half is the one worth explaining. Dependabot reads YAML and
+cannot see a version literal inside a Java string, so the CI EXPORTER — the
+workflow the product generates for a user’s project — drifts silently while
+the repository’s own workflows stay fresh. `CiExportPinCurrencyTest`
+(v1.236.0) exists for exactly that, and it passes here because the exporter
+was already on v7 and only one workflow of ours still lagged. The gate did
+its job by having nothing to say.
+
+Nothing refused this round: no platform, OpenJFX or slf4j pin was in either
+group, so none of the structural refusals (v2.21.6, v1.243.0, v2.19.4)
+applied.
+
 ## [2.125.0] - 2026-09-11
 
 **The first walk in a language longer than English.** Ukrainian was walked
@@ -19418,6 +19437,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.126.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.125.0...v2.126.0
 [2.125.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.124.0...v2.125.0
 [2.124.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.123.0...v2.124.0
 [2.123.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.122.0...v2.123.0
