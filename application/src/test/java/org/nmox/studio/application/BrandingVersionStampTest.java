@@ -73,24 +73,34 @@ class BrandingVersionStampTest {
         // the path each job rewrites, spelled as the workflow spells it
         String bundlePath = "branding/src/main/nbm-branding/core/core.jar/"
                 + "org/netbeans/core/startup/Bundle.properties";
-        int mentions = yaml.split(Pattern_quote(bundlePath), -1).length - 1;
-        if (mentions < 3) {
-            problems.add("the branding bundle is stamped in " + mentions
-                    + " jobs; linux, macOS and Windows all package an installer");
+        List<Integer> at = new ArrayList<>();
+        for (int i = yaml.indexOf(bundlePath); i >= 0; i = yaml.indexOf(bundlePath, i + 1)) {
+            at.add(i);
         }
-        // and the key it rewrites — a rename of currentVersion would leave the
-        // sentinel in every shipped build with no other symptom
-        int keyRewrites = yaml.split(Pattern_quote("currentVersion=NMOX Studio "), -1).length - 1;
-        if (keyRewrites < 3) {
-            problems.add("currentVersion is rewritten in " + keyRewrites + " jobs, expected three");
+        if (at.size() != 3) {
+            problems.add("the branding bundle is named in " + at.size()
+                    + " places; linux, macOS and Windows each package an installer");
+        }
+        // ...and EACH of those places rewrites the key. Counting occurrences of
+        // the key across the whole file is not enough: every job spells it
+        // twice, as the pattern and as the replacement, so losing one still
+        // leaves five — a mutant that renamed one survived exactly that way.
+        for (int i : at) {
+            String around = yaml.substring(Math.max(0, i - 400),
+                    Math.min(yaml.length(), i + 400));
+            // a rewrite names the key TWICE — once as the pattern it matches,
+            // once as the replacement it writes. Requiring one occurrence let a
+            // mutant rename the other and live; requiring both kills it.
+            int spellings = around.split(java.util.regex.Pattern.quote(
+                    "currentVersion=NMOX Studio "), -1).length - 1;
+            if (spellings < 2) {
+                problems.add("the job stamping at offset " + i + " names currentVersion "
+                        + spellings + " times; a rewrite needs the pattern and the replacement, "
+                        + "so this job would ship the sentinel");
+            }
         }
         assertThat(problems)
                 .as("a release that would ship the dev sentinel to users")
                 .isEmpty();
-    }
-
-    /** Literal split, so a path full of dots and slashes is not read as a regex. */
-    private static String Pattern_quote(String literal) {
-        return java.util.regex.Pattern.quote(literal);
     }
 }

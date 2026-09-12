@@ -4,6 +4,101 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.143.0] - 2026-09-12
+
+**A dialog cannot be enumerated, but a menu row can.** v2.142.0's ledger
+carried an apology at the top of the file: there is no list of dialogs in the
+cluster, so its census had to be hand-kept. The menu bar is the opposite —
+every row is a `Menu/**.shadow` in the assembled application's own layers,
+pointing at an action whose display name is a bundle key. So the population is
+DERIVED, the gate owns it, and a platform module added tomorrow fails the
+build until its rows are translated.
+
+Derived, it found 80 visible platform rows of which **77 had never been
+translated**. v2.97.0 overlaid the menu bar's top-level names and nothing ever
+went inside them, so a Hindi build has shown फ़ाइल and संपादन over English
+contents since the day thirteen languages shipped. (The three exceptions were
+Plugins, Templates and Check for Updates — picked up by the dialog work of the
+last two releases.)
+
+### Changed
+
+- **77 platform menu rows in twelve languages**, 960 values: Edit's
+  Cut/Copy/Delete/Find/Replace, File's project verbs, the whole Refactoring
+  menu, the Window debugger views, Tools, Help. Ten words came from a census
+  of our own bundles so the menu says them the way the product already does.
+- **Mnemonics are assigned per menu** in one pass, so two rows of one menu
+  cannot claim the same letter, and the gate re-derives the assignment.
+
+### The walk found two things, and corrected me about a third
+
+*The layer's `displayName` is a FALLBACK.* After translating
+`toggle-line-numbers` — the key the layer declares for that View row — the
+menu still read `Show Line Numbers` in English. Where the action is a real
+class carrying its own name, the menu paints a different key
+(`toggle-line-numbers_menu_text`). **Translating the key a surface DECLARES is
+not translating the key it PAINTS.** Three rows were affected; the model in
+the code says so now, a row has a painted key, and the gate requires that one.
+
+*Two passes, three times.* Every defect in this release's own work was one
+pass blind to another: the generator writing over hand-written overlays, a
+second mnemonic assignment that could not see the first's letters, and then
+merged values arriving with mnemonics the assignment pass had already handed
+out — which the gate caught in the clean verify, naming four Tools collisions
+in Russian, Polish, Filipino and Vietnamese. The assignment reads what is
+already on disk first now, and a row an earlier release wrote by hand is left
+exactly as it was.
+
+*A generator that writes a file deletes what it did not know about.* Eight of
+these packages already carried overlays written by hand in earlier releases —
+the toolbar's own keys live in the same bundle as the menu rows — and the
+first cut of the generator wrote each file rather than merging into it. **It
+destroyed 1,224 existing translated values**, and `ToolbarOverlayGateTest`
+caught it in the clean verify. The generator merges now, and a hand-written
+value wins over a generated one.
+
+*And the correction.* Between those two, the live menu bar read `Run` and
+`Debug` in English between translated neighbours, and I recorded that as two
+top-level menus the original overlay had missed. It was not: `Menu/BuildProject`
+and `Menu/RunProject` were already translated, and **the generator had just
+deleted them**. The walk was faithfully reporting a regression I had caused
+seconds earlier, and I read it as a platform gap without checking git. Both
+render again from their original words. *A walk tells you what the screen
+says, not whose fault it is — and the first suspect should be the change you
+just made.*
+
+### Gate
+
+`MenuRowsSpeakTest` derives its population by PARSING the layer XML. Its first
+cut used a regex and found 20 rows of 80, because the layer writer is free to
+order attributes as it likes — the v2.118.0 scar exactly, re-committed by
+someone who had read the note. Three laws: every visible platform row is
+overlaid in twelve languages, no two rows of one menu claim the same mnemonic,
+and every value is well formed. The population carries a measured floor so a
+broken derivation fails loudly rather than passing on a handful of rows.
+
+Five mutants by name, and the fifth had to be written twice: the first cut of
+the version gate counted the key across the whole workflow, so renaming one of
+the six spellings still left five and the mutant lived. It checks each
+stamping site for BOTH halves of the rewrite now — the pattern and the
+replacement — which is the v2.19.1 law again: *gate the outcome, not the
+count*.
+
+`BrandingVersionStampTest` closes a gap David found by looking: a build I made
+from the worktree read `NMOX Studio 1.0` in its footer. That is correct — the
+committed value is the dev sentinel that keeps source builds out of the update
+check (v1.47.0) and the release jobs stamp the tag — but proving it meant
+downloading a published asset by hand, because nothing held the two halves
+together. The sentinel is pinned now, and all three platform jobs must stamp
+that file and that key.
+
+### Recorded, measured
+
+About sixty more rows are still English and are NOT derivable: their names
+live in Java code rather than in the layer, so only a walk finds them and only
+a grep by VALUE places them, with several ambiguous because the same English
+appears in more than one module. Their homes are written down in plan.md.
+
 ## [2.142.0] - 2026-09-12
 
 **The dialog where a user picks their language was itself in English.** The
@@ -20491,6 +20586,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.143.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.142.0...v2.143.0
 [2.142.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.141.0...v2.142.0
 [2.141.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.140.0...v2.141.0
 [2.140.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.139.0...v2.140.0
