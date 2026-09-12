@@ -374,8 +374,8 @@ final class BlockCanvas extends JComponent {
         }
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu(Bundle.BlockCanvas_addPiece());
         for (BlockKind k : kinds) {
-            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(k.display()));
-            item.getAccessibleContext().setAccessibleName(Bundle.BlockCanvas_addA11y(k.display()));
+            javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(BlockText.of(k)));
+            item.getAccessibleContext().setAccessibleName(Bundle.BlockCanvas_addA11y(BlockText.of(k)));
             item.addActionListener(ev -> insertKind(k, parent, index));
             menu.add(item);
         }
@@ -435,7 +435,7 @@ final class BlockCanvas extends JComponent {
         @Override
         public String getAccessibleName() {
             Block b = row.block();
-            return b.kind().display() + " " + b.face()
+            return BlockText.of(b.kind()) + " " + BlockText.face(b)
                     + ", level " + (row.depth() + 1);
         }
 
@@ -552,9 +552,9 @@ final class BlockCanvas extends JComponent {
                 g.drawRoundRect(x - 1, row.y() + 1, w + 2, row.h() - 4, 12, 12);
             }
             g.setColor(Color.WHITE);
-            g.drawString(b.kind().display(), x + 10, row.y() + 15);
+            g.drawString(BlockText.of(b.kind()), x + 10, row.y() + 15);
             g.setColor(new Color(255, 255, 255, 200));
-            g.drawString(b.face(), x + 10, row.y() + 27);
+            g.drawString(BlockText.face(b), x + 10, row.y() + 27);
         }
         if (dropPreview != null) {
             g.setColor(new Color(255, 235, 120));

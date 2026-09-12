@@ -274,7 +274,7 @@ public final class BlockStudioTopComponent extends TopComponent {
                 JLabel l = PlainTables.plain((JLabel) super.getListCellRendererComponent(
                         list, value, index, selected, focus));
                 BlockKind k = (BlockKind) value;
-                l.setText(PlainText.plain(k.display()));
+                l.setText(PlainText.plain(BlockText.of(k)));
                 l.setIcon(new javax.swing.Icon() {
                     @Override
                     public void paintIcon(Component c, java.awt.Graphics g, int x, int y) {
@@ -875,11 +875,11 @@ public final class BlockStudioTopComponent extends TopComponent {
         for (BlockKind.Param p : block.kind().params()) {
             form.add(new JLabel(PlainText.plain(p.key())));
             JTextField field = new JTextField(block.param(p.key()), 18);
-            field.getAccessibleContext().setAccessibleName(Bundle.BlockStudioTopComponent_paramFieldName(block.kind().display(), p.key()));
+            field.getAccessibleContext().setAccessibleName(Bundle.BlockStudioTopComponent_paramFieldName(BlockText.of(block.kind()), p.key()));
             fields.put(p.key(), field);
             form.add(field);
         }
-        DialogDescriptor dd = new DialogDescriptor(form, block.kind().display());
+        DialogDescriptor dd = new DialogDescriptor(form, BlockText.of(block.kind()));
         if (DialogDisplayer.getDefault().notify(dd) == NotifyDescriptor.OK_OPTION) {
             // The ROOT's tag is the component's IDENTITY, not an ordinary
             // param: sibling components reference it by name (the v1.85

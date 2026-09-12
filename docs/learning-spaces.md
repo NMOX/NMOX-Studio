@@ -157,6 +157,12 @@ own `hint`. Two kinds, chosen by what the claim needs:
 ]
 ```
 
+A checkpoint carries the same translation siblings a space does:
+`label.<lang>` and `hint.<lang>`. Check My Work is where a learner is most
+stuck, so it is the last place to answer in a language they did not choose
+— and, like a blurb, an untranslated field falls back to English on its
+own, so translating just the hint is a complete thing to do.
+
 - **file** — pure-Java, toolchain-free: the file at a relative `path`
   (inside the space; `..` refuses) must contain the `contains`
   substring — at least `atLeast` times when given — and/or be free of

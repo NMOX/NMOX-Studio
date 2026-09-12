@@ -101,7 +101,16 @@ class LocaleBundleParityTest {
     private static boolean baseLivesElsewhere(String key) {
         return key.startsWith("DeviceDesc_")
                 || key.startsWith("LearnCategory_")
-                || key.startsWith("LearnFamily_");
+                || key.startsWith("LearnFamily_")
+                // v2.134.0: the three catalogues an ENUM holds. Their English
+                // is the enum's own constructor argument — the record a doc, a
+                // search and this codebase all use — and a base-bundle copy
+                // would be the second home v2.131.0 spent a release removing.
+                // CatalogueEnumsSpeakTest holds them to the shipping enums.
+                || key.startsWith("BlockKind_")
+                || key.startsWith("TemplateName_")
+                || key.startsWith("TemplateDesc_")
+                || key.startsWith("Chain_");
     }
 
     private static void stripDescriptors(Properties p) {

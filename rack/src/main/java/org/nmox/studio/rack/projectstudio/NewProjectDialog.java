@@ -142,7 +142,8 @@ public class NewProjectDialog extends JDialog {
                     boolean isSelected, boolean cellHasFocus) {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
                 if (value instanceof ProjectTemplates t) {
-                    setText(Bundle.NewProjectDialog_templateItem(t.getDisplayName(), t.getDescription()));
+                    setText(Bundle.NewProjectDialog_templateItem(
+                            TemplateText.name(t), TemplateText.description(t)));
                 } else if (value instanceof UserTemplates.Custom c) {
                     // "yours" says where it came from without a second column
                     setText(Bundle.NewProjectDialog_customTemplateItem(escape(c.name()), escape(c.description())));

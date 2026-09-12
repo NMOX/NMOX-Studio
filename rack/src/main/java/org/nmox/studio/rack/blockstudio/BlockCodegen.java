@@ -68,7 +68,7 @@ public final class BlockCodegen {
                 // line (invalid JS inside quoted literals, unparseable
                 // template lines) — refuse them all at the source
                 if (p.getValue().indexOf('\n') >= 0 || p.getValue().indexOf('\r') >= 0) {
-                    problems.add(b.kind().display() + " " + p.getKey()
+                    problems.add(BlockText.of(b.kind()) + " " + p.getKey()
                             + " must be a single line");
                 }
             }
@@ -123,7 +123,7 @@ public final class BlockCodegen {
                         problems.add(exprProblem(b.param("expr")));
                     }
                     if (!states.contains(b.param("name"))) {
-                        problems.add(b.kind().display() + " refers to undeclared state \""
+                        problems.add(BlockText.of(b.kind()) + " refers to undeclared state \""
                                 + b.param("name") + "\"");
                     }
                     if (b.kind() == BlockKind.IF_STATE && !OP.matcher(b.param("op")).matches()) {
