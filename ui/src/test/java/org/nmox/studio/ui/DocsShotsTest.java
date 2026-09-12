@@ -46,4 +46,23 @@ class DocsShotsTest {
         System.clearProperty("nmox.shots.dir");
         new DocsShots().run(); // must not throw, must not require a window system
     }
+
+    @Test
+    @DisplayName("walk-only dialog specs parse, skip malformed entries, and carry a tab index")
+    void walkDialogSpecs() {
+        assertThat(DocsShots.walkDialogs(null)).isEmpty();
+        assertThat(DocsShots.walkDialogs("Help/a.B=about.png, System/c.D=plugins.png#tab=3, junk, =x, nocat=y.png"))
+                .containsExactly(
+                        java.util.Map.entry("Help/a.B", "about.png"),
+                        java.util.Map.entry("System/c.D", "plugins.png#tab=3"));
+        assertThat(DocsShots.tabIndex("plugins.png#tab=3")).isEqualTo(3);
+        assertThat(DocsShots.tabIndex("about.png")).isEqualTo(-1);
+        assertThat(DocsShots.tabIndex("x.png#tab=no")).isEqualTo(-1);
+        assertThat(DocsShots.shotFile("plugins.png#tab=3")).isEqualTo("plugins.png");
+        assertThat(DocsShots.shotFile("about.png")).isEqualTo("about.png");
+        assertThat(DocsShots.tabIndex("p.png#tab=3#find=NMOX")).isEqualTo(3);
+        assertThat(DocsShots.findText("p.png#tab=3#find=NMOX")).isEqualTo("NMOX");
+        assertThat(DocsShots.findText("p.png#tab=3")).isNull();
+        assertThat(DocsShots.shotFile("p.png#tab=3#find=NMOX")).isEqualTo("p.png");
+    }
 }

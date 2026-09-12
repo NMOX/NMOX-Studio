@@ -69,6 +69,62 @@ public class DocsShots implements Runnable {
                 "agent-port.png");
     }
 
+    /**
+     * Walk-only dialog shots (v2.141.0): {@code -J-Dnmox.shots.dialogs=Category/id=file.png[#tab=N],...}
+     * appends dialogs to the queue for ONE run without entering the docs map
+     * above — the platform's own About and Plugin Manager dialogs are
+     * photographed this way so a translated build's platform chrome can be
+     * READ, and {@code #tab=N} selects a tab of the dialog's first tabbed pane
+     * before the settle (the Plugin Manager opens on Updates; Installed is 3).
+     * Pure, pinned by DocsShotsTest; malformed entries are skipped.
+     */
+    static Map<String, String> walkDialogs(String spec) {
+        Map<String, String> out = new LinkedHashMap<>();
+        if (spec == null || spec.isBlank()) {
+            return out;
+        }
+        for (String entry : spec.split(",")) {
+            int eq = entry.indexOf('=');
+            if (eq <= 0 || eq == entry.length() - 1 || !entry.substring(0, eq).contains("/")) {
+                continue;
+            }
+            out.put(entry.substring(0, eq).trim(), entry.substring(eq + 1).trim());
+        }
+        return out;
+    }
+
+    /** {@code file.png#tab=3} → 3; no suffix → -1 (leave the dialog's own tab). */
+    static int tabIndex(String value) {
+        int hash = value.indexOf("#tab=");
+        if (hash < 0) {
+            return -1;
+        }
+        try {
+            String rest = value.substring(hash + 5);
+            int next = rest.indexOf('#');
+            return Integer.parseInt((next < 0 ? rest : rest.substring(0, next)).trim());
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** {@code file.png#tab=3#find=NMOX} → {@code NMOX}; absent → null. */
+    static String findText(String value) {
+        int hash = value.indexOf("#find=");
+        if (hash < 0) {
+            return null;
+        }
+        String rest = value.substring(hash + 6);
+        int next = rest.indexOf('#');
+        return next < 0 ? rest : rest.substring(0, next);
+    }
+
+    /** {@code file.png#tab=3#find=NMOX} → {@code file.png}. */
+    static String shotFile(String value) {
+        int hash = value.indexOf('#');
+        return hash < 0 ? value : value.substring(0, hash);
+    }
+
     /** ms after selecting a tab before painting — lets componentShowing-deferred work land. */
     static final int SETTLE_MS = 2_500;
     /** ms after UI-ready before the first selection — lets the default-open set finish. */
@@ -195,8 +251,13 @@ public class DocsShots implements Runnable {
 
         // --- forge v2: dialog shots -----------------------------------------
 
-        private final java.util.Iterator<Map.Entry<String, String>> dialogQueue =
-                DIALOG_SHOTS.entrySet().iterator();
+        private final java.util.Iterator<Map.Entry<String, String>> dialogQueue = allDialogs();
+
+        private static java.util.Iterator<Map.Entry<String, String>> allDialogs() {
+            Map<String, String> all = new LinkedHashMap<>(DIALOG_SHOTS);
+            all.putAll(walkDialogs(System.getProperty("nmox.shots.dialogs")));
+            return all.entrySet().iterator();
+        }
 
         void nextDialog() {
             if (!dialogQueue.hasNext()) {
@@ -226,16 +287,26 @@ public class DocsShots implements Runnable {
                 java.awt.Dialog dialog = visibleDialog();
                 if (dialog != null) {
                     poll.stop();
+                    int tab = tabIndex(filename);
+                    if (tab >= 0) {
+                        javax.swing.JTabbedPane pane = firstTabbedPane(dialog);
+                        if (pane != null && tab < pane.getTabCount()) {
+                            pane.setSelectedIndex(tab);
+                        }
+                    }
                     javax.swing.Timer settle = new javax.swing.Timer(SETTLE_MS, e2 -> {
-                        // paint the root pane, not the window: the native
-                        // title-bar region isn't Swing-painted and would
-                        // land as a black band across every dialog shot
-                        java.awt.Component subject =
-                                dialog instanceof javax.swing.RootPaneContainer rpc
-                                        ? rpc.getRootPane() : dialog;
-                        captureComponent(subject, filename);
-                        closeAllDialogs(); // unblocks the modal actionPerformed
-                        nextDialog();
+                        // #find=<text>: select the first table row whose cells
+                        // contain the text (the Plugin Manager fills its table
+                        // asynchronously, so this runs after the settle) and
+                        // give the detail pane one more settle before painting
+                        String find = findText(filename);
+                        if (find != null && selectRow(dialog, find)) {
+                            javax.swing.Timer again = new javax.swing.Timer(SETTLE_MS, e3 -> paintAndClose(dialog, filename));
+                            again.setRepeats(false);
+                            again.start();
+                            return;
+                        }
+                        paintAndClose(dialog, filename);
                     });
                     settle.setRepeats(false);
                     settle.start();
@@ -247,6 +318,62 @@ public class DocsShots implements Runnable {
                 }
             });
             poll.start();
+        }
+
+        private static boolean selectRow(java.awt.Container c, String text) {
+            for (java.awt.Component child : c.getComponents()) {
+                // the Plugin Manager holds one table per tab; only the
+                // showing one is the reader's, the rest are behind tabs
+                if (child instanceof javax.swing.JTable t && t.isShowing()) {
+                    for (int r = 0; r < t.getRowCount(); r++) {
+                        for (int col = 0; col < t.getColumnCount(); col++) {
+                            Object v = t.getValueAt(r, col);
+                            // the Plugin Manager's cells are model objects whose
+                            // toString is a class name; read what the renderer paints
+                            java.awt.Component painted = t.getCellRenderer(r, col)
+                                    .getTableCellRendererComponent(t, v, false, false, r, col);
+                            String shown = painted instanceof javax.swing.JLabel lbl
+                                    ? lbl.getText() : String.valueOf(v);
+                            if (shown != null && shown.contains(text)) {
+                                t.setRowSelectionInterval(r, r);
+                                t.scrollRectToVisible(t.getCellRect(r, 0, true));
+                                return true;
+                            }
+                        }
+                    }
+                }
+                if (child instanceof java.awt.Container cc && selectRow(cc, text)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private void paintAndClose(java.awt.Dialog dialog, String filename) {
+            // paint the root pane, not the window: the native title-bar
+            // region isn't Swing-painted and would land as a black band
+            // across every dialog shot
+            java.awt.Component subject =
+                    dialog instanceof javax.swing.RootPaneContainer rpc
+                            ? rpc.getRootPane() : dialog;
+            captureComponent(subject, shotFile(filename));
+            closeAllDialogs(); // unblocks the modal actionPerformed
+            nextDialog();
+        }
+
+        private static javax.swing.JTabbedPane firstTabbedPane(java.awt.Container c) {
+            for (java.awt.Component child : c.getComponents()) {
+                if (child instanceof javax.swing.JTabbedPane p) {
+                    return p;
+                }
+                if (child instanceof java.awt.Container cc) {
+                    javax.swing.JTabbedPane found = firstTabbedPane(cc);
+                    if (found != null) {
+                        return found;
+                    }
+                }
+            }
+            return null;
         }
 
         private static java.awt.Dialog visibleDialog() {

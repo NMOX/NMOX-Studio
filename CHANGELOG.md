@@ -4,6 +4,78 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.141.0] - 2026-09-12
+
+**A translated menu opens an English dialog, one dialog family over — and
+the walk instrument had to be taught to reach it first.** v2.140.0 owed a
+screen walk of the two dialogs it changed, the Plugin Manager and Help ▸
+About, and said so; neither is a window the DocsShots forge could
+photograph, because both are modal dialogs and the forge's dialog map is
+the docs' own. The forge now takes walk-only dialog shots for ONE run —
+`-J-Dnmox.shots.dialogs=Category/id=file.png[#tab=N][#find=text]` — so any
+dialog the platform owns can be photographed in any language without
+wiring an image into the tutorials: `#tab=3` selects the Plugin Manager's
+Installed tab, and `#find=` selects the first table row whose RENDERED
+text contains the words (the cells are model objects whose `toString` is
+a class name; the first cut compared those and selected nothing). The
+Hindi photographs showed the v2.127.0 class exactly, one family over: a
+Hindi Tools menu opening a Plugin Manager whose five tabs, four columns,
+five buttons, search label and detail headings were all English — Close
+and Help included, because this dialog paints its own buttons and not
+NbPresenter's — and a Hindi Help menu opening an About dialog whose
+`Product Version`, `Java`, `Runtime`, `System` and `User directory`
+labels were the platform's English, above OUR OWN paragraph, also in
+English. **And the paragraph was wrong in English too**: it read "the web
+developers studio" because the value is a MessageFormat pattern and the
+ASCII apostrophe in "developer's" opened a quote that ran to the end of
+the sentence — the v2.98.0 hazard, in the one English string the product
+shows about itself, since the paragraph shipped.
+
+### Changed
+
+- **The Plugin Manager speaks every language.** Two overlays of the
+  platform's `autoupdate-ui` bundles (the branding+locale mechanism
+  v2.127.0 used for the dialog buttons): the tab titles, every table
+  column, the Install/Update/Uninstall/Activate/Deactivate buttons, the
+  search label, the detail pane's Version/Source/Author/Homepage headings,
+  the Settings tab, the Tools ▸ Plugins row and the update-found balloon —
+  89 keys × 12 languages, with Close and Help spelled exactly as the dialog
+  overlay spells them and Name/Version/Category as our own bundles do.
+- **The About dialog speaks every language.** An overlay of the platform's
+  `core/ui` bundle: our paragraph translated (links kept), the six
+  information labels, the Updates line, the OS line and the Close button —
+  11 keys × 12. The font-family list the platform's value carries is left
+  out of the overlays on purpose: its quoted names are MessageFormat quotes.
+- **The English paragraph has its apostrophe back** (`developer’s`, U+2019),
+  and the no-updates line names the product: the platform's said "NetBeans
+  IDE is updated to version …" in our own About dialog.
+
+### Gate
+
+`DialogChromeOverlayGateTest` holds the three new overlays with its four
+laws (keys the platform still defines, twelve languages with one key set,
+every value renders and none opens a quote, mnemonics point at their own
+label); its MessageFormat pass now fills twelve argument slots so the About
+panel's eleven placeholders are exercised rather than reported as
+unresolved. The gate found two true coincidences on its first run, both
+blessed in writing: German spells Name as `Name`, and six of the twelve
+languages borrow `Plugins` as it is. Four mutants by name.
+
+### Recorded
+
+- The platform's OWN module rows — `Git`, `IDE Platform`, `Database` —
+  stay English in every language: the NetBeans Platform ships no
+  localization, and that is the v2.101.1 measurement holding.
+- The update catalog cannot name a module per language: `updates.xml`'s
+  DTD (2.8) has no per-language element and the platform's catalog parser
+  knows none — `UpdateItem.createLocalization` is a separate NBM KIND for
+  shipping translations, not a way to name a row. An incoming update is
+  named from the catalog's one `OpenIDE-Module-Name`, which since v2.140.0
+  is the bundle's English. A platform ceiling, measured, not ours.
+- `--modules --list` prints code name, version and state and no display
+  name in any locale, so the dialog photographs above are the runtime proof
+  v2.140.0 owed.
+
 ## [2.140.0] - 2026-09-12
 
 **The idiom is a two-line contract, and the build tool reads the second
@@ -20315,6 +20387,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.141.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.140.0...v2.141.0
 [2.140.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.139.0...v2.140.0
 [2.139.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.138.0...v2.139.0
 [2.138.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.137.0...v2.138.0

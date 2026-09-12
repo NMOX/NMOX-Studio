@@ -72,7 +72,22 @@ class DialogChromeOverlayGateTest {
             // the buttons NbPresenter actually paints — the walk's find
             new Overlay("org-netbeans-core-windows.jar", "org/netbeans/core/windows/services",
                     List.of("CancelButton", "CloseButton", "CANCEL_OPTION_CAPTION",
-                            "CLOSED_OPTION_CAPTION", "HELP_OPTION_CAPTION")));
+                            "CLOSED_OPTION_CAPTION", "HELP_OPTION_CAPTION")),
+            // v2.141.0: the Plugin Manager's chrome (tabs, columns, buttons,
+            // detail labels) — photographed English in a Hindi build
+            new Overlay("org-netbeans-modules-autoupdate-ui.jar", "org/netbeans/modules/autoupdate/ui",
+                    List.of("PluginManagerUI_UnitTab_Installed_Title", "UnitTab_bClose_Text",
+                            "UnitTab_OperationName_Text_INSTALLED", "UnitDetails_Plugin_Description",
+                            "InstalledTableModel_Columns_Name")),
+            // v2.141.0: the Plugins menu row and the update-found balloon
+            new Overlay("org-netbeans-modules-autoupdate-ui.jar", "org/netbeans/modules/autoupdate/ui/actions",
+                    // not Panel_Name: six of the twelve borrow "Plugins" as is
+                    List.of("PluginManager_CloseButton_Name",
+                            "AutoupdateCheckScheduler_UpdateFound_Hint")),
+            // v2.141.0: the About dialog — our own paragraph and the platform's
+            // Product Version / Java / System / User directory labels
+            new Overlay("org-netbeans-core.jar", "org/netbeans/core/ui",
+                    List.of("LBL_Close", "LBL_description", "updates_not_found", "LBL_Copyright")));
 
     /**
      * Values that legitimately read the same as English, each blessed by
@@ -83,7 +98,9 @@ class DialogChromeOverlayGateTest {
             // "error" is the Spanish word, not the English one left behind
             "es/NTF_ErrorTitle",
             // Filipino borrows "error"; "kamalian" means a moral fault
-            "tl/NTF_ErrorTitle");
+            "tl/NTF_ErrorTitle",
+            // "Name" is the German word for name (v2.141.0, the gate's own find)
+            "de/InstalledTableModel_Columns_Name");
 
     @Test
     @DisplayName("every key we overlay still exists in the platform's own bundle")
@@ -103,7 +120,7 @@ class DialogChromeOverlayGateTest {
     }
 
     @Test
-    @DisplayName("both overlays cover all twelve languages, with the same keys, in their own words")
+    @DisplayName("every overlay covers all twelve languages, with the same keys, in their own words")
     void everyLanguageIsCovered() throws IOException {
         List<String> wrong = new ArrayList<>();
         for (Overlay o : OVERLAYS) {
@@ -162,8 +179,14 @@ class DialogChromeOverlayGateTest {
                     // -1 and 0 are the platform's own no-neighbouring-step branches
                     for (int n : new int[] {-1, 0, 1, 2, 3, 5, 11}) {
                         try {
-                            String out = new MessageFormat(value, Locale.of(locale))
-                                    .format(new Object[] {n, "demo"});
+                            // the About panel's LBL_description takes eleven
+                            // arguments; every slot gets a value so an
+                            // unresolved placeholder means a typo, not a
+                            // short argument list
+                            Object[] args = new Object[12];
+                            java.util.Arrays.fill(args, "demo");
+                            args[0] = n;
+                            String out = new MessageFormat(value, Locale.of(locale)).format(args);
                             rendered++;
                             if (out.contains("{") || out.contains("}")) {
                                 broken.add(key + " [" + locale + "] n=" + n
