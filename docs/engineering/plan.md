@@ -7,8 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.142.0 — four more platform dialogs walked and
-translated, with a ledger for the ones that are not, in the first dated section below.
+*Currency addendum 2026-09-12, at v2.143.0 — the menu bar's own rows, a population
+that CAN be derived, in the first dated section below. Under it, four more platform
+dialogs walked and translated, with a ledger for the ones that are not.
 Under it, the two dialogs the release before that owed a walk. Under that,
 the RCP-idiom audit and the module descriptor. Under that, the filter that hid what the picture showed. Under that, a door's name is not
 one key, in
@@ -926,6 +927,84 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — a menu row can be enumerated (v2.143.0)
+
+The previous release's ledger opened with an apology: this population cannot
+be derived, because a dialog is whatever an action decides to show. The menu
+bar is the opposite, and that is the whole reason to go there next. Every row
+is a `Menu/**.shadow` in the assembled application's own layers, pointing at
+an action whose display name is a bundle key — so the gate can own the
+population, and a platform module added tomorrow fails the build until its
+rows are translated.
+
+Derived, it found 80 visible platform rows of which **77 had never been
+translated**. v2.97.0 overlaid the menu bar's top-level names and nothing ever
+went inside them; a Hindi build has shown फ़ाइल and संपादन over English
+contents since the day thirteen languages shipped. The three exceptions were
+Plugins, Templates and Check for Updates, picked up by the dialog work of the
+last two releases — which is itself a small sign the arc is converging.
+
+**The layer's `displayName` is a fallback.** After translating
+`toggle-line-numbers`, the key the LAYER declares for that View row, the menu
+still read `Show Line Numbers`. Where the action is a real class carrying its
+own name, the menu paints a different key entirely
+(`toggle-line-numbers_menu_text`). *Translating the key a surface DECLARES is
+not translating the key it PAINTS.* This is v2.142.0's Rename finding one
+layer deeper: there the two keys sat in one bundle, here they sit on two sides
+of the layer/runtime boundary. A row has a modelled painted key now; the gate
+requires that one, and the mnemonic belongs to it.
+
+**A generator that writes a file deletes what it did not know about.** Eight
+of these forty packages already carried overlays written by hand in earlier
+releases — the toolbar's own keys live in the same bundle as the menu rows —
+and the first cut of the generator wrote each file rather than merging into
+it. It destroyed **1,224 existing translated values**. `ToolbarOverlayGateTest`
+failed in the clean verify and named it. The generator merges now and a
+hand-written value wins over a generated one, which is the right precedence:
+the generated text is a default, the hand-written text is a decision.
+
+**And the correction, which is the most useful part of this release.** Between
+those two findings, the live menu bar read `Run` and `Debug` in English
+between translated neighbours. I recorded that as two top-level menus the
+v2.97.0 overlay had missed, found the keys, wrote new translations, and
+watched them appear. All of it was wrong: `Menu/BuildProject` and
+`Menu/RunProject` had been translated for releases, and **the generator had
+just deleted them**. The walk was faithfully reporting a regression I had
+caused seconds earlier, and I read it as a platform gap without running
+`git show HEAD:` on the file. The original words are back.
+
+*A walk tells you what the screen says, not whose fault it is.* When a walk
+finds something missing in an area you have just touched, the first suspect is
+your own change, and the check costs one command. The house already knew the
+shape of this — v2.128.0's "a stale compile faked two dead mutants" is the
+same error in the other direction — but this is the first time the
+instrument's honesty was used as evidence for a conclusion it did not support.
+
+**The gate's own scar.** `MenuRowsSpeakTest` first read the layers with a
+regex and found 20 rows of 80: the layer writer orders attributes as it likes,
+and `<attr bundlevalue=… name=…>` is as valid as the other way round. That is
+precisely the v2.118.0 finding — an assumed layer attribute order — recommitted
+by someone who had read the note. It parses XML now, and carries a measured
+population floor so a broken derivation fails loudly instead of passing on a
+handful of rows. The lesson is not "use a parser": it is that a scar you have
+read is not a scar you have learned, and only a gate that counts the
+population protects you.
+
+**A gap a user found by looking.** David read `NMOX Studio 1.0` in the Welcome
+footer of a build made for him and asked why, with v2 out. The answer is
+correct and deliberate — the committed value is the dev sentinel that keeps
+source builds out of the update check (v1.47.0), and the three release jobs
+stamp the real version from the tag — but proving it meant downloading a
+published asset by hand. Every other version claim here is gate-held; that one
+was not. `BrandingVersionStampTest` pins the sentinel and requires all three
+platform jobs to stamp that file and that key.
+
+**Recorded and measured**: roughly sixty more rows remain English, and they
+are not derivable — their names live in Java code rather than the layer, so
+only a walk finds them and only a grep by VALUE places them, with several
+ambiguous because the same English appears in more than one module. That is
+the next unit.
 
 ## 2026-09-12 — the dialog where you ask for your language (v2.142.0)
 
