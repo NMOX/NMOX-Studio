@@ -7,8 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.139.0 — the filter that hid what the
-picture showed, in the first dated section below. Under it, a door's name is not
+*Currency addendum 2026-09-12, at v2.140.0 — the RCP-idiom audit and the one
+idiom it found unfinished, the module descriptor, in the first dated section
+below. Under it, the filter that hid what the picture showed. Under that, a door's name is not
 one key, in
 the first dated section below. Under it, the value no gate was reading is
 the first dated section below. Under it, the second home the arc review
@@ -924,6 +925,97 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — the idiom nobody had finished (v2.140.0)
+
+David's ask, with Fable on the shift: *take one last look at both i18n and
+l10n, make sure we're doing both the idiomatic way for NetBeans RCP, finish
+anything unfinished.* The audit is a checklist against the platform's own
+mechanisms, and it is worth writing down what came back CLEAN before what
+did not, because the clean list is the map a future audit starts from:
+
+- **Strings a class owns** ride `@NbBundle.Messages` and the generated
+  `Bundle.java` accessors; **packages with dozens of call sites** keep a
+  hand-written `Bundle.properties` and `NbBundle.getMessage` (v2.102.1's
+  rule — mixing the two in one package is what produced a bogus
+  MissingResource during a mutation proof).
+- **Layer display names** are `bundlevalue:` keys; `@TopComponent.Registration`
+  and `@ActionRegistration` take their `displayName` from the bundle with the
+  `#Key` form; `CTL_<window id>` is the window-name convention the live
+  language switch walks (v2.103.0).
+- **The platform's own strings** are overlaid in the branding+locale slot
+  (`<jar>_nmoxstudio_<lang>.jar`), which `NbBundle.getLocalizingSuffixes`
+  searches FIRST — the documented Maven path (v2.102.1), and the reason a
+  product decision like `&Запустити` belongs there rather than in a patched
+  platform jar.
+- **Bundle siblings are named for a language, never a country**, so
+  Taiwan and Quebec land on their own language (v2.111.0); an absent key
+  falls back to English, the bundle's own parent.
+
+**The one that was not finished: the module descriptor.** The Plugin
+Manager, the update dialog and Help ▸ About ▸ Details read
+`OpenIDE-Module-Name`, `-Short-Description`, `-Long-Description` and
+`-Display-Category`, and the RCP idiom is one manifest line —
+`OpenIDE-Module-Localizing-Bundle` — pointing at a bundle whose
+`Bundle_<lang>` siblings localize them. The census over our eleven modules:
+ten declared no such line, so the nbm plugin burned the pom's `<name>` and
+`<description>` into the manifest and a Hindi Plugin Manager listed eleven
+English rows; the editor was the exception that proved nobody had checked,
+carrying twelve translated descriptors since v2.97.0 that nothing could
+reach because its manifest never named the bundle; branding's bundle had
+the four keys commented out, so the update dialog has read
+`NMOX-Studio-branding` with a `<undefined>` description since the update
+center shipped in v1.51.0. And `LocaleBundleParityTest` had been told to
+STRIP these four keys before comparing, with a comment calling them "a rule
+only one module could break". *A gate that excludes a family has decided
+the family does not count* — the exclusion is where the audit should have
+started, because it is the one place the product wrote down that it knew.
+
+The fix is the idiom, finished: every module declares the bundle and carries
+the four keys in its base bundle and twelve siblings (528 values, the names
+built from the studio names the glossary already fixed), branding's bundle
+filled in, the parity gate's exclusion deleted, and the splash window title
+— the one string on the first screen that stayed English in every language
+— overlaid through the same branding+locale mechanism the menu bar uses.
+
+**The find was inside the fix.** The first verify failed its own gate: every
+jar still carried `OpenIDE-Module-Name` burned in BESIDE the declared
+bundle. The nbm plugin's `ExamineManifest`, decompiled: `processManifest`
+reads `OpenIDE-Module` first, sets `netBeansModule` from whether it is
+present, and skips EVERY other read — the Localizing-Bundle line included —
+when it is absent. Our source manifests never declared `OpenIDE-Module`;
+the plugin derives the code name from groupId + artifactId and adds it
+AFTER examining, so at examine time our manifest was, to the plugin, not a
+module manifest at all, `isLocalized()` was false, and the four
+`conditionallyAddAttribute` calls burned the pom's English in. *A source
+manifest that does not name its module gets none of its other lines read.*
+Every source manifest now declares `OpenIDE-Module` — the Ant harness's own
+idiom — and the burn is gone from every jar; the NBM's `Info/info.xml`,
+which resolves from the bundle, reads the same sentence the installed
+module does. That declaration is a second home for a pom-derived fact,
+v2.131.0's class exactly, so `ModuleDescriptorsSpeakTest` holds the two
+equal using the jar's own filename as the pom's side: a drift shows as a
+manifest that disagrees with the file it is in.
+
+**Two blessings, written.** `NMOX Studio API` in Chinese and Hindi is a
+product name plus an acronym, and the acronym is the one the glossary keeps
+Latin inside the studio's own translated name (`API 工作室`,
+`API स्टूडियो`); nine other languages writing the module name identically is
+the rule holding, not a key nobody reached. And one stray: the old
+multi-line `Long-Description` left two continuation lines in core's bundle
+that the parity gate read as a key named `Provides` — the gate doing its
+job on the author's own edit.
+
+**Not walked on a screen, and why that is honest here.** The surfaces this
+release changes are the Plugin Manager's Installed tab, the update dialog
+and About ▸ Details — modal dialogs the DocsShots forge does not map — and
+the splash's native title bar, which Swing does not paint. The proof is
+the assembled cluster's bytes under the gate, the NBM descriptor resolved
+from the bundle, and the platform's documented read order (bundle first,
+manifest second). One cheaper runtime proof was tried and MEASURED useless:
+the app's own `--modules --list` prints code name, version and state, and
+no display name in any locale — so the running dialogs owe a screen walk,
+and this entry says so rather than claiming one.
 
 ## 2026-09-11 — the filter that hid what the picture showed (v2.139.0)
 

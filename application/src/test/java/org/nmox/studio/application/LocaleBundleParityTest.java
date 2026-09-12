@@ -113,12 +113,6 @@ class LocaleBundleParityTest {
 
     private static final java.util.Set<String> BASE_LIVES_ELSEWHERE = SeamKeyPrefixes.all();
 
-    private static void stripDescriptors(Properties p) {
-        p.stringPropertyNames().stream()
-                .filter(k -> k.startsWith("OpenIDE-Module-"))
-                .forEach(p::remove);
-    }
-
     private static Set<Integer> placeholders(String value) {
         Set<Integer> out = new TreeSet<>();
         Matcher m = PLACEHOLDER.matcher(value == null ? "" : value);
@@ -163,16 +157,14 @@ class LocaleBundleParityTest {
                         problems.add(where + ": localized bundles with no English Bundle.properties");
                         continue;
                     }
-                    // Module descriptors (OpenIDE-Module-Name and friends) name the
-                    // MODULE in the Plugin Manager, not the chrome; nine of the ten
-                    // modules declare theirs in a manifest this arc does not localize,
-                    // so requiring them here would be a rule only one module could
-                    // break. Out of scope means out of scope on BOTH sides: the
-                    // editor's descriptor DOES live in its bundle and IS translated,
-                    // which is welcome but not required, and stripping only the
-                    // English side reported those four keys as "extra" in all five
-                    // languages.
-                    stripDescriptors(english);
+                    // Module descriptors (OpenIDE-Module-Name and friends) are
+                    // ordinary keys since v2.140.0: every module declares its
+                    // localizing bundle in the manifest, so the Plugin Manager
+                    // reads the name and descriptions through the same locale
+                    // siblings as the chrome, and this gate holds them to the
+                    // same parity. ModuleDescriptorsSpeakTest holds the manifest
+                    // half — that the bundle IS declared and no English copy is
+                    // burned into the jar beside it.
                     if (english.isEmpty()) {
                         continue;
                     }
@@ -182,7 +174,6 @@ class LocaleBundleParityTest {
                             problems.add(where + ": missing Bundle_" + locale + ".properties");
                             continue;
                         }
-                        stripDescriptors(t);
                         Set<String> want = new TreeSet<>(english.stringPropertyNames());
                         Set<String> have = new TreeSet<>(t.stringPropertyNames());
                         have.removeIf(LocaleBundleParityTest::baseLivesElsewhere);

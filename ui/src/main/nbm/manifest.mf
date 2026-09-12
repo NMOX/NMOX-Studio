@@ -1,3 +1,5 @@
 Manifest-Version: 1.0
+OpenIDE-Module: org.nmox.NMOX.Studio.ui
+OpenIDE-Module-Localizing-Bundle: org/nmox/studio/ui/Bundle.properties
 OpenIDE-Module-Layer: org/nmox/studio/ui/layer.xml
 OpenIDE-Module-Specification-Version: ${spec.version}

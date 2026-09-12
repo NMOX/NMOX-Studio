@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+OpenIDE-Module: org.nmox.NMOX.Studio.branding
 OpenIDE-Module-Localizing-Bundle: org/nmox/nmox/studio/branding/Bundle.properties
 AutoUpdate-Essential-Module: true
 OpenIDE-Module-Specification-Version: ${spec.version}
