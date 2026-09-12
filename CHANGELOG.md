@@ -4,6 +4,73 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.137.0] - 2026-09-11
+
+**Every l10n gate in this product measures whether a KEY exists. None could
+see whether its VALUE was ever translated** — and that blind spot shipped a
+surface nobody would have accepted on sight. All sixteen rack PRESET NAMES
+read English in German, Russian, Ukrainian and Polish while the description
+under each one read in the user's own language: `Ship Gate` above
+`Prod-Build → Lighthouse-Untergrenze → Bundle-Budget`, `Web Pipeline` above
+`MAESTRO запускает`. Eight other languages translated both halves. Sixteen
+keys, four languages, a green build, and the same shape as v2.132.0's German
+heading over fifty-nine English cards.
+
+It was found by photographing a German build and reading the picture — the
+DB Studio console's `RUN` button, translated in ten languages
+(`EXÉCUTER`, `运行`, `URUCHOM`) and left English in German, Spanish and
+Hindi. One button became a question, and the question became a census.
+
+**The census is why this release gates a shape rather than a value.** 226 of
+the product's 2,848 keys hold a value identical to their English in some
+language, and almost every one is honest: `Name:` is `Name:` in German,
+`Message` and `Structure` are French words, Filipino borrows freely, and 129
+keys are identical in all twelve because they are names. A gate demanding a
+blessing for each would be a chore that decides nothing.
+
+**The signal that is clean is structural.** A `…Name` and its
+`…Description` are two halves of ONE row on screen. When the description is
+translated and the name is not, the reader sees a sentence in their language
+under a heading that is not — and that cannot be a coincidence of
+vocabulary, because the same translator wrote the sentence beneath it.
+`HalfTranslatedRowGateTest` derives its population from the shipped bundles
+and holds exactly that, with two blessings that are real claims rather than
+skips: `Minimap` and `Sticky scroll` are the accepted words for those
+controls in the languages that kept them, and each has its own explanation
+in the description beside it.
+
+**The rule for a preset name was already settled by practice** — the eight
+languages that translated them translated the prose and kept the technology
+tokens (`Boucle TDD`, `CI 通道`, `Jalur Monorepo`), which is the
+`TemplateName_` rule of v2.134.0. The four that skipped now follow it:
+`Freigabe-Gate`, `Шлюз релиза`, `Шлюз релізу`, `Bramka wydania`. Nothing
+resolves a preset by its display name — every consumer names the enum
+constant — so this moves a label and no identifier, the question v2.130.0
+taught to ask before translating anything.
+
+**What this release does NOT close, with the size written down.** The
+lone-button class — a value left English with no sibling row to compare it
+to — has no clean structural signal, and its honest population is those 226
+keys of which the large majority are correct. `RUN` is fixed in the three
+languages that had it because ten languages had already decided; the class
+is recorded rather than gated, the same decision shape as the learning-space
+tutorials in v2.133.0. `EXPLAIN` stays English in all twelve on purpose: it
+is the SQL keyword the button emits.
+
+Four mutants by name, and a fifth that fired for real: the gate's first run
+found its own cluster path wrong and refused to pass over an empty scan.
+
+### Fixed
+- The sixteen rack preset names now read in the user's language in German,
+  Russian, Ukrainian and Polish, tokens (`CI`, `TDD`, `E2E`, `LAMP`, `Web3`,
+  `Multi-Chain`, `Monorepo`) preserved.
+- DB Studio's `RUN` button in German, Spanish and Hindi.
+
+### Added
+- `HalfTranslatedRowGateTest` — a row is translated whole or not at all;
+  population derived from the assembled cluster, two blessings with reasons,
+  bound to the `packaged-app-gates` execution because it reads `target/`.
+
 ## [2.136.0] - 2026-09-11
 
 **The fact that the seams own had two homes, and the second one went stale
@@ -20031,6 +20098,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.137.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.136.0...v2.137.0
 [2.136.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.135.0...v2.136.0
 [2.135.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.134.0...v2.135.0
 [2.134.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.133.0...v2.134.0
