@@ -4,6 +4,79 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.134.0] - 2026-09-11
+
+**Three releases found the same defect in three places, so the fourth search
+became a census.** v2.130.0 found English below the l10n gates as a SEED,
+v2.132.0 as a device SHELF, v2.133.0 as a learning CATALOGUE — each invisible
+to every gate for the same reason: the English never passed through a bundle.
+`CatalogueProseLedgerTest` now derives the whole population from the shipping
+source — every enum whose constants pass a string literal — and fails the
+build until each is written down as TRANSLATED (naming the seam that renders
+it) or MACHINE (with the reason). Eleven enums, and the ledger found the three
+nobody had decided about.
+
+**The New Project wizard, in the reader's language.** Fifteen rows a person
+reads to choose how to start, and the most-used catalogue in the product. The
+descriptions are prose and all fifteen are translated; the NAMES are mostly
+technology and only two carry a word (`TypeScript Library`, `Go Service`), so
+they follow the v2.133.0 rule — a name carries a key when somebody wrote one
+and is returned unchanged when nobody did, which is also what gives a drop-in
+template the right behaviour for free.
+
+**Block Studio's palette speaks too**, and its canvas still does not. A
+piece's NAME is our prose; a block's FACE is almost always the user's own
+content — a tag they typed, a string they wrote — and translating that would
+be vandalism. Only a parameterless piece has a face made of our words, and
+the test that pins this measured that no such piece exists today, so the
+branch waits with a sentence explaining itself to whoever adds one.
+
+**The Contract Kit's chains are mostly a lesson in NOT translating.** Ten of
+eleven labels are pure technology — `Cairo (Starknet)`, `Stellar — Soroban` —
+and a chain's name is how a person recognises it. One row carries a word, so
+`ChainText` exists for that row and for whichever chain arrives with a word in
+it next; the other ten pass through untouched, and a mutant that translates
+them dies by name.
+
+**Check My Work answers in the learner's language.** Nine checkpoints, each
+with a label and the hint that teaches, now carry `label.<lang>` and
+`hint.<lang>` siblings through the same parser a space's blurb uses. This is
+the surface where a learner is most stuck, and it was the last one still
+answering in English inside a fully translated space.
+
+### Added
+
+- `CatalogueProseLedgerTest` (application): the census and the two verdicts.
+  A MACHINE verdict must give its reason and a TRANSLATED one must name a seam
+  that exists — the gate caught its own author on the first run, with a
+  one-clause reason for `CloudProvider` that decided nothing.
+- `TemplateText`, `BlockText`, `ChainText`: three seams, one rule. The enum
+  keeps the English record, the surface renders (v2.101.0), and the file sits
+  beside what paints it (v2.132.0).
+- `Checkpoints.Shown` and `Checkpoint.shown()`: the learning catalogue's
+  sibling mechanism, extended to checkpoints. Two passes, so key order cannot
+  decide which sentence lands where.
+- `CatalogueEnumsSpeakTest` (application, bound to `packaged-app-gates`): the
+  population from the shipping enums, the values from the assembled cluster.
+  A template, a piece or a chain added tomorrow fails the build until it
+  speaks. `LearningCatalogSpeaksTest` gains the two checkpoint laws.
+- 612 translated values: 180 for the palette, 204 for New Project, 12 for the
+  chains, 216 for the checkpoints. Seventeen mutants by name.
+
+### Changed
+
+- `LocaleBundleParityTest` learns the second family of keys whose English
+  lives in an enum rather than a base bundle, for the reason v2.131.0 paid
+  for: a copy would be a second home.
+- `docs/learning-spaces.md` documents the checkpoint siblings.
+
+### Fixed
+
+- Three German palette words that genuinely coincide with the English
+  (`Element`, `Slot`, `Timer`) are blessed in writing rather than worked
+  around: equalling the English is evidence of an untranslated key, not proof
+  of one.
+
 ## [2.133.0] - 2026-09-11
 
 **The learning catalogue speaks every language, and ledger 97 closes with its
@@ -19812,6 +19885,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.134.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.133.0...v2.134.0
 [2.133.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.132.0...v2.133.0
 [2.132.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.131.0...v2.132.0
 [2.131.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.130.0...v2.131.0

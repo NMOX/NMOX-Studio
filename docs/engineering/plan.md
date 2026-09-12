@@ -7,8 +7,10 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.133.0 — the learning catalogue in
-twelve languages closes ledger 97 and is the first dated section below;
+*Currency addendum 2026-09-11, at v2.134.0 — the catalogue-prose CENSUS is
+the first dated section below: after three releases finding the same
+defect in three places, the fourth search became a population. Under it,
+the learning catalogue in twelve languages closes ledger 97;
 under it the l10n completeness inventory that scoped it. The inventory
 opens with what "100%" actually means, measured: what "100%" actually means, measured, with
 the one population too large to fake named at its size. Below it, at v2.130.0 — four dated sections below open
@@ -914,6 +916,58 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the fourth search is a census (v2.134.0)
+
+Three releases in a row found the same defect: prose a user reads that never
+passed through a bundle, so every l10n gate was green and correctly so.
+v2.130.0 found it as a SEED, v2.132.0 as a device SHELF, v2.133.0 as a
+learning CATALOGUE. Each time the fix was sound and the search was ad hoc.
+
+**The move that ends a class is a population, not another search.** Every
+enum in shipping source whose constants carry a string literal is a candidate
+catalogue; there are eleven, and `CatalogueProseLedgerTest` requires each to
+be written down as TRANSLATED — naming the seam that renders it, and the seam
+must exist — or MACHINE, with the reason. That is
+`SpawnSiteTrustLedgerTest`'s shape (v1.224.0) carried from spawns to prose:
+*enumeration beats recollection*, and a twelfth enum fails the build until
+somebody decides about it.
+
+The census found exactly three undecided: the New Project templates, Block
+Studio's palette, the Contract Kit's chains. It is worth noticing that a
+person searching by hand would probably have found the first and possibly the
+second; the third is eleven rows in a wizard, and ten of them are chain names
+that must NOT be translated, so it is the sort of thing a search stops at and
+a census does not.
+
+**The gate caught its own author on its first run.** `CloudProvider` was
+classified `MACHINE — API base URLs.` — true, and a shrug. A verdict that
+short says nothing about the *names* sitting beside the URLs, which is the
+only part anybody might have wanted to translate. The gate requires a reason
+long enough to be a reason, and the rewritten entry answers the question the
+short one skipped.
+
+**The half of this release that is about NOT translating.** Ten of eleven
+chain labels, thirteen of fifteen template names, and every block FACE are
+things that must survive intact: a name a person searches for is a way in, and
+a face is the user's own tag or string. Each has a mutant pinning it —
+translating the other ten chains fails by name, and so does translating a
+face. **A release that only proves what it translated has proved half of it.**
+
+**A branch that waits, measured rather than assumed.** `BlockText.face`
+translates a piece whose face is prose, and the test written to exercise that
+branch failed: all fifteen pieces carry a parameter, so no face has ever been
+prose. The branch stays, because `Block.face()` has the same guard and the two
+must agree — and the test now asserts the emptiness with a sentence addressed
+to whoever adds a parameterless piece. That is better than deleting a guard
+today and rediscovering the need for it later.
+
+**And three words blessed in writing.** German for `Element`, `Slot` and
+`Timer` is `Element`, `Slot` and `Timer`. A gate that flags a translation
+equal to its English is right to flag them and wrong to fail on them, so they
+are listed with the reason, the v2.127.0 rule (`Error` is the Spanish word)
+one catalogue over. The list is checked in the other direction too: each of
+the three must still CARRY a key, so "same word" never becomes "no entry".
 
 ## 2026-09-11 — a catalogue is read in the reader's language, twice (v2.133.0)
 
