@@ -268,6 +268,7 @@
                                 <exclude>**/PackagedSiteGateTest.java</exclude>
                                 <exclude>**/LocaleBundleParityTest.java</exclude>
                                 <exclude>**/HalfTranslatedRowGateTest.java</exclude>
+                                <exclude>**/OwnScriptGateTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
@@ -297,6 +298,7 @@
                                 <include>**/PackagedSiteGateTest.java</include>
                                 <include>**/LocaleBundleParityTest.java</include>
                                 <include>**/HalfTranslatedRowGateTest.java</include>
+                                <include>**/OwnScriptGateTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
