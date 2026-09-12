@@ -81,6 +81,19 @@ build rather than orphaning a row), each OVERLAID row really carries twelve
 locale files, and each RECORDED row gives a reason a person can disagree
 with.
 
+### Caught by CI, in a module this release does not touch
+
+The macOS lane failed on `McpSubscriptionsTest.overflowIsCountedNotLost`,
+which asserts that flooding a blocked stream drops EXACTLY 250 frames. That
+number is only true once the writer thread has TAKEN the first frame — until
+then it still occupies a queue slot and one more frame is dropped — so the
+assertion was pinned to a thread schedule. Both overflow tests now rendezvous
+with the writer before the flood, which makes the exact count a property of
+the code rather than of the runner. It is the v2.99.1 lesson for the second
+time in this class: *drive the schedule, never hope for it.* A flake cannot
+be mutation-proven the usual way, so what is claimed here is the reasoning
+and a green run, not a killed mutant.
+
 ### Recorded, not fixed
 
 - **The Advanced Proxy dialog** behind Options ▸ General ▸ More… is opened
