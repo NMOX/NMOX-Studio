@@ -4,6 +4,78 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.138.0] - 2026-09-11
+
+**In a script that shares no letters with English, an English word is a
+decision — so write it down.** v2.137.0 established why "is this value
+translated?" cannot be gated key by key: 226 of 2,848 keys hold a value
+identical to their English somewhere, and almost all are honest, because
+German really does write `Name:` and `Message` really is French. Vocabulary
+coincidence is the noise, and it is enormous.
+
+Four of the twelve languages have none of that noise available. Russian,
+Ukrainian, Chinese and Hindi share no alphabet with English, so a Latin word
+in one of their bundles is never a coincidence: it is a deliberate technical
+term or a key nobody reached. Both are fine. Not knowing which is not.
+
+**Hindi was the language nobody had finished.** Among the four own-script
+languages, Ukrainian and Chinese held no plain English word at all and
+Russian held two; Hindi held twenty-eight, and they were ordinary UI
+vocabulary a Devanagari reader has words for — `Play`, `Stop`, `Full`,
+`Watch`, `Interact`, `Oversight`, `Function`, `Certificate`, `Params`,
+`Target`, `Assertion`, `Tests`, `Motion`, `Load Balancer`, `state`,
+`directive`, `Environment Doctor`. All are in Hindi now, and the Infra
+palette went with them so a reader stops seeing half its nouns in each
+language (the v2.132.0 call about that palette's own `COMPUTE` header).
+
+**The find, and it caught this release's own author.** Translating a door's
+TITLE is not translating the door. Changing `EnvironmentDoctorAction_title`
+to परिवेश डॉक्टर left the menu item reading `Environment Doctor…` and five
+Hindi hints still sending readers to `उपकरण ▸ Environment Doctor` — one
+window with two names, the exact v2.118.0 defect, and every gate stayed
+green because the hints agreed with the MENU. The same trap sat under the
+Contract Studio tabs, where four Hindi sentences named `Interact` and
+`Watch` by their English. **A door's name is not one key.** Every mention
+follows its door now.
+
+**And it settled the Russian pair the other way.** `Ask KVASIR` and
+`Edit with KVASIR` are English in the Russian bundle — but so are the menu
+item, both consent dialogs and the refusal that fires with no selection: the
+Russian translator treated them as the FEATURE's name and used it
+consistently. Translating the title alone would have been the same two-names
+defect. The titles are restored and the decision is written down.
+
+**The evidence threshold is measured, not picked.** A word counts as a word
+when at least eight of the twelve translated it. At nine the product reports
+a handful; at eight it reports six more, all ordinary; at seven and below the
+cloud PRODUCT names arrive — `HZ Server`, `Reserved IP`, `Spaces Bucket` —
+which half the languages kept on purpose, and a gate arguing with them would
+be arguing about names.
+
+**The gate moved under its own fix, which is the point.** Translating Hindi's
+`HZ Network` raised that key's translated count from seven to eight and
+brought it inside the threshold, whereupon Russian and Ukrainian keeping it
+became visible. Both are blessed by the family rule rather than split: the
+whole HZ family stays Latin in those palettes, and one translated member
+would be the leftover, not the loanword. *Evidence is not static; fixing one
+language can make another language's decision newly visible.*
+
+Five mutants by name.
+
+### Fixed
+- Twenty-eight Hindi values, plus the Infra palette in one vocabulary, plus
+  every Hindi sentence that named a door by its English.
+
+### Changed
+- `AskKvasirAction_title` and `EditWithKvasirAction_title` restored to the
+  name the rest of the Russian bundle uses.
+
+### Added
+- `OwnScriptGateTest` — a word eight languages translated is not left in
+  English for a reader of another script; population from the assembled
+  cluster, four blessings each naming a locale and a reason, bound to the
+  `packaged-app-gates` execution.
+
 ## [2.137.0] - 2026-09-11
 
 **Every l10n gate in this product measures whether a KEY exists. None could
@@ -20098,6 +20170,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.138.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.137.0...v2.138.0
 [2.137.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.136.0...v2.137.0
 [2.136.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.135.0...v2.136.0
 [2.135.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.134.0...v2.135.0

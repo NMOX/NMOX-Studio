@@ -7,7 +7,8 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.137.0 — the value no gate was reading is
+*Currency addendum 2026-09-11, at v2.138.0 — a door's name is not one key, in
+the first dated section below. Under it, the value no gate was reading is
 the first dated section below. Under it, the second home the arc review
 itself left behind is the first dated section below. Under it, the arc review
 of the three
@@ -921,6 +922,54 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — a door's name is not one key (v2.138.0)
+
+v2.137.0 left a class recorded rather than gated: a value left in English
+with no sibling row to compare it against. 226 keys, almost all honest. This
+release found the corner of that class where the noise is zero.
+
+**Four languages cannot have a vocabulary coincidence.** Russian, Ukrainian,
+Chinese and Hindi share no alphabet with English, so a Latin word in one of
+their bundles is either a deliberate technical term or a key nobody reached.
+Measured with two filters — the value is plain prose, and at least eight of
+the twelve translated it — Ukrainian and Chinese held none, Russian two, and
+Hindi twenty-eight. **Hindi was the language nobody had finished**, and the
+twenty-eight were ordinary words a Devanagari reader has: Play, Stop, Watch,
+Interact, Oversight, Certificate, Assertion, Motion, Load Balancer.
+
+**The threshold is a measurement, not a round number.** At nine of twelve the
+product reports a handful. At eight it reports six more, all ordinary words.
+At seven and below the cloud PRODUCT names arrive — HZ Server, Reserved IP,
+Spaces Bucket — which half the languages kept deliberately, and a gate
+arguing with them would be arguing about names. Eight is where the evidence
+stops being decisive, and the javadoc says so with the numbers.
+
+**The find, and it caught this release's own author.** Translating
+`EnvironmentDoctorAction_title` to परिवेश डॉक्टर was not translating the
+door. The MENU ITEM still read `Environment Doctor…`, and five Hindi
+sentences still sent readers to `उपकरण ▸ Environment Doctor`. One window,
+two names — the v2.118.0 defect — and **every gate stayed green**, because
+`WayfindingVocabularyTest` compares a hint against the MENU name and both
+halves of that comparison were still English. Four more Hindi sentences named
+the Contract Studio tabs by their English the same way. *A door's name is not
+one key; before translating one, grep for every sentence that points at it.*
+
+**The same trap settled the Russian pair the other way.** `Ask KVASIR` and
+`Edit with KVASIR` are English in the Russian bundle — and so are the menu
+item, both consent dialogs and the refusal that fires with no selection. That
+is a translator treating them as the FEATURE's name, consistently. Changing
+only the titles would have been the identical two-names defect. The titles
+are restored and the reason is written into the gate.
+
+**The gate moved under its own fix, which is the point of deriving
+evidence.** Translating Hindi's `HZ Network` raised that key's translated
+count from seven to eight, carried it inside the threshold, and made Russian
+and Ukrainian keeping it newly visible. Both are blessed by the family rule
+rather than split — the whole Hetzner family stays Latin in those palettes,
+and one translated member would be the leftover, not the loanword (v2.132.0).
+*Evidence is not static: fixing one language can make another language's
+decision visible for the first time.*
 
 ## 2026-09-11 — the value no gate was reading (v2.137.0)
 
