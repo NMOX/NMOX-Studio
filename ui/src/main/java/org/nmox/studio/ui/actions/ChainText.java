@@ -1,8 +1,7 @@
 package org.nmox.studio.ui.actions;
 
-import java.util.MissingResourceException;
+import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.projectstudio.ContractKit;
-import org.openide.util.NbBundle;
 
 /**
  * The Contract Kit's chain list, in the reader's language.
@@ -25,10 +24,6 @@ final class ChainText {
 
     /** A chain as the kit's combo shows it. */
     static String label(ContractKit.Chain chain) {
-        try {
-            return NbBundle.getMessage(ChainText.class, "Chain_" + chain.name());
-        } catch (MissingResourceException nameNotProse) {
-            return chain.label;
-        }
+        return Bundles.optional(ChainText.class, "Chain_" + chain.name(), chain.label);
     }
 }

@@ -1,7 +1,7 @@
 package org.nmox.studio.rack.projectstudio;
 
-import java.util.MissingResourceException;
-import org.openide.util.NbBundle;
+import org.nmox.studio.core.util.Bundles;
+
 
 /**
  * The New Project catalogue, in the reader's language.
@@ -35,10 +35,6 @@ public final class TemplateText {
     }
 
     private static String lookup(String key, String english) {
-        try {
-            return NbBundle.getMessage(TemplateText.class, key);
-        } catch (MissingResourceException untranslated) {
-            return english;
-        }
+        return Bundles.optional(TemplateText.class, key, english);
     }
 }
