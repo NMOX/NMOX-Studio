@@ -281,6 +281,7 @@
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                                 <exclude>**/PlatformDialogLedgerTest.java</exclude>
                                 <exclude>**/MenuRowsSpeakTest.java</exclude>
+                                <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
                         </configuration>
@@ -305,6 +306,7 @@
                                 <include>**/ModuleDescriptorsSpeakTest.java</include>
                                 <include>**/PlatformDialogLedgerTest.java</include>
                                 <include>**/MenuRowsSpeakTest.java</include>
+                                <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
