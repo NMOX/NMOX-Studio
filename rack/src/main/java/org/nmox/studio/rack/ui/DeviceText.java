@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.ui;
 
+import java.util.List;
 import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.devices.DeviceCatalog;
 
@@ -24,12 +25,26 @@ import org.nmox.studio.rack.devices.DeviceCatalog;
  */
 public final class DeviceText {
 
+    private static final String DESC = "DeviceDesc_";
+
+    /**
+     * The key family this seam owns.
+     *
+     * <p>Its English lives in {@code DeviceType}, so these keys have no
+     * base bundle BY DESIGN and a parity scan would otherwise call all 708
+     * of them extra. {@code LocaleBundleParityTest} reads this declaration
+     * instead of keeping its own copy of the fact — the second home
+     * v2.131.0 spent a release removing. It cannot drift from the lookup
+     * below, because there is one literal and both use it.
+     */
+    static final List<String> KEY_PREFIXES = List.of(DESC);
+
     private DeviceText() {
     }
 
     /** The whole description — "Noun — what it does" — translated, or as authored. */
     public static String description(DeviceCatalog.Entry entry) {
-        return Bundles.optional(DeviceText.class, "DeviceDesc_" + entry.id(),
+        return Bundles.optional(DeviceText.class, DESC + entry.id(),
                 entry.description());
     }
 

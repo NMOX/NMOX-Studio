@@ -7,7 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.135.0 — the arc review of the three
+*Currency addendum 2026-09-11, at v2.136.0 — the second home the arc review
+itself left behind is the first dated section below. Under it, the arc review
+of the three
 catalogue releases opens the dated sections below: the fallback that cost
 most on the majority path, and two finds inside the review's own work.
 Under it, the catalogue-prose CENSUS: after three releases finding the same
@@ -918,6 +920,61 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the fact had two homes, and one of them was in a gate (v2.136.0)
+
+v2.135.0 gave the five catalogue seams one way to say "this key may be
+missing". This release noticed that the same fact was also written down
+somewhere else, and that the somewhere else had been wrong twice.
+
+`LocaleBundleParityTest` compares each locale's key set against the base
+bundle's. These keys have no base bundle on purpose, so every one of them
+reads as extra — unless the gate is told. It was told by hand, in an
+eight-prefix list inside the gate. v2.132.0 added two families to that list
+after its first run called 708 keys extra; v2.134.0 added four more. Each
+time, the symptom was a gate failing on keys that were perfectly correct,
+complaining in a file none of the seams' authors would think to open, and
+**the quickest way to make the complaint stop is to add an English copy to
+the base bundle** — which is the second home the whole design exists to
+avoid.
+
+Twice is a class, and it is v2.131.0's class exactly: *the defect is the
+second home, not the disagreement.* The two numbers agreed today; the
+arrangement was still wrong.
+
+**Where the fact belongs is beside the lookup.** Each seam declares
+`KEY_PREFIXES` from the same string constant its lookups build keys with —
+one literal per family in the file, so declaration and use cannot disagree
+without someone writing a second literal — and the parity gate reads the
+declarations. A sixth catalogue seam is exempt the moment it says what it
+owns.
+
+**The gate under it derives its population, and blesses a distinction.**
+`SeamKeyPrefixDeclarationTest` finds every shipping file that calls
+`Bundles.optional` by reading source, the `SpawnSiteTrustLedgerTest` shape:
+enumeration beats recollection. One file is blessed, and the blessing is a
+real claim rather than a skip — `LocaleRefresher` looks up other packages'
+`CTL_<window id>` keys, which have a base bundle like any chrome string, so
+it owns no family and exempts none.
+
+**What it deliberately does not check.** That a declared prefix is the one
+the lookups build. Two proofs already cover it and both beat reading source:
+the seam tests assert real translated values come back from the shipped
+bundles, and the parity gate this feeds names the real keys as extra. A
+third assertion would be the weakest of the three and the likeliest to gate
+a spelling (v2.19.1) — the mutant that declares `LearnFam_` dies in the
+parity gate, by name, on thirty real keys in every locale.
+
+**Two process notes, both already law and both re-learned here.** The
+reader's first cut expected string literals inside `List.of(...)` while the
+design it serves had moved them into constants; every seam read as declaring
+nothing and the gate failed on its own author — the third release running.
+And a mutant appeared to survive until it was recompiled: `surefire:test`
+does not recompile, so a change to a compiled test class's data was
+invisible, while the four mutants that edit source files the gates read as
+text needed no compile at all. That is v2.128.0's stale-compile law running
+the other way: there it faked two dead mutants, here it faked a live one.
+*Before believing a survivor, ask what the test was actually reading.*
 
 ## 2026-09-11 — the fallback was the slow path (v2.135.0)
 
