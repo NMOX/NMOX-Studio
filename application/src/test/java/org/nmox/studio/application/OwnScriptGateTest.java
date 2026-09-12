@@ -64,8 +64,19 @@ class OwnScriptGateTest {
     /** The four whose readers share no alphabet with English. */
     private static final List<String> OWN_SCRIPT = List.of("ru", "uk", "zh", "hi");
 
-    /** How many of the twelve must have translated a value before it counts as a word. */
-    private static final int TRANSLATED_ELSEWHERE = 9;
+    /**
+     * How many of the twelve must have translated a value before it counts
+     * as a word rather than a name.
+     *
+     * <p>Eight, and the number was measured rather than picked. At nine the
+     * product reports a handful and every one is an ordinary word. At eight
+     * it reports six more, all of them ordinary too — {@code Load Balancer},
+     * {@code Motion}, {@code Assertion}, {@code Tests}. At seven and below
+     * the cloud PRODUCT names arrive — {@code HZ Server}, {@code Reserved
+     * IP}, {@code Spaces Bucket} — which half the languages kept on purpose,
+     * and a gate that argued with them would be arguing about names.
+     */
+    private static final int TRANSLATED_ELSEWHERE = 8;
 
     private static final Pattern PROSE =
             Pattern.compile("[A-Za-z][A-Za-z /\\-]{2,26}:?");
@@ -74,6 +85,16 @@ class OwnScriptGateTest {
     private static final Map<String, String> STAYS_LATIN = new LinkedHashMap<>();
 
     static {
+        STAYS_LATIN.put("ru NodeKind_hzNetwork",
+                "one member of Hetzner's product family, which the Russian palette keeps "
+                + "whole: HZ Server, HZ Volume, HZ Firewall, HZ Floating IP and HZ Load "
+                + "Balancer all stay Latin beside it. Translating only this one would "
+                + "leave the palette half in each language, the v2.132.0 call about the "
+                + "Infra palette's own COMPUTE header.");
+        STAYS_LATIN.put("uk NodeKind_hzNetwork",
+                "the same family decision as its Russian sibling above: the Ukrainian "
+                + "palette keeps the whole HZ family as Hetzner's product names, and one "
+                + "translated member would be the leftover, not the loanword.");
         STAYS_LATIN.put("ru AskKvasirAction_title",
                 "the Russian bundle treats \"Ask KVASIR\" as the FEATURE's name and "
                 + "uses it that way throughout — in the menu item, in both consent "
