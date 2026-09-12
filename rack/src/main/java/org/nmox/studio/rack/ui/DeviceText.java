@@ -1,8 +1,7 @@
 package org.nmox.studio.rack.ui;
 
-import java.util.MissingResourceException;
+import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.devices.DeviceCatalog;
-import org.openide.util.NbBundle;
 
 /**
  * A device's shelf description in the reader's language.
@@ -30,11 +29,8 @@ public final class DeviceText {
 
     /** The whole description — "Noun — what it does" — translated, or as authored. */
     public static String description(DeviceCatalog.Entry entry) {
-        try {
-            return NbBundle.getMessage(DeviceText.class, "DeviceDesc_" + entry.id());
-        } catch (MissingResourceException untranslated) {
-            return entry.description();
-        }
+        return Bundles.optional(DeviceText.class, "DeviceDesc_" + entry.id(),
+                entry.description());
     }
 
     /**

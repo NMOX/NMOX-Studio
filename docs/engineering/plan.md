@@ -7,8 +7,10 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.134.0 — the catalogue-prose CENSUS is
-the first dated section below: after three releases finding the same
+*Currency addendum 2026-09-11, at v2.135.0 — the arc review of the three
+catalogue releases opens the dated sections below: the fallback that cost
+most on the majority path, and two finds inside the review's own work.
+Under it, the catalogue-prose CENSUS: after three releases finding the same
 defect in three places, the fourth search became a population. Under it,
 the learning catalogue in twelve languages closes ledger 97;
 under it the l10n completeness inventory that scoped it. The inventory
@@ -916,6 +918,61 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the fallback was the slow path (v2.135.0)
+
+Three releases in a row built the same seam, and the review asked the
+question none of the three had: WHERE does this cost fall?
+
+The rule is one sentence — show the translation when somebody wrote one,
+the English when nobody did — and all five seams wrote it as
+`NbBundle.getMessage` inside a `catch (MissingResourceException)`. Correct.
+And these keys have no English base bundle ON PURPOSE, which is the whole
+point of the design: their English lives in the enum or the catalogue, and
+a base-bundle copy would be the second home v2.131.0 spent a release
+removing. Follow that through and the conclusion is uncomfortable: **an
+English reader misses every key, every time.** The exceptional path is the
+normal path, and it runs inside Swing paint loops that repaint on scroll
+and on hover.
+
+Measured before touching anything, on the Block Studio palette: 300,000
+lookups cost 834 ms in English against 71 ms in German — twelve times
+slower for the majority of users. `ResourceBundle.containsKey` answers the
+same question without building a stack trace: 141 ms. The answers never
+moved; thirty seam tests pass unchanged through the new path. *A fallback
+written as an exception costs most where it is taken most.*
+
+**The gate is structural, and that is a decision.** The property is "no
+exception is constructed on the miss path", and the honest ways to assert
+it are a timing ratio or the shape. A ratio on a shared runner is a flake
+(v2.99.1), so the measurement goes in the changelog and the javadoc where
+a person reads it, and the gate reads the catch.
+
+**Then the review found its second bug in its own test.** `BundlesTest`
+named a case "a key nobody translated" — but the fixture package shipped no
+bundle at all, so that case and the absent-bundle case took the SAME early
+return, and the ternary's fallback arm was never executed. A mutant lived
+there and passed. The cure was a test-scope `Bundle.properties` beside the
+class, which makes the two miss branches different code again. *A fixture
+that cannot reach a branch is a test whose name is a claim.* This is the
+v1.189.0 law one level in: it usually catches a comment disagreeing with
+code; here it caught a test NAME disagreeing with its own fixture.
+
+**And its third in the gate it was writing.** The first cut matched the
+literal `catch (MissingResourceException`, and the mutant written to prove
+the gate used `catch (java.util.MissingResourceException e)` — which slid
+straight past. The mutation proof found the hole before any reviewer could:
+gate the outcome, not the spelling (v2.19.1), and write the mutant in a
+form you did not have in mind when you wrote the pattern.
+
+**Verified clean in the same pass** and worth recording, because each was a
+plausible place for this arc to have broken something: the learning-space
+EXPORTER writes the teacher's checkpoint JSON verbatim and only parses it to
+validate, so the new `label.<lang>` siblings survive an export untouched
+(the v2.36.2 keep-both class does not apply); `shown()` on both records
+resolves per call, so the live switch reaches a catalogue built once; and
+the new gates read file names and CRLF-tolerant patterns, so the Windows
+lane — the binding measurement — sees what macOS sees.
 
 ## 2026-09-11 — the fourth search is a census (v2.134.0)
 

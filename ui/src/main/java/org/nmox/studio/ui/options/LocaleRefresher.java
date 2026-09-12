@@ -1,8 +1,8 @@
 package org.nmox.studio.ui.options;
 
 import java.util.Map;
-import java.util.MissingResourceException;
 import javax.swing.SwingUtilities;
+import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.core.util.UiLocale;
 import org.openide.util.NbBundle;
 import org.openide.windows.OnShowing;
@@ -67,14 +67,11 @@ public final class LocaleRefresher implements Runnable {
             return null;
         }
         String key = TITLE_KEY_ALIASES.getOrDefault(id, "CTL_" + id);
-        try {
-            return NbBundle.getMessage(tc.getClass(), key);
-        } catch (MissingResourceException notNamedThatWay) {
-            try {
-                return NbBundle.getMessage(tc.getClass(), "CTL_" + tc.getClass().getSimpleName());
-            } catch (MissingResourceException neither) {
-                return null;
-            }
+        String byId = Bundles.optional(tc.getClass(), key, null);
+        if (byId != null) {
+            return byId;
         }
+        return Bundles.optional(tc.getClass(),
+                "CTL_" + tc.getClass().getSimpleName(), null);
     }
 }

@@ -1,7 +1,7 @@
 package org.nmox.studio.rack.blockstudio;
 
-import java.util.MissingResourceException;
-import org.openide.util.NbBundle;
+import org.nmox.studio.core.util.Bundles;
+
 
 /**
  * Block Studio's vocabulary, in the reader's language.
@@ -23,11 +23,7 @@ public final class BlockText {
 
     /** "Element" / "Element" / "元素" — the piece's name on the palette. */
     public static String of(BlockKind kind) {
-        try {
-            return NbBundle.getMessage(BlockText.class, "BlockKind_" + kind.name());
-        } catch (MissingResourceException untranslated) {
-            return kind.display();
-        }
+        return Bundles.optional(BlockText.class, "BlockKind_" + kind.name(), kind.display());
     }
 
     /**

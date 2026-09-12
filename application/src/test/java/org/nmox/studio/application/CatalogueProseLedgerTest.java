@@ -140,15 +140,19 @@ class CatalogueProseLedgerTest {
     void everyNamedSeamExists() throws IOException {
         List<String> missing = new ArrayList<>();
         for (Map.Entry<String, String> e : LEDGER.entrySet()) {
-            String verdict = e.getValue();
-            if (!verdict.startsWith("TRANSLATED")) {
-                continue;
+            // every "through X" is checked, not just a TRANSLATED verdict's:
+            // DeviceType is MACHINE for its leading literal and names
+            // DeviceText for the prose beside it, and that claim can rot too
+            Matcher m = Pattern.compile("through (\\w+)").matcher(e.getValue());
+            boolean named = false;
+            while (m.find()) {
+                named = true;
+                if (!sourceFileExists(m.group(1) + ".java")) {
+                    missing.add(e.getKey() + " names " + m.group(1) + ", which does not exist");
+                }
             }
-            Matcher m = Pattern.compile("through (\\w+)").matcher(verdict);
-            assertThat(m.find()).as("%s names its seam", e.getKey()).isTrue();
-            String seam = m.group(1);
-            if (!sourceFileExists(seam + ".java")) {
-                missing.add(e.getKey() + " names " + seam + ", which does not exist");
+            if (e.getValue().startsWith("TRANSLATED")) {
+                assertThat(named).as("%s is TRANSLATED but names no seam", e.getKey()).isTrue();
             }
         }
         assertThat(missing).as("a ledger that names a seam nobody wrote is a ledger "

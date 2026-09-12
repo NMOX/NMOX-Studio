@@ -4,6 +4,74 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.135.0] - 2026-09-11
+
+**The arc review of the catalogue releases: the fallback was the slow path,
+and it was the path most users are on.** Three releases (v2.132.0–v2.134.0)
+gave five catalogues the same rule — show the translation when somebody
+wrote one, the English when nobody did — and all five spelled it
+`NbBundle.getMessage` inside a `catch (MissingResourceException)`. The rule
+is right. The shape put the cost in the worst possible place.
+
+These keys have no English base bundle BY DESIGN: their English lives in the
+enum or the catalogue, and a base-bundle copy would be the second home
+v2.131.0 spent a release removing. So an ENGLISH reader misses every key,
+every time — and the miss path is the throw path, inside Swing paint loops
+that repaint on every scroll and hover. Measured on the Block Studio
+palette:
+
+| locale | 300,000 lookups |
+| --- | --- |
+| English (every lookup misses) | 834 ms |
+| German (every lookup hits) | 71 ms |
+
+Twelve times slower on the majority path. Through the new
+`core.util.Bundles.optional`, which asks `containsKey` instead of catching,
+the same 300,000 English lookups cost 141 ms. Behaviour is identical —
+that was never the defect. **A fallback written as an exception costs most
+where it is taken most**, and here it was taken on every lookup by every
+English reader.
+
+**The review's second finding was in its own test.** `BundlesTest` asserted
+the missing-KEY branch while its fixture package shipped no bundle at all,
+so every case took the absent-BUNDLE branch and the ternary's fallback arm
+was never exercised — a mutant lived there until a test-scope bundle beside
+the class split the two. The test names had claimed one thing and the
+fixture did another, which is the v1.189.0 law inside a test rather than a
+comment.
+
+**And its third was in the gate it was writing.** The first cut matched the
+literal `catch (MissingResourceException`, so a fully-qualified
+`catch (java.util.MissingResourceException e)` walked straight past it. The
+mutant that was supposed to prove the gate is what found the hole — gate the
+outcome, not the spelling (v2.19.1).
+
+### Added
+
+- `core.util.Bundles.optional(owner, key, english)`: one home for a key that
+  is allowed to be missing. The bundle is resolved per call on purpose —
+  `ResourceBundle` caches by locale, and reading it fresh is what lets the
+  LIVE language switch (v2.103.0) reach a catalogue rendered a moment ago.
+- `OptionalKeyLookupGateTest`: no shipping source catches a missing key
+  unless it is blessed with a reason, and every blessing must name a file
+  that ships and give an actual reason. Two blessings today:
+  `ProductVersionBundle` (a different overload whose throw also covers the
+  bundle being invisible — the v2.67.0 defect — and which runs once per
+  version read, never in a paint loop) and `Bundles` itself.
+- `BundlesTest`: four laws over both miss branches and the hit path, with a
+  test-scope bundle that makes the distinction reachable. Seven mutants by
+  name across the seam and the gate.
+
+### Changed
+
+- `DeviceText`, `BlockText`, `TemplateText`, `ChainText`, `CatalogText` and
+  `LocaleRefresher.titleFor` all ask instead of catching. Thirty seam tests
+  pass unchanged through the new path — the answers did not move.
+- `CatalogueProseLedgerTest` checks every `through X` seam claim, not only
+  the ones in a TRANSLATED verdict: `DeviceType` is MACHINE for its leading
+  literal and names `DeviceText` for the prose beside it, and that claim can
+  rot the same way.
+
 ## [2.134.0] - 2026-09-11
 
 **Three releases found the same defect in three places, so the fourth search
@@ -19885,6 +19953,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.135.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.134.0...v2.135.0
 [2.134.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.133.0...v2.134.0
 [2.133.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.132.0...v2.133.0
 [2.132.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.131.0...v2.132.0

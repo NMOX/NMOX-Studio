@@ -1,9 +1,8 @@
 package org.nmox.studio.ui.actions;
 
 import java.util.Locale;
-import java.util.MissingResourceException;
+import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.projectstudio.LearningCatalog;
-import org.openide.util.NbBundle;
 
 /**
  * The learning catalogue's grouping words, in the reader's language.
@@ -44,10 +43,6 @@ final class CatalogText {
     }
 
     private static String lookup(String key, String fallback) {
-        try {
-            return NbBundle.getMessage(CatalogText.class, key);
-        } catch (MissingResourceException untranslated) {
-            return fallback;
-        }
+        return Bundles.optional(CatalogText.class, key, fallback);
     }
 }
