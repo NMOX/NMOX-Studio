@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -44,7 +45,14 @@ class OptionalKeyLookupGateTest {
             "core", "editor", "tools", "rack", "infra", "apiclient",
             "dbstudio", "web3", "project", "ui");
 
-    private static final String CATCH = "catch (MissingResourceException";
+    /**
+     * The catch, however it is spelled. A fully-qualified
+     * {@code catch (java.util.MissingResourceException e)} is the same
+     * defect and slipped past the first cut of this gate, which matched a
+     * bare literal — the v2.19.1 lesson: gate the outcome, not the spelling.
+     */
+    private static final Pattern CATCH = Pattern.compile(
+            "catch\\s*\\(\\s*(?:java\\.util\\.)?MissingResourceException\\b");
 
     /** Sites where catching it is the honest shape, and why. */
     private static final Map<String, String> BLESSED = new LinkedHashMap<>();
@@ -75,7 +83,7 @@ class OptionalKeyLookupGateTest {
                     if (BLESSED.containsKey(name)) {
                         continue;
                     }
-                    if (Files.readString(p, StandardCharsets.UTF_8).contains(CATCH)) {
+                    if (CATCH.matcher(Files.readString(p, StandardCharsets.UTF_8)).find()) {
                         caught.add(module + "/" + name);
                     }
                 }
