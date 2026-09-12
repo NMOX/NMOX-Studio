@@ -280,6 +280,7 @@
                                 <exclude>**/CatalogueEnumsSpeakTest.java</exclude>
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                                 <exclude>**/PlatformDialogLedgerTest.java</exclude>
+                                <exclude>**/MenuRowsSpeakTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
                         </configuration>
@@ -303,6 +304,7 @@
                                 <include>**/OwnScriptGateTest.java</include>
                                 <include>**/ModuleDescriptorsSpeakTest.java</include>
                                 <include>**/PlatformDialogLedgerTest.java</include>
+                                <include>**/MenuRowsSpeakTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
