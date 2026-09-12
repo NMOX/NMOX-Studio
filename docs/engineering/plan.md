@@ -7,9 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.140.0 — the RCP-idiom audit and the one
-idiom it found unfinished, the module descriptor, in the first dated section
-below. Under it, the filter that hid what the picture showed. Under that, a door's name is not
+*Currency addendum 2026-09-12, at v2.141.0 — the two dialogs the previous release
+owed a walk, photographed and translated, in the first dated section below. Under it,
+the RCP-idiom audit and the module descriptor. Under that, the filter that hid what the picture showed. Under that, a door's name is not
 one key, in
 the first dated section below. Under it, the value no gate was reading is
 the first dated section below. Under it, the second home the arc review
@@ -925,6 +925,75 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — the dialog the walk could not reach (v2.141.0)
+
+v2.140.0 changed what the Plugin Manager and About ▸ Details show and said,
+honestly, that it had not seen either running: both are modal dialogs, the
+DocsShots forge photographs the windows and the three dialogs in its docs
+map, and `--modules --list` turned out to print no display names. "Keep
+going" made that the next unit, and the order of work is the lesson:
+**teach the instrument first, then read the picture, then fix what it
+shows.**
+
+**The instrument.** The forge's dialog map is the docs' own — every entry
+must be referenced by a tutorial — so a walk-only shot needed a different
+door: `-J-Dnmox.shots.dialogs=Category/id=file.png[#tab=N][#find=text]`
+appends dialogs to the queue for one run without touching the map. `#tab=`
+selects a tab of the dialog's first tabbed pane before the settle (the
+Plugin Manager opens on Updates); `#find=` selects the first table row
+whose text contains the words, after the settle, because the Plugin
+Manager fills its table asynchronously. The first cut of the finder
+compared `String.valueOf(cell)` and selected nothing: the cells are model
+objects whose `toString` is a class name. It reads what the renderer
+PAINTS now — *a table shows what its renderer returns, not what its model
+holds*, the same distinction as v1.311.0's renderer sweep from the other
+side.
+
+**The picture.** In a Hindi build, the Plugin Manager was English from
+tab to button — and so were Close and Help, which v2.127.0 had translated
+for every OTHER dialog, because this one paints its own buttons from the
+`autoupdate-ui` bundle rather than NbPresenter's. The About dialog showed
+the platform's `Product Version` / `Java` / `Runtime` / `System` / `User
+directory` labels in English above our own paragraph, also in English.
+And the paragraph read "the web developers studio": `developer's` is
+inside a MessageFormat pattern, so the ASCII apostrophe opened a quote that
+swallowed the rest of the sentence's punctuation — the v2.98.0 hazard, in
+English, in the one sentence the product says about itself, since the
+paragraph shipped. The picture found an English defect while looking for a
+Hindi one.
+
+**The fix is the v2.127.0 recipe, one family over.** Grep the cluster for
+the VALUE on screen, find the bundle that owns it, overlay it in the
+branding+locale slot: `autoupdate-ui`'s two bundles (89 keys) and
+`core/ui` (11 keys), twelve languages each, 1,200 values authored with the
+house vocabulary — Close and Help exactly as the dialog overlay spells
+them, Name/Version/Category as our own bundles do (a census over the
+shipped bundles gave the spellings). The About overlays leave out the
+platform's font-family list because its quoted names are MessageFormat
+quotes; the English paragraph gets U+2019; the no-updates line names NMOX
+Studio instead of "NetBeans IDE".
+
+**The gate found two things on its first run, both true.** German spells
+Name as `Name`, and six of the twelve languages borrow `Plugins` as it is —
+"equals the platform's English value" is evidence, not proof (v2.127.0),
+and both are blessed in writing. The gate's MessageFormat pass had
+formatted every value with two arguments; the About panel's
+`LBL_description` takes eleven, so the pass now fills twelve slots and an
+unresolved placeholder means a typo. And the mutation proofs re-taught the
+v2.128.0 law within the hour: `surefire:test` on an edited gate ran the OLD
+class and reported the OLD failure — `test-compile` first, always.
+
+**Measured ceilings, recorded rather than fixed.** The platform's own
+module rows (`Git`, `IDE Platform`, `Database`) stay English in every
+language: the NetBeans Platform ships no UI localization (v2.101.1's
+measurement, holding). And the update catalog cannot name a module per
+language: the `autoupdate-catalog-2_8.dtd` the platform ships has no
+per-language element, the catalog parser's vocabulary has none, and
+`UpdateItem.createLocalization` is a separate NBM kind for DISTRIBUTING
+translations, not for naming a row — so an incoming update is named from
+the catalog's single `OpenIDE-Module-Name`, the bundle's English since
+v2.140.0. Checked before it was called a gap.
 
 ## 2026-09-12 — the idiom nobody had finished (v2.140.0)
 
