@@ -948,7 +948,12 @@ compared `String.valueOf(cell)` and selected nothing: the cells are model
 objects whose `toString` is a class name. It reads what the renderer
 PAINTS now — *a table shows what its renderer returns, not what its model
 holds*, the same distinction as v1.311.0's renderer sweep from the other
-side.
+side — and only in a SHOWING table, because the Plugin Manager holds one
+table per tab and the first one in the component tree belongs to the hidden
+Updates tab (the second correction; the photograph with our own row in it
+took three). The walker itself joined the root pom's pure-Swing coverage
+exclusions with its reason: it runs only inside a booted window system,
+and its parsers stay measured.
 
 **The picture.** In a Hindi build, the Plugin Manager was English from
 tab to button — and so were Close and Help, which v2.127.0 had translated

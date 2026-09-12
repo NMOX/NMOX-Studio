@@ -322,7 +322,9 @@ public class DocsShots implements Runnable {
 
         private static boolean selectRow(java.awt.Container c, String text) {
             for (java.awt.Component child : c.getComponents()) {
-                if (child instanceof javax.swing.JTable t) {
+                // the Plugin Manager holds one table per tab; only the
+                // showing one is the reader's, the rest are behind tabs
+                if (child instanceof javax.swing.JTable t && t.isShowing()) {
                     for (int r = 0; r < t.getRowCount(); r++) {
                         for (int col = 0; col < t.getColumnCount(); col++) {
                             Object v = t.getValueAt(r, col);

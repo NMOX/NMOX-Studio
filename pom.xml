@@ -269,6 +269,11 @@
                         <!-- v2.87.0 screenshot gestures: a save chooser, the EDT paint and the
                              clipboard — pure Swing; the pure halves (Screenshot, ImageTransferable,
                              the tab rule) stay measured -->
+                        <!-- v2.141.0: DocsShots$Session is the forge's window walker
+                             (cycles tabs, invokes dialogs, paints root panes inside a
+                             booted app); its pure parsers stay in DocsShots and are
+                             measured, the walker cannot run headless -->
+                        <exclude>**/DocsShots$Session*.class</exclude>
                         <exclude>**/shots/ShotSaver*.class</exclude>
                         <exclude>**/shots/SaveScreenshotAction*.class</exclude>
                         <exclude>**/shots/SaveEditorScreenshotAction*.class</exclude>
