@@ -85,7 +85,7 @@ public final class ContractKitAction implements ActionListener {
             public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> l,
                     Object v, int i, boolean sel, boolean focus) {
                 return super.getListCellRendererComponent(l,
-                        v instanceof ContractKit.Chain c ? c.label : v, i, sel, focus);
+                        v instanceof ContractKit.Chain c ? ChainText.label(c) : v, i, sel, focus);
             }
         });
         JTextField name = new JTextField("MyContract");
