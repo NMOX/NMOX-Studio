@@ -4,6 +4,93 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.140.0] - 2026-09-12
+
+**The idiom is a two-line contract, and the build tool reads the second
+line only when the first is there.** David asked for one last look at i18n
+and l10n through the NetBeans RCP lens: is every mechanism the platform's
+own? The layer display names ride bundle keys, the actions and windows ride
+`@Messages` and `NbBundle.getMessage`, the platform's chrome is overlaid
+through branding+locale jars — all idiomatic, and all already gated. One
+idiom was half-done, and it is the one a user meets before any of ours:
+**the module descriptor.** The Plugin Manager, the update dialog and Help ▸
+About ▸ Details name a module from `OpenIDE-Module-Name` and describe it
+from `OpenIDE-Module-Short-Description` / `-Long-Description`, and the RCP
+way is one manifest line — `OpenIDE-Module-Localizing-Bundle` — pointing at
+a bundle whose `Bundle_<lang>` siblings carry the translations. Ten of our
+eleven modules had no such line; the nbm plugin burned the pom's English
+name and description into the manifest instead, so a Hindi build's Plugin
+Manager listed eleven English rows. The editor module was the odd one: it
+had carried twelve translated descriptors since v2.97.0 that NOTHING could
+reach, because its manifest never declared the bundle. Branding's bundle
+had its four keys commented out, so the update dialog has called it
+`NMOX-Studio-branding` with a `<undefined>` description since v1.51.0. And
+`LocaleBundleParityTest` knew — it stripped exactly these four keys before
+comparing, with a comment calling them "a rule only one module could
+break". A gate that excludes a family is a gate that has decided the
+family does not count.
+
+### Changed
+
+- **Every module names itself through its bundle.** All eleven product
+  modules declare `OpenIDE-Module-Localizing-Bundle` and carry
+  `OpenIDE-Module-Name`, `-Display-Category`, `-Short-Description` and
+  `-Long-Description` in their base bundle and in all twelve language
+  siblings — 528 values, the names built from the studio names the glossary
+  already fixed (`Rack de NMOX Studio`, `Стойка NMOX Studio`, `NMOX Studio
+  机架`, `NMOX Studio रैक`), the descriptions one sentence each. Branding's
+  bundle is filled in. The NBM's own `Info/info.xml` now resolves from the
+  bundle, so the update center's catalog carries the same sentence the
+  installed module does.
+- **The splash window speaks too.** `LBL_splash_window_title` was the one
+  string on the first screen a user sees that stayed English in every
+  language; the core startup bundle is overlaid through the branding+locale
+  mechanism v2.97.0 built for the menu bar (`NMOX Studio wird gestartet`,
+  `正在启动 NMOX Studio`), twelve values.
+- **The parity gate stops stripping.** `LocaleBundleParityTest` compares
+  the descriptor keys like any other chrome string; the exclusion and its
+  comment are gone.
+
+### Found while fixing it
+
+The first verify of the finished idiom failed on its own gate: every jar
+still carried `OpenIDE-Module-Name` burned in BESIDE the declared bundle.
+Decompiling the nbm plugin's `ExamineManifest` explained it: the plugin
+reads `OpenIDE-Module-Localizing-Bundle` only from a manifest that first
+names its module with `OpenIDE-Module`, and ours never did — the plugin
+derives the code name from groupId + artifactId and adds it later, so at
+examine time our manifest was, to the plugin, not a module manifest at all,
+`isLocalized()` was false, and the English burn ran. **A source manifest
+that does not name its module gets none of its other lines read.** Every
+source manifest now declares `OpenIDE-Module` (the Ant harness's own
+idiom), the burn is gone from every jar, and because that declaration is a
+second home for the code name the pom derives (v2.131.0's class), the gate
+holds the two equal using the jar's own filename as the pom's side.
+
+### Gate
+
+`ModuleDescriptorsSpeakTest` reads the assembled cluster (bound to
+`packaged-app-gates`): every product jar declares the bundle, the bundle
+and all twelve siblings carry the four keys, no English copy is burned in
+beside them, the declared code name is the jar's own, and the twelve
+`core_nmoxstudio_<lang>.jar` overlays each carry a non-English splash
+title. Four mutants by name: a locale's `OpenIDE-Module-Name` dropped from
+a shipped bundle, the Hindi splash title blanked in its overlay, an English
+name injected into a jar manifest beside the bundle, and a code name that
+disagrees with its jar. Two blessings in `OwnScriptGateTest` written for
+the two names that are a product name plus an acronym (`NMOX Studio API`
+in Chinese and Hindi, whose studio the glossary keeps as `API 工作室` /
+`API स्टूडियो`).
+
+### Recorded
+
+The rest of the RCP-idiom audit came back clean and is written down in
+plan.md: `@Messages` where a class owns its strings, hand bundles where a
+package has dozens of `getMessage` sites (v2.102.1's rule), layer
+`displayName` as `bundlevalue` keys, `@TopComponent.Registration` and
+`@ActionRegistration` display names through the bundle, the platform's own
+strings overlaid in the branding+locale slot the platform searches first.
+
 ## [2.139.0] - 2026-09-11
 
 **A filter that removes noise removes signal with it, and only the picture
@@ -20228,6 +20315,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.140.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.139.0...v2.140.0
 [2.139.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.138.0...v2.139.0
 [2.138.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.137.0...v2.138.0
 [2.137.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.136.0...v2.137.0
