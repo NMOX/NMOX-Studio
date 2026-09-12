@@ -4,6 +4,90 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.144.0] - 2026-09-12
+
+**A walk is the only instrument that can read a name living in code.**
+v2.143.0 translated the 80 menu rows the layer DECLARES, and could enumerate
+them because a parser can read a layer. The rest of the menu bar declares
+nothing: those rows are named by `NbBundle` lookups inside the action classes,
+so no census finds them. A walk of a translated build does, and a grep for a
+shipped value equal to the English label places them. This release is that
+walk, and it closes the platform menu bar: every row a reader meets now reads
+in their own language.
+
+**111 keys across 88 rows, 1,332 values in twelve languages.** Four of
+v2.143.0's own rows were among them — translated, and still English on screen,
+because the layer's key is only a fallback and the class's own name wins.
+
+### What the English values themselves settled
+
+Where a module holds two names for one action, the menu reads one key and the
+Keyboard Shortcuts sheet reads the other. **The English tells you which is
+which: the menu's key is the one carrying the mnemonic.** Both are translated
+now, because leaving one behind gives a single action two names — the v2.118.0
+defect at the scale of a keystroke.
+
+And the mnemonic MIRRORS English rather than being invented. The platform's
+own English menus assign letters without colliding, so inheriting the letter
+inherits that property; inventing 75 more letters would have to dodge the 80
+that v2.143.0 had already placed.
+
+### What the walk found, including in v2.143.0
+
+- **Two rows painted the ampersand.** `हाल का प्रोजेक्ट खोलें(&P)` — the marker
+  itself, on screen, because those two File rows are built by code that never
+  calls the platform's mnemonic helper. Both are rows where English assigns no
+  accelerator and v2.143.0 invented one. Rather than special-case two rows, the
+  mirror law was applied to that population too: fifteen rows drop a letter
+  English does not offer, one row gets back the letter English does offer and
+  the translation had lost, and `MenuRowsSpeakTest` now fails on an invented
+  one.
+- **Two of my keys were not the painted ones.** Palette and Navigator stayed
+  English through a whole build because the Tools row reads
+  `Menu/Tools/PaletteManager` and the Window row reads `LBL_Action`. No static
+  read could have told me; the second walk did.
+- **Eleven more rows nobody had ever seen.** Save, Close Project, Project
+  Properties, Test Project, Documents…, two bookmark-history rows, two
+  matching-word rows, and the Window menu's four submenu headings.
+- **A collision two gates could not see between them.** Two View rows both read
+  `(T)` in Hindi while `MenuRowsSpeakTest` was green, because its population is
+  derived and the other row is not in it. The mnemonic laws now read this
+  release's ledger alongside the derived rows: one law, one home, the whole
+  menu bar.
+
+### The gate
+
+`CodeNamedMenuRowsTest` is a LEDGER, the `PlatformDialogLedgerTest` shape: a
+hand-kept population cannot prove itself complete, but it can be kept honest.
+Every recorded key must still exist in the shipped jar saying exactly what the
+ledger records — so a platform upgrade that renames a key or rewords a label
+fails the build instead of quietly shipping a translation nothing reads — must
+be overlaid in all twelve languages, and must still be a `MessageFormat` choice
+pattern where English is one, with the branches actually differing except in
+the four languages that have no grammatical plural.
+
+### Two scars from this release's own work
+
+- **A seed that read escaped files raw.** These overlays ship as `\uXXXX`, so
+  the character after an ampersand is a backslash: the first seeding collected
+  the letter `\` for every Cyrillic and Devanagari row and concluded the menus
+  were empty. The gate named 53 collisions. *A file format you can read is not
+  the same as a file format you have decoded.*
+- **A heuristic that placed rows by score.** The first pass ranked candidate
+  keys and got several wrong in ways only a reading catches: Move Up landed on
+  a database dialog's button, Save As on the Output window's toolbar. Every row
+  in the ledger is now decided by hand against the menu shadow that produces
+  it.
+
+### Proof
+
+`mvn -o clean verify` green. Five mutants by name: a renamed key, a row dropped
+from one language, a code-named row colliding with a v2.143.0 row in the same
+menu, an invented mnemonic, and a choice pattern flattened to a plain string.
+Walked in Hindi before and after, reading the live menu bar through the
+accessibility API; the second walk is what proved Palette, Navigator and the
+two painted ampersands.
+
 ## [2.143.0] - 2026-09-12
 
 **A dialog cannot be enumerated, but a menu row can.** v2.142.0's ledger
@@ -20586,6 +20670,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.144.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.143.0...v2.144.0
 [2.143.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.142.0...v2.143.0
 [2.142.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.141.0...v2.142.0
 [2.141.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.140.0...v2.141.0

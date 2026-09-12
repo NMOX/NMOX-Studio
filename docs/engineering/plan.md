@@ -7,7 +7,15 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.143.0 — the menu bar's own rows, a population
+*Currency addendum 2026-09-12, at v2.144.0 — the menu rows a parser CANNOT
+enumerate, in the first dated section below: their names are `NbBundle` lookups
+inside the action classes, so a walk of a translated build is the only thing
+that finds them and a grep for a shipped value equal to the English label is
+the only thing that places them. The walk also read v2.143.0's work: two File
+rows painting the ampersand itself (the mnemonic must MIRROR English, never be
+invented), two of this release's own keys proved wrong on screen, and a
+mnemonic collision that neither gate could see because each held half the
+population. Under it, at v2.143.0 — the menu bar's own rows, a population
 that CAN be derived, in the first dated section below. Under it, four more platform
 dialogs walked and translated, with a ledger for the ones that are not.
 Under it, the two dialogs the release before that owed a walk. Under that,
@@ -927,6 +935,69 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — a name that lives in code (v2.144.0)
+
+v2.143.0 could DERIVE its population: a menu row is a `Menu/**.shadow` and the
+action it points at declares a `displayName`, so a parser reads the whole set.
+The rest of the menu bar declares nothing. Those rows are named by `NbBundle`
+lookups inside the action classes, and no census reaches them — a WALK of a
+translated build finds them, and a grep for a shipped bundle value equal to the
+English label places them. 111 keys across 88 rows, 1,332 values in twelve
+languages, and the platform menu bar is closed.
+
+**What the English values settled.** Where a module holds two honest names for
+one action — the menu item and the Keyboard Shortcuts sheet read different keys
+— the English tells you which the menu paints: it is the one carrying the
+mnemonic. Both are translated, because leaving one behind gives a single action
+two names, which is the v2.118.0 defect at the scale of a keystroke. And the
+mnemonic MIRRORS English rather than being invented: the platform's own English
+menus assign letters without colliding, so inheriting the letter inherits the
+property, where inventing 75 more would have to dodge the 80 already placed.
+
+**The walk read the previous release too.** Two File rows painted the marker
+itself — `…(&P)` on screen — because those two are built by code that never
+calls the platform's mnemonic helper, and because their English assigns no
+accelerator while v2.143.0 had invented one. The fix is the class, not the two
+rows: fifteen invented letters dropped, one English letter restored, and
+`MenuRowsSpeakTest` fails on an invented one from now on.
+
+**Two of this release's own keys were wrong, and only the screen could say so.**
+Palette and Navigator went through a whole build translated and still English,
+because the Tools row reads `Menu/Tools/PaletteManager` and the Window row reads
+`LBL_Action`. A grep by value lists the candidates; it cannot rank them.
+
+**A collision neither gate could see.** Two View rows both read `(T)` in Hindi
+while `MenuRowsSpeakTest` was green, because its population is derived and the
+other row is not in it. Splitting a law across two populations is the same
+mistake as splitting a fact across two homes: the mnemonic laws now read this
+release's ledger alongside the derived rows.
+
+**The gate is a ledger.** `CodeNamedMenuRowsTest` follows
+`PlatformDialogLedgerTest`: a hand-kept population cannot prove itself
+complete — a row nobody has walked is simply absent — but every claim in it is
+checked against the cluster the build just assembled. The key must still exist
+saying exactly what the ledger records, so a platform upgrade that renames a key
+or rewords a label fails the build instead of quietly shipping a translation
+nothing reads.
+
+**Two scars from the release's own work, both worth keeping.**
+
+- *A format you can read is not a format you have decoded.* These overlays ship
+  as escaped ASCII, so reading a line raw makes the character after an ampersand
+  a backslash. The first seeding of claimed letters collected `\` for every
+  Cyrillic and Devanagari row and concluded the menus were empty; the gate then
+  named 53 collisions.
+- *A ranking is not a reading.* The first placement pass scored candidate keys
+  and got several wrong in ways only a person reading the list catches — Move Up
+  landed on a database dialog's button, Save As on the Output window's toolbar.
+  Every row in the ledger is now decided by hand against the menu shadow that
+  produces it.
+
+**Recorded, not changed.** `Git`, `IRC`, `Docker`, `Markdown` and `Agent Port
+(MCP)` stay as they are: names, not prose. Four Window submenu headings and the
+rows above are now translated, so the only English left in the bar is those
+names.
 
 ## 2026-09-12 — a menu row can be enumerated (v2.143.0)
 

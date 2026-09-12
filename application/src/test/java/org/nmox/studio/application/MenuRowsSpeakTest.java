@@ -111,7 +111,7 @@ class MenuRowsSpeakTest {
         List<String> clashes = new ArrayList<>();
         for (String locale : LOCALES) {
             Map<String, Map<String, String>> perMenu = new HashMap<>();
-            for (Row row : rows()) {
+            for (Row row : allRows()) {
                 Properties p = overlay(row, locale);
                 String value = p == null ? null : p.getProperty(paintedKey(row));
                 if (value == null) {
@@ -130,6 +130,32 @@ class MenuRowsSpeakTest {
             }
         }
         assertThat(clashes).as("two rows of one menu a keyboard cannot tell apart").isEmpty();
+    }
+
+    @Test
+    @DisplayName("no row invents a mnemonic English does not assign")
+    void mnemonicsMirrorEnglish() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        for (String locale : LOCALES) {
+            for (Row row : allRows()) {
+                Properties p = overlay(row, locale);
+                String value = p == null ? null : p.getProperty(paintedKey(row));
+                if (value == null) {
+                    continue;
+                }
+                // One direction only. Inventing a letter English does not
+                // offer is a defect — two File rows painted a literal "(&P)"
+                // because the code that builds them never processes mnemonics,
+                // and the Hindi walk is what showed it. Going the other way is
+                // not: a menu can hold more rows than the alphabet has letters,
+                // and the Window menu does, so a row there may end up with none.
+                if (mnemonicOf(row.english()) == null && mnemonicOf(value) != null) {
+                    wrong.add(locale + " " + row.key() + ": English assigns no mnemonic and "
+                            + "this invents one (\"" + value + "\")");
+                }
+            }
+        }
+        assertThat(wrong).as("mnemonics no English row offers").isEmpty();
     }
 
     @Test
@@ -155,6 +181,30 @@ class MenuRowsSpeakTest {
             }
         }
         assertThat(wrong).as("menu row values that would misrender or accelerate nothing").isEmpty();
+    }
+
+    /**
+     * Both populations of the menu bar: the rows this gate DERIVES from the
+     * layer, and the rows {@code CodeNamedMenuRowsTest} keeps by hand because
+     * they declare nothing to derive from. The mnemonic law has to see both or
+     * it cannot see a collision BETWEEN them — which is exactly what the Hindi
+     * walk found, two View rows both reading (T), while this gate stayed green.
+     */
+    private static List<Row> allRows() throws IOException {
+        List<Row> all = new ArrayList<>(rows());
+        try (InputStream in = MenuRowsSpeakTest.class
+                .getResourceAsStream("code-named-menu-rows.txt")) {
+            assertThat(in).as("the code-named ledger").isNotNull();
+            for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n").split("\n")) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                String[] f = line.split("\\|", 5);
+                all.add(new Row(f[0], f[1], f[2], f[3], f[4]));
+            }
+        }
+        return all;
     }
 
     /** {@code A&bc} and {@code abc(&B)} both declare B; no marker gives null. */

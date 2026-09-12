@@ -1,0 +1,126 @@
+# The menu rows whose display names live in action CODE, not in the layer.
+#
+# v2.143.0 could DERIVE its population: every row it translated is a
+# Menu/**.shadow whose action declares a displayName in the layer. These
+# rows declare nothing -- their names are NbBundle lookups inside the
+# action classes -- so no parser can enumerate them. A walk of a
+# translated build found them and a grep by VALUE placed them, and this
+# file is the record of that walk. It is a ledger, like the platform
+# dialog ledger: the population is hand-kept, and every claim in it is
+# checked against the assembled cluster by CodeNamedMenuRowsTest, while
+# MenuRowsSpeakTest reads it alongside its own rows so the mnemonic laws
+# see the whole menu bar at once.
+#
+# menu | jar | package | key | the English value, mnemonic included
+
+BuildProject|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Check_File|Chec&k File
+BuildProject|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_RunSingleAction_Name|Run &File
+BuildProject|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_SetMainProjectAction_Name|Set Main Project
+BuildProject|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_TestSingleAction_Name|T&est {0,choice,0#File|1#File|1<Files}
+BuildProject|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_TestProjectAction_Name|&Test {0,choice,0#Project|1#Project ({1})|1<{0} Projects}
+BuildProject|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_File|&Validate File
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|find_next_main_menu_item|Find Ne&xt
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|find_previous_main_menu_item|Find Pre&vious
+Edit|org-netbeans-modules-editor-search.jar|org/netbeans/modules/editor/search/actions|find-selection|Find Selection
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|find_selection_main_menu_item|Find &Selection
+Edit|org-openide-actions.jar|org/openide/actions|Paste|&Paste
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|paste-from-clipboard|Paste
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|paste-formated|Paste Formatted
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|paste_formatted_main_menu_item|Paste F&ormatted
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|select-all|Select All
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|select_all_main_menu_item|Select &All
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|select-identifier|Select Identifier
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|select_identifier_main_menu_item|Select &Identifier
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|start-macro-recording|Start Macro Recording
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|start_macro_recording_main_menu_item|Start &Macro Recording
+Edit|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|stop-macro-recording|Stop Macro Recording
+Edit|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|stop_macro_recording_main_menu_item|Stop Macro Recordin&g
+File|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_CloseProjectAction_Name|&Close {0,choice,0#Project|1#Project ({1})|1<{0} Projects}
+File|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui|Menu/File/Export|Expo&rt Project
+File|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui|Menu/File/Import|&Import Project
+File|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|CTL_ExportHtmlAction|Print to &HTML...
+File|org-netbeans-modules-print.jar|org/netbeans/modules/print/action|MNU_Print_Action|&Print...
+File|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_CustomizeProjectAction_Name|Project {0,choice,0#Proper&ties|1#Proper&ties ({1})|1<Project}
+File|org-openide-actions.jar|org/openide/actions|Save|&Save
+File|org-openide-loaders.jar|org/openide/loaders|CTL_SaveAsAction|Sa&ve As...
+GoTo|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|jump-list-prev|Back
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|jump_back_main_menu_item|&Back
+GoTo|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/modules/editor/bookmarks/ui|bookmark-history-popup-next|Bookmark History Popup Next
+GoTo|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/modules/editor/bookmarks/ui|bookmark-history-popup-previous|Bookmark History Popup Previous
+GoTo|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|jump-list-next|Forward
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|jump_forward_main_menu_item|For&ward
+GoTo|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|goto-declaration|Go to Declaration
+GoTo|org-netbeans-modules-editor-actions.jar|org/netbeans/modules/editor/actions|goto-declaration_menu_text|Go to &Declaration
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|goto_declaration_main_menu_edit_item|Go to &Declaration
+GoTo|org-openide-actions.jar|org/openide/actions|Goto|Go to &Line...
+GoTo|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_RecentViewListAction|Go to P&revious Window
+GoTo|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|goto-source|Go to Source
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|goto_source_main_menu_edit_item|Go to &Source
+GoTo|org-netbeans-modules-csl-api.jar|org/netbeans/modules/csl/core|goto_source_open_source_not_formatted|Go to Source
+GoTo|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|goto-super-implementation|Go to Super Implementation
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|goto_super_implementation_main_menu_edit_item|Go to Super &Implementation
+GoTo|org-netbeans-modules-jumpto.jar|org/netbeans/modules/jumpto/symbol|TXT_GoToSymbol|Go to S&ymbol...
+GoTo|org-netbeans-modules-jumpto.jar|org/netbeans/modules/jumpto/type|TXT_GoToType|Go to &Type...
+GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|jump_back_main_menu_item-main-menu|Last &Edit Location
+GoTo|org-netbeans-core.jar|org/netbeans/core/actions|JumpNextAction|Ne&xt Error
+GoTo|org-netbeans-core.jar|org/netbeans/core/actions|JumpPrevAction|&Previous Error
+GoTo|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/lib/editor/bookmarks/actions|bookmark-toggle|Toggle Bookmar&k
+Help|org-netbeans-modules-utilities.jar|org/netbeans/modules/url|Menu/Help/netbeans-kb.url|Online &Docs and Support
+RunProject|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|LBL_DebugSingleAction_Name|Debu&g {0,choice,0#File|1#File|1<Files}
+RunProject|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|LBL_DebugTestSingleAction_Name|Debug Test {0,choice,0#Fi&le|1#Fi&le|1<Fi&les}
+RunProject|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Evaluate|Evaluate E&xpression...
+Source|org-netbeans-modules-editor-completion.jar|org/netbeans/modules/editor/completion|completion-show-main_menu_item|Complete &Code...
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|copy-selection-else-line-down-main_menu_item|Duplic&ate Down
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|copy-selection-else-line-up-main_menu_item|Dup&licate Up
+Source|org-netbeans-spi-editor-hints.jar|org/netbeans/modules/editor/hints|NM_FixAction|Fi&x Code...
+Source|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|format|Format
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|format_main_menu_item|&Format
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/codegen|generate-code-main-menu-source-item|&Insert Code...
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/codegen|popup-generate-code|Insert Code...
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|word_match_next_main_menu_item|Insert &Next Matching Word
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|word_match_previous_main_menu_item|Insert &Previous Matching Word
+Source|org-netbeans-modules-editor-actions.jar|org/netbeans/modules/editor/actions|move-code-element-down_menu_text|Move Code Element &Down
+Source|org-netbeans-modules-editor-actions.jar|org/netbeans/modules/editor/actions|move-code-element-up_menu_text|Move Code Element &Up
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|move-selection-else-line-down-main_menu_item|Move Do&wn
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|move-selection-else-line-up-main_menu_item|Mo&ve Up
+Source|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|remove-trailing-spaces|Remove Trailing Spaces
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|remove_trailing_spaces_main_menu_item|Remove &Trailing Spaces
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|shift_line_left_main_menu_item|Shift &Left
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|shift_line_right_main_menu_item|Shift &Right
+Source|org-netbeans-modules-editor-completion.jar|org/netbeans/modules/editor/completion|documentation-show-main_menu_item|Show &Documentation
+Source|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|tooltip-show|Show Method Parameters
+Source|org-netbeans-modules-editor-completion.jar|org/netbeans/modules/editor/completion|tooltip-show-main_menu_item|&Show Method Parameters
+Source|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|toggle_comment_main_menu_item|Toggle Co&mment
+Tools|org-netbeans-modules-favorites.jar|org/netbeans/modules/favorites|ACT_Add|Add to Favo&rites
+Tools|org-netbeans-core-ui.jar|org/netbeans/core/ui/sysopen|CTL_OpenParentInSystemAction|Locate in System
+Tools|org-netbeans-core-ui.jar|org/netbeans/core/ui/sysopen|CTL_OpenParentInTabAction|Open Parent as Tab
+Tools|org-netbeans-core-ui.jar|org/netbeans/core/ui/sysopen|CTL_OpenInTabAction|Open as Tab
+Tools|org-netbeans-core-ui.jar|org/netbeans/core/ui/sysopen|CTL_OpenInSystemAction|Open in System
+Tools|org-netbeans-modules-dlight-terminal.jar|org/netbeans/modules/dlight/terminal/action|CTL_OpenInTerminalActionDescr|Open in Terminal
+Tools|org-netbeans-spi-palette.jar|org/netbeans/modules/palette/resources|Menu/Tools/PaletteManager|&Palette
+Versioning|org-netbeans-modules-diff.jar|org/netbeans/modules/diff|CTL_PatchActionName|Appl&y Diff Patch...
+Versioning|org-netbeans-modules-versioning-core.jar|org/netbeans/modules/versioning/core|CTL_LocalHistoryMenuName|History
+Versioning|org-netbeans-modules-versioning-core.jar|org/netbeans/modules/versioning/core|CTL_LocalHistoryMenuNameLoc|His&tory
+Versioning|org-netbeans-modules-versioning-util.jar|org/netbeans/modules/versioning/shelve/impl|CTL_Menu_ShelveChanges|&Shelve Changes
+View|org-netbeans-modules-editor.jar|org/netbeans/modules/editor|Menu/View/CodeFolds|&Code Folds
+View|org-netbeans-core-multiview.jar|org/netbeans/core/multiview|CTL_EditorsAction|&Editors
+View|org-netbeans-modules-versioning-ui.jar|org/netbeans/modules/versioning/ui/diff|CTL_ShowDiffSidebar|Show &Diff Sidebar
+View|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_ShowOnlyEditor|Show &Only Editor
+View|org-netbeans-modules-versioning-core.jar|org/netbeans/modules/versioning/core|CTL_MenuItem_ShowTextAnnotations|Show &Versioning Labels
+View|org-netbeans-modules-versioning.jar|org/netbeans/modules/versioning|CTL_MenuItem_ShowTextAnnotations|Show &Versioning Labels
+View|org-netbeans-core-multiview.jar|org/netbeans/core/multiview|CTL_SplitAction|&Split
+View|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_ToolbarsListAction|&Toolbars
+View|org-netbeans-core-ui.jar|org/netbeans/core/ui/resources|Toolbars|Toolbars
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_CloseAllDocumentsAction|Close &All Documents
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_CloseAllButThisAction_MainMenu|Close Ot&her Documents
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_CloseWindowAction_MainMenu|Close W&indow
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/resources|Menu/Window/ConfigureWindow|Config&ure Window
+Window|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/resources|Menu/Window/Debug|De&bugging
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/documentgroup|Menu_DOCUMENT_GROUPS|Document Groups
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_DocumentsAction|&Documents...
+Window|org-netbeans-core-windows.jar|org/netbeans/core/windows/actions|CTL_SwitchToRecentDocumentAction|&Editor
+Window|org-netbeans-core-ui.jar|org/netbeans/core/ui/resources|Menu/Window/Tools|IDE &Tools
+Window|org-netbeans-spi-navigator.jar|org/netbeans/modules/navigator|LBL_Action|&Navigator
+Window|org-netbeans-spi-navigator.jar|org/netbeans/modules/navigator|LBL_Navigator|Navigator
+Window|org-netbeans-spi-palette.jar|org/netbeans/modules/palette|CTL_Component_palette|Palette
+Window|org-netbeans-core-ui.jar|org/netbeans/core/ui/resources|Menu/Window/Web|&Web
