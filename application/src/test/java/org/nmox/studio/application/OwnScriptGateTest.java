@@ -85,6 +85,46 @@ class OwnScriptGateTest {
     private static final Map<String, String> STAYS_LATIN = new LinkedHashMap<>();
 
     static {
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colActive",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colActive",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colCategory",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colCategory",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colCount",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colCount",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colCreated",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colCreated",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colName",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colName",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colReclaimable",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colReclaimable",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colReference",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colReference",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colScope",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colScope",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_colSize",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_colSize",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("ru DockerPanelTopComponent_reclaim",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("zh DockerPanelTopComponent_reclaim",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Russian and Chinese panels keep the header and the row in one vocabulary, which is what a reader matching the panel against their terminal needs.");
         STAYS_LATIN.put("ru NodeKind_hzNetwork",
                 "one member of Hetzner's product family, which the Russian palette keeps "
                 + "whole: HZ Server, HZ Volume, HZ Firewall, HZ Floating IP and HZ Load "
@@ -217,10 +257,13 @@ class OwnScriptGateTest {
         if (t.isEmpty() || t.contains("{") || t.contains("\\") || t.contains("<")) {
             return false;
         }
-        if (!t.equals(t.toLowerCase(java.util.Locale.ROOT))
-                && t.equals(t.toUpperCase(java.util.Locale.ROOT))) {
-            return false;   // an ALL-CAPS machine token, not a word
-        }
+        // NOT filtered: an ALL-CAPS value. The first cut of this gate dropped
+        // them as machine tokens, and the Hindi walk photographed three that
+        // were not — the rack's DEVICE SHELF header, its RACK EMPTY placard
+        // and the Infra Designer's red DEPLOY button, all reading English in
+        // a Devanagari window. A filter that removes noise removes signal
+        // with it, and only the picture says which. The ten that ARE machine
+        // tokens are written down below instead, where a person can disagree.
         return PROSE.matcher(t).matches();
     }
 
