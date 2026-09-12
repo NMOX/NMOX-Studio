@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
+import java.util.List;
 import org.nmox.studio.core.util.Bundles;
 
 
@@ -21,17 +22,23 @@ import org.nmox.studio.core.util.Bundles;
  */
 public final class TemplateText {
 
+    private static final String NAME = "TemplateName_";
+    private static final String DESC = "TemplateDesc_";
+
+    /** The two key families this seam owns; their English is the enum's own. */
+    static final List<String> KEY_PREFIXES = List.of(NAME, DESC);
+
     private TemplateText() {
     }
 
     /** The row's title: translated where it is prose, as written where it is a name. */
     public static String name(ProjectTemplates template) {
-        return lookup("TemplateName_" + template.name(), template.getDisplayName());
+        return lookup(NAME + template.name(), template.getDisplayName());
     }
 
     /** The row's second line: what this template gives you. */
     public static String description(ProjectTemplates template) {
-        return lookup("TemplateDesc_" + template.name(), template.getDescription());
+        return lookup(DESC + template.name(), template.getDescription());
     }
 
     private static String lookup(String key, String english) {

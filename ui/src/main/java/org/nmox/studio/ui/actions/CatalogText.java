@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import java.util.List;
 import java.util.Locale;
 import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.projectstudio.LearningCatalog;
@@ -21,12 +22,22 @@ import org.nmox.studio.rack.projectstudio.LearningCatalog;
  */
 final class CatalogText {
 
+    private static final String CATEGORY = "LearnCategory_";
+    private static final String FAMILY = "LearnFamily_";
+
+    /**
+     * The two key families this seam owns. Their English is the catalogue's
+     * own — {@code Category.label} and a space's {@code family} string —
+     * which is exactly why a family that is a NAME carries no key at all.
+     */
+    static final List<String> KEY_PREFIXES = List.of(CATEGORY, FAMILY);
+
     private CatalogText() {
     }
 
     /** "Languages" / "Sprachen" / "Программирование" — the picker's grouping word. */
     static String category(LearningCatalog.Category category) {
-        return lookup("LearnCategory_" + category.name(), category.label);
+        return lookup(CATEGORY + category.name(), category.label);
     }
 
     /** A family as the picker shows it: translated when it is prose, as written when it is a name. */
@@ -34,7 +45,7 @@ final class CatalogText {
         if (family == null || family.isBlank()) {
             return "";
         }
-        return lookup("LearnFamily_" + key(family), family);
+        return lookup(FAMILY + key(family), family);
     }
 
     /** A properties-safe key for a family that may hold spaces, slashes and dots. */

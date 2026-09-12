@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.actions;
 
+import java.util.List;
 import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.projectstudio.ContractKit;
 
@@ -19,11 +20,16 @@ import org.nmox.studio.rack.projectstudio.ContractKit;
  */
 final class ChainText {
 
+    private static final String CHAIN = "Chain_";
+
+    /** The key family this seam owns; its English is {@code Chain.label}. */
+    static final List<String> KEY_PREFIXES = List.of(CHAIN);
+
     private ChainText() {
     }
 
     /** A chain as the kit's combo shows it. */
     static String label(ContractKit.Chain chain) {
-        return Bundles.optional(ChainText.class, "Chain_" + chain.name(), chain.label);
+        return Bundles.optional(ChainText.class, CHAIN + chain.name(), chain.label);
     }
 }

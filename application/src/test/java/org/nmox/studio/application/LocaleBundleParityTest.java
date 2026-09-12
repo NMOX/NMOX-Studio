@@ -85,33 +85,33 @@ class LocaleBundleParityTest {
      * A translated key whose English is NOT in the base bundle, because it
      * has one home somewhere better.
      *
-     * <p>Two families, and both are the same shape. The shelf's 59 device
-     * descriptions (v2.132.0) have their English in {@code DeviceType}, the
-     * record that GENERATES {@code docs/devices.md}. The learning
-     * catalogue's grouping words (v2.133.0) have theirs in the catalogue
-     * itself — {@code Category.label} and a space's own {@code family}
-     * string — which is why a family that is a NAME carries no key at all
-     * and {@code CatalogText} returns it unchanged. In both cases a copy in
-     * a base bundle would be the second home v2.131.0 spent a release
-     * removing. Skipping them here does not leave them unchecked:
-     * {@code DeviceShelfSpeaksTest} and {@code LearningCatalogSpeaksTest}
-     * hold them to a STRICTER population than this gate could — the shipped
-     * catalogues themselves — and to the space they are painted in.
+     * <p>Five catalogue seams (v2.132.0–v2.134.0) share one shape: the
+     * English is the RECORD — {@code DeviceType}, which generates
+     * {@code docs/devices.md}; the learning catalogue's own
+     * {@code Category.label} and {@code family} strings; the template,
+     * block and chain enums this codebase reads — and a copy in a base
+     * bundle would be the second home v2.131.0 spent a release removing.
+     *
+     * <p>This gate used to keep its own list of their key prefixes, and
+     * that list was itself a second home: it went stale twice (v2.132.0
+     * taught it two families, v2.134.0 four more), and each time the
+     * symptom was this gate failing on keys that were perfectly correct,
+     * with a base-bundle copy as the tempting way to quiet it. The fact
+     * lives at the seams now — see {@link SeamKeyPrefixes} — so a sixth
+     * seam is exempt the moment it declares what it owns, and a seam that
+     * declares the WRONG prefix still fails here, by name, on its real
+     * keys.
+     *
+     * <p>Skipping a family is not leaving it unchecked:
+     * {@code DeviceShelfSpeaksTest}, {@code LearningCatalogSpeaksTest} and
+     * {@code CatalogueEnumsSpeakTest} hold these to a STRICTER population
+     * than this gate could — the shipped catalogues and enums themselves.
      */
     private static boolean baseLivesElsewhere(String key) {
-        return key.startsWith("DeviceDesc_")
-                || key.startsWith("LearnCategory_")
-                || key.startsWith("LearnFamily_")
-                // v2.134.0: the three catalogues an ENUM holds. Their English
-                // is the enum's own constructor argument — the record a doc, a
-                // search and this codebase all use — and a base-bundle copy
-                // would be the second home v2.131.0 spent a release removing.
-                // CatalogueEnumsSpeakTest holds them to the shipping enums.
-                || key.startsWith("BlockKind_")
-                || key.startsWith("TemplateName_")
-                || key.startsWith("TemplateDesc_")
-                || key.startsWith("Chain_");
+        return BASE_LIVES_ELSEWHERE.stream().anyMatch(key::startsWith);
     }
+
+    private static final java.util.Set<String> BASE_LIVES_ELSEWHERE = SeamKeyPrefixes.all();
 
     private static void stripDescriptors(Properties p) {
         p.stringPropertyNames().stream()

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.blockstudio;
 
+import java.util.List;
 import org.nmox.studio.core.util.Bundles;
 
 
@@ -18,12 +19,17 @@ import org.nmox.studio.core.util.Bundles;
  */
 public final class BlockText {
 
+    private static final String KIND = "BlockKind_";
+
+    /** The key family this seam owns; its English is {@code BlockKind.display()}. */
+    static final List<String> KEY_PREFIXES = List.of(KIND);
+
     private BlockText() {
     }
 
     /** "Element" / "Element" / "元素" — the piece's name on the palette. */
     public static String of(BlockKind kind) {
-        return Bundles.optional(BlockText.class, "BlockKind_" + kind.name(), kind.display());
+        return Bundles.optional(BlockText.class, KIND + kind.name(), kind.display());
     }
 
     /**
