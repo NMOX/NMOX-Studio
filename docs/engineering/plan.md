@@ -7,7 +7,8 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.136.0 — the second home the arc review
+*Currency addendum 2026-09-11, at v2.137.0 — the value no gate was reading is
+the first dated section below. Under it, the second home the arc review
 itself left behind is the first dated section below. Under it, the arc review
 of the three
 catalogue releases opens the dated sections below: the fallback that cost
@@ -920,6 +921,59 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the value no gate was reading (v2.137.0)
+
+Thirteen languages, 2,848 keys, a parity gate over every bundle in the
+assembled cluster, and a census of every catalogue that carries prose. All
+of it measures whether a KEY EXISTS. None of it could see whether the value
+behind the key had ever been translated.
+
+**What that blind spot shipped:** all sixteen rack preset names in English
+for German, Russian, Ukrainian and Polish readers, each sitting directly
+above a description in their own language. Eight other languages translated
+both halves. Nothing in the build could tell the difference.
+
+**How it was found: a photograph.** The German walk of the assembled app
+showed DB Studio's console reading `RUN` — and `RUN` is translated in ten
+languages (`EXÉCUTER`, `运行`, `URUCHOM`, `ВЫПОЛНИТЬ`). One button was
+enough to ask the general question, and the general question was worth
+measuring before answering.
+
+**The measurement is what shaped the release.** 226 of 2,848 keys hold a
+value byte-identical to their English in at least one language, and the
+overwhelming majority are correct: `Name:` is `Name:` in German, `Message`
+and `Structure` are French words, Filipino borrows freely, and 129 keys are
+identical in ALL twelve because they are names. A gate demanding a blessing
+per key would need ~226 of them and would decide nothing — the definition of
+a blessing that has stopped being a decision.
+
+**So the gate reads a shape instead.** A `…Name` and its `…Description` are
+two halves of one row on screen. A translated sentence under an English
+heading cannot be explained by vocabulary, because the SAME translator wrote
+the sentence beneath it. That signal is clean enough to gate with two
+blessings, and both are real claims: `Minimap` and `Sticky scroll` are the
+words those languages kept for controls whose own descriptions explain them.
+
+*A gate that cannot be built for the general case can still be built for the
+case where the evidence is unambiguous — and the general case is then
+RECORDED at its measured size rather than pretended away.* The lone-button
+class (a value with no sibling row to compare against) is written down at
+226 keys, the same decision shape as the untranslated tutorials in v2.133.0.
+`EXPLAIN` stays English in all twelve deliberately: it is the SQL keyword
+the button emits, not a word.
+
+**Two things the fix had to check before moving a label**, both from earlier
+scars: nothing resolves a preset by its display name (every consumer names
+the enum constant — the v2.130.0 `activeEnvironment` question), and the
+translation rule was already settled by the eight languages that followed
+it, which translate the prose and keep the technology tokens — v2.134.0's
+`TemplateName_` rule, arrived at independently by eight translators.
+
+**The gate's own first run refused to pass.** Its cluster path was wrong, so
+it scanned zero jars, and the assertion that an empty scan proves nothing
+fired exactly as written. That is the fifth mutant, and nobody had to write
+it.
 
 ## 2026-09-11 — the fact had two homes, and one of them was in a gate (v2.136.0)
 
