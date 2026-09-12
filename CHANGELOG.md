@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.139.0] - 2026-09-11
+
+**A filter that removes noise removes signal with it, and only the picture
+says which.** v2.138.0's gate dropped ALL-CAPS values as machine tokens —
+the docker column headings that made the census unreadable. The Hindi walk,
+the first ever taken of a Devanagari build, photographed three that were not
+machine tokens at all: the rack's `DEVICE SHELF` header and `RACK EMPTY`
+placard, and the Infra Designer's red `DEPLOY` button, every one of them
+reading English inside a window that was otherwise wholly Hindi.
+
+The filter is gone. The ten headings that ARE `docker ps` output are written
+down instead, where a person can disagree with them: a reader matching the
+panel against their terminal needs the header and the row in one vocabulary,
+and the Russian and Chinese panels keep both.
+
+**Two of the three sat below the gate's own evidence line.** `DEPLOY` and
+`SKIP` are translated by seven of twelve, under the eight this gate requires
+before calling something a word — so the gate would not have caught them at
+any filter setting. The photograph did. *The gate and the walk are two
+instruments, and the one that finds a thing is not always the one you were
+holding.*
+
+**One word, two renderings, one window.** Hindi's Contract Studio called the
+same thing `artifact` in five places and आर्टिफ़ैक्ट in the line that appears
+when there are none — the v2.118.0 one-window-two-names defect at the scale
+of a noun. It has one word now.
+
+**And one thing the walk showed that is NOT a defect**, checked before it was
+"fixed": the Project Studio toolbar's `Projects टैब` names the PLATFORM's own
+Projects view, which ships no localization in any language (measured at
+v2.101.1). Naming a door as the reader will actually see it is the v2.118.0
+wayfinding law working, not a miss.
+
+**The general class stays a walk finding, and now the reason is measured.**
+Three ways to gate "this value was never translated" were tried against the
+assembled cluster and all three are unusable:
+
+| candidate signal | rows | why it cannot gate |
+| --- | --- | --- |
+| value identical to its English | 226 | `Name:` is `Name:` in German; `Message` is French |
+| an English word inside a translated sentence | 1,875 | `Authorization`, `multipart`, `schema`, `nosniff` |
+| one word rendered both ways in one package | 393 | a term in one context, a plain word in another |
+
+What IS gateable is written down and shipped: a half-translated ROW
+(v2.137.0) and a word in the wrong script (v2.138.0). *Recording why the
+other three do not work is worth more than a fourth attempt.*
+
+Two mutants by name.
+
+### Fixed
+- `DEVICE SHELF` and `RACK EMPTY` in Hindi, `RACK EMPTY` in Russian.
+- The Infra Designer's `DEPLOY` and `SKIP` in Hindi, Russian and Ukrainian.
+- One Hindi word for a contract artifact, in the window that showed two.
+
+### Changed
+- `OwnScriptGateTest` no longer filters ALL-CAPS values; the ten docker
+  column headings are blessed with the reason a reader would give.
+
 ## [2.138.0] - 2026-09-11
 
 **In a script that shares no letters with English, an English word is a
@@ -20170,6 +20228,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.139.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.138.0...v2.139.0
 [2.138.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.137.0...v2.138.0
 [2.137.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.136.0...v2.137.0
 [2.136.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.135.0...v2.136.0

@@ -7,7 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-11, at v2.138.0 — a door's name is not one key, in
+*Currency addendum 2026-09-11, at v2.139.0 — the filter that hid what the
+picture showed, in the first dated section below. Under it, a door's name is not
+one key, in
 the first dated section below. Under it, the value no gate was reading is
 the first dated section below. Under it, the second home the arc review
 itself left behind is the first dated section below. Under it, the arc review
@@ -922,6 +924,59 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-11 — the filter that hid what the picture showed (v2.139.0)
+
+v2.138.0's gate needed a filter to be readable at all: ALL-CAPS values were
+dropped as machine tokens, because without that the docker panel's column
+headings flood every run. The filter was reasonable and it was wrong, and
+the thing that proved it wrong was a photograph.
+
+**The first Hindi walk ever taken** — Devanagari renders correctly in Swing,
+which was itself worth knowing — showed three ALL-CAPS labels reading English
+inside a window that was otherwise wholly Hindi: the rack's `DEVICE SHELF`
+header, its `RACK EMPTY` placard, and the Infra Designer's red `DEPLOY`
+button. None is a machine token. All three are labels a person reads.
+
+**Two of them sat below the gate's own evidence line.** `DEPLOY` and `SKIP`
+are translated by seven of twelve, under the eight the gate requires before
+calling a value a word — so no filter setting would have caught them. *The
+gate and the walk are two instruments, and the one that finds a thing is not
+always the one you were holding.* That is the argument for keeping the walk
+in the unit shape even when the gates are good, and this release is the
+cleanest evidence for it the project has.
+
+**The filter is gone; the ten real machine tokens are written down instead**,
+with the reason a reader would give: they are the headings `docker ps` and
+`docker system df` print, above rows that are that command's own output, and
+the Russian and Chinese panels keep header and row in one vocabulary on
+purpose. A blessing a person can disagree with beats a filter nobody can see.
+
+**One word, two renderings, one window**: Hindi's Contract Studio said
+`artifact` five times and आर्टिफ़ैक्ट once. That is v2.118.0's
+one-window-two-names defect at the scale of a noun, and the same cure — pick
+the window's own word.
+
+**And one thing the picture showed that was NOT a defect**, checked before
+touching it: `Projects टैब` names the PLATFORM's Projects view, which ships
+no localization in any language (measured at v2.101.1). Naming a door as the
+reader will actually see it is the wayfinding law working. *A walk finding is
+a question, not a verdict.*
+
+**The general class is now a measured refusal.** Three candidate signals for
+"this value was never translated" were run against the assembled cluster:
+
+- identical to its English — 226 rows, and `Name:` really is `Name:` in
+  German while `Message` and `Structure` really are French;
+- an English word inside a translated sentence — 1,875 rows, mostly
+  `Authorization`, `multipart`, `schema`, `nosniff`;
+- one word rendered both ways inside one package — 393 rows, mostly a term
+  in one context beside a plain word in another.
+
+None can carry a gate. The two that can — a half-translated ROW (v2.137.0)
+and a word in the wrong script (v2.138.0) — ship and hold. *Writing down why
+three candidates fail is worth more than a fourth attempt, and it is the
+ledger-94 shape: a refusal with its measurement attached.*
 
 ## 2026-09-11 — a door's name is not one key (v2.138.0)
 
