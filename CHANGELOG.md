@@ -4,6 +4,97 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.142.0] - 2026-09-12
+
+**The dialog where a user picks their language was itself in English.** The
+previous release named the remaining i18n gap as a long tail of platform
+dialogs nobody had photographed, and the instrument to photograph them had
+just been built. Four were walked in a Hindi build — Options, Go to File,
+Find in Projects, the Templates manager — and all four were English from
+title to button. Options is the one that matters most: Tools ▸ Options is
+where NMOX Studio offers its Language list, so the surface a reader uses to
+ASK for Hindi greeted them with `General / Editor / Fonts & Colors / Keymap`
+across the top and `Web Browser`, `Proxy Settings`, `Test connection`,
+`Export…`, `Import…`, `Apply` below it.
+
+**The class is v2.141.0's, confirmed four more times, and one detail proves
+it.** `OK` has been overlaid in twelve languages since v2.127.0, and the
+Options dialog and Go to File still painted it in English — because each
+builds its OWN button row from its OWN bundle key (`CTL_OK`, `CTL_Open`).
+The shared message-dialog buttons never reach a dialog that does not use
+them. *An overlay covers a bundle, not a surface: two dialogs can show the
+same word and read it from different homes.*
+
+### Changed
+
+- **Options speaks every language**: the dialog chrome (title, Apply,
+  Export…, Import…, its own OK, the empty-search verdict), all seven
+  platform category names in the strip — each owned by a different module,
+  so seven overlays — and the eleven controls the General panel actually
+  paints, including the default-browser row, which belongs to a module of
+  its own.
+- **Go to File** and **Find in Projects**, the two navigation doors a web
+  developer opens daily, plus **Replace in Projects** which shares the form,
+  and the **Templates manager**.
+- Sixteen overlay packages, 1,884 values across twelve languages. The
+  vocabulary is not new: a census over our own shipped bundles supplied the
+  house spelling for seventeen of these words (General, Apply, Port, Host,
+  Reload, Edit, Add, Delete, Rename, Close, Find, Location, Scope,
+  Duplicate, Remove, Name, Version), and `OK` is READ from the v2.127.0
+  overlay at generation time rather than authored a second time.
+
+### The discipline this release is built on
+
+The General panel's bundle holds over two hundred keys and paints eleven of
+them — the rest are Java package views, code folding, Mozilla and Internet
+Explorer, and usage statistics for "the NetBeans IDE". **Only keys the
+photograph showed are overlaid.** Translating the other two hundred would be
+work with no surface, and it would claim a coverage the product does not
+have.
+
+The same lesson arrived three more times inside the release. After every
+LABEL on the Find form was translated, the second photograph still showed two
+English words — `Literal` and `Open Projects` — because a combo's MODEL lives
+wherever its provider lives, not with the form: the match types in
+`org/netbeans/api/search`, the scopes in a utilities module. And the
+Templates manager kept an English `Rename` beside nine translated buttons
+because that bundle carries the word TWICE — `Action_Rename` for the popup
+and `BTN_TemplatesPanel_RenameButton` for the button — so the overlay landed
+on the key a reader never sees. All are overlaid now, and each was found the
+same way: by looking at the picture again.
+
+### Gate
+
+`DialogChromeOverlayGateTest` carries all sixteen overlays under its four
+laws. Its jar lookup had to be widened first: the first cut resolved against
+`platform/modules` and these modules ship across the platform and IDE
+clusters, so the gate failed on its own new overlays. Two overlays carry an
+empty must-differ list with a reason — `Editor` is the word in German,
+Spanish, Portuguese, Indonesian and Filipino, and `Team` is the German word.
+
+`PlatformDialogLedgerTest` is new, and it is honest about what it cannot
+do. **This population cannot be derived**: a dialog is whatever some action
+decides to show, and only a walk can tell you what it paints, so the ledger
+is hand-kept. Every claim it makes is checked — each action id still
+resolves in the assembled cluster's own layers (a platform rename fails the
+build rather than orphaning a row), each OVERLAID row really carries twelve
+locale files, and each RECORDED row gives a reason a person can disagree
+with.
+
+### Recorded, not fixed
+
+- **The Advanced Proxy dialog** behind Options ▸ General ▸ More… is opened
+  by a BUTTON, and the forge's walk-only dialog shot drives actions. Reaching
+  it needs an instrument that can press a named button first, so the panel
+  stays English rather than being translated unseen.
+- **The interiors of the Editor, Fonts and Colors and Keymap panels** are
+  deep configuration surfaces of several hundred keys each. Their category
+  NAMES are overlaid so the strip reads in the reader's language; the panels
+  are the next walk.
+- **Go to Type** shares the jumpto module with Go to File and has its own
+  bundle package. It was not photographed this shift, so nothing is claimed
+  about it.
+
 ## [2.141.0] - 2026-09-12
 
 **A translated menu opens an English dialog, one dialog family over — and
@@ -20387,6 +20478,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.142.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.141.0...v2.142.0
 [2.141.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.140.0...v2.141.0
 [2.140.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.139.0...v2.140.0
 [2.139.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.138.0...v2.139.0
