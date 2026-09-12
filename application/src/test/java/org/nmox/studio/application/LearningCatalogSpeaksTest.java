@@ -59,6 +59,9 @@ class LearningCatalogSpeaksTest {
     /** The fields {@code LearningCatalog.translations} reads. */
     private static final List<String> TRANSLATABLE = List.of("name", "blurb", "tutorial");
 
+    /** The fields {@code Checkpoints.translations} reads (v2.134.0). */
+    private static final List<String> CHECKED = List.of("label", "hint");
+
     /**
      * A translated pitch longer than this multiple of its English is a
      * paste, not a translation. Measured: the widest real value runs 1.46x
@@ -260,6 +263,75 @@ class LearningCatalogSpeaksTest {
         }
         assertThat(dead).as("a grouping word nobody reads usually means the group "
                 + "it was meant for is spelled differently and reads English").isEmpty();
+    }
+
+    @Test
+    @DisplayName("every checkpoint reads in every language the product offers")
+    void everyCheckpointSpeaks() throws IOException {
+        List<String> silent = new ArrayList<>();
+        int measured = 0;
+        for (JSONObject space : shippedSpaces()) {
+            JSONArray checks = space.optJSONArray("checkpoints");
+            if (checks == null) {
+                continue;
+            }
+            for (int i = 0; i < checks.length(); i++) {
+                JSONObject c = checks.getJSONObject(i);
+                String where = space.getString("slug") + "#" + i;
+                for (String lang : languages()) {
+                    for (String field : CHECKED) {
+                        // a hint may be legitimately absent in English; when it
+                        // is present it is the sentence that teaches, and it
+                        // must reach the reader in their own language
+                        if (c.optString(field, "").isBlank()) {
+                            continue;
+                        }
+                        measured++;
+                        if (c.optString(field + "." + lang, "").isBlank()) {
+                            silent.add(lang + " " + where + "." + field);
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(measured).as("the gate should measure every checkpoint sentence")
+                .isGreaterThan(150);
+        assertThat(silent).as("Check My Work would answer in English inside a "
+                + "translated space — the place a learner is most stuck").isEmpty();
+    }
+
+    @Test
+    @DisplayName("every checkpoint sibling names a real field and a real language")
+    void everyCheckpointSiblingIsAddressed() throws IOException {
+        List<String> unreachable = new ArrayList<>();
+        List<String> languages = languages();
+        for (JSONObject space : shippedSpaces()) {
+            JSONArray checks = space.optJSONArray("checkpoints");
+            if (checks == null) {
+                continue;
+            }
+            for (int i = 0; i < checks.length(); i++) {
+                JSONObject c = checks.getJSONObject(i);
+                for (String key : c.keySet()) {
+                    int dot = key.indexOf('.');
+                    if (dot <= 0) {
+                        continue;
+                    }
+                    String field = key.substring(0, dot);
+                    String lang = key.substring(dot + 1);
+                    if (!CHECKED.contains(field)) {
+                        // "file" and "command" carry no dotted keys; anything
+                        // else with a dot is a sibling nobody reads
+                        unreachable.add(space.getString("slug") + "#" + i + ": " + key);
+                    } else if (!languages.contains(lang)) {
+                        unreachable.add(space.getString("slug") + "#" + i + ": " + key
+                                + " — no such language");
+                    }
+                }
+            }
+        }
+        assertThat(unreachable).as("a checkpoint sibling nobody can read is prose "
+                + "written for no one").isEmpty();
     }
 
     /** Every heading the picker can group under. */

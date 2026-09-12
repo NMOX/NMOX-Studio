@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -49,19 +51,76 @@ public final class Checkpoints {
     private Checkpoints() {
     }
 
+    /** A claim's two sentences in one language. */
+    public record Shown(String label, String hint) {
+    }
+
     /** One verifiable claim from the catalog. */
     public record Checkpoint(String label, String hint, String filePath,
-            String contains, String absent, int atLeast, List<String> command, String expect) {
+            String contains, String absent, int atLeast, List<String> command, String expect,
+            Map<String, Shown> translations) {
 
-        /** The v2.39.1 shape — no count. */
+        public Checkpoint {
+            translations = translations == null ? Map.of() : Map.copyOf(translations);
+        }
+
+        /** The v2.39.1 shape — no count, no translations. */
         public Checkpoint(String label, String hint, String filePath,
                 String contains, String absent, List<String> command, String expect) {
-            this(label, hint, filePath, contains, absent, 0, command, expect);
+            this(label, hint, filePath, contains, absent, 0, command, expect, Map.of());
+        }
+
+        /** The v2.85.0 shape — a count, no translations. */
+        public Checkpoint(String label, String hint, String filePath,
+                String contains, String absent, int atLeast, List<String> command, String expect) {
+            this(label, hint, filePath, contains, absent, atLeast, command, expect, Map.of());
+        }
+
+        /**
+         * The two sentences a learner reads, in their language.
+         *
+         * <p>Resolved per call, not at parse time: the language switch is
+         * LIVE (v2.103.0) and a catalogue is parsed once. English is the
+         * fallback and stays the record, exactly as a space's own blurb does
+         * (v2.133.0).
+         */
+        public Shown shown() {
+            Shown t = translations.get(java.util.Locale.getDefault().getLanguage());
+            return t == null ? new Shown(label, hint) : t;
         }
 
         public boolean isFileKind() {
             return filePath != null;
         }
+    }
+
+    /**
+     * {@code label.<lang>} / {@code hint.<lang>} siblings, the same shape a
+     * space's own {@code blurb.<lang>} uses (v2.133.0) — one mechanism for
+     * the catalogue and for a drop-in author, and a file written before
+     * translations existed parses unchanged.
+     *
+     * <p>Two passes, so key order cannot decide which sentence lands where.
+     */
+    private static Map<String, Shown> translations(JSONObject o, String label, String hint) {
+        Map<String, Shown> out = new LinkedHashMap<>();
+        for (String key : o.keySet()) {
+            int dot = key.indexOf('.');
+            if (dot <= 0) {
+                continue;
+            }
+            String field = key.substring(0, dot);
+            if (!field.equals("label") && !field.equals("hint")) {
+                continue;
+            }
+            out.computeIfAbsent(key.substring(dot + 1), l -> new Shown(label, hint));
+        }
+        for (Map.Entry<String, Shown> e : out.entrySet()) {
+            String lang = e.getKey();
+            e.setValue(new Shown(o.optString("label." + lang, label),
+                    o.optString("hint." + lang, hint)));
+        }
+        return out;
     }
 
     /** ✓/✗ plus the reason the learner reads. */
@@ -94,6 +153,7 @@ public final class Checkpoints {
                 continue;
             }
             String hint = o.optString("hint", "");
+            Map<String, Shown> translated = translations(o, label, hint);
             JSONObject file = o.optJSONObject("file");
             JSONArray cmd = o.optJSONArray("command");
             if (file != null && cmd != null) {
@@ -119,7 +179,8 @@ public final class Checkpoints {
                     notes.add(label + ": atLeast needs a contains and a count of 1 or more — skipped");
                     continue;
                 }
-                out.add(new Checkpoint(label, hint, path, contains, absent, atLeast, null, null));
+                out.add(new Checkpoint(label, hint, path, contains, absent, atLeast,
+                        null, null, translated));
             } else if (cmd != null && cmd.length() > 0) {
                 List<String> argv = new ArrayList<>();
                 boolean bad = false;
@@ -138,8 +199,9 @@ public final class Checkpoints {
                     notes.add(label + ": command must be an argv with a bare tool name — skipped");
                     continue;
                 }
-                out.add(new Checkpoint(label, hint, null, null, null,
-                        List.copyOf(argv), o.has("expect") ? o.getString("expect") : null));
+                out.add(new Checkpoint(label, hint, null, null, null, 0,
+                        List.copyOf(argv), o.has("expect") ? o.getString("expect") : null,
+                        translated));
             } else {
                 notes.add(label + ": neither file nor command — skipped");
             }
@@ -154,34 +216,34 @@ public final class Checkpoints {
             if (c.isFileKind()) {
                 File target = LearningSpace.resolveInside(spaceDir, c.filePath());
                 if (target == null || !target.isFile()) {
-                    return new Result(c.label(), false,
-                            c.filePath() + " not found. " + c.hint());
+                    return new Result(c.shown().label(), false,
+                            c.filePath() + " not found. " + c.shown().hint());
                 }
                 String text = Files.readString(target.toPath(), StandardCharsets.UTF_8);
                 if (c.contains() != null && !text.contains(c.contains())) {
-                    return new Result(c.label(), false, c.hint());
+                    return new Result(c.shown().label(), false, c.shown().hint());
                 }
                 if (c.atLeast() > 1 && occurrences(text, c.contains()) < c.atLeast()) {
-                    return new Result(c.label(), false, c.hint());
+                    return new Result(c.shown().label(), false, c.shown().hint());
                 }
                 if (c.absent() != null && text.contains(c.absent())) {
-                    return new Result(c.label(), false, c.hint());
+                    return new Result(c.shown().label(), false, c.shown().hint());
                 }
-                return new Result(c.label(), true, "");
+                return new Result(c.shown().label(), true, "");
             }
             Runner.Run r = runner.apply(spaceDir, c.command());
             if (r.exitCode() != 0) {
-                return new Result(c.label(), false,
-                        "exit " + r.exitCode() + ". " + c.hint());
+                return new Result(c.shown().label(), false,
+                        "exit " + r.exitCode() + ". " + c.shown().hint());
             }
             if (c.expect() != null && !r.output().contains(c.expect())) {
-                return new Result(c.label(), false,
-                        "ran, but \"" + c.expect() + "\" did not appear. " + c.hint());
+                return new Result(c.shown().label(), false,
+                        "ran, but \"" + c.expect() + "\" did not appear. " + c.shown().hint());
             }
-            return new Result(c.label(), true, "");
+            return new Result(c.shown().label(), true, "");
         } catch (IOException | RuntimeException broken) {
-            return new Result(c.label(), false,
-                    broken.getMessage() + ". " + c.hint());
+            return new Result(c.shown().label(), false,
+                    broken.getMessage() + ". " + c.shown().hint());
         }
     }
 
