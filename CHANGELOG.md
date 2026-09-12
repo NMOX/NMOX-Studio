@@ -4,6 +4,84 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.136.0] - 2026-09-11
+
+**The fact that the seams own had two homes, and the second one went stale
+twice.** `Bundles.optional` (v2.135.0) marks the one place in the product
+where a missing key is not a defect: the English it falls back to is the
+RECORD — a device enum that generates `docs/devices.md`, a catalogue file a
+drop-in author wrote, the template and block and chain enums this codebase
+reads. That has a consequence two files away. These keys ship in twelve
+translated bundles and in **no base bundle at all**, so `LocaleBundleParityTest`
+reports every one of them as extra unless it is told otherwise.
+
+It was told otherwise by hand, in a list inside the gate — and that list is a
+second home for a fact whose real home is the seam. It went stale twice in
+three releases: v2.132.0 taught it two families (708 keys called extra on
+their first run), v2.134.0 taught it four more. Each time the symptom was a
+gate failing on keys that were perfectly correct, complaining in a file none
+of the seams' authors would think to open, with **a base-bundle copy as the
+tempting way to quiet it** — the exact defect the design exists to prevent.
+
+Twice is a class, and the class is v2.131.0's: *the defect is the second
+home, not the disagreement.* So the fact moved to the seam. Each of the five
+declares `KEY_PREFIXES` beside its lookups, built from the same string
+literals those lookups use — one literal per family, so a declaration cannot
+drift from what it looks up — and the parity gate reads the declarations
+instead of keeping a copy.
+
+`SeamKeyPrefixDeclarationTest` derives its population the way this house has
+learned to: every shipping file that calls `Bundles.optional`, found by
+reading the source, not by remembering. Each must declare what it owns or be
+blessed with a reason. There is one blessing, and it is a real distinction
+rather than a skip: `LocaleRefresher` looks up OTHER packages' own
+`CTL_<window id>` keys when the language switches live (v2.103.0), and those
+have a base bundle like any chrome string — it owns no family and exempts
+none.
+
+**What the gate deliberately does not check**, because two better proofs
+already do: that a declared prefix is really the one the lookups build. A
+wrong constant fails the seam tests, which assert real translated values come
+back from the shipped bundles; and it fails the parity scan it feeds, which
+names the real keys as extra. Asserting it a third time by reading source
+would be the weakest of the three and the one most likely to gate a spelling
+(v2.19.1).
+
+The exemption is now derived, so a sixth catalogue seam is exempt the moment
+it says what it owns — and a seam that says nothing fails with the reason in
+the message, in the file its author is already editing.
+
+**Five mutants by name, and the third faked a survivor first.** Deleting a
+seam's declaration, declaring the wrong prefix (which dies in the parity gate
+it feeds, naming thirty real `LearnFamily_` keys as extra in every locale),
+declaring a family without its separator, a blessing too thin to decide
+anything, and a blessing for a file that ships no such lookup. The thin
+blessing appeared to survive because it lives in a compiled test class and
+`surefire:test` does not recompile — the v2.128.0 law in the opposite
+direction: there a stale compile faked two DEAD mutants, here it faked a live
+one. The other four mutate source files the gates read as text, where no
+compilation stands between the change and the reader.
+
+**The reader's first cut failed on the shape it was written for.** It
+expected string literals inside `List.of(...)`, and the design it serves had
+deliberately moved those literals into constants so that declaration and
+lookup share one. Every seam read as declaring nothing, and the gate said so
+on its first run — loudly, and about the right files.
+
+### Changed
+- `DeviceText`, `BlockText`, `TemplateText`, `ChainText` and `CatalogText`
+  each declare `KEY_PREFIXES`, built from the constants their lookups use.
+- `LocaleBundleParityTest.baseLivesElsewhere` reads those declarations
+  through the new `SeamKeyPrefixes` rather than an eight-prefix hand list.
+
+### Added
+- `SeamKeyPrefixes` — the source-derived population: which files look up an
+  optional key, and which families each one owns.
+- `SeamKeyPrefixDeclarationTest` — three laws: every optional-key seam
+  declares or is blessed, every blessing names a shipping file and gives a
+  reason, and every declared family is a prefix that ends at its separator
+  (a whole key would exempt a neighbouring family by accident).
+
 ## [2.135.0] - 2026-09-11
 
 **The arc review of the catalogue releases: the fallback was the slow path,
@@ -19953,6 +20031,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.136.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.135.0...v2.136.0
 [2.135.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.134.0...v2.135.0
 [2.134.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.133.0...v2.134.0
 [2.133.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.132.0...v2.133.0
