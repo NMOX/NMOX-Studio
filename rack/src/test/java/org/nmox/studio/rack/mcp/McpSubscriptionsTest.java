@@ -193,6 +193,11 @@ class McpSubscriptionsTest {
     void overflowIsCountedNotLost() throws Exception {
         McpSubscriptions subs = new McpSubscriptions();
         java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        // the exact drop count below is only true once the writer has TAKEN the
+        // first frame — until then that frame still occupies a queue slot and
+        // one more is dropped. Rendezvous rather than hope for the schedule
+        // (v2.99.1, twice in this class now; macOS CI is where it showed).
+        java.util.concurrent.CountDownLatch writing = new java.util.concurrent.CountDownLatch(1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         OutputStream slow = new OutputStream() {
             boolean first = true;
@@ -200,6 +205,7 @@ class McpSubscriptionsTest {
             public void write(int b) throws IOException {
                 if (first) {
                     first = false;
+                    writing.countDown();
                     try {
                         gate.await();
                     } catch (InterruptedException e) {
@@ -212,7 +218,10 @@ class McpSubscriptionsTest {
         subs.attach(slow, () -> { });
         subs.setLevel("debug");
         int total = McpSubscriptions.MAX_PENDING + 250;
-        for (int i = 0; i < total; i++) {
+        subs.log("debug", "Run — x", "line 0");
+        assertThat(writing.await(10, java.util.concurrent.TimeUnit.SECONDS))
+                .as("the writer should have taken the first frame before the flood").isTrue();
+        for (int i = 1; i < total; i++) {
             subs.log("debug", "Run — x", "line " + i);
         }
         gate.countDown();
@@ -230,6 +239,11 @@ class McpSubscriptionsTest {
     void updatesPastTheCapAreBoundedToo() throws Exception {
         McpSubscriptions subs = new McpSubscriptions();
         java.util.concurrent.CountDownLatch gate = new java.util.concurrent.CountDownLatch(1);
+        // the exact drop count below is only true once the writer has TAKEN the
+        // first frame — until then that frame still occupies a queue slot and
+        // one more is dropped. Rendezvous rather than hope for the schedule
+        // (v2.99.1, twice in this class now; macOS CI is where it showed).
+        java.util.concurrent.CountDownLatch writing = new java.util.concurrent.CountDownLatch(1);
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         OutputStream slow = new OutputStream() {
             boolean first = true;
@@ -237,6 +251,7 @@ class McpSubscriptionsTest {
             public void write(int b) throws IOException {
                 if (first) {
                     first = false;
+                    writing.countDown();
                     try {
                         gate.await();
                     } catch (InterruptedException e) {
@@ -249,7 +264,10 @@ class McpSubscriptionsTest {
         subs.attach(slow, () -> { });
         subs.subscribe("nmox://runs");
         int total = McpSubscriptions.MAX_PENDING + 250;
-        for (int i = 0; i < total; i++) {
+        subs.updated("nmox://runs");
+        assertThat(writing.await(10, java.util.concurrent.TimeUnit.SECONDS))
+                .as("the writer should have taken the first frame before the flood").isTrue();
+        for (int i = 1; i < total; i++) {
             subs.updated("nmox://runs");
         }
         gate.countDown();

@@ -7,8 +7,9 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.141.0 — the two dialogs the previous release
-owed a walk, photographed and translated, in the first dated section below. Under it,
+*Currency addendum 2026-09-12, at v2.142.0 — four more platform dialogs walked and
+translated, with a ledger for the ones that are not, in the first dated section below.
+Under it, the two dialogs the release before that owed a walk. Under that,
 the RCP-idiom audit and the module descriptor. Under that, the filter that hid what the picture showed. Under that, a door's name is not
 one key, in
 the first dated section below. Under it, the value no gate was reading is
@@ -925,6 +926,84 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — the dialog where you ask for your language (v2.142.0)
+
+The previous release ended with an honest list of what i18n still lacked,
+and the first item was a long tail of platform dialogs nobody had
+photographed. The instrument for photographing them had just been built, so
+the next unit picked itself.
+
+**Four dialogs, chosen for how often a web developer opens them**: Options
+(Tools ▸ Options, which is where this product puts its own Language list),
+Go to File, Find in Projects, and the Templates manager. All four came back
+from a Hindi build English from title to button. The Options one is the
+sharpest: *the surface a reader uses to ASK for their language greeted them
+in English* — a category strip reading `General / Editor / Fonts & Colors /
+Keymap`, and under it `Web Browser`, `Proxy Settings`, `Test connection`,
+`Export…`, `Import…`, `Apply`.
+
+**The class is v2.141.0's, and one detail settles it.** `OK` has been
+overlaid in twelve languages since v2.127.0 — and the Options dialog and Go
+to File painted it in English anyway, because each builds its own button row
+from its own key (`CTL_OK`, `CTL_Open`). The shared message-dialog buttons
+only reach dialogs that use them. *An overlay covers a bundle, not a
+surface: two dialogs can show the same word and read it from different
+homes.* The cure kept one spelling — the generator READS `OK` out of the
+v2.127.0 overlay instead of authoring it twice, so the word cannot drift.
+
+**The discipline is the whole release.** The General panel's bundle holds
+over two hundred keys and paints eleven of them; the rest are Java package
+views, code folding, Mozilla and Internet Explorer, and usage statistics for
+"the NetBeans IDE". Only what the photograph showed is overlaid. Translating
+the other two hundred would be work with no surface, and worse, it would
+claim a coverage the product does not have.
+
+**The same lesson arrived three more times inside the release**, and each
+time the SECOND photograph is what found it. After every LABEL on the Find in
+Projects form was translated, two English words remained: `Literal` in the
+Match combo and `Open Projects` in the Scope combo. A combo's MODEL lives
+wherever its provider lives, not with the form that displays it — the match
+types in `org/netbeans/api/search` (a different package of the same jar), the
+scopes in a utilities module entirely. The browser combo on the General panel
+was the same shape, one module over. And the Templates manager kept an
+English `Rename` beside nine translated buttons, because that one bundle
+carries the word twice — `Action_Rename` for the popup action,
+`BTN_TemplatesPanel_RenameButton` for the button — and the overlay had landed
+on the key a reader never sees. *Translating a form is not translating what
+the form shows, and a bundle holding the same word twice will let you
+translate the wrong one.* Re-walking after a fix is not a formality; it is
+where three of this release's finds came from.
+
+**The ledger, and what it honestly cannot do.** `PlatformDialogLedgerTest`
+is the census shape of v2.134.0 applied to dialogs, with one difference
+written at the top of the file: **this population cannot be derived.** There
+is no list of "dialogs" in the cluster — a dialog is whatever some action
+decides to show, and only a walk can tell you what it paints. So the ledger
+is hand-kept, and every claim it makes is checked instead: each action id
+still resolves in the assembled cluster's own layers (a platform rename
+fails the build rather than silently orphaning a row), each OVERLAID row
+really carries twelve locale files, and each RECORDED row gives a reason
+long enough to disagree with. That is the honest half of an underivable
+population, and it is what lets the next walk extend a written census rather
+than starting the search again.
+
+**Recorded rather than translated**, each with its reason in the ledger: the
+Advanced Proxy dialog behind Options ▸ General ▸ More… (opened by a BUTTON,
+and the forge drives actions — reaching it needs an instrument that can
+press a named button first, so the panel stays English rather than being
+translated unseen); the interiors of the Editor, Fonts and Colors and Keymap
+panels (several hundred keys each, whose category NAMES are now translated
+so the strip reads right); and Go to Type, which was not photographed this
+shift, so nothing is claimed about it.
+
+**The gate's own correction.** `DialogChromeOverlayGateTest` resolved its
+platform jars against `platform/modules`, and these modules ship across the
+platform and IDE clusters — so the gate failed on the very overlays it was
+being widened to hold. It finds a jar by name anywhere in the assembled
+application now. Two overlays carry an empty must-differ list with the
+reason written in place: `Editor` is the word in German, Spanish,
+Portuguese, Indonesian and Filipino, and `Team` is the German word.
 
 ## 2026-09-12 — the dialog the walk could not reach (v2.141.0)
 

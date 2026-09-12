@@ -47,9 +47,6 @@ class DialogChromeOverlayGateTest {
     private static final Path BRANDING =
             Path.of("..", "branding", "src", "main", "nbm-branding", "modules");
 
-    private static final Path PLATFORM_MODULES =
-            Path.of("target", "nmoxstudio", "platform", "modules");
-
     private static final List<String> LOCALES =
             List.of("es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
 
@@ -87,7 +84,51 @@ class DialogChromeOverlayGateTest {
             // v2.141.0: the About dialog — our own paragraph and the platform's
             // Product Version / Java / System / User directory labels
             new Overlay("org-netbeans-core.jar", "org/netbeans/core/ui",
-                    List.of("LBL_Close", "LBL_description", "updates_not_found", "LBL_Copyright")));
+                    List.of("LBL_Close", "LBL_description", "updates_not_found", "LBL_Copyright")),
+            // v2.142.0: the Options dialog — its own chrome, then one overlay per
+            // module that contributes a category name to the strip, then the
+            // General panel every user lands on
+            new Overlay("org-netbeans-modules-options-api.jar", "org/netbeans/modules/options",
+                    List.of("CTL_APPLY", "CTL_Options_Search_Nothing_Found")),
+            new Overlay("org-netbeans-modules-options-api.jar", "org/netbeans/modules/options/advanced",
+                    List.of("CTL_Advanced_Options_Title")),
+            // no mustDiffer: "Editor" is the word in German, Spanish, Portuguese,
+            // Indonesian and Filipino, so equalling English proves nothing here
+            new Overlay("org-netbeans-modules-options-editor.jar", "org/netbeans/modules/options/editor",
+                    List.of()),
+            new Overlay("org-netbeans-modules-options-editor.jar", "org/netbeans/modules/options/colors",
+                    List.of("CTL_Font_And_Color_Options_Title")),
+            new Overlay("org-netbeans-modules-options-keymap.jar", "org/netbeans/modules/options/keymap",
+                    List.of("CTL_Keymap_Options_Title")),
+            new Overlay("org-netbeans-core-windows.jar", "org/netbeans/core/windows/options",
+                    List.of("OptionsCategory_Name_Appearance")),
+            // no mustDiffer: "Team" is the German word too
+            new Overlay("org-netbeans-modules-team-commons.jar", "org/netbeans/modules/team/commons/resources",
+                    List.of()),
+            new Overlay("org-netbeans-core-ui.jar", "org/netbeans/core/ui/options/general",
+                    List.of("GeneralOptionsPanel.bTestConnection.text",
+                            "LBL_GeneralOptionsPanel_lWebProxy", "CTL_No_Proxy")),
+            // v2.142.0: the two doors a web developer opens daily
+            new Overlay("org-netbeans-modules-jumpto.jar", "org/netbeans/modules/jumpto/file",
+                    List.of("MSG_FileSearchDlgTitle", "CTL_MatchingFiles")),
+            new Overlay("org-netbeans-api-search.jar", "org/netbeans/modules/search",
+                    List.of("BasicSearchForm.chkWholeWords.text", "TEXT_BUTTON_NEW_TAB")),
+            // v2.142.0: the Templates manager
+            new Overlay("org-netbeans-modules-templates.jar", "org/netbeans/modules/templates/ui",
+                    List.of("BTN_TemplatesPanel_NewFolder", "BTN_TemplatesPanel_RenameButton")),
+            new Overlay("org-netbeans-modules-templates.jar", "org/netbeans/modules/templates/actions",
+                    List.of("BTN_TemplatesPanel_OpenInEditorButton")),
+            // v2.142.0: the browser the General panel offers by default — the
+            // one row of that panel owned by a different module
+            new Overlay("org-netbeans-modules-extbrowser.jar", "org/netbeans/modules/extbrowser",
+                    List.of("CTL_SystemDefaultBrowserName")),
+            // v2.142.0: the two combo MODELS the Find form fills — each in a
+            // package of its own, which is why the first overlay translated
+            // every label on that form and left two values English
+            new Overlay("org-netbeans-api-search.jar", "org/netbeans/api/search",
+                    List.of("LBL_MatchType_Basic_Wildcards")),
+            new Overlay("org-netbeans-modules-utilities-project.jar", "org/netbeans/modules/search/project",
+                    List.of("SearchScopeNameOpenProjects")));
 
     /**
      * Values that legitimately read the same as English, each blessed by
@@ -240,14 +281,27 @@ class DialogChromeOverlayGateTest {
     }
 
     private static Properties platformBundle(Overlay o) throws IOException {
-        Path jarPath = PLATFORM_MODULES.resolve(o.jar());
-        assertThat(jarPath).as("the assembled cluster's %s", o.jar()).exists();
+        Path jarPath = findJar(o.jar());
+        assertThat(jarPath).as("the assembled cluster's %s", o.jar()).isNotNull();
         Properties props = new Properties();
         try (JarFile jar = new JarFile(jarPath.toFile());
                 InputStream in = jar.getInputStream(jar.getEntry(o.pkg() + "/Bundle.properties"))) {
             props.load(in);
         }
         return props;
+    }
+
+    /**
+     * The overlaid jars do not all live in one cluster — the Options and
+     * jumpto modules ship in {@code ide/}, the window system in
+     * {@code platform/} — so the jar is found by NAME anywhere in the
+     * assembled application (v2.142.0: the first cut resolved against
+     * platform/modules alone and failed on its own new overlays).
+     */
+    private static Path findJar(String name) throws IOException {
+        try (java.util.stream.Stream<Path> all = Files.walk(Path.of("target", "nmoxstudio"))) {
+            return all.filter(p -> p.getFileName().toString().equals(name)).findFirst().orElse(null);
+        }
     }
 
     private static Properties load(Path p) throws IOException {
