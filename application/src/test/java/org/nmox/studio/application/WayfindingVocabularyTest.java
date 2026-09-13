@@ -77,8 +77,29 @@ class WayfindingVocabularyTest {
      * modules are outside the branding+locale overlay set, so they read
      * English in every build. Naming them in the reader's language points at
      * a door that is not there.
+     *
+     * <p>This list is HAND-KEPT, and that is its weakness: it was written from
+     * what the v2.118.0 walk happened to find, so it protected exactly the two
+     * doors that walk noticed. The v2.147.0 Hindi walk found a third —
+     * DB Studio's {@code Services} branch, which four languages had renamed
+     * (Servicios / Dienste / Serviços / 服务) for a window that says
+     * "Services" in every build. Each entry names a real window and carries
+     * its reason:
+     *
+     * <ul>
+     *   <li>{@code Output} — the platform's output window, no overlay
+     *   <li>{@code IDE Tools} — the platform's tools submenu, no overlay
+     *   <li>{@code Services} — the platform's Services window, which DB Studio's
+     *       tree mirrors; the NetBeans Database Explorer lives inside it
+     * </ul>
+     *
+     * <p>It cannot be derived the way a menu row can: a door name is prose
+     * INSIDE a sentence, and no artifact says which words in a sentence are
+     * the name of a window. So it stays hand-kept, like the dialog ledger
+     * (v2.142.0) — and like that ledger, every claim it makes is checked.
      */
-    private static final List<String> ENGLISH_BY_CONSTRUCTION = List.of("Output", "IDE Tools");
+    private static final List<String> ENGLISH_BY_CONSTRUCTION =
+            List.of("Output", "IDE Tools", "Services");
 
     /** The menu-bar folders the overlays localize, by their English name. */
     private static final Map<String, String> MENUS = Map.of(
