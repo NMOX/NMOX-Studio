@@ -4,6 +4,61 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.148.0] - 2026-09-13
+
+**Swing does not take direction from the locale, and nothing in this product
+ever told it to.** David asked for Arabic and Hebrew. Before a word of either
+was written, the question worth answering was what the platform gives away
+free — so it was measured: a `JPanel` built while the default locale is Hebrew
+still reports `LEFT_TO_RIGHT`. Text inside a label shapes and reorders
+correctly, because bidi belongs to the text layout engine. The LAYOUT — which
+side a label sits on, which way a tree indents, the order of a toolbar — stays
+exactly as authored until something calls `applyComponentOrientation`. So
+right-to-left is engineering, not translation, and it lands first, alone, where
+it can be judged on its own.
+
+**One seam, not 160.** The product builds dialogs at 160 call sites and will
+build more; orienting each would make a right-to-left build correct only until
+the next author forgets. A single toolkit listener answers `WINDOW_OPENED` for
+every window the JVM opens — ours, the platform's, a plugin's — and orients it
+once. `RightToLeftWiringTest` keeps it the only such place.
+
+**The walk found the half a listener cannot see.** Forcing right-to-left on an
+English build (`-J-Dnmox.rtl=true`, so layout is the only question being asked)
+mirrored the platform toolbar and left every panel opened after startup
+untouched: **a TopComponent opening inside an already-open window fires no
+`WINDOW_OPENED`.** The registry announces it instead. With that half wired —
+and a `revalidate()`, because orientation changes layout and a repaint alone
+redraws the old geometry — the second walk mirrors toolbars, trees, forms,
+tabs' contents, the status line and the balloons.
+
+**Eighteen surfaces paint themselves, and an orientation sweep cannot reach
+them.** They compute their own coordinates and never read the flag. Silence
+about them would be the defect, so each is classified and
+`PaintedSurfaceLedgerTest` derives the population from the source: fifteen are
+GEOMETRY, where mirroring would break rather than translate (a faceplate's
+jacks sit where the hardware puts them, a wire between cloud nodes reads
+"serves", a timeline runs earlier to later, source code is left-to-right in
+every language), and three are OWED — the Welcome's columns, the shelf's cards,
+the Task Board overview are text laid out by hand, they should mirror, and they
+do not yet. A debt written in a file beats one a reader discovers.
+
+**Recon that saved a bug:** Java mapped Hebrew to `iw` for decades. Since JDK 17
+the modern code wins and `iw` normalises to `he`, so `Bundle_he.properties` is
+the right name on the shipped runtime — asserted, not assumed.
+
+Four mutants die by name, including the walk's own find: delete the registry
+half and the gate says so.
+
+### Added
+
+- `core.util.TextDirection` — the direction decision, asked of the JDK rather
+  than listed, with a force seam so the mechanics can be walked before any
+  right-to-left language exists.
+- `ui.rtl.RightToLeft` — the one orientation seam.
+- `ui.rtl.PaintedSurfaces` + `PaintedSurfaceLedgerTest` — every self-painting
+  surface classified, population derived from the source.
+
 ## [2.147.0] - 2026-09-13
 
 **The arc closes with a walk, and the walk found what nine gates called clean.**
@@ -20848,6 +20903,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.148.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.147.0...v2.148.0
 [2.147.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.146.0...v2.147.0
 [2.146.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.145.0...v2.146.0
 [2.145.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.144.0...v2.145.0
