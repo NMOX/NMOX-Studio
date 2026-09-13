@@ -250,10 +250,28 @@ class WayfindingVocabularyTest {
                                 + "\" menu, which reads \"" + localized + "\" here");
                     }
                 }
-                // 3. a platform surface the product does not localize survives verbatim
+            }
+        }
+
+        // 3. a platform surface the product does not localize survives verbatim.
+        //
+        // This rule used to live inside the loop above, and so inherited that
+        // loop's population: strings carrying the menu arrow. But naming a door
+        // is not the same as giving a menu PATH — DB Studio's tree root says
+        // "Services" with no arrow in sight, and four languages had renamed it
+        // (Servicios / Dienste / Serviços / 服务) for a window that reads
+        // "Services" in every build. A population defined by a SHAPE is not the
+        // population the law is about; this one reads every product string.
+        for (String loc : LOCALES) {
+            Map<String, String> here = strings.get(loc);
+            for (Map.Entry<String, String> e : strings.get("en").entrySet()) {
+                String value = here.get(e.getKey());
+                if (value == null) {
+                    continue; // parity is LocaleBundleParityTest's job
+                }
                 for (String english : ENGLISH_BY_CONSTRUCTION) {
-                    if (strings.get("en").get(key).contains(english) && !value.contains(english)) {
-                        problems.add(loc + " " + key + ": translated \"" + english
+                    if (namesTheWindow(e.getValue(), english) && !value.contains(english)) {
+                        problems.add(loc + " " + e.getKey() + ": translated \"" + english
                                 + "\", a window the product does not localize");
                     }
                 }
@@ -262,6 +280,18 @@ class WayfindingVocabularyTest {
         assertThat(problems)
                 .as("directions that point at a door with the wrong name")
                 .isEmpty();
+    }
+
+
+    /**
+     * Does this English value NAME the window, rather than merely contain the
+     * word? "Services" inside "Services (NetBeans Database Explorer)" names it;
+     * "output" in "the command's output" does not. The window's name is
+     * capitalised and stands as its own token.
+     */
+    private static boolean namesTheWindow(String english, String window) {
+        return Pattern.compile("(?<![\\w-])" + Pattern.quote(window) + "(?![\\w-])")
+                .matcher(english).find();
     }
 
     // ---- rule 4: one window, one name -----------------------------------
