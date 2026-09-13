@@ -3,6 +3,7 @@ package org.nmox.studio.rack.ui;
 import java.util.List;
 import org.nmox.studio.core.util.Bundles;
 import org.nmox.studio.rack.devices.DeviceCatalog;
+import org.nmox.studio.rack.devices.DeviceType;
 
 /**
  * A device's shelf description in the reader's language.
@@ -26,6 +27,7 @@ import org.nmox.studio.rack.devices.DeviceCatalog;
 public final class DeviceText {
 
     private static final String DESC = "DeviceDesc_";
+    private static final String CAT = "DeviceCat_";
 
     /**
      * The key family this seam owns.
@@ -37,7 +39,7 @@ public final class DeviceText {
      * v2.131.0 spent a release removing. It cannot drift from the lookup
      * below, because there is one literal and both use it.
      */
-    static final List<String> KEY_PREFIXES = List.of(DESC);
+    static final List<String> KEY_PREFIXES = List.of(DESC, CAT);
 
     private DeviceText() {
     }
@@ -46,6 +48,27 @@ public final class DeviceText {
     public static String description(DeviceCatalog.Entry entry) {
         return Bundles.optional(DeviceText.class, DESC + entry.id(),
                 entry.description());
+    }
+
+    /**
+     * A shelf SECTION heading — "Run &amp; Automate", "Build &amp; Verify" — in
+     * the reader's language.
+     *
+     * <p>These seven lived as string literals on a nested enum and read
+     * English in every translated build until the Hindi walk of v2.147.0
+     * photographed them. The prose ledger could not see them: it keyed its
+     * census by FILE, {@code DeviceType.java} was classified for the 53
+     * device literals it holds, and a second catalogue in the same file
+     * inherited a verdict that was never about it. A population unit
+     * coarser than the thing it classifies hides members.
+     *
+     * <p>A heading is not faceplate vocabulary. The silkscreen stays
+     * English by decision; the words above a group of cards are the
+     * picker telling a reader what the group is for.
+     */
+    public static String heading(DeviceType.PaletteCategory category) {
+        return Bundles.optional(DeviceText.class, CAT + category.name(),
+                category.label);
     }
 
     /**

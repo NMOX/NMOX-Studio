@@ -81,12 +81,16 @@ public class PalettePanel extends JPanel {
                             && (query.isEmpty()
                             || org.nmox.studio.core.search.SearchTerms.matches(query,
                                     t.title(), DeviceText.description(t), t.keywords(),
-                                    category.label))) {
+                                    // the reader's heading AND the English record:
+                                    // a translation adds a way in, never removes one
+                                    // (v2.133.0) — a German reader sent here by an
+                                    // English doc still finds the group by its old name
+                                    DeviceText.heading(category), category.label))) {
                         matches.add(t);
                     }
                 }
                 if (!matches.isEmpty()) {
-                    model.addElement(category.label);
+                    model.addElement(DeviceText.heading(category));
                     matches.forEach(model::addElement);
                 }
             }

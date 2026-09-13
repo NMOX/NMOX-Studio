@@ -7,7 +7,12 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-13, at v2.146.0 — the popup census's population,
+*Currency addendum 2026-09-13, at v2.147.0 — THE i18n/l10n ARC IS CLOSED,
+and the record that closes it is docs/engineering/l10n-completion.md: every
+covered surface with the gate that holds it, every ceiling with its
+measurement. The closing walk found two defects nine gates called clean, both
+because a gate's population was a SHAPE rather than the thing it was about.
+Under it, at v2.146.0 — the popup census's population,
 in the first dated section below: twelve mimes chosen by hand were a sample,
 and the cluster's own layers name eighty-four. Widening it found four more
 English rows and corrected one of v2.145.0's own ledger entries. Under it, at
@@ -943,6 +948,53 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-13 — the arc closes with a walk (v2.147.0)
+
+Nine gates said the thirteen languages were complete. The closing walk —
+twelve windows of a Hindi build, painted by the product's own forge and read by
+a person — found two things they could not see, and in both cases the reason
+was the same: **a gate's population was defined by a shape, not by the thing
+the gate is about.**
+
+**The shelf headings.** `Run & Automate` and `Build & Verify` sat in English
+over cards whose every word has been translated since v2.132.0.
+`CatalogueProseLedgerTest` exists precisely to enumerate display-carrying enums
+and force a decision on each; it keyed its census by FILE. `DeviceType.java`
+holds two catalogues — the 53 device literals and a nested `PaletteCategory`
+whose seven constants are those headings — so the file's verdict, which is true
+about the devices, silently covered an enum it never mentioned. The fix is one
+line of population: key per ENUM, `File.java#Enum`. It found the hidden
+catalogue immediately, and the census floor now names both halves so the two can
+never merge again.
+
+**The Services door.** DB Studio's tree root read `Dienste`, `Servicios`,
+`Serviços`, `服务` — for a window that says `Services` in every build, because
+the NetBeans Platform ships no UI localization (measured: every non-English
+bundle in the cluster belongs to a third party). That is v2.118.0's wayfinding
+class exactly, and `WayfindingVocabularyTest` has a rule for it. The rule ran
+over a population of *strings containing the menu arrow* — because when it was
+written, every known instance was a menu path. A tree root names a door with no
+arrow. Freed from the arrow, the rule named **66 values across 11 keys and 12
+languages**: every sentence pointing at Output or Services with the door
+renamed. All repaired, and the ordinary words deliberately untouched — Spanish
+still says `salida` for an exit code, because that one is not a window.
+
+**And the lesson that nearly escaped.** The first fix was to add `Services` to
+the gate's list of untranslated windows. It read like a fix. The mutant that
+renamed the door back **survived** — the list was consulted only inside the
+arrow population, so the entry changed nothing. Only widening the population
+made the mutant die by name. *A gate change that has not killed a mutant has
+not been shown to gate anything*, and the mutation protocol is what separates
+the two.
+
+**The record.** `docs/engineering/l10n-completion.md` states what thirteen-
+language support covers, with the gate that holds each surface, and every
+ceiling with the measurement behind it: the 1.57M characters of tutorial prose
+with its slot open, the platform's own absent localization, the update
+catalog's DTD, the faceplate decision, the restart limit on the menu bar, the
+macOS `AppleLanguages` refusal, and the five mimes whose context-menu rows no
+file can reach. Done is a claim with evidence, not the absence of a next idea.
 
 ## 2026-09-13 — the sample that wore a population's clothes (v2.146.0)
 

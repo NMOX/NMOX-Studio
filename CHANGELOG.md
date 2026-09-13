@@ -4,6 +4,60 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.147.0] - 2026-09-13
+
+**The arc closes with a walk, and the walk found what nine gates called clean.**
+Twelve windows of a Hindi build, photographed by the product's own shot forge
+and read by a person. Two findings, and each exposed a gate whose population was
+defined by a SHAPE rather than by the thing it was about.
+
+**The shelf's section headings read English** — `Run & Automate`, `Build &
+Verify`, five more — over cards whose every word was translated in v2.132.0.
+`CatalogueProseLedgerTest` exists to catch exactly this and could not: it keyed
+its census by FILE, `DeviceType.java` was classified for the 53 device literals
+it holds, and the nested `PaletteCategory` in the same file inherited a verdict
+that was never about it. *A population unit coarser than the thing it
+classifies hides members.* The census is keyed per ENUM now — `File.java#Enum` —
+which is the only change that could have found it, and the seven headings are
+translated through `DeviceText.heading`.
+
+**DB Studio's tree said `Dienste`, `Servicios`, `Serviços`, `服务`** for a
+window that reads `Services` in every build, because the NetBeans Platform ships
+no UI localization. That is the v2.118.0 wayfinding class, and
+`WayfindingVocabularyTest` has a rule for it — which ran only over strings
+containing a menu arrow. A tree root names a door with no arrow in sight. Freed
+from the arrow population, the rule immediately named **66 values across 11 keys
+and 12 languages**: every sentence pointing at the Output or Services windows
+with the door renamed. All 66 repaired, with the ordinary words left alone —
+Spanish still says `salida` for an exit code.
+
+**The gate fix was decorative until a mutant proved otherwise.** Adding
+`Services` to the untranslated-windows list changed nothing: the mutant that
+renamed the door back survived. Only widening the population made it die by
+name. *A gate change that has not killed a mutant has not been shown to gate
+anything.*
+
+**`docs/engineering/l10n-completion.md`** closes the arc: every covered surface
+with the gate that holds it, and every ceiling with its measurement — the 1.57M
+characters of untranslated tutorial prose, the platform's own absent
+localization (measured: every non-English bundle in the cluster belongs to a
+third party), the update catalog's DTD, the faceplate decision, the restart
+limit, the macOS `AppleLanguages` refusal, and the five unreachable mimes.
+Thirteen languages, and the honest edges written down.
+
+### Fixed
+
+- The device shelf's seven section headings read English in every translated
+  build; they are catalogue prose, not faceplate silkscreen.
+- 66 values across twelve languages renamed the Output and Services windows,
+  sending readers to doors their build does not have.
+
+### Changed
+
+- `CatalogueProseLedgerTest` keys its census per ENUM, not per file.
+- `WayfindingVocabularyTest`'s untranslated-window rule reads every product
+  string, not only those carrying a menu arrow.
+
 ## [2.146.0] - 2026-09-13
 
 **Twelve mimes was a sample wearing a population's clothes.** v2.145.0 built
@@ -20794,6 +20848,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.147.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.146.0...v2.147.0
 [2.146.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.145.0...v2.146.0
 [2.145.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.144.0...v2.145.0
 [2.144.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.143.0...v2.144.0

@@ -77,8 +77,29 @@ class WayfindingVocabularyTest {
      * modules are outside the branding+locale overlay set, so they read
      * English in every build. Naming them in the reader's language points at
      * a door that is not there.
+     *
+     * <p>This list is HAND-KEPT, and that is its weakness: it was written from
+     * what the v2.118.0 walk happened to find, so it protected exactly the two
+     * doors that walk noticed. The v2.147.0 Hindi walk found a third —
+     * DB Studio's {@code Services} branch, which four languages had renamed
+     * (Servicios / Dienste / Serviços / 服务) for a window that says
+     * "Services" in every build. Each entry names a real window and carries
+     * its reason:
+     *
+     * <ul>
+     *   <li>{@code Output} — the platform's output window, no overlay
+     *   <li>{@code IDE Tools} — the platform's tools submenu, no overlay
+     *   <li>{@code Services} — the platform's Services window, which DB Studio's
+     *       tree mirrors; the NetBeans Database Explorer lives inside it
+     * </ul>
+     *
+     * <p>It cannot be derived the way a menu row can: a door name is prose
+     * INSIDE a sentence, and no artifact says which words in a sentence are
+     * the name of a window. So it stays hand-kept, like the dialog ledger
+     * (v2.142.0) — and like that ledger, every claim it makes is checked.
      */
-    private static final List<String> ENGLISH_BY_CONSTRUCTION = List.of("Output", "IDE Tools");
+    private static final List<String> ENGLISH_BY_CONSTRUCTION =
+            List.of("Output", "IDE Tools", "Services");
 
     /** The menu-bar folders the overlays localize, by their English name. */
     private static final Map<String, String> MENUS = Map.of(
@@ -229,10 +250,28 @@ class WayfindingVocabularyTest {
                                 + "\" menu, which reads \"" + localized + "\" here");
                     }
                 }
-                // 3. a platform surface the product does not localize survives verbatim
+            }
+        }
+
+        // 3. a platform surface the product does not localize survives verbatim.
+        //
+        // This rule used to live inside the loop above, and so inherited that
+        // loop's population: strings carrying the menu arrow. But naming a door
+        // is not the same as giving a menu PATH — DB Studio's tree root says
+        // "Services" with no arrow in sight, and four languages had renamed it
+        // (Servicios / Dienste / Serviços / 服务) for a window that reads
+        // "Services" in every build. A population defined by a SHAPE is not the
+        // population the law is about; this one reads every product string.
+        for (String loc : LOCALES) {
+            Map<String, String> here = strings.get(loc);
+            for (Map.Entry<String, String> e : strings.get("en").entrySet()) {
+                String value = here.get(e.getKey());
+                if (value == null) {
+                    continue; // parity is LocaleBundleParityTest's job
+                }
                 for (String english : ENGLISH_BY_CONSTRUCTION) {
-                    if (strings.get("en").get(key).contains(english) && !value.contains(english)) {
-                        problems.add(loc + " " + key + ": translated \"" + english
+                    if (namesTheWindow(e.getValue(), english) && !value.contains(english)) {
+                        problems.add(loc + " " + e.getKey() + ": translated \"" + english
                                 + "\", a window the product does not localize");
                     }
                 }
@@ -241,6 +280,18 @@ class WayfindingVocabularyTest {
         assertThat(problems)
                 .as("directions that point at a door with the wrong name")
                 .isEmpty();
+    }
+
+
+    /**
+     * Does this English value NAME the window, rather than merely contain the
+     * word? "Services" inside "Services (NetBeans Database Explorer)" names it;
+     * "output" in "the command's output" does not. The window's name is
+     * capitalised and stands as its own token.
+     */
+    private static boolean namesTheWindow(String english, String window) {
+        return Pattern.compile("(?<![\\w-])" + Pattern.quote(window) + "(?![\\w-])")
+                .matcher(english).find();
     }
 
     // ---- rule 4: one window, one name -----------------------------------
