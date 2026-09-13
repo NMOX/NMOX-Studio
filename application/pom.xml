@@ -283,6 +283,8 @@
                                 <exclude>**/MenuRowsSpeakTest.java</exclude>
                                 <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/PopupRowsSpeakTest.java</exclude>
+                                <exclude>**/PaintedSurfaceLedgerTest.java</exclude>
+                                <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                             </excludes>
                         </configuration>
@@ -309,6 +311,8 @@
                                 <include>**/MenuRowsSpeakTest.java</include>
                                 <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/PopupRowsSpeakTest.java</include>
+                                <include>**/PaintedSurfaceLedgerTest.java</include>
+                                <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>

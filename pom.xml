@@ -315,6 +315,17 @@
                              validate gate, NewLearningSpaceAction/SwitchProjectAction's
                              filter predicates, GeneralOptionsPanelController, UpdateCheck)
                              are kept and tested. -->
+                        <!-- v2.148.0 right-to-left: the @OnShowing hook that
+                             registers a toolkit listener, a registry listener and a
+                             locale listener. Registration is the whole class; there
+                             is no branch to assert that a live platform does not
+                             own. Its DECIDING halves stay on the surface and are
+                             tested: TextDirection (core) answers which way the
+                             interface runs, PaintedSurfaces says which surfaces keep
+                             the direction they were painted in, and RightToLeft.apply
+                             is covered through them. -->
+                        <exclude>**/ui/rtl/RightToLeft.class</exclude>
+                        <exclude>**/ui/rtl/RightToLeft$*.class</exclude>
                         <exclude>**/ui/actions/PwaKitAction*.class</exclude>
                         <exclude>**/ui/actions/ManageExperimentsAction*.class</exclude>
                         <exclude>**/ui/actions/ManageLearningSpacesAction*.class</exclude>
