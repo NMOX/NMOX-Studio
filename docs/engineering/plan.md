@@ -7,7 +7,11 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.145.0 — the rows a RIGHT-CLICK paints,
+*Currency addendum 2026-09-13, at v2.146.0 — the popup census's population,
+in the first dated section below: twelve mimes chosen by hand were a sample,
+and the cluster's own layers name eighty-four. Widening it found four more
+English rows and corrected one of v2.145.0's own ledger entries. Under it, at
+v2.145.0 — the rows a RIGHT-CLICK paints,
 in the first dated section below: the menu bar can be read live by process id
 and a context menu cannot, so this release built an instrument that asks the
 platform to BUILD the popup and reads what it would show. Under it, at
@@ -939,6 +943,67 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-13 — the sample that wore a population's clothes (v2.146.0)
+
+v2.145.0 built the instrument and then pointed it by hand. `PopupCensus` read
+twelve mimes — the ones a web IDE opens most — found 23 English rows, translated
+them, and the re-census read zero. Every number in that release is true. The
+claim around them was not: twelve mimes is a sample, and a sample can only ever
+say what it sampled.
+
+The layer says otherwise, and the layer can be parsed. Every
+`Editors/<mime>/Popup` folder in the assembled cluster is enumerable, and **84
+mimes add rows beyond the root**. That is the same correction v2.143.0 made for
+the menu bar the day after v2.142.0's hand-kept dialog ledger: *derive the
+population from the generated artifact*. It was owed here and not paid.
+
+**Widening it cost four rows and bought one correction.** The four: the
+platform's Run/Debug Focused Test Method (`text/x-java`), `Check DTD`
+(`text/x-dtd`), and `View` (`text/xhtml`). The first three are ordinary
+translation, each taking wording the product already speaks — the test rows from
+our own `nmox-run-focused-test`, the DTD row from its `Check XML` sibling, so one
+idea keeps one name.
+
+The fourth is the release. `text/xhtml` painted `View` in English while
+`text/xml` painted `देखें` — the same word, in the same build, from the same
+census. The shadow explains it:
+`/Actions/System/org-openide-actions-ViewAction.instance` declares
+
+    displayName = org/openide/awt/Bundle#View
+
+so xhtml reads openide-**AWT**'s bundle, and v2.145.0's ledger had recorded
+openide-**ACTIONS**' `View`. That key is not wrong — it exists with exactly that
+English, and `text/xml` really does paint it — which is precisely why nothing
+caught this: the ledger's existence law asks whether the recorded key still says
+what the ledger claims, and it did. A row can be recorded, checked, overlaid and
+green, and still not be the row on screen. *One word, two mimes, two bundles;
+only the surface says which.*
+
+**And the census corrected the layer.** Predicting from the layer alone, two
+mimes looked unreachable — `text/x-less` and `text/x-scss`, whose extensions
+css-prep claims first (v1.230.0). Running the resolver measured **five**: `.dtd`
+resolves to our own `text/x-dtd` grammar rather than the platform's
+`application/xml-dtd`, `.env` to `text/x-properties`, `.markdown` to
+`text/markdown`. Those five carry popup registrations that can never paint, in
+any language. They are recorded with the mime each loses to, because a mime with
+no reachable file is not covered and must not be counted as covered. *The layer
+says a popup exists; only the running resolver says whether a file can reach
+it.*
+
+**`popup-mimes.txt` is the population**, in three buckets — 75 DERIVED (the
+layer's own `MIMEResolver` attrs give the extension), 4 NAMED (recognised by
+name: `Dockerfile`, `.component.html`, and two whose resolvers ship as
+serialized bytes), 5 UNREACHABLE — and every non-derived entry carries a reason
+a person can disagree with. The gate re-derives the same set from the cluster on
+every build and holds the ledger equal to it in both directions: a mime the
+layer gives a popup and the ledger does not name fails by name; a ledger row the
+layer no longer backs fails by name. After this, a platform upgrade that gives a
+new mime a context menu cannot ship an English row quietly — which is the
+property twelve hand-picked mimes could never provide, no matter how carefully
+they were picked.
+
+Four mutants by name. Re-censused across all 81 reachable mimes: zero English.
 
 ## 2026-09-12 — the menu you cannot open (v2.145.0)
 

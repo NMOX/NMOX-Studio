@@ -4,6 +4,61 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.146.0] - 2026-09-13
+
+**Twelve mimes was a sample wearing a population's clothes.** v2.145.0 built
+`PopupCensus`, pointed it at twelve file types chosen by hand, translated the 23
+English rows it found, and reported the right-click menus closed. The layer
+disagrees: every `Editors/<mime>/Popup` folder in the assembled cluster can be
+parsed, and **84 mimes add rows beyond the root**. A population you can derive
+was never a thing to pick by hand — the correction v2.143.0 already made for the
+menu bar, owed here too.
+
+**The widened census found four more English rows**, and one of them had a
+ledger entry already. `text/xhtml` painted `View` in English while `text/xml`
+painted `देखें`, because
+`/Actions/System/org-openide-actions-ViewAction.instance` declares
+`displayName = org/openide/awt/Bundle#View` — openide-**AWT**, where v2.145.0
+had recorded openide-**ACTIONS**. That key exists, with exactly that English, and
+is genuinely painted by `text/xml`, so the ledger's existence law passed while
+xhtml went on reading English. *One word, two mimes, two bundles; only the
+surface says which.* The other three were the platform's focused-test-method
+pair and DTD validation, each translated with wording the product already
+speaks — the test rows from our own `nmox-run-focused-test`, `Check DTD` from
+its `Check XML` sibling.
+
+**The layer predicted two unreachable mimes; running the resolver measured
+five.** A mime can be named by the layer and reached by no file: `.less` and
+`.scss` go to css-prep's mimes (v1.230.0), `.dtd` to our own DTD grammar, `.env`
+to the properties mime, `.markdown` to `text/markdown`. Those five paint nothing
+in any language, and the ledger records each with the mime it loses to. *The
+layer says a popup exists; only the running resolver says whether a file can
+reach it.*
+
+**`popup-mimes.txt` is the population, and the gate re-derives it every build**
+from the cluster's own layers: a mime the layer gives a popup and the ledger
+does not name fails the build, a ledger row the layer no longer backs fails the
+build, and any bucket that is not DERIVED must carry a reason a person can
+disagree with. After this, a platform upgrade that gives a new mime a context
+menu is caught by name instead of shipping an English row nobody looked at.
+
+Re-censused across all 81 reachable mimes: **zero English rows**. Four mutants
+die by name.
+
+### Added
+
+- `popup-mimes.txt` — the derived popup population, 84 mimes in three buckets
+  (75 DERIVED, 4 NAMED, 5 UNREACHABLE), each non-derived one with its reason.
+- `PopupRowsSpeakTest` gains a fourth law that re-derives that population from
+  the assembled cluster's layers and holds the ledger equal to it.
+- 48 overlay values (4 keys x 12 languages) so every reachable mime's
+  right-click menu reads in the user's own language.
+
+### Fixed
+
+- `text/xhtml` painted an English `View`: the popup ledger recorded
+  openide-actions' key, and the instance file names openide-awt's.
+
 ## [2.145.0] - 2026-09-12
 
 **A right-click is the one gesture this automation has never delivered — so
@@ -20739,6 +20794,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.146.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.145.0...v2.146.0
 [2.145.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.144.0...v2.145.0
 [2.144.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.143.0...v2.144.0
 [2.143.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.142.0...v2.143.0
