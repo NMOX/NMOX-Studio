@@ -7,7 +7,11 @@ the product's own screenshot forge, the running menu bar read by pid, and
 censuses over the assembled cluster. Earlier the same day the night shift
 ran to twelve releases; its own currency block follows.*
 
-*Currency addendum 2026-09-12, at v2.144.0 — the menu rows a parser CANNOT
+*Currency addendum 2026-09-12, at v2.145.0 — the rows a RIGHT-CLICK paints,
+in the first dated section below: the menu bar can be read live by process id
+and a context menu cannot, so this release built an instrument that asks the
+platform to BUILD the popup and reads what it would show. Under it, at
+v2.144.0 — the menu rows a parser CANNOT
 enumerate, in the first dated section below: their names are `NbBundle` lookups
 inside the action classes, so a walk of a translated build is the only thing
 that finds them and a grep for a shipped value equal to the English label is
@@ -935,6 +939,81 @@ correct. The releases never lied; the file did. Two rules follow:
 a docs edit is not done until a `grep` proves it, and an assertion
 inside a batched block must be the LAST thing in that block or run on
 its own where its exit code is read.
+
+## 2026-09-12 — the menu you cannot open (v2.145.0)
+
+Two releases closed the menu bar with two different instruments. The rows the
+layer declares could be ENUMERATED: a parser reads the assembled application's
+own layers and the population is derived, so `MenuRowsSpeakTest` owns it. The
+rows named inside action code could not, so a walk of a Hindi build read the
+live menu bar through the accessibility API — `System Events`, by process id —
+and a grep for a shipped value equal to the English label placed each one.
+
+Neither instrument reaches a CONTEXT menu. The accessibility API hands back a
+menu bar's rows because the menu bar is always there; a popup over a
+Swing-painted editor pane exists only while a right-click holds it open, and a
+right-click on painted Java content is the one gesture this automation has
+never been able to deliver (recorded since v2.87.0, when Copy as Markdown got
+an Edit-menu registration precisely so it could be walked). So every row a
+right-click paints was unprovable — and unprovable is exactly where English
+survives a whole arc of translation.
+
+**The instrument.** Recon first, and the platform answered it: the editor's
+popup is not special machinery. `BaseKit.BuildPopupMenuAction` is an ordinary
+editor action, and its `createPopupMenu(JTextComponent)` returns the menu it
+would show. Called reflectively — the method is not public, and the class is
+in `editor-lib`, which the pane's own loader (`openide.text`) cannot see, so
+the classloader has to come from `Lookup.getDefault().lookup(ClassLoader.class)`,
+the v2.67.0 lesson in a new costume — it yields the real menu: every row, in
+order, at every depth, with no gesture at all.
+
+`PopupCensus` arms on `-J-Dnmox.popup.census=<file>`, beside the docs forge's
+other shot switches. It opens one file per mime, asks the kit for its popup,
+and writes `MIME|` and `ROW|` lines. Getting there took four wrong turns, and
+the one that mattered was the last: rather than guess again at why the menu
+came back null, the census started recording WHY, and the diagnostic named the
+real cause verbatim — `ClassNotFoundException: org.netbeans.editor.Utilities
+starting from ModuleCL[org.openide.text]`. *A guess costs a build; a
+diagnostic costs a line.*
+
+**What it found.** First run, Hindi, twelve mimes: 23 English rows. All 46
+keys behind them are overlaid now — 552 values in twelve languages across
+nineteen platform packages, with Navigate/Refactor/Tools taken verbatim from
+the menu-bar overlays rather than re-translated, because one idea gets one
+name (v2.118.0). A rebuild and a second census read zero English rows.
+
+**The instrument corrected the guess twice, after the guess was written.** The
+fold family paints the bare action id (`collapse-all-folds`) in a popup while
+the menu bar paints the `_menu_text` sibling, so translating the sibling alone
+left the popup English. And `Go to Declaration` paints a FOURTH spelling of
+one action's name — `goto-declaration-trimmed`, beside the menu-bar text, the
+keymap-sheet id and the main-menu item. That is the painted-key lesson at a
+new depth: *an overlay covers a bundle, not a surface, and only the surface
+says which key it reads.*
+
+**The gate is the ledger's, not the census's.** `PopupRowsSpeakTest` takes the
+`CodeNamedMenuRowsTest` shape: a hand-kept population cannot prove itself
+complete, so it does not pretend to — every claim in it is checked against the
+cluster this build assembled. The recorded key still exists in its shipped jar
+saying exactly what the ledger records (so a platform upgrade that renames a
+key or rewords a label fails the build instead of quietly shipping a
+translation the popup will never read), every key is overlaid in all twelve
+languages, no value invents a mnemonic English does not assign, no value
+carries a straight apostrophe. Four mutants die by name.
+
+**Two gates caught this release's own author**, and they are worth separating.
+`DaemonThreadGateTest` was simply right: the census started its background
+thread with a bare `new Thread`, and every thread in this product is
+constructed through `core.util.Threads`. `PopupTargetGateTest` was not — it
+named the census as a popup site acting on a stale selection, and the census
+has no selection to be stale. The call it saw was
+`setComponentPopupMenu(null)`, which the census makes between mimes so its
+fallback read cannot return the PREVIOUS file's menu. A clear installs no
+menu: there is no trigger to open it and nothing to target, so the property
+the gate enforces is not merely satisfied, it is inapplicable. The gate strips
+null clears before it counts now, and a mutant proves it still bites on a real
+install. *A gate reads a shape; when the shape and the law disagree, the law
+is what the gate is for.*
 
 ## 2026-09-12 — a name that lives in code (v2.144.0)
 

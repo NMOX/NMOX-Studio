@@ -4,6 +4,75 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.145.0] - 2026-09-12
+
+**A right-click is the one gesture this automation has never delivered — so
+the product learned to read the menu without one.** v2.143.0 and v2.144.0
+closed the menu bar: the layer-declared rows by enumeration, the code-named
+rows by walking a translated build and reading the accessibility tree. Neither
+instrument reaches a context menu. The menu bar can be read live because the
+accessibility API hands back its rows by process id; a popup over a
+Swing-painted editor pane exists only while a right-click holds it open, and
+the walk harness cannot produce that click. So every row a right-click paints
+was unprovable — and unprovable is where English hides.
+
+**`PopupCensus` is the instrument.** The platform builds its editor popup
+through an ordinary editor action, `BaseKit.BuildPopupMenuAction`, whose
+`createPopupMenu(JTextComponent)` returns the menu it would show. Calling that
+reflectively yields the real thing — every row, in order, at every depth —
+with no gesture at all. Armed with `-J-Dnmox.popup.census=<file>` beside the
+docs forge's other shot switches, it opens one file per mime, asks the kit for
+its popup, and writes what the menu holds.
+
+**Its first run, in a Hindi build across twelve mimes, found 23 English rows.**
+All 46 keys behind them are overlaid now — 552 values in twelve languages
+across nineteen platform packages — and a rebuild plus a second census reads
+**zero English rows** in every mime.
+
+**Two corrections came from the instrument, after the guess was already
+written.** The fold family paints the bare action id (`collapse-all-folds`) in
+a popup while the menu bar paints the `_menu_text` sibling, so translating the
+sibling alone left the popup English. And `Go to Declaration` turned out to
+paint a FOURTH spelling of one action's name — `goto-declaration-trimmed`,
+beside the menu-bar text, the keymap-sheet id and the main-menu item — which
+is the v2.144.0 painted-key lesson at a new depth: *an overlay covers a
+bundle, not a surface, and only the surface says which key it reads.*
+
+**`PopupRowsSpeakTest` is the ledger gate**, the `CodeNamedMenuRowsTest`
+shape: a hand-kept population cannot prove itself complete, so every claim in
+it is checked against the cluster this build assembled — the key still exists
+in its shipped jar saying exactly what the ledger records, every key is
+overlaid in all twelve languages, no value invents a mnemonic English does not
+assign, no value carries a straight apostrophe. Four mutants die by name.
+
+**The release's own author was caught twice, by two gates.** `PopupCensus`
+started its background thread with a bare `new Thread`, which `DaemonThreadGateTest`
+refuses — every thread in the product is constructed through `core.util.Threads`.
+And `PopupTargetGateTest` named the census as a popup site acting on a stale
+selection. That one was the gate's blind spot rather than the code's: the
+census calls `setComponentPopupMenu(null)` between mimes so its fallback read
+cannot return the previous file's menu, and a CLEAR installs no menu at all —
+there is no trigger to open and nothing to target. The gate now strips null
+clears before it counts, and a mutant proves it still bites on a real install.
+
+### Added
+
+- `ui/.../PopupCensus.java` — reads the editor's right-click menu without a
+  right-click, by asking the platform's own `BuildPopupMenuAction` to build it;
+  armed with `-J-Dnmox.popup.census=<file>`, output as `MIME|` and `ROW|` lines.
+- `PopupRowsSpeakTest` + `popup-rows.txt` — the 46-row ledger of what a
+  right-click paints, with three laws checked against the assembled cluster.
+- 552 overlay values (46 keys x 12 languages) across nineteen platform
+  packages, so every context-menu row reads in the user's own language.
+
+### Fixed
+
+- `PopupTargetGateTest` counted `setComponentPopupMenu(null)` as an install.
+  A clear hands the component no menu, so no trigger can open it and nothing
+  can be targeted; null clears are stripped before the census.
+- `PopupCensus` constructs its background thread through `core.util.Threads`
+  rather than a raw `new Thread`.
+
 ## [2.144.0] - 2026-09-12
 
 **A walk is the only instrument that can read a name living in code.**
@@ -20670,6 +20739,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.145.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.144.0...v2.145.0
 [2.144.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.143.0...v2.144.0
 [2.143.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.142.0...v2.143.0
 [2.142.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.141.0...v2.142.0
