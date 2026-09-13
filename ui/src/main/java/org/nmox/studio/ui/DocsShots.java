@@ -134,6 +134,11 @@ public class DocsShots implements Runnable {
 
     @Override
     public void run() {
+        String census = System.getProperty("nmox.popup.census");
+        if (census != null && !census.isBlank()) {
+            PopupCensus.arm(new File(census));
+            return;
+        }
         String dir = System.getProperty("nmox.shots.dir");
         if (dir == null || dir.isBlank()) {
             return; // the normal boot: one property read, nothing else
