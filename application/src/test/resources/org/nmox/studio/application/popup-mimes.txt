@@ -1,0 +1,105 @@
+# The mimes whose RIGHT-CLICK menu adds rows, and how each is reached.
+#
+# v2.145.0 censused twelve mimes, chosen by hand. The layer states the real
+# population: every Editors/<mime>/Popup that adds rows beyond the root. This
+# file IS that population, and PopupRowsSpeakTest derives it again from the
+# assembled cluster every build — so a platform upgrade that gives a new mime
+# a popup fails here instead of shipping an English row.
+#
+# Three buckets, because a mime can be named by the layer and still be
+# unreachable by a file:
+#
+#   DERIVED      the layer's own MIMEResolver attrs give the extension
+#   NAMED        recognised by NAME, not extension — the reason is written down
+#   UNREACHABLE  no file resolves here; the mime it loses to, and why
+#
+# The UNREACHABLE bucket is the census earning its keep: the layer PREDICTED
+# two, and running the resolver MEASURED five. A mime with no reachable file
+# cannot paint anything, in any language — recorded, never counted as covered.
+#
+# mime | bucket | fixture-or-winner | reason
+
+application/xml-dtd|UNREACHABLE|text/x-dtd|our own DTD grammar claims .dtd first
+text/css|DERIVED|census.css|
+text/html|DERIVED|census.htm|
+text/javascript|DERIVED|census.js|
+text/less|DERIVED|census.less|
+text/markdown|DERIVED|census.markdown|
+text/scss|DERIVED|census.scss|
+text/sh|DERIVED|census.bash|
+text/typescript|DERIVED|census.ts|
+text/x-ada|DERIVED|census.ada|
+text/x-aiken|DERIVED|census.ak|
+text/x-astro|DERIVED|census.astro|
+text/x-c|DERIVED|census.c|
+text/x-cairo|DERIVED|census.cairo|
+text/x-clarity|DERIVED|census.clar|
+text/x-clojure|DERIVED|census.clj|
+text/x-cobol|DERIVED|census.cbl|
+text/x-cpp|DERIVED|census.cc|
+text/x-crystal|DERIVED|census.cr|
+text/x-csharp|DERIVED|census.cs|
+text/x-d|DERIVED|census.d|
+text/x-dart|DERIVED|census.dart|
+text/x-dockerfile|NAMED|Dockerfile|the file IS the name; this mime has no extension
+text/x-elixir|DERIVED|census.ex|
+text/x-elm|DERIVED|census.elm|
+text/x-env|UNREACHABLE|text/x-properties|.env resolves to the properties mime
+text/x-erlang|DERIVED|census.erl|
+text/x-fortran|DERIVED|census.f03|
+text/x-fsharp|DERIVED|census.fs|
+text/x-gleam|DERIVED|census.gleam|
+text/x-go|DERIVED|census.go|
+text/x-graphql|DERIVED|census.gql|
+text/x-groovy|DERIVED|census.groovy|
+text/x-haskell|DERIVED|census.hs|
+text/x-haxe|DERIVED|census.hx|
+text/x-hcl|DERIVED|census.hcl|
+text/x-http-request|DERIVED|census.http|
+text/x-janet|DERIVED|census.janet|
+text/x-java|DERIVED|census.java|
+text/x-jflex|DERIVED|census.flex|
+text/x-json|DERIVED|census.json|
+text/x-julia|DERIVED|census.jl|
+text/x-kotlin|DERIVED|census.kt|
+text/x-less|UNREACHABLE|text/less|css-prep claims .less first (v1.230.0)
+text/x-lisp|DERIVED|census.asd|
+text/x-lua|DERIVED|census.lua|
+text/x-markdown|UNREACHABLE|text/markdown|an alias beside text/markdown; .markdown lands there
+text/x-move|DERIVED|census.move|
+text/x-ng-template|NAMED|app.component.html|a name-SUBSTRING resolver (v2.217.0), not an extension
+text/x-nim|DERIVED|census.nim|
+text/x-ocaml|DERIVED|census.ml|
+text/x-odin|DERIVED|census.odin|
+text/x-pascal|DERIVED|census.lpr|
+text/x-perl|DERIVED|census.pl|
+text/x-php5|DERIVED|census.php|
+text/x-prolog|DERIVED|census.plt|
+text/x-purescript|DERIVED|census.purs|
+text/x-python|DERIVED|census.py|
+text/x-r|DERIVED|census.r|
+text/x-racket|DERIVED|census.rkt|
+text/x-rescript|DERIVED|census.res|
+text/x-ruby|DERIVED|census.rake|
+text/x-rust|DERIVED|census.rs|
+text/x-sass|DERIVED|census.sass|
+text/x-scala|DERIVED|census.sbt|
+text/x-scheme|DERIVED|census.scm|
+text/x-scss|UNREACHABLE|text/scss|css-prep claims .scss first (v1.230.0)
+text/x-smalltalk|DERIVED|census.st|
+text/x-sql|DERIVED|census.sql|
+text/x-svelte|DERIVED|census.svelte|
+text/x-swift|DERIVED|census.swift|
+text/x-tact|DERIVED|census.tact|
+text/x-tcl|DERIVED|census.tcl|
+text/x-terraform+x-hcl|DERIVED|census.tf|
+text/x-tfvars+x-hcl|DERIVED|census.tfvars|
+text/x-toml|DERIVED|census.toml|
+text/x-vlang|DERIVED|census.v|
+text/x-vue|DERIVED|census.vue|
+text/x-wit|DERIVED|census.wit|
+text/x-yaml|DERIVED|census.yaml|
+text/x-zig|DERIVED|census.zig|
+text/xhtml|NAMED|page.xhtml|the resolver ships as serialized bytes; the layer carries no ext attrs
+text/xml|NAMED|doc.xml|the resolver ships as serialized bytes; the layer carries no ext attrs
+text/xml-external-parsed-entity|DERIVED|census.ent|

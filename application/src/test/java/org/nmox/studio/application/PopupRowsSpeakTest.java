@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Properties;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
@@ -212,5 +213,143 @@ class PopupRowsSpeakTest {
             }
         }
         assertThat(problems).as("popup values the renderer would mangle").isEmpty();
+    }
+
+    /**
+     * The population is the LAYER's, not a hand-picked sample.
+     *
+     * <p>v2.145.0 censused twelve mimes chosen by hand and translated what they
+     * showed. The layer states the real population — every
+     * {@code Editors/<mime>/Popup} that adds rows beyond the root — and it can
+     * be parsed, so the sample was never the population. Widening it to all 84
+     * found four more English rows, one of which had a ledger entry already:
+     * {@code text/xhtml} paints openide-AWT's {@code View} while
+     * {@code text/xml} paints openide-ACTIONS' — the same word, two bundles,
+     * and only the surface says which.
+     *
+     * <p>So the ledger records the population and this law re-derives it from
+     * the cluster every build. A platform upgrade that gives a new mime a popup
+     * fails HERE, named, instead of shipping an English row nobody looked at.
+     */
+    @Test
+    @DisplayName("the mime ledger names every mime whose popup the layer extends")
+    void thePopulationIsDerivedNotSampled() throws IOException {
+        assertThat(CLUSTER).as("the assembled cluster").exists();
+
+        Map<String, String> declared = new HashMap<>();          // mime -> bucket
+        Map<String, String> reason = new HashMap<>();
+        try (InputStream in = PopupRowsSpeakTest.class.getResourceAsStream("popup-mimes.txt")) {
+            assertThat(in).as("the popup mime ledger").isNotNull();
+            for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8)
+                    .replace("\r\n", "\n").split("\n")) {
+                if (line.isBlank() || line.startsWith("#")) {
+                    continue;
+                }
+                String[] p = line.split("\\|", 4);
+                assertThat(p).as("ledger line: " + line).hasSizeGreaterThanOrEqualTo(3);
+                declared.put(p[0], p[1]);
+                reason.put(p[0], p.length > 3 ? p[3] : "");
+            }
+        }
+
+        Set<String> adders = mimesWhosePopupTheLayerExtends();
+        List<String> problems = new ArrayList<>();
+        for (String mime : adders) {
+            if (!declared.containsKey(mime)) {
+                problems.add(mime + ": the layer gives this mime popup rows and the "
+                        + "ledger does not name it — census it, or record why no file reaches it");
+            }
+        }
+        for (String mime : declared.keySet()) {
+            if (!adders.contains(mime)) {
+                problems.add(mime + ": the ledger names it, but the layer gives it no "
+                        + "popup rows of its own any more — drop the row");
+            }
+        }
+        // a bucket that is not DERIVED is a DECISION, and a decision carries a reason
+        for (Map.Entry<String, String> e : declared.entrySet()) {
+            if (!"DERIVED".equals(e.getValue()) && reason.get(e.getKey()).isBlank()) {
+                problems.add(e.getKey() + " is " + e.getValue()
+                        + " with no reason written down; a person must be able to disagree with it");
+            }
+        }
+        assertThat(problems).as("the popup census population").isEmpty();
+        assertThat(adders).as("the layer's own popup-extending mimes").hasSizeGreaterThan(60);
+    }
+
+    /** Every {@code Editors/<mime>/Popup} in the cluster that adds rows beyond the root. */
+    private static Set<String> mimesWhosePopupTheLayerExtends() throws IOException {
+        Map<String, Set<String>> rows = new HashMap<>();
+        try (var walk = Files.walk(CLUSTER)) {
+            for (Path jar : walk.filter(p -> p.toString().endsWith(".jar")).toList()) {
+                try (JarFile jf = new JarFile(jar.toFile())) {
+                    for (var en = jf.entries(); en.hasMoreElements();) {
+                        ZipEntry e = en.nextElement();
+                        if (!e.getName().endsWith("layer.xml")) {
+                            continue;
+                        }
+                        try (InputStream in = jf.getInputStream(e)) {
+                            readPopupFolders(in, rows);
+                        } catch (RuntimeException ignored) {
+                            // a layer this parser cannot read is not a popup claim
+                        }
+                    }
+                } catch (IOException ignored) {
+                    // not every file under the cluster is a readable jar
+                }
+            }
+        }
+        Set<String> root = rows.getOrDefault("", Set.of());
+        Set<String> out = new java.util.TreeSet<>();
+        rows.forEach((mime, names) -> {
+            if (!mime.isEmpty() && !root.containsAll(names)) {
+                out.add(mime);
+            }
+        });
+        return out;
+    }
+
+    private static void readPopupFolders(InputStream in, Map<String, Set<String>> rows) {
+        org.w3c.dom.Document doc;
+        try {
+            javax.xml.parsers.DocumentBuilderFactory f =
+                    javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            // a layer names the DTD it was written against; never fetch it
+            f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            f.setValidating(false);
+            doc = f.newDocumentBuilder().parse(in);
+        } catch (Exception e) {
+            return;
+        }
+        collect(doc.getDocumentElement(), "", rows);
+    }
+
+    private static void collect(org.w3c.dom.Element el, String path, Map<String, Set<String>> rows) {
+        var kids = el.getChildNodes();
+        for (int i = 0; i < kids.getLength(); i++) {
+            if (!(kids.item(i) instanceof org.w3c.dom.Element c) || !"folder".equals(c.getTagName())) {
+                continue;
+            }
+            String name = c.getAttribute("name");
+            String here = path.isEmpty() ? name : path + "/" + name;
+            if ("Popup".equals(name) && path.startsWith("Editors")) {
+                // "Editors" -> the root popup; "Editors/text/html" -> that mime's
+                String mime = path.length() > "Editors".length()
+                        ? path.substring("Editors/".length()) : "";
+                rows.computeIfAbsent(mime, k -> new java.util.HashSet<>()).addAll(namesUnder(c));
+            }
+            collect(c, here, rows);
+        }
+    }
+
+    private static Set<String> namesUnder(org.w3c.dom.Element folder) {
+        Set<String> out = new java.util.HashSet<>();
+        var kids = folder.getChildNodes();
+        for (int i = 0; i < kids.getLength(); i++) {
+            if (kids.item(i) instanceof org.w3c.dom.Element c) {
+                out.add(c.getAttribute("name"));
+            }
+        }
+        return out;
     }
 }

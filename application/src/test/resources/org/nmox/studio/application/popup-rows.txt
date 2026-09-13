@@ -57,6 +57,16 @@ org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/act
 org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_SelectInExplorerAction|Select Connection in Services
 org-openide-actions.jar|org/openide/actions|CTL_Tools|Tools
 org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_XML|&Validate XML
+# Two mimes paint a row that reads "View", from two different bundles: text/xml
+# through openide-ACTIONS (below) and text/xhtml through openide-AWT, because
+# /Actions/System/org-openide-actions-ViewAction.instance declares
+# displayName = org/openide/awt/Bundle#View. v2.145.0 recorded only the first —
+# it exists with exactly this English, so the ledger's existence law passed while
+# xhtml went on painting English. The surface is the only witness.
 org-openide-actions.jar|org/openide/actions|View|View
 org-netbeans-modules-html-editor.jar|org/netbeans/modules/html/editor|ViewAction.displayName|View
 org-netbeans-modules-xsl.jar|org/netbeans/modules/xsl/actions|NAME_transform_action|XSL &Transformation...
+org-openide-awt.jar|org/openide/awt|View|View
+org-netbeans-modules-gsf-testrunner-ui.jar|org/netbeans/modules/gsf/testrunner/ui|LBL_Action_RunTestMethod|Run Focused Test Method
+org-netbeans-modules-gsf-testrunner-ui.jar|org/netbeans/modules/gsf/testrunner/ui|LBL_Action_DebugTestMethod|Debug Focused Test Method
+org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_DTD|Check &DTD
