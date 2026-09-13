@@ -38,6 +38,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * enforces holds by construction and selectOnTrigger has nothing to
  * select. Such a site carries a {@code POPUP-PER-ROW:} comment stating
  * the claim beside the install; the marker is the blessing.
+ *
+ * <p>And one shape is not a site at all: {@code setComponentPopupMenu(null)}
+ * installs NO menu, so no trigger can open it and nothing can be targeted.
+ * The census strips those calls before it counts.
  */
 class PopupTargetGateTest {
 
@@ -63,7 +67,15 @@ class PopupTargetGateTest {
                         || s.contains("/target/") || s.contains("/.")) {
                     continue;
                 }
-                String src = Files.readString(p);
+                // A CLEAR is not an install. setComponentPopupMenu(null)
+                // hands the component no menu at all, so there is no
+                // trigger and nothing to target — PopupCensus (v2.145.0)
+                // clears the pane between mimes so the fallback read
+                // cannot return the PREVIOUS file’s menu. Strip those
+                // before the census, or the gate asks a file with no
+                // popup to install a listener for a menu it never shows.
+                String src = Files.readString(p).replaceAll(
+                        "setComponentPopupMenu\\(\\s*null\\s*\\)", "clearsItsPopupMenu()");
                 if (!src.contains("setComponentPopupMenu(")) {
                     continue;
                 }

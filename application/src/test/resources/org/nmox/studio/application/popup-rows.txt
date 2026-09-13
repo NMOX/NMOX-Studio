@@ -1,0 +1,62 @@
+# The rows a RIGHT-CLICK paints.
+#
+# The menu bar can be read live: the accessibility API hands back its rows
+# by process id. A context menu cannot — a right-click on a Swing-painted
+# editor pane is a gesture this automation has never delivered. So every
+# popup row was unprovable until v2.145.0 built PopupCensus, which asks the
+# platform to BUILD the popup and reads the items it would paint.
+#
+# Its first run found twenty-three English rows in a Hindi build, and
+# corrected two guesses: the fold family paints the bare id here and the
+# _menu_text one in the menu bar, and Go to Declaration paints a FOURTH
+# spelling again (goto-declaration-trimmed). Where a module holds more than
+# one name for one action, every one is written.
+#
+# jar | package | key | the English value, mnemonic included
+
+org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Check_XML|Chec&k XML
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-all-folds|Collapse All
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|collapse-all-folds|Collapse All
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-all-folds_menu_text|Co&llapse All
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|collapse-all-folds_menu_text|Co&llapse All
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-fold|Collapse Fold
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|collapse-fold|Collapse Fold
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-fold_menu_text|&Collapse Fold
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|collapse-fold_menu_text|&Collapse Fold
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-fold-tree|Collapse Fold Tree
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|collapse-fold-tree_menu_text|Collapse F&old Tree
+org-netbeans-modules-css-editor.jar|org/netbeans/modules/css/editor/actions|Copy-HTML-Style|Copy HTML Style
+org-netbeans-modules-css-editor.jar|org/netbeans/modules/css/editor/ui|Copy-HTML-Style|Copy HTML Style
+org-netbeans-modules-css-editor.jar|org/netbeans/modules/css/editor/actions|Copy-XML-Style|Copy XML Style
+org-netbeans-modules-css-editor.jar|org/netbeans/modules/css/editor/ui|Copy-XML-Style|Copy XML Style
+org-netbeans-modules-diff.jar|org/netbeans/modules/diff|CTL_DiffToActionName|Di&ff To...
+org-netbeans-modules-git.jar|org/netbeans/modules/git/ui/diff|LBL_DiffToRevisionAction_PopupName|Diff To...
+org-netbeans-modules-css-visual.jar|org/netbeans/modules/css/visual/actions|CTL_EditElementRulesEditorAction|Edit CSS Rules
+org-netbeans-modules-css-visual.jar|org/netbeans/modules/css/visual/actions|EditCSSRules|Edit CSS Rules
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-all-folds|Expand All
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|expand-all-folds|Expand All
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-all-folds_menu_text|E&xpand All
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|expand-all-folds_menu_text|E&xpand All
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-fold|Expand Fold
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|expand-fold|Expand Fold
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-fold_menu_text|&Expand Fold
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|expand-fold_menu_text|&Expand Fold
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-fold-tree|Expand Fold Tree
+org-netbeans-modules-editor-fold-nbui.jar|org/netbeans/modules/editor/fold/ui|expand-fold-tree_menu_text|Expand &Fold Tree
+org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/generator|PROP_GenerateDTD|Generate &DTD...
+org-netbeans-modules-csl-api.jar|org/netbeans/modules/csl/editor/hyperlink|NM_GoToDeclaration|Go to Declaration
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|goto-declaration-trimmed|Go to Declaration
+org-netbeans-modules-editor-bookmarks.jar|org/netbeans/modules/editor/bookmarks/ui|goto|Goto Line or Bookmark ...
+org-netbeans-modules-csl-api.jar|org/netbeans/modules/csl/core|generate-goto-popup|Navigate
+org-netbeans-modules-csl-api.jar|org/netbeans/modules/csl/editor|generate-goto-popup|Navigate
+org-netbeans-modules-html-editor.jar|org/netbeans/modules/html/editor/resources|generate-goto-popup|Navigate
+org-netbeans-modules-refactoring-api.jar|org/netbeans/modules/refactoring/spi/impl|Actions/Refactoring|Refactor
+org-netbeans-modules-refactoring-api.jar|org/netbeans/modules/refactoring/spi/impl|LBL_Action|Refactor
+org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_RunCurrentStatementAction|&Run Statement
+org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_SQLHistoryAction|SQL History
+org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_SelectInExplorerAction|Select Connection in Services
+org-openide-actions.jar|org/openide/actions|CTL_Tools|Tools
+org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_XML|&Validate XML
+org-openide-actions.jar|org/openide/actions|View|View
+org-netbeans-modules-html-editor.jar|org/netbeans/modules/html/editor|ViewAction.displayName|View
+org-netbeans-modules-xsl.jar|org/netbeans/modules/xsl/actions|NAME_transform_action|XSL &Transformation...
