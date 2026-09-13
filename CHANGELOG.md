@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.149.0] - 2026-09-13
+
+**Two warnings on David's own machine, and the reason they could not be fixed
+in one place.** `brew upgrade` and `brew doctor` had started naming our tap
+twice per run: the `verified:` parameter in the `url` stanza is deprecated
+(Homebrew's default URL verification covers it), and `postflight` is deprecated
+in favour of `postflight_steps`. Both were real, both were ours, and both sat
+in the cask a user's tap actually reads — `Casks/nmox-studio.rb`.
+
+**The file is not the source.** `.github/workflows/release.yml` REGENERATES
+that cask from a heredoc on every release, so editing the file alone would have
+been undone by the next tag, and editing the workflow alone would have left
+every existing tap stale. One artifact, two homes, nothing holding them
+together — which is v2.131.0's law one artifact over: *the defect is the second
+home, not the disagreement.* `CaskGeneratorParityTest` now runs the workflow's
+own heredoc and requires the result to equal the checked-in cask byte for byte
+once the two stamped lines (version, sha256) are accounted for, and refuses
+either home to carry a deprecated stanza. Three mutants die by name — a hand
+edit to the cask, `verified:` restored in the generator, a bare `postflight`
+restored in the file.
+
+**The replacement was measured, not assumed.** `postflight_steps` takes
+declarative steps rather than Ruby, so the question was whether `run` could
+still do the one thing this cask exists to do: clear the quarantine attribute
+from an ad-hoc-signed app that Homebrew 6 will no longer install unquarantined.
+Homebrew's own source answered the shape — `args` are template-expanded
+(`install_steps.rb`) and `appdir` is a content path token, so `{{appdir}}`
+resolves — and a synthetic probe cask proved it end to end rather than by
+reading: a minimal `.app` installed through a real tap came out of `xattr -l`
+with `com.apple.quarantine` present before the step and gone after it, using
+the exact stanza this cask now ships.
+
+**A fix that also ends a smaller lie.** The generated cask had been emitting
+two `Cask/StanzaOrder` offences all along; the generator now emits what
+`brew style` produces, so `brew style Casks/nmox-studio.rb` reports no offences
+and the next release regenerates that same clean file. `brew doctor` is back to
+"Your system is ready to brew."
+
 ## [2.148.0] - 2026-09-13
 
 **Swing does not take direction from the locale, and nothing in this product
@@ -20903,6 +20941,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.148.0...v2.149.0
 [2.148.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.147.0...v2.148.0
 [2.147.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.146.0...v2.147.0
 [2.146.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.145.0...v2.146.0
