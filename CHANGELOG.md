@@ -4,6 +4,62 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.150.0] - 2026-09-14
+
+**Each translation follows its own language's conventions.** David asked for
+translations that feel native, so the first step was to measure. The tells were
+never vocabulary. They were the conventions a native reader never thinks about,
+and every language got some of them right and some wrong:
+
+- German used „Anführungszeichen“ 23 times and a typewriter `"` 62 times;
+  Russian used «ёлочки» 63 times and straight quotes 55.
+- Spanish addressed the reader as *usted* in the whole `ui` module and the
+  platform overlays, and as *tú* everywhere else — which reads as two
+  translators. German said *du* in two sentences among 218 *Sie*, and the German
+  user guide said *Sie* in chapters 1–6 and *du* in 7–12.
+- French put an ordinary space before its colons 535 times, so a line wrap
+  could strand the colon at the start of the next line.
+- Chinese put ASCII `:` `,` `?` beside Chinese text 143 times, set 21
+  parenthesised Chinese asides in half-width brackets, and spaced its quotation
+  marks away from the words they quote.
+- Chinese and Hindi wrote the mnemonic after the ellipsis (`浏览...(&B)`), an
+  order no Chinese software uses.
+- The 55 platform rows we overlay wrote `...` beside the product's `…`, in
+  every language.
+
+About two thousand values across twelve languages now follow one written
+convention each. **One register fix was also a wrong door**: the Spanish
+Check My Work message named the flagship learning space *Su primera página web*
+while the catalogue calls it *Tu primera página web*, so a reader searching for
+the name they had been given found nothing.
+
+**`docs/i18n/conventions.md` is the style sheet**, one section per language:
+quotation marks, spacing, register, full-width punctuation, mnemonic form. It
+also records the Hebrew and Arabic decisions ahead of those releases, because
+they are design, not vocabulary: Hebrew stays gender-neutral by construction
+(action nouns for commands, plural imperative for instructions), keeps straight
+quotes because curly quotes are not bidi-mirrored, and points its arrows the way
+it reads (`◂`, `←`), since `▸` and `→` are not mirrored either. Both languages
+append a Latin mnemonic, because developers in both switch keyboard layouts all
+day.
+
+**`NativeTypographyGateTest` holds the mechanical half** over the assembled
+cluster, with seven laws. The languages come from `UiLocale.SUPPORTED`, so a new
+language fails the build until it has written conventions both in the gate and
+in the doc. Seven mutants die by name. Two of them first appeared to survive,
+because the mutation script never applied the change — a mutant that did not
+land proves nothing in either direction, so each one now reports whether it
+applied.
+
+**The normalizer found its own two bugs before it wrote anything.** It treated
+placeholders as opaque segments and so skipped every quote pair around `{0}`,
+which is most of them. It also would have rewritten the Options keyword lists
+(`KW_*`), which the platform splits on ASCII commas.
+
+**The limit, stated.** Typography is gated by rules and register by a short
+word list per language. Idiom is not gated and cannot be; that stays a reader's
+job for every language.
+
 ## [2.149.0] - 2026-09-13
 
 **Two warnings on David's own machine, and the reason they could not be fixed
@@ -20941,6 +20997,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.149.0...v2.150.0
 [2.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.148.0...v2.149.0
 [2.148.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.147.0...v2.148.0
 [2.147.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.146.0...v2.147.0
