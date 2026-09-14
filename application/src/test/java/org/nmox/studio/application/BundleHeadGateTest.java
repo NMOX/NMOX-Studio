@@ -131,7 +131,10 @@ class BundleHeadGateTest {
                         String locale = name.equals("Bundle.properties") ? "en"
                                 : name.substring("Bundle_".length(), name.length() - ".properties".length());
                         Properties props = new Properties();
-                        try (InputStream in = Files.newInputStream(p)) {
+                        // UTF-8, as the bundles ship: Properties.load(InputStream)
+                        // is ISO-8859-1 by contract, which turns an invisible
+                        // direction mark into three visible characters (v2.151.0)
+                        try (java.io.Reader in = Files.newBufferedReader(p, java.nio.charset.StandardCharsets.UTF_8)) {
                             props.load(in);
                         }
                         String v = props.getProperty(key);
