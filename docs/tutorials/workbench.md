@@ -26,7 +26,7 @@ into a studio.
 
 4. **Check your tooling.** The **Tooling** column shows the studios and
    external tools you can reach. For a deep probe of ~60 external tools
-   with versions and install hints, run `Tools ▸ Environment Doctor`.
+   with versions and install hints, run `Tools ▸ Environment Doctor…`.
 
 ## What you just learned
 

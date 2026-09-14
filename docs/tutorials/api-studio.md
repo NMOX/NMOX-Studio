@@ -8,7 +8,7 @@ every response is graded against the web's security-header standards.
 
 ## Open it
 
-`⌥⌘8`, or the **API Studio** tab (open by default on first launch).
+`⌥⌘8`, or the **API Studio** row in the Welcome's TOOLING column.
 
 ## Steps
 

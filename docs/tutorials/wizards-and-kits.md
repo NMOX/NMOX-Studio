@@ -23,7 +23,7 @@ tutorial adds a PWA to a web project; the others work the same way.
 
 1. **Aim a web project** (one with an `index.html`).
 
-2. **Run the wizard.** `Tools ▸ PWA Kit…`. Point it at your web root and
+2. **Run the wizard.** `File ▸ Add to Project ▸ PWA Kit…`. Point it at your web root and
    set an app name and theme color.
 
 3. **Finish.** The wizard generates the icon set, `manifest.webmanifest`,

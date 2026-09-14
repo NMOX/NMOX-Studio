@@ -18,7 +18,7 @@ so every device runs in that project's directory.
 
 ## Steps
 
-1. **Open the rack.** Click the **Rack** tab (or `Window ▸ Rack`). The
+1. **Open the rack.** Click the **Task Rack** tab (or press `⌘9`). The
    starter rack has a single **MONITOR** — the console device that shows
    command output and error lines.
 

@@ -53,7 +53,7 @@ asks, green does, red stops), and the two ports make it patchable.
 
 ## 3. Mount it
 
-Open the **Rack** (⌥⌘6 family / the Rack tab) and look in the shelf's
+Open the **Task Rack** (`⌘9`, or the Task Rack tab) and look in the shelf's
 **Observe** drawer. COUNTER is there, with your tagline under it. Drag
 it onto a rail.
 

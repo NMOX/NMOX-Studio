@@ -17,7 +17,7 @@ an Express route or a plain `node server.js`.
 1. **Open a source file.** Highlighting, bracket matching, code folding,
    and mark-occurrences all come up automatically. The **Navigator**
    shows the file's outline; language servers (installed via
-   `Tools ▸ Environment Doctor` hints) add completion and diagnostics.
+   `Tools ▸ Environment Doctor…` hints) add completion and diagnostics.
 
 2. **Set a breakpoint.** Click the editor gutter on a line inside your
    handler — a breakpoint dot appears.

@@ -12,10 +12,10 @@ For the wide reference (install, every menu, every safety net) see the
 
 | Tutorial | What you'll do | Opens with |
 |----------|----------------|------------|
-| [The Task Rack](the-task-rack.md) | Wire a run→monitor patch and watch it fire | ⌥⌘6-family / Rack tab |
+| [The Task Rack](the-task-rack.md) | Wire a run→monitor patch and watch it fire | ⌘9 / Task Rack tab |
 | [Write your own device](your-own-device.md) | Add a rack device with a text editor — no Java, no restart | `~/.nmox/devices.d/` |
 | [Workbench](workbench.md) | Use the home base to jump between projects and tools | ⌥⌘0 |
-| [Project Studio](project-studio.md) | Scaffold a project and run it with no terminal | ⌥⌘6 |
+| [Project Studio](project-studio.md) | Scaffold a project and run it with no terminal | Project Studio tab |
 | [API Studio](api-studio.md) | Send a request, assert on it, read the security grade | ⌥⌘8 |
 | [DB Studio](db-studio.md) | Connect to SQLite and edit a row in the grid | ⌥⌘7 |
 | [Contract Studio](contract-studio.md) | Compile, deploy to a local chain, and call a contract | ⌥⌘6 (Web3) |
@@ -32,12 +32,14 @@ For the wide reference (install, every menu, every safety net) see the
 | [Migrating from Postman](migrating-from-postman.md) | Import your collections, HAR captures, and more — secrets go keychain-side | ⌥⌘8 → Import… |
 | [Image Kit (Web)](image-kit.md) | Press a project's images: smaller JPEGs, WebP siblings, honest report | File ▸ Add to Project ▸ Image Kit (Web)… |
 | [Learning Spaces](learning-spaces.md) | Spin up a guided sandbox with a live REPL | New Learning Space… |
-| [Wizards & Kits](wizards-and-kits.md) | Add a PWA, standards files, or classic-web scaffolds | Tools menu |
+| [Wizards & Kits](wizards-and-kits.md) | Add a PWA, standards files, or classic-web scaffolds | File ▸ Add to Project |
 
 > **A note on the shortcuts.** The studios live on the `⌥⌘` (Option-
 > Command) family on macOS — `⌥⌘6`–`⌥⌘9`, `⌥⌘5`, `⌥⌘0` — because the
 > plain `⇧⌘` chords are claimed by the platform. On Linux/Windows the
 > modifier is `Alt+`; the menus (Window ▸ …) always work regardless.
 
-All four studios and the Workbench open by default on a fresh launch,
-so you can also just click the tab you want.
+A first launch shows three tabs — the Welcome, the Task Rack and the
+Browser — with Project Studio, the Workbench and the NPM Explorer docked
+beside them. Every other window is one chord away and listed in the
+Welcome's TOOLING column.

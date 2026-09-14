@@ -10,12 +10,12 @@ is the **HARBOR** device.
 ## Before you start
 
 Have Docker running locally (`docker version` should succeed;
-`Tools ▸ Environment Doctor` will confirm).
+`Tools ▸ Environment Doctor…` will confirm).
 
 ## Steps
 
-1. **Open the panel.** Click the **Docker** tab (open by default on first
-   launch). The **Engine** overview shows whether the daemon is up.
+1. **Open the panel.** Press `⌘8`, or click **Docker Panel** in the
+   Welcome's TOOLING column. The **Engine** overview shows whether the daemon is up.
 
 2. **Inspect containers.** The **Containers** tab lists what's running —
    names, images, ports, status. **Images**, **Volumes**, and

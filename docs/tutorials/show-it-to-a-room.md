@@ -108,6 +108,6 @@ and output in the Output window.
   DevTools.
 - The Standup you paste into a chat comes from [The Task Board and
   sprints](task-board.md).
-- Release notes for a post start at `Help ▸ What's New… ▸ Copy as
-  Markdown`; the whole presenting section is in the [User
+- Release notes for a post start at `Help ▸ What's New…`, then its **Copy
+  as Markdown** button; the whole presenting section is in the [User
   Guide](../user-guide.md).

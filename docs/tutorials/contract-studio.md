@@ -14,7 +14,7 @@ escrow contract, testing it, and running it against a local chain — see
 ## Open it
 
 `⌥⌘6`, or the **Contract Studio** tab. You'll want Foundry (`anvil`,
-`forge`) installed; check with `Tools ▸ Environment Doctor`.
+`forge`) installed; check with `Tools ▸ Environment Doctor…`.
 
 ## Steps
 

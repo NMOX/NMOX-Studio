@@ -9,7 +9,7 @@ opening a terminal.
 
 ## Open it
 
-`⌥⌘6` region / the **Project Studio** surface, or `File ▸ New Project…`.
+The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Project…`.
 
 ## Steps
 
