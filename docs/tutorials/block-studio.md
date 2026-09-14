@@ -21,8 +21,8 @@ see it run. Click a block to highlight the exact lines it produced.
    Start a component and give it a tag like `hello-badge`.
 
 2. **Add blocks from the palette.** Drag an **Element** block (a DOM
-   node), give it text; add a **State** field; add a **Listener** that
-   flips a class on click. Only legal nestings are allowed — the canvas
+   node), give it text; add a **State** field; add an **On event** block
+   with a **Toggle class** inside it. Only legal nestings are allowed — the canvas
    previews valid drop slots and refuses illegal ones, even on load.
 
 3. **Read the code.** The middle pane shows the generated

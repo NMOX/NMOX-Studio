@@ -50,6 +50,6 @@ an Express route or a plain `node server.js`.
 
 ## Next
 
-- **Run Focused Test** debugs a single test method per language.
+- **Run Focused Test** runs a single test method per language.
 - Diagnostics from rack tools (eslint/tsc/phpstan) land in the platform
   Action Items window.

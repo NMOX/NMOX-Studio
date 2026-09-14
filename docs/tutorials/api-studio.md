@@ -49,7 +49,7 @@ every response is graded against the web's security-header standards.
    command Send would run, on your clipboard.
 
 7. **Ask KVASIR about a bad response.** When a send comes back wrong,
-   press **Explain with KVASIR…**. A consent dialog first tells you
+   press **Explain…**. A consent dialog first tells you
    exactly what would leave your machine — method, URL with query
    *values* masked, status, safe headers (credential headers already
    dropped and counted), and a capped body — and nothing is sent until

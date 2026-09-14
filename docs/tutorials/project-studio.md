@@ -18,7 +18,7 @@ The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Projec
 ## Steps
 
 1. **Scaffold a project.** `File ▸ New Project…` → pick a template
-   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, and more).
+   (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, and more).
    Choose a location (defaults to `~/NMOX`) and finish. The project opens
    and the rack aims at it.
 
@@ -36,7 +36,7 @@ The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Projec
 4. **Edit package.json.** The built-in editor gives structured editing of
    scripts and dependencies.
 
-5. **Load a preset.** The presets menu wires a ready-made rack for a
+5. **Load a preset.** The Task Rack's **Presets ▾** menu wires a ready-made rack for a
    workflow — Uptime Watch, Ship Gate, Modern Web, Monorepo Lanes, Web3
    Bench, and more — so you don't build the patch by hand.
 

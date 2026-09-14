@@ -28,8 +28,8 @@ into. There are 93 built in.
    walks you through it, pointing at the relevant console or device.
 
 3. **Type into the REPL.** The pre-wired rack includes a **REPL** device
-   whose ENGINE knob is set for the space's language (26 engines, each
-   with force-interactive flags seeded). Type an expression, press
+   whose ENGINE knob is set for the space's language (one engine per REPL language in the
+   catalog, each with force-interactive flags seeded). Type an expression, press
    enter — output streams onto the REPL screen. Missing interpreter?
    The **INSTALL** button installs it from the rack.
 

@@ -18,7 +18,7 @@ way to spawn a process, write a file, or stop a run.
 
 ## 1. Start it
 
-**Do:** Tools ▸ **Agent Port (MCP)…** ▸ **Start**, then **Copy Config**.
+**Do:** Tools ▸ **Agent Port (MCP)…** (choosing it starts the port), then **Copy Config**.
 
 **See:** A dialog with the endpoint (loopback only, a fresh port), a
 per-start bearer token, and a ready-made client configuration:

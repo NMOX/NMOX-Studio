@@ -53,7 +53,7 @@ Put this in `~/.nmox/devices.d/counter.json`:
 
 Everything in it is doing a job: the **knob** becomes `{{kind}}` in the
 command, the **QUERY** role paints the button blue (the colour law: blue
-asks, green does, red stops), and the two ports make it patchable.
+asks, green does, red stops), and the three ports make it patchable.
 
 ## 3. Mount it
 
@@ -61,7 +61,7 @@ Open the **Task Rack** (`⌘9`, or the Task Rack tab) and look in the shelf's
 **Observe** drawer. COUNTER is there, with your tagline under it. Drag
 it onto a rail.
 
-Hover its How-to-use card — that is your `usage` text, which is why the
+Right-click it and choose **How to use COUNTER…** — that is your `usage` text, which is why the
 format insists on two real lines.
 
 ## 4. Press it
@@ -82,7 +82,7 @@ Decline it instead and nothing spawns — the refusal is the feature.
 
 ## 5. Wire it up
 
-Drag a cable from COUNTER's **OUT** to MONITOR's **TAP**. Press COUNT
+Drag a cable from COUNTER's **OUT** to MONITOR's **IN**. Press COUNT
 again: every line lands on the monitor, because a declared `OUT`/`DATA`
 port receives the run's output with no extra configuration.
 

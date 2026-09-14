@@ -17,7 +17,7 @@ no server.
 
 ## Steps
 
-1. **Create a SQLite connection.** Click **New Connection**, choose
+1. **Create a SQLite connection.** Click **Add**, choose
    **SQLite**, and pick a file path (a save-style chooser lets you make a
    new `.db`). It appears in the connection tree.
 
@@ -32,12 +32,12 @@ no server.
    Each statement gets its own result grid below, with timing.
 
 3. **Edit a row in the grid.** Double-click Bob's `name` cell, change it,
-   and press **Apply**. DB Studio only allows in-grid edits when it can
+   and press **Apply…**. DB Studio only allows in-grid edits when it can
    build a safe single-row `UPDATE` (single table, primary key present) —
    it shows you the exact SQL before it runs, then re-queries for truth.
    If a row can't be edited safely it tells you why.
 
-4. **Export.** Right-click any grid → **Export CSV / JSON**. CSV export
+4. **Export.** Press **CSV** or **JSON** on any result grid. CSV export
    neutralizes spreadsheet formula-injection automatically.
 
 5. **EXPLAIN a query.** Select a `SELECT` and press **EXPLAIN** for the

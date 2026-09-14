@@ -13,7 +13,7 @@ anything. This tutorial builds a plan and dry-runs it, so no money moves.
 
 ## Open it
 
-`⌥⌘9`, or the **Infra** tab.
+`⌥⌘9`, or the **Infra Designer** tab.
 
 ## Steps
 
@@ -33,8 +33,8 @@ anything. This tutorial builds a plan and dry-runs it, so no money moves.
    API plan (create firewall, create droplet, attach…) and the cost, but
    nothing is created. The deploy log shows each step.
 
-5. **Go live (when you're ready).** Add a provider token under
-   `Options` (stored in the OS keychain), and DEPLOY executes the plan
+5. **Go live (when you're ready).** Add a provider token with **Tokens…**
+   (or Options ▸ Rack & Cloud; stored in the OS keychain), and DEPLOY executes the plan
    for real, resolving cross-node references (a droplet's IP flows into
    the DNS record) as resources come up.
 
