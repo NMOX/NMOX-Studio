@@ -4,6 +4,75 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.153.0] - 2026-09-14
+
+**The tutorials speak every language the product speaks, and every document
+names doors that exist, in its own language.** The user guide has been
+translated since v2.104.0; the 21 short walkthroughs a new user follows with the
+IDE open stayed English. They are now in all fifteen languages. Before any of
+them was translated the English was checked against the product, and the
+translators, told to take every name from the shipped bundles, reported what a
+reader of each language would have hit.
+
+- **The English tutorials had drifted from the product.** The first pass found
+  the Task Rack given a `⌥⌘6` chord (it is `⌘9`), Project Studio a chord it does
+  not have, every studio said to open on a fresh launch (three tabs have since
+  v2.118.0), kits sent to a Tools menu they left for `File ▸ Add to Project`, and
+  `Window ▸ Rack` for a row the menu calls Task Rack. The translators then
+  flagged fifteen more sentences, and a check against source found thirteen wrong:
+  the Agent Port has no Start button (choosing the menu row starts it), API
+  Studio's button reads `Explain…`, DB Studio's reads `Add` and `Apply…` and
+  exports from two buttons rather than a right-click menu, MONITOR's input jack is
+  `IN`, IGNITION's button is `IGNITE`, the patch has no `⌘S`, Run Focused Test
+  runs rather than debugs, the Block Studio piece is `On event`, KVASIR's full
+  answer opens with `VIEW`, and the Presets menu lives on the Task Rack. All
+  corrected in English and in every translation.
+- **`DocsMenuDoorsTest` holds every document to the menu bar of its own
+  language.** The paths come from the README, the user guide, the Kitchen Sink,
+  the demo script, A Day at Meridian and every tutorial, in English and in each
+  translation; the doors from the assembled cluster's layers, named through the
+  platform's own bundle chain for that language, plus the rows named in action
+  code. A path is found from its arrow backwards, because most of the scripts the
+  product speaks have no capital letter to start from. Widened, it named **60
+  wrong doors in thirteen translated user guides**: German sent readers to
+  `Werkzeuge ▸` for a menu that reads `Extras`, and the Screenshot, Keystrokes,
+  Website, Plugins, Minimap, Check My Work, Export as Learning Space and Stop
+  Build/Run rows went by a translator's paraphrase. Every one now says what the
+  menu paints.
+- **On macOS, Options is Settings….** Measured from the running app's menu bar:
+  the platform's Apple menu module hides `Tools ▸ Options` and the app menu offers
+  `Settings…`. The user guide and the Kitchen Sink say where Keymap and General
+  are on a Mac, now in every language (eleven translated paths said nothing), and
+  the gate asks any path to a row missing on one OS to say so.
+- **Spanish, Portuguese and French named two windows with one word.** The
+  platform's Navigator and the in-app Browser were both `Navegador` /
+  `Navigateur`, and translators had to invent a gloss to say which a step meant.
+  The Browser is `Navegador web` / `Navigateur web` now, and
+  `WindowMenuIsUnambiguousTest` resolves the Window menu in every shipped language
+  instead of English alone; on the old cluster it named exactly es, fr and pt.
+- **The Standup report was English in every language**, under a translated button
+  and a translated Overview; five translators found it independently. Its section
+  names, notes and sprint day come from the bundle in fourteen languages, down to
+  Chinese joining its notes with full-width punctuation, and numbers go in as text
+  so a locale's own digits never reach a team's chat.
+- **Smaller native finds.** Spanish and Portuguese `Stop/Repeat Build/Run` rows read
+  as nouns (`Detener compilación/ejecución`); a Spanish refusal addressed the
+  reader as *usted* («guárdelo») and the register gate now knows the
+  pronoun-attached form; the French guide set 133 ordinary spaces where French
+  keeps `: ; ! ? »` on the word's line, and a French documents check holds it.
+- **21 tutorials × 14 languages**, every command block byte-identical to English and
+  a language bar on every page. `TranslatedTutorialsGateTest` derives both the
+  tutorials and the languages, so a new tutorial or a sixteenth language fails the
+  build until it is written; `DocsIndexGateTest` counts a translation as listed when
+  its English document is.
+- **Mutants, killed by name:** the Standup's Today back to a literal
+  (`StandupReportTest.speaksTheReadersLanguage`); the German guide back to its
+  paraphrased row (`DocsMenuDoorsTest.everyTranslatedMenuPathExists[de]`); one French
+  no-break space made ordinary (`frenchDocumentsUseNoBreakSpaces`); «guárdelo» put
+  back inside the assembled jar (`NativeTypographyGateTest.oneRegisterPerLanguage`);
+  a kit path reverted to `Tools ▸ PWA Kit…` and the Kitchen Sink's macOS note removed
+  (`everyDocumentedMenuPathExists`).
+
 ## [2.152.0] - 2026-09-14
 
 **NMOX Studio speaks Egyptian Arabic, with digits a developer can type back.**
@@ -21203,6 +21272,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.153.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.152.0...v2.153.0
 [2.152.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.151.0...v2.152.0
 [2.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.1...v2.151.0
 [2.150.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.0...v2.150.1

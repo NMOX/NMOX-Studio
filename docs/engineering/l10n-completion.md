@@ -38,13 +38,19 @@ digits kept Latin; every gate below derives its population from
 | Each module named as itself, never with another module's words | `ModuleDescriptorsSpeakTest.everyModuleHasItsOwnName`, every language |
 | Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |
 | The website's and the I18n Kit's page direction | `I18nKitTest`, `SiteShipsTest` byte parity, logical CSS sides |
+| The 21 tutorials in `docs/tutorials`, every translation (v2.153.0) | `TranslatedTutorialsGateTest` — tutorials and languages derived; commands, headings, screenshots and the language bar identical to English |
+| Menu paths in every document, English and translated | `DocsMenuDoorsTest` — the doors of each language's own menu bar; one-OS rows must say where they are on macOS |
+| The Window menu unambiguous in every language | `WindowMenuIsUnambiguousTest`, per language through the platform's bundle chain |
+| The Standup report | `StandupReportTest.speaksTheReadersLanguage` |
 
 ## The ceilings, each measured
 
 These are not gaps. Each was investigated, measured, and decided; the decision
 is recorded where the code is, and repeated here so the arc's end is honest.
 
-1. **Tutorial prose stays English** — 130,863 characters, ~1.57M across twelve
+1. **Learning-space tutorial prose stays English** (the `TUTORIAL.md` a space
+   generates; the 21 walkthroughs in `docs/tutorials` are translated since v2.153.0)
+   — 130,863 characters, ~1.57M across twelve
    languages. The catalogue's `tutorial.<lang>` slot is open and a language is
    one line; the size is the reason nobody has filled it. A catalogue is
    scanned to choose, a tutorial read after choosing (v2.133.0).
