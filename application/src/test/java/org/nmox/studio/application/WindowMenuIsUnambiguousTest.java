@@ -21,6 +21,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -43,6 +45,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * VCS-museum idiom) removes it from the population, which is the honest fix
  * when the row is chrome for a feature this product does not ship; renaming
  * ours is the honest fix when both belong.
+ *
+ * <p>Held in every language the product ships (v2.153.0): a collision can exist
+ * in one language only. The platform's Navigator and our in-app Browser are two
+ * words in English and one in Spanish, Portuguese and French ("Navegador",
+ * "Navigateur"), found by the translators of the tutorials, who had to invent a
+ * gloss to tell a reader which one a step meant.
  */
 class WindowMenuIsUnambiguousTest {
 
@@ -81,6 +89,29 @@ class WindowMenuIsUnambiguousTest {
         return out;
     }
 
+    /** The branding and language overlays live one directory down, in {@code modules/locale}. */
+    private static List<Path> overlayJars() throws IOException {
+        List<Path> out = new ArrayList<>();
+        for (Path dir : ALL_CLUSTERS) {
+            Path locale = dir.resolve("locale");
+            if (!Files.isDirectory(locale)) {
+                continue;
+            }
+            try (Stream<Path> s = Files.list(locale)) {
+                s.filter(p -> p.toString().endsWith(".jar")).sorted().forEach(out::add);
+            }
+        }
+        return out;
+    }
+
+    private static final Pattern BUNDLE = Pattern.compile("(.*)/Bundle((?:_nmoxstudio)?(?:_[a-z]{2})?)\\.properties");
+
+    static List<String> languages() {
+        List<String> out = new ArrayList<>(List.of(""));
+        out.addAll(ShippedLocales.TRANSLATED);
+        return out;
+    }
+
     /** Every layer document in a module jar: the hand-written one and the generated one. */
     private static List<String> layers(ZipFile zip) throws IOException {
         List<String> out = new ArrayList<>();
@@ -108,29 +139,37 @@ class WindowMenuIsUnambiguousTest {
         return end < 0 ? xml.substring(window) : xml.substring(window, end);
     }
 
-    @Test
-    @DisplayName("no two visible Window-menu rows answer to the same name")
-    void windowMenuNamesAreUnique() throws IOException {
+    @ParameterizedTest(name = "[{0}]")
+    @MethodSource("languages")
+    @DisplayName("no two visible Window-menu rows answer to the same name, in any language")
+    void windowMenuNamesAreUnique(String lang) throws IOException {
         List<Path> jars = jars();
         assertThat(jars).as("the assembled clusters exist after package").isNotEmpty();
 
         Map<String, String> instanceDisplay = new HashMap<>();   // instance path -> bundle#key
-        Map<String, Properties> bundles = new HashMap<>();       // bundle fqn -> values
+        // suffix ("", "_de", "_nmoxstudio", "_nmoxstudio_de") -> bundle fqn -> values
+        Map<String, Map<String, Properties>> bundles = new HashMap<>();
         Map<String, String> rows = new LinkedHashMap<>();        // shadow name -> instance path
+        Map<String, String> rowJar = new HashMap<>();            // shadow name -> the module that declares it
         Set<String> hidden = new LinkedHashSet<>();
 
-        for (Path jar : jars) {
+        List<Path> withOverlays = new ArrayList<>(jars);
+        withOverlays.addAll(overlayJars());
+        for (Path jar : withOverlays) {
             try (ZipFile zip = new ZipFile(jar.toFile())) {
                 for (ZipEntry e : zip.stream().toList()) {
-                    String n = e.getName();
-                    if (n.endsWith("/Bundle.properties")) {
+                    Matcher b = BUNDLE.matcher(e.getName());
+                    if (b.matches()) {
                         Properties p = new Properties();
                         try (InputStream in = zip.getInputStream(e)) {
                             p.load(new java.io.InputStreamReader(in, StandardCharsets.UTF_8));
                         }
-                        bundles.put(n.substring(0, n.length() - ".properties".length())
-                                .replace('/', '.'), p);
+                        bundles.computeIfAbsent(b.group(2), k -> new HashMap<>())
+                                .putIfAbsent(b.group(1).replace('/', '.') + ".Bundle", p);
                     }
+                }
+                if (!jars.contains(jar)) {
+                    continue; // an overlay carries bundles, never layers
                 }
                 for (String xml : layers(zip)) {
                     Matcher i = INSTANCE.matcher(xml);
@@ -152,6 +191,7 @@ class WindowMenuIsUnambiguousTest {
                         Matcher o = ORIGINAL.matcher(s.group(2));
                         if (o.find()) {
                             rows.put(s.group(1), o.group(1));
+                            rowJar.put(s.group(1), jar.getFileName().toString());
                         }
                     }
                 }
@@ -172,24 +212,57 @@ class WindowMenuIsUnambiguousTest {
                 continue; // a row whose name the layer does not carry (methodvalue label)
             }
             int hash = display.indexOf('#');
-            Properties p = bundles.get(display.substring(0, hash));
-            if (p == null) {
-                continue;
+            String label = null;
+            // the platform's own lookup order for a branded build in this language
+            List<String> chain = lang.isEmpty() ? List.of("_nmoxstudio", "")
+                    : List.of("_nmoxstudio_" + lang, "_nmoxstudio", "_" + lang, "");
+            for (String suffix : chain) {
+                Properties p = bundles.getOrDefault(suffix, Map.of()).get(display.substring(0, hash));
+                if (p != null && p.getProperty(display.substring(hash + 1)) != null) {
+                    label = p.getProperty(display.substring(hash + 1));
+                    break;
+                }
             }
-            String label = p.getProperty(display.substring(hash + 1));
             if (label == null) {
                 continue;
             }
-            byName.computeIfAbsent(plain(label), k -> new ArrayList<>()).add(row.getKey());
+            byName.computeIfAbsent(plain(label), k -> new ArrayList<>())
+                    .add(rowJar.get(row.getKey()) + "#" + row.getKey());
+        }
+
+        // rows whose names live in action code (the Navigator is one): the ledger
+        // DocsMenuDoorsTest and CodeNamedMenuRowsTest already hold names each
+        try (InputStream in = WindowMenuIsUnambiguousTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
+            assertThat(in).as("the code-named menu rows ledger").isNotNull();
+            for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+                String[] f = line.split("\\|");
+                if (line.startsWith("#") || f.length < 5 || !f[0].equals("Window")) {
+                    continue;
+                }
+                String label = null;
+                List<String> chain = lang.isEmpty() ? List.of("_nmoxstudio", "")
+                        : List.of("_nmoxstudio_" + lang, "_nmoxstudio", "_" + lang, "");
+                for (String suffix : chain) {
+                    Properties p = bundles.getOrDefault(suffix, Map.of()).get(f[2].replace('/', '.') + ".Bundle");
+                    if (p != null && p.getProperty(f[3]) != null) {
+                        label = p.getProperty(f[3]);
+                        break;
+                    }
+                }
+                byName.computeIfAbsent(plain(label == null ? f[4] : label), k -> new ArrayList<>())
+                        .add(f[1] + "#" + f[3]);
+            }
         }
 
         assertThat(byName)
                 .as("resolved Window-menu names — an empty scan would prove nothing")
                 .hasSizeGreaterThanOrEqualTo(20);
 
+        // one module's two names for one action (the menu reads one key, the
+        // shortcuts sheet the other, v2.144.0) are one row; two modules are two
         List<String> collisions = byName.entrySet().stream()
-                .filter(e -> e.getValue().size() > 1)
-                .map(e -> "\"" + e.getKey() + "\" is the name of " + e.getValue())
+                .filter(e -> e.getValue().stream().map(r -> r.substring(0, r.indexOf('#'))).distinct().count() > 1)
+                .map(e -> (lang.isEmpty() ? "" : lang + ": ") + "\"" + e.getKey() + "\" is the name of " + e.getValue())
                 .toList();
         assertThat(collisions)
                 .as("two rows in the Window menu with one name — the user cannot choose between them")
@@ -202,9 +275,10 @@ class WindowMenuIsUnambiguousTest {
         return slash < 0 ? path : path.substring(slash + 1);
     }
 
-    /** "Tas&amp;ks" and "Tasks" are the same row to a reader. */
+    /** "Tas&amp;ks", "Tasks" and "Tasks(&amp;K)" are the same row to a reader. */
     private static String plain(String raw) {
-        return raw.replace("&", "").trim();
+        return raw.replaceAll("\\(&.\\)", "").replace("&", "")
+                .replaceAll("[\u200E\u200F\u202A-\u202E\u2066-\u2069]", "").trim();
     }
 
     @Test

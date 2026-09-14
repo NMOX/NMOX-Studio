@@ -73,7 +73,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
 ![Um experimento Express recém-criado: o roteiro aberto, as dependências instaladas, a API já servindo](images/experiment-walkthrough.png)
 
-**Executar, construir, testar — e parar:** o ▶ da barra (F6) executa o projeto do jeito que a cadeia de ferramentas dele executa: um script `start` se o package.json tiver um, `cargo run`, `go run`, `dotnet run`, e para uma pasta de HTML um pequeno servidor estático na primeira porta livre a partir de 8080. Construir, Testar e Limpar ficam ao lado e no menu Executar. Um servidor de desenvolvimento que anuncia seu endereço acende o indicador ⇄ na barra de status e abre a página no navegador embutido. Tudo passa, na primeira vez, pela confirmação de confiança do espaço de trabalho. Uma execução que não conseguiu começar diz isso e oferece abrir o Doutor do ambiente. Para parar: o ■ à direita de Depurar (⌥⌘.) para todos os comandos em execução de uma vez e diz o que parou; **Executar ▸ Parar** para um e depois oferece **Repetir**. O ■ enxerga tudo que o produto inicia para você, instalações incluídas; ao passar o cursor, a dica nomeia exatamente o que uma pressão pararia, e desde quando cada coisa está rodando.
+**Executar, construir, testar — e parar:** o ▶ da barra (F6) executa o projeto do jeito que a cadeia de ferramentas dele executa: um script `start` se o package.json tiver um, `cargo run`, `go run`, `dotnet run`, e para uma pasta de HTML um pequeno servidor estático na primeira porta livre a partir de 8080. Construir, Testar e Limpar ficam ao lado e no menu Executar. Um servidor de desenvolvimento que anuncia seu endereço acende o indicador ⇄ na barra de status e abre a página no navegador embutido. Tudo passa, na primeira vez, pela confirmação de confiança do espaço de trabalho. Uma execução que não conseguiu começar diz isso e oferece abrir o Doutor do ambiente. Para parar: o ■ à direita de Depurar (⌥⌘.) para todos os comandos em execução de uma vez e diz o que parou; **Executar ▸ Parar compilação/execução** para um e depois oferece **Repetir**. O ■ enxerga tudo que o produto inicia para você, instalações incluídas; ao passar o cursor, a dica nomeia exatamente o que uma pressão pararia, e desde quando cada coisa está rodando.
 
 **`.env` em todo lugar:** se seu projeto tem um `.env`, os dispositivos lançados a partir do rack recebem essas variáveis. Edite-o e a barra de status anota que reinícios vão pegá-lo — processos em execução mantêm honestamente o ambiente antigo.
 
@@ -182,7 +182,7 @@ Clique na margem esquerda, escolha **Depurar arquivo (pontos de parada)** e o pr
 
 ### Apresentar e compartilhar
 
-**Ver ▸ Modo apresentação** aumenta de uma vez todos os editores, a página do navegador embutido, a janela de saída e o terminal — e devolve tudo exatamente como estava ao sair. **Ver ▸ Mostrar teclas** mostra em tamanho grande o atalho que você acabou de apertar, mas nunca o que você digita. **Editar ▸ Copiar como Markdown** copia a seleção como bloco cercado com a etiqueta de linguagem certa, e a variante **com link** acrescenta o link do GitHub para as mesmas linhas. **Ferramentas ▸ Salvar captura…** pinta a janela inteira no dobro do tamanho, com variantes para a aba do editor sozinha, para a área de transferência e para copiar a árvore do projeto como Markdown.
+**Ver ▸ Modo apresentação** aumenta de uma vez todos os editores, a página do navegador embutido, a janela de saída e o terminal — e devolve tudo exatamente como estava ao sair. **Ver ▸ Mostrar teclas** mostra em tamanho grande o atalho que você acabou de apertar, mas nunca o que você digita. **Editar ▸ Copiar como Markdown** copia a seleção como bloco cercado com a etiqueta de linguagem certa, e a variante **com link** acrescenta o link do GitHub para as mesmas linhas. **Ferramentas ▸ Salvar captura de tela…** pinta a janela inteira no dobro do tamanho, com variantes para a aba do editor sozinha, para a área de transferência e para copiar a árvore do projeto como Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Os estúdios
@@ -288,7 +288,7 @@ Ao lado do selo dos servidores estão o projeto mirado com sua cadeia de ferrame
 
 ### Os atalhos do Emacs (e do Eclipse, e do IntelliJ)
 
-Ferramentas ▸ Opções ▸ Mapa de teclado troca o perfil inteiro: os movimentos e o recortar e colar do Emacs em todo editor, ou os conjuntos do Eclipse e do IDEA se é ali que mora a sua memória muscular. Todo atalho do NMOX está registrado nos cinco perfis, então trocar de perfil nunca lhe custa os atalhos dos estúdios.
+Ferramentas ▸ Opções ▸ Mapa de teclado (no macOS, NMOX Studio ▸ Settings… ▸ Mapa de teclado) troca o perfil inteiro: os movimentos e o recortar e colar do Emacs em todo editor, ou os conjuntos do Eclipse e do IDEA se é ali que mora a sua memória muscular. Todo atalho do NMOX está registrado nos cinco perfis, então trocar de perfil nunca lhe custa os atalhos dos estúdios.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. As redes de segurança (aquilo pelo qual você não precisa fazer nada)
@@ -326,11 +326,11 @@ Discreta, uma vez por dia: se há uma versão mais nova, uma notificação leva 
 
 ### Confira o seu trabalho
 
-Alguns espaços trazem pontos de conferência: escolha um deles e **Arquivo ▸ Conferir meu trabalho** verifica os exercícios de verdade — o que os arquivos afirmam é conferido em Java puro, inclusive as conferências de *ausência*, que são o jeito de verificar «você mudou o título»: o texto original do exemplo precisa ter sumido. O que os comandos afirmam passa pela própria cadeia de ferramentas do espaço. Cada ✗ responde com a dica do próprio espaço, e quando algo falha o relatório oferece **Explicar com o KVASIR…**: os pontos que falharam e, numa conferência de arquivo, o seu próprio arquivo, limitados e sob um consentimento que diz exatamente o que sai. A resposta se lê como a de um tutor: o que mudar, e depois confira de novo.
+Alguns espaços trazem pontos de conferência: escolha um deles e **Arquivo ▸ Verificar meu trabalho** verifica os exercícios de verdade — o que os arquivos afirmam é conferido em Java puro, inclusive as conferências de *ausência*, que são o jeito de verificar «você mudou o título»: o texto original do exemplo precisa ter sumido. O que os comandos afirmam passa pela própria cadeia de ferramentas do espaço. Cada ✗ responde com a dica do próprio espaço, e quando algo falha o relatório oferece **Explicar com o KVASIR…**: os pontos que falharam e, numa conferência de arquivo, o seu próprio arquivo, limitados e sob um consentimento que diz exatamente o que sai. A resposta se lê como a de um tutor: o que mudar, e depois confira de novo.
 
 ### Os seus próprios tutoriais
 
-Ponha um arquivo `*.json` em `~/.nmox/learn-catalog.d/` e ele entra no seletor, com o mesmo esquema dos que já vêm; um `slug` igual substitui o da casa. Dá aula? Escreva construindo: faça do exercício um projeto normal e **Arquivo ▸ Exportar como espaço de aprendizagem…** monta esse arquivo para você — os arquivos de amostra, o seu `TUTORIAL.md`, o roteiro de execução e os seus pontos de conferência —, validado contra o analisador do próprio seletor antes de ser escrito, de modo que o que você entrega aos alunos é exatamente o que o seletor deles vai carregar.
+Ponha um arquivo `*.json` em `~/.nmox/learn-catalog.d/` e ele entra no seletor, com o mesmo esquema dos que já vêm; um `slug` igual substitui o da casa. Dá aula? Escreva construindo: faça do exercício um projeto normal e **Arquivo ▸ Exportar como espaço de aprendizado…** monta esse arquivo para você — os arquivos de amostra, o seu `TUTORIAL.md`, o roteiro de execução e os seus pontos de conferência —, validado contra o analisador do próprio seletor antes de ser escrito, de modo que o que você entrega aos alunos é exatamente o que o seletor deles vai carregar.
 
 ### O catálogo
 

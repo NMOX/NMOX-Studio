@@ -73,7 +73,7 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 
 ![Un experimento Express recién creado: el recorrido abierto, las dependencias instaladas y la API ya sirviendo](images/experiment-walkthrough.png)
 
-**Ejecutar, construir, probar — y detener:** el ▶ de la barra (F6) ejecuta el proyecto como lo hace su cadena de herramientas: un script `start` si package.json lo tiene, `cargo run`, `go run`, `dotnet run`, y para una carpeta de HTML un pequeño servidor estático en el primer puerto libre a partir de 8080. Construir, Probar y Limpiar están al lado y en el menú Ejecutar. Un servidor de desarrollo que anuncia su dirección enciende el indicador ⇄ de la barra de estado y abre la página en el navegador integrado. Todo se ejecuta tras la confirmación de confianza del espacio de trabajo la primera vez. Una ejecución que no pudo arrancar lo dice y ofrece abrir el Doctor del entorno. Para detener: el ■ a la derecha de Depurar (⌥⌘.) detiene todos los comandos en marcha a la vez y dice qué detuvo; **Ejecutar ▸ Detener** detiene uno y luego ofrece **Repetir**. El ■ ve todo lo que el producto ejecuta por ti, incluidas las instalaciones; al pasar el cursor, el mensaje nombra exactamente qué se detendría y desde cuándo lleva cada cosa en marcha.
+**Ejecutar, construir, probar — y detener:** el ▶ de la barra (F6) ejecuta el proyecto como lo hace su cadena de herramientas: un script `start` si package.json lo tiene, `cargo run`, `go run`, `dotnet run`, y para una carpeta de HTML un pequeño servidor estático en el primer puerto libre a partir de 8080. Construir, Probar y Limpiar están al lado y en el menú Ejecutar. Un servidor de desarrollo que anuncia su dirección enciende el indicador ⇄ de la barra de estado y abre la página en el navegador integrado. Todo se ejecuta tras la confirmación de confianza del espacio de trabajo la primera vez. Una ejecución que no pudo arrancar lo dice y ofrece abrir el Doctor del entorno. Para detener: el ■ a la derecha de Depurar (⌥⌘.) detiene todos los comandos en marcha a la vez y dice qué detuvo; **Ejecutar ▸ Detener compilación/ejecución** detiene uno y luego ofrece **Repetir**. El ■ ve todo lo que el producto ejecuta por ti, incluidas las instalaciones; al pasar el cursor, el mensaje nombra exactamente qué se detendría y desde cuándo lleva cada cosa en marcha.
 
 **`.env` en todas partes:** si tu proyecto tiene un `.env`, los dispositivos lanzados desde el rack reciben esas variables. Edítalo y la barra de estado avisa de que los reinicios lo recogerán — los procesos en marcha conservan honestamente su entorno anterior.
 
@@ -182,7 +182,7 @@ Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupció
 
 ### Presentar y compartir
 
-**Ver ▸ Modo presentación** agranda de una vez todos los editores, la página del navegador integrado, la ventana de salida y la terminal — y lo devuelve todo exactamente como estaba al salir. **Ver ▸ Mostrar pulsaciones** muestra en grande el atajo que acabas de pulsar, pero nunca lo que escribes. **Editar ▸ Copiar como Markdown** copia la selección como un bloque delimitado con la etiqueta de lenguaje correcta, y su variante **con enlace** añade el enlace de GitHub a esas mismas líneas. **Herramientas ▸ Guardar captura…** pinta la ventana entera al doble de tamaño, y hay variantes para la pestaña del editor sola, para el portapapeles y para copiar el árbol del proyecto como Markdown.
+**Ver ▸ Modo presentación** agranda de una vez todos los editores, la página del navegador integrado, la ventana de salida y la terminal — y lo devuelve todo exactamente como estaba al salir. **Ver ▸ Mostrar pulsaciones de teclas** muestra en grande el atajo que acabas de pulsar, pero nunca lo que escribes. **Editar ▸ Copiar como Markdown** copia la selección como un bloque delimitado con la etiqueta de lenguaje correcta, y su variante **con enlace** añade el enlace de GitHub a esas mismas líneas. **Herramientas ▸ Guardar captura de pantalla…** pinta la ventana entera al doble de tamaño, y hay variantes para la pestaña del editor sola, para el portapapeles y para copiar el árbol del proyecto como Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Los estudios
@@ -225,7 +225,7 @@ Un cliente completo dentro del IDE: TLS con verificación real del nombre, SASL,
 
 ### El sitio web incluido
 
-**Ayuda ▸ Sitio de NMOX Studio (local)** sirve el sitio del producto desde el propio rack, en la interfaz local. Habla las quince lenguas que habla el IDE; el selector está al pie de la página.
+**Ayuda ▸ Sitio web de NMOX Studio (local)** sirve el sitio del producto desde el propio rack, en la interfaz local. Habla las quince lenguas que habla el IDE; el selector está al pie de la página.
 
 ### Navegador (⌥⌘4)
 
@@ -288,7 +288,7 @@ Es la base: el proyecto actual, los archivos abiertos y recientes, los proyectos
 
 ### Atajos de Emacs (y de Eclipse, y de IntelliJ)
 
-Herramientas ▸ Opciones ▸ Combinaciones de teclas cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios.
+Herramientas ▸ Opciones ▸ Combinaciones de teclas (en macOS, NMOX Studio ▸ Settings… ▸ Combinaciones de teclas) cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Las redes de seguridad (lo que no tienes que hacer)

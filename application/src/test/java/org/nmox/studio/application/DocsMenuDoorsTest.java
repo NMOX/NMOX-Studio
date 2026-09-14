@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -42,11 +44,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  * it is still inside the menu bar: the top menu, its row, and a submenu's row.
  * What follows a leaf ({@code ▸ Start}, {@code ▸ Angular (standalone)}) is a
  * dialog's own control and is not a menu door.
+ *
+ * <p>The translated documents are held the same way, in their own language
+ * (v2.153.0): the doors are named from the same layer keys through the chain
+ * the platform itself uses ({@code Bundle_nmoxstudio_xx}, {@code Bundle_nmoxstudio},
+ * {@code Bundle_xx}, {@code Bundle}). The translators of the tutorials found the
+ * translated user guides naming menus the product never had: German sent readers
+ * to {@code Werkzeuge ▸} for a menu that reads {@code Extras}, and several guides
+ * named the Screenshot and Keystrokes rows by a translator's paraphrase.
  */
 class DocsMenuDoorsTest {
 
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
-    private static final String ARROW = " ▸ ";
+    /** A right-to-left language points its menu paths the way it reads (conventions.md). */
+    private static final List<String> ARROWS = List.of(" ▸ ", " ◂ ");
 
     /**
      * Platform rows whose names live in action code, not in the layer, and are
@@ -62,6 +73,22 @@ class DocsMenuDoorsTest {
 
     /** The English documents a reader follows step by step. */
     private static List<Path> documents() throws IOException {
+        return documents("");
+    }
+
+    /** The documents in one language: English's own list, or every translation of it that exists. */
+    private static List<Path> documents(String lang) throws IOException {
+        if (!lang.isEmpty()) {
+            List<Path> docs = new ArrayList<>();
+            for (Path english : documents()) {
+                String name = english.getFileName().toString();
+                Path translated = english.resolveSibling(name.substring(0, name.length() - 3) + "." + lang + ".md");
+                if (Files.isRegularFile(translated)) {
+                    docs.add(translated);
+                }
+            }
+            return docs;
+        }
         List<Path> docs = new ArrayList<>(List.of(
                 Path.of("..", "README.md"),
                 Path.of("..", "docs", "user-guide.md"),
@@ -90,28 +117,83 @@ class DocsMenuDoorsTest {
     @Test
     @DisplayName("every menu path in the English documents names a row the menu bar has")
     void everyDocumentedMenuPathExists() throws IOException {
-        Map<String, Door> bar = menuBar();
+        Map<String, Door> bar = menuBar("");
         assertThat(bar).as("top menus read from the assembled cluster").containsKeys("File", "Tools", "Window");
         assertThat(bar.get("Tools").children).as("Tools rows").isNotEmpty();
+        assertThat(wrongPaths(bar, documents(""))).as("a documented menu path that names a door the menu bar does not have").isEmpty();
+    }
 
+    static List<String> translated() {
+        return ShippedLocales.TRANSLATED;
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("translated")
+    @DisplayName("every menu path in a translated document names a row that language's menu bar has")
+    void everyTranslatedMenuPathExists(String lang) throws IOException {
+        Map<String, Door> bar = menuBar(lang);
+        assertThat(bar).as("top menus in " + lang).hasSizeGreaterThanOrEqualTo(8);
+        List<Path> docs = documents(lang);
+        assertThat(docs).as("the " + lang + " user guide at least").isNotEmpty();
+        assertThat(wrongPaths(bar, docs)).as("a " + lang + " menu path that names a door the " + lang
+                + " menu bar does not have").isEmpty();
+    }
+
+    /**
+     * Every path in the documents that starts at a top menu. A path is found from
+     * its arrow backwards, not from a capital letter forwards: most of the scripts
+     * the product speaks have no capitals, and a capital-led phrase ("Open the
+     * File ▸") had been hiding the menu name inside it.
+     */
+    private static List<String> wrongPaths(Map<String, Door> bar, List<Path> docs) throws IOException {
         List<String> wrong = new ArrayList<>();
-        for (Path doc : documents()) {
+        for (Path doc : docs) {
             String text = normalized(Files.readString(doc, StandardCharsets.UTF_8));
-            Matcher top = Pattern.compile("(?<![\\p{L}\\p{N}])(\\p{Lu}[\\p{L} ]{1,20}?)" + Pattern.quote(ARROW)).matcher(text);
-            int from = 0;
-            while (top.find(from)) {
-                from = top.end();
-                Door menu = bar.get(top.group(1).trim());
-                if (menu == null) {
-                    continue; // prose with an arrow, or a platform menu we do not document
+            for (int at = 0; at < text.length(); at++) {
+                String arrow = arrowAt(text, at);
+                if (arrow == null) {
+                    continue;
                 }
-                String problem = walk(menu, text, top.end());
+                Door menu = null;
+                for (Door d : bar.values()) {
+                    int start = at - d.name.length();
+                    if (start >= 0 && text.startsWith(d.name, start)
+                            && (start == 0 || !joins(text.charAt(start - 1), d.name.charAt(0)))
+                            && (menu == null || d.name.length() > menu.name.length())) {
+                        menu = d;
+                    }
+                }
+                if (menu == null) {
+                    continue; // a submenu hop of a path already walked, or prose with an arrow
+                }
+                String problem = walk(menu, text, at + arrow.length());
                 if (problem != null) {
-                    wrong.add(doc.getFileName() + ": " + snippet(text, top.start()) + "   (" + problem + ")");
+                    wrong.add(doc.getFileName() + ": " + snippet(text, at - menu.name.length()) + "   (" + problem + ")");
                 }
             }
         }
-        assertThat(wrong).as("a documented menu path that names a door the menu bar does not have").isEmpty();
+        return wrong;
+    }
+
+    private static String arrowAt(String text, int at) {
+        for (String a : ARROWS) {
+            if (text.startsWith(a, at)) {
+                return a;
+            }
+        }
+        return null;
+    }
+
+    /** Two letters that belong to one word; a Han character is a word of its own. */
+    private static boolean joins(char a, char b) {
+        return Character.isLetterOrDigit(a) && Character.isLetterOrDigit(b)
+                && !cjk(a) && !cjk(b);
+    }
+
+    private static boolean cjk(char c) {
+        Character.UnicodeScript s = Character.UnicodeScript.of(c);
+        return s == Character.UnicodeScript.HAN || s == Character.UnicodeScript.HIRAGANA
+                || s == Character.UnicodeScript.KATAKANA;
     }
 
     /** Follow one path through a menu; null when every menu hop resolves. */
@@ -133,11 +215,12 @@ class DocsMenuDoorsTest {
                 return current.name + " ▸ " + hop.name + " is not in every OS's menu bar; say where it is on macOS";
             }
             int after = at + matchedLength(hop, text, at);
-            if (hop.children.isEmpty() || !text.startsWith(ARROW, after)) {
+            String arrow = arrowAt(text, after);
+            if (hop.children.isEmpty() || arrow == null) {
                 return null;
             }
             current = hop;
-            at = after + ARROW.length();
+            at = after + arrow.length();
         }
     }
 
@@ -159,7 +242,7 @@ class DocsMenuDoorsTest {
         for (String name : List.of(d.name, d.name.endsWith("…") ? d.name.substring(0, d.name.length() - 1) : d.name)) {
             if (!name.isEmpty() && text.startsWith(name, at)) {
                 int end = at + name.length();
-                if (end >= text.length() || !Character.isLetterOrDigit(text.charAt(end))) {
+                if (end >= text.length() || !joins(name.charAt(name.length() - 1), text.charAt(end))) {
                     return name.length();
                 }
             }
@@ -167,9 +250,16 @@ class DocsMenuDoorsTest {
         return 0;
     }
 
-    /** Emphasis and code marks removed, line wraps joined, so a path reads as it renders. */
+    /**
+     * Emphasis and code marks removed, line wraps joined, so a path reads as it
+     * renders. The invisible marks a right-to-left path carries (RLM, embeddings)
+     * and the no-break spaces French sets are layout, not name; a typographic
+     * apostrophe and the ASCII one name the same row.
+     */
     static String normalized(String markdown) {
         return markdown.replace("\r\n", "\n").replace("**", "").replace("`", "")
+                .replaceAll("[\u200E\u200F\u202A-\u202E\u2066-\u2069]", "")
+                .replace('\u00A0', ' ').replace('\u202F', ' ').replace('\u2019', '\'')
                 .replaceAll("\\s*\\n\\s*", " ").replaceAll("[ \\t]{2,}", " ");
     }
 
@@ -179,11 +269,32 @@ class DocsMenuDoorsTest {
 
     // ---- the menu bar, read from the assembled cluster ------------------
 
-    private static Map<String, Door> cached;
+    /** What the cluster says once, for every language: the layers, and every bundle by its suffix. */
+    private record Cluster(Map<String, String> displayName, Map<String, String> originalFile, Set<String> files,
+            Set<String> folders, Set<String> hidden, Set<String> hiddenOnOneOs,
+            Map<String, Map<String, String>> bundles) {
 
-    private static synchronized Map<String, Door> menuBar() throws IOException {
-        if (cached != null) {
-            return cached;
+        /** {@code pkg/path#key} through the platform's chain for a branded build in {@code lang}. */
+        String value(String lang, String pkgKey) {
+            List<String> chain = lang.isEmpty() ? List.of("_nmoxstudio", "")
+                    : List.of("_nmoxstudio_" + lang, "_nmoxstudio", "_" + lang, "");
+            for (String suffix : chain) {
+                String v = bundles.getOrDefault(suffix, Map.of()).get(pkgKey);
+                if (v != null) {
+                    return v;
+                }
+            }
+            return null;
+        }
+    }
+
+    private static final Pattern BUNDLE = Pattern.compile(".*/Bundle((?:_nmoxstudio)?(?:_[a-z]{2})?)\\.properties");
+    private static Cluster cluster;
+    private static final Map<String, Map<String, Door>> CACHED = new java.util.HashMap<>();
+
+    private static synchronized Cluster cluster() throws IOException {
+        if (cluster != null) {
+            return cluster;
         }
         assertThat(CLUSTER).as("the assembled cluster").exists();
         Map<String, String> displayName = new LinkedHashMap<>();
@@ -192,8 +303,7 @@ class DocsMenuDoorsTest {
         Set<String> folders = new HashSet<>();
         Set<String> hidden = new HashSet<>();
         Set<String> hiddenOnOneOs = new HashSet<>();
-        Map<String, String> bundleValues = new LinkedHashMap<>(); // "pkg/path#key" -> English
-        Map<String, String> folderNames = new LinkedHashMap<>();  // "Menu/File/AddToProject" -> display
+        Map<String, Map<String, String>> bundles = new java.util.HashMap<>(); // suffix -> "pkg/path#key" -> value
 
         javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
         try {
@@ -203,30 +313,21 @@ class DocsMenuDoorsTest {
         } catch (javax.xml.parsers.ParserConfigurationException unsupported) {
             throw new IOException(unsupported);
         }
-        Map<String, String> branded = new LinkedHashMap<>();
         try (Stream<Path> all = Files.walk(CLUSTER)) {
             for (Path jar : all.filter(p -> p.toString().endsWith(".jar")).toList()) {
                 try (JarFile jf = new JarFile(jar.toFile())) {
                     for (JarEntry e : jf.stream().toList()) {
                         String n = e.getName();
-                        boolean base = n.endsWith("/Bundle.properties");
-                        boolean brand = n.endsWith("/Bundle_nmoxstudio.properties");
-                        if (base || brand) {
+                        Matcher b = BUNDLE.matcher(n);
+                        if (b.matches()) {
                             Properties p = new Properties();
                             try (InputStream in = jf.getInputStream(e)) {
                                 p.load(new InputStreamReader(in, StandardCharsets.UTF_8));
                             }
                             String pkg = n.substring(0, n.lastIndexOf('/'));
+                            Map<String, String> values = bundles.computeIfAbsent(b.group(1), k -> new java.util.HashMap<>());
                             for (String k : p.stringPropertyNames()) {
-                                String v = p.getProperty(k);
-                                (brand ? branded : bundleValues).putIfAbsent(pkg + "#" + k, v);
-                                if (k.startsWith("Menu/")) {
-                                    if (brand) {
-                                        folderNames.put(k, plain(v));
-                                    } else {
-                                        folderNames.putIfAbsent(k, plain(v));
-                                    }
-                                }
+                                values.putIfAbsent(pkg + "#" + k, p.getProperty(k));
                             }
                             continue;
                         }
@@ -252,11 +353,50 @@ class DocsMenuDoorsTest {
                 }
             }
         }
-        bundleValues.putAll(branded); // the branding overlay is what the product paints
+        for (Map.Entry<String, String> named : NAMED_IN_CODE.entrySet()) {
+            assertThat(files).as("a code-named platform row this gate relies on").contains(named.getKey());
+            assertThat(hidden).as("a code-named platform row this gate relies on is hidden").doesNotContain(named.getKey());
+            assertThat(bundles.get("")).as("its name").containsKey(named.getValue());
+        }
+        cluster = new Cluster(displayName, originalFile, files, folders, hidden, hiddenOnOneOs, bundles);
+        return cluster;
+    }
+
+    /** The menu bar a build in {@code lang} paints ("" for English). */
+    private static synchronized Map<String, Door> menuBar(String lang) throws IOException {
+        Map<String, Door> known = CACHED.get(lang);
+        if (known != null) {
+            return known;
+        }
+        Cluster c = cluster();
+        Map<String, String> folderNames = new LinkedHashMap<>();  // "Menu/File/AddToProject" -> display
+        Set<String> folderKeys = new HashSet<>();
+        for (Map<String, String> values : c.bundles().values()) {
+            for (String pkgKey : values.keySet()) {
+                if (pkgKey.substring(pkgKey.indexOf('#') + 1).startsWith("Menu/")) {
+                    folderKeys.add(pkgKey);
+                }
+            }
+        }
+        for (String pkgKey : folderKeys) {
+            String key = pkgKey.substring(pkgKey.indexOf('#') + 1);
+            String v = c.value(lang, pkgKey);
+            if (v != null) {
+                // the branding overlay is what the product paints; a folder named in two
+                // packages takes the branded one
+                boolean branded = c.bundles().getOrDefault("_nmoxstudio_" + lang, Map.of()).containsKey(pkgKey)
+                        || c.bundles().getOrDefault("_nmoxstudio", Map.of()).containsKey(pkgKey);
+                if (branded) {
+                    folderNames.put(key, plain(v));
+                } else {
+                    folderNames.putIfAbsent(key, plain(v));
+                }
+            }
+        }
 
         Map<String, Door> bar = new TreeMap<>();
-        for (String folder : folders) {
-            if (!folder.startsWith("Menu/") || hidden.contains(folder)) {
+        for (String folder : c.folders()) {
+            if (!folder.startsWith("Menu/") || c.hidden().contains(folder)) {
                 continue;
             }
             String[] parts = folder.substring("Menu/".length()).split("/");
@@ -269,39 +409,39 @@ class DocsMenuDoorsTest {
                 level = d.children;
             }
         }
-        for (String file : files) {
-            if (!file.startsWith("Menu/") || hidden.contains(file)) {
+        for (String file : c.files()) {
+            if (!file.startsWith("Menu/") || c.hidden().contains(file)) {
                 continue;
             }
-            String spec = displayName.get(file);
-            if (spec == null && originalFile.containsKey(file)) {
-                spec = displayName.get(originalFile.get(file));
+            String spec = c.displayName().get(file);
+            if (spec == null && c.originalFile().containsKey(file)) {
+                spec = c.displayName().get(c.originalFile().get(file));
             }
             if (spec == null && NAMED_IN_CODE.containsKey(file)) {
                 spec = NAMED_IN_CODE.get(file).replace('/', '.').replace("#", ".Bundle#");
             }
-            String english = spec == null ? null : resolve(spec, bundleValues);
-            if (english == null || english.contains("{")) {
+            String name = spec == null ? null : resolve(spec, pkgKey -> c.value(lang, pkgKey));
+            if (name == null || name.contains("{")) {
                 continue;
             }
-            place(bar, file, english, folderNames).notEverywhere |= hiddenOnOneOs.contains(file);
+            place(bar, file, name, folderNames).notEverywhere |= c.hiddenOnOneOs().contains(file);
         }
         try (InputStream in = DocsMenuDoorsTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
             assertThat(in).as("the code-named menu rows ledger").isNotNull();
             for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
                 String[] f = line.split("\\|");
-                if (line.startsWith("#") || f.length < 5 || f[4].contains("{")) {
+                if (line.startsWith("#") || f.length < 5) {
                     continue;
                 }
-                place(bar, "Menu/" + f[0] + "/ledger", plain(f[4]), folderNames);
+                String v = c.value(lang, f[2] + "#" + f[3]);
+                String name = v != null ? v : f[4];
+                if (name.contains("{")) {
+                    continue;
+                }
+                place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
             }
         }
-        for (Map.Entry<String, String> named : NAMED_IN_CODE.entrySet()) {
-            assertThat(files).as("a code-named platform row this gate relies on").contains(named.getKey());
-            assertThat(hidden).as("a code-named platform row this gate relies on is hidden").doesNotContain(named.getKey());
-            assertThat(bundleValues).as("its name").containsKey(named.getValue());
-        }
-        cached = bar;
+        CACHED.put(lang, bar);
         return bar;
     }
 
@@ -318,8 +458,8 @@ class DocsMenuDoorsTest {
         return level.computeIfAbsent(name, Door::new);
     }
 
-    /** {@code org.nmox.x.Bundle#KEY} (or a plain string) to its English value. */
-    private static String resolve(String spec, Map<String, String> bundleValues) {
+    /** {@code org.nmox.x.Bundle#KEY} (or a plain string) to its value. */
+    private static String resolve(String spec, java.util.function.Function<String, String> bundleValue) {
         int hash = spec.indexOf('#');
         if (hash < 0) {
             return spec;
@@ -328,12 +468,16 @@ class DocsMenuDoorsTest {
         if (pkg.endsWith(".Bundle")) {
             pkg = pkg.substring(0, pkg.length() - ".Bundle".length());
         }
-        return bundleValues.get(pkg.replace('.', '/') + "#" + spec.substring(hash + 1));
+        return bundleValue.apply(pkg.replace('.', '/') + "#" + spec.substring(hash + 1));
     }
 
-    /** {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …}. */
+    /**
+     * {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …};
+     * the RLM a right-to-left bundle sets between two Latin runs is layout, as it is in the document.
+     */
     private static String plain(String raw) {
-        return raw.replaceAll("\\(&.\\)", "").replace("&", "").replace("...", "…").trim();
+        return raw.replaceAll("\\(&.\\)", "").replace("&", "").replace("...", "…").replace('\u2019', '\'')
+                .replaceAll("[\u200E\u200F\u202A-\u202E\u2066-\u2069]", "").trim();
     }
 
     private static void collect(org.w3c.dom.Element elem, List<String> path, Map<String, String> displayName,

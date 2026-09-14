@@ -73,7 +73,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 
 ![Une expérience Express toute neuve : le parcours ouvert, les dépendances installées, l’API déjà servie](images/experiment-walkthrough.png)
 
-**Exécuter, construire, tester — et arrêter :** le ▶ de la barre (F6) exécute le projet comme sa chaîne d’outils l’exécute : un script `start` si package.json en a un, `cargo run`, `go run`, `dotnet run`, et pour un dossier de HTML un petit serveur statique sur le premier port libre à partir de 8080. Construire, Tester et Nettoyer sont à côté et dans le menu Exécuter. Un serveur de développement qui annonce son adresse allume le témoin ⇄ de la barre d’état et ouvre la page dans le navigateur intégré. Tout passe la première fois par la confirmation de confiance de l’espace de travail. Une exécution qui n’a pas pu démarrer le dit et propose d’ouvrir le Docteur d’environnement. Pour arrêter : le ■ à droite de Déboguer (⌥⌘.) arrête d’un coup toutes les commandes en cours et dit ce qu’il a arrêté ; **Exécuter ▸ Arrêter** en arrête une et propose ensuite **Répéter**. Le ■ voit tout ce que le produit lance pour vous, installations comprises ; au survol, l’infobulle nomme exactement ce qu’une pression arrêterait, et depuis quand chaque chose tourne.
+**Exécuter, construire, tester — et arrêter :** le ▶ de la barre (F6) exécute le projet comme sa chaîne d’outils l’exécute : un script `start` si package.json en a un, `cargo run`, `go run`, `dotnet run`, et pour un dossier de HTML un petit serveur statique sur le premier port libre à partir de 8080. Construire, Tester et Nettoyer sont à côté et dans le menu Exécuter. Un serveur de développement qui annonce son adresse allume le témoin ⇄ de la barre d’état et ouvre la page dans le navigateur intégré. Tout passe la première fois par la confirmation de confiance de l’espace de travail. Une exécution qui n’a pas pu démarrer le dit et propose d’ouvrir le Docteur d’environnement. Pour arrêter : le ■ à droite de Déboguer (⌥⌘.) arrête d’un coup toutes les commandes en cours et dit ce qu’il a arrêté ; **Exécuter ▸ Arrêter la compilation/exécution** en arrête une et propose ensuite **Répéter**. Le ■ voit tout ce que le produit lance pour vous, installations comprises ; au survol, l’infobulle nomme exactement ce qu’une pression arrêterait, et depuis quand chaque chose tourne.
 
 **`.env` partout :** si votre projet a un `.env`, les appareils lancés depuis le rack reçoivent ces variables. Modifiez-le et la barre d’état note que les redémarrages le prendront en compte — les processus en cours gardent honnêtement leur ancien environnement.
 
@@ -132,7 +132,7 @@ Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, 
 
 **Pointez un agent sur votre IDE.** Outils ▸ Agent Port (MCP)… ouvre un point d’accès MCP qu’un assistant extérieur peut interroger : il est **en lecture seule par construction**, éteint tant que vous ne l’allumez pas, à l’écoute de la seule interface locale, et exige le jeton engendré à son démarrage.
 
-Le rack est extensible : des greffons tiers peuvent ajouter des appareils (installez leur NBM depuis Outils ▸ Greffons). Pour en écrire un, voyez [device-spi.md](device-spi.md).
+Le rack est extensible : des greffons tiers peuvent ajouter des appareils (installez leur NBM depuis Outils ▸ Plugins). Pour en écrire un, voyez [device-spi.md](device-spi.md).
 
 <a id="5-the-editor"></a>
 ## 5. L’éditeur
@@ -182,7 +182,7 @@ Cliquez dans la marge, choisissez **Déboguer le fichier (points d’arrêt)** e
 
 ### Présenter et partager
 
-**Affichage ▸ Mode présentation** agrandit d’un coup tous les éditeurs, la page du navigateur intégré, la fenêtre de sortie et le terminal — et remet tout exactement comme c’était en sortant. **Affichage ▸ Afficher les frappes** montre en grand l’accord que vous venez de presser, mais jamais ce que vous tapez. **Édition ▸ Copier comme Markdown** copie la sélection en bloc délimité avec la bonne étiquette de langage, et sa variante **avec lien** ajoute le lien GitHub vers ces mêmes lignes. **Outils ▸ Enregistrer une capture…** peint la fenêtre entière au double de la taille, avec des variantes pour l’onglet d’édition seul, pour le presse-papiers, et pour copier l’arborescence du projet en Markdown.
+**Affichage ▸ Mode présentation** agrandit d’un coup tous les éditeurs, la page du navigateur intégré, la fenêtre de sortie et le terminal — et remet tout exactement comme c’était en sortant. **Affichage ▸ Afficher les frappes** montre en grand l’accord que vous venez de presser, mais jamais ce que vous tapez. **Édition ▸ Copier comme Markdown** copie la sélection en bloc délimité avec la bonne étiquette de langage, et sa variante **avec lien** ajoute le lien GitHub vers ces mêmes lignes. **Outils ▸ Enregistrer la capture d’écran…** peint la fenêtre entière au double de la taille, avec des variantes pour l’onglet d’édition seul, pour le presse-papiers, et pour copier l’arborescence du projet en Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Les studios
@@ -225,7 +225,7 @@ Un client complet dans l’IDE : TLS avec vraie vérification du nom, SASL, exte
 
 ### Le site web embarqué
 
-**Aide ▸ Site NMOX Studio (local)** sert le site du produit depuis son propre rack, sur l’interface locale. Il parle les quinze langues que parle l’IDE ; le sélecteur est en pied de page.
+**Aide ▸ Site web de NMOX Studio (local)** sert le site du produit depuis son propre rack, sur l’interface locale. Il parle les quinze langues que parle l’IDE ; le sélecteur est en pied de page.
 
 ### Navigateur (⌥⌘4)
 
@@ -288,7 +288,7 @@ C’est le port d’attache : projet courant, fichiers ouverts et récents, proj
 
 ### Les raccourcis d’Emacs (et d’Eclipse, et d’IntelliJ)
 
-Outils ▸ Options ▸ Raccourcis clavier change tout le profil : les déplacements et le couper-coller d’Emacs dans chaque éditeur, ou les jeux Eclipse et IDEA si c’est votre mémoire des doigts. Chaque raccourci NMOX est enregistré dans les cinq profils, si bien que changer de profil ne vous coûte jamais les raccourcis des studios.
+Outils ▸ Options ▸ Raccourcis clavier (sous macOS, NMOX Studio ▸ Settings… ▸ Raccourcis clavier) change tout le profil : les déplacements et le couper-coller d’Emacs dans chaque éditeur, ou les jeux Eclipse et IDEA si c’est votre mémoire des doigts. Chaque raccourci NMOX est enregistré dans les cinq profils, si bien que changer de profil ne vous coûte jamais les raccourcis des studios.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Les filets de sécurité (ce que vous n’avez rien à faire pour avoir)

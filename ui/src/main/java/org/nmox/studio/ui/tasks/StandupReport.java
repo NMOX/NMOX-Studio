@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The daily standup, generated from data the product already records
@@ -24,8 +25,29 @@ import java.util.List;
  *   <li>Card titles and commit subjects are external text; the output
  *       is plain markdown, and anything rendering it goes through the
  *       PLAIN law like every other board string.</li>
+ *   <li>The report speaks the reader's language (v2.153.0). Until then its
+ *       section names were English in every build, under an Overview and a
+ *       button already translated; the tutorials' translators found it in
+ *       all fourteen languages. Numbers go in as text so a locale's own
+ *       digits never reach a report pasted into a team's chat.</li>
  * </ul>
  */
+@Messages({
+    "StandupReport_heading=Standup — {0}",
+    "StandupReport_sprintDay=day {0} of {1}",
+    "StandupReport_yesterday=Yesterday",
+    "StandupReport_today=Today",
+    "StandupReport_blockers=Blockers",
+    "StandupReport_commits=Commits (since yesterday)",
+    "StandupReport_done=done",
+    "StandupReport_clockRunning=clock running",
+    "StandupReport_unowned=unowned",
+    "StandupReport_unblock=unblock: {0}",
+    "# {0} a card title, {1} its notes",
+    "StandupReport_withNotes={0} ({1})",
+    "# two notes on one card",
+    "StandupReport_noteJoin={0}, {1}"
+})
 final class StandupReport {
 
     /** One git commit line, already formatted as "abc1234 subject". */
@@ -49,7 +71,7 @@ final class StandupReport {
                 .toInstant().toEpochMilli();
 
         StringBuilder md = new StringBuilder();
-        md.append("## Standup — ").append(today);
+        md.append("## ").append(Bundle.StandupReport_heading(today.toString()));
         // the sprint context (v2.38.2): inside the window the header
         // carries "Sprint 8 · day 3 of 14" — the one number a standup
         // opens with; outside the window (a sprint set for next week)
@@ -63,7 +85,8 @@ final class StandupReport {
             if (!today.isBefore(ss) && !today.isAfter(se)) {
                 long day = java.time.temporal.ChronoUnit.DAYS.between(ss, today) + 1;
                 long len = java.time.temporal.ChronoUnit.DAYS.between(ss, se) + 1;
-                md.append(" · day ").append(day).append(" of ").append(len);
+                md.append(" · ").append(Bundle.StandupReport_sprintDay(
+                        String.valueOf(day), String.valueOf(len)));
             }
         }
         md.append('\n');
@@ -85,21 +108,21 @@ final class StandupReport {
                 }
             }
         }
-        section(md, "Yesterday", yest);
-        section(md, "Today", tod);
+        section(md, Bundle.StandupReport_yesterday(), yest);
+        section(md, Bundle.StandupReport_today(), tod);
 
         List<String> blockers = new ArrayList<>();
         for (int i = 0; i < last; i++) {
             for (TaskBoard.Card c : board.column(i).cards()) {
                 if (c.blocked()) {
                     String owner = c.blockOwner().isEmpty()
-                            ? "unowned" : c.blockOwner();
+                            ? Bundle.StandupReport_unowned() : c.blockOwner();
                     blockers.add("- " + c.title() + " — " + owner
-                            + " · unblock: " + c.blockAction());
+                            + " · " + Bundle.StandupReport_unblock(c.blockAction()));
                 }
             }
         }
-        section(md, "Blockers", blockers);
+        section(md, Bundle.StandupReport_blockers(), blockers);
 
         List<String> commitLines = new ArrayList<>();
         for (Commit c : commits) {
@@ -107,7 +130,7 @@ final class StandupReport {
                 commitLines.add("- " + c.line());
             }
         }
-        section(md, "Commits (since yesterday)", commitLines);
+        section(md, Bundle.StandupReport_commits(), commitLines);
         return md.toString();
     }
 
@@ -127,22 +150,26 @@ final class StandupReport {
 
     private static String line(TaskBoard.Card c, boolean done, long trackedMs,
             boolean running) {
-        StringBuilder b = new StringBuilder("- ");
-        b.append(c.title());
         List<String> notes = new ArrayList<>();
         if (done) {
-            notes.add("done");
+            notes.add(Bundle.StandupReport_done());
         }
         if (trackedMs > 0) {
             notes.add(BoardStats.duration(trackedMs));
         }
         if (running) {
-            notes.add("clock running");
+            notes.add(Bundle.StandupReport_clockRunning());
         }
-        if (!notes.isEmpty()) {
-            b.append(" (").append(String.join(", ", notes)).append(')');
+        if (notes.isEmpty()) {
+            return "- " + c.title();
         }
-        return b.toString();
+        // folded pairwise so a language that joins with a full-width comma or
+        // wraps in full-width brackets says so in its bundle, not here
+        String joined = notes.get(0);
+        for (int i = 1; i < notes.size(); i++) {
+            joined = Bundle.StandupReport_noteJoin(joined, notes.get(i));
+        }
+        return "- " + Bundle.StandupReport_withNotes(c.title(), joined);
     }
 
     /** Appends "### title" + items; an empty section appends NOTHING. */

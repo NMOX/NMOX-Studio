@@ -26,7 +26,7 @@ Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap củ
 
 ### Cập nhật
 
-IDE tự cập nhật: **Công cụ ▸ Trình cắm ▸ Cập nhật** đưa ra các mô-đun của mọi bản phát hành mới hơn. Cài, khởi động lại khi được nhắc, xong — không phải tải lại toàn bộ ứng dụng. Một lưu ý thẳng thắn: môi trường chạy Java đi kèm và trình khởi chạy chỉ đổi cùng một bộ cài đầy đủ, nên với những bước nhảy lớn của nền tảng, cài lại từ một tệp phát hành vẫn là cách đúng.
+IDE tự cập nhật: **Công cụ ▸ Plugin ▸ Cập nhật** đưa ra các mô-đun của mọi bản phát hành mới hơn. Cài, khởi động lại khi được nhắc, xong — không phải tải lại toàn bộ ứng dụng. Một lưu ý thẳng thắn: môi trường chạy Java đi kèm và trình khởi chạy chỉ đổi cùng một bộ cài đầy đủ, nên với những bước nhảy lớn của nền tảng, cài lại từ một tệp phát hành vẫn là cách đúng.
 
 <a id="2-first-launch"></a>
 ## 2. Lần chạy đầu tiên
@@ -73,7 +73,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 
 ![Một thử nghiệm Express mới tinh: bản hướng dẫn đang mở, các phụ thuộc đã cài, API đã phục vụ](images/experiment-walkthrough.png)
 
-**Chạy, dựng, kiểm thử — và dừng:** nút ▶ trên thanh công cụ (F6) chạy dự án theo đúng cách bộ công cụ của nó chạy: một kịch bản `start` nếu package.json có, `cargo run`, `go run`, `dotnet run`, và với một thư mục HTML thì một máy chủ tĩnh nhỏ trên cổng trống đầu tiên kể từ 8080. Dựng, Kiểm thử và Dọn nằm ngay cạnh và trong trình đơn Chạy. Một máy chủ phát triển thông báo địa chỉ của mình sẽ thắp dấu ⇄ trên thanh trạng thái và mở trang trong trình duyệt tích hợp. Mọi thứ lần đầu đều đi qua lời hỏi tin cậy không gian làm việc. Một lần chạy không khởi động được sẽ nói thẳng và mời mở Bác sĩ môi trường. Để dừng: nút ■ bên phải Gỡ lỗi (⌥⌘.) dừng mọi lệnh đang chạy cùng lúc và nói nó đã dừng những gì; **Chạy ▸ Dừng** dừng một lệnh rồi mời **Lặp lại**. Nút ■ thấy mọi thứ sản phẩm khởi chạy giúp bạn, kể cả các lần cài đặt; khi rê chuột, chú giải nêu đúng thứ một cú nhấn sẽ dừng, và mỗi thứ đã chạy từ bao giờ.
+**Chạy, dựng, kiểm thử — và dừng:** nút ▶ trên thanh công cụ (F6) chạy dự án theo đúng cách bộ công cụ của nó chạy: một kịch bản `start` nếu package.json có, `cargo run`, `go run`, `dotnet run`, và với một thư mục HTML thì một máy chủ tĩnh nhỏ trên cổng trống đầu tiên kể từ 8080. Dựng, Kiểm thử và Dọn nằm ngay cạnh và trong trình đơn Chạy. Một máy chủ phát triển thông báo địa chỉ của mình sẽ thắp dấu ⇄ trên thanh trạng thái và mở trang trong trình duyệt tích hợp. Mọi thứ lần đầu đều đi qua lời hỏi tin cậy không gian làm việc. Một lần chạy không khởi động được sẽ nói thẳng và mời mở Bác sĩ môi trường. Để dừng: nút ■ bên phải Gỡ lỗi (⌥⌘.) dừng mọi lệnh đang chạy cùng lúc và nói nó đã dừng những gì; **Chạy ▸ Dừng build/chạy** dừng một lệnh rồi mời **Lặp lại**. Nút ■ thấy mọi thứ sản phẩm khởi chạy giúp bạn, kể cả các lần cài đặt; khi rê chuột, chú giải nêu đúng thứ một cú nhấn sẽ dừng, và mỗi thứ đã chạy từ bao giờ.
 
 **`.env` ở khắp nơi:** nếu dự án của bạn có `.env`, các thiết bị khởi chạy từ giá sẽ nhận những biến đó. Sửa nó và thanh trạng thái ghi nhận rằng những lần khởi động lại sẽ nhận — các tiến trình đang chạy trung thực giữ nguyên môi trường cũ của chúng.
 
@@ -132,7 +132,7 @@ Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việ
 
 **Hướng một tác nhân vào IDE của bạn.** Công cụ ▸ Agent Port (MCP)… mở một điểm cuối MCP mà một trợ lý bên ngoài có thể hỏi: nó **chỉ đọc theo thiết kế**, tắt cho tới khi bạn bật, chỉ lắng nghe trên giao diện cục bộ, và đòi đúng thẻ được sinh ra lúc khởi động.
 
-Giá có thể mở rộng: các trình cắm của bên thứ ba có thể thêm thiết bị (cài tệp NBM của họ qua Công cụ ▸ Trình cắm). Để tự viết một cái, xem [device-spi.md](device-spi.md).
+Giá có thể mở rộng: các trình cắm của bên thứ ba có thể thêm thiết bị (cài tệp NBM của họ qua Công cụ ▸ Plugin). Để tự viết một cái, xem [device-spi.md](device-spi.md).
 
 <a id="5-the-editor"></a>
 ## 5. Trình soạn thảo
@@ -182,7 +182,7 @@ Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chươn
 
 ### Trình bày và chia sẻ
 
-**Xem ▸ Chế độ trình bày** phóng to cùng lúc mọi trình soạn thảo đang mở, trang trong trình duyệt tích hợp, cửa sổ kết xuất và cửa sổ dòng lệnh — rồi trả lại mọi thứ đúng như cũ khi bạn thoát. **Xem ▸ Hiện phím bấm** hiện thật lớn tổ hợp phím bạn vừa bấm, nhưng không bao giờ hiện thứ bạn gõ. **Sửa ▸ Chép dạng Markdown** chép phần đã chọn thành khối có rào kèm đúng nhãn ngôn ngữ, còn biến thể **kèm liên kết** thêm liên kết GitHub tới chính những dòng ấy. **Công cụ ▸ Lưu ảnh chụp…** vẽ cả cửa sổ ở kích thước gấp đôi, cùng các biến thể cho riêng thẻ soạn thảo, cho khay nhớ tạm, và để chép cây dự án ra dạng Markdown.
+**Xem ▸ Chế độ trình chiếu** phóng to cùng lúc mọi trình soạn thảo đang mở, trang trong trình duyệt tích hợp, cửa sổ kết xuất và cửa sổ dòng lệnh — rồi trả lại mọi thứ đúng như cũ khi bạn thoát. **Xem ▸ Hiện phím bấm** hiện thật lớn tổ hợp phím bạn vừa bấm, nhưng không bao giờ hiện thứ bạn gõ. **Sửa ▸ Chép dạng Markdown** chép phần đã chọn thành khối có rào kèm đúng nhãn ngôn ngữ, còn biến thể **kèm liên kết** thêm liên kết GitHub tới chính những dòng ấy. **Công cụ ▸ Lưu ảnh chụp màn hình…** vẽ cả cửa sổ ở kích thước gấp đôi, cùng các biến thể cho riêng thẻ soạn thảo, cho khay nhớ tạm, và để chép cây dự án ra dạng Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Các studio
@@ -225,7 +225,7 @@ Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật s
 
 ### Trang web đi kèm
 
-**Trợ giúp ▸ Trang NMOX Studio (cục bộ)** phục vụ trang web của sản phẩm từ chính giá của nó, trên giao diện cục bộ. Nó nói đúng mười lăm thứ tiếng mà IDE nói; bộ chọn nằm ở chân trang.
+**Trợ giúp ▸ Trang web NMOX Studio (cục bộ)** phục vụ trang web của sản phẩm từ chính giá của nó, trên giao diện cục bộ. Nó nói đúng mười lăm thứ tiếng mà IDE nói; bộ chọn nằm ở chân trang.
 
 ### Trình duyệt (⌥⌘4)
 
@@ -288,7 +288,7 @@ Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ c�
 
 ### Phím tắt của Emacs (và của Eclipse, và của IntelliJ)
 
-Công cụ ▸ Tuỳ chọn ▸ Sơ đồ phím đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.
+Công cụ ▸ Tùy chọn ▸ Sơ đồ phím (trên macOS: NMOX Studio ▸ Settings… ▸ Sơ đồ phím) đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Những tấm lưới an toàn (thứ bạn chẳng phải làm gì để có)
@@ -326,11 +326,11 @@ Lặng lẽ, mỗi ngày một lần: nếu có bản mới hơn, một thông b
 
 ### Kiểm bài của bạn
 
-Một số không gian có điểm kiểm: chọn lấy một, rồi **Tệp ▸ Kiểm bài của tôi** sẽ kiểm các bài tập thật sự — điều các tệp khẳng định được kiểm bằng Java thuần, kể cả các phép kiểm *vắng mặt*, thứ duy nhất chứng thực được «bạn đã đổi tiêu đề»: chữ gốc trong mẫu phải biến mất. Điều các lệnh khẳng định thì đi qua chính bộ công cụ của không gian ấy. Mỗi dấu ✗ đáp lại bằng gợi ý của chính không gian đó, và khi có chỗ hỏng, bản báo mời **Nhờ KVASIR giải thích…**: những điểm hỏng và, với phép kiểm tệp, chính tệp của bạn, có giới hạn và dưới một lời đồng ý nói rõ cái gì rời đi. Câu trả lời đọc như của một gia sư: đổi gì, rồi kiểm lại.
+Một số không gian có điểm kiểm: chọn lấy một, rồi **Tệp ▸ Kiểm tra bài làm** sẽ kiểm các bài tập thật sự — điều các tệp khẳng định được kiểm bằng Java thuần, kể cả các phép kiểm *vắng mặt*, thứ duy nhất chứng thực được «bạn đã đổi tiêu đề»: chữ gốc trong mẫu phải biến mất. Điều các lệnh khẳng định thì đi qua chính bộ công cụ của không gian ấy. Mỗi dấu ✗ đáp lại bằng gợi ý của chính không gian đó, và khi có chỗ hỏng, bản báo mời **Nhờ KVASIR giải thích…**: những điểm hỏng và, với phép kiểm tệp, chính tệp của bạn, có giới hạn và dưới một lời đồng ý nói rõ cái gì rời đi. Câu trả lời đọc như của một gia sư: đổi gì, rồi kiểm lại.
 
 ### Bài học của riêng bạn
 
-Thả một tệp `*.json` vào `~/.nmox/learn-catalog.d/` là nó gia nhập bảng chọn, cùng một lược đồ với những bài có sẵn; một `slug` trùng sẽ thay thế bài của nhà. Bạn đang dạy? Hãy viết bằng cách dựng: biến bài tập thành một dự án bình thường, rồi **Tệp ▸ Xuất thành Không gian học…** sẽ soạn tệp ấy hộ bạn — các tệp mẫu, `TUTORIAL.md` của bạn, trình chạy, và các điểm kiểm của bạn — đã được thẩm lại bằng chính bộ phân tích của bảng chọn trước khi ghi, nên thứ bạn trao cho học trò đúng là thứ bảng chọn của họ sẽ nạp.
+Thả một tệp `*.json` vào `~/.nmox/learn-catalog.d/` là nó gia nhập bảng chọn, cùng một lược đồ với những bài có sẵn; một `slug` trùng sẽ thay thế bài của nhà. Bạn đang dạy? Hãy viết bằng cách dựng: biến bài tập thành một dự án bình thường, rồi **Tệp ▸ Xuất thành không gian học tập…** sẽ soạn tệp ấy hộ bạn — các tệp mẫu, `TUTORIAL.md` của bạn, trình chạy, và các điểm kiểm của bạn — đã được thẩm lại bằng chính bộ phân tích của bảng chọn trước khi ghi, nên thứ bạn trao cho học trò đúng là thứ bảng chọn của họ sẽ nạp.
 
 ### Danh mục
 
