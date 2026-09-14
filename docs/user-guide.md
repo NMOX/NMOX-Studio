@@ -776,11 +776,13 @@ stops the request mid-flight. The debuggee's console — the `listening on
 3100` line and everything after it — appears in the **Output** window,
 which opens with the session.
 
-> **Breakpoints are managed in the gutter.** The IDE's *Breakpoints*
-> window (Window ▸ Debugging ▸ Breakpoints) does not yet list breakpoints
-> from the debug adapters, so use the gutter to add and remove them. This
-> is a NetBeans platform limitation, not an NMOX one — it affects Python
-> and Go breakpoints identically.
+> **The Breakpoints window lists the project you have open.**
+> Window ▸ Debugging ▸ Breakpoints shows every breakpoint in the aimed
+> project, with a checkbox to disable one. By default it shows only breakpoints from opened
+> projects, so a breakpoint in a file you opened on its own still stops the
+> program and still marks the gutter, but the window leaves it out. To list
+> those too, turn off **From Opened Projects Only** under the window's
+> *Breakpoint Groups* button.
 
 - **JavaScript and TypeScript** debug through
   [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
