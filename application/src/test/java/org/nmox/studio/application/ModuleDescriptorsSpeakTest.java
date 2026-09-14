@@ -103,6 +103,51 @@ class ModuleDescriptorsSpeakTest {
     }
 
     @Test
+    @DisplayName("no two modules share a name or a short description, in any language")
+    void everyModuleHasItsOwnName() throws IOException {
+        // Found while translating Arabic (v2.152.0): Hebrew had shipped the
+        // editor's name and descriptions in seven modules, so the Plugin
+        // Manager listed apiclient, branding, core, dbstudio, tools and web3
+        // all as "עורך NMOX Studio". The law above asked only that each key be
+        // present and non-blank, and a copied value is both.
+        List<String> problems = new ArrayList<>();
+        List<String> languages = new ArrayList<>();
+        languages.add("");
+        languages.addAll(LOCALES);
+        for (String loc : languages) {
+            for (String key : List.of("OpenIDE-Module-Name", "OpenIDE-Module-Short-Description",
+                    "OpenIDE-Module-Long-Description")) {
+                java.util.Map<String, List<String>> owners = new java.util.TreeMap<>();
+                for (Path jar : productJars()) {
+                    try (JarFile jf = new JarFile(jar.toFile())) {
+                        String bundle = jf.getManifest().getMainAttributes()
+                                .getValue("OpenIDE-Module-Localizing-Bundle");
+                        if (bundle == null) {
+                            continue; // the law above names this
+                        }
+                        String entry = loc.isEmpty() ? bundle
+                                : bundle.substring(0, bundle.lastIndexOf('/') + 1) + "Bundle_" + loc + ".properties";
+                        ZipEntry e = jf.getEntry(entry);
+                        if (e == null) {
+                            continue;
+                        }
+                        String v = read(jf, e).getProperty(key);
+                        if (v != null && !v.isBlank()) {
+                            owners.computeIfAbsent(v.strip(), x -> new ArrayList<>()).add(jar.getFileName().toString());
+                        }
+                    }
+                }
+                owners.forEach((value, jars) -> {
+                    if (jars.size() > 1) {
+                        problems.add((loc.isEmpty() ? "en" : loc) + " " + key + " \"" + value + "\" is shared by " + jars);
+                    }
+                });
+            }
+        }
+        assertThat(problems).as("a module the Plugin Manager names with another module's words").isEmpty();
+    }
+
+    @Test
     @DisplayName("the splash title reaches every language through the branding overlay")
     void theSplashSpeaks() throws IOException {
         List<String> missing = new ArrayList<>();
