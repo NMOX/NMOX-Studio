@@ -314,7 +314,7 @@ class AbiCodecTupleTest {
                 .hasMessage("Parameter 'order' is a tuple — write its components in order as"
                         + " [to: address, amount: uint256].");
         assertThatThrownBy(() -> AbiCodec.encodeCall(f, List.of("[[1], 5]")))
-                .hasMessage("Parameter 'order'.to#1 is a address — expected one value, got a list.");
+                .hasMessage("Parameter 'order'.to#1 is an address — expected one value, got a list.");
         AbiEntry g = fn("g", AbiParam.tuple("orders", "tuple[]", List.of(uint("n"))));
         assertThatThrownBy(() -> AbiCodec.encodeCall(g, List.of("[5]")))
                 .hasMessage("Parameter 'orders'[0] is a tuple — write its components in order as [n: uint256].");

@@ -65,7 +65,7 @@ final class AbiType {
             case TUPLE -> components.stream().mapToLong(AbiType::headWords).sum();
         };
         if (words > Integer.MAX_VALUE / WORD) {
-            throw new IllegalArgumentException("Parameter " + label + " is a " + type
+            throw new IllegalArgumentException("Parameter " + label + " is " + article(type) + " " + type
                     + " too large to lay out (" + words + " words).");
         }
         this.staticWords = (int) words;
@@ -117,6 +117,11 @@ final class AbiType {
         return new AbiType(Kind.SCALAR, type, null, -1, List.of(), List.of(), label);
     }
 
+    /** "an address", "an int256", "a uint256", "a bytes32": the article a refusal reads with. */
+    static String article(String type) {
+        return type.startsWith("address") || type.startsWith("int") ? "an" : "a";
+    }
+
     /**
      * How a tuple component is named in a refusal: its name and its
      * 1-based position, so {@code 'order'.amount#2} says which field and
@@ -138,7 +143,7 @@ final class AbiType {
                     + " has unsupported array type '" + type + "'.");
         }
         if (size > MAX_FIXED_LENGTH) {
-            throw new IllegalArgumentException("Parameter " + label + " is a " + type
+            throw new IllegalArgumentException("Parameter " + label + " is " + article(type) + " " + type
                     + " — more than " + MAX_FIXED_LENGTH + " elements is refused.");
         }
         return size;

@@ -311,8 +311,9 @@ public final class AbiCodec {
         switch (type.kind) {
             case SCALAR -> {
                 if (!(node instanceof AbiLiteral.Scalar scalar)) {
-                    throw new IllegalArgumentException("Parameter " + label + " is a "
-                            + type.type + " — expected one value, got a list.");
+                    throw new IllegalArgumentException("Parameter " + label + " is "
+                            + AbiType.article(type.type) + " " + type.type
+                            + " — expected one value, got a list.");
                 }
                 return encodeScalar(type.type, scalar.text(), true, label);
             }
@@ -322,7 +323,8 @@ public final class AbiCodec {
                 }
                 List<AbiLiteral.Node> items = group.items();
                 if (type.length >= 0 && items.size() != type.length) {
-                    throw new IllegalArgumentException("Parameter " + label + " is a " + type.type
+                    throw new IllegalArgumentException("Parameter " + label + " is "
+                            + AbiType.article(type.type) + " " + type.type
                             + " — expected exactly " + type.length + " elements, got "
                             + items.size() + ".");
                 }
@@ -455,7 +457,7 @@ public final class AbiCodec {
                 v = new BigInteger(cleaned);
             }
         } catch (NumberFormatException notANumber) {
-            throw new IllegalArgumentException("Parameter " + label + " is a " + type
+            throw new IllegalArgumentException("Parameter " + label + " is " + AbiType.article(type) + " " + type
                     + " — '" + value + "' is not a number (decimal or 0x-hex).");
         }
         if (signed) {
@@ -707,7 +709,7 @@ public final class AbiCodec {
     private static byte[] hexArgumentExact(String value, int n, String type, String label) {
         byte[] bytes = hexArgument(value, label);
         if (bytes.length != n) {
-            throw new IllegalArgumentException("Parameter " + label + " is a " + type
+            throw new IllegalArgumentException("Parameter " + label + " is " + AbiType.article(type) + " " + type
                     + " — expected exactly " + n + " bytes, got " + bytes.length + ".");
         }
         return bytes;
