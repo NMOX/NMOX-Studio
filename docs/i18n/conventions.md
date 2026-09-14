@@ -116,6 +116,10 @@ Two rules hold for every language:
   Israeli developers switch keyboard layouts constantly and most code in
   the English layout. A Latin accelerator is reachable in both layouts; a
   Hebrew-letter accelerator only in one.
+- **Arrows point the way the reader reads.** `▸` and `→` are not mirrored
+  by the bidi algorithm (neither is Bidi_Mirrored), so in a right-to-left
+  sentence they point backwards. A Hebrew menu path is `כלים ◂ אבחון
+  הסביבה`, and a sequence is `install ← build ← test`.
 - Technical tokens (`npm`, `package.json`, `{0}`) stay Latin inside the
   Hebrew sentence. The bidi algorithm places them; a translation never
   reorders them by hand.
@@ -127,6 +131,7 @@ Two rules hold for every language:
   stay action nouns (`حفظ`, `فتح`), the form Arabic software uses in
   every register.
 - Punctuation is Arabic: `،` `؛` `؟`.
+- Arrows point the way the reader reads, `◂` and `←`, as in Hebrew.
 - Quotes: «علامات التنصيص». Guillemets are bidi-mirrored characters, so
   they render correctly in a right-to-left line.
 - Mnemonic: appended Latin letter before the ellipsis. The same

@@ -24,6 +24,7 @@ Filipino, Tiếng Việt, 简体中文, हिन्दी.
 | Seed data a new project is born with | `SeedNamesAreNotLiteralsTest` |
 | Directions that name a door | `WayfindingVocabularyTest` |
 | A row translated by halves | `HalfTranslatedRowGateTest` |
+| Quotation marks, spacing, register, punctuation, mnemonic form — each language's own | `NativeTypographyGateTest`, rules in [`docs/i18n/conventions.md`](../i18n/conventions.md) |
 | An English word in a non-Latin script | `OwnScriptGateTest`, threshold measured |
 | Text that outgrows its pane | `NarrowPaneHintBudgetTest`, over the shipped jars |
 | Time, sort order, number formatting | `core.util.Clocks` / `Collate` / `Numbers` |
