@@ -244,7 +244,9 @@ class WayfindingVocabularyTest {
                     if (localized == null || localized.equals(english)) {
                         continue;
                     }
-                    if (Pattern.compile("(?<![\\w-])(?<!IDE )" + Pattern.quote(english) + "\\s*" + ARROW)
+                    // a right-to-left language points the arrow the way it reads
+                    // (◂), wrapped in RLM between Latin names (docs/i18n/conventions.md)
+                    if (Pattern.compile("(?<![\\w-])(?<!IDE )" + Pattern.quote(english) + "\\s*\\u200f?[" + ARROW + "◂]")
                             .matcher(value).find()) {
                         problems.add(loc + " " + key + ": names the \"" + english
                                 + "\" menu, which reads \"" + localized + "\" here");

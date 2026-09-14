@@ -70,8 +70,7 @@ class CodeNamedMenuRowsTest {
     private static final Path OVERLAYS = Path.of("..", "branding", "src", "main",
             "nbm-branding", "modules");
 
-    private static final List<String> LANGS = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LANGS = ShippedLocales.TRANSLATED;
 
     /**
      * Languages whose choice branches are allowed to read alike, because the

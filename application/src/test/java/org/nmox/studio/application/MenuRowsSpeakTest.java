@@ -58,8 +58,7 @@ class MenuRowsSpeakTest {
 
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
     /** One row of the menu bar: where it sits, and the bundle key that names it. */
     private record Row(String menu, String jar, String pkg, String key, String english) { }

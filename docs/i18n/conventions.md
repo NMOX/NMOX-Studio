@@ -120,6 +120,11 @@ Two rules hold for every language:
   by the bidi algorithm (neither is Bidi_Mirrored), so in a right-to-left
   sentence they point backwards. A Hebrew menu path is `כלים ◂ אבחון
   הסביבה`, and a sequence is `install ← build ← test`.
+- **An arrow between two Latin words is wrapped in RLM** (U+200F). Neutral
+  characters between two left-to-right runs take the left-to-right
+  direction, so `חלון ◂ IDE Tools ◂ Terminal` would lay `IDE Tools ◂
+  Terminal` out as one left-to-right run and reverse the path. An RLM on each
+  side keeps every arrow in the Hebrew flow and every name its own run.
 - Technical tokens (`npm`, `package.json`, `{0}`) stay Latin inside the
   Hebrew sentence. The bidi algorithm places them; a translation never
   reorders them by hand.

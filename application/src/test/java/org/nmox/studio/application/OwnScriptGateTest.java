@@ -58,11 +58,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class OwnScriptGateTest {
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
-    /** The four whose readers share no alphabet with English. */
-    private static final List<String> OWN_SCRIPT = List.of("ru", "uk", "zh", "hi");
+    /** The five whose readers share no alphabet with English. */
+    private static final List<String> OWN_SCRIPT = List.of("ru", "uk", "zh", "hi", "he");
 
     /**
      * How many of the twelve must have translated a value before it counts

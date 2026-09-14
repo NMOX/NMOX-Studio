@@ -57,8 +57,7 @@ class PlatformDialogLedgerTest {
     private static final Path BRANDING =
             Paths.get("..", "branding", "src", "main", "nbm-branding", "modules");
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
     /**
      * One platform surface. {@code actionId} is null for a surface no action

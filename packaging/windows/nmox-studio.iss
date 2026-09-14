@@ -52,6 +52,7 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "uk"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 Name: "pl"; MessagesFile: "compiler:Languages\Polish.isl"
 Name: "pt"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "he"; MessagesFile: "compiler:Languages\Hebrew.isl"
 
 [Files]
 Source: "..\..\application\target\nmoxstudio\*"; DestDir: "{app}"; \

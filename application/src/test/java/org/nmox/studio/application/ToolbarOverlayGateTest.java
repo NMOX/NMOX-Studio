@@ -37,7 +37,7 @@ class ToolbarOverlayGateTest {
             Path.of("..", "branding", "src", "main", "nbm-branding", "modules");
 
     private static final List<String> LOCALES =
-            List.of("es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+            ShippedLocales.TRANSLATED;
 
     /** Every overlay this release added, by jar and package. */
     private static final List<String[]> OVERLAYS = List.of(

@@ -47,8 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ModuleDescriptorsSpeakTest {
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
     private static final List<String> KEYS = List.of(
             "OpenIDE-Module-Name", "OpenIDE-Module-Display-Category",

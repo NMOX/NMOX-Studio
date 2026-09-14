@@ -65,7 +65,9 @@
           "label.zh": "你改动了标题",
           "hint.zh": "index.html 仍是示例原样的标题——修改 <h1> 与 </h1> 之间的文字，保存后刷新。",
           "label.hi": "आपने शीर्षक बदला",
-          "hint.hi": "index.html में अब भी नमूने का हूबहू शीर्षक है — <h1> और </h1> के बीच का पाठ बदलिए, सहेजिए और ताज़ा कीजिए।"
+          "hint.hi": "index.html में अब भी नमूने का हूबहू शीर्षक है — <h1> और </h1> के बीच का पाठ बदलिए, सहेजिए और ताज़ा कीजिए।",
+          "label.he": "שיניתם את הכותרת",
+          "hint.he": "ב‑index.html עדיין מופיעה הכותרת המדויקת של הדוגמה — ערכו את הטקסט שבין <h1> ל‑</h1>, שמרו ורעננו."
         },
         {
           "label": "You added a third list item",
@@ -98,7 +100,9 @@
           "label.zh": "你添加了第三个列表项",
           "hint.zh": "列表需要第三行 <li>…</li>——复制已有的一行并改掉其中的文字。",
           "label.hi": "आपने तीसरा सूची-मद जोड़ा",
-          "hint.hi": "सूची को तीसरी <li>…</li> पंक्ति चाहिए — किसी मौजूदा को नकल कीजिए और उसका पाठ बदल दीजिए।"
+          "hint.hi": "सूची को तीसरी <li>…</li> पंक्ति चाहिए — किसी मौजूदा को नकल कीजिए और उसका पाठ बदल दीजिए।",
+          "label.he": "הוספתם פריט שלישי לרשימה",
+          "hint.he": "הרשימה צריכה שורת <li>…</li> שלישית — העתיקו שורה קיימת ושנו את הטקסט שלה."
         },
         {
           "label": "The stylesheet is still linked",
@@ -130,7 +134,9 @@
           "label.zh": "样式表仍然链接着",
           "hint.zh": "<head> 里的 <link rel=\"stylesheet\" href=\"style.css\"> 这一行才是连上你 CSS 的地方——把它放回去。",
           "label.hi": "स्टाइलशीट अब भी जुड़ी है",
-          "hint.hi": "<head> में <link rel=\"stylesheet\" href=\"style.css\"> वाली पंक्ति ही आपके CSS को जोड़ती है — उसे वापस रखिए।"
+          "hint.hi": "<head> में <link rel=\"stylesheet\" href=\"style.css\"> वाली पंक्ति ही आपके CSS को जोड़ती है — उसे वापस रखिए।",
+          "label.he": "גיליון הסגנונות עדיין מקושר",
+          "hint.he": "השורה <link rel=\"stylesheet\" href=\"style.css\"> שבתוך <head> היא שמחברת את ה‑CSS שלכם — החזירו אותה."
         }
       ],
       "blurb.es": "¿Nunca has escrito HTML? Empieza aquí: construye una página real, mírala en el navegador y cámbiala en vivo. Sin instalar nada más que Node, sin paso de compilación, nada que configurar.",
@@ -156,7 +162,9 @@
       "blurb.zh": "从未写过 HTML？就从这里开始：搭建一个真实的页面，在浏览器里查看，并即时修改。除了 Node 无需安装任何东西，没有构建步骤，也没有要配置的内容。",
       "name.zh": "你的第一个网页",
       "blurb.hi": "कभी HTML नहीं लिखा? यहीं से शुरू करें: एक असली पेज बनाइए, ब्राउज़र में देखिए और लाइव बदलिए। Node के अलावा कुछ इंस्टॉल नहीं करना, कोई बिल्ड चरण नहीं, कुछ कॉन्फ़िगर नहीं करना।",
-      "name.hi": "आपका पहला वेब पेज"
+      "blurb.he": "אף פעם לא כתבתם HTML? התחילו כאן — בונים דף אמיתי, רואים אותו בדפדפן ומשנים אותו בזמן אמת. בלי התקנות מלבד Node, בלי שלב בנייה, בלי שום הגדרה.",
+      "name.hi": "आपका पहला वेब पेज",
+      "name.he": "דף הווב הראשון שלכם"
     },
     {
       "slug": "lisp-clisp",
@@ -202,7 +210,8 @@
       "blurb.tl": "Ang wikang pamprograma na maipoprograma: ang code ay datos, at ang REPL ang buong IDE.",
       "blurb.vi": "Ngôn ngữ lập trình có thể lập trình được: mã là dữ liệu, và REPL chính là toàn bộ IDE.",
       "blurb.zh": "可编程的编程语言：代码即数据，而 REPL 就是整个 IDE。",
-      "blurb.hi": "वह प्रोग्रामिंग भाषा जिसे प्रोग्राम किया जा सकता है: कोड ही डेटा है, और REPL ही पूरा IDE है।"
+      "blurb.hi": "वह प्रोग्रामिंग भाषा जिसे प्रोग्राम किया जा सकता है: कोड ही डेटा है, और REPL ही पूरा IDE है।",
+      "blurb.he": "שפת התכנות שאפשר לתכנת — קוד הוא נתונים, וה‑REPL הוא ה‑IDE כולו."
     },
     {
       "slug": "python",
@@ -250,7 +259,8 @@
       "blurb.tl": "Palakaibigang pangkalahatan: malinis na sintaks na parang Ingles kung basahin, kumpleto para sa halos lahat.",
       "blurb.vi": "Ngôn ngữ đa dụng thân thiện: cú pháp sạch đọc như tiếng Anh, đủ đầy cho hầu hết mọi việc.",
       "blurb.zh": "亲切的多面手：语法干净得像英语，几乎什么都能做。",
-      "blurb.hi": "मिलनसार सर्वगुणी: साफ़ वाक्य-रचना जो अंग्रेज़ी जैसी पढ़ी जाती है, लगभग हर काम के लिए पूरी।"
+      "blurb.hi": "मिलनसार सर्वगुणी: साफ़ वाक्य-रचना जो अंग्रेज़ी जैसी पढ़ी जाती है, लगभग हर काम के लिए पूरी।",
+      "blurb.he": "השפה הידידותית לכל מטרה: תחביר נקי שנקרא כמעט כמו אנגלית, והכול כלול כמעט לכל דבר."
     },
     {
       "slug": "javascript-node",
@@ -297,7 +307,8 @@
       "blurb.tl": "Ang wika ng web, nasa lahat na ngayon: sa browser, sa server, at sa command line.",
       "blurb.vi": "Ngôn ngữ của web, nay ở khắp nơi: trong trình duyệt, trên máy chủ và ở dòng lệnh.",
       "blurb.zh": "网页的语言，如今无处不在：浏览器里、服务器上，还有命令行中。",
-      "blurb.hi": "वेब की भाषा, अब हर जगह: ब्राउज़र में, सर्वर पर और कमांड लाइन पर।"
+      "blurb.hi": "वेब की भाषा, अब हर जगह: ब्राउज़र में, सर्वर पर और कमांड लाइन पर।",
+      "blurb.he": "שפת הווב, עכשיו בכל מקום — מריצים אותה בדפדפן, בשרתים ובשורת הפקודה."
     },
     {
       "slug": "typescript",
@@ -346,7 +357,8 @@
       "blurb.tl": "JavaScript na may sistema ng uri na humuhuli ng mali bago pa tumakbo ang code.",
       "blurb.vi": "JavaScript với hệ thống kiểu bắt lỗi của bạn trước khi mã chạy.",
       "blurb.zh": "带类型系统的 JavaScript，在代码运行之前就抓住你的错误。",
-      "blurb.hi": "टाइप प्रणाली वाला JavaScript जो कोड चलने से पहले ही आपकी ग़लतियाँ पकड़ लेता है।"
+      "blurb.hi": "टाइप प्रणाली वाला JavaScript जो कोड चलने से पहले ही आपकी ग़लतियाँ पकड़ लेता है।",
+      "blurb.he": "JavaScript עם מערכת טיפוסים שתופסת את הטעויות שלכם עוד לפני שהקוד רץ."
     },
     {
       "slug": "deno",
@@ -405,7 +417,8 @@
       "blurb.tl": "TypeScript na walang setup: ligtas na runtime na may type checker, linter, formatter at test runner sa loob.",
       "blurb.vi": "TypeScript không cần thiết lập: môi trường chạy an toàn với trình kiểm kiểu, linter, trình định dạng và trình chạy kiểm thử bên trong.",
       "blurb.zh": "无需配置的 TypeScript：安全的运行时，内置类型检查器、代码检查器、格式化工具和测试运行器。",
-      "blurb.hi": "बिना सेटअप का TypeScript: सुरक्षित रनटाइम जिसमें टाइप चेकर, लिंटर, फ़ॉर्मैटर और टेस्ट रनर भीतर ही हैं।"
+      "blurb.hi": "बिना सेटअप का TypeScript: सुरक्षित रनटाइम जिसमें टाइप चेकर, लिंटर, फ़ॉर्मैटर और टेस्ट रनर भीतर ही हैं।",
+      "blurb.he": "TypeScript בלי שום הגדרה — סביבת ריצה מאובטחת שבודק הטיפוסים, ה‑linter, המעצב ומריץ הבדיקות מובנים בה."
     },
     {
       "slug": "ruby",
@@ -451,7 +464,8 @@
       "blurb.tl": "Dinisenyo para sa kaligayahan ng programmer: mahusay magpahayag, madaling basahin, at masayang gamitin sa script at web.",
       "blurb.vi": "Thiết kế vì niềm vui của lập trình viên: giàu biểu đạt, dễ đọc và thú vị cho cả script lẫn web.",
       "blurb.zh": "为程序员的快乐而设计：富有表现力、易于阅读，写脚本和网站都令人愉快。",
-      "blurb.hi": "प्रोग्रामर की ख़ुशी के लिए बनी: अभिव्यंजक, पढ़ने में आसान, और स्क्रिप्ट तथा वेब दोनों के लिए आनंददायक।"
+      "blurb.hi": "प्रोग्रामर की ख़ुशी के लिए बनी: अभिव्यंजक, पढ़ने में आसान, और स्क्रिप्ट तथा वेब दोनों के लिए आनंददायक।",
+      "blurb.he": "תוכננה לאושר של המתכנתים: אקספרסיבית, קריאה ותענוג לכתוב בה, גם סקריפטים וגם ווב."
     },
     {
       "slug": "go",
@@ -521,7 +535,9 @@
           "label.zh": "测试通过",
           "hint.zh": "运行这个空间自带的测试：go test . ——读它打印的失败信息，修改 main.go，再检查一次。",
           "label.hi": "परीक्षण पास होते हैं",
-          "hint.hi": "इस स्थान का अपना सूट चलाइए: go test . — जो विफलता छपे उसे पढ़िए, main.go सुधारिए, फिर जाँचिए।"
+          "hint.hi": "इस स्थान का अपना सूट चलाइए: go test . — जो विफलता छपे उसे पढ़िए, main.go सुधारिए, फिर जाँचिए।",
+          "label.he": "הבדיקות עוברות",
+          "hint.he": "הריצו את הבדיקות של המרחב עצמו: go test . — קראו את הכישלון שהוא מדפיס, תקנו את main.go ובדקו שוב."
         }
       ],
       "blurb.es": "Simple, rápido, pensado para equipos, y con formateador, vet y ejecutor de pruebas ya en la caja.",
@@ -535,7 +551,8 @@
       "blurb.tl": "Simple, mabilis, gawa para sa koponan — kasama na ang formatter, vet at test runner.",
       "blurb.vi": "Đơn giản, nhanh, làm cho đội nhóm — trình định dạng, vet và trình chạy kiểm thử có sẵn.",
       "blurb.zh": "简单、快速、为团队而生——格式化工具、vet 和测试运行器开箱即得。",
-      "blurb.hi": "सरल, तेज़, टीमों के लिए बना — फ़ॉर्मैटर, vet और टेस्ट रनर डिब्बे में ही शामिल।"
+      "blurb.hi": "सरल, तेज़, टीमों के लिए बना — फ़ॉर्मैटर, vet और टेस्ट रनर डिब्बे में ही शामिल।",
+      "blurb.he": "פשוטה, מהירה, בנויה לצוותים — ושרשרת כלים שהמעצב, vet ומריץ הבדיקות מגיעים בה מהקופסה."
     },
     {
       "slug": "rust",
@@ -603,7 +620,9 @@
           "label.zh": "测试通过",
           "hint.zh": "cargo test 是这里诚实的验证者——读它的失败输出，修改 src/main.rs，再检查一次。",
           "label.hi": "परीक्षण पास होते हैं",
-          "hint.hi": "यहाँ cargo test ही ईमानदार सत्यापक है — उसका विफलता-आउटपुट पढ़िए, src/main.rs सुधारिए, फिर जाँचिए।"
+          "hint.hi": "यहाँ cargo test ही ईमानदार सत्यापक है — उसका विफलता-आउटपुट पढ़िए, src/main.rs सुधारिए, फिर जाँचिए।",
+          "label.he": "הבדיקות עוברות",
+          "hint.he": "כאן cargo test הוא המאמת הכן — קראו את פלט הכישלון שלו, תקנו את src/main.rs ובדקו שוב."
         }
       ],
       "blurb.es": "Seguridad de memoria sin recolector de basura, y cargo, que trae su propio linter, formateador y ejecutor de pruebas.",
@@ -617,7 +636,8 @@
       "blurb.tl": "Ligtas ang memorya nang walang garbage collector — at may cargo na may sariling linter, formatter at test runner.",
       "blurb.vi": "An toàn bộ nhớ mà không cần bộ thu gom rác — và cargo mang theo linter, trình định dạng cùng trình chạy kiểm thử riêng.",
       "blurb.zh": "没有垃圾回收器的内存安全——还有 cargo，自带代码检查器、格式化工具和测试运行器。",
-      "blurb.hi": "कचरा संग्राहक के बिना स्मृति सुरक्षा — और cargo, जो अपना लिंटर, फ़ॉर्मैटर और टेस्ट रनर साथ लाता है।"
+      "blurb.hi": "कचरा संग्राहक के बिना स्मृति सुरक्षा — और cargo, जो अपना लिंटर, फ़ॉर्मैटर और टेस्ट रनर साथ लाता है।",
+      "blurb.he": "בטיחות זיכרון בלי איסוף זבל — ו‑cargo, שרשרת הכלים שמגיעה עם linter, מעצב ומריץ בדיקות משלה."
     },
     {
       "slug": "java",
@@ -663,7 +683,8 @@
       "blurb.tl": "Ang kabayong-bakal ng enterprise at Android: isulat minsan, patakbuhin saanman sa subok na JVM.",
       "blurb.vi": "Con ngựa thồ của doanh nghiệp và Android: viết một lần, chạy mọi nơi trên JVM đã được thử lửa.",
       "blurb.zh": "企业与 Android 的主力：一次编写，在久经考验的 JVM 上处处运行。",
-      "blurb.hi": "उद्यम और Android का भारवाहक: एक बार लिखिए, आज़माए हुए JVM पर कहीं भी चलाइए।"
+      "blurb.hi": "उद्यम और Android का भारवाहक: एक बार लिखिए, आज़माए हुए JVM पर कहीं भी चलाइए।",
+      "blurb.he": "סוס העבודה של הארגונים ושל Android — כותבים פעם אחת ומריצים בכל מקום על ה‑JVM הוותיק והמוכח."
     },
     {
       "slug": "c",
@@ -704,7 +725,8 @@
       "blurb.tl": "Ang wikang pundasyon: malapit sa makina, maliit na runtime, at ninuno ng halos lahat.",
       "blurb.vi": "Ngôn ngữ nền đá: gần với máy, môi trường chạy nhỏ xíu, và là tổ tiên của gần như mọi thứ khác.",
       "blurb.zh": "基岩之语：贴近机器，运行时极小，几乎是其他一切的祖先。",
-      "blurb.hi": "आधारशिला की भाषा: मशीन के निकट, नन्हा रनटाइम, और लगभग हर दूसरी भाषा की पूर्वज।"
+      "blurb.hi": "आधारशिला की भाषा: मशीन के निकट, नन्हा रनटाइम, और लगभग हर दूसरी भाषा की पूर्वज।",
+      "blurb.he": "שפת הבסיס — קרובה לחומרה, סביבת ריצה זעירה, והאב הקדמון של כמעט כל השאר."
     },
     {
       "slug": "cpp",
@@ -745,7 +767,8 @@
       "blurb.tl": "C na may mga object, template at abstraksiyong walang bayad — pinipili sa laro, engine at mabibilis na sistema.",
       "blurb.vi": "C với đối tượng, template và trừu tượng không tốn chi phí — lựa chọn cho game, engine và hệ thống hiệu năng cao.",
       "blurb.zh": "带对象、模板和零开销抽象的 C——游戏、引擎和高性能系统的首选。",
-      "blurb.hi": "ऑब्जेक्ट, टेम्पलेट और शून्य-लागत अमूर्तन वाला C — खेलों, इंजनों और उच्च-प्रदर्शन प्रणालियों की पसंद।"
+      "blurb.hi": "ऑब्जेक्ट, टेम्पलेट और शून्य-लागत अमूर्तन वाला C — खेलों, इंजनों और उच्च-प्रदर्शन प्रणालियों की पसंद।",
+      "blurb.he": "C עם אובייקטים, תבניות והפשטות בלי עלות — הבחירה הטבעית למשחקים, למנועים ולמערכות עתירות ביצועים."
     },
     {
       "slug": "csharp",
@@ -790,7 +813,8 @@
       "blurb.tl": "Ang pangunahing barko ng Microsoft: moderno, mahusay magpahayag, at malakas sa web, desktop, laro (Unity) at cloud sa .NET.",
       "blurb.vi": "Kỳ hạm của Microsoft: hiện đại, giàu biểu đạt và mạnh mẽ trên web, máy tính để bàn, game (Unity) và đám mây nhờ .NET.",
       "blurb.zh": "微软的旗舰：现代、富有表现力，在 .NET 之上于网页、桌面、游戏（Unity）和云端都很强。",
-      "blurb.hi": "Microsoft का प्रमुख जहाज़: आधुनिक, अभिव्यंजक और .NET पर वेब, डेस्कटॉप, खेल (Unity) तथा क्लाउड में सशक्त।"
+      "blurb.hi": "Microsoft का प्रमुख जहाज़: आधुनिक, अभिव्यंजक और .NET पर वेब, डेस्कटॉप, खेल (Unity) तथा क्लाउड में सशक्त।",
+      "blurb.he": "שפת הדגל של Microsoft: מודרנית, אקספרסיבית וחזקה בווב, בדסקטופ, במשחקים (Unity) ובענן על ‎.NET."
     },
     {
       "slug": "swift",
@@ -836,7 +860,8 @@
       "blurb.tl": "Ang mabilis, ligtas at mahusay magpahayag na wika ng Apple para sa iOS, macOS, at lalong madalas ding server.",
       "blurb.vi": "Ngôn ngữ nhanh, an toàn và giàu biểu đạt của Apple cho iOS, macOS và ngày càng nhiều cho máy chủ.",
       "blurb.zh": "苹果那门快速、安全、富有表现力的语言，用于 iOS、macOS，也越来越多用于服务端。",
-      "blurb.hi": "Apple की तेज़, सुरक्षित और अभिव्यंजक भाषा — iOS, macOS और अब बढ़ते हुए सर्वर के लिए भी।"
+      "blurb.hi": "Apple की तेज़, सुरक्षित और अभिव्यंजक भाषा — iOS, macOS और अब बढ़ते हुए सर्वर के लिए भी।",
+      "blurb.he": "השפה המהירה, הבטוחה והאקספרסיבית של Apple ל‑iOS, ל‑macOS, ויותר ויותר גם לשרת."
     },
     {
       "slug": "kotlin",
@@ -882,7 +907,8 @@
       "blurb.tl": "Mas malinis at mas ligtas na pananaw sa JVM: maikli, hindi natitinag sa null, at ngayo'y pamantayan sa Android.",
       "blurb.vi": "Góc nhìn gọn gàng và an toàn hơn về JVM: súc tích, chống null, và nay là chuẩn mực cho Android.",
       "blurb.zh": "对 JVM 更整洁、更安全的诠释：简洁、防空值，如今已是 Android 的标准。",
-      "blurb.hi": "JVM का साफ़-सुथरा और सुरक्षित रूप: संक्षिप्त, null-रोधी, और अब Android का मानक।"
+      "blurb.hi": "JVM का साफ़-सुथरा और सुरक्षित रूप: संक्षिप्त, null-रोधी, और अब Android का मानक।",
+      "blurb.he": "גרסה אלגנטית ובטוחה יותר על ה‑JVM — תמציתית, בטוחה מפני null, וברירת המחדל המודרנית של Android."
     },
     {
       "slug": "php",
@@ -928,7 +954,8 @@
       "blurb.tl": "Ang wikang tahimik na nagpapatakbo sa malaking bahagi ng buhay na web, nasa iyong interactive shell.",
       "blurb.vi": "Ngôn ngữ lặng lẽ vận hành phần lớn web đang sống, ngay trong shell tương tác của bạn.",
       "blurb.zh": "这门默默驱动着大半个活跃网络的语言，就在你的交互式 shell 里。",
-      "blurb.hi": "वह भाषा जो चुपचाप जीवित वेब का बड़ा हिस्सा चलाती है, आपके इंटरैक्टिव शेल में।"
+      "blurb.hi": "वह भाषा जो चुपचाप जीवित वेब का बड़ा हिस्सा चलाती है, आपके इंटरैक्टिव शेल में।",
+      "blurb.he": "השפה שמניעה בשקט את רוב הווב מתעוררת לחיים במעטפת האינטראקטיבית שלכם."
     },
     {
       "slug": "lua",
@@ -974,7 +1001,8 @@
       "blurb.tl": "Maliit at napakabilis na scripting na nakapasok sa mga laro, Redis at Neovim.",
       "blurb.vi": "Ngôn ngữ kịch bản nhỏ xíu và cực nhanh, len lỏi vào game, Redis và Neovim.",
       "blurb.zh": "极小又飞快的脚本语言，悄然潜入游戏、Redis 和 Neovim。",
-      "blurb.hi": "नन्ही और बेहद तेज़ स्क्रिप्टिंग भाषा जो खेलों, Redis और Neovim में समा गई।"
+      "blurb.hi": "नन्ही और बेहद तेज़ स्क्रिप्टिंग भाषा जो खेलों, Redis और Neovim में समा गई।",
+      "blurb.he": "שפת סקריפטים זעירה ומהירה במיוחד שמשתלבת במשחקים, ב‑Redis וב‑Neovim."
     },
     {
       "slug": "haskell",
@@ -1019,7 +1047,8 @@
       "blurb.tl": "Purong functional na wika kung saan ang mga uri ang lambat mo at ang katamaran ang bumubuo ng listahang walang katapusan.",
       "blurb.vi": "Ngôn ngữ thuần hàm nơi kiểu là lưới an toàn còn sự lười biếng khiến danh sách chạy mãi.",
       "blurb.zh": "纯函数式语言，类型是你的安全网，惰性让列表可以永远走下去。",
-      "blurb.hi": "विशुद्ध फ़ंक्शनल भाषा जहाँ टाइप आपका सुरक्षा जाल हैं और आलस्य सूचियों को अनंत तक चलने देता है।"
+      "blurb.hi": "विशुद्ध फ़ंक्शनल भाषा जहाँ टाइप आपका सुरक्षा जाल हैं और आलस्य सूचियों को अनंत तक चलने देता है।",
+      "blurb.he": "שפה פונקציונלית טהורה שבה הטיפוסים הם רשת הביטחון שלכם, והעצלות מאפשרת לרשימות להימשך לנצח."
     },
     {
       "slug": "elixir",
@@ -1064,7 +1093,8 @@
       "blurb.tl": "Modernong kasiya-siyang wika sa subok na makina ng Erlang, gawa para sa concurrency at daloy.",
       "blurb.vi": "Ngôn ngữ hiện đại đầy thú vị trên cỗ máy Erlang dày dạn, dựng cho tương tranh và luồng chảy.",
       "blurb.zh": "运行在久经考验的 Erlang 机器之上的现代愉快语言，为并发与流动而造。",
-      "blurb.hi": "आज़माए हुए Erlang इंजन पर बनी आधुनिक आनंददायक भाषा, समवर्तिता और प्रवाह के लिए।"
+      "blurb.hi": "आज़माए हुए Erlang इंजन पर बनी आधुनिक आनंददायक भाषा, समवर्तिता और प्रवाह के लिए।",
+      "blurb.he": "שפה מודרנית ומשמחת על ה‑VM של Erlang, הוותיק והמוכח, בנויה למקביליות ולצינורות."
     },
     {
       "slug": "erlang",
@@ -1109,7 +1139,8 @@
       "blurb.tl": "Wikang pang-telecom sa likod ng siyam na siyam na availability, kung saan magaan na proseso ang nag-uusap sa pamamagitan ng mensahe.",
       "blurb.vi": "Ngôn ngữ hạng viễn thông đứng sau độ sẵn sàng chín số chín, nơi các tiến trình nhẹ trò chuyện bằng thông điệp.",
       "blurb.zh": "支撑九个九可用性的电信级语言，轻量进程之间靠消息交谈。",
-      "blurb.hi": "नौ-नौ उपलब्धता के पीछे की दूरसंचार-श्रेणी की भाषा, जहाँ हल्की प्रक्रियाएँ संदेशों से बतियाती हैं।"
+      "blurb.hi": "नौ-नौ उपलब्धता के पीछे की दूरसंचार-श्रेणी की भाषा, जहाँ हल्की प्रक्रियाएँ संदेशों से बतियाती हैं।",
+      "blurb.he": "השפה בדרגת תקשורת שמאחורי זמינות של תשע תשיעיות, שבה תהליכים קלים משוחחים בהודעות."
     },
     {
       "slug": "clojure",
@@ -1154,7 +1185,8 @@
       "blurb.tl": "Modernong Lisp sa JVM kung saan hindi nagbabago ang datos at ginagawang halos nakakainip ng mga panaklong ang concurrency.",
       "blurb.vi": "Lisp hiện đại trên JVM nơi dữ liệu bất biến và những dấu ngoặc khiến tương tranh gần như buồn tẻ.",
       "blurb.zh": "JVM 上的现代 Lisp，数据不可变，括号让并发几乎变得乏味。",
-      "blurb.hi": "JVM पर आधुनिक Lisp जहाँ डेटा अपरिवर्तनीय है और कोष्ठक समवर्तिता को लगभग उबाऊ बना देते हैं।"
+      "blurb.hi": "JVM पर आधुनिक Lisp जहाँ डेटा अपरिवर्तनीय है और कोष्ठक समवर्तिता को लगभग उबाऊ बना देते हैं।",
+      "blurb.he": "Lisp מודרנית על ה‑JVM שבה נתונים בלתי משתנים וסוגריים הופכים מקביליות לכמעט משעממת."
     },
     {
       "slug": "scala",
@@ -1199,7 +1231,8 @@
       "blurb.tl": "Pinagsasama ang object-oriented at functional na pagpoprograma sa JVM na may seryosong sistema ng uri.",
       "blurb.vi": "Hòa trộn lập trình hướng đối tượng và hàm trên JVM với một hệ thống kiểu nghiêm túc.",
       "blurb.zh": "在 JVM 上融合面向对象与函数式编程，并配有一套严肃的类型系统。",
-      "blurb.hi": "JVM पर वस्तु-उन्मुख और फ़ंक्शनल प्रोग्रामिंग का मेल, एक गंभीर टाइप प्रणाली के साथ।"
+      "blurb.hi": "JVM पर वस्तु-उन्मुख और फ़ंक्शनल प्रोग्रामिंग का मेल, एक गंभीर टाइप प्रणाली के साथ।",
+      "blurb.he": "מאחדת תכנות מונחה עצמים ותכנות פונקציונלי על ה‑JVM, עם מערכת טיפוסים שמתכוונת ברצינות."
     },
     {
       "slug": "julia",
@@ -1246,7 +1279,8 @@
       "blurb.tl": "Parang Python kung basahin, parang C kung tumakbo — ang wika ng siyentipikong pagkuwenta para sa mabilis na numeric na gawain.",
       "blurb.vi": "Đọc như Python, chạy như C — ngôn ngữ tính toán khoa học cho công việc số nhanh.",
       "blurb.zh": "读起来像 Python，跑起来像 C——面向快速数值计算的科学计算语言。",
-      "blurb.hi": "पढ़ने में Python जैसी, चलने में C जैसी — तेज़ संख्यात्मक काम के लिए वैज्ञानिक अभिकलन की भाषा।"
+      "blurb.hi": "पढ़ने में Python जैसी, चलने में C जैसी — तेज़ संख्यात्मक काम के लिए वैज्ञानिक अभिकलन की भाषा।",
+      "blurb.he": "נקראת כמו Python, רצה כמו C — שפה לחישוב מדעי שנבנתה לעבודה נומרית מהירה."
     },
     {
       "slug": "nim",
@@ -1292,7 +1326,8 @@
       "blurb.tl": "Kabasahan ng Python na kino-compile sa bilis ng C — na may metaprogramming na napakagaling kaya nakatayo rito ang standard library.",
       "blurb.vi": "Dễ đọc như Python, biên dịch tới tốc độ C — với siêu lập trình tốt đến mức thư viện chuẩn dựng trên nó.",
       "blurb.zh": "Python 般的可读性编译成 C 般的速度——元编程之强，连标准库都建立其上。",
-      "blurb.hi": "Python जैसी पठनीयता जो C जैसी गति में संकलित होती है — मेटाप्रोग्रामिंग इतनी अच्छी कि मानक पुस्तकालय उसी पर खड़ा है।"
+      "blurb.hi": "Python जैसी पठनीयता जो C जैसी गति में संकलित होती है — मेटाप्रोग्रामिंग इतनी अच्छी कि मानक पुस्तकालय उसी पर खड़ा है।",
+      "blurb.he": "הקריאות של Python מהודרת למהירות של C — מטא‑תכנות כל כך טוב שהספרייה הסטנדרטית בנויה עליו."
     },
     {
       "slug": "vlang",
@@ -1338,7 +1373,8 @@
       "blurb.tl": "Kino-compile ang sarili nang wala pang isang segundo tungo sa maliit na binary na walang dependency — ergonomya ng Go na may built-in na kuwento sa web (vweb).",
       "blurb.vi": "Tự biên dịch dưới một giây thành tệp nhị phân nhỏ không phụ thuộc — công thái học kiểu Go với câu chuyện web sẵn có (vweb).",
       "blurb.zh": "不到一秒就能自举编译成无依赖的小型二进制——Go 式的手感，还自带网页故事（vweb）。",
-      "blurb.hi": "एक सेकंड से भी कम में स्वयं को बिना निर्भरता वाली छोटी बाइनरी में संकलित करती है — Go जैसी सहजता और भीतर ही वेब की कहानी (vweb)।"
+      "blurb.hi": "एक सेकंड से भी कम में स्वयं को बिना निर्भरता वाली छोटी बाइनरी में संकलित करती है — Go जैसी सहजता और भीतर ही वेब की कहानी (vweb)।",
+      "blurb.he": "מהדרת את עצמה בפחות משנייה לקבצים בינאריים קטנים וחסרי תלויות — הנוחות של Go עם סיפור ווב שכולל הכול (vweb)."
     },
     {
       "slug": "fortran",
@@ -1382,7 +1418,8 @@
       "blurb.tl": "Ang orihinal na wikang may mataas na performance — gulugod pa rin ng agham at HPC, may package manager na ngayon (fpm).",
       "blurb.vi": "Ngôn ngữ hiệu năng cao nguyên bản — vẫn là xương sống của khoa học và HPC, nay có trình quản lý gói (fpm).",
       "blurb.zh": "最初的高性能语言——至今仍是科学与高性能计算的脊梁，如今还有了包管理器（fpm）。",
-      "blurb.hi": "मूल उच्च-प्रदर्शन भाषा — आज भी विज्ञान और HPC की रीढ़, और अब पैकेज प्रबंधक (fpm) के साथ।"
+      "blurb.hi": "मूल उच्च-प्रदर्शन भाषा — आज भी विज्ञान और HPC की रीढ़, और अब पैकेज प्रबंधक (fpm) के साथ।",
+      "blurb.he": "שפת הביצועים הגבוהים המקורית — עדיין עמוד השדרה של המחשוב המדעי וה‑HPC, עכשיו עם מנהל חבילות מודרני (fpm)."
     },
     {
       "slug": "smalltalk-gst",
@@ -1427,7 +1464,8 @@
       "blurb.tl": "Ang wikang kung saan lahat ay object at buhay ang mga object: tunay na live-coding na kapaligiran, sa anyong GNU.",
       "blurb.vi": "Ngôn ngữ nơi mọi thứ là đối tượng và các đối tượng đều sống: một môi trường lập trình trực tiếp thực thụ, ở dạng GNU.",
       "blurb.zh": "万物皆对象、且对象皆鲜活的语言：一个真正的实时编程环境，以 GNU 之形呈现。",
-      "blurb.hi": "वह भाषा जहाँ सब कुछ ऑब्जेक्ट है और ऑब्जेक्ट जीवित हैं: एक सच्चा लाइव-कोडिंग परिवेश, GNU रूप में।"
+      "blurb.hi": "वह भाषा जहाँ सब कुछ ऑब्जेक्ट है और ऑब्जेक्ट जीवित हैं: एक सच्चा लाइव-कोडिंग परिवेश, GNU रूप में।",
+      "blurb.he": "השפה שבה הכול אובייקט והאובייקטים חיים — סביבת הקוד החי המקורית, בגרסת GNU שלה."
     },
     {
       "slug": "prolog",
@@ -1472,7 +1510,8 @@
       "blurb.tl": "Pagpoprogramang lohika: ipahayag ang mga katotohanan at tuntunin, magtanong, hayaang gumawa ang unipikasyon. Ang SWI-Prolog ang modernong pamantayan.",
       "blurb.vi": "Lập trình như logic: khai báo sự kiện và luật, đặt câu hỏi, để phép hợp nhất làm việc. SWI-Prolog là chuẩn hiện đại.",
       "blurb.zh": "以逻辑编程：陈述事实与规则，提出问题，让合一去干活。SWI-Prolog 是现代标准。",
-      "blurb.hi": "तर्क के रूप में प्रोग्रामिंग: तथ्य और नियम घोषित कीजिए, प्रश्न पूछिए, एकीकरण को काम करने दीजिए। SWI-Prolog आधुनिक मानक है।"
+      "blurb.hi": "तर्क के रूप में प्रोग्रामिंग: तथ्य और नियम घोषित कीजिए, प्रश्न पूछिए, एकीकरण को काम करने दीजिए। SWI-Prolog आधुनिक मानक है।",
+      "blurb.he": "תכנות כלוגיקה: מצהירים על עובדות וכללים, שואלים שאלות ונותנים לאיחוד לעשות את העבודה — SWI-Prolog הוא התקן המודרני."
     },
     {
       "slug": "tcl",
@@ -1517,7 +1556,8 @@
       "blurb.tl": "Lahat ay string, bawat linya ay utos: ang klasiko ng embedded scripting sa likod ng Tk, expect at maraming kagamitang EDA.",
       "blurb.vi": "Mọi thứ là chuỗi, mỗi dòng là một lệnh: kinh điển của kịch bản nhúng đứng sau Tk, expect và nhiều công cụ EDA.",
       "blurb.zh": "一切皆字符串，每行皆命令：嵌入式脚本的经典，Tk、expect 和众多 EDA 工具背后都有它。",
-      "blurb.hi": "सब कुछ स्ट्रिंग है, हर पंक्ति एक आदेश: अंतःस्थापित स्क्रिप्टिंग का क्लासिक, Tk, expect और अनेक EDA औज़ारों के पीछे।"
+      "blurb.hi": "सब कुछ स्ट्रिंग है, हर पंक्ति एक आदेश: अंतःस्थापित स्क्रिप्टिंग का क्लासिक, Tk, expect और अनेक EDA औज़ारों के पीछे।",
+      "blurb.he": "הכול מחרוזת, כל שורה היא פקודה — קלאסיקת הסקריפטים המשתלבת שמאחורי Tk, ‏expect ואינספור כלי EDA."
     },
     {
       "slug": "scheme-guile",
@@ -1562,7 +1602,8 @@
       "blurb.tl": "Ang minimalistang Lisp ng SICP: closure, recursion at code-bilang-datos na pinadalisay. Ang Guile ang lubhang maaaring palawaking implementasyon ng GNU.",
       "blurb.vi": "Lisp tối giản của SICP: closure, đệ quy và mã-là-dữ-liệu được chắt lọc. Guile là hiện thực cực kỳ mở rộng được của GNU.",
       "blurb.zh": "SICP 那门极简 Lisp：闭包、递归与代码即数据的提纯。Guile 是 GNU 那个极易扩展的实现。",
-      "blurb.hi": "SICP की न्यूनतमवादी Lisp: क्लोज़र, पुनरावर्तन और कोड-जैसा-डेटा, आसुत रूप में। Guile GNU का अत्यंत विस्तार-योग्य कार्यान्वयन है।"
+      "blurb.hi": "SICP की न्यूनतमवादी Lisp: क्लोज़र, पुनरावर्तन और कोड-जैसा-डेटा, आसुत रूप में। Guile GNU का अत्यंत विस्तार-योग्य कार्यान्वयन है।",
+      "blurb.he": "ה‑Lisp המינימליסטית של SICP — סגורים, רקורסיה וקוד כנתונים בתמציתם; Guile הוא המימוש של GNU שאפשר להרחיב בו הכול."
     },
     {
       "slug": "ada",
@@ -1610,7 +1651,8 @@
       "blurb.tl": "Ang wika ng avionics at senyas ng tren: kaligtasan sa pamamagitan ng sistema ng uri, may package manager na ngayon (Alire).",
       "blurb.vi": "Ngôn ngữ của thiết bị hàng không và tín hiệu đường sắt: an toàn qua hệ thống kiểu, nay có trình quản lý gói (Alire).",
       "blurb.zh": "航空电子与铁路信号的语言：以类型系统换取安全，如今还有了包管理器（Alire）。",
-      "blurb.hi": "विमान-इलेक्ट्रॉनिकी और रेल संकेतन की भाषा: टाइप प्रणाली के माध्यम से सुरक्षा, और अब पैकेज प्रबंधक (Alire) के साथ।"
+      "blurb.hi": "विमान-इलेक्ट्रॉनिकी और रेल संकेतन की भाषा: टाइप प्रणाली के माध्यम से सुरक्षा, और अब पैकेज प्रबंधक (Alire) के साथ।",
+      "blurb.he": "שפת האוויוניקה ואיתות הרכבות — בטיחות דרך מערכת הטיפוסים, עכשיו עם מנהל חבילות מודרני (Alire)."
     },
     {
       "slug": "pascal",
@@ -1650,7 +1692,8 @@
       "blurb.tl": "Ang wikang pinag-aralan ng isang henerasyon: estruktura, madaling basahin, at mabilis pa rin sa Free Pascal at Lazarus.",
       "blurb.vi": "Ngôn ngữ mà cả một thế hệ học lập trình: có cấu trúc, dễ đọc và vẫn nhanh nhờ Free Pascal và Lazarus.",
       "blurb.zh": "一代人借以学会编程的语言：结构清晰、易读，在 Free Pascal 和 Lazarus 之上依然迅捷。",
-      "blurb.hi": "वह भाषा जिस पर एक पीढ़ी ने प्रोग्रामिंग सीखी: संरचित, पठनीय, और Free Pascal तथा Lazarus के ज़रिए आज भी तेज़।"
+      "blurb.hi": "वह भाषा जिस पर एक पीढ़ी ने प्रोग्रामिंग सीखी: संरचित, पठनीय, और Free Pascal तथा Lazarus के ज़रिए आज भी तेज़।",
+      "blurb.he": "השפה שדור שלם למד עליה לתכנת — מובנית, קריאה, ועדיין מהירה היום בזכות Free Pascal ו‑Lazarus."
     },
     {
       "slug": "odin",
@@ -1691,7 +1734,8 @@
       "blurb.tl": "Kapalit ng C na nakatuon sa datos para sa mataas na performance — ang wika sa likod ng real-time VFX ng EmberGen.",
       "blurb.vi": "Lựa chọn thay C hướng dữ liệu cho lập trình hiệu năng cao — ngôn ngữ đứng sau VFX thời gian thực của EmberGen.",
       "blurb.zh": "面向数据的 C 替代品，用于高性能编程——EmberGen 实时视觉特效背后的语言。",
-      "blurb.hi": "उच्च-प्रदर्शन प्रोग्रामिंग के लिए डेटा-उन्मुख C विकल्प — EmberGen के वास्तविक-समय VFX के पीछे की भाषा।"
+      "blurb.hi": "उच्च-प्रदर्शन प्रोग्रामिंग के लिए डेटा-उन्मुख C विकल्प — EmberGen के वास्तविक-समय VFX के पीछे की भाषा।",
+      "blurb.he": "חלופה מוכוונת נתונים ל‑C, בנויה לתכנות עתיר ביצועים — השפה שמאחורי האפקטים בזמן אמת של EmberGen."
     },
     {
       "slug": "cobol",
@@ -1732,7 +1776,8 @@
       "blurb.tl": "Pinapatakbo pa rin ang mga bangko ng mundo makalipas ang 65 taon — at inilalagay ng GnuCOBOL ang malayang compiler sa laptop mo.",
       "blurb.vi": "Vẫn vận hành các ngân hàng thế giới sau 65 năm — và GnuCOBOL đặt một trình biên dịch tự do lên laptop của bạn.",
       "blurb.zh": "六十五年后仍在运转着世界各地的银行——而 GnuCOBOL 把一个自由编译器放进你的笔记本。",
-      "blurb.hi": "पैंसठ वर्ष बाद भी दुनिया के बैंक चला रही है — और GnuCOBOL एक स्वतंत्र कंपाइलर आपके लैपटॉप पर रख देता है।"
+      "blurb.hi": "पैंसठ वर्ष बाद भी दुनिया के बैंक चला रही है — और GnuCOBOL एक स्वतंत्र कंपाइलर आपके लैपटॉप पर रख देता है।",
+      "blurb.he": "עדיין מריצה את הבנקים של העולם אחרי 65 שנה — ו‑GnuCOBOL הופך אותה למהדר חופשי על המחשב הנייד שלכם."
     },
     {
       "slug": "haxe",
@@ -1774,7 +1819,8 @@
       "blurb.tl": "Isang code base, maraming target: kino-compile ng Haxe sa JavaScript, C++, JVM, Python at iba pa, at binuhat nito ang isang henerasyon ng laro.",
       "blurb.vi": "Một mã nguồn, nhiều đích: Haxe biên dịch sang JavaScript, C++, JVM, Python và hơn nữa, và đã gánh cả một thế hệ game.",
       "blurb.zh": "一套代码，多个目标：Haxe 可编译到 JavaScript、C++、JVM、Python 等，并撑起了一代游戏。",
-      "blurb.hi": "एक कोड आधार, अनेक लक्ष्य: Haxe JavaScript, C++, JVM, Python और अन्य में संकलित होती है, और उसने खेलों की एक पीढ़ी संभाली।"
+      "blurb.hi": "एक कोड आधार, अनेक लक्ष्य: Haxe JavaScript, C++, JVM, Python और अन्य में संकलित होती है, और उसने खेलों की एक पीढ़ी संभाली।",
+      "blurb.he": "בסיס קוד אחד, יעדים רבים — Haxe מהדרת ל‑JavaScript, ‏C++‎, ‏JVM, ‏Python ועוד, ומניעה דור של משחקים חוצי פלטפורמות."
     },
     {
       "slug": "janet",
@@ -1819,7 +1865,8 @@
       "blurb.tl": "Modernong Lisp na maaaring i-embed sa isang maliit na C library: functional, imperative kung kailangan, may tunay na PEG engine.",
       "blurb.vi": "Lisp hiện đại nhúng được trong một thư viện C nhỏ: thuần hàm, mệnh lệnh khi cần, với một cỗ máy PEG thực thụ.",
       "blurb.zh": "可嵌入一个小巧 C 库的现代 Lisp：函数式，必要时也命令式，还带真正的 PEG 引擎。",
-      "blurb.hi": "एक छोटे C पुस्तकालय में समाहित हो सकने वाली आधुनिक Lisp: फ़ंक्शनल, ज़रूरत पड़ने पर आदेशात्मक, और सच्चे PEG इंजन के साथ।"
+      "blurb.hi": "एक छोटे C पुस्तकालय में समाहित हो सकने वाली आधुनिक Lisp: फ़ंक्शनल, ज़रूरत पड़ने पर आदेशात्मक, और सच्चे PEG इंजन के साथ।",
+      "blurb.he": "Lisp מודרנית שמשתלבת כספריית C קטנה אחת — פונקציונלית, אימפרטיבית כשצריך, עם מנוע PEG אמיתי מובנה."
     },
     {
       "slug": "racket",
@@ -1865,7 +1912,8 @@
       "blurb.tl": "Wikang panggawa ng mga wika — buong Scheme, mga dayalektong #lang, at kaluluwang pangturo.",
       "blurb.vi": "Ngôn ngữ để tạo ra ngôn ngữ — một Scheme đầy đủ, các phương ngữ #lang, và tâm hồn của người dạy học.",
       "blurb.zh": "一门用来创造语言的语言——完整的 Scheme、#lang 方言，以及一颗教学之心。",
-      "blurb.hi": "भाषाएँ बनाने की भाषा — पूरा Scheme, #lang बोलियाँ, और शिक्षण की आत्मा।"
+      "blurb.hi": "भाषाएँ बनाने की भाषा — पूरा Scheme, #lang बोलियाँ, और शिक्षण की आत्मा।",
+      "blurb.he": "השפה ליצירת שפות — Scheme שכוללת הכול, ניבי ‎#lang, ונשמה של מורה."
     },
     {
       "slug": "elm",
@@ -1911,7 +1959,8 @@
       "blurb.tl": "Kasiya-siyang wika para sa maaasahang web app: walang runtime error, at ang pinakamabait na compiler na mayroon.",
       "blurb.vi": "Ngôn ngữ thú vị cho ứng dụng web đáng tin: không lỗi lúc chạy, và trình biên dịch tử tế nhất từng có.",
       "blurb.zh": "编写可靠网页应用的愉快语言：没有运行时错误，还有现存最友善的编译器。",
-      "blurb.hi": "भरोसेमंद वेब ऐप्स के लिए आनंददायक भाषा: कोई रनटाइम त्रुटि नहीं, और अब तक का सबसे सौम्य कंपाइलर।"
+      "blurb.hi": "भरोसेमंद वेब ऐप्स के लिए आनंददायक भाषा: कोई रनटाइम त्रुटि नहीं, और अब तक का सबसे सौम्य कंपाइलर।",
+      "blurb.he": "השפה המענגת לאפליקציות ווב אמינות — בלי חריגות בזמן ריצה, ועם המהדר הידידותי ביותר בתחום."
     },
     {
       "slug": "r",
@@ -1958,7 +2007,8 @@
       "blurb.tl": "Ang wika ng mga estadistiko, kung saan buong vector ang yunit ng pag-iisip at libre ang mga grap.",
       "blurb.vi": "Ngôn ngữ của các nhà thống kê, nơi cả một vector là đơn vị tư duy và đồ thị thì miễn phí.",
       "blurb.zh": "统计学家的语言，整个向量就是思考的单位，而图形是免费附赠的。",
-      "blurb.hi": "सांख्यिकीविदों की भाषा, जहाँ पूरा सदिश ही सोचने की इकाई है और ग्राफ़िक्स मुफ़्त मिलते हैं।"
+      "blurb.hi": "सांख्यिकीविदों की भाषा, जहाँ पूरा सदिश ही सोचने की इकाई है और ग्राफ़िक्स मुफ़्त मिलते हैं।",
+      "blurb.he": "שפת הסטטיסטיקאים, שבה וקטורים שלמים הם יחידת המחשבה והגרפים באים בחינם."
     },
     {
       "slug": "perl",
@@ -1998,7 +2048,8 @@
       "blurb.tl": "Ang orihinal na chainsaw ng teksto, kung saan ang regular expression ang katutubong wika.",
       "blurb.vi": "Chiếc cưa máy nguyên bản cho văn bản, nơi biểu thức chính quy là tiếng mẹ đẻ.",
       "blurb.zh": "处理文本的原初链锯，正则表达式在这里是母语。",
-      "blurb.hi": "पाठ के लिए मूल चेनसॉ, जहाँ नियमित अभिव्यक्तियाँ मातृभाषा हैं।"
+      "blurb.hi": "पाठ के लिए मूल चेनसॉ, जहाँ नियमित अभिव्यक्तियाँ मातृभाषा हैं।",
+      "blurb.he": "אולר השוויצרי המקורי לעיבוד טקסט, שבו ביטויים רגולריים הם שפת אם."
     },
     {
       "slug": "bash",
@@ -2043,7 +2094,8 @@
       "blurb.tl": "Ang command line na tinitirhan mo na — isang buong wikang pamprograma na nakasuot ng prompt.",
       "blurb.vi": "Dòng lệnh bạn đã sống trong đó — một ngôn ngữ lập trình đầy đủ khoác áo dấu nhắc.",
       "blurb.zh": "你早已居住其中的命令行——一门穿着提示符外衣的完整编程语言。",
-      "blurb.hi": "वही कमांड लाइन जिसमें आप पहले से रहते हैं — प्रॉम्प्ट पहने एक पूरी प्रोग्रामिंग भाषा।"
+      "blurb.hi": "वही कमांड लाइन जिसमें आप पहले से रहते हैं — प्रॉम्प्ट पहने एक पूरी प्रोग्रामिंग भाषा।",
+      "blurb.he": "שורת הפקודה שאתם כבר חיים בה — שפת תכנות מלאה בלבוש של שורת קלט."
     },
     {
       "slug": "sqlite",
@@ -2089,7 +2141,8 @@
       "blurb.tl": "Ang pinakamaraming nakakabit na database sa mundo: buong SQL engine sa isang file, handa sa terminal mo.",
       "blurb.vi": "Cơ sở dữ liệu được cài nhiều nhất thế giới: cả một cỗ máy SQL trong một tệp, sẵn trong terminal của bạn.",
       "blurb.zh": "世界上部署最广的数据库：一整个 SQL 引擎装在一个文件里，就在你的终端待命。",
-      "blurb.hi": "दुनिया का सबसे अधिक तैनात डेटाबेस: एक फ़ाइल में पूरा SQL इंजन, आपके टर्मिनल में तैयार।"
+      "blurb.hi": "दुनिया का सबसे अधिक तैनात डेटाबेस: एक फ़ाइल में पूरा SQL इंजन, आपके टर्मिनल में तैयार।",
+      "blurb.he": "מסד הנתונים הנפוץ ביותר בעולם, מנוע SQL שלם בקובץ אחד, מוכן במסוף שלכם."
     },
     {
       "slug": "react",
@@ -2142,7 +2195,8 @@
       "blurb.tl": "Bumubuo ka ng interface mula sa mga component at state; muling iginuguhit ng React ang screen kapag nagbago ang state.",
       "blurb.vi": "Bạn dựng giao diện từ các thành phần và state; React vẽ lại màn hình khi state đổi.",
       "blurb.zh": "你用组件和状态搭建界面；状态一变，React 就重绘屏幕。",
-      "blurb.hi": "आप घटकों और स्थिति से इंटरफ़ेस बनाते हैं; स्थिति बदलते ही React स्क्रीन फिर से बना देता है।"
+      "blurb.hi": "आप घटकों और स्थिति से इंटरफ़ेस बनाते हैं; स्थिति बदलते ही React स्क्रीन फिर से बना देता है।",
+      "blurb.he": "בונים ממשק מרכיבים וממצב; React מרנדר מחדש את המסך כשהמצב משתנה."
     },
     {
       "slug": "vue",
@@ -2199,7 +2253,8 @@
       "blurb.tl": "Sumusulat ka ng single-file component na may reactive na state, at pinapanatili ng Vue ang DOM na kasabay nito.",
       "blurb.vi": "Bạn viết các thành phần một tệp với state phản ứng, và Vue giữ DOM đồng bộ theo.",
       "blurb.zh": "你编写带响应式状态的单文件组件，Vue 让 DOM 自行保持同步。",
-      "blurb.hi": "आप प्रतिक्रियाशील स्थिति वाले एकल-फ़ाइल घटक लिखते हैं, और Vue DOM को स्वयं मिलाए रखता है।"
+      "blurb.hi": "आप प्रतिक्रियाशील स्थिति वाले एकल-फ़ाइल घटक लिखते हैं, और Vue DOM को स्वयं मिलाए रखता है।",
+      "blurb.he": "כותבים רכיבים בקובץ אחד עם מצב ריאקטיבי, ו‑Vue שומר על ה‑DOM מסונכרן מעצמו."
     },
     {
       "slug": "svelte",
@@ -2256,7 +2311,8 @@
       "blurb.tl": "Sumusulat ka ng component na mukhang karaniwan; kino-compile ito ng Svelte tungo sa maliit at mabilis na code na walang virtual DOM.",
       "blurb.vi": "Bạn viết những thành phần trông bình thường; Svelte biên dịch chúng thành mã nhỏ và nhanh, không cần DOM ảo.",
       "blurb.zh": "你写的组件看着平平无奇；Svelte 把它们编译成小而快的代码，不需要虚拟 DOM。",
-      "blurb.hi": "आप साधारण दिखने वाले घटक लिखते हैं; Svelte उन्हें छोटे और तेज़ कोड में संकलित कर देता है, बिना किसी आभासी DOM के।"
+      "blurb.hi": "आप साधारण दिखने वाले घटक लिखते हैं; Svelte उन्हें छोटे और तेज़ कोड में संकलित कर देता है, बिना किसी आभासी DOM के।",
+      "blurb.he": "כותבים רכיבים שנראים פשוטים; Svelte מהדר אותם לקוד זעיר ומהיר בלי DOM וירטואלי."
     },
     {
       "slug": "angular",
@@ -2336,7 +2392,8 @@
       "blurb.tl": "Kumpleto at may paninindigang TypeScript framework — ang espasyong ito ay tunay na minimal na workspace: zoneless, signals, at nakakabit na ang CLI.",
       "blurb.vi": "Framework TypeScript đầy đủ và có chính kiến — không gian này là một workspace tối giản thực thụ: zoneless, signals, và CLI đã sẵn sàng.",
       "blurb.zh": "完整且有主张的 TypeScript 框架——这个空间是一个真正的极简工作区：无 zone、有 signals，CLI 已就位。",
-      "blurb.hi": "पूर्ण और सुनिश्चित मत वाला TypeScript ढाँचा — यह स्थान एक सच्चा न्यूनतम कार्यक्षेत्र है: zoneless, signals, और CLI जुड़ा हुआ।"
+      "blurb.hi": "पूर्ण और सुनिश्चित मत वाला TypeScript ढाँचा — यह स्थान एक सच्चा न्यूनतम कार्यक्षेत्र है: zoneless, signals, और CLI जुड़ा हुआ।",
+      "blurb.he": "פריימוורק TypeScript מלא ובעל דעה — המרחב הזה הוא סביבת עבודה מינימלית אמיתית: בלי zone, עם signals, וה‑CLI כולו מחווט."
     },
     {
       "slug": "nextjs",
@@ -2389,7 +2446,8 @@
       "blurb.tl": "React na may routing batay sa file system, server rendering, at nakakabit nang build system.",
       "blurb.vi": "React với định tuyến theo hệ thống tệp, kết xuất phía máy chủ và hệ thống build đã nối sẵn.",
       "blurb.zh": "带文件系统路由、服务端渲染和已接好构建系统的 React。",
-      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग, सर्वर रेंडरिंग और जुड़ी हुई बिल्ड प्रणाली वाला React।"
+      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग, सर्वर रेंडरिंग और जुड़ी हुई बिल्ड प्रणाली वाला React।",
+      "blurb.he": "React עם נתב מבוסס מערכת קבצים, רינדור בצד השרת ומערכת בנייה שכבר מחווטים יחד בשבילכם."
     },
     {
       "slug": "express",
@@ -2433,7 +2491,8 @@
       "blurb.tl": "Maliit na HTTP framework para sa Node: imapa ang ruta sa handler at ibalik ang JSON sa ilang linya.",
       "blurb.vi": "Framework HTTP nhỏ cho Node: ánh xạ tuyến tới handler và trả JSON trong vài dòng.",
       "blurb.zh": "给 Node 的小巧 HTTP 框架：把路由映射到处理函数，几行就返回 JSON。",
-      "blurb.hi": "Node के लिए छोटा HTTP ढाँचा: रूट को हैंडलर से जोड़िए और कुछ पंक्तियों में JSON लौटाइए।"
+      "blurb.hi": "Node के लिए छोटा HTTP ढाँचा: रूट को हैंडलर से जोड़िए और कुछ पंक्तियों में JSON लौटाइए।",
+      "blurb.he": "פריימוורק HTTP זעיר ל‑Node: ממפים נתיבים למטפלים ומחזירים JSON בכמה שורות."
     },
     {
       "slug": "django",
@@ -2484,7 +2543,8 @@
       "blurb.tl": "Kumpletong web framework ng Python: ORM, admin at routing na kayang lumaki mula prototype hanggang produksiyon.",
       "blurb.vi": "Framework web Python đầy đủ: ORM, trang quản trị và định tuyến mở rộng từ nguyên mẫu tới sản xuất.",
       "blurb.zh": "完备的 Python 网页框架：ORM、后台和路由，从原型一路扩展到生产。",
-      "blurb.hi": "पूरा Python वेब ढाँचा: ORM, प्रशासन और रूटिंग जो प्रोटोटाइप से उत्पादन तक फैलती है।"
+      "blurb.hi": "पूरा Python वेब ढाँचा: ORM, प्रशासन और रूटिंग जो प्रोटोटाइप से उत्पादन तक फैलती है।",
+      "blurb.he": "פריימוורק הווב של Python שכולל הכול: ORM, ממשק ניהול וניתוב שגדלים מאב טיפוס ועד ייצור."
     },
     {
       "slug": "flask",
@@ -2530,7 +2590,8 @@
       "blurb.tl": "Maliit na web framework ng Python: dekorasyunan ang isang function ng ruta at tumatakbo na ang endpoint mo.",
       "blurb.vi": "Framework web Python tí hon: trang trí một hàm bằng một tuyến là endpoint của bạn đã chạy.",
       "blurb.zh": "极小的 Python 网页框架：给一个函数加上路由装饰，你的端点就跑起来了。",
-      "blurb.hi": "नन्हा Python वेब ढाँचा: एक फ़ंक्शन पर रूट सजाइए और आपका एंडपॉइंट चल पड़ा।"
+      "blurb.hi": "नन्हा Python वेब ढाँचा: एक फ़ंक्शन पर रूट सजाइए और आपका एंडपॉइंट चल पड़ा।",
+      "blurb.he": "פריימוורק ווב זעיר ל‑Python: מקשטים פונקציה בנתיב ויש לכם נקודת קצה שרצה."
     },
     {
       "slug": "rails",
@@ -2580,7 +2641,8 @@
       "blurb.tl": "Ruby na may kumbensiyon higit sa konfigurasyon: generator, ORM at MVC na mabilis magpalit ng ideya tungo sa aplikasyon.",
       "blurb.vi": "Ruby với quy ước hơn cấu hình: generator, ORM và MVC biến ý tưởng thành ứng dụng rất nhanh.",
       "blurb.zh": "约定优于配置的 Ruby：生成器、ORM 和 MVC，让想法飞快变成应用。",
-      "blurb.hi": "कॉन्फ़िगरेशन पर परंपरा वाला Ruby: जेनरेटर, ORM और MVC जो विचार को तेज़ी से ऐप में बदल देते हैं।"
+      "blurb.hi": "कॉन्फ़िगरेशन पर परंपरा वाला Ruby: जेनरेटर, ORM और MVC जो विचार को तेज़ी से ऐप में बदल देते हैं।",
+      "blurb.he": "Ruby של מוסכמות במקום הגדרות: מחוללים, ORM ו‑MVC שהופכים רעיונות לאפליקציות מהר."
     },
     {
       "slug": "phoenix",
@@ -2631,7 +2693,8 @@
       "blurb.tl": "Web framework ng Elixir: matibay sa pagkakamali, real time bilang default, may live view sa WebSocket.",
       "blurb.vi": "Framework web của Elixir: chịu lỗi, thời gian thực theo mặc định, với live view trên WebSocket.",
       "blurb.zh": "Elixir 的网页框架：容错、默认实时，并在 WebSocket 之上提供 live view。",
-      "blurb.hi": "Elixir का वेब ढाँचा: दोष-सहिष्णु, स्वभाव से वास्तविक-समय, और WebSocket पर live view के साथ।"
+      "blurb.hi": "Elixir का वेब ढाँचा: दोष-सहिष्णु, स्वभाव से वास्तविक-समय, और WebSocket पर live view के साथ।",
+      "blurb.he": "פריימוורק הווב של Elixir: עמיד לתקלות, בזמן אמת כברירת מחדל, עם תצוגות חיות מעל WebSockets."
     },
     {
       "slug": "spring-boot",
@@ -2675,7 +2738,8 @@
       "blurb.tl": "Ang naghaharing web framework ng Java: markahan ang isang klase bilang controller at patatakbuhin ng Spring ang buong server.",
       "blurb.vi": "Framework web thống trị của Java: chú thích một lớp làm controller và Spring chạy cả một máy chủ.",
       "blurb.zh": "Java 那个占据统治地位的网页框架：把一个类标注为控制器，Spring 就跑起一整台服务器。",
-      "blurb.hi": "Java का प्रमुख वेब ढाँचा: एक क्लास को कंट्रोलर के रूप में चिह्नित कीजिए और Spring पूरा सर्वर चला देता है।"
+      "blurb.hi": "Java का प्रमुख वेब ढाँचा: एक क्लास को कंट्रोलर के रूप में चिह्नित कीजिए और Spring पूरा सर्वर चला देता है।",
+      "blurb.he": "פריימוורק הווב השולט של Java: מסמנים מחלקה כבקר ו‑Spring מריץ שרת מלא."
     },
     {
       "slug": "laravel",
@@ -2726,7 +2790,8 @@
       "blurb.tl": "Ang pinakamamahal na framework ng PHP: eleganteng routing, mahusay magpahayag na ORM (Eloquent), at REPL na tinatawag na Tinker.",
       "blurb.vi": "Framework PHP được yêu quý nhất: định tuyến thanh lịch, ORM giàu biểu đạt (Eloquent) và một REPL tên Tinker.",
       "blurb.zh": "最受喜爱的 PHP 框架：优雅的路由、富有表现力的 ORM（Eloquent），还有名为 Tinker 的 REPL。",
-      "blurb.hi": "PHP का सबसे प्रिय ढाँचा: सुरुचिपूर्ण रूटिंग, अभिव्यंजक ORM (Eloquent), और Tinker नाम का REPL।"
+      "blurb.hi": "PHP का सबसे प्रिय ढाँचा: सुरुचिपूर्ण रूटिंग, अभिव्यंजक ORM (Eloquent), और Tinker नाम का REPL।",
+      "blurb.he": "הפריימוורק האהוב ביותר של PHP: ניתוב אלגנטי, ORM אקספרסיבי (Eloquent) ו‑REPL בשם Tinker."
     },
     {
       "slug": "aspnet",
@@ -2770,7 +2835,8 @@
       "blurb.tl": "Web framework ng C# mula sa Microsoft: minimal-API app na nag-uugnay ng ruta sa lambda at tumatakbo sa Kestrel.",
       "blurb.vi": "Framework web C# của Microsoft: ứng dụng minimal API ánh xạ tuyến tới lambda và chạy trên Kestrel.",
       "blurb.zh": "微软的 C# 网页框架：minimal API 应用把路由映射到 lambda，运行在 Kestrel 上。",
-      "blurb.hi": "Microsoft का C# वेब ढाँचा: minimal API ऐप रूट को lambda से जोड़ता है और Kestrel पर चलता है।"
+      "blurb.hi": "Microsoft का C# वेब ढाँचा: minimal API ऐप रूट को lambda से जोड़ता है और Kestrel पर चलता है।",
+      "blurb.he": "פריימוורק הווב של Microsoft ל‑C#‎: אפליקציית minimal API ממפה נתיבים ל‑lambdas ורצה על Kestrel."
     },
     {
       "slug": "numpy",
@@ -2815,7 +2881,8 @@
       "blurb.tl": "Ginagawang mabilis na n-dimensional array ang mga listahan ng Python at kumukuwenta sa bilis ng C.",
       "blurb.vi": "Biến danh sách Python thành mảng n chiều nhanh và tính toán ở tốc độ C.",
       "blurb.zh": "把 Python 列表变成快速的 n 维数组，并以 C 的速度计算。",
-      "blurb.hi": "Python सूचियों को तेज़ n-विमीय सरणियों में बदलता है और C की गति से गणना करता है।"
+      "blurb.hi": "Python सूचियों को तेज़ n-विमीय सरणियों में बदलता है और C की गति से गणना करता है।",
+      "blurb.he": "הופכת רשימות של Python למערכים מהירים ב‑n ממדים ומבצעת את החישובים במהירות של C."
     },
     {
       "slug": "pandas",
@@ -2860,7 +2927,8 @@
       "blurb.tl": "DataFrame na tila spreadsheet para sa Python: mag-load, mag-filter, mag-grupo at muling hubugin ang tabular na datos.",
       "blurb.vi": "DataFrame kiểu bảng tính cho Python: nạp, lọc, nhóm và định hình lại dữ liệu dạng bảng.",
       "blurb.zh": "给 Python 的电子表格式 DataFrame：加载、筛选、分组并重塑表格数据。",
-      "blurb.hi": "Python के लिए स्प्रेडशीट जैसा DataFrame: सारणीबद्ध डेटा लादिए, छाँटिए, समूहबद्ध कीजिए और पुनर्गठित कीजिए।"
+      "blurb.hi": "Python के लिए स्प्रेडशीट जैसा DataFrame: सारणीबद्ध डेटा लादिए, छाँटिए, समूहबद्ध कीजिए और पुनर्गठित कीजिए।",
+      "blurb.he": "DataFrames בסגנון גיליון אלקטרוני ל‑Python: טוענים, מסננים, מקבצים ומעצבים מחדש נתונים טבלאיים."
     },
     {
       "slug": "pytorch",
@@ -2906,7 +2974,8 @@
       "blurb.tl": "Tensor na may awtomatikong diperensiyasyon — ang makina sa likod ng modernong deep learning.",
       "blurb.vi": "Tensor với vi phân tự động — cỗ máy đứng sau học sâu hiện đại.",
       "blurb.zh": "带自动微分的张量——现代深度学习背后的引擎。",
-      "blurb.hi": "स्वचालित अवकलन वाले टेंसर — आधुनिक गहन अधिगम के पीछे का इंजन।"
+      "blurb.hi": "स्वचालित अवकलन वाले टेंसर — आधुनिक गहन अधिगम के पीछे का इंजन।",
+      "blurb.he": "טנזורים עם גזירה אוטומטית — המנוע שמאחורי הלמידה העמוקה המודרנית."
     },
     {
       "slug": "jquery",
@@ -2948,7 +3017,8 @@
       "blurb.tl": "Ang klasikong $() library na ginawang walang sakit ang pagpili, pag-animate at pag-uugnay ng DOM.",
       "blurb.vi": "Thư viện $() kinh điển khiến việc chọn, hoạt hình và nối dây DOM trở nên nhẹ nhàng.",
       "blurb.zh": "那个经典的 $() 库，让选择、动画和串接 DOM 变得毫不费力。",
-      "blurb.hi": "वही क्लासिक $() पुस्तकालय जिसने DOM को चुनना, सजीव करना और जोड़ना पीड़ारहित बना दिया।"
+      "blurb.hi": "वही क्लासिक $() पुस्तकालय जिसने DOM को चुनना, सजीव करना और जोड़ना पीड़ारहित बना दिया।",
+      "blurb.he": "ספריית ה‑$()‎ הקלאסית שהפכה בחירה, הנפשה וחיווט של ה‑DOM לקלים."
     },
     {
       "slug": "mootools",
@@ -2990,7 +3060,8 @@
       "blurb.tl": "Klasikong object-oriented: tunay na Class/Extends/Implements at pinalawak na native, ilang taon bago ang ES6.",
       "blurb.vi": "Kinh điển hướng đối tượng: Class/Extends/Implements thực thụ và các kiểu native mở rộng, nhiều năm trước ES6.",
       "blurb.zh": "面向对象的经典：真正的 Class/Extends/Implements 和扩展过的原生类型，比 ES6 早了许多年。",
-      "blurb.hi": "वस्तु-उन्मुख क्लासिक: असली Class/Extends/Implements और विस्तारित नेटिव, ES6 से वर्षों पहले।"
+      "blurb.hi": "वस्तु-उन्मुख क्लासिक: असली Class/Extends/Implements और विस्तारित नेटिव, ES6 से वर्षों पहले।",
+      "blurb.he": "הקלאסיקה מונחית העצמים: Class/Extends/Implements אמיתיים וטיפוסים מובנים מורחבים, שנים לפני ES6."
     },
     {
       "slug": "d3",
@@ -3032,7 +3103,8 @@
       "blurb.tl": "Itali ang datos sa DOM at iguhit ito — ang kagamitan sa likod ng mga pasadyang SVG na grap na hinihimok ng datos.",
       "blurb.vi": "Gắn dữ liệu vào DOM rồi vẽ nó ra — công cụ đứng sau những đồ thị SVG tùy biến do dữ liệu dẫn dắt.",
       "blurb.zh": "把数据绑到 DOM 再把它画出来——数据驱动的定制 SVG 图形背后的工具。",
-      "blurb.hi": "डेटा को DOM से बाँधिए और फिर उसे खींचिए — डेटा-चालित कस्टम SVG ग्राफ़िक्स के पीछे का औज़ार।"
+      "blurb.hi": "डेटा को DOM से बाँधिए और फिर उसे खींचिए — डेटा-चालित कस्टम SVG ग्राफ़िक्स के पीछे का औज़ार।",
+      "blurb.he": "קושרת נתונים ל‑DOM ומציירת אותם — ערכת הכלים שמאחורי גרפי SVG מותאמים ומונעי נתונים."
     },
     {
       "slug": "threejs",
@@ -3074,7 +3146,8 @@
       "blurb.tl": "WebGL na ginawang palakaibigan: tagpo, kamera, mesh at ilaw para sa 3D sa browser.",
       "blurb.vi": "WebGL được làm cho thân thiện: cảnh, máy quay, lưới và ánh sáng cho 3D trong trình duyệt.",
       "blurb.zh": "被做得平易近人的 WebGL：场景、相机、网格与灯光，在浏览器里做 3D。",
-      "blurb.hi": "मैत्रीपूर्ण बनाया गया WebGL: ब्राउज़र में 3D के लिए दृश्य, कैमरे, जाल और प्रकाश।"
+      "blurb.hi": "मैत्रीपूर्ण बनाया गया WebGL: ब्राउज़र में 3D के लिए दृश्य, कैमरे, जाल और प्रकाश।",
+      "blurb.he": "WebGL בגרסה ידידותית — סצנות, מצלמות, רשתות ותאורה לתלת‑ממד בדפדפן."
     },
     {
       "slug": "redux",
@@ -3119,7 +3192,8 @@
       "blurb.tl": "Isang mahuhulaang lalagyan ng state: nagpapadala ka ng aksiyon, kinukuwenta ng reducer ang susunod na state.",
       "blurb.vi": "Một kho state có thể đoán trước: bạn gửi action, reducer tính state kế tiếp.",
       "blurb.zh": "一个可预测的状态容器：你派发动作，reducer 算出下一个状态。",
-      "blurb.hi": "एक पूर्वानुमेय स्थिति-कोष: आप क्रिया भेजते हैं, reducer अगली स्थिति निकालता है।"
+      "blurb.hi": "एक पूर्वानुमेय स्थिति-कोष: आप क्रिया भेजते हैं, reducer अगली स्थिति निकालता है।",
+      "blurb.he": "מיכל מצב אחד וצפוי: שולחים actions, ו‑reducers מחשבים את המצב הבא."
     },
     {
       "slug": "rxjs",
@@ -3164,7 +3238,8 @@
       "blurb.tl": "Reactive na pagpoprograma gamit ang Observable: buuin ang mga agos ng asynchronous na pangyayari na parang array.",
       "blurb.vi": "Lập trình phản ứng với Observable: dựng các dòng sự kiện bất đồng bộ như thể chúng là mảng.",
       "blurb.zh": "用 Observable 做响应式编程：像组合数组那样组合异步事件流。",
-      "blurb.hi": "Observable के साथ प्रतिक्रियाशील प्रोग्रामिंग: अतुल्यकालिक घटना-धाराओं को सरणियों की तरह जोड़िए।"
+      "blurb.hi": "Observable के साथ प्रतिक्रियाशील प्रोग्रामिंग: अतुल्यकालिक घटना-धाराओं को सरणियों की तरह जोड़िए।",
+      "blurb.he": "תכנות ריאקטיבי עם Observables: מרכיבים זרמי אירועים אסינכרוניים כמו מערכים."
     },
     {
       "slug": "tailwindcss",
@@ -3217,7 +3292,8 @@
       "blurb.tl": "CSS na nauuna ang utility: buuin ang disenyo mula sa maliliit na klase at hayaang alisin ng build ang natira.",
       "blurb.vi": "CSS ưu tiên tiện ích: dựng thiết kế từ những lớp nhỏ và để bước build loại bỏ phần dư.",
       "blurb.zh": "实用优先的 CSS：用一个个小类搭出设计，剩下的交给构建去剔除。",
-      "blurb.hi": "उपयोगिता-प्रथम CSS: छोटी-छोटी क्लासों से डिज़ाइन गढ़िए और शेष को बिल्ड हटाने दीजिए।"
+      "blurb.hi": "उपयोगिता-प्रथम CSS: छोटी-छोटी क्लासों से डिज़ाइन गढ़िए और शेष को बिल्ड हटाने दीजिए।",
+      "blurb.he": "CSS של utilities קודם כול: מרכיבים עיצובים ממחלקות זעירות ונותנים לבנייה להסיר את השאר."
     },
     {
       "slug": "graphql",
@@ -3257,7 +3333,8 @@
       "blurb.tl": "May-uring query language para sa API: tukuyin ang schema at hilingin ang eksaktong field na gusto mo.",
       "blurb.vi": "Ngôn ngữ truy vấn có kiểu cho API: định nghĩa một schema và hỏi đúng những trường bạn muốn.",
       "blurb.zh": "给 API 的类型化查询语言：定义一份 schema，只索取你想要的字段。",
-      "blurb.hi": "API के लिए टाइप वाली क्वेरी भाषा: एक स्कीमा परिभाषित कीजिए और ठीक वही फ़ील्ड माँगिए जो चाहिए।"
+      "blurb.hi": "API के लिए टाइप वाली क्वेरी भाषा: एक स्कीमा परिभाषित कीजिए और ठीक वही फ़ील्ड माँगिए जो चाहिए।",
+      "blurb.he": "שפת שאילתות עם טיפוסים ל‑APIs: מגדירים סכמה ומבקשים בדיוק את השדות שרוצים."
     },
     {
       "slug": "prisma",
@@ -3306,7 +3383,8 @@
       "blurb.tl": "ORM ng database na ligtas sa uri: imodelo ang datos sa schema at makakuha ng nabuong query client.",
       "blurb.vi": "ORM cơ sở dữ liệu an toàn kiểu: mô hình hóa dữ liệu trong một schema và nhận một client truy vấn được sinh ra.",
       "blurb.zh": "类型安全的数据库 ORM：在 schema 里为数据建模，得到一个生成出来的查询客户端。",
-      "blurb.hi": "टाइप-सुरक्षित डेटाबेस ORM: स्कीमा में डेटा का प्रतिरूप बनाइए और उत्पन्न क्वेरी क्लाइंट पाइए।"
+      "blurb.hi": "टाइप-सुरक्षित डेटाबेस ORM: स्कीमा में डेटा का प्रतिरूप बनाइए और उत्पन्न क्वेरी क्लाइंट पाइए।",
+      "blurb.he": "ORM למסדי נתונים עם בטיחות טיפוסים: ממדלים את הנתונים בסכמה ומקבלים לקוח שאילתות שנוצר אוטומטית."
     },
     {
       "slug": "redis",
@@ -3351,7 +3429,8 @@
       "blurb.tl": "Imbakan ng datos sa memorya na kinakausap mo sa REPL: string, counter, listahan at iba pa.",
       "blurb.vi": "Kho dữ liệu trong bộ nhớ mà bạn trò chuyện trong REPL: chuỗi, bộ đếm, danh sách và hơn nữa.",
       "blurb.zh": "你在 REPL 里与之对话的内存数据存储：字符串、计数器、列表等等。",
-      "blurb.hi": "स्मृति-आधारित डेटा भंडार जिससे आप REPL में बात करते हैं: स्ट्रिंग, गणक, सूचियाँ और बहुत कुछ।"
+      "blurb.hi": "स्मृति-आधारित डेटा भंडार जिससे आप REPL में बात करते हैं: स्ट्रिंग, गणक, सूचियाँ और बहुत कुछ।",
+      "blurb.he": "מאגר נתונים בזיכרון שמדברים איתו ב‑REPL: מחרוזות, מונים, רשימות ועוד."
     },
     {
       "slug": "docker-compose",
@@ -3396,7 +3475,8 @@
       "blurb.tl": "Ipahayag ang multi-container na aplikasyon sa isang YAML file at patakbuhin ang lahat sa isang utos.",
       "blurb.vi": "Khai báo một ứng dụng nhiều container trong một tệp YAML và chạy tất cả bằng một lệnh.",
       "blurb.zh": "在一个 YAML 文件里声明多容器应用，用一条命令把它们全部运行起来。",
-      "blurb.hi": "एक YAML फ़ाइल में बहु-कंटेनर ऐप घोषित कीजिए और सबको एक ही आदेश से चलाइए।"
+      "blurb.hi": "एक YAML फ़ाइल में बहु-कंटेनर ऐप घोषित कीजिए और सबको एक ही आदेश से चलाइए।",
+      "blurb.he": "מצהירים על אפליקציה מרובת קונטיינרים בקובץ YAML אחד ומעלים את כולה בפקודה אחת."
     },
     {
       "slug": "solidity",
@@ -3441,7 +3521,8 @@
       "blurb.tl": "Ang wika ng smart contract ng Ethereum — programang may hawak na tunay na halaga, kaya mahalaga ang bawat linya.",
       "blurb.vi": "Ngôn ngữ hợp đồng thông minh của Ethereum — chương trình nắm giữ giá trị thật, nên mỗi dòng đều đáng kể.",
       "blurb.zh": "以太坊的智能合约语言——程序持有真实价值，因此每一行都重要。",
-      "blurb.hi": "Ethereum की स्मार्ट अनुबंध भाषा — ऐसे प्रोग्राम जो वास्तविक मूल्य धारण करते हैं, इसलिए हर पंक्ति मायने रखती है।"
+      "blurb.hi": "Ethereum की स्मार्ट अनुबंध भाषा — ऐसे प्रोग्राम जो वास्तविक मूल्य धारण करते हैं, इसलिए हर पंक्ति मायने रखती है।",
+      "blurb.he": "שפת החוזים החכמים של Ethereum — תוכניות שמחזיקות ערך אמיתי, ולכן כל שורה נחשבת."
     },
     {
       "slug": "gleam",
@@ -3490,7 +3571,8 @@
       "blurb.tl": "Palakaibigan at ligtas-sa-uring wika para sa makina ng Erlang — sintaks na may amoy ng Rust, lakas ng BEAM.",
       "blurb.vi": "Ngôn ngữ thân thiện và an toàn kiểu cho cỗ máy Erlang — cú pháp phảng phất Rust, sức mạnh của BEAM.",
       "blurb.zh": "面向 Erlang 机器的友好类型安全语言——带着 Rust 味的语法，BEAM 的力量。",
-      "blurb.hi": "Erlang इंजन के लिए मैत्रीपूर्ण, टाइप-सुरक्षित भाषा — Rust जैसी वाक्य-रचना, BEAM की शक्ति।"
+      "blurb.hi": "Erlang इंजन के लिए मैत्रीपूर्ण, टाइप-सुरक्षित भाषा — Rust जैसी वाक्य-रचना, BEAM की शक्ति।",
+      "blurb.he": "שפה ידידותית עם בטיחות טיפוסים ל‑VM של Erlang — תחביר בטעם Rust, כוחות העל של BEAM."
     },
     {
       "slug": "astro",
@@ -3539,7 +3621,8 @@
       "blurb.tl": "Framework na nauuna ang nilalaman: file ang pahina, HTML ang ipinapadala bilang default, at ang mga isla ay nagdaragdag ng interaktibidad kung saan mo lang hinihiling.",
       "blurb.vi": "Framework ưu tiên nội dung: trang là tệp, HTML được gửi theo mặc định, và các đảo thêm tính tương tác đúng nơi bạn yêu cầu.",
       "blurb.zh": "内容优先的框架：页面就是文件，默认发送 HTML，而岛屿只在你要求之处增添交互。",
-      "blurb.hi": "सामग्री-प्रथम ढाँचा: पेज एक फ़ाइल है, HTML स्वभाव से भेजा जाता है, और द्वीप केवल वहीं अन्तःक्रिया जोड़ते हैं जहाँ आप कहें।"
+      "blurb.hi": "सामग्री-प्रथम ढाँचा: पेज एक फ़ाइल है, HTML स्वभाव से भेजा जाता है, और द्वीप केवल वहीं अन्तःक्रिया जोड़ते हैं जहाँ आप कहें।",
+      "blurb.he": "הפריימוורק שהתוכן אצלו קודם: דפים הם קבצים, HTML יוצא כברירת מחדל, ואיים מוסיפים אינטראקטיביות רק איפה שמבקשים."
     },
     {
       "slug": "sveltekit",
@@ -3596,7 +3679,8 @@
       "blurb.tl": "Svelte na may routing batay sa file system at server rendering, sa Vite: ang file na +page.svelte ay nagiging ruta.",
       "blurb.vi": "Svelte với định tuyến theo hệ thống tệp và kết xuất phía máy chủ, trên Vite: tệp +page.svelte trở thành một tuyến.",
       "blurb.zh": "带文件系统路由和服务端渲染的 Svelte，构建在 Vite 之上：一个 +page.svelte 文件就成为一条路由。",
-      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग और सर्वर रेंडरिंग वाला Svelte, Vite पर: एक +page.svelte फ़ाइल ही रूट बन जाती है।"
+      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग और सर्वर रेंडरिंग वाला Svelte, Vite पर: एक +page.svelte फ़ाइल ही रूट बन जाती है।",
+      "blurb.he": "Svelte עם נתב מבוסס מערכת קבצים ורינדור בצד השרת, על גבי Vite — קובצי +page.svelte הופכים לנתיבים."
     },
     {
       "slug": "nuxt",
@@ -3649,7 +3733,8 @@
       "blurb.tl": "Vue na may routing batay sa file system, server rendering at awtomatikong import: ang pages/ ang nagiging ruta mo.",
       "blurb.vi": "Vue với định tuyến theo hệ thống tệp, kết xuất phía máy chủ và tự động nhập: pages/ trở thành các tuyến của bạn.",
       "blurb.zh": "带文件系统路由、服务端渲染和自动导入的 Vue：pages/ 就是你的路由。",
-      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग, सर्वर रेंडरिंग और स्वतः आयात वाला Vue: pages/ ही आपके रूट बन जाते हैं।"
+      "blurb.hi": "फ़ाइल-सिस्टम रूटिंग, सर्वर रेंडरिंग और स्वतः आयात वाला Vue: pages/ ही आपके रूट बन जाते हैं।",
+      "blurb.he": "Vue עם נתב מבוסס מערכת קבצים, רינדור בצד השרת וייבוא אוטומטי — pages/‎ הופכת לנתיבים שלכם."
     },
     {
       "slug": "playwright",
@@ -3719,7 +3804,9 @@
           "label.zh": "示例用例通过",
           "hint.zh": "npx playwright test 会运行 tests/example.spec.ts——它的报告会指名到底是哪条期望没有满足。",
           "label.hi": "उदाहरण स्पेसिफ़िकेशन पास होता है",
-          "hint.hi": "npx playwright test से tests/example.spec.ts चलता है — उसकी रिपोर्ट ठीक-ठीक बताती है कौन-सी अपेक्षा विफल हुई।"
+          "hint.hi": "npx playwright test से tests/example.spec.ts चलता है — उसकी रिपोर्ट ठीक-ठीक बताती है कौन-सी अपेक्षा विफल हुई।",
+          "label.he": "מפרט הדוגמה עובר",
+          "hint.he": "npx playwright test מריץ את tests/example.spec.ts — הדוח שלו מציין בדיוק איזו ציפייה נכשלה."
         }
       ],
       "blurb.es": "Pruebas de extremo a extremo que manejan un navegador real, y el dispositivo SPECTER del rack lo habla de forma nativa.",
@@ -3733,7 +3820,8 @@
       "blurb.tl": "End-to-end na pagsubok na nagpapatakbo ng tunay na browser — at katutubong sinasalita ito ng SPECTER sa rack.",
       "blurb.vi": "Kiểm thử đầu-cuối lái một trình duyệt thật — và thiết bị SPECTER trên rack nói ngôn ngữ này một cách tự nhiên.",
       "blurb.zh": "驱动真实浏览器的端到端测试——机架上的 SPECTER 设备原生说这门语言。",
-      "blurb.hi": "असली ब्राउज़र चलाने वाला आद्योपांत परीक्षण — और रैक पर SPECTER उपकरण इसे सहज रूप से बोलता है।"
+      "blurb.hi": "असली ब्राउज़र चलाने वाला आद्योपांत परीक्षण — और रैक पर SPECTER उपकरण इसे सहज रूप से बोलता है।",
+      "blurb.he": "בדיקות מקצה לקצה שמפעילות דפדפן אמיתי — ומכשיר הראק SPECTER מדבר אותן באופן טבעי."
     },
     {
       "slug": "solid",
@@ -3786,7 +3874,8 @@
       "blurb.tl": "Sumusulat ka ng JSX na kino-compile tungo sa pinong reactive na pag-update: walang virtual DOM, minsan lang tumatakbo ang component.",
       "blurb.vi": "Bạn viết JSX được biên dịch thành cập nhật phản ứng chi tiết: không DOM ảo, thành phần chỉ chạy một lần.",
       "blurb.zh": "你写的 JSX 被编译成细粒度的响应式更新：没有虚拟 DOM，组件只运行一次。",
-      "blurb.hi": "आप JSX लिखते हैं जो सूक्ष्म प्रतिक्रियाशील अद्यतनों में संकलित होता है: कोई आभासी DOM नहीं, घटक एक ही बार चलते हैं।"
+      "blurb.hi": "आप JSX लिखते हैं जो सूक्ष्म प्रतिक्रियाशील अद्यतनों में संकलित होता है: कोई आभासी DOM नहीं, घटक एक ही बार चलते हैं।",
+      "blurb.he": "כותבים JSX שמהודר לעדכונים ריאקטיביים עדינים — בלי DOM וירטואלי, והרכיבים רצים פעם אחת."
     },
     {
       "slug": "preact",
@@ -3839,7 +3928,8 @@
       "blurb.tl": "Kapalit ng React na 3 kB lamang na may parehong API: kasama ang hook at JSX, may opsiyonal na compat alias.",
       "blurb.vi": "Bản thay React nặng 3 kB với cùng API: có hook và JSX, kèm bí danh compat tùy chọn.",
       "blurb.zh": "3 kB 的 React 替代品，API 完全相同：hook 和 JSX 都在，还有可选的 compat 别名。",
-      "blurb.hi": "उसी API वाला 3 kB का React विकल्प: hook और JSX शामिल, वैकल्पिक compat उपनाम के साथ।"
+      "blurb.hi": "उसी API वाला 3 kB का React विकल्प: hook और JSX शामिल, वैकल्पिक compat उपनाम के साथ।",
+      "blurb.he": "חלופה ל‑React במשקל 3 kB עם אותו API — hooks ו‑JSX כלולים, וכינוי תאימות לפי הצורך."
     },
     {
       "slug": "qwik",
@@ -3892,7 +3982,8 @@
       "blurb.tl": "Naipagpapatuloy sa halip na hydrated: isinisilid ang state at ginigising lang ng kliyente ang hinawakan mo.",
       "blurb.vi": "Tiếp nối thay vì hydrate: state được tuần tự hóa và phía máy khách chỉ đánh thức phần bạn chạm vào.",
       "blurb.zh": "可恢复而非水合：状态被序列化，客户端只唤醒你触碰到的部分。",
-      "blurb.hi": "हाइड्रेट होने के बजाय पुनरारंभ-योग्य: स्थिति क्रमबद्ध होती है और क्लाइंट केवल वही जगाता है जिसे आप छूते हैं।"
+      "blurb.hi": "हाइड्रेट होने के बजाय पुनरारंभ-योग्य: स्थिति क्रमबद्ध होती है और क्लाइंट केवल वही जगाता है जिसे आप छूते हैं।",
+      "blurb.he": "המשכיות במקום הידרציה: המצב עובר סריאליזציה והלקוח מעיר רק את מה שנוגעים בו."
     },
     {
       "slug": "lit",
@@ -3941,7 +4032,8 @@
       "blurb.tl": "Web component na may reactive na property at pag-render sa pamamagitan ng tagged template — daang batay sa pamantayan para maghatid ng interface.",
       "blurb.vi": "Web component với thuộc tính phản ứng và kết xuất qua template gắn thẻ — con đường theo chuẩn để giao hàng giao diện.",
       "blurb.zh": "带响应式属性、通过标记模板渲染的 Web Component——交付界面的标准之路。",
-      "blurb.hi": "प्रतिक्रियाशील गुणों और टैग्ड टेम्पलेट से रेंडरिंग वाले वेब घटक — इंटरफ़ेस पहुँचाने का मानक-आधारित रास्ता।"
+      "blurb.hi": "प्रतिक्रियाशील गुणों और टैग्ड टेम्पलेट से रेंडरिंग वाले वेब घटक — इंटरफ़ेस पहुँचाने का मानक-आधारित रास्ता।",
+      "blurb.he": "רכיבי ווב עם מאפיינים ריאקטיביים ורינדור של תבניות מתויגות — הדרך מבוססת התקנים להפיץ ממשק."
     },
     {
       "slug": "alpine",
@@ -3983,7 +4075,8 @@
       "blurb.tl": "Deklaratibong asal mismo sa markup mo: ang x-data sa isang tag ay nagbibigay sa pahina ng state at reaktibidad, walang build step.",
       "blurb.vi": "Hành vi khai báo ngay trong markup: x-data trên một thẻ cho trang state và tính phản ứng, không cần bước build.",
       "blurb.zh": "直接写在标记里的声明式行为：标签上的 x-data 就给了页面状态与响应性，无需构建步骤。",
-      "blurb.hi": "सीधे आपके मार्कअप में घोषणात्मक व्यवहार: किसी टैग पर x-data पेज को स्थिति और प्रतिक्रियाशीलता दे देता है, बिना बिल्ड चरण के।"
+      "blurb.hi": "सीधे आपके मार्कअप में घोषणात्मक व्यवहार: किसी टैग पर x-data पेज को स्थिति और प्रतिक्रियाशीलता दे देता है, बिना बिल्ड चरण के।",
+      "blurb.he": "התנהגות הצהרתית בתוך הסימון: x-data על תג נותן לדף מצב וריאקטיביות, בלי שלב בנייה."
     },
     {
       "slug": "htmx",
@@ -4029,7 +4122,8 @@
       "blurb.tl": "Katangian ng HTML na kumakausap sa server mo: pinapalitan ng hx-get ang fragment sa lugar nito — hypermedia bilang makina.",
       "blurb.vi": "Thuộc tính HTML trò chuyện với máy chủ của bạn: hx-get thay mảnh nội dung tại chỗ — siêu phương tiện làm cỗ máy.",
       "blurb.zh": "与你的服务器对话的 HTML 属性：hx-get 就地替换片段——以超媒体为引擎。",
-      "blurb.hi": "आपके सर्वर से बात करने वाले HTML गुण: hx-get टुकड़े को यथास्थान बदल देता है — हाइपरमीडिया ही इंजन है।"
+      "blurb.hi": "आपके सर्वर से बात करने वाले HTML गुण: hx-get टुकड़े को यथास्थान बदल देता है — हाइपरमीडिया ही इंजन है।",
+      "blurb.he": "תכונות HTML שמדברות עם השרת שלכם: hx-get מחליף מקטעים במקום — היפרמדיה כמנוע."
     },
     {
       "slug": "stellar-soroban",
@@ -4073,7 +4167,8 @@
       "blurb.tl": "Smart contract sa Stellar: Rust na kino-compile sa WASM, sinusubok nang katutubo, ipinapakalat sa stellar CLI.",
       "blurb.vi": "Hợp đồng thông minh trên Stellar: Rust biên dịch sang WASM, kiểm thử tự nhiên, triển khai bằng CLI stellar.",
       "blurb.zh": "Stellar 上的智能合约：Rust 编译成 WASM，原生测试，用 stellar CLI 部署。",
-      "blurb.hi": "Stellar पर स्मार्ट अनुबंध: Rust WASM में संकलित, सहज रूप से परीक्षित, stellar CLI से तैनात।"
+      "blurb.hi": "Stellar पर स्मार्ट अनुबंध: Rust WASM में संकलित, सहज रूप से परीक्षित, stellar CLI से तैनात।",
+      "blurb.he": "חוזים חכמים על Stellar: ‏Rust שמהודר ל‑WASM, נבדק באופן מקומי ונפרס עם ה‑CLI של stellar."
     },
     {
       "slug": "solana-native",
@@ -4129,7 +4224,9 @@
       "blurb.zh": "Solana 智能合约：带纯逻辑测试的 Rust 程序，真正的本地验证节点只需按一下按钮。",
       "name.zh": "Solana（程序）",
       "blurb.hi": "Solana स्मार्ट अनुबंध: विशुद्ध तर्क परीक्षणों वाले Rust प्रोग्राम, और असली स्थानीय वैलिडेटर बस एक बटन दूर।",
-      "name.hi": "Solana (प्रोग्राम)"
+      "blurb.he": "חוזים חכמים של Solana: תוכניות Rust עם בדיקות של לוגיקה טהורה, ו‑validator מקומי אמיתי במרחק לחיצה.",
+      "name.hi": "Solana (प्रोग्राम)",
+      "name.he": "Solana (תוכניות)"
     },
     {
       "slug": "cosmwasm",
@@ -4173,7 +4270,8 @@
       "blurb.tl": "Smart contract para sa interchain: Rust tungong WASM, sinusubok nang katutubo gamit ang huwad na chain sa loob ng proseso.",
       "blurb.vi": "Hợp đồng thông minh cho liên chuỗi: Rust sang WASM, kiểm thử tự nhiên với một chuỗi giả trong tiến trình.",
       "blurb.zh": "面向跨链的智能合约：Rust 编到 WASM，用进程内的模拟链原生测试。",
-      "blurb.hi": "इंटरचेन के लिए स्मार्ट अनुबंध: Rust से WASM, प्रक्रिया के भीतर नक़ली शृंखला पर सहज परीक्षण।"
+      "blurb.hi": "इंटरचेन के लिए स्मार्ट अनुबंध: Rust से WASM, प्रक्रिया के भीतर नक़ली शृंखला पर सहज परीक्षण।",
+      "blurb.he": "חוזים חכמים ל‑interchain: ‏Rust ל‑WASM, נבדק באופן מקומי מול שרשרת מדומה בתוך התהליך."
     },
     {
       "slug": "ink-polkadot",
@@ -4217,7 +4315,8 @@
       "blurb.tl": "Smart contract ng Polkadot sa Rust: ang kanonikong flipper, sinusubok sa labas ng chain sa loob ng milisegundo.",
       "blurb.vi": "Hợp đồng thông minh Polkadot bằng Rust: chiếc flipper kinh điển, kiểm thử ngoài chuỗi trong vài mili giây.",
       "blurb.zh": "用 Rust 写的 Polkadot 智能合约：那个经典的 flipper，在链下几毫秒内完成测试。",
-      "blurb.hi": "Rust में Polkadot स्मार्ट अनुबंध: वही प्रामाणिक flipper, शृंखला के बाहर मिलीसेकंडों में परीक्षित।"
+      "blurb.hi": "Rust में Polkadot स्मार्ट अनुबंध: वही प्रामाणिक flipper, शृंखला के बाहर मिलीसेकंडों में परीक्षित।",
+      "blurb.he": "חוזים חכמים של Polkadot ב‑Rust: ה‑flipper הקנוני, נבדק מחוץ לשרשרת תוך אלפיות שנייה."
     },
     {
       "slug": "cairo-starknet",
@@ -4261,7 +4360,8 @@
       "blurb.tl": "Ang wika ng napapatunayang pagkuwenta — hugis Rust, napapatunayan ng STARK, at puso ng Starknet.",
       "blurb.vi": "Ngôn ngữ của tính toán chứng minh được — hình dáng như Rust, chứng minh bằng STARK, và là trái tim của Starknet.",
       "blurb.zh": "可证明计算的语言——形似 Rust，由 STARK 证明，也是 Starknet 的心脏。",
-      "blurb.hi": "प्रमाणयोग्य अभिकलन की भाषा — रूप में Rust जैसी, STARK से प्रमाणयोग्य, और Starknet का हृदय।"
+      "blurb.hi": "प्रमाणयोग्य अभिकलन की भाषा — रूप में Rust जैसी, STARK से प्रमाणयोग्य, और Starknet का हृदय।",
+      "blurb.he": "שפת החישוב שאפשר להוכיח — בצורת Rust, ניתנת להוכחת STARK, והלב של Starknet."
     },
     {
       "slug": "move-sui",
@@ -4310,7 +4410,8 @@
       "blurb.tl": "Smart contract na nakatuon sa rekurso: Move sa Sui, sinusubok nang katutubo laban sa chain na nasa memorya.",
       "blurb.vi": "Hợp đồng thông minh hướng tài nguyên: Move trên Sui, kiểm thử tự nhiên với một chuỗi trong bộ nhớ.",
       "blurb.zh": "面向资源的智能合约：Sui 上的 Move，针对内存中的链原生测试。",
-      "blurb.hi": "संसाधन-उन्मुख स्मार्ट अनुबंध: Sui पर Move, स्मृति में मौजूद शृंखला के विरुद्ध सहज परीक्षण।"
+      "blurb.hi": "संसाधन-उन्मुख स्मार्ट अनुबंध: Sui पर Move, स्मृति में मौजूद शृंखला के विरुद्ध सहज परीक्षण।",
+      "blurb.he": "חוזים חכמים מוכווני משאבים: ‏Move על Sui, נבדקים באופן מקומי מול שרשרת בזיכרון."
     },
     {
       "slug": "bitcoin-miniscript",
@@ -4354,7 +4455,8 @@
       "blurb.tl": "Ang tunay na kontrata ng Bitcoin: kondisyon ng paggastos bilang patakarang Miniscript — napapatunayan, kino-compile, walang node.",
       "blurb.vi": "Hợp đồng thật sự của Bitcoin: điều kiện chi tiêu dưới dạng chính sách Miniscript — chứng minh được, biên dịch được, không cần node.",
       "blurb.zh": "比特币真正的合约：作为 Miniscript 策略的花费条件——可证明、可编译、无需节点。",
-      "blurb.hi": "Bitcoin के असली अनुबंध: व्यय की शर्तें Miniscript नीति के रूप में — प्रमाणयोग्य, संकलनीय, बिना किसी नोड के।"
+      "blurb.hi": "Bitcoin के असली अनुबंध: व्यय की शर्तें Miniscript नीति के रूप में — प्रमाणयोग्य, संकलनीय, बिना किसी नोड के।",
+      "blurb.he": "החוזים האמיתיים של Bitcoin: תנאי הוצאה כמדיניות Miniscript — ניתנים להוכחה ולהידור, בלי צורך בצומת."
     },
     {
       "slug": "clarity-stacks",
@@ -4418,7 +4520,8 @@
       "blurb.tl": "Smart contract na nakaangkla sa Bitcoin gamit ang Clarity: napagpapasyahan, binibigyang-kahulugan sa chain, sinusubok laban sa simnet sa memorya.",
       "blurb.vi": "Hợp đồng thông minh neo vào Bitcoin bằng Clarity: quyết định được, thông dịch trên chuỗi, kiểm thử với simnet trong bộ nhớ.",
       "blurb.zh": "用 Clarity 写的锚定比特币的智能合约：可判定、链上解释，针对内存中的 simnet 测试。",
-      "blurb.hi": "Clarity में Bitcoin-लंगर वाले स्मार्ट अनुबंध: निर्णेय, शृंखला पर व्याख्यायित, स्मृति में simnet के विरुद्ध परीक्षित।"
+      "blurb.hi": "Clarity में Bitcoin-लंगर वाले स्मार्ट अनुबंध: निर्णेय, शृंखला पर व्याख्यायित, स्मृति में simnet के विरुद्ध परीक्षित।",
+      "blurb.he": "חוזים חכמים מעוגנים ב‑Bitcoin ב‑Clarity: כריעים, מפורשים על השרשרת, ונבדקים מול simnet בזיכרון."
     },
     {
       "slug": "cardano-aiken",
@@ -4462,7 +4565,8 @@
       "blurb.tl": "Validator ng Cardano sa Aiken: purong function sa mga transaksiyon, sinusubok sa labas ng chain sa loob ng milisegundo gamit ang aiken check.",
       "blurb.vi": "Validator Cardano bằng Aiken: hàm thuần trên giao dịch, kiểm thử ngoài chuỗi trong vài mili giây với aiken check.",
       "blurb.zh": "用 Aiken 写的 Cardano 验证器：作用于交易的纯函数，用 aiken check 在链下几毫秒内测试。",
-      "blurb.hi": "Aiken में Cardano वैलिडेटर: लेनदेन पर विशुद्ध फ़ंक्शन, aiken check से शृंखला के बाहर मिलीसेकंडों में परीक्षित।"
+      "blurb.hi": "Aiken में Cardano वैलिडेटर: लेनदेन पर विशुद्ध फ़ंक्शन, aiken check से शृंखला के बाहर मिलीसेकंडों में परीक्षित।",
+      "blurb.he": "מאמתים של Cardano ב‑Aiken: פונקציות טהורות על עסקאות, נבדקות מחוץ לשרשרת תוך אלפיות שנייה עם aiken check."
     },
     {
       "slug": "ton-tact",
@@ -4522,7 +4626,8 @@
       "blurb.tl": "Kontrata ng TON sa Tact: ang tagatanggap ng mensahe ang API nito, sinusubok sa TON blockchain na nasa memorya kung saan tumatalbog ang pagtanggi.",
       "blurb.vi": "Hợp đồng TON bằng Tact: bộ nhận thông điệp chính là API, kiểm thử trên blockchain TON trong bộ nhớ nơi lời từ chối bật ngược lại.",
       "blurb.zh": "用 Tact 写的 TON 合约：消息接收器就是它的 API，在内存中的 TON 区块链上测试，拒绝会被弹回。",
-      "blurb.hi": "Tact में TON अनुबंध: संदेश ग्राहक ही इसका API है, स्मृति में TON ब्लॉकचेन पर परीक्षित जहाँ अस्वीकृति वापस उछलती है।"
+      "blurb.hi": "Tact में TON अनुबंध: संदेश ग्राहक ही इसका API है, स्मृति में TON ब्लॉकचेन पर परीक्षित जहाँ अस्वीकृति वापस उछलती है।",
+      "blurb.he": "חוזי TON ב‑Tact: מקבלי הודעות הם ה‑API, נבדקים על בלוקצ׳יין TON בזיכרון שבו סירובים חוזרים לשולח."
     },
     {
       "slug": "sass-indented",
@@ -4580,7 +4685,9 @@
       "blurb.zh": "基于空白的样式表方言：没有花括号，没有分号——靠缩进嵌套、有变量，在 NMOX 里右键一下即可编译。",
       "name.zh": "Sass（缩进式）",
       "blurb.hi": "रिक्ति-आधारित स्टाइलशीट बोली: न घुँघराले कोष्ठक, न अर्धविराम — इंडेंट से नेस्टिंग, चर, और NMOX में संकलन के लिए एक दायाँ क्लिक।",
-      "name.hi": "Sass (इंडेंट वाला)"
+      "blurb.he": "ניב גיליונות הסגנונות של הרווחים: בלי סוגריים מסולסלים, בלי נקודה‑פסיק — קינון לפי הזחה, משתנים ולחיצה ימנית אחת להידור ב‑NMOX.",
+      "name.hi": "Sass (इंडेंट वाला)",
+      "name.he": "Sass (מוזח)"
     },
     {
       "slug": "wit-component",
@@ -4643,7 +4750,9 @@
           "label.zh": "你添加了第二个函数",
           "hint.zh": "interface greet 目前只有 hello——加上一行如 goodbye: func(who: person) -> string; 然后点击 RUN。",
           "label.hi": "आपने दूसरा फ़ंक्शन जोड़ा",
-          "hint.hi": "interface greet में अब भी केवल hello है — goodbye: func(who: person) -> string; जैसी एक पंक्ति जोड़िए और RUN दबाइए।"
+          "hint.hi": "interface greet में अब भी केवल hello है — goodbye: func(who: person) -> string; जैसी एक पंक्ति जोड़िए और RUN दबाइए।",
+          "label.he": "הוספתם פונקציה שנייה",
+          "hint.he": "בממשק greet עדיין יש רק hello — הוסיפו שורה כמו goodbye: func(who: person) -> string; ולחצו על RUN."
         },
         {
           "label": "The world still exports greet",
@@ -4675,7 +4784,9 @@
           "label.zh": "world 仍然导出 greet",
           "hint.zh": "world app 必须导出 greet，否则宿主什么也看不到——把 export greet; 放回去。",
           "label.hi": "world अब भी greet निर्यात करता है",
-          "hint.hi": "world app को greet निर्यात करना ही होगा, वरना कोई होस्ट कुछ नहीं देखेगा — export greet; वापस रखिए।"
+          "hint.hi": "world app को greet निर्यात करना ही होगा, वरना कोई होस्ट कुछ नहीं देखेगा — export greet; वापस रखिए।",
+          "label.he": "ה‑world עדיין מייצא את greet",
+          "hint.he": "world app חייב לייצא את greet, אחרת מארח לא רואה כלום — החזירו את export greet;."
         },
         {
           "label": "The package validates",
@@ -4709,7 +4820,9 @@
           "label.zh": "包通过校验",
           "hint.zh": "RUN 必须把包原样打印回来；一次拒绝会指出要修改的文件和行号。",
           "label.hi": "पैकेज सत्यापित होता है",
-          "hint.hi": "RUN को पैकेज वापस छापना चाहिए; अस्वीकृति उस फ़ाइल और पंक्ति का नाम देती है जिसे सुधारना है।"
+          "hint.hi": "RUN को पैकेज वापस छापना चाहिए; अस्वीकृति उस फ़ाइल और पंक्ति का नाम देती है जिसे सुधारना है।",
+          "label.he": "החבילה עוברת אימות",
+          "hint.he": "RUN חייב להדפיס את החבילה בחזרה; סירוב מציין את הקובץ והשורה לתיקון."
         }
       ],
       "blurb.es": "Escribe el contrato tipado que expone un componente WebAssembly — WIT, el lenguaje de interfaces del Component Model — y valídalo con la herramienta de referencia. Sin compilar, solo el contrato.",
@@ -4723,7 +4836,8 @@
       "blurb.tl": "Isulat ang may-uring kontratang inilalantad ng isang WebAssembly component — ang WIT, ang wikang interface ng Component Model — at patunayan ito sa sanggunian nitong kasangkapan. Walang compile, ang kontrata lamang.",
       "blurb.vi": "Viết hợp đồng có kiểu mà một WebAssembly component phơi bày — WIT, ngôn ngữ giao diện của Component Model — rồi kiểm chứng bằng công cụ tham chiếu của nó. Không biên dịch, chỉ hợp đồng.",
       "blurb.zh": "编写一个 WebAssembly 组件所暴露的类型化契约——WIT，Component Model 的接口语言——再用它的参考工具验证。不编译，只有契约。",
-      "blurb.hi": "वह टाइप वाला अनुबंध लिखिए जो एक WebAssembly घटक उजागर करता है — WIT, Component Model की इंटरफ़ेस भाषा — और फिर उसके संदर्भ औज़ार से उसे सत्यापित कीजिए। कोई संकलन नहीं, केवल अनुबंध।"
+      "blurb.hi": "वह टाइप वाला अनुबंध लिखिए जो एक WebAssembly घटक उजागर करता है — WIT, Component Model की इंटरफ़ेस भाषा — और फिर उसके संदर्भ औज़ार से उसे सत्यापित कीजिए। कोई संकलन नहीं, केवल अनुबंध।",
+      "blurb.he": "כותבים את החוזה המטויב שרכיב WebAssembly חושף — WIT, שפת הממשקים של Component Model — ומאמתים אותו בכלי הייחוס. בלי הידור, רק החוזה."
     }
   ]
 }
