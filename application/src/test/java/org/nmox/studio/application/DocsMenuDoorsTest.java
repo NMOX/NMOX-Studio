@@ -118,6 +118,9 @@ class DocsMenuDoorsTest {
     private static String walk(Door menu, String text, int at) {
         Door current = menu;
         while (true) {
+            if (text.startsWith("…", at)) {
+                return null; // `Window ▸ …` means "any row of this menu", not a door
+            }
             Door hop = longestPrefix(current, text, at);
             if (hop == null) {
                 return "no row in " + current.name + " starts here";
