@@ -1,5 +1,9 @@
 # Tutorial: Infra Designer
 
+<!-- languages -->
+**English** · [Español](infra-designer.es.md) · [Français](infra-designer.fr.md) · [Deutsch](infra-designer.de.md) · [Русский](infra-designer.ru.md) · [Українська](infra-designer.uk.md) · [Polski](infra-designer.pl.md) · [Português (Brasil)](infra-designer.pt.md) · [Bahasa Indonesia](infra-designer.id.md) · [Filipino](infra-designer.tl.md) · [Tiếng Việt](infra-designer.vi.md) · [简体中文](infra-designer.zh.md) · [हिन्दी](infra-designer.hi.md) · [עברית](infra-designer.he.md) · [العربية](infra-designer.ar.md)
+<!-- /languages -->
+
 Infra Designer is a Node-RED-style canvas for cloud infrastructure. You
 drag nodes (droplets, firewalls, DNS records…), wire them, and deploy to
 DigitalOcean, Hetzner, or Cloudflare — with cost framing before you spend

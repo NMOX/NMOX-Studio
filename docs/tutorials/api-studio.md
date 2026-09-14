@@ -1,5 +1,9 @@
 # Tutorial: API Studio
 
+<!-- languages -->
+**English** · [Español](api-studio.es.md) · [Français](api-studio.fr.md) · [Deutsch](api-studio.de.md) · [Русский](api-studio.ru.md) · [Українська](api-studio.uk.md) · [Polski](api-studio.pl.md) · [Português (Brasil)](api-studio.pt.md) · [Bahasa Indonesia](api-studio.id.md) · [Filipino](api-studio.tl.md) · [Tiếng Việt](api-studio.vi.md) · [简体中文](api-studio.zh.md) · [हिन्दी](api-studio.hi.md) · [עברית](api-studio.he.md) · [العربية](api-studio.ar.md)
+<!-- /languages -->
+
 API Studio is a Postman-style REST workbench built into the IDE. You
 build requests, run assertions against the response, and — uniquely —
 every response is graded against the web's security-header standards.

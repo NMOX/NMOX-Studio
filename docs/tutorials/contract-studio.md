@@ -1,5 +1,9 @@
 # Tutorial: Contract Studio (Web3)
 
+<!-- languages -->
+**English** · [Español](contract-studio.es.md) · [Français](contract-studio.fr.md) · [Deutsch](contract-studio.de.md) · [Русский](contract-studio.ru.md) · [Українська](contract-studio.uk.md) · [Polski](contract-studio.pl.md) · [Português (Brasil)](contract-studio.pt.md) · [Bahasa Indonesia](contract-studio.id.md) · [Filipino](contract-studio.tl.md) · [Tiếng Việt](contract-studio.vi.md) · [简体中文](contract-studio.zh.md) · [हिन्दी](contract-studio.hi.md) · [עברית](contract-studio.he.md) · [العربية](contract-studio.ar.md)
+<!-- /languages -->
+
 Contract Studio is a full smart-contract workbench: a Foundry/Hardhat
 artifact tree, ABI-driven interaction with decoded returns and reverts,
 a live block/event watcher, and a gas + size oversight pane — with a

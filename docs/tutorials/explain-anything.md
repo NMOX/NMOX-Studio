@@ -1,5 +1,9 @@
 # Tutorial: Explain anything with KVASIR
 
+<!-- languages -->
+**English** · [Español](explain-anything.es.md) · [Français](explain-anything.fr.md) · [Deutsch](explain-anything.de.md) · [Русский](explain-anything.ru.md) · [Українська](explain-anything.uk.md) · [Polski](explain-anything.pl.md) · [Português (Brasil)](explain-anything.pt.md) · [Bahasa Indonesia](explain-anything.id.md) · [Filipino](explain-anything.tl.md) · [Tiếng Việt](explain-anything.vi.md) · [简体中文](explain-anything.zh.md) · [हिन्दी](explain-anything.hi.md) · [עברית](explain-anything.he.md) · [العربية](explain-anything.ar.md)
+<!-- /languages -->
+
 KVASIR started as a rack device that explains failed runs. It now
 reaches four places — the rack, the editor, API Studio, and DB Studio —
 and every face follows the same three laws: **you see exactly what

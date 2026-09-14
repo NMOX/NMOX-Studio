@@ -1,5 +1,9 @@
 # Tutorial: Wizards & Kits
 
+<!-- languages -->
+**English** · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
+<!-- /languages -->
+
 ![The Standards Kit wizard — robots.txt, sitemap, web manifest, RFC 9116 security.txt, and humans.txt generated from your answers](../images/tabs/wizards-and-kits.png)
 
 NMOX Studio ships several one-shot generators that add production-grade

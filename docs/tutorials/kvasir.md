@@ -1,5 +1,9 @@
 # Tutorial: KVASIR — the AI error explainer
 
+<!-- languages -->
+**English** · [Español](kvasir.es.md) · [Français](kvasir.fr.md) · [Deutsch](kvasir.de.md) · [Русский](kvasir.ru.md) · [Українська](kvasir.uk.md) · [Polski](kvasir.pl.md) · [Português (Brasil)](kvasir.pt.md) · [Bahasa Indonesia](kvasir.id.md) · [Filipino](kvasir.tl.md) · [Tiếng Việt](kvasir.vi.md) · [简体中文](kvasir.zh.md) · [हिन्दी](kvasir.hi.md) · [עברית](kvasir.he.md) · [العربية](kvasir.ar.md)
+<!-- /languages -->
+
 KVASIR is a rack device that reads your last failed run and asks your
 AI — Claude, ChatGPT or Gemini — what went wrong. It's AI assistance through the rack's
 metaphor: one button, a clear consent gate, and an honest LCD — no

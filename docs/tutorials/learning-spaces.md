@@ -1,5 +1,9 @@
 # Tutorial: Learning Spaces
 
+<!-- languages -->
+**English** · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
+<!-- /languages -->
+
 ![The New Learning Space picker — search across the built-in tutorials, with the availability probe telling you up front whether this machine has the space's tool](../images/tabs/learning-spaces.png)
 
 A Learning Space is a self-contained sandbox for learning a language,

@@ -1,5 +1,9 @@
 # Tutorial: The Task Board and sprints
 
+<!-- languages -->
+**English** · [Español](task-board.es.md) · [Français](task-board.fr.md) · [Deutsch](task-board.de.md) · [Русский](task-board.ru.md) · [Українська](task-board.uk.md) · [Polski](task-board.pl.md) · [Português (Brasil)](task-board.pt.md) · [Bahasa Indonesia](task-board.id.md) · [Filipino](task-board.tl.md) · [Tiếng Việt](task-board.vi.md) · [简体中文](task-board.zh.md) · [हिन्दी](task-board.hi.md) · [עברית](task-board.he.md) · [العربية](task-board.ar.md)
+<!-- /languages -->
+
 The Task Board is a per-project kanban that lives in one file —
 `.nmoxtasks.json` beside your code — and everything else the board
 does is derived from that file: a dashboard, a time clock, a daily

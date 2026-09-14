@@ -1,5 +1,9 @@
 # NMOX Studio Tutorials
 
+<!-- languages -->
+**English** · [Español](README.es.md) · [Français](README.fr.md) · [Deutsch](README.de.md) · [Русский](README.ru.md) · [Українська](README.uk.md) · [Polski](README.pl.md) · [Português (Brasil)](README.pt.md) · [Bahasa Indonesia](README.id.md) · [Filipino](README.tl.md) · [Tiếng Việt](README.vi.md) · [简体中文](README.zh.md) · [हिन्दी](README.hi.md) · [עברית](README.he.md) · [العربية](README.ar.md)
+<!-- /languages -->
+
 Short, do-it-yourself walkthroughs for the systems that make NMOX Studio
 different from a generic IDE. Each one is a single sitting — open the
 window, follow the steps, and you've used the feature for real.

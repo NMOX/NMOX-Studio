@@ -1,5 +1,9 @@
 # Tutorial: The Task Rack
 
+<!-- languages -->
+**English** · [Español](the-task-rack.es.md) · [Français](the-task-rack.fr.md) · [Deutsch](the-task-rack.de.md) · [Русский](the-task-rack.ru.md) · [Українська](the-task-rack.uk.md) · [Polski](the-task-rack.pl.md) · [Português (Brasil)](the-task-rack.pt.md) · [Bahasa Indonesia](the-task-rack.id.md) · [Filipino](the-task-rack.tl.md) · [Tiếng Việt](the-task-rack.vi.md) · [简体中文](the-task-rack.zh.md) · [हिन्दी](the-task-rack.hi.md) · [עברית](the-task-rack.he.md) · [العربية](the-task-rack.ar.md)
+<!-- /languages -->
+
 The Task Rack is NMOX Studio's signature idea: your build/test/serve
 tooling laid out as a rack of hardware devices you wire together with
 patch cables. A device runs a real command; a cable carries a real

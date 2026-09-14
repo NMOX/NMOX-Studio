@@ -1,5 +1,9 @@
 # Tutorial: The Workbench
 
+<!-- languages -->
+**English** · [Español](workbench.es.md) · [Français](workbench.fr.md) · [Deutsch](workbench.de.md) · [Русский](workbench.ru.md) · [Українська](workbench.uk.md) · [Polski](workbench.pl.md) · [Português (Brasil)](workbench.pt.md) · [Bahasa Indonesia](workbench.id.md) · [Filipino](workbench.tl.md) · [Tiếng Việt](workbench.vi.md) · [简体中文](workbench.zh.md) · [हिन्दी](workbench.hi.md) · [עברית](workbench.he.md) · [العربية](workbench.ar.md)
+<!-- /languages -->
+
 The Workbench is NMOX Studio's home base — a launchpad that shows your
 current project, open and recent files, known projects, and the tooling
 you have installed, all in one place. It's where you orient before diving

@@ -1,5 +1,9 @@
 # Tutorial: The Docker panel
 
+<!-- languages -->
+**English** · [Español](docker-panel.es.md) · [Français](docker-panel.fr.md) · [Deutsch](docker-panel.de.md) · [Русский](docker-panel.ru.md) · [Українська](docker-panel.uk.md) · [Polski](docker-panel.pl.md) · [Português (Brasil)](docker-panel.pt.md) · [Bahasa Indonesia](docker-panel.id.md) · [Filipino](docker-panel.tl.md) · [Tiếng Việt](docker-panel.vi.md) · [简体中文](docker-panel.zh.md) · [हिन्दी](docker-panel.hi.md) · [עברית](docker-panel.he.md) · [العربية](docker-panel.ar.md)
+<!-- /languages -->
+
 The Docker panel is a control surface for your local Docker engine —
 containers, images, volumes, networks — plus a **Dockerize** tab that
 generates a production Dockerfile for your project. Its rack counterpart

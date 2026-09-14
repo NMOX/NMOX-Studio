@@ -1,5 +1,9 @@
 # Tutorial: Migrating from Postman (and Insomnia, and the browser)
 
+<!-- languages -->
+**English** · [Español](migrating-from-postman.es.md) · [Français](migrating-from-postman.fr.md) · [Deutsch](migrating-from-postman.de.md) · [Русский](migrating-from-postman.ru.md) · [Українська](migrating-from-postman.uk.md) · [Polski](migrating-from-postman.pl.md) · [Português (Brasil)](migrating-from-postman.pt.md) · [Bahasa Indonesia](migrating-from-postman.id.md) · [Filipino](migrating-from-postman.tl.md) · [Tiếng Việt](migrating-from-postman.vi.md) · [简体中文](migrating-from-postman.zh.md) · [हिन्दी](migrating-from-postman.hi.md) · [עברית](migrating-from-postman.he.md) · [العربية](migrating-from-postman.ar.md)
+<!-- /languages -->
+
 API Studio reads the files you already have: a Postman collection or
 environment, an Insomnia v4 export (workspace structure and
 `{{ _.templates }}` translated), a devtools HAR capture, a curl

@@ -1,5 +1,9 @@
 # Tutorial: DB Studio
 
+<!-- languages -->
+**English** · [Español](db-studio.es.md) · [Français](db-studio.fr.md) · [Deutsch](db-studio.de.md) · [Русский](db-studio.ru.md) · [Українська](db-studio.uk.md) · [Polski](db-studio.pl.md) · [Português (Brasil)](db-studio.pt.md) · [Bahasa Indonesia](db-studio.id.md) · [Filipino](db-studio.tl.md) · [Tiếng Việt](db-studio.vi.md) · [简体中文](db-studio.zh.md) · [हिन्दी](db-studio.hi.md) · [עברית](db-studio.he.md) · [العربية](db-studio.ar.md)
+<!-- /languages -->
+
 DB Studio is a database suite for SQLite, PostgreSQL, MySQL/MariaDB,
 MongoDB, and CouchDB — bundled drivers, a kind-aware console, and result
 grids you can edit in place. This tutorial uses SQLite because it needs

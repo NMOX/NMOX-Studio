@@ -1,5 +1,9 @@
 # Tutorial: Project Studio
 
+<!-- languages -->
+**English** · [Español](project-studio.es.md) · [Français](project-studio.fr.md) · [Deutsch](project-studio.de.md) · [Русский](project-studio.ru.md) · [Українська](project-studio.uk.md) · [Polski](project-studio.pl.md) · [Português (Brasil)](project-studio.pt.md) · [Bahasa Indonesia](project-studio.id.md) · [Filipino](project-studio.tl.md) · [Tiếng Việt](project-studio.vi.md) · [简体中文](project-studio.zh.md) · [हिन्दी](project-studio.hi.md) · [עברית](project-studio.he.md) · [العربية](project-studio.ar.md)
+<!-- /languages -->
+
 Project Studio is where projects are born and managed: templates, a
 platform-native file tree, a package.json editor, and rack presets — plus
 the IDE-native **Run / Build / Test / Clean** that work without you ever
