@@ -62,6 +62,43 @@ reading a field. Four mutants were each killed by name: the accent edge pinned
 left, one `WEST` restored, the kit's `dir` line removed, and a bar that always
 fills from x = 0.
 
+**The walk of the Hebrew build found four more defects.** Twelve windows were
+photographed in Hebrew and the pictures read by hand:
+
+- **A chord broke the name beside it.** The Welcome read `API ⌥⌘8–אולפן ה`,
+  because a Latin name and the chord after it form one left-to-right run. An RLM
+  after the name keeps the two apart.
+- **A leading dot moved to the end.** The Standards Kit's `.well-known/security.txt`
+  lost its dot to the far end of the line. A neutral mark that opens a
+  right-to-left label takes the label's direction, so an LRM now goes before it.
+  `NativeTypographyGateTest` carries both rules for every right-to-left language.
+- **Machine text was mirrored.** The Agent Port's `.mcp.json` block had its braces
+  on the right. JSON, SQL, a URL and a driver's error message run left to right in
+  every language. `TextDirection.KEEP_LTR` marks them, and the painted-surface pass
+  puts them back after the sweep. The marker is on the Agent Port configuration,
+  DB Studio's console, history and error text, the Apply preview, and API Studio's
+  URL, body, response, headers and variables.
+- **Picker rows were cut off.** The learning-space picker cut every name and pitch
+  at the left edge. The list had grown to its widest row, and a right-aligned row
+  loses its end to that overshoot. The list now follows its viewport's width.
+
+**The clean verify found that Hebrew had never been gated.** The targeted gate runs
+before it used `surefire:test`, which loads the other modules from `~/.m2`, so they
+had read a `UiLocale` with no Hebrew in it. Every gate that derives its languages
+therefore skipped the language entirely. Checked for real, Hebrew failed seven:
+
+- 18 singular values that wrote "one item" and dropped `{0}`
+- three invented mnemonics, plus two menu-letter collisions
+- a translated `Output`, the platform window that stays English
+- a shelf gloss without its "noun — what it does" shape
+- no Hebrew case in the system-locale reach test
+- 25 Latin words that other languages translate
+
+Each was fixed or recorded with a reason. The Docker panel's column headings are
+`docker ps`'s own, as the Russian and Chinese panels already record. Hetzner's HZ
+family stays whole. `RPC URL` and DigitalOcean's product names are blessed where
+Hebrew's translation moved the evidence count for another language.
+
 ## [2.150.1] - 2026-09-14
 
 **An English sentence shipped with a broken dash, in a failure v2.102.1 had called

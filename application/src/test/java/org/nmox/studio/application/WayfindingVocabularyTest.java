@@ -324,7 +324,8 @@ class WayfindingVocabularyTest {
                     continue;
                 }
                 // the Welcome's links carry the chord after two spaces
-                String head = label.split(" {2}")[0].trim();
+                // and a right-to-left label an invisible RLM before it (v2.151.0)
+                String head = label.split(" {2}")[0].replaceAll("[\u200e\u200f]", "").trim();
                 if (!head.equals(window.trim())) {
                     problems.add(loc + " " + pair.getKey() + ": \"" + head
                             + "\" names the window called \"" + window.trim() + "\"");

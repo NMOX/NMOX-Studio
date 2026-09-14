@@ -174,6 +174,10 @@ class BundleHeadGateTest {
                 String window = title.values().iterator().next();
                 // the link carries the window's name plus its chord, two spaces on
                 String named = link.contains("  ") ? link.substring(0, link.indexOf("  ")) : link;
+                // a right-to-left link carries an RLM after a Latin name so the
+                // chord keeps its place (v2.151.0); the mark is invisible
+                // formatting, not part of the name
+                named = named.replaceAll("[\u200e\u200f]", "");
                 if (!named.equals(window)) {
                     offenders.add(locale + ": Welcome says \"" + named + "\" but the window is called \""
                             + window + "\" (" + pair.getKey() + " vs " + pair.getValue() + ")");
