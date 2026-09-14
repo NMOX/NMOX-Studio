@@ -151,6 +151,56 @@ class OwnScriptGateTest {
                 + "@supports family, shown in a completion popup beside the literal "
                 + "@ the user is typing. French, Indonesian and Filipino kept it for "
                 + "the same reason: it names a construct in the language on screen.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colScope",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colActive",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colSize",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colReclaimable",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colCreated",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colCount",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colCategory",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colName",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_colReference",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_reclaim",
+                "these are the column headings `docker ps` and `docker system df` print, shown in a panel whose rows are that command\u2019s own output; the Hebrew panel keeps the header and the row in one vocabulary, as the Russian and Chinese panels do, which is what a reader matching the panel against their terminal needs.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_tabVolumes",
+                "Docker\u2019s own noun: docs/i18n/conventions.md keeps `volume` Latin in Hebrew, as `קונטיינר` and `אימג׳` are the transliterated pair it sits beside, so the tab and the table that list `docker volume ls` read the word the verbs under them (`ניקוי volumes`, `הסרת volume`) and the terminal use.");
+        STAYS_LATIN.put("he DockerPanelTopComponent_volumesTable",
+                "Docker\u2019s own noun: docs/i18n/conventions.md keeps `volume` Latin in Hebrew, as `קונטיינר` and `אימג׳` are the transliterated pair it sits beside, so the tab and the table that list `docker volume ls` read the word the verbs under them (`ניקוי volumes`, `הסרת volume`) and the terminal use.");
+        STAYS_LATIN.put("he NodeKind_hzNetwork",
+                "the same family decision as the Russian and Ukrainian palettes: the Hebrew palette keeps the whole HZ family (HZ Server, HZ Volume, HZ Firewall, HZ Floating IP, HZ Load Balancer) as Hetzner\u2019s product names, and one member translated would split a palette the v2.132.0 family rule keeps whole.");
+        STAYS_LATIN.put("ru NodeKind_reservedIp",
+                "a DigitalOcean product name, kept whole in this palette beside Droplet and App Platform; Hebrew translating the generic half moved the evidence to eight of thirteen (v2.151.0), which is the count moving, not this reader\u2019s palette changing.");
+        STAYS_LATIN.put("ru NodeKind_spaces",
+                "a DigitalOcean product name, kept whole in this palette beside Droplet and App Platform; Hebrew translating the generic half moved the evidence to eight of thirteen (v2.151.0), which is the count moving, not this reader\u2019s palette changing.");
+        STAYS_LATIN.put("uk NodeKind_reservedIp",
+                "a DigitalOcean product name, kept whole in this palette beside Droplet and App Platform; Hebrew translating the generic half moved the evidence to eight of thirteen (v2.151.0), which is the count moving, not this reader\u2019s palette changing.");
+        STAYS_LATIN.put("uk NodeKind_spaces",
+                "a DigitalOcean product name, kept whole in this palette beside Droplet and App Platform; Hebrew translating the generic half moved the evidence to eight of thirteen (v2.151.0), which is the count moving, not this reader\u2019s palette changing.");
+        STAYS_LATIN.put("ru NetworkDialog_rowUrl",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("ru NetworkDialog_urlA11y",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("uk NetworkDialog_rowUrl",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("uk NetworkDialog_urlA11y",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("zh NetworkDialog_rowUrl",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("zh NetworkDialog_urlA11y",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("hi NetworkDialog_rowUrl",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
+        STAYS_LATIN.put("hi NetworkDialog_urlA11y",
+                "the endpoint term every chain\u2019s documentation and every wallet\u2019s network settings print, in a field that takes exactly that string; Hebrew writing `כתובת RPC` moved the evidence to eight of thirteen (v2.151.0) without making the Latin term any less what this reader pastes from their chain\u2019s docs.");
     }
 
     @Test
