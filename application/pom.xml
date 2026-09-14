@@ -276,6 +276,7 @@
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
+                                <exclude>**/DocsMenuDoorsTest.java</exclude>
                                 <exclude>**/NarrowPaneHintBudgetTest.java</exclude>
                                 <exclude>**/DeviceShelfSpeaksTest.java</exclude>
                                 <exclude>**/LearningCatalogSpeaksTest.java</exclude>
@@ -321,6 +322,7 @@
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
+                                <include>**/DocsMenuDoorsTest.java</include>
                                 <include>**/NarrowPaneHintBudgetTest.java</include>
                                 <include>**/DeviceShelfSpeaksTest.java</include>
                                 <include>**/LearningCatalogSpeaksTest.java</include>
