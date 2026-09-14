@@ -250,6 +250,9 @@ class NativeTypographyGateTest {
     private static final Pattern RTL_CHORD_AFTER_LATIN = Pattern.compile("[A-Za-z0-9)\\]]\\s+[⌘⌥⇧⌃]");
     /** A value that opens with a neutral mark glued to a Latin run: `.well-known`, `/api`. */
     private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
+    /** A dotfile name after a right-to-left word, no LRM before its dot: `في ملف .env`. */
+    private static final Pattern RTL_DOTFILE_AFTER_RTL_WORD =
+            Pattern.compile("[\\u0590-\\u05ff\\u0600-\\u06ff][\\s«\"(]+\\.[A-Za-z]");
     /** A keyboard chord glyph anywhere in the value. */
     private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
 
@@ -294,6 +297,12 @@ class NativeTypographyGateTest {
             }
             if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
                 wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
+            }
+            // The same dot in mid-sentence: after a right-to-left word the dot
+            // of `.env` takes the sentence's direction and is drawn after the
+            // name (the Arabic walk). An LRM before the dot keeps it with `env`.
+            if (RTL_DOTFILE_AFTER_RTL_WORD.matcher(t).find()) {
+                wrong.add(v.name() + "   (LRM U+200E before the dotfile's dot)");
             }
             // The second walk found no mark at all could move `IRC  ⌥⌘3`: Swing
             // runs bidi only over text it calls complex — a right-to-left

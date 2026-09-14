@@ -3076,13 +3076,16 @@ public final class Web3StudioTopComponent extends TopComponent {
                 setText("<html><b>" + branch.label + "</b></html>");
             } else if (userObject instanceof Network network) {
                 boolean active = network.equals(selectedNetwork());
-                setText("<html>" + (active ? "<b>" : "") + esc(network.name())
+                // one left-to-right embedding (LRE…PDF) around name and badge:
+                // in a right-to-left tree the badge's closing parenthesis and
+                // chain id otherwise swapped places, `(anvil) (31337السلسلة )`
+                setText("<html>‪" + (active ? "<b>" : "") + esc(network.name())
                         + (active ? "</b>" : "")
                         + " <font color='#8a8a8a'>("
                         + Bundle.Web3StudioTopComponent_chainBadge(String.valueOf(network.chainId()))
                         + (network.secretUrl()
                                 ? " " + Bundle.Web3StudioTopComponent_keyringBadge() : "")
-                        + ")</font></html>");
+                        + ")</font>‬</html>");
             } else if (userObject instanceof ContractArtifact artifact) {
                 ContractSizeCheck.Verdict verdict = ContractSizeCheck.check(artifact);
                 String dot = verdict.over() ? "#E24B4A"
@@ -3119,10 +3122,11 @@ public final class Web3StudioTopComponent extends TopComponent {
                 int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             if (value instanceof Network network) {
-                setText("<html>" + esc(network.name())
+                // left-to-right embedding, as in the tree renderer above
+                setText("<html>‪" + esc(network.name())
                         + " <font color='#8a8a8a'>("
                         + Bundle.Web3StudioTopComponent_chainBadge(String.valueOf(network.chainId()))
-                        + ")</font></html>");
+                        + ")</font>‬</html>");
             }
             return this;
         }
