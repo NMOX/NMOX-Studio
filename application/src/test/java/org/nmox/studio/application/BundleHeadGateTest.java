@@ -180,7 +180,7 @@ class BundleHeadGateTest {
                 // a right-to-left link carries an RLM after a Latin name so the
                 // chord keeps its place (v2.151.0); the mark is invisible
                 // formatting, not part of the name
-                named = named.replaceAll("[\u200e\u200f]", "");
+                named = named.replaceAll("[\u200e\u200f\u202a-\u202e]", "");
                 if (!named.equals(window)) {
                     offenders.add(locale + ": Welcome says \"" + named + "\" but the window is called \""
                             + window + "\" (" + pair.getKey() + " vs " + pair.getValue() + ")");

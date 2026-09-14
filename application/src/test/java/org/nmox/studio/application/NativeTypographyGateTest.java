@@ -228,16 +228,21 @@ class NativeTypographyGateTest {
     /** A keyboard chord glyph anywhere in the value. */
     private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
 
-    /** Whether the bidi algorithm will read this value as a left-to-right paragraph. */
-    static boolean firstStrongIsLatin(String text) {
+    /**
+     * Whether Swing will lay this text out through bidi at all. It does only
+     * for text its font utilities call complex; measured on JDK 25, a Hebrew
+     * letter or an RLE..PDF pair qualifies and an RLM or RLI..PDI does not.
+     */
+    static boolean swingLaysOutBidi(String text) {
         for (int i = 0; i < text.length(); i++) {
-            byte d = Character.getDirectionality(text.charAt(i));
-            if (d == Character.DIRECTIONALITY_LEFT_TO_RIGHT) {
+            char c = text.charAt(i);
+            if (c >= '\u202a' && c <= '\u202e') {
                 return true;
             }
-            if (d == Character.DIRECTIONALITY_RIGHT_TO_LEFT
-                    || d == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) {
-                return false;
+            byte d = Character.getDirectionality(c);
+            if (c != '\u200f' && (d == Character.DIRECTIONALITY_RIGHT_TO_LEFT
+                    || d == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC)) {
+                return true;
             }
         }
         return false;
@@ -265,12 +270,13 @@ class NativeTypographyGateTest {
             if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
                 wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
             }
-            // The second walk found the RLM after the name was not enough for
-            // `IRC  ⌥⌘3`: Swing takes a label's paragraph direction from its
-            // first strong character, so a value that OPENS Latin is laid out
-            // left to right whole and its chord trails on the wrong side.
-            if (CHORD.matcher(v.text()).find() && firstStrongIsLatin(v.text())) {
-                wrong.add(v.name() + "   (RLM U+200F at the start: the first strong character is Latin)");
+            // The second walk found no mark at all could move `IRC  ⌥⌘3`: Swing
+            // runs bidi only over text it calls complex — a right-to-left
+            // letter or an embedding mark (U+202A..U+202E) — and RLM/LRM are
+            // neither, so a chord value with no Hebrew or Arabic letter is
+            // drawn in logical order whatever marks it carries.
+            if (CHORD.matcher(v.text()).find() && !swingLaysOutBidi(v.text())) {
+                wrong.add(v.name() + "   (wrap in RLE U+202B … PDF U+202C: no right-to-left letter, so Swing draws it without bidi)");
             }
         }
         assertThat(wrong).as("a right-to-left value whose Latin run the bidi algorithm will reorder").isEmpty();

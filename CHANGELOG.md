@@ -96,9 +96,10 @@ therefore skipped the language entirely. Checked for real, Hebrew failed seven:
 - 25 Latin words that other languages translate
 
 The fixes then tripped three more. The IRC link needed the same direction mark
-before its chord, and the second set of photographs showed it needed one at its start
-too: Swing lays a label out left to right when its first letter is Latin, so the
-chord still sat on the wrong side. A fourth run-order rule now holds that. Two window-name gates compared the Welcome's link with the window's
+before its chord, and the second set of photographs showed that no mark could move it:
+Swing runs bidi only over text containing a right-to-left letter or an embedding mark,
+and RLM is neither, so a shortcut label with no Hebrew letter was drawn in logical
+order. The link is wrapped in RLE…PDF, and a fourth run-order rule holds that. Two window-name gates compared the Welcome's link with the window's
 title including that invisible mark, and one of them read bundles as Latin-1, where the
 mark is three visible characters; both now compare the name alone, read as UTF-8.
 
