@@ -90,9 +90,15 @@ therefore skipped the language entirely. Checked for real, Hebrew failed seven:
 - 18 singular values that wrote "one item" and dropped `{0}`
 - three invented mnemonics, plus two menu-letter collisions
 - a translated `Output`, the platform window that stays English
-- a shelf gloss without its "noun — what it does" shape
+- five example-device glosses without the "noun — what it does" shape, which also said
+  something other than every other language
 - no Hebrew case in the system-locale reach test
 - 25 Latin words that other languages translate
+
+The fixes then tripped three more. The IRC link needed the same direction mark
+before its chord. Two window-name gates compared the Welcome's link with the window's
+title including that invisible mark, and one of them read bundles as Latin-1, where the
+mark is three visible characters; both now compare the name alone, read as UTF-8.
 
 Each was fixed or recorded with a reason. The Docker panel's column headings are
 `docker ps`'s own, as the Russian and Chinese panels already record. Hetzner's HZ
