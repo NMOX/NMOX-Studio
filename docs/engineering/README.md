@@ -15,7 +15,7 @@ NMOX Studio actually works.
   through the codebase: the five NetBeans RCP ideas everything rides on,
   four traced flows, and where each house law came from. **Read this
   first when deciding how something works.**
-- **[l10n-completion.md](./l10n-completion.md)** — what fourteen-language
+- **[l10n-completion.md](./l10n-completion.md)** — what fifteen-language
   support covers, and every ceiling with the measurement behind it. The
   record that closed the i18n/l10n arc at v2.147.0.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open

@@ -1,7 +1,7 @@
 # NMOX Studio — User Guide
 
 <!-- languages -->
-**English** · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md)
+**English** · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md) · [العربية](user-guide.ar.md)
 <!-- /languages -->
 
 > Prefer pictures? **[The visual tour](tour.md)** shows every major feature on one page, with real screenshots (the same story in the product's own styling is the website, <https://nmox.github.io/NMOX-Studio/>). Prefer doing? **[The Kitchen Sink](kitchen-sink.md)** exercises every surface in one hands-on sitting. Prefer a story? **[A Day at Meridian](a-day-at-meridian.md)** builds one real thing through every area, screenshots from a live session.
@@ -1300,7 +1300,7 @@ install — on a free localhost port and opens it in the in-app Browser.
 The ⇄ chip names the URL; any browser on your machine can visit it.
 It is the dogfood made visible: the site's `a11y.css` and `i18n.js`
 are the A11y and I18n Kits' own output (build-gated byte-for-byte),
-and the fourteen language buttons — one per language the IDE itself
+and the fifteen language buttons — one per language the IDE itself
 speaks — ride the kit's `setLocale`.
 The same site is deployed publicly at
 <https://nmox.github.io/NMOX-Studio/> — identical bytes, different host.
@@ -1551,10 +1551,10 @@ keymaps never costs you the studio chords.
   Node's own type stripping (`--experimental-strip-types`, Node 22.6+; the
   default from 23.6 and 22.18 LTS). An older Node's refusal is translated
   into the sentence that names the floor.
-- **Your language** — NMOX Studio speaks fourteen languages: English,
+- **Your language** — NMOX Studio speaks fifteen languages: English,
   Español, Français, Deutsch, Русский, Українська, Polski, Português
-  (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी and
-  עברית (which mirrors the whole window, right to left). Pick
+  (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית and
+  العربية (both mirror the whole window, right to left). Pick
   one in **Options ▸ General ▸ Language** (each listed in its own name, so
   you can always find yours) — though you may never need to, because a
   fresh install already speaks your system's language, and does so from a

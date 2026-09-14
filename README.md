@@ -235,10 +235,10 @@ closes the deploy gate exactly like a slow one.
 
 ### ⚡ Built to live in all day
 **In your language.** The IDE's own chrome — menus, dialogs, tooltips,
-status lines, Welcome, Options — speaks fourteen languages: English, Español, Français, Deutsch, Русский, Українська, Polski,
+status lines, Welcome, Options — speaks fifteen languages: English, Español, Français, Deutsch, Русский, Українська, Polski,
 Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文,
-हिन्दी and עברית — and Hebrew lays the whole window out right to left, not
-just the words inside it.
+हिन्दी, עברית and العربية — and Hebrew and Arabic lay the whole window out right to
+left, not just the words inside it.
 Pick yours in Options ▸ General ▸ Language and the open windows rename
 themselves on the spot — no restart, and the choice survives one anyway.
 Times follow the language too, so a Hindi reader gets a 12-hour clock while
@@ -250,8 +250,9 @@ them — and the Welcome's guide link lands in your language:
 [Português (Brasil)](docs/user-guide.pt.md) ·
 [Bahasa Indonesia](docs/user-guide.id.md) · [Filipino](docs/user-guide.tl.md) ·
 [Tiếng Việt](docs/user-guide.vi.md) · [简体中文](docs/user-guide.zh.md) ·
-[हिन्दी](docs/user-guide.hi.md) · [עברית](docs/user-guide.he.md).
-The product's own website speaks all fourteen too — the page it serves on
+[हिन्दी](docs/user-guide.hi.md) · [עברית](docs/user-guide.he.md) ·
+[العربية](docs/user-guide.ar.md).
+The product's own website speaks all fifteen too — the page it serves on
 localhost and publishes to <https://nmox.github.io/NMOX-Studio/>, with a
 picker naming each language in its own words.
 Rack faceplates keep their panel vocabulary on purpose.
