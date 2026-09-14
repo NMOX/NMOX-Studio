@@ -1,5 +1,25 @@
 # The Plan
 
+*Currency addendum 2026-09-14, at v2.153.1 — the languages the arc closed
+with were not the last ones. v2.148.0 made the window run right to left
+before any right-to-left language shipped (Swing takes no direction from the
+locale, measured), v2.150.0 gave each translation its own language's
+conventions (`docs/i18n/conventions.md`), and Hebrew (v2.151.0) and Egyptian
+Arabic (v2.152.0) took the product to fifteen languages, Arabic with the
+Western digits a developer retypes. v2.153.0 translated the 21 tutorials into
+every language; the translators, briefed to take names only from the shipped
+bundles, found thirteen wrong English sentences, an English Standup report,
+and one word for two windows in three languages, and `DocsMenuDoorsTest` now
+holds every document to its own language's menu bar. v2.149.0 and v2.150.1 were
+the release tooling's second homes: the cask generator and a hand bundle the
+build double-encoded. v2.153.1 is a currency pass: CLAUDE.md carried its status
+history three times over and a passage cut mid-word since v2.106.0, and five
+ledger entries (4, 6, 24, 29, 33) read as open work that had been closed or
+decided. What is still open is the ledger's own list, now honest: the owner's
+calls are ledger 86 (official signing, v3.0), 96(b)/(c) (the Browser's home
+page, the Tools menu split), the Agent Port execution dossier (F4), and
+competitive-lens R4/R5.*
+
 *Currency addendum 2026-09-10, at v2.118.0 — the coherence pass (no new
 capability; one vocabulary, one door per idea) is the first dated section
 below, and it carries the walk method that works with no screen access:
@@ -3559,11 +3579,11 @@ left is either a settled won't-fix or a call that needs a product decision.
    repeated *idiom* not repeated *values* (#1); the Build/Test/Run switches map
    one enum to three unrelated verbs with nothing shared (#2); the
    RackIO/GraphIO/WorkspaceIO shape can't share a core helper across module
-   classloaders without ClassCastException (#3); templates hardcoded in
-   ProjectTemplates.java wait for the user-templates feature that would rewrite
-   them anyway (#4); JS/TS on a custom lexer vs. TextMate is a real editor
-   sprint with a regex-awareness cost (#5); `.sass` approximated by the SCSS
-   grammar needs upstream grammar-sourcing (#6); the rack shelf's ~0.3s of
+   classloaders without ClassCastException (#3); ~~templates hardcoded in
+   ProjectTemplates.java~~ (#4, CLOSED v1.293.0: user templates are drop-in
+   data, built-ins stay in code for their version ceilings); JS/TS on a custom lexer vs. TextMate is a real editor
+   sprint with a regex-awareness cost (#5); ~~`.sass` approximated by the SCSS
+   grammar~~ (#6, CLOSED v2.20.0: its own mime and grammar); the rack shelf's ~0.3s of
    boot is <5% of a boot the profiler says is dominated by module scanning
    (#7). These are "won't fix unless the premise changes," and the premises
    were re-read, not recalled.
@@ -3599,17 +3619,18 @@ left is either a settled won't-fix or a call that needs a product decision.
    160+ releases. Re-open only with BOTH a reported user pain and a
    layout-migration story; absent those, this is a decision, not debt.
 
-7. **i18n: ~450 hardcoded UI strings (ledger 24).** A reality note, not a
-   plan. The house style is deliberate English-only UI; making it localizable
-   is a dedicated @Messages-migration sprint. Do it only if a non-English
-   audience actually materializes.
+7. **~~i18n: ~450 hardcoded UI strings (ledger 24)~~ — CLOSED by the l10n
+   arc (v2.97.0–v2.153.0).** The audience materialized: fifteen languages,
+   two of them right to left, with the record in
+   `docs/engineering/l10n-completion.md`.
 
 8. **The Tailwind LSP waits on the platform client (ledger 45).** Built
    and live-tested in the v1.62.0 sprint: multi-server-per-mime works
    (bytecode-verified) and the server detects Tailwind v4 projects, but
    the platform's LanguageClientImpl throws on client/registerCapability
    and the server's init dies. Restore path recorded in the ledger;
-   re-test each platform bump.
+   re-test each platform bump. (Re-checked for RELEASE310 in v2.153.1: the
+   client still declares no `registerCapability`.)
 
 9. **The small, deliberately-bounded residue.** Contract Studio never signs
    (by design — no private keys, ever; tuple/struct ABI encode, eth_subscribe
@@ -3671,7 +3692,9 @@ docs + live verify), never as a checkbox:
   consult through the consent dialog, and a hands-free VERITAS FAIL →
   EXPLAIN cable consult delivering a correct diagnosis with zero faceplate
   interaction. The remaining AI surface (streaming, conversation) stays
-  deferred — each is a direction to be *chosen*, not a gap.
+  deferred — each is a direction to be *chosen*, not a gap. *(Since chosen:
+  conversations shipped in v1.147.0 and v1.148.0, and KVASIR speaks Claude,
+  ChatGPT and Gemini since v2.96.0. Streaming is still not built.)*
 
 That's the whole honest list. The old "six tabs is the discovery ceiling"
 guidance has since been tested by Block Studio (a seventh studio that

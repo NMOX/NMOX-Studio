@@ -1484,7 +1484,12 @@ left is per-module glue that must stay per-module. Re-confirmed against
 the module classloader boundary in v1.26.0. **Verdict: won't fix —
 architectural constraint, not laziness.**
 
-### 4. Hardcoded project templates (ProjectTemplates.java)
+### 4. ~~Hardcoded project templates (ProjectTemplates.java)~~ — CLOSED v1.293.0 (currency pass v2.153.1)
+The feature this entry waited for shipped: user templates are data, read from
+`~/.nmox/templates.d` (`UserTemplates`), and join the wizard beside the built-ins.
+The built-ins stay in code on purpose, because their pins carry gate-enforced
+version ceilings. The original entry:
+
 Templates live as Java string literals; data-driven templates (resources
 + substitution) would open the door to *user* templates. Big refactor,
 zero user-visible payoff until user templates are a roadmapped feature.
@@ -1498,13 +1503,22 @@ exists) unless carefully matched. Architectural change; needs its own
 sprint with fixture-based before/after highlighting comparisons across a
 JS/TS corpus. Not mechanical, not blind.
 
-### 6. .sass (indented dialect) shares the SCSS grammar
+### 6. ~~.sass (indented dialect) shares the SCSS grammar~~ — CLOSED v2.20.0 (currency pass v2.153.1)
+Indented Sass has its own mime, `text/x-sass`, with the canonical indented
+grammar; see the v2.20.0 CHANGELOG entry for what follows the dialect and what
+stays out. The original entry:
+
 Approximate highlighting for the indented dialect. The correct fix is a
 dedicated indented-sass TextMate grammar (a curated upstream fetch +
 scope-mapping pass), not a code change here. Demand has not justified
 the grammar-sourcing work.
 
 ### 7. Startup: rack UI construction (~200–400ms EDT during restore)
+*Numbers superseded (currency pass v2.153.1): the shelf holds 53 built-in devices
+now, and v1.38.0 measured the window at 1.4–2.7 s with zero processes spawned
+at boot, about 90% of it the module system scanning the cluster. The won't-fix
+verdict below still holds; its figures are from v1.26.0.*
+
 The palette builds all 39 device entries during window-system restore.
 **Measured in v1.26.0**: `scripts/boot-smoke-test.sh` reports a 7-second
 cold boot-to-exit on a fresh userdir — dominated by JVM warm-up and
@@ -1522,7 +1536,7 @@ services/actions, window system, FileSystems/DataObjects, threading/platform
 utilities, module wiring). Twelve cheap-and-clearly-right fixes shipped; what
 follows is what the review *deliberately did not fix*.
 
-### 29. The rack IS the context system — not OpenProjects/actionsGlobalContext
+### 29. The rack IS the context system — not OpenProjects/actionsGlobalContext — CLOSED v1.45.0, remainder DECIDED v1.192.0
 The platform models "the current project" as `OpenProjects` plus selection via
 `Utilities.actionsGlobalContext()`; NMOX models it as ONE globally aimed rack
 (`RackService.getRack().getProjectDir()`), read directly by every module.
@@ -1580,7 +1594,7 @@ tests) + `RackDiagnosticsWiringTest` (4 source-gates: HintsController
 pinned with no Annotation path, layer registration pinned, no-EDT pinned,
 headless factory + null-scope deactivation contract).
 
-### 33. All seven studios live in the `editor` mode
+### 33. All seven studios live in the `editor` mode — DECIDED v1.192.0: won't move (see plan.md)
 Documents opened later interleave with seven permanently-open tool tabs in one
 tab well; idiomatic RCP reserves `editor` for documents and docks tool windows
 in their own modes. A custom `studios` wsmode (plus a TopComponentGroup for
@@ -1759,7 +1773,11 @@ See "Closed by v1.51.0" below.
 ### 23. org.json rides in 8 module copies (~710 KB total) — CLOSED (v1.50.0)
 See "Closed by v1.50.0" below.
 
-### 24. i18n: ~450 user-visible strings are hardcoded
+### 24. ~~i18n: ~450 user-visible strings are hardcoded~~ — CLOSED by the l10n arc, v2.97.0–v2.153.0 (currency pass v2.153.1)
+The product speaks fifteen languages; `docs/engineering/l10n-completion.md` records
+every covered surface with its gate and every ceiling with its measurement.
+Ledger 85 opened the arc. The original entry:
+
 The house style is deliberate English-only UI (Bundle.properties exists
 only where the platform requires it). Recording the reality: NMOX
 Studio is not localizable today, and making it so is a dedicated
@@ -1773,7 +1791,11 @@ auto-reload, Docker→DB offers); v1.35.1 closed its three small IOUs
 (php -S serving registration, SelfWriteTracker→core, API Studio re-aim
 following). Still deferred, with reasons:
 - **A public plugin-facing event API** — the registry and pulse stay
-  module-internal until an external consumer exists.
+  module-internal until an external consumer exists. *(v2.153.1: the first
+  external consumer arrived as an agent, not a plugin. The Agent Port (MCP)
+  reads servings and runs since v2.54.0 and pushes their changes since v2.84.0,
+  read-only. A Java event API for Device SPI plugins still waits for a plugin
+  author who needs one.)*
 - **Docker offers beyond databases** (redis/rabbitmq/…) — DB engines
   only; other services have no studio to offer into yet.
 - **WebSocket/live push** — polling registries are honest and simple;
@@ -1815,13 +1837,18 @@ where the key still never enters the IDE. What IS deferred:
   simple; the shared HttpClient has no WS. Revisit if devnet watching
   ever feels laggy.
 - **Vyper / non-EVM chains (Solana, Move, ink!)** — grammar-only
-  support would mislead without a toolchain behind it.
+  support would mislead without a toolchain behind it. *(v2.153.1: the
+  non-EVM half shipped WITH toolchains — STELLAR and ANCHOR on the rack,
+  Cairo and Move verticals, and eleven chains in the Contract Kit, v1.130.0–
+  v1.153.0. Vyper is still absent.)*
 - **slither as a rack lane** — Doctor probes it and hints the install;
   running it well needs a Python-env story. TYPEGUARD's solhint lane
   covers day-to-day linting.
 - **Foundry project template** — `forge init` does it better (pulls
   forge-std, sets remappings); a wizard shelling out to it is a later
-  nicety.
+  nicety. *(v2.153.1: covered since v1.139.0 — File ▸ Add to Project ▸
+  Contract Kit scaffolds a Foundry project with its test and notes. A
+  wizard that runs `forge init` itself still does not exist.)*
 
 ## Open — deferred deliberately, with reasons (added v1.29.0)
 
@@ -1865,6 +1892,12 @@ capability registration (same waits-on-platform family as ledger 25/39).
 Re-test on each NetBeans platform bump: the working detection gate +
 tests lived at editor/lsp (v1.62.0 sprint branch history) and can be
 restored verbatim.
+
+**Re-checked for RELEASE310 (v2.153.1, 2026-09-14), the bump v2.35.0 made:**
+`javap -p` on `org.netbeans.modules.lsp.client.bindings.LanguageClientImpl` in
+`org-netbeans-modules-lsp-client-RELEASE310.jar` declares no `registerCapability`,
+so lsp4j's default method still throws. The deferral holds; check again on
+the next platform bump.
 
 ## Closed by v1.70.0 (the functional web)
 
