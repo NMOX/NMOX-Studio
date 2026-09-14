@@ -221,6 +221,37 @@ class NativeTypographyGateTest {
         assertThat(wrong).as("…(&X) — Chinese, Hindi, Hebrew and Arabic software writes (&X)…").isEmpty();
     }
 
+    /** A Latin word or digit, whitespace, then a keyboard chord — with no RLM between. */
+    private static final Pattern RTL_CHORD_AFTER_LATIN = Pattern.compile("[A-Za-z0-9)\\]]\\s+[⌘⌥⇧⌃]");
+    /** A value that opens with a neutral mark glued to a Latin run: `.well-known`, `/api`. */
+    private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
+
+    @Test
+    @DisplayName("right to left, a Latin run keeps its place beside a chord and its opening mark")
+    void rightToLeftRunsKeepTheirOrder() throws IOException {
+        // The first Hebrew walk read `API ⌥⌘8–אולפן ה` on the Welcome: a
+        // Latin name and the chord after it are one left-to-right run, so the
+        // chord landed inside the name. And `.well-known/security.txt` lost
+        // its dot to the far end of the line — a neutral mark opening a
+        // right-to-left label takes the label's direction. An RLM after the
+        // name and an LRM before the dot are the fixes; this is the law.
+        List<String> wrong = new ArrayList<>();
+        for (Value v : values()) {
+            if (!org.nmox.studio.core.util.TextDirection.isRightToLeft(
+                    java.util.Locale.forLanguageTag(v.lang()))) {
+                continue;
+            }
+            String t = v.masked();
+            if (RTL_CHORD_AFTER_LATIN.matcher(t).find()) {
+                wrong.add(v.name() + "   (RLM U+200F after the Latin run, before the chord)");
+            }
+            if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
+                wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
+            }
+        }
+        assertThat(wrong).as("a right-to-left value whose Latin run the bidi algorithm will reorder").isEmpty();
+    }
+
     @Test
     @DisplayName("one form of address per language")
     void oneRegisterPerLanguage() throws IOException {

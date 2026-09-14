@@ -91,6 +91,25 @@ public final class NewLearningSpaceAction implements ActionListener {
                 + "</small></font></body></html>";
     }
 
+    /**
+     * The picker's list: as wide as its viewport, never wider (v2.151.0).
+     *
+     * <p>A row's HTML width is derived from this list's width, and a plain
+     * {@code JList} is as wide as its widest row — a loop that settled a little
+     * past the viewport. Left to right the overshoot hid in the rows' blank
+     * ends; right to left the rows are aligned to the right, so the first Hebrew
+     * walk photographed every name and pitch cut off at the left edge behind a
+     * sideways scrollbar.
+     */
+    static <T> JList<T> pickerList(javax.swing.ListModel<T> model) {
+        return new JList<>(model) {
+            @Override
+            public boolean getScrollableTracksViewportWidth() {
+                return true;
+            }
+        };
+    }
+
     /** Scrollbar, selection border and cell padding the text does not get. */
     private static final int LIST_TEXT_INSET = 40;
 
@@ -123,7 +142,7 @@ public final class NewLearningSpaceAction implements ActionListener {
 
         DefaultListModel<LearningCatalog.Space> model = new DefaultListModel<>();
         all.forEach(model::addElement);
-        JList<LearningCatalog.Space> list = new JList<>(model);
+        JList<LearningCatalog.Space> list = pickerList(model);
         list.getAccessibleContext().setAccessibleName(Bundle.NewLearningSpaceAction_listName());
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setSelectedIndex(0);

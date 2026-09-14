@@ -31,7 +31,24 @@ public final class TextDirection {
     /** {@code -J-Dnmox.rtl=true|false} forces direction; absent, the locale decides. */
     public static final String FORCE = "nmox.rtl";
 
+    /**
+     * Client property naming a component whose TEXT runs left to right in every
+     * language: source code, JSON, SQL, a URL, a log line. The orientation
+     * sweep mirrors it and the painted-surface pass puts it back, so a Hebrew
+     * reader sees {@code {"url": …}} and not its reflection. The walk of the
+     * first Hebrew build found the Agent Port's {@code .mcp.json} block with
+     * its braces on the right.
+     */
+    public static final String KEEP_LTR = "nmox.direction.keepLeftToRight";
+
     private TextDirection() {
+    }
+
+    /** Mark {@code c} as left-to-right text in every language; returns it. */
+    public static <T extends javax.swing.JComponent> T keepLeftToRight(T c) {
+        c.putClientProperty(KEEP_LTR, Boolean.TRUE);
+        c.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+        return c;
     }
 
     /** Does the interface run right-to-left for this locale? */

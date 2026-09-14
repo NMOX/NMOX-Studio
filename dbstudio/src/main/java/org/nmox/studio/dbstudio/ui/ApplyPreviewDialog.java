@@ -51,7 +51,8 @@ final class ApplyPreviewDialog {
         summary.setFont(summary.getFont().deriveFont(Font.BOLD));
         panel.add(summary, BorderLayout.NORTH);
 
-        JTextArea sql = new JTextArea(String.join("\n", statements));
+        JTextArea sql = org.nmox.studio.core.util.TextDirection.keepLeftToRight(
+                new JTextArea(String.join("\n", statements)));
         sql.getAccessibleContext().setAccessibleName(Bundle.ApplyPreviewDialog_sqlA11y());
         sql.setEditable(false);
         sql.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));

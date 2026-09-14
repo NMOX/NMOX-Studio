@@ -89,7 +89,10 @@ final class PaintedSurfaces {
             }
         }
         String name = root.getClass().getSimpleName();
-        if (GEOMETRY.contains(name) || OWED.contains(name)) {
+        boolean code = root instanceof javax.swing.JComponent jc
+                && Boolean.TRUE.equals(jc.getClientProperty(
+                        org.nmox.studio.core.util.TextDirection.KEEP_LTR));
+        if (code || GEOMETRY.contains(name) || OWED.contains(name)) {
             root.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         }
     }

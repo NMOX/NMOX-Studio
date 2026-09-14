@@ -74,6 +74,25 @@ class PaintedSurfacesTest {
     }
 
     @Test
+    @DisplayName("text marked as code keeps left to right inside a mirrored window")
+    void codeKeepsItsDirection() {
+        JPanel root = new JPanel();
+        javax.swing.JTextArea json = org.nmox.studio.core.util.TextDirection.keepLeftToRight(
+                new javax.swing.JTextArea("{\"mcpServers\": {}}"));
+        JLabel prose = new JLabel("העתקת התצורה");
+        root.add(json);
+        root.add(prose);
+
+        root.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        PaintedSurfaces.keepAuthoredDirection(root);
+
+        assertThat(json.getComponentOrientation().isLeftToRight())
+                .as("JSON with its braces on the right is not a translation").isTrue();
+        assertThat(prose.getComponentOrientation().isLeftToRight())
+                .as("the prose beside it still mirrors").isFalse();
+    }
+
+    @Test
     @DisplayName("a painted surface nested deep is still found")
     void theWalkIsRecursive() {
         JPanel root = new JPanel();
