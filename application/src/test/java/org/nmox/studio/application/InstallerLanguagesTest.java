@@ -43,7 +43,7 @@ class InstallerLanguagesTest {
 
     /** Every language Inno Setup 6 ships an official message file for. */
     private static final Set<String> INNO_SHIPS = Set.of(
-            "Default", "Armenian", "BrazilianPortuguese", "Bulgarian", "Catalan", "Corsican",
+            "Default", "Arabic", "Armenian", "BrazilianPortuguese", "Bulgarian", "Catalan", "Corsican",
             "Czech", "Danish", "Dutch", "Finnish", "French", "German", "Hebrew", "Hungarian",
             "Icelandic", "Italian", "Japanese", "Norwegian", "Polish", "Portuguese", "Russian",
             "Slovak", "Slovenian", "Spanish", "Turkish", "Ukrainian");

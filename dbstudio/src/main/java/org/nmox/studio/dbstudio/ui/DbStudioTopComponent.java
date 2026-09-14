@@ -2567,7 +2567,11 @@ public final class DbStudioTopComponent extends TopComponent {
                 if (firstLine.length() > 90) {
                     firstLine = firstLine.substring(0, 87) + "…";
                 }
-                setText(org.nmox.studio.core.util.Clocks.display(entry.timestamp())
+                // LRM first: the row is SQL and reads left to right, but an
+                // Arabic clock ends in a letter (`2:14 م`), and a label takes its
+                // paragraph direction from its first strong character, so the
+                // statement's semicolon moved to the far left (the Arabic walk)
+                setText("‎" + org.nmox.studio.core.util.Clocks.display(entry.timestamp())
                         + "  [" + entry.engine() + "]  " + firstLine);
                 setFont(MONO);
             }

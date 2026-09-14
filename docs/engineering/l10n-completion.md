@@ -4,10 +4,11 @@
 record, not a plan. Every claim below was measured, and the measurement is
 named beside it so a reader can disagree with evidence rather than opinion.*
 
-NMOX Studio ships in **fourteen languages**: English, Español, Français,
+NMOX Studio ships in **fifteen languages**: English, Español, Français,
 Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia,
-Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית. Hebrew joined at v2.151.0, the
-first right-to-left language; every gate below derives its population from
+Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית, العربية. Hebrew joined at v2.151.0,
+the first right-to-left language, and Arabic at v2.152.0, the second, with its
+digits kept Latin; every gate below derives its population from
 `UiLocale.SUPPORTED`, so it was held to the same laws the day it arrived.
 
 ## What is covered
@@ -33,6 +34,8 @@ first right-to-left language; every gate below derives its population from
 | Typing what the product now names | accent-folded search at the one tokenizing point |
 | The user guide, the website, the installers, the desktop entry | `TranslatedGuideGateTest`, `SiteShipsTest`, and their siblings |
 | Right-to-left layout of every window and dialog (Hebrew, v2.151.0) | `RightToLeftWiringTest` — one toolkit seam, nothing else orients |
+| Arabic numbers in Western digits (`ar-u-nu-latn`, v2.152.0) | `UiLocaleTest.arabicFormatsLatinDigits`, `readableDigitsLeavesLatinLanguagesAlone` |
+| Each module named as itself, never with another module's words | `ModuleDescriptorsSpeakTest.everyModuleHasItsOwnName`, every language |
 | Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |
 | The website's and the I18n Kit's page direction | `I18nKitTest`, `SiteShipsTest` byte parity, logical CSS sides |
 

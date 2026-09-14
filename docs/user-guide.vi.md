@@ -1,7 +1,7 @@
 # NMOX Studio — Hướng dẫn sử dụng
 
 <!-- languages -->
-[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md)
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · **Tiếng Việt** · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md) · [العربية](user-guide.ar.md)
 <!-- /languages -->
 
 Cách dùng sản phẩm. Hướng dẫn này đi qua các tính năng theo thứ tự bạn sẽ gặp: cài đặt, lần chạy đầu tiên, dự án, giá, các studio, các trình hướng dẫn và các lưới an toàn.
@@ -225,7 +225,7 @@ Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật s
 
 ### Trang web đi kèm
 
-**Trợ giúp ▸ Trang NMOX Studio (cục bộ)** phục vụ trang web của sản phẩm từ chính giá của nó, trên giao diện cục bộ. Nó nói đúng mười bốn thứ tiếng mà IDE nói; bộ chọn nằm ở chân trang.
+**Trợ giúp ▸ Trang NMOX Studio (cục bộ)** phục vụ trang web của sản phẩm từ chính giá của nó, trên giao diện cục bộ. Nó nói đúng mười lăm thứ tiếng mà IDE nói; bộ chọn nằm ở chân trang.
 
 ### Trình duyệt (⌥⌘4)
 
@@ -315,7 +315,7 @@ Dự án có cửa vào là `index.ts`, `main.ts` hay `src/index.ts` chạy th�
 
 ### Ngôn ngữ của bạn
 
-NMOX Studio nói mười bốn thứ tiếng: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी và עברית. Chọn tiếng của bạn ở **Tuỳ chọn ▸ Chung ▸ Ngôn ngữ** — mỗi thứ tiếng viết bằng chính tên nó, để bạn luôn tìm được tiếng mình. Lựa chọn ấy được ghi vào phần cài đặt khởi động của bạn (`etc/nmoxstudio.conf`, dưới dạng đối số `--locale`) và cũng có hiệu lực ngay. Thay đổi: trình đơn, hộp thoại, chú giải, thanh trạng thái, màn hình chào và phần tuỳ chọn. Giữ nguyên: từ vựng trên mặt các thiết bị của giá (GO, STOP, EXPLAIN — đó là nhãn máy, như trên một cây đàn tổng hợp), và những hộp thoại sâu hơn của nền tảng, vốn chưa có bản dịch. Có lẽ bạn sẽ chẳng bao giờ phải chọn: một bản cài mới đã nói đúng thứ tiếng của hệ thống bạn, kể cả từ một xứ mà chúng tôi chưa từng gọi tên — Đài Loan, Singapore, Bồ Đào Nha và Quebec đều đáp xuống chính tiếng của mình chứ không phải tiếng Anh, bởi các danh mục được đặt tên theo ngôn ngữ chứ không bao giờ theo quốc gia.
+NMOX Studio nói mười lăm thứ tiếng: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית và العربية. Chọn tiếng của bạn ở **Tuỳ chọn ▸ Chung ▸ Ngôn ngữ** — mỗi thứ tiếng viết bằng chính tên nó, để bạn luôn tìm được tiếng mình. Lựa chọn ấy được ghi vào phần cài đặt khởi động của bạn (`etc/nmoxstudio.conf`, dưới dạng đối số `--locale`) và cũng có hiệu lực ngay. Thay đổi: trình đơn, hộp thoại, chú giải, thanh trạng thái, màn hình chào và phần tuỳ chọn. Giữ nguyên: từ vựng trên mặt các thiết bị của giá (GO, STOP, EXPLAIN — đó là nhãn máy, như trên một cây đàn tổng hợp), và những hộp thoại sâu hơn của nền tảng, vốn chưa có bản dịch. Có lẽ bạn sẽ chẳng bao giờ phải chọn: một bản cài mới đã nói đúng thứ tiếng của hệ thống bạn, kể cả từ một xứ mà chúng tôi chưa từng gọi tên — Đài Loan, Singapore, Bồ Đào Nha và Quebec đều đáp xuống chính tiếng của mình chứ không phải tiếng Anh, bởi các danh mục được đặt tên theo ngôn ngữ chứ không bao giờ theo quốc gia.
 
 ### Việc dò bản mới mỗi ngày
 

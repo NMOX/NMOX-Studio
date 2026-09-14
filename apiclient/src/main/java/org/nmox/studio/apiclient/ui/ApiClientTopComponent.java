@@ -1236,7 +1236,10 @@ public final class ApiClientTopComponent extends TopComponent {
                 if (value instanceof org.nmox.studio.apiclient.model.SendHistory.Entry e) {
                     String when = org.nmox.studio.core.util.Clocks.display(e.timestamp);
                     String outcome = e.status == 0 ? Bundle.ApiClientTopComponent_historyFailed() : String.valueOf(e.status);
-                    setText(when + "  " + e.method + " " + e.url
+                    // LRM first: a method and URL read left to right, and an
+                    // Arabic clock (`2:14 م`) would otherwise set the row's
+                    // paragraph direction, as it did in DB Studio's history
+                    setText("‎" + when + "  " + e.method + " " + e.url
                             + "  → " + outcome
                             + (e.durationMs > 0 ? " " + Bundle.ApiClientTopComponent_historyMillis(e.durationMs) : ""));
                 }

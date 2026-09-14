@@ -73,7 +73,8 @@ public final class UiLocale {
             new Choice("vi", "Tiếng Việt"),
             new Choice("zh", "简体中文"),
             new Choice("hi", "हिन्दी"),
-            new Choice("he", "עברית"));
+            new Choice("he", "עברית"),
+            new Choice("ar", "العربية"));
 
     /** A launcher locale code: {@code fr} or {@code fr:CA}. Nothing else is ever written. */
     static final Pattern CODE = Pattern.compile("[a-z]{2}(?::[A-Z]{2})?");
@@ -237,6 +238,29 @@ public final class UiLocale {
      */
     public static Locale toLocale(String code) {
         Choice c = choiceFor(code);
-        return c.isSystem() ? STARTED_AS : Locale.forLanguageTag(c.code());
+        return readableDigits(c.isSystem() ? STARTED_AS : Locale.forLanguageTag(c.code()));
+    }
+
+    /**
+     * The same locale, formatting with the digits a developer retypes (v2.152.0).
+     *
+     * <p>Under {@code ar} the JDK formats every number in Arabic-Indic digits:
+     * {@code String.format("%d", 8080)} is {@code ٨٠٨٠}. In an IDE that puts
+     * a port reading {@code ٨٠٨٠} beside a URL reading {@code localhost:8080},
+     * one number in two scripts, and a line number or version a reader cannot
+     * type back. So a language whose default zero digit is not {@code 0} gets
+     * the {@code nu-latn} numbering keyword: the words, the bundles and the
+     * right-to-left layout stay the language's own, and only the digits
+     * change. Measured on JDK 25 before it was written: of the fifteen shipped
+     * languages only Arabic is affected, and {@code ar-u-nu-latn} still
+     * resolves {@code Bundle_ar}. The rule reads the locale's own data rather
+     * than a list, so a language added tomorrow is decided the same way.
+     */
+    public static Locale readableDigits(Locale locale) {
+        if (locale == null || locale.getUnicodeLocaleType("nu") != null
+                || java.text.DecimalFormatSymbols.getInstance(locale).getZeroDigit() == '0') {
+            return locale;
+        }
+        return new Locale.Builder().setLocale(locale).setUnicodeLocaleKeyword("nu", "latn").build();
     }
 }

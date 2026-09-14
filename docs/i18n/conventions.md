@@ -135,6 +135,10 @@ Two rules hold for every language:
   says (`مفيش` where a formal text would write `لا يوجد`). Menu commands
   stay action nouns (`حفظ`, `فتح`), the form Arabic software uses in
   every register.
+- **Gender-neutral instructions, as in Hebrew.** An Arabic imperative has a
+  gender, so a sentence addressed to the reader uses the plural imperative:
+  `افتحوا المجلد`, `اختاروا ملف`. The gate holds the common singular forms
+  (`افتح`, `اختار`, `اضغط`…) as a register rule.
 - Punctuation is Arabic: `،` `؛` `؟`.
 - Arrows point the way the reader reads, `◂` and `←`, as in Hebrew.
 - Quotes: «علامات التنصيص». Guillemets are bidi-mirrored characters, so
@@ -142,8 +146,26 @@ Two rules hold for every language:
 - Mnemonic: appended Latin letter before the ellipsis. The same
   keyboard-layout reason as Hebrew applies, and an underline beneath a
   joined Arabic letter breaks the letter's shape.
-- Digits: decided and recorded in the Arabic release. Under `ar`,
-  `String.format` and `MessageFormat` produce Arabic-Indic digits, so the
-  line between a number a person reads and a number a person retypes (a
-  port, a version, a line number) becomes a line between scripts
-  (ledger 93).
+- **Digits are Western (`0-9`), decided in v2.152.0.** Under `ar` and
+  `ar-EG` the JDK formats every number in Arabic-Indic digits:
+  `String.format("%d", 8080)` is `٨٠٨٠`. In an IDE that puts a port reading
+  `٨٠٨٠` beside a URL reading `localhost:8080`, and turns a line number or a
+  version into something a reader cannot type back (ledger 93). The product
+  runs Arabic as `ar-u-nu-latn`: the words, the bundles (`Bundle_ar`) and the
+  right-to-left layout stay Arabic, and only the digits change.
+  `UiLocale.readableDigits` applies the rule at startup and on a live switch,
+  and it reads the locale's own zero digit rather than a language list.
+- **A label with a keyboard chord and no Arabic letter is wrapped in RLE…PDF**
+  (U+202B…U+202C). Swing runs bidi only over text containing a right-to-left
+  letter or an embedding mark; RLM and RLI are neither (measured on JDK 25
+  while shipping Hebrew), so `IRC  ⌥⌘3` would otherwise be drawn in logical
+  order with the chord on the wrong side. The Hebrew section's RLM and LRM
+  rules apply to Arabic unchanged.
+- **A dotfile name after an Arabic word takes an LRM before its dot**:
+  `في ‎.env`, `(‎.nmoxdb.json)`. Without it the dot takes the sentence's
+  direction and is drawn after the name. The gate holds this for Hebrew too.
+- **Machine text is kept in one direction by the code, not the translation.**
+  An Arabic clock ends in a letter (`2:14 م`), so a history row that begins
+  with the time would run right to left and move a SQL statement's semicolon
+  to the front; such rows start with an LRM. A URL at the end of a line is
+  wrapped in LRE…PDF so its trailing `/` stays with it.

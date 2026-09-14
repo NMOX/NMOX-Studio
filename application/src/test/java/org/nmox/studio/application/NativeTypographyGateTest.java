@@ -85,7 +85,12 @@ class NativeTypographyGateTest {
         // Hebrew keeps the straight mark on purpose: curly quotes are not
         // mirrored by the bidi algorithm and render backwards in an RTL line.
         CONVENTION.put("he", new Convention("\"", "\"", true, null));
-        CONVENTION.put("ar", new Convention("«", "»", true, null));
+        // Egyptian Arabic addresses the reader in the plural imperative, like
+        // Hebrew and for the same reason: the singular imperative has a gender.
+        // Only forms that cannot be read as a noun: unvowelled شغل is also
+        // "work" (شغل حلو, "nice work"), so it is not on the list.
+        CONVENTION.put("ar", new Convention("«", "»", true,
+                word("", "افتح|اختار|اضغط|دوس|اكتب|جرب|روح|خلي|استخدم|اسأل")));
     }
 
     private static Pattern word(String flags, String alternatives) {
@@ -221,10 +226,33 @@ class NativeTypographyGateTest {
         assertThat(wrong).as("…(&X) — Chinese, Hindi, Hebrew and Arabic software writes (&X)…").isEmpty();
     }
 
+    /**
+     * An ASCII comma, semicolon or question mark attached to a word beside Arabic.
+     * A mark standing alone between spaces is a symbol the user types (the search
+     * form's {@code ? = any character}), not the sentence's punctuation.
+     */
+    private static final Pattern AR_ASCII_PUNCT = Pattern.compile(
+            "(?<=[\\u0600-\\u06ff])[,;?]|(?<=\\S)[,;?](?=\\s*[\\u0600-\\u06ff])");
+
+    @Test
+    @DisplayName("Arabic writes its own comma, semicolon and question mark")
+    void arabicPunctuationIsArabic() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        for (Value v : values()) {
+            if ("ar".equals(v.lang()) && AR_ASCII_PUNCT.matcher(v.masked()).find()) {
+                wrong.add(v.name());
+            }
+        }
+        assertThat(wrong).as("`,` `;` `?` beside Arabic where the language writes ، ؛ ؟").isEmpty();
+    }
+
     /** A Latin word or digit, whitespace, then a keyboard chord — with no RLM between. */
     private static final Pattern RTL_CHORD_AFTER_LATIN = Pattern.compile("[A-Za-z0-9)\\]]\\s+[⌘⌥⇧⌃]");
     /** A value that opens with a neutral mark glued to a Latin run: `.well-known`, `/api`. */
     private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
+    /** A dotfile name after a right-to-left word, no LRM before its dot: `في ملف .env`. */
+    private static final Pattern RTL_DOTFILE_AFTER_RTL_WORD =
+            Pattern.compile("[\\u0590-\\u05ff\\u0600-\\u06ff][\\s«\"(]+\\.[A-Za-z]");
     /** A keyboard chord glyph anywhere in the value. */
     private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
 
@@ -269,6 +297,12 @@ class NativeTypographyGateTest {
             }
             if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
                 wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
+            }
+            // The same dot in mid-sentence: after a right-to-left word the dot
+            // of `.env` takes the sentence's direction and is drawn after the
+            // name (the Arabic walk). An LRM before the dot keeps it with `env`.
+            if (RTL_DOTFILE_AFTER_RTL_WORD.matcher(t).find()) {
+                wrong.add(v.name() + "   (LRM U+200E before the dotfile's dot)");
             }
             // The second walk found no mark at all could move `IRC  ⌥⌘3`: Swing
             // runs bidi only over text it calls complex — a right-to-left
