@@ -54,7 +54,8 @@ class PaintedSurfaceLedgerTest {
         for (String name : painted) {
             if (!ledger.contains("\"" + name + "\"")) {
                 undecided.add(name + ": paints itself, so an orientation sweep cannot "
-                        + "reach it — classify it GEOMETRY (mirroring would break it) "
+                        + "reach it — classify it GEOMETRY (mirroring would break it), "
+                        + "MIRRORS (it reads the orientation itself) "
                         + "or OWED (it should mirror and does not yet)");
             }
         }
@@ -69,6 +70,63 @@ class PaintedSurfaceLedgerTest {
             }
         }
         assertThat(stale).as("ledger entries for surfaces that no longer paint").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a surface classified MIRRORS names no absolute side")
+    void mirroredSurfacesUseLogicalSides() throws IOException {
+        // A MIRRORS entry takes the surface out of the reset, so the sweep
+        // reaches it — which is only right if the surface reads the
+        // orientation. One BorderLayout.WEST left behind puts a Hebrew row's
+        // title on the wrong side while the rest of the row mirrors: exactly
+        // the half-mirror the reset existed to prevent.
+        String ledger = Files.readString(REPO.resolve(
+                "ui/src/main/java/org/nmox/studio/ui/rtl/PaintedSurfaces.java"),
+                StandardCharsets.UTF_8);
+        int from = ledger.indexOf("MIRRORS = Set.of(");
+        assertThat(from).as("the ledger's MIRRORS set").isPositive();
+        java.util.regex.Matcher names = java.util.regex.Pattern.compile("\"([A-Z]\\w+)\"")
+                .matcher(ledger.substring(from, ledger.indexOf(';', from)));
+        java.util.regex.Pattern absolute = java.util.regex.Pattern.compile(
+                "BorderLayout\\.(WEST|EAST)\\b|FlowLayout\\.(LEFT|RIGHT)\\b"
+                + "|SwingConstants\\.(LEFT|RIGHT)\\b|GridBagConstraints\\.(WEST|EAST|NORTHWEST|NORTHEAST|SOUTHWEST|SOUTHEAST)\\b");
+
+        List<String> checked = new ArrayList<>();
+        List<String> absoluteSides = new ArrayList<>();
+        while (names.find()) {
+            Path file = sourceOf(names.group(1));
+            assertThat(file).as("source for %s", names.group(1)).isNotNull();
+            checked.add(names.group(1));
+            List<String> lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+            for (int i = 0; i < lines.size(); i++) {
+                java.util.regex.Matcher m = absolute.matcher(lines.get(i));
+                if (m.find()) {
+                    absoluteSides.add(file.getFileName() + ":" + (i + 1) + " — " + m.group());
+                }
+            }
+        }
+        assertThat(checked).as("the surfaces classified MIRRORS").isNotEmpty();
+        assertThat(absoluteSides)
+                .as("an absolute side in a surface the sweep now reaches — use LINE_START/LINE_END/LEADING/TRAILING")
+                .isEmpty();
+    }
+
+    private static Path sourceOf(String simpleName) throws IOException {
+        for (String module : MODULES) {
+            Path src = REPO.resolve(module).resolve("src/main/java");
+            if (!Files.isDirectory(src)) {
+                continue;
+            }
+            try (Stream<Path> files = Files.walk(src)) {
+                java.util.Optional<Path> hit = files
+                        .filter(f -> f.getFileName().toString().equals(simpleName + ".java"))
+                        .findFirst();
+                if (hit.isPresent()) {
+                    return hit.get();
+                }
+            }
+        }
+        return null;
     }
 
     /** Every class in the shipping source that overrides {@code paintComponent}. */

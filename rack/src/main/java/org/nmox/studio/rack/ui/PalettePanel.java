@@ -175,6 +175,9 @@ public class PalettePanel extends JPanel {
         @Override
         public Component getListCellRendererComponent(JList<? extends Object> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
+            // a renderer is never in the component tree, so no orientation
+            // sweep reaches it: it takes the list's, as Swing's own does
+            setComponentOrientation(list.getComponentOrientation());
             if (value instanceof DeviceCatalog.Entry t) {
                 this.type = t;
                 this.headerText = null;
@@ -197,6 +200,9 @@ public class PalettePanel extends JPanel {
             Graphics2D g = (Graphics2D) gr.create();
             RackStyle.antialias(g);
             int w = getWidth(), h = getHeight();
+            // a card is text laid out by hand, so it mirrors by hand: the
+            // accent edge and every line start at the reader's line start
+            boolean ltr = getComponentOrientation().isLeftToRight();
             g.setColor(selected ? new Color(48, 50, 56) : RackStyle.RACK_BG);
             g.fillRect(0, 0, w, h);
             if (headerText != null) {
@@ -204,10 +210,14 @@ public class PalettePanel extends JPanel {
                 g.setColor(RackStyle.SILKSCREEN_DIM);
                 g.setFont(RackStyle.TINY_FONT);
                 String text = headerText.toUpperCase(java.util.Locale.ROOT);
-                g.drawString(text, 10, h - 8);
                 int tw = g.getFontMetrics().stringWidth(text);
+                g.drawString(text, lineStart(ltr, w, 10, tw), h - 8);
                 g.setColor(new Color(255, 255, 255, 26));
-                g.drawLine(16 + tw, h - 11, w - 12, h - 11);
+                if (ltr) {
+                    g.drawLine(16 + tw, h - 11, w - 12, h - 11);
+                } else {
+                    g.drawLine(12, h - 11, w - 16 - tw, h - 11);
+                }
                 g.dispose();
                 return;
             }
@@ -215,13 +225,13 @@ public class PalettePanel extends JPanel {
             g.setColor(RackStyle.FACE_BOTTOM);
             g.fillRoundRect(6, 4, w - 12, h - 8, 8, 8);
             g.setColor(type.accent());
-            g.fillRoundRect(6, 4, 5, h - 8, 4, 4);
+            g.fillRoundRect(lineStart(ltr, w, 6, 5), 4, 5, h - 8, 4, 4);
             g.setColor(new Color(0, 0, 0, 120));
             g.drawRoundRect(6, 4, w - 12, h - 8, 8, 8);
 
             g.setFont(RackStyle.LABEL_FONT);
             g.setColor(RackStyle.SILKSCREEN);
-            g.drawString(type.title(), 20, 22);
+            g.drawString(type.title(), lineStart(ltr, w, 20, g.getFontMetrics().stringWidth(type.title())), 22);
             g.setFont(RackStyle.TINY_FONT);
             g.setColor(RackStyle.SILKSCREEN_DIM);
             // fit to the card, never hard-clip: a painted line that simply
@@ -230,9 +240,18 @@ public class PalettePanel extends JPanel {
             // the first German shelf photograph read "…wenn alle Spuren bes".
             // The budget gate keeps our own glosses short; this keeps a
             // drop-in device's authored words honest too.
-            g.drawString(fitTo(g.getFontMetrics(), DeviceText.gloss(type), w - 32), 20, 38);
+            String gloss = fitTo(g.getFontMetrics(), DeviceText.gloss(type), w - 32);
+            g.drawString(gloss, lineStart(ltr, w, 20, g.getFontMetrics().stringWidth(gloss)), 38);
             g.dispose();
         }
+    }
+
+    /**
+     * Where a run of {@code textWidth} pixels starts so that it sits
+     * {@code inset} pixels in from the reader's line start.
+     */
+    static int lineStart(boolean leftToRight, int width, int inset, int textWidth) {
+        return leftToRight ? inset : width - inset - textWidth;
     }
 
     /**

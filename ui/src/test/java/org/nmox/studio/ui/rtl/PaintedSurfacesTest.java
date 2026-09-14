@@ -26,7 +26,7 @@ class PaintedSurfacesTest {
     static final class Knob extends JPanel {
     }
 
-    /** Named for the real Welcome: classified OWED, and treated the same way. */
+    /** Named for the real Welcome: classified MIRRORS, so the sweep must reach it. */
     static final class MainWindow extends JPanel {
     }
 
@@ -56,16 +56,21 @@ class PaintedSurfacesTest {
     }
 
     @Test
-    @DisplayName("an OWED surface is put back too — half a mirror is worse than none")
-    void owedIsPutBackUntilItIsPaid() {
+    @DisplayName("a surface that mirrors by hand is left mirrored — the debt is paid, not re-reset")
+    void mirroredSurfacesStayMirrored() {
         JPanel root = new JPanel();
         MainWindow welcome = new MainWindow();
+        JLabel column = new JLabel("עמודה");
+        welcome.add(column);
         root.add(welcome);
 
         root.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         PaintedSurfaces.keepAuthoredDirection(root);
 
-        assertThat(welcome.getComponentOrientation().isLeftToRight()).isTrue();
+        assertThat(welcome.getComponentOrientation().isLeftToRight())
+                .as("the Welcome reads its orientation now, so putting it back would un-mirror Hebrew")
+                .isFalse();
+        assertThat(column.getComponentOrientation().isLeftToRight()).isFalse();
     }
 
     @Test
@@ -89,9 +94,11 @@ class PaintedSurfacesTest {
     @DisplayName("every classified name is a real painted surface's name")
     void theLedgerNamesAreSimpleNames() {
         assertThat(PaintedSurfaces.GEOMETRY).contains("RackDevice", "FlowCanvas", "Knob");
-        assertThat(PaintedSurfaces.OWED).contains("MainWindow", "PalettePanel");
+        assertThat(PaintedSurfaces.MIRRORS).contains("MainWindow", "PalettePanel", "OverviewPanel");
         assertThat(PaintedSurfaces.GEOMETRY)
-                .as("a surface cannot be both kinds of decision")
-                .doesNotContainAnyElementsOf(PaintedSurfaces.OWED);
+                .as("a surface cannot be two kinds of decision")
+                .doesNotContainAnyElementsOf(PaintedSurfaces.OWED)
+                .doesNotContainAnyElementsOf(PaintedSurfaces.MIRRORS);
+        assertThat(PaintedSurfaces.OWED).doesNotContainAnyElementsOf(PaintedSurfaces.MIRRORS);
     }
 }
