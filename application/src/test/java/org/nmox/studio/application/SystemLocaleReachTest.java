@@ -52,7 +52,7 @@ class SystemLocaleReachTest {
             Map.entry("ru", "ru-KZ"), Map.entry("uk", "uk-UA"), Map.entry("pl", "pl-PL"),
             Map.entry("pt", "pt-PT"), Map.entry("id", "id-ID"), Map.entry("tl", "tl-PH"),
             Map.entry("vi", "vi-VN"), Map.entry("zh", "zh-TW"), Map.entry("hi", "hi-IN"),
-            Map.entry("he", "he-IL"));
+            Map.entry("he", "he-IL"), Map.entry("ar", "ar-SA"));
 
     private static final String BUNDLE = "org.nmox.studio.ui.Bundle";
     private static final String KEY = "CTL_MainWindowTopComponent";

@@ -85,7 +85,10 @@ class NativeTypographyGateTest {
         // Hebrew keeps the straight mark on purpose: curly quotes are not
         // mirrored by the bidi algorithm and render backwards in an RTL line.
         CONVENTION.put("he", new Convention("\"", "\"", true, null));
-        CONVENTION.put("ar", new Convention("«", "»", true, null));
+        // Egyptian Arabic addresses the reader in the plural imperative, like
+        // Hebrew and for the same reason: the singular imperative has a gender.
+        CONVENTION.put("ar", new Convention("«", "»", true,
+                word("", "افتح|اختار|اضغط|دوس|اكتب|شغل|جرب|روح|خلي|استخدم")));
     }
 
     private static Pattern word(String flags, String alternatives) {
@@ -219,6 +222,22 @@ class NativeTypographyGateTest {
             }
         }
         assertThat(wrong).as("…(&X) — Chinese, Hindi, Hebrew and Arabic software writes (&X)…").isEmpty();
+    }
+
+    /** An ASCII comma, semicolon or question mark touching an Arabic letter. */
+    private static final Pattern AR_ASCII_PUNCT = Pattern.compile(
+            "(?<=[\\u0600-\\u06ff])\\s*[,;?]|[,;?](?=\\s*[\\u0600-\\u06ff])");
+
+    @Test
+    @DisplayName("Arabic writes its own comma, semicolon and question mark")
+    void arabicPunctuationIsArabic() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        for (Value v : values()) {
+            if ("ar".equals(v.lang()) && AR_ASCII_PUNCT.matcher(v.masked()).find()) {
+                wrong.add(v.name());
+            }
+        }
+        assertThat(wrong).as("`,` `;` `?` beside Arabic where the language writes ، ؛ ؟").isEmpty();
     }
 
     /** A Latin word or digit, whitespace, then a keyboard chord — with no RLM between. */

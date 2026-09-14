@@ -54,9 +54,37 @@ class UiLocaleTest {
         assertThat(UiLocale.choiceFor("xx")).isEqualTo(UiLocale.SYSTEM);
         assertThat(UiLocale.choiceFor(null)).isEqualTo(UiLocale.SYSTEM);
         assertThat(UiLocale.SUPPORTED).extracting(UiLocale.Choice::code)
-                .containsExactly("", "en", "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi", "he");
+                .containsExactly("", "en", "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi", "he", "ar");
         assertThat(UiLocale.toLocale("de")).isEqualTo(java.util.Locale.GERMAN);
         assertThat(UiLocale.userConf(java.nio.file.Path.of("/u")))
                 .isEqualTo(java.nio.file.Path.of("/u/etc/nmoxstudio.conf"));
+    }
+
+    @Test
+    @DisplayName("Arabic keeps its words and its direction but formats the digits a developer retypes")
+    void arabicFormatsLatinDigits() {
+        java.util.Locale ar = UiLocale.toLocale("ar");
+        assertThat(ar.getLanguage()).as("bundles still resolve Bundle_ar").isEqualTo("ar");
+        assertThat(String.format(ar, "%d", 8080)).isEqualTo("8080");
+        assertThat(new java.text.MessageFormat("{0,number}", ar).format(new Object[] {1234567}))
+                .as("MessageFormat under the chosen locale").isEqualTo("1,234,567");
+        // the system row from an Egyptian desktop lands on the same digits
+        assertThat(String.format(UiLocale.readableDigits(java.util.Locale.forLanguageTag("ar-EG")), "%d", 2024))
+                .isEqualTo("2024");
+    }
+
+    @Test
+    @DisplayName("only a language whose default digits are not 0-9 is touched, and the rule is idempotent")
+    void readableDigitsLeavesLatinLanguagesAlone() {
+        for (UiLocale.Choice c : UiLocale.SUPPORTED) {
+            if (c.isSystem() || "ar".equals(c.code())) {
+                continue;
+            }
+            java.util.Locale l = java.util.Locale.forLanguageTag(c.code());
+            assertThat(UiLocale.readableDigits(l)).as(c.code()).isEqualTo(l);
+        }
+        java.util.Locale once = UiLocale.readableDigits(java.util.Locale.forLanguageTag("ar"));
+        assertThat(UiLocale.readableDigits(once)).isSameAs(once);
+        assertThat(UiLocale.readableDigits(null)).isNull();
     }
 }

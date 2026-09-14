@@ -53,7 +53,8 @@ class BundleArgumentIsDataTest {
             Map.entry("es", "desde"), Map.entry("fr", "depuis"), Map.entry("de", "seit"),
             Map.entry("ru", "с"), Map.entry("uk", "з"), Map.entry("pl", "od"),
             Map.entry("pt", "desde"), Map.entry("id", "sejak"), Map.entry("tl", "mula"),
-            Map.entry("vi", "từ"), Map.entry("zh", "自"), Map.entry("hi", "से"), Map.entry("he", "מאז"));
+            Map.entry("vi", "từ"), Map.entry("zh", "自"), Map.entry("hi", "से"), Map.entry("he", "מאז"),
+            Map.entry("ar", "من"));
 
     private static List<Path> sources() throws IOException {
         List<Path> all = new ArrayList<>();

@@ -154,5 +154,17 @@
     "NPM Explorer": "סייר NPM",
     "Block Studio": "אולפן הבלוקים",
     "API Studio": "אולפן ה‑API"
+  },
+  "ar": {
+    "Task Rack": "راك المهام",
+    "Project Studio": "استوديو المشاريع",
+    "DB Studio": "استوديو قواعد البيانات",
+    "Contract Studio": "استوديو العقود",
+    "Infra Designer": "مصمم البنية التحتية",
+    "Welcome": "أهلًا بيك",
+    "Workbench": "منضدة العمل",
+    "NPM Explorer": "مستكشف NPM",
+    "Block Studio": "استوديو البلوكات",
+    "API Studio": "استوديو الـ API"
   }
 }

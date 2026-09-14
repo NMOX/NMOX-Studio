@@ -61,7 +61,7 @@ class OwnScriptGateTest {
     private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
     /** The five whose readers share no alphabet with English. */
-    private static final List<String> OWN_SCRIPT = List.of("ru", "uk", "zh", "hi", "he");
+    private static final List<String> OWN_SCRIPT = List.of("ru", "uk", "zh", "hi", "he", "ar");
 
     /**
      * How many of the twelve must have translated a value before it counts
