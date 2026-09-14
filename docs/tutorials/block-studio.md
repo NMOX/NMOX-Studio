@@ -1,5 +1,9 @@
 # Tutorial: Block Studio
 
+<!-- languages -->
+**English** · [Español](block-studio.es.md) · [Français](block-studio.fr.md) · [Deutsch](block-studio.de.md) · [Русский](block-studio.ru.md) · [Українська](block-studio.uk.md) · [Polski](block-studio.pl.md) · [Português (Brasil)](block-studio.pt.md) · [Bahasa Indonesia](block-studio.id.md) · [Filipino](block-studio.tl.md) · [Tiếng Việt](block-studio.vi.md) · [简体中文](block-studio.zh.md) · [हिन्दी](block-studio.hi.md) · [עברית](block-studio.he.md) · [العربية](block-studio.ar.md)
+<!-- /languages -->
+
 Block Studio is a Scratch-like composer for **real** Web Components. You
 snap typed blocks together and it generates a self-contained custom
 element (shadow DOM, state, listeners) — and a live preview server so you
@@ -17,8 +21,8 @@ see it run. Click a block to highlight the exact lines it produced.
    Start a component and give it a tag like `hello-badge`.
 
 2. **Add blocks from the palette.** Drag an **Element** block (a DOM
-   node), give it text; add a **State** field; add a **Listener** that
-   flips a class on click. Only legal nestings are allowed — the canvas
+   node), give it text; add a **State** field; add an **On event** block
+   with a **Toggle class** inside it. Only legal nestings are allowed — the canvas
    previews valid drop slots and refuses illegal ones, even on load.
 
 3. **Read the code.** The middle pane shows the generated

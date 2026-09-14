@@ -68,7 +68,9 @@ class NativeTypographyGateTest {
 
     static {
         CONVENTION.put("es", new Convention("«", "»", false,
-                word("(?i)", "pulse|haga|elija|seleccione|apunte|indique|usted")));
+                word("(?i)", "pulse|haga|elija|seleccione|apunte|indique|usted"
+                        // usted imperatives with an object pronoun (v2.153.0: «guárdelo primero»)
+                        + "|guárdel[oa]s?|ábral[oa]s?|cámbiel[oa]s?|selecciónel[oa]s?|instálel[oa]s?|actualícel[oa]s?|reinícial[oa]s?|cópiel[oa]s?|pruébel[oa]s?|ciérrel[oa]s?")));
         CONVENTION.put("fr", new Convention("«" + NB, NB + "»", false,
                 word("", "tu|toi|ton|ta|tes")));
         CONVENTION.put("de", new Convention("„", "“", false,

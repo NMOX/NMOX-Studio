@@ -173,7 +173,8 @@ Open `index.html` and the stylesheet, then run this gauntlet:
 - **Format** — right-click ▸ Format with Prettier (project-local
   binary only when the workspace is trusted), and `.editorconfig` is
   honored on every save.
-- **Keymaps** — Tools ▸ Options ▸ Keymap: five profiles (NetBeans,
+- **Keymaps** — Tools ▸ Options ▸ Keymap (on macOS, NMOX Studio ▸
+  Settings… ▸ Keymap): five profiles (NetBeans,
   NetBeans 5.5, Eclipse, Emacs, IntelliJ) and every NMOX chord rides
   all of them.
 

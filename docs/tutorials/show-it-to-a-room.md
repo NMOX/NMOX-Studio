@@ -1,5 +1,9 @@
 # Tutorial: Show it to a room
 
+<!-- languages -->
+**English** · [Español](show-it-to-a-room.es.md) · [Français](show-it-to-a-room.fr.md) · [Deutsch](show-it-to-a-room.de.md) · [Русский](show-it-to-a-room.ru.md) · [Українська](show-it-to-a-room.uk.md) · [Polski](show-it-to-a-room.pl.md) · [Português (Brasil)](show-it-to-a-room.pt.md) · [Bahasa Indonesia](show-it-to-a-room.id.md) · [Filipino](show-it-to-a-room.tl.md) · [Tiếng Việt](show-it-to-a-room.vi.md) · [简体中文](show-it-to-a-room.zh.md) · [हिन्दी](show-it-to-a-room.hi.md) · [עברית](show-it-to-a-room.he.md) · [العربية](show-it-to-a-room.ar.md)
+<!-- /languages -->
+
 Some days the code isn't the deliverable — the *showing* is: a
 projector, a README, an issue comment, a slide. NMOX Studio has a
 small presenting kit for exactly that person, and every piece of it
@@ -108,6 +112,6 @@ and output in the Output window.
   DevTools.
 - The Standup you paste into a chat comes from [The Task Board and
   sprints](task-board.md).
-- Release notes for a post start at `Help ▸ What's New… ▸ Copy as
-  Markdown`; the whole presenting section is in the [User
+- Release notes for a post start at `Help ▸ What's New…`, then its **Copy
+  as Markdown** button; the whole presenting section is in the [User
   Guide](../user-guide.md).

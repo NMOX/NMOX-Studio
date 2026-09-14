@@ -73,7 +73,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 
 ![Isang bagong eksperimentong Express: bukas ang gabay, nakainstall ang mga dependency, naghahain na ang API](images/experiment-walkthrough.png)
 
-**Patakbuhin, buuin, subukin — at itigil:** ang ▶ sa toolbar (F6) ay pinapatakbo ang proyekto gaya ng pagpapatakbo ng sarili nitong mga kasangkapan: isang `start` na script kung mayroon ang package.json, `cargo run`, `go run`, `dotnet run`, at para sa folder ng HTML ay isang maliit na static na server sa unang bakanteng port mula 8080. Katabi nito at nasa menu ng Patakbuhin ang Buuin, Subukin at Linisin. Ang development server na nag-aanunsyo ng address nito ay nagpapailaw sa ⇄ sa status bar at binubuksan ang pahina sa nakapaloob na browser. Ang lahat ay dumadaan muna sa pagtatanong ng tiwala sa workspace. Ang pagtakbong hindi makasimula ay tapat na sinasabi ito at nag-aalok buksan ang Doktor ng kapaligiran. Para huminto: ang ■ sa kanan ng Debug (⌥⌘.) ay pinapatigil ang lahat ng tumatakbong utos nang sabay at sinasabi kung ano ang pinatigil; ang **Patakbuhin ▸ Itigil** ay pinapatigil ang isa at pagkatapos ay nag-aalok ng **Ulitin**. Nakikita ng ■ ang lahat ng sinisimulan ng produkto para sa iyo, pati na ang mga pag-install; kapag inilapit ang cursor, pinangangalanan ng tooltip nang eksakto kung ano ang ititigil ng isang pindot, at kung mula kailan tumatakbo ang bawat isa.
+**Patakbuhin, buuin, subukin — at itigil:** ang ▶ sa toolbar (F6) ay pinapatakbo ang proyekto gaya ng pagpapatakbo ng sarili nitong mga kasangkapan: isang `start` na script kung mayroon ang package.json, `cargo run`, `go run`, `dotnet run`, at para sa folder ng HTML ay isang maliit na static na server sa unang bakanteng port mula 8080. Katabi nito at nasa menu ng Patakbuhin ang Buuin, Subukin at Linisin. Ang development server na nag-aanunsyo ng address nito ay nagpapailaw sa ⇄ sa status bar at binubuksan ang pahina sa nakapaloob na browser. Ang lahat ay dumadaan muna sa pagtatanong ng tiwala sa workspace. Ang pagtakbong hindi makasimula ay tapat na sinasabi ito at nag-aalok buksan ang Doktor ng kapaligiran. Para huminto: ang ■ sa kanan ng Debug (⌥⌘.) ay pinapatigil ang lahat ng tumatakbong utos nang sabay at sinasabi kung ano ang pinatigil; ang **Patakbuhin ▸ Ihinto ang build/run** ay pinapatigil ang isa at pagkatapos ay nag-aalok ng **Ulitin**. Nakikita ng ■ ang lahat ng sinisimulan ng produkto para sa iyo, pati na ang mga pag-install; kapag inilapit ang cursor, pinangangalanan ng tooltip nang eksakto kung ano ang ititigil ng isang pindot, at kung mula kailan tumatakbo ang bawat isa.
 
 **`.env` saanman:** kung may `.env` ang iyong proyekto, natatanggap ng mga kagamitang inilunsad mula sa rack ang mga variable na iyon. Baguhin ito at tatalâ ang status bar na kukunin ito ng mga muling pagsisimula — tapat na pinapanatili ng tumatakbong proseso ang lumang kapaligiran nito.
 
@@ -182,7 +182,7 @@ Pindutin ang kaliwang gilid, piliin ang **I-debug ang file (mga breakpoint)**, a
 
 ### Pagpapakita at pagbabahagi
 
-Ang **Tanaw ▸ Presentation Mode** ay sabay-sabay na nagpapalaki sa bawat bukás na editor, sa pahina sa nakapaloob na browser, sa bintana ng Output, at sa Terminal — at ibinabalik ang lahat nang eksakto pagkalabas mo. Ang **Tanaw ▸ Ipakita ang mga Pindot** ay ipinapakitang malaki ang kombinasyong katatapos mong pindutin, ngunit hindi kailanman ang tinitipa mo. Ang **I-edit ▸ Kopyahin bilang Markdown** ay kinokopya ang pinili bilang nakabakod na bloke na may tamang tatak ng wika, at ang bersyong **may link** ay idinadagdag ang link ng GitHub sa mismong mga hanay na iyon. Ang **Mga Kasangkapan ▸ I-save ang screenshot…** ay ipininta ang buong bintana sa doble ang laki, may mga bersyon para sa tab ng editor lamang, para sa clipboard, at para kopyahin ang puno ng proyekto bilang Markdown.
+Ang **Tanaw ▸ Presentation Mode** ay sabay-sabay na nagpapalaki sa bawat bukás na editor, sa pahina sa nakapaloob na browser, sa bintana ng Output, at sa Terminal — at ibinabalik ang lahat nang eksakto pagkalabas mo. Ang **Tanaw ▸ Ipakita ang mga Pindot** ay ipinapakitang malaki ang kombinasyong katatapos mong pindutin, ngunit hindi kailanman ang tinitipa mo. Ang **I-edit ▸ Kopyahin bilang Markdown** ay kinokopya ang pinili bilang nakabakod na bloke na may tamang tatak ng wika, at ang bersyong **may link** ay idinadagdag ang link ng GitHub sa mismong mga hanay na iyon. Ang **Kasangkapan ▸ I-save ang Screenshot…** ay ipininta ang buong bintana sa doble ang laki, may mga bersyon para sa tab ng editor lamang, para sa clipboard, at para kopyahin ang puno ng proyekto bilang Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Ang mga studio
@@ -225,7 +225,7 @@ Isang buong kliyente sa loob ng IDE: TLS na may tunay na pagsusuri ng pangalan, 
 
 ### Ang kasamang websayt
 
-Ang **Tulong ▸ Websayt ng NMOX Studio (lokal)** ay naghahain ng websayt ng produkto mula sa sarili nitong rack, sa lokal na interface. Nagsasalita ito ng parehong labinlima na wika na sinasalita ng IDE; nasa paanan ng pahina ang pampili.
+Ang **Tulong ▸ Website ng NMOX Studio (lokal)** ay naghahain ng websayt ng produkto mula sa sarili nitong rack, sa lokal na interface. Nagsasalita ito ng parehong labinlima na wika na sinasalita ng IDE; nasa paanan ng pahina ang pampili.
 
 ### Browser (⌥⌘4)
 
@@ -288,7 +288,7 @@ Ito ang tahanan: kasalukuyang proyekto, mga talaksang bukas at kamakailan, mga k
 
 ### Mga daglat ng Emacs (at ng Eclipse, at ng IntelliJ)
 
-Ang Mga Kasangkapan ▸ Mga Pagpipilian ▸ Mapa ng Teklado ay nagpapalit ng buong hanay: ang mga galaw at ang gupit at dikit ng Emacs sa bawat patnugot, o ang mga hanay ng Eclipse at IDEA kung doon nakatira ang alaala ng inyong mga daliri. Nakatala sa lahat ng limang hanay ang bawat daglat ng NMOX, kaya hindi kailanman nagagastos ng pagpapalit ang mga daglat ng mga studio.
+Ang Kasangkapan ▸ Mga Opsyon ▸ Mapa ng Teklado (sa macOS: NMOX Studio ▸ Settings… ▸ Mapa ng Teklado) ay nagpapalit ng buong hanay: ang mga galaw at ang gupit at dikit ng Emacs sa bawat patnugot, o ang mga hanay ng Eclipse at IDEA kung doon nakatira ang alaala ng inyong mga daliri. Nakatala sa lahat ng limang hanay ang bawat daglat ng NMOX, kaya hindi kailanman nagagastos ng pagpapalit ang mga daglat ng mga studio.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Ang mga lambat ng kaligtasan (ang hindi ninyo kailangang gawin)
@@ -326,11 +326,11 @@ Tahimik, minsan sa isang araw: kung may mas bagong labas, may abisong maghahatid
 
 ### Suriin ang inyong gawa
 
-May ilang espasyong may mga hintuan ng pagsusuri: pumili ng gayon at ang **Talaksan ▸ Suriin ang Aking Gawa** ay tunay na sumusuri sa mga pagsasanay — ang sinasabi ng mga talaksan ay sinusuri sa purong Java, kasama ang pagsusuri ng *kawalan*, na siyang tanging paraan upang mapatunayan ang «binago ninyo ang pamagat»: kailangang mawala na ang orihinal na teksto ng halimbawa. Ang sinasabi ng mga utos ay dumadaan sa sariling hanay ng kasangkapan ng espasyo. Bawat ✗ ay sumasagot gamit ang sariling pahiwatig ng espasyo, at kapag may pumalya, nag-aalok ang ulat ng **Ipaliwanag sa KVASIR…**: ang mga hintuang pumalya at, sa pagsusuri ng talaksan, ang inyong sariling talaksan, may hangganan at sa ilalim ng pahintulot na nagsasabi mismo kung ano ang lumalabas. Ang sagot ay parang sa isang tagapagturo: kung ano ang babaguhin, at pagkatapos ay suriin muli.
+May ilang espasyong may mga hintuan ng pagsusuri: pumili ng gayon at ang **Talaksan ▸ Suriin ang aking gawa** ay tunay na sumusuri sa mga pagsasanay — ang sinasabi ng mga talaksan ay sinusuri sa purong Java, kasama ang pagsusuri ng *kawalan*, na siyang tanging paraan upang mapatunayan ang «binago ninyo ang pamagat»: kailangang mawala na ang orihinal na teksto ng halimbawa. Ang sinasabi ng mga utos ay dumadaan sa sariling hanay ng kasangkapan ng espasyo. Bawat ✗ ay sumasagot gamit ang sariling pahiwatig ng espasyo, at kapag may pumalya, nag-aalok ang ulat ng **Ipaliwanag sa KVASIR…**: ang mga hintuang pumalya at, sa pagsusuri ng talaksan, ang inyong sariling talaksan, may hangganan at sa ilalim ng pahintulot na nagsasabi mismo kung ano ang lumalabas. Ang sagot ay parang sa isang tagapagturo: kung ano ang babaguhin, at pagkatapos ay suriin muli.
 
 ### Ang inyong sariling mga aralin
 
-Maglagay ng talaksang `*.json` sa `~/.nmox/learn-catalog.d/` at sasama ito sa pampili, sa gayon ding balangkas ng mga likas; ang tumutugmang `slug` ay humahalili sa likas. Nagtuturo kayo? Sumulat sa pamamagitan ng paggawa: gawing pangkaraniwang proyekto ang pagsasanay, at ang **Talaksan ▸ Iluwas bilang Espasyo ng Pagkatuto…** ang bubuo ng talaksang iyon para sa inyo — ang mga halimbawa, ang inyong `TUTORIAL.md`, ang tagapagpatakbo, at ang inyong mga hintuan — na pinatunayan laban sa sariling tagabasa ng pampili bago isulat, kaya ang ibibigay ninyo sa inyong mga mag-aaral ay eksaktong ilalapag ng kanilang pampili.
+Maglagay ng talaksang `*.json` sa `~/.nmox/learn-catalog.d/` at sasama ito sa pampili, sa gayon ding balangkas ng mga likas; ang tumutugmang `slug` ay humahalili sa likas. Nagtuturo kayo? Sumulat sa pamamagitan ng paggawa: gawing pangkaraniwang proyekto ang pagsasanay, at ang **Talaksan ▸ I-export bilang Lugar ng Pag-aaral…** ang bubuo ng talaksang iyon para sa inyo — ang mga halimbawa, ang inyong `TUTORIAL.md`, ang tagapagpatakbo, at ang inyong mga hintuan — na pinatunayan laban sa sariling tagabasa ng pampili bago isulat, kaya ang ibibigay ninyo sa inyong mga mag-aaral ay eksaktong ilalapag ng kanilang pampili.
 
 ### Ang katalogo
 

@@ -73,7 +73,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 
 ![Eksperimen Express yang baru dibuat: panduannya terbuka, dependensi terpasang, API sudah melayani](images/experiment-walkthrough.png)
 
-**Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `start` bila package.json memilikinya, `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
+**Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `start` bila package.json memilikinya, `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan build/jalankan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
 
 **`.env` di mana-mana:** jika proyek Anda punya `.env`, perangkat yang diluncurkan dari rak menerima variabel itu. Suntinglah, dan bilah status mencatat bahwa mulai-ulang akan mengambilnya — proses yang sedang berjalan dengan jujur mempertahankan lingkungan lamanya.
 
@@ -143,7 +143,7 @@ Lebih dari 70 bahasa disorot sebagaimana mestinya — tumpukan modern, tumpukan 
 
 - **Pelengkapan** mengenali konteks, dan juga *pustaka klasik*: bila proyek Anda membawa jQuery, MooTools, Prototype, Backbone/Underscore, atau Knockout (lewat dependensi npm *atau* tag `<script>` biasa), API mereka muncul saat melengkapi. Proyek jQuery 1.x dan 2.x mendapat penanda akhir masa pakai yang jujur, bukan omelan.
 - **Kerangka Penjelajah (⌘7)** menampilkan struktur berkas untuk 58 jenis; klik untuk melompat.
-- **Peta mini** — siluet seluruh berkas di samping bilah gulir tiap penyunting; klik atau seret untuk menggulir. Seluruh dokumen selalu muat dalam bilah itu: barisnya menyusut seiring berkas membesar. Tampilan ▸ Peta mini menyalakan dan mematikannya sekaligus di semua penyunting yang terbuka.
+- **Minimap** — siluet seluruh berkas di samping bilah gulir tiap penyunting; klik atau seret untuk menggulir. Seluruh dokumen selalu muat dalam bilah itu: barisnya menyusut seiring berkas membesar. Tampilan ▸ Minimap menyalakan dan mematikannya sekaligus di semua penyunting yang terbuka.
 - **Gulir lengket** — deklarasi yang melingkupi bagian atas tampilan (kelasnya, lalu metode yang Anda masuki) tetap tersemat di atas teks, sampai tiga baris dari kode itu sendiri; klik salah satunya untuk melompat ke sana. Bilahnya lenyap ketika tak ada yang melingkupi baris teratas.
 - **Ke simbol (⌥⇧⌘O)** melompat ke fungsi, kelas, aturan, atau judul mana pun di seluruh proyek dengan mengetik namanya — cocok menurut awalan, huruf besar di tengah kata, atau kartu bebas. Indeksnya terbatas dan jujur: `node_modules` dilewati, dan pada proyek yang sangat besar dialognya berkata bahwa ia mengindeks 2.000 berkas pertama, bukannya berpura-pura membaca semuanya.
 - **Jendela uji (⌥⌘2)** menampilkan setiap uji dalam proyek *sebelum apa pun dijalankan*, dan menjalankan satu uji, satu berkas, atau semuanya.
@@ -182,7 +182,7 @@ Klik di margin kiri, pilih **Awakutu berkas (titik henti)**, dan programnya berh
 
 ### Mempertunjukkan dan berbagi
 
-**Tampilan ▸ Mode presentasi** sekaligus memperbesar setiap penyunting yang terbuka, halaman di peramban bawaan, jendela keluaran, dan terminal — lalu mengembalikan semuanya persis seperti semula saat Anda keluar. **Tampilan ▸ Tampilkan ketikan tombol** menampilkan besar-besar kombinasi yang baru Anda tekan, tetapi tidak pernah apa yang Anda ketik. **Sunting ▸ Salin sebagai Markdown** menyalin pilihan sebagai blok berpagar dengan label bahasa yang tepat, dan variannya **dengan tautan** menambahkan tautan GitHub ke baris yang sama. **Alat ▸ Simpan tangkapan layar…** melukis seluruh jendela pada ukuran ganda, dengan varian untuk tab penyunting saja, untuk papan klip, dan untuk menyalin pohon proyek sebagai Markdown.
+**Tampilan ▸ Mode presentasi** sekaligus memperbesar setiap penyunting yang terbuka, halaman di peramban bawaan, jendela keluaran, dan terminal — lalu mengembalikan semuanya persis seperti semula saat Anda keluar. **Tampilan ▸ Tampilkan ketukan tombol** menampilkan besar-besar kombinasi yang baru Anda tekan, tetapi tidak pernah apa yang Anda ketik. **Sunting ▸ Salin sebagai Markdown** menyalin pilihan sebagai blok berpagar dengan label bahasa yang tepat, dan variannya **dengan tautan** menambahkan tautan GitHub ke baris yang sama. **Alat ▸ Simpan Tangkapan Layar…** melukis seluruh jendela pada ukuran ganda, dengan varian untuk tab penyunting saja, untuk papan klip, dan untuk menyalin pohon proyek sebagai Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Studio-studio
@@ -225,7 +225,7 @@ Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SAS
 
 ### Situs web yang menyertai
 
-**Bantuan ▸ Situs NMOX Studio (lokal)** menyajikan situs produk ini dari raknya sendiri, pada antarmuka lokal. Ia berbicara dalam lima belas bahasa yang sama seperti IDE-nya; pemilihnya ada di kaki halaman.
+**Bantuan ▸ Situs Web NMOX Studio (lokal)** menyajikan situs produk ini dari raknya sendiri, pada antarmuka lokal. Ia berbicara dalam lima belas bahasa yang sama seperti IDE-nya; pemilihnya ada di kaki halaman.
 
 ### Peramban (⌥⌘4)
 
@@ -288,7 +288,7 @@ Inilah pangkalan: proyek berjalan, berkas yang terbuka dan yang terkini, proyek 
 
 ### Pintasan Emacs (juga Eclipse dan IntelliJ)
 
-Alat ▸ Opsi ▸ Peta Tombol mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.
+Alat ▸ Opsi ▸ Peta Tombol (di macOS: NMOX Studio ▸ Settings… ▸ Peta Tombol) mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Jaring pengaman (yang tidak perlu Anda lakukan apa-apa untuk mendapatkannya)
@@ -326,7 +326,7 @@ Tenang, sekali sehari: bila ada rilis yang lebih baru, sebuah pemberitahuan memb
 
 ### Periksa pekerjaan Anda
 
-Sebagian ruang membawa titik pemeriksaan: pilih salah satunya, dan **Berkas ▸ Periksa Pekerjaan Saya** benar-benar memeriksa latihannya — apa yang dinyatakan berkas diperiksa dengan Java murni, termasuk pemeriksaan *ketidakhadiran*, satu-satunya cara memastikan «Anda mengubah judulnya»: teks asli contoh itu harus sudah lenyap. Apa yang dinyatakan perintah lewat rantai perkakas ruang itu sendiri. Setiap ✗ menjawab dengan petunjuk ruang itu, dan bila gagal laporannya menawarkan **Jelaskan dengan KVASIR…**: titik yang gagal dan, untuk pemeriksaan berkas, berkas Anda sendiri, dibatasi dan di bawah izin yang menyebut persis apa yang keluar. Jawabannya terbaca seperti seorang tutor: apa yang harus diubah, lalu periksa lagi.
+Sebagian ruang membawa titik pemeriksaan: pilih salah satunya, dan **Berkas ▸ Periksa Hasil Kerja** benar-benar memeriksa latihannya — apa yang dinyatakan berkas diperiksa dengan Java murni, termasuk pemeriksaan *ketidakhadiran*, satu-satunya cara memastikan «Anda mengubah judulnya»: teks asli contoh itu harus sudah lenyap. Apa yang dinyatakan perintah lewat rantai perkakas ruang itu sendiri. Setiap ✗ menjawab dengan petunjuk ruang itu, dan bila gagal laporannya menawarkan **Jelaskan dengan KVASIR…**: titik yang gagal dan, untuk pemeriksaan berkas, berkas Anda sendiri, dibatasi dan di bawah izin yang menyebut persis apa yang keluar. Jawabannya terbaca seperti seorang tutor: apa yang harus diubah, lalu periksa lagi.
 
 ### Tutorial Anda sendiri
 

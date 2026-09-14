@@ -1,5 +1,9 @@
 # The Agent Port (MCP)
 
+<!-- languages -->
+**English** · [Español](agent-port.es.md) · [Français](agent-port.fr.md) · [Deutsch](agent-port.de.md) · [Русский](agent-port.ru.md) · [Українська](agent-port.uk.md) · [Polski](agent-port.pl.md) · [Português (Brasil)](agent-port.pt.md) · [Bahasa Indonesia](agent-port.id.md) · [Filipino](agent-port.tl.md) · [Tiếng Việt](agent-port.vi.md) · [简体中文](agent-port.zh.md) · [हिन्दी](agent-port.hi.md) · [עברית](agent-port.he.md) · [العربية](agent-port.ar.md)
+<!-- /languages -->
+
 *Point an AI agent at your IDE — and let it READ, never run.*
 
 ![The Agent Port dialog — the loopback endpoint, the per-start token (a placeholder in this shot), and the ready-made client config to copy](../images/tabs/agent-port.png)
@@ -14,7 +18,7 @@ way to spawn a process, write a file, or stop a run.
 
 ## 1. Start it
 
-**Do:** Tools ▸ **Agent Port (MCP)…** ▸ **Start**, then **Copy Config**.
+**Do:** Tools ▸ **Agent Port (MCP)…** (choosing it starts the port), then **Copy Config**.
 
 **See:** A dialog with the endpoint (loopback only, a fresh port), a
 per-start bearer token, and a ready-made client configuration:

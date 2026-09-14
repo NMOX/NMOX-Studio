@@ -1,5 +1,9 @@
 # Tutorial: API Studio
 
+<!-- languages -->
+**English** · [Español](api-studio.es.md) · [Français](api-studio.fr.md) · [Deutsch](api-studio.de.md) · [Русский](api-studio.ru.md) · [Українська](api-studio.uk.md) · [Polski](api-studio.pl.md) · [Português (Brasil)](api-studio.pt.md) · [Bahasa Indonesia](api-studio.id.md) · [Filipino](api-studio.tl.md) · [Tiếng Việt](api-studio.vi.md) · [简体中文](api-studio.zh.md) · [हिन्दी](api-studio.hi.md) · [עברית](api-studio.he.md) · [العربية](api-studio.ar.md)
+<!-- /languages -->
+
 API Studio is a Postman-style REST workbench built into the IDE. You
 build requests, run assertions against the response, and — uniquely —
 every response is graded against the web's security-header standards.
@@ -8,7 +12,7 @@ every response is graded against the web's security-header standards.
 
 ## Open it
 
-`⌥⌘8`, or the **API Studio** tab (open by default on first launch).
+`⌥⌘8`, or the **API Studio** row in the Welcome's TOOLING column.
 
 ## Steps
 
@@ -45,7 +49,7 @@ every response is graded against the web's security-header standards.
    command Send would run, on your clipboard.
 
 7. **Ask KVASIR about a bad response.** When a send comes back wrong,
-   press **Explain with KVASIR…**. A consent dialog first tells you
+   press **Explain…**. A consent dialog first tells you
    exactly what would leave your machine — method, URL with query
    *values* masked, status, safe headers (credential headers already
    dropped and counted), and a capped body — and nothing is sent until

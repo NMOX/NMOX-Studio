@@ -1,5 +1,9 @@
 # Tutorial: Polyglot editing & debugging
 
+<!-- languages -->
+**English** · [Español](polyglot-editing-and-debugging.es.md) · [Français](polyglot-editing-and-debugging.fr.md) · [Deutsch](polyglot-editing-and-debugging.de.md) · [Русский](polyglot-editing-and-debugging.ru.md) · [Українська](polyglot-editing-and-debugging.uk.md) · [Polski](polyglot-editing-and-debugging.pl.md) · [Português (Brasil)](polyglot-editing-and-debugging.pt.md) · [Bahasa Indonesia](polyglot-editing-and-debugging.id.md) · [Filipino](polyglot-editing-and-debugging.tl.md) · [Tiếng Việt](polyglot-editing-and-debugging.vi.md) · [简体中文](polyglot-editing-and-debugging.zh.md) · [हिन्दी](polyglot-editing-and-debugging.hi.md) · [עברית](polyglot-editing-and-debugging.he.md) · [العربية](polyglot-editing-and-debugging.ar.md)
+<!-- /languages -->
+
 NMOX Studio edits 70+ languages with real syntax highlighting, a
 Navigator outline, and language-server intelligence — and it debugs
 JavaScript/TypeScript (and the browser) out of the box with breakpoints
@@ -17,7 +21,7 @@ an Express route or a plain `node server.js`.
 1. **Open a source file.** Highlighting, bracket matching, code folding,
    and mark-occurrences all come up automatically. The **Navigator**
    shows the file's outline; language servers (installed via
-   `Tools ▸ Environment Doctor` hints) add completion and diagnostics.
+   `Tools ▸ Environment Doctor…` hints) add completion and diagnostics.
 
 2. **Set a breakpoint.** Click the editor gutter on a line inside your
    handler — a breakpoint dot appears.
@@ -46,6 +50,6 @@ an Express route or a plain `node server.js`.
 
 ## Next
 
-- **Run Focused Test** debugs a single test method per language.
+- **Run Focused Test** runs a single test method per language.
 - Diagnostics from rack tools (eslint/tsc/phpstan) land in the platform
   Action Items window.

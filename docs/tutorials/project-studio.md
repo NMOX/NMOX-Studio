@@ -1,5 +1,9 @@
 # Tutorial: Project Studio
 
+<!-- languages -->
+**English** · [Español](project-studio.es.md) · [Français](project-studio.fr.md) · [Deutsch](project-studio.de.md) · [Русский](project-studio.ru.md) · [Українська](project-studio.uk.md) · [Polski](project-studio.pl.md) · [Português (Brasil)](project-studio.pt.md) · [Bahasa Indonesia](project-studio.id.md) · [Filipino](project-studio.tl.md) · [Tiếng Việt](project-studio.vi.md) · [简体中文](project-studio.zh.md) · [हिन्दी](project-studio.hi.md) · [עברית](project-studio.he.md) · [العربية](project-studio.ar.md)
+<!-- /languages -->
+
 Project Studio is where projects are born and managed: templates, a
 platform-native file tree, a package.json editor, and rack presets — plus
 the IDE-native **Run / Build / Test / Clean** that work without you ever
@@ -9,12 +13,12 @@ opening a terminal.
 
 ## Open it
 
-`⌥⌘6` region / the **Project Studio** surface, or `File ▸ New Project…`.
+The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Project…`.
 
 ## Steps
 
 1. **Scaffold a project.** `File ▸ New Project…` → pick a template
-   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, and more).
+   (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, and more).
    Choose a location (defaults to `~/NMOX`) and finish. The project opens
    and the rack aims at it.
 
@@ -25,14 +29,14 @@ opening a terminal.
    fast.
 
 3. **Run it — no terminal.** Use the IDE's **Run** (or press the rack's
-   IGNITION GO). It resolves your package manager from the project's own
+   IGNITION IGNITE). It resolves your package manager from the project's own
    lockfile/corepack pin and runs the right command; output streams into
    the rack. **Build**, **Test**, and **Clean** work the same way.
 
 4. **Edit package.json.** The built-in editor gives structured editing of
    scripts and dependencies.
 
-5. **Load a preset.** The presets menu wires a ready-made rack for a
+5. **Load a preset.** The Task Rack's **Presets ▾** menu wires a ready-made rack for a
    workflow — Uptime Watch, Ship Gate, Modern Web, Monorepo Lanes, Web3
    Bench, and more — so you don't build the patch by hand.
 

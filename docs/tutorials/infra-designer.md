@@ -1,5 +1,9 @@
 # Tutorial: Infra Designer
 
+<!-- languages -->
+**English** · [Español](infra-designer.es.md) · [Français](infra-designer.fr.md) · [Deutsch](infra-designer.de.md) · [Русский](infra-designer.ru.md) · [Українська](infra-designer.uk.md) · [Polski](infra-designer.pl.md) · [Português (Brasil)](infra-designer.pt.md) · [Bahasa Indonesia](infra-designer.id.md) · [Filipino](infra-designer.tl.md) · [Tiếng Việt](infra-designer.vi.md) · [简体中文](infra-designer.zh.md) · [हिन्दी](infra-designer.hi.md) · [עברית](infra-designer.he.md) · [العربية](infra-designer.ar.md)
+<!-- /languages -->
+
 Infra Designer is a Node-RED-style canvas for cloud infrastructure. You
 drag nodes (droplets, firewalls, DNS records…), wire them, and deploy to
 DigitalOcean, Hetzner, or Cloudflare — with cost framing before you spend
@@ -9,7 +13,7 @@ anything. This tutorial builds a plan and dry-runs it, so no money moves.
 
 ## Open it
 
-`⌥⌘9`, or the **Infra** tab.
+`⌥⌘9`, or the **Infra Designer** tab.
 
 ## Steps
 
@@ -29,8 +33,8 @@ anything. This tutorial builds a plan and dry-runs it, so no money moves.
    API plan (create firewall, create droplet, attach…) and the cost, but
    nothing is created. The deploy log shows each step.
 
-5. **Go live (when you're ready).** Add a provider token under
-   `Options` (stored in the OS keychain), and DEPLOY executes the plan
+5. **Go live (when you're ready).** Add a provider token with **Tokens…**
+   (or Options ▸ Rack & Cloud; stored in the OS keychain), and DEPLOY executes the plan
    for real, resolving cross-node references (a droplet's IP flows into
    the DNS record) as resources come up.
 

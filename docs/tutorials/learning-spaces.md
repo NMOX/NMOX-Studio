@@ -1,5 +1,9 @@
 # Tutorial: Learning Spaces
 
+<!-- languages -->
+**English** · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
+<!-- /languages -->
+
 ![The New Learning Space picker — search across the built-in tutorials, with the availability probe telling you up front whether this machine has the space's tool](../images/tabs/learning-spaces.png)
 
 A Learning Space is a self-contained sandbox for learning a language,
@@ -24,8 +28,8 @@ into. There are 93 built in.
    walks you through it, pointing at the relevant console or device.
 
 3. **Type into the REPL.** The pre-wired rack includes a **REPL** device
-   whose ENGINE knob is set for the space's language (26 engines, each
-   with force-interactive flags seeded). Type an expression, press
+   whose ENGINE knob is set for the space's language (one engine per REPL language in the
+   catalog, each with force-interactive flags seeded). Type an expression, press
    enter — output streams onto the REPL screen. Missing interpreter?
    The **INSTALL** button installs it from the rack.
 

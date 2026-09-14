@@ -1,5 +1,9 @@
 # Tutorial: Explain anything with KVASIR
 
+<!-- languages -->
+**English** · [Español](explain-anything.es.md) · [Français](explain-anything.fr.md) · [Deutsch](explain-anything.de.md) · [Русский](explain-anything.ru.md) · [Українська](explain-anything.uk.md) · [Polski](explain-anything.pl.md) · [Português (Brasil)](explain-anything.pt.md) · [Bahasa Indonesia](explain-anything.id.md) · [Filipino](explain-anything.tl.md) · [Tiếng Việt](explain-anything.vi.md) · [简体中文](explain-anything.zh.md) · [हिन्दी](explain-anything.hi.md) · [עברית](explain-anything.he.md) · [العربية](explain-anything.ar.md)
+<!-- /languages -->
+
 KVASIR started as a rack device that explains failed runs. It now
 reaches four places — the rack, the editor, API Studio, and DB Studio —
 and every face follows the same three laws: **you see exactly what
@@ -34,8 +38,7 @@ OS keychain, or export `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or
    gate, because the failure-flow consent explicitly promises source
    never leaves the machine.
 
-3. **An API response (API Studio).** After a send, press **Explain
-   with KVASIR…**. What's sent: method, URL with query values masked,
+3. **An API response (API Studio).** After a send, press **Explain…**. What's sent: method, URL with query values masked,
    status, headers with credentials dropped-and-counted, and a capped
    body. Useful the moment a 401 or an odd CORS header shows up.
 
@@ -47,8 +50,8 @@ OS keychain, or export `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` or
 
 Every face opens a conversation window: ask follow-ups, and the model
 sees the full history of that exchange (capped at ten exchanges, said
-in the transcript). The **Fast/Deep** choice (Haiku/Sonnet) is
-remembered, and fixed per conversation so the transcript never lies
+in the transcript). The **Fast/Deep** choice (the chosen provider's quick and strong
+model) is remembered, and fixed per conversation so the transcript never lies
 about who answered.
 
 ## Try it in two minutes

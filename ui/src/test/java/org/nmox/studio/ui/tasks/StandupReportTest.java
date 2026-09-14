@@ -128,4 +128,31 @@ class StandupReportTest {
         assertThat(md).doesNotContain("day ");
     }
 
+    @Test
+    @DisplayName("the report speaks the reader's language, down to the brackets (v2.153.0)")
+    void speaksTheReadersLanguage() {
+        java.util.Locale before = java.util.Locale.getDefault();
+        try {
+            TaskBoard b = TaskBoard.starter("To Do", "Doing", "Done");
+            TaskBoard.Card c = b.addCard(1, "in flight", "");
+            b.clockIn(c.id(), NOON - HOUR);
+            TaskBoard.Card stuck = b.addCard(1, "waiting on cert", "");
+            b.block(stuck.id(), "", "order the cert");
+
+            java.util.Locale.setDefault(java.util.Locale.GERMAN);
+            String de = report(b, List.of());
+            assertThat(de).startsWith("## Standup — ").contains("### Heute\n")
+                    .contains("- in flight (1h 00m, Uhr läuft)")
+                    .contains("### Blocker\n- waiting on cert — ohne Verantwortliche · Auflösung: order the cert")
+                    .doesNotContain("Today").doesNotContain("clock running").doesNotContain("unowned");
+
+            // Chinese brackets and joins its notes full-width, as its bundle says
+            java.util.Locale.setDefault(java.util.Locale.CHINESE);
+            assertThat(report(b, List.of())).startsWith("## 站会 — ")
+                    .contains("- in flight（1h 00m，计时进行中）");
+        } finally {
+            java.util.Locale.setDefault(before);
+        }
+    }
+
 }

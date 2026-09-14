@@ -73,7 +73,8 @@ the latest GitHub release. Install, restart when prompted, done — no
 re-download of the full app. The platform also checks quietly on its
 own (weekly by default; change or disable it under **Tools ▸ Plugins ▸
 Settings**), separate from the daily one-line version check in
-Options ▸ General. Since v2.42.0 every module is signed and since
+Options ▸ General (NMOX Studio ▸ Settings… on macOS, Tools ▸ Options
+elsewhere). Since v2.42.0 every module is signed and since
 v2.43.0 the signing certificate ships inside the product, so the
 installer runs with no certificate prompts at all (self-signed until
 v3.0 — verify any download against the GPG-signed `SHA256SUMS` on the
@@ -1520,7 +1521,7 @@ stopped", a stopped test reads "Focused test stopped" — never a
 failure.
 
 **Emacs (and Eclipse, IntelliJ) keyboard shortcuts:** Tools ▸ Options ▸
-Keymap switches the whole keymap profile — Emacs movement and kill/yank
+Keymap (on macOS, NMOX Studio ▸ Settings… ▸ Keymap) switches the whole keymap profile — Emacs movement and kill/yank
 chords in every editor, or the Eclipse/IDEA sets if those are your
 muscle memory. Every NMOX shortcut (the ⌥⌘ window family, ⌘P Go to
 File, Emmet's ⌥⌘E) is registered in all five profiles, so switching

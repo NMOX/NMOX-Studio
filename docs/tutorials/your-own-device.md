@@ -1,5 +1,9 @@
 # Tutorial: write your own rack device
 
+<!-- languages -->
+**English** · [Español](your-own-device.es.md) · [Français](your-own-device.fr.md) · [Deutsch](your-own-device.de.md) · [Русский](your-own-device.ru.md) · [Українська](your-own-device.uk.md) · [Polski](your-own-device.pl.md) · [Português (Brasil)](your-own-device.pt.md) · [Bahasa Indonesia](your-own-device.id.md) · [Filipino](your-own-device.tl.md) · [Tiếng Việt](your-own-device.vi.md) · [简体中文](your-own-device.zh.md) · [हिन्दी](your-own-device.hi.md) · [עברית](your-own-device.he.md) · [العربية](your-own-device.ar.md)
+<!-- /languages -->
+
 *One sitting. You'll add a device to the rack with a text editor, press
 its button, watch it run a real command, and wire its output into
 MONITOR — without writing a line of Java.*
@@ -49,15 +53,15 @@ Put this in `~/.nmox/devices.d/counter.json`:
 
 Everything in it is doing a job: the **knob** becomes `{{kind}}` in the
 command, the **QUERY** role paints the button blue (the colour law: blue
-asks, green does, red stops), and the two ports make it patchable.
+asks, green does, red stops), and the three ports make it patchable.
 
 ## 3. Mount it
 
-Open the **Rack** (⌥⌘6 family / the Rack tab) and look in the shelf's
+Open the **Task Rack** (`⌘9`, or the Task Rack tab) and look in the shelf's
 **Observe** drawer. COUNTER is there, with your tagline under it. Drag
 it onto a rail.
 
-Hover its How-to-use card — that is your `usage` text, which is why the
+Right-click it and choose **How to use COUNTER…** — that is your `usage` text, which is why the
 format insists on two real lines.
 
 ## 4. Press it
@@ -78,7 +82,7 @@ Decline it instead and nothing spawns — the refusal is the feature.
 
 ## 5. Wire it up
 
-Drag a cable from COUNTER's **OUT** to MONITOR's **TAP**. Press COUNT
+Drag a cable from COUNTER's **OUT** to MONITOR's **IN**. Press COUNT
 again: every line lands on the monitor, because a declared `OUT`/`DATA`
 port receives the run's output with no extra configuration.
 

@@ -1,5 +1,9 @@
 # Tutorial: The Docker panel
 
+<!-- languages -->
+**English** · [Español](docker-panel.es.md) · [Français](docker-panel.fr.md) · [Deutsch](docker-panel.de.md) · [Русский](docker-panel.ru.md) · [Українська](docker-panel.uk.md) · [Polski](docker-panel.pl.md) · [Português (Brasil)](docker-panel.pt.md) · [Bahasa Indonesia](docker-panel.id.md) · [Filipino](docker-panel.tl.md) · [Tiếng Việt](docker-panel.vi.md) · [简体中文](docker-panel.zh.md) · [हिन्दी](docker-panel.hi.md) · [עברית](docker-panel.he.md) · [العربية](docker-panel.ar.md)
+<!-- /languages -->
+
 The Docker panel is a control surface for your local Docker engine —
 containers, images, volumes, networks — plus a **Dockerize** tab that
 generates a production Dockerfile for your project. Its rack counterpart
@@ -10,12 +14,12 @@ is the **HARBOR** device.
 ## Before you start
 
 Have Docker running locally (`docker version` should succeed;
-`Tools ▸ Environment Doctor` will confirm).
+`Tools ▸ Environment Doctor…` will confirm).
 
 ## Steps
 
-1. **Open the panel.** Click the **Docker** tab (open by default on first
-   launch). The **Engine** overview shows whether the daemon is up.
+1. **Open the panel.** Press `⌘8`, or click **Docker Panel** in the
+   Welcome's TOOLING column. The **Engine** overview shows whether the daemon is up.
 
 2. **Inspect containers.** The **Containers** tab lists what's running —
    names, images, ports, status. **Images**, **Volumes**, and

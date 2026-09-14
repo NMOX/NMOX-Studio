@@ -73,7 +73,7 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 
 ![Świeży eksperyment Express: przewodnik otwarty, zależności zainstalowane, API już odpowiada](images/experiment-walkthrough.png)
 
-**Uruchom, zbuduj, przetestuj — i zatrzymaj:** ▶ na pasku (F6) uruchamia projekt tak, jak uruchamia go jego zestaw narzędzi: skrypt `start`, jeśli package.json go ma, `cargo run`, `go run`, `dotnet run`, a dla katalogu z HTML-em mały serwer statyczny na pierwszym wolnym porcie od 8080. Zbuduj, Przetestuj i Wyczyść są obok i w menu Uruchom. Serwer deweloperski, który ogłosi swój adres, zapala wskaźnik ⇄ na pasku stanu i otwiera stronę we wbudowanej przeglądarce. Wszystko za pierwszym razem przechodzi przez pytanie o zaufanie do przestrzeni roboczej. Uruchomienie, które nie mogło wystartować, mówi to wprost i proponuje otwarcie Doktora środowiska. Aby zatrzymać: ■ na prawo od Debuguj (⌥⌘.) zatrzymuje naraz każde działające polecenie i mówi, co zatrzymał; **Uruchom ▸ Zatrzymaj** zatrzymuje jedno i proponuje potem **Powtórz**. ■ widzi wszystko, co produkt uruchamia za ciebie, łącznie z instalacjami; po najechaniu podpowiedź nazywa dokładnie to, co zatrzymałoby naciśnięcie, i od kiedy każde działa.
+**Uruchom, zbuduj, przetestuj — i zatrzymaj:** ▶ na pasku (F6) uruchamia projekt tak, jak uruchamia go jego zestaw narzędzi: skrypt `start`, jeśli package.json go ma, `cargo run`, `go run`, `dotnet run`, a dla katalogu z HTML-em mały serwer statyczny na pierwszym wolnym porcie od 8080. Zbuduj, Przetestuj i Wyczyść są obok i w menu Uruchom. Serwer deweloperski, który ogłosi swój adres, zapala wskaźnik ⇄ na pasku stanu i otwiera stronę we wbudowanej przeglądarce. Wszystko za pierwszym razem przechodzi przez pytanie o zaufanie do przestrzeni roboczej. Uruchomienie, które nie mogło wystartować, mówi to wprost i proponuje otwarcie Doktora środowiska. Aby zatrzymać: ■ na prawo od Debuguj (⌥⌘.) zatrzymuje naraz każde działające polecenie i mówi, co zatrzymał; **Uruchom ▸ Zatrzymaj budowanie/uruchomienie** zatrzymuje jedno i proponuje potem **Powtórz**. ■ widzi wszystko, co produkt uruchamia za ciebie, łącznie z instalacjami; po najechaniu podpowiedź nazywa dokładnie to, co zatrzymałoby naciśnięcie, i od kiedy każde działa.
 
 **`.env` wszędzie:** jeśli twój projekt ma `.env`, urządzenia uruchamiane ze stojaka dostają te zmienne. Zmień go, a pasek stanu odnotuje, że ponowne uruchomienia je podchwycą — działające procesy uczciwie zachowują swoje dawne środowisko.
 
@@ -182,7 +182,7 @@ Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrz
 
 ### Pokazywanie i dzielenie się
 
-**Widok ▸ Tryb prezentacji** naraz powiększa każdy otwarty edytor, stronę we wbudowanej przeglądarce, okno wyjścia i terminal — i przy wyjściu przywraca wszystko dokładnie tak, jak było. **Widok ▸ Pokaż naciśnięcia** wyświetla wielkim drukiem właśnie naciśnięty skrót, ale nigdy tego, co piszesz. **Edycja ▸ Kopiuj jako Markdown** kopiuje zaznaczenie jako ogrodzony blok z właściwą etykietą języka, a wariant **z odnośnikiem** dokłada odnośnik GitHub do tych samych wierszy. **Narzędzia ▸ Zapisz zrzut…** maluje całe okno w podwójnym rozmiarze, a warianty obejmują samą kartę edytora, schowek i drzewo projektu jako Markdown.
+**Widok ▸ Tryb prezentacji** naraz powiększa każdy otwarty edytor, stronę we wbudowanej przeglądarce, okno wyjścia i terminal — i przy wyjściu przywraca wszystko dokładnie tak, jak było. **Widok ▸ Pokazuj naciśnięcia klawiszy** wyświetla wielkim drukiem właśnie naciśnięty skrót, ale nigdy tego, co piszesz. **Edycja ▸ Kopiuj jako Markdown** kopiuje zaznaczenie jako ogrodzony blok z właściwą etykietą języka, a wariant **z odnośnikiem** dokłada odnośnik GitHub do tych samych wierszy. **Narzędzia ▸ Zapisz zrzut ekranu…** maluje całe okno w podwójnym rozmiarze, a warianty obejmują samą kartę edytora, schowek i drzewo projektu jako Markdown.
 
 <a id="6-the-studios"></a>
 ## 6. Studia
@@ -288,7 +288,7 @@ To macierzysty port: bieżący projekt, pliki otwarte i ostatnie, ostatnie proje
 
 ### Skróty Emacsa (a także Eclipse i IntelliJ)
 
-Narzędzia ▸ Opcje ▸ Skróty klawiszowe przełącza cały profil: ruchy oraz wycinanie i wklejanie Emacsa w każdym edytorze, albo zestawy Eclipse i IDEA, jeśli tam siedzi twoja pamięć mięśniowa. Każdy skrót NMOX jest zapisany we wszystkich pięciu profilach, więc zmiana profilu nigdy nie kosztuje cię skrótów studiów.
+Narzędzia ▸ Opcje ▸ Skróty klawiszowe (w macOS: NMOX Studio ▸ Settings… ▸ Skróty klawiszowe) przełącza cały profil: ruchy oraz wycinanie i wklejanie Emacsa w każdym edytorze, albo zestawy Eclipse i IDEA, jeśli tam siedzi twoja pamięć mięśniowa. Każdy skrót NMOX jest zapisany we wszystkich pięciu profilach, więc zmiana profilu nigdy nie kosztuje cię skrótów studiów.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Siatki bezpieczeństwa (to, po co nie trzeba nic robić)
@@ -330,7 +330,7 @@ Niektóre przestrzenie mają punkty kontrolne: wybierz taką, a **Plik ▸ Spraw
 
 ### Twoje własne kursy
 
-Wrzuć plik `*.json` do `~/.nmox/learn-catalog.d/`, a dołączy on do wyboru, w tym samym schemacie co wbudowane; zgodny `slug` zastępuje domowy. Uczysz? Pisz, budując: zrób z ćwiczenia zwykły projekt, a **Plik ▸ Wyeksportuj jako przestrzeń nauki…** złoży ten plik za ciebie — pliki przykładowe, twój `TUTORIAL.md`, sterownik uruchomienia i twoje punkty kontrolne — sprawdzony parserem samego wyboru, zanim zostanie zapisany, więc to, co wręczysz uczniom, jest dokładnie tym, co wczyta ich wybór.
+Wrzuć plik `*.json` do `~/.nmox/learn-catalog.d/`, a dołączy on do wyboru, w tym samym schemacie co wbudowane; zgodny `slug` zastępuje domowy. Uczysz? Pisz, budując: zrób z ćwiczenia zwykły projekt, a **Plik ▸ Eksportuj jako przestrzeń nauki…** złoży ten plik za ciebie — pliki przykładowe, twój `TUTORIAL.md`, sterownik uruchomienia i twoje punkty kontrolne — sprawdzony parserem samego wyboru, zanim zostanie zapisany, więc to, co wręczysz uczniom, jest dokładnie tym, co wczyta ich wybór.
 
 ### Katalog
 

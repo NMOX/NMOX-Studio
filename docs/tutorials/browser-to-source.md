@@ -1,5 +1,9 @@
 # Browser to Source: pick, jump, restyle
 
+<!-- languages -->
+**English** · [Español](browser-to-source.es.md) · [Français](browser-to-source.fr.md) · [Deutsch](browser-to-source.de.md) · [Русский](browser-to-source.ru.md) · [Українська](browser-to-source.uk.md) · [Polski](browser-to-source.pl.md) · [Português (Brasil)](browser-to-source.pt.md) · [Bahasa Indonesia](browser-to-source.id.md) · [Filipino](browser-to-source.tl.md) · [Tiếng Việt](browser-to-source.vi.md) · [简体中文](browser-to-source.zh.md) · [हिन्दी](browser-to-source.hi.md) · [עברית](browser-to-source.he.md) · [العربية](browser-to-source.ar.md)
+<!-- /languages -->
+
 *One sitting. You'll click an element in the in-app Browser, land in
 the file that produced it, change its style from DevTools, and watch
 the change arrive in your stylesheet — without retyping anything.*

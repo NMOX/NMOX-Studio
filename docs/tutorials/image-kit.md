@@ -1,5 +1,9 @@
 # Tutorial: Image Kit (Web) — press your images
 
+<!-- languages -->
+**English** · [Español](image-kit.es.md) · [Français](image-kit.fr.md) · [Deutsch](image-kit.de.md) · [Русский](image-kit.ru.md) · [Українська](image-kit.uk.md) · [Polski](image-kit.pl.md) · [Português (Brasil)](image-kit.pt.md) · [Bahasa Indonesia](image-kit.id.md) · [Filipino](image-kit.tl.md) · [Tiếng Việt](image-kit.vi.md) · [简体中文](image-kit.zh.md) · [हिन्दी](image-kit.hi.md) · [עברית](image-kit.he.md) · [العربية](image-kit.ar.md)
+<!-- /languages -->
+
 Images are usually the heaviest thing a site ships. The Image Kit
 finds your project's JPEGs and PNGs and presses them for the web:
 smaller `.min.jpg` siblings by pure-Java re-encoding (nothing to
