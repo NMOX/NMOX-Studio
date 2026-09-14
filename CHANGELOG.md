@@ -4,6 +4,59 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.152.0] - 2026-09-14
+
+**NMOX Studio speaks Egyptian Arabic, with digits a developer can type back.**
+العربية is the fifteenth language and the second right-to-left one. The layout
+was built for Hebrew in v2.148.0 and v2.151.0, so Arabic arrives on that work.
+What this release had to decide was what makes Arabic read as Arabic in an IDE.
+
+- **The Egyptian register.** Everyday words are the ones an Egyptian developer
+  says (`مفيش`, `دلوقتي`, `عشان`). Menu commands are action nouns (`حفظ`, `فتح`),
+  as in every Arabic program. A sentence addressed to the reader uses the plural
+  imperative (`افتحوا المجلد`), because an Arabic imperative has a gender. Hebrew
+  made the same choice for the same reason, and `NativeTypographyGateTest` now
+  holds it as Arabic's register rule.
+- **Arabic punctuation and quotation marks.** `،` `؛` `؟` and «guillemets», which
+  the bidi algorithm mirrors correctly in a right-to-left line. A new rule refuses
+  an ASCII comma, semicolon or question mark attached to an Arabic word.
+- **Digits are Western, and that was measured before it was decided.** Under `ar`
+  and `ar-EG` the JDK formats numbers in Arabic-Indic digits: `8080` becomes
+  `٨٠٨٠`. In an IDE that puts a port reading `٨٠٨٠` beside a URL reading
+  `localhost:8080`, and turns a line number or a version into something a reader
+  cannot type back. The product runs Arabic as `ar-u-nu-latn`. The words,
+  `Bundle_ar` and the mirrored layout stay Arabic; only the digits change.
+  `UiLocale.readableDigits` applies the rule at startup (an `@OnStart`, so a first
+  launch on an Egyptian desktop gets it through the system locale) and on a live
+  language switch. It reads each locale's own zero digit rather than a list, so of
+  the fifteen languages only Arabic is affected.
+- **Everything a Hebrew reader has, an Arabic reader has.** 3,613 values across
+  every product bundle and platform overlay, the learning catalogue (93 pitches,
+  3 names, 9 checkpoints), the full user guide, the website's catalogue and
+  language switch, Inno Setup's own `Arabic.isl`, and the Linux desktop entry.
+
+**Hebrew named six modules as the editor.** In v2.151.0 the Plugin Manager listed
+apiclient, branding, core, dbstudio, tools and web3 as `עורך NMOX Studio`, with the
+editor's descriptions: one bundle's Hebrew had been copied into seven.
+`ModuleDescriptorsSpeakTest` asked only that each key be present and non-blank,
+and a copied value is both. Each module now has its own Hebrew, and a new law
+refuses two modules sharing a name or a description in any language.
+
+**The gates found six things in the Arabic build:**
+
+- The IRC network editor's `Port` label was still English.
+- The Find dialog's hint lost its escape backslash, so `\ = escape` read as a
+  stray space. The file writer had treated a lone `\` as an escaped space.
+- The KVASIR gesture was written as instructions. It is a menu path, so it is
+  now written in action nouns like every other path.
+- The register rule first matched `شغل` as a verb, but in this product it is
+  the noun "work". The punctuation rule first matched `?` in `? = any
+  character`, which is a wildcard, not a question. Both rules now match only
+  what they mean.
+- The Arabic guide's menu paths are now spelled exactly as the menus they name.
+- The Docker panel's `docker ps` headings, Hetzner's `HZ` family and the Spaces
+  product name stay Latin, recorded with the same reasons as for Hebrew.
+
 ## [2.151.0] - 2026-09-14
 
 **NMOX Studio speaks Hebrew, and the whole window reads right to left.** עברית
@@ -21122,6 +21175,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.152.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.151.0...v2.152.0
 [2.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.1...v2.151.0
 [2.150.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.0...v2.150.1
 [2.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.149.0...v2.150.0
