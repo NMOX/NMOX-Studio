@@ -77,14 +77,14 @@ commits ; sinon, cette section n’apparaît tout simplement jamais.
    partir des horodatages de fin des cartes — la ligne pâle est l’idéal, la
    ligne vive est ce qui s’est passé, et le futur reste vierge.
 
-7. **Rédigez le standup.** Pressez **Standup…**. Le rapport, rédigé en
-   anglais, s’ouvre en markdown avec un bouton **Copier dans le
-   presse-papiers** : **Yesterday** et **Today** à partir des horodatages de
+7. **Rédigez le standup.** Pressez **Standup…**. Le rapport s’ouvre en
+   markdown avec un bouton **Copier dans le
+   presse-papiers** : **Hier** et **Aujourd’hui** à partir des horodatages de
    fin et des sessions découpées par jour (un chrono en marche se lit
-   « clock running »), **Blockers** à partir du registre, **Commits (since
-   yesterday)** à partir de `git log`. Les sections qui n’ont rien à dire sont
+   « chrono en marche »), **Blocages** à partir du registre, **Commits (depuis
+   hier)** à partir de `git log`. Les sections qui n’ont rien à dire sont
    omises, jamais affichées vides, et l’en-tête commence par le sprint et son
-   décompte de jours (« Sprint 8 · day 3 of 14 »).
+   décompte de jours (« Sprint 8 · jour 3 sur 14 »).
 
    ![Un clic transforme le tableau en rapport quotidien](../images/standup.png)
 

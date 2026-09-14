@@ -39,7 +39,8 @@ aucun argent ne bouge.
    montre chaque étape.
 
 5. **Passez en réel (quand vous êtes prêt).** Ajoutez un jeton de
-   fournisseur dans `Options` (stocké dans le trousseau du système), et
+   fournisseur avec **Jetons…** (ou Options ▸ Rack et cloud ; stocké dans le
+   trousseau du système), et
    DÉPLOYER exécute le plan pour de bon, en résolvant les références entre
    nœuds (l’IP d’un droplet passe dans l’enregistrement DNS) à mesure que
    les ressources apparaissent.

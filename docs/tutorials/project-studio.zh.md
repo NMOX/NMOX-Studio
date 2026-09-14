@@ -14,15 +14,15 @@
 
 ## 步骤
 
-1. **搭一个项目的脚手架。**`文件 ▸ 新建项目…` → 挑一个模板（Angular、Vue、Vanilla JS、Elixir/Phoenix、PHP LEMP，等等）。选一个位置（默认是 `~/NMOX`），然后完成。项目会打开，机架也会瞄准它。
+1. **搭一个项目的脚手架。**`文件 ▸ 新建项目…` → 挑一个模板（Angular、Vue、Vanilla Web、Elixir/Phoenix、PHP LEMP，等等）。选一个位置（默认是 `~/NMOX`），然后完成。项目会打开，机架也会瞄准它。
 
 2. **浏览文件树。**这棵文件树是真正的平台树 — 正确的文件类型图标、根节点上的 `[branch]` git 标注，以及完整的 Open/Cut/Copy/Delete/Rename/Tools/Properties 菜单。沉重的文件夹（`node_modules`、`.git`、`dist`）显示为没有子项，所以巨大的仓库也照样快。
 
-3. **运行它 — 不开终端。**用 IDE 的**运行**（或者按机架上 IGNITION 的 GO）。它会根据项目自己的锁文件或 corepack 版本声明判断出你的包管理器，并运行正确的命令；输出会流进机架。**构建**、**测试**和**清理**也是一样的用法。
+3. **运行它 — 不开终端。**用 IDE 的**运行**（或者按机架上 IGNITION 的 IGNITE）。它会根据项目自己的锁文件或 corepack 版本声明判断出你的包管理器，并运行正确的命令；输出会流进机架。**构建**、**测试**和**清理**也是一样的用法。
 
 4. **编辑 package.json。**内置的编辑器可以结构化地编辑脚本和依赖。
 
-5. **载入一个预设。**预设菜单会为某种工作流程接好一整个现成的机架 — Uptime Watch、Ship Gate、Modern Web、Monorepo Lanes、Web3 Bench，等等 — 这样你就不用手工接配线。
+5. **载入一个预设。**任务机架上的**预设 ▾**菜单会为某种工作流程接好一整个现成的机架 — Uptime Watch、Ship Gate、Modern Web、Monorepo Lanes、Web3 Bench，等等 — 这样你就不用手工接配线。
 
 ## 你刚学到了什么
 

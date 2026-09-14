@@ -82,12 +82,12 @@ Commits lesen; wenn nicht, erscheint dieser Abschnitt einfach nie.
 
 7. **Das Standup schreiben.** Drücken Sie **Standup…**. Der Bericht
    öffnet sich als Markdown mit einem Knopf **In die Zwischenablage
-   kopieren**: **Yesterday** und **Today** aus den Erledigt-Stempeln und
+   kopieren**: **Gestern** und **Heute** aus den Erledigt-Stempeln und
    den nach Tagen aufgeteilten Sitzungen (eine laufende Uhr liest sich
-   „clock running“), **Blockers** aus dem Register, **Commits (since
-   yesterday)** aus `git log`. Abschnitte ohne Inhalt werden weggelassen,
+   „Uhr läuft“), **Blocker** aus dem Register, **Commits (seit
+   gestern)** aus `git log`. Abschnitte ohne Inhalt werden weggelassen,
    nie leer dargestellt, und die Kopfzeile beginnt mit dem Sprint und
-   seinem Tageszähler („Sprint 8 · day 3 of 14“).
+   seinem Tageszähler („Sprint 8 · Tag 3 von 14“).
 
    ![Ein Klick macht aus dem Board den täglichen Bericht](../images/standup.png)
 

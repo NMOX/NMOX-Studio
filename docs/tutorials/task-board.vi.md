@@ -71,13 +71,12 @@ không, phần đó đơn giản là không bao giờ xuất hiện.
    lai thì để trống.
 
 7. **Viết bản standup.** Nhấn **Standup…**. Báo cáo mở ra dưới dạng markdown
-   với nút **Sao chép vào bảng nhớ tạm**: **Yesterday** (hôm qua) và
-   **Today** (hôm nay) lấy từ các dấu hoàn thành và các phiên đã cắt theo
-   ngày (một đồng hồ đang chạy ghi “clock running”), **Blockers** (vướng
-   mắc) lấy từ danh sách vướng mắc, **Commits (since yesterday)** lấy từ
-   `git log`. Phần nào không có gì để nói thì bị lược đi, không bao giờ hiện
-   trống, và phần đầu mở bằng sprint cùng số ngày của nó (“Sprint 8 · day 3
-   of 14”). Các tiêu đề trong báo cáo giữ nguyên tiếng Anh.
+   với nút **Sao chép vào bảng nhớ tạm**: **Hôm qua** và **Hôm nay** lấy
+   từ các dấu hoàn thành và các phiên đã cắt theo ngày (một đồng hồ đang
+   chạy ghi “đồng hồ đang chạy”), **Vướng mắc** lấy từ danh sách vướng mắc,
+   **Commit (từ hôm qua)** lấy từ `git log`. Phần nào không có gì để nói thì
+   bị lược đi, không bao giờ hiện trống, và phần đầu mở bằng sprint cùng số
+   ngày của nó (“Sprint 8 · ngày 3 trên 14”).
 
    ![Một cú nhấp biến bảng thành báo cáo hằng ngày](../images/standup.png)
 

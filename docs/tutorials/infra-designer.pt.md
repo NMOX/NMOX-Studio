@@ -35,7 +35,8 @@ monta um plano e o simula, então nenhum dinheiro sai do lugar.
    custo, mas nada é criado. O registro da implantação mostra cada passo.
 
 5. **Vá para valer (quando estiver pronto).** Acrescente o token de um
-   provedor em `Opções` (guardado no chaveiro do sistema operacional), e o
+   provedor com **Tokens…** (ou em Opções ▸ Rack e nuvem; guardado no
+   chaveiro do sistema operacional), e o
    IMPLANTAR executa o plano de verdade, resolvendo as referências entre nós
    (o IP de um droplet chega ao registro DNS) à medida que os recursos
    sobem.

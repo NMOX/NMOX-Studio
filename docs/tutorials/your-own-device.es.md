@@ -53,7 +53,7 @@ Pon esto en `~/.nmox/devices.d/counter.json`:
 
 Cada línea tiene su función: el **mando** se convierte en `{{kind}}` dentro
 del comando, el rol **QUERY** pinta el botón de azul (la ley del color: el
-azul pregunta, el verde hace, el rojo detiene) y los dos puertos permiten
+azul pregunta, el verde hace, el rojo detiene) y los tres puertos permiten
 cablearlo.
 
 ## 3. Móntalo
@@ -62,7 +62,7 @@ Abre el **Rack de tareas** (`⌘9`, o la pestaña Rack de tareas) y busca en
 el cajón **Observar** del estante. Ahí está COUNTER, con tu lema debajo.
 Arrástralo a un raíl.
 
-Pasa el cursor por su tarjeta de uso — es tu texto `usage`, y por eso el
+Haz clic derecho en él y elige **Cómo usar COUNTER…** — es tu texto `usage`, y por eso el
 formato exige dos líneas de verdad.
 
 ## 4. Púlsalo
@@ -84,7 +84,7 @@ Si la rechazas, no arranca nada — la negativa es la función.
 
 ## 5. Conéctalo
 
-Arrastra un cable desde el **OUT** de COUNTER hasta el **TAP** de MONITOR.
+Arrastra un cable desde el **OUT** de COUNTER hasta el **IN** de MONITOR.
 Vuelve a pulsar COUNT: cada línea llega al monitor, porque un puerto
 `OUT`/`DATA` declarado recibe la salida de la ejecución sin más
 configuración.

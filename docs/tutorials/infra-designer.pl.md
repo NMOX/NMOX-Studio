@@ -36,7 +36,8 @@ wdrożenie, więc nie ruszy żaden grosz.
    każdy krok.
 
 5. **Wdróż naprawdę (gdy będziesz gotów).** Dodaj token dostawcy
-   w `Opcje` (trafia do pęku kluczy systemu), a DEPLOY wykona plan
+   przyciskiem **Tokeny…** (albo w Opcje ▸ Stojak i chmura; trafia do pęku
+   kluczy systemu), a DEPLOY wykona plan
    naprawdę, rozwiązując odwołania między węzłami (IP dropletu wpływa do
    rekordu DNS) w miarę, jak zasoby wstają.
 

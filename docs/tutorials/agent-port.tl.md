@@ -20,7 +20,7 @@ sumulat ng file, o magpahinto ng run.
 
 ## 1. Simulan ito
 
-**Gawin:** Kasangkapan ▸ **Agent Port (MCP)…** ▸ **Simulan**, saka **Kopyahin ang Config**.
+**Gawin:** Kasangkapan ▸ **Agent Port (MCP)…** (sinisimulan ng pagpili rito ang port), saka **Kopyahin ang Config**.
 
 **Makikita:** Isang dialog na may endpoint (loopback lamang, bagong port),
 isang bearer token kada pagsisimula, at isang handang configuration ng client:

@@ -18,7 +18,7 @@ Tab **Studio Proyek**, tertambat di samping Meja Kerja, atau `Berkas ▸ Proyek 
 ## Langkah-langkah
 
 1. **Buat kerangka proyek.** `Berkas ▸ Proyek Baru…` → pilih templat
-   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, dan lainnya).
+   (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, dan lainnya).
    Pilih lokasi (bawaannya `~/NMOX`) lalu selesaikan. Proyeknya terbuka
    dan rak membidiknya.
 
@@ -28,7 +28,7 @@ Tab **Studio Proyek**, tertambat di samping Meja Kerja, atau `Berkas ▸ Proyek 
    (`node_modules`, `.git`, `dist`) tampil tanpa anak sehingga repositori raksasa
    tetap cepat.
 
-3. **Jalankan — tanpa terminal.** Pakai **Jalankan** milik IDE (atau tekan GO
+3. **Jalankan — tanpa terminal.** Pakai **Jalankan** milik IDE (atau tekan IGNITE
    IGNITION di rak). Ia menentukan pengelola paket Anda dari berkas kunci /
    patokan corepack proyek itu sendiri dan menjalankan perintah yang tepat;
    keluarannya mengalir ke rak. **Bangun**, **Uji**, dan **Bersihkan** bekerja
@@ -37,7 +37,7 @@ Tab **Studio Proyek**, tertambat di samping Meja Kerja, atau `Berkas ▸ Proyek 
 4. **Sunting package.json.** Penyunting bawaan memberi penyuntingan terstruktur
    untuk skrip dan dependensi.
 
-5. **Muat sebuah prasetel.** Menu **Preset** merangkai rak siap pakai untuk sebuah
+5. **Muat sebuah prasetel.** Menu **Preset ▾** di Rak Tugas merangkai rak siap pakai untuk sebuah
    alur kerja — Uptime Watch, Ship Gate, Modern Web, Monorepo Lanes, Web3 Bench,
    dan lainnya — sehingga Anda tidak menyusun patch dengan tangan.
 

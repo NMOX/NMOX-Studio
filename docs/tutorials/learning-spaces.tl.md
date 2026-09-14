@@ -32,7 +32,8 @@ built-in na lugar).
    device.
 
 3. **Magtipa sa REPL.** May device na **REPL** ang nakakabit na rack, na
-   nakatakda ang ENGINE knob sa wika ng lugar (26 engine, bawat isa may
+   nakatakda ang ENGINE knob sa wika ng lugar (iisang engine para sa bawat wikang may REPL sa
+   katalogo, bawat isa may
    nakahandang flag para sapilitang interactive). Magtipa ng expression,
    pindutin ang Enter — umaagos ang output sa screen ng REPL. Walang
    interpreter? Ini-install ito ng pindutang **INSTALL** mula sa rack.

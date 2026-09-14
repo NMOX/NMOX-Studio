@@ -18,7 +18,7 @@ bearbeiten. Dieses Tutorial nutzt SQLite, weil es keinen Server braucht.
 ## Schritte
 
 1. **Legen Sie eine SQLite-Verbindung an.** Klicken Sie
-   **Datenbankverbindung hinzufügen**, wählen Sie **SQLite** und einen
+   **Hinzufügen**, wählen Sie **SQLite** und einen
    Dateipfad (ein Speichern-Dialog lässt Sie eine neue `.db` anlegen). Sie
    erscheint im Verbindungsbaum.
 
@@ -35,15 +35,15 @@ bearbeiten. Dieses Tutorial nutzt SQLite, weil es keinen Server braucht.
    Zeitmessung.
 
 3. **Bearbeiten Sie eine Zeile im Gitter.** Doppelklicken Sie Bobs
-   `name`-Zelle, ändern Sie sie und drücken Sie **Anwenden**. Das
+   `name`-Zelle, ändern Sie sie und drücken Sie **Anwenden…**. Das
    Datenbank-Studio erlaubt Änderungen im Gitter nur, wenn es ein sicheres
    `UPDATE` für genau eine Zeile bauen kann (eine Tabelle, Primärschlüssel
    vorhanden) — es zeigt Ihnen das genaue SQL, bevor es läuft, und fragt
    danach erneut ab, um den tatsächlichen Stand zu zeigen. Lässt sich eine
    Zeile nicht sicher bearbeiten, sagt es Ihnen warum.
 
-4. **Exportieren.** Rechtsklick auf ein Gitter → **CSV / JSON
-   exportieren**. Der CSV-Export entschärft Formel-Injection für
+4. **Exportieren.** Drücken Sie **CSV** oder **JSON** an einem
+   Ergebnisgitter. Der CSV-Export entschärft Formel-Injection für
    Tabellenkalkulationen automatisch.
 
 5. **Lassen Sie eine Abfrage mit EXPLAIN erklären.** Markieren Sie ein

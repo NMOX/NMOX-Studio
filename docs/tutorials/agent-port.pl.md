@@ -19,8 +19,8 @@ zatrzymanie uruchomienia.
 
 ## 1. Uruchom go
 
-**Zrób:** Narzędzia ▸ **Agent Port (MCP)…** ▸ **Uruchom**, potem
-**Kopiuj konfigurację**.
+**Zrób:** Narzędzia ▸ **Agent Port (MCP)…** (wybranie go uruchamia port),
+potem **Kopiuj konfigurację**.
 
 **Zobacz:** okno z punktem końcowym (tylko pętla zwrotna, świeży port),
 tokenem okaziciela tworzonym przy każdym starcie i gotową konfiguracją

@@ -32,13 +32,13 @@ Tutorial ini memakai SQLite karena tidak butuh server.
    Setiap pernyataan mendapat kisi hasilnya sendiri di bawah, lengkap dengan waktunya.
 
 3. **Sunting baris di kisi.** Klik ganda sel `name` milik Bob, ubah, lalu tekan
-   **Terapkan**. Studio Basis Data hanya mengizinkan suntingan di kisi bila ia bisa
+   **Terapkan…**. Studio Basis Data hanya mengizinkan suntingan di kisi bila ia bisa
    menyusun `UPDATE` satu baris yang aman (satu tabel, ada kunci utama) — ia
    menunjukkan SQL persisnya sebelum dijalankan, lalu mengueri ulang demi
    kebenaran. Bila sebuah baris tidak bisa disunting dengan aman, ia mengatakan
    alasannya.
 
-4. **Ekspor.** Klik kanan kisi mana pun → **Ekspor sebagai CSV / JSON**. Ekspor CSV
+4. **Ekspor.** Tekan **CSV** atau **JSON** pada kisi hasil mana pun. Ekspor CSV
    menjinakkan injeksi rumus lembar kerja secara otomatis.
 
 5. **EXPLAIN sebuah kueri.** Pilih sebuah `SELECT` dan tekan **EXPLAIN** untuk

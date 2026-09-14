@@ -31,7 +31,8 @@ REPL im Rack**, in die Sie tippen. Mitgeliefert sind 93 Räume.
 
 3. **Tippen Sie in die REPL.** Das vorverdrahtete Rack enthält ein
    **REPL**-Gerät, dessen ENGINE-Regler auf die Sprache des Raums steht
-   (26 Engines, jede mit voreingestellten Flags für den interaktiven Modus).
+   (eine Engine je REPL-Sprache im Katalog, jede mit voreingestellten Flags
+   für den interaktiven Modus).
    Tippen Sie einen Ausdruck, drücken Sie die Eingabetaste — die Ausgabe
    läuft auf den Schirm der REPL. Fehlt der Interpreter? Der Knopf
    **INSTALL** installiert ihn direkt aus dem Rack.

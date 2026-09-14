@@ -53,7 +53,7 @@ Mettez ceci dans `~/.nmox/devices.d/counter.json` :
 
 Tout ce qui s’y trouve a un rôle : le **bouton rotatif** devient `{{kind}}`
 dans la commande, le rôle **QUERY** peint le bouton en bleu (la loi des
-couleurs : le bleu demande, le vert agit, le rouge arrête), et les deux
+couleurs : le bleu demande, le vert agit, le rouge arrête), et les trois
 prises le rendent câblable.
 
 ## 3. Le monter
@@ -62,7 +62,7 @@ Ouvrez le **Rack de tâches** (`⌘9`, ou l’onglet Rack de tâches) et regarde
 dans le tiroir **Observer** de l’étagère. COUNTER y est, avec votre accroche
 en dessous. Faites-le glisser sur un rail.
 
-Survolez sa fiche « Comment utiliser » : c’est votre texte `usage`, et c’est
+Faites un clic droit dessus et choisissez **Comment utiliser COUNTER…** : c’est votre texte `usage`, et c’est
 pourquoi le format exige deux vraies lignes.
 
 ## 4. Le presser
@@ -84,7 +84,7 @@ Refusez-la plutôt et rien ne se lance — le refus est la fonctionnalité même
 
 ## 5. Le câbler
 
-Tirez un cordon de la prise **OUT** de COUNTER jusqu’à la prise **TAP** de
+Tirez un cordon de la prise **OUT** de COUNTER jusqu’à la prise **IN** de
 MONITOR. Pressez COUNT à nouveau : chaque ligne arrive sur le moniteur, car
 une prise `OUT`/`DATA` déclarée reçoit la sortie de l’exécution sans aucune
 configuration supplémentaire.

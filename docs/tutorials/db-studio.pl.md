@@ -33,14 +33,14 @@ nie potrzebuje serwera.
    wykonania.
 
 3. **Zmień wiersz w siatce.** Kliknij dwukrotnie komórkę `name` Boba,
-   zmień ją i naciśnij **Zastosuj**. Studio baz danych pozwala edytować
+   zmień ją i naciśnij **Zastosuj…**. Studio baz danych pozwala edytować
    w siatce tylko wtedy, gdy potrafi zbudować bezpieczny `UPDATE` jednego
    wiersza (jedna tabela, jest klucz główny) — pokazuje dokładny SQL,
    zanim go wykona, a potem odpytuje ponownie, żeby pokazać stan
    faktyczny. Jeśli wiersza nie da się bezpiecznie edytować, mówi
    dlaczego.
 
-4. **Wyeksportuj.** Kliknij prawym dowolną siatkę → **Eksportuj CSV / JSON**.
+4. **Wyeksportuj.** Naciśnij **CSV** albo **JSON** na dowolnej siatce wyników.
    Eksport do CSV automatycznie unieszkodliwia wstrzykiwanie formuł
    arkusza kalkulacyjnego.
 

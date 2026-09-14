@@ -19,7 +19,7 @@ L’onglet **Studio de projet**, ancré à côté du Plan de travail, ou `Fichie
 ## Étapes
 
 1. **Échafaudez un projet.** `Fichier ▸ Nouveau projet…` → choisissez un
-   modèle (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, et d’autres).
+   modèle (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, et d’autres).
    Choisissez un emplacement (par défaut `~/NMOX`) et terminez. Le projet
    s’ouvre et le rack le vise.
 
@@ -31,7 +31,7 @@ L’onglet **Studio de projet**, ancré à côté du Plan de travail, ou `Fichie
    qu’un énorme dépôt reste rapide.
 
 3. **Exécutez-le — sans terminal.** Utilisez **Exécuter** dans l’IDE (ou
-   pressez le GO d’IGNITION dans le rack). Il déduit votre gestionnaire de
+   pressez le IGNITE d’IGNITION dans le rack). Il déduit votre gestionnaire de
    paquets du fichier de verrouillage du projet ou de son épinglage
    corepack et lance la bonne commande ; la sortie défile dans le rack.
    **Construire**, **Tester** et **Nettoyer** marchent de la même façon.
@@ -39,7 +39,7 @@ L’onglet **Studio de projet**, ancré à côté du Plan de travail, ou `Fichie
 4. **Modifiez package.json.** L’éditeur intégré offre une édition
    structurée des scripts et des dépendances.
 
-5. **Chargez un préréglage.** Le menu **Préréglages** câble un rack prêt à
+5. **Chargez un préréglage.** Le menu **Préréglages ▾** du Rack de tâches câble un rack prêt à
    l’emploi pour un flux de travail — Uptime Watch, Ship Gate, Modern Web,
    Monorepo Lanes, Web3 Bench, et d’autres — pour que vous n’ayez pas à
    construire le montage à la main.

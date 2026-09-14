@@ -52,7 +52,7 @@ uruchomić, np. trasą Express albo zwykłym `node server.js`.
 
 ## Dalej
 
-- **Uruchom wskazany test** debuguje pojedynczą metodę testową w każdym
+- **Uruchom wskazany test** uruchamia pojedynczą metodę testową w każdym
   języku.
 - Diagnostyka z narzędzi stojaka (eslint/tsc/phpstan) trafia do okna
   Action Items platformy.

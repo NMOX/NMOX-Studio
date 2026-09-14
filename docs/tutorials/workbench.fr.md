@@ -17,7 +17,7 @@ que vous prenez vos repères avant de plonger dans un studio.
 
 ## Étapes
 
-1. **Voyez où vous êtes.** La colonne du projet courant nomme le projet
+1. **Voyez où vous êtes.** Le haut du Plan de travail nomme le projet
    visé et ses faits essentiels. Tout ce que font le rack et les studios
    porte sur ce projet.
 
@@ -25,13 +25,13 @@ que vous prenez vos repères avant de plonger dans un studio.
    **FICHIERS RÉCENTS** sont vivants — cliquez pour rouvrir. La liste des
    récents survit aux redémarrages.
 
-3. **Changez de projet.** La colonne **PROJETS** liste tout ce que NMOX
+3. **Changez de projet.** La section **PROJETS** liste tout ce que NMOX
    Studio connaît. Cliquez-en un pour y viser — le rack, l’explorateur et
    la liste des récents suivent tous le même projet.
 
-4. **Vérifiez votre outillage.** La colonne **OUTILS** montre les studios
+4. **Vérifiez votre outillage.** La section **OUTILS** montre les studios
    et les outils externes à votre portée. Pour sonder en profondeur une
-   soixantaine d’outils externes, avec leurs versions et des indications
+   centaine d’outils externes, avec leurs versions et des indications
    d’installation, lancez `Outils ▸ Docteur de l'environnement…`.
 
 ## Ce que vous venez d’apprendre

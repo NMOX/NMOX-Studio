@@ -58,7 +58,7 @@ visage le dit honnêtement.
 Chaque visage ouvre une fenêtre de conversation : posez des questions de
 suivi, et le modèle voit tout l’historique de cet échange (plafonné à dix
 échanges, ce que dit la transcription). Le choix **Fast/Deep**
-(Haiku/Sonnet) est mémorisé, et fixé pour chaque conversation, pour que la
+(le modèle rapide et le modèle puissant du fournisseur choisi) est mémorisé, et fixé pour chaque conversation, pour que la
 transcription ne mente jamais sur qui a répondu.
 
 ## Essayez en deux minutes

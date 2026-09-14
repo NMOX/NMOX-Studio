@@ -17,19 +17,19 @@ Anda mengambil arah sebelum masuk ke sebuah studio.
 
 ## Langkah-langkah
 
-1. **Lihat di mana Anda berada.** Kolom **Proyek saat ini** menyebut
+1. **Lihat di mana Anda berada.** Bagian atas Meja Kerja menyebut
    proyek yang sedang dibidik beserta fakta pentingnya. Semua yang dikerjakan
    rak dan studio berlaku untuk proyek ini.
 
 2. **Berpindah antarberkas.** **BERKAS TERBUKA** dan **BERKAS TERKINI** selalu
    mutakhir — klik untuk membuka lagi. Daftar terkini bertahan setelah mulai ulang.
 
-3. **Berganti proyek.** Kolom **PROYEK** mendaftar semua yang dikenal NMOX
+3. **Berganti proyek.** Bagian **PROYEK** mendaftar semua yang dikenal NMOX
    Studio. Klik salah satunya untuk membidiknya — rak, penjelajah, dan daftar
    terkini semuanya mengikuti proyek yang sama.
 
-4. **Periksa perkakas Anda.** Kolom **PERKAKAS** menampilkan studio dan
-   perkakas luar yang bisa Anda jangkau. Untuk penjajakan mendalam atas ~60
+4. **Periksa perkakas Anda.** Bagian **PERKAKAS** menampilkan studio dan
+   perkakas luar yang bisa Anda jangkau. Untuk penjajakan mendalam atas ~100
    perkakas luar lengkap dengan versi dan petunjuk pemasangan, jalankan
    `Alat ▸ Dokter Lingkungan…`.
 

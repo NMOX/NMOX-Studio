@@ -31,8 +31,8 @@ przestrzeń).
    urządzenie.
 
 3. **Pisz do REPL-a.** Podpięty stojak ma urządzenie **REPL**, którego
-   pokrętło ENGINE jest ustawione na język przestrzeni (26 silników,
-   każdy z gotowymi flagami wymuszającymi tryb interaktywny). Wpisz
+   pokrętło ENGINE jest ustawione na język przestrzeni (po jednym silniku
+   na każdy język REPL w katalogu, każdy z gotowymi flagami wymuszającymi tryb interaktywny). Wpisz
    wyrażenie, naciśnij Enter — wyjście spływa na ekran REPL-a. Brakuje
    interpretera? Przycisk **INSTALL** instaluje go prosto ze stojaka.
 

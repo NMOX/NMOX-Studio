@@ -57,7 +57,7 @@ ejecutar, por ejemplo una ruta de Express o un simple `node server.js`.
 
 ## Siguiente
 
-- **Ejecutar la prueba enfocada** depura un único método de prueba, en
+- **Ejecutar la prueba enfocada** ejecuta un único método de prueba, en
   cada lenguaje.
 - Los diagnósticos de las herramientas del rack (eslint/tsc/phpstan)
   llegan a la ventana **Elementos de acción** de la plataforma.

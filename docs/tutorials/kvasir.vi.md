@@ -38,7 +38,7 @@ cấp áp dụng cho mọi gương mặt của KVASIR và cũng nằm ở Tùy c
    liệu đi ra ngoài này có cổng riêng.
 
 4. **Đọc phán quyết.** Một chẩn đoán ngắn hiện trên màn hình LCD nhiều dòng;
-   phần giải thích đầy đủ mở trong một cửa sổ bật lên. Núm **MODEL** chọn FAST
+   nhấn **VIEW** để mở phần giải thích đầy đủ trong một cửa sổ hội thoại. Núm **MODEL** chọn FAST
    (mặc định) hoặc DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, hoặc Gemini
    Flash / Pro, tùy nhà cung cấp bạn đã chọn.
 

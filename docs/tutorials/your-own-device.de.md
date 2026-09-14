@@ -54,7 +54,7 @@ Legen Sie Folgendes in `~/.nmox/devices.d/counter.json` ab:
 
 Jede Zeile darin hat eine Aufgabe: Der **Regler** wird im Befehl zu
 `{{kind}}`, die Rolle **QUERY** färbt den Knopf blau (das Farbgesetz:
-Blau fragt, Grün handelt, Rot hält an), und die beiden Anschlüsse
+Blau fragt, Grün handelt, Rot hält an), und die drei Anschlüsse
 machen das Gerät verkabelbar.
 
 ## 3. Einbauen
@@ -63,7 +63,8 @@ machen das Gerät verkabelbar.
 Sie in der Schublade **Beobachten** des Geräteregals nach. Dort steht
 COUNTER, mit Ihrer Tagline darunter. Ziehen Sie es auf eine Schiene.
 
-Rufen Sie **Verwendung von COUNTER…** auf — das ist Ihr `usage`-Text,
+Klicken Sie es mit der rechten Maustaste an und wählen Sie
+**Verwendung von COUNTER…** — das ist Ihr `usage`-Text,
 und deshalb verlangt das Format zwei echte Zeilen.
 
 ## 4. Drücken
@@ -87,7 +88,7 @@ ist die Funktion.
 
 ## 5. Verkabeln
 
-Ziehen Sie ein Kabel von **OUT** an COUNTER zu **TAP** an MONITOR.
+Ziehen Sie ein Kabel von **OUT** an COUNTER zu **IN** an MONITOR.
 Drücken Sie COUNT noch einmal: Jede Zeile landet auf dem Monitor, denn
 ein erklärter `OUT`/`DATA`-Anschluss erhält die Ausgabe des Laufs ohne
 weitere Einstellungen.

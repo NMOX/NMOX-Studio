@@ -54,7 +54,7 @@ bezpieczeństwa w sieci.
    wykonałoby Wyślij, trafia do schowka.
 
 7. **Zapytaj KVASIR o złą odpowiedź.** Gdy wysłanie wraca z czymś nie
-   tak, naciśnij **Wyjaśnij z KVASIR…**. Okno zgody najpierw mówi
+   tak, naciśnij **Wyjaśnij…**. Okno zgody najpierw mówi
    dokładnie, co opuściłoby twoją maszynę — metodę, adres z zamaskowanymi
    *wartościami* parametrów zapytania, status, bezpieczne nagłówki
    (nagłówki z poświadczeniami już usunięte i policzone) oraz przyciętą

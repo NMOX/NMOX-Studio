@@ -28,7 +28,7 @@ tempat Anda mengetik. Ada 93 yang bawaan.
    menuntun Anda melaluinya, dengan rujukan ke konsol atau perangkat yang relevan.
 
 3. **Ketik di REPL.** Rak yang sudah terangkai memuat perangkat **REPL** yang kenop
-   ENGINE-nya disetel untuk bahasa ruang tersebut (26 mesin, masing-masing dengan
+   ENGINE-nya disetel untuk bahasa ruang tersebut (satu mesin per bahasa REPL di katalog, masing-masing dengan
    bendera paksa-interaktif yang sudah terisi). Ketik sebuah ungkapan, tekan
    Enter — keluarannya mengalir ke layar REPL. Penafsirnya tidak ada? Tombol
    **INSTALL** memasangnya dari rak.

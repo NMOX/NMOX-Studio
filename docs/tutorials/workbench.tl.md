@@ -18,22 +18,22 @@ pagbukas).
 
 ## Mga hakbang
 
-1. **Alamin kung nasaan ka.** Pinapangalanan ng hanay ng **kasalukuyang
-   proyekto** ang proyektong nakatutok at ang mahahalagang detalye nito.
+1. **Alamin kung nasaan ka.** Pinapangalanan ng itaas na bahagi ng Lugar
+   ng Trabaho ang proyektong nakatutok at ang mahahalagang detalye nito.
    Lahat ng ginagawa ng rack at ng mga studio ay para sa proyektong ito.
 
 2. **Tumalon sa pagitan ng mga file.** Buhay ang **MGA BUKAS NA FILE** at
    **MGA KAMAKAILANG FILE** — i-click para buksang muli. Nananatili ang
    listahan ng kamakailan kahit i-restart ang IDE.
 
-3. **Lumipat ng proyekto.** Inililista ng hanay na **MGA PROYEKTO** ang
+3. **Lumipat ng proyekto.** Inililista ng seksiyong **MGA PROYEKTO** ang
    lahat ng proyektong kilala ng NMOX Studio. I-click ang isa para
    itutok ang IDE roon — sumusunod sa parehong proyekto ang rack, ang
    explorer, at ang listahan ng kamakailan.
 
-4. **Suriin ang iyong mga kagamitan.** Ipinapakita ng hanay na
+4. **Suriin ang iyong mga kagamitan.** Ipinapakita ng seksiyong
    **MGA KAGAMITAN** ang mga studio at panlabas na kasangkapang maaabot
-   mo. Para sa masusing pagsisiyasat ng ~60 panlabas na kasangkapan, may
+   mo. Para sa masusing pagsisiyasat ng ~100 panlabas na kasangkapan, may
    bersyon at pahiwatig sa pag-install, patakbuhin ang
    `Kasangkapan ▸ Doktor ng Environment…`.
 

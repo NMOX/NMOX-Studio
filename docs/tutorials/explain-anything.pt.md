@@ -55,7 +55,8 @@ diz isso com honestidade.
 
 Toda face abre uma janela de conversa: faça perguntas de acompanhamento, e
 o modelo vê todo o histórico daquela troca (limitado a dez trocas, o que é
-dito na transcrição). A escolha **Fast/Deep** (Haiku/Sonnet) fica lembrada,
+dito na transcrição). A escolha **Fast/Deep** (o modelo rápido e o modelo
+forte do provedor escolhido) fica lembrada,
 e é fixada por conversa para que a transcrição nunca minta sobre quem
 respondeu.
 

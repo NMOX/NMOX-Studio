@@ -55,7 +55,7 @@ Ilagay ito sa `~/.nmox/devices.d/counter.json`:
 May tungkulin ang bawat bahagi nito: ang **knob** ay nagiging `{{kind}}` sa
 command, pinipinturahan ng role na **QUERY** ang pindutan ng asul (ang batas
 ng kulay: nagtatanong ang asul, gumagawa ang berde, humihinto ang pula), at
-ginagawang nakakabit ito ng dalawang port.
+ginagawang nakakabit ito ng tatlong port.
 
 ## 3. I-mount ito
 
@@ -63,7 +63,7 @@ Buksan ang **Rack ng Gawain** (`⌘9`, o ang tab na Rack ng Gawain) at hanapin
 sa drawer na **Obserbahan** ng istante. Naroon ang COUNTER, may iyong tagline
 sa ilalim nito. Hilahin ito sa isang riles.
 
-Ilapit ang cursor sa kard na Paano gamitin nito — iyan ang iyong tekstong
+I-right-click ito at piliin ang **Paano gamitin ang COUNTER…** — iyan ang iyong tekstong
 `usage`, at iyan ang dahilan kung bakit hinihingi ng format ang dalawang
 tunay na linya.
 
@@ -87,7 +87,7 @@ ang tampok.
 
 ## 5. Ikabit ito
 
-Hilahin ang kable mula sa **OUT** ng COUNTER papunta sa **TAP** ng MONITOR.
+Hilahin ang kable mula sa **OUT** ng COUNTER papunta sa **IN** ng MONITOR.
 Pindutin muli ang COUNT: dumadapo sa monitor ang bawat linya, dahil ang
 idineklarang port na `OUT`/`DATA` ay tumatanggap ng output ng run nang walang
 dagdag na configuration.

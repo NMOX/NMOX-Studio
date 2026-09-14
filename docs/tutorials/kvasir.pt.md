@@ -41,7 +41,8 @@ Opções ▸ Rack e nuvem.
    fluxo de dados para fora ganha a própria barreira.
 
 4. **Leia o veredito.** Um diagnóstico curto aparece no visor de várias
-   linhas; a explicação completa abre numa janela. O botão **MODEL**
+   linhas; aperte **VIEW** para abrir a explicação completa numa janela de
+   conversa. O botão **MODEL**
    escolhe FAST (o padrão) ou DEEP — Haiku / Sonnet, GPT-5 mini / GPT-5, ou
    Gemini Flash / Pro, conforme o provedor que você escolheu.
 

@@ -8,7 +8,7 @@ Stojak zadań to znak rozpoznawczy NMOX Studio: narzędzia do budowania,
 testów i serwowania rozłożone jako stojak urządzeń sprzętowych, które
 łączysz kablami krosowymi. Urządzenie uruchamia prawdziwe polecenie;
 kabel niesie prawdziwy sygnał. Ten samouczek buduje malutki układ —
-uruchom coś i zapal wskaźnik, gdy skończy — żeby metafora zaskoczyła.
+uruchom coś i obejrzyj jego wyjście na monitorze — żeby metafora zaskoczyła.
 
 ![Stojak wycelowany w prawdziwy projekt — urządzenia w stojaku i w ruchu](../images/task-rack.png)
 
@@ -17,7 +17,7 @@ uruchom coś i zapal wskaźnik, gdy skończy — żeby metafora zaskoczyła.
 ## Zanim zaczniesz
 
 Otwórz projekt (nada się dowolny projekt Node; `Plik ▸ Nowy projekt…` →
-„Vanilla JS”, jeśli go potrzebujesz). Otwarcie projektu **celuje** w niego
+„Vanilla Web”, jeśli go potrzebujesz). Otwarcie projektu **celuje** w niego
 stojakiem, więc każde urządzenie działa w katalogu tego projektu.
 
 ## Kroki
@@ -26,25 +26,25 @@ stojakiem, więc każde urządzenie działa w katalogu tego projektu.
    Startowy stojak ma jedno urządzenie **MONITOR** — konsolę, która
    pokazuje wyjście poleceń i wiersze błędów.
 
-2. **Dodaj uruchamiacz.** Przeciągnij **IGNITION** z palety po lewej na
-   półkę. IGNITION to wielojęzyczne urządzenie „uruchom”; wycelowane
+2. **Dodaj uruchamiacz.** Przeciągnij **IGNITION** z półki urządzeń po lewej
+   na stojak. IGNITION to wielojęzyczne urządzenie „uruchom”; wycelowane
    w projekt Node uruchamia `npm run dev` (samo wykrywa menedżera pakietów
    i łańcuch narzędzi).
 
-3. **Połącz go z monitorem.** Kliknij przełącznik **obrotu**, żeby
+3. **Połącz go z monitorem.** Kliknij **Tył (Tab)** (albo naciśnij Tab), żeby
    zobaczyć tył, potem kliknij gniazdo **OUT** urządzenia IGNITION i gniazdo
-   **TAP** urządzenia MONITOR — połączy je kabel krosowy. (Przeciąganie
+   **IN** urządzenia MONITOR — połączy je kabel krosowy. (Przeciąganie
    między gniazdami też działa; klikanie jest wygodniejsze, gdy stojak jest
    szeroki.)
 
-4. **Odpal.** Obróć stojak przodem i naciśnij przycisk **GO** urządzenia
+4. **Odpal.** Obróć stojak przodem i naciśnij przycisk **IGNITE** urządzenia
    IGNITION. Uruchamia proces; wyjście spływa do MONITOR, a diody stanu
    się zapalają. Jeśli projekt nie jest jeszcze zaufany, najpierw dostaniesz
    jednorazowe pytanie o zaufanie do przestrzeni roboczej — to straż, która
    nie pozwala sklonowanemu repozytorium uruchamiać skryptów bez twojej
    zgody.
 
-5. **Zapisz układ.** `⌘S` (albo przycisk Zapisz patch) zapisuje
+5. **Zapisz układ.** Przycisk **Zapisz patch** zapisuje
    `.nmoxrack.json` obok projektu. Otwórz projekt później, a układ —
    urządzenia, kable, położenia pokręteł — wróci dokładnie taki sam.
 
@@ -54,7 +54,7 @@ stojakiem, więc każde urządzenie działa w katalogu tego projektu.
   opcje, przyciski GO uruchamiają, diody i wyświetlacze pokazują stan —
   i każdy element sterujący jest prawdziwy (żadnych martwych pokręteł;
   pilnuje tego test kontraktowy).
-- **Kable koordynują tory.** OUT→TAP to najprostsze połączenie; bramki
+- **Kable koordynują tory.** OUT→IN to najprostsze połączenie; bramki
   gotowości (`ENABLE`), bariery łączenia (`QUORUM`) i kable wyzwalające
   pozwalają złożyć cały potok, który reaguje sam na siebie.
 - **Wszystko się zapisuje.** Układ to plik, który wrzucasz do repozytorium;
@@ -63,7 +63,8 @@ stojakiem, więc każde urządzenie działa w katalogu tego projektu.
 ## Dalej
 
 - Urządzeń jest 53 — przejrzyj je w [devices.md](../devices.md) albo na
-  kartach Jak używać w palecie.
+  półce urządzeń (kliknij prawym zamontowane urządzenie, żeby otworzyć jego
+  **Jak używać…**).
 - Poproś [KVASIR](kvasir.pl.md) o wyjaśnienie nieudanego uruchomienia.
 - Wyeksportuj układ do przepływu GitHub Actions: służy do tego **eksport CI**
   stojaka.

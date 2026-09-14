@@ -22,8 +22,8 @@ dihasilkannya.
    Mulai sebuah komponen dan beri tag seperti `hello-badge`.
 
 2. **Tambahkan blok dari palet.** Seret blok **Element** (sebuah simpul DOM),
-   beri teks; tambahkan medan **State**; tambahkan **Listener** yang membalik
-   sebuah kelas saat diklik. Hanya susunan sarang yang sah yang diizinkan —
+   beri teks; tambahkan medan **State**; tambahkan blok **Saat peristiwa**
+   dengan **Alihkan kelas** di dalamnya. Hanya susunan sarang yang sah yang diizinkan —
    kanvas menampilkan slot jatuh yang sah dan menolak yang tidak sah, bahkan saat
    memuat.
 

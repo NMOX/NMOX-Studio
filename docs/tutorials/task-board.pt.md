@@ -76,13 +76,13 @@ aparece.
 
 7. **Escreva o standup.** Aperte **Standup…**. O relatório abre em
    markdown com um botão **Copiar para a área de transferência**:
-   **Yesterday** (ontem) e **Today** (hoje) a partir das marcações de
+   **Ontem** e **Hoje** a partir das marcações de
    conclusão e das sessões cortadas por dia (um cronômetro rodando aparece
-   como “clock running”), **Blockers** (bloqueios) a partir do registro,
-   **Commits (since yesterday)** (commits desde ontem) a partir do
+   como “cronômetro em execução”), **Impedimentos** a partir do registro,
+   **Commits (desde ontem)** a partir do
    `git log`. Seções sem nada a dizer são omitidas, nunca mostradas vazias,
    e o cabeçalho abre com o sprint e a contagem de dias
-   (“Sprint 8 · day 3 of 14”).
+   (“Sprint 8 · dia 3 de 14”).
 
    ![Um clique transforma o quadro no relatório do dia](../images/standup.png)
 

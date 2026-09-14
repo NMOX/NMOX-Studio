@@ -20,7 +20,7 @@ La pestaña **Estudio de proyecto**, acoplada junto al Banco de trabajo, o
 ## Pasos
 
 1. **Genera un proyecto.** `Archivo ▸ Nuevo proyecto…` → elige una
-   plantilla (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP y más).
+   plantilla (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP y más).
    Elige una ubicación (por omisión `~/NMOX`) y termina. El proyecto se
    abre y el rack apunta a él.
 
@@ -31,7 +31,7 @@ La pestaña **Estudio de proyecto**, acoplada junto al Banco de trabajo, o
    carpetas pesadas (`node_modules`, `.git`, `dist`) se muestran sin hijos
    para que un repositorio enorme siga yendo rápido.
 
-3. **Ejecútalo, sin terminal.** Usa **Ejecutar** del IDE (o pulsa GO en
+3. **Ejecútalo, sin terminal.** Usa **Ejecutar** del IDE (o pulsa IGNITE en
    IGNITION, en el rack). Resuelve tu gestor de paquetes a partir del
    propio archivo de bloqueo o del pin de corepack del proyecto y ejecuta
    el comando correcto; la salida corre por el rack. **Compilar**,
@@ -40,7 +40,7 @@ La pestaña **Estudio de proyecto**, acoplada junto al Banco de trabajo, o
 4. **Edita package.json.** El editor integrado permite editar scripts y
    dependencias de forma estructurada.
 
-5. **Carga un preajuste.** El menú de preajustes cablea un rack ya hecho
+5. **Carga un preajuste.** El menú **Preajustes ▾** del Rack de tareas cablea un rack ya hecho
    para un flujo de trabajo —Vigilancia de disponibilidad, Puerta de
    publicación, Web moderna, Vías de monorepo, Banco Web3 y más— para que
    no montes el patch a mano.

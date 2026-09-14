@@ -56,7 +56,7 @@ exécuter, par exemple une route Express ou un simple `node server.js`.
 
 ## Et ensuite
 
-- **Exécuter le test ciblé** débogue une seule méthode de test, pour
+- **Exécuter le test ciblé** exécute une seule méthode de test, pour
   chaque langage.
 - Les diagnostics des outils du rack (eslint/tsc/phpstan) arrivent dans la
   fenêtre **Éléments à traiter** de la plateforme.

@@ -17,7 +17,7 @@ orientieren Sie sich, bevor Sie in ein Studio eintauchen.
 
 ## Schritte
 
-1. **Sehen, wo Sie stehen.** Die Spalte **Aktuelles Projekt** nennt das
+1. **Sehen, wo Sie stehen.** Der obere Teil des Arbeitsplatzes nennt das
    angepeilte Projekt und seine wichtigsten Eckdaten. Alles, was das Rack
    und die Studios tun, bezieht sich auf dieses Projekt.
 
@@ -25,13 +25,13 @@ orientieren Sie sich, bevor Sie in ein Studio eintauchen.
    verwendete Dateien** sind live — ein Klick öffnet erneut. Die Liste der
    zuletzt verwendeten Dateien übersteht Neustarts.
 
-3. **Projekte wechseln.** Die Spalte **Projekte** listet alles, was NMOX
+3. **Projekte wechseln.** Der Abschnitt **Projekte** listet alles, was NMOX
    Studio kennt. Ein Klick richtet sich dorthin aus — Rack, Explorer und
    Verlauf folgen alle demselben Projekt.
 
-4. **Werkzeuge prüfen.** Die Spalte **Werkzeuge** zeigt die Studios und
+4. **Werkzeuge prüfen.** Der Abschnitt **Werkzeuge** zeigt die Studios und
    externen Werkzeuge, die Sie erreichen. Für eine gründliche Prüfung von
-   rund 60 externen Werkzeugen mit Versionen und Installationshinweisen
+   rund 100 externen Werkzeugen mit Versionen und Installationshinweisen
    starten Sie `Extras ▸ Environment Doctor…`.
 
 ## Was Sie gerade gelernt haben

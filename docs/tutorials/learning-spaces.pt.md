@@ -30,8 +30,8 @@ que já vêm com o produto).
    o percorre com você, apontando para o console ou dispositivo certo.
 
 3. **Digite no REPL.** O rack já cabeado inclui um dispositivo **REPL**
-   cujo botão ENGINE está ajustado para a linguagem do espaço (26 motores,
-   cada um com as flags de modo interativo já preenchidas). Digite uma
+   cujo botão ENGINE está ajustado para a linguagem do espaço (um motor por
+   linguagem de REPL do catálogo, cada um com as flags de modo interativo já preenchidas). Digite uma
    expressão e aperte Enter — a saída corre na tela do REPL. Falta o
    interpretador? O botão **INSTALL** o instala a partir do rack.
 

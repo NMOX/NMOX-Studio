@@ -53,7 +53,7 @@ Wstaw to do `~/.nmox/devices.d/counter.json`:
 
 Każdy element ma tu swoje zadanie: **pokrętło** staje się `{{kind}}`
 w poleceniu, rola **QUERY** maluje przycisk na niebiesko (prawo kolorów:
-niebieski pyta, zielony działa, czerwony zatrzymuje), a dwa porty
+niebieski pyta, zielony działa, czerwony zatrzymuje), a trzy porty
 pozwalają go okablować.
 
 ## 3. Zamontuj je
@@ -62,7 +62,7 @@ Otwórz **Stojak zadań** (`⌘9` albo karta Stojak zadań) i zajrzyj do
 szuflady **Obserwacja** na półce. COUNTER tam jest, z twoim opisem pod
 nazwą. Przeciągnij go na szynę.
 
-Najedź na jego kartę *Jak używać* — to twój tekst `usage` i właśnie
+Kliknij go prawym i wybierz **Jak używać COUNTER…** — to twój tekst `usage` i właśnie
 dlatego format wymaga dwóch prawdziwych wierszy.
 
 ## 4. Naciśnij je
@@ -85,7 +85,7 @@ Odmów, a nic się nie uruchomi — ta odmowa to funkcja.
 
 ## 5. Okabluj je
 
-Przeciągnij kabel z **OUT** urządzenia COUNTER do **TAP** urządzenia
+Przeciągnij kabel z **OUT** urządzenia COUNTER do **IN** urządzenia
 MONITOR. Naciśnij COUNT jeszcze raz: każdy wiersz ląduje na monitorze,
 bo zadeklarowany port `OUT`/`DATA` dostaje wyjście uruchomienia bez
 dodatkowej konfiguracji.

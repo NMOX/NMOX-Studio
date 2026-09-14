@@ -39,8 +39,9 @@ probeweise durch, es fließt also kein Geld.
    anlegen, anhängen…) und die Kosten, aber nichts wird angelegt. Das
    Ausroll-Protokoll zeigt jeden Schritt.
 
-5. **Gehen Sie live (wenn Sie so weit sind).** Hinterlegen Sie unter
-   `Optionen` ein Anbieter-Token (gespeichert im Schlüsselbund des Systems),
+5. **Gehen Sie live (wenn Sie so weit sind).** Hinterlegen Sie über
+   **Tokens…** (oder Optionen ▸ Rack & Cloud) ein Anbieter-Token
+   (gespeichert im Schlüsselbund des Systems),
    und DEPLOY führt den Plan wirklich aus; Verweise zwischen Knoten werden
    aufgelöst, sobald die Ressourcen stehen (die IP eines Droplets fließt in
    den DNS-Eintrag).

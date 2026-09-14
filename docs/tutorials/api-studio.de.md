@@ -56,7 +56,7 @@ Willkommensseite.
    ausführen würde, in Ihrer Zwischenablage.
 
 7. **Fragen Sie KVASIR zu einer schlechten Antwort.** Kommt eine Sendung
-   falsch zurück, drücken Sie **Mit KVASIR erklären…**. Ein
+   falsch zurück, drücken Sie **Erklären…**. Ein
    Einwilligungsdialog sagt Ihnen zuerst genau, was Ihren Rechner verlassen
    würde — Methode, URL mit maskierten Query-*Werten*, Status, unbedenkliche
    Header (Header mit Zugangsdaten bereits entfernt und gezählt) und einen

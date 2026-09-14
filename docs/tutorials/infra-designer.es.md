@@ -36,7 +36,8 @@ monta un plan y lo simula, así que no se mueve ni un céntimo.
    paso.
 
 5. **Pasa a producción (cuando quieras).** Añade un token del proveedor
-   en `Opciones` (se guarda en el llavero del sistema operativo) y
+   con **Tokens…** (u Opciones ▸ Rack y nube; se guarda en el llavero
+   del sistema operativo) y
    DESPLEGAR ejecuta el plan de verdad, resolviendo las referencias entre
    nodos (la IP de un droplet llega al registro DNS) a medida que los
    recursos se levantan.

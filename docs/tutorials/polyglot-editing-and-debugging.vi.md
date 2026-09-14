@@ -49,7 +49,7 @@ một route Express hay một `node server.js` đơn thuần.
 
 ## Tiếp theo
 
-- **Chạy kiểm thử đang chọn** gỡ lỗi một phương thức kiểm thử duy nhất, cho
+- **Chạy kiểm thử đang chọn** chạy một phương thức kiểm thử duy nhất, cho
   từng ngôn ngữ.
 - Chẩn đoán từ các công cụ trên giá (eslint/tsc/phpstan) đổ về cửa sổ
   Mục cần xử lý của nền tảng.

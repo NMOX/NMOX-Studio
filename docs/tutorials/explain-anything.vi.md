@@ -50,7 +50,8 @@ có khóa thì không có lời gọi — gương mặt nào cũng nói thật �
 
 Gương mặt nào cũng mở một cửa sổ hội thoại: hỏi thêm câu tiếp theo, và mô hình
 thấy trọn lịch sử của cuộc trao đổi đó (giới hạn mười lượt, có ghi trong bản
-hội thoại). Lựa chọn **Nhanh/Sâu** (Haiku/Sonnet) được ghi nhớ, và cố định cho
+hội thoại). Lựa chọn **Nhanh/Sâu** (mô hình nhanh và mô hình mạnh của nhà cung cấp đã
+chọn) được ghi nhớ, và cố định cho
 từng cuộc hội thoại để bản hội thoại không bao giờ nói sai ai đã trả lời.
 
 ## Thử trong hai phút

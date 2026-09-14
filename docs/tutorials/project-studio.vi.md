@@ -18,7 +18,7 @@ Thẻ **Studio dự án**, neo cạnh Bàn làm việc, hoặc `Tệp ▸ Dự �
 ## Các bước
 
 1. **Dựng khung một dự án.** `Tệp ▸ Dự án mới…` → chọn một mẫu (Angular,
-   Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, và nhiều nữa). Chọn nơi lưu (mặc
+   Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, và nhiều nữa). Chọn nơi lưu (mặc
    định là `~/NMOX`) rồi hoàn tất. Dự án mở ra và giá nhắm vào nó.
 
 2. **Duyệt cây tệp.** Cây tệp là một cây thật của nền tảng — biểu tượng đúng
@@ -28,14 +28,14 @@ Thẻ **Studio dự án**, neo cạnh Bàn làm việc, hoặc `Tệp ▸ Dự �
    vẫn nhanh.
 
 3. **Chạy nó — không cần cửa sổ dòng lệnh.** Dùng **Chạy** của IDE (hoặc nhấn
-   GO của IGNITION trên giá). Nó xác định trình quản lý gói từ chính tệp khóa
+   IGNITE của IGNITION trên giá). Nó xác định trình quản lý gói từ chính tệp khóa
    hay pin corepack của dự án và chạy đúng lệnh; kết quả chảy vào giá.
    **Dựng**, **Kiểm thử** và **Dọn** hoạt động y như vậy.
 
 4. **Sửa package.json.** Trình sửa có sẵn cho phép sửa script và phụ thuộc
    một cách có cấu trúc.
 
-5. **Nạp một mẫu sẵn.** Trình đơn **Mẫu sẵn** đấu một giá dựng sẵn cho một
+5. **Nạp một mẫu sẵn.** Trình đơn **Mẫu sẵn ▾** của Giá tác vụ đấu một giá dựng sẵn cho một
    luồng công việc — Canh thời gian hoạt động, Cổng phát hành, Web hiện đại,
    Làn Monorepo, Bàn thử Web3, và nhiều nữa — để bạn khỏi đấu bản đấu nối
    bằng tay.

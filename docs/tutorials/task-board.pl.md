@@ -75,13 +75,13 @@ jeśli nie, ta sekcja po prostu się nie pojawi.
    nienarysowana.
 
 7. **Napisz standup.** Naciśnij **Standup…**. Raport otwiera się jako
-   markdown z przyciskiem **Kopiuj do schowka**: **Yesterday**
-   i **Today** ze znaczników ukończenia i sesji przyciętych do dnia
-   (działający zegar czyta się jako „clock running”), **Blockers**
-   z rejestru, **Commits (since yesterday)** z `git log`. Sekcje, które
+   markdown z przyciskiem **Kopiuj do schowka**: **Wczoraj**
+   i **Dziś** ze znaczników ukończenia i sesji przyciętych do dnia
+   (działający zegar czyta się jako „zegar działa”), **Blokady**
+   z rejestru, **Commity (od wczoraj)** z `git log`. Sekcje, które
    nie mają nic do powiedzenia, są pomijane, a nie wyświetlane puste,
    a nagłówek zaczyna się od sprintu i licznika jego dni („Sprint 8 ·
-   day 3 of 14”).
+   dzień 3 z 14”).
 
    ![Jedno kliknięcie zamienia tablicę w codzienny raport](../images/standup.png)
 

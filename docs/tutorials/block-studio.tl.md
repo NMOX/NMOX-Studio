@@ -24,9 +24,9 @@ nilikha nito.
    gaya ng `hello-badge`.
 
 2. **Magdagdag ng mga block mula sa palette.** Maghila ng block na
-   **Element** (isang DOM node) at bigyan ito ng teksto; magdagdag ng
-   field na **State**; magdagdag ng **Listener** na nagpapalit ng class
-   kapag i-click. Ang mga pinapayagang pagsasalansan lamang ay tinatanggap
+   **Elemento** (isang DOM node) at bigyan ito ng teksto; magdagdag ng
+   field na **Katayuan**; magdagdag ng block na **Kapag naganap** na may
+   **Ipalit ang klase** sa loob nito. Ang mga pinapayagang pagsasalansan lamang ay tinatanggap
    — ipinapakita ng canvas ang mga wastong puwang at tinatanggihan ang mga
    bawal, kahit sa pag-load.
 

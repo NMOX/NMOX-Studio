@@ -23,7 +23,7 @@ as linhas exatas que ele produziu.
 
 2. **Acrescente blocos da paleta.** Arraste um bloco **Elemento** (um nó do
    DOM) e dê a ele um texto; acrescente um campo **Estado**; acrescente um
-   **Ao evento** que alterna uma classe no clique. Só aninhamentos válidos
+   bloco **Ao evento** com um **Alternar classe** dentro dele. Só aninhamentos válidos
    são permitidos — a tela mostra onde dá para soltar e recusa os inválidos,
    inclusive ao carregar.
 

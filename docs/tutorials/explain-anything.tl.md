@@ -59,7 +59,7 @@ sinasabi ito ng bawat mukha.
 Nagbubukas ng window ng usapan ang bawat mukha: magtanong ng mga karugtong,
 at nakikita ng model ang buong kasaysayan ng palitang iyon (hangganang
 sampung palitan, sinasabi sa transcript). Inaalala ang pili na **Fast/Deep**
-(Haiku/Sonnet), at nakapirmi kada usapan para hindi kailanman magsinungaling
+(ang mabilis at malakas na model ng piniling provider), at nakapirmi kada usapan para hindi kailanman magsinungaling
 ang transcript tungkol sa kung sino ang sumagot.
 
 ## Subukan sa loob ng dalawang minuto

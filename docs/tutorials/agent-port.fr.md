@@ -19,7 +19,7 @@ exécution.
 
 ## 1. Le démarrer
 
-**Faites :** Outils ▸ **Agent Port (MCP)…** ▸ **Démarrer**, puis **Copier la configuration**.
+**Faites :** Outils ▸ **Agent Port (MCP)…** (le choisir démarre le port), puis **Copier la configuration**.
 
 **Vous voyez :** une boîte de dialogue avec le point d’accès (interface locale
 seulement, un port neuf), un jeton porteur propre à chaque démarrage et une

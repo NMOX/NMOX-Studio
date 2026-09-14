@@ -40,8 +40,8 @@ nie ma wywołania — każde oblicze uczciwie o tym mówi.
    zgoda przepływu porażek wprost obiecuje, że kod źródłowy nigdy nie
    opuszcza maszyny.
 
-3. **Odpowiedź API (Studio API).** Po wysłaniu naciśnij **Wyjaśnij
-   z KVASIR…**. Co jest wysyłane: metoda, adres z zamaskowanymi
+3. **Odpowiedź API (Studio API).** Po wysłaniu naciśnij **Wyjaśnij…**.
+   Co jest wysyłane: metoda, adres z zamaskowanymi
    wartościami parametrów zapytania, status, nagłówki z usuniętymi
    i policzonymi poświadczeniami oraz przycięta treść. Przydaje się
    w chwili, gdy wyskoczy 401 albo dziwny nagłówek CORS.
@@ -54,7 +54,7 @@ nie ma wywołania — każde oblicze uczciwie o tym mówi.
 
 Każde oblicze otwiera okno rozmowy: dopytuj, a model widzi pełną historię
 tej wymiany (najwyżej dziesięć wymian, o czym mówi zapis rozmowy). Wybór
-**Fast/Deep** (Haiku/Sonnet) jest zapamiętywany i ustalony na całą
+**Fast/Deep** (szybki i mocny model wybranego dostawcy) jest zapamiętywany i ustalony na całą
 rozmowę, więc zapis nigdy nie kłamie, kto odpowiadał.
 
 ## Spróbuj w dwie minuty

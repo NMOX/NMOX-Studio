@@ -24,7 +24,7 @@ lignes exactes qu’il a produites.
 
 2. **Ajoutez des blocs depuis la palette.** Faites glisser un bloc
    **Élément** (un nœud DOM) et donnez-lui un texte ; ajoutez un champ
-   **État** ; ajoutez un écouteur qui bascule une classe au clic. Seules
+   **État** ; ajoutez un bloc **Sur événement** contenant un bloc **Basculer la classe**. Seules
    les imbrications légales sont permises — la toile prévisualise les
    emplacements de dépôt valides et refuse les autres, même au chargement.
 

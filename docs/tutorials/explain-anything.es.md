@@ -57,7 +57,8 @@ lo dice con honestidad.
 Cada cara abre una ventana de conversación: haz preguntas de seguimiento
 y el modelo verá todo el historial de ese intercambio (con un tope de
 diez intercambios, que se indica en la transcripción). La elección
-**Rápido/Profundo** (Haiku/Sonnet) se recuerda y queda fija en cada
+**Rápido/Profundo** (el modelo rápido y el potente del proveedor
+elegido) se recuerda y queda fija en cada
 conversación, para que la transcripción nunca mienta sobre quién
 respondió.
 

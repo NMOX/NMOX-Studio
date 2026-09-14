@@ -30,8 +30,8 @@ espacios incorporados).
    que te lo recorre, señalando la consola o el dispositivo que toca.
 
 3. **Escribe en el REPL.** El rack ya cableado incluye un dispositivo
-   **REPL** cuyo mando ENGINE está puesto en el lenguaje del espacio (26
-   motores, cada uno con sus opciones de modo interactivo ya
+   **REPL** cuyo mando ENGINE está puesto en el lenguaje del espacio (un
+   motor por cada lenguaje con REPL del catálogo, cada uno con sus opciones de modo interactivo ya
    preparadas). Escribe una expresión y pulsa Entrar: la salida corre por
    la pantalla del REPL. ¿Falta el intérprete? El botón **INSTALL** lo
    instala desde el rack.

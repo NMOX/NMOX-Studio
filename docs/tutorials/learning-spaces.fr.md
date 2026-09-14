@@ -29,8 +29,8 @@ dans le rack**, où vous tapez. Il y en a 93 de livrés.
    qui vous le fait parcourir, en désignant la console ou l’appareil utile.
 
 3. **Tapez dans le REPL.** Le rack câblé comprend un appareil **REPL** dont
-   le bouton ENGINE est réglé sur le langage de l’espace (26 moteurs, chacun
-   avec ses options d’interactivité forcée déjà renseignées). Tapez une
+   le bouton ENGINE est réglé sur le langage de l’espace (un moteur par langage de
+   REPL du catalogue, chacun avec ses options d’interactivité forcée déjà renseignées). Tapez une
    expression, pressez Entrée — la sortie défile sur l’écran du REPL.
    L’interpréteur manque ? Le bouton **INSTALL** l’installe depuis le rack.
 

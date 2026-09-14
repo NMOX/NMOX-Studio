@@ -38,7 +38,8 @@ pinapatakbo ito nang dry run, kaya walang perang gumagalaw.
    nilikha. Ipinapakita ng log ng deploy ang bawat hakbang.
 
 5. **Ilagay sa produksiyon (kapag handa).** Magdagdag ng token ng
-   provider sa `Mga Pagpipilian` (naka-imbak sa keychain ng OS), at
+   provider gamit ang **Mga Token…** (o Mga Pagpipilian ▸ Rack at Cloud;
+   naka-imbak sa keychain ng OS), at
    tunay na isinasagawa ng I-DEPLOY ang plano, nilulutas ang mga
    sanggunian sa pagitan ng mga node (ang IP ng droplet ay dumadaloy sa
    DNS record) habang nabubuhay ang mga resource.

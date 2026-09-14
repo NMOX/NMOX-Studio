@@ -34,8 +34,8 @@ nó, nên không có tiền nào mất đi.
    API theo thứ tự (tạo tường lửa, tạo droplet, gắn…) cùng chi phí, nhưng
    không có gì được tạo ra. Nhật ký triển khai hiển thị từng bước.
 
-5. **Chạy thật (khi bạn sẵn sàng).** Thêm token của nhà cung cấp trong
-   `Tùy chọn` (lưu trong chùm khóa của hệ điều hành), và TRIỂN KHAI sẽ thực
+5. **Chạy thật (khi bạn sẵn sàng).** Thêm token của nhà cung cấp bằng **Token…**
+   (hoặc Tùy chọn ▸ Giá & Đám mây; lưu trong chùm khóa của hệ điều hành), và TRIỂN KHAI sẽ thực
    hiện kế hoạch thật, giải các tham chiếu chéo giữa các nút (IP của droplet
    chảy vào bản ghi DNS) khi tài nguyên lần lượt được tạo.
 

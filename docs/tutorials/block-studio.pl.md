@@ -22,8 +22,8 @@ a podświetlą się dokładnie te wiersze, które wytworzył.
    z myślnikiem. Zacznij komponent i nadaj mu tag w rodzaju `hello-badge`.
 
 2. **Dodaj bloki z palety.** Przeciągnij blok **Element** (węzeł DOM)
-   i daj mu tekst; dodaj pole **Stan**; dodaj blok **Przy zdarzeniu**,
-   który po kliknięciu przełącza klasę. Dozwolone są tylko poprawne
+   i daj mu tekst; dodaj pole **Stan**; dodaj blok **Przy zdarzeniu**
+   z blokiem **Przełącz klasę** w środku. Dozwolone są tylko poprawne
    zagnieżdżenia — płótno podpowiada poprawne miejsca upuszczenia
    i odrzuca niedozwolone, nawet przy wczytywaniu.
 

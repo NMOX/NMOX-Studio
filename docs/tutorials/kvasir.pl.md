@@ -40,7 +40,8 @@ obejmuje każde oblicze KVASIR i jest też w Opcje ▸ Stojak i chmura.
    *uruchamiania* kodu; ten wychodzący przepływ danych ma własną bramkę.
 
 4. **Przeczytaj werdykt.** Krótka diagnoza pojawia się na wielowierszowym
-   wyświetlaczu; pełne wyjaśnienie otwiera się w okienku. Pokrętło
+   wyświetlaczu; naciśnij **VIEW**, żeby otworzyć pełne wyjaśnienie w oknie
+   rozmowy. Pokrętło
    **MODEL** wybiera FAST (domyślnie) albo DEEP — Haiku / Sonnet,
    GPT-5 mini / GPT-5 albo Gemini Flash / Pro, zależnie od wybranego
    dostawcy.

@@ -43,7 +43,8 @@ Options ▸ Rack et cloud.
    sortant a sa propre porte.
 
 4. **Lisez le verdict.** Un court diagnostic s’affiche sur l’afficheur
-   multiligne ; l’explication complète s’ouvre dans une fenêtre. Le bouton
+   multiligne ; pressez **VIEW** pour ouvrir l’explication complète dans une
+   fenêtre de conversation. Le bouton
    **MODEL** choisit FAST (par défaut) ou DEEP — Haiku / Sonnet,
    GPT-5 mini / GPT-5, ou Gemini Flash / Pro, selon le fournisseur choisi.
 

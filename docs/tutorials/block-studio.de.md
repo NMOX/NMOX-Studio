@@ -24,8 +24,8 @@ genau die Zeilen hervor, die er erzeugt hat.
 
 2. **Fügen Sie Blöcke aus der Palette hinzu.** Ziehen Sie einen
    **Element**-Block (einen DOM-Knoten) herein und geben Sie ihm Text; fügen
-   Sie ein **State**-Feld hinzu; fügen Sie einen **Listener** hinzu, der beim
-   Klick eine Klasse umschaltet. Nur erlaubte Schachtelungen gehen durch —
+   Sie ein **Zustand**-Feld hinzu; fügen Sie einen Block **Bei Ereignis**
+   mit einem **Klasse umschalten** darin hinzu. Nur erlaubte Schachtelungen gehen durch —
    die Arbeitsfläche zeigt gültige Ablageplätze an und lehnt ungültige ab,
    sogar beim Laden.
 

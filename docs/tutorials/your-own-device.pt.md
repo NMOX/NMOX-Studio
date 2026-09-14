@@ -53,7 +53,7 @@ Coloque isto em `~/.nmox/devices.d/counter.json`:
 
 Cada linha tem uma função: o **botão giratório** vira `{{kind}}` no
 comando, o papel **QUERY** pinta o botão de azul (a lei das cores: azul
-pergunta, verde faz, vermelho para) e as duas portas deixam o dispositivo
+pergunta, verde faz, vermelho para) e as três portas deixam o dispositivo
 pronto para receber cabos.
 
 ## 3. Monte o dispositivo
@@ -62,7 +62,8 @@ Abra o **Rack de tarefas** (`⌘9`, ou a aba Rack de tarefas) e procure na
 gaveta **Observar** da prateleira. O COUNTER está lá, com a sua descrição
 embaixo. Arraste-o para um trilho.
 
-Passe o cursor sobre o cartão *Como usar*: é o seu texto de `usage`, e é
+Clique com o botão direito nele e escolha **Como usar COUNTER…**: é o seu
+texto de `usage`, e é
 por isso que o formato exige duas linhas de verdade.
 
 ## 4. Aperte o botão
@@ -84,7 +85,7 @@ Recuse, e nada é executado — a recusa é o recurso.
 
 ## 5. Ligue os cabos
 
-Puxe um cabo do **OUT** do COUNTER até o **TAP** do MONITOR. Aperte COUNT
+Puxe um cabo do **OUT** do COUNTER até o **IN** do MONITOR. Aperte COUNT
 de novo: cada linha chega ao monitor, porque uma porta declarada
 `OUT`/`DATA` recebe a saída da execução sem nenhuma configuração a mais.
 

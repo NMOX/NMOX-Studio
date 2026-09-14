@@ -37,8 +37,8 @@ nó không cần máy chủ.
    nó cho bạn xem đúng câu SQL trước khi chạy, rồi truy vấn lại để lấy sự thật.
    Nếu một hàng không sửa an toàn được, nó nói cho bạn biết vì sao.
 
-4. **Xuất dữ liệu.** Nhấp chuột phải vào bất kỳ lưới nào → **Xuất ra CSV /
-   JSON**. Bản xuất CSV tự động vô hiệu hóa kiểu tấn công chèn công thức vào
+4. **Xuất dữ liệu.** Nhấn **CSV** hoặc **JSON** trên bất kỳ lưới kết quả nào.
+   Bản xuất CSV tự động vô hiệu hóa kiểu tấn công chèn công thức vào
    bảng tính.
 
 5. **EXPLAIN một truy vấn.** Chọn một câu `SELECT` và nhấn **EXPLAIN** để

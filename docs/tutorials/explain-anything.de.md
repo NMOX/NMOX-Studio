@@ -42,8 +42,8 @@ ehrlich.
    Einwilligungsschranke, denn die Einwilligung für Fehlschläge verspricht
    ausdrücklich, dass kein Quelltext den Rechner verlässt.
 
-3. **Eine API-Antwort (API-Studio).** Drücken Sie nach einer Sendung **Mit
-   KVASIR erklären…**. Gesendet werden: Methode, URL mit maskierten
+3. **Eine API-Antwort (API-Studio).** Drücken Sie nach einer Sendung
+   **Erklären…**. Gesendet werden: Methode, URL mit maskierten
    Query-Werten, Status, Header ohne Zugangsdaten (entfernt und gezählt)
    und ein begrenzter Body. Nützlich, sobald ein 401 oder ein seltsamer
    CORS-Header auftaucht.
@@ -57,8 +57,8 @@ ehrlich.
 
 Jedes Gesicht öffnet ein Gesprächsfenster: Fragen Sie nach, und das Modell
 sieht den gesamten Verlauf dieses Austauschs (begrenzt auf zehn Runden,
-was im Verlauf auch steht). Die Wahl **Fast/Deep** (Haiku/Sonnet) wird
-gemerkt und bleibt je Gespräch fest, damit der Verlauf nie darüber lügt,
+was im Verlauf auch steht). Die Wahl **Fast/Deep** (das schnelle bzw. das
+starke Modell des gewählten Anbieters) wird gemerkt und bleibt je Gespräch fest, damit der Verlauf nie darüber lügt,
 wer geantwortet hat.
 
 ## In zwei Minuten ausprobieren

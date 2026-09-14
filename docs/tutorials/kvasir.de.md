@@ -45,8 +45,8 @@ Optionen ▸ Rack & Cloud.
    Datenfluss bekommt seine eigene Schranke.
 
 4. **Lesen Sie das Urteil.** Eine kurze Diagnose erscheint auf dem
-   mehrzeiligen LCD; die vollständige Erklärung öffnet sich in einem
-   Fenster. Der Regler **MODEL** wählt FAST (Vorgabe) oder DEEP — Haiku /
+   mehrzeiligen LCD; drücken Sie **VIEW**, um die vollständige Erklärung
+   in einem Gesprächsfenster zu öffnen. Der Regler **MODEL** wählt FAST (Vorgabe) oder DEEP — Haiku /
    Sonnet, GPT-5 mini / GPT-5 oder Gemini Flash / Pro, je nachdem, welchen
    Anbieter Sie gewählt haben.
 

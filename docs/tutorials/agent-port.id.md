@@ -20,8 +20,8 @@ menulis berkas, atau menghentikan sebuah jalannya.
 
 ## 1. Nyalakan
 
-**Lakukan:** Alat ▸ **Agent Port (MCP)…** ▸ **Mulai**, lalu **Salin
-Konfigurasi**.
+**Lakukan:** Alat ▸ **Agent Port (MCP)…** (memilihnya langsung menyalakan
+porta), lalu **Salin Konfigurasi**.
 
 **Lihat:** Sebuah dialog dengan titik akhirnya (hanya loopback, porta
 baru), token bearer per penyalaan, dan konfigurasi klien yang siap

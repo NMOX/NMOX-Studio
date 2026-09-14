@@ -48,6 +48,6 @@ misalnya rute Express atau `node server.js` biasa.
 
 ## Berikutnya
 
-- **Jalankan pengujian terfokus** men-debug satu metode uji per bahasa.
+- **Jalankan pengujian terfokus** menjalankan satu metode uji per bahasa.
 - Diagnostik dari perkakas rak (eslint/tsc/phpstan) mendarat di jendela
   Action Items milik platform.

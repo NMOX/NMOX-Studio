@@ -34,14 +34,14 @@ sitio. Este tutorial usa SQLite porque no necesita servidor.
    tiempo.
 
 3. **Edita una fila en la rejilla.** Haz doble clic en la celda `name` de
-   Bob, cámbiala y pulsa **Aplicar**. El Estudio de bases de datos solo
+   Bob, cámbiala y pulsa **Aplicar…**. El Estudio de bases de datos solo
    permite editar en la rejilla cuando puede construir un `UPDATE` seguro
    de una sola fila (una sola tabla, con clave primaria): te enseña el SQL
    exacto antes de ejecutarlo y luego vuelve a consultar para mostrar la
    verdad. Si una fila no se puede editar con seguridad, te dice por qué.
 
-4. **Exporta.** Haz clic derecho en cualquier rejilla →
-   **Exportar CSV / JSON**. La exportación a CSV neutraliza automáticamente la inyección de
+4. **Exporta.** Pulsa **CSV** o **JSON** en cualquier rejilla de
+   resultados. La exportación a CSV neutraliza automáticamente la inyección de
    fórmulas en hojas de cálculo.
 
 5. **Aplica EXPLAIN a una consulta.** Selecciona un `SELECT` y pulsa

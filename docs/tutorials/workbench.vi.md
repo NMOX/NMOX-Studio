@@ -17,19 +17,19 @@ studio.
 
 ## Các bước
 
-1. **Xem mình đang ở đâu.** Cột **Dự án hiện tại** gọi tên dự án đang được
-   nhắm cùng những thông tin chính của nó. Mọi thứ giá và các studio làm đều
+1. **Xem mình đang ở đâu.** Phần trên cùng của Bàn làm việc gọi tên dự án
+   đang được nhắm cùng những thông tin chính của nó. Mọi thứ giá và các studio làm đều
    nằm trong phạm vi dự án này.
 
 2. **Nhảy giữa các tệp.** **TỆP ĐANG MỞ** và **TỆP GẦN ĐÂY** luôn cập nhật —
    nhấp để mở lại. Danh sách gần đây vẫn còn sau khi khởi động lại.
 
-3. **Chuyển dự án.** Cột **DỰ ÁN** liệt kê mọi thứ NMOX Studio biết. Nhấp
+3. **Chuyển dự án.** Mục **DỰ ÁN** liệt kê mọi thứ NMOX Studio biết. Nhấp
    một dự án để nhắm vào đó — giá, trình duyệt dự án và danh sách gần đây đều
    theo cùng một dự án.
 
-4. **Kiểm tra công cụ.** Cột **CÔNG CỤ** cho thấy các studio và công cụ bên
-   ngoài mà bạn với tới được. Muốn dò kỹ khoảng 60 công cụ bên ngoài, kèm
+4. **Kiểm tra công cụ.** Mục **CÔNG CỤ** cho thấy các studio và công cụ bên
+   ngoài mà bạn với tới được. Muốn dò kỹ khoảng 100 công cụ bên ngoài, kèm
    phiên bản và gợi ý cài đặt, hãy chạy
    `Công cụ ▸ Trình chẩn đoán môi trường…`.
 

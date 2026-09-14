@@ -74,13 +74,13 @@ puede leer tus commits; si no, esa sección simplemente no aparece.
    futuro se queda sin dibujar.
 
 7. **Escribe el standup.** Pulsa **Standup…**. El informe se abre como
-   markdown con un botón **Copiar al portapapeles**: **Yesterday** y
-   **Today** a partir de las marcas de hechas y de las sesiones recortadas
-   por día (un reloj en marcha se lee «clock running»), **Blockers** a
-   partir del registro, **Commits (since yesterday)** a partir de
+   markdown con un botón **Copiar al portapapeles**: **Ayer** y
+   **Hoy** a partir de las marcas de hechas y de las sesiones recortadas
+   por día (un reloj en marcha se lee «reloj en marcha»), **Bloqueos** a
+   partir del registro, **Commits (desde ayer)** a partir de
    `git log`. Las secciones sin nada que decir se omiten, nunca se muestran
    vacías, y la cabecera abre con el sprint y su recuento de días («Sprint
-   8 · day 3 of 14»).
+   8 · día 3 de 14»).
 
    ![Un clic convierte el tablero en el informe diario](../images/standup.png)
 

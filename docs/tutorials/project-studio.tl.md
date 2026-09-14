@@ -20,7 +20,7 @@ o `Talaksan ▸ Bagong Proyekto…`.
 ## Mga hakbang
 
 1. **Lumikha ng proyekto.** `Talaksan ▸ Bagong Proyekto…` → pumili ng
-   template (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP, at iba
+   template (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP, at iba
    pa). Pumili ng lokasyon (default ay `~/NMOX`) at tapusin. Bumubukas ang
    proyekto at nakatutok dito ang rack.
 
@@ -32,7 +32,7 @@ o `Talaksan ▸ Bagong Proyekto…`.
    kaya nananatiling mabilis ang malaking repo.
 
 3. **Patakbuhin ito — walang terminal.** Gamitin ang **Patakbuhin** ng IDE
-   (o pindutin ang GO ng IGNITION sa rack). Tinutukoy nito ang iyong
+   (o pindutin ang IGNITE ng IGNITION sa rack). Tinutukoy nito ang iyong
    package manager mula sa lockfile o corepack pin ng proyekto, at
    pinapatakbo ang wastong command; umaagos ang output sa rack. Gumagana
    sa parehong paraan ang **Buuin**, **Subukin**, at **Linisin**.
@@ -40,8 +40,8 @@ o `Talaksan ▸ Bagong Proyekto…`.
 4. **I-edit ang package.json.** Nagbibigay ang built-in na editor ng
    nakabalangkas na pag-edit ng mga script at dependency.
 
-5. **Mag-load ng preset.** Ikinakabit ng menu na **Mga Preset** ang
-   handang rack para sa isang daloy ng trabaho — Uptime Watch, Ship Gate,
+5. **Mag-load ng preset.** Ikinakabit ng menu na **Mga Preset ▾** sa
+   toolbar ng Rack ng Gawain ang handang rack para sa isang daloy ng trabaho — Uptime Watch, Ship Gate,
    Modern Web, Monorepo Lanes, Web3 Bench, at iba pa — para hindi mo
    kailanganing buuin ang patch nang mano-mano.
 

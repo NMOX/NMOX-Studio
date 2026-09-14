@@ -53,7 +53,7 @@ executar, por exemplo uma rota Express ou um simples `node server.js`.
 
 ## Próximos passos
 
-- **Executar o teste em foco** depura um único método de teste, em cada
+- **Executar o teste em foco** executa um único método de teste, em cada
   linguagem.
 - Os diagnósticos das ferramentas do rack (eslint/tsc/phpstan) chegam à
   janela **Itens de ação** da plataforma.

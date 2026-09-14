@@ -8,7 +8,7 @@ O Rack de tarefas é a ideia que define o NMOX Studio: suas ferramentas de
 compilar, testar e servir dispostas como um rack de aparelhos que você liga
 uns aos outros com cabos de patch. Um dispositivo roda um comando de
 verdade; um cabo leva um sinal de verdade. Este tutorial monta uma ligação
-mínima — rodar algo e acender um indicador quando terminar — para a
+mínima — rodar algo e ver a saída dele no monitor — para a
 metáfora fazer sentido.
 
 ![O rack apontado para um projeto real — dispositivos montados e rodando](../images/task-rack.png)
@@ -18,7 +18,7 @@ metáfora fazer sentido.
 ## Antes de começar
 
 Abra um projeto (qualquer projeto Node serve; `Arquivo ▸ Novo projeto…` →
-“Vanilla JS” se você precisar de um). Abrir um projeto **aponta** o rack
+“Vanilla Web” se você precisar de um). Abrir um projeto **aponta** o rack
 para ele, então cada dispositivo roda no diretório desse projeto.
 
 ## Passos
@@ -27,23 +27,23 @@ para ele, então cada dispositivo roda no diretório desse projeto.
    rack inicial tem um único **MONITOR** — o dispositivo de console que
    mostra a saída dos comandos e as linhas de erro.
 
-2. **Acrescente um executor.** Arraste o **IGNITION** da paleta à esquerda
-   para a prateleira. O IGNITION é o dispositivo poliglota de “executar”;
+2. **Acrescente um executor.** Arraste o **IGNITION** da **Prateleira de dispositivos** à
+   esquerda para o rack. O IGNITION é o dispositivo poliglota de “executar”;
    apontado para um projeto Node, ele roda `npm run dev` (detecta sozinho o
    seu gerenciador de pacotes e a cadeia de ferramentas).
 
-3. **Ligue-o ao monitor.** Use o controle de **virar** para ver a traseira,
-   depois clique na entrada **OUT** do IGNITION e na entrada **TAP** do
+3. **Ligue-o ao monitor.** Clique em **Traseira (Tab)** (ou aperte Tab) para ver a traseira,
+   depois clique na entrada **OUT** do IGNITION e na entrada **IN** do
    MONITOR — um cabo de patch liga os dois. (Arrastar entre as entradas
    também funciona; clicar é mais fácil quando o rack é largo.)
 
-4. **Dispare.** Vire o rack de volta para a frente e aperte o botão **GO**
+4. **Dispare.** Vire o rack de volta para a frente e aperte o botão **IGNITE**
    do IGNITION. Ele inicia o processo; a saída corre para o MONITOR e os
    LEDs de estado acendem. Se o projeto ainda não for confiável, antes vem
    um aviso único de Confiança no espaço de trabalho — é a proteção que
    impede um repositório clonado de rodar os scripts dele sem o seu aval.
 
-5. **Salve a ligação.** `⌘S` (ou o botão **Salvar patch**) grava o
+5. **Salve a ligação.** O botão **Salvar patch** grava o
    `.nmoxrack.json` ao lado do seu projeto. Reabra o projeto depois e a
    ligação — dispositivos, cabos, posições dos botões — volta exatamente
    como estava.
@@ -54,7 +54,7 @@ para ele, então cada dispositivo roda no diretório desse projeto.
   escolhem opções, os botões GO executam, LEDs e visores mostram o estado —
   e todo controle é de verdade (nenhum botão morto; um teste de contrato
   garante isso).
-- **Os cabos coordenam as trilhas.** OUT→TAP é a ligação mais simples;
+- **Os cabos coordenam as trilhas.** OUT→IN é a ligação mais simples;
   barreiras de prontidão (`ENABLE`), pontos de encontro (`QUORUM`) e cabos
   de gatilho deixam você compor um pipeline inteiro que reage a si mesmo.
 - **Tudo fica salvo.** A ligação é um arquivo que se versiona; o rack até
@@ -63,7 +63,8 @@ para ele, então cada dispositivo roda no diretório desse projeto.
 ## Próximos passos
 
 - São 53 dispositivos — navegue por eles em [devices.md](../devices.md) ou
-  nos cartões de uso da paleta.
+  na Prateleira de dispositivos (clique com o botão direito num dispositivo
+  montado para ver o **Como usar…**).
 - Peça ao [KVASIR](kvasir.pt.md) para explicar uma execução que falhou.
 - Exporte uma ligação para um workflow do GitHub Actions: a **exportação
   para CI** do rack.

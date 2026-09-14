@@ -55,7 +55,7 @@ legen Sie eines an), etwa eine Express-Route oder ein schlichtes
 
 ## Weiter
 
-- **Fokussierten Test ausführen** debuggt eine einzelne Testmethode, je
+- **Fokussierten Test ausführen** führt eine einzelne Testmethode aus, je
   Sprache.
 - Diagnosen von Rack-Werkzeugen (eslint/tsc/phpstan) landen im Fenster
   **Aufgabenliste** der Plattform.

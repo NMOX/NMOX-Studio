@@ -17,7 +17,7 @@ antes de mergulhar num estúdio.
 
 ## Passos
 
-1. **Veja onde você está.** A coluna **Projeto atual** mostra o projeto
+1. **Veja onde você está.** O topo da Bancada mostra o projeto
    apontado e seus fatos principais. Tudo o que o rack e os estúdios fazem
    vale para esse projeto.
 
@@ -25,13 +25,13 @@ antes de mergulhar num estúdio.
    estão sempre atualizados — clique para reabrir. A lista de recentes
    sobrevive a reinícios.
 
-3. **Troque de projeto.** A coluna **Projetos** lista tudo o que o NMOX
+3. **Troque de projeto.** A seção **Projetos** lista tudo o que o NMOX
    Studio conhece. Clique num para apontar para ele — o rack, o explorador
    e a lista de recentes seguem o mesmo projeto.
 
-4. **Confira suas ferramentas.** A coluna **Ferramentas** mostra os
+4. **Confira suas ferramentas.** A seção **Ferramentas** mostra os
    estúdios e as ferramentas externas ao seu alcance. Para uma sondagem
-   profunda de ~60 ferramentas externas, com versões e dicas de
+   profunda de ~100 ferramentas externas, com versões e dicas de
    instalação, rode `Ferramentas ▸ Doutor do ambiente…`.
 
 ## O que você aprendeu

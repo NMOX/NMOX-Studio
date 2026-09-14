@@ -81,13 +81,13 @@ kailanman lumilitaw.
    hindi iginuhit.
 
 7. **Isulat ang standup.** Pindutin ang **Standup…**. Bumubukas ang ulat bilang
-   markdown na may pindutang **Kopyahin sa Clipboard**: **Yesterday** at
-   **Today** mula sa mga tatak ng pagkatapos at mga sesyong hinati kada araw
-   (ang tumatakbong orasan ay mababasang “clock running”), **Blockers** mula sa
-   talaan, **Commits (since yesterday)** mula sa `git log`. Ang mga bahaging
+   markdown na may pindutang **Kopyahin sa Clipboard**: **Kahapon** at
+   **Ngayon** mula sa mga tatak ng pagkatapos at mga sesyong hinati kada araw
+   (ang tumatakbong orasan ay mababasang “tumatakbo ang orasan”), **Mga harang** mula sa
+   talaan, **Mga commit (mula kahapon)** mula sa `git log`. Ang mga bahaging
    walang maisasabi ay inaalis, hindi kailanman ipinapakitang walang laman, at
    nagbubukas ang header gamit ang sprint at ang bilang ng araw nito
-   (“Sprint 8 · day 3 of 14”).
+   (“Sprint 8 · araw 3 ng 14”).
 
    ![Iisang pindot ang ginagawang pang-araw-araw na ulat ang board](../images/standup.png)
 

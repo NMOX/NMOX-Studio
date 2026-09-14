@@ -53,7 +53,7 @@ napapatakbo, hal. isang route ng Express o payak na `node server.js`.
 
 ## Susunod
 
-- Dini-debug ng **Patakbuhin ang nakapokus na test** ang iisang test
+- Pinapatakbo ng **Patakbuhin ang nakapokus na test** ang iisang test
   method, sa bawat wika.
 - Dumadapo ang mga diagnostics mula sa mga kasangkapan ng rack
   (eslint/tsc/phpstan) sa window na Action Items ng plataporma.

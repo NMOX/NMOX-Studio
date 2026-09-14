@@ -44,7 +44,8 @@ Mga Pagpipilian ▸ Rack at Cloud pati.
    code; may sarili nitong tarangkahan ang palabas na daloy ng data na ito.
 
 4. **Basahin ang hatol.** Lumilitaw ang maikling diyagnosis sa LCD na may
-   maraming linya; bumubukas ang buong paliwanag sa popup. Pumipili ang knob
+   maraming linya; pindutin ang **VIEW** para buksan ang buong paliwanag
+   sa window ng usapan. Pumipili ang knob
    na **MODEL** ng FAST (default) o DEEP — Haiku / Sonnet, GPT-5 mini /
    GPT-5, o Gemini Flash / Pro, depende sa piniling provider.
 

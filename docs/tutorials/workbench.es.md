@@ -18,7 +18,7 @@ primer arranque).
 
 ## Pasos
 
-1. **Mira dónde estás.** La columna **Proyecto actual** nombra el
+1. **Mira dónde estás.** La parte superior del Banco de trabajo nombra el
    proyecto apuntado y sus datos clave. Todo lo que hacen el rack y los
    estudios se limita a ese proyecto.
 
@@ -26,13 +26,13 @@ primer arranque).
    RECIENTES** están vivos: haz clic para volver a abrir uno. La lista de
    recientes sobrevive a los reinicios.
 
-3. **Cambia de proyecto.** La columna **PROYECTOS** enumera todo lo que
+3. **Cambia de proyecto.** La sección **PROYECTOS** enumera todo lo que
    NMOX Studio conoce. Haz clic en uno para apuntar ahí: el rack, el
    explorador y la lista de recientes siguen al mismo proyecto.
 
-4. **Revisa tus herramientas.** La columna **HERRAMIENTAS** muestra los
+4. **Revisa tus herramientas.** La sección **HERRAMIENTAS** muestra los
    estudios y las herramientas externas a tu alcance. Para un sondeo a
-   fondo de unas 60 herramientas externas, con versiones y pistas de
+   fondo de unas 100 herramientas externas, con versiones y pistas de
    instalación, ejecuta `Herramientas ▸ Doctor del entorno…`.
 
 ## Lo que acabas de aprender

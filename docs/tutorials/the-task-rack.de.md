@@ -8,8 +8,8 @@ Das Task-Rack ist die Kernidee von NMOX Studio: Ihre Werkzeuge zum Bauen,
 Testen und Ausliefern, aufgebaut als Rack aus Hardware-Geräten, die Sie
 mit Patchkabeln verbinden. Ein Gerät führt einen echten Befehl aus; ein
 Kabel trägt ein echtes Signal. Dieses Tutorial baut eine winzige
-Verkabelung — etwas ausführen und eine Anzeige aufleuchten lassen, wenn es
-fertig ist —, damit die Metapher greift.
+Verkabelung — etwas ausführen und seine Ausgabe auf dem Monitor
+verfolgen —, damit die Metapher greift.
 
 ![Das Rack auf ein echtes Projekt ausgerichtet — Geräte eingebaut und in Betrieb](../images/task-rack.png)
 
@@ -18,7 +18,7 @@ fertig ist —, damit die Metapher greift.
 ## Bevor Sie beginnen
 
 Öffnen Sie ein Projekt (jedes Node-Projekt geht; `Datei ▸ Neues Projekt…` →
-„Vanilla JS“, falls Sie eines brauchen). Ein Projekt zu öffnen **richtet**
+„Vanilla Web“, falls Sie eines brauchen). Ein Projekt zu öffnen **richtet**
 das Rack darauf aus, sodass jedes Gerät im Verzeichnis dieses Projekts
 läuft.
 
@@ -28,26 +28,26 @@ läuft.
    Sie `⌘9`). Das Start-Rack hat einen einzigen **MONITOR** — das
    Konsolengerät, das Befehlsausgabe und Fehlerzeilen zeigt.
 
-2. **Fügen Sie einen Starter hinzu.** Ziehen Sie **IGNITION** aus der
-   Palette links auf das Regal. IGNITION ist das mehrsprachige
+2. **Fügen Sie einen Starter hinzu.** Ziehen Sie **IGNITION** aus dem
+   Geräteregal links auf das Rack. IGNITION ist das mehrsprachige
    „Ausführen“-Gerät; auf ein Node-Projekt ausgerichtet führt es
    `npm run dev` aus (Paketmanager und Toolchain erkennt es selbst).
 
-3. **Verbinden Sie es mit dem Monitor.** Klicken Sie den Umschalter zum
-   **Drehen**, um die Rückseite zu sehen, klicken Sie dann die Buchse
-   **OUT** von IGNITION und die Buchse **TAP** von MONITOR an — ein
+3. **Verbinden Sie es mit dem Monitor.** Klicken Sie **Rückseite (Tab)** (oder
+   drücken Sie Tab), um die Rückseite zu sehen, klicken Sie dann die Buchse
+   **OUT** von IGNITION und die Buchse **IN** von MONITOR an — ein
    Patchkabel verbindet sie. (Ziehen zwischen den Buchsen geht auch; Klicken
    ist einfacher, wenn das Rack breit ist.)
 
 4. **Lösen Sie es aus.** Drehen Sie zurück auf die Vorderseite und drücken
-   Sie den Knopf **GO** von IGNITION. Er startet den Prozess; die Ausgabe
+   Sie den Knopf **IGNITE** von IGNITION. Er startet den Prozess; die Ausgabe
    läuft in MONITOR, und die Status-LEDs leuchten. Ist das Projekt noch
    nicht vertrauenswürdig, erscheint zuerst eine einmalige Abfrage zum
    Arbeitsbereichs-Vertrauen — die Schranke, die verhindert, dass ein
    geklontes Repository ohne Ihr Einverständnis seine Skripte ausführt.
 
-5. **Speichern Sie die Verkabelung.** `⌘S` (oder der Knopf **Patch
-   speichern**) schreibt `.nmoxrack.json` neben Ihr Projekt. Öffnen Sie das
+5. **Speichern Sie die Verkabelung.** Der Knopf **Patch speichern**
+   schreibt `.nmoxrack.json` neben Ihr Projekt. Öffnen Sie das
    Projekt später wieder, kommt die Verkabelung — Geräte, Kabel,
    Reglerstellungen — genau so zurück.
 
@@ -57,7 +57,7 @@ läuft.
   GO-Knöpfe führen aus, LEDs und LCDs melden den Zustand — und jedes
   Bedienelement ist echt (keine toten Regler; ein Vertragstest setzt das
   durch).
-- **Kabel koordinieren Spuren.** OUT→TAP ist die einfachste Verbindung;
+- **Kabel koordinieren Spuren.** OUT→IN ist die einfachste Verbindung;
   Bereitschaftstore (`ENABLE`), Sammelschranken (`QUORUM`) und
   Auslöserkabel lassen Sie eine ganze Pipeline zusammensetzen, die auf
   sich selbst reagiert.
@@ -66,8 +66,9 @@ läuft.
 
 ## Weiter
 
-- Es gibt 53 Geräte — stöbern Sie in [devices.md](../devices.md) oder in
-  den Karten „So wird es benutzt“ der Palette.
+- Es gibt 53 Geräte — stöbern Sie in [devices.md](../devices.md) oder im
+  Geräteregal (Rechtsklick auf ein eingebautes Gerät öffnet seine
+  **Verwendung von …**).
 - Fragen Sie [KVASIR](kvasir.de.md), warum ein Lauf fehlschlug.
 - Exportieren Sie eine Verkabelung als GitHub-Actions-Workflow: der
   **CI-Export** des Racks.

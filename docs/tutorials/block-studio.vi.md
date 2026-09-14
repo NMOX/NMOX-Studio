@@ -23,7 +23,7 @@ máy chủ xem trước đang sống để bạn thấy nó chạy. Nhấp vào 
 
 2. **Thêm khối từ bảng khối.** Kéo một khối **Phần tử** (một nút DOM) và cho
    nó chữ; thêm một trường **Trạng thái**; thêm một khối **Khi có sự kiện**
-   bật tắt một lớp khi nhấp. Chỉ những cách lồng hợp lệ mới được phép — khung
+   với một khối **Bật tắt lớp** bên trong. Chỉ những cách lồng hợp lệ mới được phép — khung
    vẽ cho xem trước những chỗ thả hợp lệ và từ chối chỗ không hợp lệ, kể cả
    lúc nạp.
 

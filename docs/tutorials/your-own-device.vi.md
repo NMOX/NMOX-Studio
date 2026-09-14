@@ -53,7 +53,7 @@ gì phải khởi động lại.
 
 Mọi thứ trong đó đều có việc của nó: **núm** trở thành `{{kind}}` trong
 lệnh, vai trò **QUERY** tô nút màu xanh dương (luật màu: xanh dương hỏi,
-xanh lá làm, đỏ dừng), còn các cổng giúp thiết bị nối dây được.
+xanh lá làm, đỏ dừng), còn ba cổng giúp thiết bị nối dây được.
 
 ## 3. Gắn nó lên giá
 
@@ -61,7 +61,7 @@ Mở **Giá tác vụ** (`⌘9`, hoặc thẻ Giá tác vụ) và tìm trong ng�
 của kệ. COUNTER nằm ở đó, dòng giới thiệu của bạn ngay bên dưới. Kéo nó
 lên một thanh ray.
 
-Rê chuột lên thẻ Cách dùng của nó — đó chính là đoạn `usage` của bạn, và
+Nhấp chuột phải vào nó và chọn **Cách dùng COUNTER…** — đó chính là đoạn `usage` của bạn, và
 cũng là lý do định dạng này đòi đủ hai dòng thật.
 
 ## 4. Nhấn nó
@@ -82,7 +82,7 @@ năng.
 
 ## 5. Nối dây
 
-Kéo một sợi dây từ **OUT** của COUNTER tới **TAP** của MONITOR. Nhấn COUNT
+Kéo một sợi dây từ **OUT** của COUNTER tới **IN** của MONITOR. Nhấn COUNT
 lần nữa: mọi dòng đều hiện lên màn hình, vì một cổng `OUT`/`DATA` đã khai
 báo sẽ nhận kết quả của lần chạy mà không cần cấu hình thêm.
 

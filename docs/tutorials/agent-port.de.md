@@ -20,8 +20,8 @@ Prozess zu starten, eine Datei zu schreiben oder einen Lauf anzuhalten.
 
 ## 1. Starten
 
-**Tun:** Extras ▸ **Agent Port (MCP)…** ▸ **Starten**, dann
-**Konfiguration kopieren**.
+**Tun:** Extras ▸ **Agent Port (MCP)…** (die Auswahl startet den Port),
+dann **Konfiguration kopieren**.
 
 **Sehen:** Ein Dialog mit dem Endpunkt (nur Loopback, ein frischer
 Port), einem Bearer-Token für diesen einen Start und einer fertigen

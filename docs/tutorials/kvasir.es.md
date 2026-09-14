@@ -44,8 +44,8 @@ Opciones ▸ Rack y nube.
    fuera tiene su propia compuerta.
 
 4. **Lee el veredicto.** En la pantalla LCD de varias líneas aparece un
-   diagnóstico breve; la explicación completa se abre en una ventana
-   emergente. El mando **MODEL** elige FAST (por omisión) o DEEP: Haiku /
+   diagnóstico breve; pulsa **VIEW** para abrir la explicación completa
+   en una ventana de conversación. El mando **MODEL** elige FAST (por omisión) o DEEP: Haiku /
    Sonnet, GPT-5 mini / GPT-5, o Gemini Flash / Pro, según el proveedor
    que hayas elegido.
 

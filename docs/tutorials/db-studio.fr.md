@@ -41,8 +41,8 @@ tutoriel utilise SQLite, qui n’a besoin d’aucun serveur.
    relance la requête pour vérifier. Si une ligne ne peut pas être
    modifiée sans risque, il vous dit pourquoi.
 
-4. **Exportez.** Clic droit sur n’importe quelle grille → **Exporter en CSV**
-   ou **Exporter en JSON**. L’export CSV neutralise automatiquement
+4. **Exportez.** Pressez **CSV** ou **JSON** sur n’importe quelle grille de
+   résultats. L’export CSV neutralise automatiquement
    l’injection de formules de tableur.
 
 5. **Passez une requête à EXPLAIN.** Sélectionnez un `SELECT` et pressez

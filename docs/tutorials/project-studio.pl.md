@@ -19,7 +19,7 @@ Karta **Studio projektu**, zadokowana obok Stanowiska pracy, albo
 ## Kroki
 
 1. **Postaw projekt.** `Plik ▸ Nowy projekt…` → wybierz szablon
-   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP i inne).
+   (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP i inne).
    Wybierz lokalizację (domyślnie `~/NMOX`) i zakończ. Projekt się
    otwiera, a stojak w niego celuje.
 
@@ -30,7 +30,7 @@ Karta **Studio projektu**, zadokowana obok Stanowiska pracy, albo
    dzieci, więc nawet ogromne repozytorium działa szybko.
 
 3. **Uruchom go — bez terminala.** Użyj polecenia **Uruchom** w IDE
-   (albo naciśnij GO na urządzeniu IGNITION w stojaku). Rozpoznaje ono
+   (albo naciśnij IGNITE na urządzeniu IGNITION w stojaku). Rozpoznaje ono
    menedżera pakietów z pliku blokady projektu albo z przypięcia corepack
    i uruchamia właściwe polecenie; wyjście spływa do stojaka. **Zbuduj**,
    **Testuj** i **Wyczyść** działają tak samo.
@@ -38,7 +38,7 @@ Karta **Studio projektu**, zadokowana obok Stanowiska pracy, albo
 4. **Edytuj package.json.** Wbudowany edytor pozwala strukturalnie
    edytować skrypty i zależności.
 
-5. **Wczytaj preset.** Menu presetów okablowuje gotowy stojak pod dany
+5. **Wczytaj preset.** Menu **Presety ▾** Stojaka zadań okablowuje gotowy stojak pod dany
    proces pracy — Uptime Watch, Ship Gate, Modern Web, Monorepo Lanes, Web3
    Bench i inne — więc nie musisz składać układu ręcznie.
 

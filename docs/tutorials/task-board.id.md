@@ -77,13 +77,13 @@ komit Anda; bila tidak, bagian itu memang tidak pernah muncul.
    dibiarkan tak tergambar.
 
 7. **Tulis standup.** Tekan **Standup…**. Laporannya terbuka sebagai
-   markdown dengan tombol **Salin ke Papan Klip**: **Yesterday** dan
-   **Today** dari cap selesai dan sesi yang dipotong per hari (jam yang
-   masih berjalan terbaca “clock running”), **Blockers** dari daftar
-   hambatan, **Commits (since yesterday)** dari `git log`. Bagian yang
+   markdown dengan tombol **Salin ke Papan Klip**: **Kemarin** dan
+   **Hari ini** dari cap selesai dan sesi yang dipotong per hari (jam yang
+   masih berjalan terbaca “jam berjalan”), **Hambatan** dari daftar
+   hambatan, **Commit (sejak kemarin)** dari `git log`. Bagian yang
    tidak punya isi dihilangkan, tidak pernah ditampilkan kosong, dan
-   kepalanya dibuka dengan sprint dan hitungan harinya (“Sprint 8 · day
-   3 of 14”).
+   kepalanya dibuka dengan sprint dan hitungan harinya (“Sprint 8 · hari
+   3 dari 14”).
 
    ![Sekali klik mengubah papan menjadi laporan harian](../images/standup.png)
 

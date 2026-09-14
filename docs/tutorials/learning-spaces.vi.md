@@ -30,8 +30,8 @@ sẵn).
    dắt bạn qua nó, chỉ tới đúng bảng điều khiển hay thiết bị liên quan.
 
 3. **Gõ vào REPL.** Giá đấu sẵn có một thiết bị **REPL** với núm ENGINE đã
-   đặt theo ngôn ngữ của không gian (26 engine, mỗi cái đã gieo sẵn cờ ép chế
-   độ tương tác). Gõ một biểu thức, nhấn Enter — kết quả chảy ra màn hình
+   đặt theo ngôn ngữ của không gian (mỗi ngôn ngữ REPL trong danh mục có một
+   engine, mỗi cái đã gieo sẵn cờ ép chế độ tương tác). Gõ một biểu thức, nhấn Enter — kết quả chảy ra màn hình
    REPL. Thiếu trình thông dịch? Nút **INSTALL** cài nó ngay từ giá.
 
 4. **Làm theo bài hướng dẫn.** Đi qua từng bước; mã mẫu là thật và chạy

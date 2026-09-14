@@ -18,8 +18,8 @@ gọi tên một cách để khởi chạy tiến trình, ghi tệp hay dừng m
 
 ## 1. Khởi động
 
-**Làm:** Công cụ ▸ **Agent Port (MCP)…** ▸ **Khởi động**, rồi **Sao chép
-cấu hình**.
+**Làm:** Công cụ ▸ **Agent Port (MCP)…** (chọn mục này sẽ khởi động cổng),
+rồi **Sao chép cấu hình**.
 
 **Thấy:** Một hộp thoại với điểm cuối (chỉ loopback, một cổng mới), một
 bearer token riêng cho mỗi lần khởi động, và một cấu hình máy khách soạn

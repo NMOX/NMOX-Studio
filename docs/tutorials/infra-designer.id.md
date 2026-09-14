@@ -34,8 +34,8 @@ tanpa efek, jadi tidak ada uang yang keluar.
    (buat firewall, buat droplet, pasang…) serta biayanya, tetapi tidak ada yang
    dibuat. Log penerapan menampilkan setiap langkah.
 
-5. **Jalankan sungguhan (bila sudah siap).** Tambahkan token penyedia di
-   `Opsi` (disimpan di gantungan kunci sistem operasi), dan LUNCURKAN mengeksekusi
+5. **Jalankan sungguhan (bila sudah siap).** Tambahkan token penyedia lewat **Token…**
+   (atau Opsi ▸ Rack & Awan; disimpan di gantungan kunci sistem operasi), dan LUNCURKAN mengeksekusi
    rencananya sungguhan, menyelesaikan rujukan antarsimpul (IP droplet mengalir ke
    catatan DNS) seiring sumber daya bermunculan.
 

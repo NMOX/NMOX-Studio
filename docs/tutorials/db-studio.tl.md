@@ -41,7 +41,7 @@ SQLite ang gamit ng tutorial na ito dahil walang kailangang server.
    nag-query para sa katotohanan. Kung hindi ligtas na baguhin ang isang
    hilera, sinasabi nito kung bakit.
 
-4. **I-export.** Gamitin ang **CSV** o **JSON** ng anumang grid. Kusang
+4. **I-export.** Pindutin ang **CSV** o **JSON** sa anumang grid ng resulta. Kusang
    pinawawalang-bisa ng export sa CSV ang formula injection ng
    spreadsheet.
 

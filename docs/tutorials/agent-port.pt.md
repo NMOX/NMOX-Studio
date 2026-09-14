@@ -19,8 +19,8 @@ gravar um arquivo ou parar uma execução.
 
 ## 1. Ligue
 
-**Faça:** Ferramentas ▸ **Agent Port (MCP)…** ▸ **Iniciar**, depois
-**Copiar configuração**.
+**Faça:** Ferramentas ▸ **Agent Port (MCP)…** (escolher o item já inicia
+a porta), depois **Copiar configuração**.
 
 **Veja:** uma caixa de diálogo com o endpoint (só na interface local, numa
 porta nova), um token bearer gerado a cada partida e uma configuração de

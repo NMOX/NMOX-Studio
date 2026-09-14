@@ -19,7 +19,7 @@ A aba **Estúdio de projeto**, encaixada ao lado da Bancada, ou
 ## Passos
 
 1. **Gere um projeto.** `Arquivo ▸ Novo projeto…` → escolha um modelo
-   (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP e outros). Escolha
+   (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP e outros). Escolha
    um local (o padrão é `~/NMOX`) e conclua. O projeto abre e o rack aponta
    para ele.
 
@@ -30,7 +30,7 @@ A aba **Estúdio de projeto**, encaixada ao lado da Bancada, ou
    `.git`, `dist`) aparecem sem filhos, para que um repositório enorme
    continue rápido.
 
-3. **Execute — sem terminal.** Use o **Executar** da IDE (ou aperte o GO do
+3. **Execute — sem terminal.** Use o **Executar** da IDE (ou aperte o IGNITE do
    IGNITION no rack). Ele descobre o seu gerenciador de pacotes pelo próprio
    lockfile do projeto ou pela fixação do corepack e roda o comando certo; a
    saída corre para o rack. **Compilar**, **Testar** e **Limpar** funcionam
@@ -39,7 +39,7 @@ A aba **Estúdio de projeto**, encaixada ao lado da Bancada, ou
 4. **Edite o package.json.** O editor embutido permite editar scripts e
    dependências de forma estruturada.
 
-5. **Carregue uma predefinição.** O menu de predefinições monta um rack
+5. **Carregue uma predefinição.** O menu **Predefinições ▾** do Rack de tarefas monta um rack
    pronto para um fluxo de trabalho — Uptime Watch, Ship Gate, Modern Web,
    Monorepo Lanes, Web3 Bench e outros — para você não montar a ligação à
    mão.

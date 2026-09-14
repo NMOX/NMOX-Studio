@@ -34,14 +34,14 @@ SQLite porque ele dispensa servidor.
    tempo gasto.
 
 3. **Edite uma linha na grade.** Clique duas vezes na célula `name` do Bob,
-   mude o valor e aperte **Aplicar**. O Estúdio de banco de dados só
+   mude o valor e aperte **Aplicar…**. O Estúdio de banco de dados só
    permite edição na grade quando consegue montar um `UPDATE` seguro de uma
    linha (uma única tabela, chave primária presente) — ele mostra o SQL
    exato antes de rodar e depois consulta de novo para confirmar. Se uma
    linha não puder ser editada com segurança, ele diz por quê.
 
-4. **Exporte.** Clique com o botão direito em qualquer grade → **Exportar
-   como CSV / JSON**. A exportação CSV neutraliza sozinha a injeção de
+4. **Exporte.** Aperte **CSV** ou **JSON** em qualquer grade de resultado.
+   A exportação CSV neutraliza sozinha a injeção de
    fórmulas de planilha.
 
 5. **Faça EXPLAIN de uma consulta.** Selecione um `SELECT` e aperte

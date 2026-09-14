@@ -19,7 +19,7 @@ Der Tab **Projekt-Studio**, angedockt neben dem Arbeitsplatz, oder `Datei ▸ Ne
 ## Schritte
 
 1. **Legen Sie ein Projekt an.** `Datei ▸ Neues Projekt…` → wählen Sie eine
-   Vorlage (Angular, Vue, Vanilla JS, Elixir/Phoenix, PHP LEMP und weitere).
+   Vorlage (Angular, Vue, Vanilla Web, Elixir/Phoenix, PHP LEMP und weitere).
    Wählen Sie einen Ort (Vorgabe ist `~/NMOX`) und schließen Sie ab. Das
    Projekt öffnet sich, und das Rack richtet sich darauf aus.
 
@@ -31,7 +31,7 @@ Der Tab **Projekt-Studio**, angedockt neben dem Arbeitsplatz, oder `Datei ▸ Ne
    damit auch ein riesiges Repository schnell bleibt.
 
 3. **Ausführen — ohne Terminal.** Nutzen Sie **Ausführen** der IDE (oder
-   drücken Sie GO an IGNITION im Rack). Es bestimmt Ihren Paketmanager aus
+   drücken Sie IGNITE an IGNITION im Rack). Es bestimmt Ihren Paketmanager aus
    der Lock-Datei bzw. dem corepack-Eintrag des Projekts und führt den
    richtigen Befehl aus; die Ausgabe läuft ins Rack. **Erstellen**,
    **Testen** und **Bereinigen** funktionieren genauso.
@@ -39,7 +39,7 @@ Der Tab **Projekt-Studio**, angedockt neben dem Arbeitsplatz, oder `Datei ▸ Ne
 4. **Bearbeiten Sie package.json.** Der eingebaute Editor bearbeitet
    Skripte und Abhängigkeiten strukturiert.
 
-5. **Laden Sie eine Vorlage.** Das Menü **Presets** verdrahtet ein fertiges
+5. **Laden Sie eine Vorlage.** Das Menü **Presets ▾** des Task-Racks verdrahtet ein fertiges
    Rack für einen Arbeitsablauf — Uptime Watch, Ship Gate, Modern Web,
    Monorepo Lanes, Web3 Bench und weitere —, damit Sie die Verkabelung
    nicht von Hand bauen müssen.

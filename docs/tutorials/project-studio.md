@@ -29,7 +29,7 @@ The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Projec
    fast.
 
 3. **Run it — no terminal.** Use the IDE's **Run** (or press the rack's
-   IGNITION GO). It resolves your package manager from the project's own
+   IGNITION IGNITE). It resolves your package manager from the project's own
    lockfile/corepack pin and runs the right command; output streams into
    the rack. **Build**, **Test**, and **Clean** work the same way.
 

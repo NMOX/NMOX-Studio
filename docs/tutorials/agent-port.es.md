@@ -19,8 +19,8 @@ archivo o detener una ejecución.
 
 ## 1. Arráncalo
 
-**Haz:** Herramientas ▸ **Agent Port (MCP)…** ▸ **Iniciar**, y luego
-**Copiar configuración**.
+**Haz:** Herramientas ▸ **Agent Port (MCP)…** (al elegirlo se arranca el
+puerto), y luego **Copiar configuración**.
 
 **Verás:** un diálogo con el extremo (solo loopback, un puerto nuevo), un
 token bearer para ese arranque y una configuración de cliente lista:

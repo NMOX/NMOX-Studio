@@ -53,7 +53,7 @@ Simpan ini di `~/.nmox/devices.d/counter.json`:
 
 Setiap bagiannya punya tugas: **kenop** menjadi `{{kind}}` di dalam
 perintah, peran **QUERY** mewarnai tombolnya biru (hukum warna: biru
-bertanya, hijau berbuat, merah menghentikan), dan dua porta membuatnya
+bertanya, hijau berbuat, merah menghentikan), dan tiga porta membuatnya
 bisa dirangkai.
 
 ## 3. Pasang di rak
@@ -62,7 +62,7 @@ Buka **Rak Tugas** (`⌘9`, atau tab Rak Tugas) dan lihat laci **Amati**
 di rak perangkat. COUNTER ada di sana, dengan tagline Anda di bawahnya.
 Seret ke sebuah rel.
 
-Arahkan kursor ke kartu *Cara memakai*-nya — itulah teks `usage` Anda,
+Klik kanan perangkatnya dan pilih **Cara memakai COUNTER…** — itulah teks `usage` Anda,
 dan karena itulah formatnya menuntut dua baris sungguhan.
 
 ## 4. Tekan tombolnya
@@ -84,7 +84,7 @@ Tolak, dan tidak ada yang diluncurkan — penolakan itulah fiturnya.
 
 ## 5. Rangkai
 
-Seret kabel dari **OUT** milik COUNTER ke **TAP** milik MONITOR. Tekan
+Seret kabel dari **OUT** milik COUNTER ke **IN** milik MONITOR. Tekan
 COUNT sekali lagi: setiap baris mendarat di monitor, karena porta
 `OUT`/`DATA` yang dinyatakan menerima keluaran jalannya tanpa
 konfigurasi tambahan.

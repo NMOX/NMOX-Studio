@@ -7,8 +7,8 @@
 Rak Tugas adalah gagasan khas NMOX Studio: perkakas bangun/uji/sajikan Anda
 ditata sebagai rak perangkat keras yang Anda sambungkan dengan kabel patch.
 Sebuah perangkat menjalankan perintah sungguhan; sebuah kabel membawa sinyal
-sungguhan. Tutorial ini menyusun patch kecil — jalankan sesuatu, lalu nyalakan
-sebuah penanda ketika selesai — agar metaforanya langsung terasa.
+sungguhan. Tutorial ini menyusun patch kecil — jalankan sesuatu, lalu lihat
+keluarannya di monitor — agar metaforanya langsung terasa.
 
 ![Rak yang dibidikkan ke proyek sungguhan — perangkat terpasang dan berjalan](../images/task-rack.png)
 
@@ -17,7 +17,7 @@ sebuah penanda ketika selesai — agar metaforanya langsung terasa.
 ## Sebelum mulai
 
 Buka sebuah proyek (proyek Node apa pun bisa; `Berkas ▸ Proyek Baru…` →
-“Vanilla JS” bila Anda perlu satu). Membuka proyek **membidikkan** rak ke sana,
+“Vanilla Web” bila Anda perlu satu). Membuka proyek **membidikkan** rak ke sana,
 sehingga setiap perangkat berjalan di direktori proyek itu.
 
 ## Langkah-langkah
@@ -26,23 +26,23 @@ sehingga setiap perangkat berjalan di direktori proyek itu.
    satu **MONITOR** — perangkat konsol yang menampilkan keluaran perintah dan
    baris galat.
 
-2. **Tambahkan pelari.** Seret **IGNITION** dari palet di kiri ke rak. IGNITION
+2. **Tambahkan pelari.** Seret **IGNITION** dari rak perangkat di kiri ke rak. IGNITION
    adalah perangkat “jalankan” untuk banyak bahasa; bila dibidikkan ke proyek
    Node ia menjalankan `npm run dev` (ia mendeteksi sendiri pengelola paket dan
    rantai perkakas Anda).
 
-3. **Sambungkan ke monitor.** Klik kendali **balik rak** untuk melihat sisi
-   belakang, lalu klik jack **OUT** milik IGNITION dan klik jack **TAP** milik
+3. **Sambungkan ke monitor.** Klik **Belakang (Tab)** (atau tekan Tab) untuk melihat sisi
+   belakang, lalu klik jack **OUT** milik IGNITION dan klik jack **IN** milik
    MONITOR — sebuah kabel patch menyambungkan keduanya. (Menyeret di antara jack
    juga bisa; mengeklik lebih mudah bila raknya lebar.)
 
-4. **Picu.** Balik lagi ke depan dan tekan tombol **GO** milik IGNITION. Ia
+4. **Picu.** Balik lagi ke depan dan tekan tombol **IGNITE** milik IGNITION. Ia
    meluncurkan prosesnya; keluaran mengalir ke MONITOR, dan LED status menyala.
    Bila proyeknya belum dipercaya, Anda lebih dulu mendapat konfirmasi kepercayaan
    ruang kerja sekali jalan — itulah penjaga yang mencegah repositori hasil kloning
    menjalankan skripnya tanpa izin Anda.
 
-5. **Simpan patch-nya.** `⌘S` (atau tombol **Simpan Patch**) menulis
+5. **Simpan patch-nya.** Tombol **Simpan Patch** menulis
    `.nmoxrack.json` di samping proyek Anda. Buka proyeknya lagi nanti dan patch-nya —
    perangkat, kabel, posisi kenop — kembali persis seperti semula.
 
@@ -51,7 +51,7 @@ sehingga setiap perangkat berjalan di direktori proyek itu.
 - **Perangkat adalah perkakas dengan panel depan.** Kenop memilih opsi, tombol GO
   menjalankan, LED dan LCD melaporkan keadaan — dan setiap kendali sungguhan (tak
   ada kenop mati; sebuah uji kontrak menegakkannya).
-- **Kabel mengoordinasikan jalur.** OUT→TAP adalah sambungan paling sederhana;
+- **Kabel mengoordinasikan jalur.** OUT→IN adalah sambungan paling sederhana;
   gerbang kesiapan (`ENABLE`), penghalang gabung (`QUORUM`), dan kabel pemicu
   memungkinkan Anda menyusun seluruh alur yang bereaksi pada dirinya sendiri.
 - **Semuanya bertahan.** Patch-nya adalah berkas yang bisa dikomit; rak bahkan
@@ -59,7 +59,7 @@ sehingga setiap perangkat berjalan di direktori proyek itu.
 
 ## Berikutnya
 
-- Ada 53 perangkat — telusuri di [devices.md](../devices.md) atau kartu
-  *Cara memakai* di palet.
+- Ada 53 perangkat — telusuri di [devices.md](../devices.md) atau rak
+  perangkat (klik kanan perangkat yang terpasang untuk **Cara memakai…**-nya).
 - Minta [KVASIR](kvasir.id.md) menjelaskan jalannya yang gagal.
 - Ekspor patch ke workflow GitHub Actions: **ekspor CI** milik rak.

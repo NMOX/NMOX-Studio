@@ -18,7 +18,7 @@ uruchomieniu).
 
 ## Kroki
 
-1. **Zobacz, gdzie jesteś.** Kolumna **Bieżący projekt** nazywa wycelowany
+1. **Zobacz, gdzie jesteś.** Góra Stanowiska pracy nazywa wycelowany
    projekt i najważniejsze fakty o nim. Wszystko, co robią stojak
    i studia, dotyczy właśnie tego projektu.
 
@@ -26,13 +26,13 @@ uruchomieniu).
    są żywe — kliknij, żeby otworzyć ponownie. Lista ostatnich przetrwa
    ponowne uruchomienie.
 
-3. **Przełączaj projekty.** Kolumna **PROJEKTY** wymienia wszystko, co
+3. **Przełączaj projekty.** Sekcja **PROJEKTY** wymienia wszystko, co
    zna NMOX Studio. Kliknij projekt, żeby w niego wycelować — stojak,
    eksplorator i lista ostatnich podążają za tym samym projektem.
 
-4. **Sprawdź narzędzia.** Kolumna **NARZĘDZIA** pokazuje studia
+4. **Sprawdź narzędzia.** Sekcja **NARZĘDZIA** pokazuje studia
    i zewnętrzne narzędzia, po które możesz sięgnąć. Żeby dokładnie
-   zbadać ~60 zewnętrznych narzędzi, z wersjami i podpowiedziami
+   zbadać ~100 zewnętrznych narzędzi, z wersjami i podpowiedziami
    instalacji, uruchom `Narzędzia ▸ Diagnostyka środowiska…`.
 
 ## Czego się właśnie nauczyłeś

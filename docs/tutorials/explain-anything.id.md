@@ -50,7 +50,8 @@ kunci sistem operasi Anda, atau ekspor `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, at
 
 Setiap wajah membuka jendela percakapan: ajukan pertanyaan lanjutan, dan model
 melihat seluruh riwayat percakapan itu (dibatasi sepuluh putaran, disebutkan di
-transkrip). Pilihan **Fast/Deep** (Haiku/Sonnet) diingat, dan tetap per percakapan
+transkrip). Pilihan **Fast/Deep** (model cepat dan model kuat milik penyedia yang
+dipilih) diingat, dan tetap per percakapan
 sehingga transkrip tidak pernah berbohong tentang siapa yang menjawab.
 
 ## Coba dalam dua menit
