@@ -22,10 +22,12 @@
   border: 0;
 }
 
-/* 3 · The skip link: off-screen until a keyboard user needs it. */
+/* 3 · The skip link: off-screen until a keyboard user needs it.
+   A logical side, not "left": in a right-to-left page the far
+   left is scrollable, so a physical offset would show it. */
 .skip-link {
   position: absolute;
-  left: -999px;
+  inset-inline-start: -999px;
   top: 0;
   background: #1a1a1e;
   color: #ffffff;
@@ -33,7 +35,7 @@
   z-index: 1000;
 }
 .skip-link:focus {
-  left: 0;
+  inset-inline-start: 0;
 }
 
 /* 4 · Respect the motion preference: animation is a choice. */

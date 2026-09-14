@@ -48,7 +48,7 @@ class DialogChromeOverlayGateTest {
             Path.of("..", "branding", "src", "main", "nbm-branding", "modules");
 
     private static final List<String> LOCALES =
-            List.of("es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+            ShippedLocales.TRANSLATED;
 
     /**
      * One overlay: the platform jar it covers, the package inside it, and the

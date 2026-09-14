@@ -20,7 +20,9 @@ import java.util.Set;
  * source — the v2.147.0 lesson, keyed by the thing itself — so a new painted
  * surface fails the build until somebody decides about it.
  *
- * <p>Two honest categories, and the second is a debt, not a decision:
+ * <p>Honest categories, and the last is a debt, not a decision (the three
+ * surfaces first recorded there were paid in v2.151.0 and moved to
+ * {@link #MIRRORS}):
  *
  * <ul>
  *   <li><b>Geometry, not typography.</b> A rack unit's jacks sit where the
@@ -49,11 +51,24 @@ final class PaintedSurfaces {
             "TimelineStrip",     // time runs from earlier to later
             "KeystrokeOverlay"); // a chord is typed in one order
 
-    /** Text laid out by hand. These should mirror; they do not yet. */
-    static final Set<String> OWED = Set.of(
+    /**
+     * Text laid out by hand, now mirrored (v2.151.0, the release that shipped
+     * the first right-to-left language). The Welcome's columns ride layouts
+     * that read the orientation and paint only their ground; the shelf's
+     * cards place every line from the reader's line start; the Task Board
+     * overview uses logical sides and its count bars grow away from their
+     * names. The overview's two time strips still run earlier to later — the
+     * {@code TimelineStrip} decision. The sweep reaches all three, and
+     * {@code PaintedSurfaceLedgerTest} holds that none of them names an
+     * absolute side.
+     */
+    static final Set<String> MIRRORS = Set.of(
             "MainWindow",        // the Welcome's four columns
             "PalettePanel",      // the shelf's cards
             "OverviewPanel");    // the Task Board dashboard
+
+    /** Text laid out by hand that should mirror and does not yet. Empty since v2.151.0. */
+    static final Set<String> OWED = Set.of();
 
     private PaintedSurfaces() {
     }
@@ -74,7 +89,10 @@ final class PaintedSurfaces {
             }
         }
         String name = root.getClass().getSimpleName();
-        if (GEOMETRY.contains(name) || OWED.contains(name)) {
+        boolean code = root instanceof javax.swing.JComponent jc
+                && Boolean.TRUE.equals(jc.getClientProperty(
+                        org.nmox.studio.core.util.TextDirection.KEEP_LTR));
+        if (code || GEOMETRY.contains(name) || OWED.contains(name)) {
             root.applyComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         }
     }

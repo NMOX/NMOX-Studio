@@ -163,7 +163,7 @@ public final class AgentPortAction implements ActionListener {
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panel.add(disclosureLabel(port.port(), McpProtocol.disclosure(McpTools.production())),
                 BorderLayout.NORTH);
-        JTextArea config = new JTextArea(snippet);
+        JTextArea config = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(snippet));
         config.setEditable(false);
         config.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,
                 java.awt.Font.PLAIN, 12));

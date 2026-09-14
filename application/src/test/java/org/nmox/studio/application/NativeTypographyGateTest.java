@@ -221,6 +221,67 @@ class NativeTypographyGateTest {
         assertThat(wrong).as("…(&X) — Chinese, Hindi, Hebrew and Arabic software writes (&X)…").isEmpty();
     }
 
+    /** A Latin word or digit, whitespace, then a keyboard chord — with no RLM between. */
+    private static final Pattern RTL_CHORD_AFTER_LATIN = Pattern.compile("[A-Za-z0-9)\\]]\\s+[⌘⌥⇧⌃]");
+    /** A value that opens with a neutral mark glued to a Latin run: `.well-known`, `/api`. */
+    private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
+    /** A keyboard chord glyph anywhere in the value. */
+    private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
+
+    /**
+     * Whether Swing will lay this text out through bidi at all. It does only
+     * for text its font utilities call complex; measured on JDK 25, a Hebrew
+     * letter or an RLE..PDF pair qualifies and an RLM or RLI..PDI does not.
+     */
+    static boolean swingLaysOutBidi(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c >= '\u202a' && c <= '\u202e') {
+                return true;
+            }
+            byte d = Character.getDirectionality(c);
+            if (c != '\u200f' && (d == Character.DIRECTIONALITY_RIGHT_TO_LEFT
+                    || d == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Test
+    @DisplayName("right to left, a Latin run keeps its place beside a chord and its opening mark")
+    void rightToLeftRunsKeepTheirOrder() throws IOException {
+        // The first Hebrew walk read `API ⌥⌘8–אולפן ה` on the Welcome: a
+        // Latin name and the chord after it are one left-to-right run, so the
+        // chord landed inside the name. And `.well-known/security.txt` lost
+        // its dot to the far end of the line — a neutral mark opening a
+        // right-to-left label takes the label's direction. An RLM after the
+        // name and an LRM before the dot are the fixes; this is the law.
+        List<String> wrong = new ArrayList<>();
+        for (Value v : values()) {
+            if (!org.nmox.studio.core.util.TextDirection.isRightToLeft(
+                    java.util.Locale.forLanguageTag(v.lang()))) {
+                continue;
+            }
+            String t = v.masked();
+            if (RTL_CHORD_AFTER_LATIN.matcher(t).find()) {
+                wrong.add(v.name() + "   (RLM U+200F after the Latin run, before the chord)");
+            }
+            if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
+                wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
+            }
+            // The second walk found no mark at all could move `IRC  ⌥⌘3`: Swing
+            // runs bidi only over text it calls complex — a right-to-left
+            // letter or an embedding mark (U+202A..U+202E) — and RLM/LRM are
+            // neither, so a chord value with no Hebrew or Arabic letter is
+            // drawn in logical order whatever marks it carries.
+            if (CHORD.matcher(v.text()).find() && !swingLaysOutBidi(v.text())) {
+                wrong.add(v.name() + "   (wrap in RLE U+202B … PDF U+202C: no right-to-left letter, so Swing draws it without bidi)");
+            }
+        }
+        assertThat(wrong).as("a right-to-left value whose Latin run the bidi algorithm will reorder").isEmpty();
+    }
+
     @Test
     @DisplayName("one form of address per language")
     void oneRegisterPerLanguage() throws IOException {

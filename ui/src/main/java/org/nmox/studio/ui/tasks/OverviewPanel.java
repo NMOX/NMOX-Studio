@@ -206,7 +206,7 @@ final class OverviewPanel extends JPanel {
             add(sectionLabel(Bundle.OverviewPanel_epicsSection()));
             add(Box.createVerticalStrut(4));
             JPanel legend = new JPanel(
-                    new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 14, 2));
+                    new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 14, 2));
             legend.setOpaque(false);
             legend.setMaximumSize(new Dimension(Integer.MAX_VALUE, 26));
             for (BoardStats.LabelCount lc : s.labels()) {
@@ -233,12 +233,12 @@ final class OverviewPanel extends JPanel {
         JPanel retroHead = new JPanel(new BorderLayout(8, 0));
         retroHead.setOpaque(false);
         retroHead.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-        retroHead.add(sectionLabel(Bundle.OverviewPanel_retroSection()), BorderLayout.WEST);
+        retroHead.add(sectionLabel(Bundle.OverviewPanel_retroSection()), BorderLayout.LINE_START);
         javax.swing.JButton edit = new javax.swing.JButton(Bundle.OverviewPanel_editRetro());
         edit.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_editRetroA11y());
         edit.setFont(mono(Font.PLAIN, 10f));
         edit.addActionListener(e -> editRetro.run());
-        retroHead.add(edit, BorderLayout.EAST);
+        retroHead.add(edit, BorderLayout.LINE_END);
         add(retroHead);
         add(Box.createVerticalStrut(4));
         String retro = board.retro();
@@ -274,8 +274,8 @@ final class OverviewPanel extends JPanel {
                 owner, String.valueOf(b.sinceDays()), clip(b.action()))));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
-        row.add(title, BorderLayout.WEST);
-        row.add(meta, BorderLayout.EAST);
+        row.add(title, BorderLayout.LINE_START);
+        row.add(meta, BorderLayout.LINE_END);
         row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_blockerA11y(
                 b.title(), owner, String.valueOf(b.sinceDays()), b.action()));
         return row;
@@ -293,8 +293,8 @@ final class OverviewPanel extends JPanel {
                 BoardStats.duration(t.todayMs()), BoardStats.duration(t.weekMs())));
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
-        row.add(title, BorderLayout.WEST);
-        row.add(meta, BorderLayout.EAST);
+        row.add(title, BorderLayout.LINE_START);
+        row.add(meta, BorderLayout.LINE_END);
         row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_timeA11y(
                 t.title(), t.running() ? Bundle.OverviewPanel_clockRunningSuffix() : "",
                 BoardStats.duration(t.todayMs()), BoardStats.duration(t.weekMs())));
@@ -303,7 +303,7 @@ final class OverviewPanel extends JPanel {
 
     private JComponent legendChip(BoardStats.LabelCount lc) {
         JPanel chip = new JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+                new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 5, 0));
         chip.setOpaque(false);
         JPanel dot = new JPanel();
         dot.setBackground(labelColor(lc.label()));
@@ -381,9 +381,9 @@ final class OverviewPanel extends JPanel {
         n.setFont(mono(Font.PLAIN, 12f));
         n.setPreferredSize(new Dimension(90, 18));
         Bar bar = new Bar(c.count(), maxCount, c.overLimit());
-        row.add(name, BorderLayout.WEST);
+        row.add(name, BorderLayout.LINE_START);
         row.add(bar, BorderLayout.CENTER);
-        row.add(n, BorderLayout.EAST);
+        row.add(n, BorderLayout.LINE_END);
         row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_columnA11y(
                 c.name(), count, c.overLimit() ? Bundle.OverviewPanel_overLimitSuffix() : ""));
         return row;
@@ -403,7 +403,7 @@ final class OverviewPanel extends JPanel {
         meta.setForeground(DIM);
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.CENTER);
-        row.add(meta, BorderLayout.EAST);
+        row.add(meta, BorderLayout.LINE_END);
         row.getAccessibleContext().setAccessibleName(
                 Bundle.OverviewPanel_agingA11y(a.title(), tail));
         return row;
@@ -450,11 +450,20 @@ final class OverviewPanel extends JPanel {
             int y = (getHeight() - h) / 2;
             g2.setColor(PANEL);
             g2.fillRoundRect(0, y, getWidth(), h, h, h);
-            int w = (int) Math.round((double) getWidth() * count / max);
+            int w = Math.max(count > 0 ? 4 : 0,
+                    (int) Math.round((double) getWidth() * count / max));
             g2.setColor(over ? OVER : PHOSPHOR);
-            g2.fillRoundRect(0, y, Math.max(count > 0 ? 4 : 0, w), h, h, h);
+            // the bar grows away from the column's name, so in a
+            // right-to-left board it grows leftward
+            g2.fillRoundRect(fillStart(getComponentOrientation().isLeftToRight(), getWidth(), w),
+                    y, w, h, h, h);
             g2.dispose();
         }
+    }
+
+    /** Where a bar of {@code fill} pixels starts inside {@code width}: at the line's start. */
+    static int fillStart(boolean leftToRight, int width, int fill) {
+        return leftToRight ? 0 : width - fill;
     }
 
     /** The N-day painted flow strip: one bar per day, oldest first.

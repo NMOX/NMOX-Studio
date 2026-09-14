@@ -39,7 +39,7 @@ UninstallDisplayIcon={app}\nmox-studio.ico
 ; corrected by a later release. Inno picks the entry matching the machine's
 ; language and falls back to English (v2.105.0).
 ;
-; Five of the IDE's thirteen are absent ON PURPOSE — Bahasa Indonesia,
+; Five of the IDE's fourteen are absent ON PURPOSE — Bahasa Indonesia,
 ; Filipino, Tiếng Việt, 简体中文 and हिन्दी ship no official .isl with Inno
 ; Setup, and vendoring an unreviewed community file would put text nobody
 ; here can read in front of every user of those languages. English is the
@@ -52,6 +52,7 @@ Name: "ru"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "uk"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 Name: "pl"; MessagesFile: "compiler:Languages\Polish.isl"
 Name: "pt"; MessagesFile: "compiler:Languages\BrazilianPortuguese.isl"
+Name: "he"; MessagesFile: "compiler:Languages\Hebrew.isl"
 
 [Files]
 Source: "..\..\application\target\nmoxstudio\*"; DestDir: "{app}"; \

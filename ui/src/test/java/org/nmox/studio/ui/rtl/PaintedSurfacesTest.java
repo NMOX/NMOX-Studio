@@ -26,7 +26,7 @@ class PaintedSurfacesTest {
     static final class Knob extends JPanel {
     }
 
-    /** Named for the real Welcome: classified OWED, and treated the same way. */
+    /** Named for the real Welcome: classified MIRRORS, so the sweep must reach it. */
     static final class MainWindow extends JPanel {
     }
 
@@ -56,16 +56,40 @@ class PaintedSurfacesTest {
     }
 
     @Test
-    @DisplayName("an OWED surface is put back too — half a mirror is worse than none")
-    void owedIsPutBackUntilItIsPaid() {
+    @DisplayName("a surface that mirrors by hand is left mirrored — the debt is paid, not re-reset")
+    void mirroredSurfacesStayMirrored() {
         JPanel root = new JPanel();
         MainWindow welcome = new MainWindow();
+        JLabel column = new JLabel("עמודה");
+        welcome.add(column);
         root.add(welcome);
 
         root.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         PaintedSurfaces.keepAuthoredDirection(root);
 
-        assertThat(welcome.getComponentOrientation().isLeftToRight()).isTrue();
+        assertThat(welcome.getComponentOrientation().isLeftToRight())
+                .as("the Welcome reads its orientation now, so putting it back would un-mirror Hebrew")
+                .isFalse();
+        assertThat(column.getComponentOrientation().isLeftToRight()).isFalse();
+    }
+
+    @Test
+    @DisplayName("text marked as code keeps left to right inside a mirrored window")
+    void codeKeepsItsDirection() {
+        JPanel root = new JPanel();
+        javax.swing.JTextArea json = org.nmox.studio.core.util.TextDirection.keepLeftToRight(
+                new javax.swing.JTextArea("{\"mcpServers\": {}}"));
+        JLabel prose = new JLabel("העתקת התצורה");
+        root.add(json);
+        root.add(prose);
+
+        root.applyComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        PaintedSurfaces.keepAuthoredDirection(root);
+
+        assertThat(json.getComponentOrientation().isLeftToRight())
+                .as("JSON with its braces on the right is not a translation").isTrue();
+        assertThat(prose.getComponentOrientation().isLeftToRight())
+                .as("the prose beside it still mirrors").isFalse();
     }
 
     @Test
@@ -89,9 +113,12 @@ class PaintedSurfacesTest {
     @DisplayName("every classified name is a real painted surface's name")
     void theLedgerNamesAreSimpleNames() {
         assertThat(PaintedSurfaces.GEOMETRY).contains("RackDevice", "FlowCanvas", "Knob");
-        assertThat(PaintedSurfaces.OWED).contains("MainWindow", "PalettePanel");
-        assertThat(PaintedSurfaces.GEOMETRY)
-                .as("a surface cannot be both kinds of decision")
-                .doesNotContainAnyElementsOf(PaintedSurfaces.OWED);
+        assertThat(PaintedSurfaces.MIRRORS).contains("MainWindow", "PalettePanel", "OverviewPanel");
+        // disjoint rather than doesNotContainAnyElementsOf: OWED is empty
+        // since v2.151.0, and an empty debt is a state to allow, not an error
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.GEOMETRY, PaintedSurfaces.MIRRORS))
+                .as("a surface cannot be two kinds of decision").isTrue();
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.GEOMETRY, PaintedSurfaces.OWED)).isTrue();
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.OWED, PaintedSurfaces.MIRRORS)).isTrue();
     }
 }

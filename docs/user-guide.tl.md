@@ -1,7 +1,7 @@
 # NMOX Studio — Gabay ng gumagamit
 
 <!-- languages -->
-[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · **Filipino** · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md)
 <!-- /languages -->
 
 Kung paano gamitin ang produkto. Dinadaanan ng gabay na ito ang mga tampok sa pagkakasunod-sunod na makakaharap mo: pag-install, unang pagbukas, mga proyekto, ang rack, ang mga studio, ang mga wizard at ang mga panangga.
@@ -225,7 +225,7 @@ Isang buong kliyente sa loob ng IDE: TLS na may tunay na pagsusuri ng pangalan, 
 
 ### Ang kasamang websayt
 
-Ang **Tulong ▸ Websayt ng NMOX Studio (lokal)** ay naghahain ng websayt ng produkto mula sa sarili nitong rack, sa lokal na interface. Nagsasalita ito ng parehong labintatlong wika na sinasalita ng IDE; nasa paanan ng pahina ang pampili.
+Ang **Tulong ▸ Websayt ng NMOX Studio (lokal)** ay naghahain ng websayt ng produkto mula sa sarili nitong rack, sa lokal na interface. Nagsasalita ito ng parehong labing-apat na wika na sinasalita ng IDE; nasa paanan ng pahina ang pampili.
 
 ### Browser (⌥⌘4)
 
@@ -315,7 +315,7 @@ Ang proyektong ang pasukan ay `index.ts`, `main.ts`, o `src/index.ts` ay tumatak
 
 ### Ang inyong wika
 
-Nagsasalita ang NMOX Studio ng labintatlong wika: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, at हिन्दी. Piliin ang sa inyo sa **Mga Pagpipilian ▸ Pangkalahatan ▸ Wika** — bawat isa ay nakasulat sa sarili nitong pangalan, upang matagpuan ninyo palagi ang sa inyo. Isinusulat ang pinili sa inyong mga ayos ng pagsisimula (`etc/nmoxstudio.conf`, bilang argumentong `--locale`) at umiiral din agad. Nagbabago: ang mga menu, ang mga dayalogo, ang mga paalala, ang mga guhit ng kalagayan, ang pagsalubong, at ang mga pagpipilian. Nananatili: ang bokabularyo ng mga harapan ng rak (GO, STOP, EXPLAIN — mga tatak ng kasangkapan, tulad sa isang sintesayser), at ang mas malalalim na dayalogo ng plataporma, na wala pang salin. Maaaring hindi na kayo kailanman pumili: ang bagong instalasyon ay nagsasalita na ng wika ng inyong sistema, at maging mula sa bansang hindi namin kailanman pinangalanan — ang Taiwan, Singapur, Portugal, at Quebec ay dumadapo sa sariling wika at hindi sa Ingles, sapagkat ang mga katalogo ay ipinangalan sa isang wika at kailanman ay hindi sa isang bansa.
+Nagsasalita ang NMOX Studio ng labing-apat na wika: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, at עברית. Piliin ang sa inyo sa **Mga Pagpipilian ▸ Pangkalahatan ▸ Wika** — bawat isa ay nakasulat sa sarili nitong pangalan, upang matagpuan ninyo palagi ang sa inyo. Isinusulat ang pinili sa inyong mga ayos ng pagsisimula (`etc/nmoxstudio.conf`, bilang argumentong `--locale`) at umiiral din agad. Nagbabago: ang mga menu, ang mga dayalogo, ang mga paalala, ang mga guhit ng kalagayan, ang pagsalubong, at ang mga pagpipilian. Nananatili: ang bokabularyo ng mga harapan ng rak (GO, STOP, EXPLAIN — mga tatak ng kasangkapan, tulad sa isang sintesayser), at ang mas malalalim na dayalogo ng plataporma, na wala pang salin. Maaaring hindi na kayo kailanman pumili: ang bagong instalasyon ay nagsasalita na ng wika ng inyong sistema, at maging mula sa bansang hindi namin kailanman pinangalanan — ang Taiwan, Singapur, Portugal, at Quebec ay dumadapo sa sariling wika at hindi sa Ingles, sapagkat ang mga katalogo ay ipinangalan sa isang wika at kailanman ay hindi sa isang bansa.
 
 ### Ang pang-araw-araw na tingin sa pagbabago
 

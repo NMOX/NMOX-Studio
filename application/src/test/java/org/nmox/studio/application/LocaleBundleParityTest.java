@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class LocaleBundleParityTest {
 
-    static final List<String> LOCALES = List.of("es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    static final List<String> LOCALES = ShippedLocales.TRANSLATED;
     private static final Pattern LOCALIZED = Pattern.compile("(.*/)Bundle_(" + String.join("|", LOCALES) + ")\\.properties");
     private static final Pattern PLACEHOLDER = Pattern.compile("\\{(\\d+)");
     /**

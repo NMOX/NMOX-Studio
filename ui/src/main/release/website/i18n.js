@@ -23,6 +23,10 @@ async function setLocale(tag) {
   // keep the document's language claim TRUE — screen readers
   // pick pronunciation from it, and CSS/:lang() keys off it
   document.documentElement.lang = tag;
+  // and its direction: a right-to-left language mirrors the
+  // whole page, not just the words inside it
+  document.documentElement.dir =
+    ['ar', 'he', 'fa', 'ur'].includes(tag) ? 'rtl' : 'ltr';
   applyTranslations();
 }
 

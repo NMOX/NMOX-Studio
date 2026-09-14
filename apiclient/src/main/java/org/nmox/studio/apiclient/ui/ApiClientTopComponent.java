@@ -315,7 +315,9 @@ public final class ApiClientTopComponent extends TopComponent {
     private final JComboBox<String> envCombo = new JComboBox<>();
     private final JComboBox<String> methodCombo =
             new JComboBox<>(new String[]{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"});
-    private final JTextField urlField = new JTextField();
+    // a URL, a request body, a response and its headers are machine text that
+    // runs left to right in every language (v2.151.0, the first Hebrew walk)
+    private final JTextField urlField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
     private final JTextField nameField = new JTextField();
     private final JButton sendButton = new JButton(Bundle.ApiClientTopComponent_send());
     // send history (v1.197.0)
@@ -326,7 +328,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private final JTable paramsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
     private final JTable headersTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
-    private final JTextArea bodyArea = new JTextArea();
+    private final JTextArea bodyArea = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
     private final JComboBox<AuthType> authCombo = new JComboBox<>(AuthType.values());
     // A JPasswordField, not a plaintext JTextField (v1.97.0): the token
     // is a secret, so it neither echoes on screen nor is written to the
@@ -346,11 +348,11 @@ public final class ApiClientTopComponent extends TopComponent {
     private ApiResponse lastResponse;
     private String lastMethod;
     private String lastUrl;
-    private final JTextArea responseBody = new JTextArea();
+    private final JTextArea responseBody = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
     // response pack (v1.198.0)
     private final JTextField responseFind = new JTextField();
     private final JLabel findCount = new JLabel(" ");
-    private final JTextArea responseHeaders = new JTextArea();
+    private final JTextArea responseHeaders = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
     private final JPanel testResults = new JPanel();
     private final JPanel standardsPanel = new JPanel();
 
@@ -2061,7 +2063,7 @@ public final class ApiClientTopComponent extends TopComponent {
     }
 
     private void editVariables(Environment env) {
-        JTextArea area = new JTextArea(12, 40);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(12, 40));
         area.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_variablesA11y());
         area.setFont(MONO);
         StringBuilder sb = new StringBuilder();

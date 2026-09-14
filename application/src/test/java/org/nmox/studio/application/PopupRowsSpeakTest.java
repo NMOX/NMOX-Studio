@@ -61,8 +61,7 @@ class PopupRowsSpeakTest {
     private static final Path OVERLAYS = Path.of("..", "branding", "src", "main",
             "nbm-branding", "modules");
 
-    private static final List<String> LANGS = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LANGS = ShippedLocales.TRANSLATED;
 
     private record Row(String jar, String pkg, String key, String english) {
 

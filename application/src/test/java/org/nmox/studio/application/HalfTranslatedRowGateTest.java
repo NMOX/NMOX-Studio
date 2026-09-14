@@ -51,8 +51,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class HalfTranslatedRowGateTest {
 
-    private static final List<String> LOCALES = List.of(
-            "es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+    private static final List<String> LOCALES = ShippedLocales.TRANSLATED;
 
     /** The suffix pairs that make one row: a heading and the line under it. */
     private static final Map<String, String> ROW_HALVES = new LinkedHashMap<>();

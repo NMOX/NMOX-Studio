@@ -72,7 +72,8 @@ public final class UiLocale {
             new Choice("tl", "Filipino"),
             new Choice("vi", "Tiếng Việt"),
             new Choice("zh", "简体中文"),
-            new Choice("hi", "हिन्दी"));
+            new Choice("hi", "हिन्दी"),
+            new Choice("he", "עברית"));
 
     /** A launcher locale code: {@code fr} or {@code fr:CA}. Nothing else is ever written. */
     static final Pattern CODE = Pattern.compile("[a-z]{2}(?::[A-Z]{2})?");

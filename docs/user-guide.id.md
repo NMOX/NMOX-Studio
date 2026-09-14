@@ -1,7 +1,7 @@
 # NMOX Studio — Panduan pengguna
 
 <!-- languages -->
-[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · **Bahasa Indonesia** · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md)
 <!-- /languages -->
 
 Cara memakai produk ini. Panduan ini menyusuri fitur sesuai urutan yang akan Anda temui: pemasangan, peluncuran pertama, proyek, rak, studio, wisaya, dan jaring pengaman.
@@ -225,7 +225,7 @@ Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SAS
 
 ### Situs web yang menyertai
 
-**Bantuan ▸ Situs NMOX Studio (lokal)** menyajikan situs produk ini dari raknya sendiri, pada antarmuka lokal. Ia berbicara dalam tiga belas bahasa yang sama seperti IDE-nya; pemilihnya ada di kaki halaman.
+**Bantuan ▸ Situs NMOX Studio (lokal)** menyajikan situs produk ini dari raknya sendiri, pada antarmuka lokal. Ia berbicara dalam empat belas bahasa yang sama seperti IDE-nya; pemilihnya ada di kaki halaman.
 
 ### Peramban (⌥⌘4)
 
@@ -315,7 +315,7 @@ Proyek yang pintu masuknya `index.ts`, `main.ts`, atau `src/index.ts` berjalan d
 
 ### Bahasa Anda
 
-NMOX Studio berbicara dalam tiga belas bahasa: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, dan हिन्दी. Pilih bahasa Anda di **Opsi ▸ Umum ▸ Bahasa** — masing-masing tertulis dengan namanya sendiri, agar Anda selalu menemukan milik Anda. Pilihan itu ditulis ke pengaturan peluncuran Anda (`etc/nmoxstudio.conf`, sebagai argumen `--locale`) dan juga berlaku seketika. Yang berubah: menu, dialog, tip alat, baris status, layar sambutan, dan opsi. Yang tetap: kosakata panel depan rak (GO, STOP, EXPLAIN — itu label perangkat, seperti pada synthesizer), serta dialog platform yang lebih dalam, yang belum punya terjemahan. Mungkin Anda tidak pernah perlu memilih: pemasangan yang baru sudah berbicara dalam bahasa sistem Anda, bahkan dari negeri yang tidak pernah kami sebut — Taiwan, Singapura, Portugal, dan Quebec mendarat pada bahasanya sendiri, bukan pada bahasa Inggris, karena katalognya diberi nama menurut bahasa dan tidak pernah menurut negara.
+NMOX Studio berbicara dalam empat belas bahasa: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, dan עברית. Pilih bahasa Anda di **Opsi ▸ Umum ▸ Bahasa** — masing-masing tertulis dengan namanya sendiri, agar Anda selalu menemukan milik Anda. Pilihan itu ditulis ke pengaturan peluncuran Anda (`etc/nmoxstudio.conf`, sebagai argumen `--locale`) dan juga berlaku seketika. Yang berubah: menu, dialog, tip alat, baris status, layar sambutan, dan opsi. Yang tetap: kosakata panel depan rak (GO, STOP, EXPLAIN — itu label perangkat, seperti pada synthesizer), serta dialog platform yang lebih dalam, yang belum punya terjemahan. Mungkin Anda tidak pernah perlu memilih: pemasangan yang baru sudah berbicara dalam bahasa sistem Anda, bahkan dari negeri yang tidak pernah kami sebut — Taiwan, Singapura, Portugal, dan Quebec mendarat pada bahasanya sendiri, bukan pada bahasa Inggris, karena katalognya diberi nama menurut bahasa dan tidak pernah menurut negara.
 
 ### Pemeriksaan pembaruan harian
 

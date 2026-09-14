@@ -49,7 +49,7 @@ class DeviceShelfSpeaksTest {
     private static final Path REPO = Path.of("..");
 
     private static final List<String> LOCALES =
-            List.of("es", "fr", "de", "ru", "uk", "pl", "pt", "id", "tl", "vi", "zh", "hi");
+            ShippedLocales.TRANSLATED;
 
     /**
      * Characters of gloss the card paints before it must elide, measured

@@ -244,7 +244,9 @@ class WayfindingVocabularyTest {
                     if (localized == null || localized.equals(english)) {
                         continue;
                     }
-                    if (Pattern.compile("(?<![\\w-])(?<!IDE )" + Pattern.quote(english) + "\\s*" + ARROW)
+                    // a right-to-left language points the arrow the way it reads
+                    // (◂), wrapped in RLM between Latin names (docs/i18n/conventions.md)
+                    if (Pattern.compile("(?<![\\w-])(?<!IDE )" + Pattern.quote(english) + "\\s*\\u200f?[" + ARROW + "◂]")
                             .matcher(value).find()) {
                         problems.add(loc + " " + key + ": names the \"" + english
                                 + "\" menu, which reads \"" + localized + "\" here");
@@ -322,7 +324,8 @@ class WayfindingVocabularyTest {
                     continue;
                 }
                 // the Welcome's links carry the chord after two spaces
-                String head = label.split(" {2}")[0].trim();
+                // and a right-to-left label an invisible RLM before it (v2.151.0)
+                String head = label.split(" {2}")[0].replaceAll("[\u200e\u200f\u202a-\u202e]", "").trim();
                 if (!head.equals(window.trim())) {
                     problems.add(loc + " " + pair.getKey() + ": \"" + head
                             + "\" names the window called \"" + window.trim() + "\"");

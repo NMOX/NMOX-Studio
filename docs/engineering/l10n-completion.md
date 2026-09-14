@@ -4,9 +4,11 @@
 record, not a plan. Every claim below was measured, and the measurement is
 named beside it so a reader can disagree with evidence rather than opinion.*
 
-NMOX Studio ships in **thirteen languages**: English, Español, Français,
+NMOX Studio ships in **fourteen languages**: English, Español, Français,
 Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia,
-Filipino, Tiếng Việt, 简体中文, हिन्दी.
+Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית. Hebrew joined at v2.151.0, the
+first right-to-left language; every gate below derives its population from
+`UiLocale.SUPPORTED`, so it was held to the same laws the day it arrived.
 
 ## What is covered
 
@@ -30,6 +32,9 @@ Filipino, Tiếng Việt, 简体中文, हिन्दी.
 | Time, sort order, number formatting | `core.util.Clocks` / `Collate` / `Numbers` |
 | Typing what the product now names | accent-folded search at the one tokenizing point |
 | The user guide, the website, the installers, the desktop entry | `TranslatedGuideGateTest`, `SiteShipsTest`, and their siblings |
+| Right-to-left layout of every window and dialog (Hebrew, v2.151.0) | `RightToLeftWiringTest` — one toolkit seam, nothing else orients |
+| Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |
+| The website's and the I18n Kit's page direction | `I18nKitTest`, `SiteShipsTest` byte parity, logical CSS sides |
 
 ## The ceilings, each measured
 

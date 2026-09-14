@@ -52,6 +52,10 @@ class I18nKitTest {
         String js = I18nKit.helper();
         assertThat(js).contains("document.documentElement.lang = tag");
         assertThat(js)
+                .as("a right-to-left catalog must mirror the page, not only its words")
+                .contains("document.documentElement.dir =")
+                .contains("['ar', 'he', 'fa', 'ur'].includes(tag) ? 'rtl' : 'ltr'");
+        assertThat(js)
                 .as("a missing key must surface, never vanish")
                 .contains("I18N.messages[key] ?? key");
     }

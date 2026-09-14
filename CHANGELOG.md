@@ -4,6 +4,110 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.151.0] - 2026-09-14
+
+**NMOX Studio speaks Hebrew, and the whole window reads right to left.** עברית
+is the fourteenth language and the first right-to-left one. v2.148.0 built the
+layout half before any translation shipped. This release adds the words, and
+the three hand-painted surfaces that release could only list as owed now mirror.
+
+- **3,613 values in every product bundle and platform overlay**, written to the
+  Hebrew section of `docs/i18n/conventions.md`. The convention is gender-neutral:
+  commands are action nouns (`שמירה`, `פתיחה`) and instructions use the plural
+  imperative (`פתחו`). Abbreviations take geresh and gershayim. Quotation marks
+  stay straight, because curly ones are not mirrored and would render backwards.
+- **Menu paths use `◂`.** Neither `▸` nor `→` is mirrored by the bidi algorithm,
+  so in a Hebrew sentence they point backwards. Where an arrow sits between two
+  Latin names, an RLM goes on each side so the path is not laid out as one
+  left-to-right run. `WayfindingVocabularyTest` accepts that mark.
+- **Mnemonics are Latin letters, appended.** Israeli developers switch keyboard
+  layouts constantly, and a Latin accelerator works in both layouts. The letters
+  are the Chinese overlay's, which the collision gates had already proven.
+- **The gates take the language list from `UiLocale.SUPPORTED`.** Eleven
+  localization gates kept a hand-written list of languages, and Hebrew would
+  have been ungated in every one. They now read the list through
+  `ShippedLocales`, so a fifteenth language is checked by all of them from its
+  first build.
+- **The learning catalogue speaks Hebrew**: all 93 pitches, the three names that
+  are words, and all nine Check My Work checkpoints.
+- **The user guide is translated in full**, all twelve chapters and the
+  appendix. Every guide's language bar reaches it, and each translated guide now
+  counts fourteen languages in its own language.
+- **The website gains a Hebrew catalogue and turns right to left with it.** The
+  I18n Kit's `setLocale` now sets `dir` along with `lang`, so every project the
+  kit wires gets the same behaviour. `site.css` and the A11y Kit's `a11y.css`
+  moved to logical sides. A right-to-left page scrolls toward its left edge, so a
+  skip link parked at `left: -999px` would still show.
+- **The installer and the desktop entry speak Hebrew.** Inno Setup's own
+  `Hebrew.isl` is used, and the Linux entry carries `GenericName[he]` and
+  `Comment[he]`.
+
+**The three owed surfaces mirror.** `PaintedSurfaces` held the Welcome's columns,
+the device shelf's cards and the Task Board overview back to left-to-right,
+because half a mirror is worse than none. They are in a third category now,
+`MIRRORS`, which the orientation sweep reaches:
+
+- The Welcome's links align to the line start.
+- A shelf card takes its list's orientation, since a cell renderer is never in
+  the component tree. Its accent edge and every line of text start at the
+  reader's line start.
+- The overview uses logical sides throughout, and a column's count bar grows
+  away from the column's name. Its burndown and flow strips still run from
+  earlier to later, as `TimelineStrip` does.
+
+`PaintedSurfaceLedgerTest` fails the build if a surface marked as mirrored names
+an absolute side. One `BorderLayout.WEST` left behind would put a Hebrew row's
+title on the wrong side. The shelf test checks the painted pixels rather than
+reading a field. Four mutants were each killed by name: the accent edge pinned
+left, one `WEST` restored, the kit's `dir` line removed, and a bar that always
+fills from x = 0.
+
+**The walk of the Hebrew build found four more defects.** Twelve windows were
+photographed in Hebrew and the pictures read by hand:
+
+- **A chord broke the name beside it.** The Welcome read `API ⌥⌘8–אולפן ה`,
+  because a Latin name and the chord after it form one left-to-right run. An RLM
+  after the name keeps the two apart.
+- **A leading dot moved to the end.** The Standards Kit's `.well-known/security.txt`
+  lost its dot to the far end of the line. A neutral mark that opens a
+  right-to-left label takes the label's direction, so an LRM now goes before it.
+  `NativeTypographyGateTest` carries both rules for every right-to-left language.
+- **Machine text was mirrored.** The Agent Port's `.mcp.json` block had its braces
+  on the right. JSON, SQL, a URL and a driver's error message run left to right in
+  every language. `TextDirection.KEEP_LTR` marks them, and the painted-surface pass
+  puts them back after the sweep. The marker is on the Agent Port configuration,
+  DB Studio's console, history and error text, the Apply preview, and API Studio's
+  URL, body, response, headers and variables.
+- **Picker rows were cut off.** The learning-space picker cut every name and pitch
+  at the left edge. The list had grown to its widest row, and a right-aligned row
+  loses its end to that overshoot. The list now follows its viewport's width.
+
+**The clean verify found that Hebrew had never been gated.** The targeted gate runs
+before it used `surefire:test`, which loads the other modules from `~/.m2`, so they
+had read a `UiLocale` with no Hebrew in it. Every gate that derives its languages
+therefore skipped the language entirely. Checked for real, Hebrew failed seven:
+
+- 18 singular values that wrote "one item" and dropped `{0}`
+- three invented mnemonics, plus two menu-letter collisions
+- a translated `Output`, the platform window that stays English
+- five example-device glosses without the "noun — what it does" shape, which also said
+  something other than every other language
+- no Hebrew case in the system-locale reach test
+- 25 Latin words that other languages translate
+
+The fixes then tripped three more. The IRC link needed the same direction mark
+before its chord, and the second set of photographs showed that no mark could move it:
+Swing runs bidi only over text containing a right-to-left letter or an embedding mark,
+and RLM is neither, so a shortcut label with no Hebrew letter was drawn in logical
+order. The link is wrapped in RLE…PDF, and a fourth run-order rule holds that. Two window-name gates compared the Welcome's link with the window's
+title including that invisible mark, and one of them read bundles as Latin-1, where the
+mark is three visible characters; both now compare the name alone, read as UTF-8.
+
+Each was fixed or recorded with a reason. The Docker panel's column headings are
+`docker ps`'s own, as the Russian and Chinese panels already record. Hetzner's HZ
+family stays whole. `RPC URL` and DigitalOcean's product names are blessed where
+Hebrew's translation moved the evidence count for another language.
+
 ## [2.150.1] - 2026-09-14
 
 **An English sentence shipped with a broken dash, in a failure v2.102.1 had called
@@ -21018,6 +21122,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.1...v2.151.0
 [2.150.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.0...v2.150.1
 [2.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.149.0...v2.150.0
 [2.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.148.0...v2.149.0

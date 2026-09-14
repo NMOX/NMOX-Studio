@@ -142,5 +142,17 @@
     "NPM Explorer": "NPM एक्सप्लोरर",
     "Block Studio": "ब्लॉक स्टूडियो",
     "API Studio": "API स्टूडियो"
+  },
+  "he": {
+    "Task Rack": "ראק המשימות",
+    "Project Studio": "אולפן הפרויקטים",
+    "DB Studio": "אולפן מסדי הנתונים",
+    "Contract Studio": "אולפן החוזים",
+    "Infra Designer": "מעצב התשתיות",
+    "Welcome": "ברוכים הבאים",
+    "Workbench": "שולחן העבודה",
+    "NPM Explorer": "סייר NPM",
+    "Block Studio": "אולפן הבלוקים",
+    "API Studio": "אולפן ה‑API"
   }
 }

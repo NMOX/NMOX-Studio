@@ -322,7 +322,9 @@ public final class DbStudioTopComponent extends TopComponent {
     private final JButton testButton = new JButton(Bundle.DbStudioTopComponent_test());
     private final JButton connectButton = new JButton(Bundle.DbStudioTopComponent_connect());
 
-    private final JEditorPane console = new JEditorPane();
+    // SQL, a history of SQL and a driver's own error text run left to right
+    // in every language: the orientation sweep must not mirror them (v2.151.0)
+    private final JEditorPane console = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JEditorPane());
     private final JButton runButton = new JButton(Bundle.DbStudioTopComponent_run());
     private final JButton explainButton = new JButton(Bundle.DbStudioTopComponent_explainButton());
     private final JButton cancelButton = new JButton(Bundle.DbStudioTopComponent_cancel());
@@ -382,7 +384,8 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private final JTabbedPane resultsTabs = new JTabbedPane();
     private final DefaultListModel<ConsoleHistory.Entry> historyModel = new DefaultListModel<>();
-    private final JList<ConsoleHistory.Entry> historyList = new JList<>(historyModel);
+    private final JList<ConsoleHistory.Entry> historyList =
+            org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JList<>(historyModel));
 
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
@@ -830,6 +833,10 @@ public final class DbStudioTopComponent extends TopComponent {
             JTextArea message = new JTextArea(result.isError()
                     ? result.error()
                     : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount()));
+            if (result.isError()) {
+                // the driver's message is its own English, not our prose
+                org.nmox.studio.core.util.TextDirection.keepLeftToRight(message);
+            }
             message.getAccessibleContext().setAccessibleName(Bundle.DbStudioTopComponent_statementResultA11y());
             message.setEditable(false);
             message.setFont(MONO);

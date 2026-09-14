@@ -16,7 +16,7 @@ class TextDirectionTest {
     }
 
     @Test
-    @DisplayName("the languages we ship run left to right; Arabic and Hebrew do not")
+    @DisplayName("the Latin, Cyrillic, Han and Devanagari languages run left to right; Arabic and Hebrew do not")
     void theLocaleDecides() {
         for (String ltr : new String[] {"en", "es", "fr", "de", "ru", "uk", "pl",
                 "pt", "id", "tl", "vi", "zh", "hi"}) {

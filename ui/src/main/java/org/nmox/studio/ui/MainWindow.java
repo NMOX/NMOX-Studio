@@ -336,7 +336,7 @@ public final class MainWindow extends TopComponent {
             button.setContentAreaFilled(false);
             button.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 2, 3, 2));
             button.setFocusPainted(false);
-            button.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+            button.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
             button.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             button.setAlignmentX(Component.LEFT_ALIGNMENT);
             return button;
