@@ -225,6 +225,23 @@ class NativeTypographyGateTest {
     private static final Pattern RTL_CHORD_AFTER_LATIN = Pattern.compile("[A-Za-z0-9)\\]]\\s+[⌘⌥⇧⌃]");
     /** A value that opens with a neutral mark glued to a Latin run: `.well-known`, `/api`. */
     private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
+    /** A keyboard chord glyph anywhere in the value. */
+    private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
+
+    /** Whether the bidi algorithm will read this value as a left-to-right paragraph. */
+    static boolean firstStrongIsLatin(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            byte d = Character.getDirectionality(text.charAt(i));
+            if (d == Character.DIRECTIONALITY_LEFT_TO_RIGHT) {
+                return true;
+            }
+            if (d == Character.DIRECTIONALITY_RIGHT_TO_LEFT
+                    || d == Character.DIRECTIONALITY_RIGHT_TO_LEFT_ARABIC) {
+                return false;
+            }
+        }
+        return false;
+    }
 
     @Test
     @DisplayName("right to left, a Latin run keeps its place beside a chord and its opening mark")
@@ -247,6 +264,13 @@ class NativeTypographyGateTest {
             }
             if (RTL_NEUTRAL_OPENS_LATIN.matcher(t).find()) {
                 wrong.add(v.name() + "   (LRM U+200E before the opening mark)");
+            }
+            // The second walk found the RLM after the name was not enough for
+            // `IRC  ⌥⌘3`: Swing takes a label's paragraph direction from its
+            // first strong character, so a value that OPENS Latin is laid out
+            // left to right whole and its chord trails on the wrong side.
+            if (CHORD.matcher(v.text()).find() && firstStrongIsLatin(v.text())) {
+                wrong.add(v.name() + "   (RLM U+200F at the start: the first strong character is Latin)");
             }
         }
         assertThat(wrong).as("a right-to-left value whose Latin run the bidi algorithm will reorder").isEmpty();
