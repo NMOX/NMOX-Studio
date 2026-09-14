@@ -95,10 +95,11 @@ class PaintedSurfacesTest {
     void theLedgerNamesAreSimpleNames() {
         assertThat(PaintedSurfaces.GEOMETRY).contains("RackDevice", "FlowCanvas", "Knob");
         assertThat(PaintedSurfaces.MIRRORS).contains("MainWindow", "PalettePanel", "OverviewPanel");
-        assertThat(PaintedSurfaces.GEOMETRY)
-                .as("a surface cannot be two kinds of decision")
-                .doesNotContainAnyElementsOf(PaintedSurfaces.OWED)
-                .doesNotContainAnyElementsOf(PaintedSurfaces.MIRRORS);
-        assertThat(PaintedSurfaces.OWED).doesNotContainAnyElementsOf(PaintedSurfaces.MIRRORS);
+        // disjoint rather than doesNotContainAnyElementsOf: OWED is empty
+        // since v2.151.0, and an empty debt is a state to allow, not an error
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.GEOMETRY, PaintedSurfaces.MIRRORS))
+                .as("a surface cannot be two kinds of decision").isTrue();
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.GEOMETRY, PaintedSurfaces.OWED)).isTrue();
+        assertThat(java.util.Collections.disjoint(PaintedSurfaces.OWED, PaintedSurfaces.MIRRORS)).isTrue();
     }
 }
