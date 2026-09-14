@@ -1,7 +1,7 @@
 # NMOX Studio — Benutzerhandbuch
 
 <!-- languages -->
-[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md)
+[English](user-guide.md) · [Español](user-guide.es.md) · [Français](user-guide.fr.md) · **Deutsch** · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md)
 <!-- /languages -->
 
 Wie man das Produkt tatsächlich benutzt. Dieses Handbuch geht die Funktionen in der Reihenfolge durch, in der Sie ihnen begegnen: Installation, erster Start, Projekte, das Rack, die Studios, die Assistenten und die Sicherheitsnetze.
@@ -225,7 +225,7 @@ Ein vollständiger Client in der IDE: TLS mit echter Namensprüfung, SASL, IRCv3
 
 ### Die mitgelieferte Website
 
-**Hilfe ▸ NMOX-Studio-Website (lokal)** liefert die Seite des Produkts aus seinem eigenen Rack aus, auf der lokalen Schnittstelle. Sie spricht die dreizehn Sprachen, die die IDE spricht; der Wähler steht im Fuß der Seite.
+**Hilfe ▸ NMOX-Studio-Website (lokal)** liefert die Seite des Produkts aus seinem eigenen Rack aus, auf der lokalen Schnittstelle. Sie spricht die vierzehn Sprachen, die die IDE spricht; der Wähler steht im Fuß der Seite.
 
 ### Browser (⌥⌘4)
 
@@ -315,7 +315,7 @@ Ein Projekt, dessen Einstieg `index.ts`, `main.ts` oder `src/index.ts` heißt, l
 
 ### Ihre Sprache
 
-NMOX Studio spricht dreizehn Sprachen: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文 und हिन्दी. Wählen Sie Ihre unter **Optionen ▸ Allgemein ▸ Sprache** — jede steht in ihrem eigenen Namen, damit Sie Ihre immer finden. Die Wahl wird in Ihre Starteinstellungen geschrieben (`etc/nmoxstudio.conf`, als `--locale`-Argument) und greift auch sofort. Es wechseln: Menüs, Dialoge, Kurzhinweise, Statuszeilen, der Willkommensschirm und die Optionen. Es bleibt: das Vokabular der Rack-Frontplatten (GO, STOP, EXPLAIN — Gerätebeschriftungen wie an einem Synthesizer) sowie die tieferen Dialoge der Plattform, für die es noch keine Übersetzung gibt. Vielleicht müssen Sie nie wählen: eine frische Installation spricht schon die Sprache Ihres Systems, und auch aus einem Land, das wir nie genannt haben — Taiwan, Singapur, Portugal und Québec landen in ihrer Sprache statt im Englischen, weil die Kataloge nach einer Sprache benannt sind und nie nach einem Land.
+NMOX Studio spricht vierzehn Sprachen: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी und עברית. Wählen Sie Ihre unter **Optionen ▸ Allgemein ▸ Sprache** — jede steht in ihrem eigenen Namen, damit Sie Ihre immer finden. Die Wahl wird in Ihre Starteinstellungen geschrieben (`etc/nmoxstudio.conf`, als `--locale`-Argument) und greift auch sofort. Es wechseln: Menüs, Dialoge, Kurzhinweise, Statuszeilen, der Willkommensschirm und die Optionen. Es bleibt: das Vokabular der Rack-Frontplatten (GO, STOP, EXPLAIN — Gerätebeschriftungen wie an einem Synthesizer) sowie die tieferen Dialoge der Plattform, für die es noch keine Übersetzung gibt. Vielleicht müssen Sie nie wählen: eine frische Installation spricht schon die Sprache Ihres Systems, und auch aus einem Land, das wir nie genannt haben — Taiwan, Singapur, Portugal und Québec landen in ihrer Sprache statt im Englischen, weil die Kataloge nach einer Sprache benannt sind und nie nach einem Land.
 
 ### Die tägliche Prüfung auf Aktualisierungen
 

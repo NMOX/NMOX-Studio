@@ -15,9 +15,12 @@ body {
   color: var(--ink);
   font: 16px/1.65 ui-monospace, "SF Mono", Menlo, monospace;
 }
-.skip-link { position: absolute; left: -999px; top: 0;
+/* Logical sides throughout: the page is served in two right-to-left
+   languages, and a physical "left" would neither mirror nor stay off-screen
+   (an RTL page scrolls toward the left edge). */
+.skip-link { position: absolute; inset-inline-start: -999px; top: 0;
   background: var(--phosphor); color: #04210b; padding: .5em 1em; z-index: 10; }
-.skip-link:focus { left: 0; }
+.skip-link:focus { inset-inline-start: 0; }
 .hero { text-align: center; padding: 4.5rem 1.5rem 3.5rem; border-bottom: 1px solid var(--rule); }
 .crt-line { color: var(--phosphor); opacity: .35; letter-spacing: .2em; margin: 0 0 1rem; overflow: hidden; white-space: nowrap; }
 h1 { font-size: clamp(2.2rem, 7vw, 4rem); letter-spacing: .18em; margin: 0;
@@ -37,7 +40,7 @@ h2 { color: var(--phosphor); font-size: 1.15rem; letter-spacing: .06em; margin: 
 h2::before { content: "▮ "; opacity: .6; }
 p { margin: .4rem 0; color: var(--ink); }
 .loop-list { list-style: none; padding: 0; margin: 1rem 0 0; }
-.loop-list li { padding: .35rem 0; border-left: 2px solid var(--rule); padding-left: .9rem; margin: .3rem 0; }
+.loop-list li { padding: .35rem 0; border-inline-start: 2px solid var(--rule); padding-inline-start: .9rem; margin: .3rem 0; }
 .loop-list strong { color: var(--phosphor); font-weight: 600; }
 .studio-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
   gap: .8rem; margin-top: 1rem; }
@@ -46,8 +49,8 @@ p { margin: .4rem 0; color: var(--ink); }
 .studio-grid h3 { margin: 0 0 .3rem; color: var(--phosphor); font-size: .95rem; }
 .studio-grid p { color: var(--dim); font-size: .85rem; margin: 0; }
 .laws ul { list-style: none; padding: 0; }
-.laws li { padding: .3rem 0 .3rem 1.4rem; position: relative; }
-.laws li::before { content: "✓"; position: absolute; left: 0; color: var(--phosphor); }
+.laws li { padding-block: .3rem; padding-inline: 1.4rem 0; position: relative; }
+.laws li::before { content: "✓"; position: absolute; inset-inline-start: 0; color: var(--phosphor); }
 footer { text-align: center; padding: 2.5rem 1.5rem 3rem; color: var(--dim); }
 footer nav { display: flex; gap: 1.4rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1rem; }
 footer a { color: var(--phosphor); text-decoration: none; }
@@ -67,8 +70,10 @@ footer a:hover, footer a:focus-visible { text-decoration: underline; }
 .gallery img { display: block; width: 100%; max-width: 100%; height: auto; border-bottom: 1px solid var(--rule); }
 .gallery figcaption { color: var(--dim); font-size: .8rem; line-height: 1.45; padding: .6rem .8rem; }
 .readon-list { list-style: none; padding: 0; margin: .6rem 0 0; }
-.readon-list li { padding: .3rem 0 .3rem 1.4rem; position: relative; }
-.readon-list li::before { content: "→"; position: absolute; left: 0; color: var(--phosphor); opacity: .8; }
+.readon-list li { padding-block: .3rem; padding-inline: 1.4rem 0; position: relative; }
+.readon-list li::before { content: "→"; position: absolute; inset-inline-start: 0; color: var(--phosphor); opacity: .8; }
+/* a glyph is not a side: the arrow points the way the reader reads */
+[dir="rtl"] .readon-list li::before { content: "←"; }
 .readon-list a { color: var(--phosphor); text-decoration: none; }
 .readon-list a:hover, .readon-list a:focus-visible { text-decoration: underline; }
 @media (prefers-reduced-motion: no-preference) {

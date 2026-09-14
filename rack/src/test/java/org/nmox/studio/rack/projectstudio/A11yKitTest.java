@@ -25,6 +25,10 @@ class A11yKitTest {
         assertThat(once).contains("<html lang=\"en\">");
         assertThat(once).contains("class=\"skip-link\"");
         assertThat(once).contains("a11y.css");
+        assertThat(A11yKit.stylesheet())
+                .as("a physical left would show the skip link on a right-to-left page, which scrolls leftward")
+                .contains("inset-inline-start: -999px")
+                .doesNotContain("left: -999px");
         assertThat(A11yKit.wire(once))
                 .as("the second run is a no-op — every edit is presence-checked")
                 .isEqualTo(once);
