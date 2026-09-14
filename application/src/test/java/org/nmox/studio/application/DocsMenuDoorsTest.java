@@ -48,6 +48,18 @@ class DocsMenuDoorsTest {
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
     private static final String ARROW = " ▸ ";
 
+    /**
+     * Platform rows whose names live in action code, not in the layer, and are
+     * not in the code-named ledger because no translation overlay touches them.
+     * Each is checked, not trusted: the shadow must be visible in the cluster and
+     * the key must resolve in its package's bundle.
+     */
+    private static final Map<String, String> NAMED_IN_CODE = Map.of(
+            "Menu/GoTo/org-netbeans-modules-jumpto-symbol-GoToSymbol.shadow",
+            "org/netbeans/modules/jumpto/symbol#TXT_GoToSymbol",
+            "Menu/Tools/org-netbeans-modules-options-OptionsWindowAction.shadow",
+            "org/netbeans/modules/options#CTL_Options_Window_Action");
+
     /** The English documents a reader follows step by step. */
     private static List<Path> documents() throws IOException {
         List<Path> docs = new ArrayList<>(List.of(
@@ -66,6 +78,8 @@ class DocsMenuDoorsTest {
     private static final class Door {
         final String name;
         final Map<String, Door> children = new TreeMap<>();
+        /** Hidden by a module that loads on one OS only: the path is not in that OS's menu bar. */
+        boolean notEverywhere;
 
         Door(String name) {
             this.name = name;
@@ -106,6 +120,13 @@ class DocsMenuDoorsTest {
             Door hop = longestPrefix(current, text, at);
             if (hop == null) {
                 return "no row in " + current.name + " starts here";
+            }
+            // measured v2.153.0: on macOS the applemenu module hides Tools ▸ Options
+            // and the app menu offers Settings… instead, so a path to such a row
+            // must tell a Mac reader where the door is
+            if (hop.notEverywhere && !text.substring(Math.max(0, at - 200),
+                    Math.min(text.length(), at + 200)).contains("macOS")) {
+                return current.name + " ▸ " + hop.name + " is not in every OS's menu bar; say where it is on macOS";
             }
             int after = at + matchedLength(hop, text, at);
             if (hop.children.isEmpty() || !text.startsWith(ARROW, after)) {
@@ -166,6 +187,7 @@ class DocsMenuDoorsTest {
         Set<String> files = new HashSet<>();
         Set<String> folders = new HashSet<>();
         Set<String> hidden = new HashSet<>();
+        Set<String> hiddenOnOneOs = new HashSet<>();
         Map<String, String> bundleValues = new LinkedHashMap<>(); // "pkg/path#key" -> English
         Map<String, String> folderNames = new LinkedHashMap<>();  // "Menu/File/AddToProject" -> display
 
@@ -213,8 +235,13 @@ class DocsMenuDoorsTest {
                         } catch (Exception malformed) {
                             continue;
                         }
+                        // a module that loads on one OS only (applemenu requires
+                        // org.openide.modules.os.MacOSX) hides rows on that OS only
+                        String requires = jf.getManifest() == null ? null
+                                : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Requires");
+                        boolean osConditional = requires != null && requires.contains("org.openide.modules.os.");
                         collect(doc.getDocumentElement(), new ArrayList<>(), displayName, originalFile,
-                                files, folders, hidden);
+                                files, folders, osConditional ? hiddenOnOneOs : hidden);
                     }
                 } catch (IOException unreadable) {
                     // a jar we cannot open contributes nothing
@@ -246,11 +273,14 @@ class DocsMenuDoorsTest {
             if (spec == null && originalFile.containsKey(file)) {
                 spec = displayName.get(originalFile.get(file));
             }
+            if (spec == null && NAMED_IN_CODE.containsKey(file)) {
+                spec = NAMED_IN_CODE.get(file).replace('/', '.').replace("#", ".Bundle#");
+            }
             String english = spec == null ? null : resolve(spec, bundleValues);
             if (english == null || english.contains("{")) {
                 continue;
             }
-            place(bar, file, english, folderNames);
+            place(bar, file, english, folderNames).notEverywhere |= hiddenOnOneOs.contains(file);
         }
         try (InputStream in = DocsMenuDoorsTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
             assertThat(in).as("the code-named menu rows ledger").isNotNull();
@@ -262,11 +292,16 @@ class DocsMenuDoorsTest {
                 place(bar, "Menu/" + f[0] + "/ledger", plain(f[4]), folderNames);
             }
         }
+        for (Map.Entry<String, String> named : NAMED_IN_CODE.entrySet()) {
+            assertThat(files).as("a code-named platform row this gate relies on").contains(named.getKey());
+            assertThat(hidden).as("a code-named platform row this gate relies on is hidden").doesNotContain(named.getKey());
+            assertThat(bundleValues).as("its name").containsKey(named.getValue());
+        }
         cached = bar;
         return bar;
     }
 
-    private static void place(Map<String, Door> bar, String file, String english, Map<String, String> folderNames) {
+    private static Door place(Map<String, Door> bar, String file, String english, Map<String, String> folderNames) {
         String[] parts = file.substring("Menu/".length()).split("/");
         Map<String, Door> level = bar;
         StringBuilder path = new StringBuilder("Menu");
@@ -276,7 +311,7 @@ class DocsMenuDoorsTest {
             level = level.computeIfAbsent(name, Door::new).children;
         }
         String name = plain(english);
-        level.putIfAbsent(name, new Door(name));
+        return level.computeIfAbsent(name, Door::new);
     }
 
     /** {@code org.nmox.x.Bundle#KEY} (or a plain string) to its English value. */
@@ -292,9 +327,9 @@ class DocsMenuDoorsTest {
         return bundleValues.get(pkg.replace('.', '/') + "#" + spec.substring(hash + 1));
     }
 
-    /** {@code &File} and {@code Chec&k File} name the same row the menu paints. */
+    /** {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …}. */
     private static String plain(String raw) {
-        return raw.replaceAll("\\(&.\\)", "").replace("&", "").trim();
+        return raw.replaceAll("\\(&.\\)", "").replace("&", "").replace("...", "…").trim();
     }
 
     private static void collect(org.w3c.dom.Element elem, List<String> path, Map<String, String> displayName,
