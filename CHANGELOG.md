@@ -57,6 +57,34 @@ refuses two modules sharing a name or a description in any language.
 - The Docker panel's `docker ps` headings, Hetzner's `HZ` family and the Spaces
   product name stay Latin, recorded with the same reasons as for Hebrew.
 
+**The walk of the Arabic build found four more, and three of them were in Hebrew
+too.** Twelve windows were photographed with `--locale ar`. Every suspect was then
+measured with `java.text.Bidi` and the label's own HTML view before anything was
+changed, because reading mixed-direction text off a photograph proved unreliable:
+three apparent defects turned out to be correct.
+
+- **An Arabic clock turned SQL around.** DB Studio's history row showed
+  `;SELECT * FROM no_pk [SQLite] م 11:14`. The Arabic time ends in a letter
+  (`م`), and a label takes its direction from its first strong character, so the
+  whole row ran right to left. The row now starts with an LRM, and API Studio's
+  send history, built the same way, got the same fix.
+- **The serving chip moved the URL's slash.** The status line read
+  `/http://localhost:3000` in Arabic and Hebrew. The URL is now one left-to-right
+  embedding.
+- **The network badge swapped its parts.** Contract Studio showed
+  `(anvil) (31337السلسلة )`. The network row is now one left-to-right embedding,
+  in the combo and in the tree.
+- **A dotfile name lost its dot mid-sentence.** `في .env` rendered as `env.`: the
+  dot took the sentence's direction. The existing rule covered only a value that
+  opens with the dot. A second rule in `NativeTypographyGateTest` covers the dot
+  after a right-to-left word, and it found six values, two of them Hebrew.
+
+Contract Studio's artifact count also reads `عدد الـ artifacts: {0}` now, which
+avoids Arabic's number agreement. Four mutants were each killed by name: a second
+module given the editor's Hebrew name, an ASCII comma plus a singular imperative in
+an Arabic value, a digits rule that returns the locale unchanged, and the LRM removed
+before `.env`.
+
 ## [2.151.0] - 2026-09-14
 
 **NMOX Studio speaks Hebrew, and the whole window reads right to left.** עברית

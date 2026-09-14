@@ -161,3 +161,11 @@ Two rules hold for every language:
   while shipping Hebrew), so `IRC  ⌥⌘3` would otherwise be drawn in logical
   order with the chord on the wrong side. The Hebrew section's RLM and LRM
   rules apply to Arabic unchanged.
+- **A dotfile name after an Arabic word takes an LRM before its dot**:
+  `في ‎.env`, `(‎.nmoxdb.json)`. Without it the dot takes the sentence's
+  direction and is drawn after the name. The gate holds this for Hebrew too.
+- **Machine text is kept in one direction by the code, not the translation.**
+  An Arabic clock ends in a letter (`2:14 م`), so a history row that begins
+  with the time would run right to left and move a SQL statement's semicolon
+  to the front; such rows start with an LRM. A URL at the end of a line is
+  wrapped in LRE…PDF so its trailing `/` stays with it.
