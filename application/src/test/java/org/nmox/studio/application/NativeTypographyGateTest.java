@@ -87,8 +87,10 @@ class NativeTypographyGateTest {
         CONVENTION.put("he", new Convention("\"", "\"", true, null));
         // Egyptian Arabic addresses the reader in the plural imperative, like
         // Hebrew and for the same reason: the singular imperative has a gender.
+        // Only forms that cannot be read as a noun: unvowelled شغل is also
+        // "work" (شغل حلو, "nice work"), so it is not on the list.
         CONVENTION.put("ar", new Convention("«", "»", true,
-                word("", "افتح|اختار|اضغط|دوس|اكتب|شغل|جرب|روح|خلي|استخدم")));
+                word("", "افتح|اختار|اضغط|دوس|اكتب|جرب|روح|خلي|استخدم|اسأل")));
     }
 
     private static Pattern word(String flags, String alternatives) {
@@ -224,9 +226,13 @@ class NativeTypographyGateTest {
         assertThat(wrong).as("…(&X) — Chinese, Hindi, Hebrew and Arabic software writes (&X)…").isEmpty();
     }
 
-    /** An ASCII comma, semicolon or question mark touching an Arabic letter. */
+    /**
+     * An ASCII comma, semicolon or question mark attached to a word beside Arabic.
+     * A mark standing alone between spaces is a symbol the user types (the search
+     * form's {@code ? = any character}), not the sentence's punctuation.
+     */
     private static final Pattern AR_ASCII_PUNCT = Pattern.compile(
-            "(?<=[\\u0600-\\u06ff])\\s*[,;?]|[,;?](?=\\s*[\\u0600-\\u06ff])");
+            "(?<=[\\u0600-\\u06ff])[,;?]|(?<=\\S)[,;?](?=\\s*[\\u0600-\\u06ff])");
 
     @Test
     @DisplayName("Arabic writes its own comma, semicolon and question mark")
