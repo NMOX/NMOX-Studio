@@ -1,5 +1,6 @@
 package org.nmox.studio.web3.engine;
 
+import org.nmox.studio.core.util.FilePulse;
 import org.nmox.studio.core.util.Threads;
 
 import java.io.File;
@@ -26,9 +27,14 @@ import java.util.Map;
  * scans only the two artifact roots, {@code .json} files only,
  * depth- and count-capped.
  *
+ * <p>The workspace-file half is core's {@link FilePulse}, driven inside
+ * this loop rather than copied (ledger 36's remainder, v2.154.0): one
+ * stamp diff for every per-project studio file in the product. The
+ * artifact half stays here because it diffs a tree, not a file.
+ *
  * <p>Coalescing is by construction: however many files a build writes,
  * one tick sees one diff and fires one callback. The first tick primes
- * the baseline and fires nothing. {@link #tick()} is synchronous so
+ * both baselines and fires nothing. {@link #tick()} is synchronous so
  * tests drive it deterministically; {@link #start} merely loops it on a
  * daemon thread. Callbacks arrive on the pulse's own thread — callers
  * marshal to the EDT themselves.
@@ -48,19 +54,17 @@ public final class ArtifactPulse {
         void workspaceChanged(long mtime, long size);
     }
 
-    public static final long DEFAULT_INTERVAL_MS = 1500;
+    public static final long DEFAULT_INTERVAL_MS = FilePulse.DEFAULT_INTERVAL_MS;
     /** Foundry nests one dir per source file; 8 levels is generous. */
     private static final int MAX_DEPTH = 8;
     private static final int MAX_FILES = 20_000;
     private static final String[] ARTIFACT_DIRS = {"out", "artifacts"};
 
     private final File projectDir;
-    private final File workspaceFile;
     private final Sink sink;
+    private final FilePulse workspacePulse;
 
     private Map<Path, Long> artifactBaseline = Map.of();
-    private long lastMtime;
-    private long lastSize;
     private boolean primed;
 
     private volatile boolean running;
@@ -68,8 +72,8 @@ public final class ArtifactPulse {
 
     public ArtifactPulse(File projectDir, File workspaceFile, Sink sink) {
         this.projectDir = projectDir;
-        this.workspaceFile = workspaceFile;
         this.sink = sink;
+        this.workspacePulse = new FilePulse(workspaceFile, sink::workspaceChanged);
     }
 
     public synchronized void start(long intervalMs) {
@@ -100,32 +104,24 @@ public final class ArtifactPulse {
     }
 
     /**
-     * One synchronous poll: diff the artifact snapshot and the workspace
-     * file stamp against the previous tick; fire at most one callback
-     * each. The first tick only establishes the baseline.
+     * One synchronous poll: diff the artifact snapshot against the previous
+     * tick and let the workspace {@link FilePulse} diff its own stamp; fire
+     * at most one callback each. The first tick only establishes the
+     * baselines.
      */
     void tick() {
         Map<Path, Long> current = scanArtifacts(projectDir.toPath());
-        long mtime = workspaceFile.isFile() ? workspaceFile.lastModified() : -1;
-        long size = workspaceFile.isFile() ? workspaceFile.length() : -1;
         if (!primed) {
             primed = true;
             artifactBaseline = current;
-            lastMtime = mtime;
-            lastSize = size;
-            return;
+        } else {
+            boolean artifactsMoved = !current.equals(artifactBaseline);
+            artifactBaseline = current;
+            if (artifactsMoved) {
+                sink.artifactsChanged();
+            }
         }
-        boolean artifactsMoved = !current.equals(artifactBaseline);
-        artifactBaseline = current;
-        boolean workspaceMoved = mtime != lastMtime || size != lastSize;
-        lastMtime = mtime;
-        lastSize = size;
-        if (artifactsMoved) {
-            sink.artifactsChanged();
-        }
-        if (workspaceMoved) {
-            sink.workspaceChanged(mtime, size);
-        }
+        workspacePulse.tick();
     }
 
     /**

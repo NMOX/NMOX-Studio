@@ -13,7 +13,9 @@ import java.io.File;
  * daemon thread (never the EDT — callers marshal themselves).
  *
  * <p>{@link #tick()} is synchronous so tests drive it deterministically;
- * {@link #start} merely loops it.
+ * {@link #start} merely loops it. It is public so a poller that watches
+ * more than one thing can compose this one inside its own loop instead of
+ * copying the stamp diff (Contract Studio's {@code ArtifactPulse}, v2.154.0).
  */
 public final class FilePulse {
 
@@ -68,7 +70,7 @@ public final class FilePulse {
     }
 
     /** One synchronous poll: fire when the stamp moved since last tick. */
-    void tick() {
+    public void tick() {
         long mtime = file.isFile() ? file.lastModified() : -1;
         long size = file.isFile() ? file.length() : -1;
         if (!primed) {
