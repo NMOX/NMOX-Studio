@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.153.1] - 2026-09-14
+
+**The project's own records say what is still open.** Docs only; no product
+change.
+
+- **CLAUDE.md carried its status history three times.** The v2.118.0 edit
+  left two older copies behind the current paragraph, about 242 KB of
+  repeated text read at the start of every working session. The copies are
+  gone. The one clause only the last copy had brought up to date (a first
+  launch shows three tabs, held by `FirstLaunchWindowsLedgerTest`) moved into
+  the paragraph that stays.
+- **A passage lost mid-word since v2.106.0 is back.** The v2.99.0 paragraph
+  read "six more languagesher than answered"; about 1,700 characters (the
+  six languages, their plural rules, the Docker Panel brief and ledger 88)
+  are restored from the commit before the cut.
+- **Five ledger entries read as open work that was done or decided.** Ledger 4
+  (user templates, v1.293.0), 6 (indented Sass, v2.20.0) and 24 (localization,
+  the arc through v2.153.0) are marked closed; 29 and 33 carry the decisions
+  v1.192.0 made. Ledger 7 notes its v1.26.0 figures are superseded; 12 and 14
+  record what later releases delivered (non-EVM chains and the Contract Kit's
+  Foundry scaffold; the Agent Port as the first external reader of servings
+  and runs).
+- **Ledger 45 re-checked for the platform bump it was waiting on.** The
+  RELEASE310 LSP client still declares no `registerCapability`, so the
+  Tailwind language server stays out.
+- **`plan.md` is current to this release**, and its gaps list no longer calls
+  localization, user templates, indented Sass or KVASIR conversations open.
+
 ## [2.153.0] - 2026-09-14
 
 **The tutorials speak every language the product speaks, and every document
@@ -21272,6 +21300,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.153.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.0...v2.153.1
 [2.153.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.152.0...v2.153.0
 [2.152.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.151.0...v2.152.0
 [2.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.1...v2.151.0
