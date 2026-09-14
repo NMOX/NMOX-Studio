@@ -1856,7 +1856,12 @@ No private-key handling of any kind: sends/deploys work only against a
 devnet's unlocked accounts (eth_sendTransaction); remote networks are
 read-only in the Studio. Revisit only with a hardware-wallet story
 where the key still never enters the IDE. What IS deferred:
-- **Tuple/struct ABI parameters** — parsed (functions list fine) but
+- ~~**Tuple/struct ABI parameters**~~ — CLOSED v2.154.0: encode, decode and
+  events through a type tree (`AbiType`), a strict square-bracket literal
+  (`AbiLiteral`) whose refusals name the component and position, the money
+  law inside structs, bounded decode. Walked on Anvil: `place` with a struct
+  mined, `orderAt(0)` decoded with field names, `cast call` agreeing. The
+  original entry: parsed (functions list fine) but
   refused at encode time with a pointer to `cast`. Build when a real
   project needs it; the encoding is mechanical but the form UX isn't.
 - **eth_subscribe websockets** — the Watch pane polls at 2s, honest and

@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.154.0] - 2026-09-14
+
+**Contract Studio takes structs, and three open ledger items are closed by
+walking them in the app.**
+
+- **Tuple and struct parameters work in Contract Studio.** Until now a function
+  that took a struct was listed and then refused at send time with a pointer to
+  `cast`, which covered most real contracts (Uniswap, account abstraction, any
+  order book). The codec now encodes and decodes `tuple`, `tuple[]`, `tuple[k]`,
+  nested tuples and tuples with dynamic members, in calls, returns and events;
+  the selector reads the canonical `f((address,uint256))` form. The field shows
+  the shape with component names, `order ([to: address, amount: uint256])`, and
+  takes a strict square-bracket literal (`["0x…", "250"]`, arrays of structs as
+  lists of lists). A refusal names the component and its position
+  (`'order'.amount#2`), and the money law holds inside a struct: `1.5` and `1e18`
+  are refused, never truncated. Decoding is bounded against an endpoint that lies
+  about array lengths. Nested arrays, refused before, fall out of the same type
+  tree. Pinned by `cast`-generated calldata vectors and the Solidity ABI spec
+  example; three mutants die by name. **Walked** in the assembled app against
+  Anvil: `place` with a struct mined in block 2, `orderAt(0)` decoded to
+  `(to: 0x7099…79c8, amount: 250)`, which `cast call` agrees with.
+- **The Breakpoints window lists your breakpoints; a filter hid them.** Ledger 27
+  had said since v1.38.1 that Window ▸ Debugging ▸ Breakpoints never lists debug
+  adapter breakpoints. Walked on the current platform: with the project aimed,
+  ⌘F8 on a line and the window lists `app.js:2`. The window shows only
+  breakpoints from opened projects by default, and the v1.38.1 walk predates the
+  release that opens an aimed project; a breakpoint in a file opened on its own
+  still stops the program and marks the gutter while the window leaves it out.
+  The user guide now says that, and names **From Opened Projects Only** under the
+  window's *Breakpoint Groups* button.
+- **Plugin updates install as trusted.** Ledger 86 asked to see the Plugin
+  Installer treat our signed modules as trusted. Walked from a 2.153.0 install:
+  the installer downloaded, verified and installed all 11 modules for 2.153.1
+  with no *Verify Certificate* step, which it shows only for untrusted plugins.
+  `scripts/nbm-trust-probe.sh <tag>` repeats the check for any release without a
+  GUI: it runs the platform's own certificate decision on a published module
+  with that release's cluster on the classpath (v2.153.1: TRUSTED; the
+  no-certificate control: SIGNATURE_UNVERIFIED).
+- **Contract Studio's file poller is core's.** `ArtifactPulse` kept its own copy of
+  the file-stamp diff for `.nmoxweb3.json`; it now drives `core.util.FilePulse` and
+  keeps only the artifact-tree scan (ledger 36). A mutant that stops the composed
+  pulse fails `ArtifactPulseTest.workspaceStamp` and `workspaceAppearsAndVanishes`.
+
 ## [2.153.1] - 2026-09-14
 
 **The project's own records say what is still open.** Docs only; no product
@@ -21300,6 +21343,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.154.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.1...v2.154.0
 [2.153.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.0...v2.153.1
 [2.153.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.152.0...v2.153.0
 [2.152.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.151.0...v2.152.0
