@@ -207,7 +207,7 @@ class InteractSessionTest {
     }
 
     @Test
-    @DisplayName("tuple parameters pass the codec's honest refusal through verbatim")
+    @DisplayName("a component-less tuple passes the codec's honest refusal through verbatim")
     void tupleRefusalPassesThrough() {
         AbiEntry tupleFn = AbiEntry.function("configure",
                 List.of(AbiParam.of("config", "tuple")), List.of(), "nonpayable");
@@ -215,7 +215,25 @@ class InteractSessionTest {
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> session.callData(tupleFn, List.of("{}")))
-                .withMessage("Tuple parameters aren't supported yet — use cast for this call.");
+                .withMessage("Parameter 'config' is a tuple, but this ABI lists none of its"
+                        + " components — re-export the ABI with them (solc and forge include them).");
+    }
+
+    @Test
+    @DisplayName("a tuple parameter with components becomes real calldata")
+    void tupleCallData() {
+        AbiEntry configure = AbiEntry.function("configure",
+                List.of(AbiParam.tuple("config", "tuple", List.of(
+                        AbiParam.of("limit", "uint256"), AbiParam.of("owner", "address")))),
+                List.of(), "nonpayable");
+        InteractSession session = InteractSession.attached(COUNTER, "0xabc", true);
+
+        String data = session.callData(configure,
+                List.of("[69, \"0x00000000000000000000000000000000000000aa\"]"));
+
+        assertThat(data).startsWith("0x" + Hex.toHex(
+                Keccak256.selector("configure((uint256,address))")));
+        assertThat(data).hasSize(2 + 8 + 64 * 2);
     }
 
     // ---- the payable value field ----

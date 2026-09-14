@@ -68,12 +68,14 @@ public record AbiEntry(
      * functions and errors, topic0 for events:
      * {@code transfer(address,uint256)}. Alias types are canonicalized
      * ({@code uint} → {@code uint256}, {@code int} → {@code int256},
-     * also inside array suffixes) per the Solidity ABI rules.
+     * also inside array suffixes) per the Solidity ABI rules, and a
+     * struct is its parenthesized member list:
+     * {@code f((uint256,address)[],bytes)}.
      */
     public String signature() {
         StringJoiner types = new StringJoiner(",", name + "(", ")");
         for (AbiParam input : inputs) {
-            types.add(canonicalType(input.type()));
+            types.add(input.canonicalType());
         }
         return types.toString();
     }

@@ -42,14 +42,16 @@ class AbiCodecRefusalsTest {
     }
 
     @Test
-    @DisplayName("nested arrays and tuple arrays are refused with the cast hint")
-    void nestedAndTupleArraysRefused() {
-        assertThatThrownBy(() -> AbiCodec.encodeArgs(
-                List.of(AbiParam.of("m", "uint256[2][2]")), List.of("[[1,2],[3,4]]")))
-                .hasMessageContaining("Nested arrays aren't supported yet");
+    @DisplayName("a static nested array lays out inline; a component-less tuple array is refused")
+    void nestedStaticArrayAndBareTupleArray() {
+        byte[] words = AbiCodec.encodeArgs(
+                List.of(AbiParam.of("m", "uint256[2][2]")), List.of("[[1,2],[3,4]]"));
+        assertThat(Hex.toHex(words)).isEqualTo(
+                "00".repeat(31) + "01" + "00".repeat(31) + "02"
+                + "00".repeat(31) + "03" + "00".repeat(31) + "04");
         assertThatThrownBy(() -> AbiCodec.encodeArgs(
                 List.of(AbiParam.of("t", "tuple[2]")), List.of("[a,b]")))
-                .hasMessageContaining("Tuple parameters aren't supported yet");
+                .hasMessageContaining("'t' is a tuple, but this ABI lists none of its components");
     }
 
     @Test
@@ -154,12 +156,12 @@ class AbiCodecRefusalsTest {
     }
 
     @Test
-    @DisplayName("tuple and unknown return types are refused by name")
+    @DisplayName("component-less tuple and unknown return types are refused by name")
     void badReturnTypesRefused() {
         AbiEntry tup = AbiEntry.function("t", List.of(),
                 List.of(AbiParam.of("", "tuple")), "view");
         assertThatThrownBy(() -> AbiCodec.decodeReturn(tup, "0x" + "00".repeat(32)))
-                .hasMessageContaining("Tuple parameters aren't supported yet");
+                .hasMessageContaining("#1 is a tuple, but this ABI lists none of its components");
 
         AbiEntry odd = AbiEntry.function("o", List.of(),
                 List.of(AbiParam.of("", "foo")), "view");
@@ -282,15 +284,16 @@ class AbiCodecRefusalsTest {
                 .contains("but its data would not decode");
     }
 
-    // ---- the argument splitter's quoting and nesting ----
+    // ---- array elements: quoting and nesting ----
 
     @Test
-    @DisplayName("splitArray honors escaped quotes and nested brackets")
-    void splitArrayQuotingAndNesting() {
-        assertThat(AbiCodec.splitArray("[\"a\\\"b\", \"c,d\"]", "x"))
-                .containsExactly("\"a\\\"b\"", "\"c,d\"");
-        assertThat(AbiCodec.splitArray("[[1,2], [3]]", "x"))
-                .containsExactly("[1,2]", "[3]");
+    @DisplayName("a string[] element keeps an escaped quote and an inner comma")
+    void stringArrayQuotingSurvivesEncoding() {
+        AbiEntry f = AbiEntry.function("f", List.of(), List.of(AbiParam.of("", "string[]")), "view");
+        byte[] encoded = AbiCodec.encodeArgs(List.of(AbiParam.of("s", "string[]")),
+                List.of("[\"a\\\"b\", \"c,d\"]"));
+        assertThat(AbiCodec.decodeReturn(f, "0x" + Hex.toHex(encoded)))
+                .containsExactly("[a\"b, c,d]");
     }
 
     private static String panicWith(int code) {

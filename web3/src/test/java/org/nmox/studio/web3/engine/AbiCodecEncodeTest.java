@@ -223,30 +223,53 @@ class AbiCodecEncodeTest {
     // ---- the honest refusals ---------------------------------------------
 
     @Test
-    @DisplayName("tuples are refused with the status-bar sentence")
-    void tupleRefusal() {
+    @DisplayName("a tuple whose ABI lists no components is refused, never guessed")
+    void tupleWithoutComponentsRefused() {
         AbiEntry g = fn("g", "tuple");
         assertThatThrownBy(() -> AbiCodec.encodeCall(g, List.of("whatever")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Tuple parameters aren't supported yet — use cast for this call.");
+                .hasMessageContaining("is a tuple, but this ABI lists none of its components");
     }
 
     @Test
-    @DisplayName("tuple arrays are refused the same way")
-    void tupleArrayRefusal() {
+    @DisplayName("a component-less tuple array is refused the same way")
+    void tupleArrayWithoutComponentsRefused() {
         AbiEntry g = fn("g", "tuple[]");
         assertThatThrownBy(() -> AbiCodec.encodeCall(g, List.of("[]")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Tuple parameters aren't supported yet");
+                .hasMessageContaining("lists none of its components");
     }
 
     @Test
-    @DisplayName("nested arrays are refused with their own honest sentence")
-    void nestedArrayRefusal() {
-        AbiEntry g = fn("g", "uint256[][]");
-        assertThatThrownBy(() -> AbiCodec.encodeCall(g, List.of("[[1]]")))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Nested arrays aren't supported yet — use cast for this call.");
+    @DisplayName("spec fixture: g(uint256[][],string[]) with ([[1,2],[3]], [\"one\",\"two\",\"three\"])")
+    void specNestedArrays() {
+        // the spec's nested-dynamic example; the same bytes come out of
+        // `cast calldata "g(uint256[][],string[])" "[[1,2],[3]]" '["one","two","three"]'`
+        AbiEntry g = AbiEntry.function("g",
+                List.of(AbiParam.of("a", "uint256[][]"), AbiParam.of("b", "string[]")),
+                List.of(), "pure");
+        assertThat(AbiCodec.encodeCall(g, List.of("[[1, 2], [3]]", "[\"one\", \"two\", \"three\"]")))
+                .isEqualTo("0x2289b18c"
+                + "0000000000000000000000000000000000000000000000000000000000000040"
+                + "0000000000000000000000000000000000000000000000000000000000000140"
+                + "0000000000000000000000000000000000000000000000000000000000000002"
+                + "0000000000000000000000000000000000000000000000000000000000000040"
+                + "00000000000000000000000000000000000000000000000000000000000000a0"
+                + "0000000000000000000000000000000000000000000000000000000000000002"
+                + "0000000000000000000000000000000000000000000000000000000000000001"
+                + "0000000000000000000000000000000000000000000000000000000000000002"
+                + "0000000000000000000000000000000000000000000000000000000000000001"
+                + "0000000000000000000000000000000000000000000000000000000000000003"
+                + "0000000000000000000000000000000000000000000000000000000000000003"
+                + "0000000000000000000000000000000000000000000000000000000000000060"
+                + "00000000000000000000000000000000000000000000000000000000000000a0"
+                + "00000000000000000000000000000000000000000000000000000000000000e0"
+                + "0000000000000000000000000000000000000000000000000000000000000003"
+                + "6f6e650000000000000000000000000000000000000000000000000000000000"
+                + "0000000000000000000000000000000000000000000000000000000000000003"
+                + "74776f0000000000000000000000000000000000000000000000000000000000"
+                + "0000000000000000000000000000000000000000000000000000000000000005"
+                + "7468726565000000000000000000000000000000000000000000000000000000");
     }
 
     @Test

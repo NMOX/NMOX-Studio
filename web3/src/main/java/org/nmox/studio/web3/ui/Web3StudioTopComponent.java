@@ -766,6 +766,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JTextField field = new JTextField(24);
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(paramLabel(param));
+            field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
             argFields.add(field);
             addLabeledRow(form, row++, paramLabel(param), field);
         }
@@ -881,6 +882,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JTextField field = new JTextField(10);
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(label.getText());
+            field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
             argFields.add(field);
             rowPanel.add(field);
         }
@@ -914,10 +916,15 @@ public final class Web3StudioTopComponent extends TopComponent {
         return rowPanel;
     }
 
+    /**
+     * "name (type):" — and for a struct the type is the literal shape the
+     * field takes, {@code order ([to: address, amount: uint256]):}, so the
+     * component names and order are on screen where the value is typed.
+     */
     private static String paramLabel(AbiParam param) {
         String name = param.name() == null || param.name().isBlank()
                 ? Bundle.Web3StudioTopComponent_argFallbackName() : param.name();
-        return Bundle.Web3StudioTopComponent_paramLabel(name, param.type());
+        return Bundle.Web3StudioTopComponent_paramLabel(name, AbiCodec.inputShape(param));
     }
 
     // ---- deploy / call / send -----------------------------------------------
