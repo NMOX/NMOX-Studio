@@ -32,6 +32,9 @@ first right-to-left language; every gate below derives its population from
 | Time, sort order, number formatting | `core.util.Clocks` / `Collate` / `Numbers` |
 | Typing what the product now names | accent-folded search at the one tokenizing point |
 | The user guide, the website, the installers, the desktop entry | `TranslatedGuideGateTest`, `SiteShipsTest`, and their siblings |
+| Right-to-left layout of every window and dialog (Hebrew, v2.151.0) | `RightToLeftWiringTest` — one toolkit seam, nothing else orients |
+| Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |
+| The website's and the I18n Kit's page direction | `I18nKitTest`, `SiteShipsTest` byte parity, logical CSS sides |
 
 ## The ceilings, each measured
 

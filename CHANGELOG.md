@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.151.0] - 2026-09-14
+
+**NMOX Studio speaks Hebrew, and the whole window reads right to left.** עברית
+is the fourteenth language and the first right-to-left one. v2.148.0 built the
+layout half before any translation shipped. This release adds the words, and
+the three hand-painted surfaces that release could only list as owed now mirror.
+
+- **3,613 values in every product bundle and platform overlay**, written to the
+  Hebrew section of `docs/i18n/conventions.md`. The convention is gender-neutral:
+  commands are action nouns (`שמירה`, `פתיחה`) and instructions use the plural
+  imperative (`פתחו`). Abbreviations take geresh and gershayim. Quotation marks
+  stay straight, because curly ones are not mirrored and would render backwards.
+- **Menu paths use `◂`.** Neither `▸` nor `→` is mirrored by the bidi algorithm,
+  so in a Hebrew sentence they point backwards. Where an arrow sits between two
+  Latin names, an RLM goes on each side so the path is not laid out as one
+  left-to-right run. `WayfindingVocabularyTest` accepts that mark.
+- **Mnemonics are Latin letters, appended.** Israeli developers switch keyboard
+  layouts constantly, and a Latin accelerator works in both layouts. The letters
+  are the Chinese overlay's, which the collision gates had already proven.
+- **The gates take the language list from `UiLocale.SUPPORTED`.** Eleven
+  localization gates kept a hand-written list of languages, and Hebrew would
+  have been ungated in every one. They now read the list through
+  `ShippedLocales`, so a fifteenth language is checked by all of them from its
+  first build.
+- **The learning catalogue speaks Hebrew**: all 93 pitches, the three names that
+  are words, and all nine Check My Work checkpoints.
+- **The user guide is translated in full**, all twelve chapters and the
+  appendix. Every guide's language bar reaches it, and each translated guide now
+  counts fourteen languages in its own language.
+- **The website gains a Hebrew catalogue and turns right to left with it.** The
+  I18n Kit's `setLocale` now sets `dir` along with `lang`, so every project the
+  kit wires gets the same behaviour. `site.css` and the A11y Kit's `a11y.css`
+  moved to logical sides. A right-to-left page scrolls toward its left edge, so a
+  skip link parked at `left: -999px` would still show.
+- **The installer and the desktop entry speak Hebrew.** Inno Setup's own
+  `Hebrew.isl` is used, and the Linux entry carries `GenericName[he]` and
+  `Comment[he]`.
+
+**The three owed surfaces mirror.** `PaintedSurfaces` held the Welcome's columns,
+the device shelf's cards and the Task Board overview back to left-to-right,
+because half a mirror is worse than none. They are in a third category now,
+`MIRRORS`, which the orientation sweep reaches:
+
+- The Welcome's links align to the line start.
+- A shelf card takes its list's orientation, since a cell renderer is never in
+  the component tree. Its accent edge and every line of text start at the
+  reader's line start.
+- The overview uses logical sides throughout, and a column's count bar grows
+  away from the column's name. Its burndown and flow strips still run from
+  earlier to later, as `TimelineStrip` does.
+
+`PaintedSurfaceLedgerTest` fails the build if a surface marked as mirrored names
+an absolute side. One `BorderLayout.WEST` left behind would put a Hebrew row's
+title on the wrong side. The shelf test checks the painted pixels rather than
+reading a field. Four mutants were each killed by name: the accent edge pinned
+left, one `WEST` restored, the kit's `dir` line removed, and a bar that always
+fills from x = 0.
+
 ## [2.150.1] - 2026-09-14
 
 **An English sentence shipped with a broken dash, in a failure v2.102.1 had called
@@ -21018,6 +21076,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.151.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.1...v2.151.0
 [2.150.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.0...v2.150.1
 [2.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.149.0...v2.150.0
 [2.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.148.0...v2.149.0
