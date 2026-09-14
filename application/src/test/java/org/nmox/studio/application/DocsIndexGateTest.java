@@ -35,12 +35,21 @@ class DocsIndexGateTest {
                     .filter(n -> !n.equals(index))
                     .sorted()
                     .forEach(n -> {
-                        if (!text.contains("(" + n + ")") && !text.contains("(" + n + "#") && !text.contains("/" + n + ")")) {
+                        // a translation (name.de.md) is reached through its English
+                        // document's language bar, so it is listed when that one is
+                        String english = n.replaceFirst("\\.[a-z]{2}\\.md$", ".md");
+                        boolean listed = listedIn(text, n) || (!english.equals(n)
+                                && (english.equals(index) || listedIn(text, english)));
+                        if (!listed) {
                             unlisted.add(n);
                         }
                     });
         }
         assertThat(unlisted).as(dir + "/" + index + " omits documents beside it").isEmpty();
+    }
+
+    private static boolean listedIn(String text, String name) {
+        return text.contains("(" + name + ")") || text.contains("(" + name + "#") || text.contains("/" + name + ")");
     }
 
     /**
