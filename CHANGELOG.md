@@ -4,6 +4,27 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.150.1] - 2026-09-14
+
+**An English sentence shipped with a broken dash, in a failure v2.102.1 had called
+unreproducible.** Translating the NPM Explorer into Hebrew meant reading its English
+out of the build, and the value read `{0} is already running â Stop Script…` with a
+stray `â`. The source file is correct UTF-8; the jar is not. `tools/npm` keeps a
+hand-written `Bundle.properties` beside `@NbBundle.Messages`, and the annotation
+processor merges that hand file into the generated bundle as ISO-8859-1. Each byte
+of the em dash became a character of its own (`\u00e2\u0080\u0094`), and that is
+what an English reader saw. v2.102.1 recorded a raw em dash in this file as a
+transient, misattributed failure and kept `\uXXXX` escapes as convention only; it
+reproduces in today's jar. The file now holds only ASCII.
+
+**`BundleEncodingGateTest`** reads every bundle in every NMOX jar of the assembled
+cluster, English and all translations, and fails on the signature of UTF-8 decoded
+twice: a C1 control character, or `Ã` followed by a Latin-1 supplement character.
+No source-reading gate could see this defect, because the source is right. Across
+1,327 jars the scan found exactly this one value. Two mutants die by name: the
+double-encoded dash restored in the tools jar, and a double-encoded `é` planted in
+a French bundle.
+
 ## [2.150.0] - 2026-09-14
 
 **Each translation follows its own language's conventions.** David asked for
@@ -20997,6 +21018,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.150.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.150.0...v2.150.1
 [2.150.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.149.0...v2.150.0
 [2.149.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.148.0...v2.149.0
 [2.148.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.147.0...v2.148.0

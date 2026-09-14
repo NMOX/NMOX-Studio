@@ -270,6 +270,7 @@
                                 <exclude>**/HalfTranslatedRowGateTest.java</exclude>
                                 <exclude>**/OwnScriptGateTest.java</exclude>
                                 <exclude>**/NativeTypographyGateTest.java</exclude>
+                                <exclude>**/BundleEncodingGateTest.java</exclude>
                                 <exclude>**/ModuleDescriptorsSpeakTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
@@ -308,6 +309,7 @@
                                 <include>**/HalfTranslatedRowGateTest.java</include>
                                 <include>**/OwnScriptGateTest.java</include>
                                 <include>**/NativeTypographyGateTest.java</include>
+                                <include>**/BundleEncodingGateTest.java</include>
                                 <include>**/ModuleDescriptorsSpeakTest.java</include>
                                 <include>**/PlatformDialogLedgerTest.java</include>
                                 <include>**/MenuRowsSpeakTest.java</include>
