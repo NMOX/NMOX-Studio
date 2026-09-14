@@ -167,4 +167,45 @@ class TranslatedTutorialsGateTest {
         }
         assertThat(wrong).as("a translated tutorial that sends its reader back to English").isEmpty();
     }
+
+    /**
+     * French sets a no-break space before {@code : ; ! ? »} and after {@code «}
+     * (conventions.md), and {@code NativeTypographyGateTest} holds the bundles to
+     * it. The documents were never held: the French user guide had 133 ordinary
+     * spaces there and none of the no-break kind, so a narrow window could wrap a
+     * colon onto a line of its own. Code, link targets and table rules are not prose.
+     */
+    @Test
+    @DisplayName("French documents keep their punctuation on the word's line")
+    void frenchDocumentsUseNoBreakSpaces() throws IOException {
+        List<Path> docs = new ArrayList<>(List.of(Path.of("..", "docs", "user-guide.fr.md")));
+        for (String stem : englishStems()) {
+            Path p = DIR.resolve(stem + ".fr.md");
+            if (Files.isRegularFile(p)) {
+                docs.add(p);
+            }
+        }
+        Pattern notProse = Pattern.compile("`[^`]*`|\\]\\([^)]*\\)|<[^>]+>|https?://\\S+");
+        List<String> wrong = new ArrayList<>();
+        for (Path p : docs) {
+            boolean fence = false;
+            int n = 0;
+            for (String line : read(p).split("\n")) {
+                n++;
+                if (line.stripLeading().startsWith("```")) {
+                    fence = !fence;
+                    continue;
+                }
+                if (fence || line.startsWith("    ") || line.matches("\\s*\\|?[\\s:|\\-]+\\|?\\s*")) {
+                    continue;
+                }
+                Matcher m = Pattern.compile(" [:;!?»]|« ").matcher(notProse.matcher(line).replaceAll(" "));
+                if (m.find()) {
+                    wrong.add(p.getFileName() + ":" + n + ": \"" + line.substring(Math.max(0, m.start() - 20),
+                            Math.min(line.length(), m.end() + 10)) + "\"");
+                }
+            }
+        }
+        assertThat(wrong).as("an ordinary space where French sets a no-break one (U+00A0)").isEmpty();
+    }
 }

@@ -33,7 +33,7 @@ A IDE se atualiza sozinha: **Ferramentas ▸ Plugins ▸ Atualizações** oferec
 
 No terminal, `nmoxstudio --open <pasta>` inicia o aplicativo com essa pasta aberta como projeto e o rack apontado para ela — a mesma porta que “Abrir pasta…” abre na página de boas-vindas.
 
-A IDE abre com três abas ao lado da área do editor: **Bem-vindo → Rack de tarefas → Navegador**. Cada uma das outras janelas está a um atalho ⌥⌘ e aparece na coluna TOOLING da página de boas-vindas. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
+A IDE abre com três abas ao lado da área do editor: **Bem-vindo → Rack de tarefas → Navegador web**. Cada uma das outras janelas está a um atalho ⌥⌘ e aparece na coluna TOOLING da página de boas-vindas. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
 
 ![Primeira execução — a página de boas-vindas com três abas](images/tabs/workbench.png)
 
@@ -47,7 +47,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌥⌘1** | Quadro de tarefas |
 | **⌥⌘2** | Testes |
 | **⌥⌘3** | Cliente de bate-papo IRC |
-| **⌥⌘4** | Navegador (WebKit integrado, com DevTools) |
+| **⌥⌘4** | Navegador web (WebKit integrado, com DevTools) |
 | **⌥⌘5** | Estúdio de blocos |
 | **⌥⌘6** | Estúdio de contratos |
 | **⌥⌘7** | Estúdio de banco de dados |
@@ -227,7 +227,7 @@ Um cliente completo dentro da IDE: TLS com verificação de nome de verdade, SAS
 
 **Ajuda ▸ Site do NMOX Studio (local)** serve o site do produto a partir do próprio rack dele, na interface local. Ele fala as mesmas quinze línguas que a IDE; o seletor fica no rodapé.
 
-### Navegador (⌥⌘4)
+### Navegador web (⌥⌘4)
 
 Um navegador de verdade dentro da IDE, com ferramentas de desenvolvedor próprias — console, DOM, rede, armazenamento e painéis para Vue, Svelte e Angular — porque o motor não traz inspetor e este aqui é nosso. Ele conhece o seu código: escolha um elemento, abra a linha que o produziu, mude o estilo ali mesmo, e a declaração vai parar na folha de estilo de origem. Salvar um arquivo recarrega a página, e há tamanhos de aparelho de verdade para testar o seu layout responsivo.
 
