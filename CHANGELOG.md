@@ -20,6 +20,15 @@ All notable changes to NMOX Studio are documented here. The format follows
   case the platform's default was made for, and never at boot.
   `SessionsWindowOpenerTest` pins the rule (one session opens nothing; two
   do) and the wiring (installed by the launch, before the spawn is posted).
+  Two mutants die by name — the second only after the wiring gate learned
+  to tell a statement from a commented-out one (its first cut matched the
+  substring anywhere, and a `// SessionsWindowOpener.install();` survived).
+- **Walked in the assembled app.** Debug File on a `parent.js` that forks
+  `child.js`, a breakpoint in the child: the Sessions tab came forward by
+  itself, listing `Node: parent.js` and `child.js [45753]`, with the editor
+  stopped on the child's line — no gesture, where the v2.156.0 walk had to
+  open the window from the Window menu. Finish Debugger Session ended the
+  run with nothing left behind.
 
 ## [2.158.0] - 2026-09-15
 
