@@ -12,8 +12,10 @@ import javax.swing.JScrollPane;
  * device — MAESTRO reading "RO", KVASIR "IR" — because the rack is wider
  * than its viewport and the window had opened at the wrong end of it.
  *
- * <p>Pure and headless-testable: it reads the pane's own orientation and
- * its scrollbar model, nothing else.
+ * <p>The decision is a pure function of the scrollbar's own numbers, so it
+ * is tested without a laid-out window: a real {@code JScrollPane} recomputes
+ * its model during layout and flips value-to-position under RTL, which makes
+ * a headless assertion on the widget measure Swing rather than this rule.
  */
 public final class Scrolls {
 
@@ -21,10 +23,15 @@ public final class Scrolls {
     }
 
     /**
-     * Puts the horizontal view at the side the reader's language starts on:
-     * the maximum for a right-to-left pane, zero for a left-to-right one.
-     * A view narrower than its viewport has nowhere to go and stays put.
+     * The scroll value a reader of this direction starts at: the minimum
+     * left-to-right, the far end right-to-left. A view no wider than its
+     * viewport has nowhere to go and stays at the minimum.
      */
+    public static int logicalStart(boolean leftToRight, int min, int max, int extent) {
+        return leftToRight ? min : Math.max(min, max - extent);
+    }
+
+    /** Puts the pane's horizontal view at the side its language reads from. */
     public static void toLogicalStart(JScrollPane pane) {
         if (pane == null) {
             return;
@@ -33,9 +40,7 @@ public final class Scrolls {
         if (bar == null) {
             return;
         }
-        int start = pane.getComponentOrientation().isLeftToRight()
-                ? bar.getMinimum()
-                : Math.max(bar.getMinimum(), bar.getMaximum() - bar.getVisibleAmount());
-        bar.setValue(start);
+        bar.setValue(logicalStart(pane.getComponentOrientation().isLeftToRight(),
+                bar.getMinimum(), bar.getMaximum(), bar.getVisibleAmount()));
     }
 }
