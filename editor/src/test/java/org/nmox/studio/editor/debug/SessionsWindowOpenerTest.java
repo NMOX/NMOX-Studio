@@ -37,10 +37,16 @@ class SessionsWindowOpenerTest {
         String source = Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/editor/debug/DapDebugAction.java"));
         int launch = source.indexOf("static void launch(File file, String mime)");
-        int install = source.indexOf("SessionsWindowOpener.install();", launch);
+        // the STATEMENT, at the start of a line — a commented-out call
+        // ("// SessionsWindowOpener.install();") survived the first cut of
+        // this gate, which matched the substring wherever it sat
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?m)^\\s*SessionsWindowOpener\\.install\\(\\);")
+                .matcher(source);
+        int install = m.find(launch) ? m.start() : -1;
         int post = source.indexOf("RP.post(", launch);
         assertThat(launch).as("the shared launch exists").isPositive();
-        assertThat(install).as("launch installs the opener").isPositive();
+        assertThat(install).as("launch installs the opener (as a statement, not a comment)").isPositive();
         assertThat(install).as("installed before the spawn is posted").isLessThan(post);
     }
 }
