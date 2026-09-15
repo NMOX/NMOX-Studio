@@ -25,8 +25,45 @@ import org.openide.util.Lookup;
 final class WebProjectActionProvider implements ActionProvider {
 
     private static final String[] SUPPORTED = {
-        COMMAND_RUN, COMMAND_BUILD, COMMAND_TEST, COMMAND_CLEAN
+        COMMAND_RUN, COMMAND_BUILD, COMMAND_TEST, COMMAND_CLEAN, COMMAND_DEBUG_SINGLE
     };
+
+    /**
+     * The editor's breakpoint debugger, reached through the core facade
+     * (v2.157.0) so the platform's own Debug ▸ Debug File row (⇧⌘F5 in
+     * every keymap profile) works on a web project's files. Looked up per
+     * call — a null answer (editor absent) makes the row disabled, never a
+     * dependency. Package-private seam for tests.
+     */
+    static java.util.function.Supplier<org.nmox.studio.core.spi.DebugLauncher> debugLauncher =
+            org.nmox.studio.core.spi.DebugLauncher::find;
+
+    /**
+     * The one file Debug File would debug: the context's selected
+     * DataObject (what the editor and the Projects tree publish), or its
+     * FileObject; null when there is not exactly one, when it lies outside
+     * this project, or when the debugger does not support its type.
+     */
+    static File debugTarget(Lookup context, File projectDir,
+            org.nmox.studio.core.spi.DebugLauncher launcher) {
+        if (launcher == null || context == null) {
+            return null;
+        }
+        java.util.Collection<? extends org.openide.loaders.DataObject> dobs =
+                context.lookupAll(org.openide.loaders.DataObject.class);
+        java.util.Collection<? extends org.openide.filesystems.FileObject> fos =
+                dobs.isEmpty() ? context.lookupAll(org.openide.filesystems.FileObject.class)
+                        : dobs.stream().map(org.openide.loaders.DataObject::getPrimaryFile).toList();
+        if (fos.size() != 1) {
+            return null;
+        }
+        File file = FileUtil.toFile(fos.iterator().next());
+        if (file == null || file.isDirectory() || projectDir == null
+                || !file.toPath().toAbsolutePath().startsWith(projectDir.toPath().toAbsolutePath())) {
+            return null;
+        }
+        return launcher.supports(file) ? file : null;
+    }
 
     /** Distinguishes concurrent Runs of one project in the serving registry. */
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
@@ -80,12 +117,26 @@ final class WebProjectActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) {
+        if (COMMAND_DEBUG_SINGLE.equals(command)) {
+            return debugTarget(context, FileUtil.toFile(project.getProjectDirectory()),
+                    debugLauncher.get()) != null;
+        }
         return resolve(command) != null;
     }
 
     @Override
     public void invokeAction(String command, Lookup context) {
         File dir = FileUtil.toFile(project.getProjectDirectory());
+        if (COMMAND_DEBUG_SINGLE.equals(command)) {
+            // the debugger owns its own trust prompt and lane (DapDebugAction):
+            // the gate below belongs to the four command lanes, not to this door
+            org.nmox.studio.core.spi.DebugLauncher launcher = debugLauncher.get();
+            File target = debugTarget(context, dir, launcher);
+            if (target != null) {
+                launcher.debug(target);
+            }
+            return;
+        }
         List<String> cmd = resolve(command);
         if (dir == null || cmd == null) {
             return;

@@ -62,6 +62,26 @@ public class DapDebugAction extends BaseAction {
         }
         File file = org.openide.filesystems.FileUtil.toFile(fo);
         String mime = (String) doc.getProperty("mimeType");
+        launch(file, mime);
+    }
+
+    /** The four MIME types this action debugs — the popup registrations above, as a rule. */
+    static boolean supportsMime(String mime) {
+        return mime != null && switch (mime) {
+            case "text/x-python", "text/x-go", "text/javascript", "text/typescript" -> true;
+            default -> false;
+        };
+    }
+
+    /**
+     * The launch, shared by the right-click action and the platform's
+     * Debug File row through {@link DapDebugLauncher} (v2.157.0): trust
+     * first, then the language's adapter, all off the EDT. Returns at once.
+     */
+    static void launch(File file, String mime) {
+        if (file == null || !supportsMime(mime)) {
+            return;
+        }
         RP.post(() -> {
             try {
                 // Debugging runs the project's code — the same thing the rack

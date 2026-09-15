@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.157.0] - 2026-09-15
+
+**The debugger gets the platform's own door: Debug ▸ Debug File and ⇧⌘F5.**
+
+- **Debug File works from the menu bar and the keyboard on a web project.**
+  The breakpoint debugger had one door since v1.37.0, the editor's
+  right-click **Debug File** — nothing in the Debug menu, no chord, and the
+  v2.156.0 walk had to seed a menu shadow to reach it without a mouse. The
+  platform already ships the row (Debug ▸ Debug File, ⇧⌘F5 in every keymap
+  profile) and enables it through the project's `ActionProvider`, so the
+  web project now answers `debug.single`: the selected file — one file, inside
+  the project, of a type the debugger takes (JavaScript, TypeScript, Python,
+  Go) — goes to the same launch the right-click runs, trust prompt and all,
+  through a new `core.spi.DebugLauncher` facade the editor publishes (tools
+  gains no editor dependency; without the editor the row simply stays
+  disabled). `DebugSingleDoorTest` holds the enablement rules (two files,
+  a stranger, an unsupported type, nothing selected → disabled) and that
+  invoking hands exactly the file over; `DapDebugLauncherTest` pins the
+  registration and the MIME rule to the action's own four types. Four
+  mutants die by name.
+- **Walked in the assembled app.** With the Welcome tab in front, the Debug
+  menu's *Debug File* read disabled; with `app.js` in front it read enabled,
+  and pressing it started the session: the editor stopped on line 2 at the
+  seeded breakpoint, the adapter and `node ./app.js` were alive, the
+  `Node: app.js` console opened, and Finish Debugger Session ended both.
+  The chord itself (⇧⌘F5) is the platform's own `Shortcuts/DS-F5` entry and
+  was not pressed by this walk (keystrokes cannot be delivered from the
+  background); the row it fires is the one that was pressed.
+- **The docs-doors gate learned to read a row whose name is a plural choice.**
+  Documenting "Debug ▸ Debug File" failed `DocsMenuDoorsTest` on the first
+  verify: the platform's label is a MessageFormat choice
+  (`Debu&g {0,choice,0#File|…}`) and the gate had skipped every such row since
+  v2.153.0, so a document naming one was refused as a door the bar does not
+  have. It now renders those rows the way a fresh window paints them (nothing
+  selected, no main project) — "Debug File", "Test File", "Close Project",
+  "Debug Main Project" — and checks the documents against them.
+
 ## [2.156.0] - 2026-09-15
 
 **Every child process and every worker gets a debug session of its own.**
@@ -21480,6 +21517,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.156.0...v2.157.0
 [2.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.1...v2.156.0
 [2.155.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.0...v2.155.1
 [2.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.154.0...v2.155.0

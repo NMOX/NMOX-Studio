@@ -420,8 +420,8 @@ class DocsMenuDoorsTest {
             if (spec == null && NAMED_IN_CODE.containsKey(file)) {
                 spec = NAMED_IN_CODE.get(file).replace('/', '.').replace("#", ".Bundle#");
             }
-            String name = spec == null ? null : resolve(spec, pkgKey -> c.value(lang, pkgKey));
-            if (name == null || name.contains("{")) {
+            String name = painted(spec == null ? null : resolve(spec, pkgKey -> c.value(lang, pkgKey)));
+            if (name == null) {
                 continue;
             }
             place(bar, file, name, folderNames).notEverywhere |= c.hiddenOnOneOs().contains(file);
@@ -434,8 +434,8 @@ class DocsMenuDoorsTest {
                     continue;
                 }
                 String v = c.value(lang, f[2] + "#" + f[3]);
-                String name = v != null ? v : f[4];
-                if (name.contains("{")) {
+                String name = painted(v != null ? v : f[4]);
+                if (name == null) {
                     continue;
                 }
                 place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
@@ -475,6 +475,27 @@ class DocsMenuDoorsTest {
      * {@code &File} and {@code Chec&k File} name the same row; the platform writes {@code ...} for {@code …};
      * the RLM a right-to-left bundle sets between two Latin runs is layout, as it is in the document.
      */
+    /**
+     * A row whose label is a MessageFormat choice ({@code Debu&g {0,choice,0#File|1#File|1<Files}})
+     * paints per selection; the documents name it the way the bar reads with
+     * NOTHING selected and no main project — argument −1, the state a fresh
+     * window is in — which is also the singular a reader sees: "Debug File",
+     * "Test File", "Close Project", "Debug Main Project". Until v2.157.0 every
+     * such row was skipped, so a document naming one was refused as a door
+     * the bar does not have (the Debug ▸ Debug File path, failing-first).
+     * Text MessageFormat cannot render is skipped as before.
+     */
+    private static String painted(String name) {
+        if (name == null || !name.contains("{")) {
+            return name;
+        }
+        try {
+            return new java.text.MessageFormat(name).format(new Object[]{-1, ""}).trim();
+        } catch (IllegalArgumentException unrenderable) {
+            return null;
+        }
+    }
+
     private static String plain(String raw) {
         return raw.replaceAll("\\(&.\\)", "").replace("&", "").replace("...", "…").replace('\u2019', '\'')
                 .replaceAll("[\u200E\u200F\u202A-\u202E\u2066-\u2069]", "").trim();
