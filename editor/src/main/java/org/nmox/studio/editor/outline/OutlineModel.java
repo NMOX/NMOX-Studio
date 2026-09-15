@@ -1355,7 +1355,7 @@ public final class OutlineModel {
         for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
             String line = lines[i];
             if (docDelim != null) {
-                if (occurrences(line, docDelim) % 2 == 1) {
+                if (occurrences(line, docDelim) % 2 != 0) {
                     docDelim = null;
                 }
                 continue;
@@ -1424,7 +1424,7 @@ public final class OutlineModel {
         } else {
             delim = "'''";
         }
-        return occurrences(code, delim) % 2 == 1 ? delim : null;
+        return occurrences(code, delim) % 2 != 0 ? delim : null;
     }
 
     private static int occurrences(String line, String needle) {
