@@ -158,6 +158,13 @@
             <version>${netbeans.version}</version>
         </dependency>
         <dependency>
+            <!-- the debugger's session registry: the Sessions window opens
+                 itself for a run with a second session (v2.159.0) -->
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-debugger</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-awt</artifactId>
             <version>${netbeans.version}</version>

@@ -4,6 +4,32 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.159.0] - 2026-09-15
+
+**The Sessions window opens itself when a debug run grows a second session.**
+
+- **A child session is now visible the moment it exists.** Since v2.156.0
+  every child process and worker a program starts becomes a debug session
+  of its own — and nothing showed it: the platform's debugger window group
+  declares the Sessions window `open="false"` (the v2.156.0 walk opened it
+  by hand from Window ▸ Debugging), so a user debugging a forking program
+  never learned the child had stopped at its breakpoint. A listener on the
+  debugger's session registry, registered once from the shared launch every
+  debug door runs through, opens the Sessions window on the second session
+  of a run — exactly when it becomes useful, never for the single-session
+  case the platform's default was made for, and never at boot.
+  `SessionsWindowOpenerTest` pins the rule (one session opens nothing; two
+  do) and the wiring (installed by the launch, before the spawn is posted).
+  Two mutants die by name — the second only after the wiring gate learned
+  to tell a statement from a commented-out one (its first cut matched the
+  substring anywhere, and a `// SessionsWindowOpener.install();` survived).
+- **Walked in the assembled app.** Debug File on a `parent.js` that forks
+  `child.js`, a breakpoint in the child: the Sessions tab came forward by
+  itself, listing `Node: parent.js` and `child.js [45753]`, with the editor
+  stopped on the child's line — no gesture, where the v2.156.0 walk had to
+  open the window from the Window menu. Finish Debugger Session ended the
+  run with nothing left behind.
+
 ## [2.158.0] - 2026-09-15
 
 **Debug Main Project — the toolbar's bug button and Debug ▸ Debug Main
@@ -21564,6 +21590,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.159.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.158.0...v2.159.0
 [2.158.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.157.0...v2.158.0
 [2.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.156.0...v2.157.0
 [2.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.1...v2.156.0
