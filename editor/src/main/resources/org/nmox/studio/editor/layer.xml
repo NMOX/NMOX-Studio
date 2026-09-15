@@ -484,6 +484,17 @@
                 <file name="DAPBreakpoints.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
                 </file>
+                <!-- the gutter click: what @RegisterDAPDebugger's processor
+                     generates beside the breakpoints instance (position 500,
+                     decompiled from RELEASE310). The hand registration above
+                     carried only the instance, so ⌘F8 toggled a breakpoint
+                     and a click in the gutter did nothing (v2.155.0) -->
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
                 <!-- dark palette, dark profile only — see the javascript
                      folder below -->
                 <folder name="FontsColors">
@@ -532,6 +543,17 @@
                 <file name="DAPBreakpoints.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
                 </file>
+                <!-- the gutter click: what @RegisterDAPDebugger's processor
+                     generates beside the breakpoints instance (position 500,
+                     decompiled from RELEASE310). The hand registration above
+                     carried only the instance, so ⌘F8 toggled a breakpoint
+                     and a click in the gutter did nothing (v2.155.0) -->
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
                 <!-- Phosphor is a dark palette: it belongs only to the dark
                      profile. Mapping it under "NetBeans" (the light profile)
                      painted pale-on-white JS whenever that profile was
@@ -548,11 +570,33 @@
                 <file name="DAPBreakpoints.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
                 </file>
+                <!-- the gutter click: what @RegisterDAPDebugger's processor
+                     generates beside the breakpoints instance (position 500,
+                     decompiled from RELEASE310). The hand registration above
+                     carried only the instance, so ⌘F8 toggled a breakpoint
+                     and a click in the gutter did nothing (v2.155.0) -->
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
             </folder>
             <folder name="x-go">
                 <file name="DAPBreakpoints.instance">
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.lsp.client.debugger.api.RegisterDAPBreakpoints.newInstance"/>
                 </file>
+                <!-- the gutter click: what @RegisterDAPDebugger's processor
+                     generates beside the breakpoints instance (position 500,
+                     decompiled from RELEASE310). The hand registration above
+                     carried only the instance, so ⌘F8 toggled a breakpoint
+                     and a click in the gutter did nothing (v2.155.0) -->
+                <folder name="GlyphGutterActions">
+                    <file name="org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
+                </folder>
             </folder>
         </folder>
         <!-- Frees Cmd+P from the editor kit's tooltip-show claim so the
