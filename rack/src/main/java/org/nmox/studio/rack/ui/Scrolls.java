@@ -35,10 +35,8 @@ public final class Scrolls {
         if (viewport == null) {
             return;
         }
-        Point at = viewport.getViewPosition();
-        if (at == null) {
-            return;
-        }
-        viewport.setViewPosition(new Point(0, at.y));
+        // getViewPosition builds a fresh Point, so it is never null (SpotBugs
+        // named the guard that said otherwise)
+        viewport.setViewPosition(new Point(0, viewport.getViewPosition().y));
     }
 }
