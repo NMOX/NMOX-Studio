@@ -69,7 +69,7 @@ public final class KvasirConversation {
         String text = body == null ? "" : body;
         return new KvasirConversation(title == null || title.isBlank() ? "KVASIR" : title,
                 userText -> text.isBlank() ? "" : (userText == null || userText.isBlank()
-                        ? text : text + "\n\nQuestion: " + userText));
+                        ? text : text + "\n\nQuestion: " + userText) + KvasirClient.answerLanguage());
     }
 
     /** True when there is anything to talk about — the engine's refusal gate. */

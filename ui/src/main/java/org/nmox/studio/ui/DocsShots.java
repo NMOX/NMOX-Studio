@@ -23,6 +23,14 @@ import org.openide.windows.WindowManager;
  * screen-recording permission, no window compositor, and pixel-perfect at
  * 2x for crisp docs. Without the property this is a single
  * {@code getProperty} at boot: the zero-boot-cost law holds.
+ *
+ * <p>v2.162.0: with {@code -Dnmox.shots.staged=1} the run also STAGES the
+ * user guide's six hand-photographed states (a racked project front and
+ * rear, an open file, an experiment with its walkthrough, KVASIR's
+ * diagnosis, the learning-space shelf) through
+ * {@code rack.service.DocsStaging}, so a translated guide is illustrated
+ * in its own language there too — the fixtures live under the forge's
+ * throwaway {@code user.home}.
  */
 @OnStart
 public class DocsShots implements Runnable {
@@ -173,6 +181,25 @@ public class DocsShots implements Runnable {
             main.setSize(1600, 1000);
             main.validate();
             seedFakeRun();
+            if (staged()) {
+                try {
+                    // the shelf the spaces-shelf dialog shot lists: six catalogue
+                    // spaces with a lived-in spread of ages, named in the running
+                    // locale's own words
+                    java.util.Map<String, Integer> shelf = new LinkedHashMap<>();
+                    shelf.put("first-web-page", 0);
+                    shelf.put("angular", 23);
+                    shelf.put("elm", 41);
+                    shelf.put("nim", 41);
+                    shelf.put("gleam", 45);
+                    shelf.put("lisp-clisp", 34);
+                    org.nmox.studio.rack.service.DocsStaging.seedLearningSpaces(
+                            new File(System.getProperty("user.home")), shelf);
+                } catch (java.io.IOException ex) {
+                    java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                            .warning("learning-space shelf not seeded: " + ex);
+                }
+            }
         }
 
         /**
@@ -189,13 +216,32 @@ public class DocsShots implements Runnable {
                 return;
             }
             String[] parts = fakeRunParts(spec);
-            String id = "docs-shot:" + parts[0];
-            org.nmox.studio.core.spi.LiveRuns.add(new org.nmox.studio.core.spi.LiveRuns.Run(id, parts[0], () -> { }));
-            if (parts[1] != null) {
+            fakeRun(parts[0], parts[1]);
+        }
+
+        /** The fake runs this session registered, so a staged shot can swap them. */
+        private static final java.util.Set<String> FAKE_RUNS = new java.util.LinkedHashSet<>();
+
+        /** Registers one fake run (+ its serving when a url is given); the killer is a no-op. */
+        static String fakeRun(String label, String url) {
+            String id = "docs-shot:" + label;
+            org.nmox.studio.core.spi.LiveRuns.add(new org.nmox.studio.core.spi.LiveRuns.Run(id, label, () -> { }));
+            if (url != null) {
                 org.nmox.studio.rack.service.ServingRegistry.getDefault().register(
-                        new org.nmox.studio.rack.service.ServingRegistry.Serving(id, parts[0], parts[1],
+                        new org.nmox.studio.rack.service.ServingRegistry.Serving(id, label, url,
                                 org.nmox.studio.rack.service.ServingRegistry.Kind.WEB, new File(System.getProperty("user.home"))));
             }
+            FAKE_RUNS.add(id);
+            return id;
+        }
+
+        /** Withdraws every fake run and serving this session registered. */
+        static void clearFakeRuns() {
+            for (String id : FAKE_RUNS) {
+                org.nmox.studio.core.spi.LiveRuns.remove(id);
+                org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister(id);
+            }
+            FAKE_RUNS.clear();
         }
 
         /** "label|url" → {label, url}; "label" → {label, null}. Pure, pinned. */
@@ -207,7 +253,7 @@ public class DocsShots implements Runnable {
 
         void next() {
             if (!queue.hasNext()) {
-                nextDialog();
+                nextStaged();
                 return;
             }
             Map.Entry<String, String> shot = queue.next();
@@ -252,6 +298,176 @@ public class DocsShots implements Runnable {
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
                         .warning("shot " + filename + " failed: " + ex);
             }
+        }
+
+        // --- v2.162.0: staged shots -----------------------------------------
+
+        /**
+         * A staged shot: {@code arrange} puts the app into the state the
+         * guide describes (on the EDT), {@code ready} is polled every 250 ms
+         * up to {@code maxWaitMs}, then the usual settle and paint. A stage
+         * that throws is skipped with a warning — never a stalled run.
+         */
+        record Staged(String file, Runnable arrange,
+                java.util.function.BooleanSupplier ready, int maxWaitMs) {
+        }
+
+        /** {@code -Dnmox.shots.staged=<anything>} turns the staged phase on for one run. */
+        static boolean staged() {
+            String s = System.getProperty("nmox.shots.staged");
+            return s != null && !s.isBlank();
+        }
+
+        /** KVASIR faceplate texts that mean the consult never happened — no shot then. */
+        static final java.util.List<String> KVASIR_REFUSALS = java.util.List.of(
+                "NO API KEY", "NEEDS CONSENT", "NOTHING TO EXPLAIN", "PRESS EXPLAIN");
+
+        /** True when the KVASIR LCD holds a diagnosis rather than a refusal or its idle hint. */
+        static boolean kvasirAnswered(String lcds) {
+            if (lcds == null || lcds.isBlank()) {
+                return false;
+            }
+            for (String refusal : KVASIR_REFUSALS) {
+                if (lcds.contains(refusal)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private final java.util.Iterator<Staged> stagedQueue = stagedShots().iterator();
+        private boolean thinkSeen;
+
+        /**
+         * The six states the user guide's hand-staged shots show, in the
+         * order the guide meets them. The fixtures live under the forge's
+         * (throwaway) user.home: a Classic Web site racked with the Classic
+         * Web Bench preset for the rack front, rear and editor shots; an
+         * Express experiment with its walkthrough for the experiments shot
+         * and, with VERITAS → KVASIR → MONITOR racked and a failed run fed
+         * to the recorder, for KVASIR's real diagnosis — which arrives in
+         * the running locale's language (v2.162.0) from the real API, so
+         * the run needs a key in the environment and consent seeded in the
+         * userdir (scripts/docs-shots.sh does both).
+         */
+        private java.util.List<Staged> stagedShots() {
+            if (!staged()) {
+                return java.util.List.of();
+            }
+            File home = new File(System.getProperty("user.home"));
+            File[] classic = new File[1];
+            File[] experiment = new File[1];
+            return java.util.List.of(
+                    new Staged("task-rack.png", () -> {
+                        clearFakeRuns();
+                        classic[0] = io(() -> org.nmox.studio.rack.service.DocsStaging.classicSite(home));
+                        org.nmox.studio.rack.service.DocsStaging.aim(classic[0]);
+                        fakeRun("Run \u2014 " + org.nmox.studio.rack.service.DocsStaging.CLASSIC_NAME, "http://localhost:8080/");
+                        front("RackTopComponent");
+                    }, () -> true, 0),
+                    new Staged("rack-rear.png",
+                            org.nmox.studio.rack.service.DocsStaging::flipRack, () -> true, 0),
+                    new Staged("editor.png", () -> {
+                        org.nmox.studio.rack.service.DocsStaging.flipRack(); // back to the front
+                        org.nmox.studio.rack.service.DocsStaging.openFile(new File(classic[0], "js/app.js"));
+                    }, () -> true, 0),
+                    new Staged("experiment-walkthrough.png", () -> {
+                        clearFakeRuns();
+                        experiment[0] = io(() -> org.nmox.studio.rack.service.DocsStaging.expressExperiment(home));
+                        org.nmox.studio.rack.service.DocsStaging.aim(experiment[0]);
+                        fakeRun("Run \u2014 " + org.nmox.studio.rack.service.DocsStaging.EXPERIMENT_NAME, "http://localhost:3000/");
+                        show("ProjectExplorerTopComponent"); // the Workbench beside the walkthrough
+                        org.nmox.studio.rack.service.DocsStaging.openFile(
+                                new File(experiment[0], org.nmox.studio.rack.projectstudio.Experiments.GUIDE));
+                    }, () -> true, 0),
+                    new Staged("kvasir-explain.png", () -> {
+                        front("RackTopComponent");
+                        // node:test's own shape for one failing test in the Express API's suite
+                        org.nmox.studio.rack.service.DocsStaging.seedFailedRun(
+                                org.nmox.studio.rack.service.DocsStaging.FAILING_DEVICE, "npm test",
+                                java.util.List.of(
+                                        "\u2716 GET /health answers ok (14.2ms)",
+                                        "  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:",
+                                        "  'ok' !== 'okay'",
+                                        "\u2139 fail 1"), 1);
+                        thinkSeen = false;
+                        org.nmox.studio.rack.service.DocsStaging.pressKvasirExplain();
+                    }, () -> {
+                        boolean thinking = org.nmox.studio.rack.service.DocsStaging.kvasirThinking();
+                        if (thinking) {
+                            thinkSeen = true;
+                        }
+                        return thinkSeen && !thinking;
+                    }, 90_000));
+        }
+
+        private interface IoCall<T> {
+            T call() throws java.io.IOException;
+        }
+
+        private static <T> T io(IoCall<T> call) {
+            try {
+                return call.call();
+            } catch (java.io.IOException ex) {
+                throw new java.io.UncheckedIOException(ex);
+            }
+        }
+
+        private static void front(String preferredId) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent(preferredId);
+            if (tc != null) {
+                if (!tc.isOpened()) {
+                    tc.open();
+                }
+                tc.requestActive();
+            }
+        }
+
+        private static void show(String preferredId) {
+            TopComponent tc = WindowManager.getDefault().findTopComponent(preferredId);
+            if (tc != null) {
+                if (!tc.isOpened()) {
+                    tc.open();
+                }
+                tc.requestVisible();
+            }
+        }
+
+        void nextStaged() {
+            if (!stagedQueue.hasNext()) {
+                nextDialog();
+                return;
+            }
+            Staged stage = stagedQueue.next();
+            try {
+                stage.arrange().run();
+            } catch (RuntimeException ex) {
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .warning("staged shot " + stage.file() + " could not be arranged \u2014 skipped: " + ex);
+                nextStaged();
+                return;
+            }
+            long deadline = System.currentTimeMillis() + stage.maxWaitMs();
+            javax.swing.Timer poll = new javax.swing.Timer(250, null);
+            poll.addActionListener(e -> {
+                if (!stage.ready().getAsBoolean() && System.currentTimeMillis() <= deadline) {
+                    return;
+                }
+                poll.stop();
+                javax.swing.Timer settle = new javax.swing.Timer(SETTLE_MS, e2 -> {
+                    if ("kvasir-explain.png".equals(stage.file())
+                            && !kvasirAnswered(org.nmox.studio.rack.service.DocsStaging.kvasirLcds())) {
+                        java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                                .warning("kvasir-explain.png skipped \u2014 KVASIR did not answer (no key, no consent, or timed out)");
+                    } else {
+                        capture(stage.file());
+                    }
+                    nextStaged();
+                });
+                settle.setRepeats(false);
+                settle.start();
+            });
+            poll.start();
         }
 
         // --- forge v2: dialog shots -----------------------------------------

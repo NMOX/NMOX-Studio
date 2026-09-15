@@ -108,7 +108,7 @@ class TranslatedTutorialsGateTest {
                 // (docs/images/<lang>/tabs/, v2.161.0); folded back to the
                 // English path, the set must still be the English tutorial's
                 List<String> shots = all(IMAGE, tr, 1).stream()
-                        .map(ref -> ref.replace("images/" + lang + "/tabs/", "images/tabs/")).toList();
+                        .map(ref -> ref.replace("images/" + lang + "/", "images/")).toList();
                 if (!all(IMAGE, en, 1).equals(shots)) {
                     wrong.add(p.getFileName() + ": screenshots " + shots + " but English has " + all(IMAGE, en, 1));
                 }

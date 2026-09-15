@@ -48,6 +48,31 @@ class DocsShotsTest {
     }
 
     @Test
+    @DisplayName("the staged phase is off unless its property is set")
+    void stagedPhaseIsOptIn() {
+        System.clearProperty("nmox.shots.staged");
+        assertThat(DocsShots.Session.staged()).isFalse();
+        System.setProperty("nmox.shots.staged", "1");
+        try {
+            assertThat(DocsShots.Session.staged()).isTrue();
+        } finally {
+            System.clearProperty("nmox.shots.staged");
+        }
+    }
+
+    @Test
+    @DisplayName("a KVASIR faceplate showing a refusal or its idle hint is never photographed as a diagnosis")
+    void kvasirAnsweredRefusesRefusals() {
+        assertThat(DocsShots.Session.kvasirAnswered(null)).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("  ")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("NO API KEY \u2014 PRESS KEY\u2026 TO SET ONE")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("AUTO-EXPLAIN NEEDS CONSENT \u2014 PRESS EXPLAIN ONCE")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("NOTHING TO EXPLAIN \u2014 NO FAILED RUN")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("READY \u2014 LAST RUN FAILED, PRESS EXPLAIN")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("# \u05d0\u05d1\u05d7\u05e0\u05d4\n\u05d4\u05d1\u05d3\u05d9\u05e7\u05d4 \u05e0\u05db\u05e9\u05dc\u05d4")).isTrue();
+    }
+
+    @Test
     @DisplayName("walk-only dialog specs parse, skip malformed entries, and carry a tab index")
     void walkDialogSpecs() {
         assertThat(DocsShots.walkDialogs(null)).isEmpty();
