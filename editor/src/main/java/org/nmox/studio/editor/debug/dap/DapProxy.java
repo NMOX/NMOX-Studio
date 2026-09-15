@@ -334,8 +334,13 @@ public final class DapProxy {
 
     private static void noteChildSessionAnswer(JSONObject response) {
         if (!response.optBoolean("success")) {
-            LOG.log(Level.INFO, "the platform declined a child session: {0}",
-                    response.optString("message"));
+            // the adapter was already told its target may start, so a
+            // declined offer leaves that target waiting for a session that
+            // never comes (the ledger 39 shape, for this one case); the relay
+            // closes itself when nobody dials — say why, where a person looks
+            LOG.log(Level.WARNING, "the platform declined a child debug session ({0}); "
+                    + "that child process or worker will stay paused until the run is finished",
+                    response.optString("message", "no reason given"));
         }
     }
 
@@ -389,7 +394,10 @@ public final class DapProxy {
             try {
                 p = server.accept();
             } catch (IOException ex) {
-                LOG.log(Level.INFO, "the platform never dialed the child session on port " + port(), ex);
+                LOG.log(Level.WARNING, "the platform never dialed the child debug session offered on port "
+                        + port() + " within " + ACCEPT_TIMEOUT_MS / 1000 + " s; the target \""
+                        + configuration.optString("name", "child")
+                        + "\" will stay paused until the run is finished", ex);
                 return;
             } finally {
                 closeServer();   // one-shot: the port exists for one session
@@ -438,7 +446,11 @@ public final class DapProxy {
 
         private void onAdapterFrame(JSONObject frame) throws IOException {
             if (!"request".equals(frame.optString("type"))) {
+                // attachSeq is MIN_VALUE until the platform's attach arrives,
+                // and optInt answers MIN_VALUE for a response missing its
+                // request_seq — never let those two sentinels match
                 if ("response".equals(frame.optString("type"))
+                        && attachSeq != Integer.MIN_VALUE
                         && frame.optInt("request_seq", Integer.MIN_VALUE) == attachSeq) {
                     JSONObject copy = new JSONObject(frame.toString());
                     copy.put("command", "attach");

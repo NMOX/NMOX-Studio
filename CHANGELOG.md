@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.160.0] - 2026-09-15
+
+**The debugger day's review: two hardenings in the relay, one ceiling written
+down, and the platform bug filed upstream.**
+
+- **A declined child session says so where a person looks.** When the
+  platform answers the proxy's session offer with a failure, or never dials
+  the offered port, the adapter has already been told its target may start —
+  so that child process or worker stays paused until the run is finished (the
+  ledger 39 shape, for this one case). Both paths logged at INFO with no
+  target name; both now log at WARNING naming the target and the consequence.
+- **A response with no `request_seq` can no longer be mistaken for the
+  platform's attach.** The relay maps the adapter's answer back to the
+  command the platform sent by matching `request_seq` against the attach's
+  seq; before the attach arrives that seq is a sentinel, and a response
+  missing the field reads as the same sentinel. The match now requires a real
+  attach first. `DapProxyTest` pins it; the mutant dies by name.
+- **The grandchild shape is recorded as unproven live.** A worker started by
+  a forked child is offered on the child's own relay link — pinned by the
+  proxy tests against a fake platform, but both real-adapter E2Es saw their
+  worker raised on the root link (the program starts it), so no real
+  `DAPDebugger` has yet answered an offer arriving on a child session. Ledger
+  25's closure says so.
+- **Ledger 98 filed upstream** as apache/netbeans#9621, in the project's
+  bug-report form, with the two line numbers and the stack head. Everything
+  else in v2.156.0–v2.159.0 read clean under the review lenses: the facade's
+  null-launcher branches, the entry resolver's containment and bounded read,
+  the opener's once-only install.
+
 ## [2.159.0] - 2026-09-15
 
 **The Sessions window opens itself when a debug run grows a second session.**
@@ -21590,6 +21619,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.160.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.159.0...v2.160.0
 [2.159.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.158.0...v2.159.0
 [2.158.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.157.0...v2.158.0
 [2.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.156.0...v2.157.0
