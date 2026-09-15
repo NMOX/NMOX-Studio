@@ -81,6 +81,9 @@ public final class Web3WorkspaceIO {
             nj.put("secretUrl", network.secretUrl());
             if (!network.secretUrl()) {
                 nj.put("url", nz(network.plainUrl()));
+                if (network.wsUrl() != null && !network.wsUrl().isBlank()) {
+                    nj.put("wsUrl", network.wsUrl());
+                }
             }
             networks.put(nj);
         }
@@ -243,11 +246,14 @@ public final class Web3WorkspaceIO {
                 name = nj.optString("name", "") + "-" + n;
             }
             boolean secret = nj.optBoolean("secretUrl", false);
+            String ws = nj.optString("wsUrl", "");
             out.add(new Network(
                     name,
                     nj.optInt("chainId", 0),
                     secret,
-                    secret ? null : nj.optString("url", "")));
+                    secret ? null : nj.optString("url", ""),
+                    // a secret network's ws URL carries the same key: never loaded
+                    secret || ws.isBlank() ? null : ws));
         }
         return out;
     }

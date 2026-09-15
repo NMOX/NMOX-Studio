@@ -89,12 +89,25 @@ public final class JsonRpcClient {
         }
     }
 
-    /** One log entry as {@code eth_getLogs}/receipts return it. */
+    /**
+     * One log entry as {@code eth_getLogs}/receipts/{@code logs}
+     * subscriptions return it. {@code logIndex} is the log's position in
+     * its block, {@code -1} when the node did not report one — with the
+     * transaction hash it is the log's identity, which is how the Watch
+     * pane tells a log the stream delivered from the same log re-fetched
+     * over HTTP (v2.155.0, ledger 12).
+     */
     public record LogEntry(String address, List<String> topics, String data,
-            long blockNumber, String txHash) {
+            long blockNumber, String txHash, long logIndex) {
 
         public LogEntry {
             topics = List.copyOf(topics);
+        }
+
+        /** A log whose position in its block is not known. */
+        public LogEntry(String address, List<String> topics, String data,
+                long blockNumber, String txHash) {
+            this(address, topics, data, blockNumber, txHash, -1);
         }
     }
 
@@ -402,21 +415,28 @@ public final class JsonRpcClient {
             if (log == null) {
                 continue;
             }
-            List<String> topics = new ArrayList<>();
-            JSONArray topicsJson = log.optJSONArray("topics");
-            if (topicsJson != null) {
-                for (int t = 0; t < topicsJson.length(); t++) {
-                    topics.add(topicsJson.getString(t));
-                }
-            }
-            out.add(new LogEntry(
-                    log.optString("address", ""),
-                    topics,
-                    log.optString("data", "0x"),
-                    hexToLong(log.optString("blockNumber", "0x0")),
-                    log.optString("transactionHash", "")));
+            out.add(logEntry(log));
         }
         return out;
+    }
+
+    /** One log object — the one parse {@code eth_getLogs}, receipts and subscriptions share. */
+    static LogEntry logEntry(JSONObject log) {
+        List<String> topics = new ArrayList<>();
+        JSONArray topicsJson = log.optJSONArray("topics");
+        if (topicsJson != null) {
+            for (int t = 0; t < topicsJson.length(); t++) {
+                topics.add(topicsJson.getString(t));
+            }
+        }
+        String logIndex = log.isNull("logIndex") ? "" : log.optString("logIndex", "");
+        return new LogEntry(
+                log.optString("address", ""),
+                topics,
+                log.optString("data", "0x"),
+                hexToLong(log.optString("blockNumber", "0x0")),
+                log.optString("transactionHash", ""),
+                logIndex.isBlank() ? -1 : hexToLong(logIndex));
     }
 
     /**
