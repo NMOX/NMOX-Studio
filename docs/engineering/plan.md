@@ -1,5 +1,14 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.158.0 — the bug button. The platform's
+Debug Main Project has been greyed for every web project since debugging
+shipped; it now debugs the entry the toolchain's own contract names (the
+`start` script's `node` target, `main`, `index.js`; Go's `main.go`), refusing
+to guess where the contract is silent — a disabled row is honest, a guess
+runs the wrong program. Ledger 51 was re-read against the code before being
+built and its deferral held (no existing device can commit the lie), which is
+the v1.26.0 rule: a deferral defended after re-reading is a decision.*
+
 *Currency addendum 2026-09-15, at v2.157.0 — the debugger has a door a
 keyboard can reach. The v2.156.0 walk could not right-click and had to seed a
 menu shadow to start a session; the product had the same gap for every user

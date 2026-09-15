@@ -775,7 +775,13 @@ scope, stepping, and watch expressions you can evaluate against the
 paused program. The menu row and its chord are the platform's own
 (v2.157.0); they enable for one JavaScript, TypeScript, Python or Go
 file inside the open project, and run the same launch as the
-right-click, Workspace Trust prompt included.
+right-click, Workspace Trust prompt included. **Debug ▸ Debug Main
+Project** and the toolbar's bug button (v2.158.0) debug the project's
+own entry instead of the selection: for a Node project the file its
+`start` script runs under `node`, else its `main`, else `index.js`; for
+a Go project `main.go`. A project whose scripts start a dev server
+rather than a program keeps the button disabled — use Debug File on
+the file you mean.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 

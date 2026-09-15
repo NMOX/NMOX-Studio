@@ -560,7 +560,8 @@ about it. The walkthrough:
 ### 🐞 Breakpoints that actually stop
 
 Click the gutter, press ⇧⌘F5 (or Debug ▸ Debug File, or right-click →
-**Debug File**), and your program pauses
+**Debug File** — or the toolbar's bug button for the project's own
+entry, the file its `start` script runs), and your program pauses
 there — call stack, variables in scope, stepping, watch expressions
 evaluated against the live process. **JavaScript and TypeScript debug
 out of the box**: Microsoft's [js-debug](https://github.com/microsoft/vscode-js-debug)
