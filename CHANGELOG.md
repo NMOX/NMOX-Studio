@@ -37,6 +37,15 @@ All notable changes to NMOX Studio are documented here. The format follows
   only when it carries the forge's own marker. `NMOX_SHOTS_LOG` keeps the
   boot's log. A toolchain balloon about this machine's TypeScript no longer
   paints itself into a documentation picture, while the log still says it.
+- **The pictures found a real right-to-left defect.** The Hebrew and Arabic
+  Task Rack came out with every device face cut off — MAESTRO reading "RO",
+  KVASIR "IR" — because the rack is wider than its viewport and a mirrored
+  view opened at Swing's zero scroll position, which in a right-to-left
+  window is the FAR end. `Scrolls.toLogicalStart` puts a scrolled view where
+  its reader starts, and the rack window asks for it on every show; a
+  left-to-right rack is unchanged. `ScrollsTest`, mutant by name. This is a
+  defect every Hebrew and Arabic user met on opening the window, found only
+  because the guide's pictures are now painted in their languages.
 - **A faceplate LCD can be read the way it is painted.** The forge's first
   runs polled KVASIR's verdict through `LcdDisplay.getText()` and saw a blank
   faceplate over a live one. That call returns the single-line field, and
