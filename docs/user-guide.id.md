@@ -35,7 +35,7 @@ Dari terminal, `nmoxstudio --open <folder>` menjalankan aplikasi dengan folder i
 
 IDE terbuka dengan tiga tab di samping area editor: **Selamat Datang → Rak Tugas → Peramban**. Setiap jendela lain berjarak satu pintasan ⌥⌘ dan tercantum di kolom TOOLING halaman selamat datang. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
 
-![Peluncuran pertama — halaman selamat datang dengan tiga tab](images/tabs/workbench.png)
+![Peluncuran pertama — halaman selamat datang dengan tiga tab](images/id/tabs/workbench.png)
 
 Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab selamat datang):
 
@@ -80,7 +80,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 <a id="4-the-task-rack"></a>
 ## 4. Rak Tugas
 
-![Rak Tugas](images/tabs/the-task-rack.png)
+![Rak Tugas](images/id/tabs/the-task-rack.png)
 
 Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pembundel, penjalan uji, server pengembangan, linter, git, penerapan — adalah sebuah perangkat di dalam rak: kenop memilih tugas, GO menjalankannya, LED menunjukkan keadaan, dan sebuah layar LCD memberi tahu Anda dengan kata-kata apa yang terjadi.
 

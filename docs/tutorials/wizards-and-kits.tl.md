@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · **Filipino** · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Ang wizard ng Standards Kit — robots.txt, sitemap, web manifest, security.txt ayon sa RFC 9116, at humans.txt na nilikha mula sa iyong mga sagot](../images/tabs/wizards-and-kits.png)
+![Ang wizard ng Standards Kit — robots.txt, sitemap, web manifest, security.txt ayon sa RFC 9116, at humans.txt na nilikha mula sa iyong mga sagot](../images/tl/tabs/wizards-and-kits.png)
 
 May dalang ilang minsanang generator ang NMOX Studio na nagdaragdag ng
 scaffold na handa para sa produksiyon sa isang proyektong mayroon na,

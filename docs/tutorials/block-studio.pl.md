@@ -10,7 +10,7 @@ element niestandardowy (shadow DOM, stan, nasłuchiwanie zdarzeń) — i do
 tego serwer podglądu na żywo, żebyś zobaczył, jak działa. Kliknij blok,
 a podświetlą się dokładnie te wiersze, które wytworzył.
 
-![Studio bloków — paleta bloków, płótno z korzeniem komponentu i wygenerowany element niestandardowy z mapowaniem kodu po kliknięciu bloku](../images/tabs/block-studio.png)
+![Studio bloków — paleta bloków, płótno z korzeniem komponentu i wygenerowany element niestandardowy z mapowaniem kodu po kliknięciu bloku](../images/pl/tabs/block-studio.png)
 
 ## Otwieranie
 

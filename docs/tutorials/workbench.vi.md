@@ -9,7 +9,7 @@ tại, các tệp đang mở và gần đây, những dự án đã biết, và 
 cài, tất cả ở cùng một chỗ. Đây là nơi bạn định hướng trước khi lao vào một
 studio.
 
-![Bàn làm việc ở khung bên trái — dự án hiện tại với các nhãn bộ công cụ, tệp đang mở và gần đây, các dự án, và danh mục công cụ](../images/tabs/workbench.png)
+![Bàn làm việc ở khung bên trái — dự án hiện tại với các nhãn bộ công cụ, tệp đang mở và gần đây, các dự án, và danh mục công cụ](../images/vi/tabs/workbench.png)
 
 ## Mở nó
 

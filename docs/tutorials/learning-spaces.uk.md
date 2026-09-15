@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · **Українська** · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Вибір «Новий навчальний простір» — пошук серед вбудованих уроків, а перевірка доступності наперед каже, чи є на цій машині потрібний інструмент](../images/tabs/learning-spaces.png)
+![Вибір «Новий навчальний простір» — пошук серед вбудованих уроків, а перевірка доступності наперед каже, чи є на цій машині потрібний інструмент](../images/uk/tabs/learning-spaces.png)
 
 Навчальний простір — самодостатня пісочниця для вивчення мови, фреймворку
 чи бібліотеки: NMOX Studio створює зразковий код, покроковий урок і стійку

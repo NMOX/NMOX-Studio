@@ -35,7 +35,7 @@ Mula sa terminal, sinisimulan ng `nmoxstudio --open <folder>` ang app kasama ang
 
 Bumubukas ang IDE kasama ang tatlong tab sa tabi ng lugar ng editor: **Maligayang Pagdating → Rack ng Gawain → Browser**. Isang ⌥⌘ shortcut lang ang layo ng bawat ibang window, at nakalista ang mga ito sa hanay na TOOLING ng welcome page. Sa kaliwang dock: **Studio ng Proyekto** (puno ng mga file at mga template), ang batayang **Lugar ng Trabaho** at ang **Explorer ng NPM**. Gumagawa ng folder na `~/NMOX` bilang default na workspace; doon nakaturo ang rack hanggang magbukas ka ng proyekto.
 
-![Unang pagbukas — ang welcome page na may tatlong tab](images/tabs/workbench.png)
+![Unang pagbukas — ang welcome page na may tatlong tab](images/tl/tabs/workbench.png)
 
 Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa welcome tab):
 
@@ -80,7 +80,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 <a id="4-the-task-rack"></a>
 ## 4. Ang Rack ng Gawain
 
-![Ang Rack ng Gawain](images/tabs/the-task-rack.png)
+![Ang Rack ng Gawain](images/tl/tabs/the-task-rack.png)
 
 Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — npm, ang bundler, ang tagapagpatakbo ng pagsusulit, ang development server, ang linter, ang git, ang paglalagay — ay isang kagamitan sa isang rack: pumipili ng gawain ang mga knob, pinapatakbo ito ng GO, ipinapakita ng mga LED ang kalagayan, at sinasabi sa iyo ng isang LCD sa mga salita kung ano ang nangyari.
 

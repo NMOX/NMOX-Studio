@@ -38,6 +38,7 @@ digits kept Latin; every gate below derives its population from
 | Each module named as itself, never with another module's words | `ModuleDescriptorsSpeakTest.everyModuleHasItsOwnName`, every language |
 | Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |
 | The website's and the I18n Kit's page direction | `I18nKitTest`, `SiteShipsTest` byte parity, logical CSS sides |
+| The forge's tab shots in every translated guide and tutorial (v2.161.0) | `TranslatedShotsGateTest` — a translated document names `docs/images/<lang>/tabs/`, painted by `scripts/docs-shots.sh <dir> <lang>` with the app booted `--locale <lang>` (mirrored for he/ar); `ImageRefsTest` keeps dead refs and orphans out |
 | The 21 tutorials in `docs/tutorials`, every translation (v2.153.0) | `TranslatedTutorialsGateTest` — tutorials and languages derived; commands, headings, screenshots and the language bar identical to English |
 | Menu paths in every document, English and translated | `DocsMenuDoorsTest` — the doors of each language's own menu bar; one-OS rows must say where they are on macOS |
 | The Window menu unambiguous in every language | `WindowMenuIsUnambiguousTest`, per language through the platform's bundle chain |

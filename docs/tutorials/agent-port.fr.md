@@ -6,7 +6,7 @@
 
 *Pointez un agent d’IA sur votre IDE — et laissez-le LIRE, jamais exécuter.*
 
-![La boîte de dialogue Agent Port — le point d’accès local, le jeton propre à chaque démarrage (un substitut sur cette capture) et la configuration client prête à copier](../images/tabs/agent-port.png)
+![La boîte de dialogue Agent Port — le point d’accès local, le jeton propre à chaque démarrage (un substitut sur cette capture) et la configuration client prête à copier](../images/fr/tabs/agent-port.png)
 
 NMOX Studio embarque un serveur Model Context Protocol. Tout agent qui parle
 MCP (Claude Code, un assistant d’éditeur, votre propre script) peut s’y

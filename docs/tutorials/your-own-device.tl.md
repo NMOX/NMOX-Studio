@@ -13,7 +13,7 @@ Bago sa 2.0.0. Dumating ang rack na may limampu’t tatlong kagamitan at,
 hanggang ngayon, iisang paraan para magdagdag ng ika-54: sumulat ng
 NetBeans plugin. Ito ang isa pang paraan.
 
-![Ang Rack ng Gawain: ang istante ng mga kagamitan sa kaliwa ay kung saan lumilitaw ang kagamitan mula sa ~/.nmox/devices.d, sa tabi ng mga nakapaloob](../images/tabs/the-task-rack.png)
+![Ang Rack ng Gawain: ang istante ng mga kagamitan sa kaliwa ay kung saan lumilitaw ang kagamitan mula sa ~/.nmox/devices.d, sa tabi ng mga nakapaloob](../images/tl/tabs/the-task-rack.png)
 
 ## 1. Gawin ang folder
 

@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · **简体中文** · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![新建学习空间选择器 — 在内置教程中搜索，可用性探测会事先告诉你这台机器上有没有这个空间要用的工具](../images/tabs/learning-spaces.png)
+![新建学习空间选择器 — 在内置教程中搜索，可用性探测会事先告诉你这台机器上有没有这个空间要用的工具](../images/zh/tabs/learning-spaces.png)
 
 学习空间是一个自足的沙盒，用来学一门语言、一个框架或一个库：NMOX Studio 会生成示例代码、一份带着你走的教程，以及一个已经接好线的机架，里面有一个你可以直接敲字的**真正的机架内 REPL**。内置的一共有 93 个。
 

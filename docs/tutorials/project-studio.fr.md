@@ -10,7 +10,7 @@ des modèles, une arborescence de fichiers native de la plateforme, un
 **Exécuter / Construire / Tester / Nettoyer** natifs de l’IDE, qui
 marchent sans que vous ouvriez jamais un terminal.
 
-![Le Studio de projet dans le dock de gauche — l’arborescence native de la plateforme et la barre d’outils du projet, avec le Rack de tâches ouvert à côté](../images/tabs/project-studio.png)
+![Le Studio de projet dans le dock de gauche — l’arborescence native de la plateforme et la barre d’outils du projet, avec le Rack de tâches ouvert à côté](../images/fr/tabs/project-studio.png)
 
 ## L’ouvrir
 

@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · **Polski** · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Kreator Standards Kit — robots.txt, mapa witryny, manifest aplikacji webowej, security.txt zgodny z RFC 9116 i humans.txt utworzone z twoich odpowiedzi](../images/tabs/wizards-and-kits.png)
+![Kreator Standards Kit — robots.txt, mapa witryny, manifest aplikacji webowej, security.txt zgodny z RFC 9116 i humans.txt utworzone z twoich odpowiedzi](../images/pl/tabs/wizards-and-kits.png)
 
 NMOX Studio ma kilka jednorazowych generatorów, które dodają do
 istniejącego projektu rusztowanie klasy produkcyjnej, nie nadpisując

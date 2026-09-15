@@ -10,7 +10,7 @@ package.json, at mga preset ng rack — kasama ang katutubong
 **Patakbuhin / Buuin / Subukin / Linisin** ng IDE na gumagana nang hindi
 kailanman nagbubukas ng terminal.
 
-![Studio ng Proyekto sa kaliwang dock — ang puno ng file na katutubo sa plataporma at ang toolbar ng proyekto, at nakabukas sa tabi ang Rack ng Gawain](../images/tabs/project-studio.png)
+![Studio ng Proyekto sa kaliwang dock — ang puno ng file na katutubo sa plataporma at ang toolbar ng proyekto, at nakabukas sa tabi ang Rack ng Gawain](../images/tl/tabs/project-studio.png)
 
 ## Buksan ito
 

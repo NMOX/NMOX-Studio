@@ -35,7 +35,7 @@ Z terminala `nmoxstudio --open <katalog>` uruchamia aplikację z tym katalogiem 
 
 IDE otwiera się z trzema kartami przy obszarze edytora: **Witamy → Stojak zadań → Przeglądarka**. Każde inne okno jest o jeden skrót ⌥⌘ i figuruje w kolumnie TOOLING strony powitalnej. W lewym doku: **Studio projektu** (drzewo plików i szablony), baza **Stanowisko pracy** oraz **Eksplorator NPM**. Powstaje katalog `~/NMOX` jako domyślna przestrzeń robocza; stojak wskazuje tam, dopóki nie otworzysz projektu.
 
-![Pierwsze uruchomienie — strona powitalna z trzema kartami](images/tabs/workbench.png)
+![Pierwsze uruchomienie — strona powitalna z trzema kartami](images/pl/tabs/workbench.png)
 
 Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na karcie powitalnej):
 
@@ -80,7 +80,7 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 <a id="4-the-task-rack"></a>
 ## 4. Stojak zadań
 
-![Stojak zadań](images/tabs/the-task-rack.png)
+![Stojak zadań](images/pl/tabs/the-task-rack.png)
 
 Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bundler, uruchamiacz testów, serwer deweloperski, linter, git, wdrożenie — jest urządzeniem w stojaku: pokrętła wybierają zadanie, GO je uruchamia, diody pokazują stan, a wyświetlacz mówi słowami, co się stało.
 

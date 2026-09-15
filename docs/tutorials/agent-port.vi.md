@@ -6,7 +6,7 @@
 
 *Hướng một tác nhân AI vào IDE của bạn — và để nó ĐỌC, không bao giờ chạy.*
 
-![Hộp thoại Agent Port — điểm cuối loopback, token cấp cho mỗi lần khởi động (trong ảnh này là một giá trị giữ chỗ), và cấu hình máy khách soạn sẵn để sao chép](../images/tabs/agent-port.png)
+![Hộp thoại Agent Port — điểm cuối loopback, token cấp cho mỗi lần khởi động (trong ảnh này là một giá trị giữ chỗ), và cấu hình máy khách soạn sẵn để sao chép](../images/vi/tabs/agent-port.png)
 
 NMOX Studio có sẵn một máy chủ Model Context Protocol. Bất kỳ tác nhân nào
 nói MCP (Claude Code, một trợ lý trong trình soạn thảo, script của riêng

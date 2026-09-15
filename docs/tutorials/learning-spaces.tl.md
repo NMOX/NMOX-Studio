@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · **Filipino** · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Ang pampili ng Bagong Lugar ng Pag-aaral — maghanap sa mga built-in na tutorial, habang sinasabi ng pagsisiyasat mula sa simula kung may kasangkapan ng lugar ang makinang ito](../images/tabs/learning-spaces.png)
+![Ang pampili ng Bagong Lugar ng Pag-aaral — maghanap sa mga built-in na tutorial, habang sinasabi ng pagsisiyasat mula sa simula kung may kasangkapan ng lugar ang makinang ito](../images/tl/tabs/learning-spaces.png)
 
 Ang Lugar ng Pag-aaral ay isang sandbox na nakatayo mag-isa para
 matutunan ang isang wika, framework, o library: lumilikha ang NMOX Studio

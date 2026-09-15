@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · **Español** · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![El asistente del Kit de estándares: robots.txt, sitemap, manifiesto web, security.txt del RFC 9116 y humans.txt generados a partir de tus respuestas](../images/tabs/wizards-and-kits.png)
+![El asistente del Kit de estándares: robots.txt, sitemap, manifiesto web, security.txt del RFC 9116 y humans.txt generados a partir de tus respuestas](../images/es/tabs/wizards-and-kits.png)
 
 NMOX Studio trae varios generadores de un solo uso que añaden andamiaje
 de calidad de producción a un proyecto existente sin pisar tus archivos.

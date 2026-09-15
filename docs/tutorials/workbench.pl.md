@@ -9,7 +9,7 @@ pokazuje bieżący projekt, pliki otwarte i ostatnie, znane projekty oraz
 zainstalowane narzędzia. Tu łapiesz orientację, zanim wejdziesz do
 któregoś studia.
 
-![Stanowisko pracy w lewym doku — bieżący projekt z plakietkami łańcucha narzędzi, pliki otwarte i ostatnie, projekty i spis narzędzi](../images/tabs/workbench.png)
+![Stanowisko pracy w lewym doku — bieżący projekt z plakietkami łańcucha narzędzi, pliki otwarte i ostatnie, projekty i spis narzędzi](../images/pl/tabs/workbench.png)
 
 ## Otwieranie
 

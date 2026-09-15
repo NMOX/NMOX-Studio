@@ -9,7 +9,7 @@ proyek Anda saat ini, berkas yang terbuka dan yang terkini, proyek yang
 dikenal, dan perkakas yang terpasang, semuanya di satu tempat. Di sinilah
 Anda mengambil arah sebelum masuk ke sebuah studio.
 
-![Meja Kerja di panel kiri — proyek saat ini dengan tanda rantai perkakasnya, berkas yang terbuka dan yang terkini, proyek, dan direktori perkakas](../images/tabs/workbench.png)
+![Meja Kerja di panel kiri — proyek saat ini dengan tanda rantai perkakasnya, berkas yang terbuka dan yang terkini, proyek, dan direktori perkakas](../images/id/tabs/workbench.png)
 
 ## Membukanya
 

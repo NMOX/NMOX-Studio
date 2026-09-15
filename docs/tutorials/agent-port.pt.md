@@ -6,7 +6,7 @@
 
 *Aponte um agente de IA para a sua IDE — e deixe-o LER, nunca executar.*
 
-![A caixa de diálogo do Agent Port — o endpoint local, o token gerado a cada partida (um marcador de exemplo nesta imagem) e a configuração pronta do cliente para copiar](../images/tabs/agent-port.png)
+![A caixa de diálogo do Agent Port — o endpoint local, o token gerado a cada partida (um marcador de exemplo nesta imagem) e a configuração pronta do cliente para copiar](../images/pt/tabs/agent-port.png)
 
 O NMOX Studio traz um servidor Model Context Protocol. Qualquer agente que
 fale MCP (Claude Code, um assistente de editor, o seu próprio script) pode

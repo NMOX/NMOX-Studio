@@ -35,7 +35,7 @@ No terminal, `nmoxstudio --open <pasta>` inicia o aplicativo com essa pasta aber
 
 A IDE abre com três abas ao lado da área do editor: **Bem-vindo → Rack de tarefas → Navegador web**. Cada uma das outras janelas está a um atalho ⌥⌘ e aparece na coluna TOOLING da página de boas-vindas. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
 
-![Primeira execução — a página de boas-vindas com três abas](images/tabs/workbench.png)
+![Primeira execução — a página de boas-vindas com três abas](images/pt/tabs/workbench.png)
 
 Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
@@ -80,7 +80,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 <a id="4-the-task-rack"></a>
 ## 4. O rack de tarefas
 
-![O rack de tarefas](images/tabs/the-task-rack.png)
+![O rack de tarefas](images/pt/tabs/the-task-rack.png)
 
 O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — npm, o empacotador, o executor de testes, o servidor de desenvolvimento, o linter, o git, a implantação — é um dispositivo físico num rack: os botões giratórios escolhem a tarefa, o GO executa, os LEDs mostram o estado e um visor conta em palavras o que aconteceu.
 

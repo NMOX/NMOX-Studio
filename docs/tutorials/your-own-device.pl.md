@@ -12,7 +12,7 @@ Nowość w 2.0.0. Stojak przyszedł z pięćdziesięcioma trzema urządzeniami
 i do tej pory z jednym sposobem na dodanie pięćdziesiątego czwartego:
 napisaniem wtyczki NetBeans. To jest ten drugi sposób.
 
-![Stojak zadań: półka urządzeń po lewej to miejsce, gdzie urządzenie z ~/.nmox/devices.d pojawia się obok wbudowanych](../images/tabs/the-task-rack.png)
+![Stojak zadań: półka urządzeń po lewej to miejsce, gdzie urządzenie z ~/.nmox/devices.d pojawia się obok wbudowanych](../images/pl/tabs/the-task-rack.png)
 
 ## 1. Utwórz katalog
 

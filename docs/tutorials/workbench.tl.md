@@ -9,7 +9,7 @@ nagpapakita ng kasalukuyang proyekto, mga bukas at kamakailang file, mga
 kilalang proyekto, at mga kasangkapang nakainstall sa iyong makina, sa
 iisang lugar. Dito ka nag-oorient bago sumisid sa isang studio.
 
-![Ang Lugar ng Trabaho sa kaliwang dock — kasalukuyang proyekto na may mga tanda ng toolchain, mga bukas at kamakailang file, mga proyekto, at direktoryo ng mga kagamitan](../images/tabs/workbench.png)
+![Ang Lugar ng Trabaho sa kaliwang dock — kasalukuyang proyekto na may mga tanda ng toolchain, mga bukas at kamakailang file, mga proyekto, at direktoryo ng mga kagamitan](../images/tl/tabs/workbench.png)
 
 ## Buksan ito
 

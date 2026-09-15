@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · **简体中文** · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![标准套件向导 — 根据你的回答生成 robots.txt、sitemap、Web 清单、符合 RFC 9116 的 security.txt 以及 humans.txt](../images/tabs/wizards-and-kits.png)
+![标准套件向导 — 根据你的回答生成 robots.txt、sitemap、Web 清单、符合 RFC 9116 的 security.txt 以及 humans.txt](../images/zh/tabs/wizards-and-kits.png)
 
 NMOX Studio 自带几个一次性的生成器，能给现有项目加上生产级的脚手架，而不会覆盖你的文件。本教程给一个网页项目加上 PWA；其他套件的用法一样。
 

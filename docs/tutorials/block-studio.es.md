@@ -10,7 +10,7 @@ autónomo (shadow DOM, estado, escuchadores), además de un servidor de
 vista previa para que lo veas funcionar. Pulsa un bloque y se resaltan
 exactamente las líneas que produjo.
 
-![El Estudio de bloques: la paleta de piezas, el lienzo con la raíz de un componente y el elemento personalizado generado, con el código enlazado a cada pieza](../images/tabs/block-studio.png)
+![El Estudio de bloques: la paleta de piezas, el lienzo con la raíz de un componente y el elemento personalizado generado, con el código enlazado a cada pieza](../images/es/tabs/block-studio.png)
 
 ## Ábrelo
 

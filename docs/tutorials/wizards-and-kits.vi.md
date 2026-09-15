@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · **Tiếng Việt** · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Trình hướng dẫn Standards Kit — robots.txt, sitemap, web manifest, security.txt theo RFC 9116 và humans.txt được sinh ra từ câu trả lời của bạn](../images/tabs/wizards-and-kits.png)
+![Trình hướng dẫn Standards Kit — robots.txt, sitemap, web manifest, security.txt theo RFC 9116 và humans.txt được sinh ra từ câu trả lời của bạn](../images/vi/tabs/wizards-and-kits.png)
 
 NMOX Studio mang theo nhiều trình sinh chạy một lần, thêm khung sườn đạt
 chuẩn sản xuất vào một dự án có sẵn mà không ghi đè tệp của bạn. Bài này

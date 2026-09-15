@@ -6,7 +6,7 @@
 
 *Wyceluj agenta SI w swoje IDE — i pozwól mu CZYTAĆ, nigdy uruchamiać.*
 
-![Okno Agent Port — punkt końcowy na pętli zwrotnej, token tworzony przy każdym starcie (na tym zrzucie zastępczy) i gotowa konfiguracja klienta do skopiowania](../images/tabs/agent-port.png)
+![Okno Agent Port — punkt końcowy na pętli zwrotnej, token tworzony przy każdym starcie (na tym zrzucie zastępczy) i gotowa konfiguracja klienta do skopiowania](../images/pl/tabs/agent-port.png)
 
 NMOX Studio ma w komplecie serwer Model Context Protocol. Każdy agent,
 który mówi MCP (Claude Code, asystent w edytorze, twój własny skrypt),

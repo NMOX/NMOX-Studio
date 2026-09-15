@@ -35,7 +35,7 @@ Aus einem Terminal startet `nmoxstudio --open <Ordner>` die Anwendung mit diesem
 
 Die IDE öffnet sich mit drei Tabs am Editorbereich: **Willkommen → Task-Rack → Browser**. Jedes weitere Fenster ist ein ⌥⌘-Kürzel entfernt und steht in der Spalte TOOLING der Willkommensseite. Im linken Dock: **Projekt-Studio** (Dateibaum und Vorlagen), die Basis **Arbeitsplatz** und der **NPM-Explorer**. Ein Ordner `~/NMOX` wird als Standardarbeitsbereich angelegt; das Rack zeigt dorthin, bis Sie ein Projekt öffnen.
 
-![Erster Start — die Willkommensseite mit drei Tabs](images/tabs/workbench.png)
+![Erster Start — die Willkommensseite mit drei Tabs](images/de/tabs/workbench.png)
 
 Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willkommens-Tab):
 
@@ -80,7 +80,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 <a id="4-the-task-rack"></a>
 ## 4. Das Task-Rack
 
-![Das Task-Rack](images/tabs/the-task-rack.png)
+![Das Task-Rack](images/de/tabs/the-task-rack.png)
 
 Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm, der Bundler, der Testläufer, der Entwicklungsserver, der Linter, git, das Ausrollen — ist ein Gerät im Rack: Drehregler wählen die Aufgabe, GO führt sie aus, LEDs zeigen den Zustand, und ein LCD sagt Ihnen mit Worten, was geschehen ist.
 

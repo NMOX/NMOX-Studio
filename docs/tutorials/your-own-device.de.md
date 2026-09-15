@@ -13,7 +13,7 @@ Neu in 2.0.0. Das Rack kam mit dreiundfünfzig Geräten und bisher mit
 genau einem Weg zu einem vierundfünfzigsten: ein NetBeans-Plugin
 schreiben. Dies ist der andere Weg.
 
-![Das Task-Rack: Links im Geräteregal erscheint ein Gerät aus ~/.nmox/devices.d, neben den eingebauten](../images/tabs/the-task-rack.png)
+![Das Task-Rack: Links im Geräteregal erscheint ein Gerät aus ~/.nmox/devices.d, neben den eingebauten](../images/de/tabs/the-task-rack.png)
 
 ## 1. Den Ordner anlegen
 

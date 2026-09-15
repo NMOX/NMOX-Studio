@@ -1,5 +1,17 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.161.0 — the picture speaks the language.
+David opened the Hebrew guide and its first illustration was an English
+window: the l10n arc translated every word and left every screenshot the
+English build's. The forge already painted windows without a screen and the
+launcher already took `--locale`, so the fix was fourteen throwaway boots and
+a keep-list; the two gates make a translated document's own-language shot a
+law rather than a courtesy. Ceiling: the staged live shots (a real failure
+explained, a flipped rack, a preset, seeded spaces) need the forge to stage
+those states per language — the next forge unit. Lesson: a completion record
+(l10n-completion.md) lists surfaces; a reader lists what they SAW, and the
+picture beside the words is a surface.*
+
 *Currency addendum 2026-09-15, at v2.160.0 — the debugger day reviewed. Four
 releases of fresh code under the hostile lenses found two small hardenings in
 the child-session relay (a declined offer said nothing a user could find; a

@@ -11,7 +11,7 @@ listener) — kasama ang buhay na preview server para makita mo itong
 tumatakbo. I-click ang isang block para ipakita ang mismong mga linyang
 nilikha nito.
 
-![Studio ng Block — ang palette ng mga piraso, ang canvas na may ugat ng component, at ang nilikhang custom element na may pagmamapa ng piraso sa code](../images/tabs/block-studio.png)
+![Studio ng Block — ang palette ng mga piraso, ang canvas na may ugat ng component, at ang nilikhang custom element na may pagmamapa ng piraso sa code](../images/tl/tabs/block-studio.png)
 
 ## Buksan ito
 

@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · **Bahasa Indonesia** · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Pemilih Ruang Belajar Baru — cari di antara tutorial bawaan, dengan penjajakan ketersediaan yang memberi tahu sejak awal apakah mesin ini punya perkakas ruang tersebut](../images/tabs/learning-spaces.png)
+![Pemilih Ruang Belajar Baru — cari di antara tutorial bawaan, dengan penjajakan ketersediaan yang memberi tahu sejak awal apakah mesin ini punya perkakas ruang tersebut](../images/id/tabs/learning-spaces.png)
 
 Ruang belajar adalah kotak pasir mandiri untuk mempelajari sebuah bahasa,
 kerangka kerja, atau pustaka: NMOX Studio membangkitkan kode contoh, tutorial
