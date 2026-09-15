@@ -69,9 +69,9 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 
 **Les expériences** sont le moyen le plus rapide d’essayer une technologie. **Fichier ▸ Nouvelle expérience…** (⇧⌘E) choisit un gabarit et génère un projet jetable sous `~/.nmox/experiments` : pas de git, pas de récents, déjà approuvé, dépendances installées, pour que la **première exécution marche**. Il s’ouvre sur son propre parcours `EXPERIMENT.md`, qui dit quoi presser, quel fichier modifier et où vit l’intelligence de l’IDE pour cette technologie. Gardez ce qui prend forme : **Fichier ▸ Expériences…** ▸ **Promouvoir** l’en sort et initialise git, **Dupliquer** en crée une copie pour tenter une autre approche, **Écarter** supprime le reste. L’étagère montre l’âge de chacune et son coût disque mesuré. Vous préférez le chemin guidé ? La boîte de dialogue met en avant les 93 espaces d’apprentissage.
 
-![L’étagère des espaces d’apprentissage — nombre, coût disque, âge et tout le cycle de vie](images/spaces-shelf.png)
+![L’étagère des espaces d’apprentissage — nombre, coût disque, âge et tout le cycle de vie](images/fr/spaces-shelf.png)
 
-![Une expérience Express toute neuve : le parcours ouvert, les dépendances installées, l’API déjà servie](images/experiment-walkthrough.png)
+![Une expérience Express toute neuve : le parcours ouvert, les dépendances installées, l’API déjà servie](images/fr/experiment-walkthrough.png)
 
 **Exécuter, construire, tester — et arrêter :** le ▶ de la barre (F6) exécute le projet comme sa chaîne d’outils l’exécute : un script `start` si package.json en a un, `cargo run`, `go run`, `dotnet run`, et pour un dossier de HTML un petit serveur statique sur le premier port libre à partir de 8080. Construire, Tester et Nettoyer sont à côté et dans le menu Exécuter. Un serveur de développement qui annonce son adresse allume le témoin ⇄ de la barre d’état et ouvre la page dans le navigateur intégré. Tout passe la première fois par la confirmation de confiance de l’espace de travail. Une exécution qui n’a pas pu démarrer le dit et propose d’ouvrir le Docteur d’environnement. Pour arrêter : le ■ à droite de Déboguer (⌥⌘.) arrête d’un coup toutes les commandes en cours et dit ce qu’il a arrêté ; **Exécuter ▸ Arrêter la compilation/exécution** en arrête une et propose ensuite **Répéter**. Le ■ voit tout ce que le produit lance pour vous, installations comprises ; au survol, l’infobulle nomme exactement ce qu’une pression arrêterait, et depuis quand chaque chose tourne.
 
@@ -84,7 +84,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 
 Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, l’empaqueteur, le lanceur de tests, le serveur de développement, le linter, git, le déploiement — est un appareil matériel dans un rack : les boutons rotatifs choisissent la tâche, GO l’exécute, les LED montrent l’état, et un afficheur vous dit avec des mots ce qui s’est passé.
 
-![Le rack pointé sur un site jQuery classique — le préréglage Classic Web Bench : MAESTRO, CRATE, DYNAMO (son bouton TASK a analysé le vrai Gruntfile), IGNITION servant du statique, VITALS veillant sur la qualité](images/task-rack.png)
+![Le rack pointé sur un site jQuery classique — le préréglage Classic Web Bench : MAESTRO, CRATE, DYNAMO (son bouton TASK a analysé le vrai Gruntfile), IGNITION servant du statique, VITALS veillant sur la qualité](images/fr/task-rack.png)
 
 **Les bases :**
 
@@ -94,7 +94,7 @@ Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, 
 - **Annulez toute modification de structure** avec **⌘Z** — ajouts, retraits et recâblages. Retirer un appareil en marche arrête d’abord son processus.
 - **Les préréglages** vous donnent un rack entier déjà câblé en un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Les montages sont enregistrés par projet automatiquement.
 
-![Tab retourne le rack — les cordons relient MAESTRO à travers CRATE, DYNAMO et IGNITION jusqu’à VITALS](images/rack-rear.png)
+![Tab retourne le rack — les cordons relient MAESTRO à travers CRATE, DYNAMO et IGNITION jusqu’à VITALS](images/fr/rack-rear.png)
 
 **La coordination, quand votre pipeline grandit :**
 
@@ -120,7 +120,7 @@ Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, 
 
 ### KVASIR — expliquer le dernier échec
 
-![KVASIR expliquant un échec réel : le diagnostic consenti sur la façade et les étapes complètes de correction dans la visionneuse](images/kvasir-explain.png)
+![KVASIR expliquant un échec réel : le diagnostic consenti sur la façade et les étapes complètes de correction dans la visionneuse](images/fr/kvasir-explain.png)
 
 **KVASIR** est l’assistance par IA à la manière du rack : un appareil qui explique l’erreur présente sur le bus MONITOR, pas une barre latérale de discussion. Quand une exécution échoue, pressez **EXPLAIN** et KVASIR demande à votre IA ce qui a mal tourné et quelle est l’étape suivante concrète. Un verdict court s’affiche ; **VIEW** ouvre la réponse entière. **MODEL** choisit entre **FAST** (rapide et économique, par défaut) et **DEEP** (plus puissant). EXPLAIN est bleu : il lit et demande, il ne touche jamais à votre projet.
 
@@ -139,7 +139,7 @@ Le rack est extensible : des greffons tiers peuvent ajouter des appareils (inst
 <a id="5-the-editor"></a>
 ## 5. L’éditeur
 
-![Du code jQuery dans la palette NMOX Phosphor, la structure dans le Navigateur](images/editor.png)
+![Du code jQuery dans la palette NMOX Phosphor, la structure dans le Navigateur](images/fr/editor.png)
 
 Plus de 70 langages sont colorés comme il faut — la pile moderne, la pile classique (CoffeeScript compris) et toute la couche de configuration, jusqu’aux `.env`, `.editorconfig`, configurations nginx et Apache, Dockerfiles et fichiers de verrouillage.
 

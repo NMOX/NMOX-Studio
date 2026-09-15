@@ -9,7 +9,12 @@ the forge stages them per language. The walk of the English run paid three
 times before a single translation was painted: the rack showed "NO GRUNTFILE"
 under a caption promising a parsed Gruntfile, the editor carried a balloon
 about this machine's TypeScript 7, and KVASIR's refusal list missed its own
-consent text, which would have photographed a refusal as a diagnosis. KVASIR
+consent text, which would have photographed a refusal as a diagnosis. Then
+two reruns chased a rack-drift theory until the kept boot log showed the rack
+holding VERITAS, KVASIR and MONITOR the whole time: the forge had read a
+three-line LCD through `getText()`, the single-line field, and seen blank
+glass (`LcdDisplay.getShownText()` now reads what is painted). Log the state
+you assert about before theorizing about why it is wrong. KVASIR
 itself had answered a Hebrew IDE in English since the AI arc began; the prompt
 now names the reader's language. Scar: `-rf :NMOX-Studio-app` assembles the app
 from `~/.m2` for every other module, and a stale ui jar staged nothing while

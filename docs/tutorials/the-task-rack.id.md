@@ -10,9 +10,9 @@ Sebuah perangkat menjalankan perintah sungguhan; sebuah kabel membawa sinyal
 sungguhan. Tutorial ini menyusun patch kecil — jalankan sesuatu, lalu lihat
 keluarannya di monitor — agar metaforanya langsung terasa.
 
-![Rak yang dibidikkan ke proyek sungguhan — perangkat terpasang dan berjalan](../images/task-rack.png)
+![Rak yang dibidikkan ke proyek sungguhan — perangkat terpasang dan berjalan](../images/id/task-rack.png)
 
-![Tab membalik rak — kabel patch menyambungkan perangkat di sisi belakang](../images/rack-rear.png)
+![Tab membalik rak — kabel patch menyambungkan perangkat di sisi belakang](../images/id/rack-rear.png)
 
 ## Sebelum mulai
 

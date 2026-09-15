@@ -10,9 +10,9 @@ testów i serwowania rozłożone jako stojak urządzeń sprzętowych, które
 kabel niesie prawdziwy sygnał. Ten samouczek buduje malutki układ —
 uruchom coś i obejrzyj jego wyjście na monitorze — żeby metafora zaskoczyła.
 
-![Stojak wycelowany w prawdziwy projekt — urządzenia w stojaku i w ruchu](../images/task-rack.png)
+![Stojak wycelowany w prawdziwy projekt — urządzenia w stojaku i w ruchu](../images/pl/task-rack.png)
 
-![Tab obraca stojak — kable krosowe łączą urządzenia z tyłu](../images/rack-rear.png)
+![Tab obraca stojak — kable krosowe łączą urządzenia z tyłu](../images/pl/rack-rear.png)
 
 ## Zanim zaczniesz
 

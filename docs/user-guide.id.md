@@ -69,9 +69,9 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 
 **Eksperimen** adalah cara tercepat mencoba sebuah tumpukan teknologi. **Berkas ▸ Eksperimen baru…** (⇧⌘E) memilih templat dan membuat proyek sekali pakai di `~/.nmox/experiments`: tanpa git, tanpa daftar terkini, sudah dipercaya, dependensi terpasang — agar **Jalankan yang pertama langsung berhasil**. Ia terbuka pada panduan `EXPERIMENT.md` miliknya sendiri, yang memberi tahu apa yang harus ditekan, berkas mana yang diubah, dan di mana kecerdasan IDE untuk tumpukan itu berada. Simpan yang berkembang: **Berkas ▸ Eksperimen…** ▸ **Naikkan** memindahkannya keluar dan menyiapkan git, **Gandakan** membuat salinan di sampingnya untuk pendekatan kedua, **Buang** membereskan sisanya. Raknya menampilkan usia tiap eksperimen dan biaya diskanya yang terukur. Lebih suka jalur terpandu? Dialognya menampilkan 93 ruang belajar di depan.
 
-![Rak ruang belajar — jumlah, biaya disk, usia, dan seluruh siklus hidupnya](images/spaces-shelf.png)
+![Rak ruang belajar — jumlah, biaya disk, usia, dan seluruh siklus hidupnya](images/id/spaces-shelf.png)
 
-![Eksperimen Express yang baru dibuat: panduannya terbuka, dependensi terpasang, API sudah melayani](images/experiment-walkthrough.png)
+![Eksperimen Express yang baru dibuat: panduannya terbuka, dependensi terpasang, API sudah melayani](images/id/experiment-walkthrough.png)
 
 **Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `start` bila package.json memilikinya, `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan build/jalankan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
 
@@ -84,7 +84,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 
 Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pembundel, penjalan uji, server pengembangan, linter, git, penerapan — adalah sebuah perangkat di dalam rak: kenop memilih tugas, GO menjalankannya, LED menunjukkan keadaan, dan sebuah layar LCD memberi tahu Anda dengan kata-kata apa yang terjadi.
 
-![Rak yang diarahkan ke situs jQuery klasik — prasetel Classic Web Bench: MAESTRO, CRATE, DYNAMO (kenop TASK-nya membaca Gruntfile yang sebenarnya), IGNITION menyajikan statis, VITALS menjaga mutu](images/task-rack.png)
+![Rak yang diarahkan ke situs jQuery klasik — prasetel Classic Web Bench: MAESTRO, CRATE, DYNAMO (kenop TASK-nya membaca Gruntfile yang sebenarnya), IGNITION menyajikan statis, VITALS menjaga mutu](images/id/task-rack.png)
 
 **Dasar-dasarnya:**
 
@@ -94,7 +94,7 @@ Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pe
 - **Batalkan perubahan struktur apa pun** dengan **⌘Z** — menambah, membuang, merangkai ulang. Membuang perangkat yang sedang berjalan menghentikan prosesnya lebih dulu.
 - **Prasetel** memberi Anda satu rak penuh yang sudah dirangkai dengan sekali klik — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Rangkaian tersimpan per proyek secara otomatis.
 
-![Tab memutar rak — kabel patch menuntun MAESTRO melalui CRATE, DYNAMO dan IGNITION sampai ke VITALS](images/rack-rear.png)
+![Tab memutar rak — kabel patch menuntun MAESTRO melalui CRATE, DYNAMO dan IGNITION sampai ke VITALS](images/id/rack-rear.png)
 
 **Koordinasi, ketika alur Anda membesar:**
 
@@ -120,7 +120,7 @@ Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pe
 
 ### KVASIR — menjelaskan kegagalan terakhir
 
-![KVASIR menjelaskan jalannya yang benar-benar gagal: diagnosis yang telah diizinkan di panel depan dan langkah perbaikan lengkap di penampil](images/kvasir-explain.png)
+![KVASIR menjelaskan jalannya yang benar-benar gagal: diagnosis yang telah diizinkan di panel depan dan langkah perbaikan lengkap di penampil](images/id/kvasir-explain.png)
 
 **KVASIR** adalah bantuan AI dengan cara rak: sebuah perangkat yang menjelaskan galat yang sedang ada di bus MONITOR, bukan bilah obrolan di samping. Ketika sebuah jalannya gagal, tekan **EXPLAIN** dan KVASIR bertanya kepada AI Anda apa yang salah dan apa langkah berikutnya yang konkret. Putusan singkat mendarat di layar; **VIEW** membuka jawaban selengkapnya. **MODEL** memilih **FAST** (cepat dan murah, bawaan) atau **DEEP** (lebih kuat). EXPLAIN berwarna biru: ia membaca dan bertanya, ia tidak pernah menyentuh proyek Anda.
 
@@ -139,7 +139,7 @@ Rak ini dapat diperluas: plugin pihak ketiga bisa menambahkan perangkat (pasang 
 <a id="5-the-editor"></a>
 ## 5. Penyunting
 
-![Kode jQuery dalam palet NMOX Phosphor, strukturnya di Penjelajah](images/editor.png)
+![Kode jQuery dalam palet NMOX Phosphor, strukturnya di Penjelajah](images/id/editor.png)
 
 Lebih dari 70 bahasa disorot sebagaimana mestinya — tumpukan modern, tumpukan klasik (termasuk CoffeeScript), dan seluruh lapisan konfigurasi, sampai ke `.env`, `.editorconfig`, konfigurasi nginx dan Apache, Dockerfile, serta berkas kunci.
 

@@ -37,6 +37,13 @@ All notable changes to NMOX Studio are documented here. The format follows
   only when it carries the forge's own marker. `NMOX_SHOTS_LOG` keeps the
   boot's log. A toolchain balloon about this machine's TypeScript no longer
   paints itself into a documentation picture, while the log still says it.
+- **A faceplate LCD can be read the way it is painted.** The forge's first
+  runs polled KVASIR's verdict through `LcdDisplay.getText()` and saw a blank
+  faceplate over a live one. That call returns the single-line field, and
+  KVASIR's verdict is a three-line panel. `LcdDisplay.getShownText()` returns
+  what the glass shows in either mode, pinned by `LcdShownTextTest`; a mutant
+  returning the single-line field fails by name. The kept boot log settled it
+  in one line: the rack had held VERITAS, KVASIR and MONITOR all along.
 - **Gates.** `TranslatedShotsGateTest` holds a translated document to its own
   language's copy of any staged shot that exists, and requires the six for
   every language with forge tabs. `TranslatedTutorialsGateTest` folds any

@@ -11,7 +11,7 @@ malinaw na tarangkahan ng pahintulot, at tapat na LCD — walang file ng
 proyekto o lihim na ipinapadala, tanging ang may hangganang konteksto ng
 pagkabigo.
 
-![KVASIR na nagpapaliwanag ng tunay na nabigong pagtakbo: ang diyagnosis na dumaan sa pahintulot sa faceplate, at ang buong hakbang ng pag-aayos sa viewer](../images/kvasir-explain.png)
+![KVASIR na nagpapaliwanag ng tunay na nabigong pagtakbo: ang diyagnosis na dumaan sa pahintulot sa faceplate, at ang buong hakbang ng pag-aayos sa viewer](../images/tl/kvasir-explain.png)
 
 ## Bago magsimula
 

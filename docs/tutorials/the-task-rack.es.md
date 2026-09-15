@@ -10,9 +10,9 @@ conectas con cables. Un dispositivo ejecuta un comando real; un cable
 lleva una señal real. Este tutorial monta un patch diminuto —ejecutar
 algo y ver su salida en el monitor— para que la metáfora encaje.
 
-![El rack apuntando a un proyecto real, con los dispositivos montados y en marcha](../images/task-rack.png)
+![El rack apuntando a un proyecto real, con los dispositivos montados y en marcha](../images/es/task-rack.png)
 
-![Tab da la vuelta al rack: los cables conectan los dispositivos por detrás](../images/rack-rear.png)
+![Tab da la vuelta al rack: los cables conectan los dispositivos por detrás](../images/es/rack-rear.png)
 
 ## Antes de empezar
 

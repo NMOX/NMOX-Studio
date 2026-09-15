@@ -10,7 +10,7 @@ bantuan AI dengan cara rak: satu tombol, gerbang persetujuan yang jelas, dan LCD
 yang jujur — tidak ada berkas proyek atau rahasia yang dikirim, hanya konteks
 kegagalan yang terbatas.
 
-![KVASIR menjelaskan jalannya yang benar-benar gagal: diagnosis yang dijaga persetujuan di panel depan dan langkah perbaikan lengkap di penampil](../images/kvasir-explain.png)
+![KVASIR menjelaskan jalannya yang benar-benar gagal: diagnosis yang dijaga persetujuan di panel depan dan langkah perbaikan lengkap di penampil](../images/id/kvasir-explain.png)
 
 ## Sebelum mulai
 

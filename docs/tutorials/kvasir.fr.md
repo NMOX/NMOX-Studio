@@ -10,7 +10,7 @@ C’est l’assistance par IA à la manière du rack : un bouton, une porte de
 consentement claire et un afficheur honnête — aucun fichier du projet ni
 secret n’est envoyé, seulement le contexte borné de l’échec.
 
-![KVASIR expliquant une exécution réellement échouée : le diagnostic consenti sur la façade et les étapes complètes de correction dans la visionneuse](../images/kvasir-explain.png)
+![KVASIR expliquant une exécution réellement échouée : le diagnostic consenti sur la façade et les étapes complètes de correction dans la visionneuse](../images/fr/kvasir-explain.png)
 
 ## Avant de commencer
 

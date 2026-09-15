@@ -10,9 +10,9 @@ nhau bằng dây patch. Một thiết bị chạy một lệnh thật; một s�
 hiệu thật. Bài này dựng một bản đấu nối nhỏ xíu — chạy một thứ gì đó và xem kết
 quả của nó trên MONITOR — để ẩn dụ ấy thấm vào.
 
-![Giá nhắm vào một dự án thật — các thiết bị đã lên giá và đang chạy](../images/task-rack.png)
+![Giá nhắm vào một dự án thật — các thiết bị đã lên giá và đang chạy](../images/vi/task-rack.png)
 
-![Tab lật giá lại — dây patch đấu các thiết bị ở mặt sau](../images/rack-rear.png)
+![Tab lật giá lại — dây patch đấu các thiết bị ở mặt sau](../images/vi/rack-rear.png)
 
 ## Trước khi bắt đầu
 

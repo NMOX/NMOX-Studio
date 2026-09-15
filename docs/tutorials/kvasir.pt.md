@@ -10,7 +10,7 @@ assistência de IA do jeito do rack: um botão, um consentimento claro e um
 visor honesto — nenhum arquivo do projeto nem segredo é enviado, só o
 contexto limitado da falha.
 
-![O KVASIR explicando uma execução que falhou de verdade: o diagnóstico consentido no painel frontal e os passos completos da correção no visualizador](../images/kvasir-explain.png)
+![O KVASIR explicando uma execução que falhou de verdade: o diagnóstico consentido no painel frontal e os passos completos da correção no visualizador](../images/pt/kvasir-explain.png)
 
 ## Antes de começar
 

@@ -14,7 +14,7 @@ segredos não têm como ir junto, por construção** (o que é revelado é
 montado pelo estúdio dono dos dados, com os cabeçalhos de credenciais
 retirados e as senhas sempre fora de alcance).
 
-![O KVASIR explicando uma execução que falhou de verdade](../images/kvasir-explain.png)
+![O KVASIR explicando uma execução que falhou de verdade](../images/pt/kvasir-explain.png)
 
 ## Antes de começar
 

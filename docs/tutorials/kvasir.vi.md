@@ -10,7 +10,7 @@ theo đúng ẩn dụ của giá: một nút bấm, một cổng đồng ý rõ 
 LCD trung thực — không tệp dự án hay bí mật nào bị gửi đi, chỉ có phần ngữ
 cảnh lỗi đã được giới hạn.
 
-![KVASIR giải thích một lần chạy hỏng thật: chẩn đoán đã qua cổng đồng ý trên mặt máy và trọn các bước sửa trong ô xem](../images/kvasir-explain.png)
+![KVASIR giải thích một lần chạy hỏng thật: chẩn đoán đã qua cổng đồng ý trên mặt máy và trọn các bước sửa trong ô xem](../images/vi/kvasir-explain.png)
 
 ## Trước khi bắt đầu
 

@@ -11,7 +11,7 @@ consentimiento clara y una pantalla LCD honesta. No se envía ningún
 archivo del proyecto ni ningún secreto, solo el contexto acotado del
 fallo.
 
-![KVASIR explicando una ejecución fallida real: el diagnóstico autorizado en la carátula y los pasos completos de solución en el visor](../images/kvasir-explain.png)
+![KVASIR explicando una ejecución fallida real: el diagnóstico autorizado en la carátula y los pasos completos de solución en el visor](../images/es/kvasir-explain.png)
 
 ## Antes de empezar
 
