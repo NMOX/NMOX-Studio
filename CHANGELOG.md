@@ -39,7 +39,12 @@ Project debug a web project's own entry.**
   three of the Debug menu's four platform rows and not this one, so the gate
   could not see a door the bar has had all along (its translations were
   already in place in every language — only the ledger line was missing).
-  Recorded now; the hand-kept population is one row more complete.
+  Recorded now; the hand-kept population is one row more complete — and the
+  mnemonic law, reading the row for the first time, found the v2.144.0
+  translation had given it a letter another Debug row already claimed in
+  German, Russian, Ukrainian and Polish (a keyboard could not tell *Debug
+  File* from *Debug Main Project* in those menus since it shipped). Each
+  now carries a letter free within its menu.
 - **Ledger 51 re-checked, deferral kept.** The only third-party-shaped
   devices that exist — the JSON device format and the bundled gallery —
   raise no gate before `exec`, so the trust-lie the entry describes cannot
