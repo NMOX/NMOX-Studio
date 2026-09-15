@@ -32,6 +32,14 @@ All notable changes to NMOX Studio are documented here. The format follows
   The chord itself (⇧⌘F5) is the platform's own `Shortcuts/DS-F5` entry and
   was not pressed by this walk (keystrokes cannot be delivered from the
   background); the row it fires is the one that was pressed.
+- **The docs-doors gate learned to read a row whose name is a plural choice.**
+  Documenting "Debug ▸ Debug File" failed `DocsMenuDoorsTest` on the first
+  verify: the platform's label is a MessageFormat choice
+  (`Debu&g {0,choice,0#File|…}`) and the gate had skipped every such row since
+  v2.153.0, so a document naming one was refused as a door the bar does not
+  have. It now renders those rows the way a fresh window paints them (nothing
+  selected, no main project) — "Debug File", "Test File", "Close Project",
+  "Debug Main Project" — and checks the documents against them.
 
 ## [2.156.0] - 2026-09-15
 
