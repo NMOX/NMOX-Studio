@@ -52,6 +52,14 @@ LOCALE_OPT=""
 [ -n "$LOCALE" ] && LOCALE_OPT="--locale $LOCALE"
 mkdir -p "$OUT"
 OUT_ABS="$(cd "$OUT" && pwd)"
+# docs/images holds the curated shots, and the forge both WRITES same-named
+# PNGs (db-studio.png, api-studio.png…) and prunes the rest: refuse it as an
+# output dir before anything boots — forge into a scratch dir and copy
+IMAGES_ABS="$(cd docs/images 2>/dev/null && pwd)"
+if [ "$OUT_ABS" = "$IMAGES_ABS" ]; then
+  echo "refusing to forge into $OUT_ABS: it holds the curated shots — use a scratch dir and copy"
+  exit 1
+fi
 
 APP="${NMOX_SHOTS_APP:-application/target/nmoxstudio/bin/nmoxstudio}"
 if [ "${NMOX_SHOTS_NO_BUILD:-0}" != "1" ]; then
