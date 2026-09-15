@@ -26,7 +26,14 @@ Project debug a web project's own entry.**
   refusal, the missing and escaping entries, Go, the kinds that name none);
   `DebugMainProjectDoorTest` holds the door (enabled for a supported entry,
   exactly that entry handed over, disabled and inert without one or without
-  the editor).
+  the editor). Five mutants die by name.
+- **Walked in the assembled app.** A project whose `start` is `node
+  server.js`, opened on a different file (`other.js`): the Debug menu read
+  *Debug Main Project* enabled; pressing it ran `node ./server.js` — the
+  contract's entry, not the selection — the editor opened `server.js` and
+  stopped on its line 2 at the seeded breakpoint, the `Node: server.js`
+  console opened, and Finish Debugger Session ended the debuggee and the
+  adapter with nothing left behind.
 - **Ledger 51 re-checked, deferral kept.** The only third-party-shaped
   devices that exist — the JSON device format and the bundled gallery —
   raise no gate before `exec`, so the trust-lie the entry describes cannot
