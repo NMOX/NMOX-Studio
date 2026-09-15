@@ -70,6 +70,7 @@ import org.nmox.studio.editor.completion.JavaScriptObjectCompletionItem;
     @MimeRegistration(mimeType = "text/x-cairo", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-aiken", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-tact", service = CompletionProvider.class, position = 560),
+    @MimeRegistration(mimeType = "text/x-vyper", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-clarity", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-move", service = CompletionProvider.class, position = 560),
     @MimeRegistration(mimeType = "text/x-fortran", service = CompletionProvider.class, position = 560),
@@ -287,6 +288,15 @@ public class PolyglotCompletionProvider implements CompletionProvider {
             Map.entry("text/x-cairo", set("as break const continue else enum extern false fn if impl let loop match mod mut nopanic of pub ref return struct trait true type use while assert felt252 bool u8 u16 u32 u64 u128 u256 usize Array Option Span")),
             Map.entry("text/x-aiken", set("use pub fn type opaque const if else when is expect test fail todo trace validator and or let Int ByteArray Bool List Option Data spend mint withdraw publish else")),
             Map.entry("text/x-tact", set("contract trait struct message init receive external get fun let const return if else while until repeat do try catch require sender self Int Bool Address Cell Slice Builder String map bounced with import primitive native abstract virtual override extends as")),
+            // Vyper 0.4: decorators carry their @ because the walk steps over it on this mime
+            Map.entry("text/x-vyper", set("def event struct interface flag enum implements exports initializes uses "
+                    + "import from as pass return if elif else for in range break continue assert raise log "
+                    + "extcall staticcall self msg block tx chain True False and or not "
+                    + "public constant immutable transient indexed view pure payable nonpayable "
+                    + "@external @internal @deploy @view @pure @payable @nonreentrant @raw_return "
+                    + "address bool bytes32 decimal int128 int256 uint8 uint256 String Bytes DynArray HashMap "
+                    + "empty len convert concat slice keccak256 sha256 ecrecover send raw_call create_minimal_proxy_to "
+                    + "create_from_blueprint min max abs unsafe_add unsafe_sub")),
             Map.entry("text/x-clarity", set("define-public define-private define-read-only define-constant define-data-var define-map define-trait define-fungible-token define-non-fungible-token begin let if asserts! unwrap! unwrap-err! try! ok err some none var-get var-set map-get? map-set contract-call? tx-sender contract-caller is-eq and or not print u0 true false uint int principal")),
             Map.entry("text/x-vlang", set("as asm assert atomic break const continue defer else enum false fn "
                     + "for go goto if import in interface is isreftype lock match module mut none or "
@@ -521,12 +531,15 @@ public class PolyglotCompletionProvider implements CompletionProvider {
     static String prefixAt(String text, int offset, String mime) {
         boolean svelte = "text/x-svelte".equals(mime);
         boolean vue = "text/x-vue".equals(mime);
+        // Vyper decorators (@external, @view): without the @ in the walk they are unreachable
+        boolean vyper = "text/x-vyper".equals(mime);
         int start = Math.min(offset, text.length());
         int i = start;
         while (i > 0 && (Character.isLetterOrDigit(text.charAt(i - 1))
                 || text.charAt(i - 1) == '_' || text.charAt(i - 1) == '$'
                 || (svelte && isSvelteSigil(text.charAt(i - 1)))
-                || (vue && isVueSigil(text.charAt(i - 1))))) {
+                || (vue && isVueSigil(text.charAt(i - 1)))
+                || (vyper && text.charAt(i - 1) == '@'))) {
             i--;
         }
         return text.substring(i, start);

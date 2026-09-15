@@ -116,6 +116,8 @@ public final class EnvironmentDoctor {
                 new String[]{"cast", "Ethereum RPC/ABI multitool", "curl -L https://foundry.paradigm.xyz | bash"},
                 new String[]{"chisel", "Solidity REPL — learning space", "curl -L https://foundry.paradigm.xyz | bash"},
                 new String[]{"solc", "Solidity compiler", "brew install solidity"},
+                // Vyper: Foundry compiles .vy when this is on PATH, and the editor speaks the language
+                new String[]{"vyper", "Vyper compiler (Pythonic EVM contracts; Foundry compiles .vy with it)", "pip3 install vyper (or: pipx install vyper)"},
                 new String[]{"slither", "static analysis for Solidity", "pip3 install slither-analyzer"},
                 new String[]{"solhint", "Solidity linter — TYPEGUARD lane", "npm install -g solhint"},
                 new String[]{"webpack", "classic bundler — FORGE webpack lane", "npm install -g webpack-cli"},
