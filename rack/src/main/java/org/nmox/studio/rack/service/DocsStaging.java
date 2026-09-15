@@ -57,6 +57,8 @@ public final class DocsStaging {
 
     /** The classic site's name — the rack and editor shots aim here. */
     public static final String CLASSIC_NAME = "classic-demo";
+    /** Where the classic site is shown served — the ⇄ chip and VITALS agree on it. */
+    public static final String CLASSIC_URL = "http://localhost:8080";
     /** The experiment's name — the walkthrough and KVASIR shots aim here. */
     public static final String EXPERIMENT_NAME = "hello-api";
     /** The bus name of the device whose failed run KVASIR explains. */
@@ -76,7 +78,20 @@ public final class DocsStaging {
             Files.createDirectories(dir.toPath());
             ProjectTemplates.CLASSIC_WEB_JQUERY.generate(dir, CLASSIC_NAME);
         }
-        writePatch(dir, RackPresets.CLASSIC_WEB.buildPatch());
+        // the Classic Kit's own Gruntfile, so DYNAMO's TASK knob parses a real one
+        Files.writeString(new File(dir, "Gruntfile.js").toPath(),
+                org.nmox.studio.rack.projectstudio.ClassicKit.gruntfileFor(dir), StandardCharsets.UTF_8);
+        JSONObject patch = RackPresets.CLASSIC_WEB.buildPatch();
+        // VITALS keeps its Vite default until IGNITION's URL jack fires; the
+        // picture shows the site the rack serves, so the gate names it too
+        org.json.JSONArray devices = patch.getJSONArray("devices");
+        for (int i = 0; i < devices.length(); i++) {
+            JSONObject d = devices.getJSONObject(i);
+            if (DeviceType.VITALS.getId().equals(d.optString("type"))) {
+                d.getJSONObject("state").put("url", CLASSIC_URL);
+            }
+        }
+        writePatch(dir, patch);
         return dir;
     }
 

@@ -69,6 +69,9 @@ class DocsShotsTest {
         assertThat(DocsShots.Session.kvasirAnswered("AUTO-EXPLAIN NEEDS CONSENT \u2014 PRESS EXPLAIN ONCE")).isFalse();
         assertThat(DocsShots.Session.kvasirAnswered("NOTHING TO EXPLAIN \u2014 NO FAILED RUN")).isFalse();
         assertThat(DocsShots.Session.kvasirAnswered("READY \u2014 LAST RUN FAILED, PRESS EXPLAIN")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("EXPLAIN NEEDS YOUR OK \u2014 PRESS AGAIN")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("CONSULTING KVASIR\u2026")).isFalse();
+        assertThat(DocsShots.Session.kvasirAnswered("OFFLINE \u2014 COULD NOT REACH KVASIR")).isFalse();
         assertThat(DocsShots.Session.kvasirAnswered("# \u05d0\u05d1\u05d7\u05e0\u05d4\n\u05d4\u05d1\u05d3\u05d9\u05e7\u05d4 \u05e0\u05db\u05e9\u05dc\u05d4")).isTrue();
     }
 

@@ -320,7 +320,8 @@ public class DocsShots implements Runnable {
 
         /** KVASIR faceplate texts that mean the consult never happened — no shot then. */
         static final java.util.List<String> KVASIR_REFUSALS = java.util.List.of(
-                "NO API KEY", "NEEDS CONSENT", "NOTHING TO EXPLAIN", "PRESS EXPLAIN");
+                "NO API KEY", "NEEDS CONSENT", "NEEDS YOUR OK", "NOTHING TO EXPLAIN",
+                "PRESS EXPLAIN", "CONSULTING", "OFFLINE", "COOLING DOWN");
 
         /** True when the KVASIR LCD holds a diagnosis rather than a refusal or its idle hint. */
         static boolean kvasirAnswered(String lcds) {
@@ -337,6 +338,7 @@ public class DocsShots implements Runnable {
 
         private final java.util.Iterator<Staged> stagedQueue = stagedShots().iterator();
         private boolean thinkSeen;
+        private long explainPressedAt;
 
         /**
          * The six states the user guide's hand-staged shots show, in the
@@ -391,14 +393,28 @@ public class DocsShots implements Runnable {
                                         "  'ok' !== 'okay'",
                                         "\u2139 fail 1"), 1);
                         thinkSeen = false;
-                        org.nmox.studio.rack.service.DocsStaging.pressKvasirExplain();
+                        explainPressedAt = 0;
                     }, () -> {
+                        // press only once KVASIR shows a failure is ready to explain:
+                        // the patch loads and the recorder fills on their own time
+                        String lcds = org.nmox.studio.rack.service.DocsStaging.kvasirLcds();
+                        if (explainPressedAt == 0) {
+                            if (lcds.contains("PRESS EXPLAIN")
+                                    && org.nmox.studio.rack.service.DocsStaging.pressKvasirExplain()) {
+                                explainPressedAt = System.currentTimeMillis();
+                            }
+                            return false;
+                        }
                         boolean thinking = org.nmox.studio.rack.service.DocsStaging.kvasirThinking();
                         if (thinking) {
                             thinkSeen = true;
                         }
-                        return thinkSeen && !thinking;
-                    }, 90_000));
+                        // done when the consult has come and gone — or, for a refusal
+                        // too quick for a 250 ms poll to see the LED, when the idle
+                        // hint has been replaced
+                        return !thinking && (thinkSeen || (!lcds.contains("PRESS EXPLAIN")
+                                && System.currentTimeMillis() - explainPressedAt > 1_500));
+                    }, 120_000));
         }
 
         private interface IoCall<T> {
@@ -455,10 +471,12 @@ public class DocsShots implements Runnable {
                 }
                 poll.stop();
                 javax.swing.Timer settle = new javax.swing.Timer(SETTLE_MS, e2 -> {
-                    if ("kvasir-explain.png".equals(stage.file())
-                            && !kvasirAnswered(org.nmox.studio.rack.service.DocsStaging.kvasirLcds())) {
+                    String lcds = "kvasir-explain.png".equals(stage.file())
+                            ? org.nmox.studio.rack.service.DocsStaging.kvasirLcds() : null;
+                    if (lcds != null && !kvasirAnswered(lcds)) {
                         java.util.logging.Logger.getLogger(DocsShots.class.getName())
-                                .warning("kvasir-explain.png skipped \u2014 KVASIR did not answer (no key, no consent, or timed out)");
+                                .warning("kvasir-explain.png skipped \u2014 KVASIR did not answer; its faceplate reads: "
+                                        + lcds.replace('\n', ' ').strip());
                     } else {
                         capture(stage.file());
                     }

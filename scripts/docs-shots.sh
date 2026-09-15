@@ -65,8 +65,17 @@ UD="$WORK/shots-userdir"
 CD="$WORK/shots-cachedir"
 STAGED_OPTS=""
 if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
-  HOME_DIR="$WORK/home"
+  # a short, readable home: the Project Studio footer and the Workbench
+  # print the aimed path, and a /var/folders/... temp path reads as noise in
+  # a docs picture. Deleted only when it carries this script's own marker.
+  HOME_DIR="${NMOX_SHOTS_HOME:-/tmp/nmox}"
+  if [ -e "$HOME_DIR" ] && [ ! -f "$HOME_DIR/.nmox-docs-home" ]; then
+    echo "refusing: $HOME_DIR exists and is not a docs-shots home (no .nmox-docs-home marker)"
+    exit 1
+  fi
+  rm -rf "$HOME_DIR"
   mkdir -p "$HOME_DIR"
+  : > "$HOME_DIR/.nmox-docs-home"
   # KVASIR's consent lives in the userdir (v2.63.0); a fresh one has none
   PREFS="$UD/config/Preferences/org/nmox/NMOX/Studio"
   mkdir -p "$PREFS"
@@ -103,5 +112,11 @@ for f in ${NMOX_SHOTS_KEEP:-workbench the-task-rack project-studio db-studio con
     missing=1
   fi
 done
+# NMOX_SHOTS_LOG=<file> keeps the boot's messages.log (the forge's warnings —
+# a skipped staged shot says why there) before the throwaway dirs go
+if [ -n "${NMOX_SHOTS_LOG:-}" ] && [ -f "$UD/var/log/messages.log" ]; then
+  cp "$UD/var/log/messages.log" "$NMOX_SHOTS_LOG" 2>/dev/null || true
+fi
 rm -rf "$WORK" 2>/dev/null || true
+[ -n "${HOME_DIR:-}" ] && [ -f "$HOME_DIR/.nmox-docs-home" ] && rm -rf "$HOME_DIR"
 exit $missing

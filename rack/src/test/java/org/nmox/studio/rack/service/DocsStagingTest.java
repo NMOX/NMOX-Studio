@@ -36,6 +36,20 @@ class DocsStagingTest {
         JSONObject patch = new JSONObject(Files.readString(new File(dir, RackIO.DEFAULT_FILENAME).toPath()));
         assertThat(patch.getJSONArray("devices").length())
                 .as("the Classic Web Bench preset racks several devices").isGreaterThanOrEqualTo(4);
+        // DYNAMO's TASK knob needs a real Gruntfile: the kit's own
+        assertThat(Files.readString(new File(dir, "Gruntfile.js").toPath()))
+                .isEqualTo(org.nmox.studio.rack.projectstudio.ClassicKit.gruntfileFor(dir))
+                .contains("grunt");
+        // VITALS names the served site, not its Vite default
+        boolean vitalsNamesTheSite = false;
+        for (int i = 0; i < patch.getJSONArray("devices").length(); i++) {
+            JSONObject d = patch.getJSONArray("devices").getJSONObject(i);
+            if ("vitals".equals(d.getString("type"))) {
+                assertThat(d.getJSONObject("state").getString("url")).isEqualTo(DocsStaging.CLASSIC_URL);
+                vitalsNamesTheSite = true;
+            }
+        }
+        assertThat(vitalsNamesTheSite).as("the Classic Web Bench racks VITALS").isTrue();
         // idempotent: a second call keeps the site and refreshes the patch
         assertThat(DocsStaging.classicSite(home)).isEqualTo(dir);
     }
