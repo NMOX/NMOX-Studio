@@ -27,7 +27,7 @@ class EnvironmentDoctorTest {
         assertThat(tools).as("learning-space interpreters are swept")
                 .contains("clisp", "sqlite3");
         assertThat(tools).as("the Web3 toolbelt is swept")
-                .contains("forge", "anvil", "cast", "chisel", "solc", "slither", "solhint");
+                .contains("forge", "anvil", "cast", "chisel", "solc", "slither", "solhint", "vyper");
         assertThat(tools).as("the classic web toolbelt is swept")
                 .contains("webpack", "grunt", "gulp", "bower", "coffee");
         assertThat(tools).as("the Svelte language server is swept")
@@ -41,6 +41,11 @@ class EnvironmentDoctorTest {
                 case "bower" -> assertThat(check[2]).isEqualTo("npm install -g bower");
                 case "coffee" -> assertThat(check[2]).isEqualTo("npm install -g coffeescript");
                 case "svelteserver" -> assertThat(check[2]).isEqualTo("npm install -g svelte-language-server");
+                // Vyper installs from PyPI; the probe speaks the default --version dialect
+                case "vyper" -> {
+                    assertThat(check[2]).contains("pip3 install vyper").contains("pipx install vyper");
+                    assertThat(EnvironmentDoctor.versionCommand("vyper")).containsExactly("vyper", "--version");
+                }
                 default -> { }
             }
         }

@@ -7,7 +7,7 @@
 [![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
 [![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
 
-`53 RACK DEVICES` · `87 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `88 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
 
@@ -52,7 +52,7 @@ nothing is sent without a gesture; keys live in the OS keychain. **Works
 with Claude, ChatGPT or Gemini** — your key, your pick, one switch for
 every face.
 
-**A polyglot editor that came to work.** 87 TextMate grammars through
+**A polyglot editor that came to work.** 88 TextMate grammars through
 NetBeans CSL, LSP with ordered fallbacks, project-wide Go to Symbol
 (⌥⇧⌘O), a minimap and sticky scroll on every editor, zero-setup
 JavaScript/TypeScript/Chrome debugging, color swatches that resolve
@@ -414,7 +414,7 @@ and a MooTools learning space that tours `Class`/`Extends`, the extended
 natives, and Fx on a live page.
 
 ### ⌨️ Polyglot editing
-70+ languages with syntax highlighting (87 TextMate grammars through
+70+ languages with syntax highlighting (88 TextMate grammars through
 NetBeans CSL) — code plus the whole config layer: `.editorconfig`,
 dotenv, ignore files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars,
 Liquid, nginx, Makefile, Protocol Buffers, Prisma, YAML, TOML,
@@ -678,8 +678,10 @@ keychain.
 ### ⛓️ Contract Studio (Web3)
 Smart contract development in its own tab (⌥⌘6) — **Solidity in the
 editor** (pinned TextMate grammar, Navigator outline, LSP catalog
-entry), **Foundry as a real toolchain** (`foundry.toml` projects get
-IDE-native Build/Test/Clean → forge, plus rack lanes), and a Studio
+entry), **Vyper in the editor** too (grammar, outline, decorator
+completion), **Foundry as a real toolchain** (`foundry.toml` projects get
+IDE-native Build/Test/Clean → forge, plus rack lanes, slither findings
+included), and a Studio
 that treats contracts like the first-class artifacts they are. The
 tree scans Foundry `out/` and Hardhat `artifacts/`; the **Interact**
 pane generates call forms straight from the ABI — CALL a view function

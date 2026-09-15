@@ -15,12 +15,26 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
 /**
  * PURITY Lint Filter: static analysis pass. Counts problems from the
  * "x problems (y errors, z warnings)" summary that eslint prints.
+ *
+ * <p><b>Why slither lives here (ledger 12, v2.155.0).</b> slither is a
+ * static analyzer that reports findings with a severity, which is exactly
+ * PURITY's job: E/W counts on the LCD, CLEAN when spotless, findings on the
+ * diagnostics bus. TYPEGUARD already carries the Foundry project's solhint
+ * lane, but TYPEGUARD has no selector — giving it one would add a control
+ * to a faceplate whose saved patches carry none — while PURITY's LINTER
+ * knob is the rack's established place to choose an analyzer, and it grows
+ * by APPENDING (positions persist by index). So slither is position 8 on
+ * that knob, and AUTO resolves to it on a Foundry project, where eslint was
+ * never going to find anything. solhint stays TYPEGUARD's: the two answer
+ * different questions (style and best-practice lint versus vulnerability
+ * detectors) and a Foundry rack can run both.
  */
 public class LintDevice extends CommandDevice {
 
-// "biome"/"auto"/"deno"/"clippy" appended, never inserted: knob positions
-    // persist by index in saved patches (the v1.59.0 law). New devices default to auto.
-    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno", "clippy", "govet", "golangci"};
+    // "biome"/"auto"/"deno"/"clippy"/"slither" appended, never inserted: knob
+    // positions persist by index in saved patches (the v1.59.0 law). New
+    // devices default to auto.
+    private static final String[] LINTERS = {"eslint", "stylelint", "biome", "auto", "deno", "clippy", "govet", "golangci", "slither"};
     private static final Pattern SUMMARY =
             Pattern.compile("(\\d+)\\s+problems?\\s*\\((\\d+)\\s+errors?,\\s*(\\d+)\\s+warnings?\\)");
     // with and without the fixable suffix: "Found 2 problems" and
@@ -31,6 +45,15 @@ public class LintDevice extends CommandDevice {
     // warning: `rsprobe` (bin "rsprobe") generated 3 warnings (...)
     private static final Pattern CLIPPY_SUMMARY =
             Pattern.compile("generated (\\d+) warnings?\\b");
+
+    /**
+     * Test seam for slither's availability. Production asks the IDE's
+     * augmented PATH (the same probe every console's grey-honestly path
+     * uses); slither is never installed on the user's behalf — it lives in
+     * whatever Python environment the user chose, and the IDE must not pick
+     * one for them.
+     */
+    static java.util.function.Predicate<String> toolProbe = CommandDevice::toolOnPath;
 
     private final Knob linterKnob;
     private final ToggleSwitch fixSwitch;
@@ -74,6 +97,11 @@ public class LintDevice extends CommandDevice {
                 return ProjectInspector.hasGolangci(projectDir())
                         ? "golangci" : "govet";
             }
+            // a Foundry project's static analyzer is slither (ledger 12):
+            // eslint over a contracts repo has nothing to read
+            if (effectiveKind() == ProjectInspector.ProjectKind.FOUNDRY) {
+                return "slither";
+            }
             // a Deno workspace lints with the runtime's own linter — no
             // node_modules exists for npx to resolve anything from
             if (ProjectInspector.hasDeno(projectDir())) {
@@ -96,11 +124,18 @@ public class LintDevice extends CommandDevice {
             case "clippy" -> cmd.addAll(List.of("cargo", "clippy"));
             case "govet" -> cmd.addAll(List.of("go", "vet", "./..."));
             case "golangci" -> cmd.addAll(List.of("golangci-lint", "run"));
+            // `slither .` — crytic-compile recognises the Foundry project
+            // (it runs forge build itself) and a plain directory of .sol
+            // files alike; the per-run --json report path is added at
+            // launch (slitherLaunchCommand), so the tooltip and a CI export
+            // show the command a person would type
+            case "slither" -> cmd.addAll(List.of("slither", "."));
             default -> cmd.addAll(List.of("npx", "eslint", "."));
         }
         if (fixSwitch.isOn()) {
-            if ("govet".equals(linter)) {
-                // go vet has no autofix; the switch is honest by doing nothing
+            if ("govet".equals(linter) || "slither".equals(linter)) {
+                // go vet and slither have no autofix; the switch is honest
+                // by doing nothing
             } else if ("clippy".equals(linter)) {
                 // clippy --fix refuses a dirty working tree by default,
                 // and an IDE's tree is dirty by definition mid-edit
@@ -110,6 +145,14 @@ public class LintDevice extends CommandDevice {
                 cmd.add("biome".equals(linter) ? "--write" : "--fix");
             }
         }
+        return cmd;
+    }
+
+    /** The slither argv this run hands the executor: the typed command plus its own report file. */
+    List<String> slitherLaunchCommand(java.nio.file.Path report) {
+        List<String> cmd = new ArrayList<>(buildCommand());
+        cmd.add("--json");
+        cmd.add(report.toString());
         return cmd;
     }
 
@@ -130,9 +173,23 @@ public class LintDevice extends CommandDevice {
             java.util.regex.Pattern.compile("Found\\s+(\\d+)\\s+(error|warning)s?\\.");
     private volatile String activeLinter = "eslint";
     private volatile String biomeErrors = "0", biomeWarnings = "0";
+    /** This slither run's private report directory; null when no slither run is live. */
+    private volatile java.nio.file.Path slitherReportDir;
+    /** The compiler wall appeared in this slither run's output. */
+    private volatile boolean slitherCompilerMissing;
 
     @Override
     protected void onLine(String line) {
+        if ("slither".equals(activeLinter)) {
+            // the findings come from the report file, not the human text;
+            // the one line worth reading is the compiler wall, so the LCD
+            // can say why no report arrived
+            if (org.nmox.studio.rack.engine.CommandExecutor
+                    .looksLikeSolidityCompilerMissing(line)) {
+                slitherCompilerMissing = true;
+            }
+            return;
+        }
         if ("biome".equals(activeLinter)) {
             java.util.regex.Matcher b = BIOME_LOC.matcher(line);
             if (b.find()) {
@@ -211,11 +268,64 @@ public class LintDevice extends CommandDevice {
         activeLinter = effectiveLinter();
         biomeErrors = "0";
         biomeWarnings = "0";
+        slitherCompilerMissing = false;
         onEdt(() -> {
             cleanLed.setOn(false);
+            countLcd.setTextColor(RackStyle.LCD_TEXT);
             countLcd.setText("E:- W:-");
         });
+        if ("slither".equals(activeLinter)) {
+            launchSlither();
+            return;
+        }
         launch(buildCommand());
+    }
+
+    /**
+     * The slither lane's own launch. Order is the law: the availability
+     * grey comes FIRST (a missing tool spawns nothing and asks nothing), the
+     * trust gate rides {@link #launch} before the executor sees the argv,
+     * and the report directory exists only for a run that really launched —
+     * a declined trust prompt leaves no directory and no armed state behind.
+     */
+    private void launchSlither() {
+        if (!toolProbe.test("slither")) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("NO SLITHER ON PATH — " + SlitherReport.INSTALL_HINT);
+            });
+            return;
+        }
+        java.nio.file.Path dir;
+        try {
+            dir = java.nio.file.Files.createTempDirectory("nmox-slither-");
+        } catch (java.io.IOException ex) {
+            onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText("NO SCRATCH DIRECTORY FOR THE SLITHER REPORT");
+            });
+            return;
+        }
+        // slither refuses to overwrite a report, so the file must not exist yet
+        java.nio.file.Path report = dir.resolve("slither.json");
+        slitherReportDir = dir;
+        if (!launch(slitherLaunchCommand(report))) {
+            slitherReportDir = null;
+            deleteReportDir(dir);
+        }
+    }
+
+    /** Removes a run's private report directory; best effort, it is scratch. */
+    private static void deleteReportDir(java.nio.file.Path dir) {
+        if (dir == null) {
+            return;
+        }
+        try {
+            java.nio.file.Files.deleteIfExists(dir.resolve("slither.json"));
+            java.nio.file.Files.deleteIfExists(dir);
+        } catch (java.io.IOException | RuntimeException ignored) {
+            // scratch under the temp dir; the OS reclaims it
+        }
     }
 
     /** Test seams: arm a parse run and read what it collected. */
@@ -225,6 +335,12 @@ public class LintDevice extends CommandDevice {
         activeLinter = effectiveLinter();
         biomeErrors = "0";
         biomeWarnings = "0";
+        slitherCompilerMissing = false;
+    }
+
+    /** Test seam: the report directory a launched slither run would own. */
+    void armSlitherReportForTest(java.nio.file.Path dir) {
+        slitherReportDir = dir;
     }
 
     java.util.List<org.nmox.studio.rack.engine.DiagnosticsBus.Problem> collectedForTest() {
@@ -235,12 +351,62 @@ public class LintDevice extends CommandDevice {
         return countLcd.getText();
     }
 
+    String statusTextForTest() {
+        return statusLcd.getText();
+    }
+
+    java.nio.file.Path slitherReportDirForTest() {
+        return slitherReportDir;
+    }
+
     @Override
     protected void onFinished(int exitCode) {
         onEdt(() -> cleanLed.setOn(exitCode == 0));
+        if ("slither".equals(activeLinter)) {
+            finishSlither(stoppedByUserOrSignal(false, exitCode));
+            return;
+        }
         // the squiggle/Action Items label names the tool that actually ran
         org.nmox.studio.rack.engine.DiagnosticsBus.publish(
                 "biome".equals(activeLinter) ? "biome" : "eslint",
                 new java.util.ArrayList<>(collected));
+    }
+
+    /**
+     * Reads this run's report, publishes the findings under "slither" and
+     * clears the scratch directory. A run with no readable report publishes
+     * NOTHING: a crash is not an all-clear, and the previous run's squiggles
+     * stay true until a real report replaces them.
+     */
+    private void finishSlither(boolean stopped) {
+        java.nio.file.Path dir = slitherReportDir;
+        slitherReportDir = null;
+        SlitherReport.Result result = SlitherReport.read(
+                dir == null ? null : dir.resolve("slither.json"), commandDir());
+        deleteReportDir(dir);
+        if (result.refusal() != null) {
+            if (stopped) {
+                // the STOP already reads STOPPED; a killed run has no report
+                // by design and needs no second explanation
+                return;
+            }
+            String why = slitherCompilerMissing
+                    ? "SLITHER COULD NOT COMPILE — NO forge/solc ON PATH"
+                    : result.refusal();
+            onEdt(() -> {
+                countLcd.setTextColor(RackStyle.LCD_TEXT);
+                countLcd.setText("E:- W:-");
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText(why);
+            });
+            return;
+        }
+        String lcd = result.lcd();
+        boolean clean = result.errors() == 0;
+        onEdt(() -> {
+            countLcd.setTextColor(clean ? RackStyle.LCD_TEXT : new Color(255, 90, 80));
+            countLcd.setText(lcd);
+        });
+        org.nmox.studio.rack.engine.DiagnosticsBus.publish("slither", result.problems());
     }
 }

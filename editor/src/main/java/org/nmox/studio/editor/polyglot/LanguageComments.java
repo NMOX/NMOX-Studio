@@ -59,6 +59,7 @@ public final class LanguageComments {
             Map.entry("text/x-cairo", "//"),
             Map.entry("text/x-aiken", "//"),
             Map.entry("text/x-tact", "//"),
+            Map.entry("text/x-vyper", "#"),
             Map.entry("text/x-clarity", ";;"),
             Map.entry("text/x-move", "//"),
             Map.entry("text/x-fortran", "!"),

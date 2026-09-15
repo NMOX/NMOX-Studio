@@ -4,6 +4,62 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.155.0] - 2026-09-15
+
+**The overnight shift: a gutter click sets a breakpoint, MongoDB reads past its
+first batch and Cancel stops it, Contract Studio's Watch streams over
+WebSocket, and slither and Vyper join the Solidity toolchain.**
+
+- **A click in the gutter toggles a breakpoint in JavaScript, TypeScript, Python
+  and Go.** Every translated user guide teaches it, and it did nothing: the
+  platform's `@RegisterDAPDebugger` generates two entries per language, the
+  breakpoint registration and a gutter action, and the editor's hand-written
+  layer carried only the first. ⌘F8 worked (the v2.154.0 walk used it); a click
+  did not. The gutter action now sits beside every breakpoint registration at
+  the platform processor's position, and `DapGutterToggleRegisteredTest`
+  derives the languages from the layer, so a new debug language cannot repeat
+  the gap. A mutant that drops Go's entry fails naming `Editors/text/x-go`.
+  Not yet walked with a real click.
+- **MongoDB results page past the first batch, and Cancel stops the command**
+  (ledger 10). A query returned only the driver's first batch, and Cancel did
+  nothing. Cursors now follow `getMore` up to the grid's row limit and mark the
+  result truncated when more remained; a cursor left open is closed with
+  `killCursors`, including after a failure. Cancel ends the backend's own
+  running operation on the server (`currentOp` scoped to the connection's
+  application name, then `killOp`), because the driver ignores a thread
+  interrupt mid-read. Proven on a real `mongo:7`: 250 documents paged whole, a
+  cap of 150 truncated with no server cursor left open, and a slow query stopped
+  38 ms after Cancel with the connection still answering. Four mutants die by
+  name.
+- **Contract Studio's Watch streams over WebSocket** (ledger 12). Where the
+  network has a WebSocket endpoint (a loopback RPC such as ANVIL's, or a `wsUrl`
+  set in `.nmoxweb3.json`) Watch subscribes to new heads and logs instead of
+  polling. It renders through the same path as before, and falls back to the
+  2 s poller when the socket fails or drops, resuming after the last streamed
+  block with every log de-duplicated. Messages are capped at 1 MB and results
+  from a stopped session are dropped. Proven against anvil through a proxy cut
+  mid-stream: blocks 2–4 streamed, 5–6 polled, every block and log once. The
+  Watch tooltip says both ways in all fifteen languages.
+- **slither runs on the rack** (ledger 12). PURITY's LINTER knob gains `slither`
+  (appended), and AUTO picks it on a Foundry project. Findings from slither's
+  JSON report land as squiggles and Action Items, High and Medium as errors,
+  with counts on the LCD and the read capped at 8 MB. Without slither on PATH
+  the lane greys with the Environment Doctor's install hint and spawns nothing;
+  when slither cannot find `forge` or `solc`, one plain sentence says so.
+  Checked headlessly with slither 0.11.6 on a vault with a reentrancy bug (three
+  findings, High on line 11); the test fixture is that real report.
+- **Vyper is an editor language** (ledger 12). `.vy` and `.vyi` open with the
+  tintinweb Vyper grammar (MIT, sha256-pinned; 88 grammars), `#` comments,
+  spellcheck, keyword and decorator completion (`@external` completes), and a
+  Navigator outline of functions with their decorators, events, structs,
+  interfaces and storage. The Environment Doctor probes `vyper`, and the test
+  contract compiles with vyper 0.4.3.
+- **A rack test no longer depends on test order.**
+  `CommandExecutorTest.stopThroughTheHandleReadsStopped` created the flight
+  recorder after the kill. The recorder subscribes to the bus when created, so
+  the test passed only when an earlier test had created it, and failed every
+  time run alone.
+
 ## [2.154.0] - 2026-09-14
 
 **Contract Studio takes structs, and three open ledger items are closed by
@@ -21343,6 +21399,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.154.0...v2.155.0
 [2.154.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.1...v2.154.0
 [2.153.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.0...v2.153.1
 [2.153.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.152.0...v2.153.0

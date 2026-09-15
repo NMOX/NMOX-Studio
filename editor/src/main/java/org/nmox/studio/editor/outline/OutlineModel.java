@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -67,6 +68,7 @@ public final class OutlineModel {
             case "crystal" -> crystal(lines);
             case "zig" -> zig(lines);
             case "solidity" -> solidity(lines);
+            case "vyper" -> vyper(lines);
             case "coffeescript" -> coffeescript(lines);
             case "brace" -> braceLang(lines);
             case "shell" -> shell(lines);
@@ -116,6 +118,7 @@ public final class OutlineModel {
             case "text/x-cairo" -> "brace"; // Cairo is Rust-shaped (fn/mod/struct/trait/{})
             case "text/x-aiken" -> "brace"; // fn/type/validator with braces
             case "text/x-tact" -> "brace";  // contract/fun/receive with braces
+            case "text/x-vyper" -> "vyper"; // indentation-scoped like Python, with its own declaration words
             // text/x-clarity deliberately has NO outline: Lisp-shaped defines
             // would need their own extractor; junk beats absence — skipped
             case "text/x-move" -> "brace"; // Move: module/struct/fun/{}
@@ -1314,6 +1317,122 @@ public final class OutlineModel {
             }
         }
         return out;
+    }
+
+    // ---- Vyper -------------------------------------------------------------
+
+    private static final Pattern VY_DEF = Pattern.compile(
+            "^(\\s*)def\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(");
+    // an interface member's mutability rides after the signature: `def f() -> bool: view`
+    private static final Pattern VY_MUTABILITY = Pattern.compile(
+            ":\\s*(view|pure|nonpayable|payable)\\s*(?:#.*)?$");
+    private static final Pattern VY_DECL = Pattern.compile(
+            "^(\\s*)(event|struct|interface|flag|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*:");
+    private static final Pattern VY_DECORATOR = Pattern.compile(
+            "^\\s*@([A-Za-z_][A-Za-z0-9_]*)");
+    // storage lives at column zero: `name: public(String[32])`, `MAX: constant(uint256) = 1`
+    private static final Pattern VY_STATE = Pattern.compile(
+            "^([A-Za-z_][A-Za-z0-9_]*)\\s*:\\s*(?:(public|constant|immutable|transient)\\s*\\()?");
+    /** Column-zero {@code word:} lines that are module directives, not storage. */
+    private static final Set<String> VY_DIRECTIVES = Set.of("implements", "exports", "initializes", "uses");
+
+    /**
+     * Vyper nests by indentation like Python, but its structure is its own:
+     * decorated {@code def}s (the decorators become the item's detail, so
+     * {@code @external @view} tells an external view from an internal
+     * helper at a glance), {@code event}/{@code struct}/{@code interface}/
+     * {@code flag} declarations, interface members nested under their
+     * interface with their mutability as the detail, and column-zero
+     * storage variables. Docstrings are prose: a {@code def} inside triple
+     * quotes never surfaces, and an unclosed docstring swallows the rest of
+     * the file rather than guessing.
+     */
+    private static List<Item> vyper(String[] lines) {
+        List<Item> out = new ArrayList<>();
+        Deque<Integer> cols = new ArrayDeque<>();
+        List<String> decorators = new ArrayList<>();
+        String docDelim = null;
+        for (int i = 0; i < lines.length && i < MAX_LINES; i++) {
+            String line = lines[i];
+            if (docDelim != null) {
+                if (occurrences(line, docDelim) % 2 != 0) {
+                    docDelim = null;
+                }
+                continue;
+            }
+            String trimmed = line.strip();
+            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
+                continue;
+            }
+            docDelim = openedDocstring(line);
+            Matcher m;
+            if ((m = VY_DECORATOR.matcher(line)).find()) {
+                decorators.add("@" + m.group(1));
+                continue;
+            }
+            if ((m = VY_DEF.matcher(line)).find()) {
+                int depth = vyDepth(cols, m.group(1).length());
+                String detail;
+                if (!decorators.isEmpty()) {
+                    detail = String.join(" ", decorators);
+                } else {
+                    Matcher mu = VY_MUTABILITY.matcher(line);
+                    detail = mu.find() ? mu.group(1) : null;
+                }
+                out.add(new Item(depth > 0 ? OutlineKind.METHOD : OutlineKind.FUNCTION,
+                        m.group(2), detail, i, depth));
+            } else if ((m = VY_DECL.matcher(line)).find()) {
+                int depth = vyDepth(cols, m.group(1).length());
+                OutlineKind kind = switch (m.group(2)) {
+                    case "interface" -> OutlineKind.INTERFACE;
+                    case "struct" -> OutlineKind.TYPE;
+                    case "flag", "enum" -> OutlineKind.ENUM;
+                    default -> OutlineKind.FIELD; // event: the Solidity extractor's spelling
+                };
+                out.add(new Item(kind, m.group(3), m.group(2), i, depth));
+            } else if ((m = VY_STATE.matcher(line)).find() && !VY_DIRECTIVES.contains(m.group(1))) {
+                int depth = vyDepth(cols, 0);
+                out.add(new Item(OutlineKind.PROPERTY, m.group(1),
+                        m.group(2) != null ? m.group(2) : "storage", i, depth));
+            }
+            decorators.clear();
+        }
+        return out;
+    }
+
+    /** Python's column stack: pop every item at or right of this column, then claim it. */
+    private static int vyDepth(Deque<Integer> cols, int col) {
+        while (!cols.isEmpty() && cols.peek() >= col) {
+            cols.pop();
+        }
+        int depth = cols.size();
+        cols.push(col);
+        return depth;
+    }
+
+    /** The triple-quote delimiter this line leaves open, or null when it opens none (or closes what it opens). */
+    private static String openedDocstring(String line) {
+        int hash = line.indexOf('#');
+        String code = hash >= 0 ? line.substring(0, hash) : line;
+        int dq = code.indexOf("\"\"\"");
+        int sq = code.indexOf("'''");
+        String delim;
+        if (dq < 0 && sq < 0) {
+            return null;
+        } else if (sq < 0 || (dq >= 0 && dq < sq)) {
+            delim = "\"\"\"";
+        } else {
+            delim = "'''";
+        }
+        return occurrences(code, delim) % 2 != 0 ? delim : null;
+    }
+
+    private static int occurrences(String line, String needle) {
+        int n = 0;
+        for (int at = line.indexOf(needle); at >= 0; at = line.indexOf(needle, at + needle.length())) {
+            n++;
+        }
+        return n;
     }
 
     // ---- CoffeeScript ------------------------------------------------------

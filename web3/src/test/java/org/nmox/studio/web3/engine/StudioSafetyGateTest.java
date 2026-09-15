@@ -79,17 +79,32 @@ class StudioSafetyGateTest {
     }
 
     @Test
-    @DisplayName("stopWatch revokes cursor ownership and the tick honors it")
+    @DisplayName("stopWatch revokes cursor ownership and every lane asks its session")
     void watchGenerationGuard() throws Exception {
         String src = source();
-        assertThat(method(src, "private void stopWatch()"))
-                .contains("watchGeneration.incrementAndGet()");
-        String tick = method(src, "private void watchTick()");
+        String stop = method(src, "private void stopWatch()");
+        assertThat(stop)
+                .contains("watchGeneration.incrementAndGet()")
+                .as("STOP closes the live subscription with the session")
+                .contains("session.retire()");
+        assertThat(stop.indexOf("watchGeneration.incrementAndGet()"))
+                .as("the bump happens BEFORE the retire, so nothing in flight can re-attach")
+                .isLessThan(stop.indexOf("session.retire()"));
+        // the guard itself is behavior-tested in WatchReconcilerTest;
+        // these pin that the TopComponent's lanes actually route through it
+        String tick = method(src, "private void watchTick(WatchReconciler session)");
         assertThat(tick)
+                .as("both fetch lanes ride the pure clamped plan (WatchCursor.plan inside)")
+                .contains("session.pollPlan(")
                 .as("a superseded tick abandons its cursor writes")
-                .contains("gen != watchGeneration.get()");
-        assertThat(tick)
-                .as("both fetch lanes ride the pure clamped plan")
-                .contains("WatchCursor.plan(");
+                .contains("session.commitPoll(");
+        String head = method(src, "private void streamHead(WatchReconciler session, long head)");
+        assertThat(head).contains("session.onHead(").contains("session.commitHead(");
+        String log = method(src, "private boolean feedLog(");
+        assertThat(log).contains("session.acceptLog(");
+        assertThat(method(src, "private void openWatch("))
+                .as("a socket is only kept once the session accepts it")
+                .contains("session.attach(")
+                .contains("WatchEndpoint.wsUrl(");
     }
 }

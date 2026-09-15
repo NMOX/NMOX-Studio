@@ -71,8 +71,11 @@ import org.nmox.studio.web3.engine.ErcStandards;
 import org.nmox.studio.web3.engine.TokenAmounts;
 import org.nmox.studio.web3.engine.TxInspection;
 import org.nmox.studio.web3.engine.ReceiptWaiter;
+import org.nmox.studio.web3.engine.WatchEndpoint;
 import org.nmox.studio.web3.engine.WatchFeed;
+import org.nmox.studio.web3.engine.WatchReconciler;
 import org.nmox.studio.web3.engine.WatchRows;
+import org.nmox.studio.web3.engine.WatchSocket;
 import org.nmox.studio.web3.io.RpcSecrets;
 import org.nmox.studio.web3.io.Web3WorkspaceIO;
 import org.nmox.studio.web3.model.AbiEntry;
@@ -219,8 +222,9 @@ import org.openide.windows.TopComponent;
         + "Rescan first, then select the deployment again.",
     "Web3StudioTopComponent_deploymentOnOtherNetwork=Note: this deployment was recorded on {0}"
         + " \u2014 calls go to {1}",
-    "Web3StudioTopComponent_watchTip=Poll the chain every 2 s: new blocks plus decoded "
-        + "events of your deployed contracts",
+    "Web3StudioTopComponent_watchTip=Watch the chain: new blocks plus decoded events of your "
+        + "deployed contracts, over a live subscription where the network offers one and "
+        + "otherwise by polling every 2 s",
     "Web3StudioTopComponent_watchContractLabel= Contract: ",
     "Web3StudioTopComponent_watchFilterTip=Whose events to fetch \u2014 blocks always show",
     "Web3StudioTopComponent_inspectTx=Inspect tx\u2026",
@@ -234,6 +238,11 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_watchTableA11y=Watched blocks and events",
     "Web3StudioTopComponent_watchStopped=Watch stopped",
     "Web3StudioTopComponent_watchingStatus=Watching {0} \u2014 polling every 2 s",
+    "Web3StudioTopComponent_watchStreamingStatus=Watching {0} \u2014 live subscription (WebSocket)",
+    "Web3StudioTopComponent_watchFallbackStatus=Watching {0} \u2014 live subscription unavailable, "
+        + "polling every 2 s",
+    "Web3StudioTopComponent_watchDroppedStatus=Live subscription dropped \u2014 polling every 2 s "
+        + "after block {0}",
     "Web3StudioTopComponent_theChain=the chain",
     "Web3StudioTopComponent_chipChainBlock=chain {0} \u00b7 block {1}",
     "Web3StudioTopComponent_chipChainExpectedBlock=chain {0} (expected {1}) \u00b7 block {2}",
@@ -475,18 +484,25 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final JComboBox<Object> watchFilterCombo = new JComboBox<>();
     private boolean watchFilterRefreshing;
     private ScheduledExecutorService watchExec;
-    /** Poller-thread-only cursor state; reset on the EDT before the poller starts. */
-    private long lastWatchedBlock = -1;
-    private long logsFromBlock = Long.MAX_VALUE;
+    /**
+     * The running Watch session — its cursors, its generation and its live
+     * subscription (ledger 12). EDT-confined: START sets it, STOP retires
+     * and clears it. The poller, the stream's head drain and the socket's
+     * listener each hold the session they were started for, never this
+     * field, so a late result can only ask a retired session.
+     */
+    private WatchReconciler watchSession;
+    private static final java.util.logging.Logger WATCH_LOG =
+            java.util.logging.Logger.getLogger(Web3StudioTopComponent.class.getName());
 
     /**
      * Bumped on every {@link #stopWatch}. {@code shutdownNow} interrupts
      * but does not JOIN a tick blocked in an RPC (up to the 10s timeout);
      * a quick STOP→START or a network switch could otherwise leave the
-     * dying tick writing the two cursor fields the new poller now owns.
-     * A tick captures the generation at entry and abandons its cursor
-     * writes if it changed. AtomicLong (not a volatile ++): the
-     * increment must be atomic for SpotBugs' VO_VOLATILE_INCREMENT law
+     * dying tick writing the cursors the new session now owns. Every
+     * session compares its own generation with this one before each write
+     * ({@link WatchReconciler#current()}). AtomicLong (not a volatile ++):
+     * the increment must be atomic for SpotBugs' VO_VOLATILE_INCREMENT law
      * even though stopWatch is EDT-confined.
      */
     private final java.util.concurrent.atomic.AtomicLong watchGeneration =
@@ -1328,24 +1344,32 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NOT_CONNECTED, FAIL_RED);
             return;
         }
-        feed.clear();
-        watchModel.refresh();
-        lastWatchedBlock = -1;
-        logsFromBlock = Long.MAX_VALUE;
-        updateWatchAddresses();
-        watchExec = Executors.newSingleThreadScheduledExecutor(r -> {
-            Thread t = Threads.daemon(r, "Contract Studio watch");
-            return t;
-        });
-        watchExec.scheduleWithFixedDelay(this::watchTick, 0, 2, TimeUnit.SECONDS);
-        watchButton.setText(Bundle.Web3StudioTopComponent_watchStop());
         Network network = selectedNetwork();
-        status(Bundle.Web3StudioTopComponent_watchingStatus(network == null
-                ? Bundle.Web3StudioTopComponent_theChain() : network.name()), Color.GRAY);
+        synchronized (feed) {
+            feed.clear(); // under the feed's monitor: a stale lane's add can't land after it
+        }
+        watchModel.refresh();
+        updateWatchAddresses();
+        // every STOP bumped the generation, so this value is this session's alone
+        WatchReconciler session = new WatchReconciler(
+                watchGeneration.get(), watchGeneration::get, CATCHUP_CAP);
+        watchSession = session;
+        ScheduledExecutorService exec = Executors.newSingleThreadScheduledExecutor(
+                r -> Threads.daemon(r, "Contract Studio watch"));
+        watchExec = exec;
+        String name = network == null
+                ? Bundle.Web3StudioTopComponent_theChain() : network.name();
+        exec.execute(() -> openWatch(session, exec, network, name));
+        watchButton.setText(Bundle.Web3StudioTopComponent_watchStop());
     }
 
     private void stopWatch() {
-        watchGeneration.incrementAndGet(); // any in-flight tick loses cursor ownership
+        watchGeneration.incrementAndGet(); // any in-flight tick, head or log loses ownership
+        WatchReconciler session = watchSession;
+        watchSession = null;
+        if (session != null) {
+            session.retire(); // closes the live subscription, if there is one
+        }
         if (watchExec != null) {
             watchExec.shutdownNow();
             watchExec = null;
@@ -1354,81 +1378,318 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     /**
+     * On the watch daemon thread: subscribe when the network has a
+     * WebSocket endpoint ({@link WatchEndpoint}), else poll. A failed
+     * handshake says so in one status line and polls — polling is the
+     * fallback and the truth. The socket is attached to the session under
+     * the lock STOP retires it with, so a STOP during the handshake can
+     * never leave a socket open.
+     */
+    private void openWatch(WatchReconciler session, ScheduledExecutorService exec,
+            Network network, String name) {
+        if (!session.current()) {
+            return;
+        }
+        String wsUrl = network == null ? null
+                : WatchEndpoint.wsUrl(network.wsUrl(), urlFor(network)); // urlFor: off-EDT (keyring)
+        if (wsUrl == null) {
+            schedulePolling(session, exec);
+            watchStatus(session, Bundle.Web3StudioTopComponent_watchingStatus(name));
+            return;
+        }
+        StreamHandler handler = new StreamHandler(session, exec);
+        try {
+            WatchSocket socket = WatchSocket.open(wsUrl, watchAddresses, handler,
+                    WatchSocket.HANDSHAKE_TIMEOUT);
+            handler.socket = socket;
+            if (!session.attach(handler) || !session.startStreaming()) {
+                socket.close(); // STOP won the race
+                return;
+            }
+        } catch (IOException noSubscription) {
+            // the message is redacted by WatchSocket: host only, never the path or key
+            WATCH_LOG.log(java.util.logging.Level.INFO, "Watch polls instead: {0}",
+                    noSubscription.getMessage());
+            if (session.current()) {
+                schedulePolling(session, exec);
+                watchStatus(session, Bundle.Web3StudioTopComponent_watchFallbackStatus(name));
+            }
+            return;
+        }
+        watchTick(session); // the seed: the current block and its logs, as the poller's first tick
+        watchStatus(session, Bundle.Web3StudioTopComponent_watchStreamingStatus(name));
+    }
+
+    private void schedulePolling(WatchReconciler session, ScheduledExecutorService exec) {
+        try {
+            exec.scheduleWithFixedDelay(() -> watchTick(session), 0, 2, TimeUnit.SECONDS);
+        } catch (java.util.concurrent.RejectedExecutionException stopped) {
+            // STOP shut the executor down first — nothing left to poll for
+        }
+    }
+
+    private void watchStatus(WatchReconciler session, String message) {
+        SwingUtilities.invokeLater(() -> {
+            if (session.current()) {
+                status(message, Color.GRAY);
+            }
+        });
+    }
+
+    /**
      * One poll, on the watch daemon thread: new blocks (deduped by the
      * feed) and, for the watched addresses, logs since the last polled
      * block, decoded against the scanned events. Errors gray the chip;
-     * they never raise a dialog.
+     * they never raise a dialog. Also the stream's seed tick.
      */
-    private void watchTick() {
+    private void watchTick(WatchReconciler session) {
         JsonRpcClient c = client;
-        if (c == null) {
+        if (c == null || !session.current()) {
             return;
         }
-        final long gen = watchGeneration.get();
         try {
             long current = c.blockNumber();
-            boolean firstTick = lastWatchedBlock < 0;
             // both lanes clamped to the cap window (the log clamp is the
             // v1.100.0 fix: a failing getLogs never advanced its cursor,
             // so retries widened the range — and the response — unboundedly)
-            var plan = org.nmox.studio.web3.engine.WatchCursor.plan(
-                    lastWatchedBlock, logsFromBlock, current, CATCHUP_CAP);
+            var plan = session.pollPlan(current);
             for (long n = plan.blockFrom(); n <= plan.blockTo(); n++) {
-                JsonRpcClient.Block block = c.getBlockByNumber(String.valueOf(n), false);
-                if (block != null) {
-                    feed.addBlock(block.number(), block.txCount(), block.gasUsed(),
-                            block.gasLimit(), block.hash());
-                }
+                feedBlock(session, c.getBlockByNumber(String.valueOf(n), false));
             }
             List<String> addresses = watchAddresses;
             EventMatcher matcher = eventMatcher;
             boolean consumedLogs = plan.hasLogs() && !addresses.isEmpty();
             if (consumedLogs) {
                 for (String address : addresses) {
-                    feedLogs(c, matcher, address, plan.logFrom(), plan.logTo());
+                    feedLogs(c, session, matcher, address, plan.logFrom(), plan.logTo());
                 }
             }
-            if (gen != watchGeneration.get()) {
-                return; // the watch was re-armed mid-tick — the new
-                        // poller owns the cursors; a dying tick must
-                        // not tear or resurrect them
+            if (!session.commitPoll(plan, current, consumedLogs)) {
+                return; // the watch was re-armed mid-tick — the new session
+                        // owns the cursors; a dying tick must not tear them
             }
-            if (consumedLogs) {
-                logsFromBlock = plan.logTo() + 1;
-            } else if (firstTick) {
-                logsFromBlock = current; // the watch-start block
-            }
-            lastWatchedBlock = current;
-            SwingUtilities.invokeLater(() -> {
-                watchModel.refresh();
-                chip(Bundle.Web3StudioTopComponent_chipChainBlock(String.valueOf(liveChainId),
-                        String.valueOf(current)), OK_GREEN);
-            });
+            watchAdvanced(session, current);
         } catch (IOException | RuntimeException pollFailed) {
-            SwingUtilities.invokeLater(() -> chip(NOT_CONNECTED, Color.GRAY));
+            watchFailed(session);
+        }
+    }
+
+    /**
+     * One {@code newHeads} notification, on the watch daemon thread: the
+     * same block fetch the poller makes (so the row renders identically),
+     * and — when the head skipped blocks — the same log fetch for them,
+     * because their logs never came over the socket.
+     */
+    private void streamHead(WatchReconciler session, long head) {
+        WatchReconciler.HeadPlan plan = session.onHead(head);
+        JsonRpcClient c = client;
+        if (!plan.hasBlocks() || c == null) {
+            return;
+        }
+        try {
+            for (long n = plan.blockFrom(); n <= plan.blockTo(); n++) {
+                feedBlock(session, c.getBlockByNumber(String.valueOf(n), false));
+            }
+            if (plan.gap()) {
+                EventMatcher matcher = eventMatcher;
+                for (String address : watchAddresses) {
+                    feedLogs(c, session, matcher, address, plan.blockFrom(), plan.blockTo());
+                }
+            }
+            if (session.commitHead(head)) {
+                watchAdvanced(session, head);
+            }
+        } catch (IOException | RuntimeException fetchFailed) {
+            watchFailed(session); // uncommitted: the next head re-plans from the last finished block
+        }
+    }
+
+    private void watchAdvanced(WatchReconciler session, long block) {
+        SwingUtilities.invokeLater(() -> {
+            if (!session.current()) {
+                return; // a result belongs to the session that produced it
+            }
+            watchModel.refresh();
+            chip(Bundle.Web3StudioTopComponent_chipChainBlock(String.valueOf(liveChainId),
+                    String.valueOf(block)), OK_GREEN);
+        });
+    }
+
+    private void watchFailed(WatchReconciler session) {
+        SwingUtilities.invokeLater(() -> {
+            if (session.current()) {
+                chip(NOT_CONNECTED, Color.GRAY);
+            }
+        });
+    }
+
+    private void feedBlock(WatchReconciler session, JsonRpcClient.Block block) {
+        if (block == null) {
+            return;
+        }
+        synchronized (feed) {
+            if (session.current()) {
+                feed.addBlock(block.number(), block.txCount(), block.gasUsed(),
+                        block.gasLimit(), block.hash());
+            }
         }
     }
 
     /** Fetches and decodes one address's logs for the block range; skips unknown topics. */
-    private void feedLogs(JsonRpcClient c, EventMatcher matcher, String address,
-            long fromBlock, long toBlock) throws IOException {
+    private void feedLogs(JsonRpcClient c, WatchReconciler session, EventMatcher matcher,
+            String address, long fromBlock, long toBlock) throws IOException {
         for (JsonRpcClient.LogEntry log
                 : c.getLogs(address, String.valueOf(fromBlock), String.valueOf(toBlock))) {
-            if (log.topics().isEmpty()) {
-                continue;
-            }
-            EventMatcher.Match match = matcher.match(log.topics().get(0));
-            if (match == null) {
-                continue; // someone else's event shape — normal, skip
-            }
-            Map<String, String> decoded;
-            try {
-                decoded = matcher.decodedDisplay(match, log.topics(), log.data());
-            } catch (RuntimeException malformed) {
-                decoded = Map.of("note", "decode failed: " + malformed.getMessage());
+            feedLog(session, WatchReconciler.Lane.POLL, matcher, log, false);
+        }
+    }
+
+    /**
+     * The one decode both lanes share: unknown event shapes are skipped,
+     * a log either lane already delivered is dropped by the session, and
+     * the add happens under the feed's monitor only while the session is
+     * current. True when a row was added.
+     */
+    private boolean feedLog(WatchReconciler session, WatchReconciler.Lane lane,
+            EventMatcher matcher, JsonRpcClient.LogEntry log, boolean removed) {
+        if (log.topics().isEmpty()) {
+            return false;
+        }
+        EventMatcher.Match match = matcher.match(log.topics().get(0));
+        if (match == null) {
+            return false; // someone else's event shape — normal, skip
+        }
+        if (!session.acceptLog(lane, log, removed)) {
+            return false;
+        }
+        Map<String, String> decoded;
+        try {
+            decoded = matcher.decodedDisplay(match, log.topics(), log.data());
+        } catch (RuntimeException malformed) {
+            decoded = Map.of("note", "decode failed: " + malformed.getMessage());
+        }
+        synchronized (feed) {
+            if (!session.current()) {
+                return false;
             }
             feed.addEvent(log.blockNumber(), match.contractName(),
                     match.event().name(), decoded);
+        }
+        return true;
+    }
+
+    /**
+     * The live subscription's side of one Watch session: heads coalesce
+     * onto the watch thread (a burst of heads queues one drain, so the
+     * queue is bounded), logs decode on the listener thread (the socket
+     * reads the next message only after this one — that is the
+     * back-pressure), and a drop hands the lane back to the poller with
+     * one status line. The session closes it on STOP.
+     */
+    private final class StreamHandler implements WatchSocket.Events, AutoCloseable {
+
+        private final WatchReconciler session;
+        private final ScheduledExecutorService exec;
+        private final java.util.concurrent.atomic.AtomicLong pendingHead =
+                new java.util.concurrent.atomic.AtomicLong(-1);
+        private final java.util.concurrent.atomic.AtomicBoolean drainQueued =
+                new java.util.concurrent.atomic.AtomicBoolean();
+        private final java.util.concurrent.atomic.AtomicBoolean refreshQueued =
+                new java.util.concurrent.atomic.AtomicBoolean();
+        volatile WatchSocket socket;
+
+        StreamHandler(WatchReconciler session, ScheduledExecutorService exec) {
+            this.session = session;
+            this.exec = exec;
+        }
+
+        @Override
+        public void onHead(long blockNumber) {
+            pendingHead.accumulateAndGet(blockNumber, Math::max);
+            if (drainQueued.compareAndSet(false, true)) {
+                if (!post(this::drainHeads)) {
+                    drainQueued.set(false);
+                }
+            }
+        }
+
+        private void drainHeads() {
+            drainQueued.set(false); // before the read: a head landing now queues its own drain
+            streamHead(session, pendingHead.get());
+        }
+
+        @Override
+        public void onLog(JsonRpcClient.LogEntry log, boolean removed) {
+            if (!watches(log.address())) {
+                return; // the filter narrowed since the subscription was made
+            }
+            if (feedLog(session, WatchReconciler.Lane.STREAM, eventMatcher, log, removed)
+                    && refreshQueued.compareAndSet(false, true)) {
+                SwingUtilities.invokeLater(() -> {
+                    refreshQueued.set(false);
+                    if (session.current()) {
+                        watchModel.refresh();
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onDrop(String reason) {
+            post(() -> {
+                WatchReconciler.Resume resume = session.onDrop();
+                if (resume == null) {
+                    return; // stopped, or already fell back: one line, not two
+                }
+                WATCH_LOG.log(java.util.logging.Level.INFO,
+                        "Watch subscription dropped ({0}); polling resumes after block {1}",
+                        new Object[]{reason, resume.lastWatchedBlock()});
+                schedulePolling(session, exec);
+                watchStatus(session, Bundle.Web3StudioTopComponent_watchDroppedStatus(
+                        String.valueOf(Math.max(0, resume.lastWatchedBlock()))));
+            });
+        }
+
+        /** The address filter changed while streaming: move the logs subscription. */
+        void addressesChanged(List<String> addresses) {
+            post(() -> {
+                WatchSocket s = socket;
+                if (s == null || !session.streaming()) {
+                    return;
+                }
+                try {
+                    s.resubscribeLogs(addresses, WatchSocket.HANDSHAKE_TIMEOUT);
+                } catch (IOException failed) {
+                    s.close();
+                    onDrop(failed.getMessage());
+                }
+            });
+        }
+
+        private boolean watches(String address) {
+            for (String watched : watchAddresses) {
+                if (watched.equalsIgnoreCase(address)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private boolean post(Runnable task) {
+            try {
+                exec.execute(task);
+                return true;
+            } catch (java.util.concurrent.RejectedExecutionException stopped) {
+                return false;
+            }
+        }
+
+        @Override
+        public void close() {
+            WatchSocket s = socket;
+            if (s != null) {
+                s.close();
+            }
         }
     }
 
@@ -1448,7 +1709,13 @@ public final class Web3StudioTopComponent extends TopComponent {
             }
             addresses.add(record.address());
         }
-        watchAddresses = List.copyOf(addresses);
+        List<String> fresh = List.copyOf(addresses);
+        boolean changed = !fresh.equals(watchAddresses);
+        watchAddresses = fresh;
+        if (changed && watchSession != null
+                && watchSession.attached() instanceof StreamHandler stream) {
+            stream.addressesChanged(fresh); // a live logs subscription follows the filter
+        }
     }
 
     private void refreshWatchFilter() {

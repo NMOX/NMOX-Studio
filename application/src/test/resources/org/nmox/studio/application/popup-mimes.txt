@@ -97,6 +97,7 @@ text/x-tfvars+x-hcl|DERIVED|census.tfvars|
 text/x-toml|DERIVED|census.toml|
 text/x-vlang|DERIVED|census.v|
 text/x-vue|DERIVED|census.vue|
+text/x-vyper|DERIVED|census.vy|
 text/x-wit|DERIVED|census.wit|
 text/x-yaml|DERIVED|census.yaml|
 text/x-zig|DERIVED|census.zig|

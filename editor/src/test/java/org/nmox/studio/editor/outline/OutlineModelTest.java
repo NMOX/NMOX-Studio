@@ -858,6 +858,7 @@ class OutlineModelTest {
         // own-family languages
         assertThat(OutlineModel.family("text/x-nim")).isEqualTo("nim");
         assertThat(OutlineModel.family("text/x-wit")).isEqualTo("wit");
+        assertThat(OutlineModel.family("text/x-vyper")).isEqualTo("vyper");
         assertThat(OutlineModel.family("text/x-elm")).isEqualTo("elm");
         assertThat(OutlineModel.family("text/x-fortran")).isEqualTo("fortran");
         assertThat(OutlineModel.family("text/x-fsharp")).isEqualTo("fsharp");

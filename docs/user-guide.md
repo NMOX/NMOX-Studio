@@ -328,6 +328,10 @@ connections) the Java [Device SPI](device-spi.md) is still there.
   deploy device and deploys physically can't run until every check is
   green.
 - **GOVERNOR** gates Solidity work on gas regressions (`.gas-snapshot`).
+- **PURITY** runs **slither** on a Foundry project: its findings land as
+  squiggles and in Action Items, High and Medium as errors. Without slither on
+  your PATH the lane says how to install it (`pip3 install slither-analyzer`)
+  and runs nothing.
 
 **Anything else:** **SOLDER** wraps any shell command as a first-class
 device — and the whole rack **exports to GitHub Actions** (your local
@@ -1142,6 +1146,9 @@ plus named saved queries. **Edit rows in the grid** — single-table,
 primary-keyed results only (the grid tells you *why* when it's
 read-only), and Apply shows you the exact UPDATE statements before
 touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
+A MongoDB query reads past the driver's first batch up to the row limit and
+says when more remained, and **Cancel** stops the command on the server, so
+the connection is ready for the next one.
 NetBeans Database Explorer connections (Kvasir, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
@@ -1179,7 +1186,9 @@ shows its fields in the label, `order ([to: address, amount: uint256])`, and
 takes its values in order in square brackets: `["0x70997970…79C8", "250"]`
 (an array of structs is a list of lists). A struct return reads back with
 its field names. **Watch** streams
-blocks and decodes event logs live. **Oversight** shows the gas report,
+blocks and decodes event logs live: on a local chain such as ANVIL it
+subscribes over WebSocket, and anywhere else, or if the socket drops, it
+polls every 2 seconds and says so, without missing or repeating a block. **Oversight** shows the gas report,
 EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and
 never reach the file).

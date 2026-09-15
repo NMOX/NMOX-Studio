@@ -1864,17 +1864,39 @@ where the key still never enters the IDE. What IS deferred:
   original entry: parsed (functions list fine) but
   refused at encode time with a pointer to `cast`. Build when a real
   project needs it; the encoding is mechanical but the form UX isn't.
-- **eth_subscribe websockets** — the Watch pane polls at 2s, honest and
-  simple; the shared HttpClient has no WS. Revisit if devnet watching
-  ever feels laggy.
-- **Vyper / non-EVM chains (Solana, Move, ink!)** — grammar-only
-  support would mislead without a toolchain behind it. *(v2.153.1: the
-  non-EVM half shipped WITH toolchains — STELLAR and ANCHOR on the rack,
+- ~~**eth_subscribe websockets**~~ — CLOSED v2.155.0: the JDK's HttpClient
+  does ship a WebSocket builder. Watch subscribes to `newHeads` and `logs`
+  where the network has a WS endpoint (an explicit `wsUrl` in
+  `.nmoxweb3.json`, or a loopback `http(s)` RPC read as `ws(s)` on the same
+  port, which covers anvil); remote gateways and secret networks keep polling
+  because their WS paths are not guessed. One `WatchReconciler` session owns
+  the cursors both lanes share, generation-guarded; a dropped socket falls back
+  to the 2 s poller after the last streamed block, logs de-duplicated by
+  transaction hash and log index; each message capped at 1 MB. Live-proven
+  against anvil 1.8.1 through a proxy cut mid-stream: blocks 2–4 streamed,
+  5–6 polled, every block and log exactly once. Remainder: the network dialog
+  has no `wsUrl` field (set it in the workspace file). The original entry: the
+  Watch pane polls at 2s, honest and simple; the shared HttpClient has no WS.
+  Revisit if devnet watching ever feels laggy.
+- ~~**Vyper / non-EVM chains (Solana, Move, ink!)**~~ — CLOSED v2.155.0 for
+  Vyper: the toolchain now exists (Foundry compiles `.vy` when `vyper` is
+  installed, and the artifact tree reads `out/`), so `.vy`/`.vyi` are editor
+  citizens — the tintinweb grammar (MIT, sha256-pinned), `#` comments,
+  decorator completion, a Navigator outline, a Doctor probe. No Vyper language
+  server or project kind: Foundry carries the build. The original entry:
+  grammar-only support would mislead without a toolchain behind it. *(v2.153.1:
+  the non-EVM half shipped WITH toolchains — STELLAR and ANCHOR on the rack,
   Cairo and Move verticals, and eleven chains in the Contract Kit, v1.130.0–
-  v1.153.0. Vyper is still absent.)*
-- **slither as a rack lane** — Doctor probes it and hints the install;
-  running it well needs a Python-env story. TYPEGUARD's solhint lane
-  covers day-to-day linting.
+  v1.153.0.)*
+- ~~**slither as a rack lane**~~ — CLOSED v2.155.0: PURITY's LINTER knob gains
+  `slither` (appended, position 8; AUTO picks it on a Foundry project). The
+  Python-env story is refusal, not installation: without slither on PATH the
+  lane greys with the Doctor's own hint and spawns nothing, and slither's
+  missing-compiler traceback becomes one sentence. Findings come from slither's
+  `--json` report (a file, because one stdout line would pass the pump's line
+  cap), read capped at 8 MB, into DiagnosticsBus. The original entry: Doctor
+  probes it and hints the install; running it well needs a Python-env story.
+  TYPEGUARD's solhint lane covers day-to-day linting.
 - **Foundry project template** — `forge init` does it better (pulls
   forge-std, sets remappings); a wizard shelling out to it is a later
   nicety. *(v2.153.1: covered since v1.139.0 — File ▸ Add to Project ▸
@@ -1883,7 +1905,17 @@ where the key still never enters the IDE. What IS deferred:
 
 ## Open — deferred deliberately, with reasons (added v1.29.0)
 
-### 10. DB Studio: Mongo cancel is a no-op; cursors read firstBatch only
+### 10. ~~DB Studio: Mongo cancel is a no-op; cursors read firstBatch only~~ — CLOSED v2.155.0
+Cursors follow `getMore` up to the row cap (`MongoCursorPager`), mark the
+result truncated when more remained, and release abandoned cursors with
+`killCursors`. Cancel is a server-side kill: the 5.11 driver ignores a thread
+interrupt mid-read (measured: the first live cancel waited out a 20 s scan),
+so each backend carries a unique application name and Cancel ends its own
+operations found by `currentOp {$ownOps, appName}` with `killOp`. Proven on a
+real `mongo:7` (250 documents paged; a cap of 150 left zero open cursors; a
+slow query stopped 38 ms after Cancel with the connection still answering).
+An uncapped read is bounded at 1,000,000 documents. The original entry:
+
 Driver-level operation kill and `getMore` continuation are real work with
 a small v1 audience; both are documented in the backend javadoc and the
 UI truncation flag is honest about partial reads.

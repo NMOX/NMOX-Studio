@@ -62,6 +62,35 @@ class Web3WorkspaceIOTest {
         assertThat(json).contains("http://127.0.0.1:8545");
     }
 
+    @Test
+    @DisplayName("PIN: a secret network never writes a wsUrl, and a smuggled one never loads")
+    void secretNetworkCarriesNoWsUrl() {
+        Network smuggler = new Network("Mainnet (Alchemy)", 1, true, null,
+                "wss://eth-mainnet.g.alchemy.com/v2/WSSECRETKEY");
+        String json = Web3WorkspaceIO.toJson(
+                new Web3WorkspaceIO.Workspace(List.of(smuggler), List.of(), List.of()));
+        assertThat(json).doesNotContain("WSSECRETKEY").doesNotContain("wsUrl");
+
+        Web3WorkspaceIO.Workspace loaded = Web3WorkspaceIO.fromJson("""
+                {"version": 1, "networks": [
+                  {"name": "Sneaky", "chainId": 1, "secretUrl": true,
+                   "wsUrl": "wss://eth-mainnet.g.alchemy.com/v2/LEAKED"}
+                ]}""");
+        assertThat(loaded.networks().get(0).wsUrl()).isNull();
+    }
+
+    @Test
+    @DisplayName("a plain network's explicit wsUrl round-trips; an absent one stays null")
+    void plainNetworkWsUrlRoundTrips() {
+        Network explicit = new Network("Hardhat", 31337, false, "http://10.0.0.5:8545",
+                "ws://10.0.0.5:8546");
+        Network derived = new Network("Local (anvil)", 31337, false, "http://127.0.0.1:8545");
+        Web3WorkspaceIO.Workspace loaded = Web3WorkspaceIO.fromJson(Web3WorkspaceIO.toJson(
+                new Web3WorkspaceIO.Workspace(List.of(explicit, derived), List.of(), List.of())));
+        assertThat(loaded.networks().get(0).wsUrl()).isEqualTo("ws://10.0.0.5:8546");
+        assertThat(loaded.networks().get(1).wsUrl()).isNull();
+    }
+
     // ---- round trips ---------------------------------------------------------
 
     @Test
