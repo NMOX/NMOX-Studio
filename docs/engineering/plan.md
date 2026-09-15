@@ -1,5 +1,25 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.156.0 — the debugger follows a program's
+children. Ledger 25 (Node children ran undebugged) and 39 (a page's Web
+Workers sat paused) had waited since v1.37.0/v1.43.0 on "a platform DAP
+client that accepts N sessions"; the RELEASE310 lsp-client already had one,
+one request over — `attachedChildSession`, which the client answers by
+dialing a port and opening a further session. `DapProxy` keeps the first
+target spliced flat and offers every later `startDebugging` through that
+door with a one-shot relay per target (bare `attach` → the target's
+`launch`), so a fork, a worker thread, a browser worker and a worker's own
+children each get a session named for their file; proven against the real
+adapter (parent.js:3, child.js:2, worker.js:2 all hit) and real headless
+Chrome (worker.js:2 in the worker's session). Lesson: a ledger entry that
+waits on "a platform change" should be re-read against every platform
+upgrade — the door opened with RELEASE310 (v2.35.0) and sat unnoticed for
+120 releases. Before that: v2.154.0 (Contract Studio structs; ledgers 27, 86
+and 36 closed by walking), v2.155.0 (the overnight ledger sweep — gutter
+breakpoints, Mongo paging and Cancel, Watch over WebSocket, slither, Vyper)
+and v2.155.1 (the walk's two finds — DB Studio's EDT freeze behind a
+running query, slither's Vyper crash).*
+
 *Currency addendum 2026-09-14, at v2.153.1 — the languages the arc closed
 with were not the last ones. v2.148.0 made the window run right to left
 before any right-to-left language shipped (Swing takes no direction from the
@@ -3468,10 +3488,11 @@ Since the v1.36.0 senior-review capstone, five things graduated from
 - **It debugs.** JS/TS breakpoints out of the box (v1.37.0) via the vendored
   js-debug adapter and the `DapProxy` session multiplexer; **browser/Chrome
   debugging** (v1.43.0) on the same one-child splice, gated on Workspace
-  Trust, real-adapter integration-tested. The honest ceiling is recorded,
-  not hidden: one child session per run (ledger 25), and a page's Web Workers
-  sit *paused* rather than undebugged (ledger 39) — both wait on a platform
-  N-session DAP client.
+  Trust, real-adapter integration-tested. The ceiling those two releases
+  recorded — one child session per run (ledger 25), a page's Web Workers
+  sitting *paused* (ledger 39) — closed in v2.156.0 through the platform's
+  own `attachedChildSession` door: every further target becomes a session
+  of its own, proven against the real adapter and real Chrome.
 - **It knows its branch, and its project is a platform citizen.** The git
   chip (v1.40.0) reads HEAD from disk and opens the platform History browser.
   Then the big one: **ledger 29, the context migration, landed** (v1.45.0 +

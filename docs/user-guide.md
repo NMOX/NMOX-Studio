@@ -811,9 +811,16 @@ starts your program with a debug port open (`node --inspect`, `dlv`,
 like chrome://inspect. Use the editor action for breakpoints in NMOX
 Studio; use INSPECTOR when something else does the debugging.
 
-One limit worth knowing: a debug session follows one process. Child
-processes your program spawns keep running, undebugged, rather than
-pausing for an attach that never comes.
+A debug session follows your program's children too (v2.156.0). A
+`child_process.fork`, a `worker_threads` Worker, or a worker's own
+children each appear in the Debugging window as a session of their own,
+named for the file they run, and stop at the breakpoints you set in
+their files — set a breakpoint in `child.js`, debug `parent.js`, and the
+child pauses in its own session the moment it reaches the line. Each
+session closes with the run, and each keeps its own console in the
+Output window.
+
+![Two debug sessions in the Sessions window — the parent and a worker it started, the editor stopped on the worker's line](images/debug-sessions.png)
 
 ### Debugging in the browser
 
@@ -834,11 +841,12 @@ server has no page to load it, and the status line says so instead of
 guessing. The browser runs with a fresh throwaway profile — your real
 Chrome stays untouched — and stopping the session closes it completely.
 
-One browser-specific limit: a page's **Web Workers pause** under the
-debugger rather than running undebugged (the session can follow only
-the page itself). A page whose core logic lives in a worker will appear
-stuck while debugging; debug it with the worker code inlined or via
-INSPECTOR + chrome://inspect instead.
+A page's **Web Workers** debug too (v2.156.0): each `new Worker(…)` the
+page starts becomes a session of its own in the Debugging window, and a
+breakpoint set in the worker's file stops the worker there. Before this
+release a worker sat paused under the debugger, so a page whose logic
+lived in a worker looked stuck; now it runs, and pauses only where you
+asked.
 
 ### Presenting and sharing (v2.87.0)
 
