@@ -339,6 +339,14 @@ public class DocsShots implements Runnable {
         private final java.util.Iterator<Staged> stagedQueue = stagedShots().iterator();
         private boolean thinkSeen;
         private long explainPressedAt;
+        private long firstStageAt;
+
+        /**
+         * The first staged picture follows a project aim, which starts the
+         * boot-time indexing (the spellchecker's "Building dictionary" bar):
+         * hold it long enough that the status line is quiet in the picture.
+         */
+        static final int FIRST_STAGE_HOLD_MS = 8_000;
 
         /**
          * The six states the user guide's hand-staged shots show, in the
@@ -366,7 +374,8 @@ public class DocsShots implements Runnable {
                         org.nmox.studio.rack.service.DocsStaging.aim(classic[0]);
                         fakeRun("Run \u2014 " + org.nmox.studio.rack.service.DocsStaging.CLASSIC_NAME, "http://localhost:8080/");
                         front("RackTopComponent");
-                    }, () -> true, 0),
+                        firstStageAt = System.currentTimeMillis();
+                    }, () -> System.currentTimeMillis() - firstStageAt > FIRST_STAGE_HOLD_MS, FIRST_STAGE_HOLD_MS + 1_000),
                     new Staged("rack-rear.png",
                             org.nmox.studio.rack.service.DocsStaging::flipRack, () -> true, 0),
                     new Staged("editor.png", () -> {
