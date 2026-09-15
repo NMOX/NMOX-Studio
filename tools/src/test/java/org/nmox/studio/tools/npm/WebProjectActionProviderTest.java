@@ -59,20 +59,23 @@ class WebProjectActionProviderTest {
     }
 
     @Test
-    @DisplayName("Exactly Run, Build, Test, Clean and Debug File are advertised as supported actions")
+    @DisplayName("Exactly Run, Build, Test, Clean, Debug File and Debug Main Project are advertised as supported actions")
     void advertisesTheFourStandardActions(@TempDir Path dir) throws IOException {
         Files.writeString(dir.resolve("package.json"), "{\"scripts\":{}}");
         String[] supported = providerFor(dir).getSupportedActions();
 
-        // debug.single joined in v2.157.0: the platform's own Debug File
-        // row (⇧⌘F5) routes to the editor's breakpoint debugger through
-        // the DebugLauncher facade — DebugSingleDoorTest owns its laws
+        // debug.single joined in v2.157.0 and debug in v2.158.0: the
+        // platform's own Debug File row (⇧⌘F5) and Debug Main Project row /
+        // toolbar button route to the editor's breakpoint debugger through
+        // the DebugLauncher facade — DebugSingleDoorTest and
+        // DebugMainProjectDoorTest own their laws
         assertThat(supported).containsExactlyInAnyOrder(
                 ActionProvider.COMMAND_RUN,
                 ActionProvider.COMMAND_BUILD,
                 ActionProvider.COMMAND_TEST,
                 ActionProvider.COMMAND_CLEAN,
-                ActionProvider.COMMAND_DEBUG_SINGLE);
+                ActionProvider.COMMAND_DEBUG_SINGLE,
+                ActionProvider.COMMAND_DEBUG);
     }
 
     @Test

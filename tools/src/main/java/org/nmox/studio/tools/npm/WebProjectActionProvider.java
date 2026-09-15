@@ -25,8 +25,24 @@ import org.openide.util.Lookup;
 final class WebProjectActionProvider implements ActionProvider {
 
     private static final String[] SUPPORTED = {
-        COMMAND_RUN, COMMAND_BUILD, COMMAND_TEST, COMMAND_CLEAN, COMMAND_DEBUG_SINGLE
+        COMMAND_RUN, COMMAND_BUILD, COMMAND_TEST, COMMAND_CLEAN, COMMAND_DEBUG_SINGLE, COMMAND_DEBUG
     };
+
+    /**
+     * The file Debug Main Project would debug (v2.158.0): the project's
+     * entry as {@link DebugEntries} reads it from the toolchain's own
+     * contract, or null when the kind names none or the debugger does not
+     * take it — then the platform's row and the toolbar's bug button stay
+     * disabled, as they were for every web project before.
+     */
+    private File debugMainEntry(org.nmox.studio.core.spi.DebugLauncher launcher) {
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        if (launcher == null || dir == null) {
+            return null;
+        }
+        File entry = DebugEntries.mainEntry(dir, kindCache.get(dir, System.currentTimeMillis()));
+        return entry != null && launcher.supports(entry) ? entry : null;
+    }
 
     /**
      * The editor's breakpoint debugger, reached through the core facade
@@ -121,6 +137,9 @@ final class WebProjectActionProvider implements ActionProvider {
             return debugTarget(context, FileUtil.toFile(project.getProjectDirectory()),
                     debugLauncher.get()) != null;
         }
+        if (COMMAND_DEBUG.equals(command)) {
+            return debugMainEntry(debugLauncher.get()) != null;
+        }
         return resolve(command) != null;
     }
 
@@ -134,6 +153,15 @@ final class WebProjectActionProvider implements ActionProvider {
             File target = debugTarget(context, dir, launcher);
             if (target != null) {
                 launcher.debug(target);
+            }
+            return;
+        }
+        if (COMMAND_DEBUG.equals(command)) {
+            // same door, the project's entry instead of the selection
+            org.nmox.studio.core.spi.DebugLauncher launcher = debugLauncher.get();
+            File entry = debugMainEntry(launcher);
+            if (entry != null) {
+                launcher.debug(entry);
             }
             return;
         }

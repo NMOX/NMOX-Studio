@@ -1360,6 +1360,15 @@ self-correct, and the SPI is frozen — the fix is an ADDITIVE overload
 day a real plugin author needs it, not speculatively. Found by the
 v1.95.2 review's gate lens.
 
+**Re-checked 2026-09-15 (v2.158.0), deferral stands.** The only
+third-party-shaped devices that exist — the v2.0.0 JSON device format and
+the six bundled gallery devices — cannot commit this lie:
+`JsonDeviceExtension` raises no gate before `exec` (an LED the −1 exit
+contract corrects, and a TRIGGER only after exit), and the host now says
+"UNTRUSTED WORKSPACE — EXECUTION REFUSED" on the refused line. A Java SPI
+plugin that calls `emitGate` before `exec` would still be exposed, and none
+has been written. Same condition, same answer.
+
 ## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
 
 ### 50. Console in-jacks STOP/ENABLE are inert across the family — CLOSED (v1.90.0)
