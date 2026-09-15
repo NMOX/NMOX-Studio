@@ -4,6 +4,39 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.155.1] - 2026-09-15
+
+**The overnight walk of v2.155.0, with real clicks: three features confirmed,
+two defects found and fixed.**
+
+- **DB Studio no longer freezes behind a running query, so Cancel can be
+  clicked.** Walked against a real `mongo:7`: a 30-second `$where` query froze
+  the whole DB Studio window until it finished, and Cancel never responded. A
+  thread dump showed why: the connection tree repaints by asking the backend
+  whether it is open, that check waited on the backend's lock, and the running
+  query held that lock for the whole command. The JDBC backend (SQLite,
+  PostgreSQL, MySQL, MariaDB) and the NetBeans Services bridge had the same
+  shape. The check no longer waits in any of them. `IsOpenNeverWaitsTest` holds
+  a backend's lock while asking, and refuses a waiting check in any backend the
+  engine package declares; a mutant that restores the wait fails it.
+  Walked again on the fixed build: the toolbar read "Running…" with Cancel
+  enabled, Cancel answered "Cancelled — the command was stopped before it
+  finished" after 3.3 seconds, the server showed no query left running, and the
+  next query on the same connection returned 200 rows in 18 ms.
+- **slither says why a Vyper file stops it.** Walked on a Foundry project that
+  also holds a `.vy` contract: slither crashed with `KeyError: 'ast'`, because
+  the build it reads includes Vyper output, which has no Solidity AST. The same
+  project without the `.vy` file reports its findings. The rack now translates
+  that line into a sentence naming the usual cause and what to do, and PURITY's
+  display reads `SLITHER CANNOT READ THIS BUILD — VYPER (.vy) IN PROJECT?`
+  instead of a bare "no report". Two mutants die by name.
+- **Walked and confirmed in the assembled app:** a gutter click sets a
+  breakpoint in a JavaScript file (the v2.155.0 fix); `.vy` files open
+  highlighted with a Navigator outline; Contract Studio's Watch reads
+  "live subscription (WebSocket)" on ANVIL and showed each block and Deposited
+  event once; MongoDB reads page past the first batch (200 rows), truncate at
+  the row limit (`150+ rows`) and leave no server cursor open.
+
 ## [2.155.0] - 2026-09-15
 
 **The overnight shift: a gutter click sets a breakpoint, MongoDB reads past its
@@ -21399,6 +21432,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.155.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.0...v2.155.1
 [2.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.154.0...v2.155.0
 [2.154.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.1...v2.154.0
 [2.153.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.0...v2.153.1
