@@ -164,9 +164,8 @@ class MongoCursorPagerTest {
     @Test
     @DisplayName("a getMore that throws still releases the cursor, then rethrows")
     void failureMidPagingReleases() {
+        List<Document> released = new ArrayList<>();
         MongoCursorPager.Transport server = new MongoCursorPager.Transport() {
-            final List<Document> released = new ArrayList<>();
-
             @Override
             public Document run(Document command) {
                 throw new IllegalStateException("socket closed");
@@ -181,6 +180,8 @@ class MongoCursorPagerTest {
 
         assertThatThrownBy(() -> MongoCursorPager.follow(first(CURSOR, docs(0, 1)), 10,
                 () -> false, server)).hasMessage("socket closed");
+        assertThat(released).as("the open cursor was released before the rethrow").hasSize(1);
+        assertThat(released.get(0).getList("cursors", Long.class)).containsExactly(CURSOR);
     }
 
     @Test
