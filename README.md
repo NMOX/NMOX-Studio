@@ -559,7 +559,8 @@ about it. The walkthrough:
 
 ### 🐞 Breakpoints that actually stop
 
-Click the gutter, right-click → **Debug File**, and your program pauses
+Click the gutter, press ⇧⌘F5 (or Debug ▸ Debug File, or right-click →
+**Debug File**), and your program pauses
 there — call stack, variables in scope, stepping, watch expressions
 evaluated against the live process. **JavaScript and TypeScript debug
 out of the box**: Microsoft's [js-debug](https://github.com/microsoft/vscode-js-debug)

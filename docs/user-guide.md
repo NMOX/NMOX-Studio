@@ -768,10 +768,14 @@ defaults — install it globally or let the project pin it.
 
 ### Debugging with real breakpoints
 
-Click the gutter (or **⌘F8**) to set a breakpoint, right-click →
-**Debug File (breakpoints)**, and the program stops there — with the
-call stack, the variables in scope, stepping, and watch expressions you
-can evaluate against the paused program.
+Click the gutter (or **⌘F8**) to set a breakpoint, then **⇧⌘F5** — or
+**Debug ▸ Debug File**, or right-click → **Debug File (breakpoints)** —
+and the program stops there — with the call stack, the variables in
+scope, stepping, and watch expressions you can evaluate against the
+paused program. The menu row and its chord are the platform's own
+(v2.157.0); they enable for one JavaScript, TypeScript, Python or Go
+file inside the open project, and run the same launch as the
+right-click, Workspace Trust prompt included.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 

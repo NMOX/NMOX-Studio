@@ -4,6 +4,26 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.157.0] - 2026-09-15
+
+**The debugger gets the platform's own door: Debug ▸ Debug File and ⇧⌘F5.**
+
+- **Debug File works from the menu bar and the keyboard on a web project.**
+  The breakpoint debugger had one door since v1.37.0, the editor's
+  right-click **Debug File** — nothing in the Debug menu, no chord, and the
+  v2.156.0 walk had to seed a menu shadow to reach it without a mouse. The
+  platform already ships the row (Debug ▸ Debug File, ⇧⌘F5 in every keymap
+  profile) and enables it through the project's `ActionProvider`, so the
+  web project now answers `debug.single`: the selected file — one file, inside
+  the project, of a type the debugger takes (JavaScript, TypeScript, Python,
+  Go) — goes to the same launch the right-click runs, trust prompt and all,
+  through a new `core.spi.DebugLauncher` facade the editor publishes (tools
+  gains no editor dependency; without the editor the row simply stays
+  disabled). `DebugSingleDoorTest` holds the enablement rules (two files,
+  a stranger, an unsupported type, nothing selected → disabled) and that
+  invoking hands exactly the file over; `DapDebugLauncherTest` pins the
+  registration and the MIME rule to the action's own four types.
+
 ## [2.156.0] - 2026-09-15
 
 **Every child process and every worker gets a debug session of its own.**
@@ -21480,6 +21500,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.156.0...v2.157.0
 [2.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.1...v2.156.0
 [2.155.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.0...v2.155.1
 [2.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.154.0...v2.155.0
