@@ -9,7 +9,7 @@ của chính nền tảng, một trình sửa package.json, và các mẫu sẵn
 với **Chạy / Dựng / Kiểm thử / Dọn** của IDE, những thao tác làm việc mà bạn
 chẳng bao giờ phải mở cửa sổ dòng lệnh.
 
-![Studio dự án ở khung bên trái — cây tệp của nền tảng và thanh công cụ dự án, với Giá tác vụ mở bên cạnh](../images/tabs/project-studio.png)
+![Studio dự án ở khung bên trái — cây tệp của nền tảng và thanh công cụ dự án, với Giá tác vụ mở bên cạnh](../images/vi/tabs/project-studio.png)
 
 ## Mở nó
 

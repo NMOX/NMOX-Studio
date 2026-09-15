@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.161.0] - 2026-09-15
+
+**Every translated guide and tutorial is illustrated in its own language.**
+
+- **The Hebrew guide showed an English window** (David's find, and every
+  other translation was the same): the fourteen translated user guides and
+  the translated tutorials all referenced the forge's English tab shots. The
+  forge (`scripts/docs-shots.sh`) now takes a locale — the app boots with
+  `--locale`, so every window paints the reader's own words, and for Hebrew
+  and Arabic the mirrored layout IS the illustration — and writes to
+  `docs/images/<lang>/tabs/`, keeping only the shots that language's
+  documents reference (the orphan law). Seven shots × fourteen languages, 126
+  references rewritten across 112 documents; ~20 MB of PNGs, the price of a
+  picture per language at the forge's one size.
+- **Two gates hold it.** `TranslatedShotsGateTest` refuses a translated
+  document illustrated with another language's forge shot (failing-first:
+  every translated document was); `TranslatedTutorialsGateTest`'s shape law
+  now folds a language's own shot back to the English path before comparing,
+  so a tutorial may show its language and must still show the same picture.
+- **The ceiling, recorded.** The translated guides' six staged shots (a
+  KVASIR answer to a real failure, the rack's rear, a preset rack, seeded
+  learning spaces, an opened experiment, code in the editor) are live states
+  the forge cannot yet stage, so they stay English; the forge's next step is
+  staging those states per language.
+
 ## [2.160.0] - 2026-09-15
 
 **The debugger day's review: two hardenings in the relay, one ceiling written
@@ -21619,6 +21644,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.161.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.160.0...v2.161.0
 [2.160.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.159.0...v2.160.0
 [2.159.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.158.0...v2.159.0
 [2.158.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.157.0...v2.158.0

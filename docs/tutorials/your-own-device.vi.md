@@ -12,7 +12,7 @@ Mới từ 2.0.0. Giá ra đời với năm mươi ba thiết bị và, cho tớ
 một cách thêm thiết bị thứ năm mươi tư: viết một trình cắm NetBeans. Đây
 là cách còn lại.
 
-![Giá tác vụ: kệ thiết bị bên trái là nơi một thiết bị từ ~/.nmox/devices.d xuất hiện, bên cạnh các thiết bị có sẵn](../images/tabs/the-task-rack.png)
+![Giá tác vụ: kệ thiết bị bên trái là nơi một thiết bị từ ~/.nmox/devices.d xuất hiện, bên cạnh các thiết bị có sẵn](../images/vi/tabs/the-task-rack.png)
 
 ## 1. Tạo thư mục
 

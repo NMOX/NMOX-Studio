@@ -25,7 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Beyond existence, the properties a translated walkthrough usually loses:
  * the commands (every fenced block byte for byte), the shape (the same
- * headings and screenshots), and the way around (the language bar, and links
+ * headings and screenshots — since v2.161.0 a forge shot may come from the
+ * language's own directory, the same picture painted in the reader's
+ * words), and the way around (the language bar, and links
  * that stay in the reader's language instead of dropping them back into English).
  */
 class TranslatedTutorialsGateTest {
@@ -102,8 +104,13 @@ class TranslatedTutorialsGateTest {
                 if (!all(HEADING, en, 1).equals(all(HEADING, tr, 1))) {
                     wrong.add(p.getFileName() + ": headings " + all(HEADING, tr, 1) + " but English has " + all(HEADING, en, 1));
                 }
-                if (!all(IMAGE, en, 1).equals(all(IMAGE, tr, 1))) {
-                    wrong.add(p.getFileName() + ": screenshots " + all(IMAGE, tr, 1) + " but English has " + all(IMAGE, en, 1));
+                // a translated tutorial shows the forge's shot in ITS language
+                // (docs/images/<lang>/tabs/, v2.161.0); folded back to the
+                // English path, the set must still be the English tutorial's
+                List<String> shots = all(IMAGE, tr, 1).stream()
+                        .map(ref -> ref.replace("images/" + lang + "/tabs/", "images/tabs/")).toList();
+                if (!all(IMAGE, en, 1).equals(shots)) {
+                    wrong.add(p.getFileName() + ": screenshots " + shots + " but English has " + all(IMAGE, en, 1));
                 }
             }
         }

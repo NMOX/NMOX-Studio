@@ -9,7 +9,7 @@ lugar o projeto atual, os arquivos abertos e recentes, os projetos
 conhecidos e as ferramentas que você tem instaladas. É onde você se situa
 antes de mergulhar num estúdio.
 
-![A Bancada no painel esquerdo — o projeto atual com os selos da cadeia de ferramentas, arquivos abertos e recentes, projetos e o diretório de ferramentas](../images/tabs/workbench.png)
+![A Bancada no painel esquerdo — o projeto atual com os selos da cadeia de ferramentas, arquivos abertos e recentes, projetos e o diretório de ferramentas](../images/pt/tabs/workbench.png)
 
 ## Abrir
 

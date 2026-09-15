@@ -12,7 +12,7 @@ Baru di 2.0.0. Rak ini hadir dengan lima puluh tiga perangkat dan,
 sampai sekarang, hanya satu cara untuk menambahkan yang kelima puluh
 empat: membuat plugin NetBeans. Inilah cara yang lain.
 
-![Rak Tugas: rak perangkat di sebelah kiri adalah tempat perangkat dari ~/.nmox/devices.d muncul, di samping perangkat bawaan](../images/tabs/the-task-rack.png)
+![Rak Tugas: rak perangkat di sebelah kiri adalah tempat perangkat dari ~/.nmox/devices.d muncul, di samping perangkat bawaan](../images/id/tabs/the-task-rack.png)
 
 ## 1. Buat foldernya
 

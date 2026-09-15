@@ -9,7 +9,7 @@ lanzamiento que reúne en un solo sitio tu proyecto actual, los archivos
 abiertos y recientes, los proyectos conocidos y las herramientas que
 tienes instaladas. Es donde te orientas antes de meterte en un estudio.
 
-![El Banco de trabajo en el panel izquierdo: el proyecto actual con sus etiquetas de cadena de herramientas, los archivos abiertos y recientes, los proyectos y el directorio de herramientas](../images/tabs/workbench.png)
+![El Banco de trabajo en el panel izquierdo: el proyecto actual con sus etiquetas de cadena de herramientas, los archivos abiertos y recientes, los proyectos y el directorio de herramientas](../images/es/tabs/workbench.png)
 
 ## Ábrelo
 

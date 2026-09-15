@@ -6,7 +6,7 @@
 
 *Itutok ang isang AI agent sa iyong IDE — at hayaan itong BUMASA, hindi kailanman magpatakbo.*
 
-![Ang dialog ng Agent Port — ang loopback endpoint, ang token kada pagsisimula (isang placeholder sa kuhang ito), at ang handang config ng client na kokopyahin](../images/tabs/agent-port.png)
+![Ang dialog ng Agent Port — ang loopback endpoint, ang token kada pagsisimula (isang placeholder sa kuhang ito), at ang handang config ng client na kokopyahin](../images/tl/tabs/agent-port.png)
 
 May kasamang Model Context Protocol server ang NMOX Studio. Anumang agent
 na nagsasalita ng MCP (Claude Code, isang katulong sa editor, ang iyong

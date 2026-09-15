@@ -9,7 +9,7 @@ nimi zarządza: szablony, natywne drzewo plików platformy, edytor
 package.json i presety stojaka — plus wbudowane w IDE **Uruchom / Zbuduj
 / Testuj / Wyczyść**, które działają, choć nigdy nie otworzysz terminala.
 
-![Studio projektu w lewym doku — natywne drzewo plików platformy i pasek narzędzi projektu, obok otwarty Stojak zadań](../images/tabs/project-studio.png)
+![Studio projektu w lewym doku — natywne drzewo plików platformy i pasek narzędzi projektu, obok otwarty Stojak zadań](../images/pl/tabs/project-studio.png)
 
 ## Otwieranie
 

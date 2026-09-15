@@ -10,7 +10,7 @@ Rack-Vorlagen — dazu die IDE-eigenen Aktionen **Ausführen / Erstellen /
 Testen / Bereinigen**, die funktionieren, ohne dass Sie je ein Terminal
 öffnen.
 
-![Das Projekt-Studio im linken Dock — der plattformeigene Dateibaum und die Projekt-Werkzeugleiste, daneben das offene Task-Rack](../images/tabs/project-studio.png)
+![Das Projekt-Studio im linken Dock — der plattformeigene Dateibaum und die Projekt-Werkzeugleiste, daneben das offene Task-Rack](../images/de/tabs/project-studio.png)
 
 ## Öffnen
 

@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · **Français** · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Le sélecteur d’espaces d’apprentissage — la recherche dans les tutoriels livrés, avec la sonde qui vous dit d’emblée si cette machine a l’outil de l’espace](../images/tabs/learning-spaces.png)
+![Le sélecteur d’espaces d’apprentissage — la recherche dans les tutoriels livrés, avec la sonde qui vous dit d’emblée si cette machine a l’outil de l’espace](../images/fr/tabs/learning-spaces.png)
 
 Un espace d’apprentissage est un bac à sable autonome pour apprendre un
 langage, un cadriciel ou une bibliothèque : NMOX Studio génère du code

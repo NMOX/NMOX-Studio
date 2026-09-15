@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · **Русский** · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Выбор нового учебного пространства — поиск по встроенным урокам и проверка доступности, которая сразу говорит, есть ли на этой машине нужный пространству инструмент](../images/tabs/learning-spaces.png)
+![Выбор нового учебного пространства — поиск по встроенным урокам и проверка доступности, которая сразу говорит, есть ли на этой машине нужный пространству инструмент](../images/ru/tabs/learning-spaces.png)
 
 Учебное пространство — самодостаточная песочница для изучения языка,
 фреймворка или библиотеки: NMOX Studio создаёт образец кода, урок с

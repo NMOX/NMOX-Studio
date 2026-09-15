@@ -10,7 +10,7 @@ eigenständiges Custom Element (Shadow DOM, State, Listener) — dazu einen
 Vorschauserver, damit Sie es laufen sehen. Ein Klick auf einen Block hebt
 genau die Zeilen hervor, die er erzeugt hat.
 
-![Block-Studio — die Teilepalette, die Arbeitsfläche mit einer Komponentenwurzel und das erzeugte Custom Element, bei dem ein Klick auf ein Teil seinen Code zeigt](../images/tabs/block-studio.png)
+![Block-Studio — die Teilepalette, die Arbeitsfläche mit einer Komponentenwurzel und das erzeugte Custom Element, bei dem ein Klick auf ein Teil seinen Code zeigt](../images/de/tabs/block-studio.png)
 
 ## Öffnen
 

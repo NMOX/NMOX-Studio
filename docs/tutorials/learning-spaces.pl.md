@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · **Polski** · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Wybór nowej przestrzeni nauki — wyszukiwanie wśród wbudowanych kursów i sonda dostępności, która od razu mówi, czy ta maszyna ma narzędzie danej przestrzeni](../images/tabs/learning-spaces.png)
+![Wybór nowej przestrzeni nauki — wyszukiwanie wśród wbudowanych kursów i sonda dostępności, która od razu mówi, czy ta maszyna ma narzędzie danej przestrzeni](../images/pl/tabs/learning-spaces.png)
 
 Przestrzeń nauki to samowystarczalna piaskownica do nauki języka,
 frameworka albo biblioteki: NMOX Studio tworzy przykładowy kod, prowadzony

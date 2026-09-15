@@ -9,7 +9,7 @@ O Estúdio de projeto é onde os projetos nascem e são cuidados: modelos, uma
 predefinições do rack — mais o **Executar / Compilar / Testar / Limpar**
 nativos da IDE, que funcionam sem você jamais abrir um terminal.
 
-![O Estúdio de projeto no painel esquerdo — a árvore de arquivos nativa da plataforma e a barra de ferramentas do projeto, com o Rack de tarefas aberto ao lado](../images/tabs/project-studio.png)
+![O Estúdio de projeto no painel esquerdo — a árvore de arquivos nativa da plataforma e a barra de ferramentas do projeto, com o Rack de tarefas aberto ao lado](../images/pt/tabs/project-studio.png)
 
 ## Abrir
 

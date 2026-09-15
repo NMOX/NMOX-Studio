@@ -9,7 +9,7 @@ asli platform, penyunting package.json, dan prasetel rak — ditambah
 **Jalankan / Bangun / Uji / Bersihkan** bawaan IDE yang bekerja tanpa Anda
 pernah membuka terminal.
 
-![Studio Proyek di panel kiri — pohon berkas asli platform dan bilah alat proyek, dengan Rak Tugas terbuka di sampingnya](../images/tabs/project-studio.png)
+![Studio Proyek di panel kiri — pohon berkas asli platform dan bilah alat proyek, dengan Rak Tugas terbuka di sampingnya](../images/id/tabs/project-studio.png)
 
 ## Membukanya
 

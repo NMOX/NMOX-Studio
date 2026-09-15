@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · **हिन्दी** · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![नया लर्निंग स्पेस चयनक — अंतर्निहित ट्यूटोरियल में खोज, और उपलब्धता की जाँच जो पहले ही बता देती है कि इस मशीन पर उस स्पेस का उपकरण है या नहीं](../images/tabs/learning-spaces.png)
+![नया लर्निंग स्पेस चयनक — अंतर्निहित ट्यूटोरियल में खोज, और उपलब्धता की जाँच जो पहले ही बता देती है कि इस मशीन पर उस स्पेस का उपकरण है या नहीं](../images/hi/tabs/learning-spaces.png)
 
 लर्निंग स्पेस किसी भाषा, फ़्रेमवर्क या लाइब्रेरी को सीखने के लिए एक
 आत्मनिर्भर सैंडबॉक्स है: NMOX Studio नमूना कोड, क़दम-दर-क़दम ट्यूटोरियल

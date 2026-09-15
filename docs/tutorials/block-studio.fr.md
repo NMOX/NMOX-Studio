@@ -10,7 +10,7 @@ personnalisé autonome (shadow DOM, état, écouteurs) — plus un serveur
 d’aperçu vivant pour le voir tourner. Cliquez un bloc pour surligner les
 lignes exactes qu’il a produites.
 
-![Le Studio de blocs — la palette des pièces, la toile avec la racine d’un composant, et l’élément personnalisé généré avec la correspondance pièce-code au clic](../images/tabs/block-studio.png)
+![Le Studio de blocs — la palette des pièces, la toile avec la racine d’un composant, et l’élément personnalisé généré avec la correspondance pièce-code au clic](../images/fr/tabs/block-studio.png)
 
 ## L’ouvrir
 

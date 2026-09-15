@@ -10,7 +10,7 @@ package.json y preajustes del rack, además de **Ejecutar / Compilar /
 Probar / Limpiar** nativos del IDE, que funcionan sin que abras nunca una
 terminal.
 
-![El Estudio de proyecto en el panel izquierdo: el árbol de archivos nativo de la plataforma y la barra del proyecto, con el Rack de tareas abierto al lado](../images/tabs/project-studio.png)
+![El Estudio de proyecto en el panel izquierdo: el árbol de archivos nativo de la plataforma y la barra del proyecto, con el Rack de tareas abierto al lado](../images/es/tabs/project-studio.png)
 
 ## Ábrelo
 

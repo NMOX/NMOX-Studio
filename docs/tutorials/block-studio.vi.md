@@ -10,7 +10,7 @@ tùy biến đứng độc lập (shadow DOM, trạng thái, trình lắng nghe)
 máy chủ xem trước đang sống để bạn thấy nó chạy. Nhấp vào một khối để tô sáng
 đúng những dòng mà khối đó sinh ra.
 
-![Studio khối — bảng khối, khung vẽ với gốc của thành phần, và phần tử tùy biến được sinh ra với ánh xạ mã khi nhấp vào từng mảnh](../images/tabs/block-studio.png)
+![Studio khối — bảng khối, khung vẽ với gốc của thành phần, và phần tử tùy biến được sinh ra với ánh xạ mã khi nhấp vào từng mảnh](../images/vi/tabs/block-studio.png)
 
 ## Mở nó
 

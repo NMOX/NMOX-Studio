@@ -10,7 +10,7 @@ sendiri (shadow DOM, state, listener) — beserta server pratinjau hidup agar An
 melihatnya berjalan. Klik sebuah blok untuk menyorot baris persis yang
 dihasilkannya.
 
-![Studio Blok — palet kepingan, kanvas dengan akar komponen, dan elemen kustom yang dibangkitkan dengan pemetaan klik-kepingan ke kode](../images/tabs/block-studio.png)
+![Studio Blok — palet kepingan, kanvas dengan akar komponen, dan elemen kustom yang dibangkitkan dengan pemetaan klik-kepingan ke kode](../images/id/tabs/block-studio.png)
 
 ## Membukanya
 

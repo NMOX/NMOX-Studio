@@ -35,7 +35,7 @@ Từ dòng lệnh, `nmoxstudio --open <thư-mục>` khởi động ứng dụng 
 
 IDE mở ra với ba thẻ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Trình duyệt**. Mọi cửa sổ khác chỉ cách một phím tắt ⌥⌘ và đều có trong cột TOOLING của trang chào mừng. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
 
-![Lần chạy đầu tiên — trang chào mừng với ba thẻ](images/tabs/workbench.png)
+![Lần chạy đầu tiên — trang chào mừng với ba thẻ](images/vi/tabs/workbench.png)
 
 Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên thẻ chào mừng):
 
@@ -80,7 +80,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 <a id="4-the-task-rack"></a>
 ## 4. Giá tác vụ
 
-![Giá tác vụ](images/tabs/the-task-rack.png)
+![Giá tác vụ](images/vi/tabs/the-task-rack.png)
 
 Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việc của bạn — npm, trình đóng gói, trình chạy kiểm thử, máy chủ phát triển, trình soi lỗi, git, việc triển khai — đều là một thiết bị trong một giá: các núm chọn tác vụ, GO chạy nó, các đèn LED cho thấy trạng thái, và một màn hình LCD kể cho bạn bằng lời chuyện gì đã xảy ra.
 

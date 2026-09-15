@@ -12,7 +12,7 @@ Nouveau dans la 2.0.0. Le rack était livré avec cinquante-trois appareils
 et, jusqu’ici, une seule façon d’en ajouter un cinquante-quatrième : écrire
 un greffon NetBeans. Voici l’autre façon.
 
-![Le Rack de tâches : l’étagère d’appareils à gauche, où apparaît un appareil venu de ~/.nmox/devices.d, à côté des appareils intégrés](../images/tabs/the-task-rack.png)
+![Le Rack de tâches : l’étagère d’appareils à gauche, où apparaît un appareil venu de ~/.nmox/devices.d, à côté des appareils intégrés](../images/fr/tabs/the-task-rack.png)
 
 ## 1. Créer le dossier
 

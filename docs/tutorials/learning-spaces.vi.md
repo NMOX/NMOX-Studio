@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · **Tiếng Việt** · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Bảng chọn Không gian học tập mới — tìm trong các bài hướng dẫn có sẵn, với phép dò cho biết ngay từ đầu máy này có công cụ của không gian đó hay không](../images/tabs/learning-spaces.png)
+![Bảng chọn Không gian học tập mới — tìm trong các bài hướng dẫn có sẵn, với phép dò cho biết ngay từ đầu máy này có công cụ của không gian đó hay không](../images/vi/tabs/learning-spaces.png)
 
 Một không gian học tập là một hộp cát khép kín để học một ngôn ngữ, framework
 hay thư viện: NMOX Studio sinh ra mã mẫu, một bài hướng dẫn dắt tay, và một

@@ -7,7 +7,7 @@
 *Arahkan agen AI ke IDE Anda — dan biarkan ia MEMBACA, tidak pernah
 menjalankan.*
 
-![Dialog Agent Port — titik akhir loopback, token per penyalaan (placeholder di bidikan ini), dan konfigurasi klien siap salin](../images/tabs/agent-port.png)
+![Dialog Agent Port — titik akhir loopback, token per penyalaan (placeholder di bidikan ini), dan konfigurasi klien siap salin](../images/id/tabs/agent-port.png)
 
 NMOX Studio membawa server Model Context Protocol. Agen apa pun yang
 berbicara MCP (Claude Code, asisten penyunting, skrip Anda sendiri)

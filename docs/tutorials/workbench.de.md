@@ -9,7 +9,7 @@ Ihr aktuelles Projekt, offene und zuletzt verwendete Dateien, bekannte
 Projekte und Ihre installierten Werkzeuge an einem Ort zeigt. Hier
 orientieren Sie sich, bevor Sie in ein Studio eintauchen.
 
-![Der Arbeitsplatz im linken Dock — das aktuelle Projekt mit seinen Toolchain-Zeichen, offene und zuletzt verwendete Dateien, Projekte und das Werkzeugverzeichnis](../images/tabs/workbench.png)
+![Der Arbeitsplatz im linken Dock — das aktuelle Projekt mit seinen Toolchain-Zeichen, offene und zuletzt verwendete Dateien, Projekte und das Werkzeugverzeichnis](../images/de/tabs/workbench.png)
 
 ## Öffnen
 

@@ -35,7 +35,7 @@ Depuis un terminal, `nmoxstudio --open <dossier>` lance l’application avec ce 
 
 L’IDE s’ouvre avec trois onglets le long de la zone d’édition : **Bienvenue → Rack de tâches → Navigateur web**. Chaque autre fenêtre est à un raccourci ⌥⌘ et figure dans la colonne TOOLING de la page d’accueil. Dans le dock de gauche : **Studio de projet** (arborescence et modèles), la base **Plan de travail** et l’**Explorateur NPM**. Un dossier `~/NMOX` est créé comme espace de travail par défaut ; le rack y pointe jusqu’à ce que vous ouvriez un projet.
 
-![Premier lancement — la page d’accueil avec trois onglets](images/tabs/workbench.png)
+![Premier lancement — la page d’accueil avec trois onglets](images/fr/tabs/workbench.png)
 
 Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l’onglet d’accueil) :
 
@@ -80,7 +80,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 <a id="4-the-task-rack"></a>
 ## 4. Le rack de tâches
 
-![Le rack de tâches](images/tabs/the-task-rack.png)
+![Le rack de tâches](images/fr/tabs/the-task-rack.png)
 
 Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, l’empaqueteur, le lanceur de tests, le serveur de développement, le linter, git, le déploiement — est un appareil matériel dans un rack : les boutons rotatifs choisissent la tâche, GO l’exécute, les LED montrent l’état, et un afficheur vous dit avec des mots ce qui s’est passé.
 

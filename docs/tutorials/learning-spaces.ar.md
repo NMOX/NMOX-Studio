@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · **العربية**
 <!-- /languages -->
 
-![نافذة اختيار مساحة التعلم الجديدة — بحث في الدروس المدمجة، وفحص التوفّر بيقولكم من الأول الجهاز ده عليه أداة المساحة ولا لأ](../images/tabs/learning-spaces.png)
+![نافذة اختيار مساحة التعلم الجديدة — بحث في الدروس المدمجة، وفحص التوفّر بيقولكم من الأول الجهاز ده عليه أداة المساحة ولا لأ](../images/ar/tabs/learning-spaces.png)
 
 مساحة التعلم ساحة تجربة مستقلة لتعلم لغة، أو framework، أو مكتبة: NMOX
 Studio بيولّد كود مثال، ودرس خطوة بخطوة، وراك متوصّل من الأول فيه **REPL

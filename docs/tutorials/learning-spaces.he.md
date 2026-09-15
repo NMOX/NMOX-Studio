@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · **עברית** · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![הבורר של מרחב למידה חדש — חיפוש במדריכים המובנים, ובדיקת הזמינות אומרת מראש אם במחשב הזה יש את הכלי של המרחב](../images/tabs/learning-spaces.png)
+![הבורר של מרחב למידה חדש — חיפוש במדריכים המובנים, ובדיקת הזמינות אומרת מראש אם במחשב הזה יש את הכלי של המרחב](../images/he/tabs/learning-spaces.png)
 
 מרחב למידה הוא ארגז חול עצמאי ללימוד שפה, מסגרת עבודה או ספרייה: NMOX Studio יוצר קוד לדוגמה, מדריך מודרך וראק שכבר מחובר אליו **REPL אמיתי בתוך הראק** שמקלידים לתוכו. יש 93 מרחבים מובנים.
 

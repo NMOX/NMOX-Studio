@@ -9,7 +9,7 @@ lancement qui montre en un seul endroit votre projet courant, les fichiers
 ouverts et récents, les projets connus et l’outillage installé. C’est là
 que vous prenez vos repères avant de plonger dans un studio.
 
-![Le Plan de travail dans le dock de gauche — projet courant avec ses pastilles de chaîne d’outils, fichiers ouverts et récents, projets et répertoire des outils](../images/tabs/workbench.png)
+![Le Plan de travail dans le dock de gauche — projet courant avec ses pastilles de chaîne d’outils, fichiers ouverts et récents, projets et répertoire des outils](../images/fr/tabs/workbench.png)
 
 ## L’ouvrir
 

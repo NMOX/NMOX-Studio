@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · [Deutsch](learning-spaces.de.md) · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · **Português (Brasil)** · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![O seletor de Novo espaço de aprendizado — busca nos tutoriais que já vêm com o produto, com a sondagem de disponibilidade dizendo de antemão se esta máquina tem a ferramenta do espaço](../images/tabs/learning-spaces.png)
+![O seletor de Novo espaço de aprendizado — busca nos tutoriais que já vêm com o produto, com a sondagem de disponibilidade dizendo de antemão se esta máquina tem a ferramenta do espaço](../images/pt/tabs/learning-spaces.png)
 
 Um espaço de aprendizado é um ambiente autocontido para aprender uma
 linguagem, um framework ou uma biblioteca: o NMOX Studio gera o código de

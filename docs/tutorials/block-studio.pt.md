@@ -10,7 +10,7 @@ element autocontido (shadow DOM, estado, listeners) — mais um servidor de
 visualização ao vivo para você vê-lo rodar. Clique num bloco para realçar
 as linhas exatas que ele produziu.
 
-![O Estúdio de blocos — a paleta de peças, a tela com a raiz de um componente e o custom element gerado, com o mapeamento clique-na-peça para o código](../images/tabs/block-studio.png)
+![O Estúdio de blocos — a paleta de peças, a tela com a raiz de um componente e o custom element gerado, com o mapeamento clique-na-peça para o código](../images/pt/tabs/block-studio.png)
 
 ## Abrir
 

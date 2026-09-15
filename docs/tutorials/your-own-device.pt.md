@@ -12,7 +12,7 @@ Novidade da 2.0.0. O rack veio com cinquenta e três dispositivos e, até
 agora, um único jeito de acrescentar o quinquagésimo quarto: escrever um
 plugin do NetBeans. Este é o outro jeito.
 
-![O Rack de tarefas: a prateleira de dispositivos à esquerda é onde aparece um dispositivo de ~/.nmox/devices.d, ao lado dos embutidos](../images/tabs/the-task-rack.png)
+![O Rack de tarefas: a prateleira de dispositivos à esquerda é onde aparece um dispositivo de ~/.nmox/devices.d, ao lado dos embutidos](../images/pt/tabs/the-task-rack.png)
 
 ## 1. Crie a pasta
 

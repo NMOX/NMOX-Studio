@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · **हिन्दी** · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Standards Kit विज़ार्ड — robots.txt, sitemap, वेब मैनिफ़ेस्ट, RFC 9116 security.txt और humans.txt, आपके उत्तरों से बने हुए](../images/tabs/wizards-and-kits.png)
+![Standards Kit विज़ार्ड — robots.txt, sitemap, वेब मैनिफ़ेस्ट, RFC 9116 security.txt और humans.txt, आपके उत्तरों से बने हुए](../images/hi/tabs/wizards-and-kits.png)
 
 NMOX Studio कई एक-बार चलने वाले जनरेटर के साथ आता है जो किसी मौजूदा
 प्रोजेक्ट में प्रोडक्शन-स्तर का ढाँचा जोड़ते हैं, आपकी फ़ाइलों को ऊपर से

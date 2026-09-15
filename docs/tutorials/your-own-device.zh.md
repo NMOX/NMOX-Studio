@@ -8,7 +8,7 @@
 
 2.0.0 新增。机架自带五十三台设备，而在此之前，想加第五十四台只有一条路：编写一个 NetBeans 插件。本教程讲的是另一条路。
 
-![任务机架：左侧的设备货架就是 ~/.nmox/devices.d 中的设备出现的地方，和内置设备排在一起](../images/tabs/the-task-rack.png)
+![任务机架：左侧的设备货架就是 ~/.nmox/devices.d 中的设备出现的地方，和内置设备排在一起](../images/zh/tabs/the-task-rack.png)
 
 ## 1. 建好文件夹
 

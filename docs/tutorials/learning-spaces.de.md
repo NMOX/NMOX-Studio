@@ -4,7 +4,7 @@
 [English](learning-spaces.md) · [Español](learning-spaces.es.md) · [Français](learning-spaces.fr.md) · **Deutsch** · [Русский](learning-spaces.ru.md) · [Українська](learning-spaces.uk.md) · [Polski](learning-spaces.pl.md) · [Português (Brasil)](learning-spaces.pt.md) · [Bahasa Indonesia](learning-spaces.id.md) · [Filipino](learning-spaces.tl.md) · [Tiếng Việt](learning-spaces.vi.md) · [简体中文](learning-spaces.zh.md) · [हिन्दी](learning-spaces.hi.md) · [עברית](learning-spaces.he.md) · [العربية](learning-spaces.ar.md)
 <!-- /languages -->
 
-![Die Auswahl „Neuer Lernraum“ — Suche über die mitgelieferten Anleitungen, und die Verfügbarkeitsprüfung sagt Ihnen vorab, ob dieser Rechner das Werkzeug des Raums hat](../images/tabs/learning-spaces.png)
+![Die Auswahl „Neuer Lernraum“ — Suche über die mitgelieferten Anleitungen, und die Verfügbarkeitsprüfung sagt Ihnen vorab, ob dieser Rechner das Werkzeug des Raums hat](../images/de/tabs/learning-spaces.png)
 
 Ein Lernraum ist eine abgeschlossene Sandbox, um eine Sprache, ein
 Framework oder eine Bibliothek zu lernen: NMOX Studio erzeugt Beispielcode,

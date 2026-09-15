@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · **Deutsch** · [Русский](wizards-and-kits.ru.md) · [Українська](wizards-and-kits.uk.md) · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Der Assistent des Standards-Kits — robots.txt, Sitemap, Web-Manifest, security.txt nach RFC 9116 und humans.txt, erzeugt aus Ihren Antworten](../images/tabs/wizards-and-kits.png)
+![Der Assistent des Standards-Kits — robots.txt, Sitemap, Web-Manifest, security.txt nach RFC 9116 und humans.txt, erzeugt aus Ihren Antworten](../images/de/tabs/wizards-and-kits.png)
 
 NMOX Studio bringt mehrere Generatoren mit, die einem bestehenden Projekt
 produktionstaugliche Gerüste hinzufügen, ohne Ihre Dateien zu

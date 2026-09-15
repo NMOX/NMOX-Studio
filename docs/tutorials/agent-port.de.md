@@ -7,7 +7,7 @@
 *Richten Sie einen KI-Agenten auf Ihre IDE — und lassen Sie ihn LESEN,
 nie ausführen.*
 
-![Der Dialog Agent Port — der Loopback-Endpunkt, das beim Start erzeugte Token (in dieser Aufnahme ein Platzhalter) und die fertige Client-Konfiguration zum Kopieren](../images/tabs/agent-port.png)
+![Der Dialog Agent Port — der Loopback-Endpunkt, das beim Start erzeugte Token (in dieser Aufnahme ein Platzhalter) und die fertige Client-Konfiguration zum Kopieren](../images/de/tabs/agent-port.png)
 
 NMOX Studio bringt einen Model-Context-Protocol-Server mit. Jeder Agent,
 der MCP spricht (Claude Code, ein Editor-Assistent, Ihr eigenes Skript),

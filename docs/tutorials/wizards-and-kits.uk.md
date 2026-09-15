@@ -4,7 +4,7 @@
 [English](wizards-and-kits.md) · [Español](wizards-and-kits.es.md) · [Français](wizards-and-kits.fr.md) · [Deutsch](wizards-and-kits.de.md) · [Русский](wizards-and-kits.ru.md) · **Українська** · [Polski](wizards-and-kits.pl.md) · [Português (Brasil)](wizards-and-kits.pt.md) · [Bahasa Indonesia](wizards-and-kits.id.md) · [Filipino](wizards-and-kits.tl.md) · [Tiếng Việt](wizards-and-kits.vi.md) · [简体中文](wizards-and-kits.zh.md) · [हिन्दी](wizards-and-kits.hi.md) · [עברית](wizards-and-kits.he.md) · [العربية](wizards-and-kits.ar.md)
 <!-- /languages -->
 
-![Майстер Standards Kit — robots.txt, sitemap, вебманіфест, security.txt за RFC 9116 і humans.txt, створені з ваших відповідей](../images/tabs/wizards-and-kits.png)
+![Майстер Standards Kit — robots.txt, sitemap, вебманіфест, security.txt за RFC 9116 і humans.txt, створені з ваших відповідей](../images/uk/tabs/wizards-and-kits.png)
 
 NMOX Studio має кілька одноразових генераторів, що додають до наявного
 проєкту заготовки промислового рівня, не затираючи ваших файлів. Цей урок
