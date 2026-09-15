@@ -222,8 +222,9 @@ import org.openide.windows.TopComponent;
         + "Rescan first, then select the deployment again.",
     "Web3StudioTopComponent_deploymentOnOtherNetwork=Note: this deployment was recorded on {0}"
         + " \u2014 calls go to {1}",
-    "Web3StudioTopComponent_watchTip=Poll the chain every 2 s: new blocks plus decoded "
-        + "events of your deployed contracts",
+    "Web3StudioTopComponent_watchTip=Watch the chain: new blocks plus decoded events of your "
+        + "deployed contracts, over a live subscription where the network offers one and "
+        + "otherwise by polling every 2 s",
     "Web3StudioTopComponent_watchContractLabel= Contract: ",
     "Web3StudioTopComponent_watchFilterTip=Whose events to fetch \u2014 blocks always show",
     "Web3StudioTopComponent_inspectTx=Inspect tx\u2026",

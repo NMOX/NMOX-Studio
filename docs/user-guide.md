@@ -1186,7 +1186,9 @@ shows its fields in the label, `order ([to: address, amount: uint256])`, and
 takes its values in order in square brackets: `["0x70997970…79C8", "250"]`
 (an array of structs is a list of lists). A struct return reads back with
 its field names. **Watch** streams
-blocks and decodes event logs live. **Oversight** shows the gas report,
+blocks and decodes event logs live: on a local chain such as ANVIL it
+subscribes over WebSocket, and anywhere else, or if the socket drops, it
+polls every 2 seconds and says so, without missing or repeating a block. **Oversight** shows the gas report,
 EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and
 never reach the file).

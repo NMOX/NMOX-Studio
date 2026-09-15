@@ -1864,9 +1864,20 @@ where the key still never enters the IDE. What IS deferred:
   original entry: parsed (functions list fine) but
   refused at encode time with a pointer to `cast`. Build when a real
   project needs it; the encoding is mechanical but the form UX isn't.
-- **eth_subscribe websockets** — the Watch pane polls at 2s, honest and
-  simple; the shared HttpClient has no WS. Revisit if devnet watching
-  ever feels laggy.
+- ~~**eth_subscribe websockets**~~ — CLOSED v2.155.0: the JDK's HttpClient
+  does ship a WebSocket builder. Watch subscribes to `newHeads` and `logs`
+  where the network has a WS endpoint (an explicit `wsUrl` in
+  `.nmoxweb3.json`, or a loopback `http(s)` RPC read as `ws(s)` on the same
+  port, which covers anvil); remote gateways and secret networks keep polling
+  because their WS paths are not guessed. One `WatchReconciler` session owns
+  the cursors both lanes share, generation-guarded; a dropped socket falls back
+  to the 2 s poller after the last streamed block, logs de-duplicated by
+  transaction hash and log index; each message capped at 1 MB. Live-proven
+  against anvil 1.8.1 through a proxy cut mid-stream: blocks 2–4 streamed,
+  5–6 polled, every block and log exactly once. Remainder: the network dialog
+  has no `wsUrl` field (set it in the workspace file). The original entry: the
+  Watch pane polls at 2s, honest and simple; the shared HttpClient has no WS.
+  Revisit if devnet watching ever feels laggy.
 - ~~**Vyper / non-EVM chains (Solana, Move, ink!)**~~ — CLOSED v2.155.0 for
   Vyper: the toolchain now exists (Foundry compiles `.vy` when `vyper` is
   installed, and the artifact tree reads `out/`), so `.vy`/`.vyi` are editor
