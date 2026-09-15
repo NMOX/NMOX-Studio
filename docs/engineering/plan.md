@@ -1,5 +1,16 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.159.0 — the window that shows what
+v2.156.0 built. Three releases into the debugger's day the multi-session
+feature was still invisible: the platform's debugger group opens Locals,
+Call Stack and Breakpoints but declares Sessions closed, and the walk that
+proved child sessions had opened that window by hand. The fix is a listener
+on the session registry, not a layer override of a platform group file whose
+precedence nobody vouched for: the window opens on a run's second session,
+which is the one moment it earns its place. Lesson: after shipping a
+capability, walk the SHOWING of it — a feature a user cannot see has not
+shipped.*
+
 *Currency addendum 2026-09-15, at v2.158.0 — the bug button. The platform's
 Debug Main Project has been greyed for every web project since debugging
 shipped; it now debugs the entry the toolchain's own contract names (the

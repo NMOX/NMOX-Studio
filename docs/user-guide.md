@@ -828,7 +828,10 @@ named for the file they run, and stop at the breakpoints you set in
 their files — set a breakpoint in `child.js`, debug `parent.js`, and the
 child pauses in its own session the moment it reaches the line. Each
 session closes with the run, and each keeps its own console in the
-Output window.
+Output window. The **Sessions** window opens by itself the moment a run
+has a second session (v2.159.0), so a child that stops is never a
+secret; for a single-session run it stays out of the way, as the
+platform intends.
 
 ![Two debug sessions in the Sessions window — the parent and a worker it started, the editor stopped on the worker's line](images/debug-sessions.png)
 

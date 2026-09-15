@@ -82,6 +82,10 @@ public class DapDebugAction extends BaseAction {
         if (file == null || !supportsMime(mime)) {
             return;
         }
+        // a run that grows a second session shows the Sessions window by
+        // itself (v2.159.0); registered here, once, so nothing touches the
+        // debugger API before the first launch
+        SessionsWindowOpener.install();
         RP.post(() -> {
             try {
                 // Debugging runs the project's code — the same thing the rack
