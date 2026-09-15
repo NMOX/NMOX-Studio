@@ -139,9 +139,14 @@ public final class ServicesBackend implements DbBackend {
                 : Bundle.ServicesBackend_causeWithHint(JdbcCore.humanize(cause), hint);
     }
 
-    /** True while the explorer's shared connection is up and not known-dead. */
+    /**
+     * True while the explorer's shared connection is up and not known-dead.
+     * NOT synchronized: the EDT asks this while {@link #runConsole} holds the
+     * monitor (see {@link DbBackend#isOpen()}); it touches only the final
+     * NetBeans connection handle.
+     */
     @Override
-    public synchronized boolean isOpen() {
+    public boolean isOpen() {
         return isOpenNow();
     }
 
