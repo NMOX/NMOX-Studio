@@ -299,6 +299,7 @@ public final class CommandExecutor {
         boolean portExplained = false;
         boolean nodeFloorExplained = false;
         boolean stripTypesExplained = false;
+        boolean compilerExplained = false;
         try (BufferedReader reader = new BufferedReader(
                 new InputStreamReader(stream, StandardCharsets.UTF_8))) {
             String line;
@@ -358,6 +359,17 @@ public final class CommandExecutor {
                     }
                     RackBus.publish(tabName, stripWall, isErr);
                 }
+                // The fourth wall (v2.155.0, ledger 12): slither ends a
+                // missing-compiler run in a Python traceback whose last
+                // line is the only clue. Translated once, naming the tool.
+                if (!compilerExplained && looksLikeSolidityCompilerMissing(clean)) {
+                    compilerExplained = true;
+                    String human = friendlySolidityCompilerMissing(clean);
+                    if (writer != null) {
+                        writer.println(human);
+                    }
+                    RackBus.publish(tabName, human, isErr);
+                }
                 safeAccept(onLine, clean);
                 RackBus.publish(tabName, clean, isErr);
             }
@@ -415,6 +427,39 @@ public final class CommandExecutor {
                 + " nvm install --lts, or brew install node — then Run"
                 + " again. (Tools ▸ Environment Doctor shows which node"
                 + " the IDE found.)";
+    }
+
+    /** The compiler slither's crytic-compile could not start, quoted as Python prints it. */
+    private static final java.util.regex.Pattern SOLIDITY_COMPILER_MISSING =
+            java.util.regex.Pattern.compile("No such file or directory: '(forge|solc)'");
+
+    /**
+     * True when a line reports that slither's compile step could not find its
+     * compiler (ledger 12, v2.155.0). Measured on slither 0.11.6: a Foundry
+     * project with no {@code forge} on PATH ends in a Python traceback whose
+     * last line is {@code FileNotFoundError: [Errno 2] No such file or
+     * directory: 'forge'}; crytic-compile's solc path fails with the same
+     * {@code No such file or directory: 'solc'} tail. Pinned to those two
+     * names so an unrelated missing file never reads as a compiler wall.
+     * Public for PURITY, which reads the same line to explain why no report
+     * arrived.
+     */
+    public static boolean looksLikeSolidityCompilerMissing(String line) {
+        return line != null && SOLIDITY_COMPILER_MISSING.matcher(line).find();
+    }
+
+    /** The way out, naming the compiler the line named. */
+    static String friendlySolidityCompilerMissing(String line) {
+        java.util.regex.Matcher m = SOLIDITY_COMPILER_MISSING.matcher(line);
+        String tool = m.find() ? m.group(1) : "forge";
+        String install = "forge".equals(tool)
+                ? "install Foundry (curl -L https://foundry.paradigm.xyz | bash)"
+                : "install a solc (pip3 install solc-select, then solc-select install latest"
+                        + " and solc-select use latest)";
+        return "↳ slither could not compile the contracts: " + tool
+                + " is not on the IDE's PATH. To fix it, " + install
+                + ", then run the lint again. (Tools ▸ Environment Doctor shows"
+                + " which tools the IDE found.)";
     }
 
     /**

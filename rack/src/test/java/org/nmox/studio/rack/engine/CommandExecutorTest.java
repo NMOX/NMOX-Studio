@@ -162,6 +162,38 @@ class CommandExecutorTest {
         org.assertj.core.api.Assertions.assertThat(src)
                 .as("NodeTypeStripping.wall must be consulted by the pump — a wall with no call site is a payload without a gate")
                 .contains("NodeTypeStripping.wall(clean)");
+        // the fourth wall (v2.155.0): slither's missing compiler
+        org.assertj.core.api.Assertions.assertThat(src)
+                .as("the slither compiler wall must be consulted by the pump")
+                .contains("looksLikeSolidityCompilerMissing(clean)");
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("slither's missing-compiler traceback is recognized and translated, naming the tool (v2.155.0)")
+    void solidityCompilerWallSpeaksHuman() {
+        // Verbatim: the last line of slither 0.11.6's traceback in a Foundry
+        // project with no forge on PATH (measured, ledger 12).
+        String forge = "FileNotFoundError: [Errno 2] No such file or directory: 'forge'";
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSolidityCompilerMissing(forge))
+                .isTrue();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSolidityCompilerMissing(
+                "crytic_compile.platform.exceptions.InvalidCompilation: [Errno 2] No such file or directory: 'solc'"))
+                .isTrue();
+        // an unrelated missing file is not a compiler wall
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSolidityCompilerMissing(
+                "FileNotFoundError: [Errno 2] No such file or directory: 'remappings.txt'"))
+                .isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSolidityCompilerMissing(null))
+                .isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.friendlySolidityCompilerMissing(forge))
+                .startsWith("↳ ")
+                .contains("forge is not on the IDE's PATH")
+                .contains("foundry.paradigm.xyz")
+                .contains("Environment Doctor");
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.friendlySolidityCompilerMissing(
+                "No such file or directory: 'solc'"))
+                .contains("solc is not on the IDE's PATH")
+                .contains("solc-select");
     }
 
     @Test
