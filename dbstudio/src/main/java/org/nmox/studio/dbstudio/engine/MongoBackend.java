@@ -2,6 +2,7 @@ package org.nmox.studio.dbstudio.engine;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bson.BsonRegularExpression;
@@ -40,9 +42,14 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * "limit": 50}}) executed via {@code runCommand}; a reply carrying
  * {@code cursor.firstBatch} is flattened to a grid by
  * {@link DocumentGrid}, any other reply renders as a single flattened
- * row. Only the first batch is shown — cursor continuation
- * ({@code getMore}) is out of v1 scope, so cap {@code "limit"} in the
- * command (or accept the server's default first batch of 101).
+ * row. The cursor is followed with {@code getMore} up to the grid's row
+ * cap and released with {@code killCursors} when abandoned — see
+ * {@link MongoCursorPager} for the rules; a capped read is marked
+ * truncated, never shown as the whole set.
+ *
+ * <p><b>Cancel</b> interrupts the thread running the command (the
+ * driver's interruptible I/O, see {@link MongoCancel}); the result says
+ * it was cancelled and the client stays open for the next command.
  *
  * <p>The connection string carries URL-encoded credentials and is
  * never logged.
@@ -51,7 +58,8 @@ import org.nmox.studio.dbstudio.model.TableInfo;
     // chrome (shift-2970): the reasons this backend speaks to the user.
     "MongoBackend_noDatabase=No database set \u2014 MongoDB connections need a database name in the connection settings.",
     "MongoBackend_notACommand=Not a MongoDB command document: {0}",
-    "MongoBackend_couldNotOpen=Could not open connection: {0}"
+    "MongoBackend_couldNotOpen=Could not open connection: {0}",
+    "MongoBackend_cancelled=Cancelled — the command was stopped before it finished."
 })
 public final class MongoBackend implements DbBackend {
 
@@ -66,6 +74,9 @@ public final class MongoBackend implements DbBackend {
     private final char[] password;
 
     private MongoClient client; // guarded by this
+
+    /** The cross-thread cancel seam; deliberately not this object's monitor. */
+    private final MongoCancel cancel = new MongoCancel();
 
     /**
      * @param spec     the connection to speak to; must be a
@@ -201,9 +212,10 @@ public final class MongoBackend implements DbBackend {
     /**
      * Runs the console text as ONE Extended-JSON command document via
      * {@code runCommand} — always exactly one {@link QueryResult}
-     * (none for blank input). Parse errors, the missing-database case,
-     * connection failures and server errors all land in
-     * {@link QueryResult#error()}.
+     * (none for blank input). A cursor reply is paged up to
+     * {@code rowLimit} ({@link MongoCursorPager}). Parse errors, the
+     * missing-database case, connection failures, server errors and a
+     * cancel all land in {@link QueryResult#error()}.
      */
     @Override
     public synchronized List<QueryResult> runConsole(String text, int rowLimit) {
@@ -220,31 +232,75 @@ public final class MongoBackend implements DbBackend {
                     Bundle.MongoBackend_notACommand(humanize(e))));
             return results;
         }
-        String openError = open();
-        if (openError != null) {
-            results.add(errorResult(text, elapsedMs(start),
-                    Bundle.MongoBackend_couldNotOpen(openError)));
-            return results;
-        }
+        cancel.begin();
         try {
-            Document reply = client.getDatabase(spec.database()).runCommand(command);
-            results.add(toResult(reply, rowLimit, elapsedMs(start), text));
-        } catch (RuntimeException e) {
-            results.add(errorResult(text, elapsedMs(start), humanize(e)));
+            String openError = open();
+            if (cancel.requested()) {
+                results.add(cancelledResult(text, elapsedMs(start)));
+            } else if (openError != null) {
+                results.add(errorResult(text, elapsedMs(start),
+                        Bundle.MongoBackend_couldNotOpen(openError)));
+            } else {
+                results.add(execute(command, text, rowLimit,
+                        transport(client.getDatabase(spec.database()), cancel),
+                        cancel::requested, start));
+            }
+        } finally {
+            cancel.end();
         }
         return results;
     }
 
     /**
-     * Best-effort no-op: the sync driver offers no per-operation
-     * cancellation handle, and a server-side {@code killOp} hunt is out
-     * of v1 scope. Commands are bounded by the driver timeouts instead;
-     * a long-running command simply finishes. Documented rather than
-     * pretended.
+     * Cancels the command {@link #runConsole} is running, from any
+     * thread: interrupts it (the driver aborts the socket read and drops
+     * that one pooled connection), stops cursor paging before the next
+     * {@code getMore}, and releases the cursor. A no-op when idle.
      */
     @Override
     public void cancel() {
-        // deliberately empty — see javadoc
+        cancel.cancel();
+    }
+
+    /**
+     * One command through a transport: run it, page a cursor reply, map
+     * to a result. A requested cancel wins over whatever the interrupted
+     * call threw, so the console says "cancelled", not a driver message.
+     */
+    static QueryResult execute(Document command, String text, int rowLimit,
+            MongoCursorPager.Transport transport, BooleanSupplier cancelled, long startNanos) {
+        if (cancelled.getAsBoolean()) {
+            return cancelledResult(text, elapsedMs(startNanos));
+        }
+        try {
+            Document reply = transport.run(command);
+            MongoCursorPager.Page page = MongoCursorPager.follow(reply, rowLimit, cancelled, transport);
+            if (page != null && page.cancelled()) {
+                return cancelledResult(text, elapsedMs(startNanos));
+            }
+            return toResult(reply, page, elapsedMs(startNanos), text);
+        } catch (RuntimeException e) {
+            if (cancelled.getAsBoolean()) {
+                return cancelledResult(text, elapsedMs(startNanos));
+            }
+            return errorResult(text, elapsedMs(startNanos), humanize(e));
+        }
+    }
+
+    /** The real transport: {@code runCommand} on the database; release un-interrupts first. */
+    private static MongoCursorPager.Transport transport(MongoDatabase database, MongoCancel cancel) {
+        return new MongoCursorPager.Transport() {
+            @Override
+            public Document run(Document command) {
+                return database.runCommand(command);
+            }
+
+            @Override
+            public Document release(Document killCursors) {
+                cancel.stopInterrupting(); // a cancel's interrupt would refuse the release itself
+                return database.runCommand(killCursors);
+            }
+        };
     }
 
     // ---- internals (static seams, testable without a server) -------
@@ -335,34 +391,33 @@ public final class MongoBackend implements DbBackend {
     }
 
     /**
-     * Maps a {@code runCommand} reply to a result: a reply carrying
-     * {@code cursor.firstBatch} flattens those documents (capped at
-     * {@code rowLimit}, truncated flag when more were in the batch);
-     * anything else renders as the reply itself, one flattened row.
+     * Maps a single {@code runCommand} reply to a result with no server
+     * to page against: a {@code cursor.firstBatch} reply flattens that
+     * batch (capped at {@code rowLimit}; truncated when more were in the
+     * batch or the cursor was still open); anything else renders as the
+     * reply itself, one flattened row.
      */
     static QueryResult toResult(Document reply, int rowLimit, long elapsedMs, String statement) {
-        List<Document> batch = firstBatch(reply);
-        DocumentGrid.Grid grid = batch != null
-                ? DocumentGrid.fromMaps(batch, rowLimit)
-                : DocumentGrid.fromMaps(List.of(reply), 0);
-        return new QueryResult(grid.columnNames(), grid.rows(), grid.rows().size(),
-                -1, grid.truncated(), elapsedMs, null, statement);
+        MongoCursorPager.Page page = MongoCursorPager.follow(reply, rowLimit, () -> true,
+                command -> {
+                    throw new IllegalStateException("no server to page against");
+                });
+        return toResult(reply, page, elapsedMs, statement);
     }
 
-    /** {@code cursor.firstBatch} as documents, or null when the reply has no (clean) cursor. */
-    private static List<Document> firstBatch(Document reply) {
-        if (!(reply.get("cursor") instanceof Document cursor)
-                || !(cursor.get("firstBatch") instanceof List<?> batch)) {
-            return null;
-        }
-        List<Document> docs = new ArrayList<>(batch.size());
-        for (Object item : batch) {
-            if (!(item instanceof Document doc)) {
-                return null; // not a document batch — render the raw reply instead
-            }
-            docs.add(doc);
-        }
-        return docs;
+    /** A paged cursor becomes its documents; no page means the raw reply as one row. */
+    private static QueryResult toResult(Document reply, MongoCursorPager.Page page,
+            long elapsedMs, String statement) {
+        DocumentGrid.Grid grid = page != null
+                ? DocumentGrid.fromMaps(page.documents(), 0)
+                : DocumentGrid.fromMaps(List.of(reply), 0);
+        boolean truncated = page != null && page.truncated();
+        return new QueryResult(grid.columnNames(), grid.rows(), grid.rows().size(),
+                -1, truncated, elapsedMs, null, statement);
+    }
+
+    private static QueryResult cancelledResult(String statement, long elapsedMs) {
+        return errorResult(statement, elapsedMs, Bundle.MongoBackend_cancelled());
     }
 
     private static QueryResult errorResult(String statement, long elapsedMs, String error) {
