@@ -207,6 +207,11 @@ class CommandExecutorTest {
                 busLines.add(line + "|" + err);
             }
         };
+        // the recorder subscribes to the bus when it is first created, so it
+        // must exist BEFORE the run: created after the kill, it never hears
+        // the events, and this test passed only when an earlier test in the
+        // same fork happened to create it first (failed every time alone)
+        FlightRecorder rec = FlightRecorder.getDefault();
         RackBus.subscribe(tap);
         try {
             CountDownLatch done = new CountDownLatch(1);
@@ -221,7 +226,6 @@ class CommandExecutorTest {
             assertThat(busLines).as("the exit line carries the stop mark and is not an error line")
                     .anyMatch(l -> l.startsWith("[exit ") && l.endsWith("] stopped|false"));
             // the real recorder classifies it — poll: the bus fans out on the pump thread
-            FlightRecorder rec = FlightRecorder.getDefault();
             FlightRecorder.Event last = null;
             deadline = System.currentTimeMillis() + 5_000;
             while (System.currentTimeMillis() < deadline) {
