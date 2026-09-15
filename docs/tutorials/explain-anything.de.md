@@ -14,7 +14,7 @@ können von Bauart nicht mitreisen** (die Offenlegung stellt das Studio
 zusammen, dem die Daten gehören, mit entfernten Headern für Zugangsdaten
 und Kennwörtern, die gar nicht erst in Reichweite sind).
 
-![KVASIR erklärt einen echten fehlgeschlagenen Lauf](../images/kvasir-explain.png)
+![KVASIR erklärt einen echten fehlgeschlagenen Lauf](../images/de/kvasir-explain.png)
 
 ## Bevor Sie beginnen
 

@@ -69,9 +69,9 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 
 **Los experimentos** son la forma más rápida de probar una tecnología. **Archivo ▸ Nuevo experimento…** (⇧⌘E) elige una plantilla y genera un proyecto desechable en `~/.nmox/experiments`: sin git, sin recientes, ya confiado y con las dependencias instaladas, para que la **primera ejecución funcione**. Se abre con su propio recorrido `EXPERIMENT.md`, que te dice qué pulsar, qué archivo cambiar y dónde vive la inteligencia del IDE para esa tecnología. Conserva lo que prospere: **Archivo ▸ Experimentos…** ▸ **Promover** lo saca e inicia git, **Duplicar** crea una copia para probar otro enfoque y **Descartar** elimina el resto. El estante muestra la edad de cada uno y su coste real en disco. ¿Prefieres el camino guiado? El diálogo presenta los 93 espacios de aprendizaje.
 
-![El estante de espacios de aprendizaje — cantidad, coste en disco, edad y todo el ciclo de vida](images/spaces-shelf.png)
+![El estante de espacios de aprendizaje — cantidad, coste en disco, edad y todo el ciclo de vida](images/es/spaces-shelf.png)
 
-![Un experimento Express recién creado: el recorrido abierto, las dependencias instaladas y la API ya sirviendo](images/experiment-walkthrough.png)
+![Un experimento Express recién creado: el recorrido abierto, las dependencias instaladas y la API ya sirviendo](images/es/experiment-walkthrough.png)
 
 **Ejecutar, construir, probar — y detener:** el ▶ de la barra (F6) ejecuta el proyecto como lo hace su cadena de herramientas: un script `start` si package.json lo tiene, `cargo run`, `go run`, `dotnet run`, y para una carpeta de HTML un pequeño servidor estático en el primer puerto libre a partir de 8080. Construir, Probar y Limpiar están al lado y en el menú Ejecutar. Un servidor de desarrollo que anuncia su dirección enciende el indicador ⇄ de la barra de estado y abre la página en el navegador integrado. Todo se ejecuta tras la confirmación de confianza del espacio de trabajo la primera vez. Una ejecución que no pudo arrancar lo dice y ofrece abrir el Doctor del entorno. Para detener: el ■ a la derecha de Depurar (⌥⌘.) detiene todos los comandos en marcha a la vez y dice qué detuvo; **Ejecutar ▸ Detener compilación/ejecución** detiene uno y luego ofrece **Repetir**. El ■ ve todo lo que el producto ejecuta por ti, incluidas las instalaciones; al pasar el cursor, el mensaje nombra exactamente qué se detendría y desde cuándo lleva cada cosa en marcha.
 
@@ -84,7 +84,7 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 
 El rack es el corazón del producto. Cada herramienta de tu flujo de trabajo — npm, el empaquetador, el ejecutor de pruebas, el servidor de desarrollo, el linter, git, el despliegue — es un dispositivo físico en un rack: los mandos eligen la tarea, GO la ejecuta, los LED muestran el estado y una pantalla LCD te cuenta con palabras qué ocurrió.
 
-![El rack apuntando a un sitio jQuery clásico — el preajuste Classic Web Bench: MAESTRO, CRATE, DYNAMO (su mando TASK analizó el Gruntfile real), IGNITION sirviendo estático y VITALS vigilando la calidad](images/task-rack.png)
+![El rack apuntando a un sitio jQuery clásico — el preajuste Classic Web Bench: MAESTRO, CRATE, DYNAMO (su mando TASK analizó el Gruntfile real), IGNITION sirviendo estático y VITALS vigilando la calidad](images/es/task-rack.png)
 
 **Lo básico:**
 
@@ -94,7 +94,7 @@ El rack es el corazón del producto. Cada herramienta de tu flujo de trabajo —
 - **Deshaz cualquier cambio estructural** con **⌘Z** — añadir, quitar y recablear dispositivos. Quitar un dispositivo en marcha detiene antes su proceso.
 - **Los preajustes** te dan un rack entero ya cableado con un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Los montajes se guardan por proyecto automáticamente.
 
-![Tab gira el rack — los cables conectan MAESTRO a través de CRATE, DYNAMO e IGNITION hasta VITALS](images/rack-rear.png)
+![Tab gira el rack — los cables conectan MAESTRO a través de CRATE, DYNAMO e IGNITION hasta VITALS](images/es/rack-rear.png)
 
 **Coordinación, cuando tu tubería crece:**
 
@@ -120,9 +120,11 @@ El rack es el corazón del producto. Cada herramienta de tu flujo de trabajo —
 
 ### KVASIR — explica el último fallo
 
-![KVASIR explicando una ejecución fallida real: el diagnóstico autorizado en el frontal y los pasos completos de solución en el visor](images/kvasir-explain.png)
+![KVASIR explicando una ejecución fallida real: el diagnóstico autorizado en el frontal y los pasos completos de solución en el visor](images/es/kvasir-explain.png)
 
 **KVASIR** es asistencia de IA a la manera del rack: un dispositivo que explica el error que hay ahora mismo en el bus MONITOR, no una barra lateral de chat. Cuando una ejecución falla, pulsa **EXPLAIN** y KVASIR le pregunta a tu IA qué salió mal y cuál es el siguiente paso concreto. Un veredicto breve aparece en la pantalla; **VIEW** abre la respuesta completa. **MODEL** elige entre **FAST** (rápido y barato, el valor por omisión) y **DEEP** (más potente). EXPLAIN es azul: lee y pregunta, nunca toca tu proyecto.
+
+KVASIR responde en el idioma en que está configurado NMOX Studio.
 
 **Elige tu IA y pon tu clave.** KVASIR funciona con **Claude (Anthropic)**, **ChatGPT (OpenAI)** o **Gemini (Google)** — tu clave, tu elección. Pulsa **KEY…** para escoger el proveedor y pegar su clave; la elección se recuerda y la clave vive solo en el llavero del sistema operativo. También se leen las variables de entorno habituales de cada proveedor, y una clave guardada gana a una del entorno.
 
@@ -137,7 +139,7 @@ El rack es ampliable: los complementos de terceros pueden añadir dispositivos (
 <a id="5-the-editor"></a>
 ## 5. El editor
 
-![Código jQuery en la paleta NMOX Phosphor, con la estructura en el Navegador](images/editor.png)
+![Código jQuery en la paleta NMOX Phosphor, con la estructura en el Navegador](images/es/editor.png)
 
 Más de 70 lenguajes se resaltan como es debido — la pila moderna, la clásica (CoffeeScript incluido) y toda la capa de configuración, hasta `.env`, `.editorconfig`, las configuraciones de nginx y Apache, los Dockerfile y los archivos de bloqueo.
 

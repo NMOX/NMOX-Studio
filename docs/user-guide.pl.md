@@ -69,9 +69,9 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 
 **Eksperymenty** to najszybszy sposób, by spróbować stosu. **Plik ▸ Nowy eksperyment…** (⇧⌘E) wybiera szablon i tworzy jednorazowy projekt w `~/.nmox/experiments`: bez gita, bez ostatnio używanych, już zaufany, z zainstalowanymi zależnościami — żeby **pierwsze uruchomienie po prostu zadziałało**. Otwiera się na własnym przewodniku `EXPERIMENT.md`, który mówi, co nacisnąć, który plik zmienić i gdzie mieszka inteligencja IDE dla tego stosu. Zachowaj to, z czego coś wyrosło: **Plik ▸ Eksperymenty…** ▸ **Awansuj** wynosi go na zewnątrz i inicjuje gita, **Powiel** tworzy obok kopię na drugie podejście, **Odrzuć** sprząta resztę. Półka pokazuje wiek każdego i jego zmierzony koszt na dysku. Wolisz drogę z przewodnikiem? Okno wysuwa na przód 93 przestrzenie nauki.
 
-![Półka przestrzeni nauki — liczba, koszt na dysku, wiek i cały cykl życia](images/spaces-shelf.png)
+![Półka przestrzeni nauki — liczba, koszt na dysku, wiek i cały cykl życia](images/pl/spaces-shelf.png)
 
-![Świeży eksperyment Express: przewodnik otwarty, zależności zainstalowane, API już odpowiada](images/experiment-walkthrough.png)
+![Świeży eksperyment Express: przewodnik otwarty, zależności zainstalowane, API już odpowiada](images/pl/experiment-walkthrough.png)
 
 **Uruchom, zbuduj, przetestuj — i zatrzymaj:** ▶ na pasku (F6) uruchamia projekt tak, jak uruchamia go jego zestaw narzędzi: skrypt `start`, jeśli package.json go ma, `cargo run`, `go run`, `dotnet run`, a dla katalogu z HTML-em mały serwer statyczny na pierwszym wolnym porcie od 8080. Zbuduj, Przetestuj i Wyczyść są obok i w menu Uruchom. Serwer deweloperski, który ogłosi swój adres, zapala wskaźnik ⇄ na pasku stanu i otwiera stronę we wbudowanej przeglądarce. Wszystko za pierwszym razem przechodzi przez pytanie o zaufanie do przestrzeni roboczej. Uruchomienie, które nie mogło wystartować, mówi to wprost i proponuje otwarcie Doktora środowiska. Aby zatrzymać: ■ na prawo od Debuguj (⌥⌘.) zatrzymuje naraz każde działające polecenie i mówi, co zatrzymał; **Uruchom ▸ Zatrzymaj budowanie/uruchomienie** zatrzymuje jedno i proponuje potem **Powtórz**. ■ widzi wszystko, co produkt uruchamia za ciebie, łącznie z instalacjami; po najechaniu podpowiedź nazywa dokładnie to, co zatrzymałoby naciśnięcie, i od kiedy każde działa.
 
@@ -84,7 +84,7 @@ Skróty warte nauczenia się pierwszego dnia (wszystkie są też wypisane na kar
 
 Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bundler, uruchamiacz testów, serwer deweloperski, linter, git, wdrożenie — jest urządzeniem w stojaku: pokrętła wybierają zadanie, GO je uruchamia, diody pokazują stan, a wyświetlacz mówi słowami, co się stało.
 
-![Stojak wycelowany w klasyczną stronę na jQuery — zestaw Classic Web Bench: MAESTRO, CRATE, DYNAMO (jego pokrętło TASK odczytało prawdziwy Gruntfile), IGNITION serwuje statykę, VITALS pilnuje jakości](images/task-rack.png)
+![Stojak wycelowany w klasyczną stronę na jQuery — zestaw Classic Web Bench: MAESTRO, CRATE, DYNAMO (jego pokrętło TASK odczytało prawdziwy Gruntfile), IGNITION serwuje statykę, VITALS pilnuje jakości](images/pl/task-rack.png)
 
 **Podstawy:**
 
@@ -94,7 +94,7 @@ Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bu
 - **Cofnij dowolną zmianę struktury** przez **⌘Z** — dodanie, usunięcie, przełożenie kabli. Usunięcie działającego urządzenia najpierw zatrzymuje jego proces.
 - **Zestawy** dają cały okablowany stojak jednym kliknięciem — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Układy zapisują się per projekt automatycznie.
 
-![Tab obraca stojak — kable krosowe prowadzą MAESTRO przez CRATE, DYNAMO i IGNITION do VITALS](images/rack-rear.png)
+![Tab obraca stojak — kable krosowe prowadzą MAESTRO przez CRATE, DYNAMO i IGNITION do VITALS](images/pl/rack-rear.png)
 
 **Koordynacja, gdy potok rośnie:**
 
@@ -120,9 +120,11 @@ Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bu
 
 ### KVASIR — wyjaśnia ostatnią porażkę
 
-![KVASIR wyjaśniający prawdziwe nieudane uruchomienie: zatwierdzona diagnoza na płycie czołowej i pełne kroki naprawy w podglądzie](images/kvasir-explain.png)
+![KVASIR wyjaśniający prawdziwe nieudane uruchomienie: zatwierdzona diagnoza na płycie czołowej i pełne kroki naprawy w podglądzie](images/pl/kvasir-explain.png)
 
 **KVASIR** to pomoc SI po stojakowemu: urządzenie, które wyjaśnia błąd leżący właśnie na szynie MONITOR, a nie boczny panel czatu. Gdy uruchomienie padnie, naciśnij **EXPLAIN**, a KVASIR spyta twoją SI, co poszło nie tak i jaki jest konkretny następny krok. Krótki werdykt ląduje na wyświetlaczu; **VIEW** otwiera pełną odpowiedź. **MODEL** wybiera **FAST** (szybko i tanio, domyślnie) albo **DEEP** (mocniej). EXPLAIN jest niebieski: czyta i pyta, nigdy nie dotyka twojego projektu.
+
+KVASIR odpowiada w języku ustawionym w NMOX Studio.
 
 **Wybierz swoją SI, włóż swój klucz.** KVASIR działa z **Claude (Anthropic)**, **ChatGPT (OpenAI)** albo **Gemini (Google)** — twój klucz, twój wybór. Naciśnij **KEY…**, aby wybrać dostawcę i wkleić jego klucz; wybór jest zapamiętywany, a klucz mieszka wyłącznie w pęku kluczy systemu. Zwykłe zmienne środowiskowe każdego dostawcy też są czytane, a klucz zapisany wygrywa z kluczem ze środowiska.
 
@@ -137,7 +139,7 @@ Stojak jest rozszerzalny: wtyczki innych osób mogą dodawać urządzenia (zains
 <a id="5-the-editor"></a>
 ## 5. Edytor
 
-![Kod jQuery w palecie NMOX Phosphor, struktura w Nawigatorze](images/editor.png)
+![Kod jQuery w palecie NMOX Phosphor, struktura w Nawigatorze](images/pl/editor.png)
 
 Ponad 70 języków jest kolorowanych jak należy — nowoczesny zestaw, klasyczny (razem z CoffeeScriptem) i cała warstwa konfiguracji, aż po `.env`, `.editorconfig`, konfiguracje nginksa i Apache, pliki Dockerfile oraz pliki blokad.
 

@@ -11,9 +11,9 @@ ang pinapatakbo ng device; tunay na signal ang dinadala ng cable. Bumubuo
 ang tutorial na ito ng maliit na patch — magpatakbo ng bagay at pagmasdan
 ang output nito sa monitor — para maunawaan ang talinghaga.
 
-![Nakatutok ang rack sa tunay na proyekto — mga device na nakalagay at tumatakbo](../images/task-rack.png)
+![Nakatutok ang rack sa tunay na proyekto — mga device na nakalagay at tumatakbo](../images/tl/task-rack.png)
 
-![Ibinabaliktad ng Tab ang rack — ikinakabit ng mga patch cable ang mga device sa likod](../images/rack-rear.png)
+![Ibinabaliktad ng Tab ang rack — ikinakabit ng mga patch cable ang mga device sa likod](../images/tl/rack-rear.png)
 
 ## Bago magsimula
 

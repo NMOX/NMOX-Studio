@@ -14,7 +14,7 @@ z samej konstrukcji nie mogą się zabrać przy okazji** (ujawniane dane
 składa studio, do którego należą, nagłówki z poświadczeniami są usuwane,
 a hasła są zawsze poza zasięgiem).
 
-![KVASIR wyjaśniający prawdziwe nieudane uruchomienie](../images/kvasir-explain.png)
+![KVASIR wyjaśniający prawdziwe nieudane uruchomienie](../images/pl/kvasir-explain.png)
 
 ## Zanim zaczniesz
 

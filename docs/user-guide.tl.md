@@ -69,9 +69,9 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 
 **Ang mga eksperimento** ang pinakamabilis na paraan para subukan ang isang stack. Ang **File ▸ Bagong eksperimento…** (⇧⌘E) ay pumipili ng template at gumagawa ng pansamantalang proyekto sa `~/.nmox/experiments`: walang git, walang kamakailan, pinagkakatiwalaan na, nakainstall na ang mga dependency — para **gumana agad ang unang Patakbuhin**. Bumubukas ito sa sarili nitong gabay na `EXPERIMENT.md`, na nagsasabi kung ano ang pipindutin, aling file ang babaguhin, at kung saan naroon ang talino ng IDE para sa stack na iyon. Itago ang nagiging kapaki-pakinabang: **File ▸ Mga eksperimento…** ▸ **Itaas** ang naglalabas nito at nag-uumpisa ng git, **Doblehin** ang gumagawa ng kopya sa tabi para sa pangalawang paraan, at **Itapon** ang nag-aalis ng iba. Ipinapakita ng istante ang edad ng bawat isa at ang nasukat nitong laki sa disk. Mas gusto mo ang gabay na landas? Inuuna ng dialog ang 93 espasyo ng pagkatuto.
 
-![Ang istante ng mga espasyo ng pagkatuto — bilang, laki sa disk, edad, at ang buong siklo](images/spaces-shelf.png)
+![Ang istante ng mga espasyo ng pagkatuto — bilang, laki sa disk, edad, at ang buong siklo](images/tl/spaces-shelf.png)
 
-![Isang bagong eksperimentong Express: bukas ang gabay, nakainstall ang mga dependency, naghahain na ang API](images/experiment-walkthrough.png)
+![Isang bagong eksperimentong Express: bukas ang gabay, nakainstall ang mga dependency, naghahain na ang API](images/tl/experiment-walkthrough.png)
 
 **Patakbuhin, buuin, subukin — at itigil:** ang ▶ sa toolbar (F6) ay pinapatakbo ang proyekto gaya ng pagpapatakbo ng sarili nitong mga kasangkapan: isang `start` na script kung mayroon ang package.json, `cargo run`, `go run`, `dotnet run`, at para sa folder ng HTML ay isang maliit na static na server sa unang bakanteng port mula 8080. Katabi nito at nasa menu ng Patakbuhin ang Buuin, Subukin at Linisin. Ang development server na nag-aanunsyo ng address nito ay nagpapailaw sa ⇄ sa status bar at binubuksan ang pahina sa nakapaloob na browser. Ang lahat ay dumadaan muna sa pagtatanong ng tiwala sa workspace. Ang pagtakbong hindi makasimula ay tapat na sinasabi ito at nag-aalok buksan ang Doktor ng kapaligiran. Para huminto: ang ■ sa kanan ng Debug (⌥⌘.) ay pinapatigil ang lahat ng tumatakbong utos nang sabay at sinasabi kung ano ang pinatigil; ang **Patakbuhin ▸ Ihinto ang build/run** ay pinapatigil ang isa at pagkatapos ay nag-aalok ng **Ulitin**. Nakikita ng ■ ang lahat ng sinisimulan ng produkto para sa iyo, pati na ang mga pag-install; kapag inilapit ang cursor, pinangangalanan ng tooltip nang eksakto kung ano ang ititigil ng isang pindot, at kung mula kailan tumatakbo ang bawat isa.
 
@@ -84,7 +84,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 
 Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — npm, ang bundler, ang tagapagpatakbo ng pagsusulit, ang development server, ang linter, ang git, ang paglalagay — ay isang kagamitan sa isang rack: pumipili ng gawain ang mga knob, pinapatakbo ito ng GO, ipinapakita ng mga LED ang kalagayan, at sinasabi sa iyo ng isang LCD sa mga salita kung ano ang nangyari.
 
-![Ang rack na nakatutok sa klasikong jQuery na sityo — ang presetong Classic Web Bench: MAESTRO, CRATE, DYNAMO (binasa ng TASK knob nito ang tunay na Gruntfile), naghahain ng static ang IGNITION, binabantayan ng VITALS ang kalidad](images/task-rack.png)
+![Ang rack na nakatutok sa klasikong jQuery na sityo — ang presetong Classic Web Bench: MAESTRO, CRATE, DYNAMO (binasa ng TASK knob nito ang tunay na Gruntfile), naghahain ng static ang IGNITION, binabantayan ng VITALS ang kalidad](images/tl/task-rack.png)
 
 **Ang batayan:**
 
@@ -94,7 +94,7 @@ Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — n
 - **Bawiin ang anumang pagbabago sa istruktura** sa pamamagitan ng **⌘Z** — pagdaragdag, pagtatanggal, muling pagkakabit. Ang pagtanggal ng tumatakbong kagamitan ay pinapatigil muna ang proseso nito.
 - **Ang mga preset** ay nagbibigay ng buong nakakabit na rack sa isang pindot — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Kusang naiimbak ang mga kabitan kada proyekto.
 
-![Ibinabaling ng Tab ang rack — dinadala ng mga patch cable ang MAESTRO sa CRATE, DYNAMO at IGNITION hanggang sa VITALS](images/rack-rear.png)
+![Ibinabaling ng Tab ang rack — dinadala ng mga patch cable ang MAESTRO sa CRATE, DYNAMO at IGNITION hanggang sa VITALS](images/tl/rack-rear.png)
 
 **Pag-uugnay, kapag lumaki ang iyong daloy:**
 
@@ -120,9 +120,11 @@ Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — n
 
 ### KVASIR — ipinapaliwanag ang huling pagkabigo
 
-![KVASIR na nagpapaliwanag ng tunay na bumagsak na pagtakbo: ang pinahintulutang diyagnosis sa harapan at ang buong hakbang ng pag-aayos sa tagatanaw](images/kvasir-explain.png)
+![KVASIR na nagpapaliwanag ng tunay na bumagsak na pagtakbo: ang pinahintulutang diyagnosis sa harapan at ang buong hakbang ng pag-aayos sa tagatanaw](images/tl/kvasir-explain.png)
 
 Ang **KVASIR** ay tulong ng AI sa paraan ng rack: isang kagamitang nagpapaliwanag sa maling nasa MONITOR bus ngayon, hindi isang gilid na panel ng usapan. Kapag bumagsak ang isang pagtakbo, pindutin ang **EXPLAIN** at tatanungin ng KVASIR ang iyong AI kung ano ang nagkamali at kung ano ang konkretong susunod na hakbang. Isang maikling hatol ang dumadapo sa pantalan; binubuksan ng **VIEW** ang buong sagot. Pumipili ang **MODEL** ng **FAST** (mabilis at mura, ang likas) o **DEEP** (mas malakas). Asul ang EXPLAIN: nagbabasa ito at nagtatanong, hindi nito hinahawakan kailanman ang iyong proyekto.
+
+Sumasagot ang KVASIR sa wikang nakatakda sa NMOX Studio.
 
 **Piliin ang iyong AI, ilagay ang iyong susi.** Gumagana ang KVASIR sa **Claude (Anthropic)**, **ChatGPT (OpenAI)** o **Gemini (Google)** — iyong susi, iyong pili. Pindutin ang **KEY…** upang piliin ang tagapaglaan at idikit ang susi nito; naaalala ang pinili, at nakatira ang susi sa keychain lamang ng operating system. Binabasa rin ang karaniwang mga environment variable ng bawat tagapaglaan, at nananaig ang naimbak na susi sa isang mula sa kapaligiran.
 
@@ -137,7 +139,7 @@ Napapalawak ang rack: maaaring magdagdag ng kagamitan ang mga plugin ng iba (i-i
 <a id="5-the-editor"></a>
 ## 5. Ang editor
 
-![Kodigong jQuery sa paleta ng NMOX Phosphor, ang balangkas sa Navigator](images/editor.png)
+![Kodigong jQuery sa paleta ng NMOX Phosphor, ang balangkas sa Navigator](images/tl/editor.png)
 
 Mahigit 70 wika ang nakukulayan nang wasto — ang makabagong salansan, ang klasiko (kasama ang CoffeeScript), at ang buong patong ng kompigurasyon, hanggang sa `.env`, `.editorconfig`, mga kompigurasyon ng nginx at Apache, mga Dockerfile, at mga lockfile.
 

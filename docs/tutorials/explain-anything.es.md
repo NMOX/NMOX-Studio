@@ -14,7 +14,7 @@ SQL) y **los secretos no pueden colarse, por construcción** (lo que se
 comparte lo arma el estudio dueño de los datos, sin las cabeceras de
 credenciales y sin acceso posible a las contraseñas).
 
-![KVASIR explicando una ejecución fallida real](../images/kvasir-explain.png)
+![KVASIR explicando una ejecución fallida real](../images/es/kvasir-explain.png)
 
 ## Antes de empezar
 

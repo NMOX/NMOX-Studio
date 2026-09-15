@@ -15,7 +15,7 @@ par construction** (la divulgation est assemblée par le studio à qui
 appartiennent les données, les en-têtes d’identification retirés et les
 mots de passe hors de portée).
 
-![KVASIR expliquant une exécution réellement échouée](../images/kvasir-explain.png)
+![KVASIR expliquant une exécution réellement échouée](../images/fr/kvasir-explain.png)
 
 ## Avant de commencer
 

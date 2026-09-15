@@ -13,7 +13,7 @@ pengiriman kode atau SQL), dan **rahasia tidak mungkin ikut terbawa menurut
 rancangannya** (pengungkapannya disusun oleh studio pemilik data, dengan tajuk
 kredensial dibuang dan kata sandi tidak pernah terjangkau).
 
-![KVASIR menjelaskan jalannya yang benar-benar gagal](../images/kvasir-explain.png)
+![KVASIR menjelaskan jalannya yang benar-benar gagal](../images/id/kvasir-explain.png)
 
 ## Sebelum mulai
 

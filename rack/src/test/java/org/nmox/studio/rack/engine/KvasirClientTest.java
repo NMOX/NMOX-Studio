@@ -59,6 +59,41 @@ class KvasirClientTest {
                 .toString();
     }
 
+    // ---- v2.162.0: the reader's language ------------------------------------
+
+    @Test
+    @DisplayName("answerLanguage names the reader's language in English, and says nothing for English")
+    void answerLanguageNamesTheReadersLanguage() {
+        assertThat(KvasirClient.answerLanguage(java.util.Locale.ENGLISH)).isEmpty();
+        assertThat(KvasirClient.answerLanguage(java.util.Locale.ROOT)).isEmpty();
+        assertThat(KvasirClient.answerLanguage(null)).isEmpty();
+        assertThat(KvasirClient.answerLanguage(java.util.Locale.forLanguageTag("he")))
+                .contains("Answer in Hebrew");
+        assertThat(KvasirClient.answerLanguage(java.util.Locale.forLanguageTag("ar-u-nu-latn")))
+                .contains("Answer in Arabic");
+        assertThat(KvasirClient.answerLanguage(java.util.Locale.forLanguageTag("zh")))
+                .contains("Answer in Chinese");
+    }
+
+    @Test
+    @DisplayName("under a translated default locale every explain prompt ends by naming the language")
+    void promptsCarryTheReadersLanguage() {
+        java.util.Locale before = java.util.Locale.getDefault();
+        try {
+            java.util.Locale.setDefault(java.util.Locale.forLanguageTag("uk"));
+            assertThat(KvasirClient.assemblePrompt(ctx())).endsWith("Answer in Ukrainian \u2014 the language the developer's IDE is set to.\n");
+            assertThat(KvasirClient.assembleCodePrompt(
+                    new KvasirClient.CodeQuestion("a.js", "JavaScript", "1 + 1", "")))
+                    .endsWith("Answer in Ukrainian \u2014 the language the developer's IDE is set to.\n");
+            assertThat(KvasirConversation.forDisclosure("API", "GET /x -> 404").outgoing("").get(0).text())
+                    .endsWith("Answer in Ukrainian \u2014 the language the developer's IDE is set to.\n");
+            java.util.Locale.setDefault(java.util.Locale.ENGLISH);
+            assertThat(KvasirClient.assemblePrompt(ctx())).doesNotContain("Answer in");
+        } finally {
+            java.util.Locale.setDefault(before);
+        }
+    }
+
     // ---- prompt assembly: a pure function ----------------------------------
 
     @Test

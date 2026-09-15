@@ -357,6 +357,8 @@ full answer. **MODEL** dials **FAST** (cheap, quick — the default) or
 **DEEP** (stronger). EXPLAIN is blue: it reads and asks, it never touches
 your project.
 
+KVASIR answers in the language NMOX Studio is set to.
+
 **Pick your AI, set your key.** KVASIR works with **Claude (Anthropic)**,
 **ChatGPT (OpenAI)** or **Gemini (Google)** — your key, your pick. Press
 **KEY…** to choose the provider and paste its key; the choice is remembered

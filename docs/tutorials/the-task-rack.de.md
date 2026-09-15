@@ -11,9 +11,9 @@ Kabel trägt ein echtes Signal. Dieses Tutorial baut eine winzige
 Verkabelung — etwas ausführen und seine Ausgabe auf dem Monitor
 verfolgen —, damit die Metapher greift.
 
-![Das Rack auf ein echtes Projekt ausgerichtet — Geräte eingebaut und in Betrieb](../images/task-rack.png)
+![Das Rack auf ein echtes Projekt ausgerichtet — Geräte eingebaut und in Betrieb](../images/de/task-rack.png)
 
-![Tab dreht das Rack — Patchkabel verbinden die Geräte auf der Rückseite](../images/rack-rear.png)
+![Tab dreht das Rack — Patchkabel verbinden die Geräte auf der Rückseite](../images/de/rack-rear.png)
 
 ## Bevor Sie beginnen
 

@@ -69,9 +69,9 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 
 **Thử nghiệm** là cách nhanh nhất để thử một bộ công nghệ. **Tệp ▸ Thử nghiệm mới…** (⇧⌘E) chọn một mẫu và tạo một dự án dùng một lần trong `~/.nmox/experiments`: không git, không danh sách gần đây, đã được tin cậy, các phụ thuộc đã cài — để **lần Chạy đầu tiên chạy được ngay**. Nó mở ra ở chính bản hướng dẫn `EXPERIMENT.md` của mình, nói cho bạn biết nhấn gì, sửa tệp nào, và trí thông minh của IDE dành cho bộ công nghệ ấy nằm ở đâu. Giữ lại thứ thành hình: **Tệp ▸ Thử nghiệm…** ▸ **Nâng lên** đưa nó ra ngoài và khởi tạo git, **Nhân bản** tạo một bản sao bên cạnh để thử cách thứ hai, **Bỏ đi** dọn phần còn lại. Kệ hiển thị tuổi của từng cái và chi phí đĩa đo được. Bạn thích con đường có hướng dẫn hơn? Hộp thoại đưa 93 không gian học lên trước.
 
-![Kệ không gian học — số lượng, chi phí đĩa, tuổi và trọn vòng đời](images/spaces-shelf.png)
+![Kệ không gian học — số lượng, chi phí đĩa, tuổi và trọn vòng đời](images/vi/spaces-shelf.png)
 
-![Một thử nghiệm Express mới tinh: bản hướng dẫn đang mở, các phụ thuộc đã cài, API đã phục vụ](images/experiment-walkthrough.png)
+![Một thử nghiệm Express mới tinh: bản hướng dẫn đang mở, các phụ thuộc đã cài, API đã phục vụ](images/vi/experiment-walkthrough.png)
 
 **Chạy, dựng, kiểm thử — và dừng:** nút ▶ trên thanh công cụ (F6) chạy dự án theo đúng cách bộ công cụ của nó chạy: một kịch bản `start` nếu package.json có, `cargo run`, `go run`, `dotnet run`, và với một thư mục HTML thì một máy chủ tĩnh nhỏ trên cổng trống đầu tiên kể từ 8080. Dựng, Kiểm thử và Dọn nằm ngay cạnh và trong trình đơn Chạy. Một máy chủ phát triển thông báo địa chỉ của mình sẽ thắp dấu ⇄ trên thanh trạng thái và mở trang trong trình duyệt tích hợp. Mọi thứ lần đầu đều đi qua lời hỏi tin cậy không gian làm việc. Một lần chạy không khởi động được sẽ nói thẳng và mời mở Bác sĩ môi trường. Để dừng: nút ■ bên phải Gỡ lỗi (⌥⌘.) dừng mọi lệnh đang chạy cùng lúc và nói nó đã dừng những gì; **Chạy ▸ Dừng build/chạy** dừng một lệnh rồi mời **Lặp lại**. Nút ■ thấy mọi thứ sản phẩm khởi chạy giúp bạn, kể cả các lần cài đặt; khi rê chuột, chú giải nêu đúng thứ một cú nhấn sẽ dừng, và mỗi thứ đã chạy từ bao giờ.
 
@@ -84,7 +84,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 
 Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việc của bạn — npm, trình đóng gói, trình chạy kiểm thử, máy chủ phát triển, trình soi lỗi, git, việc triển khai — đều là một thiết bị trong một giá: các núm chọn tác vụ, GO chạy nó, các đèn LED cho thấy trạng thái, và một màn hình LCD kể cho bạn bằng lời chuyện gì đã xảy ra.
 
-![Giá hướng vào một trang jQuery cổ điển — bộ dựng sẵn Classic Web Bench: MAESTRO, CRATE, DYNAMO (núm TASK của nó đã đọc đúng tệp Gruntfile thật), IGNITION phục vụ tĩnh, VITALS canh chất lượng](images/task-rack.png)
+![Giá hướng vào một trang jQuery cổ điển — bộ dựng sẵn Classic Web Bench: MAESTRO, CRATE, DYNAMO (núm TASK của nó đã đọc đúng tệp Gruntfile thật), IGNITION phục vụ tĩnh, VITALS canh chất lượng](images/vi/task-rack.png)
 
 **Những điều căn bản:**
 
@@ -94,7 +94,7 @@ Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việ
 - **Hoàn tác mọi thay đổi cấu trúc** bằng **⌘Z** — thêm, bớt, đấu lại. Gỡ một thiết bị đang chạy sẽ dừng tiến trình của nó trước.
 - **Các bộ dựng sẵn** trao cho bạn cả một giá đã đấu dây chỉ với một cú nhấp — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Các sơ đồ được lưu theo từng dự án một cách tự động.
 
-![Tab lật giá lại — những sợi dây patch dẫn MAESTRO qua CRATE, DYNAMO và IGNITION tới VITALS](images/rack-rear.png)
+![Tab lật giá lại — những sợi dây patch dẫn MAESTRO qua CRATE, DYNAMO và IGNITION tới VITALS](images/vi/rack-rear.png)
 
 **Sự phối hợp, khi dây chuyền của bạn lớn dần:**
 
@@ -120,9 +120,11 @@ Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việ
 
 ### KVASIR — giải thích lần hỏng gần nhất
 
-![KVASIR đang giải thích một lần chạy hỏng thật: chẩn đoán đã được cho phép trên mặt máy và trọn các bước sửa trong ô xem](images/kvasir-explain.png)
+![KVASIR đang giải thích một lần chạy hỏng thật: chẩn đoán đã được cho phép trên mặt máy và trọn các bước sửa trong ô xem](images/vi/kvasir-explain.png)
 
 **KVASIR** là trợ giúp AI theo cách của giá: một thiết bị giải thích cái lỗi đang nằm trên bus MONITOR, chứ không phải một khung trò chuyện bên lề. Khi một lần chạy hỏng, hãy nhấn **EXPLAIN** và KVASIR sẽ hỏi AI của bạn xem đã sai ở đâu và bước tiếp theo cụ thể là gì. Một phán quyết ngắn hiện lên màn hình; **VIEW** mở ra câu trả lời đầy đủ. **MODEL** chọn giữa **FAST** (nhanh, rẻ, mặc định) và **DEEP** (mạnh hơn). EXPLAIN màu xanh: nó đọc và hỏi, nó không bao giờ đụng vào dự án của bạn.
+
+KVASIR trả lời bằng ngôn ngữ mà NMOX Studio đang dùng.
 
 **Chọn AI của bạn, đặt khóa của bạn.** KVASIR làm việc với **Claude (Anthropic)**, **ChatGPT (OpenAI)** hoặc **Gemini (Google)** — khóa của bạn, lựa chọn của bạn. Nhấn **KEY…** để chọn nhà cung cấp và dán khóa của họ; lựa chọn được ghi nhớ, còn khóa chỉ sống trong chùm khóa của hệ điều hành. Các biến môi trường quen thuộc của từng nhà cung cấp cũng được đọc, và khóa đã lưu thắng khóa từ môi trường.
 
@@ -137,7 +139,7 @@ Giá có thể mở rộng: các trình cắm của bên thứ ba có thể thê
 <a id="5-the-editor"></a>
 ## 5. Trình soạn thảo
 
-![Mã jQuery trong bảng màu NMOX Phosphor, cấu trúc nằm trong Trình duyệt cấu trúc](images/editor.png)
+![Mã jQuery trong bảng màu NMOX Phosphor, cấu trúc nằm trong Trình duyệt cấu trúc](images/vi/editor.png)
 
 Hơn 70 ngôn ngữ được tô màu đúng cách — bộ hiện đại, bộ cổ điển (kể cả CoffeeScript) và trọn lớp cấu hình, xuống tới `.env`, `.editorconfig`, cấu hình nginx và Apache, các tệp Dockerfile và các tệp khóa phiên bản.
 

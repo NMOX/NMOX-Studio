@@ -168,7 +168,8 @@ public final class RackTopComponent extends TopComponent {
 
         rackPanel = new RackPanel(rack);
 
-        JScrollPane scroll = new JScrollPane(rackPanel);
+        rackScroll = new JScrollPane(rackPanel);
+        JScrollPane scroll = rackScroll;
         scroll.setBorder(BorderFactory.createEmptyBorder());
         scroll.getVerticalScrollBar().setUnitIncrement(24);
         scroll.getViewport().setBackground(RackStyle.RACK_BG);
@@ -206,6 +207,8 @@ public final class RackTopComponent extends TopComponent {
         }
     };
     private boolean projectListenerAttached;
+    /** The rack's scroller — kept so a re-show can put it at its logical start. */
+    private JScrollPane rackScroll;
 
     /**
      * Ledger 29 (v1.45.0): the aimed directory's DataFolder node becomes
@@ -543,6 +546,13 @@ public final class RackTopComponent extends TopComponent {
     @Override
     protected void componentShowing() {
         aimNodeShowing = true;
+        // a rack faceplate is painted geometry and never mirrors, so the
+        // rack starts at its left edge in every language — but a mirrored
+        // window opens a wide view at the FAR end of it, which is how the
+        // Hebrew and Arabic pictures came out with every device face cut
+        // off (v2.162.0)
+        javax.swing.SwingUtilities.invokeLater(
+                () -> org.nmox.studio.rack.ui.Scrolls.toContentStart(rackScroll));
         // the publisher's equality guard makes re-shows of an unchanged aim
         // free; a fresh boot pays one ~/NMOX folder-node resolve on first
         // show (never while hidden), which touches no TCC-protected path

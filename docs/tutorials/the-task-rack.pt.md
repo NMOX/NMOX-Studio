@@ -11,9 +11,9 @@ verdade; um cabo leva um sinal de verdade. Este tutorial monta uma ligação
 mínima — rodar algo e ver a saída dele no monitor — para a
 metáfora fazer sentido.
 
-![O rack apontado para um projeto real — dispositivos montados e rodando](../images/task-rack.png)
+![O rack apontado para um projeto real — dispositivos montados e rodando](../images/pt/task-rack.png)
 
-![Tab vira o rack — os cabos de patch ligam os dispositivos na traseira](../images/rack-rear.png)
+![Tab vira o rack — os cabos de patch ligam os dispositivos na traseira](../images/pt/rack-rear.png)
 
 ## Antes de começar
 

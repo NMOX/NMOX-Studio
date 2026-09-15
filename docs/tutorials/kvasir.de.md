@@ -11,7 +11,7 @@ Einwilligungsschranke und ein ehrliches LCD — es werden keine
 Projektdateien oder Geheimnisse gesendet, nur der begrenzte Kontext des
 Fehlschlags.
 
-![KVASIR erklärt einen echten fehlgeschlagenen Lauf: die eingewilligte Diagnose auf der Frontplatte und die vollständigen Schritte zur Behebung im Betrachter](../images/kvasir-explain.png)
+![KVASIR erklärt einen echten fehlgeschlagenen Lauf: die eingewilligte Diagnose auf der Frontplatte und die vollständigen Schritte zur Behebung im Betrachter](../images/de/kvasir-explain.png)
 
 ## Bevor Sie beginnen
 

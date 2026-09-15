@@ -62,6 +62,9 @@ public final class LanguageServerHealth {
         // the refusal speaks in the log too (a walk reads logs, not balloons)
         java.util.logging.Logger.getLogger(LanguageServerHealth.class.getName()).info(
                 "TypeScript " + version + " ships no tsserver; the TypeScript server was not started — " + install);
+        if (forgeRun()) {
+            return; // a docs picture shows the product, not this machine's toolchain
+        }
         NotificationDisplayer.getDefault().notify(NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsTitle"), ICON,
                 NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsBody", version,
                         clickInstalls(s) ? NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_tsClickInstall", install)
@@ -77,6 +80,15 @@ public final class LanguageServerHealth {
                 });
     }
 
+    /**
+     * True under the docs forge ({@code -Dnmox.shots.dir}, the UpdateCheck
+     * precedent): a balloon about THIS machine's missing or wrong toolchain
+     * would be painted into every documentation picture. The log still speaks.
+     */
+    static boolean forgeRun() {
+        return System.getProperty("nmox.shots.dir") != null;
+    }
+
     /** Called when a server binary failed to launch; notifies at most once per binary. */
     public static void reportMissing(String binary) {
         if (binary == null || QUIET_BINARIES.contains(binary)
@@ -88,6 +100,11 @@ public final class LanguageServerHealth {
         String install = s != null ? s.install()
                 : "install " + binary + " and put it on your PATH";
         String title = NbBundle.getMessage(LanguageServerHealth.class, "LanguageServerHealth_title", language);
+        if (forgeRun()) {
+            java.util.logging.Logger.getLogger(LanguageServerHealth.class.getName()).info(
+                    language + " server " + binary + " is missing — " + install);
+            return;
+        }
         NotificationDisplayer.getDefault().notify(title, ICON, detail(s, binary, install),
                 e -> {
                     if (clickInstalls(s)) {

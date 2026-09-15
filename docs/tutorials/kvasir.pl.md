@@ -10,7 +10,7 @@ tak. To pomoc SI na sposób stojaka: jeden przycisk, jasna bramka zgody
 i uczciwy wyświetlacz — żadne pliki projektu ani sekrety nie wychodzą,
 tylko ograniczony kontekst porażki.
 
-![KVASIR wyjaśniający prawdziwe nieudane uruchomienie: diagnoza za zgodą na płycie czołowej i pełne kroki naprawy w podglądzie](../images/kvasir-explain.png)
+![KVASIR wyjaśniający prawdziwe nieudane uruchomienie: diagnoza za zgodą na płycie czołowej i pełne kroki naprawy w podglądzie](../images/pl/kvasir-explain.png)
 
 ## Zanim zaczniesz
 

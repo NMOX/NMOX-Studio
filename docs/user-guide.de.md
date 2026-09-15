@@ -69,9 +69,9 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 
 **Experimente** sind der schnellste Weg, einen Stack auszuprobieren. **Datei ▸ Neues Experiment…** (⇧⌘E) wählt eine Vorlage und erzeugt ein Wegwerfprojekt unter `~/.nmox/experiments`: kein Git, keine zuletzt geöffneten Einträge, bereits vertraut, Abhängigkeiten installiert — damit der **erste Start einfach funktioniert**. Es öffnet sich mit seinem eigenen `EXPERIMENT.md`-Rundgang, der sagt, was zu drücken ist, welche Datei zu ändern ist und wo die IDE-Intelligenz für diesen Stack wohnt. Behalten Sie, woraus etwas wird: **Datei ▸ Experimente…** ▸ **Übernehmen** holt es heraus und legt ein Git-Repository an, **Duplizieren** legt eine Kopie für einen zweiten Ansatz daneben, **Verwerfen** räumt den Rest weg. Das Regal zeigt das Alter jedes Eintrags und seine gemessenen Speicherkosten. Lieber der geführte Weg? Der Dialog stellt die 93 Lernräume voran.
 
-![Das Regal der Lernräume — Anzahl, Speicherkosten, Alter und der gesamte Lebenszyklus](images/spaces-shelf.png)
+![Das Regal der Lernräume — Anzahl, Speicherkosten, Alter und der gesamte Lebenszyklus](images/de/spaces-shelf.png)
 
-![Ein frisches Express-Experiment: der Rundgang offen, die Abhängigkeiten installiert, die API bereits erreichbar](images/experiment-walkthrough.png)
+![Ein frisches Express-Experiment: der Rundgang offen, die Abhängigkeiten installiert, die API bereits erreichbar](images/de/experiment-walkthrough.png)
 
 **Ausführen, Bauen, Testen — und Anhalten:** Das ▶ der Werkzeugleiste (F6) führt das Projekt so aus, wie seine Toolchain es ausführt: ein `start`-Skript, sofern package.json eines hat, `cargo run`, `go run`, `dotnet run`, und für einen Ordner mit HTML einen kleinen statischen Server auf dem ersten freien Port ab 8080. Bauen, Testen und Aufräumen liegen daneben und im Menü Ausführen. Ein Entwicklungsserver, der seine Adresse ankündigt, lässt das ⇄-Zeichen in der Statusleiste aufleuchten und öffnet die Seite im eingebauten Browser. Alles läuft beim ersten Mal hinter der Arbeitsbereichs-Vertrauensabfrage. Ein Start, der nicht gelingen konnte, sagt das und bietet an, den Umgebungs-Doktor zu öffnen. Zum Anhalten: Das ■ rechts von Debuggen (⌥⌘.) hält jeden laufenden Befehl auf einmal an und sagt, was es angehalten hat; **Ausführen ▸ Build/Ausführen stoppen** hält einen an und bietet danach **Wiederholen**. Das ■ sieht alles, was das Produkt für Sie startet, Installationen eingeschlossen; beim Überfahren nennt der Hinweis genau, was ein Druck anhalten würde, und seit wann jedes läuft.
 
@@ -84,7 +84,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 
 Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm, der Bundler, der Testläufer, der Entwicklungsserver, der Linter, git, das Ausrollen — ist ein Gerät im Rack: Drehregler wählen die Aufgabe, GO führt sie aus, LEDs zeigen den Zustand, und ein LCD sagt Ihnen mit Worten, was geschehen ist.
 
-![Das Rack auf eine klassische jQuery-Seite gerichtet — die Vorlage Classic Web Bench: MAESTRO, CRATE, DYNAMO (dessen TASK-Regler das echte Gruntfile gelesen hat), IGNITION liefert statisch aus, VITALS wacht über die Qualität](images/task-rack.png)
+![Das Rack auf eine klassische jQuery-Seite gerichtet — die Vorlage Classic Web Bench: MAESTRO, CRATE, DYNAMO (dessen TASK-Regler das echte Gruntfile gelesen hat), IGNITION liefert statisch aus, VITALS wacht über die Qualität](images/de/task-rack.png)
 
 **Die Grundlagen:**
 
@@ -94,7 +94,7 @@ Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm,
 - **Jede strukturelle Änderung rückgängig machen** mit **⌘Z** — Hinzufügen, Entfernen, Umverkabeln. Ein laufendes Gerät zu entfernen hält zuerst seinen Prozess an.
 - **Vorlagen** geben Ihnen mit einem Klick ein ganzes verkabeltes Rack — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Verkabelungen werden je Projekt automatisch gesichert.
 
-![Tab dreht das Rack — Patchkabel führen MAESTRO über CRATE, DYNAMO und IGNITION bis zu VITALS](images/rack-rear.png)
+![Tab dreht das Rack — Patchkabel führen MAESTRO über CRATE, DYNAMO und IGNITION bis zu VITALS](images/de/rack-rear.png)
 
 **Koordination, wenn Ihre Kette wächst:**
 
@@ -120,9 +120,11 @@ Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm,
 
 ### KVASIR — erklärt den letzten Fehlschlag
 
-![KVASIR erklärt einen echten fehlgeschlagenen Lauf: die eingewilligte Diagnose auf der Frontplatte und die vollständigen Schritte im Betrachter](images/kvasir-explain.png)
+![KVASIR erklärt einen echten fehlgeschlagenen Lauf: die eingewilligte Diagnose auf der Frontplatte und die vollständigen Schritte im Betrachter](images/de/kvasir-explain.png)
 
 **KVASIR** ist KI-Unterstützung nach Art des Racks: ein Gerät, das den Fehler erklärt, der gerade auf dem MONITOR-Bus liegt — keine Chat-Seitenleiste. Schlägt ein Lauf fehl, drücken Sie **EXPLAIN**, und KVASIR fragt Ihre KI, was schiefging und was der konkrete nächste Schritt ist. Ein kurzes Urteil erscheint auf der Anzeige; **VIEW** öffnet die ganze Antwort. **MODEL** wählt zwischen **FAST** (schnell und günstig, die Voreinstellung) und **DEEP** (stärker). EXPLAIN ist blau: Es liest und fragt, es rührt Ihr Projekt nie an.
+
+KVASIR antwortet in der Sprache, auf die NMOX Studio eingestellt ist.
 
 **Wählen Sie Ihre KI, hinterlegen Sie Ihren Schlüssel.** KVASIR arbeitet mit **Claude (Anthropic)**, **ChatGPT (OpenAI)** oder **Gemini (Google)** — Ihr Schlüssel, Ihre Wahl. Drücken Sie **KEY…**, um den Anbieter zu wählen und seinen Schlüssel einzufügen; die Wahl wird gemerkt, und der Schlüssel wohnt allein im Schlüsselbund des Systems. Die üblichen Umgebungsvariablen jedes Anbieters werden ebenfalls gelesen, und ein hinterlegter Schlüssel schlägt einen aus der Umgebung.
 
@@ -137,7 +139,7 @@ Das Rack ist erweiterbar: Erweiterungen von Dritten können Geräte hinzufügen 
 <a id="5-the-editor"></a>
 ## 5. Der Editor
 
-![jQuery-Code in der NMOX-Phosphor-Palette, die Struktur im Navigator](images/editor.png)
+![jQuery-Code in der NMOX-Phosphor-Palette, die Struktur im Navigator](images/de/editor.png)
 
 Über 70 Sprachen werden richtig eingefärbt — der moderne Stapel, der klassische (CoffeeScript eingeschlossen) und die ganze Konfigurationsschicht bis hinunter zu `.env`, `.editorconfig`, nginx- und Apache-Konfigurationen, Dockerfiles und Sperrdateien.
 

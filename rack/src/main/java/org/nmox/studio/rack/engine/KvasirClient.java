@@ -246,6 +246,7 @@ public final class KvasirClient {
                 sb.append("  ").append(line).append('\n');
             }
         }
+        sb.append(answerLanguage());
         return sb.toString();
     }
 
@@ -270,7 +271,32 @@ public final class KvasirClient {
         sb.append("Question: ").append(q.question().isBlank()
                 ? "Explain what this code does." : q.question()).append('\n');
         sb.append("Selected code:\n").append(q.code()).append('\n');
+        sb.append(answerLanguage());
         return sb.toString();
+    }
+
+    /**
+     * The reader's language rides every explain-style prompt (v2.162.0):
+     * a Hebrew IDE asked for a diagnosis in English and got one — the
+     * prompts never said which language the developer reads. Empty for
+     * English (the prompts above are English already, and the verbatim
+     * tests stay verbatim); otherwise one line naming the language in
+     * English, the form a model follows most reliably. Read from the JVM
+     * default so a live language switch (v2.103.0) moves it too. Applies
+     * to the failure, code and disclosure flows only — a commit message or
+     * a completion is code, not prose for the reader.
+     */
+    static String answerLanguage() {
+        return answerLanguage(java.util.Locale.getDefault());
+    }
+
+    /** Pure form of {@link #answerLanguage()}; pinned by KvasirClientTest. */
+    static String answerLanguage(java.util.Locale locale) {
+        if (locale == null || locale.getLanguage().isBlank() || "en".equals(locale.getLanguage())) {
+            return "";
+        }
+        return "\nAnswer in " + locale.getDisplayLanguage(java.util.Locale.ENGLISH)
+                + " \u2014 the language the developer's IDE is set to.\n";
     }
 
     /** The Messages request envelope: model, token cap, one user turn. */

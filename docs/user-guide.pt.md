@@ -69,9 +69,9 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
 **Experimentos** são o jeito mais rápido de experimentar uma pilha. **Arquivo ▸ Novo experimento…** (⇧⌘E) escolhe um modelo e gera um projeto descartável em `~/.nmox/experiments`: sem git, sem recentes, já confiado, dependências instaladas — para que a **primeira execução simplesmente funcione**. Ele abre no próprio roteiro `EXPERIMENT.md`, que diz o que apertar, qual arquivo mudar e onde mora a inteligência da IDE para aquela pilha. Guarde o que virar alguma coisa: **Arquivo ▸ Experimentos…** ▸ **Promover** o tira de lá e inicia o git, **Duplicar** cria uma cópia ao lado para uma segunda abordagem, **Descartar** limpa o resto. A prateleira mostra a idade de cada um e seu custo medido em disco. Prefere o caminho guiado? A caixa de diálogo põe à frente os 93 espaços de aprendizado.
 
-![A prateleira de espaços de aprendizado — quantidade, custo em disco, idade e todo o ciclo de vida](images/spaces-shelf.png)
+![A prateleira de espaços de aprendizado — quantidade, custo em disco, idade e todo o ciclo de vida](images/pt/spaces-shelf.png)
 
-![Um experimento Express recém-criado: o roteiro aberto, as dependências instaladas, a API já servindo](images/experiment-walkthrough.png)
+![Um experimento Express recém-criado: o roteiro aberto, as dependências instaladas, a API já servindo](images/pt/experiment-walkthrough.png)
 
 **Executar, construir, testar — e parar:** o ▶ da barra (F6) executa o projeto do jeito que a cadeia de ferramentas dele executa: um script `start` se o package.json tiver um, `cargo run`, `go run`, `dotnet run`, e para uma pasta de HTML um pequeno servidor estático na primeira porta livre a partir de 8080. Construir, Testar e Limpar ficam ao lado e no menu Executar. Um servidor de desenvolvimento que anuncia seu endereço acende o indicador ⇄ na barra de status e abre a página no navegador embutido. Tudo passa, na primeira vez, pela confirmação de confiança do espaço de trabalho. Uma execução que não conseguiu começar diz isso e oferece abrir o Doutor do ambiente. Para parar: o ■ à direita de Depurar (⌥⌘.) para todos os comandos em execução de uma vez e diz o que parou; **Executar ▸ Parar compilação/execução** para um e depois oferece **Repetir**. O ■ enxerga tudo que o produto inicia para você, instalações incluídas; ao passar o cursor, a dica nomeia exatamente o que uma pressão pararia, e desde quando cada coisa está rodando.
 
@@ -84,7 +84,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
 O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — npm, o empacotador, o executor de testes, o servidor de desenvolvimento, o linter, o git, a implantação — é um dispositivo físico num rack: os botões giratórios escolhem a tarefa, o GO executa, os LEDs mostram o estado e um visor conta em palavras o que aconteceu.
 
-![O rack apontado para um site jQuery clássico — a predefinição Classic Web Bench: MAESTRO, CRATE, DYNAMO (seu botão TASK leu o Gruntfile de verdade), IGNITION servindo estático, VITALS vigiando a qualidade](images/task-rack.png)
+![O rack apontado para um site jQuery clássico — a predefinição Classic Web Bench: MAESTRO, CRATE, DYNAMO (seu botão TASK leu o Gruntfile de verdade), IGNITION servindo estático, VITALS vigiando a qualidade](images/pt/task-rack.png)
 
 **O básico:**
 
@@ -94,7 +94,7 @@ O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — n
 - **Desfaça qualquer mudança de estrutura** com **⌘Z** — acrescentar, remover, recabear. Remover um dispositivo em execução para antes o processo dele.
 - **As predefinições** entregam um rack inteiro já cabeado em um clique — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. As montagens ficam salvas por projeto automaticamente.
 
-![Tab gira o rack — os cabos levam o MAESTRO por CRATE, DYNAMO e IGNITION até o VITALS](images/rack-rear.png)
+![Tab gira o rack — os cabos levam o MAESTRO por CRATE, DYNAMO e IGNITION até o VITALS](images/pt/rack-rear.png)
 
 **Coordenação, quando o pipeline cresce:**
 
@@ -120,9 +120,11 @@ O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — n
 
 ### KVASIR — explica a última falha
 
-![KVASIR explicando uma execução que falhou de verdade: o diagnóstico consentido no painel e os passos completos de correção no visualizador](images/kvasir-explain.png)
+![KVASIR explicando uma execução que falhou de verdade: o diagnóstico consentido no painel e os passos completos de correção no visualizador](images/pt/kvasir-explain.png)
 
 **KVASIR** é assistência de IA do jeito do rack: um dispositivo que explica o erro que está agora no barramento MONITOR, não uma barra lateral de conversa. Quando uma execução falha, aperte **EXPLAIN** e o KVASIR pergunta à sua IA o que deu errado e qual é o próximo passo concreto. Um veredito curto aparece no visor; **VIEW** abre a resposta inteira. **MODEL** escolhe entre **FAST** (rápido e barato, o padrão) e **DEEP** (mais forte). EXPLAIN é azul: ele lê e pergunta, nunca toca no seu projeto.
+
+O KVASIR responde no idioma configurado no NMOX Studio.
 
 **Escolha sua IA, ponha sua chave.** O KVASIR funciona com **Claude (Anthropic)**, **ChatGPT (OpenAI)** ou **Gemini (Google)** — sua chave, sua escolha. Aperte **KEY…** para escolher o provedor e colar a chave dele; a escolha fica lembrada e a chave mora só no chaveiro do sistema operacional. As variáveis de ambiente usuais de cada provedor também são lidas, e uma chave guardada vence uma do ambiente.
 
@@ -137,7 +139,7 @@ O rack é extensível: plugins de terceiros podem acrescentar dispositivos (inst
 <a id="5-the-editor"></a>
 ## 5. O editor
 
-![Código jQuery na paleta NMOX Phosphor, a estrutura no Navegador](images/editor.png)
+![Código jQuery na paleta NMOX Phosphor, a estrutura no Navegador](images/pt/editor.png)
 
 Mais de 70 linguagens são realçadas como devem — a pilha moderna, a clássica (CoffeeScript incluído) e toda a camada de configuração, até `.env`, `.editorconfig`, configurações do nginx e do Apache, Dockerfiles e arquivos de bloqueio.
 

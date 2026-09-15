@@ -15,7 +15,7 @@ pagkakagawa, hindi makakasakay ang mga lihim** (binubuo ang pagbubunyag ng
 studio na nagmamay-ari ng data, inaalis ang mga header ng credential, at
 hindi kailanman naaabot ang mga password).
 
-![KVASIR na nagpapaliwanag ng tunay na nabigong pagtakbo](../images/kvasir-explain.png)
+![KVASIR na nagpapaliwanag ng tunay na nabigong pagtakbo](../images/tl/kvasir-explain.png)
 
 ## Bago magsimula
 

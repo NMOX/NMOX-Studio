@@ -11,9 +11,9 @@ commande ; un câble transporte un vrai signal. Ce tutoriel construit un
 tout petit montage — exécuter quelque chose et regarder sa sortie sur
 le moniteur — pour que la métaphore prenne tout son sens.
 
-![Le rack visant un vrai projet — appareils en place et en marche](../images/task-rack.png)
+![Le rack visant un vrai projet — appareils en place et en marche](../images/fr/task-rack.png)
 
-![Tab retourne le rack — les cordons relient les appareils à l’arrière](../images/rack-rear.png)
+![Tab retourne le rack — les cordons relient les appareils à l’arrière](../images/fr/rack-rear.png)
 
 ## Avant de commencer
 

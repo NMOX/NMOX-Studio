@@ -69,9 +69,9 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 
 **实验**是尝试一套技术栈最快的方式。**文件 ▸ 新建实验…**（⇧⌘E）挑选一个模板，在 `~/.nmox/experiments` 下生成一个用完即弃的项目：没有 git、不进入最近列表、已经受信任、依赖已安装 — 这样**第一次运行就能成功**。它会打开自己的 `EXPERIMENT.md` 导览，告诉你该按什么、该改哪个文件，以及这套技术栈的 IDE 智能功能在哪里。留下有价值的：**文件 ▸ 实验…** ▸ **升级**把它移出并初始化 git，**复制**在旁边生成一份副本以尝试第二种做法，**丢弃**清理其余的。架子上显示每一个的存在时长和实测占用的磁盘空间。更想要带引导的路径？对话框会把 93 个学习空间放在前面。
 
-![学习空间架 — 数量、磁盘占用、存在时长以及完整的生命周期](images/spaces-shelf.png)
+![学习空间架 — 数量、磁盘占用、存在时长以及完整的生命周期](images/zh/spaces-shelf.png)
 
-![一个刚建好的 Express 实验：导览已打开，依赖已安装，API 已在提供服务](images/experiment-walkthrough.png)
+![一个刚建好的 Express 实验：导览已打开，依赖已安装，API 已在提供服务](images/zh/experiment-walkthrough.png)
 
 **运行、构建、测试 — 以及停止：**工具栏的 ▶（F6）会按项目自己的工具链方式运行它：package.json 中若有 `start` 脚本就用它，否则 `cargo run`、`go run`、`dotnet run`；对于只有 HTML 的文件夹，则在从 8080 起的第一个空闲端口上启动一个小型静态服务器。构建、测试和清理就在旁边，也在“运行”菜单里。宣告了自己地址的开发服务器会点亮状态栏上的 ⇄ 标记，并在内置浏览器中打开该页面。所有这些第一次都要先通过工作区信任确认。无法启动的运行会如实说明，并提供打开环境体检的入口。要停止：调试右侧的 ■（⌥⌘.）会一次停掉所有正在运行的命令，并说明停掉了什么；**运行 ▸ 停止构建/运行**只停一个，随后提供**重复**。■ 能看到产品替你启动的一切，包括各种安装；把光标停在上面，提示会准确说出按下去会停掉什么，以及每一项已经运行了多久。
 
@@ -84,7 +84,7 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 
 机架是本产品的心脏。你工作流程中的每一件工具 — npm、打包器、测试运行器、开发服务器、代码检查器、git、部署 — 都是机架上的一台硬件设备：旋钮选择任务，GO 执行它，指示灯显示状态，而一块液晶屏用文字告诉你发生了什么。
 
-![机架对准一个经典 jQuery 站点 — Classic Web Bench 预设：MAESTRO、CRATE、DYNAMO（它的 TASK 旋钮读取了真实的 Gruntfile）、IGNITION 提供静态服务、VITALS 把关质量](images/task-rack.png)
+![机架对准一个经典 jQuery 站点 — Classic Web Bench 预设：MAESTRO、CRATE、DYNAMO（它的 TASK 旋钮读取了真实的 Gruntfile）、IGNITION 提供静态服务、VITALS 把关质量](images/zh/task-rack.png)
 
 **基础操作：**
 
@@ -94,7 +94,7 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 - **撤销任何结构性改动**：用 **⌘Z** — 添加、移除、重新接线。移除一台正在运行的设备会先停掉它的进程。
 - **预设**只需一次点击就给你一整个接好线的机架 — Ship Gate、Dev Intelligence、Monorepo Lanes、E2E Loop、LAMP Bench、Web3 Bench、Uptime Watch。接线方案会按项目自动保存。
 
-![Tab 把机架翻过来 — 跳线把 MAESTRO 经由 CRATE、DYNAMO 和 IGNITION 接到 VITALS](images/rack-rear.png)
+![Tab 把机架翻过来 — 跳线把 MAESTRO 经由 CRATE、DYNAMO 和 IGNITION 接到 VITALS](images/zh/rack-rear.png)
 
 **当流水线变大时的协调手段：**
 
@@ -120,9 +120,11 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 
 ### KVASIR — 解释最近一次失败
 
-![KVASIR 正在解释一次真实的失败运行：面板上是已获授权的诊断，查看器中是完整的修复步骤](images/kvasir-explain.png)
+![KVASIR 正在解释一次真实的失败运行：面板上是已获授权的诊断，查看器中是完整的修复步骤](images/zh/kvasir-explain.png)
 
 **KVASIR** 是机架方式的 AI 协助：一台解释当前 MONITOR 总线上那个错误的设备，而不是一条聊天侧边栏。当一次运行失败时，按下 **EXPLAIN**，KVASIR 就会问你的 AI 哪里出了问题，以及具体的下一步该怎么做。一个简短的结论落在显示屏上；**VIEW** 打开完整回答。**MODEL** 在 **FAST**（快而便宜，默认）和 **DEEP**（更强）之间选择。EXPLAIN 是蓝色的：它只读取和询问，从不改动你的项目。
+
+KVASIR 会用 NMOX Studio 当前设置的语言回答。
 
 **选择你的 AI，放上你的密钥。**KVASIR 可以配合 **Claude（Anthropic）**、**ChatGPT（OpenAI）**或 **Gemini（Google）** — 你的密钥，你来选。按 **KEY…** 选择服务商并粘贴其密钥；选择会被记住，而密钥只住在操作系统的钥匙串里。各服务商常用的环境变量也会被读取，且已保存的密钥优先于环境变量。
 
@@ -137,7 +139,7 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 <a id="5-the-editor"></a>
 ## 5. 编辑器
 
-![NMOX Phosphor 配色下的 jQuery 代码，结构显示在导航器中](images/editor.png)
+![NMOX Phosphor 配色下的 jQuery 代码，结构显示在导航器中](images/zh/editor.png)
 
 70 多种语言都能正确高亮 — 现代技术栈、经典技术栈（含 CoffeeScript），以及整个配置层，一直到 `.env`、`.editorconfig`、nginx 与 Apache 配置、Dockerfile 和锁文件。
 

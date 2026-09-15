@@ -13,7 +13,7 @@ hay SQL), và **bí mật không thể đi kèm theo, ngay từ thiết kế** (
 chính studio sở hữu dữ liệu soạn ra, tiêu đề chứa thông tin xác thực bị loại bỏ
 và mật khẩu thì không bao giờ nằm trong tầm với).
 
-![KVASIR giải thích một lần chạy hỏng thật](../images/kvasir-explain.png)
+![KVASIR giải thích một lần chạy hỏng thật](../images/vi/kvasir-explain.png)
 
 ## Trước khi bắt đầu
 
