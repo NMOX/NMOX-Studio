@@ -180,7 +180,7 @@ class RealJsDebugIntegrationTest {
         nb.request("stackTrace", new JSONObject().put("threadId", threadId));
         JSONObject top = nb.awaitResponse("stackTrace").getJSONObject("body")
                 .getJSONArray("stackFrames").getJSONObject(0);
-        assertThat(top.getJSONObject("source").getString("path")).isEqualTo(parent.toAbsolutePath().toString());
+        assertThat(ReportedPaths.of(top)).isEqualTo(parent.toAbsolutePath().toString());
         nb.request("continue", new JSONObject().put("threadId", threadId));
 
         // … then the fork asks for a second session, the way the platform
@@ -247,7 +247,7 @@ class RealJsDebugIntegrationTest {
                     client.request("stackTrace", new JSONObject().put("threadId", thread));
                     JSONObject top = client.awaitResponse("stackTrace").getJSONObject("body")
                             .getJSONArray("stackFrames").getJSONObject(0);
-                    hits.add(top.getJSONObject("source").getString("path") + ":" + top.getInt("line"));
+                    hits.add(ReportedPaths.of(top) + ":" + top.getInt("line"));
                     client.request("continue", new JSONObject().put("threadId", thread));
                 } catch (IOException | InterruptedException | RuntimeException | AssertionError ex) {
                     hits.add("FAILED: " + ex);

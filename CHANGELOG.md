@@ -45,6 +45,12 @@ All notable changes to NMOX Studio are documented here. The format follows
   argument to `Annotatable[]`. The breakpoints still list; the "hit" icon
   never shows and the status bar's error badge lights. One session or ten,
   the same; it is NetBeans's bug to fix.
+- **The windows lane caught the new E2E comparing a path by its spelling.**
+  js-debug reports a `pwa-node` frame's Windows path with a lowercase drive
+  letter (`c:\…`) where Java's `Path` says `C:\…`; the first Node E2E never
+  saw it because it only compared the line number. Both integration tests
+  now compare a reported path in its canonical form (`ReportedPaths`), and a
+  wrong path still fails by its own spelling.
 
 ## [2.155.1] - 2026-09-15
 

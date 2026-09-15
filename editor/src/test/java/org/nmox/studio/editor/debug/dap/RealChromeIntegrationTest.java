@@ -351,7 +351,7 @@ class RealChromeIntegrationTest {
                 session.request("stackTrace", new JSONObject().put("threadId", thread));
                 JSONObject top = session.awaitResponse("stackTrace").getJSONObject("body")
                         .getJSONArray("stackFrames").getJSONObject(0);
-                hits.add(top.getJSONObject("source").getString("path") + ":" + top.getInt("line"));
+                hits.add(ReportedPaths.of(top) + ":" + top.getInt("line"));
                 session.request("continue", new JSONObject().put("threadId", thread));
             } catch (IOException | InterruptedException | RuntimeException | AssertionError ex) {
                 hits.add("FAILED: " + ex);
