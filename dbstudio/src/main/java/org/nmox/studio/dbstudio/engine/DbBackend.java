@@ -47,7 +47,15 @@ public interface DbBackend extends AutoCloseable {
      */
     String open();
 
-    /** True while the last {@link #open()} succeeded and the backend wasn't closed. */
+    /**
+     * True while the last {@link #open()} succeeded and the backend wasn't
+     * closed. The one exception to "never call from the EDT": the
+     * connection tree's renderer and the console toolbar ask it while a
+     * command runs, so it must answer immediately and never wait on the
+     * monitor a running {@link #runConsole} holds (the v2.155.0 walk froze
+     * DB Studio for a whole slow query because it did).
+     * {@code IsOpenNeverWaitsTest} holds every implementation to that.
+     */
     boolean isOpen();
 
     /** Releases the connection; safe to call when already closed. Never throws. */

@@ -177,16 +177,21 @@ public class LintDevice extends CommandDevice {
     private volatile java.nio.file.Path slitherReportDir;
     /** The compiler wall appeared in this slither run's output. */
     private volatile boolean slitherCompilerMissing;
+    /** slither's no-AST traceback (Vyper output in the build) appeared in this run. */
+    private volatile boolean slitherNoAst;
 
     @Override
     protected void onLine(String line) {
         if ("slither".equals(activeLinter)) {
             // the findings come from the report file, not the human text;
-            // the one line worth reading is the compiler wall, so the LCD
-            // can say why no report arrived
+            // the lines worth reading are the walls, so the LCD can say why
+            // no report arrived
             if (org.nmox.studio.rack.engine.CommandExecutor
                     .looksLikeSolidityCompilerMissing(line)) {
                 slitherCompilerMissing = true;
+            }
+            if (org.nmox.studio.rack.engine.CommandExecutor.looksLikeSlitherNoAst(line)) {
+                slitherNoAst = true;
             }
             return;
         }
@@ -269,6 +274,7 @@ public class LintDevice extends CommandDevice {
         biomeErrors = "0";
         biomeWarnings = "0";
         slitherCompilerMissing = false;
+        slitherNoAst = false;
         onEdt(() -> {
             cleanLed.setOn(false);
             countLcd.setTextColor(RackStyle.LCD_TEXT);
@@ -336,6 +342,7 @@ public class LintDevice extends CommandDevice {
         biomeErrors = "0";
         biomeWarnings = "0";
         slitherCompilerMissing = false;
+        slitherNoAst = false;
     }
 
     /** Test seam: the report directory a launched slither run would own. */
@@ -392,7 +399,9 @@ public class LintDevice extends CommandDevice {
             }
             String why = slitherCompilerMissing
                     ? "SLITHER COULD NOT COMPILE — NO forge/solc ON PATH"
-                    : result.refusal();
+                    : slitherNoAst
+                            ? "SLITHER CANNOT READ THIS BUILD — VYPER (.vy) IN PROJECT?"
+                            : result.refusal();
             onEdt(() -> {
                 countLcd.setTextColor(RackStyle.LCD_TEXT);
                 countLcd.setText("E:- W:-");

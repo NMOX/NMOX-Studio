@@ -164,10 +164,17 @@ public final class MongoBackend implements DbBackend {
         }
     }
 
-    /** True while the held client is open (last {@link #open()} succeeded). */
+    /**
+     * True while the held client is open (last {@link #open()} succeeded).
+     * Deliberately NOT synchronized: the connection tree's renderer and the
+     * console toolbar ask this on the EDT while {@link #runConsole} holds the
+     * monitor for the whole command. A synchronized read froze all of DB
+     * Studio for the length of a slow query, Cancel included (the v2.155.0
+     * walk, thread dump in hand). It reads the volatile mirror instead.
+     */
     @Override
-    public synchronized boolean isOpen() {
-        return client != null;
+    public boolean isOpen() {
+        return liveClient != null;
     }
 
     /** Closes the held client; safe to call when already closed. */

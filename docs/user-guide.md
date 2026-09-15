@@ -331,7 +331,8 @@ connections) the Java [Device SPI](device-spi.md) is still there.
 - **PURITY** runs **slither** on a Foundry project: its findings land as
   squiggles and in Action Items, High and Medium as errors. Without slither on
   your PATH the lane says how to install it (`pip3 install slither-analyzer`)
-  and runs nothing.
+  and runs nothing. slither analyzes Solidity only: a Foundry project that also
+  holds Vyper (`.vy`) files stops it, and the lane says so.
 
 **Anything else:** **SOLDER** wraps any shell command as a first-class
 device — and the whole rack **exports to GitHub Actions** (your local

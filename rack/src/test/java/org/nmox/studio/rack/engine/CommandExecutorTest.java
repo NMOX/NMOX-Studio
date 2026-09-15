@@ -166,6 +166,29 @@ class CommandExecutorTest {
         org.assertj.core.api.Assertions.assertThat(src)
                 .as("the slither compiler wall must be consulted by the pump")
                 .contains("looksLikeSolidityCompilerMissing(clean)");
+        // the fifth wall (v2.155.1): slither's no-AST traceback (Vyper output in the build)
+        org.assertj.core.api.Assertions.assertThat(src)
+                .as("the slither no-AST wall must be consulted by the pump")
+                .contains("looksLikeSlitherNoAst(clean)");
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("slither's no-AST traceback is recognized and names Vyper as the usual cause (v2.155.1)")
+    void slitherNoAstWallSpeaksHuman() {
+        // Verbatim: the last line of slither 0.11.6's traceback on a Foundry
+        // project holding a .vy file with vyper on PATH (walked 2026-09-15).
+        String line = "KeyError: 'ast'";
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSlitherNoAst(line)).isTrue();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSlitherNoAst("  " + line + "  ")).isTrue();
+        // another KeyError is not this wall
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSlitherNoAst("KeyError: 'abi'")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSlitherNoAst(
+                "ast_nodes = parse(ast[\"ast\"])")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.looksLikeSlitherNoAst(null)).isFalse();
+        org.assertj.core.api.Assertions.assertThat(CommandExecutor.friendlySlitherNoAst())
+                .startsWith("↳ ")
+                .contains("Vyper (.vy)")
+                .contains("does not analyze");
     }
 
     @org.junit.jupiter.api.Test

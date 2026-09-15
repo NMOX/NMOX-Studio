@@ -59,6 +59,8 @@ public final class DbClient implements DbBackend {
     private final char[] password;
 
     private Connection connection;           // guarded by this
+    /** {@link #connection} as {@link #isOpen()} reads it without the monitor. */
+    private volatile Connection liveConnection;
     /** Cancellation seam shared with {@link JdbcCore}; fired by {@link #cancel()}. */
     private final JdbcCore.CancelHook cancelHook = new JdbcCore.CancelHook();
 
@@ -122,17 +124,28 @@ public final class DbClient implements DbBackend {
         try {
             Class.forName(spec.engine().driverClass());
             connection = DriverManager.getConnection(urlWithConnectTimeout(), credentials());
+            liveConnection = connection;
             return null;
         } catch (Exception e) {
             connection = null;
+            liveConnection = null;
             return humanize(e);
         }
     }
 
-    /** True while the held connection is open and not known-dead. */
+    /**
+     * True while the held connection is open and not known-dead. NOT
+     * synchronized: the EDT asks this while {@link #runScript} holds the
+     * monitor for a long statement (see {@link DbBackend#isOpen()}).
+     */
     @Override
-    public synchronized boolean isOpen() {
-        return isOpenLocked();
+    public boolean isOpen() {
+        Connection live = liveConnection;
+        try {
+            return live != null && !live.isClosed();
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     /**
@@ -142,6 +155,7 @@ public final class DbClient implements DbBackend {
     @Override // both DbBackend and AutoCloseable
     public synchronized void close() {
         if (connection != null) {
+            liveConnection = null;
             try {
                 connection.close();
             } catch (SQLException e) {

@@ -370,6 +370,17 @@ public final class CommandExecutor {
                     }
                     RackBus.publish(tabName, human, isErr);
                 }
+                // The fifth wall (v2.155.1): slither's build read an artifact
+                // with no Solidity AST, which is what Vyper output looks like
+                // to it. The walk hit it on a Foundry project holding a .vy.
+                if (!compilerExplained && looksLikeSlitherNoAst(clean)) {
+                    compilerExplained = true;
+                    String human = friendlySlitherNoAst();
+                    if (writer != null) {
+                        writer.println(human);
+                    }
+                    RackBus.publish(tabName, human, isErr);
+                }
                 safeAccept(onLine, clean);
                 RackBus.publish(tabName, clean, isErr);
             }
@@ -460,6 +471,30 @@ public final class CommandExecutor {
                 + " is not on the IDE's PATH. To fix it, " + install
                 + ", then run the lint again. (Tools ▸ Environment Doctor shows"
                 + " which tools the IDE found.)";
+    }
+
+    /**
+     * True when a line is the end of slither's traceback for a build artifact
+     * with no Solidity AST (v2.155.1). Measured on slither 0.11.6 with vyper
+     * 0.4.3 on PATH: a Foundry project holding a {@code .vy} file ends in
+     * {@code KeyError: 'ast'} raised from {@code slither.py}'s
+     * {@code parse(ast["ast"])}, because crytic-compile's
+     * {@code forge build --build-info} includes the Vyper output; the same
+     * project without the {@code .vy} file reports its findings. Pinned to
+     * the exact line so no other KeyError reads as this wall. Public for
+     * PURITY, which reads the same line to explain the missing report.
+     */
+    public static boolean looksLikeSlitherNoAst(String line) {
+        return line != null && line.trim().equals("KeyError: 'ast'");
+    }
+
+    /** The way out: the usual cause, and what to do about it. */
+    static String friendlySlitherNoAst() {
+        return "↳ slither could not read this build: a compiled contract has no"
+                + " Solidity AST. The usual cause is Vyper (.vy) sources in the"
+                + " project, which slither does not analyze. Run the lint on a"
+                + " checkout without the .vy files, or keep them outside the"
+                + " Foundry sources.";
     }
 
     /**

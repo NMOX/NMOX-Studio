@@ -343,4 +343,27 @@ class SlitherLaneTest {
         assertThat(lint.statusTextForTest()).isEqualTo("SLITHER COULD NOT COMPILE — NO forge/solc ON PATH");
         assertThat(tools).as("a failed run is not an all-clear").doesNotContain("slither");
     }
+
+    @Test
+    @DisplayName("no report after the no-AST traceback (Vyper in the build): the LCD names the likely cause, nothing published")
+    void vyperInTheBuildExplainsTheMissingReport() throws Exception {
+        List<String> tools = new CopyOnWriteArrayList<>();
+        DiagnosticsBus.Listener listener = (tool, problems) -> tools.add(tool);
+        LintDevice lint = mounted(Map.of());
+        lint.beginParseForTest();
+        lint.armSlitherReportForTest(Files.createTempDirectory(dir, "run-"));
+        // the last two lines of the real traceback (walked 2026-09-15, slither 0.11.6)
+        lint.onLine("    ast_nodes = parse(ast[\"ast\"])");
+        lint.onLine("KeyError: 'ast'");
+        DiagnosticsBus.addListener(listener);
+        try {
+            tools.clear();
+            lint.onFinished(1);
+            settle();
+        } finally {
+            DiagnosticsBus.removeListener(listener);
+        }
+        assertThat(lint.statusTextForTest()).isEqualTo("SLITHER CANNOT READ THIS BUILD — VYPER (.vy) IN PROJECT?");
+        assertThat(tools).as("a failed run is not an all-clear").doesNotContain("slither");
+    }
 }
