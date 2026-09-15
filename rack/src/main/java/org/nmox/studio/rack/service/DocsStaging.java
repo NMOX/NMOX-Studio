@@ -293,7 +293,7 @@ public final class DocsStaging {
     private static void collect(Container c, Class<LcdDisplay> type, StringBuilder sb) {
         for (Component child : c.getComponents()) {
             if (type.isInstance(child)) {
-                sb.append(((LcdDisplay) child).getText()).append('\n');
+                sb.append(((LcdDisplay) child).getShownText()).append('\n');
             } else if (child instanceof Container cc) {
                 collect(cc, type, sb);
             }

@@ -89,6 +89,17 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         return text;
     }
 
+    /**
+     * What the panel shows, in either mode: the single-line text, or the
+     * buffered lines of a multi-line display joined by newlines. {@link #getText()}
+     * is the single-line field only, so it reads empty on a multi-line
+     * display — the v2.162.0 docs forge read KVASIR's verdict that way and
+     * saw a blank faceplate over a live one.
+     */
+    public String getShownText() {
+        return shownText();
+    }
+
     /** Multi-line mode: append a line, scrolling old ones off. */
     public void appendLine(String line) {
         appendLine(line, null);
