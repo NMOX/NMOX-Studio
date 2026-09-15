@@ -39,13 +39,24 @@ All notable changes to NMOX Studio are documented here. The format follows
   paints itself into a documentation picture, while the log still says it.
 - **The pictures found a real right-to-left defect.** The Hebrew and Arabic
   Task Rack came out with every device face cut off — MAESTRO reading "RO",
-  KVASIR "IR" — because the rack is wider than its viewport and a mirrored
-  view opened at Swing's zero scroll position, which in a right-to-left
-  window is the FAR end. `Scrolls.toLogicalStart` puts a scrolled view where
-  its reader starts, and the rack window asks for it on every show; a
-  left-to-right rack is unchanged. `ScrollsTest`, mutant by name. This is a
-  defect every Hebrew and Arabic user met on opening the window, found only
-  because the guide's pictures are now painted in their languages.
+  MASTER CONTROL reading "NTRL" — because the rack is wider than its viewport
+  and a mirrored window opens it at Swing's zero scroll VALUE, which in a
+  right-to-left view is the FAR end. A faceplate is painted GEOMETRY and never
+  mirrors (v2.148.0), so the rack's content starts at its left edge in every
+  language: `Scrolls.toContentStart` puts the viewport there, which says what
+  is meant regardless of the value-to-position flip a mirrored scrollbar
+  applies, and the rack window asks for it on every show. Measured on the same
+  crop before and after: "RO / NTRL" became "MAESTRO / ASTER CONTROL / RUN
+  SEQUENCE", about ninety pixels of device face recovered. `ScrollsTest`, two
+  mutants by name (the rule and its call site). A left-to-right rack is
+  unchanged. This is what a Hebrew or Arabic user met on opening the window,
+  found only because the guide's pictures are now painted in their languages.
+- **The ceiling that leaves, measured.** A few pixels of the leftmost column
+  still clip in a mirrored rack: the rail gutter moves to the other side and
+  the device panels overflow their viewport by roughly eight pixels, so a
+  subtitle loses its first letter ("ASTER CONTROL"). That is the rack's
+  mirrored LAYOUT, not its scroll position, and it is recorded rather than
+  guessed at here.
 - **A faceplate LCD can be read the way it is painted.** The forge's first
   runs polled KVASIR's verdict through `LcdDisplay.getText()` and saw a blank
   faceplate over a live one. That call returns the single-line field, and
