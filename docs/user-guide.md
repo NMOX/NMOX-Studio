@@ -776,11 +776,13 @@ stops the request mid-flight. The debuggee's console — the `listening on
 3100` line and everything after it — appears in the **Output** window,
 which opens with the session.
 
-> **Breakpoints are managed in the gutter.** The IDE's *Breakpoints*
-> window (Window ▸ Debugging ▸ Breakpoints) does not yet list breakpoints
-> from the debug adapters, so use the gutter to add and remove them. This
-> is a NetBeans platform limitation, not an NMOX one — it affects Python
-> and Go breakpoints identically.
+> **The Breakpoints window lists the project you have open.**
+> Window ▸ Debugging ▸ Breakpoints shows every breakpoint in the aimed
+> project, with a checkbox to disable one. By default it shows only breakpoints from opened
+> projects, so a breakpoint in a file you opened on its own still stops the
+> program and still marks the gutter, but the window leaves it out. To list
+> those too, turn off **From Opened Projects Only** under the window's
+> *Breakpoint Groups* button.
 
 - **JavaScript and TypeScript** debug through
   [js-debug](https://github.com/microsoft/vscode-js-debug) — the same
@@ -1172,7 +1174,11 @@ Build with Foundry or Hardhat and your compiled contracts appear in the
 artifact tree (they re-scan automatically after a FORGE build). Start the
 ANVIL device in the rack and the studio connects to the local chain by
 itself. **Interact** calls any function from the ABI — decoded returns,
-decoded reverts and custom errors, receipts for sends. **Watch** streams
+decoded reverts and custom errors, receipts for sends. A struct parameter
+shows its fields in the label, `order ([to: address, amount: uint256])`, and
+takes its values in order in square brackets: `["0x70997970…79C8", "250"]`
+(an array of structs is a list of lists). A struct return reads back with
+its field names. **Watch** streams
 blocks and decodes event logs live. **Oversight** shows the gas report,
 EIP-170 size verdicts per contract, and your deployment address book
 (persisted to `.nmoxweb3.json`; secret RPC URLs live in the keychain and

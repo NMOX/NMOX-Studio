@@ -228,6 +228,17 @@ public final class ArtifactScanner {
     }
 
     private static List<AbiParam> params(JSONArray array) {
+        return params(array, 0);
+    }
+
+    /**
+     * A struct's members ride in {@code components}, recursively. The
+     * recursion is bounded: past {@link AbiLiteral#MAX_DEPTH} levels the
+     * members are dropped, and the codec then refuses that parameter by
+     * name ("lists none of its components") instead of this parse
+     * recursing without limit on a hostile ABI.
+     */
+    private static List<AbiParam> params(JSONArray array, int depth) {
         List<AbiParam> out = new ArrayList<>();
         if (array == null) {
             return out;
@@ -237,10 +248,14 @@ public final class ArtifactScanner {
             if (param == null) {
                 continue;
             }
+            List<AbiParam> components = depth < AbiLiteral.MAX_DEPTH
+                    ? params(param.optJSONArray("components"), depth + 1)
+                    : List.of();
             out.add(new AbiParam(
                     param.optString("name", ""),
                     param.optString("type", ""),
-                    param.optBoolean("indexed", false)));
+                    param.optBoolean("indexed", false),
+                    components));
         }
         return out;
     }

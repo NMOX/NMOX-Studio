@@ -186,8 +186,15 @@ user-visible weight:
   platform SPI (KeyStoreProvider, Lookup-collected, TrustLevel.TRUST
   for exact-cert trust; Utilities.verifyCertificates consumes it) and
   NmoxTrustedCerts now ships the certificate in-product,
-  KEYS-parity-gated. Remainder: the GUI TRUSTED label observed on the
-  first post-2.43.0 update walk.
+  KEYS-parity-gated. ~~Remainder: the GUI TRUSTED label observed on the
+  first post-2.43.0 update walk.~~ CLOSED v2.154.0: there is no label to
+  photograph — the Plugin Installer's `InstallStep` opens its *Verify
+  Certificate* panel only for plugins that are NOT `isTrusted`. The platform's
+  own decision (`Utilities.verifyCertificates`, which `verifyNbm` feeds) run on
+  the published 2.153.1 core NBM with a portable's cluster on the classpath:
+  1 TRUST certificate, 1 signer, **TRUSTED**; the no-certificate control says
+  SIGNATURE_UNVERIFIED. `scripts/nbm-trust-probe.sh <tag>` repeats it for any
+  release.
 
 ### 94. macOS cannot set the app's language, and saying it could would be a lie
 
@@ -1637,10 +1644,29 @@ v1.33.1 TCC storm, `RootResolver` seam test-pinned); heavy dirs childless (no
 possibly-open `index.html` (bounded — wire-in flows on files rarely open at
 that moment), and three mtime pollers (FileWatcher/ArtifactPulse/
 WorkspaceFilePulse) share a shape a `StampPoller` seam could unify.
+*(v2.154.0: WorkspaceFilePulse became `core.util.FilePulse` in v2.7.0, and
+`ArtifactPulse` now drives a FilePulse for `.nmoxweb3.json` instead of copying
+its stamp diff, keeping only the artifact-tree diff a single-file pulse cannot
+express. `FileWatcher` stays separate on purpose: it is a debounced recursive
+tree watcher with skip-dirs, not a file stamp.)*
 
 ## Open — deferred deliberately, with reasons (added v1.38.1)
 
-### 27. The Breakpoints window never lists DAP breakpoints
+### 27. ~~The Breakpoints window never lists DAP breakpoints~~ — CLOSED v2.154.0: it lists them; a filter hid them
+**Re-walked 2026-09-14 on the 2.153.0 portable (RELEASE310).** One DAP
+breakpoint was seeded through the platform's own persistence
+(`debugger.breakpoints.dap` in `config/Services/org-netbeans-modules-debugger-Settings.properties`,
+read by lsp-client's `BreakpointsReader`), because a gutter click cannot be
+delivered from the background. With the folder AIMED, the window listed
+`app.js:3` with its enabled checkbox. With the same breakpoint and the file
+opened on its own, the window was empty while the gutter still marked line 3.
+The cause is spi-debugger-ui's `BreakpointGroup.createGroups`, which reads
+`Breakpoints.fromOpenProjects` (default **true**) and skips a breakpoint whose
+`GroupProperties.getProjects()` are not open. The v1.38.1 walk predates the
+v1.45.0 OpenProjects bridge, so its project was never "open". Not a platform
+defect: the user guide now says what the window shows and names the
+**From Opened Projects Only** toggle under *Breakpoint Groups*. The original entry:
+
 Found by the v1.38.1 DX pass: set a JS breakpoint, hit it inside a live HTTP
 request — Window ▸ Debugging ▸ Breakpoints stays empty, during and after the
 session. Reproduced identically with a **Python** breakpoint, which runs
@@ -1830,7 +1856,12 @@ No private-key handling of any kind: sends/deploys work only against a
 devnet's unlocked accounts (eth_sendTransaction); remote networks are
 read-only in the Studio. Revisit only with a hardware-wallet story
 where the key still never enters the IDE. What IS deferred:
-- **Tuple/struct ABI parameters** — parsed (functions list fine) but
+- ~~**Tuple/struct ABI parameters**~~ — CLOSED v2.154.0: encode, decode and
+  events through a type tree (`AbiType`), a strict square-bracket literal
+  (`AbiLiteral`) whose refusals name the component and position, the money
+  law inside structs, bounded decode. Walked on Anvil: `place` with a struct
+  mined, `orderAt(0)` decoded with field names, `cast call` agreeing. The
+  original entry: parsed (functions list fine) but
   refused at encode time with a pointer to `cast`. Build when a real
   project needs it; the encoding is mechanical but the form UX isn't.
 - **eth_subscribe websockets** — the Watch pane polls at 2s, honest and
