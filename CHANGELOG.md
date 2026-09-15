@@ -4,6 +4,35 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.158.0] - 2026-09-15
+
+**Debug Main Project — the toolbar's bug button and Debug ▸ Debug Main
+Project debug a web project's own entry.**
+
+- **The bug button works.** Every web project has shown the platform's
+  Debug Main Project button and menu row greyed since v1.37.0. The web
+  project now answers `debug`, and what it debugs is read from the
+  toolchain's own contract, never guessed past it: a Node project's `start`
+  script when it runs a file under `node` (flags tolerated; a dev server, a
+  `nodemon` wrapper or a `&&` pipeline names no single program), else its
+  `main`, else Node's own default `index.js`; a Go project's `main.go`, else
+  its first root source (delve debugs the directory). Every other kind names
+  nothing — its Run names no program either, and a disabled row is honest
+  where a guess would run the wrong thing. The entry must exist and lie
+  inside the project (a `../` in a script points anywhere), and the same
+  `DebugLauncher` facade as v2.157.0 decides by type and runs the same
+  trust-gated launch. `DebugEntriesTest` holds the entry rules (the start
+  script's target, the fall-through to `main` and `index.js`, the pipeline
+  refusal, the missing and escaping entries, Go, the kinds that name none);
+  `DebugMainProjectDoorTest` holds the door (enabled for a supported entry,
+  exactly that entry handed over, disabled and inert without one or without
+  the editor).
+- **Ledger 51 re-checked, deferral kept.** The only third-party-shaped
+  devices that exist — the JSON device format and the bundled gallery —
+  raise no gate before `exec`, so the trust-lie the entry describes cannot
+  occur in them; its condition ("the day a real plugin author needs it") is
+  still unmet, and the reason is now written beside it.
+
 ## [2.157.0] - 2026-09-15
 
 **The debugger gets the platform's own door: Debug ▸ Debug File and ⇧⌘F5.**
@@ -21517,6 +21546,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.158.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.157.0...v2.158.0
 [2.157.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.156.0...v2.157.0
 [2.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.1...v2.156.0
 [2.155.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.0...v2.155.1

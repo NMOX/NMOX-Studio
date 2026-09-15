@@ -62,8 +62,9 @@ class DebugEntriesTest {
     void shouldRefuseMissingAndEscapingEntries(@TempDir Path tmp) throws Exception {
         Path missing = node(tmp, "{\"main\":\"gone.js\"}");
         assertThat(DebugEntries.mainEntry(missing.toFile(), ProjectKind.NODE)).isNull();
-        Path escaping = node(tmp, "{\"scripts\":{\"start\":\"node ../../etc/passwd.js\"}}");
-        Files.writeString(tmp.resolve("passwd.js"), "1");
+        // the file EXISTS one level above the project, so only containment can refuse it
+        Path escaping = node(tmp, "{\"scripts\":{\"start\":\"node ../outside.js\"}}");
+        Files.writeString(tmp.resolve("outside.js"), "1");
         assertThat(DebugEntries.mainEntry(escaping.toFile(), ProjectKind.NODE)).isNull();
     }
 
