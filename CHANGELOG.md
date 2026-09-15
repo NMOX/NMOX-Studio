@@ -34,6 +34,12 @@ Project debug a web project's own entry.**
   stopped on its line 2 at the seeded breakpoint, the `Node: server.js`
   console opened, and Finish Debugger Session ended the debuggee and the
   adapter with nothing left behind.
+- **A menu row the v2.144.0 census missed.** Documenting "Debug ▸ Debug Main
+  Project" failed `DocsMenuDoorsTest`: the code-named rows ledger recorded
+  three of the Debug menu's four platform rows and not this one, so the gate
+  could not see a door the bar has had all along (its translations were
+  already in place in every language — only the ledger line was missing).
+  Recorded now; the hand-kept population is one row more complete.
 - **Ledger 51 re-checked, deferral kept.** The only third-party-shaped
   devices that exist — the JSON device format and the bundled gallery —
   raise no gate before `exec`, so the trust-lie the entry describes cannot
