@@ -67,6 +67,24 @@ class MongoCancelTest {
     }
 
     @Test
+    @DisplayName("request() records without interrupting; interruptRunner() interrupts only after a request")
+    void requestAndInterruptAreSeparate() {
+        MongoCancel cancel = new MongoCancel();
+        assertThat(cancel.request()).as("idle: nothing to cancel").isFalse();
+
+        cancel.begin();
+        cancel.interruptRunner(); // no request yet
+        assertThat(Thread.currentThread().isInterrupted()).isFalse();
+        assertThat(cancel.request()).isTrue();
+        assertThat(Thread.currentThread().isInterrupted())
+                .as("the server kill runs between request and interrupt").isFalse();
+        cancel.interruptRunner();
+        assertThat(Thread.currentThread().isInterrupted()).isTrue();
+        cancel.end();
+        assertThat(Thread.currentThread().isInterrupted()).isFalse();
+    }
+
+    @Test
     @DisplayName("begin() clears the previous run's request, so the next statement runs")
     void beginClearsTheOldRequest() {
         MongoCancel cancel = new MongoCancel();

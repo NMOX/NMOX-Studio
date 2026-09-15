@@ -1,5 +1,7 @@
 package org.nmox.studio.dbstudio.engine;
 
+import com.mongodb.ConnectionString;
+import com.mongodb.MongoClientSettings;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
@@ -10,6 +12,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,9 +50,11 @@ import org.nmox.studio.dbstudio.model.TableInfo;
  * {@link MongoCursorPager} for the rules; a capped read is marked
  * truncated, never shown as the whole set.
  *
- * <p><b>Cancel</b> interrupts the thread running the command (the
- * driver's interruptible I/O, see {@link MongoCancel}); the result says
- * it was cancelled and the client stays open for the next command.
+ * <p><b>Cancel</b> kills the running operation on the server
+ * ({@code killOp}, found through this backend's unique application
+ * name, see {@link MongoServerCancel}) and interrupts the thread for the
+ * waits that respond to that ({@link MongoCancel}). The result says it was
+ * cancelled, and the client stays open for the next command.
  *
  * <p>The connection string carries URL-encoded credentials and is
  * never logged.
@@ -77,6 +82,15 @@ public final class MongoBackend implements DbBackend {
 
     /** The cross-thread cancel seam; deliberately not this object's monitor. */
     private final MongoCancel cancel = new MongoCancel();
+
+    /**
+     * This backend's application name, unique per instance, so a
+     * cancel's {@code currentOp} can match only its own operations.
+     */
+    private final String appName = "NMOX Studio DB " + UUID.randomUUID();
+
+    /** The open client as {@link #cancel()} sees it without taking the monitor. */
+    private volatile MongoClient liveClient;
 
     /**
      * @param spec     the connection to speak to; must be a
@@ -134,9 +148,13 @@ public final class MongoBackend implements DbBackend {
         }
         MongoClient fresh = null;
         try {
-            fresh = MongoClients.create(connectionString());
+            fresh = MongoClients.create(MongoClientSettings.builder()
+                    .applyConnectionString(new ConnectionString(connectionString()))
+                    .applicationName(appName)
+                    .build());
             fresh.getDatabase(spec.database()).runCommand(new Document("ping", 1));
             client = fresh;
+            liveClient = fresh;
             return null;
         } catch (RuntimeException e) {
             if (fresh != null) {
@@ -156,6 +174,7 @@ public final class MongoBackend implements DbBackend {
     @Override
     public synchronized void close() {
         if (client != null) {
+            liveClient = null;
             client.close();
             client = null;
         }
@@ -253,13 +272,23 @@ public final class MongoBackend implements DbBackend {
 
     /**
      * Cancels the command {@link #runConsole} is running, from any
-     * thread: interrupts it (the driver aborts the socket read and drops
-     * that one pooled connection), stops cursor paging before the next
-     * {@code getMore}, and releases the cursor. A no-op when idle.
+     * thread: records the request (paging stops before the next
+     * {@code getMore}, and the error reads "Cancelled"), kills this
+     * backend's operation on the server ({@link MongoServerCancel}), then
+     * interrupts the running thread. A no-op when idle. The kill makes
+     * server calls, so call this off the EDT, as the console already does.
      */
     @Override
     public void cancel() {
-        cancel.cancel();
+        if (!cancel.request()) {
+            return;
+        }
+        MongoClient live = liveClient;
+        if (live != null) {
+            MongoDatabase admin = live.getDatabase("admin");
+            MongoServerCancel.kill(admin::runCommand, appName);
+        }
+        cancel.interruptRunner();
     }
 
     /**
