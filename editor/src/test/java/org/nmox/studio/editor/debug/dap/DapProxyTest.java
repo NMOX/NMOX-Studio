@@ -159,16 +159,113 @@ class DapProxyTest {
     }
 
     @Test
-    @DisplayName("a second startDebugging gets a polite yes and no third connection")
-    void shouldIgnoreExtraTargets() throws Exception {
+    @DisplayName("a second target is offered to the platform as its own session, on a port the proxy owns")
+    void shouldOfferExtraTargetAsChildSession() throws Exception {
         spliceChild();
 
         adapter.requestParent("startDebugging", new JSONObject()
                 .put("request", "launch")
-                .put("configuration", new JSONObject().put("__pendingTargetId", "target-2")));
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-node").put("name", "child.js [4242]")
+                        .put("__pendingTargetId", "target-2")));
         JSONObject reply = adapter.parentReceived();
+        assertThat(reply.getString("command")).isEqualTo("startDebugging");
         assertThat(reply.getBoolean("success")).isTrue();
-        assertThat(adapter.connectionCount()).isEqualTo(2);
+
+        JSONObject offer = client.awaitRequest("attachedChildSession");
+        JSONObject config = offer.getJSONObject("arguments").getJSONObject("config");
+        assertThat(config.getString("name")).isEqualTo("child.js [4242]");
+        int port = Integer.parseInt(config.getString("__jsDebugChildServer"));
+        assertThat(port).isBetween(1, 65535);
+        assertThat(adapter.connectionCount())
+                .as("nothing is dialed until the platform dials the offered port")
+                .isEqualTo(2);
+        assertThat(proxy.childSessions()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("the platform's bare attach on the offered port reaches the adapter as the target's launch")
+    void shouldRelayChildSessionWithTheTargetsConfiguration() throws Exception {
+        spliceChild();
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-node").put("name", "child.js [4242]")
+                        .put("__pendingTargetId", "target-2")));
+        adapter.parentReceived(); // success reply
+        int port = offeredPort(client.awaitRequest("attachedChildSession"));
+
+        // the platform's side of attachedChildSession: dial, initialize, bare attach
+        DapClient session = new DapClient(port);
+        session.request("initialize", new JSONObject().put("clientID", "nb"));
+        JSONObject init = adapter.received(3);
+        assertThat(init.getString("command")).isEqualTo("initialize");
+        adapter.respond(3, init, new JSONObject());
+        assertThat(session.awaitResponse("initialize").getBoolean("success")).isTrue();
+
+        session.request("attach", null);
+        JSONObject launch = adapter.received(3);
+        assertThat(launch.getString("command")).as("a bare attach becomes the target's launch").isEqualTo("launch");
+        assertThat(launch.getJSONObject("arguments").getString("__pendingTargetId")).isEqualTo("target-2");
+        adapter.respond(3, launch, new JSONObject());
+        assertThat(session.awaitResponse("attach")).as("the answer comes back under the platform's own command")
+                .isNotNull();
+
+        // and the target's events flow to the platform's session, not the flat one
+        adapter.event(3, "stopped", new JSONObject().put("reason", "breakpoint").put("threadId", 7));
+        assertThat(session.awaitEvent("stopped").getJSONObject("body").getInt("threadId")).isEqualTo(7);
+        assertThat(client.receivedCommands()).doesNotContain("stopped");
+    }
+
+    @Test
+    @DisplayName("a startDebugging raised on a child session's link spawns a grandchild session on that link")
+    void shouldRelayGrandchildOnTheChildLink() throws Exception {
+        spliceChild();
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject().put("type", "pwa-node")
+                        .put("name", "child.js [1]").put("__pendingTargetId", "target-2")));
+        adapter.parentReceived();
+        DapClient session = new DapClient(offeredPort(client.awaitRequest("attachedChildSession")));
+        session.request("initialize", new JSONObject());
+        adapter.respond(3, adapter.received(3), new JSONObject());
+
+        adapter.request(3, "startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject().put("type", "pwa-node")
+                        .put("name", "[worker 1]").put("__pendingTargetId", "target-2-1")));
+        JSONObject reply = adapter.received(3);
+        assertThat(reply.getString("command")).isEqualTo("startDebugging");
+        assertThat(reply.getBoolean("success")).isTrue();
+        JSONObject offer = session.awaitRequest("attachedChildSession");
+        assertThat(offer.getJSONObject("arguments").getJSONObject("config").getString("name"))
+                .isEqualTo("[worker 1]");
+        assertThat(client.receivedCommands().stream().filter("attachedChildSession"::equals).count())
+                .as("the root heard ONE offer (the child); the grandchild is offered on ITS parent's link")
+                .isEqualTo(1);
+        assertThat(proxy.childSessions()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("closing the proxy tears every child session's sockets down")
+    void shouldCloseChildSessionsWithTheProxy() throws Exception {
+        spliceChild();
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject().put("type", "pwa-node")
+                        .put("name", "child").put("__pendingTargetId", "t2")));
+        adapter.parentReceived();
+        DapClient session = new DapClient(offeredPort(client.awaitRequest("attachedChildSession")));
+        session.request("initialize", new JSONObject());
+        adapter.received(3);
+
+        proxy.close();
+        assertThat(session.awaitEof(5_000)).as("the platform's child session reads EOF").isTrue();
+    }
+
+    private static int offeredPort(JSONObject offer) {
+        return Integer.parseInt(offer.getJSONObject("arguments").getJSONObject("config")
+                .getString("__jsDebugChildServer"));
     }
 
     @Test
@@ -218,12 +315,13 @@ class DapProxyTest {
     }
 
     @Test
-    @DisplayName("a worker target's startDebugging on the CHILD link is answered there and never surfaces")
-    void shouldAnswerWorkerTargetOnChildLink() throws Exception {
+    @DisplayName("a worker target's startDebugging on the CHILD link is answered there and offered to the platform")
+    void shouldOfferWorkerTargetFromChildLink() throws Exception {
         // recon finding: for browsers the page target's startDebugging comes
         // on the parent link but WORKER targets arrive on the CHILD link.
         // The proxy must answer where it was asked — an unanswered reverse
-        // request wedges js-debug — and must not dial a third connection.
+        // request wedges js-debug — and the worker gets its own session
+        // (ledger 39: an answered-but-unattached worker sat paused forever).
         spliceChild();
 
         adapter.requestChild("startDebugging", new JSONObject()
@@ -237,7 +335,9 @@ class DapProxyTest {
         assertThat(reply.getString("type")).isEqualTo("response");
         assertThat(reply.getString("command")).isEqualTo("startDebugging");
         assertThat(reply.getBoolean("success")).isTrue();
-        assertThat(adapter.connectionCount()).isEqualTo(2);
+        JSONObject offer = client.awaitRequest("attachedChildSession");
+        assertThat(offer.getJSONObject("arguments").getJSONObject("config").getString("name"))
+                .isEqualTo("http://127.0.0.1:3000/worker.js");
         assertThat(client.receivedCommands()).doesNotContain("startDebugging");
     }
 
@@ -353,9 +453,11 @@ class DapProxyTest {
         private final OutputStream out;
         private final BlockingQueue<JSONObject> responses = new LinkedBlockingQueue<>();
         private final BlockingQueue<JSONObject> events = new LinkedBlockingQueue<>();
+        private final BlockingQueue<JSONObject> requests = new LinkedBlockingQueue<>();
         private final List<String> allCommands = new CopyOnWriteArrayList<>();
         private final java.util.Map<String, Integer> sentSeqs = new java.util.concurrent.ConcurrentHashMap<>();
         private final AtomicInteger seq = new AtomicInteger();
+        private final CountDownLatch eof = new CountDownLatch(1);
 
         DapClient(InputStream in, OutputStream out) {
             this.out = out;
@@ -365,28 +467,55 @@ class DapProxyTest {
                     while ((json = DapFrames.read(in)) != null) {
                         JSONObject frame = new JSONObject(json);
                         allCommands.add(frame.optString("command", frame.optString("event")));
-                        if ("response".equals(frame.optString("type"))) {
-                            responses.add(frame);
-                        } else if ("event".equals(frame.optString("type"))) {
-                            events.add(frame);
+                        switch (frame.optString("type")) {
+                            case "response" -> responses.add(frame);
+                            case "event" -> events.add(frame);
+                            case "request" -> requests.add(frame);
+                            default -> { }
                         }
                     }
                 } catch (IOException ignored) {
                     // stream closed at teardown
+                } finally {
+                    eof.countDown();
                 }
             }, "test-dap-client");
             reader.setDaemon(true);
             reader.start();
         }
 
+        /** The platform's side of attachedChildSession: a fresh client on the offered port. */
+        DapClient(int port) throws IOException {
+            this(dialFor(port));
+        }
+
+        private DapClient(Socket socket) throws IOException {
+            this(socket.getInputStream(), socket.getOutputStream());
+        }
+
+        private static Socket dialFor(int port) throws IOException {
+            return new Socket(InetAddress.getLoopbackAddress(), port);
+        }
+
+        boolean awaitEof(long millis) throws InterruptedException {
+            return eof.await(millis, TimeUnit.MILLISECONDS);
+        }
+
         void request(String command, JSONObject arguments) throws IOException {
             int s = seq.incrementAndGet();
             sentSeqs.put(command, s);
             synchronized (out) {
-                DapFrames.write(out, new JSONObject()
-                        .put("seq", s).put("type", "request")
-                        .put("command", command).put("arguments", arguments).toString());
+                JSONObject frame = new JSONObject()
+                        .put("seq", s).put("type", "request").put("command", command);
+                if (arguments != null) {
+                    frame.put("arguments", arguments);
+                }
+                DapFrames.write(out, frame.toString());
             }
+        }
+
+        JSONObject awaitRequest(String command) throws InterruptedException {
+            return await(requests, f -> command.equals(f.optString("command")));
         }
 
         int seqOf(String command) {
@@ -418,23 +547,22 @@ class DapProxyTest {
         }
     }
 
-    /** The js-debug side: accepts parent then child, scripted by the test. */
+    /** The js-debug side: accepts parent, child, and every further session, scripted by the test. */
     private static final class FakeAdapter {
         private final ServerSocket server;
         private final List<Socket> connections = new CopyOnWriteArrayList<>();
-        private final BlockingQueue<JSONObject> parentIn = new LinkedBlockingQueue<>();
-        private final BlockingQueue<JSONObject> childIn = new LinkedBlockingQueue<>();
+        private final List<BlockingQueue<JSONObject>> inbox = new CopyOnWriteArrayList<>();
         private final AtomicInteger adapterSeq = new AtomicInteger(1000);
 
         FakeAdapter() throws IOException {
-            server = new ServerSocket(0, 2, InetAddress.getLoopbackAddress());
+            server = new ServerSocket(0, 4, InetAddress.getLoopbackAddress());
             Thread acceptor = new Thread(() -> {
                 try {
                     while (!server.isClosed()) {
                         Socket s = server.accept();
+                        BlockingQueue<JSONObject> sink = new LinkedBlockingQueue<>();
+                        inbox.add(sink);
                         connections.add(s);
-                        BlockingQueue<JSONObject> sink =
-                                connections.size() == 1 ? parentIn : childIn;
                         Thread reader = new Thread(() -> {
                             try {
                                 String json;
@@ -465,40 +593,58 @@ class DapProxyTest {
         }
 
         JSONObject parentReceived() throws InterruptedException {
-            JSONObject f = parentIn.poll(10, TimeUnit.SECONDS);
-            assertThat(f).as("frame expected on parent connection").isNotNull();
-            return f;
+            return received(1);
         }
 
         JSONObject childReceived() throws InterruptedException {
-            JSONObject f = childIn.poll(10, TimeUnit.SECONDS);
-            assertThat(f).as("frame expected on child connection").isNotNull();
+            return received(2);
+        }
+
+        /** The next frame on the Nth connection (1 = parent, 2 = the spliced child, 3+ = child sessions). */
+        JSONObject received(int connection) throws InterruptedException {
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+            while (inbox.size() < connection && System.nanoTime() < deadline) {
+                Thread.sleep(5);
+            }
+            assertThat(inbox.size()).as("connection " + connection + " exists").isGreaterThanOrEqualTo(connection);
+            JSONObject f = inbox.get(connection - 1).poll(10, TimeUnit.SECONDS);
+            assertThat(f).as("frame expected on connection " + connection).isNotNull();
             return f;
         }
 
         void respondParent(JSONObject request, JSONObject body) throws IOException {
-            sendTo(0, response(request, body));
+            respond(1, request, body);
         }
 
         void respondChild(JSONObject request, JSONObject body) throws IOException {
-            sendTo(1, response(request, body));
+            respond(2, request, body);
+        }
+
+        void respond(int connection, JSONObject request, JSONObject body) throws IOException {
+            sendTo(connection - 1, response(request, body));
         }
 
         void requestParent(String command, JSONObject arguments) throws IOException {
-            sendTo(0, new JSONObject()
-                    .put("seq", adapterSeq.incrementAndGet()).put("type", "request")
-                    .put("command", command).put("arguments", arguments));
+            request(1, command, arguments);
         }
 
         /** Browser worker targets ask on the CHILD connection (recon-pinned). */
         void requestChild(String command, JSONObject arguments) throws IOException {
-            sendTo(1, new JSONObject()
+            request(2, command, arguments);
+        }
+
+        void request(int connection, String command, JSONObject arguments) throws IOException {
+            sendTo(connection - 1, new JSONObject()
                     .put("seq", adapterSeq.incrementAndGet()).put("type", "request")
                     .put("command", command).put("arguments", arguments));
         }
 
         void eventChild(String event, JSONObject body) throws IOException {
-            sendTo(1, new JSONObject()
+            event(2, event, body);
+        }
+
+        void event(int connection, String event, JSONObject body) throws IOException {
+            sendTo(connection - 1, new JSONObject()
                     .put("seq", adapterSeq.incrementAndGet()).put("type", "event")
                     .put("event", event).put("body", body));
         }
