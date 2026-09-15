@@ -566,7 +566,10 @@ out of the box**: Microsoft's [js-debug](https://github.com/microsoft/vscode-js-
 (the engine VS Code uses) ships inside the IDE, so if `node` runs your
 file, you can debug it. Python (debugpy) and Go (delve) work the same
 way with their own adapters. Debugging runs your code, so it asks for
-Workspace Trust first — the same gate the rack uses.
+Workspace Trust first — the same gate the rack uses. And it follows
+your program's children: a forked process, a worker thread, or a
+page's Web Worker each become a debug session of their own, stopping at
+the breakpoints set in their files (v2.156.0).
 
 ![A JavaScript breakpoint hit — live V8 variables and the Node call stack](docs/images/debug-javascript.png)
 

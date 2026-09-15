@@ -35,9 +35,9 @@ import org.openide.util.RequestProcessor;
  * {@code pwa-chrome} launch instead of {@code pwa-node}. Recon against the
  * real adapter (v1.43.0) pinned the shape: one {@code startDebugging}
  * reverse request for the page target arrives on the PARENT link; worker
- * targets arrive as further {@code startDebugging} on the CHILD link, which
- * the proxy answers and ignores (a worker so ignored sits paused — see the
- * ledger). The browser is spawned by js-debug as the adapter's direct child
+ * targets arrive as further {@code startDebugging} on the CHILD link, and
+ * each becomes a debug session of its own through the proxy's child-session
+ * door (v2.156.0). The browser is spawned by js-debug as the adapter's direct child
  * at {@code configurationDone} time, so the adapter's kill-tree covers it;
  * a client {@code disconnect} alone also tears the whole browser down
  * (js-debug defaults {@code cleanUp: wholeBrowser, killBehavior: forceful},

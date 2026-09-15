@@ -8,7 +8,9 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -29,6 +31,19 @@ import org.json.JSONObject;
  * dials the child, replays the client's breakpoints, and from then on
  * routes client requests to the child and both connections' events back
  * up — one flat session as far as NetBeans can tell.
+ *
+ * <p>Every FURTHER target — a child process the program forks, a worker
+ * thread, a page's Web Worker — arrives as another {@code startDebugging},
+ * on whichever link spawned it. Those become real NetBeans sessions of
+ * their own (v2.156.0): the platform's DAP client cannot dial a socket for
+ * a {@code startDebugging}, but it does implement js-debug's OLDER child
+ * protocol, an {@code attachedChildSession} request naming a loopback port
+ * it dials itself, opening a new session with {@code initialize} and a bare
+ * {@code attach}. A {@link ChildRelay} is that port: it accepts the platform
+ * once, dials the adapter, and pumps both ways, rewriting the bare attach
+ * into the launch that names the pending target and answering any
+ * {@code startDebugging} the adapter raises on that link with yet another
+ * relay — so grandchildren work by construction.
  *
  * Every outgoing frame gets a fresh per-link {@code seq}; responses map
  * back to the client's original seq via per-link pending tables. All
@@ -54,6 +69,10 @@ public final class DapProxy {
     private final AtomicBoolean adapterStopped = new AtomicBoolean();
     private volatile JSONObject childConfiguration;
     private final AtomicBoolean closed = new AtomicBoolean();
+    /** Every extra target handed to the platform as its own session. */
+    private final List<ChildRelay> relays = new CopyOnWriteArrayList<>();
+    /** How long a relay waits for the platform to dial its port. */
+    static final int ACCEPT_TIMEOUT_MS = 30_000;
 
     private final Object toClientLock = new Object();
     private final Object toParentLock = new Object();
@@ -119,6 +138,11 @@ public final class DapProxy {
         return proxySideClient.isClosed() && actionSideClient.isClosed();
     }
 
+    /** Visible for tests: the extra targets opened as sessions of their own. */
+    int childSessions() {
+        return relays.size();
+    }
+
     /** Stream pair for {@code DAPConfiguration.create} — the client side. */
     public InputStream clientInput() throws IOException {
         return actionSideClient.getInputStream();
@@ -132,7 +156,12 @@ public final class DapProxy {
 
     private void onClientFrame(JSONObject frame) throws IOException {
         if (!"request".equals(frame.optString("type"))) {
-            LOG.log(Level.FINE, "dropping non-request from client: {0}", frame.optString("type"));
+            if ("response".equals(frame.optString("type"))
+                    && "attachedChildSession".equals(frame.optString("command"))) {
+                noteChildSessionAnswer(frame);
+            } else {
+                LOG.log(Level.FINE, "dropping non-request from client: {0}", frame.optString("type"));
+            }
             return;
         }
         String command = frame.optString("command");
@@ -241,13 +270,6 @@ public final class DapProxy {
             LOG.log(Level.FINE, "declined reverse request {0}", command);
             return;
         }
-        if (childSocket != null) {
-            // one child per session; launch config disables auto-attach so
-            // this only fires for exotic targets — run them undebugged
-            respond(from, frame, true, null);
-            LOG.log(Level.INFO, "ignoring additional js-debug target");
-            return;
-        }
         // parse BEFORE acking success: a malformed configuration used to be
         // acked first, so the parent believed a child launched that never
         // would (the getJSONObject throw landed in the pump's catch)
@@ -258,6 +280,14 @@ public final class DapProxy {
         } catch (org.json.JSONException ex) {
             respond(from, frame, false, "malformed startDebugging configuration");
             LOG.log(Level.INFO, "refused malformed startDebugging", ex);
+            return;
+        }
+        if (childSocket != null) {
+            // the program's OWN process is the flat session above; every
+            // further target (a forked child, a worker) gets a session of
+            // its own through the platform's child-session door
+            respond(from, frame, true, null);
+            spawnChildSession(configuration, requestKind(frame), f -> forwardToClient(f, null));
             return;
         }
         respond(from, frame, true, null);
@@ -273,6 +303,215 @@ public final class DapProxy {
                         .put("linesStartAt1", true).put("columnsStartAt1", true)
                         .put("supportsRunInTerminalRequest", false));
         send(Link.CHILD, init, PROXY);
+    }
+
+    /** js-debug says whether the target wants {@code launch} or {@code attach}. */
+    private static String requestKind(JSONObject startDebugging) {
+        JSONObject args = startDebugging.optJSONObject("arguments");
+        String kind = args == null ? "" : args.optString("request", "");
+        return "attach".equals(kind) ? "attach" : "launch";
+    }
+
+    /**
+     * Opens a relay for one extra target and asks the platform — on the
+     * link {@code platformWriter} writes to — to open a session on it. The
+     * request shape is the platform's own {@code attachedChildSession}
+     * contract: the port as a STRING (it parses it) and a name for the
+     * session tab.
+     */
+    private void spawnChildSession(JSONObject configuration, String request,
+            FrameWriter platformWriter) throws IOException {
+        ChildRelay relay = new ChildRelay(configuration, request);
+        relays.add(relay);
+        relay.start();
+        platformWriter.write(new JSONObject()
+                .put("type", "request").put("command", "attachedChildSession")
+                .put("arguments", new JSONObject().put("config", new JSONObject()
+                        .put("__jsDebugChildServer", String.valueOf(relay.port()))
+                        .put("name", configuration.optString("name", "child")))));
+        LOG.log(Level.FINE, "child session offered on port {0}", relay.port());
+    }
+
+    private static void noteChildSessionAnswer(JSONObject response) {
+        if (!response.optBoolean("success")) {
+            LOG.log(Level.INFO, "the platform declined a child session: {0}",
+                    response.optString("message"));
+        }
+    }
+
+    private interface FrameWriter {
+        void write(JSONObject frame) throws IOException;
+    }
+
+    /**
+     * One extra target as the platform's own session. The platform dials
+     * {@link #port()} (once), we dial the adapter, and the two are pumped
+     * against each other with three translations: the platform's bare
+     * {@code attach} becomes the {@code launch}/{@code attach} carrying the
+     * target's configuration (its {@code __pendingTargetId} is what the
+     * adapter matches); the platform's answer to our
+     * {@code attachedChildSession} is ours and never reaches the adapter;
+     * and a {@code startDebugging} the adapter raises on THIS link spawns
+     * another relay, offered on this link's platform session.
+     */
+    private final class ChildRelay {
+        private final ServerSocket server;
+        private final JSONObject configuration;
+        private final String request;
+        private final Object toPlatformLock = new Object();
+        private final Object toAdapterLock = new Object();
+        /** Our own reverse requests and answers on the adapter link — far
+         *  above any seq the adapter or the platform will reach. */
+        private int injected = 1_000_000;
+        /** The seq of the platform's bare attach, so its answer comes back
+         *  under the command the platform sent, not the one the adapter saw. */
+        private volatile int attachSeq = Integer.MIN_VALUE;
+        private volatile Socket platform;
+        private volatile Socket adapter;
+
+        ChildRelay(JSONObject configuration, String request) throws IOException {
+            this.configuration = configuration;
+            this.request = request;
+            this.server = new ServerSocket(0, 1, InetAddress.getLoopbackAddress());
+            this.server.setSoTimeout(ACCEPT_TIMEOUT_MS);
+        }
+
+        int port() {
+            return server.getLocalPort();
+        }
+
+        void start() {
+            Threads.daemon(this::accept, "nmox-dap-child-server").start();
+        }
+
+        private void accept() {
+            Socket p;
+            try {
+                p = server.accept();
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "the platform never dialed the child session on port " + port(), ex);
+                return;
+            } finally {
+                closeServer();   // one-shot: the port exists for one session
+            }
+            platform = p;
+            try {
+                adapter = dial(adapterPort);
+            } catch (IOException ex) {
+                LOG.log(Level.INFO, "could not reach the adapter for a child session", ex);
+                closeQuietly(p);
+                return;
+            }
+            pumpFrames("nmox-dap-child-platform", platform, this::onPlatformFrame, () -> {
+                closeQuietly(adapter);
+                closeQuietly(platform);
+            });
+            pumpFrames("nmox-dap-child-adapter", adapter, this::onAdapterFrame, () -> {
+                // half-close so the platform drains what we wrote (the
+                // terminated event is the last thing) before it reads EOF
+                try {
+                    platform.shutdownOutput();
+                } catch (IOException ex) {
+                    LOG.log(Level.FINE, "child session half-close failed", ex);
+                }
+                closeQuietly(adapter);
+            });
+        }
+
+        private void onPlatformFrame(JSONObject frame) throws IOException {
+            String type = frame.optString("type");
+            if ("response".equals(type)
+                    && "attachedChildSession".equals(frame.optString("command"))) {
+                noteChildSessionAnswer(frame);
+                return;
+            }
+            if ("request".equals(type) && "attach".equals(frame.optString("command"))) {
+                attachSeq = frame.optInt("seq", Integer.MIN_VALUE);
+                JSONObject copy = new JSONObject(frame.toString());
+                copy.put("command", request);
+                copy.put("arguments", new JSONObject(configuration.toString()));
+                writeAdapter(copy);
+                return;
+            }
+            writeAdapter(frame);
+        }
+
+        private void onAdapterFrame(JSONObject frame) throws IOException {
+            if (!"request".equals(frame.optString("type"))) {
+                if ("response".equals(frame.optString("type"))
+                        && frame.optInt("request_seq", Integer.MIN_VALUE) == attachSeq) {
+                    JSONObject copy = new JSONObject(frame.toString());
+                    copy.put("command", "attach");
+                    writePlatform(copy);
+                    return;
+                }
+                writePlatform(frame);
+                return;
+            }
+            String command = frame.optString("command");
+            if (!"startDebugging".equals(command)) {
+                answerAdapter(frame, false, "unsupported by NMOX DAP proxy");
+                return;
+            }
+            JSONObject configuration;
+            try {
+                configuration = frame.getJSONObject("arguments").getJSONObject("configuration");
+            } catch (org.json.JSONException ex) {
+                answerAdapter(frame, false, "malformed startDebugging configuration");
+                return;
+            }
+            answerAdapter(frame, true, null);
+            spawnChildSession(configuration, requestKind(frame), this::writeInjected);
+        }
+
+        private void answerAdapter(JSONObject request, boolean success, String message)
+                throws IOException {
+            JSONObject response = new JSONObject()
+                    .put("type", "response")
+                    .put("command", request.optString("command"))
+                    .put("request_seq", request.optInt("seq"))
+                    .put("success", success);
+            if (message != null) {
+                response.put("message", message);
+            }
+            synchronized (toAdapterLock) {
+                response.put("seq", injected++);
+                DapFrames.write(adapter.getOutputStream(), response.toString());
+            }
+        }
+
+        private void writeInjected(JSONObject frame) throws IOException {
+            synchronized (toPlatformLock) {
+                frame.put("seq", injected++);
+                DapFrames.write(platform.getOutputStream(), frame.toString());
+            }
+        }
+
+        private void writePlatform(JSONObject frame) throws IOException {
+            synchronized (toPlatformLock) {
+                DapFrames.write(platform.getOutputStream(), frame.toString());
+            }
+        }
+
+        private void writeAdapter(JSONObject frame) throws IOException {
+            synchronized (toAdapterLock) {
+                DapFrames.write(adapter.getOutputStream(), frame.toString());
+            }
+        }
+
+        void close() {
+            closeServer();
+            closeQuietly(adapter);
+            closeQuietly(platform);
+        }
+
+        private void closeServer() {
+            try {
+                server.close();
+            } catch (IOException ignored) {
+                // teardown is best-effort by design
+            }
+        }
     }
 
     private void onChildDanceResponse(JSONObject response) throws IOException {
@@ -371,8 +610,33 @@ public final class DapProxy {
     }
 
     private void pump(String name, Socket socket, FrameHandler handler) {
+        boolean[] peerClosed = new boolean[1];
+        pumpFrames(name, socket, handler, () -> {
+            // a dropped link ends the session; it must not slam the
+            // client's socket shut on top of frames it hasn't read
+            endSession();
+            // ...but once the CLIENT's own socket has hit clean EOF, the
+            // client is gone and has read everything it ever will — the
+            // loopback pair can be reaped. Nothing else ever closes it in
+            // production (close() is the owner's call and no owner holds
+            // the proxy), so this is where the per-session FD pair used
+            // to leak.
+            if (socket == proxySideClient && peerClosed[0]) {
+                closeQuietly(proxySideClient);
+                closeQuietly(actionSideClient);
+            }
+        }, peerClosed);
+    }
+
+    private void pumpFrames(String name, Socket socket, FrameHandler handler, Runnable onEnd) {
+        pumpFrames(name, socket, handler, onEnd, new boolean[1]);
+    }
+
+    /** Reads frames until EOF or error; {@code peerClosed[0]} is true on a
+     *  clean EOF at a frame boundary when {@code onEnd} runs. */
+    private void pumpFrames(String name, Socket socket, FrameHandler handler,
+            Runnable onEnd, boolean[] peerClosed) {
         Thread t = Threads.daemon(() -> {
-            boolean peerClosed = false;
             try {
                 InputStream in = socket.getInputStream();
                 String json;
@@ -384,23 +648,11 @@ public final class DapProxy {
                         LOG.log(Level.INFO, "DAP frame handling failed", ex);
                     }
                 }
-                peerClosed = true;   // clean EOF: the far side closed its socket
+                peerClosed[0] = true;   // clean EOF: the far side closed its socket
             } catch (IOException ex) {
                 LOG.log(Level.FINE, name + " pump ended", ex);
             } finally {
-                // a dropped link ends the session; it must not slam the
-                // client's socket shut on top of frames it hasn't read
-                endSession();
-                // ...but once the CLIENT's own socket has hit clean EOF, the
-                // client is gone and has read everything it ever will — the
-                // loopback pair can be reaped. Nothing else ever closes it in
-                // production (close() is the owner's call and no owner holds
-                // the proxy), so this is where the per-session FD pair used
-                // to leak.
-                if (socket == proxySideClient && peerClosed) {
-                    closeQuietly(proxySideClient);
-                    closeQuietly(actionSideClient);
-                }
+                onEnd.run();
             }
         }, name);
         t.start();
@@ -438,6 +690,7 @@ public final class DapProxy {
         }
         closeQuietly(childSocket);
         closeQuietly(parentSocket);
+        relays.forEach(ChildRelay::close);
         stopAdapter();
     }
 
@@ -451,6 +704,7 @@ public final class DapProxy {
         closeQuietly(parentSocket);
         closeQuietly(proxySideClient);
         closeQuietly(actionSideClient);
+        relays.forEach(ChildRelay::close);
         stopAdapter();
     }
 

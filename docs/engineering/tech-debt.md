@@ -20,6 +20,28 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
+
+### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped
+Found by the v2.156.0 walk, read from bytecode, not ours: in the RELEASE310
+lsp-client, `breakpoints/BreakpointModel.getIconBase` (line 90) calls
+`DAPStackTraceAnnotationHolder.contains(debugger.getCurrentLine(), bp.getLine())`
+— a `Line` as the first argument — and `contains(Object, Line)` (line 102)
+opens with `checkcast [Lorg/openide/text/Annotatable;`. Two platform classes
+disagree about one parameter's type, so whenever the Breakpoints window paints
+a breakpoint row while ANY DAP session is stopped (`getCurrentLine()` non-null),
+the renderer throws `ClassCastException: EditorSupportLineSet$SupportLine
+cannot be cast to [Lorg.openide.text.Annotatable;`, logged SEVERE once per
+repaint (eight in a two-minute walk). Visible cost: the "breakpoint hit" icon
+never paints (the plain one does — the rows list fine) and the status bar's
+error badge lights. One session or ten, the same; unrelated to the proxy.
+**Deferred**: the fix is a one-line change in NetBeans (`contains` should
+accept the `Line`, or the model should pass the holder's annotations), which
+belongs upstream; a patched copy of a platform module would be a second home
+for platform code. Worth an Apache NetBeans issue with the two line numbers
+above. Until then the walk law: an error badge that appears the moment the
+Breakpoints window opens on a stopped session is this, not the debugger.
+
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
 ### 97. ~~The learning-space catalog speaks English in every translated build~~ — CLOSED v2.133.0
@@ -1686,7 +1708,21 @@ silently empty window is worse than a documented limit.
 
 ## Open — deferred deliberately, with reasons (added v1.43.0)
 
-### 39. Browser debugging: a page's Web Workers sit paused, not undebugged
+### 39. ~~Browser debugging: a page's Web Workers sit paused, not undebugged~~ — CLOSED v2.156.0: each worker is a session of its own
+**Closed 2026-09-15 with item 25, by the same mechanism.** The platform's
+DAP client has a door for exactly this: `DAPDebugger.attachedChildSession`
+is a `@JsonRequest` the adapter side sends with a `config` holding
+`__jsDebugChildServer` (a port) and `name`; the client dials the port and
+starts a NEW debug session with `initialize` + a bare `attach`. `DapProxy`
+now answers every `startDebugging` after the first with that request, on
+the link the target was raised on, each backed by a one-shot loopback relay
+that dials the adapter, translates the bare `attach` into the target's
+`launch` (its `__pendingTargetId` configuration) and maps the answer back.
+`RealChromeIntegrationTest.shouldDebugWebWorkerAsItsOwnSession` proves it
+against real headless Chrome: `app.js` starts `new Worker('worker.js')`,
+the offer arrives on the root client, and worker.js:2 hits inside the
+worker's session. The original entry follows for the record.
+
 Recon-proven (v1.43.0 transcripts): for `pwa-chrome` the page target's
 `startDebugging` arrives on the parent link and `DapProxy` splices it —
 but Web Worker targets arrive as further `startDebugging` reverse
@@ -1753,7 +1789,21 @@ kill's blindness is unchanged.
 
 ## Open — deferred deliberately, with reasons (added v1.37.0)
 
-### 25. One debug session per run: child processes run undebugged
+### 25. ~~One debug session per run: child processes run undebugged~~ — CLOSED v2.156.0: every child process and worker is a session of its own
+**Closed 2026-09-15.** The "platform change" this entry waited on already
+existed one module over: the RELEASE310 lsp-client's `DAPDebugger` answers
+an `attachedChildSession` request by opening a further session on a port.
+`DapProxy` keeps the first target spliced flat (unchanged) and offers every
+further `startDebugging` — a `child_process.fork`, a `worker_threads`
+Worker, a grandchild raised on a child's link — through that door via a
+one-shot `ChildRelay`; `DapDebugAction` no longer sets
+`autoAttachChildProcesses: false`. `RealJsDebugIntegrationTest.shouldDebugChildProcessesAndWorkersAsSessions`
+runs the real adapter over `parent.js` → fork `child.js` → `new Worker(worker.js)`
+and sees breakpoints hit at parent.js:3, child.js:2 and worker.js:2, each
+in its own session; `DapProxyTest` pins the relay, the grandchild link and
+teardown with three mutants by name. Item 39 (browser workers) closed with
+it. The original entry follows for the record.
+
 js-debug is a *multi-session* adapter: after `launch` it sends a
 `startDebugging` reverse request per debug target, expecting the client
 to open another socket. The platform's `DAPConfiguration` is

@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.156.0] - 2026-09-15
+
+**Every child process and every worker gets a debug session of its own.**
+
+- **Debugging follows your program's children** (ledger 25 and 39, both
+  closed). A debug session used to follow one process: a script that forked,
+  started a worker thread, or a page that started a Web Worker debugged the
+  parent only. Node children ran undebugged straight past their breakpoints,
+  and a browser worker sat paused forever, because js-debug raises every
+  further target as a `startDebugging` request and the platform's DAP client
+  could hold only one session. The platform does have a door for exactly this,
+  `attachedChildSession`, a request its client answers by opening a new
+  session on a local port, and the proxy now walks through it: the first
+  target stays spliced into the session you started, and each further one (a
+  `child_process.fork`, a `worker_threads` Worker, a page's Web Worker, a
+  worker's own children) gets a one-shot relay the platform dials, with the
+  platform's bare `attach` translated into that target's `launch` and the
+  answer mapped back. Each appears in the Debugging window as a session named
+  for its target, stops at its own breakpoints, and closes with the run.
+  Proven against the real adapter: `parent.js` forks `child.js` and then
+  starts `worker.js`, and breakpoints at parent.js:3, child.js:2 and
+  worker.js:2 all hit, each in its own session (`RealJsDebugIntegrationTest`);
+  a page running `new Worker('worker.js')` in real headless Chrome stops at
+  worker.js:2 inside the worker's session (`RealChromeIntegrationTest`).
+  Fifteen proxy tests cover the relay, the grandchild shape (a target raised
+  on a child's link is offered on that link) and teardown; three mutants die
+  by name.
+- **Walked in the assembled app.** A project whose `parent.js` forks
+  `child.js` and then starts `worker.js`, breakpoints in the child and the
+  worker, Debug File on the parent: the Sessions window listed
+  `Node: parent.js` and `child.js [18219]` with the editor stopped on the
+  child's line; Continue, and it listed `Node: parent.js` and `[worker 1]`
+  with the editor on the worker's line; Continue again, and the run ended
+  with one Output console per session and no node process left behind.
+- **A platform defect the walk exposed, recorded not fixed** (ledger 98): with
+  the Breakpoints window open while any DAP session is stopped, the RELEASE310
+  lsp-client logs a `ClassCastException` per repaint — its `BreakpointModel`
+  hands a `Line` to `DAPStackTraceAnnotationHolder.contains`, which casts the
+  argument to `Annotatable[]`. The breakpoints still list; the "hit" icon
+  never shows and the status bar's error badge lights. One session or ten,
+  the same; it is NetBeans's bug to fix.
+- **The windows lane caught the new E2E comparing a path by its spelling.**
+  js-debug reports a `pwa-node` frame's Windows path with a lowercase drive
+  letter (`c:\…`) where Java's `Path` says `C:\…`; the first Node E2E never
+  saw it because it only compared the line number. Both integration tests
+  now compare a reported path in its canonical form (`ReportedPaths`), and a
+  wrong path still fails by its own spelling.
+
 ## [2.155.1] - 2026-09-15
 
 **The overnight walk of v2.155.0, with real clicks: three features confirmed,
@@ -21432,6 +21480,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.156.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.1...v2.156.0
 [2.155.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.155.0...v2.155.1
 [2.155.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.154.0...v2.155.0
 [2.154.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.153.1...v2.154.0

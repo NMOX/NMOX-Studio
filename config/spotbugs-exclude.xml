@@ -159,9 +159,17 @@
          the mitigation that actually applies: the channel never leaves the host.
          Encrypting a pipe to a child process the IDE controls would add no
          principal and no boundary. Scoped to the two DAP transport classes, so
-         any new unencrypted socket elsewhere still fails the gate. -->
+         any new unencrypted socket elsewhere still fails the gate. The
+         v2.156.0 child-session relay (DapProxy$ChildRelay: one loopback
+         accept per further debug target, dialed by the platform's own DAP
+         client on this host) is the same channel one nesting level in;
+         named explicitly because a Class match is exact, not a prefix. -->
     <Match>
         <Class name="org.nmox.studio.editor.debug.dap.DapProxy"/>
+        <Bug pattern="UNENCRYPTED_SERVER_SOCKET,UNENCRYPTED_SOCKET"/>
+    </Match>
+    <Match>
+        <Class name="org.nmox.studio.editor.debug.dap.DapProxy$ChildRelay"/>
         <Bug pattern="UNENCRYPTED_SERVER_SOCKET,UNENCRYPTED_SOCKET"/>
     </Match>
     <Match>

@@ -161,7 +161,9 @@ public class DapDebugAction extends BaseAction {
      * Node scripts debug through the vendored js-debug server. Its parent
      * connection only coordinates — the real target arrives on a child
      * session the platform client can't open — so the streams handed to
-     * DAPConfiguration come from the DapProxy that flattens the two.
+     * DAPConfiguration come from the DapProxy that flattens the two, and
+     * hands every further target (forked children, worker threads) to the
+     * platform as a session of its own.
      */
     private static void debugNode(File file) throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
@@ -180,11 +182,11 @@ public class DapDebugAction extends BaseAction {
                             "name", file.getName(),
                             "program", file.getAbsolutePath(),
                             "cwd", root.getAbsolutePath(),
-                            "console", "internalConsole",
-                            // one child per session; user subprocesses run
-                            // undebugged instead of pausing for an attach
-                            // that will never come
-                            "autoAttachChildProcesses", false))
+                            "console", "internalConsole"))
+                            // auto-attach stays ON (js-debug's default): every
+                            // child process and worker the program starts
+                            // becomes a debug session of its own through the
+                            // proxy's child-session door (v2.156.0)
                     .setSessionName("Node: " + file.getName())
                     .launch();
         } catch (IOException | RuntimeException ex) {
