@@ -116,7 +116,9 @@ class WatchSocketTest {
         assertThat(log.blockNumber()).isEqualTo(16);
         assertThat(log.logIndex()).isEqualTo(3);
         assertThat(log.topics()).containsExactly("0xtopic");
-        assertThat(removed.poll()).isFalse();
+        // the listener hands over the log BEFORE the removed flag, so the flag
+        // is awaited too: an untimed poll lost that race on windows-latest (PR 779)
+        assertThat(removed.poll(5, TimeUnit.SECONDS)).isFalse();
         assertThat(heads.poll(5, TimeUnit.SECONDS))
                 .as("an unknown subscription is ignored, the next head still arrives").isEqualTo(17L);
 
@@ -269,7 +271,9 @@ class WatchSocketTest {
         o.conn().notify("0xlogs2", logJson("0x2", "0x0", true));
         JsonRpcClient.LogEntry delivered = logs.poll(5, TimeUnit.SECONDS);
         assertThat(delivered.blockNumber()).as("the old subscription's logs are ignored").isEqualTo(2);
-        assertThat(removed.poll()).as("removed passes through for the session to refuse").isTrue();
+        // the listener hands over the log BEFORE the removed flag, so the flag
+        // is awaited too: an untimed poll lost that race on windows-latest (PR 779)
+        assertThat(removed.poll(5, TimeUnit.SECONDS)).as("removed passes through for the session to refuse").isTrue();
 
         Future<?> emptying = side.submit(() -> {
             o.socket().resubscribeLogs(List.of(), T);
