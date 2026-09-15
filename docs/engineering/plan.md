@@ -1,5 +1,15 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.160.0 — the debugger day reviewed. Four
+releases of fresh code under the hostile lenses found two small hardenings in
+the child-session relay (a declined offer said nothing a user could find; a
+sentinel could match a malformed response) and one ceiling worth writing
+down: the grandchild-on-a-child-link shape has only ever been answered by a
+fake platform. The platform's own defect (ledger 98) is filed upstream as
+apache/netbeans#9621, in their form. Lesson: a review that finds only
+hardenings is still the review — the day's E2Es and walks had already done
+the finding, which is what they are for.*
+
 *Currency addendum 2026-09-15, at v2.159.0 — the window that shows what
 v2.156.0 built. Three releases into the debugger's day the multi-session
 feature was still invisible: the platform's debugger group opens Locals,

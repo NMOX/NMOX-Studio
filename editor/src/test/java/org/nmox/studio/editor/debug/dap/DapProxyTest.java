@@ -218,6 +218,32 @@ class DapProxyTest {
     }
 
     @Test
+    @DisplayName("before the platform's attach, an adapter response with no request_seq is never relabelled as the attach's answer")
+    void shouldNotMistakeASentinelForTheAttach() throws Exception {
+        spliceChild();
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "launch")
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-node").put("name", "child.js [7]")
+                        .put("__pendingTargetId", "target-2")));
+        adapter.parentReceived();
+        int port = offeredPort(client.awaitRequest("attachedChildSession"));
+        DapClient session = new DapClient(port);
+        session.request("initialize", new JSONObject().put("clientID", "nb"));
+        adapter.respond(3, adapter.received(3), new JSONObject());
+        session.awaitResponse("initialize");
+
+        // no attach has been sent, so attachSeq is its sentinel; a response
+        // missing request_seq reads as the same sentinel through optInt
+        adapter.raw(3, new JSONObject().put("type", "response")
+                .put("command", "initialize").put("success", true));
+        JSONObject passed = session.awaitResponse("initialize");
+        assertThat(passed.getString("command"))
+                .as("passed through under its own command, not rewritten to attach")
+                .isEqualTo("initialize");
+    }
+
+    @Test
     @DisplayName("a startDebugging raised on a child session's link spawns a grandchild session on that link")
     void shouldRelayGrandchildOnTheChildLink() throws Exception {
         spliceChild();
@@ -647,6 +673,11 @@ class DapProxyTest {
             sendTo(connection - 1, new JSONObject()
                     .put("seq", adapterSeq.incrementAndGet()).put("type", "event")
                     .put("event", event).put("body", body));
+        }
+
+        /** A frame exactly as given — for shapes the helpers would never build. */
+        void raw(int connection, JSONObject frame) throws IOException {
+            sendTo(connection - 1, frame);
         }
 
         private JSONObject response(JSONObject request, JSONObject body) {

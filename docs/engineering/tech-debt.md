@@ -41,6 +41,9 @@ belongs upstream; a patched copy of a platform module would be a second home
 for platform code. Worth an Apache NetBeans issue with the two line numbers
 above. Until then the walk law: an error badge that appears the moment the
 Breakpoints window opens on a stopped session is this, not the debugger.
+**Filed upstream 2026-09-15** as
+[apache/netbeans#9621](https://github.com/apache/netbeans/issues/9621), in
+their bug-report form with the two line numbers and the stack head.
 
 ## Open — deferred deliberately, with reasons (added v2.19.4, the deps split)
 
@@ -1811,7 +1814,12 @@ runs the real adapter over `parent.js` → fork `child.js` → `new Worker(worke
 and sees breakpoints hit at parent.js:3, child.js:2 and worker.js:2, each
 in its own session; `DapProxyTest` pins the relay, the grandchild link and
 teardown with three mutants by name. Item 39 (browser workers) closed with
-it. The original entry follows for the record.
+it. One honest ceiling (v2.160.0 review): the GRANDCHILD shape — a worker of
+a forked child, offered on the child's own relay link — is pinned by
+`DapProxyTest` against a fake platform only; both E2Es saw the worker raised
+on the root link (the program starts it), so no real `DAPDebugger` has yet
+answered an offer arriving on a child session. The original entry follows
+for the record.
 
 js-debug is a *multi-session* adapter: after `launch` it sends a
 `startDebugging` reverse request per debug target, expecting the client
