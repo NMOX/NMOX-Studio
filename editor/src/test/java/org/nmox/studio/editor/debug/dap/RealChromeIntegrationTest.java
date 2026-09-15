@@ -232,6 +232,135 @@ class RealChromeIntegrationTest {
                 .as("Stop leaves zero browser orphans").isTrue();
     }
 
+    /**
+     * Ledger 39's case, closed: a page's Web Worker used to sit paused
+     * forever, because js-debug raised its target as a second
+     * {@code startDebugging} on the CHILD link and the platform's single
+     * session could never attach to it. The proxy now offers that target to
+     * the platform as a session of its own ({@code attachedChildSession});
+     * this plays the platform's half against real headless Chrome and
+     * expects the worker's breakpoint to hit inside that second session.
+     */
+    @Test
+    @DisplayName("a page's Web Worker becomes a debug session of its own, and its breakpoint hits there")
+    void shouldDebugWebWorkerAsItsOwnSession(@TempDir Path tmp) throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        File browser = BrowserLocator.find();
+        assumeTrue(browser != null, "no Chromium-family browser installed — skipping browser debug E2E");
+        assertThat(SERVER_JS).as("vendored adapter present").exists();
+
+        Path dir = tmp.toRealPath();
+        Files.writeString(dir.resolve("index.html"), """
+                <!doctype html>
+                <html><body>
+                <h1>worker e2e</h1>
+                <script src="app.js"></script>
+                </body></html>
+                """, StandardCharsets.UTF_8);
+        Files.writeString(dir.resolve("app.js"), """
+                const w = new Worker('worker.js');
+                w.onmessage = (e) => console.log('from worker ' + e.data);
+                """, StandardCharsets.UTF_8);
+        Path workerJs = dir.resolve("worker.js");
+        Files.writeString(workerJs, """
+                const x = 1;
+                const y = x + 1;
+                postMessage(y);
+                """, StandardCharsets.UTF_8);
+        String url = serveFixture(dir);
+        profile = Files.createTempDirectory("nmox-chrome-e2e-profile-");
+
+        adapterLog = new AdapterLogTap();
+        server = JsDebugServer.start(SERVER_JS);
+        proxy = DapProxy.start(server.port(), () -> { });
+        Client nb = new Client(proxy.clientInput(), proxy.clientOutput(),
+                adapterLog::dump);
+
+        nb.request("initialize", new JSONObject()
+                .put("clientID", "test").put("adapterID", "test")
+                .put("pathFormat", "path")
+                .put("linesStartAt1", true).put("columnsStartAt1", true));
+        nb.awaitResponse("initialize");
+        nb.request("launch", new JSONObject()
+                .put("type", "pwa-chrome").put("request", "launch")
+                .put("name", "worker-e2e")
+                .put("url", url)
+                .put("webRoot", dir.toString())
+                .put("runtimeExecutable", browser.getAbsolutePath())
+                .put("runtimeArgs", new JSONArray().put("--headless=new"))
+                .put("timeout", 120_000)   // same cold-start ceiling as above
+                .put("userDataDir", profile.toString()));
+        nb.awaitEvent("initialized");
+        // the platform replays every breakpoint into every session; the
+        // page session never loads worker.js as a script of its own, so this
+        // one only binds where it belongs — inside the worker's session
+        nb.request("setBreakpoints", new JSONObject()
+                .put("source", new JSONObject().put("path", workerJs.toString()))
+                .put("breakpoints", new JSONArray().put(new JSONObject().put("line", 2))));
+        nb.awaitResponse("setBreakpoints");
+        nb.request("configurationDone", new JSONObject());
+
+        // Chrome boots, the page runs app.js, the worker target is raised on
+        // the page's link — and arrives here as an offer of a new session
+        JSONObject offer = nb.awaitRequest("attachedChildSession", Duration.ofSeconds(120));
+        nb.answer(offer);
+        JSONObject config = offer.getJSONObject("arguments").getJSONObject("config");
+        assertThat(config.getString("name")).as("the offered session is the worker's")
+                .containsIgnoringCase("worker");
+
+        BlockingQueue<String> hits = new LinkedBlockingQueue<>();
+        driveChildSession(Integer.parseInt(config.getString("__jsDebugChildServer")),
+                workerJs, 2, hits, adapterLog::dump);
+        assertThat(hits.poll(60, TimeUnit.SECONDS))
+                .as("the worker's breakpoint hit in its own session")
+                .isEqualTo(workerJs + ":2");
+
+        nb.request("disconnect", new JSONObject());
+        server.stop();   // the reaper the product runs on every OS (ledger 40)
+    }
+
+    /**
+     * What {@code DAPDebugger.attachedChildSession} does, sans UI: dial the
+     * offered port, initialize, send a bare attach, set the breakpoint on
+     * initialized, configurationDone, and on the stop read the top frame,
+     * report it as {@code path:line}, then continue. Same driver as
+     * RealJsDebugIntegrationTest's PlatformChildSession over this test's
+     * diagnostics-carrying Client.
+     */
+    private static void driveChildSession(int port, Path file, int line,
+            BlockingQueue<String> hits, java.util.function.Supplier<String> diagnostics)
+            throws IOException {
+        java.net.Socket socket = new java.net.Socket(InetAddress.getLoopbackAddress(), port);
+        Client session = new Client(socket.getInputStream(), socket.getOutputStream(), diagnostics);
+        Thread driver = new Thread(() -> {
+            try {
+                session.request("initialize", new JSONObject()
+                        .put("clientID", "nb").put("adapterID", "nb")
+                        .put("pathFormat", "path")
+                        .put("linesStartAt1", true).put("columnsStartAt1", true));
+                session.awaitResponse("initialize");
+                session.request("attach", null);
+                session.awaitEvent("initialized");
+                session.request("setBreakpoints", new JSONObject()
+                        .put("source", new JSONObject().put("path", file.toString()))
+                        .put("breakpoints", new JSONArray().put(new JSONObject().put("line", line))));
+                session.awaitResponse("setBreakpoints");
+                session.request("configurationDone", new JSONObject());
+                JSONObject stopped = session.awaitEvent("stopped");
+                int thread = stopped.getJSONObject("body").getInt("threadId");
+                session.request("stackTrace", new JSONObject().put("threadId", thread));
+                JSONObject top = session.awaitResponse("stackTrace").getJSONObject("body")
+                        .getJSONArray("stackFrames").getJSONObject(0);
+                hits.add(top.getJSONObject("source").getString("path") + ":" + top.getInt("line"));
+                session.request("continue", new JSONObject().put("threadId", thread));
+            } catch (IOException | InterruptedException | RuntimeException | AssertionError ex) {
+                hits.add("FAILED: " + ex);
+            }
+        }, "test-platform-child-session");
+        driver.setDaemon(true);
+        driver.start();
+    }
+
     /** Poll until every handle in {@code tree} has exited, or {@code budget}
      *  elapses; then assert the tree is dead. */
     private static void assertTreeDeadWithin(List<ProcessHandle> tree,
@@ -323,10 +452,31 @@ class RealChromeIntegrationTest {
 
         void request(String command, JSONObject arguments) throws IOException {
             synchronized (out) {
-                DapFrames.write(out, new JSONObject()
+                JSONObject frame = new JSONObject()
                         .put("seq", seq.incrementAndGet()).put("type", "request")
-                        .put("command", command).put("arguments", arguments).toString());
+                        .put("command", command);
+                if (arguments != null) {   // a bare attach carries no arguments
+                    frame.put("arguments", arguments);
+                }
+                DapFrames.write(out, frame.toString());
             }
+        }
+
+        /** The platform's success reply to a reverse request (attachedChildSession). */
+        void answer(JSONObject request) throws IOException {
+            synchronized (out) {
+                DapFrames.write(out, new JSONObject()
+                        .put("seq", seq.incrementAndGet()).put("type", "response")
+                        .put("command", request.optString("command"))
+                        .put("request_seq", request.optInt("seq"))
+                        .put("success", true).put("body", new JSONObject()).toString());
+            }
+        }
+
+        JSONObject awaitRequest(String command, Duration budget) throws InterruptedException {
+            return await("request '" + command + "'", budget,
+                    f -> "request".equals(f.optString("type"))
+                    && command.equals(f.optString("command")));
         }
 
         JSONObject awaitResponse(String command) throws InterruptedException {
