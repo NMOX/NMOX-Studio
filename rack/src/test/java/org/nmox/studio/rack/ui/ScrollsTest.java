@@ -53,7 +53,7 @@ class ScrollsTest {
         Path window = Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java");
         assertThat(window).isRegularFile();
         String source = Files.readString(window);
-        assertThat(Pattern.compile("(?m)^\\s*(\\w+\\.)*Scrolls\\.toLogicalStart\\(").matcher(source).find())
+        assertThat(Pattern.compile("(?m)^\\s*(\\(\\) ->\\s*)?(\\w+\\.)*Scrolls\\.toLogicalStart\\(").matcher(source).find())
                 .as("RackTopComponent calls Scrolls.toLogicalStart")
                 .isTrue();
         assertThat(source).contains("protected void componentShowing()");
