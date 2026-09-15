@@ -174,7 +174,14 @@ class WatchSocketTest {
                         .put("result", new JSONObject().put("number", "0x5")
                                 .put("padding", "x".repeat(200_000))))
                 .toString();
-        o.conn().sendText(huge);
+        try {
+            o.conn().sendText(huge);
+        } catch (java.net.SocketException clientHungUp) {
+            // the client refusing the frame and dropping the socket mid-write
+            // IS the behaviour under test: Windows reports that reset on the
+            // writer ("an established connection was aborted"), macOS and
+            // Linux usually let the write finish into the dead socket
+        }
         assertThat(drops.poll(10, TimeUnit.SECONDS)).contains("size cap");
         assertThat(heads).as("the refused head was never parsed").isEmpty();
         assertThat(o.socket().finished()).isTrue();
