@@ -1,21 +1,21 @@
 package org.nmox.studio.rack.ui;
 
-import javax.swing.JScrollBar;
+import java.awt.Point;
+
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 
 /**
- * Where a scrolled view starts reading (v2.162.0). A left-to-right view
- * starts at the left edge, and Swing's zero scroll position already means
- * that. A MIRRORED view (the RTL work of v2.148.0 orients every window)
- * reads from the right, and zero is then the FAR end: the docs forge's
- * Hebrew and Arabic pictures of the Task Rack opened on the tail of every
- * device — MAESTRO reading "RO", KVASIR "IR" — because the rack is wider
- * than its viewport and the window had opened at the wrong end of it.
+ * Where a scrolled view starts reading (v2.162.0).
  *
- * <p>The decision is a pure function of the scrollbar's own numbers, so it
- * is tested without a laid-out window: a real {@code JScrollPane} recomputes
- * its model during layout and flips value-to-position under RTL, which makes
- * a headless assertion on the widget measure Swing rather than this rule.
+ * <p>A rack faceplate is painted GEOMETRY, and geometry does not mirror
+ * (the v2.148.0 decision: a device's jacks, meters and transport keep their
+ * shape in every language). So the rack's content begins at its left edge
+ * in every direction — but in a mirrored window Swing's zero scroll VALUE
+ * is the far end of it, and the Hebrew and Arabic pictures of the Task Rack
+ * opened on the tail of every device: MAESTRO reading "RO", KVASIR "IR".
+ * Setting the viewport's POSITION says what is meant regardless of the
+ * value-to-position flip a right-to-left scrollbar applies.
  */
 public final class Scrolls {
 
@@ -23,24 +23,22 @@ public final class Scrolls {
     }
 
     /**
-     * The scroll value a reader of this direction starts at: the minimum
-     * left-to-right, the far end right-to-left. A view no wider than its
-     * viewport has nowhere to go and stays at the minimum.
+     * Puts a scrolled view at the start of its content — the left edge —
+     * keeping whatever vertical position it had. A view narrower than its
+     * viewport is already there and does not move.
      */
-    public static int logicalStart(boolean leftToRight, int min, int max, int extent) {
-        return leftToRight ? min : Math.max(min, max - extent);
-    }
-
-    /** Puts the pane's horizontal view at the side its language reads from. */
-    public static void toLogicalStart(JScrollPane pane) {
+    public static void toContentStart(JScrollPane pane) {
         if (pane == null) {
             return;
         }
-        JScrollBar bar = pane.getHorizontalScrollBar();
-        if (bar == null) {
+        JViewport viewport = pane.getViewport();
+        if (viewport == null) {
             return;
         }
-        bar.setValue(logicalStart(pane.getComponentOrientation().isLeftToRight(),
-                bar.getMinimum(), bar.getMaximum(), bar.getVisibleAmount()));
+        Point at = viewport.getViewPosition();
+        if (at == null) {
+            return;
+        }
+        viewport.setViewPosition(new Point(0, at.y));
     }
 }

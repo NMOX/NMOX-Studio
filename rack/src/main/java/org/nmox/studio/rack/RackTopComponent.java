@@ -546,11 +546,13 @@ public final class RackTopComponent extends TopComponent {
     @Override
     protected void componentShowing() {
         aimNodeShowing = true;
-        // a mirrored rack reads from the right, and Swing's zero scroll
-        // position is then the FAR end — the Hebrew and Arabic pictures of
-        // this window opened on the tail of every device face (v2.162.0)
+        // a rack faceplate is painted geometry and never mirrors, so the
+        // rack starts at its left edge in every language — but a mirrored
+        // window opens a wide view at the FAR end of it, which is how the
+        // Hebrew and Arabic pictures came out with every device face cut
+        // off (v2.162.0)
         javax.swing.SwingUtilities.invokeLater(
-                () -> org.nmox.studio.rack.ui.Scrolls.toLogicalStart(rackScroll));
+                () -> org.nmox.studio.rack.ui.Scrolls.toContentStart(rackScroll));
         // the publisher's equality guard makes re-shows of an unchanged aim
         // free; a fresh boot pays one ~/NMOX folder-node resolve on first
         // show (never while hidden), which touches no TCC-protected path

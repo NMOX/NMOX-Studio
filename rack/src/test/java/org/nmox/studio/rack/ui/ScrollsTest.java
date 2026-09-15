@@ -1,8 +1,13 @@
 package org.nmox.studio.rack.ui;
 
+import java.awt.Dimension;
+import java.awt.Point;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.regex.Pattern;
+
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,39 +15,51 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * A mirrored view opens where its reader starts (v2.162.0): the forge's
+ * A rack view opens at the start of its content (v2.162.0): the forge's
  * Hebrew and Arabic Task Rack pictures showed every device face cut off,
- * because a right-to-left rack wider than its viewport opened at the far
- * end. Mutation-proven: a rule that always answers the minimum fails
- * {@code mirroredViewStartsAtTheFarSide} by name.
+ * because a mirrored window opens a wide view at Swing's zero scroll
+ * VALUE, which is the far end of the content. Mutation-proven: a rule that
+ * leaves the position alone fails {@code aScrolledViewOpensAtItsContentsStart}
+ * by name.
  */
 class ScrollsTest {
 
+    private static JScrollPane wideScrollPane() {
+        JPanel wide = new JPanel();
+        wide.setPreferredSize(new Dimension(2_000, 400));
+        wide.setSize(2_000, 400);
+        JScrollPane pane = new JScrollPane(wide);
+        pane.setSize(500, 300);
+        pane.getViewport().setSize(500, 300);
+        return pane;
+    }
+
     @Test
-    @DisplayName("a mirrored view starts at the far side; a left-to-right one at the minimum")
-    void mirroredViewStartsAtTheFarSide() {
-        // a 2000px view in a 500px viewport
-        assertThat(Scrolls.logicalStart(false, 0, 2_000, 500))
-                .as("right-to-left starts at the rightmost column")
-                .isEqualTo(1_500);
-        assertThat(Scrolls.logicalStart(true, 0, 2_000, 500))
-                .as("left-to-right starts at the left edge")
+    @DisplayName("a scrolled view opens at the start of its content, wherever it was")
+    void aScrolledViewOpensAtItsContentsStart() {
+        JScrollPane pane = wideScrollPane();
+        pane.getViewport().setViewPosition(new Point(1_400, 60));
+        assertThat(pane.getViewport().getViewPosition().x)
+                .as("the fixture really starts away from the content's start")
+                .isGreaterThan(0);
+
+        Scrolls.toContentStart(pane);
+
+        assertThat(pane.getViewport().getViewPosition().x)
+                .as("the first column of the content is showing")
                 .isZero();
+        assertThat(pane.getViewport().getViewPosition().y)
+                .as("how far down the reader had scrolled is left alone")
+                .isEqualTo(60);
     }
 
     @Test
-    @DisplayName("a view no wider than its viewport has nowhere to go")
-    void narrowViewStaysAtTheMinimum() {
-        assertThat(Scrolls.logicalStart(false, 0, 400, 500)).isZero();
-        assertThat(Scrolls.logicalStart(false, 0, 500, 500)).isZero();
-        assertThat(Scrolls.logicalStart(true, 0, 400, 500)).isZero();
-    }
-
-    @Test
-    @DisplayName("a non-zero minimum is still the floor")
-    void honoursTheModelsMinimum() {
-        assertThat(Scrolls.logicalStart(false, 100, 300, 500)).isEqualTo(100);
-        assertThat(Scrolls.logicalStart(true, 100, 2_000, 500)).isEqualTo(100);
+    @DisplayName("a view already at its start, or missing, is left alone")
+    void nothingToDoIsSafe() {
+        JScrollPane pane = wideScrollPane();
+        Scrolls.toContentStart(pane);
+        assertThat(pane.getViewport().getViewPosition()).isEqualTo(new Point(0, 0));
+        Scrolls.toContentStart(null); // must not throw
     }
 
     @Test
@@ -53,8 +70,8 @@ class ScrollsTest {
         Path window = Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java");
         assertThat(window).isRegularFile();
         String source = Files.readString(window);
-        assertThat(Pattern.compile("(?m)^\\s*(\\(\\) ->\\s*)?(\\w+\\.)*Scrolls\\.toLogicalStart\\(").matcher(source).find())
-                .as("RackTopComponent calls Scrolls.toLogicalStart")
+        assertThat(Pattern.compile("(?m)^\\s*(\\(\\) ->\\s*)?(\\w+\\.)*Scrolls\\.toContentStart\\(").matcher(source).find())
+                .as("RackTopComponent calls Scrolls.toContentStart")
                 .isTrue();
         assertThat(source).contains("protected void componentShowing()");
     }
