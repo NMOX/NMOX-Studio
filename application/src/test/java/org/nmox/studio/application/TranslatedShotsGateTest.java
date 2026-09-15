@@ -67,8 +67,8 @@ class TranslatedShotsGateTest {
                     continue;
                 }
                 // a staged shot: English unless the forge has painted this language's own
-                String name = target.substring(target.lastIndexOf('/') + 1);
-                if (Files.isRegularFile(root.resolve("docs/images").resolve(lang).resolve(name))) {
+                String shot = target.substring(target.lastIndexOf('/') + 1);
+                if (Files.isRegularFile(root.resolve("docs/images").resolve(lang).resolve(shot))) {
                     stagedChecked++;
                     if (!target.contains("/" + lang + "/")) {
                         wrong.add(root.relativize(doc) + " -> " + target + " (a " + lang + " copy exists)");
