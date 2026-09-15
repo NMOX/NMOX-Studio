@@ -1,5 +1,15 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.157.0 — the debugger has a door a
+keyboard can reach. The v2.156.0 walk could not right-click and had to seed a
+menu shadow to start a session; the product had the same gap for every user
+since v1.37.0. The fix is the platform's, not a new row: Debug ▸ Debug File
+and ⇧⌘F5 enable through the project's `ActionProvider`, so `debug.single` is
+now answered — the file goes through a `core.spi.DebugLauncher` facade to the
+editor's trust-gated launch (the v1.46.0 soft-dependency idiom; tools still
+carries no editor dependency). Lesson: when a walk needs a workaround to
+reach a feature, the workaround is the next unit.*
+
 *Currency addendum 2026-09-15, at v2.156.0 — the debugger follows a program's
 children. Ledger 25 (Node children ran undebugged) and 39 (a page's Web
 Workers sat paused) had waited since v1.37.0/v1.43.0 on "a platform DAP
