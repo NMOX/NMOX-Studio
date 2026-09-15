@@ -240,6 +240,47 @@ public final class DocsStaging {
         return sb.toString();
     }
 
+    /** True when a KVASIR device is racked in the studio's rack. */
+    public static boolean kvasirRacked() {
+        return kvasir() != null;
+    }
+
+    /**
+     * Puts the studio's rack on {@code dir} with that directory's own patch
+     * mounted: re-aims when the rack has drifted to another project, and
+     * loads the patch through the product's own {@link RackIO#load} when
+     * the aim alone left it unmounted. Call on the EDT (devices are Swing).
+     * Returns what it had to do, for the forge's log.
+     */
+    public static String ensureRackOn(File dir) {
+        org.nmox.studio.rack.model.Rack rack = RackService.getDefault().getRack();
+        StringBuilder did = new StringBuilder();
+        if (!dir.equals(rack.getProjectDir())) {
+            aim(dir);
+            did.append("re-aimed from ").append(rack.getProjectDir() == null ? "nothing" : "a drifted rack");
+        }
+        File patch = new File(dir, RackIO.DEFAULT_FILENAME);
+        if (kvasir() == null && patch.isFile() && dir.equals(rack.getProjectDir())) {
+            try {
+                RackIO.load(rack, patch);
+                did.append(did.length() > 0 ? "; " : "").append("loaded the patch");
+            } catch (IOException | RuntimeException ex) {
+                did.append(did.length() > 0 ? "; " : "").append("patch load failed: ").append(ex);
+            }
+        }
+        return did.toString();
+    }
+
+    /** The aimed directory and every racked device's title — what a skipped KVASIR shot logs. */
+    public static String rackSummary() {
+        org.nmox.studio.rack.model.Rack rack = RackService.getDefault().getRack();
+        StringBuilder sb = new StringBuilder(String.valueOf(rack.getProjectDir())).append(" [");
+        for (RackDevice d : rack.getDevices()) {
+            sb.append(d.getTitle()).append(' ');
+        }
+        return sb.toString().strip() + "]";
+    }
+
     private static RackDevice kvasir() {
         for (RackDevice d : RackService.getDefault().getRack().getDevices()) {
             if ("KVASIR".equals(d.getTitle())) {

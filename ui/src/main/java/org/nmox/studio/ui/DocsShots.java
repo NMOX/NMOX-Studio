@@ -392,6 +392,13 @@ public class DocsShots implements Runnable {
                                 new File(experiment[0], org.nmox.studio.rack.projectstudio.Experiments.GUIDE));
                     }, () -> true, 0),
                     new Staged("kvasir-explain.png", () -> {
+                        java.util.logging.Logger.getLogger(DocsShots.class.getName()).info(
+                                "kvasir stage begins on the rack: " + org.nmox.studio.rack.service.DocsStaging.rackSummary());
+                        String fixed = org.nmox.studio.rack.service.DocsStaging.ensureRackOn(experiment[0]);
+                        if (!fixed.isEmpty()) {
+                            java.util.logging.Logger.getLogger(DocsShots.class.getName()).info(
+                                    "kvasir stage " + fixed + " \u2014 now: " + org.nmox.studio.rack.service.DocsStaging.rackSummary());
+                        }
                         front("RackTopComponent");
                         // node:test's own shape for one failing test in the Express API's suite
                         org.nmox.studio.rack.service.DocsStaging.seedFailedRun(
@@ -406,6 +413,14 @@ public class DocsShots implements Runnable {
                     }, () -> {
                         // press only once KVASIR shows a failure is ready to explain:
                         // the patch loads and the recorder fills on their own time
+                        if (explainPressedAt == 0 && !org.nmox.studio.rack.service.DocsStaging.kvasirRacked()) {
+                            String fixed = org.nmox.studio.rack.service.DocsStaging.ensureRackOn(experiment[0]);
+                            if (!fixed.isEmpty()) {
+                                java.util.logging.Logger.getLogger(DocsShots.class.getName()).info(
+                                        "kvasir stage " + fixed + " \u2014 now: " + org.nmox.studio.rack.service.DocsStaging.rackSummary());
+                            }
+                            return false;
+                        }
                         String lcds = org.nmox.studio.rack.service.DocsStaging.kvasirLcds();
                         if (explainPressedAt == 0) {
                             if (lcds.contains("PRESS EXPLAIN")
@@ -485,7 +500,9 @@ public class DocsShots implements Runnable {
                     if (lcds != null && !kvasirAnswered(lcds)) {
                         java.util.logging.Logger.getLogger(DocsShots.class.getName())
                                 .warning("kvasir-explain.png skipped \u2014 KVASIR did not answer; its faceplate reads: "
-                                        + lcds.replace('\n', ' ').strip());
+                                        + lcds.replace('\n', ' ').strip() + " \u2014 the rack: "
+                                        + org.nmox.studio.rack.service.DocsStaging.rackSummary()
+                                        + " \u2014 EXPLAIN pressed: " + (explainPressedAt != 0));
                     } else {
                         capture(stage.file());
                     }
