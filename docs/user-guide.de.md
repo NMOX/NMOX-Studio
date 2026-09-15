@@ -124,6 +124,8 @@ Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm,
 
 **KVASIR** ist KI-Unterstützung nach Art des Racks: ein Gerät, das den Fehler erklärt, der gerade auf dem MONITOR-Bus liegt — keine Chat-Seitenleiste. Schlägt ein Lauf fehl, drücken Sie **EXPLAIN**, und KVASIR fragt Ihre KI, was schiefging und was der konkrete nächste Schritt ist. Ein kurzes Urteil erscheint auf der Anzeige; **VIEW** öffnet die ganze Antwort. **MODEL** wählt zwischen **FAST** (schnell und günstig, die Voreinstellung) und **DEEP** (stärker). EXPLAIN ist blau: Es liest und fragt, es rührt Ihr Projekt nie an.
 
+KVASIR antwortet in der Sprache, auf die NMOX Studio eingestellt ist.
+
 **Wählen Sie Ihre KI, hinterlegen Sie Ihren Schlüssel.** KVASIR arbeitet mit **Claude (Anthropic)**, **ChatGPT (OpenAI)** oder **Gemini (Google)** — Ihr Schlüssel, Ihre Wahl. Drücken Sie **KEY…**, um den Anbieter zu wählen und seinen Schlüssel einzufügen; die Wahl wird gemerkt, und der Schlüssel wohnt allein im Schlüsselbund des Systems. Die üblichen Umgebungsvariablen jedes Anbieters werden ebenfalls gelesen, und ein hinterlegter Schlüssel schlägt einen aus der Umgebung.
 
 **Was KVASIR sendet, und alles, was es sendet.** Beim ersten Druck auf EXPLAIN führt ein Dialog genau auf, was Ihren Rechner verlässt und was nicht; ohne diese Einwilligung wird nichts gesendet, und die Einwilligung gilt je Anbieter. Nach einem erfolgreichen EXPLAIN öffnet **VIEW** die Antwort als Gespräch — Sie können zum selben Fehlschlag weiterfragen.

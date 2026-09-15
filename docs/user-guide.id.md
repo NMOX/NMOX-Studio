@@ -124,6 +124,8 @@ Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pe
 
 **KVASIR** adalah bantuan AI dengan cara rak: sebuah perangkat yang menjelaskan galat yang sedang ada di bus MONITOR, bukan bilah obrolan di samping. Ketika sebuah jalannya gagal, tekan **EXPLAIN** dan KVASIR bertanya kepada AI Anda apa yang salah dan apa langkah berikutnya yang konkret. Putusan singkat mendarat di layar; **VIEW** membuka jawaban selengkapnya. **MODEL** memilih **FAST** (cepat dan murah, bawaan) atau **DEEP** (lebih kuat). EXPLAIN berwarna biru: ia membaca dan bertanya, ia tidak pernah menyentuh proyek Anda.
 
+KVASIR menjawab dalam bahasa yang dipilih untuk NMOX Studio.
+
 **Pilih AI Anda, pasang kunci Anda.** KVASIR bekerja dengan **Claude (Anthropic)**, **ChatGPT (OpenAI)** atau **Gemini (Google)** — kunci Anda, pilihan Anda. Tekan **KEY…** untuk memilih penyedia dan menempelkan kuncinya; pilihannya diingat, dan kuncinya hanya tinggal di gantungan kunci sistem operasi. Variabel lingkungan yang lazim bagi tiap penyedia juga dibaca, dan kunci yang tersimpan mengalahkan kunci dari lingkungan.
 
 **Apa yang KVASIR kirim, dan itu seluruhnya.** Pertama kali Anda menekan EXPLAIN, sebuah dialog merinci persis apa yang akan meninggalkan mesin Anda dan apa yang tidak; tidak ada yang dikirim tanpa persetujuan itu, dan persetujuannya berlaku per penyedia. Setelah EXPLAIN yang berhasil, tombol **VIEW** membuka jawabannya sebagai percakapan — Anda bisa terus bertanya tentang kegagalan yang sama.

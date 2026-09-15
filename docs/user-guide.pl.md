@@ -124,6 +124,8 @@ Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bu
 
 **KVASIR** to pomoc SI po stojakowemu: urządzenie, które wyjaśnia błąd leżący właśnie na szynie MONITOR, a nie boczny panel czatu. Gdy uruchomienie padnie, naciśnij **EXPLAIN**, a KVASIR spyta twoją SI, co poszło nie tak i jaki jest konkretny następny krok. Krótki werdykt ląduje na wyświetlaczu; **VIEW** otwiera pełną odpowiedź. **MODEL** wybiera **FAST** (szybko i tanio, domyślnie) albo **DEEP** (mocniej). EXPLAIN jest niebieski: czyta i pyta, nigdy nie dotyka twojego projektu.
 
+KVASIR odpowiada w języku ustawionym w NMOX Studio.
+
 **Wybierz swoją SI, włóż swój klucz.** KVASIR działa z **Claude (Anthropic)**, **ChatGPT (OpenAI)** albo **Gemini (Google)** — twój klucz, twój wybór. Naciśnij **KEY…**, aby wybrać dostawcę i wkleić jego klucz; wybór jest zapamiętywany, a klucz mieszka wyłącznie w pęku kluczy systemu. Zwykłe zmienne środowiskowe każdego dostawcy też są czytane, a klucz zapisany wygrywa z kluczem ze środowiska.
 
 **Co KVASIR wysyła — i to wszystko, co wysyła.** Przy pierwszym naciśnięciu EXPLAIN okno wylicza dokładnie to, co opuści twoją maszynę, i to, co jej nie opuści; bez tej zgody nie wysyła się nic, a zgoda obowiązuje osobno dla każdego dostawcy. Po udanym EXPLAIN przycisk **VIEW** otwiera odpowiedź jako rozmowę — możesz dopytywać o tę samą porażkę.

@@ -124,6 +124,8 @@ O rack é o coração do produto. Cada ferramenta do seu fluxo de trabalho — n
 
 **KVASIR** é assistência de IA do jeito do rack: um dispositivo que explica o erro que está agora no barramento MONITOR, não uma barra lateral de conversa. Quando uma execução falha, aperte **EXPLAIN** e o KVASIR pergunta à sua IA o que deu errado e qual é o próximo passo concreto. Um veredito curto aparece no visor; **VIEW** abre a resposta inteira. **MODEL** escolhe entre **FAST** (rápido e barato, o padrão) e **DEEP** (mais forte). EXPLAIN é azul: ele lê e pergunta, nunca toca no seu projeto.
 
+O KVASIR responde no idioma configurado no NMOX Studio.
+
 **Escolha sua IA, ponha sua chave.** O KVASIR funciona com **Claude (Anthropic)**, **ChatGPT (OpenAI)** ou **Gemini (Google)** — sua chave, sua escolha. Aperte **KEY…** para escolher o provedor e colar a chave dele; a escolha fica lembrada e a chave mora só no chaveiro do sistema operacional. As variáveis de ambiente usuais de cada provedor também são lidas, e uma chave guardada vence uma do ambiente.
 
 **O que o KVASIR envia — e é tudo o que ele envia.** Na primeira vez que você aperta EXPLAIN, uma caixa de diálogo lista exatamente o que vai sair da sua máquina e o que não vai; nada é enviado sem esse consentimento, e o consentimento vale por provedor. Depois de um EXPLAIN bem-sucedido, o botão **VIEW** abre a resposta como uma conversa — dá para continuar perguntando sobre a mesma falha.

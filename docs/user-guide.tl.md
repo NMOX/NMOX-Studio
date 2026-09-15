@@ -124,6 +124,8 @@ Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — n
 
 Ang **KVASIR** ay tulong ng AI sa paraan ng rack: isang kagamitang nagpapaliwanag sa maling nasa MONITOR bus ngayon, hindi isang gilid na panel ng usapan. Kapag bumagsak ang isang pagtakbo, pindutin ang **EXPLAIN** at tatanungin ng KVASIR ang iyong AI kung ano ang nagkamali at kung ano ang konkretong susunod na hakbang. Isang maikling hatol ang dumadapo sa pantalan; binubuksan ng **VIEW** ang buong sagot. Pumipili ang **MODEL** ng **FAST** (mabilis at mura, ang likas) o **DEEP** (mas malakas). Asul ang EXPLAIN: nagbabasa ito at nagtatanong, hindi nito hinahawakan kailanman ang iyong proyekto.
 
+Sumasagot ang KVASIR sa wikang nakatakda sa NMOX Studio.
+
 **Piliin ang iyong AI, ilagay ang iyong susi.** Gumagana ang KVASIR sa **Claude (Anthropic)**, **ChatGPT (OpenAI)** o **Gemini (Google)** — iyong susi, iyong pili. Pindutin ang **KEY…** upang piliin ang tagapaglaan at idikit ang susi nito; naaalala ang pinili, at nakatira ang susi sa keychain lamang ng operating system. Binabasa rin ang karaniwang mga environment variable ng bawat tagapaglaan, at nananaig ang naimbak na susi sa isang mula sa kapaligiran.
 
 **Kung ano ang ipinapadala ng KVASIR, at iyon na ang lahat.** Sa unang pagpindot mo sa EXPLAIN, inililista ng isang dayalogo nang eksakto kung ano ang aalis sa iyong makina at kung ano ang hindi; walang ipinapadala nang walang pahintulot na iyon, at ang pahintulot ay kada tagapaglaan. Pagkatapos ng matagumpay na EXPLAIN, binubuksan ng **VIEW** ang sagot bilang isang usapan — maaari kang magpatuloy sa pagtatanong tungkol sa parehong pagkabigo.

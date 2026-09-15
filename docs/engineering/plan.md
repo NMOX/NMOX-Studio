@@ -1,5 +1,22 @@
 # The Plan
 
+*Currency addendum 2026-09-15, at v2.162.0 — the pictures that needed a
+session. v2.161.0's ceiling was six staged shots, and the reason they were a
+ceiling was that each needed a live state: a preset racked, cables on the rear,
+a failed run explained. None of that needed a person. The product's own
+templates, presets, recorder and accessible actions can produce every one, so
+the forge stages them per language. The walk of the English run paid three
+times before a single translation was painted: the rack showed "NO GRUNTFILE"
+under a caption promising a parsed Gruntfile, the editor carried a balloon
+about this machine's TypeScript 7, and KVASIR's refusal list missed its own
+consent text, which would have photographed a refusal as a diagnosis. KVASIR
+itself had answered a Hebrew IDE in English since the AI arc began; the prompt
+now names the reader's language. Scar: `-rf :NMOX-Studio-app` assembles the app
+from `~/.m2` for every other module, and a stale ui jar staged nothing while
+`ui/target` was right — byte-check the cluster jar before a forge boot. Ceiling
+now: the tutorials' live-external scenes (breakpoint, database, Docker, Anvil,
+sprint history, Presentation Mode).*
+
 *Currency addendum 2026-09-15, at v2.161.0 — the picture speaks the language.
 David opened the Hebrew guide and its first illustration was an English
 window: the l10n arc translated every word and left every screenshot the
