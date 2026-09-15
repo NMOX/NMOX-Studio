@@ -22,7 +22,16 @@ All notable changes to NMOX Studio are documented here. The format follows
   disabled). `DebugSingleDoorTest` holds the enablement rules (two files,
   a stranger, an unsupported type, nothing selected → disabled) and that
   invoking hands exactly the file over; `DapDebugLauncherTest` pins the
-  registration and the MIME rule to the action's own four types.
+  registration and the MIME rule to the action's own four types. Four
+  mutants die by name.
+- **Walked in the assembled app.** With the Welcome tab in front, the Debug
+  menu's *Debug File* read disabled; with `app.js` in front it read enabled,
+  and pressing it started the session: the editor stopped on line 2 at the
+  seeded breakpoint, the adapter and `node ./app.js` were alive, the
+  `Node: app.js` console opened, and Finish Debugger Session ended both.
+  The chord itself (⇧⌘F5) is the platform's own `Shortcuts/DS-F5` entry and
+  was not pressed by this walk (keystrokes cannot be delivered from the
+  background); the row it fires is the one that was pressed.
 
 ## [2.156.0] - 2026-09-15
 
