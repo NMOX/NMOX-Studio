@@ -72,9 +72,11 @@ public interface DbBackend extends AutoCloseable {
      * Executes console input — a SQL script, a MongoDB command
      * document, or a Mango query — and returns one {@link QueryResult}
      * per executed statement (document backends always execute exactly
-     * one). Result sets are capped at {@code rowLimit} rows
-     * ({@code <= 0} means unlimited) and marked truncated when more
-     * remained. Errors land in {@link QueryResult#error()}, never as a
+     * one). Result sets are capped at {@code rowLimit} rows and marked
+     * truncated when more remained. {@code <= 0} means the caller sets no
+     * cap; a backend may still bound the read — MongoDB pages cursors to at
+     * most 1,000,000 documents, the row spinner's own maximum (v2.155.0),
+     * because every read in the product is bounded. Errors land in {@link QueryResult#error()}, never as a
      * throw.
      */
     List<QueryResult> runConsole(String text, int rowLimit);
