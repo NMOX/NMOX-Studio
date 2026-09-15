@@ -678,8 +678,10 @@ keychain.
 ### ⛓️ Contract Studio (Web3)
 Smart contract development in its own tab (⌥⌘6) — **Solidity in the
 editor** (pinned TextMate grammar, Navigator outline, LSP catalog
-entry), **Foundry as a real toolchain** (`foundry.toml` projects get
-IDE-native Build/Test/Clean → forge, plus rack lanes), and a Studio
+entry), **Vyper in the editor** too (grammar, outline, decorator
+completion), **Foundry as a real toolchain** (`foundry.toml` projects get
+IDE-native Build/Test/Clean → forge, plus rack lanes, slither findings
+included), and a Studio
 that treats contracts like the first-class artifacts they are. The
 tree scans Foundry `out/` and Hardhat `artifacts/`; the **Interact**
 pane generates call forms straight from the ABI — CALL a view function

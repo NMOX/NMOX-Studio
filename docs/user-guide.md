@@ -328,6 +328,10 @@ connections) the Java [Device SPI](device-spi.md) is still there.
   deploy device and deploys physically can't run until every check is
   green.
 - **GOVERNOR** gates Solidity work on gas regressions (`.gas-snapshot`).
+- **PURITY** runs **slither** on a Foundry project: its findings land as
+  squiggles and in Action Items, High and Medium as errors. Without slither on
+  your PATH the lane says how to install it (`pip3 install slither-analyzer`)
+  and runs nothing.
 
 **Anything else:** **SOLDER** wraps any shell command as a first-class
 device — and the whole rack **exports to GitHub Actions** (your local
@@ -1142,6 +1146,9 @@ plus named saved queries. **Edit rows in the grid** — single-table,
 primary-keyed results only (the grid tells you *why* when it's
 read-only), and Apply shows you the exact UPDATE statements before
 touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
+A MongoDB query reads past the driver's first batch up to the row limit and
+says when more remained, and **Cancel** stops the command on the server, so
+the connection is ready for the next one.
 NetBeans Database Explorer connections (Kvasir, Derby, anything with a
 JDBC driver) appear in the tree too and run in the same console.
 
