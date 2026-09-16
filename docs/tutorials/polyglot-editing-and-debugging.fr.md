@@ -10,7 +10,7 @@ langage — et il débogue JavaScript/TypeScript (et le navigateur) d’origine,
 avec des points d’arrêt qui arrêtent vraiment. Ce tutoriel atteint un
 point d’arrêt dans une application Node.
 
-![Un point d’arrêt JavaScript atteint : exécution en pause, pile d’appels Node et variables V8 vivantes](../images/debug-javascript.png)
+![Un point d’arrêt JavaScript atteint : exécution en pause, pile d’appels Node et variables V8 vivantes](../images/fr/debug-javascript.png)
 
 ## Avant de commencer
 

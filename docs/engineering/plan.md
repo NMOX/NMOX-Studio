@@ -1,5 +1,21 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.164.0 — the pictures that needed a live
+service. The last four English-only tutorial scenes (Docker Panel, Contract
+Studio, a hit breakpoint, the DevTools pick) are DocsScenes now, and the forge
+script starts what each needs for one run. Three laws. **A picture of a shared
+resource shows a filtered view of it, never the resource**: the Docker Panel
+lists every container on the daemon, so the app talks to a read-only proxy
+that shows only `org.nmox.docs=1` containers — the privacy half and the
+no-writes half are each a named test over the real script. **A live scene is
+required, not best-effort**: one that never becomes ready is skipped and
+named, because an empty table is not the picture. **A path the script and a
+scene both spell is a second home**: the first English run lost the DevTools
+picture to a 404 from exactly that, now gated. The pictures found a real
+product flaw (Contract Studio's capped network combo wrapping its HTML face)
+and a measured, unexplained one (the Browser paints Arabic unjoined, ledger
+99). Fourteen languages × four, 56 references.*
+
 *Currency addendum 2026-09-16, at v2.163.0 — the pictures that needed data, and the plate David photographed. Eight tutorial windows only mean something with data in them, and the forge could reach none of their writers, so each module stages its own scene behind `core.spi.DocsScene`. Three laws came out of it. **A type can be a different class one module over**: every module loads its own org.json, so a `JSONObject` crossing a module boundary is a linkage error the flat test classpath cannot raise — only JDK types cross. **A leash around a whole script hides why it was needed**: the outer timeout killed the log copy and report, and `| tail` reported exit 0 over it (v2.69.1, again). **A green rectangle test is not a picture**: the faceplate law found twelve devices, two were adjacency, and one layout (VITALS) was wrong until it was looked at. The pictures themselves found three product defects no gate saw — 75px grid columns, cut cards, an RTL header out of order. Ceiling: Docker Panel, Contract Studio, a hit breakpoint, the DevTools pick.*
 
 *Currency addendum 2026-09-15, at v2.162.0 — the pictures that needed a

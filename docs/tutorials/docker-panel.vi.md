@@ -9,7 +9,7 @@ container, image, volume, mạng — cộng thêm thẻ **Dockerize** sinh ra m�
 Dockerfile dùng cho môi trường sản xuất của dự án. Bản sao của nó trên giá
 là thiết bị **HARBOR**.
 
-![Engine đang chạy, một container postgres đang hoạt động — chấm trạng thái, các cổng, và hàng thao tác: khởi động, dừng, nhật ký, kiểm tra](../images/docker-panel.png)
+![Engine đang chạy, một container postgres đang hoạt động — chấm trạng thái, các cổng, và hàng thao tác: khởi động, dừng, nhật ký, kiểm tra](../images/vi/docker-panel.png)
 
 ## Trước khi bắt đầu
 

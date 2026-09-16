@@ -16,7 +16,7 @@ Hand hin und her. Der Browser von NMOX Studio schließt diese Kluft.
 Dieses Tutorial geht die ganze Schleife an einer Seite durch, die Sie
 in zwei Minuten anlegen.
 
-![Die DOM-Ansicht der DevTools mit einem in der Seite ausgewählten h1: Element auswählen, Quelle öffnen und Stil bearbeiten… neben dem lebenden Baum](../images/story-06-devtools-pick.png)
+![Die DOM-Ansicht der DevTools mit einem in der Seite ausgewählten h1: Element auswählen, Quelle öffnen und Stil bearbeiten… neben dem lebenden Baum](../images/de/story-06-devtools-pick.png)
 
 ## 1. Eine Seite anlegen
 

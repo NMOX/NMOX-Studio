@@ -30,6 +30,16 @@
 # printed. With no key the KVASIR shot is skipped and reported MISS.
 #   NMOX_SHOTS_STAGED=1 NMOX_SHOTS_NO_BUILD=1 scripts/docs-shots.sh docs/images/he he
 #
+# v2.164.0: the staged run also paints the tutorials' four LIVE scenes, and
+# starts what they need for the length of the run — a postgres:16-alpine
+# container labelled org.nmox.docs=1 (never pulled: without the image the
+# scene is skipped), a read-only Docker view (docs-docker-proxy.py) so the
+# Docker Panel can show that container and nothing else on the machine,
+# anvil on 8545, and the shop page on the fixture server. The Browser needs
+# JavaFX: NMOX_SHOTS_JDKHOME names a runtime that has it, and by default the
+# installed app's bundled one is used when present. A live scene that never
+# becomes ready is skipped and named in the log, never painted empty.
+#
 # The forge OWNS its output dir — every file there is regenerable. The
 # curated, hand-staged shots in docs/images/ (real DB rows, a hit
 # breakpoint, a running container) are never touched by this script.
@@ -98,11 +108,57 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   [ -f "$FIXTURES" ] || { echo "no forge fixtures at $FIXTURES"; exit 1; }
   # API Studio's picture is a response, so something must answer the starter
   # request's /health on loopback for the length of the run
-  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 >/dev/null 2>&1 &
+  # (v2.164.0: and the shop front the DevTools picture picks from, which the
+  # forge's own scene writes under the demo shop during the run)
+  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 "$HOME_DIR/NMOX/storefront/site" >/dev/null 2>&1 &
   FIXTURE_SERVER=$!
-  trap 'kill $FIXTURE_SERVER 2>/dev/null || true' EXIT
+  SERVICES="$FIXTURE_SERVER"
+  DOCS_CONTAINER=""
+  cleanup() {
+    # shellcheck disable=SC2086 — a list of pids
+    kill $SERVICES 2>/dev/null || true
+    [ -n "$DOCS_CONTAINER" ] && docker rm -fv "$DOCS_CONTAINER" >/dev/null 2>&1
+    return 0
+  }
+  trap cleanup EXIT
+  # v2.164.0: Contract Studio's picture is connected to a chain — a local
+  # anvil for the length of the run, when this machine has one and 8545 is free
+  if command -v anvil >/dev/null 2>&1 && ! lsof -nP -iTCP:8545 -sTCP:LISTEN >/dev/null 2>&1; then
+    anvil --host 127.0.0.1 --port 8545 --silent >/dev/null 2>&1 &
+    SERVICES="$SERVICES $!"
+  else
+    echo "  (no anvil, or 8545 is taken: contract-studio will be skipped)"
+  fi
+  # v2.164.0: the Docker Panel's picture holds one real container — and ONLY
+  # that one. The app never sees the daemon directly: it talks to a read-only
+  # proxy that shows only containers labelled org.nmox.docs=1, so the
+  # developer's own containers can never reach a docs picture. Nothing is
+  # pulled: without postgres:16-alpine already present the scene is skipped.
+  DOCKER_VIEW=""
+  DOCKER_SOCK="$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null | sed -n 's#^unix://##p')"
+  if [ -n "$DOCKER_SOCK" ] && docker image inspect postgres:16-alpine >/dev/null 2>&1; then
+    DOCS_CONTAINER=storefront-db
+    if docker container inspect "$DOCS_CONTAINER" >/dev/null 2>&1; then
+      if [ "$(docker container inspect -f '{{index .Config.Labels "org.nmox.docs"}}' "$DOCS_CONTAINER")" = "1" ]; then
+        docker rm -fv "$DOCS_CONTAINER" >/dev/null 2>&1
+      else
+        echo "  (a container named $DOCS_CONTAINER exists and is not the forge's: docker-panel will be skipped)"
+        DOCS_CONTAINER=""
+      fi
+    fi
+    if [ -n "$DOCS_CONTAINER" ] && docker run -d --label org.nmox.docs=1 --name "$DOCS_CONTAINER" \
+        -e POSTGRES_PASSWORD=docs-only -p 127.0.0.1::5432 postgres:16-alpine >/dev/null; then
+      python3 "$(dirname "$0")/docs-docker-proxy.py" 23750 "$DOCKER_SOCK" >/dev/null 2>&1 &
+      SERVICES="$SERVICES $!"
+      DOCKER_VIEW="tcp://127.0.0.1:23750"
+    else
+      DOCS_CONTAINER=""
+    fi
+  else
+    echo "  (no Docker daemon or no postgres:16-alpine image: docker-panel will be skipped)"
+  fi
   STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.fixtures=$FIXTURES -J-Dnmox.shots.lang=${LOCALE:-en} -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
-  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf task-board sprint-overview standup infra-designer db-studio api-studio presentation-mode editor-screenshot-2x}"
+  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf task-board sprint-overview standup infra-designer db-studio api-studio presentation-mode editor-screenshot-2x docker-panel contract-studio story-06-devtools-pick debug-javascript}"
 fi
 echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throwaway userdir + cachedir) =="
 # shellcheck disable=SC2086 — a locale code and the staged flags have no spaces; unquoted on purpose
@@ -112,9 +168,20 @@ echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throw
 # advancing must still reach the log copy and the missing-shots report below —
 # a timeout wrapped around the whole script killed both and hid the cause
 FORGE_TIMEOUT="${NMOX_SHOTS_TIMEOUT:-900}"
+# v2.164.0: the in-app Browser needs JavaFX, which a source build's host JDK
+# lacks and the installed app's bundled runtime carries. NMOX_SHOTS_JDKHOME
+# names a runtime; by default the installed app's is used when it has JavaFX
+BUNDLED_JRE="/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio/jre"
+if [ -z "${NMOX_SHOTS_JDKHOME:-}" ] && [ -f "$BUNDLED_JRE/lib/javafx.properties" ]; then
+  NMOX_SHOTS_JDKHOME="$BUNDLED_JRE"
+fi
+set --
+[ -n "${NMOX_SHOTS_JDKHOME:-}" ] && set -- --jdkhome "$NMOX_SHOTS_JDKHOME"
+# shellcheck disable=SC2086 — one NAME=value word or none
+env ${DOCKER_VIEW:+DOCKER_HOST=$DOCKER_VIEW} \
 timeout --kill-after=30 "$FORGE_TIMEOUT" \
 zsh -ilc 'exec "$@"' nmox-forge \
-  "$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
+  "$APP" --nosplash "$@" --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
   -J-Dnmox.shots.dir="$OUT_ABS" \
   -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \

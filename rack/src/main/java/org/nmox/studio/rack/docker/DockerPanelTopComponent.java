@@ -215,6 +215,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     private final JPanel enginePanel = new JPanel(new GridBagLayout());
     private final DefaultTableModel containersModel = model("", Bundle.DockerPanelTopComponent_colName(), Bundle.DockerPanelTopComponent_colImage(), Bundle.DockerPanelTopComponent_colStatus(), Bundle.DockerPanelTopComponent_colPorts(), Bundle.DockerPanelTopComponent_colCpu(), Bundle.DockerPanelTopComponent_colMem());
     private final JTable containersTable = table(containersModel, Bundle.DockerPanelTopComponent_containersTable());
+    private final JTabbedPane tabs = new JTabbedPane();
     private final DefaultTableModel imagesModel = model(Bundle.DockerPanelTopComponent_colReference(), Bundle.DockerPanelTopComponent_colId(), Bundle.DockerPanelTopComponent_colSize(), Bundle.DockerPanelTopComponent_colCreated(), "");
     private final JTable imagesTable = table(imagesModel, Bundle.DockerPanelTopComponent_imagesTable());
     private final DefaultTableModel volumesModel = model(Bundle.DockerPanelTopComponent_colName(), Bundle.DockerPanelTopComponent_colDriver());
@@ -247,7 +248,6 @@ public final class DockerPanelTopComponent extends TopComponent {
 
         add(buildHeader(), BorderLayout.NORTH);
 
-        JTabbedPane tabs = new JTabbedPane();
         tabs.setBackground(BG);
         tabs.addTab(Bundle.DockerPanelTopComponent_tabEngine(), wrap(enginePanel));
         tabs.addTab(Bundle.DockerPanelTopComponent_tabContainers(), buildContainersTab());
@@ -409,6 +409,19 @@ public final class DockerPanelTopComponent extends TopComponent {
             }
             refreshAll();
         }));
+    }
+
+    // ---- the docs forge (v2.164.0) ----
+
+    /** The docs forge's picture: the Containers tab, freshly read. */
+    void docsShowContainers() {
+        tabs.setSelectedIndex(1);
+        refreshAll();
+    }
+
+    /** How many containers the table lists — the forge waits for its demo one. */
+    int docsContainerRows() {
+        return containersModel.getRowCount();
     }
 
     // ---- refresh ----

@@ -15,7 +15,7 @@ Voici la visite rapide. Pour un exemple complet — écrire un contrat de
 séquestre, le tester et le faire tourner sur une chaîne locale — voyez
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL tourne dans le rack et le Studio de contrats s’y est connecté tout seul — chaîne 31337, le contrat dans l’arborescence des artefacts avec son usage de la taille EIP-170](../images/contract-studio.png)
+![ANVIL tourne dans le rack et le Studio de contrats s’y est connecté tout seul — chaîne 31337, le contrat dans l’arborescence des artefacts avec son usage de la taille EIP-170](../images/fr/contract-studio.png)
 
 ## L’ouvrir
 

@@ -10,7 +10,7 @@ es debuggt JavaScript/TypeScript (und den Browser) ab Werk, mit
 Haltepunkten, die wirklich anhalten. Dieses Tutorial trifft einen
 Haltepunkt in einer Node-App.
 
-![Ein JavaScript-Haltepunkt ist erreicht: die Ausführung angehalten, der Node-Aufrufstapel und live V8-Variablen](../images/debug-javascript.png)
+![Ein JavaScript-Haltepunkt ist erreicht: die Ausführung angehalten, der Node-Aufrufstapel und live V8-Variablen](../images/de/debug-javascript.png)
 
 ## Bevor Sie beginnen
 

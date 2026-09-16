@@ -16,7 +16,7 @@ membawa informasi di antara keduanya. Peramban NMOX Studio menutup
 celah itu. Tutorial ini menyusuri seluruh putarannya pada halaman yang
 Anda buat dalam dua menit.
 
-![Panel DOM di DevTools dengan h1 terpilih di halaman: Pilih elemen, Buka Sumber, dan Ubah Gaya… di samping pohon yang hidup](../images/story-06-devtools-pick.png)
+![Panel DOM di DevTools dengan h1 terpilih di halaman: Pilih elemen, Buka Sumber, dan Ubah Gaya… di samping pohon yang hidup](../images/id/story-06-devtools-pick.png)
 
 ## 1. Buat halaman
 

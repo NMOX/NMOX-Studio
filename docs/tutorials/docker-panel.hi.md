@@ -9,7 +9,7 @@ Docker पैनल आपके लोकल Docker इंजन का नि�
 लिए प्रोडक्शन Dockerfile बनाता है। रैक में इसका जोड़ीदार **HARBOR**
 डिवाइस है।
 
-![इंजन चालू, एक postgres कंटेनर चलता हुआ — स्थिति-बिंदु, पोर्ट और क्रियाओं की पंक्ति: start, stop, logs, inspect](../images/docker-panel.png)
+![इंजन चालू, एक postgres कंटेनर चलता हुआ — स्थिति-बिंदु, पोर्ट और क्रियाओं की पंक्ति: start, stop, logs, inspect](../images/hi/docker-panel.png)
 
 ## शुरू करने से पहले
 

@@ -15,7 +15,7 @@ editor sabe *dónde vive el código*, y tú llevas la información de uno a
 otro a mano. El Navegador web de NMOX Studio cierra esa brecha. Este tutorial
 recorre el ciclo completo sobre una página que harás en dos minutos.
 
-![El panel DOM de DevTools con un h1 elegido en la página: Elegir elemento, Abrir el código fuente y Editar estilo… junto al árbol en vivo](../images/story-06-devtools-pick.png)
+![El panel DOM de DevTools con un h1 elegido en la página: Elegir elemento, Abrir el código fuente y Editar estilo… junto al árbol en vivo](../images/es/story-06-devtools-pick.png)
 
 ## 1. Crea una página
 

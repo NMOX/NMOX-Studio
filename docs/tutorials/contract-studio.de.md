@@ -15,7 +15,7 @@ Treuhandvertrag schreiben, testen und gegen eine lokale Chain laufen
 lassen — finden Sie in
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL läuft im Rack, und das Smart-Contract-Studio hat sich von selbst damit verbunden — Chain 31337, der Vertrag im Artefaktbaum mit seiner EIP-170-Größenauslastung](../images/contract-studio.png)
+![ANVIL läuft im Rack, und das Smart-Contract-Studio hat sich von selbst damit verbunden — Chain 31337, der Vertrag im Artefaktbaum mit seiner EIP-170-Größenauslastung](../images/de/contract-studio.png)
 
 ## Öffnen
 

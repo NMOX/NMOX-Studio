@@ -14,7 +14,7 @@ Ito ang maikling paglilibot. Para sa buong halimbawa — pagsulat ng
 kontratang escrow, pagsubok dito, at pagpapatakbo nito sa lokal na chain —
 tingnan ang [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![Tumatakbo ang ANVIL sa rack at kusang nakakonekta rito ang Studio ng Kontrata — chain 31337, ang kontrata sa puno ng artifact kasama ang gamit nito sa laking EIP-170](../images/contract-studio.png)
+![Tumatakbo ang ANVIL sa rack at kusang nakakonekta rito ang Studio ng Kontrata — chain 31337, ang kontrata sa puno ng artifact kasama ang gamit nito sa laking EIP-170](../images/tl/contract-studio.png)
 
 ## Buksan ito
 

@@ -14,7 +14,7 @@ Este é o passeio rápido. Para um exemplo completo — escrever um contrato de
 escrow, testá-lo e rodá-lo contra uma cadeia local — veja
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL rodando no rack e o Estúdio de contratos conectado a ele sozinho — chain 31337, o contrato na árvore de artefatos com o uso de tamanho EIP-170](../images/contract-studio.png)
+![ANVIL rodando no rack e o Estúdio de contratos conectado a ele sozinho — chain 31337, o contrato na árvore de artefatos com o uso de tamanho EIP-170](../images/pt/contract-studio.png)
 
 ## Abrir
 

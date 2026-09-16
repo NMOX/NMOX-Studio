@@ -9,7 +9,7 @@ Container, Images, Volumes, Netzwerke — und dazu der Tab **Dockerize**, der
 ein produktionstaugliches Dockerfile für Ihr Projekt erzeugt. Sein
 Gegenstück im Rack ist das Gerät **HARBOR**.
 
-![Engine läuft, ein postgres-Container ist aktiv — Statuspunkt, Ports und die Reihe der Aktionen: starten, stoppen, Protokolle, untersuchen](../images/docker-panel.png)
+![Engine läuft, ein postgres-Container ist aktiv — Statuspunkt, Ports und die Reihe der Aktionen: starten, stoppen, Protokolle, untersuchen](../images/de/docker-panel.png)
 
 ## Bevor Sie beginnen
 

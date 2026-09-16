@@ -309,7 +309,40 @@ public class DocsShots implements Runnable {
          * that throws is skipped with a warning — never a stalled run.
          */
         record Staged(String file, Runnable arrange,
-                java.util.function.BooleanSupplier ready, int maxWaitMs) {
+                java.util.function.BooleanSupplier ready, int maxWaitMs, boolean required) {
+
+            Staged(String file, Runnable arrange, java.util.function.BooleanSupplier ready, int maxWaitMs) {
+                this(file, arrange, ready, maxWaitMs, false);
+            }
+        }
+
+        /**
+         * v2.164.0: a scene whose picture only means something once its
+         * real service answered — a daemon, a chain, a debuggee, a page.
+         * It is staged, arranged and waited for through its own
+         * {@link org.nmox.studio.core.spi.DocsScene}, and a scene that
+         * never became ready is SKIPPED with a warning: an empty Docker
+         * table or a debugger that never paused is not the picture.
+         */
+        private static Staged sceneShot(String id, File home, boolean aim, int maxWaitMs) {
+            return new Staged(id + ".png", () -> {
+                File dir = stageScene(id, home);
+                if (aim && dir != null) {
+                    org.nmox.studio.rack.service.DocsStaging.aim(dir);
+                }
+                arrangeScene(id);
+            }, () -> sceneReady(id), maxWaitMs, true);
+        }
+
+        private static boolean sceneReady(String id) {
+            org.nmox.studio.core.spi.DocsScene target = scene(id);
+            try {
+                return target != null && target.ready();
+            } catch (RuntimeException | LinkageError ex) {
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .warning("scene " + id + " could not report readiness: " + ex);
+                return false;
+            }
         }
 
         /** {@code -Dnmox.shots.staged=<anything>} turns the staged phase on for one run. */
@@ -500,7 +533,14 @@ public class DocsShots implements Runnable {
                         // one shows the editor at its ordinary size, so press
                         // the same toggle again
                         presentationMode();
-                    }, () -> true, 0));
+                    }, () -> true, 0),
+                    // v2.164.0: the tutorials' four live scenes. The debugger
+                    // goes LAST: a paused session keeps its views and toolbar
+                    // for the rest of the run
+                    sceneShot("docker-panel", home, false, 60_000),
+                    sceneShot("contract-studio", home, true, 90_000),
+                    sceneShot("story-06-devtools-pick", home, false, 60_000),
+                    sceneShot("debug-javascript", home, true, 90_000));
         }
 
         /**
@@ -672,7 +712,11 @@ public class DocsShots implements Runnable {
                 javax.swing.Timer settle = new javax.swing.Timer(SETTLE_MS, e2 -> {
                     String lcds = "kvasir-explain.png".equals(stage.file())
                             ? org.nmox.studio.rack.service.DocsStaging.kvasirLcds() : null;
-                    if (lcds != null && !kvasirAnswered(lcds)) {
+                    if (stage.required() && !stage.ready().getAsBoolean()) {
+                        java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                                .warning(stage.file() + " skipped \u2014 its scene never became ready within "
+                                        + stage.maxWaitMs() + " ms");
+                    } else if (lcds != null && !kvasirAnswered(lcds)) {
                         java.util.logging.Logger.getLogger(DocsShots.class.getName())
                                 .warning("kvasir-explain.png skipped \u2014 KVASIR did not answer; its faceplate reads: "
                                         + lcds.replace('\n', ' ').strip() + " \u2014 the rack: "

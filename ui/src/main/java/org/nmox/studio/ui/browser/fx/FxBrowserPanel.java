@@ -212,6 +212,7 @@ public final class FxBrowserPanel extends JPanel {
         engine.getLoadWorker().stateProperty().addListener((obs, old, state) -> {
             if (state == Worker.State.SUCCEEDED) {
                 installBridge();
+                loadedLocation = engine.getLocation();
             } else if (state == Worker.State.FAILED) {
                 String loc = engine.getLocation();
                 long at = System.currentTimeMillis();
@@ -280,6 +281,25 @@ public final class FxBrowserPanel extends JPanel {
     /** One lane so overlapping localhost probes stay ordered. */
     private static final org.openide.util.RequestProcessor LOOPBACK_RP =
             new org.openide.util.RequestProcessor("Browser Loopback Probe", 1);
+
+    /** The last page that finished loading, set on the FX thread; read by the docs forge. */
+    private volatile String loadedLocation;
+
+    /** The docs forge (v2.164.0): true once {@code url} has finished loading. */
+    public boolean docsLoaded(String url) {
+        return url.equals(loadedLocation);
+    }
+
+    /** The docs forge (v2.164.0), EDT: DevTools open with the element at {@code path} picked. */
+    public void docsPick(java.util.List<Integer> path) {
+        setDevToolsVisible(true);
+        devTools.docsPick(path);
+    }
+
+    /** The docs forge (v2.164.0): true once the DOM tree holds the pick. */
+    public boolean docsPicked() {
+        return devTools.docsPicked();
+    }
 
     /** EDT. Shows/hides the DevTools split. */
     public void setDevToolsVisible(boolean visible) {

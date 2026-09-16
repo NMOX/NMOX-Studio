@@ -4,6 +4,57 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.164.0] - 2026-09-16
+
+**The tutorials' last English pictures — a live Docker container, a compiled contract on a local chain, a picked element and a paused breakpoint — are painted in every language, and no docs picture can show a container that is not the forge's.**
+
+- **The ceiling v2.163.0 recorded is gone.** Four tutorial scenes stayed English
+  because each needs a live service a throwaway boot never starts: the Docker
+  Panel (a daemon), Contract Studio (a chain and compiled artifacts), the
+  JavaScript breakpoint (a paused debuggee) and the Browser's DevTools pick (a
+  served page and JavaFX). Each is now a `core.spi.DocsScene` staged by the
+  module that owns it, fourteen languages × four, 56 references rewritten.
+  The forge script starts the services for the length of a run — a real
+  `postgres:16-alpine` container, `anvil` on 8545, the page on loopback — and
+  boots on a runtime that carries JavaFX (the installed app's own, or
+  `NMOX_SHOTS_JDKHOME`). Nothing is ever pulled or downloaded: a missing image
+  or tool skips that scene with a sentence in the report.
+- **A picture of the Docker Panel on a working machine publishes every container
+  the developer runs.** So the app never sees the daemon: it talks to
+  `scripts/docs-docker-proxy.py`, a read-only view showing only containers
+  labelled `org.nmox.docs=1` (with their images and the three built-in
+  networks) and refusing every write with 403. The daemon's newer `system df`
+  answer carries per-kind summaries that would have leaked the machine's
+  totals, so those are rebuilt from the filtered lists. `DocsDockerViewGateTest`
+  runs the script against a fake daemon on a unix socket holding one docs
+  container and one private one; both laws are mutation-proven by name.
+- **A scene that never becomes ready is skipped, not painted.** An empty Docker
+  table or a debugger that never paused is not the picture, so these four are
+  `required` shots in the forge, and a timeout logs which one and why.
+- **The breakpoint is set the way a user sets it** — the platform's own Toggle
+  Line Breakpoint with the caret on line 18 — and the run starts through the
+  same trust-gated launch as Debug File. Trust is granted in the store's
+  SCRATCH node, never in the developer's real grants. The script is each
+  language's own nightly stock report (`forge-fixtures.json` gains `inventory`
+  and `page`), one item per line so the paused line is the same everywhere.
+- **The first English run found three things and the second confirmed them.**
+  The page 404'd because the script served `storefront/site` while the scene
+  wrote `NMOX/storefront/site` — one path with two homes, now held equal by
+  `DocsBrowserTest`. The paused line opened a second tab of the same file,
+  because node names `/private/tmp` where the scene opened `/tmp`; the scene
+  opens the real path. And Contract Studio's network combo painted
+  `Local (anvil) (chain` with the rest on a clipped second line: its face is
+  width-capped and an HTML label narrower than its text wraps. The closed face
+  now names the network alone — the chip beside it already reads
+  `chain N · block M` — while the list keeps the badge
+  (`NetworkComboRendererTest`, mutant by name).
+- **The Arabic picture shows what the Browser paints, and that is ledger 99.**
+  Every Arabic word on the served page is drawn letter by letter, unjoined,
+  while Hebrew on the same page is right. A system Arabic font gave the same
+  result, so the page is ruled out and the shaping step is missing somewhere
+  in the JavaFX WebView path; the two instruments that would split it are
+  written down rather than guessed at.
+
 ## [2.163.0] - 2026-09-15
 
 **The tutorials' data-bearing windows are painted in every language, with each reader's own data in them, and no faceplate prints one label on another.**
@@ -21791,6 +21842,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.164.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.163.0...v2.164.0
 [2.163.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.162.0...v2.163.0
 [2.162.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.161.0...v2.162.0
 [2.161.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.160.0...v2.161.0

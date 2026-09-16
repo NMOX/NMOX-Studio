@@ -15,7 +15,7 @@ um para o outro na mão. O Navegador web do NMOX Studio fecha essa divisão.
 Este tutorial percorre o ciclo inteiro numa página que você cria em dois
 minutos.
 
-![O painel DOM do DevTools com um h1 escolhido na página: Escolher elemento, Abrir origem e Editar estilo… ao lado da árvore ao vivo](../images/story-06-devtools-pick.png)
+![O painel DOM do DevTools com um h1 escolhido na página: Escolher elemento, Abrir origem e Editar estilo… ao lado da árvore ao vivo](../images/pt/story-06-devtools-pick.png)
 
 ## 1. Crie uma página
 

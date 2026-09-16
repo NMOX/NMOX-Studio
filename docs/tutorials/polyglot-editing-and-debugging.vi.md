@@ -9,7 +9,7 @@ Bộ điều hướng và trí thông minh của máy chủ ngôn ngữ — và 
 JavaScript/TypeScript (cả trình duyệt) ngay khi cài xong, với những điểm dừng
 thật sự dừng lại. Bài này dừng ở một điểm dừng trong một ứng dụng Node.
 
-![Một điểm dừng JavaScript đã dừng: chương trình tạm dừng, ngăn xếp lời gọi của Node, và các biến V8 đang sống](../images/debug-javascript.png)
+![Một điểm dừng JavaScript đã dừng: chương trình tạm dừng, ngăn xếp lời gọi của Node, và các biến V8 đang sống](../images/vi/debug-javascript.png)
 
 ## Trước khi bắt đầu
 

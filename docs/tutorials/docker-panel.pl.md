@@ -9,7 +9,7 @@ obrazy, wolumeny, sieci — a do tego karta **Dockerize**, która tworzy
 produkcyjny Dockerfile dla twojego projektu. Jego odpowiednikiem na
 stojaku jest urządzenie **HARBOR**.
 
-![Silnik działa, kontener postgres pracuje — kropka stanu, porty i rząd czynności: start, stop, dzienniki, inspekcja](../images/docker-panel.png)
+![Silnik działa, kontener postgres pracuje — kropka stanu, porty i rząd czynności: start, stop, dzienniki, inspekcja](../images/pl/docker-panel.png)
 
 ## Zanim zaczniesz
 

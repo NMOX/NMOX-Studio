@@ -9,7 +9,7 @@ local — conteneurs, images, volumes, réseaux — avec en plus un onglet
 **Dockerize** qui génère un Dockerfile de production pour votre projet.
 Son pendant dans le rack est l’appareil **HARBOR**.
 
-![Moteur démarré, un conteneur postgres en marche — pastille d’état, ports et la rangée de verbes : démarrer, arrêter, journaux, inspecter](../images/docker-panel.png)
+![Moteur démarré, un conteneur postgres en marche — pastille d’état, ports et la rangée de verbes : démarrer, arrêter, journaux, inspecter](../images/fr/docker-panel.png)
 
 ## Avant de commencer
 

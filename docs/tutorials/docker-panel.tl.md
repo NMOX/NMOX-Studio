@@ -9,7 +9,7 @@ engine — mga container, image, volume, network — kasama ang tab na
 **Dockerize** na lumilikha ng production Dockerfile para sa iyong
 proyekto. Ang katapat nito sa rack ay ang device na **HARBOR**.
 
-![Gumagana ang engine, tumatakbo ang postgres container — tuldok ng status, mga port, at hanay ng mga aksyon: start, stop, logs, inspect](../images/docker-panel.png)
+![Gumagana ang engine, tumatakbo ang postgres container — tuldok ng status, mga port, at hanay ng mga aksyon: start, stop, logs, inspect](../images/tl/docker-panel.png)
 
 ## Bago magsimula
 

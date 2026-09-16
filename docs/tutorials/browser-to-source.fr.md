@@ -16,7 +16,7 @@ l’information de l’un à l’autre, à la main. Le Navigateur web de NMOX St
 referme cette fracture. Ce tutoriel parcourt toute la boucle sur une page que
 vous créerez en deux minutes.
 
-![Le panneau DOM des DevTools avec un h1 désigné dans la page : Sélectionner un élément, Ouvrir la source et Modifier le style… à côté de l’arbre vivant](../images/story-06-devtools-pick.png)
+![Le panneau DOM des DevTools avec un h1 désigné dans la page : Sélectionner un élément, Ouvrir la source et Modifier le style… à côté de l’arbre vivant](../images/fr/story-06-devtools-pick.png)
 
 ## 1. Créer une page
 

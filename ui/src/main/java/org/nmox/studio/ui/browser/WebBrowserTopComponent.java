@@ -67,6 +67,11 @@ public final class WebBrowserTopComponent extends TopComponent {
         setLayout(new BorderLayout());
     }
 
+    /** The docs forge (v2.164.0): the built browser, or null before first show or without JavaFX. */
+    FxBrowserPanel docsBrowser() {
+        return browser;
+    }
+
     @Override
     protected void componentOpened() {
         // Deliberately empty. Since v1.211.0 this tab is open by DEFAULT so a

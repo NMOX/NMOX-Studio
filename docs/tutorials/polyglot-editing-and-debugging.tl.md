@@ -10,7 +10,7 @@ ang JavaScript/TypeScript (at ang browser) mula sa pabrika, na may mga
 breakpoint na talagang humihinto. Humihinto ang tutorial na ito sa isang
 breakpoint sa Node app.
 
-![Huminto sa breakpoint ng JavaScript: nakahinto ang pagpapatakbo, ang call stack ng Node, at buhay na mga variable ng V8](../images/debug-javascript.png)
+![Huminto sa breakpoint ng JavaScript: nakahinto ang pagpapatakbo, ang call stack ng Node, at buhay na mga variable ng V8](../images/tl/debug-javascript.png)
 
 ## Bago magsimula
 

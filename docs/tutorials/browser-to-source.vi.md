@@ -15,7 +15,7 @@ tin qua lại giữa hai bên. Trình duyệt của NMOX Studio khép lại sự
 ấy. Bài hướng dẫn này đi trọn vòng trên một trang mà bạn sẽ tạo trong hai
 phút.
 
-![Khung DOM của DevTools với một h1 được chọn trong trang: Chọn phần tử, Mở mã nguồn và Chỉnh sửa kiểu… bên cạnh cây trực tiếp](../images/story-06-devtools-pick.png)
+![Khung DOM của DevTools với một h1 được chọn trong trang: Chọn phần tử, Mở mã nguồn và Chỉnh sửa kiểu… bên cạnh cây trực tiếp](../images/vi/story-06-devtools-pick.png)
 
 ## 1. Tạo một trang
 

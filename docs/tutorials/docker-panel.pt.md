@@ -9,7 +9,7 @@ local — contêineres, imagens, volumes, redes — mais uma aba **Dockerize**
 que gera um Dockerfile de produção para o seu projeto. O equivalente dele
 no rack é o dispositivo **HARBOR**.
 
-![Motor no ar, um contêiner postgres rodando — o ponto de estado, as portas e a fileira de ações: iniciar, parar, registros, inspecionar](../images/docker-panel.png)
+![Motor no ar, um contêiner postgres rodando — o ponto de estado, as portas e a fileira de ações: iniciar, parar, registros, inspecionar](../images/pt/docker-panel.png)
 
 ## Antes de começar
 
