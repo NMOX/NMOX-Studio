@@ -23,7 +23,10 @@ All notable changes to NMOX Studio are documented here. The format follows
   and only what they cannot absorb moves the run's far edge. A space at the edge
   the run keeps belongs to its neighbour too and stays as measured. Anchoring
   each word at its own edge was tried first and photographed worse: every word
-  measured short ate the space beside it.
+  measured short ate the space beside it. Indic runs keep v2.166.0's rule (left
+  edge kept, the miss past the run's end): a Hindi word's estimate misses by
+  about a whole space, and the re-forged Hindi picture showed half a space each
+  squeezing its words together.
 - **A lone letter is shaped.** A one-letter word (Uyghur `ڭ`) was painted in
   its isolated form inside the narrower box WebKit measured for a joined letter
   and crowded the space before it; it is shaped now, so its real width joins the
