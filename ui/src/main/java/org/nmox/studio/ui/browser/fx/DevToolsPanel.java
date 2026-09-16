@@ -248,6 +248,7 @@ public final class DevToolsPanel extends JPanel {
     private javax.swing.Timer pickPoll;
     /** The DOM tab's tree — the Motion tab animates its selection. */
     private JTree domTreeView;
+    private final JTabbedPane tabs = new JTabbedPane();
 
     // Motion tab (v2.12.0 — the DHTML keyframe timeline)
     private final JLabel motionStatus = new JLabel(" ");
@@ -294,7 +295,6 @@ public final class DevToolsPanel extends JPanel {
         networkSync = coalesced(this::syncNetwork);
         console.setListener(consoleSync::restart);
         network.setListener(networkSync::restart);
-        JTabbedPane tabs = new JTabbedPane();
         tabs.addTab(Bundle.DevToolsPanel_tabConsole(), consoleTab());
         tabs.addTab(Bundle.DevToolsPanel_tabDom(), domTab());
         tabs.addTab(Bundle.DevToolsPanel_tabMotion(), motionTab());
@@ -1043,6 +1043,23 @@ public final class DevToolsPanel extends JPanel {
                 }
             });
         }), err -> domStatus.setText(Bundle.DevToolsPanel_pickFailed(err)));
+    }
+
+    /**
+     * The docs forge (v2.164.0): the DOM tab showing and the element at
+     * {@code path} picked, exactly as a page click with Pick armed lands.
+     */
+    void docsPick(List<Integer> path) {
+        tabs.setSelectedIndex(1);
+        if (domTreeView != null) {
+            onPicked(domTreeView, path.toString().replace(" ", ""));
+        }
+    }
+
+    /** True once the DOM tree holds a selected element. */
+    boolean docsPicked() {
+        DomNode node = domTreeView == null ? null : selectedDom(domTreeView);
+        return node != null && !node.isPlaceholder();
     }
 
     private static DefaultMutableTreeNode findByPath(DefaultMutableTreeNode swingRoot, List<Integer> path) {
