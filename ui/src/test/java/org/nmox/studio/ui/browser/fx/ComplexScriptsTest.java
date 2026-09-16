@@ -251,6 +251,11 @@ class ComplexScriptsTest {
                 text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
         assertThat(indic.origin()).isZero();
         assertThat(indic.xs()).containsExactly(0f, 6f, 18f);
+        // and an Indic run's spaces never absorb: its words' miss falls past its end
+        int[] words = glyphs("कम" + " " + "कम");
+        ComplexScripts.Laid spaced = ComplexScripts.layout(words, new float[]{10f, 10f, 6f, 10f, 10f}, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
+        assertThat(spaced.xs()).containsExactly(0f, 12f, 24f, 30f, 42f);
     }
 
     @Test

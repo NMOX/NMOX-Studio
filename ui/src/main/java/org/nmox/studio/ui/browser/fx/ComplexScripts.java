@@ -269,6 +269,11 @@ public final class ComplexScripts {
      * edge (a right-to-left run keeps its right edge, an Indic run its left).
      * Spaces at the kept edge are left as measured: a Pashto line painted its
      * {@code npm} against the word beside it when that space gave up half.
+     * Only right-to-left runs do this. An Indic word's estimate misses by about
+     * a whole space (6.5px a word at 26px against Arabic script's 3.5-4.3), so
+     * half a space each squeezed a Hindi heading's words together in the forged
+     * picture; an Indic run keeps its left edge and lets the difference fall past
+     * its end, as it did before.
      * Until then all of it moved the far edge, so over a long right-to-left
      * stretch the words' few pixels each added up to a whole space and a Sindhi
      * line painted {@code ۽} against the {@code npm} beside it. Anchoring each
@@ -359,7 +364,8 @@ public final class ComplexScripts {
             }
         }
         float excess = painted - measured; // positive: the words came out wider than WebKit's box
-        float absorbed = spaces == 0f ? 0f : Math.max(-SPACE_GIVES * spaces, Math.min(SPACE_GIVES * spaces, excess));
+        float absorbed = spaces == 0f || !rtl ? 0f
+                : Math.max(-SPACE_GIVES * spaces, Math.min(SPACE_GIVES * spaces, excess));
         float[] outX = new float[size];
         float x = rtl ? -(excess - absorbed) : 0f;
         for (int k = 0; k < size; k++) {
