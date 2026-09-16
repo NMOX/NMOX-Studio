@@ -4,6 +4,40 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.168.0] - 2026-09-16
+
+**Kurdish, Pashto, Sindhi and Uyghur checked in the Browser: letters, marks and digits render correctly, and a long right-to-left line keeps its spaces.**
+
+- **Checked, and correct.** Sorani Kurdish (ڕ ڵ ۆ ێ ە), Pashto (ټ ډ ړ ږ ښ ګ ڼ ځ څ ې ۍ),
+  Sindhi (ٻ ڄ ڃ ڇ ڍ ڊ ڏ ڌ ڙ ڦ ڪ ڳ ڱ ڻ ٺ ٽ ٿ ڀ) and Uyghur (ئا ئە ې ۆ ۇ ۈ ۋ ڭ) draw
+  the same letter forms in the Browser as JavaFX's own text, joined, with their
+  rings and dots, and their numbers read in order. The width estimate lands
+  within 3.6px a word for Sorani, 3.5 for Pashto and Sindhi and 4.3 for Uyghur,
+  as for Arabic.
+- **A long right-to-left line keeps its spaces.** WebKit paints a stretch of
+  one direction in one call, and every word's few pixels of estimate error were
+  added up and pushed to the call's far edge, so a Sindhi paragraph painted `۽`
+  against the `npm` beside it and a Pashto one `npm` against `چلېږي`. The
+  words are now laid end to end and the difference is absorbed by the spaces
+  between them: each gives up or takes on up to half its width, in proportion,
+  and only what they cannot absorb moves the run's far edge. A space at the edge
+  the run keeps belongs to its neighbour too and stays as measured. Anchoring
+  each word at its own edge was tried first and photographed worse: every word
+  measured short ate the space beside it.
+- **A lone letter is shaped.** A one-letter word (Uyghur `ڭ`) was painted in
+  its isolated form inside the narrower box WebKit measured for a joined letter
+  and crowded the space before it; it is shaped now, so its real width joins the
+  sum.
+- **A laid-out run starts at zero.** JavaFX draws a positioned glyph run from its
+  first position, so a run whose first glyph spilled left of where WebKit put it
+  was painted that far to the right instead; the paint call moves now and the
+  positions start at zero.
+- **Proven by running it.** `ComplexScriptsTest` holds the spaces' share, the
+  kept-edge spaces, the lone letter and the origin; four mutants die by name.
+  Probes of all six scripts and the English page with Arabic and Hindi phrases,
+  rendered through the product's installer on the bundled runtime, show them
+  spaced; the Arabic and Hindi DevTools pictures are re-forged.
+
 ## [2.167.0] - 2026-09-16
 
 **Persian and Urdu checked in the Browser: numbers read in their own order again, vowelled Arabic keeps its marks on its letters, and Urdu in Nastaliq renders as Nastaliq.**
@@ -21978,6 +22012,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.168.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.167.0...v2.168.0
 [2.167.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.166.0...v2.167.0
 [2.166.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.165.0...v2.166.0
 [2.165.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.164.0...v2.165.0
