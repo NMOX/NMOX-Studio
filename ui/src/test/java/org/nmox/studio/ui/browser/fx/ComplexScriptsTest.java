@@ -139,4 +139,64 @@ class ComplexScriptsTest {
         assertThat(ComplexScripts.reshape(new int[2], new float[3], CHAR_FOR, t -> null, BLANK)).isZero();
         assertThat(ComplexScripts.reshape(null, null, CHAR_FOR, t -> null, BLANK)).isZero();
     }
+
+    @Test
+    @DisplayName("digits and punctuation stay where WebKit put them; only the letters around them are reversed and shaped")
+    void numbersAndPunctuationAreNotReversed() {
+        // logical "ص ١٢٣، بت": WebKit paints the number left to right inside the right-to-left line,
+        // so the visual array here is: letters "بت" reversed, the comma, then the digits in reading order
+        String visual = "تب" + "،" + "١٢٣";
+        int[] g = glyphs(visual);
+        int[] digitsBefore = java.util.Arrays.copyOfRange(g, 2, 6);
+        float[] a = advances(g.length, 10f);
+        List<String> asked = new ArrayList<>();
+        ComplexScripts.reshape(g, a, CHAR_FOR, text -> {
+            asked.add(text);
+            return new ComplexScripts.Shaped(new int[]{70, 71}, new float[]{9f, 9f});
+        }, BLANK);
+        assertThat(asked).containsExactly("بت");
+        assertThat(java.util.Arrays.copyOfRange(g, 2, 6)).containsExactly(digitsBefore);
+        assertThat(java.util.Arrays.copyOfRange(a, 2, 6)).containsExactly(10f, 10f, 10f, 10f);
+    }
+
+    @Test
+    @DisplayName("Arabic-Indic, Persian and Devanagari digits and the danda keep the font's own width")
+    void digitsAndPunctuationAreMeasuredByTheFont() {
+        java.util.function.IntToDoubleFunction any = cp -> 10d;
+        for (int cp : new int[]{0x0661, 0x06F4, 0x0967, 0x0964, 0x060C, 0x066B}) {
+            assertThat(ComplexScripts.measuredWidth(cp, any, any, any)).as("U+%04X", cp).isNaN();
+        }
+        assertThat(ComplexScripts.shapes(0x06CC)).isTrue();  // Farsi yeh
+        assertThat(ComplexScripts.shapes(0x06D2)).isTrue();  // Urdu yeh barree
+        assertThat(ComplexScripts.shapes(0x0640)).isTrue();  // tatweel joins
+        assertThat(ComplexScripts.shapes(0x093E)).isTrue();  // a spacing vowel sign
+    }
+
+    @Test
+    @DisplayName("a run's vertical offsets are written beside its glyphs, and without room for them an off-baseline run is left alone")
+    void offBaselineRunsNeedSomewhereToPutTheirOffsets() {
+        Function<String, ComplexScripts.Shaped> stacked = t -> new ComplexScripts.Shaped(
+                new int[]{70, 71}, new float[]{9f, 0f}, new float[]{0f, -6f}); // a letter and its mark above
+        int[] g = glyphs("\u064Eب"); // visual: fatha, beh
+        int[] before = g.clone();
+        float[] a = advances(2, 10f);
+        ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK);
+        assertThat(g).containsExactly(before);
+        assertThat(a).containsExactly(10f, 10f);
+
+        float[] rises = new float[2];
+        ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK, rises);
+        assertThat(g).containsExactly(70, 71);
+        assertThat(rises).containsExactly(0f, -6f);
+        assertThat(ComplexScripts.onBaseline(rises)).isFalse();
+        assertThat(ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK, new float[1])).isZero(); // wrong length
+    }
+
+    @Test
+    @DisplayName("positions are the running sum of the advances with each glyph's offset, closed by the run's width")
+    void positionsFromAdvancesAndOffsets() {
+        assertThat(ComplexScripts.positions(new float[]{3f, 4f}, new float[]{0f, -2f}))
+                .containsExactly(0f, 0f, 3f, -2f, 7f, 0f);
+        assertThat(ComplexScripts.positions(new float[0], new float[0])).containsExactly(0f, 0f);
+    }
 }

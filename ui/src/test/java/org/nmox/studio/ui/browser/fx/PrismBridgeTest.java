@@ -36,9 +36,10 @@ class PrismBridgeTest {
     @DisplayName("a shaped run is ordered by where the layout put each glyph, advances travelling with them")
     void visualOrderSortsByPosition() {
         ComplexScripts.Shaped shaped = ComplexTextShaping.PrismBridge.visualOrder(
-                new int[]{10, 20, 30}, new float[]{40f, 0f, 20f}, new float[]{1f, 2f, 3f});
+                new int[]{10, 20, 30}, new float[]{40f, 0f, 20f}, new float[]{0f, -4f, 7f}, new float[]{1f, 2f, 3f});
         assertThat(shaped.glyphs()).containsExactly(20, 30, 10);
         assertThat(shaped.advances()).containsExactly(2f, 3f, 1f);
+        assertThat(shaped.rises()).containsExactly(-4f, 7f, 0f);
     }
 
     @Test
@@ -62,6 +63,21 @@ class PrismBridgeTest {
         assertThat(none.widthsApplied).isFalse();
         assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
                 new byte[]{1, 2, 3})).isNull();
+    }
+
+    @Test
+    @DisplayName("the transformer rewrites WebKit's glyph-list build, and refuses bytes it cannot read there")
+    void transformerRewritesTheGlyphListBuild() {
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        assertThat(t.transform(null, null, ComplexTextShaping.TEXT_UTILITIES, null, null,
+                ComplexTextShapingTest.textUtilities())).isNotNull();
+        assertThat(t.placementApplied).isTrue();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        assertThat(none.transform(null, null, ComplexTextShaping.TEXT_UTILITIES, null, null,
+                ComplexTextShapingTest.emptyClass(ComplexTextShaping.TEXT_UTILITIES))).isNull();
+        assertThat(none.placementApplied).isFalse();
+        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.TEXT_UTILITIES,
+                null, null, new byte[]{1, 2, 3})).isNull();
     }
 
     @Test
@@ -103,5 +119,21 @@ class PrismBridgeTest {
         assertThat(bridge.apply(new Object[]{"not a font", null, null})).isEqualTo(0f);
         assertThat((Double) bridge.width(new Object[]{null, 5})).isNaN();
         assertThat((Double) bridge.width(new Object[]{"not a font", 5})).isNaN();
+    }
+
+    @Test
+    @DisplayName("a shaped run's offsets reach only the glyph list built from that paint's own glyph array, once")
+    void placementAnswersOnlyTheSamePaint() throws Exception {
+        ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
+        int[] glyphs = {1, 2, 3};
+        float[] advances = {4f, 5f, 6f};
+        assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // nothing shaped yet
+        bridge.remember(glyphs, new float[]{0f, -7f, 2f});
+        assertThat(bridge.place(new Object[]{new int[]{1, 2, 3}, advances})).isNull(); // an equal array is not this paint's
+        assertThat((float[]) bridge.place(new Object[]{glyphs, advances}))
+                .containsExactly(0f, 0f, 4f, -7f, 9f, 2f, 15f, 0f);
+        assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // used up
+        bridge.remember(glyphs, new float[]{1f});
+        assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // lengths disagree
     }
 }

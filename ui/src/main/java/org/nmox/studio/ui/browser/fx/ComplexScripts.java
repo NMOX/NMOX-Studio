@@ -26,8 +26,17 @@ public final class ComplexScripts {
     private ComplexScripts() {
     }
 
-    /** Shaped glyphs in visual order with their advances. */
-    public record Shaped(int[] glyphs, float[] advances) {
+    /**
+     * Shaped glyphs in visual order with their advances and their vertical
+     * offsets from the baseline (screen direction: positive is down). Vowel
+     * marks sit above or below their letters and Nastaliq steps each word down
+     * its line; a Naskh letter's offset is zero.
+     */
+    public record Shaped(int[] glyphs, float[] advances, float[] rises) {
+        /** A run whose every glyph sits on the baseline. */
+        public Shaped(int[] glyphs, float[] advances) {
+            this(glyphs, advances, new float[glyphs.length]);
+        }
     }
 
     /** Arabic, Arabic Supplement and Arabic Extended-A: joined, right to left. */
@@ -40,9 +49,21 @@ public final class ComplexScripts {
         return cp >= 0x0900 && cp <= 0x0D7F;
     }
 
-    /** Every code point this core shapes. */
+    /**
+     * Every code point this core shapes: the letters and marks of those
+     * scripts (v2.167.0). A digit or a punctuation mark never joins, and a
+     * number inside a right-to-left line already arrives left to right, so
+     * reversing it with the letters around it painted {@code ١٢٣} as
+     * {@code ٣٢١}; they stay where WebKit put them, measured by the font.
+     */
     public static boolean shapes(int cp) {
-        return rightToLeft(cp) || leftToRight(cp);
+        return (rightToLeft(cp) || leftToRight(cp)) && letterOrMark(cp);
+    }
+
+    private static boolean letterOrMark(int cp) {
+        int type = Character.getType(cp);
+        return Character.isLetter(cp) || type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK || type == Character.ENCLOSING_MARK;
     }
 
     /** The code point ranges a glyph lookup table needs, inclusive pairs. */
@@ -115,7 +136,20 @@ public final class ComplexScripts {
      */
     public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
             Function<String, Shaped> shaper, int blank) {
-        if (glyphs == null || advances == null || glyphs.length != advances.length) {
+        return reshape(glyphs, advances, charFor, shaper, blank, null);
+    }
+
+    /**
+     * As {@link #reshape(int[], float[], IntUnaryOperator, Function, int)}, and
+     * writes each glyph's vertical offset into {@code rises} (v2.167.0). With
+     * no {@code rises} to write into, a run whose shaped glyphs leave the
+     * baseline is left as it was: painted along one line, vowel marks land
+     * between the letters and a Nastaliq word collapses onto itself.
+     */
+    public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
+            Function<String, Shaped> shaper, int blank, float[] rises) {
+        if (glyphs == null || advances == null || glyphs.length != advances.length
+                || (rises != null && rises.length != glyphs.length)) {
             return 0f;
         }
         float slack = 0f;
@@ -129,13 +163,13 @@ public final class ComplexScripts {
             while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
                 i++;
             }
-            slack += segment(glyphs, advances, start, i, charFor, shaper, blank);
+            slack += segment(glyphs, advances, start, i, charFor, shaper, blank, rises);
         }
         return slack;
     }
 
     private static float segment(int[] glyphs, float[] advances, int start, int end,
-            IntUnaryOperator charFor, Function<String, Shaped> shaper, int blank) {
+            IntUnaryOperator charFor, Function<String, Shaped> shaper, int blank, float[] rises) {
         int n = end - start;
         if (n < 2) {
             return 0f; // one glyph has no neighbours to join or reorder with
@@ -149,8 +183,12 @@ public final class ComplexScripts {
         }
         Shaped shaped = shaper.apply(logical.toString());
         if (shaped == null || shaped.glyphs().length == 0 || shaped.glyphs().length > n
-                || shaped.advances().length != shaped.glyphs().length) {
+                || shaped.advances().length != shaped.glyphs().length
+                || shaped.rises().length != shaped.glyphs().length) {
             return 0f; // a shaper that needs more slots than WebKit gave is left unshaped
+        }
+        if (rises == null && !onBaseline(shaped.rises())) {
+            return 0f; // nowhere to put the offsets: painting it flat would be worse than plain
         }
         float original = 0f;
         for (int k = start; k < end; k++) {
@@ -168,16 +206,49 @@ public final class ComplexScripts {
         for (int k = 0; k < count; k++) {
             glyphs[first + k] = shaped.glyphs()[k];
             advances[first + k] = shaped.advances()[k];
+            if (rises != null) {
+                rises[first + k] = shaped.rises()[k];
+            }
         }
         for (int k = 0; k < pad; k++) {
             int at = rtl ? start + k : start + count + k;
             glyphs[at] = blank;
             advances[at] = 0f;
+            if (rises != null) {
+                rises[at] = 0f;
+            }
         }
         // a run keeps the edge its script reads from: an Arabic run its right,
         // an Indic run its left, so what the width estimate missed falls where
         // the run ends (centring was tried first and pushed a Hindi heading past
         // its card's padding by half the shortfall)
         return rtl ? original - used : 0f;
+    }
+
+    /** Whether every offset is zero: the run paints along one line. */
+    public static boolean onBaseline(float[] rises) {
+        for (float r : rises) {
+            if (r != 0f) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The x/y pairs a positioned glyph run is drawn from (v2.167.0): x the sum
+     * of the advances before a glyph, y its offset, and one closing pair whose
+     * x is the run's whole width.
+     */
+    public static float[] positions(float[] advances, float[] rises) {
+        float[] pos = new float[2 * (advances.length + 1)];
+        float x = 0f;
+        for (int k = 0; k < advances.length; k++) {
+            pos[2 * k] = x;
+            pos[2 * k + 1] = rises[k];
+            x += advances[k];
+        }
+        pos[2 * advances.length] = x;
+        return pos;
     }
 }
