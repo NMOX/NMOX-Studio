@@ -60,7 +60,7 @@ public final class ComplexTextShaping {
     static final String RESHAPE = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)F";
 
     /** What happened, for the log line and the tests. */
-    enum Outcome { INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED }
+    public enum Outcome { INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED }
 
     private static volatile Outcome outcome;
 
