@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.163.0] - 2026-09-15
+
+**No faceplate prints one control's label on top of another's.**
+
+- **David photographed VERITAS showing `RUNNER`, `FAILURES` and `COVER` piled
+  on one another**, in English, on a shipped build. The cause is geometric and
+  shared: `CommandDevice` places its status display at `clusterX - 254`, which
+  on a 920-wide rack reserves x 482–722, y 40–67 on every command device — and
+  a subclass has no way to see that band. Ten plates placed controls into it,
+  or into each other.
+- **The law that was missing.** `DeviceContractTest` has held the rear panel's
+  jacks inside the plate since v1.41.0 and the rear jacks' clear air since
+  v1.93.1; the FRONT face was never checked. It now refuses any two controls
+  whose rectangles overlap, with a two-pixel allowance — stacked displays and
+  buttons sit edge to edge, and a border kiss hides nothing, which the paint
+  math proves (`LcdDisplay` draws its text at `h/2`). The first run named
+  twelve devices; the allowance dropped the two that were mere adjacency.
+- **The ten are laid out, not recorded.** A ledger was written and then
+  deleted: every plate is repaired. VERITAS's tally and FAILURES clear the
+  knob band; HALO and TIMELINE tighten their rows; PHOENIX gives migrations
+  their own row, because they are not version actions; NEPTUNE drops its state
+  LEDs beneath the buttons that set them; SOLDER and HELM give the command
+  line its own row under the transport, like a prompt; WORMHOLE moves LIVE
+  under the URL it describes; VITALS becomes a 2×2 scorecard in the free band
+  under the status display; GAUNTLET grows to three units, because three 78px
+  knobs plus a second row cannot fit a 132px plate.
+- **VITALS was got wrong once and corrected by looking.** Its first layout
+  grew the plate to three units on a bad assumption about where the meters
+  fit; at y 70 and 100 they finish at 130, inside a two-unit plate. The plate
+  shrank back and both knobs returned to the top row.
+- **`FaceplatePaintProbe` paints every plate to a PNG**, property-gated like
+  the docs forge (`-Dnmox.faceplates=<dir>`), because a rectangle test cannot
+  say whether a plate READS well — the gate was green on the day VERITAS
+  shipped its collision, and the picture is what settled every call here.
+- **A modifier letter stopped posing as an apostrophe.** A translator reading
+  Ukrainian for register found `U+02BC` in one infra value where the
+  conventions require `U+2019` — the only one in the repository. It is a
+  LETTER, so it joins its word and the word stops matching a search for its
+  ordinary spelling (the v2.114.0 class). `NativeTypographyGateTest` refuses
+  it in any language now.
+
 ## [2.162.0] - 2026-09-15
 
 **The user guide's six live pictures are painted in every language, and KVASIR answers in yours.**
@@ -21716,6 +21757,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.163.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.162.0...v2.163.0
 [2.162.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.161.0...v2.162.0
 [2.161.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.160.0...v2.161.0
 [2.160.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.159.0...v2.160.0
