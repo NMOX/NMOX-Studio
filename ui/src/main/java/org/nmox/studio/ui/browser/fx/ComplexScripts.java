@@ -92,6 +92,17 @@ public final class ComplexScripts {
     static final double INDIC_SHARE = 0.72;
 
     /**
+     * {@link #ARABIC_TOWARD_FINAL} for a Nastaliq font (v2.167.0), whose words
+     * climb and descend instead of running along a line. Over 42 Urdu words in
+     * Noto Nastaliq Urdu at 26px the shaped total was 1654px, the medial forms
+     * 1113 and the final 2329. Blends from 0.25 to 0.5 all land within a
+     * word-average of 9-10px, the per-letter estimate's ceiling for a script
+     * this contextual; at 0.25, 27 words came out more than 3px short, at 0.5,
+     * 17. Short paints over the neighbour, so 0.5.
+     */
+    static final double NASTALIQ_TOWARD_FINAL = 0.5;
+
+    /**
      * The width WebKit should MEASURE a glyph at (v2.166.0), or NaN to keep
      * the font's own. WebKit lays text out from one width per glyph with no
      * context, and for these scripts the font's width is the wrong one: an
@@ -107,6 +118,18 @@ public final class ComplexScripts {
      */
     public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
             java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain) {
+        return measuredWidth(cp, medial, finalForm, plain, false);
+    }
+
+    /**
+     * As {@link #measuredWidth(int, java.util.function.IntToDoubleFunction,
+     * java.util.function.IntToDoubleFunction, java.util.function.IntToDoubleFunction)},
+     * for a font whose Arabic letters leave the baseline when joined
+     * ({@code stacking}, a Nastaliq face) or keep to it (a Naskh face).
+     */
+    public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
+            java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain,
+            boolean stacking) {
         if (!shapes(cp)) {
             return Double.NaN;
         }
@@ -117,7 +140,8 @@ public final class ComplexScripts {
         if (rightToLeft(cp)) {
             double m = medial.applyAsDouble(cp);
             double f = finalForm.applyAsDouble(cp);
-            return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + ARABIC_TOWARD_FINAL * (f - m);
+            double k = stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
+            return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
         return Double.isNaN(p) ? Double.NaN : INDIC_SHARE * p;

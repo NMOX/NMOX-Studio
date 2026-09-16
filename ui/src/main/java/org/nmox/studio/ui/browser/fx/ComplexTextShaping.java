@@ -509,6 +509,8 @@ public final class ComplexTextShaping {
         private final Method charOffset;
         /** Per WebKit font and glyph: the width WebKit should measure. */
         private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
+        /** Per WebKit font: whether its joined Arabic letters leave the baseline. */
+        private final Map<Object, Boolean> stacking = new WeakHashMap<>();
         private final Field locationX;
         private final Field locationY;
         private final Method posY;
@@ -633,12 +635,13 @@ public final class ComplexTextShaping {
                     }
                 }
                 Object pg = platformFont.invoke(font);
+                String letter = new String(Character.toChars(cp));
+                String tatweel = String.valueOf(ComplexScripts.TATWEEL);
                 double w = ComplexScripts.measuredWidth(cp,
-                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
-                                .append(ComplexScripts.TATWEEL).toString(), pg),
-                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
-                                .toString(), pg),
-                        c -> joinedAdvance(new String(Character.toChars(c)), pg, 0));
+                        c -> textWidth(tatweel + letter + tatweel, pg) - 2 * textWidth(tatweel, pg),
+                        c -> textWidth(tatweel + letter, pg) - textWidth(tatweel, pg),
+                        c -> firstAdvance(letter, pg),
+                        stacks(font, pg));
                 synchronized (known) {
                     known.put(glyph, w);
                 }
@@ -648,20 +651,36 @@ public final class ComplexTextShaping {
             }
         }
 
-        /** The advance of the character at index 1 of {@code text} as shaped, or NaN. */
-        private double joinedAdvance(String text, Object pg) {
-            return joinedAdvance(text, pg, 1);
+        /**
+         * How wide JavaFX lays {@code text} out, or NaN: the same measure the
+         * width constants were calibrated with (a word's laid-out width), so a
+         * letter drawn as several glyphs, or glyphs out of order, measure right.
+         */
+        private double textWidth(String text, Object pg) {
+            try {
+                double total = 0d;
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, text, pg))) {
+                    total += (Float) width.invoke(list);
+                }
+                return total;
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                return Double.NaN;
+            }
         }
 
-        /** The advance of the glyph for char index {@code at} of {@code text} as shaped, or NaN. */
-        private double joinedAdvance(String text, Object pg, int index) {
+        /**
+         * The advance of the first glyph JavaFX gives a lone character, or NaN:
+         * the plain measure the Indic share was calibrated against in v2.166.0.
+         * A lone vowel sign's laid-out width would count the dotted circle a
+         * layout draws in front of it and measure the sign twice over.
+         */
+        private double firstAdvance(String text, Object pg) {
             try {
-                Object layout = createLayout.invoke(null, text, pg);
-                for (Object list : (Object[]) runs.invoke(layout)) {
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, text, pg))) {
                     int count = (Integer) glyphCount.invoke(list);
                     float runWidth = (Float) width.invoke(list);
                     for (int g = 0; g < count; g++) {
-                        if ((Integer) charOffset.invoke(list, g) == index) {
+                        if ((Integer) charOffset.invoke(list, g) == 0) {
                             float at = (Float) posX.invoke(list, g);
                             float next = g + 1 < count ? (Float) posX.invoke(list, g + 1) : runWidth;
                             return Math.abs(next - at);
@@ -672,6 +691,34 @@ public final class ComplexTextShaping {
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 return Double.NaN;
             }
+        }
+
+        /**
+         * Whether a font's joined Arabic letters leave the baseline (Nastaliq):
+         * four behs shaped together, offsets read. Once per font.
+         */
+        private boolean stacks(Object font, Object pg) {
+            synchronized (stacking) {
+                Boolean known = stacking.get(font);
+                if (known != null) {
+                    return known;
+                }
+            }
+            boolean climbs = false;
+            try {
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, "\u0628\u0628\u0628\u0628", pg))) {
+                    int count = (Integer) glyphCount.invoke(list);
+                    for (int g = 0; g < count && !climbs; g++) {
+                        climbs = (Float) posY.invoke(list, g) != 0f;
+                    }
+                }
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                climbs = false;
+            }
+            synchronized (stacking) {
+                stacking.put(font, climbs);
+            }
+            return climbs;
         }
 
         private int[][] table(Object font) throws ReflectiveOperationException {

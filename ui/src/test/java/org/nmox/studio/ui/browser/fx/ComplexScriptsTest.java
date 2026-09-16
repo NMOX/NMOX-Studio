@@ -131,6 +131,8 @@ class ComplexScriptsTest {
         assertThat(ComplexScripts.measuredWidth(0x05D0, medial, fin, plain)).isNaN();        // Hebrew is not shaped
         assertThat(ComplexScripts.measuredWidth(0x0628, cp -> Double.NaN, fin, plain)).isNaN();
         assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, cp -> Double.NaN)).isNaN();
+        assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain, true)).isEqualTo(15d); // Nastaliq: 10 + 0.5 * 10
+        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain, true)).isEqualTo(36d); // Indic ignores it
     }
 
     @Test
