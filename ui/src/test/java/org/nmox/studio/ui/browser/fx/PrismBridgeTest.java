@@ -134,8 +134,8 @@ class PrismBridgeTest {
         int[] glyphs = {1, 2, 3};
         float[] advances = {4f, 5f, 6f};
         assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // nothing shaped yet
-        bridge.remember(glyphs, new ComplexScripts.Laid(new int[]{7, 8, 9, 10}, new float[]{4f, 5f, 6f, 1f},
-                new float[]{0f, -7f, 2f, 0f}, 0f, true));
+        bridge.remember(glyphs, new ComplexScripts.Laid(new int[]{7, 8, 9, 10}, new float[]{0f, 4f, 9f, 15f},
+                new float[]{0f, -7f, 2f, 0f}, 16f, true));
         assertThat(bridge.place(new Object[]{new int[]{1, 2, 3}, advances})).isNull(); // an equal array is not this paint's
         Object[] placed = (Object[]) bridge.place(new Object[]{glyphs, advances});
         assertThat((int[]) placed[0]).containsExactly(7, 8, 9, 10);

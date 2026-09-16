@@ -198,24 +198,52 @@ class ComplexScriptsTest {
         });
         assertThat(laid.changed()).isTrue();
         assertThat(laid.glyphs()).containsExactly(g[0], 80, 81, 82, g[3]);
-        assertThat(laid.advances()).containsExactly(5f, 4f, 4f, 4f, 6f);
+        // the word's box is 5..25; its 12px of glyphs keep the box's right edge
+        assertThat(laid.xs()).containsExactly(0f, 13f, 17f, 21f, 25f);
         assertThat(laid.rises()).containsExactly(0f, 0f, -9f, 3f, 0f);
-        assertThat(laid.slack()).isEqualTo(8f); // 20 measured, 12 painted, right edge kept
+        assertThat(laid.width()).isEqualTo(31f);
         assertThat(g).containsExactly(glyphs("A" + "اٹ" + "B")); // WebKit's own arrays are untouched
 
         ComplexScripts.Laid refused = ComplexScripts.layout(g, a, CHAR_FOR, text -> null);
         assertThat(refused.changed()).isFalse();
         assertThat(refused.glyphs()).containsExactly(g);
-        assertThat(refused.advances()).containsExactly(a);
+        assertThat(refused.xs()).containsExactly(0f, 5f, 15f, 25f);
         assertThat(ComplexScripts.layout(new int[1], new float[2], CHAR_FOR, text -> null)).isNull();
     }
 
     @Test
-    @DisplayName("positions are the running sum of the advances with each glyph's offset, closed by the run's width")
-    void positionsFromAdvancesAndOffsets() {
-        assertThat(ComplexScripts.positions(new float[]{3f, 4f}, new float[]{0f, -2f}))
-                .containsExactly(0f, 0f, 3f, -2f, 7f, 0f);
-        assertThat(ComplexScripts.positions(new float[0], new float[0])).containsExactly(0f, 0f);
+    @DisplayName("each word keeps its own edge, so one word's miss never moves another (a Sindhi line lost its spaces)")
+    void wordErrorsDoNotAccumulate() {
+        // visual: word two "دت" (painted wider than measured), a space, word one "بت" (painted wider too)
+        int[] g = glyphs("دت" + " " + "بت");
+        float[] a = {10f, 10f, 6f, 10f, 10f};
+        ComplexScripts.Laid laid = ComplexScripts.layout(g, a, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}));
+        // word two's box is 0..20, word one's 26..46: each overshoots by 4 to its left, the space stays at 20
+        assertThat(laid.xs()).containsExactly(-4f, 8f, 20f, 22f, 34f);
+        assertThat(laid.width()).isEqualTo(46f);
+    }
+
+    @Test
+    @DisplayName("a lone letter is laid out too, keeping its reading edge")
+    void loneLetterKeepsItsReadingEdge() {
+        int[] g = glyphs("A" + " " + "ڭ");
+        float[] a = {5f, 6f, 8f};
+        java.util.List<String> asked = new java.util.ArrayList<>();
+        ComplexScripts.Laid laid = ComplexScripts.layout(g, a, CHAR_FOR, text -> {
+            asked.add(text);
+            return new ComplexScripts.Shaped(new int[]{95}, new float[]{14f}); // its isolated form is wider
+        });
+        assertThat(asked).containsExactly("ڭ");
+        assertThat(laid.xs()).containsExactly(0f, 5f, 5f); // box 11..19, right edge 19, 14 wide
+    }
+
+    @Test
+    @DisplayName("positions are each glyph's x with its offset, closed by the run's width")
+    void positionsFromPlacesAndOffsets() {
+        assertThat(ComplexScripts.positions(new float[]{-2f, 4f}, new float[]{0f, -2f}, 9f))
+                .containsExactly(-2f, 0f, 4f, -2f, 9f, 0f);
+        assertThat(ComplexScripts.positions(new float[0], new float[0], 0f)).containsExactly(0f, 0f);
     }
 
     @Test

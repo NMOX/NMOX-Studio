@@ -585,7 +585,7 @@ public final class ComplexTextShaping {
                     return 0f;
                 }
                 remember(glyphs, laid);
-                return laid.slack();
+                return 0f; // every word is placed at its own edge; the call itself does not move
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
@@ -608,7 +608,7 @@ public final class ComplexTextShaping {
             }
             pending.remove();
             ComplexScripts.Laid laid = (ComplexScripts.Laid) mine[1];
-            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.advances(), laid.rises())};
+            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.xs(), laid.rises(), laid.width())};
         }
 
         /** The hook's width answer: {font, glyph} to a Double, NaN for the font's own. Never throws. */

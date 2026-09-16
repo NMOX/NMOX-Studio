@@ -239,20 +239,30 @@ public final class ComplexScripts {
     }
 
     /**
-     * A whole painted run laid out anew (v2.167.0): its glyphs, advances and
-     * vertical offsets, as many as shaping needs, and how far the run moves
-     * right. {@code changed} is false when nothing in it was shaped.
+     * A whole painted run laid out anew: its glyphs, where each is drawn along
+     * the run and how far off the baseline, and the run's measured width.
+     * {@code changed} is false when nothing in it was shaped. Since v2.168.0 each
+     * glyph carries its own x instead of an advance, so a word's placement no
+     * longer depends on the words painted before it.
      */
-    public record Laid(int[] glyphs, float[] advances, float[] rises, float slack, boolean changed) {
+    public record Laid(int[] glyphs, float[] xs, float[] rises, float width, boolean changed) {
     }
 
     /**
      * Lays a painted run out for a glyph list built from positions rather than
-     * advances, so a shaped segment may take more glyphs than it had characters
-     * (a Nastaliq letter and its dots are separate glyphs) and its glyphs may
-     * leave the baseline (vowel marks, Nastaliq's descending words). Segments
-     * follow the same rules as {@link #reshape}; everything else is copied as
-     * WebKit painted it.
+     * advances (v2.167.0), so a shaped segment may take more glyphs than it had
+     * characters (a Nastaliq letter and its dots are separate glyphs) and its
+     * glyphs may leave the baseline (vowel marks, Nastaliq's descending words).
+     *
+     * <p>Every segment keeps the reading edge of the box WebKit measured for it
+     * (v2.168.0): an Arabic-script word its right edge, an Indic word its left.
+     * Until then the whole paint call kept one edge, so each word's few pixels of
+     * estimate error added up along a long right-to-left stretch until a space
+     * disappeared: a Sindhi paragraph painted {@code ۽} against {@code npm}.
+     * Now a word can miss only by its own error, into the space beside it. A
+     * lone letter is a segment too: its plain glyph is its isolated form, wider
+     * than the joined width WebKit measured it at, and it keeps its reading edge
+     * the same way. Everything else is drawn where WebKit put it.
      */
     public static Laid layout(int[] glyphs, float[] advances, IntUnaryOperator charFor,
             Function<String, Shaped> shaper) {
@@ -260,24 +270,29 @@ public final class ComplexScripts {
             return null;
         }
         int[] outG = new int[glyphs.length];
-        float[] outA = new float[glyphs.length];
+        float[] outX = new float[glyphs.length];
         float[] outR = new float[glyphs.length];
         int size = 0;
-        float slack = 0f;
+        float at = 0f; // where WebKit's measured box for the next glyph starts
         boolean changed = false;
         int i = 0;
         while (i < glyphs.length) {
             int start = i;
-            if (!shapes(charFor.applyAsInt(glyphs[i]))) {
+            boolean shapeable = shapes(charFor.applyAsInt(glyphs[i]));
+            if (!shapeable) {
                 i++;
             } else {
                 while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
                     i++;
                 }
             }
+            float original = 0f;
+            for (int k = start; k < i; k++) {
+                original += advances[k];
+            }
             Shaped shaped = null;
             boolean rtl = false;
-            if (i - start >= 2) {
+            if (shapeable) {
                 rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
                 shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, rtl)));
             }
@@ -285,32 +300,36 @@ public final class ComplexScripts {
             if (need > outG.length) {
                 int grown = Math.max(need, outG.length * 2);
                 outG = java.util.Arrays.copyOf(outG, grown);
-                outA = java.util.Arrays.copyOf(outA, grown);
+                outX = java.util.Arrays.copyOf(outX, grown);
                 outR = java.util.Arrays.copyOf(outR, grown);
             }
             if (shaped == null) {
-                System.arraycopy(glyphs, start, outG, size, i - start);
-                System.arraycopy(advances, start, outA, size, i - start);
-                size += i - start;
-                continue;
+                float x = at;
+                for (int k = start; k < i; k++) {
+                    outG[size] = glyphs[k];
+                    outX[size] = x;
+                    x += advances[k];
+                    size++;
+                }
+            } else {
+                float used = 0f;
+                for (float a : shaped.advances()) {
+                    used += a;
+                }
+                float x = rtl ? at + original - used : at;
+                for (int k = 0; k < shaped.glyphs().length; k++) {
+                    outG[size] = shaped.glyphs()[k];
+                    outX[size] = x;
+                    outR[size] = shaped.rises()[k];
+                    x += shaped.advances()[k];
+                    size++;
+                }
+                changed = true;
             }
-            float original = 0f;
-            for (int k = start; k < i; k++) {
-                original += advances[k];
-            }
-            float used = 0f;
-            for (int k = 0; k < shaped.glyphs().length; k++) {
-                outG[size] = shaped.glyphs()[k];
-                outA[size] = shaped.advances()[k];
-                outR[size] = shaped.rises()[k];
-                used += shaped.advances()[k];
-                size++;
-            }
-            slack += rtl ? original - used : 0f;
-            changed = true;
+            at += original;
         }
-        return new Laid(java.util.Arrays.copyOf(outG, size), java.util.Arrays.copyOf(outA, size),
-                java.util.Arrays.copyOf(outR, size), slack, changed);
+        return new Laid(java.util.Arrays.copyOf(outG, size), java.util.Arrays.copyOf(outX, size),
+                java.util.Arrays.copyOf(outR, size), at, changed);
     }
 
     /** Whether every offset is zero: the run paints along one line. */
@@ -324,19 +343,16 @@ public final class ComplexScripts {
     }
 
     /**
-     * The x/y pairs a positioned glyph run is drawn from (v2.167.0): x the sum
-     * of the advances before a glyph, y its offset, and one closing pair whose
-     * x is the run's whole width.
+     * The x/y pairs a positioned glyph run is drawn from (v2.167.0): each
+     * glyph's x and offset, and one closing pair whose x is the run's width.
      */
-    public static float[] positions(float[] advances, float[] rises) {
-        float[] pos = new float[2 * (advances.length + 1)];
-        float x = 0f;
-        for (int k = 0; k < advances.length; k++) {
-            pos[2 * k] = x;
+    public static float[] positions(float[] xs, float[] rises, float width) {
+        float[] pos = new float[2 * (xs.length + 1)];
+        for (int k = 0; k < xs.length; k++) {
+            pos[2 * k] = xs[k];
             pos[2 * k + 1] = rises[k];
-            x += advances[k];
         }
-        pos[2 * advances.length] = x;
+        pos[2 * xs.length] = width;
         return pos;
     }
 
