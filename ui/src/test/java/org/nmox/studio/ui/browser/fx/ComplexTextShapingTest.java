@@ -92,6 +92,56 @@ class ComplexTextShapingTest {
         return cw.toByteArray();
     }
 
+    /** WebKit's font in miniature: getGlyphWidth answers glyph * 2, as JavaFX's own width would. */
+    static byte[] fontImpl() {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, ComplexTextShaping.FONT_IMPL, null,
+                "java/lang/Object", null);
+        constructor(cw);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, ComplexTextShaping.GLYPH_WIDTH,
+                ComplexTextShaping.GLYPH_WIDTH_DESC, null, null);
+        mv.visitCode();
+        mv.visitVarInsn(Opcodes.ILOAD, 1);
+        mv.visitInsn(Opcodes.ICONST_2);
+        mv.visitInsn(Opcodes.IMUL);
+        mv.visitInsn(Opcodes.I2D);
+        mv.visitInsn(Opcodes.DRETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        cw.visitEnd();
+        return cw.toByteArray();
+    }
+
+    private static Object[] loadFont(boolean[] applied) throws Exception {
+        Bytes loader = new Bytes();
+        loader.add(ComplexTextShaping.HOOK, ComplexTextShaping.hookClass());
+        loader.add(ComplexTextShaping.FONT_IMPL, ComplexTextShaping.rewriteWidths(fontImpl(), applied));
+        Class<?> font = loader.loadClass(ComplexTextShaping.FONT_IMPL.replace('/', '.'));
+        Class<?> hook = loader.loadClass(ComplexTextShaping.HOOK.replace('/', '.'));
+        return new Object[]{font, hook};
+    }
+
+    @Test
+    @DisplayName("the rewritten glyph width answers the hook's width, and the font's own when the hook says NaN or is unset")
+    void rewrittenWidthAsksTheHookFirst() throws Exception {
+        boolean[] applied = {false};
+        Object[] loaded = loadFont(applied);
+        Class<?> font = (Class<?>) loaded[0];
+        Class<?> hook = (Class<?>) loaded[1];
+        assertThat(applied[0]).isTrue();
+        Object instance = font.getConstructor().newInstance();
+        java.lang.reflect.Method width = font.getMethod(ComplexTextShaping.GLYPH_WIDTH, int.class);
+        assertThat((Double) width.invoke(instance, 21)).isEqualTo(42d); // no hook yet: the font's own
+        AtomicReference<Object[]> seen = new AtomicReference<>();
+        hook.getField("WIDTHS").set(null, (Function<Object[], Object>) args -> {
+            seen.set(args);
+            return (Integer) args[1] == 7 ? 3.5d : Double.NaN;
+        });
+        assertThat((Double) width.invoke(instance, 7)).isEqualTo(3.5d);
+        assertThat(seen.get()).containsExactly(instance, 7);
+        assertThat((Double) width.invoke(instance, 8)).isEqualTo(16d);  // NaN: the font's own
+    }
+
     private record Loaded(Class<?> context, Class<?> font, Class<?> hook, boolean applied) {
     }
 

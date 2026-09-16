@@ -48,13 +48,17 @@ rewrites that one draw method with ASM so it hands its glyphs to
 shaped by JavaFX's own text layout, and written back in place. No
 OpenJFX file changes. Every refusal leaves the page painting as before.
 
-**The one trade-off that remains.** WebKit still MEASURES the unshaped
-glyphs, so a shaped word is narrower than the box WebKit gave it: an
-Arabic run keeps its right edge and a Devanagari run its left, and the
-difference shows as extra space on the other side — invisible in a
-right-to-left page, a small gap before an Arabic phrase inside an English
-line. Installs whose conf predates v2.165.0 (update-center updates) keep
-unjoined text until a reinstall, the v1.256.0 conf timing law.
+**The trade-off v2.165.0 left, and how v2.166.0 narrowed it.** WebKit
+measured the unshaped glyphs, so a shaped word was narrower than its box and
+an Arabic phrase inside an English line sat apart from its neighbours.
+v2.166.0 rewrites `WCFontImpl.getGlyphWidth` as well, so WebKit measures
+marks at zero, Arabic letters a quarter of the way from medial to final form and Indic
+letters at 0.72 of their width (both measured on running text), and each
+shaped run keeps its reading edge. What remains is a few pixels per word at
+the run's far end; exact widths need context WebKit does not pass, which
+only a native change could give. Installs whose conf predates v2.165.0
+(update-center updates) keep unjoined text until a reinstall, the v1.256.0
+conf timing law.
 
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 

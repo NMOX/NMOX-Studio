@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.166.0] - 2026-09-16
+
+**Arabic and Hindi phrases inside English lines sit in ordinary word spacing, and Hebrew is checked and needs nothing.**
+
+- **The gap v2.165.0 left, closed at its source.** WebKit measures text one
+  glyph at a time before painting it, through JavaFX's
+  `WCFontImpl.getGlyphWidth`, and for these scripts every answer was the wrong
+  size: an Arabic letter's plain glyph is its isolated form, the widest it
+  takes; combining marks advance although shaping sets them on their letter;
+  Devanagari folds into conjuncts. So WebKit reserved a box far wider than the
+  shaped word, and the difference showed as a gap. The same installer now
+  rewrites that one method too: a mark measures zero, an Arabic letter measures
+  between its medial and final forms, an Indic letter at a share of its width,
+  and everything else keeps JavaFX's own answer.
+- **The widths are measured, not chosen.** Over running Arabic at 26px,
+  isolated forms summed a third too wide and medial forms slightly narrow;
+  every blend from 0.2 to 0.3 of the way toward the final form lands within a
+  word-average of 4.3px, and 0.25 is the one that halves the words measured
+  short — a short word paints over its neighbour, a long one leaves a sliver of
+  space. Over 42 Hindi words the non-mark characters summed 39% wide; 0.72 of
+  each lands within 6.5px, and raising it only grows every word's error.
+  `ComplexScripts` holds both numbers with the measurement beside them.
+- **Each run keeps the edge its script reads from.** An Arabic run keeps its
+  right edge and an Indic run its left, so the few pixels the estimate misses
+  fall where the run ends. Centring was tried first and the forged Hindi
+  picture showed why not: a heading measured short was pushed past its card's
+  padding by half the shortfall, out of line with the button beneath it.
+- **Hebrew needs nothing.** Plain Hebrew, niqqud, shin and sin dots and
+  cantillation marks render in place in the unpatched WebView, the same as a
+  shaped JavaFX label: Hebrew letters do not join and these fonts place their
+  marks without shaping, so the shaper leaves Hebrew alone.
+- **Proven by running it.** `ComplexTextShapingTest` loads a stand-in font,
+  rewrites `getGlyphWidth` exactly as the installer does, and asks it for
+  widths (the hook's answer, the font's own on NaN or before install);
+  `ComplexScriptsTest` holds the width rule and the edge alignment. Both laws are
+  mutation-proven by name. A probe of English lines holding Arabic and Hindi
+  phrases, rendered through the product's own installer on the bundled runtime,
+  shows the phrases in normal spacing.
+
 ## [2.165.0] - 2026-09-16
 
 **The Browser paints Arabic, Persian and Hindi shaped: letters joined, vowel signs and conjuncts where they belong.**
@@ -21891,6 +21930,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.166.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.165.0...v2.166.0
 [2.165.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.164.0...v2.165.0
 [2.164.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.163.0...v2.164.0
 [2.163.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.162.0...v2.163.0

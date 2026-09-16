@@ -50,6 +50,21 @@ class PrismBridgeTest {
     }
 
     @Test
+    @DisplayName("the transformer rewrites the font's glyph width too, and refuses bytes it cannot read there")
+    void transformerRewritesTheFontWidths() {
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        assertThat(t.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null, ComplexTextShapingTest.fontImpl()))
+                .isNotNull();
+        assertThat(t.widthsApplied).isTrue();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        assertThat(none.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
+                ComplexTextShapingTest.emptyClass(ComplexTextShaping.FONT_IMPL))).isNull();
+        assertThat(none.widthsApplied).isFalse();
+        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
+                new byte[]{1, 2, 3})).isNull();
+    }
+
+    @Test
     @DisplayName("the transformer rewrites the context's glyph draw, and refuses bytes it cannot read")
     void transformerRewritesTheContextAndRefusesGarbage() {
         ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
@@ -86,5 +101,7 @@ class PrismBridgeTest {
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         assertThat(bridge.apply(new Object[]{null, new int[0], new float[0]})).isEqualTo(0f);
         assertThat(bridge.apply(new Object[]{"not a font", null, null})).isEqualTo(0f);
+        assertThat((Double) bridge.width(new Object[]{null, 5})).isNaN();
+        assertThat((Double) bridge.width(new Object[]{"not a font", 5})).isNaN();
     }
 }

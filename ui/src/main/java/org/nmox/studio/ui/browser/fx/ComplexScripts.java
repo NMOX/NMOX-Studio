@@ -15,11 +15,11 @@ import java.util.function.IntUnaryOperator;
  * character, in visual order. This core finds the runs of those glyphs, asks a
  * real shaper for the joined forms, and writes them back in place.
  *
- * <p>WebKit has already measured and positioned the run from the unshaped
- * glyphs, and nothing here can change that. The shaped word is painted tight,
- * and the width it no longer uses is reported: a right-to-left run keeps its
- * right edge (the caller moves the run by that much), a left-to-right one keeps
- * its left edge. Pure: glyph lookup and shaping arrive as functions.
+ * <p>WebKit measures the run itself, glyph by glyph, before painting it; since
+ * v2.166.0 those widths are estimated close to the shaped forms
+ * ({@link #measuredWidth}), and each shaped run keeps the edge its script
+ * reads from, so the few pixels the estimate misses fall where the run ends.
+ * Pure: glyph lookup and shaping arrive as functions.
  */
 public final class ComplexScripts {
 
@@ -49,12 +49,69 @@ public final class ComplexScripts {
     public static final int[][] RANGES = {{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0x0900, 0x0D7F}};
 
     /**
+     * How far along from an Arabic letter's medial form to its final form its
+     * measured width sits (v2.166.0). Measured, not chosen: over 34 words of
+     * running Arabic at 26px the shaped total was 2376px and the medial forms
+     * summed short. Every blend from 0.2 to 0.3 lands within a word-average of
+     * 4.3px; they differ in which way they miss, and a word measured short
+     * paints over its neighbour while one measured long leaves a sliver of
+     * space. At 0.2, 19 words came out more than 3px short; at 0.25, 11.
+     */
+    static final double ARABIC_TOWARD_FINAL = 0.25;
+
+    /**
+     * The share of its plain width an Indic letter or spacing sign is measured
+     * at (v2.166.0). Conjuncts, half forms and reordered signs make shaped
+     * Devanagari far narrower than its characters: over 42 Hindi words the
+     * shaped total was 1937px against 2690 for the non-mark characters, and 0.72
+     * lands within a word-average of 6.5px. Raising it barely changes how many
+     * words come out short (24 at 0.72 and at 0.75) while every word's error
+     * grows, so the miss here is per word, not a bias to correct.
+     */
+    static final double INDIC_SHARE = 0.72;
+
+    /**
+     * The width WebKit should MEASURE a glyph at (v2.166.0), or NaN to keep
+     * the font's own. WebKit lays text out from one width per glyph with no
+     * context, and for these scripts the font's width is the wrong one: an
+     * Arabic letter's plain glyph is its isolated form, the widest it takes; a
+     * combining mark advances although shaping sets it on its letter; Devanagari
+     * shrinks into conjuncts. Measuring them close to their shaped size keeps the
+     * box WebKit reserves close to the painted word, so the difference no longer
+     * shows as a gap beside it.
+     *
+     * @param medial   a letter's advance shaped between two joining neighbours, or NaN
+     * @param finalForm its advance shaped after a joining neighbour, or NaN
+     * @param plain    the font's own advance for the plain glyph
+     */
+    public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
+            java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain) {
+        if (!shapes(cp)) {
+            return Double.NaN;
+        }
+        int type = Character.getType(cp);
+        if (type == Character.NON_SPACING_MARK || type == Character.ENCLOSING_MARK) {
+            return 0d;
+        }
+        if (rightToLeft(cp)) {
+            double m = medial.applyAsDouble(cp);
+            double f = finalForm.applyAsDouble(cp);
+            return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + ARABIC_TOWARD_FINAL * (f - m);
+        }
+        double p = plain.applyAsDouble(cp);
+        return Double.isNaN(p) ? Double.NaN : INDIC_SHARE * p;
+    }
+
+    /** The joining character a letter is shaped between to find its in-word form. */
+    public static final char TATWEEL = '\u0640';
+
+    /**
      * Rewrites every shapeable run in {@code glyphs}/{@code advances} in place.
      *
      * @param charFor the character a painted glyph stands for, or -1
      * @param shaper  shapes one logical string; null or an empty result leaves the run alone
      * @param blank   a glyph that draws nothing, used where shaping produced fewer glyphs
-     * @return how far a right-to-left call must move right to keep its right edge
+     * @return how far the call must move right so its right-to-left runs keep their right edge
      */
     public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
             Function<String, Shaped> shaper, int blank) {
@@ -117,6 +174,10 @@ public final class ComplexScripts {
             glyphs[at] = blank;
             advances[at] = 0f;
         }
+        // a run keeps the edge its script reads from: an Arabic run its right,
+        // an Indic run its left, so what the width estimate missed falls where
+        // the run ends (centring was tried first and pushed a Hindi heading past
+        // its card's padding by half the shortfall)
         return rtl ? original - used : 0f;
     }
 }
