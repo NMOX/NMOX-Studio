@@ -59,6 +59,10 @@ import org.openide.windows.TopComponent;
 public final class WebBrowserTopComponent extends TopComponent {
 
     private FxBrowserPanel browser;
+
+    /** One lane for the one-time shaping install (v2.165.0). */
+    private static final org.openide.util.RequestProcessor SHAPING_RP =
+            new org.openide.util.RequestProcessor("Browser Complex Text", 1);
     private String pendingUrl;
 
     public WebBrowserTopComponent() {
@@ -105,6 +109,10 @@ public final class WebBrowserTopComponent extends TopComponent {
             add(unavailablePanel(), BorderLayout.CENTER);
             return;
         }
+        // OpenJFX's WebKit paints Arabic and Indic scripts unshaped (ledger 99);
+        // the shaping hook installs once, off the EDT — a page painted before
+        // it lands repaints shaped on its next paint
+        SHAPING_RP.post(org.nmox.studio.ui.browser.fx.ComplexTextShaping::install);
         browser = new FxBrowserPanel(title -> setDisplayName(BrowserUrls.tabTitle(title)));
         add(browser, BorderLayout.CENTER);
         // save → see: local pages reload themselves on web-file saves
