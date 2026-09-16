@@ -13,9 +13,9 @@ gắn nhãn khối mã có rào, và cách tự vẽ mà công cụ chụp ảnh
 dùng. Bài hướng dẫn này đi qua tất cả trong một buổi, từ hàng ghế cuối tới
 bảng nhớ tạm.
 
-![Chế độ trình chiếu đang bật: một khuôn mẫu Angular và cửa sổ Output cùng lớn thêm 10 pt, trả lại đúng như cũ khi tắt chế độ](../images/presentation-mode.png)
+![Chế độ trình chiếu đang bật: một khuôn mẫu Angular và cửa sổ Output cùng lớn thêm 10 pt, trả lại đúng như cũ khi tắt chế độ](../images/vi/presentation-mode.png)
 
-![Riêng thẻ soạn thảo, được lưu bằng Lưu ảnh chụp bộ soạn thảo… ở kích thước 2x](../images/editor-screenshot-2x.png)
+![Riêng thẻ soạn thảo, được lưu bằng Lưu ảnh chụp bộ soạn thảo… ở kích thước 2x](../images/vi/editor-screenshot-2x.png)
 
 ## Trước khi bắt đầu
 

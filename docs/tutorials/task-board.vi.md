@@ -11,9 +11,9 @@ standup hằng ngày và một biểu đồ burndown cho sprint. Không có gì 
 bạn phải tự tay ghi; chính các dấu thời gian trên thẻ là bản ghi. Bài hướng
 dẫn này đưa một bảng từ ba thẻ tới một sprint đã đóng chỉ trong một buổi.
 
-![Bảng công việc: ba cột, một thẻ đang bấm giờ và bộ đếm trực tiếp trên phần đầu bảng](../images/task-board.png)
+![Bảng công việc: ba cột, một thẻ đang bấm giờ và bộ đếm trực tiếp trên phần đầu bảng](../images/vi/task-board.png)
 
-![Một sprint trên Tổng quan của bảng — đường burndown chạy trên đường lý tưởng](../images/sprint-overview.png)
+![Một sprint trên Tổng quan của bảng — đường burndown chạy trên đường lý tưởng](../images/vi/sprint-overview.png)
 
 ## Trước khi bắt đầu
 
@@ -78,7 +78,7 @@ không, phần đó đơn giản là không bao giờ xuất hiện.
    bị lược đi, không bao giờ hiện trống, và phần đầu mở bằng sprint cùng số
    ngày của nó (“Sprint 8 · ngày 3 trên 14”).
 
-   ![Một cú nhấp biến bảng thành báo cáo hằng ngày](../images/standup.png)
+   ![Một cú nhấp biến bảng thành báo cáo hằng ngày](../images/vi/standup.png)
 
 8. **Đóng sprint.** **Sprint… ▸ Báo cáo sprint…** là người anh em dùng để
    nhìn lại của Standup — việc đã xong, việc còn mở lúc đóng, việc vẫn bị

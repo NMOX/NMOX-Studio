@@ -22,18 +22,47 @@ class TasksLawsGateTest {
     }
 
     @Test
-    @DisplayName("card text renders PLAIN — a cloned repo's board is external text")
-    void plainRenderWired() throws Exception {
+    @DisplayName("the column header renders PLAIN — a cloned repo's board is external text")
+    void plainHeaderWired() throws Exception {
         assertThat(tc())
-                .as("the card renderer and the column header both show text"
-                        + " from a file a clone can carry; <html> titles must"
-                        + " paint as characters, never fetch (v1.311.0). The"
-                        + " renderer sets its text per paint, so the property"
-                        + " on `this` is right; the column header is a one-shot"
-                        + " JLabel, where the property lands too late (v2.86.0)"
-                        + " — its text rides PlainText.plain instead.")
-                .contains("PlainTables.plain(this)")
+                .as("the column header shows a column name from a file a clone can"
+                        + " carry; it is a one-shot JLabel, where html.disable lands"
+                        + " too late (v2.86.0) — its text rides PlainText.plain")
                 .contains("new JLabel(PlainText.plain(");
+    }
+
+    /**
+     * A card title comes from a file a clone can carry, so {@code <html>} in it
+     * must paint as characters and never make the JVM fetch (v1.311.0). This
+     * law once checked the renderer's SOURCE for {@code PlainTables.plain(this)};
+     * v2.163.0 made cards wrap with a text-area renderer, which cannot render
+     * HTML at all, and the source check failed on code that was safer than
+     * before. The outcome is what matters, so the law asks Swing: no HTML view
+     * is installed on the painted card. The control proves the probe can see
+     * one — the same title through a bare label renderer DOES install a view.
+     */
+    @Test
+    @DisplayName("an <html> card title paints as characters — Swing installs no HTML view")
+    void htmlCardTitleNeverRenders() {
+        String hostile = "<html><img src='http://evil.invalid/x'>pwn";
+        TaskBoard.Card card = new TaskBoard.Card("id", hostile, "", 0L);
+        javax.swing.DefaultListModel<TaskBoard.Card> model = new javax.swing.DefaultListModel<>();
+        model.addElement(card);
+        javax.swing.JList<TaskBoard.Card> list = new javax.swing.JList<>(model);
+
+        java.awt.Component painted = new TasksTopComponent.CardRenderer()
+                .getListCellRendererComponent(list, card, 0, false, false);
+        assertThat(((javax.swing.JComponent) painted)
+                        .getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey))
+                .as("the real card renderer must not build an HTML view for a hostile title")
+                .isNull();
+
+        java.awt.Component control = new javax.swing.DefaultListCellRenderer()
+                .getListCellRendererComponent(list, hostile, 0, false, false);
+        assertThat(((javax.swing.JComponent) control)
+                        .getClientProperty(javax.swing.plaf.basic.BasicHTML.propertyKey))
+                .as("control: a bare label renderer DOES build one, so the probe can see a fetch")
+                .isNotNull();
     }
 
     @Test

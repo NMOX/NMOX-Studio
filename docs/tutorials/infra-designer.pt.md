@@ -10,7 +10,7 @@ DNS…), liga uns aos outros e implanta na DigitalOcean, na Hetzner ou na
 Cloudflare — vendo o custo antes de gastar qualquer coisa. Este tutorial
 monta um plano e o simula, então nenhum dinheiro sai do lugar.
 
-![Uma pilha tomando forma — DNS, balanceador de carga, droplet e um volume com a folha de propriedades; a barra de ferramentas calcula o preço do desenho ao vivo e deixa claro que está em modo de simulação](../images/infra-designer.png)
+![Uma pilha tomando forma — DNS, balanceador de carga, droplet e um volume com a folha de propriedades; a barra de ferramentas calcula o preço do desenho ao vivo e deixa claro que está em modo de simulação](../images/pt/infra-designer.png)
 
 ## Abrir
 

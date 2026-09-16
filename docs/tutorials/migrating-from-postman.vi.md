@@ -12,7 +12,7 @@ Bài này đi trọn một bản xuất Postman thật từ đầu tới cuối 
 NMOX Studio cố ý làm khác: **bí mật về nằm trong chùm khóa của hệ điều hành,
 không bao giờ trong một tệp đưa vào kho.**
 
-![Studio API, nơi các bản nhập đáp xuống: cây bộ sưu tập, một yêu cầu đã gửi, và điểm tiêu đề bảo mật của nó](../images/api-studio.png)
+![Studio API, nơi các bản nhập đáp xuống: cây bộ sưu tập, một yêu cầu đã gửi, và điểm tiêu đề bảo mật của nó](../images/vi/api-studio.png)
 
 ## Trước khi bắt đầu
 

@@ -1,0 +1,771 @@
+{
+  "_README": [
+    "Fixture content for the documentation forge (v2.163.0). The product's own",
+    "seeds are translated by the product (a board's column names, API Studio's",
+    "starter collection); what lives here is the CONTENT a staged scene holds —",
+    "the card titles on the board, the rows in the database grid, the labels on",
+    "the infra canvas — so a translated guide shows that language's own context",
+    "and not English data under translated chrome.",
+    "",
+    "Not shipped inside the IDE: these are documentation strings, and the",
+    "product's translated surface should hold only what a user can actually see.",
+    "scripts/docs-shots.sh passes this file to the forge as -Dnmox.shots.fixtures;",
+    "a language with no entry falls back to 'en' SECTION BY SECTION, and",
+    "ForgeFixturesGateTest fails the build when a shipped language is missing.",
+    "",
+    "THESE ARE NOT TRANSLATIONS. Each language's cards, names and cities are its",
+    "own plausible work and its own people and places — that is the whole point.",
+    "Two translators read one English card as 'shorten' and the rest as 'remove';",
+    "both are a real card a developer would write, so both stay. Only the SHAPE",
+    "is shared: the same sections, the same number of cards and rows.",
+    "",
+    "Fixed by design, and so exempt from the gate's copies-English check:",
+    "  db.query   — SQL keywords and identifiers are code a developer retypes",
+    "               (the v2.104.0 machine-text rule). Identical in every language.",
+    "  infra.dns  — a hostname. Its first label MAY be the reader's own word for",
+    "               a shop; the .example.com suffix never changes (RFC 2606).",
+    "",
+    "Two strings are one storyline and must stay so: the to-do card about naming",
+    "the empty states is the card whose blocker asks design for that copy.",
+    "",
+    "The board's clock runs on the FIRST 'doing' card — the fixture names no card",
+    "twice. An earlier draft carried a 'clocked' key repeating a card's title,",
+    "which is one fact in two places kept byte-identical by hand across fifteen",
+    "files; the defect is the second home, not the disagreement (v2.131.0)."
+  ],
+  "en": {
+    "board": {
+      "todo": [
+        "Ship the offline page",
+        "Name the empty states"
+      ],
+      "doing": [
+        "Cut the login round-trip"
+      ],
+      "done": [
+        "Translate the error catalogue"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Payment",
+      "blockOwner": "Dana",
+      "blockAction": "Ask design for the empty-state copy"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Ada Marsh",
+          "Bristol",
+          "412"
+        ],
+        [
+          "Noor Haddad",
+          "Leeds",
+          "377"
+        ],
+        [
+          "Tom Rivera",
+          "Cardiff",
+          "298"
+        ],
+        [
+          "Ines Duarte",
+          "Belfast",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Front door",
+      "droplet": "App server",
+      "volume": "Order archive"
+    }
+  },
+  "es": {
+    "board": {
+      "todo": [
+        "Publicar la página sin conexión",
+        "Nombrar los estados vacíos"
+      ],
+      "doing": [
+        "Quitar una ida y vuelta del login"
+      ],
+      "done": [
+        "Traducir el catálogo de errores"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Pago",
+      "blockOwner": "Lucía",
+      "blockAction": "Pedir a diseño los textos de estados vacíos"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Ana Serrano",
+          "Sevilla",
+          "412"
+        ],
+        [
+          "Javier Ortega",
+          "Valencia",
+          "377"
+        ],
+        [
+          "Marta Ibáñez",
+          "Bilbao",
+          "298"
+        ],
+        [
+          "Rubén Castaño",
+          "Zaragoza",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "tienda.example.com",
+      "loadBalancer": "Puerta de entrada",
+      "droplet": "Servidor de la app",
+      "volume": "Archivo de pedidos"
+    }
+  },
+  "fr": {
+    "board": {
+      "todo": [
+        "Livrer la page hors ligne",
+        "Nommer les états vides"
+      ],
+      "doing": [
+        "Couper l'aller-retour de connexion"
+      ],
+      "done": [
+        "Traduire le catalogue d'erreurs"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Paiement",
+      "blockOwner": "Camille",
+      "blockAction": "Demander les textes d'état vide au design"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Élodie Renard",
+          "Nantes",
+          "412"
+        ],
+        [
+          "Karim Benali",
+          "Lille",
+          "377"
+        ],
+        [
+          "Thomas Rivière",
+          "Bordeaux",
+          "298"
+        ],
+        [
+          "Inès Marques",
+          "Strasbourg",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "boutique.example.com",
+      "loadBalancer": "Porte d'entrée",
+      "droplet": "Serveur applicatif",
+      "volume": "Archive commandes"
+    }
+  },
+  "de": {
+    "board": {
+      "todo": [
+        "Offline-Seite ausliefern",
+        "Leerzustände benennen"
+      ],
+      "doing": [
+        "Login-Roundtrip einsparen"
+      ],
+      "done": [
+        "Fehlerkatalog übersetzen"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Kasse",
+      "blockOwner": "Jonas",
+      "blockAction": "Text für Leerzustände von Design anfordern"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Lena Brandt",
+          "Bremen",
+          "412"
+        ],
+        [
+          "Mira Özdemir",
+          "Leipzig",
+          "377"
+        ],
+        [
+          "Tobias Roth",
+          "Mainz",
+          "298"
+        ],
+        [
+          "Paul Winter",
+          "Kassel",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Eingang",
+      "droplet": "App-Server",
+      "volume": "Bestellarchiv"
+    }
+  },
+  "ru": {
+    "board": {
+      "todo": [
+        "Выкатить офлайн-страницу",
+        "Назвать пустые состояния"
+      ],
+      "doing": [
+        "Убрать лишний запрос при входе"
+      ],
+      "done": [
+        "Перевести каталог ошибок"
+      ],
+      "sprint": "Спринт 8",
+      "epic": "Оформление",
+      "blockOwner": "Дарья",
+      "blockAction": "Запросить тексты у дизайнера"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Анна Морозова",
+          "Казань",
+          "412"
+        ],
+        [
+          "Игорь Соколов",
+          "Самара",
+          "377"
+        ],
+        [
+          "Марина Ковалёва",
+          "Воронеж",
+          "298"
+        ],
+        [
+          "Пётр Ильин",
+          "Новосибирск",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Точка входа",
+      "droplet": "Сервер приложения",
+      "volume": "Архив заказов"
+    }
+  },
+  "hi": {
+    "board": {
+      "todo": [
+        "ऑफ़लाइन पेज लाइव करें",
+        "खाली स्थितियों को नाम दें"
+      ],
+      "doing": [
+        "लॉगिन का राउंड-ट्रिप घटाएँ"
+      ],
+      "done": [
+        "त्रुटि कैटलॉग का अनुवाद करें"
+      ],
+      "sprint": "स्प्रिंट 8",
+      "epic": "चेकआउट",
+      "blockOwner": "नेहा",
+      "blockAction": "डिज़ाइन से खाली स्थिति का टेक्स्ट माँगें"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "आद्या शर्मा",
+          "पुणे",
+          "412"
+        ],
+        [
+          "इमरान शेख़",
+          "हैदराबाद",
+          "377"
+        ],
+        [
+          "रोहित वर्मा",
+          "जयपुर",
+          "298"
+        ],
+        [
+          "मीरा नायर",
+          "कोच्चि",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "मुख्य द्वार",
+      "droplet": "ऐप सर्वर",
+      "volume": "ऑर्डर संग्रह"
+    }
+  },
+  "uk": {
+    "board": {
+      "todo": [
+        "Випустити офлайн-сторінку",
+        "Назвати порожні стани"
+      ],
+      "doing": [
+        "Прибрати зайвий запит на вході"
+      ],
+      "done": [
+        "Перекласти каталог помилок"
+      ],
+      "sprint": "Спринт 8",
+      "epic": "Оформлення",
+      "blockOwner": "Оксана",
+      "blockAction": "Попросити в дизайнерів тексти порожніх станів"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Олена Кравченко",
+          "Львів",
+          "412"
+        ],
+        [
+          "Андрій Шевчук",
+          "Харків",
+          "377"
+        ],
+        [
+          "Марія Бондаренко",
+          "Одеса",
+          "298"
+        ],
+        [
+          "Тарас Мельник",
+          "Дніпро",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Вхідна точка",
+      "droplet": "Сервер застосунку",
+      "volume": "Архів замовлень"
+    }
+  },
+  "pl": {
+    "board": {
+      "todo": [
+        "Wdrożyć stronę offline",
+        "Nazwać puste stany"
+      ],
+      "doing": [
+        "Usunąć jedno żądanie w logowaniu"
+      ],
+      "done": [
+        "Przetłumaczyć katalog błędów"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Kasa",
+      "blockOwner": "Marta",
+      "blockAction": "Poprosić design o teksty pustych stanów"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Julia Mazur",
+          "Gdańsk",
+          "412"
+        ],
+        [
+          "Piotr Wójcik",
+          "Wrocław",
+          "377"
+        ],
+        [
+          "Michał Sikora",
+          "Poznań",
+          "298"
+        ],
+        [
+          "Zofia Kaczmarek",
+          "Kraków",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Brama wejściowa",
+      "droplet": "Serwer aplikacji",
+      "volume": "Archiwum zamówień"
+    }
+  },
+  "pt": {
+    "board": {
+      "todo": [
+        "Publicar a página offline",
+        "Nomear os estados vazios"
+      ],
+      "doing": [
+        "Cortar o round-trip do login"
+      ],
+      "done": [
+        "Traduzir o catálogo de erros"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Pagamento",
+      "blockOwner": "Camila",
+      "blockAction": "Pedir ao design o texto dos estados vazios"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Ana Ribeiro",
+          "Recife",
+          "412"
+        ],
+        [
+          "Bruno Tavares",
+          "Curitiba",
+          "377"
+        ],
+        [
+          "Helena Castro",
+          "Salvador",
+          "298"
+        ],
+        [
+          "Marcos Vieira",
+          "Fortaleza",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Porta de entrada",
+      "droplet": "Servidor do app",
+      "volume": "Arquivo de pedidos"
+    }
+  },
+  "id": {
+    "board": {
+      "todo": [
+        "Rilis halaman luring",
+        "Beri nama keadaan kosong"
+      ],
+      "doing": [
+        "Pangkas bolak-balik saat masuk"
+      ],
+      "done": [
+        "Terjemahkan katalog kesalahan"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Pembayaran",
+      "blockOwner": "Dewi",
+      "blockAction": "Minta teks keadaan kosong ke tim desain"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Ayu Pratiwi",
+          "Bandung",
+          "412"
+        ],
+        [
+          "Bagus Saputra",
+          "Surabaya",
+          "377"
+        ],
+        [
+          "Sari Wijaya",
+          "Makassar",
+          "298"
+        ],
+        [
+          "Rizky Hakim",
+          "Medan",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Pintu depan",
+      "droplet": "Server aplikasi",
+      "volume": "Arsip pesanan"
+    }
+  },
+  "tl": {
+    "board": {
+      "todo": [
+        "Ilabas ang offline page",
+        "Pangalanan ang empty states"
+      ],
+      "doing": [
+        "Paikliin ang login round-trip"
+      ],
+      "done": [
+        "Isalin ang katalogo ng error"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Pagbabayad",
+      "blockOwner": "Mara",
+      "blockAction": "Hingin sa design ang tekstong empty-state"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Ana Ramos",
+          "Cebu",
+          "412"
+        ],
+        [
+          "Jomar dela Cruz",
+          "Davao",
+          "377"
+        ],
+        [
+          "Liza Santos",
+          "Quezon City",
+          "298"
+        ],
+        [
+          "Nestor Bautista",
+          "Iloilo",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Harapang pinto",
+      "droplet": "Server ng app",
+      "volume": "Arkibo ng order"
+    }
+  },
+  "vi": {
+    "board": {
+      "todo": [
+        "Phát hành trang offline",
+        "Đặt tên các trạng thái rỗng"
+      ],
+      "doing": [
+        "Bỏ một vòng gọi khi đăng nhập"
+      ],
+      "done": [
+        "Dịch bộ thông báo lỗi"
+      ],
+      "sprint": "Sprint 8",
+      "epic": "Thanh toán",
+      "blockOwner": "Linh",
+      "blockAction": "Hỏi bên thiết kế nội dung trạng thái rỗng"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "Nguyễn Thu Hà",
+          "Hà Nội",
+          "412"
+        ],
+        [
+          "Trần Minh Quân",
+          "Đà Nẵng",
+          "377"
+        ],
+        [
+          "Lê Thị Mai",
+          "Cần Thơ",
+          "298"
+        ],
+        [
+          "Phạm Văn Đức",
+          "Huế",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "Cổng vào",
+      "droplet": "Máy chủ ứng dụng",
+      "volume": "Lưu trữ đơn hàng"
+    }
+  },
+  "zh": {
+    "board": {
+      "todo": [
+        "上线离线页面",
+        "给空状态命名"
+      ],
+      "doing": [
+        "去掉登录的一次往返"
+      ],
+      "done": [
+        "翻译错误信息目录"
+      ],
+      "sprint": "冲刺 8",
+      "epic": "结算",
+      "blockOwner": "张敏",
+      "blockAction": "找设计要空状态文案"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "李文静",
+          "杭州",
+          "412"
+        ],
+        [
+          "王海涛",
+          "成都",
+          "377"
+        ],
+        [
+          "陈雨欣",
+          "南京",
+          "298"
+        ],
+        [
+          "赵明远",
+          "西安",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "流量入口",
+      "droplet": "应用服务器",
+      "volume": "订单归档"
+    }
+  },
+  "he": {
+    "board": {
+      "todo": [
+        "העלאת הדף הלא־מקוון לאוויר",
+        "מתן שם למצבים הריקים"
+      ],
+      "doing": [
+        "ביטול סבב הרשת בהתחברות"
+      ],
+      "done": [
+        "תרגום קטלוג השגיאות"
+      ],
+      "sprint": "ספרינט 8",
+      "epic": "תשלום",
+      "blockOwner": "נועה",
+      "blockAction": "בקשת נוסח למצבים הריקים מהעיצוב"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "יעל ברנר",
+          "תל אביב",
+          "412"
+        ],
+        [
+          "סאמר חורי",
+          "חיפה",
+          "377"
+        ],
+        [
+          "מאיה לוי",
+          "באר שבע",
+          "298"
+        ],
+        [
+          "עומר דגן",
+          "נתניה",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "שער הכניסה",
+      "droplet": "שרת היישום",
+      "volume": "ארכיון ההזמנות"
+    }
+  },
+  "ar": {
+    "board": {
+      "todo": [
+        "تسليم صفحة الأوفلاين",
+        "تسمية الحالات الفاضية"
+      ],
+      "doing": [
+        "تقليل رحلات تسجيل الدخول"
+      ],
+      "done": [
+        "ترجمة كتالوج الأخطاء"
+      ],
+      "sprint": "سبرينت 8",
+      "epic": "الدفع",
+      "blockOwner": "منى",
+      "blockAction": "طلب نصوص الحالات الفاضية من الديزاين"
+    },
+    "db": {
+      "query": "SELECT name, city, orders FROM customers ORDER BY orders DESC;",
+      "rows": [
+        [
+          "أحمد سليم",
+          "القاهرة",
+          "412"
+        ],
+        [
+          "هدى فتحي",
+          "الإسكندرية",
+          "377"
+        ],
+        [
+          "يوسف مراد",
+          "أسيوط",
+          "298"
+        ],
+        [
+          "سارة منير",
+          "المنصورة",
+          "265"
+        ]
+      ]
+    },
+    "infra": {
+      "dns": "shop.example.com",
+      "loadBalancer": "الواجهة",
+      "droplet": "خادم التطبيق",
+      "volume": "أرشيف الطلبات"
+    }
+  }
+}

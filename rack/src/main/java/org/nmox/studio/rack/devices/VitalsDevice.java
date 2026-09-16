@@ -45,17 +45,17 @@ public class VitalsDevice extends CommandDevice {
         RackButton audit = place(new RackButton("AUDIT", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
         audit.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
-        urlLcd = place(new LcdDisplay(170, 1), 180, 46);
+        urlLcd = place(new LcdDisplay(144, 1), 180, 46);
         urlLcd.setText(DEFAULT_URL);
         urlLcd.setEditable("URL to audit");
-        minKnob = place(new Knob("MIN", MINIMUMS, 0), 360, 40);
+        minKnob = place(new Knob("MIN", MINIMUMS, 0), 332, 40);
         minKnob.setToolTipText("Score floor: below it, FAIL fires instead of OK");
-        gateKnob = place(new Knob("GATE", GATES, 0), 424, 40);
+        gateKnob = place(new Knob("GATE", GATES, 0), 404, 40);
         gateKnob.setToolTipText("Which standard the floor holds: performance, accessibility (WCAG), both, best practices, SEO, or all four");
-        place(perfMeter, 480, 34);
-        place(a11yMeter, 480, 74);
-        place(bestMeter, 560, 34);
-        place(seoMeter, 560, 74);
+        place(perfMeter, 482, 70);
+        place(a11yMeter, 482, 100);
+        place(bestMeter, 600, 70);
+        place(seoMeter, 600, 100);
 
         audit.addActionListener(e -> primaryAction());
         stop.addActionListener(e -> stopByUser());

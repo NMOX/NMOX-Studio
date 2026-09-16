@@ -13,9 +13,9 @@ etiqueta los bloques de código, el pintado de la forja de documentación.
 Este tutorial lo recorre todo en una sola sesión, de la última fila al
 portapapeles.
 
-![Modo presentación activado: una plantilla de Angular y la ventana Output a +10 pt, restauradas exactamente al desactivar el modo](../images/presentation-mode.png)
+![Modo presentación activado: una plantilla de Angular y la ventana Output a +10 pt, restauradas exactamente al desactivar el modo](../images/es/presentation-mode.png)
 
-![La pestaña del editor sola, guardada con Guardar captura del editor… a 2x](../images/editor-screenshot-2x.png)
+![La pestaña del editor sola, guardada con Guardar captura del editor… a 2x](../images/es/editor-screenshot-2x.png)
 
 ## Antes de empezar
 

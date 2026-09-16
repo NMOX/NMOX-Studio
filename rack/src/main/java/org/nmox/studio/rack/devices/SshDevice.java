@@ -38,7 +38,7 @@ public class SshDevice extends CommandDevice {
         hostLcd = place(new LcdDisplay(180, 1), 180, 46);
         hostLcd.setText("");
         hostLcd.setEditable("user@host");
-        commandLcd = place(new LcdDisplay(280, 1), 380, 46);
+        commandLcd = place(new LcdDisplay(280, 1), 180, 94);
         commandLcd.setText("");
         commandLcd.setEditable("Remote command");
 

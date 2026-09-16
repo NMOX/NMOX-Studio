@@ -9,7 +9,7 @@ MySQL/MariaDB, MongoDB et CouchDB — pilotes inclus, une console qui
 connaît le moteur et des grilles de résultats modifiables sur place. Ce
 tutoriel utilise SQLite, qui n’a besoin d’aucun serveur.
 
-![Une connexion SQLite, une requête, des lignes vivantes dans la grille — et la barre d’état qui donne la raison honnête quand une grille est en lecture seule](../images/db-studio.png)
+![Une connexion SQLite, une requête, des lignes vivantes dans la grille — et la barre d’état qui donne la raison honnête quand une grille est en lecture seule](../images/fr/db-studio.png)
 
 ## L’ouvrir
 

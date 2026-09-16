@@ -11,9 +11,9 @@ et un burndown de sprint. Rien n’est une comptabilité tenue à la main ; les
 horodatages des cartes elles-mêmes font foi. Ce tutoriel mène un tableau de
 trois cartes jusqu’à un sprint clôturé, en une séance.
 
-![Le Tableau des tâches : trois colonnes, une carte chronométrée et le compteur en direct dans l’en-tête](../images/task-board.png)
+![Le Tableau des tâches : trois colonnes, une carte chronométrée et le compteur en direct dans l’en-tête](../images/fr/task-board.png)
 
-![Un sprint dans la Vue d’ensemble — le burndown au-dessus de la ligne idéale](../images/sprint-overview.png)
+![Un sprint dans la Vue d’ensemble — le burndown au-dessus de la ligne idéale](../images/fr/sprint-overview.png)
 
 ## Avant de commencer
 
@@ -86,7 +86,7 @@ commits ; sinon, cette section n’apparaît tout simplement jamais.
    omises, jamais affichées vides, et l’en-tête commence par le sprint et son
    décompte de jours (« Sprint 8 · jour 3 sur 14 »).
 
-   ![Un clic transforme le tableau en rapport quotidien](../images/standup.png)
+   ![Un clic transforme le tableau en rapport quotidien](../images/fr/standup.png)
 
 8. **Clôturez le sprint.** **Sprint… ▸ Rapport de sprint…** est le pendant de
    revue du Standup — ce qui est terminé, ce qui reste ouvert à la clôture,

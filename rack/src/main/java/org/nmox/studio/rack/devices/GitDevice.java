@@ -23,15 +23,15 @@ public class GitDevice extends CommandDevice {
     public GitDevice() {
         super("git", "TIMELINE", "GIT SEQUENCER", new Color(222, 78, 54), 2);
 
-        branchLcd = place(new LcdDisplay(150, 1), 44, 46);
+        branchLcd = place(new LcdDisplay(130, 1), 44, 46);
         branchLcd.getAccessibleContext().setAccessibleName("branch");
         branchLcd.setText("…");
-        dirtyLed = place(new Led("DIRTY", RackStyle.MUTATE), 200, 52);
+        dirtyLed = place(new Led("DIRTY", RackStyle.MUTATE), 182, 52);
 
-        RackButton status = place(new RackButton("STATUS", RackStyle.QUERY), 240, 52);
-        RackButton pull = place(new RackButton("PULL", RackStyle.MUTATE), 304, 52);
-        RackButton commit = place(new RackButton("COMMIT", RackStyle.MUTATE), 368, 52);
-        RackButton push = place(new RackButton("PUSH", RackStyle.MUTATE), 432, 52);
+        RackButton status = place(new RackButton("STATUS", RackStyle.QUERY), 222, 52);
+        RackButton pull = place(new RackButton("PULL", RackStyle.MUTATE), 286, 52);
+        RackButton commit = place(new RackButton("COMMIT", RackStyle.MUTATE), 350, 52);
+        RackButton push = place(new RackButton("PUSH", RackStyle.MUTATE), 414, 52);
 
         status.addActionListener(e -> launch(List.of("git", "status", "--short")));
         pull.addActionListener(e -> launch(List.of("git", "pull")));

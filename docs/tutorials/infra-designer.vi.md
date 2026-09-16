@@ -10,7 +10,7 @@ rồi triển khai lên DigitalOcean, Hetzner hoặc Cloudflare — với chi ph
 ra trước khi bạn tiêu bất cứ đồng nào. Bài này dựng một kế hoạch và chạy thử
 nó, nên không có tiền nào mất đi.
 
-![Một chồng tài nguyên đang thành hình — DNS, bộ cân bằng tải, droplet và một ổ đĩa cùng bảng thuộc tính; thanh công cụ báo giá thiết kế theo thời gian thực và nói rõ đang ở chế độ chạy thử](../images/infra-designer.png)
+![Một chồng tài nguyên đang thành hình — DNS, bộ cân bằng tải, droplet và một ổ đĩa cùng bảng thuộc tính; thanh công cụ báo giá thiết kế theo thời gian thực và nói rõ đang ở chế độ chạy thử](../images/vi/infra-designer.png)
 
 ## Mở nó
 

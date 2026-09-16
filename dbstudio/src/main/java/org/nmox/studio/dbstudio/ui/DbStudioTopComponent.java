@@ -824,6 +824,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         .disableHtml(new JTable(new ResultsTableModel(result)));
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
+                org.nmox.studio.core.util.TableColumns.fitToContent(table); // no "Noor H..." (v2.163.0)
                 String reason = decision == null ? Bundle.DbStudioTopComponent_readOnly() : decision.reason();
                 table.setToolTipText(PlainText.plain(reason));
                 panel.add(new JScrollPane(table), BorderLayout.CENTER);
@@ -884,6 +885,7 @@ public final class DbStudioTopComponent extends TopComponent {
         table.setDefaultRenderer(String.class,
                 org.nmox.studio.core.util.PlainTables.plain(new DirtyCellRenderer(model)));
         table.setToolTipText(Bundle.DbStudioTopComponent_editableGridTooltip());
+        org.nmox.studio.core.util.TableColumns.fitToContent(table);
         applyButton.addActionListener(e -> applyEdits(tabPanel, spec, content, model));
         revertButton.addActionListener(e -> model.revertAll());
 
@@ -1940,6 +1942,44 @@ public final class DbStudioTopComponent extends TopComponent {
             applyConsoleMimeFor(spec);
         }
         refreshActions();
+    }
+
+    /**
+     * Stages a run for the documentation forge (v2.163.0): selects the one
+     * staged connection, connects it so the tree shows its tables, puts
+     * {@code sql} in the console and runs it — the picture of DB Studio is
+     * a grid with rows in it, and an empty grid says nothing in any
+     * language.
+     *
+     * <p>Package-private and reached only from {@link DocsDb}, which is a
+     * {@code DocsScene} — nothing but the forge looks one up. It exists
+     * because {@code runText} and {@code connect} are private: the forge
+     * drives the window the way a user does rather than reaching past it.
+     */
+    void docsStageRun(String sql) {
+        if (specs.isEmpty()) {
+            return;
+        }
+        ConnectionSpec spec = specs.get(0);
+        activeSpecId = spec.id();
+        connect(spec, nodeFor(spec), true);
+        console.setText(sql);
+        runText(sql);
+    }
+
+    /** The connection tree's node for {@code spec}, or null. */
+    private DefaultMutableTreeNode nodeFor(ConnectionSpec spec) {
+        if (!(tree.getModel().getRoot() instanceof DefaultMutableTreeNode root)) {
+            return null;
+        }
+        java.util.Enumeration<javax.swing.tree.TreeNode> en = root.depthFirstEnumeration();
+        while (en.hasMoreElements()) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) en.nextElement();
+            if (node.getUserObject() instanceof ConnectionSpec s && s.id().equals(spec.id())) {
+                return node;
+            }
+        }
+        return null;
     }
 
     private ConnectionSpec activeSpec() {

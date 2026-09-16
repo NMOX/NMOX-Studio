@@ -9,7 +9,7 @@ Você monta requisições, faz verificações sobre a resposta e — algo que s�
 ele faz — cada resposta recebe uma nota pelos padrões de cabeçalhos de
 segurança da web.
 
-![Um 200 ao vivo em 331ms — e a aba Padrões dando nota aos cabeçalhos de segurança da resposta](../images/api-studio.png)
+![Um 200 ao vivo em 331ms — e a aba Padrões dando nota aos cabeçalhos de segurança da resposta](../images/pt/api-studio.png)
 
 ## Abrir
 

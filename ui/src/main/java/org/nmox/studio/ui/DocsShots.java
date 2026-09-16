@@ -438,7 +438,182 @@ public class DocsShots implements Runnable {
                         // hint has been replaced
                         return !thinking && (thinkSeen || (!lcds.contains("PRESS EXPLAIN")
                                 && System.currentTimeMillis() - explainPressedAt > 1_500));
-                    }, 120_000));
+                    }, 120_000),
+                    // v2.163.0: the scenes whose windows only mean something
+                    // with data in them. Each module stages its own fixture
+                    // through its own writer (core.spi.DocsScene) because the
+                    // forge can reach neither the board's package-private IO
+                    // nor three modules the ui module does not depend on.
+                    new Staged("task-board.png", () -> {
+                        clearFakeRuns();
+                        // every scene writes into the SAME demo project, so one
+                        // aim serves them all and the reader meets one shop
+                        // rather than four unrelated fixtures
+                        File demo = null;
+                        for (String id : java.util.List.of(
+                                org.nmox.studio.ui.tasks.DocsTaskBoard.ID,
+                                "infra-designer", "db-studio", "api-studio")) {
+                            File staged = stageScene(id, home);
+                            if (staged != null) {
+                                demo = staged;
+                            }
+                        }
+                        if (demo != null) {
+                            org.nmox.studio.rack.service.DocsStaging.aim(demo);
+                        }
+                        front("TasksTopComponent");
+                    }, () -> true, 0),
+                    new Staged("sprint-overview.png", () -> {
+                        org.nmox.studio.ui.tasks.TasksTopComponent board = tasks();
+                        if (board != null) {
+                            board.docsShowOverview();
+                        }
+                    }, () -> true, 0),
+                    new Staged("standup.png", () -> {
+                        org.nmox.studio.ui.tasks.TasksTopComponent board = tasks();
+                        if (board != null) {
+                            // the report is MODAL: invokeLater so the show
+                            // blocks that lambda and not this queue — a modal
+                            // pump keeps our timers firing (the v2.141.0 law)
+                            java.awt.EventQueue.invokeLater(board::docsShowStandup);
+                        }
+                    }, () -> visibleDialog() != null, 20_000),
+                    new Staged("infra-designer.png", () -> {
+                        closeAllDialogs(); // the standup report has been painted
+                        front("InfraDesignerTopComponent");
+                    }, () -> true, 0),
+                    new Staged("db-studio.png", () -> {
+                        front("DbStudioTopComponent");
+                        arrangeScene("db-studio"); // connect, fill the console, run
+                    }, () -> false, 8_000),
+                    new Staged("api-studio.png", () -> {
+                        front("ApiClientTopComponent");
+                        arrangeScene("api-studio"); // select the starter request and send
+                    }, () -> false, 8_000),
+                    new Staged("presentation-mode.png", () -> {
+                        org.nmox.studio.rack.service.DocsStaging.openFile(
+                                new File(classic[0], "js/app.js"));
+                        presentationMode();
+                    }, () -> true, 0),
+                    new Staged("editor-screenshot-2x.png", () -> {
+                        // the previous picture left Presentation Mode ON; this
+                        // one shows the editor at its ordinary size, so press
+                        // the same toggle again
+                        presentationMode();
+                    }, () -> true, 0));
+        }
+
+        /**
+         * The component a staged picture paints. Most are the whole main
+         * window; two are not. The Standup is a modal dialog, and a dialog
+         * is painted by its ROOT PANE because a native title bar is not
+         * Swing-painted (the v1.125.0 law). The editor screenshot is the
+         * editor tab alone — the same tab Save Editor Screenshot saves.
+         */
+        private static java.awt.Component targetFor(String file) {
+            if ("standup.png".equals(file)) {
+                java.awt.Dialog dialog = visibleDialog();
+                if (dialog instanceof javax.swing.JDialog jd) {
+                    return jd.getRootPane();
+                }
+                if (dialog != null) {
+                    return dialog;
+                }
+            }
+            if ("editor-screenshot-2x.png".equals(file)) {
+                org.openide.windows.Mode editor = WindowManager.getDefault().findMode("editor");
+                TopComponent tab = editor == null ? null : editor.getSelectedTopComponent();
+                if (tab != null) {
+                    return tab;
+                }
+            }
+            return WindowManager.getDefault().getMainWindow();
+        }
+
+        /** Presses View ▸ Presentation Mode, which is a toggle. */
+        private static void presentationMode() {
+            javax.swing.Action present = org.openide.awt.Actions.forID(
+                    "View", "org.nmox.studio.editor.present.PresentationModeAction");
+            if (present != null) {
+                present.actionPerformed(new java.awt.event.ActionEvent(
+                        WindowManager.getDefault().getMainWindow(),
+                        java.awt.event.ActionEvent.ACTION_PERFORMED, "docs-shot"));
+            }
+        }
+
+        /**
+         * This run's scene content, or empty when the forge was given none —
+         * in which case the scenes are skipped rather than staged in English,
+         * so a missing fixtures file loses those pictures loudly (the script
+         * checks for them) instead of quietly painting the wrong language.
+         */
+        private static String fixtures() {
+            String path = System.getProperty("nmox.shots.fixtures");
+            if (path == null || path.isBlank()) {
+                return "";
+            }
+            try {
+                return java.nio.file.Files.readString(new File(path).toPath(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+            } catch (java.io.IOException unreadable) {
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .warning("fixtures unreadable at " + path + ": " + unreadable);
+                return "";
+            }
+        }
+
+        /** The language being painted, as the launcher's --locale named it. */
+        private static String lang() {
+            return System.getProperty("nmox.shots.lang", "");
+        }
+
+        private static org.nmox.studio.core.spi.DocsScene scene(String id) {
+            for (org.nmox.studio.core.spi.DocsScene candidate : org.nmox.studio.core.spi.DocsScene.all()) {
+                if (candidate.id().equals(id)) {
+                    return candidate;
+                }
+            }
+            return null;
+        }
+
+        /** Writes one scene's fixtures; returns the directory to aim at, or null. */
+        private static File stageScene(String id, File home) {
+            org.nmox.studio.core.spi.DocsScene target = scene(id);
+            String content = fixtures();
+            if (target == null || content.isEmpty()) {
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .warning("scene " + id + (target == null ? " is not registered" : " has no fixtures")
+                                + " — its picture will be missing");
+                return null;
+            }
+            try {
+                return target.stage(home, content, lang());
+            } catch (java.io.IOException | RuntimeException | LinkageError | java.util.ServiceConfigurationError ex) {
+                // an Error here once stopped the whole forge silently (a cross-loader
+                // org.json type): skip the scene, say so, keep painting
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .log(java.util.logging.Level.WARNING, "scene " + id + " could not be staged", ex);
+                return null;
+            }
+        }
+
+        /** Puts a scene's window into the state its picture shows — EDT. */
+        private static void arrangeScene(String id) {
+            org.nmox.studio.core.spi.DocsScene target = scene(id);
+            if (target == null) {
+                return;
+            }
+            try {
+                target.arrange();
+            } catch (RuntimeException | LinkageError ex) {
+                java.util.logging.Logger.getLogger(DocsShots.class.getName())
+                        .warning("scene " + id + " could not be arranged: " + ex);
+            }
+        }
+
+        private static org.nmox.studio.ui.tasks.TasksTopComponent tasks() {
+            TopComponent tc = WindowManager.getDefault().findTopComponent("TasksTopComponent");
+            return tc instanceof org.nmox.studio.ui.tasks.TasksTopComponent board ? board : null;
         }
 
         private interface IoCall<T> {
@@ -481,7 +656,7 @@ public class DocsShots implements Runnable {
             Staged stage = stagedQueue.next();
             try {
                 stage.arrange().run();
-            } catch (RuntimeException ex) {
+            } catch (RuntimeException | LinkageError ex) {
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
                         .warning("staged shot " + stage.file() + " could not be arranged \u2014 skipped: " + ex);
                 nextStaged();
@@ -504,7 +679,7 @@ public class DocsShots implements Runnable {
                                         + org.nmox.studio.rack.service.DocsStaging.rackSummary()
                                         + " \u2014 EXPLAIN pressed: " + (explainPressedAt != 0));
                     } else {
-                        capture(stage.file());
+                        captureComponent(targetFor(stage.file()), stage.file());
                     }
                     nextStaged();
                 });

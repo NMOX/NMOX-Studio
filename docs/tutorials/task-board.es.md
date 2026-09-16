@@ -11,9 +11,9 @@ standup diario y un burndown del sprint. Nada es contabilidad que lleves a
 mano; las marcas de las propias tarjetas son el registro. Este tutorial
 lleva un tablero de tres tarjetas a un sprint cerrado en una sola sesión.
 
-![El Tablero de tareas: tres columnas, una tarjeta con el reloj en marcha y el contador en vivo en la cabecera](../images/task-board.png)
+![El Tablero de tareas: tres columnas, una tarjeta con el reloj en marcha y el contador en vivo en la cabecera](../images/es/task-board.png)
 
-![Un sprint en el Resumen del tablero — el burndown sobre la línea ideal](../images/sprint-overview.png)
+![Un sprint en el Resumen del tablero — el burndown sobre la línea ideal](../images/es/sprint-overview.png)
 
 ## Antes de empezar
 
@@ -82,7 +82,7 @@ puede leer tus commits; si no, esa sección simplemente no aparece.
    vacías, y la cabecera abre con el sprint y su recuento de días («Sprint
    8 · día 3 de 14»).
 
-   ![Un clic convierte el tablero en el informe diario](../images/standup.png)
+   ![Un clic convierte el tablero en el informe diario](../images/es/standup.png)
 
 8. **Cierra el sprint.** **Sprint… ▸ Informe del sprint…** es el hermano de
    revisión del Standup — hechas, abiertas al cierre, todavía bloqueadas,

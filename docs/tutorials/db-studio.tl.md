@@ -9,7 +9,7 @@ MongoDB, at CouchDB — may kasamang driver, console na kilala ang uri ng
 engine, at mga grid ng resulta na maaari mong baguhin sa kinaroroonan.
 SQLite ang gamit ng tutorial na ito dahil walang kailangang server.
 
-![Isang koneksyon sa SQLite, isang query, buhay na mga hilera sa grid — at ang status bar na nagsasabi ng tapat na dahilan kapag read-only ang isang grid](../images/db-studio.png)
+![Isang koneksyon sa SQLite, isang query, buhay na mga hilera sa grid — at ang status bar na nagsasabi ng tapat na dahilan kapag read-only ang isang grid](../images/tl/db-studio.png)
 
 ## Buksan ito
 

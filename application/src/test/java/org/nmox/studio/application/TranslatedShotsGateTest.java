@@ -30,10 +30,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * whenever {@code docs/images/<lang>/<name>.png} exists, a document of that
  * language must reference it rather than the English {@code docs/images/<name>.png}
  * — and the six the user guide shows must exist for every language that has
- * a tab directory. The staged shots no forge paints yet (the tutorials'
- * live-external scenes: a hit breakpoint, a real database grid, Docker,
- * Anvil) stay English and are the recorded ceiling in
- * {@code docs/engineering/l10n-completion.md}.
+ * a tab directory. v2.163.0 adds the tutorials' data-bearing windows (the
+ * Task Board and its Overview and Standup, the Infra Designer, DB Studio, API
+ * Studio, Presentation Mode, the editor tab), each staged by the module that
+ * owns it. The four no forge paints — the Docker Panel, Contract Studio, a hit
+ * breakpoint, the DevTools pick — need a live service or debugger state and
+ * are the recorded ceiling in {@code docs/engineering/l10n-completion.md}.
  */
 class TranslatedShotsGateTest {
 
@@ -81,12 +83,15 @@ class TranslatedShotsGateTest {
         assertThat(wrong).as("a translated document illustrated with another language's shot").isEmpty();
     }
 
-    /** The six staged states the user guide shows, painted per language since v2.162.0. */
+    /** The staged states the guide and tutorials show, painted per language (v2.162.0, v2.163.0). */
     static final List<String> GUIDE_STAGED = List.of("task-rack.png", "rack-rear.png", "editor.png",
-            "experiment-walkthrough.png", "kvasir-explain.png", "spaces-shelf.png");
+            "experiment-walkthrough.png", "kvasir-explain.png", "spaces-shelf.png",
+            // v2.163.0: the tutorials' data-bearing windows, one fixture per language
+            "task-board.png", "sprint-overview.png", "standup.png", "infra-designer.png",
+            "db-studio.png", "api-studio.png", "presentation-mode.png", "editor-screenshot-2x.png");
 
     @Test
-    @DisplayName("every language with forge tab shots also has the guide's six staged shots")
+    @DisplayName("every language with forge tab shots also has every staged shot")
     void everyLanguageHasTheGuidesStagedShots() throws Exception {
         Path images = Path.of("..").toRealPath().resolve("docs/images");
         List<String> missing = new ArrayList<>();

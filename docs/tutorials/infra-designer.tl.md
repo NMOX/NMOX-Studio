@@ -11,7 +11,7 @@ DigitalOcean, Hetzner, o Cloudflare — may pagtatantya ng halaga bago
 gumastos ng anuman. Bumubuo ang tutorial na ito ng plano at
 pinapatakbo ito nang dry run, kaya walang perang gumagalaw.
 
-![Isang stack na hinuhubog — DNS, load balancer, droplet, at volume na may property sheet; buhay na kinukuwenta ng toolbar ang halaga ng disenyo at tapat itong nagsasabi kapag nasa dry run](../images/infra-designer.png)
+![Isang stack na hinuhubog — DNS, load balancer, droplet, at volume na may property sheet; buhay na kinukuwenta ng toolbar ang halaga ng disenyo at tapat itong nagsasabi kapag nasa dry run](../images/tl/infra-designer.png)
 
 ## Buksan ito
 

@@ -9,7 +9,7 @@ MySQL/MariaDB, MongoDB e CouchDB — drivers inclusos, um console que conhece
 o motor e grades de resultado que você edita ali mesmo. Este tutorial usa
 SQLite porque ele dispensa servidor.
 
-![Uma conexão SQLite, uma consulta, linhas vivas na grade — e a barra de status dando o motivo honesto quando uma grade é somente leitura](../images/db-studio.png)
+![Uma conexão SQLite, uma consulta, linhas vivas na grade — e a barra de status dando o motivo honesto quando uma grade é somente leitura](../images/pt/db-studio.png)
 
 ## Abrir
 

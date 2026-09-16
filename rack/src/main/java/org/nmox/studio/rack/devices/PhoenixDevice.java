@@ -52,8 +52,8 @@ public class PhoenixDevice extends CommandDevice {
         currentLed = place(new Led("CURRENT", RackStyle.GO), 252, 46);
         outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 308, 46);
         RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 372, 40);
-        RackButton migrate = place(new RackButton("MIGRATE", new Color(99, 197, 70)), 444, 40);
-        RackButton rollback = place(new RackButton("ROLLBACK", RackStyle.MUTATE), 508, 40);
+        RackButton migrate = place(new RackButton("MIGRATE", new Color(99, 197, 70)), 44, 142);
+        RackButton rollback = place(new RackButton("ROLLBACK", RackStyle.MUTATE), 108, 142);
 
         RackButton server = place(new RackButton("SERVER", RackStyle.GO), 44, 96);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), 108, 96);

@@ -9,7 +9,7 @@ MongoDB i CouchDB — sterowniki w komplecie, konsola znająca silnik
 i siatki wyników edytowalne na miejscu. Ten samouczek używa SQLite, bo
 nie potrzebuje serwera.
 
-![Połączenie SQLite, zapytanie, żywe wiersze w siatce — i pasek stanu podający uczciwy powód, gdy siatka jest tylko do odczytu](../images/db-studio.png)
+![Połączenie SQLite, zapytanie, żywe wiersze w siatce — i pasek stanu podający uczciwy powód, gdy siatka jest tylko do odczytu](../images/pl/db-studio.png)
 
 ## Otwieranie
 

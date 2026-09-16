@@ -13,9 +13,9 @@ który nazywa bloki kodu, na rysowaniu z kuźni dokumentacji. Ten
 samouczek przechodzi przez całość na jednym posiedzeniu, od ostatniego
 rzędu po schowek.
 
-![Tryb prezentacji włączony: szablon Angulara i okno Output, oba +10 pt, przywrócone dokładnie po wyłączeniu trybu](../images/presentation-mode.png)
+![Tryb prezentacji włączony: szablon Angulara i okno Output, oba +10 pt, przywrócone dokładnie po wyłączeniu trybu](../images/pl/presentation-mode.png)
 
-![Sama karta edytora, zapisana przez Zapisz zrzut edytora… w rozmiarze 2x](../images/editor-screenshot-2x.png)
+![Sama karta edytora, zapisana przez Zapisz zrzut edytora… w rozmiarze 2x](../images/pl/editor-screenshot-2x.png)
 
 ## Zanim zaczniesz
 

@@ -9,7 +9,7 @@ MySQL/MariaDB, MongoDB, dan CouchDB — penggerak sudah disertakan, konsol yang
 mengenali jenis mesinnya, dan kisi hasil yang bisa Anda sunting di tempat.
 Tutorial ini memakai SQLite karena tidak butuh server.
 
-![Sambungan SQLite, sebuah kueri, baris hidup di kisi — dan bilah status memberi alasan jujur ketika sebuah kisi hanya bisa dibaca](../images/db-studio.png)
+![Sambungan SQLite, sebuah kueri, baris hidup di kisi — dan bilah status memberi alasan jujur ketika sebuah kisi hanya bisa dibaca](../images/id/db-studio.png)
 
 ## Membukanya
 

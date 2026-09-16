@@ -11,9 +11,9 @@ burndown de um sprint. Nada é controle que você mantém à mão; as marcaçõe
 dos próprios cartões são o registro. Este tutorial leva um quadro de três
 cartões a um sprint encerrado numa sentada só.
 
-![O Quadro de tarefas: três colunas, um cartão com cronômetro e o contador ao vivo no cabeçalho](../images/task-board.png)
+![O Quadro de tarefas: três colunas, um cartão com cronômetro e o contador ao vivo no cabeçalho](../images/pt/task-board.png)
 
-![Um sprint na Visão geral do quadro — o burndown sobre a linha ideal](../images/sprint-overview.png)
+![Um sprint na Visão geral do quadro — o burndown sobre a linha ideal](../images/pt/sprint-overview.png)
 
 ## Antes de começar
 
@@ -84,7 +84,7 @@ aparece.
    e o cabeçalho abre com o sprint e a contagem de dias
    (“Sprint 8 · dia 3 de 14”).
 
-   ![Um clique transforma o quadro no relatório do dia](../images/standup.png)
+   ![Um clique transforma o quadro no relatório do dia](../images/pt/standup.png)
 
 8. **Encerre o sprint.** **Sprint… ▸ Relatório do sprint…** é o irmão de
    revisão do Standup — concluídos, abertos no encerramento, ainda

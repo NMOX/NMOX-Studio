@@ -54,6 +54,67 @@ class DeviceContractTest {
         }
     }
 
+    /** Borders may kiss by this many pixels; more than this hides content. */
+    private static final int TOUCH = 2;
+
+    /** The control types a faceplate places; everything else is chrome. */
+    private static final java.util.List<Class<?>> CONTROLS = java.util.List.of(
+            Knob.class,
+            org.nmox.studio.rack.ui.controls.ToggleSwitch.class,
+            org.nmox.studio.rack.ui.controls.RackButton.class,
+            org.nmox.studio.rack.ui.controls.Led.class,
+            org.nmox.studio.rack.ui.controls.LcdDisplay.class,
+            org.nmox.studio.rack.ui.controls.VuMeter.class);
+
+    private static boolean isControl(java.awt.Component c) {
+        return CONTROLS.stream().anyMatch(type -> type.isInstance(c));
+    }
+
+    /** A control's own name, for a failure a person can act on. */
+    private static String nameOf(java.awt.Component c) {
+        String name = c.getAccessibleContext() == null
+                ? null : c.getAccessibleContext().getAccessibleName();
+        return (name == null || name.isBlank() ? c.getClass().getSimpleName() : name)
+                + " " + c.getBounds();
+    }
+
+    @ParameterizedTest
+    @MethodSource("catalog")
+    @DisplayName("No two controls on a faceplate overlap")
+    void faceplateControlsDoNotOverlap(DeviceCatalog.Entry type) {
+        RackDevice device = type.create();
+        java.util.List<java.awt.Component> controls = new java.util.ArrayList<>();
+        for (java.awt.Component c : device.getComponents()) {
+            if (isControl(c)) {
+                controls.add(c);
+            }
+        }
+        java.util.List<String> collisions = new java.util.ArrayList<>();
+        for (int i = 0; i < controls.size(); i++) {
+            for (int j = i + 1; j < controls.size(); j++) {
+                java.awt.Rectangle a = controls.get(i).getBounds();
+                java.awt.Rectangle b = controls.get(j).getBounds();
+                java.awt.Rectangle over = a.intersection(b);
+                // borders may TOUCH: stacked displays and stacked buttons sit
+                // edge to edge, and a one- or two-pixel border kiss hides
+                // nothing (LcdDisplay paints its text at h/2, a RackButton its
+                // label inside its own inset). Past that, one control is
+                // painting over another's label — which is what VERITAS showed
+                if (a.intersects(b) && over.width > TOUCH && over.height > TOUCH) {
+                    collisions.add(nameOf(controls.get(i)) + "  ×  " + nameOf(controls.get(j))
+                            + "  overlap " + over);
+                }
+            }
+        }
+        // a control's bounds INCLUDE the band where it paints its own label
+        // and value (a Knob is 64x78 for an 18px dial), so two controls that
+        // overlap are two labels printed on top of each other — which is what
+        // VERITAS showed: FAILURES sat inside the RUNNER knob's label band
+        assertThat(collisions)
+                .as(type + ": controls whose rectangles overlap — their labels collide on screen")
+                .isEmpty();
+    }
+
     @ParameterizedTest
     @MethodSource("catalog")
     @DisplayName("Control state must survive a save/load round trip")

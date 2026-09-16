@@ -12,9 +12,9 @@ talaang iniingatan mo nang mano-mano; ang mga tatak ng mga card mismo ay
 ang talaan. Dinadala ng tutorial na ito ang isang board mula tatlong card
 hanggang sa isang saradong sprint, nang isang upuan.
 
-![Ang Task Board: tatlong kolum, isang card na naka-clock, at ang buhay na ticker sa header](../images/task-board.png)
+![Ang Task Board: tatlong kolum, isang card na naka-clock, at ang buhay na ticker sa header](../images/tl/task-board.png)
 
-![Isang sprint sa Pangkalahatang tanaw ng board — ang burndown sa ibabaw ng ideal na linya](../images/sprint-overview.png)
+![Isang sprint sa Pangkalahatang tanaw ng board — ang burndown sa ibabaw ng ideal na linya](../images/tl/sprint-overview.png)
 
 ## Bago magsimula
 
@@ -89,7 +89,7 @@ kailanman lumilitaw.
    nagbubukas ang header gamit ang sprint at ang bilang ng araw nito
    (“Sprint 8 · araw 3 ng 14”).
 
-   ![Iisang pindot ang ginagawang pang-araw-araw na ulat ang board](../images/standup.png)
+   ![Iisang pindot ang ginagawang pang-araw-araw na ulat ang board](../images/tl/standup.png)
 
 8. **Isara ang sprint.** Ang **Sprint… ▸ Ulat ng Sprint…** ay ang kapatid na
    pagsusuri ng Standup — tapos, bukas nang isara, nakaharang pa, naitalang

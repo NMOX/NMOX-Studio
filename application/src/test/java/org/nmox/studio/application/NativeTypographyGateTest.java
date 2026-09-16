@@ -170,6 +170,30 @@ class NativeTypographyGateTest {
         assertThat(wrong).as("three periods where the language writes … (U+2026)").isEmpty();
     }
 
+    /**
+     * U+02BC MODIFIER LETTER APOSTROPHE. It looks like an apostrophe and is
+     * not one: Unicode classes it as a LETTER, so it joins the word it sits
+     * inside. A word spelled with it tokenizes as one token including the
+     * mark, which is why a search for the word without it does not match —
+     * the v2.114.0 class, where a mark the folder preserved was the very
+     * character the tokenizer split on.
+     */
+    private static final Pattern MODIFIER_APOSTROPHE = Pattern.compile("\u02bc");
+
+    @Test
+    @DisplayName("an apostrophe is punctuation, never the modifier LETTER U+02BC")
+    void apostrophesAreNotModifierLetters() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        for (Value v : values()) {
+            if (MODIFIER_APOSTROPHE.matcher(v.text()).find()) {
+                wrong.add(v.name());
+            }
+        }
+        assertThat(wrong).as("U+02BC where the language writes \u2019 (U+2019): a modifier "
+                + "letter is a LETTER, so it joins its word and the word stops matching "
+                + "a search for its ordinary spelling").isEmpty();
+    }
+
     @Test
     @DisplayName("quotation marks are the language's own")
     void quotesAreTheLanguagesOwn() throws IOException {

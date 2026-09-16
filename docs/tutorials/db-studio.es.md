@@ -9,7 +9,7 @@ MySQL/MariaDB, MongoDB y CouchDB: controladores incluidos, una consola
 que conoce el motor y rejillas de resultados que puedes editar en su
 sitio. Este tutorial usa SQLite porque no necesita servidor.
 
-![Una conexión SQLite, una consulta y filas vivas en la rejilla, con la barra de estado dando la razón honesta cuando una rejilla es de solo lectura](../images/db-studio.png)
+![Una conexión SQLite, una consulta y filas vivas en la rejilla, con la barra de estado dando la razón honesta cuando una rejilla es de solo lectura](../images/es/db-studio.png)
 
 ## Ábrelo
 

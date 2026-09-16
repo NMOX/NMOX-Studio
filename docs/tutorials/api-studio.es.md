@@ -9,7 +9,7 @@ integrado en el IDE. Construyes peticiones, lanzas comprobaciones contra
 la respuesta y, algo que no hace nadie más, cada respuesta recibe una
 nota según los estándares de cabeceras de seguridad de la web.
 
-![Un 200 en vivo en 331 ms, y la pestaña Estándares poniendo nota a las cabeceras de seguridad de la respuesta](../images/api-studio.png)
+![Un 200 en vivo en 331 ms, y la pestaña Estándares poniendo nota a las cabeceras de seguridad de la respuesta](../images/es/api-studio.png)
 
 ## Ábrelo
 

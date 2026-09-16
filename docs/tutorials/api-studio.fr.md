@@ -9,7 +9,7 @@ construisez des requêtes, vous vérifiez la réponse par des assertions et —
 c’est unique — chaque réponse reçoit une note selon les standards des
 en-têtes de sécurité du web.
 
-![Un 200 réel en 331 ms — et l’onglet Standards qui note les en-têtes de sécurité de la réponse](../images/api-studio.png)
+![Un 200 réel en 331 ms — et l’onglet Standards qui note les en-têtes de sécurité de la réponse](../images/fr/api-studio.png)
 
 ## L’ouvrir
 

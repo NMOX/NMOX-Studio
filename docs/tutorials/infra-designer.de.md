@@ -11,7 +11,7 @@ Hetzner oder Cloudflare aus — mit den Kosten vor Augen, bevor Sie
 irgendetwas ausgeben. Dieses Tutorial baut einen Plan und spielt ihn
 probeweise durch, es fließt also kein Geld.
 
-![Ein Stapel nimmt Gestalt an — DNS, Load Balancer, Droplet und ein Volume mit seinem Eigenschaftsblatt; die Werkzeugleiste beziffert den Entwurf live und sagt ehrlich, dass nur probeweise ausgerollt wird](../images/infra-designer.png)
+![Ein Stapel nimmt Gestalt an — DNS, Load Balancer, Droplet und ein Volume mit seinem Eigenschaftsblatt; die Werkzeugleiste beziffert den Entwurf live und sagt ehrlich, dass nur probeweise ausgerollt wird](../images/de/infra-designer.png)
 
 ## Öffnen
 

@@ -10,7 +10,7 @@ registros DNS…), los cableas y despliegas en DigitalOcean, Hetzner o
 Cloudflare, con el coste delante antes de gastar nada. Este tutorial
 monta un plan y lo simula, así que no se mueve ni un céntimo.
 
-![Una pila tomando forma: DNS, balanceador de carga, droplet y un volumen con su hoja de propiedades; la barra de herramientas pone precio al diseño en vivo y deja claro que está en modo de simulación](../images/infra-designer.png)
+![Una pila tomando forma: DNS, balanceador de carga, droplet y un volumen con su hoja de propiedades; la barra de herramientas pone precio al diseño en vivo y deja claro que está en modo de simulación](../images/es/infra-designer.png)
 
 ## Ábrelo
 

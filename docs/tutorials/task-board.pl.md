@@ -11,9 +11,9 @@ spalania sprintu. Nie ma tu żadnej buchalterii prowadzonej ręcznie;
 zapisem są znaczniki samych kart. Ten samouczek prowadzi tablicę od
 trzech kart do zamkniętego sprintu na jednym posiedzeniu.
 
-![Tablica zadań: trzy kolumny, karta z działającym zegarem i licznik na żywo w nagłówku](../images/task-board.png)
+![Tablica zadań: trzy kolumny, karta z działającym zegarem i licznik na żywo w nagłówku](../images/pl/task-board.png)
 
-![Sprint w przeglądzie tablicy — wykres spalania nad linią idealną](../images/sprint-overview.png)
+![Sprint w przeglądzie tablicy — wykres spalania nad linią idealną](../images/pl/sprint-overview.png)
 
 ## Zanim zaczniesz
 
@@ -83,7 +83,7 @@ jeśli nie, ta sekcja po prostu się nie pojawi.
    a nagłówek zaczyna się od sprintu i licznika jego dni („Sprint 8 ·
    dzień 3 z 14”).
 
-   ![Jedno kliknięcie zamienia tablicę w codzienny raport](../images/standup.png)
+   ![Jedno kliknięcie zamienia tablicę w codzienny raport](../images/pl/standup.png)
 
 8. **Zamknij sprint.** **Sprint… ▸ Raport sprintu…** to przeglądowe
    rodzeństwo Standupu — zrobione, otwarte w chwili zamknięcia, wciąż

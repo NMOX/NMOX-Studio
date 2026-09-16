@@ -6,7 +6,7 @@
 
 基础设施设计器是一块 Node-RED 风格的云基础设施画布。你拖出节点（droplet、防火墙、DNS 记录…），把它们连起来，然后部署到 DigitalOcean、Hetzner 或 Cloudflare — 花任何钱之前都先把费用摆在你面前。本教程搭一份计划并试运行它，所以一分钱都不会动。
 
-![一套资源正在成形 — DNS、负载均衡器、droplet，以及一个带属性表的卷；工具栏实时给设计定价，并如实说明现在是试运行模式](../images/infra-designer.png)
+![一套资源正在成形 — DNS、负载均衡器、droplet，以及一个带属性表的卷；工具栏实时给设计定价，并如实说明现在是试运行模式](../images/zh/infra-designer.png)
 
 ## 打开方式
 

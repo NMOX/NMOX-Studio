@@ -6,7 +6,7 @@
 
 数据库工作室是一套数据库工具，支持 SQLite、PostgreSQL、MySQL/MariaDB、MongoDB 和 CouchDB — 驱动随附，控制台了解各种引擎，结果网格可以就地编辑。本教程用 SQLite，因为它不需要服务器。
 
-![一个 SQLite 连接、一条查询、网格里的实时数据行 — 以及网格只读时，状态栏给出的诚实理由](../images/db-studio.png)
+![一个 SQLite 连接、一条查询、网格里的实时数据行 — 以及网格只读时，状态栏给出的诚实理由](../images/zh/db-studio.png)
 
 ## 打开方式
 

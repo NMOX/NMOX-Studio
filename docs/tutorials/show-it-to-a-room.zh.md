@@ -6,9 +6,9 @@
 
 有些日子，要交付的不是代码，而是*展示*：投影仪、README、议题评论、幻灯片。NMOX Studio 为这样的人准备了一小套演示工具，而且每一件都建立在 IDE 原本就有的东西上，而不是外挂上去的：编辑器自己的文字缩放、给代码围栏命名的那一套统一的语言词汇、文档截图工具自己的绘制。本教程一次走完全部，从最后一排一直到剪贴板。
 
-![演示模式已开启：一个 Angular 模板和 Output 窗口都放大了 10 pt，关掉模式后原样恢复](../images/presentation-mode.png)
+![演示模式已开启：一个 Angular 模板和 Output 窗口都放大了 10 pt，关掉模式后原样恢复](../images/zh/presentation-mode.png)
 
-![用保存编辑器截图… 以二倍尺寸保存下来的单个编辑器标签页](../images/editor-screenshot-2x.png)
+![用保存编辑器截图… 以二倍尺寸保存下来的单个编辑器标签页](../images/zh/editor-screenshot-2x.png)
 
 ## 开始之前
 

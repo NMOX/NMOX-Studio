@@ -87,17 +87,40 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   # KVASIR's consent lives in the userdir (v2.63.0); a fresh one has none
   PREFS="$UD/config/Preferences/org/nmox/NMOX/Studio"
   mkdir -p "$PREFS"
-  printf 'kvasir.external.consent=true\n' > "$PREFS/rack.properties"
-  STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
-  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf}"
+  # Claude is the provider the forge asks (David's call); the key reaches the
+  # app only through an interactive shell, so the launch below runs under
+  # `zsh -ilc` — ~/.zshrc is where CLAUDE_API_KEY lives and a plain exec of
+  # the launcher inherits this script's non-interactive environment instead
+  printf 'kvasir.external.consent=true\nkvasir.provider=anthropic\n' > "$PREFS/rack.properties"
+  # the scenes' own content, in the language being painted (v2.163.0): the
+  # cards on the board, the rows in the grid, the labels on the canvas
+  FIXTURES="$(cd "$(dirname "$0")/.." && pwd)/docs/i18n/forge-fixtures.json"
+  [ -f "$FIXTURES" ] || { echo "no forge fixtures at $FIXTURES"; exit 1; }
+  # API Studio's picture is a response, so something must answer the starter
+  # request's /health on loopback for the length of the run
+  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 >/dev/null 2>&1 &
+  FIXTURE_SERVER=$!
+  trap 'kill $FIXTURE_SERVER 2>/dev/null || true' EXIT
+  STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.fixtures=$FIXTURES -J-Dnmox.shots.lang=${LOCALE:-en} -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
+  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf task-board sprint-overview standup infra-designer db-studio api-studio presentation-mode editor-screenshot-2x}"
 fi
 echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throwaway userdir + cachedir) =="
 # shellcheck disable=SC2086 — a locale code and the staged flags have no spaces; unquoted on purpose
-"$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
+# an interactive login zsh so the app sees the keys ~/.zshrc exports; "$@"
+# keeps every argument's quoting intact through the hop
+# the app gets its own leash (NMOX_SHOTS_TIMEOUT seconds): a forge that stops
+# advancing must still reach the log copy and the missing-shots report below —
+# a timeout wrapped around the whole script killed both and hid the cause
+FORGE_TIMEOUT="${NMOX_SHOTS_TIMEOUT:-900}"
+timeout --kill-after=30 "$FORGE_TIMEOUT" \
+zsh -ilc 'exec "$@"' nmox-forge \
+  "$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
   -J-Dnmox.shots.dir="$OUT_ABS" \
   -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dapple.awt.application.name="NMOX Studio"
+boot=$?
+[ "$boot" = 124 ] && echo "forge timed out after ${FORGE_TIMEOUT}s — the log below says where it stopped"
 
 echo "== shots =="
 missing=0
