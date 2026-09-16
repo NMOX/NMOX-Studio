@@ -895,8 +895,26 @@ public final class TasksTopComponent extends TopComponent {
      * <p>Package-private, called only from {@code DocsTaskBoard}, which is
      * a {@code DocsScene} — nothing but the forge looks one up.
      */
-    void docsShowStandup() {
+    public void docsShowStandup() {
         showStandup();
+    }
+
+    /**
+     * Shows the sprint Overview face for the documentation forge
+     * (v2.163.0) — the second of this window's three pictures.
+     *
+     * <p>The forge asks rather than pressing the toggle it can see,
+     * because the toggle is found by its ACCESSIBLE NAME and that name is
+     * translated: a finder matching it would work in English and silently
+     * miss in fourteen languages, which is the exact defect this release
+     * exists to end.
+     */
+    public void docsShowOverview() {
+        if (overviewToggle == null) {
+            return;
+        }
+        overviewToggle.setSelected(true);
+        faces.show(center, "overview");
     }
 
     private void showStandup() {
