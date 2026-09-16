@@ -173,23 +173,39 @@ class ComplexScriptsTest {
     }
 
     @Test
-    @DisplayName("a run's vertical offsets are written beside its glyphs, and without room for them an off-baseline run is left alone")
-    void offBaselineRunsNeedSomewhereToPutTheirOffsets() {
-        Function<String, ComplexScripts.Shaped> stacked = t -> new ComplexScripts.Shaped(
-                new int[]{70, 71}, new float[]{9f, 0f}, new float[]{0f, -6f}); // a letter and its mark above
+    @DisplayName("the in-place rewrite leaves alone a run whose shaped glyphs leave the baseline or outnumber its slots")
+    void inPlaceRewriteRefusesWhatItCannotHold() {
         int[] g = glyphs("\u064Eب"); // visual: fatha, beh
         int[] before = g.clone();
         float[] a = advances(2, 10f);
-        ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK);
+        ComplexScripts.reshape(g, a, CHAR_FOR, t -> new ComplexScripts.Shaped(
+                new int[]{70, 71}, new float[]{9f, 0f}, new float[]{0f, -6f}), BLANK);
         assertThat(g).containsExactly(before);
         assertThat(a).containsExactly(10f, 10f);
+    }
 
-        float[] rises = new float[2];
-        ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK, rises);
-        assertThat(g).containsExactly(70, 71);
-        assertThat(rises).containsExactly(0f, -6f);
-        assertThat(ComplexScripts.onBaseline(rises)).isFalse();
-        assertThat(ComplexScripts.reshape(g, a, CHAR_FOR, stacked, BLANK, new float[1])).isZero(); // wrong length
+    @Test
+    @DisplayName("a laid-out run takes as many glyphs as shaping needs, with their offsets, and copies the rest as painted")
+    void layoutTakesAnyGlyphCountAndOffsets() {
+        // visual: "A", then Urdu "ٹا" reversed, then "B": the letters shape into three glyphs, one lifted
+        int[] g = glyphs("A" + "اٹ" + "B");
+        float[] a = {5f, 10f, 10f, 6f};
+        ComplexScripts.Laid laid = ComplexScripts.layout(g, a, CHAR_FOR, text -> {
+            assertThat(text).isEqualTo("ٹا");
+            return new ComplexScripts.Shaped(new int[]{80, 81, 82}, new float[]{4f, 4f, 4f}, new float[]{0f, -9f, 3f});
+        });
+        assertThat(laid.changed()).isTrue();
+        assertThat(laid.glyphs()).containsExactly(g[0], 80, 81, 82, g[3]);
+        assertThat(laid.advances()).containsExactly(5f, 4f, 4f, 4f, 6f);
+        assertThat(laid.rises()).containsExactly(0f, 0f, -9f, 3f, 0f);
+        assertThat(laid.slack()).isEqualTo(8f); // 20 measured, 12 painted, right edge kept
+        assertThat(g).containsExactly(glyphs("A" + "اٹ" + "B")); // WebKit's own arrays are untouched
+
+        ComplexScripts.Laid refused = ComplexScripts.layout(g, a, CHAR_FOR, text -> null);
+        assertThat(refused.changed()).isFalse();
+        assertThat(refused.glyphs()).containsExactly(g);
+        assertThat(refused.advances()).containsExactly(a);
+        assertThat(ComplexScripts.layout(new int[1], new float[2], CHAR_FOR, text -> null)).isNull();
     }
 
     @Test

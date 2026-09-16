@@ -136,20 +136,7 @@ public final class ComplexScripts {
      */
     public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
             Function<String, Shaped> shaper, int blank) {
-        return reshape(glyphs, advances, charFor, shaper, blank, null);
-    }
-
-    /**
-     * As {@link #reshape(int[], float[], IntUnaryOperator, Function, int)}, and
-     * writes each glyph's vertical offset into {@code rises} (v2.167.0). With
-     * no {@code rises} to write into, a run whose shaped glyphs leave the
-     * baseline is left as it was: painted along one line, vowel marks land
-     * between the letters and a Nastaliq word collapses onto itself.
-     */
-    public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
-            Function<String, Shaped> shaper, int blank, float[] rises) {
-        if (glyphs == null || advances == null || glyphs.length != advances.length
-                || (rises != null && rises.length != glyphs.length)) {
+        if (glyphs == null || advances == null || glyphs.length != advances.length) {
             return 0f;
         }
         float slack = 0f;
@@ -163,32 +150,23 @@ public final class ComplexScripts {
             while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
                 i++;
             }
-            slack += segment(glyphs, advances, start, i, charFor, shaper, blank, rises);
+            slack += segment(glyphs, advances, start, i, charFor, shaper, blank);
         }
         return slack;
     }
 
     private static float segment(int[] glyphs, float[] advances, int start, int end,
-            IntUnaryOperator charFor, Function<String, Shaped> shaper, int blank, float[] rises) {
+            IntUnaryOperator charFor, Function<String, Shaped> shaper, int blank) {
         int n = end - start;
         if (n < 2) {
             return 0f; // one glyph has no neighbours to join or reorder with
         }
         boolean rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
-        // a painted run is in visual order: a right-to-left script's characters
-        // arrive reversed, a left-to-right one's do not
-        StringBuilder logical = new StringBuilder(n);
-        for (int k = 0; k < n; k++) {
-            logical.appendCodePoint(charFor.applyAsInt(glyphs[rtl ? end - 1 - k : start + k]));
-        }
-        Shaped shaped = shaper.apply(logical.toString());
-        if (shaped == null || shaped.glyphs().length == 0 || shaped.glyphs().length > n
-                || shaped.advances().length != shaped.glyphs().length
-                || shaped.rises().length != shaped.glyphs().length) {
-            return 0f; // a shaper that needs more slots than WebKit gave is left unshaped
-        }
-        if (rises == null && !onBaseline(shaped.rises())) {
-            return 0f; // nowhere to put the offsets: painting it flat would be worse than plain
+        Shaped shaped = usable(shaper.apply(logical(glyphs, start, end, charFor, rtl)));
+        if (shaped == null || shaped.glyphs().length > n || !onBaseline(shaped.rises())) {
+            // more glyphs than WebKit gave slots, or glyphs off the line: an
+            // in-place rewrite can hold neither, and plain paints better
+            return 0f;
         }
         float original = 0f;
         for (int k = start; k < end; k++) {
@@ -206,23 +184,109 @@ public final class ComplexScripts {
         for (int k = 0; k < count; k++) {
             glyphs[first + k] = shaped.glyphs()[k];
             advances[first + k] = shaped.advances()[k];
-            if (rises != null) {
-                rises[first + k] = shaped.rises()[k];
-            }
         }
         for (int k = 0; k < pad; k++) {
             int at = rtl ? start + k : start + count + k;
             glyphs[at] = blank;
             advances[at] = 0f;
-            if (rises != null) {
-                rises[at] = 0f;
-            }
         }
         // a run keeps the edge its script reads from: an Arabic run its right,
         // an Indic run its left, so what the width estimate missed falls where
         // the run ends (centring was tried first and pushed a Hindi heading past
         // its card's padding by half the shortfall)
         return rtl ? original - used : 0f;
+    }
+
+    /**
+     * A painted run in visual order: a right-to-left script's characters
+     * arrive reversed, a left-to-right one's do not.
+     */
+    private static String logical(int[] glyphs, int start, int end, IntUnaryOperator charFor, boolean rtl) {
+        StringBuilder text = new StringBuilder(end - start);
+        for (int k = 0; k < end - start; k++) {
+            text.appendCodePoint(charFor.applyAsInt(glyphs[rtl ? end - 1 - k : start + k]));
+        }
+        return text.toString();
+    }
+
+    private static Shaped usable(Shaped shaped) {
+        return shaped == null || shaped.glyphs().length == 0 || shaped.advances().length != shaped.glyphs().length
+                || shaped.rises().length != shaped.glyphs().length ? null : shaped;
+    }
+
+    /**
+     * A whole painted run laid out anew (v2.167.0): its glyphs, advances and
+     * vertical offsets, as many as shaping needs, and how far the run moves
+     * right. {@code changed} is false when nothing in it was shaped.
+     */
+    public record Laid(int[] glyphs, float[] advances, float[] rises, float slack, boolean changed) {
+    }
+
+    /**
+     * Lays a painted run out for a glyph list built from positions rather than
+     * advances, so a shaped segment may take more glyphs than it had characters
+     * (a Nastaliq letter and its dots are separate glyphs) and its glyphs may
+     * leave the baseline (vowel marks, Nastaliq's descending words). Segments
+     * follow the same rules as {@link #reshape}; everything else is copied as
+     * WebKit painted it.
+     */
+    public static Laid layout(int[] glyphs, float[] advances, IntUnaryOperator charFor,
+            Function<String, Shaped> shaper) {
+        if (glyphs == null || advances == null || glyphs.length != advances.length) {
+            return null;
+        }
+        int[] outG = new int[glyphs.length];
+        float[] outA = new float[glyphs.length];
+        float[] outR = new float[glyphs.length];
+        int size = 0;
+        float slack = 0f;
+        boolean changed = false;
+        int i = 0;
+        while (i < glyphs.length) {
+            int start = i;
+            if (!shapes(charFor.applyAsInt(glyphs[i]))) {
+                i++;
+            } else {
+                while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
+                    i++;
+                }
+            }
+            Shaped shaped = null;
+            boolean rtl = false;
+            if (i - start >= 2) {
+                rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
+                shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, rtl)));
+            }
+            int need = size + (shaped == null ? i - start : shaped.glyphs().length);
+            if (need > outG.length) {
+                int grown = Math.max(need, outG.length * 2);
+                outG = java.util.Arrays.copyOf(outG, grown);
+                outA = java.util.Arrays.copyOf(outA, grown);
+                outR = java.util.Arrays.copyOf(outR, grown);
+            }
+            if (shaped == null) {
+                System.arraycopy(glyphs, start, outG, size, i - start);
+                System.arraycopy(advances, start, outA, size, i - start);
+                size += i - start;
+                continue;
+            }
+            float original = 0f;
+            for (int k = start; k < i; k++) {
+                original += advances[k];
+            }
+            float used = 0f;
+            for (int k = 0; k < shaped.glyphs().length; k++) {
+                outG[size] = shaped.glyphs()[k];
+                outA[size] = shaped.advances()[k];
+                outR[size] = shaped.rises()[k];
+                used += shaped.advances()[k];
+                size++;
+            }
+            slack += rtl ? original - used : 0f;
+            changed = true;
+        }
+        return new Laid(java.util.Arrays.copyOf(outG, size), java.util.Arrays.copyOf(outA, size),
+                java.util.Arrays.copyOf(outR, size), slack, changed);
     }
 
     /** Whether every offset is zero: the run paints along one line. */

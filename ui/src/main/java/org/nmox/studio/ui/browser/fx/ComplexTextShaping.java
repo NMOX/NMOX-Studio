@@ -217,7 +217,8 @@ public final class ComplexTextShaping {
         cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "PLACER",
                 "Ljava/util/function/Function;", null, null).visitEnd();
         // static void shapeRun(TextRun run, int n, int[] glyphs, float[] advances):
-        // positions from PLACER when it has them, else the advances as before
+        // when PLACER answers {int[] glyphs, float[] positions}, the run is built
+        // from those; else from the advances as before
         MethodVisitor pv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "shapeRun", SHAPE_RUN, null, null);
         pv.visitCode();
         Label asBefore = new Label();
@@ -241,10 +242,21 @@ public final class ComplexTextShaping {
         pv.visitVarInsn(Opcodes.ASTORE, 5);
         pv.visitVarInsn(Opcodes.ALOAD, 5);
         pv.visitJumpInsn(Opcodes.IFNULL, asBefore);
-        pv.visitVarInsn(Opcodes.ALOAD, 0);
-        pv.visitVarInsn(Opcodes.ILOAD, 1);
-        pv.visitVarInsn(Opcodes.ALOAD, 2);
         pv.visitVarInsn(Opcodes.ALOAD, 5);
+        pv.visitTypeInsn(Opcodes.CHECKCAST, "[Ljava/lang/Object;");
+        pv.visitVarInsn(Opcodes.ASTORE, 6);
+        pv.visitVarInsn(Opcodes.ALOAD, 6);
+        pv.visitInsn(Opcodes.ICONST_0);
+        pv.visitInsn(Opcodes.AALOAD);
+        pv.visitTypeInsn(Opcodes.CHECKCAST, "[I");
+        pv.visitVarInsn(Opcodes.ASTORE, 7);
+        pv.visitVarInsn(Opcodes.ALOAD, 0);
+        pv.visitVarInsn(Opcodes.ALOAD, 7);
+        pv.visitInsn(Opcodes.ARRAYLENGTH);
+        pv.visitVarInsn(Opcodes.ALOAD, 7);
+        pv.visitVarInsn(Opcodes.ALOAD, 6);
+        pv.visitInsn(Opcodes.ICONST_1);
+        pv.visitInsn(Opcodes.AALOAD);
         pv.visitTypeInsn(Opcodes.CHECKCAST, "[F");
         pv.visitInsn(Opcodes.ACONST_NULL);
         pv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, TEXT_RUN, RUN_SHAPE, "(I[I[F[I)V", false);
@@ -561,37 +573,40 @@ public final class ComplexTextShaping {
                     return 0f;
                 }
                 Object pg = platformFont.invoke(font);
-                float[] rises = placementReady ? new float[glyphs.length] : null;
-                float slack = ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g),
-                        text -> shape(text, pg), table[2][0], rises);
-                if (rises != null && !ComplexScripts.onBaseline(rises)) {
-                    remember(glyphs, rises);
+                if (!placementReady) {
+                    return ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g),
+                            text -> shape(text, pg), table[2][0]);
                 }
-                return slack;
+                ComplexScripts.Laid laid = ComplexScripts.layout(glyphs, advances, g -> charFor(table, g),
+                        text -> shape(text, pg));
+                if (laid == null || !laid.changed()) {
+                    return 0f;
+                }
+                remember(glyphs, laid);
+                return laid.slack();
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
         }
 
         /**
-         * The placement answer: {glyphs, advances} to the x/y positions of the
-         * run this thread just shaped off the baseline, or null to build the run
-         * from its advances as before. Never throws.
+         * The placement answer: {glyphs, advances} to {the laid-out glyphs, their
+         * x/y positions} for the run this thread just shaped, or null to build the
+         * run from its advances as before. Never throws.
          */
-        /** Holds a shaped run's offsets for the glyph-list build that follows on this thread. */
-        void remember(int[] glyphs, float[] rises) {
-            pending.set(new Object[]{glyphs, rises});
+        /** Holds a laid-out run for the glyph-list build that follows on this thread. */
+        void remember(int[] glyphs, ComplexScripts.Laid laid) {
+            pending.set(new Object[]{glyphs, laid});
         }
 
         Object place(Object[] args) {
             Object[] mine = pending.get();
-            if (mine == null || args == null || args.length < 2 || mine[0] != args[0]
-                    || !(args[1] instanceof float[] advances)) {
+            if (mine == null || args == null || args.length < 1 || mine[0] != args[0]) {
                 return null;
             }
             pending.remove();
-            float[] rises = (float[]) mine[1];
-            return advances.length == rises.length ? ComplexScripts.positions(advances, rises) : null;
+            ComplexScripts.Laid laid = (ComplexScripts.Laid) mine[1];
+            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.advances(), laid.rises())};
         }
 
         /** The hook's width answer: {font, glyph} to a Double, NaN for the font's own. Never throws. */

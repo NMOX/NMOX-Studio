@@ -128,18 +128,18 @@ class PrismBridgeTest {
     }
 
     @Test
-    @DisplayName("a shaped run's offsets reach only the glyph list built from that paint's own glyph array, once")
+    @DisplayName("a laid-out run reaches only the glyph list built from that paint's own glyph array, once")
     void placementAnswersOnlyTheSamePaint() throws Exception {
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         int[] glyphs = {1, 2, 3};
         float[] advances = {4f, 5f, 6f};
         assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // nothing shaped yet
-        bridge.remember(glyphs, new float[]{0f, -7f, 2f});
+        bridge.remember(glyphs, new ComplexScripts.Laid(new int[]{7, 8, 9, 10}, new float[]{4f, 5f, 6f, 1f},
+                new float[]{0f, -7f, 2f, 0f}, 0f, true));
         assertThat(bridge.place(new Object[]{new int[]{1, 2, 3}, advances})).isNull(); // an equal array is not this paint's
-        assertThat((float[]) bridge.place(new Object[]{glyphs, advances}))
-                .containsExactly(0f, 0f, 4f, -7f, 9f, 2f, 15f, 0f);
+        Object[] placed = (Object[]) bridge.place(new Object[]{glyphs, advances});
+        assertThat((int[]) placed[0]).containsExactly(7, 8, 9, 10);
+        assertThat((float[]) placed[1]).containsExactly(0f, 0f, 4f, -7f, 9f, 2f, 15f, 0f, 16f, 0f);
         assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // used up
-        bridge.remember(glyphs, new float[]{1f});
-        assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // lengths disagree
     }
 }

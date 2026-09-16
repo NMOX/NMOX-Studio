@@ -217,6 +217,8 @@ class ComplexTextShapingTest {
                 "java/lang/Object", null);
         cw.visitField(Opcodes.ACC_PUBLIC, "advances", "[F", null, null).visitEnd();
         cw.visitField(Opcodes.ACC_PUBLIC, "positions", "[F", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC, "gids", "[I", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC, "count", "I", null, null).visitEnd();
         constructor(cw);
         MethodVisitor adv = cw.visitMethod(Opcodes.ACC_PUBLIC, ComplexTextShaping.RUN_SHAPE,
                 ComplexTextShaping.RUN_SHAPE_DESC, null, null);
@@ -232,6 +234,12 @@ class ComplexTextShapingTest {
         pos.visitVarInsn(Opcodes.ALOAD, 0);
         pos.visitVarInsn(Opcodes.ALOAD, 3);
         pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "positions", "[F");
+        pos.visitVarInsn(Opcodes.ALOAD, 0);
+        pos.visitVarInsn(Opcodes.ALOAD, 2);
+        pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "gids", "[I");
+        pos.visitVarInsn(Opcodes.ALOAD, 0);
+        pos.visitVarInsn(Opcodes.ILOAD, 1);
+        pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "count", "I");
         pos.visitInsn(Opcodes.RETURN);
         pos.visitMaxs(0, 0);
         pos.visitEnd();
@@ -288,15 +296,18 @@ class ComplexTextShapingTest {
         assertThat(run.getField("advances").get(plain)).isSameAs(advances);
         assertThat(run.getField("positions").get(plain)).isNull();
 
-        float[] lifted = {0f, -5f, 3f, 2f, 7f, 0f};
+        int[] laid = {7, 8, 9};  // shaping took more glyphs than WebKit painted
+        float[] lifted = {0f, -5f, 3f, 2f, 7f, 0f, 9f, 0f};
         AtomicReference<Object[]> seen = new AtomicReference<>();
         hook.getField("PLACER").set(null, (Function<Object[], Object>) args -> {
             seen.set(args);
-            return args[0] == glyphs ? lifted : null;
+            return args[0] == glyphs ? new Object[]{laid, lifted} : null;
         });
         Object placed = build.invoke(null, glyphs, advances, 0f, 0f);
         assertThat(seen.get()).containsExactly(glyphs, advances);
         assertThat(run.getField("positions").get(placed)).isSameAs(lifted);
+        assertThat(run.getField("gids").get(placed)).isSameAs(laid);
+        assertThat(run.getField("count").getInt(placed)).isEqualTo(3);
         assertThat(run.getField("advances").get(placed)).isNull();
 
         float[] other = {9f};
