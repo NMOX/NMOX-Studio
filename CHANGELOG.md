@@ -38,6 +38,40 @@ All notable changes to NMOX Studio are documented here. The format follows
   the docs forge (`-Dnmox.faceplates=<dir>`), because a rectangle test cannot
   say whether a plate READS well — the gate was green on the day VERITAS
   shipped its collision, and the picture is what settled every call here.
+- **The windows the tutorials show now carry data, in the reader's
+  language.** v2.162.0 painted the guide's six live states per language; the
+  tutorials still showed eight English windows under translated sentences —
+  a Task Board mid-sprint, its Overview and Standup, the Infra Designer, DB
+  Studio, API Studio, Presentation Mode and the editor tab. Each is now staged
+  by the module that owns it, through a forge-only `core.spi.DocsScene` seam,
+  because the forge can reach neither the board's package-private writer nor
+  three modules it does not depend on. The CONTENT — card titles, customers
+  and cities, node labels — comes from `docs/i18n/forge-fixtures.json`, written
+  per language as that reader's own world rather than translated English
+  (Lucía in Sevilla, Дарья in Казань, the SQL identical everywhere because it
+  is code). The product's own seeds stay the product's: column names and API
+  Studio's starter collection come from each language's bundle.
+  `ForgeFixturesGateTest` fails the build when a guide's language is missing,
+  incomplete, or English in disguise.
+- **Every NMOX module loads its own org.json, and the forge learned it the hard
+  way.** The first staged run stopped dead after KVASIR's picture: the fixture
+  reader in core handed a `JSONObject` to scenes in four other modules, which
+  in the assembled app is a different class — a linkage error unit tests on
+  one flat classpath could never raise. `DocsFixtures` now returns only JDK
+  types, held by `DocsFixturesTest`; a scene that throws an Error is skipped
+  and logged instead of silently ending the run; and `docs-shots.sh` leashes
+  the app rather than being leashed whole, so the log copy and the report
+  always run. The run that hid it also reported exit 0, through a `| tail`.
+- **The pictures found two defects every user meets.** DB Studio's grid left
+  each column at Swing's 75px, so customers read `Noor H...` beside empty
+  space; `core.util.TableColumns` fits a column to its widest sampled value,
+  capped so one blob cannot push the rest away. A Task Board card longer than
+  its column was cut at the edge with no ellipsis; a card is a sentence, so it
+  wraps, and its text-area renderer paints no HTML at all.
+- **KVASIR's picture is answered by Claude.** The forge seeds the Anthropic
+  provider and launches through an interactive login shell, because the key
+  lives in `~/.zshrc`; an earlier run launched without it and KVASIR asked for
+  a key in the picture.
 - **A modifier letter stopped posing as an apostrophe.** A translator reading
   Ukrainian for register found `U+02BC` in one infra value where the
   conventions require `U+2019` — the only one in the repository. It is a
