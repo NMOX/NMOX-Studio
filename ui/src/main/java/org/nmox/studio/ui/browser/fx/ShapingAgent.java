@@ -12,10 +12,15 @@ import java.lang.instrument.Instrumentation;
  */
 public final class ShapingAgent {
 
-    /** Set by the JVM's call to {@link #agentmain}; read reflectively. */
-    public static volatile Instrumentation instrumentation;
+    /** Set only by the JVM's call to {@link #agentmain}. */
+    private static volatile Instrumentation instrumentation;
 
     private ShapingAgent() {
+    }
+
+    /** The JVM's Instrumentation once attached, else null; read reflectively. */
+    public static Instrumentation instrumentation() {
+        return instrumentation;
     }
 
     /** Called by the JVM when the agent is attached. */
