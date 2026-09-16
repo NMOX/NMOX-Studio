@@ -263,6 +263,8 @@ public final class ComplexScripts {
      * (v2.168.0): each space gives up, or takes on, up to half its width in
      * proportion, and only what the spaces cannot absorb moves the run's far
      * edge (a right-to-left run keeps its right edge, an Indic run its left).
+     * Spaces at the kept edge are left as measured: a Pashto line painted its
+     * {@code npm} against the word beside it when that space gave up half.
      * Until then all of it moved the far edge, so over a long right-to-left
      * stretch the words' few pixels each added up to a whole space and a Sindhi
      * line painted {@code ۽} against the {@code npm} beside it. Anchoring each
@@ -337,6 +339,19 @@ public final class ComplexScripts {
                     size++;
                 }
                 changed = true;
+            }
+        }
+        // spaces at the edge the run keeps are its neighbour's too (the space
+        // between a right-to-left word and the npm beside it): they stay as measured
+        if (rtl) {
+            for (int k = size - 1; k >= 0 && isSpace[k]; k--) {
+                isSpace[k] = false;
+                spaces -= outW[k];
+            }
+        } else {
+            for (int k = 0; k < size && isSpace[k]; k++) {
+                isSpace[k] = false;
+                spaces -= outW[k];
             }
         }
         float excess = painted - measured; // positive: the words came out wider than WebKit's box

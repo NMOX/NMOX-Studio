@@ -232,6 +232,22 @@ class ComplexScriptsTest {
     }
 
     @Test
+    @DisplayName("a space at the edge the run keeps stays as measured; the neighbour beside it is another run's")
+    void keptEdgeSpacesStayMeasured() {
+        // visual: "بت" + " " — the trailing space sits at a right-to-left run's kept right edge
+        int[] g = glyphs("بت" + " ");
+        float[] a = {10f, 10f, 6f};
+        ComplexScripts.Laid laid = ComplexScripts.layout(g, a, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
+        assertThat(laid.xs()).containsExactly(-4f, 8f, 20f); // the space keeps 20..26; the 4 spill left
+        // an Indic run keeps its left edge, so a leading space is the one that stays
+        int[] h = glyphs(" " + "कम");
+        ComplexScripts.Laid indic = ComplexScripts.layout(h, new float[]{6f, 10f, 10f}, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
+        assertThat(indic.xs()).containsExactly(0f, 6f, 18f);
+    }
+
+    @Test
     @DisplayName("a lone letter is shaped too, and its real width joins the sum")
     void loneLetterIsShaped() {
         int[] g = glyphs("ڭ" + " " + "A");
