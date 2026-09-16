@@ -241,12 +241,16 @@ public final class ComplexScripts {
     /**
      * A whole painted run laid out anew: its glyphs, where each is drawn along
      * the run and how far off the baseline, and the run's measured width.
-     * {@code changed} is false when nothing in it was shaped. Since v2.168.0 each
-     * glyph carries its own x instead of an advance, so a word's placement no
-     * longer depends on the words painted before it.
+     * {@code changed} is false when nothing in it was shaped.
      */
     public record Laid(int[] glyphs, float[] xs, float[] rises, float width, boolean changed) {
     }
+
+    /**
+     * How much of its own width a space may give up or take on (v2.168.0) so
+     * a paint call's words keep its measured width: half.
+     */
+    static final float SPACE_GIVES = 0.5f;
 
     /**
      * Lays a painted run out for a glyph list built from positions rather than
@@ -254,26 +258,34 @@ public final class ComplexScripts {
      * characters (a Nastaliq letter and its dots are separate glyphs) and its
      * glyphs may leave the baseline (vowel marks, Nastaliq's descending words).
      *
-     * <p>Every segment keeps the reading edge of the box WebKit measured for it
-     * (v2.168.0): an Arabic-script word its right edge, an Indic word its left.
-     * Until then the whole paint call kept one edge, so each word's few pixels of
-     * estimate error added up along a long right-to-left stretch until a space
-     * disappeared: a Sindhi paragraph painted {@code ۽} against {@code npm}.
-     * Now a word can miss only by its own error, into the space beside it. A
-     * lone letter is a segment too: its plain glyph is its isolated form, wider
-     * than the joined width WebKit measured it at, and it keeps its reading edge
-     * the same way. Everything else is drawn where WebKit put it.
+     * <p>The words are laid end to end, and the difference between their shaped
+     * widths and the widths WebKit measured is absorbed by the spaces in the run
+     * (v2.168.0): each space gives up, or takes on, up to half its width in
+     * proportion, and only what the spaces cannot absorb moves the run's far
+     * edge (a right-to-left run keeps its right edge, an Indic run its left).
+     * Until then all of it moved the far edge, so over a long right-to-left
+     * stretch the words' few pixels each added up to a whole space and a Sindhi
+     * line painted {@code ۽} against the {@code npm} beside it. Anchoring each
+     * word at its own edge was tried first: every word measured short then ate
+     * the space beside it. A lone letter is shaped too, so it takes its real
+     * isolated width into the sum.
+     *
+     * @param space the glyph a space paints as
      */
     public static Laid layout(int[] glyphs, float[] advances, IntUnaryOperator charFor,
-            Function<String, Shaped> shaper) {
+            Function<String, Shaped> shaper, int space) {
         if (glyphs == null || advances == null || glyphs.length != advances.length) {
             return null;
         }
         int[] outG = new int[glyphs.length];
-        float[] outX = new float[glyphs.length];
+        float[] outW = new float[glyphs.length]; // each output glyph's advance, spaces as measured
         float[] outR = new float[glyphs.length];
+        boolean[] isSpace = new boolean[glyphs.length];
         int size = 0;
-        float at = 0f; // where WebKit's measured box for the next glyph starts
+        float measured = 0f;
+        float painted = 0f;
+        float spaces = 0f;
+        boolean rtl = false;
         boolean changed = false;
         int i = 0;
         while (i < glyphs.length) {
@@ -286,50 +298,61 @@ public final class ComplexScripts {
                     i++;
                 }
             }
-            float original = 0f;
-            for (int k = start; k < i; k++) {
-                original += advances[k];
-            }
             Shaped shaped = null;
-            boolean rtl = false;
             if (shapeable) {
-                rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
-                shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, rtl)));
+                boolean segmentRtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
+                shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, segmentRtl)));
+                if (shaped != null && !changed) {
+                    rtl = segmentRtl; // WebKit paints one direction per call
+                }
             }
             int need = size + (shaped == null ? i - start : shaped.glyphs().length);
             if (need > outG.length) {
                 int grown = Math.max(need, outG.length * 2);
                 outG = java.util.Arrays.copyOf(outG, grown);
-                outX = java.util.Arrays.copyOf(outX, grown);
+                outW = java.util.Arrays.copyOf(outW, grown);
                 outR = java.util.Arrays.copyOf(outR, grown);
+                isSpace = java.util.Arrays.copyOf(isSpace, grown);
+            }
+            for (int k = start; k < i; k++) {
+                measured += advances[k];
             }
             if (shaped == null) {
-                float x = at;
                 for (int k = start; k < i; k++) {
                     outG[size] = glyphs[k];
-                    outX[size] = x;
-                    x += advances[k];
+                    outW[size] = advances[k];
+                    isSpace[size] = glyphs[k] == space && !shapeable;
+                    if (isSpace[size]) {
+                        spaces += advances[k];
+                    }
+                    painted += advances[k];
                     size++;
                 }
             } else {
-                float used = 0f;
-                for (float a : shaped.advances()) {
-                    used += a;
-                }
-                float x = rtl ? at + original - used : at;
                 for (int k = 0; k < shaped.glyphs().length; k++) {
                     outG[size] = shaped.glyphs()[k];
-                    outX[size] = x;
+                    outW[size] = shaped.advances()[k];
                     outR[size] = shaped.rises()[k];
-                    x += shaped.advances()[k];
+                    painted += shaped.advances()[k];
                     size++;
                 }
                 changed = true;
             }
-            at += original;
         }
-        return new Laid(java.util.Arrays.copyOf(outG, size), java.util.Arrays.copyOf(outX, size),
-                java.util.Arrays.copyOf(outR, size), at, changed);
+        float excess = painted - measured; // positive: the words came out wider than WebKit's box
+        float absorbed = spaces == 0f ? 0f : Math.max(-SPACE_GIVES * spaces, Math.min(SPACE_GIVES * spaces, excess));
+        float[] outX = new float[size];
+        float x = rtl ? -(excess - absorbed) : 0f;
+        for (int k = 0; k < size; k++) {
+            outX[k] = x;
+            float w = outW[k];
+            if (isSpace[k] && spaces != 0f) {
+                w -= absorbed * (outW[k] / spaces);
+            }
+            x += w;
+        }
+        return new Laid(java.util.Arrays.copyOf(outG, size), outX, java.util.Arrays.copyOf(outR, size),
+                measured, changed);
     }
 
     /** Whether every offset is zero: the run paints along one line. */

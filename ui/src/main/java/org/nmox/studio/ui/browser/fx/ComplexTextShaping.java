@@ -580,12 +580,12 @@ public final class ComplexTextShaping {
                             text -> shape(text, pg), table[2][0]);
                 }
                 ComplexScripts.Laid laid = ComplexScripts.layout(glyphs, advances, g -> charFor(table, g),
-                        text -> shape(text, pg));
+                        text -> shape(text, pg), table[2][0]);
                 if (laid == null || !laid.changed()) {
                     return 0f;
                 }
                 remember(glyphs, laid);
-                return 0f; // every word is placed at its own edge; the call itself does not move
+                return 0f; // the laid-out positions already carry where the run starts
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
