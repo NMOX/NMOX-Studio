@@ -48,7 +48,7 @@ class ComplexTextShapingTest {
         }
     }
 
-    private static byte[] emptyClass(String name) {
+    static byte[] emptyClass(String name) {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, name, null, "java/lang/Object", null);
         constructor(cw);
@@ -67,7 +67,7 @@ class ComplexTextShapingTest {
     }
 
     /** WebKit's context in miniature: both drawString overloads record where they paint. */
-    private static byte[] context() {
+    static byte[] context() {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
         cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, ComplexTextShaping.CONTEXT, null,
                 "java/lang/Object", null);

@@ -50,6 +50,21 @@ class PrismBridgeTest {
     }
 
     @Test
+    @DisplayName("the transformer rewrites the context's glyph draw, and refuses bytes it cannot read")
+    void transformerRewritesTheContextAndRefusesGarbage() {
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        byte[] out = t.transform(null, null, ComplexTextShaping.CONTEXT, null, null, ComplexTextShapingTest.context());
+        assertThat(out).isNotNull();
+        assertThat(t.applied).isTrue();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        assertThat(none.transform(null, null, ComplexTextShaping.CONTEXT, null, null,
+                ComplexTextShapingTest.emptyClass(ComplexTextShaping.CONTEXT))).isNull();
+        assertThat(none.applied).isFalse();
+        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.CONTEXT, null, null,
+                new byte[]{1, 2, 3})).isNull();
+    }
+
+    @Test
     @DisplayName("the agent's handoff gives the handle once, and a newer attach replaces an unclaimed one")
     void handoffIsOneShot() {
         ShapingAgent.claim();
