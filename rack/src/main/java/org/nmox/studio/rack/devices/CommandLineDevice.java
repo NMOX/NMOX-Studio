@@ -25,7 +25,7 @@ public class CommandLineDevice extends CommandDevice {
         RackButton run = place(new RackButton("RUN", RackStyle.GO), RackStyle.TRANSPORT_X, 52);
         run.setCommandPreview(this::commandPreview);
         RackButton stop = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 52);
-        commandLcd = place(new LcdDisplay(400, 1), 180, 52);
+        commandLcd = place(new LcdDisplay(420, 1), 44, 94);
         commandLcd.setText("");
         commandLcd.setEditable("Command (argv, quotes ok — no shell)");
 

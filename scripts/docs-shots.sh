@@ -87,7 +87,11 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   # KVASIR's consent lives in the userdir (v2.63.0); a fresh one has none
   PREFS="$UD/config/Preferences/org/nmox/NMOX/Studio"
   mkdir -p "$PREFS"
-  printf 'kvasir.external.consent=true\n' > "$PREFS/rack.properties"
+  # Claude is the provider the forge asks (David's call); the key reaches the
+  # app only through an interactive shell, so the launch below runs under
+  # `zsh -ilc` — ~/.zshrc is where CLAUDE_API_KEY lives and a plain exec of
+  # the launcher inherits this script's non-interactive environment instead
+  printf 'kvasir.external.consent=true\nkvasir.provider=anthropic\n' > "$PREFS/rack.properties"
   # the scenes' own content, in the language being painted (v2.163.0): the
   # cards on the board, the rows in the grid, the labels on the canvas
   FIXTURES="$(cd "$(dirname "$0")/.." && pwd)/docs/i18n/forge-fixtures.json"
@@ -102,7 +106,10 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
 fi
 echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throwaway userdir + cachedir) =="
 # shellcheck disable=SC2086 — a locale code and the staged flags have no spaces; unquoted on purpose
-"$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
+# an interactive login zsh so the app sees the keys ~/.zshrc exports; "$@"
+# keeps every argument's quoting intact through the hop
+zsh -ilc 'exec "$@"' nmox-forge \
+  "$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
   -J-Dnmox.shots.dir="$OUT_ABS" \
   -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \

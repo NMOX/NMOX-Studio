@@ -33,15 +33,15 @@ public class DatabaseDevice extends CommandDevice {
 
         dbTypeKnob = place(new Knob("DB TYPE", DB_TYPES, 0), 44, 40);
         
-        connLcd = place(new LcdDisplay(260, 1), 120, 52);
+        connLcd = place(new LcdDisplay(220, 1), 120, 52);
         connLcd.setText("localhost/db_name");
         connLcd.setEditable("Connection URL or database name");
 
-        RackButton ping = place(new RackButton("PING", RackStyle.GO), 400, 52);
-        RackButton migrate = place(new RackButton("MIGRATE", new Color(99, 197, 70)), 464, 52);
+        RackButton ping = place(new RackButton("PING", RackStyle.GO), 350, 52);
+        RackButton migrate = place(new RackButton("MIGRATE", new Color(99, 197, 70)), 414, 52);
         
-        connectedLed = place(new Led("CONNECTED", RackStyle.GO), 530, 58);
-        errorLed = place(new Led("ERROR", RackStyle.STOP), 580, 58);
+        connectedLed = place(new Led("CONNECTED", RackStyle.GO), 350, 100);
+        errorLed = place(new Led("ERROR", RackStyle.STOP), 424, 100);
 
         ping.addActionListener(e -> ping());
         migrate.addActionListener(e -> migrate());

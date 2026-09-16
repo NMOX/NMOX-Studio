@@ -45,7 +45,7 @@ public class TunnelDevice extends CommandDevice {
         urlLcd = place(new LcdDisplay(150, 1), 328, 52);
         urlLcd.getAccessibleContext().setAccessibleName("public URL");
         urlLcd.setText("—");
-        liveLed = place(new Led("LIVE", new Color(156, 89, 209)), 442, 58);
+        liveLed = place(new Led("LIVE", new Color(156, 89, 209)), 442, 86);
 
         open.addActionListener(e -> primaryAction());
         close.addActionListener(e -> stopByUser());

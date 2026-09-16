@@ -36,22 +36,22 @@ public class BenchDevice extends CommandDevice {
     private volatile long lastReqPerSec = -1;
 
     public BenchDevice() {
-        super("bench", "GAUNTLET", "LOAD BENCH", new Color(224, 122, 47), 2);
+        super("bench", "GAUNTLET", "LOAD BENCH", new Color(224, 122, 47), 3);
 
         durationKnob = place(new Knob("RUN FOR", DURATIONS, 0), 180, 40);
         connectionsKnob = place(new Knob("CONNS", CONNECTIONS, 0), 254, 40);
-        urlLcd = place(new LcdDisplay(150, 1), 328, 46);
+        urlLcd = place(new LcdDisplay(150, 1), 180, 126);
         urlLcd.setText("http://localhost:5173");
         urlLcd.setEditable("URL to bench");
         RackButton fire = place(new RackButton("FIRE", RackStyle.GO), RackStyle.TRANSPORT_X, 46);
         fire.setCommandPreview(this::commandPreview);
         RackButton stopBench = place(new RackButton("STOP", RackStyle.STOP), RackStyle.TRANSPORT_STOP_X, 46);
         stopBench.addActionListener(e -> stopByUser());
-        resultLcd = place(new LcdDisplay(120, 1), 328, 82);
+        resultLcd = place(new LcdDisplay(120, 1), 340, 126);
         resultLcd.getAccessibleContext().setAccessibleName("throughput");
         resultLcd.setText("—");
-        reqMeter = place(new VuMeter("REQ/S", false), 460, 82);
-        minKnob = place(new Knob("MIN R/S", MINIMUMS, 0), 560, 40);
+        reqMeter = place(new VuMeter("REQ/S", false), 482, 124);
+        minKnob = place(new Knob("MIN R/S", MINIMUMS, 0), 328, 40);
         minKnob.setToolTipText("Throughput floor: below it, FAIL fires instead of OK");
 
         fire.addActionListener(e -> primaryAction());

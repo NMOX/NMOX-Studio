@@ -64,10 +64,10 @@ public class TestDevice extends CommandDevice {
         coverageSwitch = place(new ToggleSwitch("COVER", false), 254, 42);
         covMinKnob = place(new Knob("MIN COV", COVERAGE_MINIMUMS, 0), 324, 40);
         covMinKnob.setToolTipText("Coverage floor (needs COVER on): below it, FAIL fires instead of OK");
-        tallyLcd = place(new LcdDisplay(160, 1), 44, 82);
+        tallyLcd = place(new LcdDisplay(130, 1), 44, 94);
         tallyLcd.getAccessibleContext().setAccessibleName("test tally");
         tallyLcd.setText("P:0 F:0");
-        RackButton failuresButton = place(new RackButton("FAILURES", RackStyle.QUERY), 220, 84);
+        RackButton failuresButton = place(new RackButton("FAILURES", RackStyle.QUERY), 400, 52);
         failuresButton.setToolTipText("The failing tests by name — with one-click re-run of just those");
 
         run.addActionListener(e -> primaryAction());

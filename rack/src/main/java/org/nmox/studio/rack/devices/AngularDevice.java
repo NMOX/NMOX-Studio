@@ -43,14 +43,14 @@ public class AngularDevice extends CommandDevice {
         super("angular", "HALO", "ANGULAR CONSOLE", new Color(0xDD, 0x00, 0x31), 3);
 
         // ---- row 1: version currency ----
-        versionLcd = place(new LcdDisplay(210, 1), 44, 40);
+        versionLcd = place(new LcdDisplay(180, 1), 44, 40);
         versionLcd.getAccessibleContext().setAccessibleName("version");
         versionLcd.setText("v? → ?");
         versionLcd.setToolTipText("installed @angular/core → latest on the registry");
-        currentLed = place(new Led("CURRENT", RackStyle.GO), 262, 46);
-        outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 318, 46);
-        RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 382, 40);
-        RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 446, 40);
+        currentLed = place(new Led("CURRENT", RackStyle.GO), 232, 46);
+        outdatedLed = place(new Led("OUTDATED", RackStyle.MUTATE), 288, 46);
+        RackButton check = place(new RackButton("CHECK", RackStyle.QUERY), 352, 40);
+        RackButton update = place(new RackButton("UPDATE", RackStyle.MUTATE), 416, 40);
 
         // ---- row 2: run/build/test + schematics ----
         RackButton serve = place(new RackButton("SERVE", RackStyle.GO), 44, 96);
