@@ -88,7 +88,10 @@ class TranslatedShotsGateTest {
             "experiment-walkthrough.png", "kvasir-explain.png", "spaces-shelf.png",
             // v2.163.0: the tutorials' data-bearing windows, one fixture per language
             "task-board.png", "sprint-overview.png", "standup.png", "infra-designer.png",
-            "db-studio.png", "api-studio.png", "presentation-mode.png", "editor-screenshot-2x.png");
+            "db-studio.png", "api-studio.png", "presentation-mode.png", "editor-screenshot-2x.png",
+            // v2.164.0: the tutorials' four live scenes — a filtered Docker daemon,
+            // an anvil chain, a served page, a paused Node run
+            "docker-panel.png", "contract-studio.png", "story-06-devtools-pick.png", "debug-javascript.png");
 
     @Test
     @DisplayName("every language with forge tab shots also has every staged shot")
