@@ -4,6 +4,55 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.165.0] - 2026-09-16
+
+**The Browser paints Arabic, Persian and Hindi shaped: letters joined, vowel signs and conjuncts where they belong.**
+
+- **Ledger 99, explained and closed.** v2.164.0 photographed the Browser
+  drawing every Arabic letter in its isolated form and could not say why. It
+  is OpenJFX's WebKit, on every release: the same page paints unjoined Arabic
+  and unreordered Devanagari on 17, 21, 24 and 26. The port paints text
+  through WebKit's simple path, whose shaping hook does nothing outside
+  CoreText and HarfBuzz builds (and 25 onward pin that path for Java). A small
+  agent that logged the glyphs WebKit actually painted settled it: each was
+  the character's plain glyph, in visual order, while the same font shaped
+  correctly in every JavaFX control. No page CSS reaches it.
+- **The fix changes one method in memory and no OpenJFX file.** On its first
+  open the Browser attaches its own agent to its own process (the launcher
+  conf now carries `-Djdk.attach.allowAttachSelf=true` and
+  `-XX:+EnableDynamicAgentLoading`), opens the JavaFX packages it reads,
+  defines a one-method hook inside `javafx.web`, and rewrites
+  `WCGraphicsPrismContext.drawString(WCFont, int[], float[], …)` with the
+  platform's own ASM so it first hands its glyphs over. `ComplexScripts` finds
+  the runs of Arabic or Indic glyphs, maps them back to text, shapes them with
+  JavaFX's own text layout and writes the shaped glyphs back — an Arabic run
+  keeping its right edge, a Devanagari run its left. A JavaFX without that
+  method, a runtime without `jdk.attach`, or a launcher without the flags
+  leaves the page painting exactly as before, said once in the log.
+- **Proven by running it.** `ComplexScriptsTest` holds the reordering,
+  alignment and refusal rules; `ComplexTextShapingTest` loads a stand-in
+  WebKit context, rewrites it exactly as the installer does, and paints
+  through it; both laws are mutation-proven by name.
+- **The first in-app run found what no unit test could.** The Browser posts
+  the install as a method reference from another package, and the install's
+  result type was package-private: javac accepted it, the JVM refused it with
+  an `IllegalAccessError`, and the Browser never built its WebView.
+  `ShapingInstallReferenceTest` runs that reference from the Browser's own
+  package and reproduces the exact error under the mutant.
+- **SpotBugs shaped the agent.** Three findings in a row — a public field,
+  then any static field, holding the JVM's Instrumentation — ended in a
+  one-shot handoff: the handle waits in a one-slot queue and is gone once
+  claimed.
+- **What remains, and why.** WebKit still measures words unshaped, so a
+  shaped Arabic phrase inside an English line sits a little apart from the
+  words before it. Installs updated through the update center keep unjoined
+  text until they reinstall, because the conf ships only with installers.
+- The Arabic and Hindi DevTools pictures are re-forged; `PackagedConfGateTest`
+  holds the two conf flags.
+- `DocsDockerViewGateTest` waits up to two minutes for its proxy: the v2.164.0
+  macOS lane needed about 35 seconds per interpreter start against a 45-second
+  leash.
+
 ## [2.164.0] - 2026-09-16
 
 **The tutorials' last English pictures — a live Docker container, a compiled contract on a local chain, a picked element and a paused breakpoint — are painted in every language, and no docs picture can show a container that is not the forge's.**
@@ -21842,6 +21891,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.165.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.164.0...v2.165.0
 [2.164.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.163.0...v2.164.0
 [2.163.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.162.0...v2.163.0
 [2.162.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.161.0...v2.162.0

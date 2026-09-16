@@ -1,5 +1,19 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.165.0 — the ceiling that was an engine.
+Ledger 99 went from "seen, not explained" to measured to closed in one
+release. The measurement ladder is the lesson: a plain FX Label shaped the
+text (so not the font), a standalone WebView did not (so not our embedding),
+FX 24, 21 and 17 did not either (so not a recent regression, and reading the
+source had suggested otherwise — the source was right about the switch and
+wrong about the cause), and an agent logging the painted glyph IDs gave the
+answer no reading could: plain glyphs, visual order. The fix lives where the
+evidence pointed, one method rewritten in memory. Two laws. **A method
+reference across packages checks the target's types at runtime, not compile
+time** — the first in-app run died on a package-private return type javac had
+accepted. **SpotBugs was right three times running** about a handle that can
+rewrite any class; the answer was a one-shot handoff, not an exclusion.*
+
 *Currency addendum 2026-09-16, at v2.164.0 — the pictures that needed a live
 service. The last four English-only tutorial scenes (Docker Panel, Contract
 Studio, a hit breakpoint, the DevTools pick) are DocsScenes now, and the forge

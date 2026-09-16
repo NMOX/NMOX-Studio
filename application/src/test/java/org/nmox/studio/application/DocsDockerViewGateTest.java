@@ -69,9 +69,10 @@ class DocsDockerViewGateTest {
                 String.valueOf(port), sock.toString())
                 .redirectErrorStream(true).redirectOutput(log.toFile()).start();
         // a cold CI runner can take seconds to start an interpreter; the first
-        // macOS run gave up at 10 s and could not say why, so the leash is
-        // longer and a proxy that exits or never listens reports its own output
-        long until = System.currentTimeMillis() + 45_000;
+        // macOS run gave up at 10 s and could not say why, and the passing run
+        // needed ~35 s per start against a 45 s leash (v2.164.0) — so the leash
+        // is generous, and a proxy that exits or never listens reports its output
+        long until = System.currentTimeMillis() + 120_000;
         while (System.currentTimeMillis() < until) {
             try (var probe = new java.net.Socket("127.0.0.1", port)) {
                 return;

@@ -20,26 +20,41 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
-## Open — recorded by v2.164.0 (the live scenes in every language)
+## Closed by v2.165.0 (the Browser shapes complex scripts)
 
-### 99. The in-app Browser paints Arabic letters unjoined
+### 99. The in-app Browser paints Arabic letters unjoined — CLOSED
 
-**Seen, not yet explained.** The v2.164.0 forge painted the DevTools scene in
-Arabic, and every Arabic word on the served page is drawn with each letter in
-its isolated form, in the right order, never joined — `تحميصات الأسبوع ده`
-reads as a row of separate letters. Hebrew on the same page, which needs no
-joining, is correct. Naming a system Arabic font (`Geeza Pro`, then
-`SF Arabic`) instead of the page's Georgia produced the same unjoined letters
-in the new face, so the page's font is ruled out: the shaping step is missing
-somewhere in the JavaFX WebView path (FX 26 on the bundled Zulu 25), or in how
-its frame reaches the Swing paint the forge photographs.
+**What it was.** Recorded by v2.164.0 as seen but unexplained. Measured
+since: OpenJFX's WebKit never shapes complex scripts, on any release —
+the same page paints unjoined Arabic and unreordered Devanagari on 17,
+21, 24 and 26. The port paints every run through WebKit's simple text
+path, whose shaping hook (`Font::applyTransforms`) is a no-op outside
+CoreText and HarfBuzz builds, and 25 onward also hard-code
+`s_codePath = Simple` for the Java platform. A glyph-logging agent on
+`WCGraphicsPrismContext.drawString` proved it: the painted glyphs were
+each character's plain cmap glyph, reversed into visual order, while
+the same font shaped correctly in every JavaFX control. Page CSS
+(`text-rendering`, `font-feature-settings`, a system Arabic font)
+changes nothing.
 
-**Why it is not fixed here.** The two candidates need different instruments:
-a standalone FX `WebView` in its own `Stage` on the same runtime decides
-whether WebKit shapes Arabic at all (upstream's to fix if not), and a real
-screen capture of the running Browser decides whether the forge's paint path
-is the one losing it. Neither is a forge change. The Arabic picture ships as
-the product paints it, which is what a translated tutorial should show.
+**How it closed** (David chose the in-memory agent over shipping a
+patched `javafx.web` or reporting upstream only). The Browser attaches
+its own agent to its own process on first open (`ComplexTextShaping`,
+enabled by `-Djdk.attach.allowAttachSelf=true` and
+`-XX:+EnableDynamicAgentLoading` in the launcher conf), opens the JavaFX
+packages it reads, defines a one-method hook inside `javafx.web`, and
+rewrites that one draw method with ASM so it hands its glyphs to
+`ComplexScripts`: runs of Arabic or Indic glyphs are mapped back to text,
+shaped by JavaFX's own text layout, and written back in place. No
+OpenJFX file changes. Every refusal leaves the page painting as before.
+
+**The one trade-off that remains.** WebKit still MEASURES the unshaped
+glyphs, so a shaped word is narrower than the box WebKit gave it: an
+Arabic run keeps its right edge and a Devanagari run its left, and the
+difference shows as extra space on the other side — invisible in a
+right-to-left page, a small gap before an Arabic phrase inside an English
+line. Installs whose conf predates v2.165.0 (update-center updates) keep
+unjoined text until a reinstall, the v1.256.0 conf timing law.
 
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 

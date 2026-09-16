@@ -155,6 +155,13 @@
             <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- v2.165.0: the Browser's complex-script shaping rewrites one JavaFX
+             method in memory; the platform already ships ASM as a public module -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-libs-asm</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <!-- JavaFX (v1.206.0, the Browser DevTools engine): the bundled
              runtimes have carried the OpenJFX jmods since v1.199.0, and
