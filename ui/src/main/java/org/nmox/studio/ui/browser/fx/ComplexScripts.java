@@ -26,8 +26,17 @@ public final class ComplexScripts {
     private ComplexScripts() {
     }
 
-    /** Shaped glyphs in visual order with their advances. */
-    public record Shaped(int[] glyphs, float[] advances) {
+    /**
+     * Shaped glyphs in visual order with their advances and their vertical
+     * offsets from the baseline (screen direction: positive is down). Vowel
+     * marks sit above or below their letters and Nastaliq steps each word down
+     * its line; a Naskh letter's offset is zero.
+     */
+    public record Shaped(int[] glyphs, float[] advances, float[] rises) {
+        /** A run whose every glyph sits on the baseline. */
+        public Shaped(int[] glyphs, float[] advances) {
+            this(glyphs, advances, new float[glyphs.length]);
+        }
     }
 
     /** Arabic, Arabic Supplement and Arabic Extended-A: joined, right to left. */
@@ -40,9 +49,21 @@ public final class ComplexScripts {
         return cp >= 0x0900 && cp <= 0x0D7F;
     }
 
-    /** Every code point this core shapes. */
+    /**
+     * Every code point this core shapes: the letters and marks of those
+     * scripts (v2.167.0). A digit or a punctuation mark never joins, and a
+     * number inside a right-to-left line already arrives left to right, so
+     * reversing it with the letters around it painted {@code ١٢٣} as
+     * {@code ٣٢١}; they stay where WebKit put them, measured by the font.
+     */
     public static boolean shapes(int cp) {
-        return rightToLeft(cp) || leftToRight(cp);
+        return (rightToLeft(cp) || leftToRight(cp)) && letterOrMark(cp);
+    }
+
+    private static boolean letterOrMark(int cp) {
+        int type = Character.getType(cp);
+        return Character.isLetter(cp) || type == Character.NON_SPACING_MARK
+                || type == Character.COMBINING_SPACING_MARK || type == Character.ENCLOSING_MARK;
     }
 
     /** The code point ranges a glyph lookup table needs, inclusive pairs. */
@@ -71,6 +92,17 @@ public final class ComplexScripts {
     static final double INDIC_SHARE = 0.72;
 
     /**
+     * {@link #ARABIC_TOWARD_FINAL} for a Nastaliq font (v2.167.0), whose words
+     * climb and descend instead of running along a line. Over 42 Urdu words in
+     * Noto Nastaliq Urdu at 26px the shaped total was 1654px, the medial forms
+     * 1113 and the final 2329. Blends from 0.25 to 0.5 all land within a
+     * word-average of 9-10px, the per-letter estimate's ceiling for a script
+     * this contextual; at 0.25, 27 words came out more than 3px short, at 0.5,
+     * 17. Short paints over the neighbour, so 0.5.
+     */
+    static final double NASTALIQ_TOWARD_FINAL = 0.5;
+
+    /**
      * The width WebKit should MEASURE a glyph at (v2.166.0), or NaN to keep
      * the font's own. WebKit lays text out from one width per glyph with no
      * context, and for these scripts the font's width is the wrong one: an
@@ -86,6 +118,18 @@ public final class ComplexScripts {
      */
     public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
             java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain) {
+        return measuredWidth(cp, medial, finalForm, plain, false);
+    }
+
+    /**
+     * As {@link #measuredWidth(int, java.util.function.IntToDoubleFunction,
+     * java.util.function.IntToDoubleFunction, java.util.function.IntToDoubleFunction)},
+     * for a font whose Arabic letters leave the baseline when joined
+     * ({@code stacking}, a Nastaliq face) or keep to it (a Naskh face).
+     */
+    public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
+            java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain,
+            boolean stacking) {
         if (!shapes(cp)) {
             return Double.NaN;
         }
@@ -96,7 +140,8 @@ public final class ComplexScripts {
         if (rightToLeft(cp)) {
             double m = medial.applyAsDouble(cp);
             double f = finalForm.applyAsDouble(cp);
-            return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + ARABIC_TOWARD_FINAL * (f - m);
+            double k = stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
+            return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
         return Double.isNaN(p) ? Double.NaN : INDIC_SHARE * p;
@@ -141,16 +186,11 @@ public final class ComplexScripts {
             return 0f; // one glyph has no neighbours to join or reorder with
         }
         boolean rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
-        // a painted run is in visual order: a right-to-left script's characters
-        // arrive reversed, a left-to-right one's do not
-        StringBuilder logical = new StringBuilder(n);
-        for (int k = 0; k < n; k++) {
-            logical.appendCodePoint(charFor.applyAsInt(glyphs[rtl ? end - 1 - k : start + k]));
-        }
-        Shaped shaped = shaper.apply(logical.toString());
-        if (shaped == null || shaped.glyphs().length == 0 || shaped.glyphs().length > n
-                || shaped.advances().length != shaped.glyphs().length) {
-            return 0f; // a shaper that needs more slots than WebKit gave is left unshaped
+        Shaped shaped = usable(shaper.apply(logical(glyphs, start, end, charFor, rtl)));
+        if (shaped == null || shaped.glyphs().length > n || !onBaseline(shaped.rises())) {
+            // more glyphs than WebKit gave slots, or glyphs off the line: an
+            // in-place rewrite can hold neither, and plain paints better
+            return 0f;
         }
         float original = 0f;
         for (int k = start; k < end; k++) {
@@ -179,5 +219,134 @@ public final class ComplexScripts {
         // the run ends (centring was tried first and pushed a Hindi heading past
         // its card's padding by half the shortfall)
         return rtl ? original - used : 0f;
+    }
+
+    /**
+     * A painted run in visual order: a right-to-left script's characters
+     * arrive reversed, a left-to-right one's do not.
+     */
+    private static String logical(int[] glyphs, int start, int end, IntUnaryOperator charFor, boolean rtl) {
+        StringBuilder text = new StringBuilder(end - start);
+        for (int k = 0; k < end - start; k++) {
+            text.appendCodePoint(charFor.applyAsInt(glyphs[rtl ? end - 1 - k : start + k]));
+        }
+        return text.toString();
+    }
+
+    private static Shaped usable(Shaped shaped) {
+        return shaped == null || shaped.glyphs().length == 0 || shaped.advances().length != shaped.glyphs().length
+                || shaped.rises().length != shaped.glyphs().length ? null : shaped;
+    }
+
+    /**
+     * A whole painted run laid out anew (v2.167.0): its glyphs, advances and
+     * vertical offsets, as many as shaping needs, and how far the run moves
+     * right. {@code changed} is false when nothing in it was shaped.
+     */
+    public record Laid(int[] glyphs, float[] advances, float[] rises, float slack, boolean changed) {
+    }
+
+    /**
+     * Lays a painted run out for a glyph list built from positions rather than
+     * advances, so a shaped segment may take more glyphs than it had characters
+     * (a Nastaliq letter and its dots are separate glyphs) and its glyphs may
+     * leave the baseline (vowel marks, Nastaliq's descending words). Segments
+     * follow the same rules as {@link #reshape}; everything else is copied as
+     * WebKit painted it.
+     */
+    public static Laid layout(int[] glyphs, float[] advances, IntUnaryOperator charFor,
+            Function<String, Shaped> shaper) {
+        if (glyphs == null || advances == null || glyphs.length != advances.length) {
+            return null;
+        }
+        int[] outG = new int[glyphs.length];
+        float[] outA = new float[glyphs.length];
+        float[] outR = new float[glyphs.length];
+        int size = 0;
+        float slack = 0f;
+        boolean changed = false;
+        int i = 0;
+        while (i < glyphs.length) {
+            int start = i;
+            if (!shapes(charFor.applyAsInt(glyphs[i]))) {
+                i++;
+            } else {
+                while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
+                    i++;
+                }
+            }
+            Shaped shaped = null;
+            boolean rtl = false;
+            if (i - start >= 2) {
+                rtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
+                shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, rtl)));
+            }
+            int need = size + (shaped == null ? i - start : shaped.glyphs().length);
+            if (need > outG.length) {
+                int grown = Math.max(need, outG.length * 2);
+                outG = java.util.Arrays.copyOf(outG, grown);
+                outA = java.util.Arrays.copyOf(outA, grown);
+                outR = java.util.Arrays.copyOf(outR, grown);
+            }
+            if (shaped == null) {
+                System.arraycopy(glyphs, start, outG, size, i - start);
+                System.arraycopy(advances, start, outA, size, i - start);
+                size += i - start;
+                continue;
+            }
+            float original = 0f;
+            for (int k = start; k < i; k++) {
+                original += advances[k];
+            }
+            float used = 0f;
+            for (int k = 0; k < shaped.glyphs().length; k++) {
+                outG[size] = shaped.glyphs()[k];
+                outA[size] = shaped.advances()[k];
+                outR[size] = shaped.rises()[k];
+                used += shaped.advances()[k];
+                size++;
+            }
+            slack += rtl ? original - used : 0f;
+            changed = true;
+        }
+        return new Laid(java.util.Arrays.copyOf(outG, size), java.util.Arrays.copyOf(outA, size),
+                java.util.Arrays.copyOf(outR, size), slack, changed);
+    }
+
+    /** Whether every offset is zero: the run paints along one line. */
+    public static boolean onBaseline(float[] rises) {
+        for (float r : rises) {
+            if (r != 0f) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The x/y pairs a positioned glyph run is drawn from (v2.167.0): x the sum
+     * of the advances before a glyph, y its offset, and one closing pair whose
+     * x is the run's whole width.
+     */
+    public static float[] positions(float[] advances, float[] rises) {
+        float[] pos = new float[2 * (advances.length + 1)];
+        float x = 0f;
+        for (int k = 0; k < advances.length; k++) {
+            pos[2 * k] = x;
+            pos[2 * k + 1] = rises[k];
+            x += advances[k];
+        }
+        pos[2 * advances.length] = x;
+        return pos;
+    }
+
+    /**
+     * Which way a layout measures y, read from where it puts a kasra (a mark
+     * below its letter in every Arabic font): +1 when the kasra's offset is
+     * positive, so the layout already measures down as drawing does; -1 when
+     * negative; 0 when the font placed it on the baseline and nothing is known.
+     */
+    public static float downwardFrom(float kasraOffset) {
+        return Math.signum(kasraOffset);
     }
 }

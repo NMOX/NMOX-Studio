@@ -209,4 +209,118 @@ class ComplexTextShapingTest {
         ComplexTextShaping.rewrite(emptyClass(ComplexTextShaping.CONTEXT), applied);
         assertThat(applied[0]).isFalse();
     }
+
+    /** JavaFX's TextRun in miniature: each shape overload records what it was built from. */
+    static byte[] textRun() {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, ComplexTextShaping.TEXT_RUN, null,
+                "java/lang/Object", null);
+        cw.visitField(Opcodes.ACC_PUBLIC, "advances", "[F", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC, "positions", "[F", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC, "gids", "[I", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC, "count", "I", null, null).visitEnd();
+        constructor(cw);
+        MethodVisitor adv = cw.visitMethod(Opcodes.ACC_PUBLIC, ComplexTextShaping.RUN_SHAPE,
+                ComplexTextShaping.RUN_SHAPE_DESC, null, null);
+        adv.visitCode();
+        adv.visitVarInsn(Opcodes.ALOAD, 0);
+        adv.visitVarInsn(Opcodes.ALOAD, 3);
+        adv.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "advances", "[F");
+        adv.visitInsn(Opcodes.RETURN);
+        adv.visitMaxs(0, 0);
+        adv.visitEnd();
+        MethodVisitor pos = cw.visitMethod(Opcodes.ACC_PUBLIC, ComplexTextShaping.RUN_SHAPE, "(I[I[F[I)V", null, null);
+        pos.visitCode();
+        pos.visitVarInsn(Opcodes.ALOAD, 0);
+        pos.visitVarInsn(Opcodes.ALOAD, 3);
+        pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "positions", "[F");
+        pos.visitVarInsn(Opcodes.ALOAD, 0);
+        pos.visitVarInsn(Opcodes.ALOAD, 2);
+        pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "gids", "[I");
+        pos.visitVarInsn(Opcodes.ALOAD, 0);
+        pos.visitVarInsn(Opcodes.ILOAD, 1);
+        pos.visitFieldInsn(Opcodes.PUTFIELD, ComplexTextShaping.TEXT_RUN, "count", "I");
+        pos.visitInsn(Opcodes.RETURN);
+        pos.visitMaxs(0, 0);
+        pos.visitEnd();
+        cw.visitEnd();
+        return cw.toByteArray();
+    }
+
+    /** WebKit's TextUtilities in miniature: createGlyphList builds a run from the advances, as the real one does. */
+    static byte[] textUtilities() {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, ComplexTextShaping.TEXT_UTILITIES, null,
+                "java/lang/Object", null);
+        constructor(cw);
+        MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, ComplexTextShaping.CREATE_GLYPH_LIST,
+                "([I[FFF)L" + ComplexTextShaping.TEXT_RUN + ";", null, null);
+        mv.visitCode();
+        mv.visitTypeInsn(Opcodes.NEW, ComplexTextShaping.TEXT_RUN);
+        mv.visitInsn(Opcodes.DUP);
+        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, ComplexTextShaping.TEXT_RUN, "<init>", "()V", false);
+        mv.visitVarInsn(Opcodes.ASTORE, 4);
+        mv.visitVarInsn(Opcodes.ALOAD, 4);
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitInsn(Opcodes.ARRAYLENGTH);
+        mv.visitVarInsn(Opcodes.ALOAD, 0);
+        mv.visitVarInsn(Opcodes.ALOAD, 1);
+        mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, ComplexTextShaping.TEXT_RUN, ComplexTextShaping.RUN_SHAPE,
+                ComplexTextShaping.RUN_SHAPE_DESC, false);
+        mv.visitVarInsn(Opcodes.ALOAD, 4);
+        mv.visitInsn(Opcodes.ARETURN);
+        mv.visitMaxs(0, 0);
+        mv.visitEnd();
+        cw.visitEnd();
+        return cw.toByteArray();
+    }
+
+    @Test
+    @DisplayName("the rewritten glyph-list build takes positions from the placer when it has them, advances otherwise")
+    void rewrittenGlyphListTakesPositionsFromThePlacer() throws Exception {
+        Bytes loader = new Bytes();
+        boolean[] applied = {false};
+        loader.add(ComplexTextShaping.TEXT_RUN, textRun());
+        loader.add(ComplexTextShaping.HOOK, ComplexTextShaping.hookClass());
+        loader.add(ComplexTextShaping.TEXT_UTILITIES, ComplexTextShaping.rewritePlacement(textUtilities(), applied));
+        assertThat(applied[0]).isTrue();
+        Class<?> utilities = loader.loadClass(ComplexTextShaping.TEXT_UTILITIES.replace('/', '.'));
+        Class<?> run = loader.loadClass(ComplexTextShaping.TEXT_RUN.replace('/', '.'));
+        Class<?> hook = loader.loadClass(ComplexTextShaping.HOOK.replace('/', '.'));
+        java.lang.reflect.Method build = utilities.getMethod(ComplexTextShaping.CREATE_GLYPH_LIST,
+                int[].class, float[].class, float.class, float.class);
+        int[] glyphs = {1, 2};
+        float[] advances = {3f, 4f};
+
+        Object plain = build.invoke(null, glyphs, advances, 0f, 0f); // no placer yet
+        assertThat(run.getField("advances").get(plain)).isSameAs(advances);
+        assertThat(run.getField("positions").get(plain)).isNull();
+
+        int[] laid = {7, 8, 9};  // shaping took more glyphs than WebKit painted
+        float[] lifted = {0f, -5f, 3f, 2f, 7f, 0f, 9f, 0f};
+        AtomicReference<Object[]> seen = new AtomicReference<>();
+        hook.getField("PLACER").set(null, (Function<Object[], Object>) args -> {
+            seen.set(args);
+            return args[0] == glyphs ? new Object[]{laid, lifted} : null;
+        });
+        Object placed = build.invoke(null, glyphs, advances, 0f, 0f);
+        assertThat(seen.get()).containsExactly(glyphs, advances);
+        assertThat(run.getField("positions").get(placed)).isSameAs(lifted);
+        assertThat(run.getField("gids").get(placed)).isSameAs(laid);
+        assertThat(run.getField("count").getInt(placed)).isEqualTo(3);
+        assertThat(run.getField("advances").get(placed)).isNull();
+
+        float[] other = {9f};
+        Object unplaced = build.invoke(null, new int[]{5}, other, 0f, 0f); // the placer has nothing for it
+        assertThat(run.getField("advances").get(unplaced)).isSameAs(other);
+        assertThat(run.getField("positions").get(unplaced)).isNull();
+    }
+
+    @Test
+    @DisplayName("a TextUtilities without that call reports nothing applied")
+    void aChangedGlyphListBuildIsReported() {
+        boolean[] applied = {false};
+        ComplexTextShaping.rewritePlacement(emptyClass(ComplexTextShaping.TEXT_UTILITIES), applied);
+        assertThat(applied[0]).isFalse();
+    }
 }

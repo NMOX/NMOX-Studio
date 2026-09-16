@@ -43,6 +43,10 @@ import org.objectweb.asm.Opcodes;
  * so its first act is to hand the glyphs to that hook. The hook calls
  * {@link ComplexScripts}, which shapes them with JavaFX's own text layout, the
  * one that already shapes these scripts correctly in every JavaFX control.
+ * Since v2.167.0 it also rewrites the one call in
+ * {@code TextUtilities.createGlyphList} that builds the painted run from
+ * advances alone, so a run whose shaped glyphs leave the baseline (vowel marks,
+ * Nastaliq) is built from x/y positions instead.
  *
  * <p>Every step refuses quietly and says so once in the log: no JavaFX, a
  * runtime or launcher that does not allow attaching, a JavaFX whose method has
@@ -62,6 +66,12 @@ public final class ComplexTextShaping {
     static final String GLYPH_WIDTH = "getGlyphWidth";
     static final String GLYPH_WIDTH_DESC = "(I)D";
     static final String WIDTH = "(Ljava/lang/Object;I)D";
+    static final String TEXT_UTILITIES = "com/sun/javafx/webkit/prism/TextUtilities";
+    static final String CREATE_GLYPH_LIST = "createGlyphList";
+    static final String TEXT_RUN = "com/sun/javafx/text/TextRun";
+    static final String RUN_SHAPE = "shape";
+    static final String RUN_SHAPE_DESC = "(I[I[F)V";
+    static final String SHAPE_RUN = "(L" + TEXT_RUN + ";I[I[F)V";
 
     /** What happened, for the log line and the tests. */
     public enum Outcome { INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED }
@@ -115,18 +125,27 @@ public final class ComplexTextShaping {
             }
             Class<?> fontImpl = Class.forName(FONT_IMPL.replace('/', '.'), false, web.getClassLoader());
             Class<?> hook = MethodHandles.privateLookupIn(context, MethodHandles.lookup()).defineClass(hookClass());
+            Class<?> utilities = Class.forName(TEXT_UTILITIES.replace('/', '.'), false, web.getClassLoader());
             PrismBridge bridge = new PrismBridge(web.getClassLoader());
             hook.getField("SHAPER").set(null, bridge);
             hook.getField("WIDTHS").set(null, (Function<Object[], Object>) bridge::width);
+            hook.getField("PLACER").set(null, (Function<Object[], Object>) bridge::place);
             Transformer transformer = new Transformer();
             inst.addTransformer(transformer, true);
             try {
                 // widths first: a paint that runs between the two would still be
-                // measured and painted consistently, just unshaped
+                // measured and painted consistently, just unshaped; placement
+                // before the paint, so shaping only lifts glyphs once a lifted
+                // run can be built
                 inst.retransformClasses(fontImpl);
+                inst.retransformClasses(utilities);
+                bridge.placementReady = transformer.placementApplied;
                 inst.retransformClasses(context);
             } finally {
                 inst.removeTransformer(transformer);
+            }
+            if (!transformer.placementApplied) {
+                LOG.info("complex-script shaping: glyphs cannot leave the baseline; vowelled and Nastaliq runs stay unshaped");
             }
             if (!transformer.widthsApplied) {
                 LOG.info("complex-script shaping: WebKit's glyph widths could not be adjusted; shaped words keep a gap");
@@ -195,6 +214,62 @@ public final class ComplexTextShaping {
                 "Ljava/util/function/Function;", null, null).visitEnd();
         cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "WIDTHS",
                 "Ljava/util/function/Function;", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "PLACER",
+                "Ljava/util/function/Function;", null, null).visitEnd();
+        // static void shapeRun(TextRun run, int n, int[] glyphs, float[] advances):
+        // when PLACER answers {int[] glyphs, float[] positions}, the run is built
+        // from those; else from the advances as before
+        MethodVisitor pv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "shapeRun", SHAPE_RUN, null, null);
+        pv.visitCode();
+        Label asBefore = new Label();
+        pv.visitFieldInsn(Opcodes.GETSTATIC, HOOK, "PLACER", "Ljava/util/function/Function;");
+        pv.visitVarInsn(Opcodes.ASTORE, 4);
+        pv.visitVarInsn(Opcodes.ALOAD, 4);
+        pv.visitJumpInsn(Opcodes.IFNULL, asBefore);
+        pv.visitVarInsn(Opcodes.ALOAD, 4);
+        pv.visitInsn(Opcodes.ICONST_2);
+        pv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+        pv.visitInsn(Opcodes.DUP);
+        pv.visitInsn(Opcodes.ICONST_0);
+        pv.visitVarInsn(Opcodes.ALOAD, 2);
+        pv.visitInsn(Opcodes.AASTORE);
+        pv.visitInsn(Opcodes.DUP);
+        pv.visitInsn(Opcodes.ICONST_1);
+        pv.visitVarInsn(Opcodes.ALOAD, 3);
+        pv.visitInsn(Opcodes.AASTORE);
+        pv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Function", "apply",
+                "(Ljava/lang/Object;)Ljava/lang/Object;", true);
+        pv.visitVarInsn(Opcodes.ASTORE, 5);
+        pv.visitVarInsn(Opcodes.ALOAD, 5);
+        pv.visitJumpInsn(Opcodes.IFNULL, asBefore);
+        pv.visitVarInsn(Opcodes.ALOAD, 5);
+        pv.visitTypeInsn(Opcodes.CHECKCAST, "[Ljava/lang/Object;");
+        pv.visitVarInsn(Opcodes.ASTORE, 6);
+        pv.visitVarInsn(Opcodes.ALOAD, 6);
+        pv.visitInsn(Opcodes.ICONST_0);
+        pv.visitInsn(Opcodes.AALOAD);
+        pv.visitTypeInsn(Opcodes.CHECKCAST, "[I");
+        pv.visitVarInsn(Opcodes.ASTORE, 7);
+        pv.visitVarInsn(Opcodes.ALOAD, 0);
+        pv.visitVarInsn(Opcodes.ALOAD, 7);
+        pv.visitInsn(Opcodes.ARRAYLENGTH);
+        pv.visitVarInsn(Opcodes.ALOAD, 7);
+        pv.visitVarInsn(Opcodes.ALOAD, 6);
+        pv.visitInsn(Opcodes.ICONST_1);
+        pv.visitInsn(Opcodes.AALOAD);
+        pv.visitTypeInsn(Opcodes.CHECKCAST, "[F");
+        pv.visitInsn(Opcodes.ACONST_NULL);
+        pv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, TEXT_RUN, RUN_SHAPE, "(I[I[F[I)V", false);
+        pv.visitInsn(Opcodes.RETURN);
+        pv.visitLabel(asBefore);
+        pv.visitVarInsn(Opcodes.ALOAD, 0);
+        pv.visitVarInsn(Opcodes.ILOAD, 1);
+        pv.visitVarInsn(Opcodes.ALOAD, 2);
+        pv.visitVarInsn(Opcodes.ALOAD, 3);
+        pv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, TEXT_RUN, RUN_SHAPE, RUN_SHAPE_DESC, false);
+        pv.visitInsn(Opcodes.RETURN);
+        pv.visitMaxs(0, 0);
+        pv.visitEnd();
         // static double width(Object font, int glyph): NaN until WIDTHS is set
         MethodVisitor wv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "width", WIDTH, null, null);
         wv.visitCode();
@@ -335,9 +410,44 @@ public final class ComplexTextShaping {
         return writer.toByteArray();
     }
 
+    /**
+     * Rewrites {@code TextUtilities.createGlyphList} so the one call that
+     * builds its run from advances, {@code TextRun.shape(int, int[], float[])},
+     * goes to {@code NmoxComplexText.shapeRun} with the same arguments. The
+     * stack is the same before and after, so no frame changes.
+     */
+    static byte[] rewritePlacement(byte[] original, boolean[] applied) {
+        ClassReader reader = new ClassReader(original);
+        ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
+        reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+                    String[] exceptions) {
+                MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+                if (!CREATE_GLYPH_LIST.equals(name)) {
+                    return mv;
+                }
+                return new MethodVisitor(Opcodes.ASM9, mv) {
+                    @Override
+                    public void visitMethodInsn(int opcode, String owner, String callee, String desc, boolean itf) {
+                        if (opcode == Opcodes.INVOKEVIRTUAL && TEXT_RUN.equals(owner) && RUN_SHAPE.equals(callee)
+                                && RUN_SHAPE_DESC.equals(desc)) {
+                            super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOK, "shapeRun", SHAPE_RUN, false);
+                            applied[0] = true;
+                            return;
+                        }
+                        super.visitMethodInsn(opcode, owner, callee, desc, itf);
+                    }
+                };
+            }
+        }, 0);
+        return writer.toByteArray();
+    }
+
     static final class Transformer implements ClassFileTransformer {
         volatile boolean applied;
         volatile boolean widthsApplied;
+        volatile boolean placementApplied;
 
         @Override
         public byte[] transform(Module module, ClassLoader loader, String className, Class<?> redefined,
@@ -347,6 +457,17 @@ public final class ComplexTextShaping {
                     boolean[] done = {false};
                     byte[] out = rewriteWidths(bytes, done);
                     widthsApplied = done[0];
+                    return done[0] ? out : null;
+                } catch (RuntimeException ex) {
+                    LOG.log(Level.INFO, "could not rewrite " + className, ex);
+                    return null;
+                }
+            }
+            if (TEXT_UTILITIES.equals(className)) {
+                try {
+                    boolean[] done = {false};
+                    byte[] out = rewritePlacement(bytes, done);
+                    placementApplied = done[0];
                     return done[0] ? out : null;
                 } catch (RuntimeException ex) {
                     LOG.log(Level.INFO, "could not rewrite " + className, ex);
@@ -388,7 +509,21 @@ public final class ComplexTextShaping {
         private final Method charOffset;
         /** Per WebKit font and glyph: the width WebKit should measure. */
         private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
+        /** Per WebKit font: whether its joined Arabic letters leave the baseline. */
+        private final Map<Object, Boolean> stacking = new WeakHashMap<>();
         private final Field locationX;
+        private final Field locationY;
+        private final Method posY;
+        /** Set once the glyph-list builder can take positions; until then no run leaves the baseline. */
+        volatile boolean placementReady;
+        /**
+         * The offsets of the run this thread's paint just shaped, keyed by that
+         * paint's glyph array: {@code drawString} hands the same array to
+         * {@code createGlyphList} straight after, so identity finds it.
+         */
+        private final ThreadLocal<Object[]> pending = new ThreadLocal<>();
+        /** Which way this JavaFX's layout measures y, once a kasra has said: +1 down, -1 up. */
+        private volatile float yDirection;
         /** Per WebKit font: sorted glyph codes, their characters, and a blank glyph. */
         private final Map<Object, int[][]> tables = new WeakHashMap<>();
 
@@ -412,8 +547,12 @@ public final class ComplexTextShaping {
             width = open(glyphList.getMethod("getWidth"));
             location = open(glyphList.getMethod("getLocation"));
             charOffset = open(glyphList.getMethod("getCharOffset", int.class));
-            locationX = Class.forName("com.sun.javafx.geom.Point2D", false, fx).getField("x");
+            posY = open(glyphList.getMethod("getPosY", int.class));
+            Class<?> point = Class.forName("com.sun.javafx.geom.Point2D", false, fx);
+            locationX = point.getField("x");
             locationX.setAccessible(true);
+            locationY = point.getField("y");
+            locationY.setAccessible(true);
         }
 
         private static Method open(Method m) {
@@ -430,16 +569,46 @@ public final class ComplexTextShaping {
                 if (font == null || glyphs == null || advances == null) {
                     return 0f;
                 }
+                pending.remove();
                 int[][] table = table(font);
                 if (table == null || !anyShapeable(glyphs, table)) {
                     return 0f;
                 }
                 Object pg = platformFont.invoke(font);
-                return ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g),
-                        text -> shape(text, pg), table[2][0]);
+                if (!placementReady) {
+                    return ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g),
+                            text -> shape(text, pg), table[2][0]);
+                }
+                ComplexScripts.Laid laid = ComplexScripts.layout(glyphs, advances, g -> charFor(table, g),
+                        text -> shape(text, pg));
+                if (laid == null || !laid.changed()) {
+                    return 0f;
+                }
+                remember(glyphs, laid);
+                return laid.slack();
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
+        }
+
+        /**
+         * The placement answer: {glyphs, advances} to {the laid-out glyphs, their
+         * x/y positions} for the run this thread just shaped, or null to build the
+         * run from its advances as before. Never throws.
+         */
+        /** Holds a laid-out run for the glyph-list build that follows on this thread. */
+        void remember(int[] glyphs, ComplexScripts.Laid laid) {
+            pending.set(new Object[]{glyphs, laid});
+        }
+
+        Object place(Object[] args) {
+            Object[] mine = pending.get();
+            if (mine == null || args == null || args.length < 1 || mine[0] != args[0]) {
+                return null;
+            }
+            pending.remove();
+            ComplexScripts.Laid laid = (ComplexScripts.Laid) mine[1];
+            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.advances(), laid.rises())};
         }
 
         /** The hook's width answer: {font, glyph} to a Double, NaN for the font's own. Never throws. */
@@ -466,12 +635,13 @@ public final class ComplexTextShaping {
                     }
                 }
                 Object pg = platformFont.invoke(font);
+                String letter = new String(Character.toChars(cp));
+                String tatweel = String.valueOf(ComplexScripts.TATWEEL);
                 double w = ComplexScripts.measuredWidth(cp,
-                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
-                                .append(ComplexScripts.TATWEEL).toString(), pg),
-                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
-                                .toString(), pg),
-                        c -> joinedAdvance(new String(Character.toChars(c)), pg, 0));
+                        c -> textWidth(tatweel + letter + tatweel, pg) - 2 * textWidth(tatweel, pg),
+                        c -> textWidth(tatweel + letter, pg) - textWidth(tatweel, pg),
+                        c -> firstAdvance(letter, pg),
+                        stacks(font, pg));
                 synchronized (known) {
                     known.put(glyph, w);
                 }
@@ -481,20 +651,36 @@ public final class ComplexTextShaping {
             }
         }
 
-        /** The advance of the character at index 1 of {@code text} as shaped, or NaN. */
-        private double joinedAdvance(String text, Object pg) {
-            return joinedAdvance(text, pg, 1);
+        /**
+         * How wide JavaFX lays {@code text} out, or NaN: the same measure the
+         * width constants were calibrated with (a word's laid-out width), so a
+         * letter drawn as several glyphs, or glyphs out of order, measure right.
+         */
+        private double textWidth(String text, Object pg) {
+            try {
+                double total = 0d;
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, text, pg))) {
+                    total += (Float) width.invoke(list);
+                }
+                return total;
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                return Double.NaN;
+            }
         }
 
-        /** The advance of the glyph for char index {@code at} of {@code text} as shaped, or NaN. */
-        private double joinedAdvance(String text, Object pg, int index) {
+        /**
+         * The advance of the first glyph JavaFX gives a lone character, or NaN:
+         * the plain measure the Indic share was calibrated against in v2.166.0.
+         * A lone vowel sign's laid-out width would count the dotted circle a
+         * layout draws in front of it and measure the sign twice over.
+         */
+        private double firstAdvance(String text, Object pg) {
             try {
-                Object layout = createLayout.invoke(null, text, pg);
-                for (Object list : (Object[]) runs.invoke(layout)) {
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, text, pg))) {
                     int count = (Integer) glyphCount.invoke(list);
                     float runWidth = (Float) width.invoke(list);
                     for (int g = 0; g < count; g++) {
-                        if ((Integer) charOffset.invoke(list, g) == index) {
+                        if ((Integer) charOffset.invoke(list, g) == 0) {
                             float at = (Float) posX.invoke(list, g);
                             float next = g + 1 < count ? (Float) posX.invoke(list, g + 1) : runWidth;
                             return Math.abs(next - at);
@@ -505,6 +691,34 @@ public final class ComplexTextShaping {
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 return Double.NaN;
             }
+        }
+
+        /**
+         * Whether a font's joined Arabic letters leave the baseline (Nastaliq):
+         * four behs shaped together, offsets read. Once per font.
+         */
+        private boolean stacks(Object font, Object pg) {
+            synchronized (stacking) {
+                Boolean known = stacking.get(font);
+                if (known != null) {
+                    return known;
+                }
+            }
+            boolean climbs = false;
+            try {
+                for (Object list : (Object[]) runs.invoke(createLayout.invoke(null, "\u0628\u0628\u0628\u0628", pg))) {
+                    int count = (Integer) glyphCount.invoke(list);
+                    for (int g = 0; g < count && !climbs; g++) {
+                        climbs = (Float) posY.invoke(list, g) != 0f;
+                    }
+                }
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                climbs = false;
+            }
+            synchronized (stacking) {
+                stacking.put(font, climbs);
+            }
+            return climbs;
         }
 
         private int[][] table(Object font) throws ReflectiveOperationException {
@@ -585,8 +799,14 @@ public final class ComplexTextShaping {
             return false;
         }
 
-        /** Shaped glyphs sorted left to right by where the layout placed them. */
-        static ComplexScripts.Shaped visualOrder(int[] code, float[] x, float[] adv) {
+        /**
+         * Shaped glyphs sorted left to right by where the layout placed them,
+         * offsets travelling with them, each advance the distance to the next
+         * glyph in that order and the last one's to {@code end}. The layout's
+         * own order is logical: with marks in it, a mark sits between two
+         * letters that are not neighbours on screen (v2.167.0).
+         */
+        static ComplexScripts.Shaped visualOrder(int[] code, float[] x, float[] y, float end) {
             int total = code.length;
             Integer[] order = new Integer[total];
             for (int j = 0; j < total; j++) {
@@ -595,11 +815,41 @@ public final class ComplexTextShaping {
             Arrays.sort(order, (a, b) -> Float.compare(x[a], x[b]));
             int[] glyphs = new int[total];
             float[] advances = new float[total];
+            float[] rises = new float[total];
             for (int j = 0; j < total; j++) {
                 glyphs[j] = code[order[j]];
-                advances[j] = adv[order[j]];
+                float next = j + 1 < total ? x[order[j + 1]] : end;
+                advances[j] = Math.max(0f, next - x[order[j]]);
+                rises[j] = y[order[j]];
             }
-            return new ComplexScripts.Shaped(glyphs, advances);
+            return new ComplexScripts.Shaped(glyphs, advances, rises);
+        }
+
+        /**
+         * +1 when this JavaFX's layout reports offsets downward as it draws
+         * them, -1 when it reports them upward. Measured, not assumed per
+         * platform: on macOS JavaFX 26 hands CoreText's upward offsets on
+         * unchanged, and its own Text node paints a kasra above its letter. A
+         * kasra sits below in every Arabic font, so its sign answers; a font
+         * that places no marks answers nothing, and down is kept until one does.
+         */
+        private float downward(Object pg) throws ReflectiveOperationException {
+            float known = yDirection;
+            if (known != 0f) {
+                return known;
+            }
+            Object layout = createLayout.invoke(null, "\u0628\u0650", pg);
+            for (Object list : (Object[]) runs.invoke(layout)) {
+                int count = (Integer) glyphCount.invoke(list);
+                for (int g = 0; g < count; g++) {
+                    if ((Integer) charOffset.invoke(list, g) == 1) {
+                        float kasra = ComplexScripts.downwardFrom((Float) posY.invoke(list, g));
+                        yDirection = kasra;
+                        return kasra == 0f ? 1f : kasra;
+                    }
+                }
+            }
+            return 1f;
         }
 
         private ComplexScripts.Shaped shape(String text, Object pg) {
@@ -611,23 +861,25 @@ public final class ComplexTextShaping {
                     total += (Integer) glyphCount.invoke(list);
                 }
                 float[] x = new float[total];
-                float[] adv = new float[total];
+                float[] y = new float[total];
+                float end = 0f;
+                float down = downward(pg);
                 int[] code = new int[total];
                 int k = 0;
                 for (Object list : lists) {
-                    float base = (Float) locationX.get(location.invoke(list));
+                    Object where = location.invoke(list);
+                    float base = (Float) locationX.get(where);
+                    float baseY = (Float) locationY.get(where);
                     int count = (Integer) glyphCount.invoke(list);
-                    float runWidth = (Float) width.invoke(list);
+                    end = Math.max(end, base + (Float) width.invoke(list));
                     for (int g = 0; g < count; g++) {
-                        float at = (Float) posX.invoke(list, g);
-                        float next = g + 1 < count ? (Float) posX.invoke(list, g + 1) : runWidth;
                         code[k] = (Integer) glyphCode.invoke(list, g);
-                        x[k] = base + at;
-                        adv[k] = Math.abs(next - at);
+                        x[k] = base + (Float) posX.invoke(list, g);
+                        y[k] = baseY + down * (Float) posY.invoke(list, g);
                         k++;
                     }
                 }
-                return visualOrder(code, x, adv);
+                return visualOrder(code, x, y, end);
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 return null;
             }

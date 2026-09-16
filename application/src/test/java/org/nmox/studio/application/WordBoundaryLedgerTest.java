@@ -48,6 +48,11 @@ class WordBoundaryLedgerTest {
 
     /** Splits text a PERSON wrote, so a combining mark is part of the word. */
     private static final Map<String, String> HUMAN_TEXT = Map.of(
+            "ComplexScripts.java",
+            "chooses which characters of a page the Browser joins and reorders (v2.167.0): "
+            + "letters and every kind of mark, because a mark belongs to the letter it sits "
+            + "on; never a digit or punctuation, which WebKit already placed and which "
+            + "reversed with the letters around them painted a number backwards",
             "SearchTerms.java",
             "the one term matcher behind every search surface: a mark joins the word in "
             + "front of it (v2.114.0), and a mark with no word in front of it separates",
