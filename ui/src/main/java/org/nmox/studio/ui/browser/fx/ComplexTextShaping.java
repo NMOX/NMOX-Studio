@@ -508,6 +508,8 @@ public final class ComplexTextShaping {
          * {@code createGlyphList} straight after, so identity finds it.
          */
         private final ThreadLocal<Object[]> pending = new ThreadLocal<>();
+        /** Which way this JavaFX's layout measures y, once a kasra has said: +1 down, -1 up. */
+        private volatile float yDirection;
         /** Per WebKit font: sorted glyph codes, their characters, and a blank glyph. */
         private final Map<Object, int[][]> tables = new WeakHashMap<>();
 
@@ -735,8 +737,14 @@ public final class ComplexTextShaping {
             return false;
         }
 
-        /** Shaped glyphs sorted left to right by where the layout placed them, offsets travelling with them. */
-        static ComplexScripts.Shaped visualOrder(int[] code, float[] x, float[] y, float[] adv) {
+        /**
+         * Shaped glyphs sorted left to right by where the layout placed them,
+         * offsets travelling with them, each advance the distance to the next
+         * glyph in that order and the last one's to {@code end}. The layout's
+         * own order is logical: with marks in it, a mark sits between two
+         * letters that are not neighbours on screen (v2.167.0).
+         */
+        static ComplexScripts.Shaped visualOrder(int[] code, float[] x, float[] y, float end) {
             int total = code.length;
             Integer[] order = new Integer[total];
             for (int j = 0; j < total; j++) {
@@ -748,10 +756,38 @@ public final class ComplexTextShaping {
             float[] rises = new float[total];
             for (int j = 0; j < total; j++) {
                 glyphs[j] = code[order[j]];
-                advances[j] = adv[order[j]];
+                float next = j + 1 < total ? x[order[j + 1]] : end;
+                advances[j] = Math.max(0f, next - x[order[j]]);
                 rises[j] = y[order[j]];
             }
             return new ComplexScripts.Shaped(glyphs, advances, rises);
+        }
+
+        /**
+         * +1 when this JavaFX's layout reports offsets downward as it draws
+         * them, -1 when it reports them upward. Measured, not assumed per
+         * platform: on macOS JavaFX 26 hands CoreText's upward offsets on
+         * unchanged, and its own Text node paints a kasra above its letter. A
+         * kasra sits below in every Arabic font, so its sign answers; a font
+         * that places no marks answers nothing, and down is kept until one does.
+         */
+        private float downward(Object pg) throws ReflectiveOperationException {
+            float known = yDirection;
+            if (known != 0f) {
+                return known;
+            }
+            Object layout = createLayout.invoke(null, "\u0628\u0650", pg);
+            for (Object list : (Object[]) runs.invoke(layout)) {
+                int count = (Integer) glyphCount.invoke(list);
+                for (int g = 0; g < count; g++) {
+                    if ((Integer) charOffset.invoke(list, g) == 1) {
+                        float kasra = ComplexScripts.downwardFrom((Float) posY.invoke(list, g));
+                        yDirection = kasra;
+                        return kasra == 0f ? 1f : kasra;
+                    }
+                }
+            }
+            return 1f;
         }
 
         private ComplexScripts.Shaped shape(String text, Object pg) {
@@ -764,7 +800,8 @@ public final class ComplexTextShaping {
                 }
                 float[] x = new float[total];
                 float[] y = new float[total];
-                float[] adv = new float[total];
+                float end = 0f;
+                float down = downward(pg);
                 int[] code = new int[total];
                 int k = 0;
                 for (Object list : lists) {
@@ -772,18 +809,15 @@ public final class ComplexTextShaping {
                     float base = (Float) locationX.get(where);
                     float baseY = (Float) locationY.get(where);
                     int count = (Integer) glyphCount.invoke(list);
-                    float runWidth = (Float) width.invoke(list);
+                    end = Math.max(end, base + (Float) width.invoke(list));
                     for (int g = 0; g < count; g++) {
-                        float at = (Float) posX.invoke(list, g);
-                        float next = g + 1 < count ? (Float) posX.invoke(list, g + 1) : runWidth;
                         code[k] = (Integer) glyphCode.invoke(list, g);
-                        x[k] = base + at;
-                        y[k] = baseY + (Float) posY.invoke(list, g);
-                        adv[k] = Math.abs(next - at);
+                        x[k] = base + (Float) posX.invoke(list, g);
+                        y[k] = baseY + down * (Float) posY.invoke(list, g);
                         k++;
                     }
                 }
-                return visualOrder(code, x, y, adv);
+                return visualOrder(code, x, y, end);
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 return null;
             }

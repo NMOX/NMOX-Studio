@@ -33,13 +33,19 @@ class PrismBridgeTest {
     }
 
     @Test
-    @DisplayName("a shaped run is ordered by where the layout put each glyph, advances travelling with them")
+    @DisplayName("a shaped run is ordered by where the layout put each glyph, advances measured in that order")
     void visualOrderSortsByPosition() {
         ComplexScripts.Shaped shaped = ComplexTextShaping.PrismBridge.visualOrder(
-                new int[]{10, 20, 30}, new float[]{40f, 0f, 20f}, new float[]{0f, -4f, 7f}, new float[]{1f, 2f, 3f});
+                new int[]{10, 20, 30}, new float[]{40f, 0f, 20f}, new float[]{0f, -4f, 7f}, 55f);
         assertThat(shaped.glyphs()).containsExactly(20, 30, 10);
-        assertThat(shaped.advances()).containsExactly(2f, 3f, 1f);
+        assertThat(shaped.advances()).containsExactly(20f, 20f, 15f);
         assertThat(shaped.rises()).containsExactly(-4f, 7f, 0f);
+        // "بِ" as a layout lists it, logically: the letter at 10, its kasra drawn at 12 — the advance
+        // between them is the 2 the screen shows, not the letter's own 8
+        ComplexScripts.Shaped marked = ComplexTextShaping.PrismBridge.visualOrder(
+                new int[]{1, 2, 3}, new float[]{10f, 12f, 0f}, new float[]{0f, 5f, 0f}, 18f);
+        assertThat(marked.glyphs()).containsExactly(3, 1, 2);
+        assertThat(marked.advances()).containsExactly(10f, 2f, 6f);
     }
 
     @Test

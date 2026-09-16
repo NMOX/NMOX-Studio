@@ -251,4 +251,14 @@ public final class ComplexScripts {
         pos[2 * advances.length] = x;
         return pos;
     }
+
+    /**
+     * Which way a layout measures y, read from where it puts a kasra (a mark
+     * below its letter in every Arabic font): +1 when the kasra's offset is
+     * positive, so the layout already measures down as drawing does; -1 when
+     * negative; 0 when the font placed it on the baseline and nothing is known.
+     */
+    public static float downwardFrom(float kasraOffset) {
+        return Math.signum(kasraOffset);
+    }
 }

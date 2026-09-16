@@ -199,4 +199,12 @@ class ComplexScriptsTest {
                 .containsExactly(0f, 0f, 3f, -2f, 7f, 0f);
         assertThat(ComplexScripts.positions(new float[0], new float[0])).containsExactly(0f, 0f);
     }
+
+    @Test
+    @DisplayName("a kasra below its letter says which way the layout measures y")
+    void kasraGivesTheLayoutsDirection() {
+        assertThat(ComplexScripts.downwardFrom(6.2f)).isEqualTo(1f);
+        assertThat(ComplexScripts.downwardFrom(-7.7f)).isEqualTo(-1f); // JavaFX 26 on macOS
+        assertThat(ComplexScripts.downwardFrom(0f)).isZero();
+    }
 }
