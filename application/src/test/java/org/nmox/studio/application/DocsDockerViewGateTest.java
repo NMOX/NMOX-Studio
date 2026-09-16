@@ -64,17 +64,27 @@ class DocsDockerViewGateTest {
             s.bind(new InetSocketAddress("127.0.0.1", 0));
             port = s.getLocalPort();
         }
+        Path log = dir.resolve("proxy.log");
         proxy = new ProcessBuilder("python3", Path.of("../scripts/docs-docker-proxy.py").toString(),
-                String.valueOf(port), sock.toString()).redirectErrorStream(true).start();
-        long until = System.currentTimeMillis() + 10_000;
+                String.valueOf(port), sock.toString())
+                .redirectErrorStream(true).redirectOutput(log.toFile()).start();
+        // a cold CI runner can take seconds to start an interpreter; the first
+        // macOS run gave up at 10 s and could not say why, so the leash is
+        // longer and a proxy that exits or never listens reports its own output
+        long until = System.currentTimeMillis() + 45_000;
         while (System.currentTimeMillis() < until) {
             try (var probe = new java.net.Socket("127.0.0.1", port)) {
                 return;
             } catch (IOException notYet) {
+                if (!proxy.isAlive()) {
+                    break;
+                }
                 Thread.sleep(100);
             }
         }
-        throw new IllegalStateException("the proxy never listened");
+        throw new IllegalStateException("the proxy never listened on " + port
+                + (proxy.isAlive() ? " (still running)" : " (exited " + proxy.exitValue() + ")")
+                + ": " + Files.readString(log));
     }
 
     @AfterEach
