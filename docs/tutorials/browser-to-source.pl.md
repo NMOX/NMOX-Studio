@@ -15,7 +15,7 @@ chodzi*, edytor wie, *gdzie mieszka kod*, a ty przenosisz tę wiedzę
 między nimi ręcznie. Przeglądarka NMOX Studio zamyka ten podział. Ten
 samouczek przechodzi całą pętlę na stronie, którą zrobisz w dwie minuty.
 
-![Panel DOM w DevTools z nagłówkiem h1 wskazanym na stronie: Wskaż element, Otwórz źródło i Edytuj styl… obok żywego drzewa](../images/story-06-devtools-pick.png)
+![Panel DOM w DevTools z nagłówkiem h1 wskazanym na stronie: Wskaż element, Otwórz źródło i Edytuj styl… obok żywego drzewa](../images/pl/story-06-devtools-pick.png)
 
 ## 1. Zrób stronę
 

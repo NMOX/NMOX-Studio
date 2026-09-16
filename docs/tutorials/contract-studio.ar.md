@@ -13,7 +13,7 @@ Foundry/Hardhat، وتفاعل ماشي بالـ ABI بقيم رجوع وreverts
 وتشغيله على سلسلة محلية — شوفوا
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL شغال في الراك واستوديو العقود متصل بيه لوحده — السلسلة 31337، والعقد في شجرة الـ artifacts ومعاه نسبة الحجم حسب EIP-170](../images/contract-studio.png)
+![ANVIL شغال في الراك واستوديو العقود متصل بيه لوحده — السلسلة 31337، والعقد في شجرة الـ artifacts ومعاه نسبة الحجم حسب EIP-170](../images/ar/contract-studio.png)
 
 ## افتحوه
 

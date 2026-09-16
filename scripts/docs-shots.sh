@@ -30,6 +30,16 @@
 # printed. With no key the KVASIR shot is skipped and reported MISS.
 #   NMOX_SHOTS_STAGED=1 NMOX_SHOTS_NO_BUILD=1 scripts/docs-shots.sh docs/images/he he
 #
+# v2.164.0: the staged run also paints the tutorials' four LIVE scenes, and
+# starts what they need for the length of the run — a postgres:16-alpine
+# container labelled org.nmox.docs=1 (never pulled: without the image the
+# scene is skipped), a read-only Docker view (docs-docker-proxy.py) so the
+# Docker Panel can show that container and nothing else on the machine,
+# anvil on 8545, and the shop page on the fixture server. The Browser needs
+# JavaFX: NMOX_SHOTS_JDKHOME names a runtime that has it, and by default the
+# installed app's bundled one is used when present. A live scene that never
+# becomes ready is skipped and named in the log, never painted empty.
+#
 # The forge OWNS its output dir — every file there is regenerable. The
 # curated, hand-staged shots in docs/images/ (real DB rows, a hit
 # breakpoint, a running container) are never touched by this script.

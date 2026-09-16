@@ -14,7 +14,7 @@ nào chạm tới IDE**.
 đồng ký quỹ, kiểm thử nó, và chạy nó trên một chuỗi cục bộ — xem
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL đang chạy trên giá và Studio hợp đồng tự kết nối tới nó — chuỗi 31337, hợp đồng trong cây tạo phẩm cùng mức dùng kích thước EIP-170](../images/contract-studio.png)
+![ANVIL đang chạy trên giá và Studio hợp đồng tự kết nối tới nó — chuỗi 31337, hợp đồng trong cây tạo phẩm cùng mức dùng kích thước EIP-170](../images/vi/contract-studio.png)
 
 ## Mở nó
 

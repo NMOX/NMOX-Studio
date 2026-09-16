@@ -16,7 +16,7 @@ nagbubuhat ng impormasyon sa pagitan ng dalawa. Isinasara ng Browser ng
 NMOX Studio ang hating iyon. Dinadaanan ng tutorial na ito ang buong loop
 sa isang pahinang gagawin mo sa loob ng dalawang minuto.
 
-![Ang DOM pane ng DevTools na may napiling h1 sa pahina: Pumili ng elemento, Buksan ang Source, at I-edit ang Style… sa tabi ng buhay na tree](../images/story-06-devtools-pick.png)
+![Ang DOM pane ng DevTools na may napiling h1 sa pahina: Pumili ng elemento, Buksan ang Source, at I-edit ang Style… sa tabi ng buhay na tree](../images/tl/story-06-devtools-pick.png)
 
 ## 1. Gumawa ng pahina
 

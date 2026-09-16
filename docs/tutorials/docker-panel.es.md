@@ -9,7 +9,7 @@ El Panel de Docker es un panel de control para tu motor de Docker local
 **Dockerize** que genera un Dockerfile de producción para tu proyecto.
 Su equivalente en el rack es el dispositivo **HARBOR**.
 
-![Motor en marcha y un contenedor de postgres corriendo: el punto de estado, los puertos y la fila de acciones (arrancar, parar, registros, inspeccionar)](../images/docker-panel.png)
+![Motor en marcha y un contenedor de postgres corriendo: el punto de estado, los puertos y la fila de acciones (arrancar, parar, registros, inspeccionar)](../images/es/docker-panel.png)
 
 ## Antes de empezar
 

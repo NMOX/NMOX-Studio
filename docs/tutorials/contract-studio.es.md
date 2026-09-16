@@ -15,7 +15,7 @@ contrato de depósito en garantía, probarlo y ejecutarlo contra una cadena
 local— consulta
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL corriendo en el rack y el Estudio de contratos conectado a él por sí solo: cadena 31337, el contrato en el árbol de artefactos con su uso del límite de tamaño EIP-170](../images/contract-studio.png)
+![ANVIL corriendo en el rack y el Estudio de contratos conectado a él por sí solo: cadena 31337, el contrato en el árbol de artefactos con su uso del límite de tamaño EIP-170](../images/es/contract-studio.png)
 
 ## Ábrelo
 

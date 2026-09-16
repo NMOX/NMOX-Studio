@@ -8,7 +8,7 @@
 
 这是快速导览。想看一个完整的实例 — 写一个托管合约、测试它、在本地链上运行它 — 请读 [making-a-smart-contract.md](../making-a-smart-contract.md)。
 
-![ANVIL 在机架上运行，合约工作室自己连上了它 — 链 31337，构件树里的合约显示着它的 EIP-170 体积占用](../images/contract-studio.png)
+![ANVIL 在机架上运行，合约工作室自己连上了它 — 链 31337，构件树里的合约显示着它的 EIP-170 体积占用](../images/zh/contract-studio.png)
 
 ## 打开方式
 

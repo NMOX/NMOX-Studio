@@ -6,7 +6,7 @@
 
 NMOX Studio 能编辑 70 多种语言，带真正的语法高亮、导航器大纲和语言服务器的智能功能 — 而且开箱即可调试 JavaScript/TypeScript（以及浏览器），断点是真的会停下来的。本教程在一个 Node 应用里命中一个断点。
 
-![一个 JavaScript 断点命中：执行已暂停，Node 调用栈，以及实时的 V8 变量](../images/debug-javascript.png)
+![一个 JavaScript 断点命中：执行已暂停，Node 调用栈，以及实时的 V8 变量](../images/zh/debug-javascript.png)
 
 ## 开始之前
 

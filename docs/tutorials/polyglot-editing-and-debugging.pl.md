@@ -10,7 +10,7 @@ i TypeScript (oraz przeglądarkę) debuguje od razu, z pułapkami, które
 naprawdę zatrzymują program. W tym samouczku zatrzymasz się na pułapce
 w aplikacji Node.
 
-![Pułapka w JavaScripcie trafiona: wykonanie wstrzymane, stos wywołań Node i żywe zmienne V8](../images/debug-javascript.png)
+![Pułapka w JavaScripcie trafiona: wykonanie wstrzymane, stos wywołań Node i żywe zmienne V8](../images/pl/debug-javascript.png)
 
 ## Zanim zaczniesz
 

@@ -10,7 +10,7 @@ JavaScript/TypeScript (e o navegador) de fábrica, com pontos de
 interrupção que param de fato. Este tutorial faz um app Node parar num
 ponto de interrupção.
 
-![Um ponto de interrupção de JavaScript atingido: execução pausada, a pilha de chamadas do Node e as variáveis vivas do V8](../images/debug-javascript.png)
+![Um ponto de interrupção de JavaScript atingido: execução pausada, a pilha de chamadas do Node e as variáveis vivas do V8](../images/pt/debug-javascript.png)
 
 ## Antes de começar
 

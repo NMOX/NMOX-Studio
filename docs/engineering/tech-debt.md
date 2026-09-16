@@ -20,6 +20,27 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — recorded by v2.164.0 (the live scenes in every language)
+
+### 99. The in-app Browser paints Arabic letters unjoined
+
+**Seen, not yet explained.** The v2.164.0 forge painted the DevTools scene in
+Arabic, and every Arabic word on the served page is drawn with each letter in
+its isolated form, in the right order, never joined — `تحميصات الأسبوع ده`
+reads as a row of separate letters. Hebrew on the same page, which needs no
+joining, is correct. Naming a system Arabic font (`Geeza Pro`, then
+`SF Arabic`) instead of the page's Georgia produced the same unjoined letters
+in the new face, so the page's font is ruled out: the shaping step is missing
+somewhere in the JavaFX WebView path (FX 26 on the bundled Zulu 25), or in how
+its frame reaches the Swing paint the forge photographs.
+
+**Why it is not fixed here.** The two candidates need different instruments:
+a standalone FX `WebView` in its own `Stage` on the same runtime decides
+whether WebKit shapes Arabic at all (upstream's to fix if not), and a real
+screen capture of the running Browser decides whether the forge's paint path
+is the one losing it. Neither is a forge change. The Arabic picture ships as
+the product paints it, which is what a translated tutorial should show.
+
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 
 ### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped

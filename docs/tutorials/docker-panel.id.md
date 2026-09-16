@@ -9,7 +9,7 @@ kontainer, image, volume, jaringan — ditambah tab **Dockerize** yang
 membuat Dockerfile kelas produksi untuk proyek Anda. Pasangannya di rak
 adalah perangkat **HARBOR**.
 
-![Mesin hidup, kontainer postgres berjalan — titik status, porta, dan deretan tindakan: mulai, henti, log, periksa](../images/docker-panel.png)
+![Mesin hidup, kontainer postgres berjalan — titik status, porta, dan deretan tindakan: mulai, henti, log, periksa](../images/id/docker-panel.png)
 
 ## Sebelum mulai
 

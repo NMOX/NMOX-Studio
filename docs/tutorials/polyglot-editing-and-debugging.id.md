@@ -9,7 +9,7 @@ Navigator, dan kecerdasan server bahasa — dan ia men-debug JavaScript/TypeScri
 (juga peramban) sejak awal dengan titik henti yang benar-benar berhenti. Tutorial
 ini mengenai sebuah titik henti di aplikasi Node.
 
-![Titik henti JavaScript tercapai: eksekusi berhenti, tumpukan panggilan Node, dan variabel V8 yang hidup](../images/debug-javascript.png)
+![Titik henti JavaScript tercapai: eksekusi berhenti, tumpukan panggilan Node, dan variabel V8 yang hidup](../images/id/debug-javascript.png)
 
 ## Sebelum mulai
 

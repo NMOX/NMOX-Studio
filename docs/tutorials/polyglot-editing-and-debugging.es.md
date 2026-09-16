@@ -10,7 +10,7 @@ depura JavaScript/TypeScript (y el navegador) de serie, con puntos de
 interrupción que de verdad se detienen. Este tutorial alcanza un punto de
 interrupción en una app Node.
 
-![Un punto de interrupción de JavaScript alcanzado: ejecución en pausa, la pila de llamadas de Node y las variables vivas de V8](../images/debug-javascript.png)
+![Un punto de interrupción de JavaScript alcanzado: ejecución en pausa, la pila de llamadas de Node y las variables vivas de V8](../images/es/debug-javascript.png)
 
 ## Antes de empezar
 

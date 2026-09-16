@@ -6,7 +6,7 @@
 
 Docker 面板是本地 Docker 引擎的控制台 — 容器、镜像、卷、网络 — 另外还有一个 **Dockerize** 标签页，为你的项目生成可用于生产的 Dockerfile。它在机架上的对应物是 **HARBOR** 设备。
 
-![引擎已启动，一个 postgres 容器在运行 — 状态点、端口，以及那一排动作：启动、停止、日志、检查](../images/docker-panel.png)
+![引擎已启动，一个 postgres 容器在运行 — 状态点、端口，以及那一排动作：启动、停止、日志、检查](../images/zh/docker-panel.png)
 
 ## 开始之前
 

@@ -14,7 +14,7 @@ To szybka wycieczka. Pełny przykład — napisanie kontraktu escrow, jego
 testy i uruchomienie na lokalnym łańcuchu — znajdziesz w
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL działa na stojaku, a Studio kontraktów samo się z nim połączyło — łańcuch 31337, kontrakt w drzewie artefaktów z wykorzystaniem limitu rozmiaru EIP-170](../images/contract-studio.png)
+![ANVIL działa na stojaku, a Studio kontraktów samo się z nim połączyło — łańcuch 31337, kontrakt w drzewie artefaktów z wykorzystaniem limitu rozmiaru EIP-170](../images/pl/contract-studio.png)
 
 ## Otwieranie
 

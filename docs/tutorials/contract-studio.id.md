@@ -14,7 +14,7 @@ Ini tur singkatnya. Untuk contoh lengkap yang dikerjakan — menulis kontrak esc
 mengujinya, dan menjalankannya pada rantai lokal — lihat
 [making-a-smart-contract.md](../making-a-smart-contract.md).
 
-![ANVIL berjalan di rak dan Studio Kontrak tersambung ke sana dengan sendirinya — chain 31337, kontraknya di pohon artefak beserta pemakaian ukuran EIP-170](../images/contract-studio.png)
+![ANVIL berjalan di rak dan Studio Kontrak tersambung ke sana dengan sendirinya — chain 31337, kontraknya di pohon artefak beserta pemakaian ukuran EIP-170](../images/id/contract-studio.png)
 
 ## Membukanya
 
