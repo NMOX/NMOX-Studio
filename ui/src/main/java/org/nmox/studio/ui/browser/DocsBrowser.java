@@ -96,6 +96,8 @@ public final class DocsBrowser implements DocsScene {
             .hero p { margin: 0; font-size: 18px; }
             .card { max-width: 560px; margin: -32px auto 0; background: #fff; border-radius: 12px;
                     padding: 24px 32px; box-shadow: 0 2px 8px rgba(0, 0, 0, .12); }
+            html[lang="ar"] p, html[lang="ar"] h2, html[lang="ar"] .order {
+                font-family: "Geeza Pro", "SF Arabic", "Noto Naskh Arabic", serif; }
             .order { display: inline-block; margin-top: 8px; color: #fff; background: #8a4b2d;
                      padding: 8px 16px; border-radius: 6px; text-decoration: none; }
             """;
