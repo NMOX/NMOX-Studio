@@ -13,9 +13,9 @@ langages qui étiquette les blocs de code, le dessin de la forge de
 documentation. Ce tutoriel parcourt le tout en une séance, du dernier rang
 au presse-papiers.
 
-![Mode présentation activé : un gabarit Angular et la fenêtre Output tous deux à +10 pt, rétablis exactement quand le mode est désactivé](../images/presentation-mode.png)
+![Mode présentation activé : un gabarit Angular et la fenêtre Output tous deux à +10 pt, rétablis exactement quand le mode est désactivé](../images/fr/presentation-mode.png)
 
-![L’onglet d’édition seul, enregistré à 2x par Enregistrer la capture de l’éditeur…](../images/editor-screenshot-2x.png)
+![L’onglet d’édition seul, enregistré à 2x par Enregistrer la capture de l’éditeur…](../images/fr/editor-screenshot-2x.png)
 
 ## Avant de commencer
 

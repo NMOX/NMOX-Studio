@@ -13,9 +13,9 @@ Sprachvokabular, das Codeblöcke benennt, das Zeichnen der eigenen
 Doku-Screenshots. Dieses Tutorial geht alles in einer Sitzung durch, von
 der letzten Reihe bis zur Zwischenablage.
 
-![Präsentationsmodus an: ein Angular-Template und das Output-Fenster beide um +10 pt vergrößert, beim Ausschalten genau wiederhergestellt](../images/presentation-mode.png)
+![Präsentationsmodus an: ein Angular-Template und das Output-Fenster beide um +10 pt vergrößert, beim Ausschalten genau wiederhergestellt](../images/de/presentation-mode.png)
 
-![Nur der Editor-Tab, gespeichert mit Editor-Screenshot speichern… in doppelter Größe](../images/editor-screenshot-2x.png)
+![Nur der Editor-Tab, gespeichert mit Editor-Screenshot speichern… in doppelter Größe](../images/de/editor-screenshot-2x.png)
 
 ## Bevor Sie beginnen
 

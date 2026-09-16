@@ -13,9 +13,9 @@ menamai pagar kode, dan lukisan milik bengkel dokumentasi. Tutorial ini
 menyusuri semuanya sekali duduk, dari barisan belakang sampai papan
 klip.
 
-![Mode presentasi menyala: templat Angular dan jendela Output sama-sama +10 pt, dikembalikan persis ketika modenya dimatikan](../images/presentation-mode.png)
+![Mode presentasi menyala: templat Angular dan jendela Output sama-sama +10 pt, dikembalikan persis ketika modenya dimatikan](../images/id/presentation-mode.png)
 
-![Tab penyunting saja, disimpan dengan Simpan Tangkapan Layar Editor… pada 2x](../images/editor-screenshot-2x.png)
+![Tab penyunting saja, disimpan dengan Simpan Tangkapan Layar Editor… pada 2x](../images/id/editor-screenshot-2x.png)
 
 ## Sebelum mulai
 

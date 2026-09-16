@@ -12,7 +12,7 @@ To przejście prowadzi prawdziwy eksport z Postmana od początku do końca
 — i pokazuje jedną rzecz, którą NMOX Studio celowo robi inaczej:
 **sekrety lądują w pęku kluczy systemu, nigdy w pliku do wersjonowania.**
 
-![Studio API, dokąd trafiają importy: drzewo kolekcji, wysłane żądanie i jego ocena nagłówków bezpieczeństwa](../images/api-studio.png)
+![Studio API, dokąd trafiają importy: drzewo kolekcji, wysłane żądanie i jego ocena nagłówków bezpieczeństwa](../images/pl/api-studio.png)
 
 ## Zanim zaczniesz
 

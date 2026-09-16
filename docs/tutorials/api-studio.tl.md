@@ -9,7 +9,7 @@ IDE. Bumubuo mo ng mga request, nagpapatakbo ng mga assertion sa response,
 at — natatangi rito — minamarkahan ang bawat response ayon sa mga pamantayan
 ng web para sa security header.
 
-![Buhay na 200 sa loob ng 331ms — at ang tab na Mga Pamantayan na minamarkahan ang mga security header ng response](../images/api-studio.png)
+![Buhay na 200 sa loob ng 331ms — at ang tab na Mga Pamantayan na minamarkahan ang mga security header ng response](../images/tl/api-studio.png)
 
 ## Buksan ito
 

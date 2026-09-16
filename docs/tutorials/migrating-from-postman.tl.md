@@ -13,7 +13,7 @@ hanggang wakas — at ipinapakita ang iisang bagay na tahasang ginagawa ng
 NMOX Studio sa ibang paraan: **dumadapo ang mga lihim sa keychain ng
 iyong OS, hindi kailanman sa file na maii-commit.**
 
-![Studio ng API, kung saan dumadapo ang mga import: ang puno ng collection, isang request na naipadala, at ang marka nito sa security header](../images/api-studio.png)
+![Studio ng API, kung saan dumadapo ang mga import: ang puno ng collection, isang request na naipadala, at ang marka nito sa security header](../images/tl/api-studio.png)
 
 ## Bago magsimula
 

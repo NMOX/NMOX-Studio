@@ -10,7 +10,7 @@ je i wdrażasz do DigitalOcean, Hetznera albo Cloudflare — z kosztem przed
 oczami, zanim cokolwiek wydasz. Ten samouczek buduje plan i robi próbne
 wdrożenie, więc nie ruszy żaden grosz.
 
-![Stos nabiera kształtu — DNS, load balancer, droplet i wolumen z arkuszem właściwości; pasek narzędzi wycenia projekt na żywo i uczciwie mówi o trybie próbnym](../images/infra-designer.png)
+![Stos nabiera kształtu — DNS, load balancer, droplet i wolumen z arkuszem właściwości; pasek narzędzi wycenia projekt na żywo i uczciwie mówi o trybie próbnym](../images/pl/infra-designer.png)
 
 ## Otwieranie
 

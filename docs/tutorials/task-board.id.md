@@ -12,9 +12,9 @@ catat dengan tangan; cap waktu pada kartu itu sendirilah catatannya.
 Tutorial ini membawa sebuah papan dari tiga kartu sampai sprint yang
 ditutup, sekali duduk.
 
-![Papan Tugas: tiga kolom, kartu yang jamnya berjalan, dan penghitung hidup di kepala papan](../images/task-board.png)
+![Papan Tugas: tiga kolom, kartu yang jamnya berjalan, dan penghitung hidup di kepala papan](../images/id/task-board.png)
 
-![Sebuah sprint di Ikhtisar papan — burndown di atas garis ideal](../images/sprint-overview.png)
+![Sebuah sprint di Ikhtisar papan — burndown di atas garis ideal](../images/id/sprint-overview.png)
 
 ## Sebelum mulai
 
@@ -85,7 +85,7 @@ komit Anda; bila tidak, bagian itu memang tidak pernah muncul.
    kepalanya dibuka dengan sprint dan hitungan harinya (“Sprint 8 · hari
    3 dari 14”).
 
-   ![Sekali klik mengubah papan menjadi laporan harian](../images/standup.png)
+   ![Sekali klik mengubah papan menjadi laporan harian](../images/id/standup.png)
 
 8. **Tutup sprint.** **Sprint… ▸ Laporan Sprint…** adalah saudara
    tinjauan bagi Standup — yang selesai, yang masih terbuka saat

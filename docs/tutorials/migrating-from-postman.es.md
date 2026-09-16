@@ -14,7 +14,7 @@ muestra lo único que NMOX Studio hace distinto a propósito: **los
 secretos acaban en el llavero de tu sistema operativo, nunca en un
 archivo versionable.**
 
-![El Estudio de API, donde aterrizan las importaciones: el árbol de colecciones, una petición enviada y la nota de sus cabeceras de seguridad](../images/api-studio.png)
+![El Estudio de API, donde aterrizan las importaciones: el árbol de colecciones, una petición enviada y la nota de sus cabeceras de seguridad](../images/es/api-studio.png)
 
 ## Antes de empezar
 

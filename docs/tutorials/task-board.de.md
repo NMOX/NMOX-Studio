@@ -12,9 +12,9 @@ davon ist Buchhaltung, die Sie von Hand führen; die Zeitstempel der
 Karten selbst sind die Aufzeichnung. Dieses Tutorial bringt ein Board in
 einer Sitzung von drei Karten bis zu einem abgeschlossenen Sprint.
 
-![Das Aufgaben-Board: drei Spalten, eine eingestempelte Karte und die laufende Uhr in der Kopfzeile](../images/task-board.png)
+![Das Aufgaben-Board: drei Spalten, eine eingestempelte Karte und die laufende Uhr in der Kopfzeile](../images/de/task-board.png)
 
-![Ein Sprint in der Board-Übersicht — der Burndown über der Ideallinie](../images/sprint-overview.png)
+![Ein Sprint in der Board-Übersicht — der Burndown über der Ideallinie](../images/de/sprint-overview.png)
 
 ## Bevor Sie beginnen
 
@@ -89,7 +89,7 @@ Commits lesen; wenn nicht, erscheint dieser Abschnitt einfach nie.
    nie leer dargestellt, und die Kopfzeile beginnt mit dem Sprint und
    seinem Tageszähler („Sprint 8 · Tag 3 von 14“).
 
-   ![Ein Klick macht aus dem Board den täglichen Bericht](../images/standup.png)
+   ![Ein Klick macht aus dem Board den täglichen Bericht](../images/de/standup.png)
 
 8. **Den Sprint abschließen.** **Sprint… ▸ Sprint-Bericht…** ist das
    Gegenstück des Standups für das Review — erledigt, offen beim

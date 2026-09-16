@@ -14,7 +14,7 @@ durch — und zeigt das eine, was NMOX Studio mit Absicht anders macht:
 **Geheimnisse landen im Schlüsselbund Ihres Systems, nie in einer Datei
 zum Einchecken.**
 
-![Das API-Studio, wo Importe landen: der Sammlungsbaum, eine gesendete Anfrage und ihre Note für die Sicherheits-Header](../images/api-studio.png)
+![Das API-Studio, wo Importe landen: der Sammlungsbaum, eine gesendete Anfrage und ihre Note für die Sicherheits-Header](../images/de/api-studio.png)
 
 ## Bevor Sie beginnen
 

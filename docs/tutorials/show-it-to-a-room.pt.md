@@ -12,9 +12,9 @@ próprio editor, o único vocabulário de linguagens que dá nome aos blocos
 de código, a pintura da própria forja de documentação. Este tutorial
 percorre tudo numa sentada só, da última fileira à área de transferência.
 
-![Modo de apresentação ligado: um modelo Angular e a janela Output, ambos com +10 pt, restaurados exatamente quando o modo é desligado](../images/presentation-mode.png)
+![Modo de apresentação ligado: um modelo Angular e a janela Output, ambos com +10 pt, restaurados exatamente quando o modo é desligado](../images/pt/presentation-mode.png)
 
-![A aba do editor sozinha, salva por Salvar captura de tela do editor… em 2x](../images/editor-screenshot-2x.png)
+![A aba do editor sozinha, salva por Salvar captura de tela do editor… em 2x](../images/pt/editor-screenshot-2x.png)
 
 ## Antes de começar
 

@@ -8,7 +8,7 @@ Studio API adalah meja kerja REST ala Postman yang menyatu di dalam IDE. Anda
 menyusun permintaan, menjalankan asersi terhadap tanggapannya, dan — yang tidak
 dimiliki alat lain — setiap tanggapan dinilai terhadap standar tajuk keamanan web.
 
-![200 yang hidup dalam 331 ms — dan tab Standar menilai tajuk keamanan tanggapannya](../images/api-studio.png)
+![200 yang hidup dalam 331 ms — dan tab Standar menilai tajuk keamanan tanggapannya](../images/id/api-studio.png)
 
 ## Membukanya
 

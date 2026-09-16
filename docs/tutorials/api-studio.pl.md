@@ -9,7 +9,7 @@ Studio API to wbudowane w IDE stanowisko REST w stylu Postmana. Budujesz
 indziej — każda odpowiedź dostaje ocenę według standardów nagłówków
 bezpieczeństwa w sieci.
 
-![Żywe 200 w 331 ms — i karta Standardy oceniająca nagłówki bezpieczeństwa odpowiedzi](../images/api-studio.png)
+![Żywe 200 w 331 ms — i karta Standardy oceniająca nagłówki bezpieczeństwa odpowiedzi](../images/pl/api-studio.png)
 
 ## Otwieranie
 

@@ -9,7 +9,7 @@ MySQL/MariaDB, MongoDB und CouchDB — mit mitgelieferten Treibern, einer
 Konsole, die die Maschine kennt, und Ergebnisgittern, die Sie direkt
 bearbeiten. Dieses Tutorial nutzt SQLite, weil es keinen Server braucht.
 
-![Eine SQLite-Verbindung, eine Abfrage, Live-Zeilen im Gitter — und die Statusleiste nennt den ehrlichen Grund, wenn ein Gitter nur lesbar ist](../images/db-studio.png)
+![Eine SQLite-Verbindung, eine Abfrage, Live-Zeilen im Gitter — und die Statusleiste nennt den ehrlichen Grund, wenn ein Gitter nur lesbar ist](../images/de/db-studio.png)
 
 ## Öffnen
 

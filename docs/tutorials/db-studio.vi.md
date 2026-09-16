@@ -9,7 +9,7 @@ MongoDB và CouchDB — trình điều khiển đi kèm, một bảng điều kh
 loại máy, và những lưới kết quả sửa được ngay tại chỗ. Bài này dùng SQLite vì
 nó không cần máy chủ.
 
-![Một kết nối SQLite, một truy vấn, các hàng đang sống trong lưới — và thanh trạng thái nói lý do trung thực khi một lưới chỉ đọc](../images/db-studio.png)
+![Một kết nối SQLite, một truy vấn, các hàng đang sống trong lưới — và thanh trạng thái nói lý do trung thực khi một lưới chỉ đọc](../images/vi/db-studio.png)
 
 ## Mở nó
 

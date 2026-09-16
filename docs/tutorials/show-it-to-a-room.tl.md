@@ -13,9 +13,9 @@ bokabularyo ng wika na pumapangalan sa mga code fence, ang sariling
 pagpipinta ng docs forge. Dinadaanan ng tutorial na ito ang lahat nang
 isang upuan, mula sa huling hanay ng upuan hanggang sa clipboard.
 
-![Naka-on ang Mode ng presentasyon: isang template ng Angular at ang window ng Output, parehong +10 pt, eksaktong ibinabalik kapag pinatay ang mode](../images/presentation-mode.png)
+![Naka-on ang Mode ng presentasyon: isang template ng Angular at ang window ng Output, parehong +10 pt, eksaktong ibinabalik kapag pinatay ang mode](../images/tl/presentation-mode.png)
 
-![Ang tab ng editor lamang, na-save ng I-save ang Screenshot ng Editor… sa 2x](../images/editor-screenshot-2x.png)
+![Ang tab ng editor lamang, na-save ng I-save ang Screenshot ng Editor… sa 2x](../images/tl/editor-screenshot-2x.png)
 
 ## Bago magsimula
 

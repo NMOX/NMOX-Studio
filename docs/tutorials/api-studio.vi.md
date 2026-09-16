@@ -9,7 +9,7 @@ Bạn dựng yêu cầu, chạy các khẳng định trên phản hồi, và —
 khác có — mỗi phản hồi đều được chấm điểm theo các chuẩn tiêu đề bảo mật của
 web.
 
-![Một phản hồi 200 thật trong 331ms — và thẻ Tiêu chuẩn chấm điểm các tiêu đề bảo mật của phản hồi](../images/api-studio.png)
+![Một phản hồi 200 thật trong 331ms — và thẻ Tiêu chuẩn chấm điểm các tiêu đề bảo mật của phản hồi](../images/vi/api-studio.png)
 
 ## Mở nó
 

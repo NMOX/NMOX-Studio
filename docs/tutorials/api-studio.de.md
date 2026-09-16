@@ -9,7 +9,7 @@ die IDE. Sie bauen Anfragen, prüfen die Antwort mit Assertions, und —
 das gibt es sonst nirgends — jede Antwort wird an den Standards für
 Sicherheits-Header gemessen.
 
-![Ein Live-200 in 331 ms — und der Tab „Standards“ bewertet die Sicherheits-Header der Antwort](../images/api-studio.png)
+![Ein Live-200 in 331 ms — und der Tab „Standards“ bewertet die Sicherheits-Header der Antwort](../images/de/api-studio.png)
 
 ## Öffnen
 

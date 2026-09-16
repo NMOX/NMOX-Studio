@@ -12,7 +12,7 @@ menunjukkan satu hal yang sengaja dilakukan NMOX Studio secara berbeda:
 **rahasia mendarat di gantungan kunci sistem operasi Anda, tidak pernah di berkas
 yang bisa dikomit.**
 
-![Studio API, tempat hasil impor mendarat: pohon koleksi, permintaan yang terkirim, dan nilai tajuk keamanannya](../images/api-studio.png)
+![Studio API, tempat hasil impor mendarat: pohon koleksi, permintaan yang terkirim, dan nilai tajuk keamanannya](../images/id/api-studio.png)
 
 ## Sebelum mulai
 

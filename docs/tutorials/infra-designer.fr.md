@@ -11,7 +11,7 @@ DigitalOcean, Hetzner ou Cloudflare — avec le coût sous les yeux avant de
 dépenser quoi que ce soit. Ce tutoriel construit un plan et le simule :
 aucun argent ne bouge.
 
-![Une pile qui prend forme — DNS, équilibreur de charge, droplet et un volume avec sa feuille de propriétés ; la barre d’outils chiffre la conception en direct et reste honnête sur le mode simulation](../images/infra-designer.png)
+![Une pile qui prend forme — DNS, équilibreur de charge, droplet et un volume avec sa feuille de propriétés ; la barre d’outils chiffre la conception en direct et reste honnête sur le mode simulation](../images/fr/infra-designer.png)
 
 ## L’ouvrir
 

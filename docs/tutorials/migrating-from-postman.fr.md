@@ -14,7 +14,7 @@ seule chose que NMOX Studio fait autrement exprès : **les secrets
 atterrissent dans le trousseau de votre système, jamais dans un fichier
 versionnable.**
 
-![Le Studio d’API, là où arrivent les imports : l’arborescence de la collection, une requête envoyée et la note de ses en-têtes de sécurité](../images/api-studio.png)
+![Le Studio d’API, là où arrivent les imports : l’arborescence de la collection, une requête envoyée et la note de ses en-têtes de sécurité](../images/fr/api-studio.png)
 
 ## Avant de commencer
 

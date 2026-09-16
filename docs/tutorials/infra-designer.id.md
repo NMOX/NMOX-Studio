@@ -10,7 +10,7 @@ menerapkannya ke DigitalOcean, Hetzner, atau Cloudflare — dengan perkiraan bia
 sebelum Anda membelanjakan apa pun. Tutorial ini menyusun rencana dan mengujinya
 tanpa efek, jadi tidak ada uang yang keluar.
 
-![Tumpukan yang mulai terbentuk — DNS, penyeimbang beban, droplet, dan volume beserta lembar propertinya; bilah alat menghitung harga rancangan secara langsung dan terus terang soal mode uji coba](../images/infra-designer.png)
+![Tumpukan yang mulai terbentuk — DNS, penyeimbang beban, droplet, dan volume beserta lembar propertinya; bilah alat menghitung harga rancangan secara langsung dan terus terang soal mode uji coba](../images/id/infra-designer.png)
 
 ## Membukanya
 
