@@ -240,10 +240,14 @@ public final class ComplexScripts {
 
     /**
      * A whole painted run laid out anew: its glyphs, where each is drawn along
-     * the run and how far off the baseline, and the run's measured width.
-     * {@code changed} is false when nothing in it was shaped.
+     * the run and how far off the baseline, and the run's width, all measured
+     * from its first glyph; {@code origin} is how far that first glyph sits from
+     * where WebKit put the run. {@code changed} is false when nothing in it was
+     * shaped. JavaFX draws a positioned run from its first position, so a run
+     * whose first glyph started left of zero was painted shifted right by that
+     * much (v2.168.0): the paint call moves instead.
      */
-    public record Laid(int[] glyphs, float[] xs, float[] rises, float width, boolean changed) {
+    public record Laid(int[] glyphs, float[] xs, float[] rises, float width, float origin, boolean changed) {
     }
 
     /**
@@ -366,8 +370,12 @@ public final class ComplexScripts {
             }
             x += w;
         }
+        float origin = size == 0 ? 0f : outX[0];
+        for (int k = 0; k < size; k++) {
+            outX[k] -= origin;
+        }
         return new Laid(java.util.Arrays.copyOf(outG, size), outX, java.util.Arrays.copyOf(outR, size),
-                measured, changed);
+                measured - origin, origin, changed);
     }
 
     /** Whether every offset is zero: the run paints along one line. */

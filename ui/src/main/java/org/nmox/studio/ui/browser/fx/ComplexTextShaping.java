@@ -585,7 +585,7 @@ public final class ComplexTextShaping {
                     return 0f;
                 }
                 remember(glyphs, laid);
-                return 0f; // the laid-out positions already carry where the run starts
+                return laid.origin(); // the run's positions start at zero; the call moves to where it begins
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
