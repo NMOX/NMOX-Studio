@@ -100,7 +100,7 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   # request's /health on loopback for the length of the run
   # (v2.164.0: and the shop front the DevTools picture picks from, which the
   # forge's own scene writes under the demo shop during the run)
-  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 "$HOME_DIR/storefront/site" >/dev/null 2>&1 &
+  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 "$HOME_DIR/NMOX/storefront/site" >/dev/null 2>&1 &
   FIXTURE_SERVER=$!
   SERVICES="$FIXTURE_SERVER"
   DOCS_CONTAINER=""

@@ -58,6 +58,9 @@ public final class DocsDebug implements DocsScene {
         {"CRF-60", "24.50", "12"},
     };
 
+    /** The debugger's Variables window, by its platform window id. */
+    static final String VARIABLES = "localsView";
+
     /** Holds after the session appears, so the adapter has paused and the views filled. */
     static final long PAUSE_HOLD_MS = 6_000;
 
@@ -81,6 +84,10 @@ public final class DocsDebug implements DocsScene {
                 DocsFixtures.text(fixtures, lang, "inventory", "value"),
                 DocsFixtures.text(fixtures, lang, "inventory", "restock"),
                 DocsFixtures.text(fixtures, lang, "inventory", "shelf")), StandardCharsets.UTF_8);
+        // the path the debugger will name: node reports the REAL path, and on
+        // macOS /tmp is a link to /private/tmp — opening the link would leave
+        // the paused line in a second tab of the same file
+        script = script.toPath().toRealPath().toFile();
         phase = 0;
         return dir;
     }
@@ -189,6 +196,14 @@ public final class DocsDebug implements DocsScene {
                 advance(now);
             }
             default -> {
+                if (now - phaseAt >= PAUSE_HOLD_MS / 2) {
+                    // the run fronts its Output console; the picture is about
+                    // the paused state, so the Variables view goes in front
+                    TopComponent locals = org.openide.windows.WindowManager.getDefault().findTopComponent(VARIABLES);
+                    if (locals != null && !locals.isShowing()) {
+                        locals.requestVisible();
+                    }
+                }
                 return now - phaseAt >= PAUSE_HOLD_MS;
             }
         }

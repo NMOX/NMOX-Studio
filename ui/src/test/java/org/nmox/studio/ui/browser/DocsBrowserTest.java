@@ -46,6 +46,20 @@ class DocsBrowserTest {
     }
 
     @Test
+    @DisplayName("the forge script serves the directory this scene writes, on the port it loads")
+    void scriptServesTheScenesDirectory() throws Exception {
+        // the path had two homes and the first English run lost the picture
+        // to a 404: the script served $HOME_DIR/storefront/site while the
+        // scene wrote under $HOME_DIR/NMOX/storefront/site
+        String script = Files.readString(Path.of("../scripts/docs-shots.sh"), StandardCharsets.UTF_8);
+        String written = org.nmox.studio.core.util.DocsFixtures.projectDir(new File("HOME"))
+                .toPath().resolve(DocsBrowser.SITE).toString().replace(File.separatorChar, '/');
+        String served = "\"" + written.replaceFirst("^HOME", "\\$HOME_DIR") + "\"";
+        assertThat(script).contains("docs-fixture-server.py\" " + java.net.URI.create(DocsBrowser.URL).getPort()
+                + " " + served);
+    }
+
+    @Test
     @DisplayName("with no Browser built the scene is quiet and never ready")
     void quietWithoutABrowser() {
         DocsBrowser scene = new DocsBrowser();
