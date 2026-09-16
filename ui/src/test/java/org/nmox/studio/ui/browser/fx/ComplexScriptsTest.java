@@ -31,8 +31,8 @@ class ComplexScriptsTest {
     }
 
     @Test
-    @DisplayName("an Arabic run reaches the shaper in logical order, and the call is centred in the width WebKit measured")
-    void rightToLeftRunIsReversedShapedAndCentred() {
+    @DisplayName("an Arabic run reaches the shaper in logical order and keeps its right edge")
+    void rightToLeftRunIsReversedShapedAndKeepsItsRightEdge() {
         // visual order of "بيت" is ت ي ب
         String visual = new StringBuilder("بيت").reverse().toString();
         int[] g = glyphs(visual);
@@ -46,12 +46,12 @@ class ComplexScriptsTest {
         assertThat(asked).containsExactly("بيت");
         assertThat(g).containsExactly(BLANK, 7, 8);        // the blank sits where reading starts... on the left
         assertThat(a).containsExactly(0f, 6f, 9f);
-        assertThat(slack).isEqualTo(7.5f);                 // 30 measured, 15 painted: half on each side
+        assertThat(slack).isEqualTo(15f);                  // 30 measured, 15 painted: moved right by all of it
     }
 
     @Test
-    @DisplayName("a Devanagari run is not reversed, and is centred the same way")
-    void leftToRightRunKeepsOrderAndIsCentred() {
+    @DisplayName("a Devanagari run is not reversed, keeps its left edge and moves nothing")
+    void leftToRightRunKeepsOrderAndLeftEdge() {
         int[] g = glyphs("हिन्दी");
         float[] a = advances(g.length, 10f);
         List<String> asked = new ArrayList<>();
@@ -61,11 +61,11 @@ class ComplexScriptsTest {
         }, BLANK);
         assertThat(asked).containsExactly("हिन्दी");
         assertThat(g).startsWith(1, 2, 4).endsWith(BLANK, BLANK, BLANK);
-        assertThat(slack).isEqualTo(22.5f);                // 60 measured, 15 painted
+        assertThat(slack).isZero();
     }
 
     @Test
-    @DisplayName("words are shaped one at a time and the whole call centres on their summed difference")
+    @DisplayName("words are shaped one at a time and every Arabic word's difference adds up")
     void spacesSeparateWordsAndSlackSums() {
         // logical "با تا" -> visual: "ات اب"
         String visual = new StringBuilder("با تا").reverse().toString();
@@ -78,7 +78,7 @@ class ComplexScriptsTest {
         }, BLANK);
         assertThat(asked).containsExactly("تا", "با"); // visual left-to-right: the second word first
         assertThat(g[2]).isEqualTo(32);                  // the space is untouched
-        assertThat(slack).isEqualTo(4f);                 // (20-16) twice, halved
+        assertThat(slack).isEqualTo(8f);                 // (20-16) twice
     }
 
     @Test

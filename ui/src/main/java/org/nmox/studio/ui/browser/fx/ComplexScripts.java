@@ -17,8 +17,8 @@ import java.util.function.IntUnaryOperator;
  *
  * <p>WebKit measures the run itself, glyph by glyph, before painting it; since
  * v2.166.0 those widths are estimated close to the shaped forms
- * ({@link #measuredWidth}), and the shaped run is painted centred in the box
- * WebKit reserved, so what the estimate missed splits evenly on both sides.
+ * ({@link #measuredWidth}), and each shaped run keeps the edge its script
+ * reads from, so the few pixels the estimate misses fall where the run ends.
  * Pure: glyph lookup and shaping arrive as functions.
  */
 public final class ComplexScripts {
@@ -74,8 +74,7 @@ public final class ComplexScripts {
      * combining mark advances although shaping sets it on its letter; Devanagari
      * shrinks into conjuncts. Measuring them close to their shaped size keeps the
      * box WebKit reserves close to the painted word, so the difference no longer
-     * shows as a gap beside it (a shaped run is centred in its box, splitting
-     * what remains).
+     * shows as a gap beside it.
      *
      * @param medial   a letter's advance shaped between two joining neighbours, or NaN
      * @param finalForm its advance shaped after a joining neighbour, or NaN
@@ -108,7 +107,7 @@ public final class ComplexScripts {
      * @param charFor the character a painted glyph stands for, or -1
      * @param shaper  shapes one logical string; null or an empty result leaves the run alone
      * @param blank   a glyph that draws nothing, used where shaping produced fewer glyphs
-     * @return how far the call must move right to centre its shaped runs in the width WebKit measured
+     * @return how far the call must move right so its right-to-left runs keep their right edge
      */
     public static float reshape(int[] glyphs, float[] advances, IntUnaryOperator charFor,
             Function<String, Shaped> shaper, int blank) {
@@ -128,8 +127,7 @@ public final class ComplexScripts {
             }
             slack += segment(glyphs, advances, start, i, charFor, shaper, blank);
         }
-        // centred in the box WebKit measured: what the estimate missed splits evenly
-        return slack / 2f;
+        return slack;
     }
 
     private static float segment(int[] glyphs, float[] advances, int start, int end,
@@ -172,6 +170,10 @@ public final class ComplexScripts {
             glyphs[at] = blank;
             advances[at] = 0f;
         }
-        return original - used;
+        // a run keeps the edge its script reads from: an Arabic run its right,
+        // an Indic run its left, so what the width estimate missed falls where
+        // the run ends (centring was tried first and pushed a Hindi heading past
+        // its card's padding by half the shortfall)
+        return rtl ? original - used : 0f;
     }
 }

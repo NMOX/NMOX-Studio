@@ -23,9 +23,11 @@ All notable changes to NMOX Studio are documented here. The format follows
   way from medial to final lands within a word-average of 4.3px. Over 42 Hindi
   words the non-mark characters summed 39% wide; 0.72 of each lands within
   6.2px. `ComplexScripts` holds both numbers with the measurement beside them.
-- **What the estimate misses is split evenly.** A shaped run is now painted
-  centred in the box WebKit reserved, so a few pixels of error fall on both
-  sides of a phrase rather than all on one.
+- **Each run keeps the edge its script reads from.** An Arabic run keeps its
+  right edge and an Indic run its left, so the few pixels the estimate misses
+  fall where the run ends. Centring was tried first and the forged Hindi
+  picture showed why not: a heading measured short was pushed past its card's
+  padding by half the shortfall, out of line with the button beneath it.
 - **Hebrew needs nothing.** Plain Hebrew, niqqud, shin and sin dots and
   cantillation marks render in place in the unpatched WebView, the same as a
   shaped JavaFX label: Hebrew letters do not join and these fonts place their
@@ -33,7 +35,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 - **Proven by running it.** `ComplexTextShapingTest` loads a stand-in font,
   rewrites `getGlyphWidth` exactly as the installer does, and asks it for
   widths (the hook's answer, the font's own on NaN or before install);
-  `ComplexScriptsTest` holds the width rule and the centring. Both laws are
+  `ComplexScriptsTest` holds the width rule and the edge alignment. Both laws are
   mutation-proven by name. A probe of English lines holding Arabic and Hindi
   phrases, rendered through the product's own installer on the bundled runtime,
   shows the phrases in normal spacing.
