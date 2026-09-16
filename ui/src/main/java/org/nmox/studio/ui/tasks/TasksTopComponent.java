@@ -882,6 +882,23 @@ public final class TasksTopComponent extends TopComponent {
      * no trust gate), then assembles and shows the markdown on the EDT
      * where the board may be touched safely.
      */
+    /**
+     * Raises the Standup report for the documentation forge (v2.163.0).
+     *
+     * <p>The report is one of three pictures this window gives the guides,
+     * and it is the one no action can reach: the layer's only Tasks action
+     * OPENS this window, and {@link #showStandup()} is private and raised
+     * by a button. So the forge asks the window directly, the same way it
+     * asks DB Studio to run and API Studio to send, rather than reaching
+     * past it or faking a click.
+     *
+     * <p>Package-private, called only from {@code DocsTaskBoard}, which is
+     * a {@code DocsScene} — nothing but the forge looks one up.
+     */
+    void docsShowStandup() {
+        showStandup();
+    }
+
     private void showStandup() {
         File dir = boundDir;
         if (dir == null) {

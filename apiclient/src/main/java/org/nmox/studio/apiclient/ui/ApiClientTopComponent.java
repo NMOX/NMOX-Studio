@@ -1553,6 +1553,29 @@ public final class ApiClientTopComponent extends TopComponent {
 
     // ---- sending ----
 
+    /**
+     * Sends the starter request for the documentation forge (v2.163.0).
+     * API Studio's picture is a response — status, timing, headers, body —
+     * and an unsent request shows none of it. The collection, request and
+     * environment names are the PRODUCT's translations (v2.130.0), so this
+     * takes no fixture content: it sends whatever this language's starter
+     * workspace calls its one request.
+     *
+     * <p>Package-private and reached only from {@link DocsApi}, a
+     * {@code DocsScene}; nothing but the forge looks one up.
+     */
+    void docsSendStarter() {
+        if (workspace == null || workspace.collections.isEmpty()) {
+            return;
+        }
+        Collection collection = workspace.collections.get(0);
+        if (collection.requests.isEmpty()) {
+            return;
+        }
+        selectRequest(collection.name, collection.requests.get(0).name);
+        send();
+    }
+
     private void send() {
         if (inFlight != null && !inFlight.isFinished()) {
             // the button reads "Cancel" — interrupt the running send

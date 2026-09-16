@@ -88,8 +88,17 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   PREFS="$UD/config/Preferences/org/nmox/NMOX/Studio"
   mkdir -p "$PREFS"
   printf 'kvasir.external.consent=true\n' > "$PREFS/rack.properties"
-  STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
-  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf}"
+  # the scenes' own content, in the language being painted (v2.163.0): the
+  # cards on the board, the rows in the grid, the labels on the canvas
+  FIXTURES="$(cd "$(dirname "$0")/.." && pwd)/docs/i18n/forge-fixtures.json"
+  [ -f "$FIXTURES" ] || { echo "no forge fixtures at $FIXTURES"; exit 1; }
+  # API Studio's picture is a response, so something must answer the starter
+  # request's /health on loopback for the length of the run
+  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 >/dev/null 2>&1 &
+  FIXTURE_SERVER=$!
+  trap 'kill $FIXTURE_SERVER 2>/dev/null || true' EXIT
+  STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.fixtures=$FIXTURES -J-Dnmox.shots.lang=${LOCALE:-en} -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
+  : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf task-board sprint-overview standup infra-designer db-studio api-studio presentation-mode editor-screenshot-2x}"
 fi
 echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throwaway userdir + cachedir) =="
 # shellcheck disable=SC2086 — a locale code and the staged flags have no spaces; unquoted on purpose
