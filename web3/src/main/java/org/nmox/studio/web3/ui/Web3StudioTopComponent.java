@@ -3405,13 +3405,20 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     /** Network combo entries: name plus a gray chain badge. */
-    private static final class NetworkRenderer extends DefaultListCellRenderer {
+    static final class NetworkRenderer extends DefaultListCellRenderer {
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,
                 int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Network network) {
+            if (value instanceof Network network && index < 0) {
+                // v2.164.0: the CLOSED combo names the network only. Its width
+                // is capped, and an HTML label narrower than its text wraps —
+                // the chain badge fell onto a second, clipped line once the
+                // toolbar grew; the connection chip beside it already reads
+                // "chain N · block M", so the badge said nothing new there
+                setText("\u202A" + network.name() + "\u202C");
+            } else if (value instanceof Network network) {
                 // left-to-right embedding, as in the tree renderer above
                 setText("<html>‪" + esc(network.name())
                         + " <font color='#8a8a8a'>("
