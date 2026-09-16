@@ -28,6 +28,9 @@ public final class ShapingAgent {
 
     /** Called by the JVM when the agent is attached. */
     public static void agentmain(String args, Instrumentation inst) {
-        HANDOFF.offer(inst);
+        // a newer attach supersedes an unclaimed one: the slot holds the latest
+        while (!HANDOFF.offer(inst)) {
+            HANDOFF.poll();
+        }
     }
 }
