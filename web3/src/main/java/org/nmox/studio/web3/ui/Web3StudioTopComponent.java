@@ -2130,6 +2130,22 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     /**
+     * The docs forge (v2.164.0): the local chain selected and probed, and
+     * the aimed project's artifacts walked — what a user sees after ANVIL
+     * starts and the project builds. Called with the window showing.
+     */
+    void docsConnectAndScan() {
+        networkCombo.setSelectedItem(LOCAL_ANVIL);
+        networkSelected();
+        rescan();
+    }
+
+    /** True once the chain answered and the artifact tree holds contracts. */
+    boolean docsReady() {
+        return connected && !artifacts.isEmpty();
+    }
+
+    /**
      * The combo changed: drop the old client, stop the watch, and probe
      * the new endpoint (chainId + blockNumber + accounts) off-EDT. The
      * chip answers honestly; the FROM combo and every write gate follow

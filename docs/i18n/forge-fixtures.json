@@ -31,7 +31,12 @@
     "The board's clock runs on the FIRST 'doing' card — the fixture names no card",
     "twice. An earlier draft carried a 'clocked' key repeating a card's title,",
     "which is one fact in two places kept byte-identical by hand across fifteen",
-    "files; the defect is the second home, not the disagreement (v2.131.0)."
+    "files; the defect is the second home, not the disagreement (v2.131.0).",
+    "",
+    "v2.164.0: inventory is the script the debugger picture pauses in, one",
+    "item name per line so the breakpoint's line never moves; page is the shop",
+    "front the DevTools picture picks from. The brand, Meridian, is a name and",
+    "is not in the file."
   ],
   "en": {
     "board": {
@@ -80,6 +85,23 @@
       "loadBalancer": "Front door",
       "droplet": "App server",
       "volume": "Order archive"
+    },
+    "inventory": {
+      "comment": "Nightly stock report for the shop — run with node.",
+      "items": [
+        "Pour-over kettle",
+        "Burr grinder",
+        "Paper filters",
+        "Glass carafe"
+      ],
+      "value": "Inventory value",
+      "restock": "Restock to 50 of each",
+      "shelf": "on the shelf"
+    },
+    "page": {
+      "tagline": "Small-batch roasts, honest crema.",
+      "heading": "This week's roasts",
+      "order": "Order beans"
     }
   },
   "es": {
@@ -129,6 +151,23 @@
       "loadBalancer": "Puerta de entrada",
       "droplet": "Servidor de la app",
       "volume": "Archivo de pedidos"
+    },
+    "inventory": {
+      "comment": "Informe nocturno de existencias de la tienda — ejecútalo con node.",
+      "items": [
+        "Hervidor de goteo",
+        "Molinillo de muelas",
+        "Filtros de papel",
+        "Jarra de vidrio"
+      ],
+      "value": "Valor del inventario",
+      "restock": "Reponer hasta 50 de cada uno",
+      "shelf": "en el estante"
+    },
+    "page": {
+      "tagline": "Tuestes pequeños, crema honesta.",
+      "heading": "Los tuestes de esta semana",
+      "order": "Pedir café en grano"
     }
   },
   "fr": {
@@ -178,6 +217,23 @@
       "loadBalancer": "Porte d'entrée",
       "droplet": "Serveur applicatif",
       "volume": "Archive commandes"
+    },
+    "inventory": {
+      "comment": "Rapport de stock nocturne de la boutique — à lancer avec node.",
+      "items": [
+        "Bouilloire col de cygne",
+        "Moulin à meules",
+        "Filtres en papier",
+        "Carafe en verre"
+      ],
+      "value": "Valeur du stock",
+      "restock": "Réassort à 50 de chaque",
+      "shelf": "en rayon"
+    },
+    "page": {
+      "tagline": "Petits lots torréfiés, crema sincère.",
+      "heading": "Les torréfactions de la semaine",
+      "order": "Commander du café"
     }
   },
   "de": {
@@ -227,6 +283,23 @@
       "loadBalancer": "Eingang",
       "droplet": "App-Server",
       "volume": "Bestellarchiv"
+    },
+    "inventory": {
+      "comment": "Nächtlicher Lagerbericht für den Shop – mit node ausführen.",
+      "items": [
+        "Wasserkessel mit Schwanenhals",
+        "Kegelmahlwerk",
+        "Papierfilter",
+        "Glaskaraffe"
+      ],
+      "value": "Lagerwert",
+      "restock": "Auf je 50 auffüllen",
+      "shelf": "im Regal"
+    },
+    "page": {
+      "tagline": "Kleine Röstungen, ehrliche Crema.",
+      "heading": "Röstungen dieser Woche",
+      "order": "Bohnen bestellen"
     }
   },
   "ru": {
@@ -276,6 +349,23 @@
       "loadBalancer": "Точка входа",
       "droplet": "Сервер приложения",
       "volume": "Архив заказов"
+    },
+    "inventory": {
+      "comment": "Ночной отчёт об остатках магазина — запускать через node.",
+      "items": [
+        "Чайник для пуровера",
+        "Жерновая кофемолка",
+        "Бумажные фильтры",
+        "Стеклянный кувшин"
+      ],
+      "value": "Стоимость запасов",
+      "restock": "Дозаказать до 50 каждого",
+      "shelf": "на полке"
+    },
+    "page": {
+      "tagline": "Обжарка малыми партиями, честная крема.",
+      "heading": "Обжарки этой недели",
+      "order": "Заказать зёрна"
     }
   },
   "hi": {
@@ -325,6 +415,23 @@
       "loadBalancer": "मुख्य द्वार",
       "droplet": "ऐप सर्वर",
       "volume": "ऑर्डर संग्रह"
+    },
+    "inventory": {
+      "comment": "दुकान की रात की स्टॉक रिपोर्ट — node से चलाएँ।",
+      "items": [
+        "पोर-ओवर केतली",
+        "बर ग्राइंडर",
+        "काग़ज़ के फ़िल्टर",
+        "काँच की सुराही"
+      ],
+      "value": "माल का मूल्य",
+      "restock": "हर एक को 50 तक भरें",
+      "shelf": "शेल्फ़ पर"
+    },
+    "page": {
+      "tagline": "छोटे बैच में भुनी कॉफ़ी, सच्चा क्रेमा।",
+      "heading": "इस हफ़्ते की भुनाई",
+      "order": "बीन्स मँगाएँ"
     }
   },
   "uk": {
@@ -374,6 +481,23 @@
       "loadBalancer": "Вхідна точка",
       "droplet": "Сервер застосунку",
       "volume": "Архів замовлень"
+    },
+    "inventory": {
+      "comment": "Нічний звіт про залишки крамниці — запускати через node.",
+      "items": [
+        "Чайник для пуровера",
+        "Жорновий млинок",
+        "Паперові фільтри",
+        "Скляний глечик"
+      ],
+      "value": "Вартість запасів",
+      "restock": "Дозамовити до 50 кожного",
+      "shelf": "на полиці"
+    },
+    "page": {
+      "tagline": "Обсмаження малими партіями, чесна крема.",
+      "heading": "Обсмаження цього тижня",
+      "order": "Замовити зерно"
     }
   },
   "pl": {
@@ -423,6 +547,23 @@
       "loadBalancer": "Brama wejściowa",
       "droplet": "Serwer aplikacji",
       "volume": "Archiwum zamówień"
+    },
+    "inventory": {
+      "comment": "Nocny raport stanów magazynowych sklepu — uruchom przez node.",
+      "items": [
+        "Czajnik do przelewu",
+        "Młynek żarnowy",
+        "Filtry papierowe",
+        "Szklana karafka"
+      ],
+      "value": "Wartość zapasów",
+      "restock": "Uzupełnij do 50 sztuk",
+      "shelf": "na półce"
+    },
+    "page": {
+      "tagline": "Palone w małych partiach, uczciwa crema.",
+      "heading": "Palenia tego tygodnia",
+      "order": "Zamów ziarna"
     }
   },
   "pt": {
@@ -472,6 +613,23 @@
       "loadBalancer": "Porta de entrada",
       "droplet": "Servidor do app",
       "volume": "Arquivo de pedidos"
+    },
+    "inventory": {
+      "comment": "Relatório noturno de estoque da loja — rode com node.",
+      "items": [
+        "Chaleira de bico fino",
+        "Moedor de mós",
+        "Filtros de papel",
+        "Jarra de vidro"
+      ],
+      "value": "Valor do estoque",
+      "restock": "Repor até 50 de cada",
+      "shelf": "na prateleira"
+    },
+    "page": {
+      "tagline": "Torras em pequenos lotes, crema de verdade.",
+      "heading": "As torras da semana",
+      "order": "Pedir grãos"
     }
   },
   "id": {
@@ -521,6 +679,23 @@
       "loadBalancer": "Pintu depan",
       "droplet": "Server aplikasi",
       "volume": "Arsip pesanan"
+    },
+    "inventory": {
+      "comment": "Laporan stok malam untuk toko — jalankan dengan node.",
+      "items": [
+        "Ketel leher angsa",
+        "Penggiling burr",
+        "Filter kertas",
+        "Teko kaca"
+      ],
+      "value": "Nilai persediaan",
+      "restock": "Isi ulang hingga 50 per barang",
+      "shelf": "di rak"
+    },
+    "page": {
+      "tagline": "Sangrai kecil, crema yang jujur.",
+      "heading": "Sangrai minggu ini",
+      "order": "Pesan biji kopi"
     }
   },
   "tl": {
@@ -570,6 +745,23 @@
       "loadBalancer": "Harapang pinto",
       "droplet": "Server ng app",
       "volume": "Arkibo ng order"
+    },
+    "inventory": {
+      "comment": "Gabi-gabing ulat ng stock ng tindahan — patakbuhin gamit ang node.",
+      "items": [
+        "Takure para pour-over",
+        "Burr grinder",
+        "Mga paper filter",
+        "Pitsel na salamin"
+      ],
+      "value": "Halaga ng imbentaryo",
+      "restock": "Punan hanggang 50 bawat isa",
+      "shelf": "sa estante"
+    },
+    "page": {
+      "tagline": "Maliit na batch ng sangrai, tapat na crema.",
+      "heading": "Mga sangrai ngayong linggo",
+      "order": "Umorder ng beans"
     }
   },
   "vi": {
@@ -619,6 +811,23 @@
       "loadBalancer": "Cổng vào",
       "droplet": "Máy chủ ứng dụng",
       "volume": "Lưu trữ đơn hàng"
+    },
+    "inventory": {
+      "comment": "Báo cáo tồn kho hằng đêm của cửa hàng — chạy bằng node.",
+      "items": [
+        "Ấm rót cổ ngỗng",
+        "Máy xay cối",
+        "Giấy lọc",
+        "Bình thủy tinh"
+      ],
+      "value": "Giá trị tồn kho",
+      "restock": "Nhập thêm cho đủ 50 mỗi loại",
+      "shelf": "trên kệ"
+    },
+    "page": {
+      "tagline": "Rang mẻ nhỏ, crema chân thật.",
+      "heading": "Mẻ rang tuần này",
+      "order": "Đặt mua hạt"
     }
   },
   "zh": {
@@ -668,6 +877,23 @@
       "loadBalancer": "流量入口",
       "droplet": "应用服务器",
       "volume": "订单归档"
+    },
+    "inventory": {
+      "comment": "店铺的夜间库存报告——用 node 运行。",
+      "items": [
+        "手冲壶",
+        "锥刀磨豆机",
+        "滤纸",
+        "玻璃分享壶"
+      ],
+      "value": "库存价值",
+      "restock": "每件补货至 50",
+      "shelf": "在货架上"
+    },
+    "page": {
+      "tagline": "小批量烘焙，真实的油脂。",
+      "heading": "本周烘焙",
+      "order": "订购咖啡豆"
     }
   },
   "he": {
@@ -717,6 +943,23 @@
       "loadBalancer": "שער הכניסה",
       "droplet": "שרת היישום",
       "volume": "ארכיון ההזמנות"
+    },
+    "inventory": {
+      "comment": "דוח מלאי לילי של החנות — להרצה עם node.",
+      "items": [
+        "קומקום לחליטה",
+        "מטחנת אבנים",
+        "פילטרים מנייר",
+        "קנקן זכוכית"
+      ],
+      "value": "שווי המלאי",
+      "restock": "השלמה ל־50 מכל פריט",
+      "shelf": "על המדף"
+    },
+    "page": {
+      "tagline": "קלייה בסבבים קטנים, קרמה אמיתית.",
+      "heading": "הקלייה של השבוע",
+      "order": "הזמנת פולים"
     }
   },
   "ar": {
@@ -766,6 +1009,23 @@
       "loadBalancer": "الواجهة",
       "droplet": "خادم التطبيق",
       "volume": "أرشيف الطلبات"
+    },
+    "inventory": {
+      "comment": "تقرير المخزون الليلي للمحل — شغّلوه بـ node.",
+      "items": [
+        "غلاية تقطير",
+        "مطحنة حجرية",
+        "فلاتر ورق",
+        "إبريق زجاج"
+      ],
+      "value": "قيمة المخزون",
+      "restock": "التكملة لحد 50 من كل صنف",
+      "shelf": "على الرف"
+    },
+    "page": {
+      "tagline": "تحميص على دفعات صغيرة، وكريمة بجد.",
+      "heading": "تحميصات الأسبوع ده",
+      "order": "اطلب بُن"
     }
   }
 }
