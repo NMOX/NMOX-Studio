@@ -165,7 +165,7 @@ public final class ComplexTextShaping {
             vm.getMethod("detach").invoke(machine);
         }
         Class<?> agent = ClassLoader.getSystemClassLoader().loadClass(ShapingAgent.class.getName());
-        return (Instrumentation) agent.getMethod("instrumentation").invoke(null);
+        return (Instrumentation) agent.getMethod("claim").invoke(null);
     }
 
     /**
