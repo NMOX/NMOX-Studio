@@ -6,7 +6,7 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [2.163.0] - 2026-09-15
 
-**No faceplate prints one control's label on top of another's.**
+**The tutorials' data-bearing windows are painted in every language, with each reader's own data in them, and no faceplate prints one label on another.**
 
 - **David photographed VERITAS showing `RUNNER`, `FAILURES` and `COVER` piled
   on one another**, in English, on a shipped build. The cause is geometric and

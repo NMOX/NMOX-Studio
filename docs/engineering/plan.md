@@ -1,5 +1,7 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.163.0 — the pictures that needed data, and the plate David photographed. Eight tutorial windows only mean something with data in them, and the forge could reach none of their writers, so each module stages its own scene behind `core.spi.DocsScene`. Three laws came out of it. **A type can be a different class one module over**: every module loads its own org.json, so a `JSONObject` crossing a module boundary is a linkage error the flat test classpath cannot raise — only JDK types cross. **A leash around a whole script hides why it was needed**: the outer timeout killed the log copy and report, and `| tail` reported exit 0 over it (v2.69.1, again). **A green rectangle test is not a picture**: the faceplate law found twelve devices, two were adjacency, and one layout (VITALS) was wrong until it was looked at. The pictures themselves found three product defects no gate saw — 75px grid columns, cut cards, an RTL header out of order. Ceiling: Docker Panel, Contract Studio, a hit breakpoint, the DevTools pick.*
+
 *Currency addendum 2026-09-15, at v2.162.0 — the pictures that needed a
 session. v2.161.0's ceiling was six staged shots, and the reason they were a
 ceiling was that each needed a live state: a preset racked, cables on the rear,
