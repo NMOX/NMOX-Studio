@@ -56,7 +56,18 @@ marks at zero, Arabic letters a quarter of the way from medial to final form and
 letters at 0.72 of their width (both measured on running text), and each
 shaped run keeps its reading edge. What remains is a few pixels per word at
 the run's far end; exact widths need context WebKit does not pass, which
-only a native change could give. Installs whose conf predates v2.165.0
+only a native change could give.
+
+**What checking Persian and Urdu found (v2.167.0).** Three defects the
+Arabic and Hindi pictures had not exercised. Digits were reversed with the
+letters around them (`١٢٣` painted `٣٢١`), so only letters and marks are shaped
+now. Vowelled text lost its marks' vertical offsets and its advances were read
+in logical order; the installer also rewrites the advances-only glyph-run build
+in `TextUtilities.createGlyphList`, so a shaped run is drawn from x/y positions
+and may take more glyphs than it had characters, and JavaFX's upside-down y on
+macOS is detected from where a kasra lands. Nastaliq, which that made
+renderable, estimates its widths at half way from medial to final and misses by
+9-10px a word; that looseness is the recorded remainder. Installs whose conf predates v2.165.0
 (update-center updates) keep unjoined text until a reinstall, the v1.256.0
 conf timing law.
 

@@ -1,5 +1,14 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.167.0 — a check of two more languages
+is a check of what they bring. Persian and Urdu share Arabic's script, so they
+looked covered; photographed, they carried three things the Arabic pictures
+never had: numbers (reversed since v2.165.0, in Arabic too), vowel marks
+(offsets lost, advances read in logical order) and a Nastaliq font (more glyphs
+than characters). The reference itself was wrong in one place: JavaFX's own
+Text node paints a kasra above its letter on macOS, so the sign of y was
+measured from a kasra, not copied from the layout.*
+
 *Currency addendum 2026-09-16, at v2.166.0 — measure the estimate before
 choosing it. The gap before an Arabic phrase was WebKit reserving isolated-form
 widths; WebKit asks Java for one width per glyph with no context, so the answer

@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.167.0] - 2026-09-16
+
+**Persian and Urdu checked in the Browser: numbers read in their own order again, vowelled Arabic keeps its marks on its letters, and Urdu in Nastaliq renders as Nastaliq.**
+
+- **Numbers printed backwards since v2.165.0, in Arabic too.** WebKit hands
+  the paint call a right-to-left line in visual order, and a number inside it
+  already reads left to right. The shaper reversed every glyph in the run,
+  digits included, so `١٢٣` painted as `٣٢١` and Persian `۱۴۰۳` as `۳۰۴۱`. It now
+  shapes only the letters and marks of these scripts (`ComplexScripts.shapes`):
+  a digit or punctuation mark never joins, so it stays where WebKit put it,
+  measured by the font. Devanagari digits and the danda follow the same rule.
+- **Vowel marks sit on their letters.** Checking Persian meant checking
+  harakat, and a vowelled word (`بِسْمِ`) painted with its letters pulled apart
+  and its marks between them. Two causes, both measured. The shaped glyphs'
+  advances were taken in JavaFX's layout order, which is logical, so a mark
+  between two letters stretched the gap; they are now measured left to right
+  on screen. And the paint call can only move glyphs along the line, so every
+  vertical offset was lost. The installer now rewrites the one call in
+  `TextUtilities.createGlyphList` that builds WebKit's glyph run from advances
+  alone, and a shaped run is built from x/y positions instead (a `TextRun`
+  already carries them; JavaFX's own text uses that form).
+- **JavaFX reports those offsets upside down on macOS, so the direction is
+  measured.** JavaFX 26's layout hands CoreText's upward y on unchanged: its own
+  `Text` node paints a kasra above its letter. The bridge asks where a kasra
+  lands once (below its letter in every Arabic font) and flips only if the
+  layout says above, so a platform that already measures down is left alone.
+- **Urdu in Nastaliq renders as Nastaliq.** Noto Nastaliq Urdu shapes `ٹیسٹ`
+  (4 letters) into 8 glyphs that climb and descend. WebKit gave one slot per
+  letter, so the run was refused and painted as a squeezed pile. A run built
+  from positions can hold any number of glyphs, so the whole run is laid out
+  anew (`ComplexScripts.layout`). Its width is estimated from the medial and
+  final forms like Arabic's, halfway between for a font whose letters leave the
+  baseline (measured over 42 Urdu words: blends from 0.25 to 0.5 land within
+  9-10px a word; 0.5 leaves 17 words short instead of 27). Nastaliq's cascade
+  is too contextual for a per-letter estimate to be tight, so a line can sit a
+  few pixels apart or into a neighbour.
+- **Persian and Urdu in Naskh measure like Arabic.** The same estimate lands
+  within 4.0px a word for Persian and 3.4px for Urdu (Arabic: 4.3px). Persian's
+  zero-width non-joiner already breaks the join where it should (`می‌خواهم`).
+- **Proven by running it.** `ComplexTextShapingTest` rewrites a stand-in
+  `TextUtilities` exactly as the installer does and shows the run built from the
+  placer's glyphs and positions; `ComplexScriptsTest` holds the letters-only
+  rule, the layout with extra glyphs and offsets, and the kasra direction;
+  `PrismBridgeTest` holds the visual-order advances and the one-paint placement
+  handoff. Seven mutants die by name. Probes of Persian, Urdu (Naskh and
+  Nastaliq), vowelled Arabic and the English-with-phrases page, rendered through
+  the product's installer on the bundled runtime, show each correct.
+
 ## [2.166.0] - 2026-09-16
 
 **Arabic and Hindi phrases inside English lines sit in ordinary word spacing, and Hebrew is checked and needs nothing.**

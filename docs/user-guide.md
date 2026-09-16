@@ -1363,8 +1363,11 @@ letters joined, vowel signs and conjuncts in place — since v2.165.0.
 JavaFX's WebKit never did that by itself; the Browser teaches its paint
 call to on first open, and since v2.166.0 it measures them close to their
 shaped width too, so an Arabic or Hindi phrase inside an English sentence sits
-in ordinary word spacing (within a few pixels). Hebrew renders correctly on its
-own, niqqud included.
+in ordinary word spacing (within a few pixels). Since v2.167.0 numbers inside
+Arabic or Persian text read in their own order, vowel marks sit on their
+letters, and Urdu set in a Nastaliq font renders as Nastaliq (its widths are
+looser, so a Nastaliq line can sit a few pixels off). Hebrew renders correctly
+on its own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output
   (the originals still fire), plus `window.onerror` and unhandled
