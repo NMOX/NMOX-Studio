@@ -123,7 +123,7 @@ class ComplexScriptsTest {
         java.util.function.IntToDoubleFunction medial = cp -> 10d;
         java.util.function.IntToDoubleFunction fin = cp -> 20d;
         java.util.function.IntToDoubleFunction plain = cp -> 50d;
-        assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain)).isEqualTo(12d); // beh: 10 + 0.2 * 10
+        assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain)).isEqualTo(12.5d); // beh: 10 + 0.25 * 10
         assertThat(ComplexScripts.measuredWidth(0x064E, medial, fin, plain)).isZero();        // fatha, a mark
         assertThat(ComplexScripts.measuredWidth(0x094D, medial, fin, plain)).isZero();        // virama, a mark
         assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain)).isEqualTo(36d); // ka: 0.72 * 50

@@ -6,7 +6,7 @@ widths; WebKit asks Java for one width per glyph with no context, so the answer
 could only ever be an estimate. The first estimate (every letter at its medial
 form) looked principled and overlapped its neighbours on screen; a ten-minute
 calibration over real sentences showed medial forms run 4% narrow and isolated
-33% wide, and picked the blend that lands within a few pixels per word. And
+33% wide, and picked, among blends that all land within a few pixels per word, the one that errs toward a sliver of space rather than an overlap. And
 Hebrew was CHECKED before anything was built for it: it renders correctly
 unshaped, so the shaper stays out of it.*
 

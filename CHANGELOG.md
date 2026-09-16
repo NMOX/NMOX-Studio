@@ -18,11 +18,14 @@ All notable changes to NMOX Studio are documented here. The format follows
   rewrites that one method too: a mark measures zero, an Arabic letter measures
   between its medial and final forms, an Indic letter at a share of its width,
   and everything else keeps JavaFX's own answer.
-- **The widths are measured, not chosen.** Over 34 words of running Arabic at
-  26px, isolated forms summed 33% wide and medial forms 4% narrow; 0.2 of the
-  way from medial to final lands within a word-average of 4.3px. Over 42 Hindi
-  words the non-mark characters summed 39% wide; 0.72 of each lands within
-  6.2px. `ComplexScripts` holds both numbers with the measurement beside them.
+- **The widths are measured, not chosen.** Over running Arabic at 26px,
+  isolated forms summed a third too wide and medial forms slightly narrow;
+  every blend from 0.2 to 0.3 of the way toward the final form lands within a
+  word-average of 4.3px, and 0.25 is the one that halves the words measured
+  short — a short word paints over its neighbour, a long one leaves a sliver of
+  space. Over 42 Hindi words the non-mark characters summed 39% wide; 0.72 of
+  each lands within 6.5px, and raising it only grows every word's error.
+  `ComplexScripts` holds both numbers with the measurement beside them.
 - **Each run keeps the edge its script reads from.** An Arabic run keeps its
   right edge and an Indic run its left, so the few pixels the estimate misses
   fall where the run ends. Centring was tried first and the forged Hindi

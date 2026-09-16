@@ -52,7 +52,7 @@ OpenJFX file changes. Every refusal leaves the page painting as before.
 measured the unshaped glyphs, so a shaped word was narrower than its box and
 an Arabic phrase inside an English line sat apart from its neighbours.
 v2.166.0 rewrites `WCFontImpl.getGlyphWidth` as well, so WebKit measures
-marks at zero, Arabic letters between their medial and final forms and Indic
+marks at zero, Arabic letters a quarter of the way from medial to final form and Indic
 letters at 0.72 of their width (both measured on running text), and each
 shaped run keeps its reading edge. What remains is a few pixels per word at
 the run's far end; exact widths need context WebKit does not pass, which

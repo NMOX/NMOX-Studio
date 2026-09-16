@@ -51,18 +51,22 @@ public final class ComplexScripts {
     /**
      * How far along from an Arabic letter's medial form to its final form its
      * measured width sits (v2.166.0). Measured, not chosen: over 34 words of
-     * running Arabic at 26px the shaped total was 2376px, the medial forms sum to
-     * 2291, and 0.2 of the way to the final forms brings the estimate within a
-     * word-average of 4.3px — words end on their widest form, once each.
+     * running Arabic at 26px the shaped total was 2376px and the medial forms
+     * summed short. Every blend from 0.2 to 0.3 lands within a word-average of
+     * 4.3px; they differ in which way they miss, and a word measured short
+     * paints over its neighbour while one measured long leaves a sliver of
+     * space. At 0.2, 19 words came out more than 3px short; at 0.25, 11.
      */
-    static final double ARABIC_TOWARD_FINAL = 0.2;
+    static final double ARABIC_TOWARD_FINAL = 0.25;
 
     /**
      * The share of its plain width an Indic letter or spacing sign is measured
      * at (v2.166.0). Conjuncts, half forms and reordered signs make shaped
      * Devanagari far narrower than its characters: over 42 Hindi words the
      * shaped total was 1937px against 2690 for the non-mark characters, and 0.72
-     * lands within a word-average of 6.2px.
+     * lands within a word-average of 6.5px. Raising it barely changes how many
+     * words come out short (24 at 0.72 and at 0.75) while every word's error
+     * grows, so the miss here is per word, not a bias to correct.
      */
     static final double INDIC_SHARE = 0.72;
 
