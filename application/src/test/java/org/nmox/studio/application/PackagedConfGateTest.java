@@ -75,6 +75,20 @@ class PackagedConfGateTest {
     }
 
     @Test
+    @DisplayName("The assembled app's conf lets the Browser attach its shaping agent (v2.165.0)")
+    void packagedConfAllowsTheShapingAgent() throws Exception {
+        Path conf = Path.of("target", "nmoxstudio", "etc", "nmoxstudio.conf");
+        assertThat(conf).as("the assembled application's conf").exists();
+        assertThat(defaultOptionsLine(Files.readString(conf)))
+                .as("the Browser shapes Arabic and Indic scripts by attaching an agent to its own "
+                        + "process (ledger 99); without allowAttachSelf the attach is refused and "
+                        + "those scripts paint unjoined, and without EnableDynamicAgentLoading "
+                        + "every launch warns (JEP 451)")
+                .contains("-J-Djdk.attach.allowAttachSelf=true")
+                .contains("-J-XX:+EnableDynamicAgentLoading");
+    }
+
+    @Test
     @DisplayName("The packaged conf has exactly ONE default_options line")
     void packagedConfHasASingleDefaultOptionsLine() throws Exception {
         Path conf = Path.of("target", "nmoxstudio", "etc", "nmoxstudio.conf");
