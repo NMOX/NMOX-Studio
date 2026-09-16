@@ -519,6 +519,15 @@ public final class TasksTopComponent extends TopComponent {
         JList<TaskBoard.Card> list = Popups.popupTargetList(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setCellRenderer(new CardRenderer());
+        // a card WRAPS (v2.163.0): its height depends on the column's width,
+        // and BasicListUI caches cell heights, so a resize must re-measure
+        list.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                list.setFixedCellHeight(10);
+                list.setFixedCellHeight(-1);
+            }
+        });
         list.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_columnCardsA11y(col.name()));
         wireList(list, index);
         // a just-moved card keeps selection and focus, so ⌘↓ ⌘↓ ⌘→ reads
@@ -537,17 +546,30 @@ public final class TasksTopComponent extends TopComponent {
         return panel;
     }
 
-    /** Card text as PLAIN text (v1.311.0 — board files arrive with clones). */
-    private static final class CardRenderer
-            extends javax.swing.DefaultListCellRenderer {
+    /**
+     * A card is a sentence someone wrote, so it WRAPS (v2.163.0). The label
+     * renderer before it cut a long card at the column's edge with no
+     * ellipsis — {@code Translate the error catalogue [Payme} — the cut-text
+     * class v2.119.0 answered for the Workbench, and German runs ~40% longer.
+     * A text area renders no HTML at all, so the v1.311.0 plain-text rule for
+     * cloned board files holds by construction rather than by a flag.
+     */
+    static final class CardRenderer extends javax.swing.JTextArea
+            implements javax.swing.ListCellRenderer<Object> {
         CardRenderer() {
-            PlainTables.plain(this);
+            setLineWrap(true);
+            setWrapStyleWord(true);
+            setEditable(false);
+            setOpaque(true);
         }
 
         @Override
         public Component getListCellRendererComponent(JList<?> list, Object value,
                 int index, boolean selected, boolean focus) {
-            super.getListCellRendererComponent(list, value, index, selected, focus);
+            setFont(list.getFont());
+            setBackground(selected ? list.getSelectionBackground() : list.getBackground());
+            setForeground(selected ? list.getSelectionForeground() : list.getForeground());
+            setText(String.valueOf(value));
             if (value instanceof TaskBoard.Card c) {
                 String head = c.blocked() ? Bundle.TasksTopComponent_blockedCard(c.title()) : c.title();
                 if (c.clockedIn()) {
@@ -562,8 +584,15 @@ public final class TasksTopComponent extends TopComponent {
                 }
                 setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
             }
+            // measure the wrap against the width the card will actually get
+            int width = list.getParent() instanceof javax.swing.JViewport v && v.getWidth() > 0
+                    ? v.getWidth() : list.getWidth();
+            setSize(width > 0 ? width : WRAP_FALLBACK, Short.MAX_VALUE);
             return this;
         }
+
+        /** Before first layout a list has no width; wrap to a plausible column. */
+        static final int WRAP_FALLBACK = 240;
 
         private static String firstLine(String notes) {
             int nl = notes.indexOf('\n');

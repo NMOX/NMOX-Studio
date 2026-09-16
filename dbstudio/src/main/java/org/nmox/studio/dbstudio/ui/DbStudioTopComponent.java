@@ -824,6 +824,7 @@ public final class DbStudioTopComponent extends TopComponent {
                         .disableHtml(new JTable(new ResultsTableModel(result)));
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
+                org.nmox.studio.core.util.TableColumns.fitToContent(table); // no "Noor H..." (v2.163.0)
                 String reason = decision == null ? Bundle.DbStudioTopComponent_readOnly() : decision.reason();
                 table.setToolTipText(PlainText.plain(reason));
                 panel.add(new JScrollPane(table), BorderLayout.CENTER);
@@ -884,6 +885,7 @@ public final class DbStudioTopComponent extends TopComponent {
         table.setDefaultRenderer(String.class,
                 org.nmox.studio.core.util.PlainTables.plain(new DirtyCellRenderer(model)));
         table.setToolTipText(Bundle.DbStudioTopComponent_editableGridTooltip());
+        org.nmox.studio.core.util.TableColumns.fitToContent(table);
         applyButton.addActionListener(e -> applyEdits(tabPanel, spec, content, model));
         revertButton.addActionListener(e -> model.revertAll());
 
