@@ -58,6 +58,10 @@ public final class ComplexTextShaping {
     static final String DRAW = "drawString";
     static final String DRAW_GLYPHS = "(Lcom/sun/webkit/graphics/WCFont;[I[FFF)V";
     static final String RESHAPE = "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)F";
+    static final String FONT_IMPL = "com/sun/javafx/webkit/prism/WCFontImpl";
+    static final String GLYPH_WIDTH = "getGlyphWidth";
+    static final String GLYPH_WIDTH_DESC = "(I)D";
+    static final String WIDTH = "(Ljava/lang/Object;I)D";
 
     /** What happened, for the log line and the tests. */
     public enum Outcome { INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED }
@@ -109,14 +113,23 @@ public final class ComplexTextShaping {
             if (!hasGlyphDraw(context)) {
                 return Outcome.METHOD_CHANGED;
             }
+            Class<?> fontImpl = Class.forName(FONT_IMPL.replace('/', '.'), false, web.getClassLoader());
             Class<?> hook = MethodHandles.privateLookupIn(context, MethodHandles.lookup()).defineClass(hookClass());
-            hook.getField("SHAPER").set(null, new PrismBridge(web.getClassLoader()));
+            PrismBridge bridge = new PrismBridge(web.getClassLoader());
+            hook.getField("SHAPER").set(null, bridge);
+            hook.getField("WIDTHS").set(null, (Function<Object[], Object>) bridge::width);
             Transformer transformer = new Transformer();
             inst.addTransformer(transformer, true);
             try {
+                // widths first: a paint that runs between the two would still be
+                // measured and painted consistently, just unshaped
+                inst.retransformClasses(fontImpl);
                 inst.retransformClasses(context);
             } finally {
                 inst.removeTransformer(transformer);
+            }
+            if (!transformer.widthsApplied) {
+                LOG.info("complex-script shaping: WebKit's glyph widths could not be adjusted; shaped words keep a gap");
             }
             return transformer.applied ? Outcome.INSTALLED : Outcome.METHOD_CHANGED;
         } catch (ReflectiveOperationException | RuntimeException | LinkageError
@@ -180,6 +193,38 @@ public final class ComplexTextShaping {
                 "java/lang/Object", null);
         cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "SHAPER",
                 "Ljava/util/function/Function;", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "WIDTHS",
+                "Ljava/util/function/Function;", null, null).visitEnd();
+        // static double width(Object font, int glyph): NaN until WIDTHS is set
+        MethodVisitor wv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "width", WIDTH, null, null);
+        wv.visitCode();
+        wv.visitFieldInsn(Opcodes.GETSTATIC, HOOK, "WIDTHS", "Ljava/util/function/Function;");
+        wv.visitVarInsn(Opcodes.ASTORE, 2);
+        wv.visitVarInsn(Opcodes.ALOAD, 2);
+        Label widths = new Label();
+        wv.visitJumpInsn(Opcodes.IFNONNULL, widths);
+        wv.visitLdcInsn(Double.NaN);
+        wv.visitInsn(Opcodes.DRETURN);
+        wv.visitLabel(widths);
+        wv.visitVarInsn(Opcodes.ALOAD, 2);
+        wv.visitInsn(Opcodes.ICONST_2);
+        wv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+        wv.visitInsn(Opcodes.DUP);
+        wv.visitInsn(Opcodes.ICONST_0);
+        wv.visitVarInsn(Opcodes.ALOAD, 0);
+        wv.visitInsn(Opcodes.AASTORE);
+        wv.visitInsn(Opcodes.DUP);
+        wv.visitInsn(Opcodes.ICONST_1);
+        wv.visitVarInsn(Opcodes.ILOAD, 1);
+        wv.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+        wv.visitInsn(Opcodes.AASTORE);
+        wv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Function", "apply",
+                "(Ljava/lang/Object;)Ljava/lang/Object;", true);
+        wv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/Double");
+        wv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Double", "doubleValue", "()D", false);
+        wv.visitInsn(Opcodes.DRETURN);
+        wv.visitMaxs(0, 0);
+        wv.visitEnd();
         MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "reshape", RESHAPE, null, null);
         mv.visitCode();
         mv.visitFieldInsn(Opcodes.GETSTATIC, HOOK, "SHAPER", "Ljava/util/function/Function;");
@@ -245,12 +290,69 @@ public final class ComplexTextShaping {
         return writer.toByteArray();
     }
 
+    /**
+     * Rewrites {@code WCFontImpl.getGlyphWidth(int)} so it starts with
+     * {@code double w = NmoxComplexText.width(this, glyph); if (w == w) return w;}
+     * — NaN falls through to the font's own width. The one branch gets its
+     * frame spelled out (locals this, glyph, w; empty stack), so frames are
+     * expanded for the whole class.
+     */
+    static byte[] rewriteWidths(byte[] original, boolean[] applied) {
+        ClassReader reader = new ClassReader(original);
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+                    String[] exceptions) {
+                MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+                if (!GLYPH_WIDTH.equals(name) || !GLYPH_WIDTH_DESC.equals(descriptor)
+                        || (access & Opcodes.ACC_STATIC) != 0) {
+                    return mv;
+                }
+                return new MethodVisitor(Opcodes.ASM9, mv) {
+                    @Override
+                    public void visitCode() {
+                        super.visitCode();
+                        super.visitVarInsn(Opcodes.ALOAD, 0);
+                        super.visitVarInsn(Opcodes.ILOAD, 1);
+                        super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOK, "width", WIDTH, false);
+                        super.visitVarInsn(Opcodes.DSTORE, 2);
+                        super.visitVarInsn(Opcodes.DLOAD, 2);
+                        super.visitVarInsn(Opcodes.DLOAD, 2);
+                        super.visitInsn(Opcodes.DCMPL);
+                        Label fontOwn = new Label();
+                        super.visitJumpInsn(Opcodes.IFNE, fontOwn);
+                        super.visitVarInsn(Opcodes.DLOAD, 2);
+                        super.visitInsn(Opcodes.DRETURN);
+                        super.visitLabel(fontOwn);
+                        super.visitFrame(Opcodes.F_NEW, 3, new Object[]{FONT_IMPL, Opcodes.INTEGER, Opcodes.DOUBLE},
+                                0, new Object[0]);
+                        applied[0] = true;
+                    }
+                };
+            }
+        }, ClassReader.EXPAND_FRAMES);
+        return writer.toByteArray();
+    }
+
     static final class Transformer implements ClassFileTransformer {
         volatile boolean applied;
+        volatile boolean widthsApplied;
 
         @Override
         public byte[] transform(Module module, ClassLoader loader, String className, Class<?> redefined,
                 ProtectionDomain domain, byte[] bytes) {
+            if (FONT_IMPL.equals(className)) {
+                try {
+                    boolean[] done = {false};
+                    byte[] out = rewriteWidths(bytes, done);
+                    widthsApplied = done[0];
+                    return done[0] ? out : null;
+                } catch (RuntimeException ex) {
+                    LOG.log(Level.INFO, "could not rewrite " + className, ex);
+                    return null;
+                }
+            }
             if (!CONTEXT.equals(className)) {
                 return null;
             }
@@ -283,6 +385,9 @@ public final class ComplexTextShaping {
         private final Method posX;
         private final Method width;
         private final Method location;
+        private final Method charOffset;
+        /** Per WebKit font and glyph: the width WebKit should measure. */
+        private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
         private final Field locationX;
         /** Per WebKit font: sorted glyph codes, their characters, and a blank glyph. */
         private final Map<Object, int[][]> tables = new WeakHashMap<>();
@@ -306,6 +411,7 @@ public final class ComplexTextShaping {
             posX = open(glyphList.getMethod("getPosX", int.class));
             width = open(glyphList.getMethod("getWidth"));
             location = open(glyphList.getMethod("getLocation"));
+            charOffset = open(glyphList.getMethod("getCharOffset", int.class));
             locationX = Class.forName("com.sun.javafx.geom.Point2D", false, fx).getField("x");
             locationX.setAccessible(true);
         }
@@ -333,6 +439,71 @@ public final class ComplexTextShaping {
                         text -> shape(text, pg), table[2][0]);
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
+            }
+        }
+
+        /** The hook's width answer: {font, glyph} to a Double, NaN for the font's own. Never throws. */
+        Object width(Object[] args) {
+            try {
+                Object font = args[0];
+                int glyph = (Integer) args[1];
+                int[][] table = font == null ? null : table(font);
+                if (table == null) {
+                    return Double.NaN;
+                }
+                int cp = charFor(table, glyph);
+                if (cp < 0) {
+                    return Double.NaN;
+                }
+                Map<Integer, Double> known;
+                synchronized (widths) {
+                    known = widths.computeIfAbsent(font, f -> new java.util.HashMap<>());
+                }
+                synchronized (known) {
+                    Double cached = known.get(glyph);
+                    if (cached != null) {
+                        return cached;
+                    }
+                }
+                Object pg = platformFont.invoke(font);
+                double w = ComplexScripts.measuredWidth(cp,
+                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
+                                .append(ComplexScripts.TATWEEL).toString(), pg),
+                        c -> joinedAdvance(new StringBuilder().append(ComplexScripts.TATWEEL).appendCodePoint(c)
+                                .toString(), pg),
+                        c -> joinedAdvance(new String(Character.toChars(c)), pg, 0));
+                synchronized (known) {
+                    known.put(glyph, w);
+                }
+                return w;
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+                return Double.NaN;
+            }
+        }
+
+        /** The advance of the character at index 1 of {@code text} as shaped, or NaN. */
+        private double joinedAdvance(String text, Object pg) {
+            return joinedAdvance(text, pg, 1);
+        }
+
+        /** The advance of the glyph for char index {@code at} of {@code text} as shaped, or NaN. */
+        private double joinedAdvance(String text, Object pg, int index) {
+            try {
+                Object layout = createLayout.invoke(null, text, pg);
+                for (Object list : (Object[]) runs.invoke(layout)) {
+                    int count = (Integer) glyphCount.invoke(list);
+                    float runWidth = (Float) width.invoke(list);
+                    for (int g = 0; g < count; g++) {
+                        if ((Integer) charOffset.invoke(list, g) == index) {
+                            float at = (Float) posX.invoke(list, g);
+                            float next = g + 1 < count ? (Float) posX.invoke(list, g + 1) : runWidth;
+                            return Math.abs(next - at);
+                        }
+                    }
+                }
+                return Double.NaN;
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                return Double.NaN;
             }
         }
 
