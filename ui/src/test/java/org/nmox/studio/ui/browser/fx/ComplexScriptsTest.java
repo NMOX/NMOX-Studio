@@ -32,7 +32,7 @@ class ComplexScriptsTest {
 
     @Test
     @DisplayName("an Arabic run reaches the shaper in logical order, and the call is centred in the width WebKit measured")
-    void rightToLeftRunIsReversedShapedAndRightAligned() {
+    void rightToLeftRunIsReversedShapedAndCentred() {
         // visual order of "بيت" is ت ي ب
         String visual = new StringBuilder("بيت").reverse().toString();
         int[] g = glyphs(visual);
@@ -51,7 +51,7 @@ class ComplexScriptsTest {
 
     @Test
     @DisplayName("a Devanagari run is not reversed, and is centred the same way")
-    void leftToRightRunKeepsOrderAndLeftEdge() {
+    void leftToRightRunKeepsOrderAndIsCentred() {
         int[] g = glyphs("हिन्दी");
         float[] a = advances(g.length, 10f);
         List<String> asked = new ArrayList<>();
