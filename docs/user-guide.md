@@ -1361,9 +1361,10 @@ Open-in-Browser action route here too.
 Pages in Arabic, Persian, Hindi and the other Indic scripts paint shaped —
 letters joined, vowel signs and conjuncts in place — since v2.165.0.
 JavaFX's WebKit never did that by itself; the Browser teaches its paint
-call to on first open. One visible difference from a desktop browser
-remains: WebKit still measures those words unjoined, so an Arabic phrase
-inside an English sentence can sit a little apart from the words before it.
+call to on first open, and since v2.166.0 it measures them close to their
+shaped width too, so an Arabic or Hindi phrase inside an English sentence sits
+in ordinary word spacing (within a few pixels). Hebrew renders correctly on its
+own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output
   (the originals still fire), plus `window.onerror` and unhandled
