@@ -9,7 +9,6 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
-import org.json.JSONObject;
 import org.nmox.studio.core.spi.DocsScene;
 import org.nmox.studio.core.util.DocsFixtures;
 import org.nmox.studio.dbstudio.io.DbWorkspaceIO;
@@ -55,8 +54,7 @@ public final class DocsDb implements DocsScene {
 
     @Override
     public File stage(File home, String fixtures, String lang) throws IOException {
-        JSONObject text = DocsFixtures.section(fixtures, lang, "db");
-        query = text.getString("query");
+        query = DocsFixtures.text(fixtures, lang, "db", "query");
         File dir = DocsFixtures.projectDir(home);
         Files.createDirectories(dir.toPath());
         File db = new File(dir, DB_FILE);
@@ -73,7 +71,7 @@ public final class DocsDb implements DocsScene {
             }
             try (PreparedStatement insert = c.prepareStatement(
                     "INSERT INTO " + TABLE + " (name, city, orders) VALUES (?, ?, ?)")) {
-                for (List<String> row : DocsFixtures.rows(text, "rows")) {
+                for (List<String> row : DocsFixtures.rows(fixtures, lang, "db", "rows")) {
                     if (row.size() < 3) {
                         continue;
                     }

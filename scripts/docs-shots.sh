@@ -108,12 +108,19 @@ echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throw
 # shellcheck disable=SC2086 — a locale code and the staged flags have no spaces; unquoted on purpose
 # an interactive login zsh so the app sees the keys ~/.zshrc exports; "$@"
 # keeps every argument's quoting intact through the hop
+# the app gets its own leash (NMOX_SHOTS_TIMEOUT seconds): a forge that stops
+# advancing must still reach the log copy and the missing-shots report below —
+# a timeout wrapped around the whole script killed both and hid the cause
+FORGE_TIMEOUT="${NMOX_SHOTS_TIMEOUT:-900}"
+timeout --kill-after=30 "$FORGE_TIMEOUT" \
 zsh -ilc 'exec "$@"' nmox-forge \
   "$APP" --nosplash --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
   -J-Dnmox.shots.dir="$OUT_ABS" \
   -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dapple.awt.application.name="NMOX Studio"
+boot=$?
+[ "$boot" = 124 ] && echo "forge timed out after ${FORGE_TIMEOUT}s — the log below says where it stopped"
 
 echo "== shots =="
 missing=0

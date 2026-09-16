@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import org.json.JSONObject;
 import org.nmox.studio.core.spi.DocsScene;
 import org.nmox.studio.core.util.DocsFixtures;
 import org.nmox.studio.core.util.SelfWriteTracker;
@@ -51,16 +50,15 @@ public final class DocsTaskBoard implements DocsScene {
 
     @Override
     public File stage(File home, String fixtures, String lang) throws IOException {
-        JSONObject text = DocsFixtures.section(fixtures, lang, "board");
         File dir = DocsFixtures.projectDir(home);
         Files.createDirectories(dir.toPath());
 
         TaskBoard board = TasksIO.starterBoard();
         int last = board.columnCount() - 1;
-        String epic = text.getString("epic");
+        String epic = DocsFixtures.text(fixtures, lang, "board", "epic");
         long now = System.currentTimeMillis();
 
-        List<String> todo = DocsFixtures.strings(text, "todo");
+        List<String> todo = DocsFixtures.strings(fixtures, lang, "board", "todo");
         TaskBoard.Card blocked = null;
         for (String title : todo) {
             TaskBoard.Card card = board.addCard(0, title, "");
@@ -73,7 +71,8 @@ public final class DocsTaskBoard implements DocsScene {
         // and the action that would unblock it, which is what the register
         // shows (v2.5.0 — a row with no action is not a register row)
         if (blocked != null) {
-            board.block(blocked.id(), text.getString("blockOwner"), text.getString("blockAction"));
+            board.block(blocked.id(), DocsFixtures.text(fixtures, lang, "board", "blockOwner"),
+                    DocsFixtures.text(fixtures, lang, "board", "blockAction"));
         }
 
         // exactly one clock runs on a board, and it is the FIRST in-progress
@@ -81,7 +80,7 @@ public final class DocsTaskBoard implements DocsScene {
         // it was the same fact in two places, kept byte-identical by hand in
         // fifteen files (the v2.131.0 rule — the defect is the second home).
         boolean clockStarted = false;
-        for (String title : DocsFixtures.strings(text, "doing")) {
+        for (String title : DocsFixtures.strings(fixtures, lang, "board", "doing")) {
             TaskBoard.Card card = board.addCard(1, title, "");
             if (card == null) {
                 continue;
@@ -94,14 +93,14 @@ public final class DocsTaskBoard implements DocsScene {
 
         // addCard into the last column stamps `done` itself, which is what
         // the Overview's burndown and the Standup's Yesterday/Today read
-        for (String title : DocsFixtures.strings(text, "done")) {
+        for (String title : DocsFixtures.strings(fixtures, lang, "board", "done")) {
             TaskBoard.Card card = board.addCard(last, title, "");
             if (card != null) {
                 board.setLabel(card.id(), epic);
             }
         }
 
-        board.setSprint(text.getString("sprint"), now - SPRINT_STARTED_AGO_MS, now + SPRINT_ENDS_IN_MS);
+        board.setSprint(DocsFixtures.text(fixtures, lang, "board", "sprint"), now - SPRINT_STARTED_AGO_MS, now + SPRINT_ENDS_IN_MS);
         TasksIO.save(dir, board, new SelfWriteTracker());
         return dir;
     }

@@ -588,9 +588,11 @@ public class DocsShots implements Runnable {
             }
             try {
                 return target.stage(home, content, lang());
-            } catch (java.io.IOException | RuntimeException ex) {
+            } catch (java.io.IOException | RuntimeException | LinkageError | java.util.ServiceConfigurationError ex) {
+                // an Error here once stopped the whole forge silently (a cross-loader
+                // org.json type): skip the scene, say so, keep painting
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
-                        .warning("scene " + id + " could not be staged: " + ex);
+                        .log(java.util.logging.Level.WARNING, "scene " + id + " could not be staged", ex);
                 return null;
             }
         }
@@ -603,7 +605,7 @@ public class DocsShots implements Runnable {
             }
             try {
                 target.arrange();
-            } catch (RuntimeException ex) {
+            } catch (RuntimeException | LinkageError ex) {
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
                         .warning("scene " + id + " could not be arranged: " + ex);
             }
@@ -654,7 +656,7 @@ public class DocsShots implements Runnable {
             Staged stage = stagedQueue.next();
             try {
                 stage.arrange().run();
-            } catch (RuntimeException ex) {
+            } catch (RuntimeException | LinkageError ex) {
                 java.util.logging.Logger.getLogger(DocsShots.class.getName())
                         .warning("staged shot " + stage.file() + " could not be arranged \u2014 skipped: " + ex);
                 nextStaged();

@@ -16,26 +16,32 @@ import org.json.JSONObject;
  * than four times differently.
  *
  * <p>The rule: a language's own section when it has one, English otherwise,
- * decided per SECTION rather than per file, so a language half-translated
- * still shows everything it does have. English is the fixture file's own
- * fallback and is required to be complete — {@code ForgeFixturesGateTest}
- * fails the build when a shipped language is missing.
+ * decided per SECTION, so a half-translated language still shows everything
+ * it does have. {@code ForgeFixturesGateTest} fails the build when a shipped
+ * language is missing.
  *
- * <p>Forge-only: nothing on a normal boot reads fixtures. The content here
- * is documentation, deliberately NOT one of the product's bundles, because
- * the product's translated surface should hold only what a user can see.
+ * <p><b>Only JDK types cross this class's boundary.</b> Every NMOX module
+ * bundles its own copy of org.json in its own classloader (tech-debt ledger
+ * 3), so a {@code JSONObject} returned from core is a DIFFERENT class from the
+ * {@code JSONObject} a scene in ui, infra, dbstudio or apiclient compiles
+ * against. The first cut returned one: every unit test passed on a flat
+ * classpath, and in the assembled app the first scene died with a linkage
+ * error that stopped the forge dead. {@code DocsFixturesTest} holds the
+ * signature rule by reflection.
+ *
+ * <p>Forge-only: nothing on a normal boot reads fixtures.
  */
 public final class DocsFixtures {
 
     private DocsFixtures() {
     }
 
+    /** The English section every language falls back to. */
+    public static final String FALLBACK = "en";
+
     /**
-     * The demo project every scene stages into, so one aim serves them all:
-     * the board, the infrastructure design, the database workspace and the
-     * API workspace all belong to one shop the reader is shown working on.
-     * A repository name, so it is NOT translated — the v2.130.0 line between
-     * the product's words and the user's own.
+     * The demo project every scene stages into, so one aim serves them all.
+     * A repository name, so it is NOT translated.
      */
     public static final String PROJECT = "storefront";
 
@@ -44,31 +50,15 @@ public final class DocsFixtures {
         return new java.io.File(new java.io.File(home, "NMOX"), PROJECT);
     }
 
-    /** The English section every language falls back to. */
-    public static final String FALLBACK = "en";
-
-    /**
-     * One section of one language's fixtures — {@code board}, {@code db},
-     * {@code infra} — falling back to English when this language has no
-     * entry for it.
-     *
-     * @param fixtures the text of {@code docs/i18n/forge-fixtures.json}
-     * @param lang     the language being painted, e.g. {@code de}; blank means English
-     * @param section  the section name
-     */
-    public static JSONObject section(String fixtures, String lang, String section) {
-        JSONObject root = new JSONObject(fixtures);
-        JSONObject english = root.getJSONObject(FALLBACK);
-        JSONObject mine = lang == null || lang.isBlank() || FALLBACK.equals(lang)
-                ? english : root.optJSONObject(lang);
-        JSONObject own = mine == null ? null : mine.optJSONObject(section);
-        return own != null ? own : english.getJSONObject(section);
+    /** One string value of a language's section, falling back to English. */
+    public static String text(String fixtures, String lang, String section, String key) {
+        return section(fixtures, lang, section).getString(key);
     }
 
-    /** A string array of a section, in file order; empty when absent. */
-    public static List<String> strings(JSONObject section, String key) {
+    /** A string array of a language's section, in file order; empty when absent. */
+    public static List<String> strings(String fixtures, String lang, String section, String key) {
         List<String> out = new ArrayList<>();
-        JSONArray arr = section.optJSONArray(key);
+        JSONArray arr = section(fixtures, lang, section).optJSONArray(key);
         for (int i = 0; arr != null && i < arr.length(); i++) {
             out.add(arr.getString(i));
         }
@@ -76,9 +66,9 @@ public final class DocsFixtures {
     }
 
     /** An array of string arrays — the rows of a grid; empty when absent. */
-    public static List<List<String>> rows(JSONObject section, String key) {
+    public static List<List<String>> rows(String fixtures, String lang, String section, String key) {
         List<List<String>> out = new ArrayList<>();
-        JSONArray arr = section.optJSONArray(key);
+        JSONArray arr = section(fixtures, lang, section).optJSONArray(key);
         for (int i = 0; arr != null && i < arr.length(); i++) {
             JSONArray row = arr.getJSONArray(i);
             List<String> cells = new ArrayList<>();
@@ -88,5 +78,15 @@ public final class DocsFixtures {
             out.add(cells);
         }
         return out;
+    }
+
+    /** Package-private on purpose: a JSONObject must never leave this module. */
+    static JSONObject section(String fixtures, String lang, String section) {
+        JSONObject root = new JSONObject(fixtures);
+        JSONObject english = root.getJSONObject(FALLBACK);
+        JSONObject mine = lang == null || lang.isBlank() || FALLBACK.equals(lang)
+                ? english : root.optJSONObject(lang);
+        JSONObject own = mine == null ? null : mine.optJSONObject(section);
+        return own != null ? own : english.getJSONObject(section);
     }
 }

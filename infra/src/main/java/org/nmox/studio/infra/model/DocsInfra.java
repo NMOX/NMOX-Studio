@@ -3,7 +3,6 @@ package org.nmox.studio.infra.model;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import org.json.JSONObject;
 import org.nmox.studio.core.spi.DocsScene;
 import org.nmox.studio.core.util.DocsFixtures;
 import org.openide.util.lookup.ServiceProvider;
@@ -37,15 +36,14 @@ public final class DocsInfra implements DocsScene {
 
     @Override
     public File stage(File home, String fixtures, String lang) throws IOException {
-        JSONObject text = DocsFixtures.section(fixtures, lang, "infra");
         File dir = DocsFixtures.projectDir(home);
         Files.createDirectories(dir.toPath());
 
         InfraGraph graph = new InfraGraph();
-        InfraGraph.InfraNode volume = node(graph, NodeKind.VOLUME, 80, 250, text.getString("volume"));
-        InfraGraph.InfraNode droplet = node(graph, NodeKind.DROPLET, 320, 250, text.getString("droplet"));
-        InfraGraph.InfraNode balancer = node(graph, NodeKind.LOAD_BALANCER, 560, 150, text.getString("loadBalancer"));
-        InfraGraph.InfraNode domain = node(graph, NodeKind.DOMAIN, 800, 150, text.getString("dns"));
+        InfraGraph.InfraNode volume = node(graph, NodeKind.VOLUME, 80, 250, DocsFixtures.text(fixtures, lang, "infra", "volume"));
+        InfraGraph.InfraNode droplet = node(graph, NodeKind.DROPLET, 320, 250, DocsFixtures.text(fixtures, lang, "infra", "droplet"));
+        InfraGraph.InfraNode balancer = node(graph, NodeKind.LOAD_BALANCER, 560, 150, DocsFixtures.text(fixtures, lang, "infra", "loadBalancer"));
+        InfraGraph.InfraNode domain = node(graph, NodeKind.DOMAIN, 800, 150, DocsFixtures.text(fixtures, lang, "infra", "dns"));
 
         graph.connect(volume, droplet);
         graph.connect(droplet, balancer);
