@@ -21978,6 +21978,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.167.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.166.0...v2.167.0
 [2.166.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.165.0...v2.166.0
 [2.165.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.164.0...v2.165.0
 [2.164.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.163.0...v2.164.0
