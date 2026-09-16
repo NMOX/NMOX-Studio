@@ -245,7 +245,7 @@ public final class ComplexTextShaping {
         return writer.toByteArray();
     }
 
-    private static final class Transformer implements ClassFileTransformer {
+    static final class Transformer implements ClassFileTransformer {
         volatile boolean applied;
 
         @Override
@@ -353,6 +353,22 @@ public final class ComplexTextShaping {
                 return null;
             }
             Object mapper = glyphMapper.invoke(fontResource.invoke(pg));
+            java.util.function.IntUnaryOperator lookup = cp -> {
+                try {
+                    return (Integer) charToGlyph.invoke(mapper, cp);
+                } catch (ReflectiveOperationException ex) {
+                    return 0;
+                }
+            };
+            return glyphTable(lookup);
+        }
+
+        /**
+         * A font's reverse map for the shaped scripts: glyph codes sorted, the
+         * character each stands for beside it (the first, when two share a
+         * glyph), and the glyph that draws a space.
+         */
+        static int[][] glyphTable(java.util.function.IntUnaryOperator charToGlyph) {
             int total = 0;
             for (int[] r : ComplexScripts.RANGES) {
                 total += r[1] - r[0] + 1;
@@ -361,7 +377,7 @@ public final class ComplexTextShaping {
             int n = 0;
             for (int[] r : ComplexScripts.RANGES) {
                 for (int cp = r[0]; cp <= r[1]; cp++) {
-                    int g = (Integer) charToGlyph.invoke(mapper, cp);
+                    int g = charToGlyph.applyAsInt(cp);
                     if (g != 0) {
                         pairs[n++] = ((long) g << 32) | cp;
                     }
@@ -381,22 +397,38 @@ public final class ComplexTextShaping {
                 chars[kept] = (int) p;
                 kept++;
             }
-            int blank = (Integer) charToGlyph.invoke(mapper, (int) ' ');
-            return new int[][]{Arrays.copyOf(codes, kept), Arrays.copyOf(chars, kept), {blank}};
+            return new int[][]{Arrays.copyOf(codes, kept), Arrays.copyOf(chars, kept), {charToGlyph.applyAsInt(' ')}};
         }
 
-        private static int charFor(int[][] table, int glyph) {
+        static int charFor(int[][] table, int glyph) {
             int at = Arrays.binarySearch(table[0], glyph);
             return at >= 0 ? table[1][at] : -1;
         }
 
-        private static boolean anyShapeable(int[] glyphs, int[][] table) {
+        static boolean anyShapeable(int[] glyphs, int[][] table) {
             for (int g : glyphs) {
                 if (Arrays.binarySearch(table[0], g) >= 0) {
                     return true;
                 }
             }
             return false;
+        }
+
+        /** Shaped glyphs sorted left to right by where the layout placed them. */
+        static ComplexScripts.Shaped visualOrder(int[] code, float[] x, float[] adv) {
+            int total = code.length;
+            Integer[] order = new Integer[total];
+            for (int j = 0; j < total; j++) {
+                order[j] = j;
+            }
+            Arrays.sort(order, (a, b) -> Float.compare(x[a], x[b]));
+            int[] glyphs = new int[total];
+            float[] advances = new float[total];
+            for (int j = 0; j < total; j++) {
+                glyphs[j] = code[order[j]];
+                advances[j] = adv[order[j]];
+            }
+            return new ComplexScripts.Shaped(glyphs, advances);
         }
 
         private ComplexScripts.Shaped shape(String text, Object pg) {
@@ -424,18 +456,7 @@ public final class ComplexTextShaping {
                         k++;
                     }
                 }
-                Integer[] order = new Integer[total];
-                for (int j = 0; j < total; j++) {
-                    order[j] = j;
-                }
-                Arrays.sort(order, (a, b) -> Float.compare(x[a], x[b]));
-                int[] glyphs = new int[total];
-                float[] advances = new float[total];
-                for (int j = 0; j < total; j++) {
-                    glyphs[j] = code[order[j]];
-                    advances[j] = adv[order[j]];
-                }
-                return new ComplexScripts.Shaped(glyphs, advances);
+                return visualOrder(code, x, adv);
             } catch (ReflectiveOperationException | RuntimeException ex) {
                 return null;
             }
