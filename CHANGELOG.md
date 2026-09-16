@@ -49,6 +49,9 @@ All notable changes to NMOX Studio are documented here. The format follows
   text until they reinstall, because the conf ships only with installers.
 - The Arabic and Hindi DevTools pictures are re-forged; `PackagedConfGateTest`
   holds the two conf flags.
+- `DocsDockerViewGateTest` waits up to two minutes for its proxy: the v2.164.0
+  macOS lane needed about 35 seconds per interpreter start against a 45-second
+  leash.
 
 ## [2.164.0] - 2026-09-16
 
