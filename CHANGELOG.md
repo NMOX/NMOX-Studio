@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.169.0] - 2026-09-16
+
+**Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada and Malayalam checked in the Browser: shaped correctly, and each now measured at its own width.**
+
+- **Checked, and shaped correctly.** The eight other Indic scripts the Browser
+  shapes had never been photographed. Split vowels (কৌশল, கொண்டு, കൊണ്ട്),
+  reph and conjuncts (আর্দ্র, ਸ੍ਰੀ, શ્રી, ప్రోగ్రామ్, ಪ್ರೋಗ್ರಾಮ್) and native digits
+  all render as JavaFX's own text renders them; unshaped, every one of them had
+  dotted circles and broken conjuncts.
+- **Each script is measured at its own share.** v2.166.0 measured every Indic
+  letter at 0.72 of its plain width, calibrated on Hindi against a different
+  measure than the bridge takes (a lone character's laid-out width, which for a
+  vowel sign counts a dotted circle). Measured the product's way, it left most
+  words short in almost every script, and Tamil, Telugu, Kannada and Malayalam
+  phrases painted over the English word after them. The shares were measured
+  in the Browser itself, from WebKit's own fonts, logging each word's measured
+  and shaped width over prose and short interface phrases (25-35 words a
+  script): Devanagari 0.84, Bengali 0.84, Gurmukhi 0.90, Gujarati 0.82, Oriya
+  0.76, Tamil 0.78, Telugu 0.98, Kannada 0.82, Malayalam 0.78, each the share
+  with the fewest short words among those within 1px of the best average
+  (misses 5.0-11.0px a word). A first calibration with JavaFX's `Serif` text
+  was photographed against real phrases and discarded.
+- **An Indic run's spaces take up what its words miss, gently.** A space in an
+  Indic run may take on up to half its width when the words come out narrow,
+  and give up at most a quarter when they come out wide; the rest falls past
+  the run's end as before. v2.168.0 kept Indic runs out of this entirely:
+  half a space each had squeezed a Hindi heading together, and a Kannada phrase
+  squeezed the same way until the quarter cap.
+- **What remains.** A per-letter estimate cannot see conjuncts, so a phrase full
+  of them (a Hindi `प्रोजेक्ट`) comes out narrower than prose and can sit a few
+  pixels apart from the text after it; Kannada and Malayalam phrases can sit
+  close to it.
+- **Proven by running it.** `ComplexScriptsTest` holds each script's share from
+  the first to the last code point of its block and the Indic spaces' give and
+  take; three mutants die by name. Probes of all nine Indic scripts, alone and
+  inside English lines, rendered through the product's installer; the Hindi and
+  Arabic DevTools pictures re-forged.
+
 ## [2.168.0] - 2026-09-16
 
 **Kurdish, Pashto, Sindhi and Uyghur checked in the Browser: letters, marks and digits render correctly, and a long right-to-left line keeps its spaces.**
@@ -22015,6 +22053,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.169.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.168.0...v2.169.0
 [2.168.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.167.0...v2.168.0
 [2.167.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.166.0...v2.167.0
 [2.166.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.165.0...v2.166.0
