@@ -310,4 +310,45 @@ class ComplexScriptsTest {
                     .isCloseTo(share[k] / 100d, org.assertj.core.data.Offset.offset(1e-9));
         }
     }
+
+    @Test
+    @DisplayName("a letter and its combining marks shape as one cluster, in reading order; the rest of the run is untouched (Vietnamese written decomposed)")
+    void combiningMarksShapeWithTheirLetter() {
+        // "Tiê̂́" style: T, i, e + U+0302 + U+0301, n — the marks ride on e
+        int[] g = glyphs("Tie\u0302\u0301n");
+        float[] a = {10f, 5f, 11f, 0f, 0f, 12f};
+        java.util.List<String> asked = new java.util.ArrayList<>();
+        ComplexScripts.Laid laid = ComplexScripts.layout(g, a, CHAR_FOR, text -> {
+            asked.add(text);
+            return new ComplexScripts.Shaped(new int[]{77}, new float[]{11f}); // the precomposed glyph
+        }, 32);
+        assertThat(asked).containsExactly("e\u0302\u0301");
+        assertThat(laid.changed()).isTrue();
+        assertThat(laid.glyphs()).containsExactly(g[0], g[1], 77, g[5]);
+        assertThat(laid.xs()).containsExactly(0f, 10f, 15f, 26f);
+        // no marks: nothing to shape, nothing changes
+        int[] plain = glyphs("Tien");
+        assertThat(ComplexScripts.layout(plain, new float[]{10f, 5f, 11f, 12f}, CHAR_FOR, text -> {
+            throw new AssertionError("plain Latin is never shaped");
+        }, 32).changed()).isFalse();
+        // a mark with no letter before it is left as painted
+        int[] stray = glyphs(" \u0301");
+        assertThat(ComplexScripts.layout(stray, new float[]{6f, 0f}, CHAR_FOR, text -> {
+            throw new AssertionError("a mark after a space has no letter to join");
+        }, 32).changed()).isFalse();
+    }
+
+    @Test
+    @DisplayName("combining marks from the general blocks measure zero; the letters under them keep the font's width")
+    void combiningMarksMeasureZero() {
+        java.util.function.IntToDoubleFunction any = cp -> 10d;
+        for (int cp : new int[]{0x0300, 0x0301, 0x0302, 0x0303, 0x0309, 0x031B, 0x0323, 0x0342, 0x1DC4, 0x20D7, 0xFE20}) {
+            assertThat(ComplexScripts.combining(cp)).as("U+%04X", cp).isTrue();
+            assertThat(ComplexScripts.measuredWidth(cp, any, any, any)).as("U+%04X", cp).isZero();
+        }
+        for (int cp : new int[]{'e', 0x00E9, 0x1EBF, 0x0391, 0x0439, 0x0374, 0x0591}) {
+            assertThat(ComplexScripts.combining(cp)).as("U+%04X", cp).isFalse();
+            assertThat(ComplexScripts.measuredWidth(cp, any, any, any)).as("U+%04X", cp).isNaN();
+        }
+    }
 }

@@ -30,6 +30,15 @@ class PrismBridgeTest {
         assertThat(ComplexTextShaping.PrismBridge.charFor(table, 5)).isEqualTo(-1);
         assertThat(ComplexTextShaping.PrismBridge.anyShapeable(new int[]{3, 800}, table)).isTrue();
         assertThat(ComplexTextShaping.PrismBridge.anyShapeable(new int[]{3, 4}, table)).isFalse();
+        // a table that also maps Latin letters: a Latin-only paint has nothing to shape, a combining mark does
+        int[][] latin = ComplexTextShaping.PrismBridge.glyphTable(cp -> switch (cp) {
+            case 'e' -> 500;
+            case 0x0301 -> 600;
+            case ' ' -> 3;
+            default -> 0;
+        });
+        assertThat(ComplexTextShaping.PrismBridge.anyShapeable(new int[]{500, 3, 500}, latin)).isFalse();
+        assertThat(ComplexTextShaping.PrismBridge.anyShapeable(new int[]{500, 600}, latin)).isTrue();
     }
 
     @Test

@@ -1372,7 +1372,9 @@ line spreads the few pixels its words miss across its spaces instead of letting
 them pile up against the next word. Bengali, Gurmukhi, Gujarati, Oriya, Tamil,
 Telugu, Kannada and Malayalam are shaped too, each measured at its own width
 since v2.169.0; a phrase full of conjuncts can still sit a few pixels apart
-from the text after it. Hebrew renders correctly
+from the text after it. Since v2.170.0 accents written as separate characters
+(Vietnamese, French or German in decomposed form, as macOS file names are) sit
+on their letters. Hebrew renders correctly
 on its own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output

@@ -67,7 +67,30 @@ public final class ComplexScripts {
     }
 
     /** The code point ranges a glyph lookup table needs, inclusive pairs. */
-    public static final int[][] RANGES = {{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0x0900, 0x0D7F}};
+    public static final int[][] RANGES = {{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0x0900, 0x0D7F},
+        // since v2.170.0 also the letters a combining mark sits on, and the marks themselves
+        {0x0041, 0x024F}, {0x0300, 0x036F}, {0x0370, 0x03FF}, {0x0400, 0x052F}, {0x1AB0, 0x1AFF},
+        {0x1DC0, 0x1DFF}, {0x1E00, 0x1FFF}, {0x20D0, 0x20FF}, {0xFE20, 0xFE2F}};
+
+    /**
+     * A combining mark from the general combining blocks (v2.170.0): the
+     * accents Vietnamese, and any language written in decomposed form, puts
+     * after its letter ({@code e} + U+0302 + U+0301 for {@code ế}). WebKit's simple
+     * path paints such a mark as a character of its own, beside the letter and
+     * taking space; shaped with its letter it becomes the letter's precomposed
+     * glyph. The marks of the scripts above belong to their own blocks.
+     */
+    public static boolean combining(int cp) {
+        boolean block = (cp >= 0x0300 && cp <= 0x036F) || (cp >= 0x1AB0 && cp <= 0x1AFF)
+                || (cp >= 0x1DC0 && cp <= 0x1DFF) || (cp >= 0x20D0 && cp <= 0x20FF) || (cp >= 0xFE20 && cp <= 0xFE2F);
+        int type = block ? Character.getType(cp) : -1;
+        return type == Character.NON_SPACING_MARK || type == Character.ENCLOSING_MARK;
+    }
+
+    /** A letter outside the shaped scripts that combining marks can follow. */
+    static boolean clusterBase(int cp) {
+        return cp >= 0 && !shapes(cp) && Character.isLetter(cp);
+    }
 
     /**
      * How far along from an Arabic letter's medial form to its final form its
@@ -164,6 +187,9 @@ public final class ComplexScripts {
     public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
             java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain,
             boolean stacking) {
+        if (combining(cp)) {
+            return 0d; // shaped into its letter's glyph, it takes no space of its own
+        }
         if (!shapes(cp)) {
             return Double.NaN;
         }
@@ -340,8 +366,16 @@ public final class ComplexScripts {
         int i = 0;
         while (i < glyphs.length) {
             int start = i;
-            boolean shapeable = shapes(charFor.applyAsInt(glyphs[i]));
-            if (!shapeable) {
+            int first = charFor.applyAsInt(glyphs[i]);
+            boolean shapeable = shapes(first);
+            boolean cluster = !shapeable && clusterBase(first) && i + 1 < glyphs.length
+                    && combining(charFor.applyAsInt(glyphs[i + 1]));
+            if (cluster) {
+                i++;
+                while (i < glyphs.length && combining(charFor.applyAsInt(glyphs[i]))) {
+                    i++;
+                }
+            } else if (!shapeable) {
                 i++;
             } else {
                 while (i < glyphs.length && shapes(charFor.applyAsInt(glyphs[i]))) {
@@ -349,7 +383,10 @@ public final class ComplexScripts {
                 }
             }
             Shaped shaped = null;
-            if (shapeable) {
+            if (cluster) {
+                // a letter and its marks, in reading order: the shaper composes them
+                shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, false)));
+            } else if (shapeable) {
                 boolean segmentRtl = rightToLeft(charFor.applyAsInt(glyphs[start]));
                 shaped = usable(shaper.apply(logical(glyphs, start, i, charFor, segmentRtl)));
                 if (shaped != null && !changed) {

@@ -4,6 +4,31 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.170.0] - 2026-09-16
+
+**Accents written as separate characters sit on their letters in the Browser: Vietnamese, French, German, Greek and Cyrillic text in decomposed form reads like the precomposed form.**
+
+- **The drift, and worse.** Text can carry an accent as its own character after
+  the letter (NFD: `e` + U+0302 + U+0301 for `ế`), as macOS file names do. The
+  Browser's WebKit paints such a mark as a character of its own, beside its
+  letter and taking space, so Vietnamese read `dự án` as `dụ ́an` with gaps;
+  German `Übersetzung` lost its umlaut outright.
+- **Shaped with its letter.** A letter followed by combining marks (U+0300-036F
+  and the other general combining blocks) is now a cluster the shaper composes:
+  JavaFX's layout returns the letter's precomposed glyph at the letter's width,
+  and every such mark measures zero, so the line spaces as the precomposed text
+  does. Decomposed Vietnamese, French, German, polytonic Greek and Cyrillic
+  (`й`, `ё`) photograph identical to their precomposed forms.
+- **English pays nothing.** The per-font glyph table now also maps Latin, Greek
+  and Cyrillic letters, so a paint is only laid out when it holds a letter of the
+  shaped scripts or a combining mark; a plain English paint, and every Latin
+  glyph's width, return before any work.
+- **Proven by running it.** `ComplexScriptsTest` holds the cluster (reading
+  order, the rest of the run untouched, a stray mark left alone) and the zero
+  width; `PrismBridgeTest` holds the fast path over a table that maps Latin.
+  Three mutants die by name. The Arabic-script, Indic, vowelled-Arabic and
+  mixed pages re-photographed unchanged.
+
 ## [2.169.0] - 2026-09-16
 
 **Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada and Malayalam checked in the Browser: shaped correctly, and each now measured at its own width.**
@@ -22053,6 +22078,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.170.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.169.0...v2.170.0
 [2.169.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.168.0...v2.169.0
 [2.168.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.167.0...v2.168.0
 [2.167.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.166.0...v2.167.0
