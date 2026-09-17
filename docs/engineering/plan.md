@@ -1,5 +1,12 @@
 # The Plan
 
+*Currency addendum 2026-09-17, at v2.173.0 — check each platform in its own
+fonts. The Linux check ran the release's exact Linux WebKit in a container and
+found two things no macOS run could: no switch to turn, and width constants
+measured on macOS fonts that were twenty pixels a word wrong on Linux's. Fitting
+to the font fixed most of it; cross-validating the fit kept a tempting second
+term out.*
+
 *Currency addendum 2026-09-17, at v2.172.0 — read the engine before
 estimating it. Seven releases repaired WebKit's simple text path from outside
 because the dossier said WebKit never shapes. It can: OpenJFX's source starts the

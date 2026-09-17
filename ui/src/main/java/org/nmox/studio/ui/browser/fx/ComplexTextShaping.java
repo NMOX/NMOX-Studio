@@ -713,6 +713,8 @@ public final class ComplexTextShaping {
         private final Method charOffset;
         /** Per WebKit font and glyph: the width WebKit should measure. */
         private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
+        /** Per font, the width parameters fitted for each script block (v2.173.0, {@link FontFit}). */
+        private final Map<Object, Map<Integer, FontFit.Fit>> fits = new WeakHashMap<>();
         /** Per WebKit font: the runs it has shaped, most recent last. */
         private final Map<Object, ShapeCache> shaped = new WeakHashMap<>();
         /** Per WebKit font: whether its joined Arabic letters leave the baseline. */
@@ -852,11 +854,12 @@ public final class ComplexTextShaping {
                 Object pg = platformFont.invoke(font);
                 String letter = new String(Character.toChars(cp));
                 String tatweel = String.valueOf(ComplexScripts.TATWEEL);
+                boolean stacking = stacks(font, pg);
                 double w = ComplexScripts.measuredWidth(cp,
                         c -> textWidth(tatweel + letter + tatweel, pg) - 2 * textWidth(tatweel, pg),
                         c -> textWidth(tatweel + letter, pg) - textWidth(tatweel, pg),
                         c -> firstAdvance(letter, pg),
-                        stacks(font, pg));
+                        stacking, fitFor(font, pg, ComplexScripts.blockOf(cp), stacking));
                 synchronized (known) {
                     known.put(glyph, w);
                 }
@@ -864,6 +867,65 @@ public final class ComplexTextShaping {
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return Double.NaN;
             }
+        }
+
+        /**
+         * The width parameters fitted to {@code font} for {@code block}, computed
+         * once from the corpus: a few dozen JavaFX layouts the first time a font
+         * meets a script, then a map lookup.
+         */
+        FontFit.Fit fitFor(Object font, Object pg, int block, boolean stacking) {
+            Map<Integer, FontFit.Fit> known;
+            synchronized (fits) {
+                known = fits.computeIfAbsent(font, f -> new java.util.HashMap<>());
+            }
+            synchronized (known) {
+                FontFit.Fit cached = known.get(block);
+                if (cached != null) {
+                    return cached;
+                }
+            }
+            FontFit.Fit fit = fit(pg, block, ComplexScripts.constantFor(block, stacking));
+            synchronized (known) {
+                known.put(block, fit);
+            }
+            return fit;
+        }
+
+        private FontFit.Fit fit(Object pg, int block, double constant) {
+            List<String> words = FontFit.corpus().getOrDefault(block, List.of());
+            boolean arabic = block == 0x0600;
+            String tatweel = String.valueOf(ComplexScripts.TATWEEL);
+            double tatweelWidth = arabic ? textWidth(tatweel, pg) : 0;
+            Map<Integer, double[]> letters = new java.util.HashMap<>();
+            List<FontFit.Row> rows = new java.util.ArrayList<>();
+            for (String word : words) {
+                double a = 0;
+                double b = 0;
+                boolean usable = true;
+                for (int cp : word.codePoints().toArray()) {
+                    int type = Character.getType(cp);
+                    if (type == Character.NON_SPACING_MARK || type == Character.ENCLOSING_MARK) {
+                        continue; // marks measure zero
+                    }
+                    String letter = new String(Character.toChars(cp));
+                    double[] m = letters.computeIfAbsent(cp, c -> arabic
+                            ? new double[]{textWidth(tatweel + letter + tatweel, pg) - 2 * tatweelWidth,
+                                textWidth(tatweel + letter, pg) - tatweelWidth}
+                            : new double[]{firstAdvance(letter, pg), 0});
+                    if (Double.isNaN(m[0]) || Double.isNaN(m[1])) {
+                        usable = false;
+                        break;
+                    }
+                    a += m[0];
+                    b += m[1];
+                }
+                double laid = textWidth(word, pg);
+                if (usable && !Double.isNaN(laid) && laid > 0) {
+                    rows.add(new FontFit.Row(a, b, laid));
+                }
+            }
+            return arabic ? FontFit.arabic(rows, constant) : FontFit.share(rows, constant);
         }
 
         /**

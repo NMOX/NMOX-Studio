@@ -116,6 +116,15 @@ x64 is not in the table (not a shipped installer); every JavaFX bump must
 re-measure the offsets, which the gate enforces. Both OpenJFX defects belong
 upstream.
 
+**Linux (v2.173.0).** Checked in a container on the release's Linux WebKit:
+no data switch exists (each candidate byte flipped, no change), so the repaired
+path stays. Its constants, measured on macOS fonts, were far off on Linux's
+(Tamil 20px a word); `FontFit` fits the share or Arabic blend to each font from
+a word corpus, used only when clearly better (held-out mean 5.99 → 4.46px).
+Remainder: the per-word spread a context-free estimate cannot remove (4–8px);
+JavaFX's own Linux layout draws Tamil `பொ` with a dotted circle and ZWNJ as a
+box (font/JavaFX, not the Browser).
+
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 
 ### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped
