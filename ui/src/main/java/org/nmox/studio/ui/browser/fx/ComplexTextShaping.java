@@ -73,9 +73,17 @@ public final class ComplexTextShaping {
     static final String RUN_SHAPE = "shape";
     static final String RUN_SHAPE_DESC = "(I[I[F)V";
     static final String SHAPE_RUN = "(L" + TEXT_RUN + ";I[I[F)V";
+    static final String TEXT_RUNS = "getTextRuns";
+    static final String TEXT_RUNS_DESC = "(Ljava/lang/String;)[Lcom/sun/webkit/graphics/WCTextRun;";
+    static final String RUNS_TEXT = "(Ljava/lang/String;)Ljava/lang/String;";
 
     /** What happened, for the log line and the tests. */
-    public enum Outcome { INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED }
+    public enum Outcome {
+        /** WebKit shapes complex text itself: its code path is switched on for a known build (v2.172.0). */
+        NATIVE,
+        /** The simple path is repaired from outside: shaped paint, estimated widths. */
+        INSTALLED, NO_JAVAFX, NO_ATTACH, METHOD_CHANGED, FAILED
+    }
 
     private static volatile Outcome outcome;
 
@@ -86,7 +94,7 @@ public final class ComplexTextShaping {
     public static synchronized Outcome install() {
         if (outcome == null) {
             outcome = attempt();
-            LOG.log(outcome == Outcome.INSTALLED ? Level.FINE : Level.INFO,
+            LOG.log(outcome == Outcome.INSTALLED || outcome == Outcome.NATIVE ? Level.FINE : Level.INFO,
                     "complex-script shaping for the Browser: {0}", outcome);
         }
         return outcome;
@@ -127,11 +135,30 @@ public final class ComplexTextShaping {
             Class<?> fontImpl = Class.forName(FONT_IMPL.replace('/', '.'), false, web.getClassLoader());
             Class<?> hook = MethodHandles.privateLookupIn(context, MethodHandles.lookup()).defineClass(hookClass());
             Class<?> utilities = Class.forName(TEXT_UTILITIES.replace('/', '.'), false, web.getClassLoader());
+            Path javaHome = Path.of(System.getProperty("java.home"));
+            WebKitTextPath.Build build = WebKitTextPath.knownBuild(javaHome);
+            if (build != null) {
+                hook.getField("STRIPPER").set(null, (Function<String, String>) WebKitTextPath::stripLengthSuffix);
+                Transformer strip = new Transformer(false);
+                inst.addTransformer(strip, true);
+                try {
+                    // the strip first: a string measured on the complex path must
+                    // never carry the length the native glue appends to it
+                    inst.retransformClasses(fontImpl);
+                } finally {
+                    inst.removeTransformer(strip);
+                }
+                if (strip.textRunsApplied && WebKitTextPath.switchOn(javaHome, build)) {
+                    return Outcome.NATIVE;
+                }
+                LOG.info("complex-script shaping: WebKit's own text path did not switch on; repairing the simple path");
+            }
             PrismBridge bridge = new PrismBridge(web.getClassLoader());
             hook.getField("SHAPER").set(null, bridge);
             hook.getField("WIDTHS").set(null, (Function<Object[], Object>) bridge::width);
             hook.getField("PLACER").set(null, (Function<Object[], Object>) bridge::place);
-            Transformer transformer = new Transformer();
+            Transformer transformer = new Transformer(true);
+            transformer.stripRuns = build != null; // a retransform replays the original bytes: keep the strip
             inst.addTransformer(transformer, true);
             try {
                 // widths first: a paint that runs between the two would still be
@@ -270,6 +297,27 @@ public final class ComplexTextShaping {
                 "Ljava/util/function/Function;", null, null).visitEnd();
         cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "PLACER",
                 "Ljava/util/function/Function;", null, null).visitEnd();
+        cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC | Opcodes.ACC_VOLATILE, "STRIPPER",
+                "Ljava/util/function/Function;", null, null).visitEnd();
+        // static String runsText(String text): STRIPPER's answer, or text unchanged until it is set
+        MethodVisitor sv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "runsText", RUNS_TEXT, null, null);
+        sv.visitCode();
+        sv.visitFieldInsn(Opcodes.GETSTATIC, HOOK, "STRIPPER", "Ljava/util/function/Function;");
+        sv.visitVarInsn(Opcodes.ASTORE, 1);
+        sv.visitVarInsn(Opcodes.ALOAD, 1);
+        Label stripping = new Label();
+        sv.visitJumpInsn(Opcodes.IFNONNULL, stripping);
+        sv.visitVarInsn(Opcodes.ALOAD, 0);
+        sv.visitInsn(Opcodes.ARETURN);
+        sv.visitLabel(stripping);
+        sv.visitVarInsn(Opcodes.ALOAD, 1);
+        sv.visitVarInsn(Opcodes.ALOAD, 0);
+        sv.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/function/Function", "apply",
+                "(Ljava/lang/Object;)Ljava/lang/Object;", true);
+        sv.visitTypeInsn(Opcodes.CHECKCAST, "java/lang/String");
+        sv.visitInsn(Opcodes.ARETURN);
+        sv.visitMaxs(0, 0);
+        sv.visitEnd();
         // static void shapeRun(TextRun run, int n, int[] glyphs, float[] advances):
         // when PLACER answers {int[] glyphs, float[] positions}, the run is built
         // from those; else from the advances as before
@@ -426,6 +474,40 @@ public final class ComplexTextShaping {
      * frame spelled out (locals this, glyph, w; empty stack), so frames are
      * expanded for the whole class.
      */
+    /**
+     * Rewrites {@code WCFontImpl.getTextRuns(String)} to lay out
+     * {@code NmoxComplexText.runsText(text)} instead of {@code text}: the string
+     * without the length the native glue appends (v2.172.0, see
+     * {@link WebKitTextPath#stripLengthSuffix}). One store at the top of the
+     * method; no frame changes.
+     */
+    static byte[] rewriteTextRuns(byte[] original, boolean[] applied) {
+        ClassReader reader = new ClassReader(original);
+        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+        reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
+            @Override
+            public MethodVisitor visitMethod(int access, String name, String descriptor, String signature,
+                    String[] exceptions) {
+                MethodVisitor mv = super.visitMethod(access, name, descriptor, signature, exceptions);
+                if (!TEXT_RUNS.equals(name) || !TEXT_RUNS_DESC.equals(descriptor)
+                        || (access & Opcodes.ACC_STATIC) != 0) {
+                    return mv;
+                }
+                return new MethodVisitor(Opcodes.ASM9, mv) {
+                    @Override
+                    public void visitCode() {
+                        super.visitCode();
+                        super.visitVarInsn(Opcodes.ALOAD, 1);
+                        super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOK, "runsText", RUNS_TEXT, false);
+                        super.visitVarInsn(Opcodes.ASTORE, 1);
+                        applied[0] = true;
+                    }
+                };
+            }
+        }, 0);
+        return writer.toByteArray();
+    }
+
     static byte[] rewriteWidths(byte[] original, boolean[] applied) {
         ClassReader reader = new ClassReader(original);
         ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -499,23 +581,53 @@ public final class ComplexTextShaping {
     }
 
     static final class Transformer implements ClassFileTransformer {
+        /** The simple-path repair (widths, placement, paint); false for the strip alone. */
+        final boolean bridge;
+        /** Whether {@code getTextRuns} lays out the stripped string. */
+        volatile boolean stripRuns;
         volatile boolean applied;
         volatile boolean widthsApplied;
         volatile boolean placementApplied;
+        volatile boolean textRunsApplied;
+
+        Transformer(boolean bridge) {
+            this.bridge = bridge;
+            this.stripRuns = !bridge;
+        }
 
         @Override
         public byte[] transform(Module module, ClassLoader loader, String className, Class<?> redefined,
                 ProtectionDomain domain, byte[] bytes) {
             if (FONT_IMPL.equals(className)) {
                 try {
-                    boolean[] done = {false};
-                    byte[] out = rewriteWidths(bytes, done);
-                    widthsApplied = done[0];
-                    return done[0] ? out : null;
+                    byte[] out = bytes;
+                    boolean changed = false;
+                    if (stripRuns) {
+                        boolean[] done = {false};
+                        byte[] stripped = rewriteTextRuns(out, done);
+                        textRunsApplied = done[0];
+                        if (done[0]) {
+                            out = stripped;
+                            changed = true;
+                        }
+                    }
+                    if (bridge) {
+                        boolean[] done = {false};
+                        byte[] widths = rewriteWidths(out, done);
+                        widthsApplied = done[0];
+                        if (done[0]) {
+                            out = widths;
+                            changed = true;
+                        }
+                    }
+                    return changed ? out : null;
                 } catch (RuntimeException ex) {
                     LOG.log(Level.INFO, "could not rewrite " + className, ex);
                     return null;
                 }
+            }
+            if (!bridge) {
+                return null;
             }
             if (TEXT_UTILITIES.equals(className)) {
                 try {
