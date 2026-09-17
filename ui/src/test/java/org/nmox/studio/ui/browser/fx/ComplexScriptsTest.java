@@ -351,4 +351,47 @@ class ComplexScriptsTest {
             assertThat(ComplexScripts.measuredWidth(cp, any, any, any)).as("U+%04X", cp).isNaN();
         }
     }
+
+    @Test
+    @DisplayName("Sinhala, Thai, Tibetan, Myanmar and Khmer shape left to right and Syriac, Thaana and N'Ko right to left, each at its measured share; Lao is left as painted")
+    void theV2171ScriptsShapeAtTheirShares() {
+        java.util.function.IntToDoubleFunction none = cp -> Double.NaN;
+        java.util.function.IntToDoubleFunction plain = cp -> 100d;
+        int[] ltr = {0x0D9A, 0x0E01, 0x0F40, 0x1000, 0x1780};
+        double[] ltrShare = {86, 100, 100, 96, 80};
+        for (int k = 0; k < ltr.length; k++) {
+            assertThat(ComplexScripts.leftToRight(ltr[k])).as("U+%04X", ltr[k]).isTrue();
+            assertThat(ComplexScripts.rightToLeft(ltr[k])).as("U+%04X", ltr[k]).isFalse();
+            assertThat(ComplexScripts.measuredWidth(ltr[k], none, none, plain)).as("U+%04X", ltr[k])
+                    .isCloseTo(ltrShare[k], org.assertj.core.data.Offset.offset(1e-9));
+        }
+        int[] rtl = {0x0712, 0x0784, 0x07D3};
+        double[] rtlShare = {90, 108, 118};
+        for (int k = 0; k < rtl.length; k++) {
+            assertThat(ComplexScripts.rightToLeft(rtl[k])).as("U+%04X", rtl[k]).isTrue();
+            assertThat(ComplexScripts.arabic(rtl[k])).as("U+%04X", rtl[k]).isFalse();
+            // measured from the plain width alone: these fonts have no medial and final pair to blend
+            assertThat(ComplexScripts.measuredWidth(rtl[k], none, none, plain)).as("U+%04X", rtl[k])
+                    .isCloseTo(rtlShare[k], org.assertj.core.data.Offset.offset(1e-9));
+        }
+        for (int cp = 0x0E80; cp <= 0x0EFF; cp++) {
+            assertThat(ComplexScripts.shapes(cp)).as("Lao U+%04X", cp).isFalse();
+            assertThat(ComplexScripts.measuredWidth(cp, plain, plain, plain)).as("Lao U+%04X", cp).isNaN();
+        }
+    }
+
+    @Test
+    @DisplayName("every code point the core shapes lies inside the ranges the glyph table is built from")
+    void everyShapedCodePointIsInTheTable() {
+        for (int cp = 0; cp <= 0xFFFF; cp++) {
+            if (!ComplexScripts.shapes(cp) && !ComplexScripts.combining(cp)) {
+                continue;
+            }
+            boolean inside = false;
+            for (int[] range : ComplexScripts.RANGES) {
+                inside |= cp >= range[0] && cp <= range[1];
+            }
+            assertThat(inside).as("U+%04X is shaped but no glyph table covers it", cp).isTrue();
+        }
+    }
 }

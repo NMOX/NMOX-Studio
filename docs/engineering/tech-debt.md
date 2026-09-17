@@ -88,9 +88,19 @@ phrases sit a little apart and Kannada/Malayalam phrases a little close.
 Vietnamese written with combining accents (NFD) placed its accents beside the
 letters in the unpatched WebView too; v2.170.0 shapes a letter and its combining
 marks into the precomposed glyph and measures the marks at zero, so
-decomposed Vietnamese, French, German, Greek and Cyrillic read as precomposed. Installs whose conf predates v2.165.0
-(update-center updates) keep unjoined text until a reinstall, the v1.256.0
-conf timing law.
+decomposed Vietnamese, French, German, Greek and Cyrillic read as precomposed.
+
+**More scripts, the update-center gap, the cost (v2.171.0).** Sinhala, Thai,
+Tibetan, Myanmar and Khmer painted unshaped too and are shaped now, each at a
+share measured in the Browser; Syriac, Thaana and N'Ko shape right to left, and
+Syriac and N'Ko join only since a paint holding a new composite-font fallback
+slot rebuilds the glyph table once for that slot. Armenian, Georgian and
+Ethiopic were already right. CLOSED: installs updated in-app, whose conf lacks
+the attach flags, attach from a helper process (the IDE's runtime and its own
+`ShapingAttach`), proven on a runtime started without them. The repaint p90 of
+21-30ms (11-12 unshaped) is back to about 12 with a per-font laid-out-word
+cache. Remainder: Lao is excluded because JavaFX's own text drifts it; Khmer
+words miss by 12px on average.
 
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 

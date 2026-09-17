@@ -1,5 +1,15 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.171.0 — the night after five language
+checks. A shaped page cost twice an unshaped one per repaint; a cache brought it
+back. The update-center gap that had been written down as "needs a reinstall"
+closed with a helper process once somebody asked why a second JVM could not do
+what the first was refused. Syriac and N'Ko stayed unjoined after shaping until
+the fallback font's glyph codes were traced: a table built at first paint cannot
+know the fonts later text will pull in. Calibration samples only come from what
+is in the snapshot's viewport, which is why N'Ko once gave five and then
+twenty-nine.*
+
 *Currency addendum 2026-09-16, at v2.169.0 — calibrate in the instrument
 that paints. The eight other Indic scripts were shaped correctly all along; their
 widths were not. The first recalibration used JavaFX's Serif text, agreed with

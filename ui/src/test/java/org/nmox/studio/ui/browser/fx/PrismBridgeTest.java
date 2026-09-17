@@ -129,6 +129,7 @@ class PrismBridgeTest {
     @Test
     @DisplayName("the bridge finds every JavaFX member it reads, and refuses a call with nothing to shape")
     void bridgeWiresAgainstRealJavaFx() throws Exception {
+        assumeJavaFxLoads();
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         assertThat(bridge.apply(new Object[]{null, new int[0], new float[0]})).isEqualTo(0f);
         assertThat(bridge.apply(new Object[]{"not a font", null, null})).isEqualTo(0f);
@@ -139,6 +140,7 @@ class PrismBridgeTest {
     @Test
     @DisplayName("a laid-out run reaches only the glyph list built from that paint's own glyph array, once")
     void placementAnswersOnlyTheSamePaint() throws Exception {
+        assumeJavaFxLoads();
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         int[] glyphs = {1, 2, 3};
         float[] advances = {4f, 5f, 6f};
@@ -150,5 +152,104 @@ class PrismBridgeTest {
         assertThat((int[]) placed[0]).containsExactly(7, 8, 9, 10);
         assertThat((float[]) placed[1]).containsExactly(0f, 0f, 4f, -7f, 9f, 2f, 15f, 0f, 16f, 0f);
         assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // used up
+    }
+
+    @Test
+    @DisplayName("a shaped run is shaped once per font and text, a refusal is remembered, and the oldest run leaves first")
+    void shapeCacheShapesOnceAndForgetsTheOldest() {
+        ComplexTextShaping.ShapeCache cache = new ComplexTextShaping.ShapeCache(2);
+        java.util.List<String> shapedTexts = new java.util.ArrayList<>();
+        java.util.function.Function<String, ComplexScripts.Shaped> shaper = text -> {
+            shapedTexts.add(text);
+            return text.equals("refused") ? null : new ComplexScripts.Shaped(new int[]{text.length()}, new float[]{1f});
+        };
+        ComplexScripts.Shaped first = cache.get("بت", shaper);
+        assertThat(cache.get("بت", shaper)).isSameAs(first);
+        assertThat(cache.get("refused", shaper)).isNull();
+        assertThat(cache.get("refused", shaper)).isNull();
+        assertThat(shapedTexts).containsExactly("بت", "refused");
+        cache.get("بت", shaper);          // used again: now the most recent
+        cache.get("كم", shaper);          // a third run: "refused" is the oldest and leaves
+        assertThat(cache.entries()).isEqualTo(2);
+        cache.get("refused", shaper);
+        assertThat(shapedTexts).containsExactly("بت", "refused", "كم", "refused");
+    }
+
+    @Test
+    @DisplayName("the attach helper runs this JVM's own java on the jar just written, naming this process")
+    void attachHelperCommandIsFixed() {
+        java.nio.file.Path home = java.nio.file.Path.of("/opt/jre");
+        java.nio.file.Path jar = java.nio.file.Path.of("/tmp/nmox-shaping-agent1.jar");
+        // paths compared as Path strings: Windows prints them with its own separator
+        assertThat(ComplexTextShaping.helperCommand(home, false, jar, 4242)).containsExactly(
+                home.resolve("bin").resolve("java").toString(), "-cp", jar.toString(),
+                "org.nmox.studio.ui.browser.fx.ShapingAttach", "4242", jar.toString());
+        assertThat(ComplexTextShaping.helperCommand(home, true, jar, 7).get(0)).endsWith("java.exe");
+    }
+
+    @Test
+    @DisplayName("the attach helper refuses a call without exactly a pid and a jar, and says why")
+    void attachHelperRefusesBadArguments() {
+        assertThat(ShapingAttach.attach(null)).isFalse();
+        assertThat(ShapingAttach.attach(new String[]{"1"})).isFalse();
+    }
+
+    @Test
+    @DisplayName("the agent jar carries the agent and the attach helper under the manifest the attach API reads")
+    void agentJarCarriesAgentAndHelper() throws Exception {
+        java.nio.file.Path jar = ComplexTextShaping.writeAgentJar();
+        assertThat(jar).isNotNull();
+        try (java.util.jar.JarFile file = new java.util.jar.JarFile(jar.toFile())) {
+            java.util.jar.Attributes main = file.getManifest().getMainAttributes();
+            assertThat(main.getValue("Agent-Class")).isEqualTo(ShapingAgent.class.getName());
+            assertThat(main.getValue("Can-Redefine-Classes")).isEqualTo("true");
+            assertThat(main.getValue("Can-Retransform-Classes")).isEqualTo("true");
+            assertThat(file.getEntry("org/nmox/studio/ui/browser/fx/ShapingAgent.class")).isNotNull();
+            assertThat(file.getEntry("org/nmox/studio/ui/browser/fx/ShapingAttach.class")).isNotNull();
+        } finally {
+            java.nio.file.Files.deleteIfExists(jar);
+        }
+    }
+
+    @Test
+    @DisplayName("a helper that cannot attach reports failure, run for real with this JVM's own java, in-process and out")
+    void attachHelperReportsARefusedAttach() throws Exception {
+        java.nio.file.Path jar = ComplexTextShaping.writeAgentJar();
+        try {
+            String nobody = Long.toString(Long.MAX_VALUE); // no JVM has this pid
+            assertThat(ShapingAttach.attach(new String[]{nobody, jar.toString()})).isFalse();
+            assertThat(ComplexTextShaping.attachFromHelper(jar, Long.MAX_VALUE)).isFalse();
+        } finally {
+            java.nio.file.Files.deleteIfExists(jar);
+        }
+    }
+
+    @Test
+    @DisplayName("an unmapped glyph from a fallback slot asks for one rebuild per slot; mapped glyphs and the primary font never do")
+    void newFallbackSlotsRebuildOnce() {
+        int[][] table = ComplexTextShaping.PrismBridge.glyphTable(cp -> cp == 0x0628 ? 800 : cp == ' ' ? 3 : 0);
+        java.util.Set<Integer> tried = new java.util.HashSet<>();
+        int syriac = (0x27 << 24) | 9;
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{800, 3}, table, tried)).isFalse(); // all mapped
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{55}, table, tried)).isFalse();     // primary slot
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{3, syriac}, table, tried)).isTrue();
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{syriac, syriac + 1}, table, tried)).isFalse(); // tried
+        assertThat(tried).containsExactly(0x27);
+    }
+
+    /**
+     * The provided JavaFX jars are compiled for Java 24 and up; CI runs these on
+     * JDK 25. An older local JDK cannot load them at all, which says nothing about
+     * the bridge, so the two tests that touch real JavaFX classes skip there and
+     * say why. Any other failure to load still fails.
+     */
+    private static void assumeJavaFxLoads() {
+        try {
+            Class.forName("com.sun.webkit.graphics.WCFont", false, PrismBridgeTest.class.getClassLoader());
+        } catch (UnsupportedClassVersionError tooNew) {
+            org.junit.jupiter.api.Assumptions.abort("JavaFX needs a newer JDK than " + Runtime.version() + ": " + tooNew.getMessage());
+        } catch (ClassNotFoundException missing) {
+            throw new AssertionError("javafx-web is a provided dependency of this module", missing);
+        }
     }
 }

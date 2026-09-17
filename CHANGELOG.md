@@ -4,6 +4,42 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.171.0] - 2026-09-16
+
+**Five more scripts are shaped in the Browser, three right-to-left scripts join, a Browser installed by an in-app update is shaped too, and a shaped page repaints as fast as an unshaped one.**
+
+- **Sinhala, Thai, Tibetan, Myanmar and Khmer.** The Browser's WebKit painted
+  them unshaped as well: broken conjuncts and stacks, vowels on dotted circles.
+  They now go through the same bridge as the Indic scripts, each measured at a
+  width share taken in the Browser itself (0.86, 1.00, 1.00, 0.96, 0.80;
+  word-average misses 7.1, 1.7, 0.4, 7.7 and 12.4px).
+- **Syriac, Thaana and N'Ko.** Right to left like Arabic. Syriac and N'Ko
+  painted unjoined even once shaped: their letters come from a fallback font,
+  whose glyph codes were not in the table built at first paint. A paint holding
+  glyphs from a fallback font not seen before now rebuilds the table once for
+  that font. Widths are measured the same way (0.90, 1.08, 1.18).
+- **Lao is left as it was.** JavaFX's own text drifts Lao vowels too, so
+  shaping it would trade one wrong picture for another.
+- **In-app updates get shaping too.** The attach flags live in the launcher
+  conf, which only an installer writes, so an install updated through
+  Tools ▸ Plugins refused to attach and painted these scripts unshaped (the
+  v1.256.0 conf timing law). When attaching from inside the IDE is refused, the
+  Browser now attaches from a short-lived helper: the IDE's own runtime running
+  the IDE's own attach class, a fixed command, 30 seconds at most. Proven on a
+  runtime started without the flags: shaped. The JDK prints its standard
+  dynamic-agent warning in that case.
+- **Repaint cost.** Every paint used to lay its text out again: a shaped page
+  scrolled at a p90 of 21-30ms a frame against 11-12ms unshaped. Laid-out words
+  are now cached per font (2,048 entries, least recently used dropped), and the
+  y-direction probe runs only for text that has vertical offsets: back to about
+  12ms, the pictures byte-identical.
+- **Proven by running it.** `ComplexScriptsTest` holds each new script's
+  direction and share, Lao's exclusion, and that every shaped code point lies in
+  the glyph table's ranges; `PrismBridgeTest` holds the cache, the helper command
+  and its refusals, and the rebuild-once rule for a new fallback font. Four
+  mutants die by name. The two bridge tests that load real JavaFX classes skip,
+  saying why, on a JDK older than JavaFX 26 needs; CI runs them.
+
 ## [2.170.0] - 2026-09-16
 
 **Accents written as separate characters sit on their letters in the Browser: Vietnamese, French, German, Greek and Cyrillic text in decomposed form reads like the precomposed form.**
@@ -22078,6 +22114,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.171.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.170.0...v2.171.0
 [2.170.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.169.0...v2.170.0
 [2.169.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.168.0...v2.169.0
 [2.168.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.167.0...v2.168.0

@@ -148,6 +148,10 @@ class SpawnSiteTrustLedgerTest {
                 "GATED-BY-VALIDATION: catalog checkpoints execute argv the parser law-checked "
                 + "(bare tool name, no shell — the device-file law) in the pre-trusted "
                 + "~/.nmox/learn home, at the learner's button press, under the leash (v2.39.1)"),
+            Map.entry("ComplexTextShaping.java",
+                "BLESSED: the IDE's own runtime `java` running our own ShapingAttach class from the "
+                + "jar it just wrote, with this process's pid — nothing project-controlled; only when "
+                + "self-attach is refused, as on an install updated in-app without the conf flag (v2.171.0)"),
             Map.entry("CommandProbe.java",
                 "BLESSED: fixed tool-version argv from the device tables — never project-controlled"),
             Map.entry("EnvironmentDoctor.java",
