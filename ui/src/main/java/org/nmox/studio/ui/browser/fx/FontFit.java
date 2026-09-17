@@ -137,11 +137,16 @@ final class FontFit {
                 return Collections.emptyMap();
             }
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
-                for (String line; (line = reader.readLine()) != null; ) {
-                    if (line.isBlank() || line.startsWith("#")) {
+                for (String raw; (raw = reader.readLine()) != null; ) {
+                    // trim BEFORE deciding it is a comment: the parse trims, so a comment
+                    // written with one leading space used to reach Integer.parseInt("#")
+                    // and throw away the WHOLE corpus — every script silently back on the
+                    // macOS constants, which is the regression this class exists to fix
+                    String line = raw.trim();
+                    if (line.isEmpty() || line.startsWith("#")) {
                         continue;
                     }
-                    String[] parts = line.trim().split("\\s+");
+                    String[] parts = line.split("\\s+");
                     List<String> list = new ArrayList<>();
                     for (int i = 1; i < parts.length; i++) {
                         list.add(parts[i]);

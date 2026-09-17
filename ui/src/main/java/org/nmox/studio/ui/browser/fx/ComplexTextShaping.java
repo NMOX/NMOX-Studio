@@ -148,7 +148,12 @@ public final class ComplexTextShaping {
                 } finally {
                     inst.removeTransformer(strip);
                 }
-                if (strip.textRunsApplied && WebKitTextPath.switchOn(javaHome, build)) {
+                WebKitTextPath.Switched switched = strip.textRunsApplied
+                        ? WebKitTextPath.switchOn(javaHome, build) : WebKitTextPath.Switched.UNTOUCHED;
+                if (!WebKitTextPath.repairable(switched)) {
+                    // ON: WebKit shapes and measures for itself. UNCONFIRMED: it may be,
+                    // and repairing the simple path over it would measure every complex
+                    // run twice — WebKitTextPath has already said so at WARNING.
                     return Outcome.NATIVE;
                 }
                 LOG.info("complex-script shaping: WebKit's own text path did not switch on; repairing the simple path");
@@ -885,7 +890,16 @@ public final class ComplexTextShaping {
                     return cached;
                 }
             }
-            FontFit.Fit fit = fit(pg, block, ComplexScripts.constantFor(block, stacking));
+            FontFit.Fit fit;
+            try {
+                fit = fit(pg, block, ComplexScripts.constantFor(block, stacking));
+            } catch (RuntimeException | LinkageError ex) {
+                // a fit that throws must still be remembered as the constant: otherwise
+                // the whole corpus is laid out again on the NEXT glyph of this block,
+                // forever, on the thread holding WebKit's page lock
+                LOG.log(Level.FINE, "complex-script shaping: the width fit failed; keeping the constant", ex);
+                fit = new FontFit.Fit(ComplexScripts.constantFor(block, stacking));
+            }
             synchronized (known) {
                 known.put(block, fit);
             }
@@ -907,6 +921,15 @@ public final class ComplexTextShaping {
                     int type = Character.getType(cp);
                     if (type == Character.NON_SPACING_MARK || type == Character.ENCLOSING_MARK) {
                         continue; // marks measure zero
+                    }
+                    if (!ComplexScripts.shapes(cp)) {
+                        // the width hook leaves this one at WebKit's own width, so the fit
+                        // must not scale it either: summing it here would solve
+                        // s·(letters + punctuation) while the hook computes s·letters +
+                        // punctuation, and — worse — `clearlyBetter` would then be judging
+                        // an error nothing ever computes. Tibetan's tsheg is a third of
+                        // its corpus, and its constant is 1.00, where the two agree.
+                        continue;
                     }
                     String letter = new String(Character.toChars(cp));
                     double[] m = letters.computeIfAbsent(cp, c -> arabic

@@ -101,6 +101,48 @@ class ShipScriptsGateTest {
         assertThat(delete).as("… before the branch is deleted").isGreaterThan(detach);
     }
 
+    // v2.174.0: the gate used to read only the asset COUNT while it waited,
+    // which cannot tell a slow upload from a dead one — so when GitHub's own
+    // release step failed (v2.173.0, four times), the gate sat out its whole
+    // 90-minute timer on a run that had already finished, leaving a 16-asset
+    // draft and the homebrew job skipped behind it. The decision moved into
+    // its own pure script so it can be RUN rather than read; the two proofs
+    // are the v1.321.0 pair — the seam decides correctly, and the gate calls it.
+    @Test
+    @DisplayName("release-run-verdict.sh: a finished-red release run is re-run once, then fails by name — and a stale read never aborts a healthy one")
+    void releaseRunVerdictDecides() throws Exception {
+        assertThat(verdict("21", "completed:failure:1", "0", "0"))
+                .as("21 assets is the release being whole; a red run that still uploaded everything is done")
+                .isEqualTo("complete");
+        assertThat(verdict("16", "completed:failure:1", "0", "0"))
+                .as("finished red, not yet re-run → re-run its failed jobs").isEqualTo("rerun");
+        assertThat(verdict("16", "completed:failure:1", "1", "1"))
+                .as("red AGAIN after its one re-run, and that re-run was seen running → stop by name")
+                .isEqualTo("fail");
+        assertThat(verdict("16", "completed:failure:1", "1", "0"))
+                .as("re-run issued but not yet seen running: `completed` here is the stale pre-re-run read, "
+                        + "and aborting on it would kill a healthy release")
+                .isEqualTo("wait");
+        assertThat(verdict("16", "in_progress::1", "0", "0")).as("still running → wait").isEqualTo("wait");
+        assertThat(verdict("16", "completed:success:1", "0", "0"))
+                .as("green but short of 21: the uploads are still landing → wait").isEqualTo("wait");
+        assertThat(verdict("0", "", "0", "0")).as("no run registered yet → wait").isEqualTo("wait");
+        assertThat(run("bash", SCRIPTS.resolve("release-run-verdict.sh").toString()))
+                .as("no arguments → non-zero, never a silent verdict").isNotZero();
+    }
+
+    @Test
+    @DisplayName("ship-gate.sh acts on that verdict — it calls the script and carries out all three of its non-wait words")
+    void shipGateActsOnTheVerdict() throws Exception {
+        String s = Files.readString(SCRIPTS.resolve("ship-gate.sh"));
+        assertThat(s).as("the gate asks the seam rather than re-deciding inline")
+                .contains("scripts/release-run-verdict.sh");
+        assertThat(s).as("complete → the existing happy exit").contains("RELEASE-COMPLETE: 21 assets");
+        assertThat(s).as("rerun → GitHub's own re-run-failed-jobs, which also revives the skipped homebrew job")
+                .contains("gh run rerun").contains("--failed");
+        assertThat(s).as("fail → a named refusal, not a silent 90-minute wait").contains("RELEASE-RUN-FAILED");
+    }
+
     @Test
     @DisplayName("post-ship.sh refuses to run without a tag")
     void postShipDemandsItsTag() throws Exception {
@@ -115,6 +157,18 @@ class ShipScriptsGateTest {
                 .as("no arguments → a non-zero exit, never a silent run").isNotZero();
         assertThat(run("bash", SCRIPTS.resolve("ship-branch.sh").toString(), "b", "sha", "title", "/nonexistent/body.md"))
                 .as("a missing body file is refused before any git command").isEqualTo(2);
+    }
+
+    /** The verdict script's one word, for the arguments given. */
+    private static String verdict(String... args) throws IOException, InterruptedException {
+        Path out = Path.of(System.getProperty("java.io.tmpdir"), "release-run-verdict.out");
+        String[] argv = new String[args.length + 2];
+        argv[0] = "bash";
+        argv[1] = SCRIPTS.resolve("release-run-verdict.sh").toString();
+        System.arraycopy(args, 0, argv, 2, args.length);
+        Process p = new ProcessBuilder(argv).redirectErrorStream(true).redirectOutput(out.toFile()).start();
+        assertThat(p.waitFor(30, TimeUnit.SECONDS)).as("the verdict is a pure function — it exits at once").isTrue();
+        return Files.readString(out).trim();
     }
 
     private static int run(String... argv) throws IOException, InterruptedException {

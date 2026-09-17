@@ -73,6 +73,13 @@ final class WebKitTextPath {
      * {@code 0x675af58}), anchored on an exported JNI entry. Windows x64 exports
      * the setter by name ({@code movb %cl, 0x501b26e(%rip)}). The Linux build
      * reads no such byte anywhere near its font code, so it keeps the simple path.
+     *
+     * <p>The library paths are where {@code jlink} puts each jmod's native library:
+     * it drops the first path segment and then, on Windows only, files a {@code .dll}
+     * under {@code bin} — so the jmod's {@code lib/javafx/jfxwebkit.dll} becomes
+     * {@code bin/javafx/jfxwebkit.dll}, while {@code lib/libjfxwebkit.dylib} and
+     * {@code lib/libjfxwebkit.so} stay under {@code lib}. v2.172.0 shipped
+     * {@code bin/jfxwebkit.dll} and so never found the Windows library.
      */
     static final List<Build> KNOWN = List.of(
             new Build("osx-aarch64", "ed6ac7d8d056b29fa221edb029ed232eb54f3a7068c4d4e1304faf99f8d93285",
@@ -81,7 +88,7 @@ final class WebKitTextPath {
                     0x1c405acL - 0xa938cL, 0x675af58L - 0xa938cL),
             new Build("windows-x64", "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672",
                     "1fc1f628b312f38a5fd9c8463bfbd1e3d89d3c4416fe25818f04ea1f8efdeef7",
-                    "bin/jfxwebkit.dll", "?setCodePath@FontCascade@WebCore@@SAXW4CodePath@12@@Z",
+                    "bin/javafx/jfxwebkit.dll", "?setCodePath@FontCascade@WebCore@@SAXW4CodePath@12@@Z",
                     0L, 0x185a2db64L - 0x180a128f0L));
 
     private WebKitTextPath() {
@@ -99,7 +106,21 @@ final class WebKitTextPath {
 
     /** The known build for this platform and library hash, or null. */
     static Build match(String platform, String sha256) {
-        for (Build build : KNOWN) {
+        return match(KNOWN, platform, sha256);
+    }
+
+    /**
+     * The entry whose platform AND bytes both match, or null.
+     *
+     * <p>Takes its candidates so the choice can be made over two entries for one
+     * platform, which is what an OpenJFX patch bump adds and what this release's
+     * table cannot yet show: two such entries name the SAME library path, so a
+     * walk of the table reaches the first while the file on disk hashes as the
+     * second — and the first's offsets inside the second's image are an arbitrary
+     * call and an arbitrary write.
+     */
+    static Build match(List<Build> builds, String platform, String sha256) {
+        for (Build build : builds) {
             if (build.platform().equals(platform) && build.sha256().equalsIgnoreCase(sha256)) {
                 return build;
             }
@@ -109,16 +130,35 @@ final class WebKitTextPath {
 
     /** The known build of the WebKit library this runtime carries, or null when it is not one. */
     static Build knownBuild(Path javaHome) {
-        String platform = platform(System.getProperty("os.name", ""), System.getProperty("os.arch", ""));
+        return knownBuild(javaHome, platform(System.getProperty("os.name", ""), System.getProperty("os.arch", "")));
+    }
+
+    /**
+     * The same, for a named platform — so the rule that decides whether a runtime is
+     * known can be exercised on a host that is not that platform. Linux has no entry
+     * in {@code KNOWN}, so a Linux test of the one-argument form never reaches this
+     * loop at all, and the property it proves (an unknown library keeps the repaired
+     * simple path) would be proven on macOS only.
+     */
+    static Build knownBuild(Path javaHome, String platform) {
         for (Build build : KNOWN) {
             if (!build.platform().equals(platform)) {
                 continue;
             }
             Path library = javaHome.resolve(build.library());
+            if (!Files.isRegularFile(library)) {
+                // this platform has a known build and no library where it should be:
+                // say so, because the only other sign is text that stays unshaped
+                LOG.log(Level.INFO, "WebKit text path: no WebKit library at {0}; staying on the simple path", library);
+                continue;
+            }
             try {
-                if (Files.isRegularFile(library) && match(platform, sha256(library)) != null) {
-                    return build;
+                // the entry that matched the BYTES, never the one whose path we walked
+                Build found = match(platform, sha256(library));
+                if (found != null) {
+                    return found;
                 }
+                LOG.log(Level.FINE, "WebKit text path: {0} is not a build this release knows", library);
             } catch (IOException ex) {
                 LOG.log(Level.FINE, "could not read " + library, ex);
             }
@@ -164,12 +204,53 @@ final class WebKitTextPath {
     }
 
     /**
-     * Sets the code path to {@code Auto} through WebKit's own setter, only when the
-     * state reads {@code Simple} first; true when it reads {@code Auto} after.
-     * Needs the foreign-function API (JDK 22 and later) and native access; any
-     * refusal leaves WebKit as it was and answers false.
+     * What a switch attempt left behind — because "it did not work" is two different
+     * states and the caller must treat them differently.
+     *
+     * <p>The repaired simple path corrects widths that WebKit's own complex path
+     * already measures exactly, so installing it over a switched WebKit is worse
+     * than either alone: the same runs get shaped and re-measured twice. Only
+     * {@link #UNTOUCHED} may fall back to it.
      */
-    static boolean switchOn(Path javaHome, Build build) {
+    enum Switched {
+        /** The setter ran and the state reads {@code Auto}: WebKit shapes for itself. */
+        ON,
+        /** Nothing was written (or it was written and put back): the simple path is free to be repaired. */
+        UNTOUCHED,
+        /** The setter ran and the state does not read back as written: leave WebKit alone. */
+        UNCONFIRMED
+    }
+
+    /**
+     * Whether the simple path may still be repaired after an attempt — true only for
+     * {@link Switched#UNTOUCHED}.
+     *
+     * <p>The law in one place, because its two false cases look nothing alike and
+     * both used to be a bare {@code false}: after {@link Switched#ON} WebKit shapes
+     * and measures for itself, and after {@link Switched#UNCONFIRMED} it may be
+     * doing so. Repairing over either measures every complex run twice.
+     */
+    static boolean repairable(Switched switched) {
+        return switched == Switched.UNTOUCHED;
+    }
+
+    /**
+     * Sets the code path to {@code Auto} through WebKit's own setter, only when the
+     * state reads {@code Simple} first, and reads it back to confirm.
+     *
+     * <p>Needs the foreign-function API (JDK 22 and later) and native access. A
+     * refusal BEFORE the setter runs leaves WebKit exactly as it was
+     * ({@link Switched#UNTOUCHED}). Once the setter has run the byte may have
+     * changed, so a failure past that point puts {@code Simple} back and only
+     * reports {@code UNTOUCHED} when that is confirmed — otherwise
+     * {@link Switched#UNCONFIRMED}, which no caller may repair over.
+     *
+     * <p>What this cannot catch: a wrong {@code setterOffset} calls an arbitrary
+     * address, which is a segmentation fault and not a Java throwable. The sha256
+     * pin on the library is the only thing standing between a user and that.
+     */
+    static Switched switchOn(Path javaHome, Build build) {
+        boolean wrote = false;
         try {
             Foreign ffm = new Foreign();
             Object arena = ffm.globalArena.invoke(null);
@@ -177,34 +258,47 @@ final class WebKitTextPath {
             java.util.Optional<?> anchor = (java.util.Optional<?>) ffm.find.invoke(lookup, build.anchor());
             if (anchor.isEmpty()) {
                 LOG.info("WebKit text path: the anchor symbol is missing; staying on the simple path");
-                return false;
+                return Switched.UNTOUCHED;
             }
             long[] at = addresses(build, (Long) ffm.address.invoke(anchor.get()));
             Object state = ffm.reinterpret.invoke(ffm.ofAddress.invoke(null, at[1]), 1L);
             byte before = (Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L);
+            if (before == AUTO) {
+                // already switched on in this JVM: the caller must not repair over it
+                LOG.info("WebKit text path: already on WebKit's own path; nothing to do");
+                return Switched.UNCONFIRMED;
+            }
             if (before != SIMPLE) {
                 LOG.log(Level.INFO, "WebKit text path: unexpected code path {0}; left alone", before);
-                return false;
+                return Switched.UNTOUCHED;
             }
             MethodHandle setter = ffm.downcall(ffm.ofAddress.invoke(null, at[0]));
+            wrote = true;
             setter.invokeWithArguments(AUTO);
             byte after = (Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L);
             if (after != AUTO) {
-                LOG.log(Level.INFO, "WebKit text path: the setter did not take ({0})", after);
-                return false;
+                // The byte was written and does not read back as written, so this build
+                // is not where we think it is. Writing AGAIN to put Simple back would be
+                // a second write at an address already shown to be wrong — the one thing
+                // not to do. Stop, and let the caller know not to repair over it.
+                LOG.log(Level.WARNING, "WebKit text path: the code-path byte was written and reads {0}; "
+                        + "the simple-path repair is NOT installed, because repairing a path WebKit may "
+                        + "already be shaping would measure every complex run twice", after);
+                return Switched.UNCONFIRMED;
             }
-            return true;
+            return Switched.ON;
         } catch (Throwable ex) { // NOPMD: any refusal of native access keeps the simple path
             if (ex instanceof VirtualMachineError vme && !(ex instanceof StackOverflowError)) {
                 throw vme;
             }
             LOG.log(Level.INFO, "WebKit text path could not be switched on; staying on the simple path", ex);
-            return false;
+            return wrote ? Switched.UNCONFIRMED : Switched.UNTOUCHED;
         }
     }
 
     /** The foreign-function API reached reflectively: this module compiles for Java 21. */
-    private static final class Foreign {
+    /** Package-private so a test can prove every java.lang.foreign signature still resolves. */
+    static final class Foreign {
         final Method globalArena;
         final Method libraryLookup;
         final Method find;

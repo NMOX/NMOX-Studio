@@ -1377,10 +1377,12 @@ from the text after it. Since v2.170.0 accents written as separate characters
 on their letters. Since v2.171.0 Sinhala, Thai, Tibetan, Myanmar, Khmer,
 Syriac, Thaana and N'Ko are shaped too, and so is a Browser installed through an
 in-app update. Lao is not: JavaFX's own text drifts its vowels as well. Since
-v2.172.0, on macOS and Windows, WebKit shapes all of these itself, so text in
-form fields, bold and italic phrases, justified paragraphs and selections is
-measured exactly; Linux keeps the repair described above, and since v2.173.0
-fits its width estimates to the fonts your distribution installed. Hebrew,
+v2.172.0 on macOS — and since v2.174.0 on Windows, which v2.172.0 named but
+where it looked for WebKit's library in the wrong place and quietly kept the
+repair — WebKit shapes all of these itself, so text in form fields, bold and
+italic phrases, justified paragraphs and selections is measured exactly; Linux
+keeps the repair described above, and since v2.173.0 fits its width estimates
+to the fonts your distribution installed. Hebrew,
 Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output

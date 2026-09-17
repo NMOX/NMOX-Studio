@@ -4,6 +4,76 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.174.0] - 2026-09-17
+
+**Windows really does take WebKit's own text path, and the pipeline notices a
+failed release instead of waiting it out.**
+
+- **Windows was silently on the old path — and stayed there through v2.173.0.**
+  v2.172.0 looked for the WebKit library at `bin/jfxwebkit.dll`. `jlink` drops a
+  jmod entry's first path segment and then files a `.dll` under `bin`, so the
+  Windows jmod's `lib/javafx/jfxwebkit.dll` becomes `bin/javafx/jfxwebkit.dll` —
+  proven by linking a real Windows image with the pinned jmods. The Browser found
+  nothing there and fell back to the repaired simple path, with no sign but
+  unshaped-looking widths, so v2.172.0's headline was true on macOS and false on
+  Windows. The path is fixed, and a library missing where a known platform should
+  have one now says so in the log. Independently decoded from the shipped DLL: the
+  exported setter writes the byte the table names (`0x501b274` past the setter),
+  and it reads `Simple`.
+- **Proven on Windows for real.** `WebKitTextPathLiveTest` runs against a runtime
+  that the release itself would ship: a new `windows-installer-check` job links one
+  with the pinned OpenJFX jmods and switches the path from `Simple` to `Auto` in it
+  (and checks the second attempt refuses). macOS runs the same test against the
+  installed app's runtime. Every other test passes on a stand-in, which is why the
+  wrong path shipped.
+- **Why it shipped twice.** The fix was written, tested and committed — into the
+  worktree branch v2.173.0 was already merging from, after its pull request had
+  been opened. A commit made in a worktree after its PR exists reaches no PR and no
+  release, and nothing in the pipeline could see the difference: the branch was
+  green, the release was green, and the work was simply not in it. The unit that
+  proves a claim and the commit that carries it have to be the same push.
+- **The arc review of the switch itself, and what it found.** Two hostile lenses
+  over the v2.171.0–v2.173.0 code. The one that matters: `knownBuild` hashed the
+  library, asked the table which entry those bytes are, and then returned **the
+  entry it had walked to** rather than the one that matched. The table holds one
+  entry per platform today, so the two always coincide — and an OpenJFX patch bump
+  adds the second, both naming the same jlink path, at which point the walk reaches
+  one build while the file on disk is the other, and its offsets inside that image
+  are an arbitrary call and an arbitrary write. The selection is a pure function
+  over its candidates now, pinned across a two-entry table. Beside it: a refusal
+  *after* the setter has run can no longer report "nothing happened" — the state
+  byte is put back, and when it cannot be, the simple-path repair is deliberately
+  NOT installed, because repairing a path WebKit may already be shaping measures
+  every complex run twice; the helper's `detach` no longer reports a **loaded**
+  agent as a refusal (its exception used to replace the load's own, so a real
+  refusal named the wrong reason); and the width fit now skips the code points the
+  width hook leaves at WebKit's own width — Tibetan's corpus is a third tsheg, so
+  the fit was solving one equation while the hook computed another, and
+  `clearly better`, the only gate deciding whether a fit replaces a measured
+  constant, was judging an error nothing ever computes. A corpus comment written
+  with one leading space used to discard the whole corpus silently. Ledger 100 and
+  101 record what was measured and deliberately left: a fit computed per *sized*
+  font rather than per font, and first-load waits that serialize across reopens.
+- **The build's own JDK, written down correctly.** `CLAUDE.md` told the reader to
+  build with `java_home -v 21`, which cannot compile this project: JavaFX 26's jars
+  are class-file 68 (JDK 24+), so the `ui` module needs a JDK 25 — the compiler
+  still TARGETS 21, which is a rule about emitted bytecode, not about the JDK you
+  build with. The failure hides itself: javac reports the version mismatch once,
+  abandons annotation processing, and every `@Messages`-generated `Bundle`
+  reference in the module then fails, so a tailed log is hundreds of
+  `cannot find symbol: variable Bundle` lines pointing at an unrelated file. Both
+  the command and that symptom are in the file now.
+- **A failed release run is noticed now.** GitHub's own release step fails often
+  enough to matter (v2.172.0 once, v2.173.0 four times — "Headers Timeout Error",
+  "Error creating asset temp dir", "Error saving asset"), and the gate watched only
+  the asset COUNT, which cannot tell a slow upload from a dead one: v2.173.0's gate
+  sat out its whole 90-minute timer on a run that had already finished failing,
+  leaving a 16-asset draft and the Homebrew cask a version behind. `ship-gate.sh`
+  reads the run as well, re-runs its failed jobs once (which also revives the
+  skipped `homebrew` job) and otherwise stops by name. The decision itself is
+  `scripts/release-run-verdict.sh`, a pure script whose four answers are run in
+  tests rather than read; three mutants die by name.
+
 ## [2.173.0] - 2026-09-17
 
 **Linux checked: the Browser's shaped text fits its words there too.**
@@ -22184,6 +22254,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.173.0...v2.174.0
 [2.173.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.172.0...v2.173.0
 [2.172.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.171.0...v2.172.0
 [2.171.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.170.0...v2.171.0
