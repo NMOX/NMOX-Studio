@@ -85,9 +85,10 @@ not take; each script now has a share measured in the Browser from WebKit's own
 fonts, and an Indic run's spaces take on up to half, give up at most a quarter,
 of what its words miss. Remainder: per-word misses of 5-11px, so conjunct-heavy
 phrases sit a little apart and Kannada/Malayalam phrases a little close.
-Vietnamese written with combining accents (NFD) places its accents beside the
-letters in the unpatched WebView too; that is WebKit's Latin path, outside the
-shaper, recorded not fixed. Installs whose conf predates v2.165.0
+Vietnamese written with combining accents (NFD) placed its accents beside the
+letters in the unpatched WebView too; v2.170.0 shapes a letter and its combining
+marks into the precomposed glyph and measures the marks at zero, so
+decomposed Vietnamese, French, German, Greek and Cyrillic read as precomposed. Installs whose conf predates v2.165.0
 (update-center updates) keep unjoined text until a reinstall, the v1.256.0
 conf timing law.
 
