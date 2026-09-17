@@ -56,9 +56,13 @@ final class WebKitTextPath {
      * One WebKit library whose code-path switch has been located, read from its
      * disassembly. Offsets are relative to {@code anchor}, an exported symbol the
      * loader can find: the setter is {@code FontCascade::setCodePath} and the
-     * state is the {@code s_codePath} byte that setter writes.
+     * state is the {@code s_codePath} byte that setter writes. {@code jmods} is
+     * the sha256 of the OpenJFX jmods archive the library came from, the pin the
+     * release lanes download by; {@code WebKitTextPathTest} holds the two equal,
+     * so a JavaFX bump cannot ship with offsets measured on another build.
      */
-    record Build(String platform, String sha256, String library, String anchor, long setterOffset, long stateOffset) {
+    record Build(String platform, String jmods, String sha256, String library, String anchor,
+            long setterOffset, long stateOffset) {
     }
 
     /**
@@ -71,10 +75,12 @@ final class WebKitTextPath {
      * reads no such byte anywhere near its font code, so it keeps the simple path.
      */
     static final List<Build> KNOWN = List.of(
-            new Build("osx-aarch64", "fb270b8c231f71095f773a368ed67939d0c8d12dd17fa1841e11caf3edc749fd",
+            new Build("osx-aarch64", "ed6ac7d8d056b29fa221edb029ed232eb54f3a7068c4d4e1304faf99f8d93285",
+                    "fb270b8c231f71095f773a368ed67939d0c8d12dd17fa1841e11caf3edc749fd",
                     "lib/libjfxwebkit.dylib", "Java_com_sun_webkit_WebPage_twkInitWebCore",
                     0x1c405acL - 0xa938cL, 0x675af58L - 0xa938cL),
-            new Build("windows-x64", "1fc1f628b312f38a5fd9c8463bfbd1e3d89d3c4416fe25818f04ea1f8efdeef7",
+            new Build("windows-x64", "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672",
+                    "1fc1f628b312f38a5fd9c8463bfbd1e3d89d3c4416fe25818f04ea1f8efdeef7",
                     "bin/jfxwebkit.dll", "?setCodePath@FontCascade@WebCore@@SAXW4CodePath@12@@Z",
                     0L, 0x185a2db64L - 0x180a128f0L));
 
