@@ -621,8 +621,8 @@ public final class ComplexTextShaping {
                     return Double.NaN;
                 }
                 int cp = charFor(table, glyph);
-                if (cp < 0) {
-                    return Double.NaN;
+                if (cp < 0 || !ComplexScripts.shapes(cp) && !ComplexScripts.combining(cp)) {
+                    return Double.NaN; // a Latin letter keeps the font's own width, with no work done
                 }
                 Map<Integer, Double> known;
                 synchronized (widths) {
@@ -790,9 +790,16 @@ public final class ComplexTextShaping {
             return at >= 0 ? table[1][at] : -1;
         }
 
+        /**
+         * Whether a paint has anything to shape: a letter or mark of the shaped
+         * scripts, or a combining mark. The table also maps plain Latin, Greek
+         * and Cyrillic letters (v2.170.0), so being in it is not enough, and an
+         * English paint returns here without laying anything out.
+         */
         static boolean anyShapeable(int[] glyphs, int[][] table) {
             for (int g : glyphs) {
-                if (Arrays.binarySearch(table[0], g) >= 0) {
+                int cp = charFor(table, g);
+                if (cp >= 0 && (ComplexScripts.shapes(cp) || ComplexScripts.combining(cp))) {
                     return true;
                 }
             }
