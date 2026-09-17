@@ -126,13 +126,13 @@ class ComplexScriptsTest {
         assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain)).isEqualTo(12.5d); // beh: 10 + 0.25 * 10
         assertThat(ComplexScripts.measuredWidth(0x064E, medial, fin, plain)).isZero();        // fatha, a mark
         assertThat(ComplexScripts.measuredWidth(0x094D, medial, fin, plain)).isZero();        // virama, a mark
-        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain)).isEqualTo(36d); // ka: 0.72 * 50
+        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain)).isEqualTo(42d); // ka: 0.84 * 50
         assertThat(ComplexScripts.measuredWidth('A', medial, fin, plain)).isNaN();           // the font's own
         assertThat(ComplexScripts.measuredWidth(0x05D0, medial, fin, plain)).isNaN();        // Hebrew is not shaped
         assertThat(ComplexScripts.measuredWidth(0x0628, cp -> Double.NaN, fin, plain)).isNaN();
         assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, cp -> Double.NaN)).isNaN();
         assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain, true)).isEqualTo(15d); // Nastaliq: 10 + 0.5 * 10
-        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain, true)).isEqualTo(36d); // Indic ignores it
+        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain, true)).isEqualTo(42d); // Indic ignores it
     }
 
     @Test
@@ -235,7 +235,7 @@ class ComplexScriptsTest {
     }
 
     @Test
-    @DisplayName("a space at the edge the run keeps stays as measured; the neighbour beside it is another run's")
+    @DisplayName("a space at the edge the run keeps stays as measured, and an Indic run's spaces give up less than they take")
     void keptEdgeSpacesStayMeasured() {
         // visual: "بت" + " " — the trailing space sits at a right-to-left run's kept right edge
         int[] g = glyphs("بت" + " ");
@@ -251,11 +251,16 @@ class ComplexScriptsTest {
                 text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
         assertThat(indic.origin()).isZero();
         assertThat(indic.xs()).containsExactly(0f, 6f, 18f);
-        // and an Indic run's spaces never absorb: its words' miss falls past its end
+        // an Indic run's space gives up at most a quarter of itself when the words come out wide...
         int[] words = glyphs("कम" + " " + "कम");
-        ComplexScripts.Laid spaced = ComplexScripts.layout(words, new float[]{10f, 10f, 6f, 10f, 10f}, CHAR_FOR,
+        float[] measured = {10f, 10f, 6f, 10f, 10f};
+        ComplexScripts.Laid wide = ComplexScripts.layout(words, measured, CHAR_FOR,
                 text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
-        assertThat(spaced.xs()).containsExactly(0f, 12f, 24f, 30f, 42f);
+        assertThat(wide.xs()).containsExactly(0f, 12f, 24f, 28.5f, 40.5f); // 8 too wide: the space gives 1.5
+        // ...and takes on up to half when they come out narrow
+        ComplexScripts.Laid narrow = ComplexScripts.layout(words, measured, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{8f, 8f}), 32);
+        assertThat(narrow.xs()).containsExactly(0f, 8f, 16f, 25f, 33f); // 8 too narrow: the space takes 3
     }
 
     @Test
@@ -287,5 +292,22 @@ class ComplexScriptsTest {
         assertThat(ComplexScripts.downwardFrom(6.2f)).isEqualTo(1f);
         assertThat(ComplexScripts.downwardFrom(-7.7f)).isEqualTo(-1f); // JavaFX 26 on macOS
         assertThat(ComplexScripts.downwardFrom(0f)).isZero();
+    }
+
+    @Test
+    @DisplayName("each Indic script is measured at its own share, from the first to the last code point of its block")
+    void indicSharesPerScript() {
+        java.util.function.IntToDoubleFunction none = cp -> Double.NaN;
+        java.util.function.IntToDoubleFunction plain = cp -> 100d;
+        int[][] firstAndLast = {{0x0915, 0x097F}, {0x0995, 0x09FF}, {0x0A15, 0x0A7F}, {0x0A95, 0x0AFF},
+            {0x0B15, 0x0B7F}, {0x0B95, 0x0BFF}, {0x0C15, 0x0C7F}, {0x0C95, 0x0CFF}, {0x0D15, 0x0D7F}};
+        double[] share = {84, 84, 90, 82, 76, 78, 98, 82, 78};
+        for (int k = 0; k < firstAndLast.length; k++) {
+            int letter = firstAndLast[k][0];
+            assertThat(ComplexScripts.measuredWidth(letter, none, none, plain)).as("U+%04X", letter)
+                    .isCloseTo(share[k], org.assertj.core.data.Offset.offset(1e-9));
+            assertThat(ComplexScripts.indicShare(firstAndLast[k][1])).as("end of block U+%04X", firstAndLast[k][1])
+                    .isCloseTo(share[k] / 100d, org.assertj.core.data.Offset.offset(1e-9));
+        }
     }
 }

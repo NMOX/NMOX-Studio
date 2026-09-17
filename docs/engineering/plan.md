@@ -1,5 +1,13 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.169.0 — calibrate in the instrument
+that paints. The eight other Indic scripts were shaped correctly all along; their
+widths were not. The first recalibration used JavaFX's Serif text, agreed with
+itself, and photographed worse: WebKit's fonts are not Serif's, and v2.166.0's
+own number had been chosen against a measure the bridge never takes. Logging
+each word's measured and shaped width inside the Browser gave the shares that
+held up in the pictures.*
+
 *Currency addendum 2026-09-16, at v2.168.0 — the first fix that sounds right
 is still a hypothesis. When long right-to-left lines lost their spaces, anchoring
 each word at its own edge was the obvious cure; photographed, it was worse,

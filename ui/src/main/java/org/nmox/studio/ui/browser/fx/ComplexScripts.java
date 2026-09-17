@@ -82,14 +82,48 @@ public final class ComplexScripts {
 
     /**
      * The share of its plain width an Indic letter or spacing sign is measured
-     * at (v2.166.0). Conjuncts, half forms and reordered signs make shaped
-     * Devanagari far narrower than its characters: over 42 Hindi words the
-     * shaped total was 1937px against 2690 for the non-mark characters, and 0.72
-     * lands within a word-average of 6.5px. Raising it barely changes how many
-     * words come out short (24 at 0.72 and at 0.75) while every word's error
-     * grows, so the miss here is per word, not a bias to correct.
+     * at, per script (v2.169.0): {first code point of the block, share}. The
+     * plain width is the advance of the first glyph JavaFX gives the lone
+     * character, the measure the bridge takes. v2.166.0 chose one share, 0.72,
+     * for every script against a different measure (a lone character's laid-out
+     * width, which for a vowel sign counts the dotted circle drawn in front of
+     * it); measured the way the product measures, it left most words short in
+     * every script but Oriya, and Tamil, Telugu, Kannada and Malayalam phrases
+     * painted over the English word after them.
+     *
+     * <p>Measured in the Browser itself, from WebKit's own fonts: each word's
+     * measured and shaped widths logged while running prose and short
+     * interface phrases rendered, 25-35 words a script at 26px. Chosen as for
+     * Arabic: among the shares within 1px of the best word-average, the one that
+     * leaves the fewest words short, since a short word paints over its
+     * neighbour and a long one leaves a gap after it. Word-average misses:
+     * Devanagari 5.0px, Bengali 7.5, Gurmukhi 6.7, Gujarati 6.4, Oriya 8.1, Tamil
+     * 7.2, Telugu 10.4, Kannada 7.3, Malayalam 11.0. Words full of conjuncts (a
+     * Hindi {@code प्रोजेक्ट}) come out narrower than prose, so a phrase of them
+     * can sit a little apart from the text after it.
      */
-    static final double INDIC_SHARE = 0.72;
+    static final double[][] INDIC_SHARES = {
+        {0x0900, 0.84}, // Devanagari
+        {0x0980, 0.84}, // Bengali
+        {0x0A00, 0.90}, // Gurmukhi
+        {0x0A80, 0.82}, // Gujarati
+        {0x0B00, 0.76}, // Oriya
+        {0x0B80, 0.78}, // Tamil
+        {0x0C00, 0.98}, // Telugu
+        {0x0C80, 0.82}, // Kannada
+        {0x0D00, 0.78}, // Malayalam
+    };
+
+    /** The measured share for the Indic block {@code cp} falls in. */
+    static double indicShare(int cp) {
+        double share = INDIC_SHARES[0][1];
+        for (double[] block : INDIC_SHARES) {
+            if (cp >= block[0]) {
+                share = block[1];
+            }
+        }
+        return share;
+    }
 
     /**
      * {@link #ARABIC_TOWARD_FINAL} for a Nastaliq font (v2.167.0), whose words
@@ -144,7 +178,7 @@ public final class ComplexScripts {
             return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
-        return Double.isNaN(p) ? Double.NaN : INDIC_SHARE * p;
+        return Double.isNaN(p) ? Double.NaN : indicShare(cp) * p;
     }
 
     /** The joining character a letter is shaped between to find its in-word form. */
@@ -256,6 +290,9 @@ public final class ComplexScripts {
      */
     static final float SPACE_GIVES = 0.5f;
 
+    /** How much of its width a space in an Indic run may give up (v2.169.0); it may still take on half. */
+    static final float INDIC_SPACE_GIVES = 0.25f;
+
     /**
      * Lays a painted run out for a glyph list built from positions rather than
      * advances (v2.167.0), so a shaped segment may take more glyphs than it had
@@ -269,11 +306,13 @@ public final class ComplexScripts {
      * edge (a right-to-left run keeps its right edge, an Indic run its left).
      * Spaces at the kept edge are left as measured: a Pashto line painted its
      * {@code npm} against the word beside it when that space gave up half.
-     * Only right-to-left runs do this. An Indic word's estimate misses by about
-     * a whole space (6.5px a word at 26px against Arabic script's 3.5-4.3), so
-     * half a space each squeezed a Hindi heading's words together in the forged
-     * picture; an Indic run keeps its left edge and lets the difference fall past
-     * its end, as it did before.
+     * In an Indic run a space gives up at most a quarter of itself (v2.169.0)
+     * while it may still take on half: an Indic word's estimate misses by more
+     * (5-11px a word at 26px against Arabic script's 3.5-4.3), and half a space
+     * each squeezed a Hindi heading and a Kannada phrase together in the
+     * pictures, while spreading a phrase that came out narrow across its spaces
+     * closed the gap it had left after its last word. v2.168.0 kept Indic runs
+     * out of this entirely and let every miss fall past the run's end.
      * Until then all of it moved the far edge, so over a long right-to-left
      * stretch the words' few pixels each added up to a whole space and a Sindhi
      * line painted {@code ۽} against the {@code npm} beside it. Anchoring each
@@ -364,8 +403,9 @@ public final class ComplexScripts {
             }
         }
         float excess = painted - measured; // positive: the words came out wider than WebKit's box
-        float absorbed = spaces == 0f || !rtl ? 0f
-                : Math.max(-SPACE_GIVES * spaces, Math.min(SPACE_GIVES * spaces, excess));
+        float gives = rtl ? SPACE_GIVES : INDIC_SPACE_GIVES;
+        float absorbed = spaces == 0f ? 0f
+                : Math.max(-SPACE_GIVES * spaces, Math.min(gives * spaces, excess));
         float[] outX = new float[size];
         float x = rtl ? -(excess - absorbed) : 0f;
         for (int k = 0; k < size; k++) {

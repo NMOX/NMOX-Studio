@@ -1369,7 +1369,10 @@ letters, and Urdu set in a Nastaliq font renders as Nastaliq (its widths are
 looser, so a Nastaliq line can sit a few pixels off). Kurdish (Sorani), Pashto,
 Sindhi and Uyghur render the same way, and since v2.168.0 a long right-to-left
 line spreads the few pixels its words miss across its spaces instead of letting
-them pile up against the next word. Hebrew renders correctly
+them pile up against the next word. Bengali, Gurmukhi, Gujarati, Oriya, Tamil,
+Telugu, Kannada and Malayalam are shaped too, each measured at its own width
+since v2.169.0; a phrase full of conjuncts can still sit a few pixels apart
+from the text after it. Hebrew renders correctly
 on its own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output
