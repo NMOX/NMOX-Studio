@@ -54,12 +54,14 @@ public final class ComplexScripts {
 
     /**
      * Left to right, reordered, conjoined or stacked: Devanagari through
-     * Malayalam, and since v2.171.0 Sinhala, Thai, Lao, Tibetan, Myanmar and
-     * Khmer, which WebKit painted with broken conjuncts, stacks and vowels on
-     * dotted circles while JavaFX's own text renders them.
+     * Malayalam, and since v2.171.0 Sinhala, Thai, Tibetan, Myanmar and Khmer,
+     * which WebKit painted with broken conjuncts, stacks and vowels on dotted
+     * circles while JavaFX's own text renders them. Lao is left out: JavaFX's
+     * own text drifts its vowels too, so shaping would trade one wrong picture
+     * for another.
      */
     static boolean leftToRight(int cp) {
-        return (cp >= 0x0900 && cp <= 0x0FFF) || (cp >= 0x1000 && cp <= 0x109F) || (cp >= 0x1780 && cp <= 0x17FF);
+        return (cp >= 0x0900 && cp <= 0x0E7F) || (cp >= 0x0F00 && cp <= 0x109F) || (cp >= 0x1780 && cp <= 0x17FF);
     }
 
     /**
@@ -81,8 +83,8 @@ public final class ComplexScripts {
 
     /** The code point ranges a glyph lookup table needs, inclusive pairs. */
     public static final int[][] RANGES = {{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0x0900, 0x0D7F},
-        // since v2.171.0: Syriac, Thaana and N'Ko; Sinhala through Tibetan; Myanmar; Khmer
-        {0x0700, 0x074F}, {0x0780, 0x07FF}, {0x0D80, 0x0FFF}, {0x1000, 0x109F}, {0x1780, 0x17FF},
+        // since v2.171.0: Syriac, Thaana and N'Ko; Sinhala and Thai; Tibetan and Myanmar; Khmer
+        {0x0700, 0x074F}, {0x0780, 0x07FF}, {0x0D80, 0x0E7F}, {0x0F00, 0x109F}, {0x1780, 0x17FF},
         // since v2.170.0 also the letters a combining mark sits on, and the marks themselves
         {0x0041, 0x024F}, {0x0300, 0x036F}, {0x0370, 0x03FF}, {0x0400, 0x052F}, {0x1AB0, 0x1AFF},
         {0x1DC0, 0x1DFF}, {0x1E00, 0x1FFF}, {0x20D0, 0x20FF}, {0xFE20, 0xFE2F}};
@@ -136,7 +138,8 @@ public final class ComplexScripts {
      * leaves the fewest words short, since a short word paints over its
      * neighbour and a long one leaves a gap after it. Word-average misses:
      * Devanagari 5.0px, Bengali 7.5, Gurmukhi 6.7, Gujarati 6.4, Oriya 8.1, Tamil
-     * 7.2, Telugu 10.4, Kannada 7.3, Malayalam 11.0. Words full of conjuncts (a
+     * 7.2, Telugu 10.4, Kannada 7.3, Malayalam 11.0; since v2.171.0 Sinhala 7.1,
+     * Thai 1.7, Tibetan 0.4, Myanmar 7.7, Khmer 12.4. Words full of conjuncts (a
      * Hindi {@code प्रोजेक्ट}) come out narrower than prose, so a phrase of them
      * can sit a little apart from the text after it.
      */
@@ -150,19 +153,22 @@ public final class ComplexScripts {
         {0x0C00, 0.98}, // Telugu
         {0x0C80, 0.82}, // Kannada
         {0x0D00, 0.78}, // Malayalam
-        {0x0D80, 1.00}, // Sinhala
+        {0x0D80, 0.86}, // Sinhala
         {0x0E00, 1.00}, // Thai
-        {0x0E80, 1.00}, // Lao
         {0x0F00, 1.00}, // Tibetan
-        {0x1000, 1.00}, // Myanmar
-        {0x1780, 1.00}, // Khmer
+        {0x1000, 0.96}, // Myanmar
+        {0x1780, 0.80}, // Khmer
     };
 
-    /** Syriac, Thaana and N'Ko's share of their plain width (v2.171.0); their fonts carry no Arabic tatweel. */
+    /**
+     * Syriac, Thaana and N'Ko's share of their plain width (v2.171.0), measured
+     * the same way in the Browser (word-average misses 5.9px, 2.4 and 3.5); their
+     * fonts carry no Arabic medial and final pair to measure between.
+     */
     static final double[][] RTL_SHARES = {
-        {0x0700, 1.00}, // Syriac
-        {0x0780, 1.00}, // Thaana
-        {0x07C0, 1.00}, // N'Ko
+        {0x0700, 0.90}, // Syriac
+        {0x0780, 1.08}, // Thaana
+        {0x07C0, 1.18}, // N'Ko
     };
 
     /** The measured share for the Indic block {@code cp} falls in. */
@@ -453,8 +459,6 @@ public final class ComplexScripts {
                     size++;
                 }
             } else {
-                { float o = 0f, u = 0f; for (int k = start; k < i; k++) o += advances[k]; for (float q : shaped.advances()) u += q;
-                  System.err.printf("CAL %04X %.3f %.3f%n", charFor.applyAsInt(glyphs[start]), o, u); }
                 for (int k = 0; k < shaped.glyphs().length; k++) {
                     outG[size] = shaped.glyphs()[k];
                     outW[size] = shaped.advances()[k];

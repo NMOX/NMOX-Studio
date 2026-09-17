@@ -129,6 +129,7 @@ class PrismBridgeTest {
     @Test
     @DisplayName("the bridge finds every JavaFX member it reads, and refuses a call with nothing to shape")
     void bridgeWiresAgainstRealJavaFx() throws Exception {
+        assumeJavaFxLoads();
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         assertThat(bridge.apply(new Object[]{null, new int[0], new float[0]})).isEqualTo(0f);
         assertThat(bridge.apply(new Object[]{"not a font", null, null})).isEqualTo(0f);
@@ -139,6 +140,7 @@ class PrismBridgeTest {
     @Test
     @DisplayName("a laid-out run reaches only the glyph list built from that paint's own glyph array, once")
     void placementAnswersOnlyTheSamePaint() throws Exception {
+        assumeJavaFxLoads();
         ComplexTextShaping.PrismBridge bridge = new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
         int[] glyphs = {1, 2, 3};
         float[] advances = {4f, 5f, 6f};
@@ -202,5 +204,21 @@ class PrismBridgeTest {
         assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{3, syriac}, table, tried)).isTrue();
         assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{syriac, syriac + 1}, table, tried)).isFalse(); // tried
         assertThat(tried).containsExactly(0x27);
+    }
+
+    /**
+     * The provided JavaFX jars are compiled for Java 24 and up; CI runs these on
+     * JDK 25. An older local JDK cannot load them at all, which says nothing about
+     * the bridge, so the two tests that touch real JavaFX classes skip there and
+     * say why. Any other failure to load still fails.
+     */
+    private static void assumeJavaFxLoads() {
+        try {
+            Class.forName("com.sun.webkit.graphics.WCFont", false, PrismBridgeTest.class.getClassLoader());
+        } catch (UnsupportedClassVersionError tooNew) {
+            org.junit.jupiter.api.Assumptions.abort("JavaFX needs a newer JDK than " + Runtime.version() + ": " + tooNew.getMessage());
+        } catch (ClassNotFoundException missing) {
+            throw new AssertionError("javafx-web is a provided dependency of this module", missing);
+        }
     }
 }
