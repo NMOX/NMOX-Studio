@@ -39,14 +39,27 @@ public final class ComplexScripts {
         }
     }
 
-    /** Arabic, Arabic Supplement and Arabic Extended-A: joined, right to left. */
+    /**
+     * Right to left: Arabic, Arabic Supplement and Arabic Extended-A (joined),
+     * and since v2.171.0 Syriac and N'Ko (joined) and Thaana (vowel marks).
+     */
     static boolean rightToLeft(int cp) {
+        return arabic(cp) || (cp >= 0x0700 && cp <= 0x074F) || (cp >= 0x0780 && cp <= 0x07FF);
+    }
+
+    /** The Arabic blocks, measured between their medial and final forms. */
+    static boolean arabic(int cp) {
         return (cp >= 0x0600 && cp <= 0x06FF) || (cp >= 0x0750 && cp <= 0x077F) || (cp >= 0x08A0 && cp <= 0x08FF);
     }
 
-    /** Devanagari through Malayalam: reordered and conjoined, left to right. */
+    /**
+     * Left to right, reordered, conjoined or stacked: Devanagari through
+     * Malayalam, and since v2.171.0 Sinhala, Thai, Lao, Tibetan, Myanmar and
+     * Khmer, which WebKit painted with broken conjuncts, stacks and vowels on
+     * dotted circles while JavaFX's own text renders them.
+     */
     static boolean leftToRight(int cp) {
-        return cp >= 0x0900 && cp <= 0x0D7F;
+        return (cp >= 0x0900 && cp <= 0x0FFF) || (cp >= 0x1000 && cp <= 0x109F) || (cp >= 0x1780 && cp <= 0x17FF);
     }
 
     /**
@@ -68,6 +81,8 @@ public final class ComplexScripts {
 
     /** The code point ranges a glyph lookup table needs, inclusive pairs. */
     public static final int[][] RANGES = {{0x0600, 0x06FF}, {0x0750, 0x077F}, {0x08A0, 0x08FF}, {0x0900, 0x0D7F},
+        // since v2.171.0: Syriac, Thaana and N'Ko; Sinhala through Tibetan; Myanmar; Khmer
+        {0x0700, 0x074F}, {0x0780, 0x07FF}, {0x0D80, 0x0FFF}, {0x1000, 0x109F}, {0x1780, 0x17FF},
         // since v2.170.0 also the letters a combining mark sits on, and the marks themselves
         {0x0041, 0x024F}, {0x0300, 0x036F}, {0x0370, 0x03FF}, {0x0400, 0x052F}, {0x1AB0, 0x1AFF},
         {0x1DC0, 0x1DFF}, {0x1E00, 0x1FFF}, {0x20D0, 0x20FF}, {0xFE20, 0xFE2F}};
@@ -135,12 +150,34 @@ public final class ComplexScripts {
         {0x0C00, 0.98}, // Telugu
         {0x0C80, 0.82}, // Kannada
         {0x0D00, 0.78}, // Malayalam
+        {0x0D80, 1.00}, // Sinhala
+        {0x0E00, 1.00}, // Thai
+        {0x0E80, 1.00}, // Lao
+        {0x0F00, 1.00}, // Tibetan
+        {0x1000, 1.00}, // Myanmar
+        {0x1780, 1.00}, // Khmer
+    };
+
+    /** Syriac, Thaana and N'Ko's share of their plain width (v2.171.0); their fonts carry no Arabic tatweel. */
+    static final double[][] RTL_SHARES = {
+        {0x0700, 1.00}, // Syriac
+        {0x0780, 1.00}, // Thaana
+        {0x07C0, 1.00}, // N'Ko
     };
 
     /** The measured share for the Indic block {@code cp} falls in. */
     static double indicShare(int cp) {
-        double share = INDIC_SHARES[0][1];
-        for (double[] block : INDIC_SHARES) {
+        return shareIn(INDIC_SHARES, cp);
+    }
+
+    /** The measured share for the Syriac, Thaana or N'Ko block {@code cp} falls in. */
+    static double rtlShare(int cp) {
+        return shareIn(RTL_SHARES, cp);
+    }
+
+    private static double shareIn(double[][] table, int cp) {
+        double share = table[0][1];
+        for (double[] block : table) {
             if (cp >= block[0]) {
                 share = block[1];
             }
@@ -197,14 +234,14 @@ public final class ComplexScripts {
         if (type == Character.NON_SPACING_MARK || type == Character.ENCLOSING_MARK) {
             return 0d;
         }
-        if (rightToLeft(cp)) {
+        if (arabic(cp)) {
             double m = medial.applyAsDouble(cp);
             double f = finalForm.applyAsDouble(cp);
             double k = stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
             return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
-        return Double.isNaN(p) ? Double.NaN : indicShare(cp) * p;
+        return Double.isNaN(p) ? Double.NaN : (rightToLeft(cp) ? rtlShare(cp) : indicShare(cp)) * p;
     }
 
     /** The joining character a letter is shaped between to find its in-word form. */
@@ -416,6 +453,8 @@ public final class ComplexScripts {
                     size++;
                 }
             } else {
+                { float o = 0f, u = 0f; for (int k = start; k < i; k++) o += advances[k]; for (float q : shaped.advances()) u += q;
+                  System.err.printf("CAL %04X %.3f %.3f%n", charFor.applyAsInt(glyphs[start]), o, u); }
                 for (int k = 0; k < shaped.glyphs().length; k++) {
                     outG[size] = shaped.glyphs()[k];
                     outW[size] = shaped.advances()[k];

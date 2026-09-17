@@ -190,4 +190,17 @@ class PrismBridgeTest {
         assertThat(ShapingAttach.attach(null)).isFalse();
         assertThat(ShapingAttach.attach(new String[]{"1"})).isFalse();
     }
+
+    @Test
+    @DisplayName("an unmapped glyph from a fallback slot asks for one rebuild per slot; mapped glyphs and the primary font never do")
+    void newFallbackSlotsRebuildOnce() {
+        int[][] table = ComplexTextShaping.PrismBridge.glyphTable(cp -> cp == 0x0628 ? 800 : cp == ' ' ? 3 : 0);
+        java.util.Set<Integer> tried = new java.util.HashSet<>();
+        int syriac = (0x27 << 24) | 9;
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{800, 3}, table, tried)).isFalse(); // all mapped
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{55}, table, tried)).isFalse();     // primary slot
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{3, syriac}, table, tried)).isTrue();
+        assertThat(ComplexTextShaping.PrismBridge.newSlots(new int[]{syriac, syriac + 1}, table, tried)).isFalse(); // tried
+        assertThat(tried).containsExactly(0x27);
+    }
 }

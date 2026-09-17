@@ -606,6 +606,8 @@ public final class ComplexTextShaping {
         private final ThreadLocal<Object[]> pending = new ThreadLocal<>();
         /** Which way this JavaFX's layout measures y, once a kasra has said: +1 down, -1 up. */
         private volatile float yDirection;
+        /** Per WebKit font: the fallback slots its table has been built with, or rebuilt for. */
+        private final Map<Object, Set<Integer>> triedSlots = new WeakHashMap<>();
         /** Per WebKit font: sorted glyph codes, their characters, and a blank glyph. */
         private final Map<Object, int[][]> tables = new WeakHashMap<>();
 
@@ -652,7 +654,7 @@ public final class ComplexTextShaping {
                     return 0f;
                 }
                 pending.remove();
-                int[][] table = table(font);
+                int[][] table = table(font, glyphs);
                 if (table == null || !anyShapeable(glyphs, table)) {
                     return 0f;
                 }
@@ -705,7 +707,7 @@ public final class ComplexTextShaping {
             try {
                 Object font = args[0];
                 int glyph = (Integer) args[1];
-                int[][] table = font == null ? null : table(font);
+                int[][] table = font == null ? null : table(font, new int[]{glyph});
                 if (table == null) {
                     return Double.NaN;
                 }
@@ -811,14 +813,44 @@ public final class ComplexTextShaping {
         }
 
         private int[][] table(Object font) throws ReflectiveOperationException {
+            return table(font, new int[0]);
+        }
+
+        /**
+         * A font's reverse glyph table, rebuilt once for each fallback slot a
+         * paint shows it has not mapped yet (v2.171.0). WebKit's font is a
+         * composite: a glyph from a fallback font carries the fallback's slot in
+         * its top byte, and a slot exists only once some text has needed it, so a
+         * table built at the first paint knew nothing of the Syriac or N'Ko font
+         * a later paint brought in, and those scripts stayed unjoined.
+         */
+        private int[][] table(Object font, int[] glyphs) throws ReflectiveOperationException {
             synchronized (tables) {
                 int[][] table = tables.get(font);
+                Set<Integer> tried = triedSlots.computeIfAbsent(font, f -> new java.util.HashSet<>());
+                if (table != null && newSlots(glyphs, table, tried)) {
+                    table = null;
+                }
                 if (table == null) {
                     table = buildTable(font);
                     tables.put(font, table);
+                    for (int g : table[0]) {
+                        tried.add(g >>> 24);
+                    }
                 }
                 return table;
             }
+        }
+
+        /** Whether {@code glyphs} hold an unmapped glyph from a slot not yet tried, marking such slots tried. */
+        static boolean newSlots(int[] glyphs, int[][] table, Set<Integer> tried) {
+            boolean fresh = false;
+            for (int g : glyphs) {
+                if (g >>> 24 != 0 && charFor(table, g) < 0 && tried.add(g >>> 24)) {
+                    fresh = true;
+                }
+            }
+            return fresh;
         }
 
         private int[][] buildTable(Object font) throws ReflectiveOperationException {
