@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.ProtectionDomain;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -178,26 +179,67 @@ public final class ComplexTextShaping {
         main.putValue("Agent-Class", ShapingAgent.class.getName());
         main.putValue("Can-Retransform-Classes", "true");
         main.putValue("Can-Redefine-Classes", "true");
-        String entry = ShapingAgent.class.getName().replace('.', '/') + ".class";
         try (OutputStream out = Files.newOutputStream(jar);
-                JarOutputStream jos = new JarOutputStream(out, manifest);
-                InputStream in = ComplexTextShaping.class.getClassLoader().getResourceAsStream(entry)) {
-            if (in == null) {
+                JarOutputStream jos = new JarOutputStream(out, manifest)) {
+            for (Class<?> carried : new Class<?>[]{ShapingAgent.class, ShapingAttach.class}) {
+                String entry = carried.getName().replace('.', '/') + ".class";
+                try (InputStream in = ComplexTextShaping.class.getClassLoader().getResourceAsStream(entry)) {
+                    if (in == null) {
+                        return null;
+                    }
+                    jos.putNextEntry(new JarEntry(entry));
+                    in.transferTo(jos);
+                    jos.closeEntry();
+                }
+            }
+        }
+        long pid = ProcessHandle.current().pid();
+        Class<?> vm = Class.forName("com.sun.tools.attach.VirtualMachine", true, attach.getClassLoader());
+        try {
+            Object machine = vm.getMethod("attach", String.class).invoke(null, Long.toString(pid));
+            try {
+                vm.getMethod("loadAgent", String.class).invoke(machine, jar.toString());
+            } finally {
+                vm.getMethod("detach").invoke(machine);
+            }
+        } catch (java.lang.reflect.InvocationTargetException refused) {
+            // no jdk.attach.allowAttachSelf: an install updated in-app never got the
+            // launcher conf that carries it, so another process attaches instead
+            LOG.log(Level.FINE, "self-attach refused; attaching from a helper process", refused.getCause());
+            if (!attachFromHelper(jar, pid)) {
                 return null;
             }
-            jos.putNextEntry(new JarEntry(entry));
-            in.transferTo(jos);
-            jos.closeEntry();
-        }
-        Class<?> vm = Class.forName("com.sun.tools.attach.VirtualMachine", true, attach.getClassLoader());
-        Object machine = vm.getMethod("attach", String.class).invoke(null, Long.toString(ProcessHandle.current().pid()));
-        try {
-            vm.getMethod("loadAgent", String.class).invoke(machine, jar.toString());
-        } finally {
-            vm.getMethod("detach").invoke(machine);
         }
         Class<?> agent = ClassLoader.getSystemClassLoader().loadClass(ShapingAgent.class.getName());
         return (Instrumentation) agent.getMethod("claim").invoke(null);
+    }
+
+    /** How long the helper process may take to attach before the Browser paints unshaped. */
+    private static final java.time.Duration HELPER_LEASH = java.time.Duration.ofSeconds(30);
+
+    /**
+     * Runs {@link ShapingAttach} with this JVM's own runtime to load the agent into
+     * this process (v2.171.0). The command is fixed: the runtime's {@code java},
+     * the jar this class just wrote, and this process's pid.
+     */
+    private static boolean attachFromHelper(Path jar, long pid) throws IOException {
+        List<String> command = helperCommand(Path.of(System.getProperty("java.home")),
+                org.openide.util.BaseUtilities.isWindows(), jar, pid);
+        org.nmox.studio.core.process.ProcessSupport.BoundedResult result =
+                org.nmox.studio.core.process.ProcessSupport.runBounded(command, null, HELPER_LEASH);
+        if (!result.ok()) {
+            LOG.log(Level.INFO, "complex-script shaping: the attach helper failed (exit {0}{1}): {2}",
+                    new Object[]{result.exitCode(), result.timedOut() ? ", timed out" : "", result.stderr().strip()});
+            return false;
+        }
+        return true;
+    }
+
+    /** The helper's argv: {@code <java.home>/bin/java[.exe] -cp <jar> ShapingAttach <pid> <jar>}. */
+    static List<String> helperCommand(Path javaHome, boolean windows, Path jar, long pid) {
+        Path java = javaHome.resolve("bin").resolve(windows ? "java.exe" : "java");
+        return List.of(java.toString(), "-cp", jar.toString(), ShapingAttach.class.getName(),
+                Long.toString(pid), jar.toString());
     }
 
     /**

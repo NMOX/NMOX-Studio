@@ -172,4 +172,22 @@ class PrismBridgeTest {
         cache.get("refused", shaper);
         assertThat(shapedTexts).containsExactly("بت", "refused", "كم", "refused");
     }
+
+    @Test
+    @DisplayName("the attach helper runs this JVM's own java on the jar just written, naming this process")
+    void attachHelperCommandIsFixed() {
+        java.nio.file.Path home = java.nio.file.Path.of("/opt/jre");
+        java.nio.file.Path jar = java.nio.file.Path.of("/tmp/nmox-shaping-agent1.jar");
+        assertThat(ComplexTextShaping.helperCommand(home, false, jar, 4242)).containsExactly(
+                "/opt/jre/bin/java", "-cp", "/tmp/nmox-shaping-agent1.jar",
+                "org.nmox.studio.ui.browser.fx.ShapingAttach", "4242", "/tmp/nmox-shaping-agent1.jar");
+        assertThat(ComplexTextShaping.helperCommand(home, true, jar, 7).get(0)).endsWith("java.exe");
+    }
+
+    @Test
+    @DisplayName("the attach helper refuses a call without exactly a pid and a jar, and says why")
+    void attachHelperRefusesBadArguments() {
+        assertThat(ShapingAttach.attach(null)).isFalse();
+        assertThat(ShapingAttach.attach(new String[]{"1"})).isFalse();
+    }
 }
