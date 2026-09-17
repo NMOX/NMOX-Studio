@@ -1374,8 +1374,10 @@ Telugu, Kannada and Malayalam are shaped too, each measured at its own width
 since v2.169.0; a phrase full of conjuncts can still sit a few pixels apart
 from the text after it. Since v2.170.0 accents written as separate characters
 (Vietnamese, French or German in decomposed form, as macOS file names are) sit
-on their letters. Hebrew renders correctly
-on its own, niqqud included.
+on their letters. Since v2.171.0 Sinhala, Thai, Tibetan, Myanmar, Khmer,
+Syriac, Thaana and N'Ko are shaped too, and so is a Browser installed through an
+in-app update. Lao is not: JavaFX's own text drifts its vowels as well. Hebrew,
+Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output
   (the originals still fire), plus `window.onerror` and unhandled
