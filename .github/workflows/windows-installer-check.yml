@@ -155,7 +155,13 @@ jobs:
           }
 
       - name: Switch WebKit's text path on in that runtime
-        run: >
-          mvn -B -pl ui surefire:test -Dtest=WebKitTextPathLiveTest -Dsurefire.failIfNoSpecifiedTests=true
-          -Dnmox.webkit.live=true -Djvm="%RUNNER_TEMP%\jre\bin\java.exe"
-          -DargLine="--enable-native-access=ALL-UNNAMED"
+        shell: pwsh
+        # every -D quoted whole: PowerShell splits an unquoted -Dsurefire.foo=bar at
+        # the dot and hands maven ".foo=bar" as a lifecycle phase. And the runtime path
+        # is $env:RUNNER_TEMP, not %RUNNER_TEMP% — this job's shell is PowerShell, so
+        # the cmd form arrived at maven literally.
+        run: |
+          mvn -B -pl ui surefire:test "-Dtest=WebKitTextPathLiveTest" `
+            "-Dsurefire.failIfNoSpecifiedTests=true" "-Dnmox.webkit.live=true" `
+            "-Djvm=$env:RUNNER_TEMP\jre\bin\java.exe" `
+            "-DargLine=--enable-native-access=ALL-UNNAMED"
