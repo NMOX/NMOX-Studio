@@ -151,4 +151,25 @@ class PrismBridgeTest {
         assertThat((float[]) placed[1]).containsExactly(0f, 0f, 4f, -7f, 9f, 2f, 15f, 0f, 16f, 0f);
         assertThat(bridge.place(new Object[]{glyphs, advances})).isNull();          // used up
     }
+
+    @Test
+    @DisplayName("a shaped run is shaped once per font and text, a refusal is remembered, and the oldest run leaves first")
+    void shapeCacheShapesOnceAndForgetsTheOldest() {
+        ComplexTextShaping.ShapeCache cache = new ComplexTextShaping.ShapeCache(2);
+        java.util.List<String> shapedTexts = new java.util.ArrayList<>();
+        java.util.function.Function<String, ComplexScripts.Shaped> shaper = text -> {
+            shapedTexts.add(text);
+            return text.equals("refused") ? null : new ComplexScripts.Shaped(new int[]{text.length()}, new float[]{1f});
+        };
+        ComplexScripts.Shaped first = cache.get("بت", shaper);
+        assertThat(cache.get("بت", shaper)).isSameAs(first);
+        assertThat(cache.get("refused", shaper)).isNull();
+        assertThat(cache.get("refused", shaper)).isNull();
+        assertThat(shapedTexts).containsExactly("بت", "refused");
+        cache.get("بت", shaper);          // used again: now the most recent
+        cache.get("كم", shaper);          // a third run: "refused" is the oldest and leaves
+        assertThat(cache.size()).isEqualTo(2);
+        cache.get("refused", shaper);
+        assertThat(shapedTexts).containsExactly("بت", "refused", "كم", "refused");
+    }
 }

@@ -493,6 +493,44 @@ public final class ComplexTextShaping {
      * The shaper the hook calls: reads a WebKit font's glyph mapping and asks
      * JavaFX's own text layout to shape a run. Never throws into the paint.
      */
+    /**
+     * A font's shaped runs, least recently used first out (v2.171.0). WebKit
+     * paints the same words on every repaint, and shaping each run is a JavaFX
+     * text layout through reflection; before this cache a scroll re-shaped every
+     * visible word, and the slowest frames on a long Arabic or Hindi page took
+     * two to three times as long as on the same page unshaped. A run the shaper
+     * refused is remembered as refused. Shaped runs are never written to, so
+     * sharing one between paints is safe.
+     */
+    static final class ShapeCache {
+        static final int CAPACITY = 2048;
+        private static final ComplexScripts.Shaped REFUSED = new ComplexScripts.Shaped(new int[0], new float[0]);
+        private final Map<String, ComplexScripts.Shaped> runs;
+
+        ShapeCache(int capacity) {
+            runs = new java.util.LinkedHashMap<>(64, 0.75f, true) {
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, ComplexScripts.Shaped> eldest) {
+                    return size() > capacity;
+                }
+            };
+        }
+
+        /** The run shaped for {@code text}, shaping it once; null when the shaper refused it. */
+        synchronized ComplexScripts.Shaped get(String text, Function<String, ComplexScripts.Shaped> shaper) {
+            ComplexScripts.Shaped known = runs.get(text);
+            if (known == null) {
+                known = shaper.apply(text);
+                runs.put(text, known == null ? REFUSED : known);
+            }
+            return known == REFUSED ? null : known;
+        }
+
+        synchronized int size() {
+            return runs.size();
+        }
+    }
+
     static final class PrismBridge implements Function<Object[], Object> {
 
         private final Method platformFont;
@@ -509,6 +547,8 @@ public final class ComplexTextShaping {
         private final Method charOffset;
         /** Per WebKit font and glyph: the width WebKit should measure. */
         private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
+        /** Per WebKit font: the runs it has shaped, most recent last. */
+        private final Map<Object, ShapeCache> shaped = new WeakHashMap<>();
         /** Per WebKit font: whether its joined Arabic letters leave the baseline. */
         private final Map<Object, Boolean> stacking = new WeakHashMap<>();
         private final Field locationX;
@@ -575,12 +615,13 @@ public final class ComplexTextShaping {
                     return 0f;
                 }
                 Object pg = platformFont.invoke(font);
+                ShapeCache cache = shapeCache(font);
+                Function<String, ComplexScripts.Shaped> shaper = text -> cache.get(text, t -> shape(t, pg));
                 if (!placementReady) {
-                    return ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g),
-                            text -> shape(text, pg), table[2][0]);
+                    return ComplexScripts.reshape(glyphs, advances, g -> charFor(table, g), shaper, table[2][0]);
                 }
                 ComplexScripts.Laid laid = ComplexScripts.layout(glyphs, advances, g -> charFor(table, g),
-                        text -> shape(text, pg), table[2][0]);
+                        shaper, table[2][0]);
                 if (laid == null || !laid.changed()) {
                     return 0f;
                 }
@@ -591,16 +632,22 @@ public final class ComplexTextShaping {
             }
         }
 
-        /**
-         * The placement answer: {glyphs, advances} to {the laid-out glyphs, their
-         * x/y positions} for the run this thread just shaped, or null to build the
-         * run from its advances as before. Never throws.
-         */
+        private ShapeCache shapeCache(Object font) {
+            synchronized (shaped) {
+                return shaped.computeIfAbsent(font, f -> new ShapeCache(ShapeCache.CAPACITY));
+            }
+        }
+
         /** Holds a laid-out run for the glyph-list build that follows on this thread. */
         void remember(int[] glyphs, ComplexScripts.Laid laid) {
             pending.set(new Object[]{glyphs, laid});
         }
 
+        /**
+         * The placement answer: {glyphs, advances} to {the laid-out glyphs, their
+         * x/y positions} for the run this thread just shaped, or null to build the
+         * run from its advances as before. Never throws.
+         */
         Object place(Object[] args) {
             Object[] mine = pending.get();
             if (mine == null || args == null || args.length < 1 || mine[0] != args[0]) {
@@ -870,7 +917,8 @@ public final class ComplexTextShaping {
                 float[] x = new float[total];
                 float[] y = new float[total];
                 float end = 0f;
-                float down = downward(pg);
+                float[] lineY = new float[total];
+                boolean lifted = false;
                 int[] code = new int[total];
                 int k = 0;
                 for (Object list : lists) {
@@ -882,9 +930,17 @@ public final class ComplexTextShaping {
                     for (int g = 0; g < count; g++) {
                         code[k] = (Integer) glyphCode.invoke(list, g);
                         x[k] = base + (Float) posX.invoke(list, g);
-                        y[k] = baseY + down * (Float) posY.invoke(list, g);
+                        y[k] = (Float) posY.invoke(list, g);
+                        lineY[k] = baseY;
+                        lifted |= y[k] != 0f;
                         k++;
                     }
+                }
+                // asked only for a run that leaves the baseline: a Hindi page, whose
+                // fonts place no kasra, re-asked on every shape call before v2.171.0
+                float down = lifted ? downward(pg) : 1f;
+                for (int j = 0; j < total; j++) {
+                    y[j] = lineY[j] + down * y[j];
                 }
                 return visualOrder(code, x, y, end);
             } catch (ReflectiveOperationException | RuntimeException ex) {
