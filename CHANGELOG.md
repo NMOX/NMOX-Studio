@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.173.0] - 2026-09-17
+
+**Linux checked: the Browser's shaped text fits its words there too.**
+
+- **What Linux has.** v2.172.0 switched WebKit's own text engine on for macOS and
+  Windows. Linux was checked in a container running the release's exact Linux
+  WebKit (OpenJFX 26.0.2, hash `893ed798…`) under xvfb with Noto fonts: its
+  library carries no code-path switch to turn (flipping each candidate byte,
+  one at a time, changed nothing), so Linux keeps the repaired simple path of
+  v2.165.0–v2.171.0, which shapes every script there as it does elsewhere.
+- **What was wrong on Linux.** That path estimates each glyph's width with
+  constants measured on the macOS fonts. Linux draws with the distribution's
+  fonts, and there the estimates were far off: Tamil words 20 pixels a word on
+  average, Malayalam 11.5, Oriya 9.5, so highlighted phrases ran over the word
+  after them and justified lines broke early.
+- **Fitted to the font.** The first time a font meets a script, the Browser now
+  lays out a small corpus of that script's words with the font and fits the one
+  parameter the estimate uses (the share of a letter's plain width, or for Arabic
+  how far toward the final form). The fit is used only when it is sane and clearly
+  better than the constant (a quarter less error and a pixel a word); otherwise
+  the constant stays. Checked on words the fit did not see: Tamil 20.2 → 7.3px a
+  word, Malayalam 11.5 → 8.1, Oriya 9.5 → 7.3, Sinhala 5.6 → 4.2; the mean over
+  all eighteen blocks 5.99 → 4.46px on Linux and 5.06 → 4.37px with macOS fonts.
+  A second term for the virama was tried and dropped: fitted on a few dozen words
+  it swung to twenty pixels and made unseen words worse.
+- **Recorded, not ours.** On Linux, JavaFX's own labels draw Tamil `பொ` with a
+  dotted circle while `கொ` is right, and a ZWNJ as a box; the Browser inherits
+  both from JavaFX's text layout and the installed fonts.
+- **Proven by running it.** `FontFitTest` holds the fits, their refusals, the
+  corpus (every block the width hook measures, every word in its block) and that
+  a fit replaces the constant; four mutants die by name.
+
 ## [2.172.0] - 2026-09-17
 
 **On macOS and Windows the Browser shapes Arabic, Persian, Urdu, the Indic scripts and the rest with WebKit's own text engine: form fields, bold and italic, justified lines and decomposed accents come out exactly right.**
@@ -22152,6 +22184,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.173.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.172.0...v2.173.0
 [2.172.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.171.0...v2.172.0
 [2.171.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.170.0...v2.171.0
 [2.170.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.169.0...v2.170.0
