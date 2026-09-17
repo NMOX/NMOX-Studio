@@ -126,13 +126,13 @@ class ComplexScriptsTest {
         assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain)).isEqualTo(12.5d); // beh: 10 + 0.25 * 10
         assertThat(ComplexScripts.measuredWidth(0x064E, medial, fin, plain)).isZero();        // fatha, a mark
         assertThat(ComplexScripts.measuredWidth(0x094D, medial, fin, plain)).isZero();        // virama, a mark
-        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain)).isEqualTo(45d); // ka: 0.90 * 50
+        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain)).isEqualTo(42d); // ka: 0.84 * 50
         assertThat(ComplexScripts.measuredWidth('A', medial, fin, plain)).isNaN();           // the font's own
         assertThat(ComplexScripts.measuredWidth(0x05D0, medial, fin, plain)).isNaN();        // Hebrew is not shaped
         assertThat(ComplexScripts.measuredWidth(0x0628, cp -> Double.NaN, fin, plain)).isNaN();
         assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, cp -> Double.NaN)).isNaN();
         assertThat(ComplexScripts.measuredWidth(0x0628, medial, fin, plain, true)).isEqualTo(15d); // Nastaliq: 10 + 0.5 * 10
-        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain, true)).isEqualTo(45d); // Indic ignores it
+        assertThat(ComplexScripts.measuredWidth(0x0915, medial, fin, plain, true)).isEqualTo(42d); // Indic ignores it
     }
 
     @Test
@@ -296,7 +296,7 @@ class ComplexScriptsTest {
         java.util.function.IntToDoubleFunction plain = cp -> 100d;
         int[][] firstAndLast = {{0x0915, 0x097F}, {0x0995, 0x09FF}, {0x0A15, 0x0A7F}, {0x0A95, 0x0AFF},
             {0x0B15, 0x0B7F}, {0x0B95, 0x0BFF}, {0x0C15, 0x0C7F}, {0x0C95, 0x0CFF}, {0x0D15, 0x0D7F}};
-        double[] share = {90, 87, 100, 81, 78, 78, 100, 78, 78};
+        double[] share = {84, 84, 90, 82, 76, 78, 98, 82, 78};
         for (int k = 0; k < firstAndLast.length; k++) {
             int letter = firstAndLast[k][0];
             assertThat(ComplexScripts.measuredWidth(letter, none, none, plain)).as("U+%04X", letter)

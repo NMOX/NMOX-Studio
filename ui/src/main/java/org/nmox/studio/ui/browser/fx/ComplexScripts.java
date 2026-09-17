@@ -85,28 +85,32 @@ public final class ComplexScripts {
      * at, per script (v2.169.0): {first code point of the block, share}. The
      * plain width is the advance of the first glyph JavaFX gives the lone
      * character, the measure the bridge takes. v2.166.0 chose one share, 0.72,
-     * against a different measure (a lone character's laid-out width, which for
-     * a vowel sign counts the dotted circle drawn in front of it); measured the
-     * way the product measures, that left 28 of 34 Hindi words short, and Tamil
-     * and Malayalam phrases painted over the English word after them.
+     * for every script against a different measure (a lone character's laid-out
+     * width, which for a vowel sign counts the dotted circle drawn in front of
+     * it); measured the way the product measures, it left most words short in
+     * every script but Oriya, and Tamil, Telugu, Kannada and Malayalam phrases
+     * painted over the English word after them.
      *
-     * <p>Each share was measured over running text of 22-34 words at 26px, and
-     * chosen as for Arabic: among the shares within 1px of the best word-average,
-     * the one that leaves the fewest words short, since a short word paints over
-     * its neighbour. Word-average misses: Devanagari 4.5px, Bengali 6.1,
-     * Gurmukhi 5.6, Gujarati 5.4, Oriya 7.1, Tamil 8.4, Telugu 10.0, Kannada 7.6,
-     * Malayalam 11.5. Telugu and Malayalam words vary the most with their
-     * conjuncts, so their estimate is the loosest.
+     * <p>Measured in the Browser itself, from WebKit's own fonts: each word's
+     * measured and shaped widths logged while running prose and short
+     * interface phrases rendered, 25-35 words a script at 26px. Chosen as for
+     * Arabic: among the shares within 1px of the best word-average, the one that
+     * leaves the fewest words short, since a short word paints over its
+     * neighbour and a long one leaves a gap after it. Word-average misses:
+     * Devanagari 5.0px, Bengali 7.5, Gurmukhi 6.7, Gujarati 6.4, Oriya 8.1, Tamil
+     * 7.2, Telugu 10.4, Kannada 7.3, Malayalam 11.0. Words full of conjuncts (a
+     * Hindi {@code प्रोजेक्ट}) come out narrower than prose, so a phrase of them
+     * can sit a little apart from the text after it.
      */
     static final double[][] INDIC_SHARES = {
-        {0x0900, 0.90}, // Devanagari
-        {0x0980, 0.87}, // Bengali
-        {0x0A00, 1.00}, // Gurmukhi
-        {0x0A80, 0.81}, // Gujarati
-        {0x0B00, 0.78}, // Oriya
+        {0x0900, 0.84}, // Devanagari
+        {0x0980, 0.84}, // Bengali
+        {0x0A00, 0.90}, // Gurmukhi
+        {0x0A80, 0.82}, // Gujarati
+        {0x0B00, 0.76}, // Oriya
         {0x0B80, 0.78}, // Tamil
-        {0x0C00, 1.00}, // Telugu
-        {0x0C80, 0.78}, // Kannada
+        {0x0C00, 0.98}, // Telugu
+        {0x0C80, 0.82}, // Kannada
         {0x0D00, 0.78}, // Malayalam
     };
 
