@@ -15,6 +15,8 @@ on:
       - 'packaging/windows/**'
       - 'packaging/icons/**'
       - 'packaging/tools/**'
+      - 'ui/src/main/java/org/nmox/studio/ui/browser/fx/WebKitTextPath.java'
+      - 'ui/src/test/java/org/nmox/studio/ui/browser/fx/WebKitTextPathLiveTest.java'
       - '.github/workflows/windows-installer-check.yml'
       - '.github/workflows/release.yml'
 
@@ -103,3 +105,57 @@ jobs:
             Write-Host "$path -> icon $icon"
             if ($icon -notmatch 'nmox-studio\.ico') { throw "unbranded shortcut icon: $icon" }
           }
+
+  # The one place the Windows half of WebKitTextPath is exercised for real:
+  # the library path inside a linked runtime, the exported setter, the
+  # offsets and the foreign-function call. v2.172.0 shipped a path that
+  # never existed in an image (jlink files a jmod's .dll under bin/javafx,
+  # not bin/), and every other test passed. Mirrors release.yml's runtime
+  # step; the same test runs on macOS against the installed app's runtime.
+  webkit-text-path:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 25
+          cache: maven
+
+      - name: Build the ui module
+        run: mvn -B -pl core,ui -am install -DskipTests
+
+      - name: Link a runtime with OpenJFX, as the release does
+        shell: pwsh
+        run: |
+          $fxVersion = "26.0.2"
+          $fxSha256 = "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672"
+          $fxZip = "$env:RUNNER_TEMP\openjfx-jmods.zip"
+          $attempt = 0
+          while ($true) {
+            $attempt++
+            try {
+              Invoke-WebRequest -Uri "https://download2.gluonhq.com/openjfx/$fxVersion/openjfx-${fxVersion}_windows-x64_bin-jmods.zip" -OutFile $fxZip
+              break
+            } catch {
+              if ($attempt -ge 5) { throw "OpenJFX jmods download failed after $attempt attempts: $_" }
+              Start-Sleep -Seconds 3
+            }
+          }
+          $actual = (Get-FileHash $fxZip -Algorithm SHA256).Hash.ToLower()
+          if ($actual -ne $fxSha256) { throw "OpenJFX jmods sha256 mismatch: $actual" }
+          Expand-Archive $fxZip -DestinationPath "$env:RUNNER_TEMP\openjfx"
+          & "$env:JAVA_HOME\bin\jlink.exe" `
+            --module-path "$env:JAVA_HOME\jmods;$env:RUNNER_TEMP\openjfx\javafx-jmods-$fxVersion" `
+            --add-modules ALL-MODULE-PATH `
+            --strip-debug --no-header-files --no-man-pages `
+            --output "$env:RUNNER_TEMP\jre"
+          if (-not (Test-Path "$env:RUNNER_TEMP\jre\bin\javafx\jfxwebkit.dll")) {
+            throw "linked runtime has no bin/javafx/jfxwebkit.dll — the path WebKitTextPath looks in"
+          }
+
+      - name: Switch WebKit's text path on in that runtime
+        run: >
+          mvn -B -pl ui surefire:test -Dtest=WebKitTextPathLiveTest -Dsurefire.failIfNoSpecifiedTests=true
+          -Dnmox.webkit.live=true -Djvm="%RUNNER_TEMP%\jre\bin\java.exe"
+          -DargLine="--enable-native-access=ALL-UNNAMED"

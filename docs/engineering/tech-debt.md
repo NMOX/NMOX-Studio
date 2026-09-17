@@ -116,6 +116,14 @@ x64 is not in the table (not a shipped installer); every JavaFX bump must
 re-measure the offsets, which the gate enforces. Both OpenJFX defects belong
 upstream.
 
+**Windows (v2.173.0).** v2.172.0's Windows entry named `bin/jfxwebkit.dll`; a
+linked image carries `bin/javafx/jfxwebkit.dll` (jlink drops the jmod entry's
+first segment, then files a `.dll` under `bin`), so Windows silently kept the
+repaired path. Fixed, with a missing library now logged, the setter's target byte
+re-derived from the shipped DLL, and `WebKitTextPathLiveTest` run on a linked
+runtime by a `windows-installer-check` job (macOS runs it on the installed app's
+runtime).
+
 **Linux (v2.173.0).** Checked in a container on the release's Linux WebKit:
 no data switch exists (each candidate byte flipped, no change), so the repaired
 path stays. Its constants, measured on macOS fonts, were far off on Linux's

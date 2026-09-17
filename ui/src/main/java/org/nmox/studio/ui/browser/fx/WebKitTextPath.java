@@ -73,6 +73,13 @@ final class WebKitTextPath {
      * {@code 0x675af58}), anchored on an exported JNI entry. Windows x64 exports
      * the setter by name ({@code movb %cl, 0x501b26e(%rip)}). The Linux build
      * reads no such byte anywhere near its font code, so it keeps the simple path.
+     *
+     * <p>The library paths are where {@code jlink} puts each jmod's native library:
+     * it drops the first path segment and then, on Windows only, files a {@code .dll}
+     * under {@code bin} — so the jmod's {@code lib/javafx/jfxwebkit.dll} becomes
+     * {@code bin/javafx/jfxwebkit.dll}, while {@code lib/libjfxwebkit.dylib} and
+     * {@code lib/libjfxwebkit.so} stay under {@code lib}. v2.172.0 shipped
+     * {@code bin/jfxwebkit.dll} and so never found the Windows library.
      */
     static final List<Build> KNOWN = List.of(
             new Build("osx-aarch64", "ed6ac7d8d056b29fa221edb029ed232eb54f3a7068c4d4e1304faf99f8d93285",
@@ -81,7 +88,7 @@ final class WebKitTextPath {
                     0x1c405acL - 0xa938cL, 0x675af58L - 0xa938cL),
             new Build("windows-x64", "8554a293273eac20d172c18455fcf154a54b7879d3f00de28344ebefd8978672",
                     "1fc1f628b312f38a5fd9c8463bfbd1e3d89d3c4416fe25818f04ea1f8efdeef7",
-                    "bin/jfxwebkit.dll", "?setCodePath@FontCascade@WebCore@@SAXW4CodePath@12@@Z",
+                    "bin/javafx/jfxwebkit.dll", "?setCodePath@FontCascade@WebCore@@SAXW4CodePath@12@@Z",
                     0L, 0x185a2db64L - 0x180a128f0L));
 
     private WebKitTextPath() {
@@ -115,10 +122,17 @@ final class WebKitTextPath {
                 continue;
             }
             Path library = javaHome.resolve(build.library());
+            if (!Files.isRegularFile(library)) {
+                // this platform has a known build and no library where it should be:
+                // say so, because the only other sign is text that stays unshaped
+                LOG.log(Level.INFO, "WebKit text path: no WebKit library at {0}; staying on the simple path", library);
+                continue;
+            }
             try {
-                if (Files.isRegularFile(library) && match(platform, sha256(library)) != null) {
+                if (match(platform, sha256(library)) != null) {
                     return build;
                 }
+                LOG.log(Level.FINE, "WebKit text path: {0} is not a build this release knows", library);
             } catch (IOException ex) {
                 LOG.log(Level.FINE, "could not read " + library, ex);
             }

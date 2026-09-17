@@ -1,5 +1,22 @@
 # The Plan
 
+*Currency addendum 2026-09-17, at v2.174.0 — a claim is only proven on the
+platform it names, and only by the commit that ships. v2.172.0 said "macOS and
+Windows" and was true on macOS alone: the Windows library was looked for at
+`bin/jfxwebkit.dll` while a jlinked image carries `bin/javafx/jfxwebkit.dll`,
+so the switch never armed there and nothing said so — every test passed against
+a stand-in. It is fixed, an absent library on a known platform logs, and a
+Windows CI job now links a real runtime and switches the path inside it. The
+sharper lesson is about the pipeline, not the code: the fix was written, tested
+and committed a day earlier, into the worktree branch v2.173.0 was already
+merging from, AFTER that branch's PR had been opened — so it reached no PR and
+no release, and nothing could tell, because the branch was green and the release
+was green and the work simply was not in it. A commit made in a worktree once its
+PR exists is invisible to the pipeline; the unit that proves a claim and the push
+that carries it have to be the same one. Beside it, the gate stopped mistaking a
+dead release for a slow one: it reads the run, re-runs a red one's failed jobs
+once, and stops by name instead of sitting out a ninety-minute timer.*
+
 *Currency addendum 2026-09-17, at v2.173.0 — check each platform in its own
 fonts. The Linux check ran the release's exact Linux WebKit in a container and
 found two things no macOS run could: no switch to turn, and width constants

@@ -59,6 +59,17 @@ class WebKitTextPathTest {
     }
 
     @Test
+    @DisplayName("each library sits where jlink files that jmod's native library")
+    void libraryPathsFollowJlink() {
+        // jlink drops the jmod entry's first segment, then files a .dll under bin
+        // (Windows) and everything else under lib: the Windows jmod carries
+        // lib/javafx/jfxwebkit.dll, so the image carries bin/javafx/jfxwebkit.dll.
+        // v2.172.0 looked in bin/jfxwebkit.dll and never found it.
+        assertThat(WebKitTextPath.KNOWN.get(0).library()).isEqualTo("lib/libjfxwebkit.dylib");
+        assertThat(WebKitTextPath.KNOWN.get(1).library()).isEqualTo("bin/javafx/jfxwebkit.dll");
+    }
+
+    @Test
     @DisplayName("the setter and state addresses are the measured offsets from the anchor, as read from the disassembly")
     void addressesFollowTheAnchor() {
         WebKitTextPath.Build mac = WebKitTextPath.KNOWN.get(0);
@@ -81,7 +92,7 @@ class WebKitTextPathTest {
             Path lib = home.resolve("lib").resolve("libjfxwebkit.dylib");
             Files.createDirectories(lib.getParent());
             Files.writeString(lib, "not WebKit");
-            Path bin = home.resolve("bin").resolve("jfxwebkit.dll");
+            Path bin = home.resolve("bin").resolve("javafx").resolve("jfxwebkit.dll");
             Files.createDirectories(bin.getParent());
             Files.writeString(bin, "not WebKit");
             assertThat(WebKitTextPath.knownBuild(home)).isNull();
