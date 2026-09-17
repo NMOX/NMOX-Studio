@@ -130,7 +130,17 @@ final class WebKitTextPath {
 
     /** The known build of the WebKit library this runtime carries, or null when it is not one. */
     static Build knownBuild(Path javaHome) {
-        String platform = platform(System.getProperty("os.name", ""), System.getProperty("os.arch", ""));
+        return knownBuild(javaHome, platform(System.getProperty("os.name", ""), System.getProperty("os.arch", "")));
+    }
+
+    /**
+     * The same, for a named platform — so the rule that decides whether a runtime is
+     * known can be exercised on a host that is not that platform. Linux has no entry
+     * in {@code KNOWN}, so a Linux test of the one-argument form never reaches this
+     * loop at all, and the property it proves (an unknown library keeps the repaired
+     * simple path) would be proven on macOS only.
+     */
+    static Build knownBuild(Path javaHome, String platform) {
         for (Build build : KNOWN) {
             if (!build.platform().equals(platform)) {
                 continue;
@@ -207,7 +217,7 @@ final class WebKitTextPath {
         ON,
         /** Nothing was written (or it was written and put back): the simple path is free to be repaired. */
         UNTOUCHED,
-        /** The setter ran and the state could not be confirmed or restored: leave WebKit alone. */
+        /** The setter ran and the state does not read back as written: leave WebKit alone. */
         UNCONFIRMED
     }
 
@@ -267,8 +277,14 @@ final class WebKitTextPath {
             setter.invokeWithArguments(AUTO);
             byte after = (Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L);
             if (after != AUTO) {
-                LOG.log(Level.INFO, "WebKit text path: the setter did not take ({0})", after);
-                return restore(ffm, state, after);
+                // The byte was written and does not read back as written, so this build
+                // is not where we think it is. Writing AGAIN to put Simple back would be
+                // a second write at an address already shown to be wrong — the one thing
+                // not to do. Stop, and let the caller know not to repair over it.
+                LOG.log(Level.WARNING, "WebKit text path: the code-path byte was written and reads {0}; "
+                        + "the simple-path repair is NOT installed, because repairing a path WebKit may "
+                        + "already be shaping would measure every complex run twice", after);
+                return Switched.UNCONFIRMED;
             }
             return Switched.ON;
         } catch (Throwable ex) { // NOPMD: any refusal of native access keeps the simple path
@@ -280,30 +296,9 @@ final class WebKitTextPath {
         }
     }
 
-    /**
-     * Puts {@code Simple} back after a write that could not be confirmed, so the
-     * simple path can still be repaired; {@code UNCONFIRMED} when even that fails.
-     */
-    private static Switched restore(Foreign ffm, Object state, byte seen) {
-        try {
-            ffm.setByte.invoke(state, ffm.javaByte, 0L, SIMPLE);
-            if ((Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L) == SIMPLE) {
-                return Switched.UNTOUCHED;
-            }
-        } catch (Throwable ex) { // NOPMD: the restore is best effort; its failure is the finding
-            if (ex instanceof VirtualMachineError vme && !(ex instanceof StackOverflowError)) {
-                throw vme;
-            }
-            LOG.log(Level.FINE, "WebKit text path: the state byte could not be put back", ex);
-        }
-        LOG.log(Level.WARNING, "WebKit text path: the code-path byte was written and reads {0}; "
-                + "the simple-path repair is NOT installed, because repairing a path WebKit may "
-                + "already be shaping would measure every complex run twice", seen);
-        return Switched.UNCONFIRMED;
-    }
-
     /** The foreign-function API reached reflectively: this module compiles for Java 21. */
-    private static final class Foreign {
+    /** Package-private so a test can prove every java.lang.foreign signature still resolves. */
+    static final class Foreign {
         final Method globalArena;
         final Method libraryLookup;
         final Method find;
@@ -311,7 +306,6 @@ final class WebKitTextPath {
         final Method ofAddress;
         final Method reinterpret;
         final Method getByte;
-        final Method setByte;
         final Object javaByte;
         private final Class<?> linkerClass;
         private final Class<?> segmentClass;
@@ -333,7 +327,6 @@ final class WebKitTextPath {
             ofAddress = segmentClass.getMethod("ofAddress", long.class);
             reinterpret = segmentClass.getMethod("reinterpret", long.class);
             getByte = segmentClass.getMethod("get", ofByte, long.class);
-            setByte = segmentClass.getMethod("set", ofByte, long.class, byte.class);
             javaByte = layoutClass.getField("JAVA_BYTE").get(null);
         }
 

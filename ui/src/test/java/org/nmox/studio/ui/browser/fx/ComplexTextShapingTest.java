@@ -31,11 +31,15 @@ class ComplexTextShapingTest {
     @Test
     @DisplayName("the corpus fit skips every code point the width hook does not scale")
     void fitCountsOnlyWhatTheHookScales() throws Exception {
+        // normalized: a Windows checkout is CRLF, and a pattern written with \n
+        // matches nothing there — the same trap that has faked a green gate before
         String src = java.nio.file.Files.readString(java.nio.file.Path.of(
-                "src/main/java/org/nmox/studio/ui/browser/fx/ComplexTextShaping.java"));
+                "src/main/java/org/nmox/studio/ui/browser/fx/ComplexTextShaping.java"))
+                .replace("\r\n", "\n");
         int from = src.indexOf("private FontFit.Fit fit(Object pg");
         assertThat(from).as("the fit loop is still where this law lives").isPositive();
-        String fit = src.substring(from, src.indexOf("\n        }\n", from));
+        int next = src.indexOf("\n        private ", from + 1);
+        String fit = next > from ? src.substring(from, next) : src.substring(from);
         assertThat(fit)
                 .as("the fit's per-code-point loop must consult the same predicate the width hook does")
                 .contains("ComplexScripts.shapes(cp)");

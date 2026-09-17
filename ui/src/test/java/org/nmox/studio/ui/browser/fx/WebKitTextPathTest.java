@@ -39,6 +39,29 @@ class WebKitTextPathTest {
                 .as("the hash alone never decides: the platform must match too").isNull();
     }
 
+    // The switch reaches java.lang.foreign REFLECTIVELY, because this module targets
+    // Java 21 and the API is 22+. Nothing a compiler checks, then: a renamed method or
+    // a changed parameter type in a future JDK would fail at RUNTIME, on a user's first
+    // Browser open, as an INFO line saying the path could not be switched on — which
+    // reads exactly like "this is not a known build". This resolves every one of them
+    // against the JDK actually running the tests, so a JDK bump fails the build instead.
+    @Test
+    @DisplayName("every java.lang.foreign member the switch calls reflectively still resolves on this JDK")
+    void foreignSignaturesResolve() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(Runtime.version().feature() >= 22,
+                "java.lang.foreign arrived in 22; older runtimes keep the repaired simple path");
+        WebKitTextPath.Foreign ffm = new WebKitTextPath.Foreign();
+        assertThat(ffm.globalArena.invoke(null)).as("Arena.global()").isNotNull();
+        assertThat(ffm.javaByte).as("ValueLayout.JAVA_BYTE").isNotNull();
+        // the one segment the switch builds by hand, and the read it does through it
+        Object zero = ffm.reinterpret.invoke(ffm.ofAddress.invoke(null, 0L), 1L);
+        assertThat(zero).as("MemorySegment.ofAddress(0).reinterpret(1)").isNotNull();
+        assertThat(ffm.address.invoke(zero)).as("MemorySegment.address()").isEqualTo(0L);
+        assertThat(ffm.libraryLookup).isNotNull();
+        assertThat(ffm.find).isNotNull();
+        assertThat(ffm.getByte).isNotNull();
+    }
+
     // Both false cases used to be one bare `false`, so the caller could not tell
     // "nothing was written" from "WebKit is on its own path now" — and it repaired
     // the simple path over the second, which measures every complex run twice.
@@ -123,14 +146,23 @@ class WebKitTextPathTest {
     void unknownRuntimesAreNotKnown() throws Exception {
         Path home = Files.createTempDirectory("nmox-jre");
         try {
-            assertThat(WebKitTextPath.knownBuild(home)).isNull();
+            // named platforms, not this host's: Linux has no entry in KNOWN, so a
+            // host-platform call there skips the loop entirely and proves nothing
+            assertThat(WebKitTextPath.knownBuild(home, "osx-aarch64"))
+                    .as("a runtime with no WebKit library at all").isNull();
+            assertThat(WebKitTextPath.knownBuild(home, "windows-x64")).isNull();
+            assertThat(WebKitTextPath.knownBuild(home, "linux-x64"))
+                    .as("a platform with no known build is never known").isNull();
             Path lib = home.resolve("lib").resolve("libjfxwebkit.dylib");
             Files.createDirectories(lib.getParent());
             Files.writeString(lib, "not WebKit");
             Path bin = home.resolve("bin").resolve("javafx").resolve("jfxwebkit.dll");
             Files.createDirectories(bin.getParent());
             Files.writeString(bin, "not WebKit");
-            assertThat(WebKitTextPath.knownBuild(home)).isNull();
+            assertThat(WebKitTextPath.knownBuild(home, "osx-aarch64"))
+                    .as("a library of another build keeps the repaired simple path").isNull();
+            assertThat(WebKitTextPath.knownBuild(home, "windows-x64")).isNull();
+            assertThat(WebKitTextPath.knownBuild(home)).as("and through this host's own platform").isNull();
             assertThat(WebKitTextPath.sha256(lib)).isEqualTo(
                     java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                             .digest("not WebKit".getBytes(java.nio.charset.StandardCharsets.UTF_8))));
