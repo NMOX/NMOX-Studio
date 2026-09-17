@@ -230,6 +230,18 @@ public final class ComplexScripts {
     public static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
             java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain,
             boolean stacking) {
+        return measuredWidth(cp, medial, finalForm, plain, stacking, null);
+    }
+
+    /**
+     * As above, with the parameters fitted to this font for {@code cp}'s block
+     * (v2.173.0, {@link FontFit}) in place of the measured constants, when
+     * {@code fit} is not null: the blend toward the final form for Arabic, the
+     * share for the others.
+     */
+    static double measuredWidth(int cp, java.util.function.IntToDoubleFunction medial,
+            java.util.function.IntToDoubleFunction finalForm, java.util.function.IntToDoubleFunction plain,
+            boolean stacking, FontFit.Fit fit) {
         if (combining(cp)) {
             return 0d; // shaped into its letter's glyph, it takes no space of its own
         }
@@ -243,11 +255,35 @@ public final class ComplexScripts {
         if (arabic(cp)) {
             double m = medial.applyAsDouble(cp);
             double f = finalForm.applyAsDouble(cp);
-            double k = stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
+            double k = fit != null ? fit.factor() : stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
             return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
-        return Double.isNaN(p) ? Double.NaN : (rightToLeft(cp) ? rtlShare(cp) : indicShare(cp)) * p;
+        double share = fit != null ? fit.factor() : rightToLeft(cp) ? rtlShare(cp) : indicShare(cp);
+        return Double.isNaN(p) ? Double.NaN : share * p;
+    }
+
+    /** The start of the block whose parameters {@code cp} is measured with: Arabic's, or a shares table's. */
+    static int blockOf(int cp) {
+        if (arabic(cp)) {
+            return 0x0600;
+        }
+        double[][] table = rightToLeft(cp) ? RTL_SHARES : INDIC_SHARES;
+        int block = (int) table[0][0];
+        for (double[] row : table) {
+            if (cp >= row[0]) {
+                block = (int) row[0];
+            }
+        }
+        return block;
+    }
+
+    /** The constant a fit replaces for {@code block}: Arabic's blend, or the block's share. */
+    static double constantFor(int block, boolean stacking) {
+        if (block == 0x0600) {
+            return stacking ? NASTALIQ_TOWARD_FINAL : ARABIC_TOWARD_FINAL;
+        }
+        return rightToLeft(block) ? rtlShare(block) : indicShare(block);
     }
 
     /** The joining character a letter is shaped between to find its in-word form. */
