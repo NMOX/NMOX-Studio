@@ -170,7 +170,7 @@ class PrismBridgeTest {
         assertThat(shapedTexts).containsExactly("بت", "refused");
         cache.get("بت", shaper);          // used again: now the most recent
         cache.get("كم", shaper);          // a third run: "refused" is the oldest and leaves
-        assertThat(cache.size()).isEqualTo(2);
+        assertThat(cache.entries()).isEqualTo(2);
         cache.get("refused", shaper);
         assertThat(shapedTexts).containsExactly("بت", "refused", "كم", "refused");
     }
@@ -191,6 +191,36 @@ class PrismBridgeTest {
     void attachHelperRefusesBadArguments() {
         assertThat(ShapingAttach.attach(null)).isFalse();
         assertThat(ShapingAttach.attach(new String[]{"1"})).isFalse();
+    }
+
+    @Test
+    @DisplayName("the agent jar carries the agent and the attach helper under the manifest the attach API reads")
+    void agentJarCarriesAgentAndHelper() throws Exception {
+        java.nio.file.Path jar = ComplexTextShaping.writeAgentJar();
+        assertThat(jar).isNotNull();
+        try (java.util.jar.JarFile file = new java.util.jar.JarFile(jar.toFile())) {
+            java.util.jar.Attributes main = file.getManifest().getMainAttributes();
+            assertThat(main.getValue("Agent-Class")).isEqualTo(ShapingAgent.class.getName());
+            assertThat(main.getValue("Can-Redefine-Classes")).isEqualTo("true");
+            assertThat(main.getValue("Can-Retransform-Classes")).isEqualTo("true");
+            assertThat(file.getEntry("org/nmox/studio/ui/browser/fx/ShapingAgent.class")).isNotNull();
+            assertThat(file.getEntry("org/nmox/studio/ui/browser/fx/ShapingAttach.class")).isNotNull();
+        } finally {
+            java.nio.file.Files.deleteIfExists(jar);
+        }
+    }
+
+    @Test
+    @DisplayName("a helper that cannot attach reports failure, run for real with this JVM's own java, in-process and out")
+    void attachHelperReportsARefusedAttach() throws Exception {
+        java.nio.file.Path jar = ComplexTextShaping.writeAgentJar();
+        try {
+            String nobody = Long.toString(Long.MAX_VALUE); // no JVM has this pid
+            assertThat(ShapingAttach.attach(new String[]{nobody, jar.toString()})).isFalse();
+            assertThat(ComplexTextShaping.attachFromHelper(jar, Long.MAX_VALUE)).isFalse();
+        } finally {
+            java.nio.file.Files.deleteIfExists(jar);
+        }
     }
 
     @Test

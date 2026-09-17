@@ -171,27 +171,9 @@ public final class ComplexTextShaping {
         if (attach == null) {
             return null;
         }
-        Path jar = Files.createTempFile("nmox-shaping-agent", ".jar");
-        jar.toFile().deleteOnExit();
-        Manifest manifest = new Manifest();
-        Attributes main = manifest.getMainAttributes();
-        main.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-        main.putValue("Agent-Class", ShapingAgent.class.getName());
-        main.putValue("Can-Retransform-Classes", "true");
-        main.putValue("Can-Redefine-Classes", "true");
-        try (OutputStream out = Files.newOutputStream(jar);
-                JarOutputStream jos = new JarOutputStream(out, manifest)) {
-            for (Class<?> carried : new Class<?>[]{ShapingAgent.class, ShapingAttach.class}) {
-                String entry = carried.getName().replace('.', '/') + ".class";
-                try (InputStream in = ComplexTextShaping.class.getClassLoader().getResourceAsStream(entry)) {
-                    if (in == null) {
-                        return null;
-                    }
-                    jos.putNextEntry(new JarEntry(entry));
-                    in.transferTo(jos);
-                    jos.closeEntry();
-                }
-            }
+        Path jar = writeAgentJar();
+        if (jar == null) {
+            return null;
         }
         long pid = ProcessHandle.current().pid();
         Class<?> vm = Class.forName("com.sun.tools.attach.VirtualMachine", true, attach.getClassLoader());
@@ -214,6 +196,36 @@ public final class ComplexTextShaping {
         return (Instrumentation) agent.getMethod("claim").invoke(null);
     }
 
+    /**
+     * Writes the agent jar: the agent and the attach helper, with the manifest the
+     * attach API reads. Null when either class cannot be read back from this module.
+     */
+    static Path writeAgentJar() throws IOException {
+        Path jar = Files.createTempFile("nmox-shaping-agent", ".jar");
+        jar.toFile().deleteOnExit();
+        Manifest manifest = new Manifest();
+        Attributes main = manifest.getMainAttributes();
+        main.put(Attributes.Name.MANIFEST_VERSION, "1.0");
+        main.putValue("Agent-Class", ShapingAgent.class.getName());
+        main.putValue("Can-Retransform-Classes", "true");
+        main.putValue("Can-Redefine-Classes", "true");
+        try (OutputStream out = Files.newOutputStream(jar);
+                JarOutputStream jos = new JarOutputStream(out, manifest)) {
+            for (Class<?> carried : new Class<?>[]{ShapingAgent.class, ShapingAttach.class}) {
+                String entry = carried.getName().replace('.', '/') + ".class";
+                try (InputStream in = ComplexTextShaping.class.getClassLoader().getResourceAsStream(entry)) {
+                    if (in == null) {
+                        return null;
+                    }
+                    jos.putNextEntry(new JarEntry(entry));
+                    in.transferTo(jos);
+                    jos.closeEntry();
+                }
+            }
+        }
+        return jar;
+    }
+
     /** How long the helper process may take to attach before the Browser paints unshaped. */
     private static final java.time.Duration HELPER_LEASH = java.time.Duration.ofSeconds(30);
 
@@ -222,7 +234,7 @@ public final class ComplexTextShaping {
      * this process (v2.171.0). The command is fixed: the runtime's {@code java},
      * the jar this class just wrote, and this process's pid.
      */
-    private static boolean attachFromHelper(Path jar, long pid) throws IOException {
+    static boolean attachFromHelper(Path jar, long pid) throws IOException {
         List<String> command = helperCommand(Path.of(System.getProperty("java.home")),
                 org.openide.util.BaseUtilities.isWindows(), jar, pid);
         org.nmox.studio.core.process.ProcessSupport.BoundedResult result =
@@ -553,7 +565,7 @@ public final class ComplexTextShaping {
             runs = new java.util.LinkedHashMap<>(64, 0.75f, true) {
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, ComplexScripts.Shaped> eldest) {
-                    return size() > capacity;
+                    return super.size() > capacity;
                 }
             };
         }
@@ -568,7 +580,7 @@ public final class ComplexTextShaping {
             return known == REFUSED ? null : known;
         }
 
-        synchronized int size() {
+        synchronized int entries() {
             return runs.size();
         }
     }
@@ -810,10 +822,6 @@ public final class ComplexTextShaping {
                 stacking.put(font, climbs);
             }
             return climbs;
-        }
-
-        private int[][] table(Object font) throws ReflectiveOperationException {
-            return table(font, new int[0]);
         }
 
         /**
