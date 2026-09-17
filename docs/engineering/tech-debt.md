@@ -102,6 +102,20 @@ the attach flags, attach from a helper process (the IDE's runtime and its own
 cache. Remainder: Lao is excluded because JavaFX's own text drifts it; Khmer
 words miss by 12px on average.
 
+**WebKit's own path (v2.172.0).** The estimates were near their ceiling (an
+offline fit of per-font parameters moved nothing; a virama term took Hindi from
+4.1 to 3.5px). OpenJFX's WebKit has a working complex path that the Java port
+starts switched off (`FontCascade.cpp`: `#if PLATFORM(JAVA) s_codePath =
+CodePath::Simple`). For the bundled OpenJFX 26.0.2 libraries on macOS arm64 and
+Windows x64, identified by SHA-256 and tied to the release lanes' jmods pins,
+`WebKitTextPath` calls WebKit's own setter with `Auto` (guarded by reading
+`Simple` first), and `getTextRuns` strips the length the native glue appends
+(`makeString(characters, characters.size())`). Remainder: Linux keeps the
+repaired simple path (its library reads no such byte near its font code); macOS
+x64 is not in the table (not a shipped installer); every JavaFX bump must
+re-measure the offsets, which the gate enforces. Both OpenJFX defects belong
+upstream.
+
 ## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
 
 ### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped

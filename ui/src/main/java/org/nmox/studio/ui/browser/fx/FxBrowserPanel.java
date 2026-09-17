@@ -260,8 +260,17 @@ public final class FxBrowserPanel extends JPanel {
         }
     }
 
+    /** EDT-confined count of {@link #loadUrl} calls, so a deferred load can tell it was overtaken. */
+    private int loads;
+
+    /** EDT. How many loads have been asked for. */
+    public int loadCount() {
+        return loads;
+    }
+
     /** EDT. Loads a URL (already scheme-complete). */
     public void loadUrl(String url) {
+        loads++;
         urlField.setText(url);
         if (LoopbackUrls.needsProbe(url)) {
             // localhost URLs first learn which loopback stack actually

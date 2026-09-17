@@ -323,4 +323,76 @@ class ComplexTextShapingTest {
         ComplexTextShaping.rewritePlacement(emptyClass(ComplexTextShaping.TEXT_UTILITIES), applied);
         assertThat(applied[0]).isFalse();
     }
+
+    /** WebKit's font in miniature, the text-runs half: getTextRuns records the string it lays out. */
+    static byte[] fontWithTextRuns(boolean withMethod) {
+        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
+        cw.visit(Opcodes.V21, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, ComplexTextShaping.FONT_IMPL, null,
+                "java/lang/Object", null);
+        cw.visitField(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, "laidOut", "Ljava/lang/String;", null, null).visitEnd();
+        constructor(cw);
+        if (withMethod) {
+            MethodVisitor runs = cw.visitMethod(Opcodes.ACC_PUBLIC, ComplexTextShaping.TEXT_RUNS,
+                    ComplexTextShaping.TEXT_RUNS_DESC, null, null);
+            runs.visitCode();
+            runs.visitVarInsn(Opcodes.ALOAD, 1);
+            runs.visitFieldInsn(Opcodes.PUTSTATIC, ComplexTextShaping.FONT_IMPL, "laidOut", "Ljava/lang/String;");
+            runs.visitInsn(Opcodes.ACONST_NULL);
+            runs.visitInsn(Opcodes.ARETURN);
+            runs.visitMaxs(0, 0);
+            runs.visitEnd();
+        }
+        cw.visitEnd();
+        return cw.toByteArray();
+    }
+
+    @Test
+    @DisplayName("the rewritten getTextRuns lays out the stripper's answer, and the string as given until a stripper is set")
+    void rewrittenTextRunsLayOutTheStrippedString() throws Exception {
+        boolean[] applied = {false};
+        Bytes loader = new Bytes();
+        loader.add(ComplexTextShaping.HOOK, ComplexTextShaping.hookClass());
+        loader.add(ComplexTextShaping.FONT_IMPL, ComplexTextShaping.rewriteTextRuns(fontWithTextRuns(true), applied));
+        // the return type, stood in too: reflection resolves it, and the real one needs JavaFX's JDK
+        loader.add("com/sun/webkit/graphics/WCTextRun", emptyClass("com/sun/webkit/graphics/WCTextRun"));
+        Class<?> font = loader.loadClass(ComplexTextShaping.FONT_IMPL.replace('/', '.'));
+        Class<?> hook = loader.loadClass(ComplexTextShaping.HOOK.replace('/', '.'));
+        assertThat(applied[0]).isTrue();
+        Object instance = font.getConstructor().newInstance();
+        java.lang.reflect.Method runs = font.getMethod(ComplexTextShaping.TEXT_RUNS, String.class);
+        java.lang.reflect.Field laidOut = font.getField("laidOut");
+        runs.invoke(instance, "\u0633\u0627\u06443");
+        assertThat(laidOut.get(null)).isEqualTo("\u0633\u0627\u06443"); // no stripper yet
+        hook.getField("STRIPPER").set(null, (Function<String, String>) WebKitTextPath::stripLengthSuffix);
+        runs.invoke(instance, "\u0633\u0627\u06443");
+        assertThat(laidOut.get(null)).isEqualTo("\u0633\u0627\u0644");
+    }
+
+    @Test
+    @DisplayName("a font without getTextRuns reports nothing applied, so the native path is not switched on")
+    void aFontWithoutTextRunsIsReported() {
+        boolean[] applied = {false};
+        ComplexTextShaping.rewriteTextRuns(fontWithTextRuns(false), applied);
+        assertThat(applied[0]).isFalse();
+    }
+
+    @Test
+    @DisplayName("the strip-only transformer rewrites getTextRuns and leaves the widths, the glyph list and the paint alone")
+    void stripOnlyTransformerTouchesTextRunsAlone() throws Exception {
+        ComplexTextShaping.Transformer strip = new ComplexTextShaping.Transformer(false);
+        byte[] font = strip.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null, fontWithTextRuns(true));
+        assertThat(font).isNotNull();
+        assertThat(strip.textRunsApplied).isTrue();
+        assertThat(strip.widthsApplied).isFalse();
+        assertThat(strip.transform(null, null, ComplexTextShaping.CONTEXT, null, null, context())).isNull();
+        assertThat(strip.transform(null, null, ComplexTextShaping.TEXT_UTILITIES, null, null, emptyClass(ComplexTextShaping.TEXT_UTILITIES))).isNull();
+        // the repair keeps the strip when asked, since a retransform replays the original bytes
+        ComplexTextShaping.Transformer repair = new ComplexTextShaping.Transformer(true);
+        repair.stripRuns = true;
+        repair.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null, fontWithTextRuns(true));
+        assertThat(repair.textRunsApplied).isTrue();
+        ComplexTextShaping.Transformer plain = new ComplexTextShaping.Transformer(true);
+        plain.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null, fontWithTextRuns(true));
+        assertThat(plain.textRunsApplied).isFalse();
+    }
 }

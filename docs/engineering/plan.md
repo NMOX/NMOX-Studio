@@ -1,5 +1,15 @@
 # The Plan
 
+*Currency addendum 2026-09-17, at v2.172.0 — read the engine before
+estimating it. Seven releases repaired WebKit's simple text path from outside
+because the dossier said WebKit never shapes. It can: OpenJFX's source starts the
+port on the simple path with one static, and the complex path it bypasses was
+wired all along (apart from a length suffix its glue appends). A walk of ordinary
+page shapes — bold, fields, justified text — showed the estimates' ceiling; the
+native source showed the switch; a hash-pinned call to WebKit's own setter turned
+it. The lesson: when a workaround keeps needing calibration, re-read the thing
+being worked around.*
+
 *Currency addendum 2026-09-16, at v2.171.0 — the night after five language
 checks. A shaped page cost twice an unshaped one per repaint; a cache brought it
 back. The update-center gap that had been written down as "needs a reinstall"

@@ -60,7 +60,7 @@ class PrismBridgeTest {
     @Test
     @DisplayName("the transformer rewrites only WebKit's graphics context")
     void transformerIgnoresOtherClasses() {
-        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer(true);
         assertThat(t.transform(null, null, "java/lang/String", null, null, new byte[0])).isNull();
         assertThat(t.applied).isFalse();
     }
@@ -68,45 +68,45 @@ class PrismBridgeTest {
     @Test
     @DisplayName("the transformer rewrites the font's glyph width too, and refuses bytes it cannot read there")
     void transformerRewritesTheFontWidths() {
-        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer(true);
         assertThat(t.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null, ComplexTextShapingTest.fontImpl()))
                 .isNotNull();
         assertThat(t.widthsApplied).isTrue();
-        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer(true);
         assertThat(none.transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
                 ComplexTextShapingTest.emptyClass(ComplexTextShaping.FONT_IMPL))).isNull();
         assertThat(none.widthsApplied).isFalse();
-        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
+        assertThat(new ComplexTextShaping.Transformer(true).transform(null, null, ComplexTextShaping.FONT_IMPL, null, null,
                 new byte[]{1, 2, 3})).isNull();
     }
 
     @Test
     @DisplayName("the transformer rewrites WebKit's glyph-list build, and refuses bytes it cannot read there")
     void transformerRewritesTheGlyphListBuild() {
-        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer(true);
         assertThat(t.transform(null, null, ComplexTextShaping.TEXT_UTILITIES, null, null,
                 ComplexTextShapingTest.textUtilities())).isNotNull();
         assertThat(t.placementApplied).isTrue();
-        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer(true);
         assertThat(none.transform(null, null, ComplexTextShaping.TEXT_UTILITIES, null, null,
                 ComplexTextShapingTest.emptyClass(ComplexTextShaping.TEXT_UTILITIES))).isNull();
         assertThat(none.placementApplied).isFalse();
-        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.TEXT_UTILITIES,
+        assertThat(new ComplexTextShaping.Transformer(true).transform(null, null, ComplexTextShaping.TEXT_UTILITIES,
                 null, null, new byte[]{1, 2, 3})).isNull();
     }
 
     @Test
     @DisplayName("the transformer rewrites the context's glyph draw, and refuses bytes it cannot read")
     void transformerRewritesTheContextAndRefusesGarbage() {
-        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer t = new ComplexTextShaping.Transformer(true);
         byte[] out = t.transform(null, null, ComplexTextShaping.CONTEXT, null, null, ComplexTextShapingTest.context());
         assertThat(out).isNotNull();
         assertThat(t.applied).isTrue();
-        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer();
+        ComplexTextShaping.Transformer none = new ComplexTextShaping.Transformer(true);
         assertThat(none.transform(null, null, ComplexTextShaping.CONTEXT, null, null,
                 ComplexTextShapingTest.emptyClass(ComplexTextShaping.CONTEXT))).isNull();
         assertThat(none.applied).isFalse();
-        assertThat(new ComplexTextShaping.Transformer().transform(null, null, ComplexTextShaping.CONTEXT, null, null,
+        assertThat(new ComplexTextShaping.Transformer(true).transform(null, null, ComplexTextShaping.CONTEXT, null, null,
                 new byte[]{1, 2, 3})).isNull();
     }
 
