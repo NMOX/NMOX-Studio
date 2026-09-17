@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.172.0] - 2026-09-17
+
+**On macOS and Windows the Browser shapes Arabic, Persian, Urdu, the Indic scripts and the rest with WebKit's own text engine: form fields, bold and italic, justified lines and decomposed accents come out exactly right.**
+
+- **The find.** A walk of real page shapes found bold Arabic phrases eating the
+  space after them, italic Hindi leaving a gap before its comma, and Arabic in
+  text fields losing or spreading spaces. Every estimate in the v2.165.0 bridge
+  was close to its limit: WebKit asked for one glyph's width at a time, and no
+  single-glyph number can know a conjunct or a contextual form. Reading OpenJFX's
+  source showed WebKit already has the right path: it hands strings to JavaFX's
+  text layout (`WCFontImpl.getTextRuns`) and paints what comes back. It never
+  used it, because `FontCascade.cpp` starts the Java port on the simple path
+  (`s_codePath = CodePath::Simple`).
+- **The switch.** For the WebKit library the release bundles on macOS arm64 and
+  Windows x64, identified by SHA-256, the Browser calls WebKit's own
+  `FontCascade::setCodePath` with `Auto`, after reading `Simple` in the byte it
+  guards, and reads `Auto` back. The addresses were read from each library's
+  disassembly; the Windows library exports the setter by name. Any other build
+  — Linux, whose library has no such switch left, a JavaFX from elsewhere, a
+  runtime without the foreign-function API — keeps the repaired simple path from
+  v2.165.0–v2.171.0.
+- **A second OpenJFX defect, fixed on the way.** The native glue builds the
+  string it lays out with `makeString(characters, characters.size())`, which
+  appends the length as digits: `سال` arrived as `سال3`. Every shaped string grew
+  by the width of those digits (a Vietnamese phrase written with combining accents
+  measured 133px instead of 117). `getTextRuns` now lays out the string without
+  them, for the same known builds only.
+- **The first page waits for it.** The Browser's first load now waits, at most
+  2.5 seconds, for shaping to install, so a page is never laid out on one path and
+  painted on the other; a page the user asks for in the meantime loads at once.
+- **Measured.** Span widths match JavaFX's own shaped widths exactly (Bengali `বাংলা ভাষা`
+  87.58px, the NFD Vietnamese phrase 116.80px, the same as its composed form); scrolling a
+  long Arabic, Hindi or English page repaints as fast as it does unshaped. A wrong
+  offset, tried deliberately, reads an unexpected value and falls back to the
+  repaired path. `WebKitTextPathTest` holds the table to the jmods archives the
+  release lanes pin, so a JavaFX bump fails the build until the addresses are
+  measured again; four mutants die by name.
+
 ## [2.171.0] - 2026-09-16
 
 **Five more scripts are shaped in the Browser, three right-to-left scripts join, a Browser installed by an in-app update is shaped too, and a shaped page repaints as fast as an unshaped one.**
@@ -22114,6 +22152,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.172.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.171.0...v2.172.0
 [2.171.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.170.0...v2.171.0
 [2.170.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.169.0...v2.170.0
 [2.169.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.168.0...v2.169.0
