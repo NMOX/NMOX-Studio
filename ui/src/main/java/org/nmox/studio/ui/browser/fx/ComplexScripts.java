@@ -82,14 +82,44 @@ public final class ComplexScripts {
 
     /**
      * The share of its plain width an Indic letter or spacing sign is measured
-     * at (v2.166.0). Conjuncts, half forms and reordered signs make shaped
-     * Devanagari far narrower than its characters: over 42 Hindi words the
-     * shaped total was 1937px against 2690 for the non-mark characters, and 0.72
-     * lands within a word-average of 6.5px. Raising it barely changes how many
-     * words come out short (24 at 0.72 and at 0.75) while every word's error
-     * grows, so the miss here is per word, not a bias to correct.
+     * at, per script (v2.169.0): {first code point of the block, share}. The
+     * plain width is the advance of the first glyph JavaFX gives the lone
+     * character, the measure the bridge takes. v2.166.0 chose one share, 0.72,
+     * against a different measure (a lone character's laid-out width, which for
+     * a vowel sign counts the dotted circle drawn in front of it); measured the
+     * way the product measures, that left 28 of 34 Hindi words short, and Tamil
+     * and Malayalam phrases painted over the English word after them.
+     *
+     * <p>Each share was measured over running text of 22-34 words at 26px, and
+     * chosen as for Arabic: among the shares within 1px of the best word-average,
+     * the one that leaves the fewest words short, since a short word paints over
+     * its neighbour. Word-average misses: Devanagari 4.5px, Bengali 6.1,
+     * Gurmukhi 5.6, Gujarati 5.4, Oriya 7.1, Tamil 8.4, Telugu 10.0, Kannada 7.6,
+     * Malayalam 11.5. Telugu and Malayalam words vary the most with their
+     * conjuncts, so their estimate is the loosest.
      */
-    static final double INDIC_SHARE = 0.72;
+    static final double[][] INDIC_SHARES = {
+        {0x0900, 0.90}, // Devanagari
+        {0x0980, 0.87}, // Bengali
+        {0x0A00, 1.00}, // Gurmukhi
+        {0x0A80, 0.81}, // Gujarati
+        {0x0B00, 0.78}, // Oriya
+        {0x0B80, 0.78}, // Tamil
+        {0x0C00, 1.00}, // Telugu
+        {0x0C80, 0.78}, // Kannada
+        {0x0D00, 0.78}, // Malayalam
+    };
+
+    /** The measured share for the Indic block {@code cp} falls in. */
+    static double indicShare(int cp) {
+        double share = INDIC_SHARES[0][1];
+        for (double[] block : INDIC_SHARES) {
+            if (cp >= block[0]) {
+                share = block[1];
+            }
+        }
+        return share;
+    }
 
     /**
      * {@link #ARABIC_TOWARD_FINAL} for a Nastaliq font (v2.167.0), whose words
@@ -144,7 +174,7 @@ public final class ComplexScripts {
             return Double.isNaN(m) || Double.isNaN(f) ? Double.NaN : m + k * (f - m);
         }
         double p = plain.applyAsDouble(cp);
-        return Double.isNaN(p) ? Double.NaN : INDIC_SHARE * p;
+        return Double.isNaN(p) ? Double.NaN : indicShare(cp) * p;
     }
 
     /** The joining character a letter is shaped between to find its in-word form. */
