@@ -112,7 +112,8 @@ public final class WebBrowserTopComponent extends TopComponent {
         // OpenJFX's WebKit paints Arabic and Indic scripts unshaped (ledger 99);
         // the shaping hook installs once, off the EDT — a page painted before
         // it lands repaints shaped on its next paint
-        SHAPING_RP.post(org.nmox.studio.ui.browser.fx.ComplexTextShaping::install);
+        org.openide.util.RequestProcessor.Task shaping =
+                SHAPING_RP.post(org.nmox.studio.ui.browser.fx.ComplexTextShaping::install);
         browser = new FxBrowserPanel(title -> setDisplayName(BrowserUrls.tabTitle(title)));
         add(browser, BorderLayout.CENTER);
         // save → see: local pages reload themselves on web-file saves
@@ -133,9 +134,39 @@ public final class WebBrowserTopComponent extends TopComponent {
         String target = pendingUrl != null ? pendingUrl : startUrl();
         pendingUrl = null;
         if (target != null) {
-            browser.loadUrl(target);
+            loadWhenShaped(shaping, target);
         }
     }
+
+    /** How long the first page waits for text shaping to install before loading anyway. */
+    static final long SHAPING_WAIT_MS = 2500;
+
+    /**
+     * EDT. The first page loads once text shaping has installed, or after
+     * {@link #SHAPING_WAIT_MS} (v2.172.0). Since then shaping can switch
+     * WebKit's own complex-text path on, and a page laid out before the switch
+     * keeps the old widths while it paints with the new glyphs until something
+     * lays it out again.
+     */
+    private void loadWhenShaped(org.openide.util.RequestProcessor.Task shaping, String target) {
+        FxBrowserPanel first = browser;
+        int asked = first.loadCount();
+        FIRST_LOAD_RP.post(() -> {
+            try {
+                shaping.waitFinished(SHAPING_WAIT_MS);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                if (browser == first && first.loadCount() == asked) { // nothing loaded meanwhile
+                    first.loadUrl(target);
+                }
+            });
+        });
+    }
+
+    private static final org.openide.util.RequestProcessor FIRST_LOAD_RP =
+            new org.openide.util.RequestProcessor("Browser First Load", 1);
 
     @Override
     protected void componentClosed() {
