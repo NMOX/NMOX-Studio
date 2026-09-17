@@ -180,9 +180,10 @@ class PrismBridgeTest {
     void attachHelperCommandIsFixed() {
         java.nio.file.Path home = java.nio.file.Path.of("/opt/jre");
         java.nio.file.Path jar = java.nio.file.Path.of("/tmp/nmox-shaping-agent1.jar");
+        // paths compared as Path strings: Windows prints them with its own separator
         assertThat(ComplexTextShaping.helperCommand(home, false, jar, 4242)).containsExactly(
-                "/opt/jre/bin/java", "-cp", "/tmp/nmox-shaping-agent1.jar",
-                "org.nmox.studio.ui.browser.fx.ShapingAttach", "4242", "/tmp/nmox-shaping-agent1.jar");
+                home.resolve("bin").resolve("java").toString(), "-cp", jar.toString(),
+                "org.nmox.studio.ui.browser.fx.ShapingAttach", "4242", jar.toString());
         assertThat(ComplexTextShaping.helperCommand(home, true, jar, 7).get(0)).endsWith("java.exe");
     }
 
