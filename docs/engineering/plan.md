@@ -1,5 +1,13 @@
 # The Plan
 
+*Currency addendum 2026-09-16, at v2.168.0 — the first fix that sounds right
+is still a hypothesis. When long right-to-left lines lost their spaces, anchoring
+each word at its own edge was the obvious cure; photographed, it was worse,
+because every word measured short then ate the space beside it. The picture
+chose the design (spaces absorb the error), and a trace of one paint call found
+the second cause no reasoning would have: JavaFX draws a positioned run from
+its first position, so a run starting left of zero shifted right.*
+
 *Currency addendum 2026-09-16, at v2.167.0 — a check of two more languages
 is a check of what they bring. Persian and Urdu share Arabic's script, so they
 looked covered; photographed, they carried three things the Arabic pictures

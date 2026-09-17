@@ -67,7 +67,16 @@ in `TextUtilities.createGlyphList`, so a shaped run is drawn from x/y positions
 and may take more glyphs than it had characters, and JavaFX's upside-down y on
 macOS is detected from where a kasra lands. Nastaliq, which that made
 renderable, estimates its widths at half way from medial to final and misses by
-9-10px a word; that looseness is the recorded remainder. Installs whose conf predates v2.165.0
+9-10px a word; that looseness is the recorded remainder.
+
+**Kurdish, Pashto, Sindhi and Uyghur (v2.168.0).** Letter forms, marks and
+digits were already right; long right-to-left lines were not. The estimate's
+per-word error added up across a paint call and went to its far edge, eating
+the space before the next run. Now, in right-to-left runs, spaces between words absorb up to
+half their width of it and spaces at the kept edge stay as measured (Indic
+runs keep the old rule, their per-word miss being about a whole space); what remains still
+reaches the far edge, where a comma or phrase can sit close to its neighbour on
+a line of many words measured short. Installs whose conf predates v2.165.0
 (update-center updates) keep unjoined text until a reinstall, the v1.256.0
 conf timing law.
 

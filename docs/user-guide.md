@@ -1366,7 +1366,10 @@ shaped width too, so an Arabic or Hindi phrase inside an English sentence sits
 in ordinary word spacing (within a few pixels). Since v2.167.0 numbers inside
 Arabic or Persian text read in their own order, vowel marks sit on their
 letters, and Urdu set in a Nastaliq font renders as Nastaliq (its widths are
-looser, so a Nastaliq line can sit a few pixels off). Hebrew renders correctly
+looser, so a Nastaliq line can sit a few pixels off). Kurdish (Sorani), Pashto,
+Sindhi and Uyghur render the same way, and since v2.168.0 a long right-to-left
+line spreads the few pixels its words miss across its spaces instead of letting
+them pile up against the next word. Hebrew renders correctly
 on its own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output

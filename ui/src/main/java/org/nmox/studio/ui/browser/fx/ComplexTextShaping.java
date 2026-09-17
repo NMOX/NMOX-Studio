@@ -580,12 +580,12 @@ public final class ComplexTextShaping {
                             text -> shape(text, pg), table[2][0]);
                 }
                 ComplexScripts.Laid laid = ComplexScripts.layout(glyphs, advances, g -> charFor(table, g),
-                        text -> shape(text, pg));
+                        text -> shape(text, pg), table[2][0]);
                 if (laid == null || !laid.changed()) {
                     return 0f;
                 }
                 remember(glyphs, laid);
-                return laid.slack();
+                return laid.origin(); // the run's positions start at zero; the call moves to where it begins
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 return 0f; // the page still paints, unshaped, as it always did
             }
@@ -608,7 +608,7 @@ public final class ComplexTextShaping {
             }
             pending.remove();
             ComplexScripts.Laid laid = (ComplexScripts.Laid) mine[1];
-            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.advances(), laid.rises())};
+            return new Object[]{laid.glyphs(), ComplexScripts.positions(laid.xs(), laid.rises(), laid.width())};
         }
 
         /** The hook's width answer: {font, glyph} to a Double, NaN for the font's own. Never throws. */
