@@ -18,6 +18,41 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class WebKitTextPathTest {
 
+    // The table holds one entry per platform today, so a walk of it and a match on
+    // the BYTES always coincide — and that is exactly why returning the walked entry
+    // instead of the matched one survived review. An OpenJFX patch bump adds the
+    // second entry, both naming the same jlink path, and then the walk reaches the
+    // wrong one: its offsets inside the other build's image are an arbitrary call
+    // and an arbitrary write. The selection is pinned over a two-entry table.
+    @Test
+    @DisplayName("with two builds for one platform, the entry that matches the library's BYTES wins — not the first one listed")
+    void matchPicksTheBuildTheBytesName() {
+        WebKitTextPath.Build first = new WebKitTextPath.Build("osx-aarch64", "jmods-a", "aaaa",
+                "lib/libjfxwebkit.dylib", "anchor", 0x10L, 0x20L);
+        WebKitTextPath.Build second = new WebKitTextPath.Build("osx-aarch64", "jmods-b", "bbbb",
+                "lib/libjfxwebkit.dylib", "anchor", 0x30L, 0x40L);
+        java.util.List<WebKitTextPath.Build> table = java.util.List.of(first, second);
+        assertThat(WebKitTextPath.match(table, "osx-aarch64", "bbbb")).isSameAs(second);
+        assertThat(WebKitTextPath.match(table, "osx-aarch64", "aaaa")).isSameAs(first);
+        assertThat(WebKitTextPath.match(table, "osx-aarch64", "cccc")).isNull();
+        assertThat(WebKitTextPath.match(table, "windows-x64", "aaaa"))
+                .as("the hash alone never decides: the platform must match too").isNull();
+    }
+
+    // Both false cases used to be one bare `false`, so the caller could not tell
+    // "nothing was written" from "WebKit is on its own path now" — and it repaired
+    // the simple path over the second, which measures every complex run twice.
+    @Test
+    @DisplayName("only an untouched WebKit may have its simple path repaired")
+    void onlyUntouchedIsRepairable() {
+        assertThat(WebKitTextPath.repairable(WebKitTextPath.Switched.UNTOUCHED))
+                .as("nothing was written: the repair is the whole point").isTrue();
+        assertThat(WebKitTextPath.repairable(WebKitTextPath.Switched.ON))
+                .as("WebKit shapes and measures for itself").isFalse();
+        assertThat(WebKitTextPath.repairable(WebKitTextPath.Switched.UNCONFIRMED))
+                .as("it may be shaping: repairing over it is worse than either path alone").isFalse();
+    }
+
     @Test
     @DisplayName("the length the native glue appends is removed, whatever the string ends in")
     void lengthSuffixIsStripped() {

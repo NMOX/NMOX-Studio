@@ -33,10 +33,16 @@ public final class ShapingAttach {
         try {
             Class<?> vm = Class.forName("com.sun.tools.attach.VirtualMachine");
             Object machine = vm.getMethod("attach", String.class).invoke(null, args[0]);
+            // the load decides the answer, never the detach: a detach that throws
+            // once the agent is IN (the target tearing the pipe down, say) used to
+            // be reported as a refusal, so the caller repaired a Browser that was
+            // already shaped — and it replaced the load's own exception, which is
+            // the one that says WHY a real refusal happened
+            vm.getMethod("loadAgent", String.class).invoke(machine, args[1]);
             try {
-                vm.getMethod("loadAgent", String.class).invoke(machine, args[1]);
-            } finally {
                 vm.getMethod("detach").invoke(machine);
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                System.err.println("agent loaded; detach failed: " + ex);
             }
             return true;
         } catch (InvocationTargetException ex) {

@@ -106,7 +106,21 @@ final class WebKitTextPath {
 
     /** The known build for this platform and library hash, or null. */
     static Build match(String platform, String sha256) {
-        for (Build build : KNOWN) {
+        return match(KNOWN, platform, sha256);
+    }
+
+    /**
+     * The entry whose platform AND bytes both match, or null.
+     *
+     * <p>Takes its candidates so the choice can be made over two entries for one
+     * platform, which is what an OpenJFX patch bump adds and what this release's
+     * table cannot yet show: two such entries name the SAME library path, so a
+     * walk of the table reaches the first while the file on disk hashes as the
+     * second — and the first's offsets inside the second's image are an arbitrary
+     * call and an arbitrary write.
+     */
+    static Build match(List<Build> builds, String platform, String sha256) {
+        for (Build build : builds) {
             if (build.platform().equals(platform) && build.sha256().equalsIgnoreCase(sha256)) {
                 return build;
             }
@@ -129,8 +143,10 @@ final class WebKitTextPath {
                 continue;
             }
             try {
-                if (match(platform, sha256(library)) != null) {
-                    return build;
+                // the entry that matched the BYTES, never the one whose path we walked
+                Build found = match(platform, sha256(library));
+                if (found != null) {
+                    return found;
                 }
                 LOG.log(Level.FINE, "WebKit text path: {0} is not a build this release knows", library);
             } catch (IOException ex) {
@@ -178,12 +194,53 @@ final class WebKitTextPath {
     }
 
     /**
-     * Sets the code path to {@code Auto} through WebKit's own setter, only when the
-     * state reads {@code Simple} first; true when it reads {@code Auto} after.
-     * Needs the foreign-function API (JDK 22 and later) and native access; any
-     * refusal leaves WebKit as it was and answers false.
+     * What a switch attempt left behind — because "it did not work" is two different
+     * states and the caller must treat them differently.
+     *
+     * <p>The repaired simple path corrects widths that WebKit's own complex path
+     * already measures exactly, so installing it over a switched WebKit is worse
+     * than either alone: the same runs get shaped and re-measured twice. Only
+     * {@link #UNTOUCHED} may fall back to it.
      */
-    static boolean switchOn(Path javaHome, Build build) {
+    enum Switched {
+        /** The setter ran and the state reads {@code Auto}: WebKit shapes for itself. */
+        ON,
+        /** Nothing was written (or it was written and put back): the simple path is free to be repaired. */
+        UNTOUCHED,
+        /** The setter ran and the state could not be confirmed or restored: leave WebKit alone. */
+        UNCONFIRMED
+    }
+
+    /**
+     * Whether the simple path may still be repaired after an attempt — true only for
+     * {@link Switched#UNTOUCHED}.
+     *
+     * <p>The law in one place, because its two false cases look nothing alike and
+     * both used to be a bare {@code false}: after {@link Switched#ON} WebKit shapes
+     * and measures for itself, and after {@link Switched#UNCONFIRMED} it may be
+     * doing so. Repairing over either measures every complex run twice.
+     */
+    static boolean repairable(Switched switched) {
+        return switched == Switched.UNTOUCHED;
+    }
+
+    /**
+     * Sets the code path to {@code Auto} through WebKit's own setter, only when the
+     * state reads {@code Simple} first, and reads it back to confirm.
+     *
+     * <p>Needs the foreign-function API (JDK 22 and later) and native access. A
+     * refusal BEFORE the setter runs leaves WebKit exactly as it was
+     * ({@link Switched#UNTOUCHED}). Once the setter has run the byte may have
+     * changed, so a failure past that point puts {@code Simple} back and only
+     * reports {@code UNTOUCHED} when that is confirmed — otherwise
+     * {@link Switched#UNCONFIRMED}, which no caller may repair over.
+     *
+     * <p>What this cannot catch: a wrong {@code setterOffset} calls an arbitrary
+     * address, which is a segmentation fault and not a Java throwable. The sha256
+     * pin on the library is the only thing standing between a user and that.
+     */
+    static Switched switchOn(Path javaHome, Build build) {
+        boolean wrote = false;
         try {
             Foreign ffm = new Foreign();
             Object arena = ffm.globalArena.invoke(null);
@@ -191,30 +248,58 @@ final class WebKitTextPath {
             java.util.Optional<?> anchor = (java.util.Optional<?>) ffm.find.invoke(lookup, build.anchor());
             if (anchor.isEmpty()) {
                 LOG.info("WebKit text path: the anchor symbol is missing; staying on the simple path");
-                return false;
+                return Switched.UNTOUCHED;
             }
             long[] at = addresses(build, (Long) ffm.address.invoke(anchor.get()));
             Object state = ffm.reinterpret.invoke(ffm.ofAddress.invoke(null, at[1]), 1L);
             byte before = (Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L);
+            if (before == AUTO) {
+                // already switched on in this JVM: the caller must not repair over it
+                LOG.info("WebKit text path: already on WebKit's own path; nothing to do");
+                return Switched.UNCONFIRMED;
+            }
             if (before != SIMPLE) {
                 LOG.log(Level.INFO, "WebKit text path: unexpected code path {0}; left alone", before);
-                return false;
+                return Switched.UNTOUCHED;
             }
             MethodHandle setter = ffm.downcall(ffm.ofAddress.invoke(null, at[0]));
+            wrote = true;
             setter.invokeWithArguments(AUTO);
             byte after = (Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L);
             if (after != AUTO) {
                 LOG.log(Level.INFO, "WebKit text path: the setter did not take ({0})", after);
-                return false;
+                return restore(ffm, state, after);
             }
-            return true;
+            return Switched.ON;
         } catch (Throwable ex) { // NOPMD: any refusal of native access keeps the simple path
             if (ex instanceof VirtualMachineError vme && !(ex instanceof StackOverflowError)) {
                 throw vme;
             }
             LOG.log(Level.INFO, "WebKit text path could not be switched on; staying on the simple path", ex);
-            return false;
+            return wrote ? Switched.UNCONFIRMED : Switched.UNTOUCHED;
         }
+    }
+
+    /**
+     * Puts {@code Simple} back after a write that could not be confirmed, so the
+     * simple path can still be repaired; {@code UNCONFIRMED} when even that fails.
+     */
+    private static Switched restore(Foreign ffm, Object state, byte seen) {
+        try {
+            ffm.setByte.invoke(state, ffm.javaByte, 0L, SIMPLE);
+            if ((Byte) ffm.getByte.invoke(state, ffm.javaByte, 0L) == SIMPLE) {
+                return Switched.UNTOUCHED;
+            }
+        } catch (Throwable ex) { // NOPMD: the restore is best effort; its failure is the finding
+            if (ex instanceof VirtualMachineError vme && !(ex instanceof StackOverflowError)) {
+                throw vme;
+            }
+            LOG.log(Level.FINE, "WebKit text path: the state byte could not be put back", ex);
+        }
+        LOG.log(Level.WARNING, "WebKit text path: the code-path byte was written and reads {0}; "
+                + "the simple-path repair is NOT installed, because repairing a path WebKit may "
+                + "already be shaping would measure every complex run twice", seen);
+        return Switched.UNCONFIRMED;
     }
 
     /** The foreign-function API reached reflectively: this module compiles for Java 21. */
@@ -226,6 +311,7 @@ final class WebKitTextPath {
         final Method ofAddress;
         final Method reinterpret;
         final Method getByte;
+        final Method setByte;
         final Object javaByte;
         private final Class<?> linkerClass;
         private final Class<?> segmentClass;
@@ -247,6 +333,7 @@ final class WebKitTextPath {
             ofAddress = segmentClass.getMethod("ofAddress", long.class);
             reinterpret = segmentClass.getMethod("reinterpret", long.class);
             getByte = segmentClass.getMethod("get", ofByte, long.class);
+            setByte = segmentClass.getMethod("set", ofByte, long.class, byte.class);
             javaByte = layoutClass.getField("JAVA_BYTE").get(null);
         }
 

@@ -20,6 +20,53 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — recorded by the v2.174.0 arc review of the shaping arc
+
+### 100. A width fit is computed per SIZED font, not per font
+
+**What it is.** `ComplexTextShaping.fits` keys on the `WCFont` instance,
+which WebKit creates one of per family *and size and weight and style*.
+The fitted parameter is a ratio of widths measured at one size, so it is
+dimensionless and identical across those — but a page using one family at
+`h1`, `h2`, `body`, `strong` and `em` pays the whole corpus fit five times
+instead of once. Each fit is 21–29 laid-out words plus one advance per
+distinct letter, roughly 60–90 fresh JavaFX layouts, and it runs on
+whichever thread holds WebKit's page lock — the FX application thread
+during layout, the render thread during paint. So the cost lands on a
+frame, not on a background lane.
+
+**Why it is deferred.** The fix is to key on the font's family or its
+`FontResource` rather than the `WCFont`, and the honest version of that
+needs a measurement first: how much a fit actually costs on a real page
+(the repaint budget the v2.171.0 cache was built against was ~12 ms p90),
+and whether two `WCFont`s of one family can ever disagree about the fit —
+a bold face is a different file, so "per family" may be too coarse and
+"per `FontResource`" the right key. Measuring that belongs with the next
+Linux run, where the fit matters and the fonts vary.
+
+**Where it bites.** Only where the fit runs at all: the repaired simple
+path, which since v2.174.0 means Linux and unknown builds. macOS and
+Windows take WebKit's own path and never fit.
+
+### 101. The Browser's first-load waits are per-open and serialized
+
+**What it is.** `WebBrowserTopComponent.loadWhenShaped` posts each first
+load to a throughput-1 `RequestProcessor` and blocks up to 2,500 ms for
+shaping to install. Closing and reopening the Browser tab posts another,
+which cannot begin its own wait until the previous one's has elapsed. On
+an update-center install whose conf lacks the attach flags — the case the
+`ShapingAttach` helper exists for, with a 30 s leash — a second open can
+show a blank pane for about five seconds, a third for seven and a half,
+and the `browser == first` guard means the delay lands on exactly the page
+the user is waiting for.
+
+**Why it is deferred.** Two shapes fix it (cancel the superseded task, or
+make the deadline shared and absolute rather than per-open) and choosing
+between them wants the walk that shows the stall, which needs an install
+in that state. The guard itself was reviewed and is sufficient: no
+superseded task ever loads the wrong page, so this is a wait, not a wrong
+page.
+
 ## Closed by v2.165.0 (the Browser shapes complex scripts)
 
 ### 99. The in-app Browser paints Arabic letters unjoined — CLOSED

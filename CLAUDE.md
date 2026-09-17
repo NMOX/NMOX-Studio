@@ -80,11 +80,17 @@ pattern is an OR of its lines — every enforced literal is ONE line.
 - **Java 25+** (the bundled runtime and CI are JDK 25 LTS since v1.253.0; the compiler still TARGETS 21 bytecode on purpose — see the law at maven.compiler.target)
 - **Maven 3.6+**
 
-**IMPORTANT**: Ensure JAVA_HOME points to JDK 21+ or use `--jdkhome` when running:
+**IMPORTANT**: BUILD with JDK 25. JavaFX 26's jars are class-file 68 (JDK 24+),
+so the `ui` module cannot be compiled by an older javac — and the failure does not
+say so twice: javac reports `bad class file … wrong version 68.0` once, abandons
+annotation processing, and every `@Messages`-generated `Bundle` reference in the
+module then fails, so a tailed log is hundreds of `cannot find symbol: variable
+Bundle` lines pointing at the wrong file. (The compiler still TARGETS 21 — that
+law is about the bytecode emitted, not the JDK you build with.)
 ```bash
-# Set Java for build
-export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk-23.jdk/Contents/Home
-# or use: export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+# Set Java for build — a JDK 25, which `/usr/libexec/java_home` may not list
+export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home
+# the installed app ships one too: "/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio/jre"
 
 # Alternative: use --jdkhome when launching IDE
 ./application/target/nmoxstudio/bin/nmoxstudio --jdkhome /Library/Java/JavaVirtualMachines/jdk-23.jdk/Contents/Home
@@ -949,7 +955,7 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger (the
 
 **Build fails with "invalid target release: 21"**:
 - Ensure Java 21+ is active: `java -version`
-- Set JAVA_HOME: `export JAVA_HOME=$(/usr/libexec/java_home -v 21)`
+- Set JAVA_HOME to a JDK 25: `export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home`
 - Or specify Java explicitly: `JAVA_HOME=/path/to/jdk21 mvn clean package`
 
 **"Cannot run on older versions of Java" error**:

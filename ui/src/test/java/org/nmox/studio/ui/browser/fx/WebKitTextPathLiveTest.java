@@ -30,8 +30,12 @@ class WebKitTextPathLiveTest {
         WebKitTextPath.Build build = WebKitTextPath.knownBuild(javaHome);
         assertThat(build).as("the runtime at %s carries a known WebKit library", javaHome).isNotNull();
         assertThat(javaHome.resolve(build.library())).exists();
-        assertThat(WebKitTextPath.switchOn(javaHome, build)).as("Simple -> Auto").isTrue();
-        // and only once: the state no longer reads Simple, so the setter is left alone
-        assertThat(WebKitTextPath.switchOn(javaHome, build)).as("already Auto").isFalse();
+        assertThat(WebKitTextPath.switchOn(javaHome, build)).as("Simple -> Auto")
+                .isEqualTo(WebKitTextPath.Switched.ON);
+        // And only once: the state no longer reads Simple, so the setter is left alone.
+        // UNCONFIRMED, not UNTOUCHED — WebKit IS on its own path now, and the caller
+        // must not repair the simple path over it (v2.174.0).
+        assertThat(WebKitTextPath.switchOn(javaHome, build)).as("already Auto")
+                .isEqualTo(WebKitTextPath.Switched.UNCONFIRMED);
     }
 }

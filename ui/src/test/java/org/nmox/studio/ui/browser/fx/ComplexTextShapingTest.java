@@ -20,6 +20,29 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ComplexTextShapingTest {
 
+    // v2.174.0 (arc review): the fit solves for a share the WIDTH HOOK applies, and
+    // the hook scales only what `ComplexScripts.shapes` accepts — punctuation keeps
+    // WebKit's own width. Summing an unscaled code point into the fit's plain sum
+    // solves a different equation than the one that runs, and `clearlyBetter` — the
+    // only gate deciding whether a fit replaces a measured constant — would be
+    // judging an error nothing ever computes. Tibetan's corpus is a third tsheg
+    // (U+0F0B, punctuation), and its constant is 1.00, the one value at which the
+    // two formulas agree, which is why no picture could show it.
+    @Test
+    @DisplayName("the corpus fit skips every code point the width hook does not scale")
+    void fitCountsOnlyWhatTheHookScales() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/ui/browser/fx/ComplexTextShaping.java"));
+        int from = src.indexOf("private FontFit.Fit fit(Object pg");
+        assertThat(from).as("the fit loop is still where this law lives").isPositive();
+        String fit = src.substring(from, src.indexOf("\n        }\n", from));
+        assertThat(fit)
+                .as("the fit's per-code-point loop must consult the same predicate the width hook does")
+                .contains("ComplexScripts.shapes(cp)");
+        assertThat(ComplexScripts.shapes(0x0F0B))
+                .as("the tsheg is exactly the kind of code point the hook leaves alone").isFalse();
+    }
+
     private static final String FONT = "com/sun/webkit/graphics/WCFont";
 
     /** A class loader that defines exactly the bytes it is given. */
