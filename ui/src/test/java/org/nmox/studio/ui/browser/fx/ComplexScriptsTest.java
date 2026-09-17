@@ -235,7 +235,7 @@ class ComplexScriptsTest {
     }
 
     @Test
-    @DisplayName("a space at the edge the run keeps stays as measured; the neighbour beside it is another run's")
+    @DisplayName("a space at the edge the run keeps stays as measured, and an Indic run's spaces give up less than they take")
     void keptEdgeSpacesStayMeasured() {
         // visual: "بت" + " " — the trailing space sits at a right-to-left run's kept right edge
         int[] g = glyphs("بت" + " ");
@@ -251,11 +251,16 @@ class ComplexScriptsTest {
                 text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
         assertThat(indic.origin()).isZero();
         assertThat(indic.xs()).containsExactly(0f, 6f, 18f);
-        // and an Indic run's spaces never absorb: its words' miss falls past its end
+        // an Indic run's space gives up at most a quarter of itself when the words come out wide...
         int[] words = glyphs("कम" + " " + "कम");
-        ComplexScripts.Laid spaced = ComplexScripts.layout(words, new float[]{10f, 10f, 6f, 10f, 10f}, CHAR_FOR,
+        float[] measured = {10f, 10f, 6f, 10f, 10f};
+        ComplexScripts.Laid wide = ComplexScripts.layout(words, measured, CHAR_FOR,
                 text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{12f, 12f}), 32);
-        assertThat(spaced.xs()).containsExactly(0f, 12f, 24f, 30f, 42f);
+        assertThat(wide.xs()).containsExactly(0f, 12f, 24f, 28.5f, 40.5f); // 8 too wide: the space gives 1.5
+        // ...and takes on up to half when they come out narrow
+        ComplexScripts.Laid narrow = ComplexScripts.layout(words, measured, CHAR_FOR,
+                text -> new ComplexScripts.Shaped(new int[]{90, 91}, new float[]{8f, 8f}), 32);
+        assertThat(narrow.xs()).containsExactly(0f, 8f, 16f, 25f, 33f); // 8 too narrow: the space takes 3
     }
 
     @Test

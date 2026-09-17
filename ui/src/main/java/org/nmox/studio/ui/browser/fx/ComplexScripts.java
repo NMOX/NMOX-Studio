@@ -290,6 +290,9 @@ public final class ComplexScripts {
      */
     static final float SPACE_GIVES = 0.5f;
 
+    /** How much of its width a space in an Indic run may give up (v2.169.0); it may still take on half. */
+    static final float INDIC_SPACE_GIVES = 0.25f;
+
     /**
      * Lays a painted run out for a glyph list built from positions rather than
      * advances (v2.167.0), so a shaped segment may take more glyphs than it had
@@ -303,11 +306,13 @@ public final class ComplexScripts {
      * edge (a right-to-left run keeps its right edge, an Indic run its left).
      * Spaces at the kept edge are left as measured: a Pashto line painted its
      * {@code npm} against the word beside it when that space gave up half.
-     * Only right-to-left runs do this. An Indic word's estimate misses by about
-     * a whole space (6.5px a word at 26px against Arabic script's 3.5-4.3), so
-     * half a space each squeezed a Hindi heading's words together in the forged
-     * picture; an Indic run keeps its left edge and lets the difference fall past
-     * its end, as it did before.
+     * In an Indic run a space gives up at most a quarter of itself (v2.169.0)
+     * while it may still take on half: an Indic word's estimate misses by more
+     * (5-11px a word at 26px against Arabic script's 3.5-4.3), and half a space
+     * each squeezed a Hindi heading and a Kannada phrase together in the
+     * pictures, while spreading a phrase that came out narrow across its spaces
+     * closed the gap it had left after its last word. v2.168.0 kept Indic runs
+     * out of this entirely and let every miss fall past the run's end.
      * Until then all of it moved the far edge, so over a long right-to-left
      * stretch the words' few pixels each added up to a whole space and a Sindhi
      * line painted {@code ۽} against the {@code npm} beside it. Anchoring each
@@ -398,8 +403,9 @@ public final class ComplexScripts {
             }
         }
         float excess = painted - measured; // positive: the words came out wider than WebKit's box
-        float absorbed = spaces == 0f || !rtl ? 0f
-                : Math.max(-SPACE_GIVES * spaces, Math.min(SPACE_GIVES * spaces, excess));
+        float gives = rtl ? SPACE_GIVES : INDIC_SPACE_GIVES;
+        float absorbed = spaces == 0f ? 0f
+                : Math.max(-SPACE_GIVES * spaces, Math.min(gives * spaces, excess));
         float[] outX = new float[size];
         float x = rtl ? -(excess - absorbed) : 0f;
         for (int k = 0; k < size; k++) {
