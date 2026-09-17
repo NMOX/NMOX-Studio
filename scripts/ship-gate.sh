@@ -85,17 +85,37 @@ fi
 git tag -a "$TAG" -m "nmox-studio ${TAG#v}" "$SHA"
 eval "$PUSH $TAG" 2>&1 | /usr/bin/tail -1
 echo "tagged $TAG"
+# Wait for the release, reading the RUN and not just its assets — the
+# decision itself lives in release-run-verdict.sh, where it can be run
+# and proven; this loop only carries it out. A run that finishes red has
+# its failed jobs re-run ONCE (which also revives the homebrew job that
+# was skipped behind it), and a second failure stops by name instead of
+# sitting out the whole timer, which is what v2.173.0 did.
+RERAN=0; RERUN_SEEN=0
 for i in $(seq 1 90); do
   N=$(gh release view "$TAG" --json assets --jq '.assets | length' 2>/dev/null || echo 0)
   echo "assets: $N"
-  if [[ "$N" == 21 ]]; then
-    echo "RELEASE-COMPLETE: 21 assets"
-    # nudge the canonical tap's self-sync so brew users get the bump
-    # now, not at the next half-hour cron (v2.39.6; failure harmless —
-    # cron is the backstop)
-    gh workflow run sync.yml -R NMOX/homebrew-nmox-studio 2>/dev/null || true
-    exit 0
-  fi
+  RUN=$(gh run list --workflow release.yml --branch "$TAG" --limit 1 \
+          --json databaseId,status,conclusion \
+          --jq '.[0] | (.status)+":"+(.conclusion // "")+":"+(.databaseId|tostring)' 2>/dev/null)
+  # the re-run has registered the moment the run reads as running again
+  [[ "${RUN:-}" != completed:* ]] && [ "$RERAN" = 1 ] && RERUN_SEEN=1
+  case "$(scripts/release-run-verdict.sh "$N" "${RUN:-}" "$RERAN" "$RERUN_SEEN")" in
+    complete)
+      echo "RELEASE-COMPLETE: 21 assets"
+      # nudge the canonical tap's self-sync so brew users get the bump
+      # now, not at the next half-hour cron (v2.39.6; failure harmless —
+      # cron is the backstop)
+      gh workflow run sync.yml -R NMOX/homebrew-nmox-studio 2>/dev/null || true
+      exit 0;;
+    rerun)
+      C=${RUN#completed:}; C=${C%:*}
+      echo "release run ${RUN##*:} finished $C; re-running its failed jobs once"
+      gh run rerun "${RUN##*:}" --failed 2>&1 | /usr/bin/tail -1
+      RERAN=1;;
+    fail)
+      echo "RELEASE-RUN-FAILED: ${RUN##*:} failed again after one re-run ($N assets)"; exit 1;;
+  esac
   sleep 60
 done
 echo "ASSETS-TIMEOUT"; exit 1
