@@ -19,6 +19,46 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class I18nUsageTest {
 
+    // The two scans below were quadratic in the first cut (the 2026-09-17 arc
+    // review, hostile-input lens): 10,000 unclosed defineMessages( cost 4.8 s
+    // and 30,000 keys on one newline-free line 1.4 s — per FILE, in a census
+    // of up to 400. Fixed, each runs in milliseconds; the two-second leash is
+    // a 100x margin over the fix and a fraction of the mutant's own cost on
+    // the inputs below, so a slow runner cannot make it lie in either direction.
+    private static final java.time.Duration LEASH = java.time.Duration.ofSeconds(2);
+
+    @Test
+    @DisplayName("10,000 unclosed defineMessages( in one source cost one pass, not one rescan to the end per call")
+    void unclosedMessageDescriptorsAreLinear() {
+        String src = "defineMessages(".repeat(10_000);
+        org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(LEASH, () -> I18nUsage.fromSource(src));
+        int[] close = I18nUsage.closers("a(b(c)d)e()(");
+        assertThat(close[1]).isEqualTo(7);
+        assertThat(close[3]).isEqualTo(5);
+        assertThat(close[9]).isEqualTo(10);
+        assertThat(close[11]).as("never closed").isEqualTo(-1);
+    }
+
+    @Test
+    @DisplayName("60,000 keys on one line without a newline cost one scan of each key, not one walk back to the file's start per key")
+    void manyKeysOnOneLineAreLinear() {
+        String src = "t('k').".repeat(60_000);
+        Usage u = org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(LEASH, () -> I18nUsage.fromSource(src));
+        assertThat(u.refs()).containsExactly(new Ref(null, "k"));
+        assertThat(I18nUsage.fromSource("t('a\nb')").refs()).as("a quote closed on another line is still not a key").isEmpty();
+    }
+
+    @Test
+    @DisplayName("the 40-char cut on a dynamic argument never splits a surrogate pair (the v1.149.0 cap class)")
+    void dynamicArgumentCutKeepsPairsWhole() {
+        String src = "t(x" + "a".repeat(36) + "😀😀😀)";
+        Usage u = I18nUsage.fromSource(src);
+        assertThat(u.dynamic()).hasSize(1);
+        String d = u.dynamic().get(0);
+        assertThat(Character.isHighSurrogate(d.charAt(d.length() - 1))).as("no lone high surrogate at the cut").isFalse();
+        assertThat(d).startsWith("x" + "a".repeat(36) + "😀");
+    }
+
     @Test
     @DisplayName("call shapes: t, $t, i18n.t, $tc, $_, _, $format, single/double/backtick quotes")
     void callShapes() {
