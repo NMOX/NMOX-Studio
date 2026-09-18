@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
+import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
 
@@ -70,10 +71,10 @@ public final class StarterRacks {
         RackDevice debug = add(rack, DeviceType.DEBUG, null);
         RackDevice test = add(rack, DeviceType.TEST, null);
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(run.getPort("out"), console.getPort("in"));
-        rack.connect(debug.getPort("out"), console.getPort("in"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
+        wire(rack, run.getPort("out"), console.getPort("in"));
+        wire(rack, debug.getPort("out"), console.getPort("in"));
     };
 
     /** The Vite family: SURGE serves into SCOPE, MASTER runs install→build→test, REFLEX re-tests on save. */
@@ -86,13 +87,13 @@ public final class StarterRacks {
         RackDevice build = add(rack, DeviceType.BUILD, Map.of("tool", "1"));
         RackDevice test = add(rack, DeviceType.TEST, Map.of("framework", "2"));
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(master.getPort("trig1"), deps.getPort("run"));
-        rack.connect(deps.getPort("ok"), build.getPort("run"));
-        rack.connect(build.getPort("ok"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(server.getPort("url"), browser.getPort("url"));
-        rack.connect(server.getPort("ready"), browser.getPort("open"));
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, master.getPort("trig1"), deps.getPort("run"));
+        wire(rack, deps.getPort("ok"), build.getPort("run"));
+        wire(rack, build.getPort("ok"), test.getPort("run"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
+        wire(rack, server.getPort("url"), browser.getPort("url"));
+        wire(rack, server.getPort("ready"), browser.getPort("open"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
     };
 
     /** Angular: HALO serves and opens SCOPE, CRATE installs, VERITAS re-runs on save. */
@@ -103,11 +104,11 @@ public final class StarterRacks {
         RackDevice test = add(rack, DeviceType.TEST, null);
         RackDevice browser = add(rack, DeviceType.BROWSER, null);
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(halo.getPort("url"), browser.getPort("url"));
-        rack.connect(halo.getPort("ready"), browser.getPort("open"));
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(halo.getPort("out"), console.getPort("in"));
+        wire(rack, halo.getPort("url"), browser.getPort("url"));
+        wire(rack, halo.getPort("ready"), browser.getPort("open"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
+        wire(rack, halo.getPort("out"), console.getPort("in"));
     };
 
     /** A Node HTTP service: the dev server's READY pings its own health route. */
@@ -117,10 +118,10 @@ public final class StarterRacks {
         RackDevice ping = add(rack, DeviceType.HTTP,
                 Map.of("url", "http://localhost:3000/health", "method", "0"));
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(server.getPort("ready"), ping.getPort("send"));
-        rack.connect(ping.getPort("body"), console.getPort("in"));
-        rack.connect(server.getPort("out"), console.getPort("in"));
-        rack.connect(deps.getPort("out"), console.getPort("in"));
+        wire(rack, server.getPort("ready"), ping.getPort("send"));
+        wire(rack, ping.getPort("body"), console.getPort("in"));
+        wire(rack, server.getPort("out"), console.getPort("in"));
+        wire(rack, deps.getPort("out"), console.getPort("in"));
     };
 
     /**
@@ -134,10 +135,10 @@ public final class StarterRacks {
         RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
         RackDevice test = add(rack, DeviceType.TEST, null);
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        rack.connect(deps.getPort("out"), console.getPort("in"));
-        rack.connect(script.getPort("out"), console.getPort("in"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, deps.getPort("out"), console.getPort("in"));
+        wire(rack, script.getPort("out"), console.getPort("in"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
     };
 
     /** A static site: serve it and open it, nothing to build. */
@@ -145,9 +146,9 @@ public final class StarterRacks {
         RackDevice server = add(rack, DeviceType.DEV_SERVER, Map.of("server", "2", "port", "4"));
         RackDevice browser = add(rack, DeviceType.BROWSER, Map.of("url", "http://localhost:8080"));
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(server.getPort("url"), browser.getPort("url"));
-        rack.connect(server.getPort("ready"), browser.getPort("open"));
-        rack.connect(server.getPort("out"), console.getPort("in"));
+        wire(rack, server.getPort("url"), browser.getPort("url"));
+        wire(rack, server.getPort("ready"), browser.getPort("open"));
+        wire(rack, server.getPort("out"), console.getPort("in"));
     };
 
     /** BEAM: deps first (mix deps.get), then the polyglot loop. */
@@ -157,10 +158,10 @@ public final class StarterRacks {
         RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
         RackDevice test = add(rack, DeviceType.TEST, null);
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(deps.getPort("ok"), test.getPort("run"));
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(run.getPort("out"), console.getPort("in"));
+        wire(rack, deps.getPort("ok"), test.getPort("run"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
+        wire(rack, run.getPort("out"), console.getPort("in"));
     };
 
     /** Foundry: ANVIL is the loop's heart; VERITAS runs forge test on save. */
@@ -169,10 +170,25 @@ public final class StarterRacks {
         RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
         RackDevice test = add(rack, DeviceType.TEST, null);
         RackDevice console = add(rack, DeviceType.CONSOLE, null);
-        rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        rack.connect(test.getPort("out"), console.getPort("in"));
-        rack.connect(anvil.getPort("url"), console.getPort("in"));
+        wire(rack, reflex.getPort("changed"), test.getPort("run"));
+        wire(rack, test.getPort("out"), console.getPort("in"));
+        wire(rack, anvil.getPort("url"), console.getPort("in"));
     };
+
+    /**
+     * Connects two jacks or throws — a starter that names a jack a device does not
+     * have, or wires two that cannot meet, is a defect in THIS file, and
+     * {@code Rack.connect} answering null would otherwise mount the rack one cable
+     * short with nothing said (the first mutant of {@code StarterRacksTest} did
+     * exactly that and lived).
+     */
+    private static void wire(Rack rack, Port from, Port to) {
+        if (from == null || to == null || rack.connect(from, to) == null) {
+            throw new IllegalStateException("starter rack cannot cable "
+                    + (from == null ? "<missing>" : from.getDevice().getTypeId() + "." + from.getId()) + " -> "
+                    + (to == null ? "<missing>" : to.getDevice().getTypeId() + "." + to.getId()));
+        }
+    }
 
     private StarterRacks() {
     }
