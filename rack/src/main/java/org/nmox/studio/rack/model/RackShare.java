@@ -439,6 +439,11 @@ public final class RackShare {
             return value;
         }
         boolean ignoreCase = prefix.length() > 1 && prefix.charAt(1) == ':';
+        // Only a Windows-spelled home (a drive letter, or a UNC share) has
+        // backslash SEPARATORS to re-spell. Under a slash-spelled home a
+        // backslash is a character of the path — "my\ notes" — and turning it
+        // into a slash names a different file (the 2026-09-18 fold review).
+        boolean windowsHome = ignoreCase || prefix.startsWith("//");
         StringBuilder out = null;
         int copied = 0;
         int i = 0;
@@ -452,7 +457,7 @@ public final class RackShare {
                 int end = tokenEnd(value, i, i + prefix.length());
                 for (int k = i + prefix.length(); k < end; k++) {
                     char c = value.charAt(k);
-                    out.append(c == '\\' ? '/' : c);
+                    out.append(windowsHome && c == '\\' ? '/' : c);
                 }
                 copied = end;
                 i = Math.max(end, i + 1);

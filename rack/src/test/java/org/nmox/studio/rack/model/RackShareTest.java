@@ -420,4 +420,13 @@ class RackShareTest {
         assertThat(card.requires()).containsExactly("cargo");
         assertThat(card.author()).isEmpty();
     }
+
+    @Test
+    @DisplayName("on a slash-spelled home a backslash is a character of the path, not a separator: hiding the home leaves it alone")
+    void unixBackslashIsNotASeparator() {
+        assertThat(RackShare.hideHome("cat /Users/sender/my\\ notes/a.txt", "/Users/sender"))
+                .isEqualTo("cat ~/my\\ notes/a.txt");
+        assertThat(RackShare.hideHome("C:\\Users\\sender\\proj\\x.log", "C:/Users/sender"))
+                .as("a drive-spelled home is Windows: its tail is written with /").isEqualTo("~/proj/x.log");
+    }
 }
