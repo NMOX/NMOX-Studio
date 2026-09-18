@@ -26,8 +26,6 @@ public class DevServerDevice extends CommandDevice {
     private final Knob serverKnob;
     private final Knob portKnob;
     private final Led liveLed;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
-    private volatile String announcedUrl;
 
     public DevServerDevice() {
         super("dev-server", "SURGE", "DEV SERVER", new Color(64, 156, 255), 2);
@@ -69,7 +67,6 @@ public class DevServerDevice extends CommandDevice {
 
     @Override
     protected void primaryAction() {
-        readyFired.set(false);
         if (launch(buildCommand())) {
             emit("running", Signal.gate(true));
             onEdt(() -> liveLed.setBlinking(true));
@@ -125,26 +122,22 @@ public class DevServerDevice extends CommandDevice {
             });
             return;
         }
-        if (readyFired.compareAndSet(false, true)) {
+        if (announcedUrl() == null) {
+            // the first line of output: the knob's URL is the best guess until
+            // the server prints its own; URL then READY, one home (CommandDevice)
             onEdt(() -> {
                 liveLed.setBlinking(false);
                 liveLed.setOn(true);
             });
-            emit("ready", Signal.trigger());
-            announcedUrl = localUrl();
-            emit("url", Signal.data(announcedUrl));
-            registerServing(announcedUrl, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
+            announceServing(localUrl(), org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
         }
         // trust the server's own printed address over the knob: in AUTO
         // mode the npm script picks the port, not us. Re-emit on change
         // so a patched SCOPE follows the real URL.
         String plain = line.replaceAll("\\[[;\\d]*m", ""); // strip ANSI color
         String real = ServeUrls.firstLocalUrl(plain);
-        if (real != null && !real.equals(announcedUrl)) {
-            announcedUrl = real;
+        if (real != null && announceServing(real, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB)) {
             onEdt(() -> statusLcd.setText("UP  " + real));
-            emit("url", Signal.data(real));
-            registerServing(real, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
         }
     }
 

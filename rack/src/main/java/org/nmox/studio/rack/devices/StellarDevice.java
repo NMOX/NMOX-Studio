@@ -83,10 +83,17 @@ public class StellarDevice extends CommandDevice {
         stop.addActionListener(e -> stopByUser());
         run.addActionListener(e -> runAction());
 
-        // the base CommandDevice already declares the RUN in-jack; our
-        // receive() routes it to the dialed ACTION verb like the RUN button
+        // The base RUN in-jack fires the primary action (BUILD), as on every
+        // other CommandDevice — it used to fire the ACTION knob's verb, the
+        // one console where RUN by cable meant something other than GO.
+        // ACTION is the knob's own jack. There is deliberately NO ENABLE:
+        // the gate contract (start while high, stop when low) held for none
+        // of the three verbs — a test exits on its own, net-start detaches a
+        // container the low edge could never stop, net-stop is itself a stop
+        // (the 2026-09-17 rack audit; a saved patch naming stellar.enable
+        // loads without that cable, RackIO tolerates a missing port).
         addInPort("stop", "STOP", SignalType.TRIGGER);
-        addInPort("enable", "ENABLE", SignalType.GATE);
+        addInPort("action", "ACTION", SignalType.TRIGGER);
         addOutPort("url", "URL", SignalType.DATA);
         addOutPort("ready", "READY", SignalType.TRIGGER);
 
@@ -109,12 +116,15 @@ public class StellarDevice extends CommandDevice {
         refreshVersions();
     }
 
+    /** Test seam for the CLI probe (production: the augmented PATH); a jack test on a box that HAS stellar must not build for real. */
+    java.util.function.Predicate<String> cliPresent = CommandDevice::toolOnPath;
+
     /** Grey honestly before any spawn; null means good to go. */
     private String refusal(boolean needsStellarCli) {
         if (!ProjectInspector.hasSorobanSdk(commandDir())) {
             return "NO soroban-sdk IN Cargo.toml — stellar contract init FIRST";
         }
-        if (needsStellarCli && !toolOnPath("stellar")) {
+        if (needsStellarCli && !cliPresent.test("stellar")) {
             return "stellar not found — brew install stellar-cli";
         }
         return null;
@@ -159,10 +169,7 @@ public class StellarDevice extends CommandDevice {
     protected void primaryAction() {
         String refusal = refusal(true);
         if (refusal != null) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText(refusal);
-            });
+            refuseLaunch(refusal); // FAIL + DONE, so a cabled lane hears the verdict
             return;
         }
         launchedVerb = "build"; // never inherit a stale net-start attribution
@@ -193,10 +200,7 @@ public class StellarDevice extends CommandDevice {
         // cargo test needs no stellar CLI — the SDK's testutils run natively
         String refusal = refusal(!"test".equals(verb));
         if (refusal != null) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText(refusal);
-            });
+            refuseLaunch(refusal); // FAIL + DONE, so a cabled lane hears the verdict
             return;
         }
         launchedVerb = verb;
@@ -222,18 +226,18 @@ public class StellarDevice extends CommandDevice {
         // consumers, and net-stop tears the container down.
         if (exitCode == 0 && "net-start".equals(launchedVerb)) {
             onEdt(() -> statusLcd.setText("LOCAL NET UP (docker) — " + LOCAL_RPC_URL));
-            emit("url", Signal.data(LOCAL_RPC_URL));
-            emit("ready", Signal.trigger());
+            // URL then READY through the one home, cables only: this process
+            // does not own the container, so no registry entry (the v1.93.0 law)
+            announceServingUnowned(LOCAL_RPC_URL);
         }
     }
 
     @Override
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
-            case "run" -> runAction();
+            case "action" -> runAction();
             case "stop" -> stopByUser();
-            case "enable" -> enableGate(signal.high(), this::runAction, this::stopProcess);
-            default -> super.receive(in, signal);
+            default -> super.receive(in, signal); // run → primaryAction (BUILD)
         }
     }
 }

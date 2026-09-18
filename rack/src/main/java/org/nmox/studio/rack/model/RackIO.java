@@ -23,6 +23,27 @@ public final class RackIO {
 
     public static final String DEFAULT_FILENAME = ".nmoxrack.json";
 
+    /**
+     * Port ids a saved patch may still name, keyed {@code <typeId>.<oldId>}
+     * → the id that port carries now. Cables persist by port ID, so a
+     * rename without this table silently drops every cable into the
+     * renamed jack on the next load (the id is what the file says; the
+     * label is what the user saw, and the label never changed). Three ids
+     * drifted from the rack's vocabulary — TEMPO's STOP was {@code halt},
+     * INSPECTOR's and WORMHOLE's RUNNING gates were {@code live} — and were
+     * renamed on 2026-09-17. Applied when a cable's ports are resolved in
+     * {@link #fromJson}; the next save writes the current id.
+     */
+    static final Map<String, String> LEGACY_PORT_IDS = Map.of(
+            "tempo.halt", "stop",
+            "debug.live", "running",
+            "tunnel.live", "running");
+
+    /** The id a device's port carries today for the id a patch named. */
+    static String currentPortId(RackDevice device, String savedId) {
+        return LEGACY_PORT_IDS.getOrDefault(device.getTypeId() + "." + savedId, savedId);
+    }
+
     private RackIO() {
     }
 
@@ -93,18 +114,24 @@ public final class RackIO {
                 }
                 RackDevice fd = devices.get(fi);
                 RackDevice td = devices.get(ti);
-                Port from = fd.getPort(cj.getString("fromPort"));
-                Port to = td.getPort(cj.getString("toPort"));
+                // a renamed jack keeps its cables: the saved id maps to today's
+                String fromId = currentPortId(fd, cj.getString("fromPort"));
+                String toId = currentPortId(td, cj.getString("toPort"));
+                Port from = fd.getPort(fromId);
+                Port to = td.getPort(toId);
                 // a missing device adopts the ports its saved cables name,
                 // typed like the live peer so canConnectTo accepts the patch
                 if (from == null && fd instanceof MissingDevice m) {
-                    from = m.adoptPort(cj.getString("fromPort"), Port.Direction.OUT,
+                    from = m.adoptPort(fromId, Port.Direction.OUT,
                             to != null ? to.getType() : SignalType.DATA);
                 }
                 if (to == null && td instanceof MissingDevice m) {
-                    to = m.adoptPort(cj.getString("toPort"), Port.Direction.IN,
+                    to = m.adoptPort(toId, Port.Direction.IN,
                             from != null ? from.getType() : SignalType.DATA);
                 }
+                // a port a device no longer has (STELLAR's ENABLE, removed
+                // 2026-09-17) loses its cable and nothing else: the patch
+                // still loads, every other cable intact
                 if (from != null && to != null) {
                     rack.connect(from, to);
                 }

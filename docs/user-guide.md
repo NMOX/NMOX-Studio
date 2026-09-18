@@ -275,6 +275,28 @@ an LCD tells you what happened in words.
 - **Presets** give you a full wired rack in one click — Ship Gate, Dev
   Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench,
   Uptime Watch. Patches persist per project automatically.
+- **A project starts wired for what it is** (since v2.176.0). Open a
+  checkout that has no saved patch and the rack mounts the same starter
+  the New Project wizard would have written beside it: a Rust or Go or
+  Python project gets IGNITION, INSPECTOR and VERITAS on a REFLEX save
+  loop; an Angular workspace gets HALO serving into SCOPE; a Vite site
+  gets SURGE, MASTER and the install→build→test chain; an Express-style
+  service gets its dev server pinging its own health route; any other
+  Node package gets CRATE and NPM-9000 with its scripts. It is a starter,
+  not a save — nothing is written until you press **Save Patch** — and a
+  directory with no manifest keeps the one MONITOR a first launch shows.
+- **Share a rack as a file** (since v2.176.0). **Share…** writes this rack
+  wherever you choose, with every path under your home directory rewritten
+  to `~` (a home path is a username) and nothing else touched — the
+  commands and settings are the point. **Import…** opens a rack someone
+  sent you and shows what it holds *before* anything mounts: every device
+  (naming any this install lacks — they mount as placeholders that keep
+  their cables), the cable count, and every setting that reads like a
+  command, path or address. Mount is not the default button. A shared rack
+  arrives at rest — a REFLEX saved armed or a TEMPO saved running comes in
+  switched off — and nothing runs until you press GO, behind Workspace
+  Trust like anything else. A plain saved `.nmoxrack.json` opens through the
+  same door.
 
 ![Tab flips the rack — patch cables wire MAESTRO through CRATE, DYNAMO, and IGNITION into VITALS](images/rack-rear.png)
 

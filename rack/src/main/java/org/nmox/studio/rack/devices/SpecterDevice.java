@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.nmox.studio.rack.model.Signal;
 import org.nmox.studio.rack.model.SignalType;
 import org.nmox.studio.rack.service.ServingRegistry;
@@ -41,10 +40,8 @@ public class SpecterDevice extends CommandDevice {
     private final LcdDisplay versionLcd;
     private final Led currentLed;
     private final Led outdatedLed;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
-    private volatile String announcedUrl;
 
     public SpecterDevice() {
         // 3 units: the ENGINE knob + HEADED toggle + six buttons need the
@@ -222,7 +219,6 @@ public class SpecterDevice extends CommandDevice {
             onEdt(() -> statusLcd.setText("NO REPORT SERVER FOR CYPRESS"));
             return;
         }
-        readyFired.set(false);
         if (launch(cmd)) {
             emit("serving", Signal.gate(true));
         }
@@ -341,14 +337,9 @@ public class SpecterDevice extends CommandDevice {
     protected void onLine(String line) {
         String url = ServeUrls.firstLocalUrl(line);
         if (url != null) {
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
-            if (!url.equals(announcedUrl)) {
-                announcedUrl = url;
+            // URL then READY, one home (CommandDevice.announceServing)
+            if (announceServing(url, ServingRegistry.Kind.WEB)) {
                 onEdt(() -> statusLcd.setText("REPORT  " + url));
-                emit("url", Signal.data(url));
-                registerServing(url, ServingRegistry.Kind.WEB);
             }
         }
     }
@@ -356,14 +347,13 @@ public class SpecterDevice extends CommandDevice {
     @Override
     protected void onFinished(int exitCode) {
         // report server (or codegen) stopped: drop the registry entry and
-        // the SERVING gate; clear announcedUrl so a restart re-announces.
-        // readyFired resets here too — RUN can also serve (Playwright's
+        // the SERVING gate; clear the announcement so a restart re-announces.
+        // The READY latch resets with it — RUN can also serve (Playwright's
         // report-on-failure), and a latched one-shot would let a later
         // serving emit url without ever emitting ready (the v1.89.0
-        // review's lifecycle find)
+        // review's lifecycle find; every launch resets it too now)
         deregisterServing();
         emit("serving", Signal.gate(false));
-        announcedUrl = null;
-        readyFired.set(false);
+        clearServingAnnouncement();
     }
 }

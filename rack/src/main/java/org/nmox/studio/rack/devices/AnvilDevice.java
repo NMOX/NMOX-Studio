@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -26,6 +25,13 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  * fork of any live network; BLOCK-TIME switches instant mining to a
  * fixed cadence. The IDE never touches keys: anvil's own unlocked
  * accounts sign everything, on localhost only.
+ *
+ * <p>Jacks: START boots the chain and is what saved patches cable; the
+ * inherited RUN in-jack is an alias for START (both call {@code
+ * startChain}) — kept because RUN is the one jack every CommandDevice
+ * has and a MAESTRO trig wired to it must not go dead, and kept
+ * documented because two jacks doing one thing is otherwise a puzzle
+ * on the rear panel (the 2026-09-17 rack audit).
  */
 public class AnvilDevice extends CommandDevice {
 
@@ -44,7 +50,6 @@ public class AnvilDevice extends CommandDevice {
     private final Knob blockTimeKnob;
     private final LcdDisplay chainIdLcd;
     private final LcdDisplay forkUrlLcd;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private final AtomicInteger accountCount = new AtomicInteger();
     private volatile String firstAccount;
     private volatile String firstBalance;
@@ -105,13 +110,11 @@ public class AnvilDevice extends CommandDevice {
 
     private void startChain() {
         if (!anvilOnPath()) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("anvil not found — curl -L https://foundry.paradigm.xyz | bash");
-            });
+            // FAIL + DONE, so a cabled lane hears the verdict (the refusal
+            // family's one home; the 2026-09-17 rack audit)
+            refuseLaunch("anvil not found — curl -L https://foundry.paradigm.xyz | bash");
             return;
         }
-        readyFired.set(false);
         accountCount.set(0);
         firstAccount = null;
         firstBalance = null;
@@ -164,11 +167,8 @@ public class AnvilDevice extends CommandDevice {
         if (listening.find()) {
             String url = "http://" + listening.group(1);
             onEdt(() -> statusLcd.setText("CHAIN UP  " + url + "  id " + chainIdLcd.getText().trim()));
-            emit("url", Signal.data(url));
-            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
+            // URL then READY, one home (CommandDevice.announceServing)
+            announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
         }
     }
 

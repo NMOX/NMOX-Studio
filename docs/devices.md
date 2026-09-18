@@ -174,7 +174,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### SCOPE — Browser Link — open URLs on trigger
 
-> Opens the system browser at the dialed URL on OPEN or any trigger in.
+> Opens the system browser at the dialed URL when OPEN fires (patch a READY trigger in).
 > Patch a URL data jack in and SCOPE follows wherever the server actually is.
 
 - **In:** `OPEN` (trigger), `URL` (data)
@@ -272,13 +272,13 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 
 ### STELLAR — Soroban Console — Stellar contracts: build, cargo test, local quickstart net
 
-> BUILD compiles the Soroban contract to WASM (stellar contract build); the ACTION knob
-> dials cargo test (the SDK runs contracts natively — no network) and the local quickstart net
+> BUILD compiles the Soroban contract to WASM (stellar contract build; RUN by cable); the ACTION
+> knob — and the ACTION jack — dials cargo test (the SDK runs contracts natively — no network) and the local quickstart net
 > (stellar container start/stop local — Docker; RPC on localhost:8000). Deploy/invoke need
 > identities and free-form args: use SOLDER (stellar contract deploy/invoke). Keys stay in the
 > stellar CLI's own config — the IDE never touches them.
 
-- **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **In:** `RUN` (trigger), `STOP` (trigger), `ACTION` (trigger)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger)
 
 ### ANCHOR — Solana Console — anchor build/test, solana-test-validator with a live RPC URL
@@ -288,7 +288,7 @@ mvn -pl rack test -Dtest=DeviceDocsTest -Dnmox.docs.write=true
 > anchor build/test for RUN (test spins its own throwaway validator). Keypairs live in the
 > solana CLI's own config — the IDE never touches them; non-local deploys are SOLDER one-liners.
 
-- **In:** `RUN` (trigger), `STOP` (trigger), `ENABLE` (gate)
+- **In:** `RUN` (trigger), `START` (trigger), `STOP` (trigger), `ENABLE` (gate)
 - **Out:** `OK` (trigger), `FAIL` (trigger), `DONE` (trigger), `OUT` (data), `URL` (data), `READY` (trigger), `SERVING` (gate)
 
 ## OBSERVE

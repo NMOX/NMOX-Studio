@@ -143,7 +143,7 @@ class InspectorMatrixTest {
             rack.addDevice(inspector);
             rack.addDevice(probe);
             rack.connect(inspector.getPort("endpoint"), probe.getPort("endpoint"));
-            rack.connect(inspector.getPort("live"), probe.getPort("live"));
+            rack.connect(inspector.getPort("running"), probe.getPort("live"));
 
             inspector.onLine("Debugger listening on ws://127.0.0.1:9229/abc-def");
             inspector.onLine("Debugger listening on ws://127.0.0.1:9229/second");

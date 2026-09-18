@@ -82,6 +82,30 @@ class PatchlessSwitchTest {
         }
     }
 
+    // v2.176.0: a patchless project gets the rack its KIND would have been born
+    // with — the same wiring the wizard writes beside a new project of that
+    // kind — while a directory with no manifest keeps the bare MONITOR above.
+    // The v1.278.0 law still holds in both: the previous project's devices are
+    // gone before anything mounts.
+    @Test
+    @DisplayName("a patchless project with a manifest mounts its kind's starter rack, never the previous project's devices")
+    void patchlessToolchainProjectGetsItsKindsStarter(@TempDir Path tmp) throws Exception {
+        Path crate = Files.createDirectory(tmp.resolve("crate"));
+        Files.writeString(crate.resolve("Cargo.toml"), "[package]\nname = \"x\"\n");
+        RackService service = new RackService();
+        Rack rack = service.getRack();
+        try {
+            rack.addDevice(DeviceType.REPL.create());
+            rack.setProjectDir(crate.toFile());
+            assertThat(rack.getDevices().stream().map(d -> d.getTypeId()))
+                    .as("the polyglot starter: IGNITION, INSPECTOR, VERITAS on REFLEX into MONITOR — and no REPL")
+                    .containsExactlyInAnyOrder("reflex", "run", "debug", "test", "console");
+            assertThat(rack.getCables()).as("wired, not just mounted").isNotEmpty();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
     @Test
     @DisplayName("a project WITH a patch still loads it, unchanged")
     void patchedProjectStillLoads(@TempDir Path tmp) throws Exception {

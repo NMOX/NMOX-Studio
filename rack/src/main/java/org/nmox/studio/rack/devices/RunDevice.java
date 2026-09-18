@@ -40,8 +40,6 @@ public class RunDevice extends CommandDevice {
     private final Knob targetKnob;
     private final LcdDisplay argsLcd;
     private final Led liveLed;
-    private final java.util.concurrent.atomic.AtomicBoolean readyFired =
-            new java.util.concurrent.atomic.AtomicBoolean();
     /** True while the current launch is the webpack-serve lane. Test seam. */
     volatile boolean webpackLane;
     /** True while the current launch is the php built-in-server lane. Test seam. */
@@ -76,7 +74,6 @@ public class RunDevice extends CommandDevice {
 
     @Override
     protected void primaryAction() {
-        readyFired.set(false);
         List<String> cmd = buildCommand();
         webpackLane = cmd.contains("webpack");
         phpLane = cmd.contains("php");
@@ -101,30 +98,33 @@ public class RunDevice extends CommandDevice {
         // announce reads the port from the server's OWN banner instead of a
         // constant — announcing 8000 while the server bound 8001 would put
         // the serving chip on a port nothing listens on (the v1.93.0 class).
-        if (line.contains("Serving HTTP") && readyFired.compareAndSet(false, true)) {
-            announceServing("http://localhost:" + ServeUrls.bannerPort(
+        // each lane announces ONCE per run: the base helper dedupes the URL
+        // and latches READY, so the "already announced" check is announcedUrl()
+        if (announcedUrl() != null) {
+            return;
+        }
+        if (line.contains("Serving HTTP")) {
+            announceWeb("http://localhost:" + ServeUrls.bannerPort(
                     line, Integer.parseInt(STATIC_PORT)));
             return;
         }
-        if (phpLane && line.contains("Development Server")
-                && readyFired.compareAndSet(false, true)) {
-            announceServing("http://127.0.0.1:" + ServeUrls.bannerPort(
+        if (phpLane && line.contains("Development Server")) {
+            announceWeb("http://127.0.0.1:" + ServeUrls.bannerPort(
                     line, PHP_PORT));
             return;
         }
-        if (webpackLane && !readyFired.get()) {
+        if (webpackLane) {
             String url = ServeUrls.firstLocalUrl(line);
-            if (url != null && readyFired.compareAndSet(false, true)) {
-                announceServing(url);
+            if (url != null) {
+                announceWeb(url);
             }
         }
     }
 
-    private void announceServing(String url) {
+    /** URL then READY through the one home (CommandDevice.announceServing). */
+    private void announceWeb(String url) {
         onEdt(() -> statusLcd.setText("SERVING  " + url));
-        emit("url", Signal.data(url));
-        emit("ready", Signal.trigger());
-        registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
+        announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
     }
 
     @Override

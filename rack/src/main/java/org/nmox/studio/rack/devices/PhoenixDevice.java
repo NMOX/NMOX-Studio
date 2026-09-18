@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nmox.studio.rack.model.Port;
@@ -37,10 +36,8 @@ public class PhoenixDevice extends CommandDevice {
     private final Led outdatedLed;
     private final Knob genKnob;
     private final LcdDisplay genArgsLcd;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
-    private volatile String announcedUrl;
 
     public PhoenixDevice() {
         super("phoenix", "PHOENIX", "FRAMEWORK CONSOLE", new Color(0xFD, 0x4F, 0x00), 3);
@@ -141,7 +138,6 @@ public class PhoenixDevice extends CommandDevice {
     }
 
     private void server() {
-        readyFired.set(false);
         if (launch(List.of("mix", "phx.server"))) {
             emit("serving", Signal.gate(true));
         }
@@ -156,14 +152,9 @@ public class PhoenixDevice extends CommandDevice {
     protected void onLine(String line) {
         String url = ServeUrls.firstLocalUrl(line);
         if (url != null) {
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
-            if (!url.equals(announcedUrl)) {
-                announcedUrl = url;
+            // URL then READY, one home (CommandDevice.announceServing)
+            if (announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB)) {
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
-                emit("url", Signal.data(url));
-                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
@@ -172,7 +163,7 @@ public class PhoenixDevice extends CommandDevice {
     protected void onFinished(int exitCode) {
         deregisterServing();
         emit("serving", Signal.gate(false));
-        announcedUrl = null;
+        clearServingAnnouncement();
     }
 
     @Override

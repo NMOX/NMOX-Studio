@@ -8,6 +8,7 @@ import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
 import org.nmox.studio.rack.model.RackIO;
+import org.nmox.studio.rack.projectstudio.StarterRacks;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -731,16 +732,33 @@ public class RackService {
     }
 
     /**
-     * Clears the rack and mounts the starter patch — the state a
-     * project with no {@code .nmoxrack.json} must show, identical to a
-     * first launch. Shares {@link #loadDefaultRack()} so the two can
-     * never drift.
+     * Clears the rack and mounts the starter for the project's KIND (v2.176.0):
+     * the rack the New Project wizard would have written beside it — a Rust
+     * checkout gets IGNITION/VERITAS/INSPECTOR on REFLEX, an Angular one HALO
+     * into SCOPE — read from the one home both doors share,
+     * {@link StarterRacks}. A kind with no toolchain to wire (no manifest, a
+     * learning directory) keeps the bare starter of {@link #loadDefaultRack()},
+     * which is also what a first launch shows.
+     *
+     * <p>v1.278.0 made a patchless project reset to the bare rack because the
+     * alternative then — inheriting the PREVIOUS project's devices — was a lie.
+     * This keeps that law (the previous project's devices are gone before
+     * anything mounts) and answers the question it left: not "the same as a
+     * fresh launch" but "the same as this project's own template".
      */
     private void resetToStarterRack() {
         for (RackDevice d : new java.util.ArrayList<>(rack.getDevices())) {
             rack.removeDevice(d);
         }
-        loadDefaultRack();
+        java.util.Optional<StarterRacks.Starter> starter = StarterRacks.forProject(rack.getProjectDir());
+        if (starter.isEmpty()) {
+            loadDefaultRack();
+            return;
+        }
+        java.util.logging.Logger.getLogger(RackService.class.getName()).log(java.util.logging.Level.INFO,
+                "no {0} in {1}: mounting the {2} starter rack",
+                new Object[]{RackIO.DEFAULT_FILENAME, rack.getProjectDir().getName(), starter.get().id()});
+        starter.get().wiring().accept(rack);
     }
 
     /**

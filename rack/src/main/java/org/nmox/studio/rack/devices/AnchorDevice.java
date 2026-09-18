@@ -3,7 +3,6 @@ package org.nmox.studio.rack.devices;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nmox.studio.rack.model.Port;
@@ -45,7 +44,6 @@ public class AnchorDevice extends CommandDevice {
     private final Led currentLed;
     private final Led outdatedLed;
     private final Knob actionKnob;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
 
@@ -72,6 +70,12 @@ public class AnchorDevice extends CommandDevice {
         stop.addActionListener(e -> stopByUser());
         run.addActionListener(e -> runAction());
 
+        // START is the validator's own trigger jack: the long-runner carrying
+        // URL/READY/SERVING had no cable that could start it (RUN fires the
+        // ACTION knob's verb, ENABLE is a gate) — the rule DeviceCatalog
+        // already imposes on JSON devices, long-runners expose start/stop
+        // (the 2026-09-17 rack audit)
+        addInPort("start", "START", SignalType.TRIGGER);
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("url", "URL", SignalType.DATA);
@@ -134,15 +138,14 @@ public class AnchorDevice extends CommandDevice {
         });
     }
 
+    /** Test seam for the CLI probe (production: the augmented PATH); a jack test on a box that HAS solana must not boot a validator. */
+    java.util.function.Predicate<String> cliPresent = CommandDevice::toolOnPath;
+
     private void startValidator() {
-        if (!toolOnPath("solana-test-validator")) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("solana-test-validator not found — brew install solana");
-            });
+        if (!cliPresent.test("solana-test-validator")) {
+            refuseLaunch("solana-test-validator not found — brew install solana");
             return;
         }
-        readyFired.set(false);
         if (launch(buildCommand())) {
             emit("serving", Signal.gate(true));
         }
@@ -172,18 +175,13 @@ public class AnchorDevice extends CommandDevice {
     }
 
     private void runAction() {
+        // FAIL + DONE on every refusal, so a cabled lane hears the verdict
         if (!new File(commandDir(), "Anchor.toml").isFile()) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO Anchor.toml IN PROJECT — anchor init FIRST");
-            });
+            refuseLaunch("NO Anchor.toml IN PROJECT — anchor init FIRST");
             return;
         }
-        if (!toolOnPath("anchor")) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("anchor not found — cargo install avm && avm install latest");
-            });
+        if (!cliPresent.test("anchor")) {
+            refuseLaunch("anchor not found — cargo install avm && avm install latest");
             return;
         }
         launch(actionCommand());
@@ -195,11 +193,8 @@ public class AnchorDevice extends CommandDevice {
         if (rpc.find()) {
             String url = rpc.group(1);
             onEdt(() -> statusLcd.setText("VALIDATOR UP  " + url));
-            emit("url", Signal.data(url));
-            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
+            // URL then READY, one home (CommandDevice.announceServing)
+            announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
         }
     }
 
@@ -212,6 +207,7 @@ public class AnchorDevice extends CommandDevice {
     @Override
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
+            case "start" -> startValidator();
             case "run" -> runAction();
             case "stop" -> stopByUser();
             case "enable" -> enableGate(signal.high(), this::startValidator, this::stopProcess);

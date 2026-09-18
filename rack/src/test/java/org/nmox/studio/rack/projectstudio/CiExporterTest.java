@@ -103,6 +103,84 @@ class CiExporterTest {
         rack.shutdown();
     }
 
+    private static int stepAt(String yaml, String title) {
+        int at = yaml.indexOf("- name: " + title);
+        assertThat(at).as(title + " is exported").isGreaterThan(-1);
+        return at;
+    }
+
+    /** The YAML lines of one step: from its name line to the next step or the end. */
+    private static String stepBlock(String yaml, String title) {
+        int at = stepAt(yaml, title);
+        int next = yaml.indexOf("\n      - ", at + 1);
+        return next < 0 ? yaml.substring(at) : yaml.substring(at, next);
+    }
+
+    @Test
+    @DisplayName("A step fed only by a FAIL cable runs after its source with if: failure() — the notify-on-failure SOLDER")
+    void failCableExportsTheFailurePath() throws Exception {
+        Rack rack = new Rack();
+        rack.setProjectDir(dirWith("failpath", "package.json"));
+        RackDevice test = DeviceType.TEST.create();
+        RackDevice notify = DeviceType.CMD.create();
+        notify.applyState(java.util.Map.of("command", "echo notify-the-room"));
+        // rack order scrambled: SOLDER sits above VERITAS on the rack
+        rack.addDevice(notify);
+        rack.addDevice(test);
+        rack.connect(test.getPort("fail"), notify.getPort("run"));
+
+        String yaml = CiExporter.toWorkflowYaml(rack);
+
+        assertThat(stepAt(yaml, "VERITAS")).isLessThan(stepAt(yaml, "SOLDER"));
+        assertThat(stepBlock(yaml, "SOLDER")).as("the failure path is marked").contains("if: failure()");
+        assertThat(stepBlock(yaml, "VERITAS")).as("the source is an ordinary step").doesNotContain("if:");
+        rack.shutdown();
+    }
+
+    @Test
+    @DisplayName("A step fed by OK and FAIL cables is on both paths and stays an ordinary step")
+    void bothPathsStayOrdinary() throws Exception {
+        Rack rack = new Rack();
+        rack.setProjectDir(dirWith("bothpaths", "package.json"));
+        RackDevice build = DeviceType.BUILD.create();
+        RackDevice test = DeviceType.TEST.create();
+        RackDevice report = DeviceType.CMD.create();
+        report.applyState(java.util.Map.of("command", "echo report"));
+        rack.addDevice(report);
+        rack.addDevice(build);
+        rack.addDevice(test);
+        rack.connect(build.getPort("ok"), report.getPort("run"));
+        rack.connect(test.getPort("fail"), report.getPort("run"));
+
+        String yaml = CiExporter.toWorkflowYaml(rack);
+
+        assertThat(stepAt(yaml, "FORGE")).isLessThan(stepAt(yaml, "SOLDER"));
+        assertThat(stepAt(yaml, "VERITAS")).isLessThan(stepAt(yaml, "SOLDER"));
+        assertThat(stepBlock(yaml, "SOLDER")).doesNotContain("if:");
+        rack.shutdown();
+    }
+
+    @Test
+    @DisplayName("Only verdict cables order steps: a GATE (or DATA) cable between two steps is not a sequence")
+    void nonVerdictCablesDoNotOrder() throws Exception {
+        Rack rack = new Rack();
+        rack.setProjectDir(dirWith("gates", "package.json"));
+        RackDevice angular = DeviceType.ANGULAR.create();
+        RackDevice vite = DeviceType.VITE.create();
+        rack.addDevice(angular); // rack order: HALO first
+        rack.addDevice(vite);
+        // VELOCITY SERVING → HALO ENABLE says "serve while that serves", not "build after that builds";
+        // every cable used to order, so this put VELOCITY's build step before HALO's
+        rack.connect(vite.getPort("serving"), angular.getPort("enable"));
+
+        String yaml = CiExporter.toWorkflowYaml(rack);
+
+        assertThat(stepAt(yaml, "HALO")).as("rack order kept: a gate cable is no sequence")
+                .isLessThan(stepAt(yaml, "VELOCITY"));
+        assertThat(yaml).doesNotContain("if: failure()");
+        rack.shutdown();
+    }
+
     @Test
     @DisplayName("Devices that are not pipeline steps never become CI steps")
     void nonStepDevicesExcluded() {

@@ -22,6 +22,10 @@ public class BrowserDevice extends RackDevice {
     private final LcdDisplay urlLcd;
     private final Led openedLed;
     private final org.nmox.studio.rack.ui.controls.Knob targetKnob;
+    /** The URL a cable delivered, until the EDT paints it (see {@link CabledUrl}). */
+    private final CabledUrl cabledUrl = new CabledUrl();
+    /** Test seam: how a URL reaches the system browser (production: java.awt.Desktop). */
+    java.util.function.Consumer<String> systemBrowser = BrowserDevice::browseWithDesktop;
 
     public BrowserDevice() {
         super("browser", "SCOPE", "BROWSER LINK", new Color(54, 174, 222), 2);
@@ -47,9 +51,36 @@ public class BrowserDevice extends RackDevice {
         param("target", targetKnob);
     }
 
+    /** Production opener: the desktop's browser, or an exception the LCD reports. */
+    private static void browseWithDesktop(String url) {
+        try {
+            if (!Desktop.isDesktopSupported()
+                    || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+                // used to fall through in silence — OPEN did nothing and said nothing
+                throw new java.io.IOException("no system browser on this desktop");
+            }
+            Desktop.getDesktop().browse(URI.create(url));
+        } catch (java.io.IOException ex) {
+            throw new java.io.UncheckedIOException(ex);
+        }
+    }
+
     private void openBrowser() {
-        String url = urlLcd.getText().trim();
+        // the cabled URL wins until the EDT has painted it: OPEN runs on the
+        // router thread one signal after URL, and reading the LCD alone opened
+        // the factory default on a first serve (the Angular template on 4200
+        // opened 5173 — the 2026-09-17 rack walk; see CabledUrl)
+        String url = cabledUrl.resolve(urlLcd);
         if (url.isEmpty()) {
+            return;
+        }
+        if (!url.startsWith("http")) {
+            // the LCD holds a refusal or a hand-typed non-URL: say so rather
+            // than hand it to a browser (which would only fail more vaguely);
+            // a refusal already on the LCD is not prefixed a second time
+            if (!url.startsWith(CabledUrl.REFUSAL)) {
+                onEdt(() -> urlLcd.setText(CabledUrl.REFUSAL + " — " + url));
+            }
             return;
         }
         try {
@@ -63,9 +94,8 @@ public class BrowserDevice extends RackDevice {
                         org.nmox.studio.core.spi.EmbeddedBrowser.find();
                 opened = embedded != null && embedded.open(url);
             }
-            if (!opened && Desktop.isDesktopSupported()
-                    && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-                Desktop.getDesktop().browse(URI.create(url));
+            if (!opened) {
+                systemBrowser.accept(url);
                 opened = true;
             }
             if (opened) {
@@ -90,11 +120,10 @@ public class BrowserDevice extends RackDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "open" -> openBrowser();
-            case "url" -> {
-                if (signal.payload() != null && signal.payload().startsWith("http")) {
-                    onEdt(() -> urlLcd.setText(signal.payload()));
-                }
-            }
+            // SCOPE has one LCD, so a non-URL payload is refused on it: a wrong
+            // cable used to be dropped in silence (refusals speak)
+            case "url" -> cabledUrl.deliver(signal, urlLcd,
+                    reason -> onEdt(() -> urlLcd.setText(reason)));
             default -> {
             }
         }

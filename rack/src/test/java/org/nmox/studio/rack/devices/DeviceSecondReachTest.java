@@ -150,9 +150,10 @@ class DeviceSecondReachTest {
             anchor.receive(anchor.getPort("stop"), Signal.trigger(true));
             stellar.receive(stellar.getPort("stop"), Signal.trigger(true));
             anvil.receive(anvil.getPort("stop"), Signal.trigger(true));
-            // enable-low routes to the stop side of the gate
+            // enable-low routes to the stop side of the gate (STELLAR has no
+            // ENABLE since 2026-09-17: its ACTION jack refuses without soroban-sdk)
             anchor.receive(anchor.getPort("enable"), Signal.gate(false));
-            stellar.receive(stellar.getPort("enable"), Signal.gate(false));
+            stellar.receive(stellar.getPort("action"), Signal.trigger(true));
             anvil.receive(anvil.getPort("enable"), Signal.gate(false));
             settle(rack);
             assertThat(anchor.isLive()).isFalse();
@@ -375,7 +376,13 @@ class DeviceSecondReachTest {
             kvasir.consentCheck = () -> true; // granted earlier by a human press
             rack.addDevice(kvasir);
 
-            kvasir.receive(kvasir.getPort("explain"), Signal.trigger(true));
+            // v1.91.0's path: VERITAS FAIL → EXPLAIN. FAIL carries the run's
+            // success bit LOW (Signal.trigger(false)); an OK verdict is the one
+            // trigger EXPLAIN ignores (the 2026-09-17 audit), so the fixture
+            // fires what a FAIL jack fires and says so.
+            Signal fail = Signal.trigger(false);
+            assertThat(fail.okVerdict()).as("FAIL is never an OK verdict").isFalse();
+            kvasir.receive(kvasir.getPort("explain"), fail);
             long deadline = System.currentTimeMillis() + 15_000;
             while (spy.posts.get() == 0 && System.currentTimeMillis() < deadline) {
                 RackDevice.awaitDeviceBgIdle();
@@ -383,10 +390,11 @@ class DeviceSecondReachTest {
                 Thread.sleep(25);
             }
             assertThat(spy.posts.get())
-                    .as("the cable path consults once through the spy").isEqualTo(1);
+                    .as("the VERITAS FAIL → EXPLAIN cable path consults exactly once through the spy")
+                    .isEqualTo(1);
 
             // inside the cooldown window a second trigger must not re-consult
-            kvasir.receive(kvasir.getPort("explain"), Signal.trigger(true));
+            kvasir.receive(kvasir.getPort("explain"), Signal.trigger(false));
             RackDevice.awaitDeviceBgIdle();
             settle(rack);
             assertThat(spy.posts.get()).isEqualTo(1);

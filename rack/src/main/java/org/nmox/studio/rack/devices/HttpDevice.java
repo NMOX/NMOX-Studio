@@ -40,6 +40,8 @@ public class HttpDevice extends RackDevice {
 
     private final Knob methodKnob;
     private final LcdDisplay urlLcd;
+    /** The URL a cable delivered, until the EDT paints it (see {@link CabledUrl}). */
+    private final CabledUrl cabledUrl = new CabledUrl();
     private final LcdDisplay bodyLcd;
     private final LcdDisplay headersLcd;
     private final LcdDisplay statusLcd;
@@ -95,7 +97,9 @@ public class HttpDevice extends RackDevice {
     }
 
     private void fire() {
-        String url = urlLcd.getText().trim();
+        // the cabled URL until the EDT paints it (SEND runs on the router
+        // thread one signal after URL — the SCOPE 4200-opens-5173 class)
+        String url = cabledUrl.resolve(urlLcd);
         if (url.isEmpty()) {
             return;
         }
@@ -307,11 +311,11 @@ public class HttpDevice extends RackDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "send" -> fire();
-            case "url" -> {
-                if (signal.payload() != null && signal.payload().startsWith("http")) {
-                    onEdt(() -> urlLcd.setText(signal.payload()));
-                }
-            }
+            // a non-URL payload is refused on the status line (refusals speak)
+            case "url" -> cabledUrl.deliver(signal, urlLcd, reason -> onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText(reason);
+            }));
             default -> {
             }
         }

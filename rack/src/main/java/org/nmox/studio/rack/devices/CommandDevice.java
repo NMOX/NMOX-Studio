@@ -253,6 +253,28 @@ public abstract class CommandDevice extends RackDevice {
     }
 
     /**
+     * A refused launch speaks on the patch bay as well as the faceplate.
+     *
+     * <p>The LCD said "NO PROJECT MANIFEST" or "UNTRUSTED WORKSPACE" and
+     * nothing left the rear jacks, so a pipeline waiting on this device
+     * waited forever: POLYGLOT_GAUNTLET's QUORUM is wired on DONE and
+     * never fired when one lane was refused (the 2026-09-17 rack audit).
+     * A refusal is a verdict — FAIL and DONE both carry {@code false},
+     * exactly what a run that failed emits, so every downstream reads it
+     * the same way (KVASIR's EXPLAIN keys on that bit). Every refusal in
+     * the family routes through here: the base launch guards, GOVERNOR's
+     * missing snapshot, the chain consoles' missing tools and manifests.
+     */
+    protected final void refuseLaunch(String reason) {
+        onEdt(() -> {
+            statusLcd.setTextColor(RackStyle.LCD_AMBER);
+            statusLcd.setText(reason);
+        });
+        emit("fail", Signal.trigger(false));
+        emit("done", Signal.trigger(false));
+    }
+
+    /**
      * Launches a command with the full standard treatment: LEDs, meter,
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
@@ -291,30 +313,23 @@ public abstract class CommandDevice extends RackDevice {
             // otherwise. Say it instead. DebugDevice has spoken this exact
             // refusal honestly since v1.77.1; this brings the whole family up
             // to that bar at the one choke point they all pass through.
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText(noCommandReason());
-            });
+            refuseLaunch(noCommandReason());
             return false;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
-            });
+            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             return false;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
-            });
+            refuseLaunch("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             return false;
         }
         // captured per launch: a relaunch must not skew a still-running
         // command's elapsed-time readout
         final long launchedAt = System.currentTimeMillis();
         stopRequested = false;
+        // a new run announces afresh: READY once, the URL when it changes
+        clearServingAnnouncement();
         onEdt(() -> {
             runLed.setBlinking(true);
             okLed.setOn(false);
@@ -377,17 +392,11 @@ public abstract class CommandDevice extends RackDevice {
             return;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
-            });
+            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             return;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
-            });
+            refuseLaunch("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             return;
         }
         final long launchedAt = System.currentTimeMillis();
@@ -563,6 +572,74 @@ public abstract class CommandDevice extends RackDevice {
     /** Withdraws this device's serving — call from the exit/stop path. */
     protected final void deregisterServing() {
         org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister(servingId());
+    }
+
+    // ---- the serving announcement: URL first, then READY ----
+
+    /** READY fires once per run; reset at every launch and on {@link #clearServingAnnouncement()}. */
+    private final java.util.concurrent.atomic.AtomicBoolean readyFired =
+            new java.util.concurrent.atomic.AtomicBoolean();
+    /** The URL this run last announced on its URL jack; null until the first announce. */
+    private volatile String announcedUrl;
+
+    /** The URL this run has announced so far, or null. */
+    protected final String announcedUrl() {
+        return announcedUrl;
+    }
+
+    /**
+     * Announces a live server on the cables and in the registry, in the ONE
+     * order that lets a patch work: {@code url} (DATA, when it changed), the
+     * registry, then {@code ready} (TRIGGER, once per run). Every preset and
+     * template wires {@code server.url → SCOPE.url} and {@code server.ready →
+     * SCOPE.open}, and the router is one FIFO thread — so a device that emitted
+     * READY before URL had SCOPE open its LCD's stale default on a first
+     * serve: the Angular template on 4200 opened {@code http://localhost:5173}
+     * (the 2026-09-17 rack walk). Twelve serve devices each spelled the pair
+     * by hand and nine had them the wrong way round; this is the one home,
+     * and {@code ServingAnnounceOrderGateTest} refuses a device emitting
+     * {@code ready} on its own. Returns whether the URL was new.
+     */
+    protected final boolean announceServing(String url,
+            org.nmox.studio.rack.service.ServingRegistry.Kind kind) {
+        boolean changed = announce(url);
+        if (changed && kind != null) {
+            registerServing(url, kind);
+        }
+        ready();
+        return changed;
+    }
+
+    /**
+     * The cables-only announcement for a server this PROCESS does not own —
+     * STELLAR's quickstart net lives in a detached container that outlives
+     * the start command, so no registry entry and no SERVING gate (the
+     * v1.93.0 serving-truth law); the URL still flows for SCOPE and READY
+     * still fires, in the same order as {@link #announceServing}.
+     */
+    protected final boolean announceServingUnowned(String url) {
+        return announceServing(url, null);
+    }
+
+    private boolean announce(String url) {
+        if (url == null || url.equals(announcedUrl)) {
+            return false;
+        }
+        announcedUrl = url;
+        emit("url", Signal.data(url));
+        return true;
+    }
+
+    private void ready() {
+        if (readyFired.compareAndSet(false, true)) {
+            emit("ready", Signal.trigger());
+        }
+    }
+
+    /** Forgets the announced URL and the READY latch so a restart re-announces even on the same port. */
+    protected final void clearServingAnnouncement() {
+        announcedUrl = null;
+        readyFired.set(false);
     }
 
     /** True when the changed-manifest batch carries any of these filenames. */

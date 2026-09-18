@@ -120,7 +120,7 @@ class ServingTruthTest {
             rack.addDevice(probe);
             rack.addDevice(gates);
             rack.connect(inspector.getPort("endpoint"), probe.getPort("in"));
-            rack.connect(inspector.getPort("live"), gates.getPort("gate"));
+            rack.connect(inspector.getPort("running"), gates.getPort("gate"));
 
             CommandDevice.trustCheck = f -> false; // the Keep Safe answer
             inspector.receive(inspector.getPort("run"), Signal.trigger());

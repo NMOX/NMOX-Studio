@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.nmox.studio.rack.model.Port;
 import org.nmox.studio.rack.model.Signal;
 import org.nmox.studio.rack.model.SignalType;
@@ -34,10 +33,8 @@ public class AngularDevice extends CommandDevice {
     private final ToggleSwitch prodSwitch;
     private final Knob schematicKnob;
     private final LcdDisplay nameLcd;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
-    private volatile String announcedUrl;
 
     public AngularDevice() {
         super("angular", "HALO", "ANGULAR CONSOLE", new Color(0xDD, 0x00, 0x31), 3);
@@ -173,7 +170,6 @@ public class AngularDevice extends CommandDevice {
     }
 
     private void serve() {
-        readyFired.set(false);
         if (launch(List.of("npx", "ng", "serve"))) {
             emit("serving", Signal.gate(true));
         }
@@ -192,14 +188,9 @@ public class AngularDevice extends CommandDevice {
     protected void onLine(String line) {
         String url = ServeUrls.firstLocalUrl(line);
         if (url != null) {
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
-            if (!url.equals(announcedUrl)) {
-                announcedUrl = url;
+            // URL then READY, one home (CommandDevice.announceServing)
+            if (announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB)) {
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
-                emit("url", Signal.data(url));
-                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
@@ -208,7 +199,7 @@ public class AngularDevice extends CommandDevice {
     protected void onFinished(int exitCode) {
         deregisterServing();
         emit("serving", Signal.gate(false));
-        announcedUrl = null;
+        clearServingAnnouncement();
         // a finished `ng update` may have bumped package.json
         refreshVersions();
     }

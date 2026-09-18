@@ -114,17 +114,7 @@ public enum ProjectTemplates {
 
         @Override
         JSONObject buildPatch() {
-            return buildPatchFrom(rack -> {
-                // SURGE on http-server:8080 pops the browser when up
-                RackDevice server = add(rack, DeviceType.DEV_SERVER,
-                        Map.of("server", "2", "port", "4"));
-                RackDevice browser = add(rack, DeviceType.BROWSER,
-                        Map.of("url", "http://localhost:8080"));
-                RackDevice console = add(rack, DeviceType.CONSOLE, null);
-                rack.connect(server.getPort("url"), browser.getPort("url"));
-                rack.connect(server.getPort("ready"), browser.getPort("open"));
-                rack.connect(server.getPort("out"), console.getPort("in"));
-            });
+            return buildPatchFrom(StarterRacks.STATIC);
         }
     },
 
@@ -373,19 +363,7 @@ public enum ProjectTemplates {
 
         @Override
         JSONObject buildPatch() {
-            return buildPatchFrom(rack -> {
-                RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
-                // npm run dev (nodemon) on port 3000; PING smoke-tests /health
-                RackDevice server = add(rack, DeviceType.DEV_SERVER,
-                        Map.of("server", "0", "port", "0"));
-                RackDevice ping = add(rack, DeviceType.HTTP,
-                        Map.of("url", "http://localhost:3000/health", "method", "0"));
-                RackDevice console = add(rack, DeviceType.CONSOLE, null);
-                rack.connect(server.getPort("ready"), ping.getPort("send"));
-                rack.connect(ping.getPort("body"), console.getPort("in"));
-                rack.connect(server.getPort("out"), console.getPort("in"));
-                rack.connect(deps.getPort("out"), console.getPort("in"));
-            });
+            return buildPatchFrom(StarterRacks.EXPRESS);
         }
     },
 
@@ -1061,19 +1039,7 @@ public enum ProjectTemplates {
 
         @Override
         JSONObject buildPatch() {
-            return buildPatchFrom(rack -> {
-                RackDevice halo = add(rack, DeviceType.ANGULAR, Map.of("prod", "true"));
-                RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
-                RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
-                RackDevice test = add(rack, DeviceType.TEST, null);
-                RackDevice browser = add(rack, DeviceType.BROWSER, null);
-                RackDevice console = add(rack, DeviceType.CONSOLE, null);
-                rack.connect(halo.getPort("url"), browser.getPort("url"));
-                rack.connect(halo.getPort("ready"), browser.getPort("open"));
-                rack.connect(reflex.getPort("changed"), test.getPort("run"));
-                rack.connect(test.getPort("out"), console.getPort("in"));
-                rack.connect(halo.getPort("out"), console.getPort("in"));
-            });
+            return buildPatchFrom(StarterRacks.ANGULAR);
         }
 
         @Override
@@ -1160,17 +1126,7 @@ public enum ProjectTemplates {
 
         @Override
         JSONObject buildPatch() {
-            return buildPatchFrom(rack -> {
-                RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
-                RackDevice run = add(rack, DeviceType.RUN, null);
-                RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
-                RackDevice test = add(rack, DeviceType.TEST, null);
-                RackDevice console = add(rack, DeviceType.CONSOLE, null);
-                rack.connect(deps.getPort("ok"), test.getPort("run"));
-                rack.connect(reflex.getPort("changed"), test.getPort("run"));
-                rack.connect(test.getPort("out"), console.getPort("in"));
-                rack.connect(run.getPort("out"), console.getPort("in"));
-            });
+            return buildPatchFrom(StarterRacks.ELIXIR);
         }
 
         @Override
@@ -1950,42 +1906,11 @@ public enum ProjectTemplates {
 
     /** Shared patch for the polyglot templates: run/test/debug, save-driven. */
     private static JSONObject polyglotPatch() {
-        return buildPatchFrom(rack -> {
-            RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
-            RackDevice run = add(rack, DeviceType.RUN, null);
-            RackDevice debug = add(rack, DeviceType.DEBUG, null);
-            RackDevice test = add(rack, DeviceType.TEST, null);
-            RackDevice console = add(rack, DeviceType.CONSOLE, null);
-            rack.connect(reflex.getPort("changed"), test.getPort("run"));
-            rack.connect(test.getPort("out"), console.getPort("in"));
-            rack.connect(run.getPort("out"), console.getPort("in"));
-            rack.connect(debug.getPort("out"), console.getPort("in"));
-        });
+        return buildPatchFrom(StarterRacks.POLYGLOT);
     }
 
     /** Shared patch for the Vite-based templates (React/Vue). */
     private static JSONObject vitePatch() {
-        return buildPatchFrom(rack -> {
-            RackDevice master = add(rack, DeviceType.MASTER, null);
-            RackDevice reflex = add(rack, DeviceType.REFLEX, Map.of("armed", "false", "filter", "1"));
-            RackDevice deps = add(rack, DeviceType.PACKAGE_MANAGER, null);
-            // vite on 5173
-            RackDevice server = add(rack, DeviceType.DEV_SERVER, Map.of("server", "1", "port", "2"));
-            RackDevice browser = add(rack, DeviceType.BROWSER, Map.of("url", "http://localhost:5173"));
-            RackDevice build = add(rack, DeviceType.BUILD, Map.of("tool", "1"));
-            RackDevice test = add(rack, DeviceType.TEST, Map.of("framework", "2"));
-            RackDevice console = add(rack, DeviceType.CONSOLE, null);
-
-            // CI lane
-            rack.connect(master.getPort("trig1"), deps.getPort("run"));
-            rack.connect(deps.getPort("ok"), build.getPort("run"));
-            rack.connect(build.getPort("ok"), test.getPort("run"));
-            rack.connect(test.getPort("out"), console.getPort("in"));
-            // dev lane
-            rack.connect(server.getPort("url"), browser.getPort("url"));
-            rack.connect(server.getPort("ready"), browser.getPort("open"));
-            // TDD lane (arm REFLEX to activate)
-            rack.connect(reflex.getPort("changed"), test.getPort("run"));
-        });
+        return buildPatchFrom(StarterRacks.VITE);
     }
 }
