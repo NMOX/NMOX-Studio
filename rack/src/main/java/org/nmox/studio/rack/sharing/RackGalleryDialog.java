@@ -189,9 +189,13 @@ public final class RackGalleryDialog {
             });
         });
 
-        Object importFile = Bundle.RackGalleryDialog_importFile();
-        Object importClipboard = Bundle.RackGalleryDialog_importClipboard();
-        Object close = Bundle.RackGalleryDialog_close();
+        // Every option is a button INSTANCE. Mixed with plain strings, the first
+        // JButton became the default (walked 2026-09-18: Mount painted as the
+        // default beside a search field, where Enter is a reflex) — the platform
+        // matches the initial value by identity, so Close is handed over as itself.
+        JButton importFile = new JButton(Bundle.RackGalleryDialog_importFile());
+        JButton importClipboard = new JButton(Bundle.RackGalleryDialog_importClipboard());
+        JButton close = new JButton(Bundle.RackGalleryDialog_close());
         DialogDescriptor descriptor = new DialogDescriptor(split, Bundle.RackGalleryDialog_title(), true,
                 new Object[]{mountButton, removeButton, importFile, importClipboard, close},
                 close, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -203,10 +207,10 @@ public final class RackGalleryDialog {
         if (chosen == removeButton && selected != null) {
             return Optional.of(new Result(Action.REMOVE, selected));
         }
-        if (importFile.equals(chosen)) {
+        if (chosen == importFile) {
             return Optional.of(new Result(Action.IMPORT_FILE, null));
         }
-        if (importClipboard.equals(chosen)) {
+        if (chosen == importClipboard) {
             return Optional.of(new Result(Action.IMPORT_CLIPBOARD, null));
         }
         return Optional.empty();

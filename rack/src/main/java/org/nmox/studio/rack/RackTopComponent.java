@@ -97,6 +97,7 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_keptLabel=[kept as {0}]",
     "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
     "RackTopComponent_leavingSummary={0} devices, {1} cables. Settings that travel:",
+    "RackTopComponent_leavingNothing={0} devices, {1} cables. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
     "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — take it out of the rack before sharing (shown masked here):",
     "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
     "RackTopComponent_importRack=Import…",
@@ -587,7 +588,7 @@ public final class RackTopComponent extends TopComponent {
         final File dir = rack.getProjectDir();
         final org.json.JSONObject shared = org.nmox.studio.rack.model.RackShare.export(
                 RackIO.toJson(rack), java.nio.file.Path.of(System.getProperty("user.home")),
-                org.nmox.studio.core.util.ProductVersion.number());
+                stampedVersion());
         SAVE_RP.post(() -> {
             org.nmox.studio.rack.devices.ProjectInspector.ProjectKind kind =
                     org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
@@ -595,6 +596,12 @@ public final class RackTopComponent extends TopComponent {
                     ? null : kind.name();
             java.awt.EventQueue.invokeLater(() -> shareSnapshot(shared, dir, kindName));
         });
+    }
+
+    /** This build's version when a release stamped one; null for a dev build, whose "1.0" is a sentinel and not a version. */
+    private static String stampedVersion() {
+        return org.nmox.studio.core.util.ProductVersion.stamped()
+                ? org.nmox.studio.core.util.ProductVersion.number() : null;
     }
 
     /** EDT: the dialog, then the destination the sender picked. */
@@ -682,8 +689,14 @@ public final class RackTopComponent extends TopComponent {
             appendSettings(sb, audit.personalPaths());
             sb.append("\n");
         }
-        sb.append(Bundle.RackTopComponent_leavingSummary(devices, cables)).append("\n");
-        appendSettings(sb, audit.settings());
+        if (audit.settings().isEmpty()) {
+            // walked 2026-09-18: a rack of AUTO lanes stores no command at all,
+            // and "Settings that travel:" over an empty pane read as a bug
+            sb.append(Bundle.RackTopComponent_leavingNothing(devices, cables)).append("\n");
+        } else {
+            sb.append(Bundle.RackTopComponent_leavingSummary(devices, cables)).append("\n");
+            appendSettings(sb, audit.settings());
+        }
         return sb.toString();
     }
 
@@ -749,8 +762,11 @@ public final class RackTopComponent extends TopComponent {
         }
         org.nmox.studio.rack.gallery.RackGallery.Entry entry = asked.get().entry();
         switch (asked.get().action()) {
-            case IMPORT_FILE -> importRack();
-            case IMPORT_CLIPBOARD -> importFromClipboard();
+            // deferred a turn: opened straight from here, the file chooser adopts the
+            // closing gallery as its owner and keeps its native window alive behind
+            // it (walked 2026-09-18: one ghost "Rack Gallery" window per import)
+            case IMPORT_FILE -> java.awt.EventQueue.invokeLater(this::importRack);
+            case IMPORT_CLIPBOARD -> java.awt.EventQueue.invokeLater(this::importFromClipboard);
             case REMOVE -> removeKept(entry);
             case MOUNT -> {
                 if (!aimedAt.equals(rack.getProjectDir())) {
@@ -864,8 +880,10 @@ public final class RackTopComponent extends TopComponent {
         // looks complete and does something else
         org.nmox.studio.rack.model.RackCompat.Report compat;
         try {
-            compat = org.nmox.studio.rack.model.RackCompat.check(
-                    doc, org.nmox.studio.core.util.ProductVersion.number());
+            // a dev build carries the "1.0" sentinel, which would read as older than
+            // every release ever shipped (walked 2026-09-18: a rack made with this
+            // very build said "newer than this install") — unstamped is unknown
+            compat = org.nmox.studio.rack.model.RackCompat.check(doc, stampedVersion());
         } catch (RuntimeException ex) {
             error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
             return;
