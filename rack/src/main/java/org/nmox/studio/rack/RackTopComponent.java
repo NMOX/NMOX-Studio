@@ -112,7 +112,7 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install — update to get everything it uses.",
     "RackTopComponent_importCarriesWhole=Every cable and setting it uses exists in this install.",
     "RackTopComponent_importLostCables=Cables this install cannot connect — it will mount WITHOUT them:",
-    "RackTopComponent_importLostSettings=Settings this install's devices do not have — ignored:",
+    "RackTopComponent_importLostSettings=Settings this install’s devices do not have — ignored:",
     "RackTopComponent_importTooNew=This rack file is in format {0}; this install reads format {1}. Update NMOX Studio to import it.",
     "RackTopComponent_importClipboard=Import Rack from Clipboard",
     "RackTopComponent_gallery=Rack Gallery…",
