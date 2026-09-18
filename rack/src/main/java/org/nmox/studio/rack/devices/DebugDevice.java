@@ -52,7 +52,10 @@ public class DebugDevice extends CommandDevice {
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("endpoint", "ENDPOINT", SignalType.DATA);
-        addOutPort("live", "RUNNING", SignalType.GATE);
+        // id "running" (was "live" until 2026-09-17; the label always read
+        // RUNNING) — one id per label across the rack; RackIO aliases the old
+        // id on load so saved patches keep their cables
+        addOutPort("running", "RUNNING", SignalType.GATE);
 
         param("target", targetKnob);
     }
@@ -148,7 +151,7 @@ public class DebugDevice extends CommandDevice {
                 armedLed.setBlinking(true);
             });
             emit("endpoint", Signal.data(endpoint));
-            emit("live", Signal.gate(true));
+            emit("running", Signal.gate(true));
         } else {
             onEdt(() -> armedLed.setBlinking(false));
         }
@@ -219,7 +222,7 @@ public class DebugDevice extends CommandDevice {
 
     @Override
     protected void onFinished(int exitCode) {
-        emit("live", Signal.gate(false));
+        emit("running", Signal.gate(false));
         onEdt(() -> {
             armedLed.setBlinking(false);
             armedLed.setOn(false);

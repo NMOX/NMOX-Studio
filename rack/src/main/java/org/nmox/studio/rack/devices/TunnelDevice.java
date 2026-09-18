@@ -53,7 +53,10 @@ public class TunnelDevice extends CommandDevice {
         addInPort("stop", "STOP", SignalType.TRIGGER);
         addInPort("enable", "ENABLE", SignalType.GATE);
         addOutPort("url", "URL", SignalType.DATA);
-        addOutPort("live", "RUNNING", SignalType.GATE);
+        // id "running" (was "live" until 2026-09-17; the label always read
+        // RUNNING) — one id per label across the rack; RackIO aliases the old
+        // id on load so saved patches keep their cables
+        addOutPort("running", "RUNNING", SignalType.GATE);
 
         param("provider", providerKnob);
         param("port", portKnob);
@@ -83,7 +86,7 @@ public class TunnelDevice extends CommandDevice {
             liveLed.setBlinking(true);
         });
         if (launch(buildCommand())) {
-            emit("live", Signal.gate(true));
+            emit("running", Signal.gate(true));
         }
     }
 
@@ -118,7 +121,7 @@ public class TunnelDevice extends CommandDevice {
 
     @Override
     protected void onFinished(int exitCode) {
-        emit("live", Signal.gate(false));
+        emit("running", Signal.gate(false));
         onEdt(() -> {
             liveLed.setBlinking(false);
             liveLed.setOn(false);

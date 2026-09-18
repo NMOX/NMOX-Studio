@@ -46,7 +46,10 @@ public class TempoDevice extends RackDevice {
         rateKnob.addChangeListener(this::syncTimer);
 
         addInPort("run", "START", SignalType.TRIGGER);
-        addInPort("halt", "STOP", SignalType.TRIGGER);
+        // id "stop" (was "halt" until 2026-09-17; the label always read STOP)
+        // — one id per label across the rack; RackIO aliases the old id on
+        // load so saved patches keep their cables
+        addInPort("stop", "STOP", SignalType.TRIGGER);
         // gate-driven clock: patch SURGE's RUNNING gate in and the clock
         // ticks exactly while the dev server lives - health checks,
         // recurring scans, whatever is cabled to TICK, only when it matters
@@ -129,7 +132,7 @@ public class TempoDevice extends RackDevice {
     public void receive(Port in, Signal signal) {
         switch (in.getId()) {
             case "run" -> onEdt(() -> runSwitch.setOn(true));
-            case "halt" -> onEdt(() -> runSwitch.setOn(false));
+            case "stop" -> onEdt(() -> runSwitch.setOn(false));
             case "enable" -> onEdt(() -> runSwitch.setOn(signal.high()));
             default -> {
             }
