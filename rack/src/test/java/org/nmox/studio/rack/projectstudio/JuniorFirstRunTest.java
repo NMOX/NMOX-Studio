@@ -72,11 +72,27 @@ class JuniorFirstRunTest {
         int idx = src.indexOf("if (command == null || command.isEmpty())");
         assertThat(idx).as("the null-command choke point exists").isGreaterThan(0);
         String branch = src.substring(idx, Math.min(src.length(), idx + 1400));
+        // Since the 2026-09-17 audit the null-command branch speaks through the
+        // ONE refusal choke point every refused launch takes (refuseLaunch):
+        // the reason lands on the status LCD AND the patch bay hears FAIL+DONE,
+        // so a refused device no longer sits silent in the middle of a chain.
+        // This gate pins BOTH halves — the branch calls the choke point with
+        // the toolchain reason, and the choke point really paints it.
         assertThat(branch)
                 .as("two dozen call sites comment this as 'CHECK greys' / 'IGNITION "
                         + "greys', but nothing greyed and nothing spoke — the button "
                         + "stayed lit and the click did nothing")
-                .contains("statusLcd.setText(noCommandReason())");
+                .contains("refuseLaunch(noCommandReason());");
+        int refuse = src.indexOf("protected final void refuseLaunch(String reason)");
+        assertThat(refuse).as("the refusal choke point exists").isGreaterThan(0);
+        String choke = src.substring(refuse, Math.min(src.length(), refuse + 400));
+        assertThat(choke)
+                .as("the choke point paints the reason on the status LCD")
+                .contains("statusLcd.setText(reason);");
+        assertThat(choke)
+                .as("and tells the patch bay: FAIL then DONE, both carrying the failure bit")
+                .contains("emit(\"fail\", Signal.trigger(false));")
+                .contains("emit(\"done\", Signal.trigger(false));");
         assertThat(src)
                 .as("the reason names the device and the toolchain")
                 .contains("\"NO \" + getTitle() + \" VERB FOR \"");

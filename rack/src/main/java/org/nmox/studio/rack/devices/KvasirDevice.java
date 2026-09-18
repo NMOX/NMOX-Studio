@@ -133,14 +133,18 @@ public class KvasirDevice extends RackDevice {
     @Override
     public void receive(org.nmox.studio.rack.model.Port in,
             org.nmox.studio.rack.model.Signal signal) {
-        // Only a LOW trigger is a failure to explain: FAIL carries false, and
-        // DONE carries the run's success bit (Signal.high — true = success-ish).
-        // Without this guard, VERITAS done → EXPLAIN consulted the model on
-        // every GREEN run (the 2026-09-17 rack audit; a refused launch's
-        // FAIL/DONE both carry false and are explained like any failure).
+        // Only an EXPLICIT OK verdict is not a failure to explain: FAIL carries
+        // false, DONE carries the run's success bit, and a refused launch's
+        // FAIL/DONE both carry false. Without this guard, VERITAS done →
+        // EXPLAIN consulted the model on every GREEN run (the 2026-09-17 rack
+        // audit). The guard asks okVerdict() and NOT !high(): a verdict-less
+        // pulse (MASTER trig, REFLEX changed, TEMPO tick) rides high too, and
+        // a first cut on the bare bit silently killed "explain now" on a
+        // button and "explain on save" — DeviceSecondReachTest.kvasirCablePath
+        // caught it. A pulse means "explain the last failure", so it consults.
         if ("explain".equals(in.getId())
                 && signal.type() == org.nmox.studio.rack.model.SignalType.TRIGGER
-                && !signal.high()) {
+                && !signal.okVerdict()) {
             onAutoExplain();
         }
     }
