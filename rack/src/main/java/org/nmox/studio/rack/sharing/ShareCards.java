@@ -107,6 +107,21 @@ public final class ShareCards {
         return sb.length() == 0 ? "rack" : sb.toString();
     }
 
+    /**
+     * The comma of the keyboard in front of the sender, not only the ASCII one:
+     * a Chinese reader types the full-width comma or the enumeration comma, an
+     * Arabic reader the Arabic comma — found by the translators, 2026-09-18,
+     * who had to tell Chinese readers to type a half-width comma to get by.
+     */
+    static boolean isListSeparator(char c) {
+        return c == ',' || c == ';' || Character.isWhitespace(c)
+                || c == 0xFF0C  // fullwidth comma
+                || c == 0x3001  // ideographic (enumeration) comma
+                || c == 0x060C  // Arabic comma
+                || c == 0xFF1B  // fullwidth semicolon
+                || c == 0x061B; // Arabic semicolon
+    }
+
     /** {@code "npm, cargo  docker"} as the sender typed it → the list a card holds. */
     public static List<String> splitList(String typed) {
         List<String> out = new ArrayList<>();
@@ -116,7 +131,7 @@ public final class ShareCards {
         StringBuilder word = new StringBuilder();
         for (int i = 0; i <= typed.length(); i++) {
             char c = i < typed.length() ? typed.charAt(i) : ',';
-            if (c == ',' || c == ';' || Character.isWhitespace(c)) {
+            if (isListSeparator(c)) {
                 if (word.length() > 0) {
                     out.add(word.toString());
                     word.setLength(0);

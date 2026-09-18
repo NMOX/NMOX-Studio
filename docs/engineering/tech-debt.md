@@ -105,6 +105,17 @@ corrupt file is kept as `.bak`, an oversize one is untouched) — it is a refusa
 that does not speak, which is a standing law. Deferred only because the right
 surface (a balloon, the rack's own placard) wants a look at the running app.
 
+### 105. "1 devices, 1 cables": three rack sentences count without a plural
+
+`RackTopComponent_importSummary` (v2.176.0) and v2.179.0's `leavingSummary` /
+`leavingNothing` render `{0} devices, {1} cables` for any count, so a
+one-device rack reads "1 devices". Found by the translators, who dodged it in
+Polish, Russian and Ukrainian by writing the count after a label. The house
+answer exists (`core.util.Plural`, the `{n,choice,…}` forms the l10n arc uses
+with three Slavic branches) and costs three keys re-authored in fifteen
+languages with real plural forms. Deferred as a translator pass of its own
+rather than squeezed into a release whose strings were already reviewed.
+
 ## Closed by v2.165.0 (the Browser shapes complex scripts)
 
 ### 99. The in-app Browser paints Arabic letters unjoined — CLOSED

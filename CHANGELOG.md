@@ -119,12 +119,22 @@ found two shipped claims the code did not back.
   out of the background tools' reach; arrival at rest is proven behaviourally by
   `SelfStartingLedgerTest`), Import from Clipboard end to end (`RackText` and
   the door gate hold it), and Remove from My Racks (`MyRacks` tests).
+- **The translators were the instrument again.** Fourteen languages for ~85 new
+  strings, the sixteen starter names and descriptions, and the ten community
+  racks' cards — and a defect list that was right: the *Needs on the PATH*
+  field split only on the ASCII comma, so a Chinese `，` or an Arabic `،` glued
+  two tool names into one (the comma of the keyboard in front of the sender
+  splits now); the gallery's moved-aim refusal reused Import's sentence and
+  named a manifest the gallery does not have (its own sentence); Russian and
+  Ukrainian had inserted a nominative *shared rack* after «на» since v2.176.0
+  (the accusative the sentence asks for); and `{0} devices, {1} cables` reads
+  "1 devices" — recorded as ledger 105, a plural pass of its own.
 - **Also found, by looking.** The user guide said "Patches persist per project
   automatically" in fifteen languages; nothing autosaves — Save Patch writes,
   aiming loads. CLAUDE.md's reference body quoted 72 grammars (88), 16
   manifests (60), 14 templates (15), 19 release assets (21) because the docs
   census never read it; its undated body is in `DocsCountGateTest` now, mutant
-  by name. Ledger 102–104 record what stays open: a plugin device's KNOB also
+  by name. Ledger 102–105 record what stays open: a plugin device's KNOB also
   runs plugin code at mount (a knob has no "off"), the three unwalked edges of
   v2.176–v2.178, and the patch auto-load that fails silently on aim.
 

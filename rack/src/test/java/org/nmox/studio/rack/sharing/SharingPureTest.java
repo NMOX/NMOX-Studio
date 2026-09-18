@@ -75,6 +75,10 @@ class SharingPureTest {
     @DisplayName("a typed list splits on commas, semicolons and whitespace")
     void splitsLists() {
         assertThat(ShareCards.splitList("npm, cargo  docker;go")).containsExactly("npm", "cargo", "docker", "go");
+        String typed = "npm" + Character.toString(0xFF0C) + "cargo" + Character.toString(0x3001) + "docker"
+                + Character.toString(0x060C) + " go" + Character.toString(0xFF1B) + "deno";
+        assertThat(ShareCards.splitList(typed))
+                .as("the full-width, enumeration and Arabic commas are commas").containsExactly("npm", "cargo", "docker", "go", "deno");
         assertThat(ShareCards.splitList("  ")).isEmpty();
         assertThat(ShareCards.splitList(null)).isEmpty();
     }

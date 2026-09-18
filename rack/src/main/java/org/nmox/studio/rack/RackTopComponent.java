@@ -98,7 +98,7 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
     "RackTopComponent_leavingSummary={0} devices, {1} cables. Settings that travel:",
     "RackTopComponent_leavingNothing={0} devices, {1} cables. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
-    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — take it out of the rack before sharing (shown masked here):",
+    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — remove before sharing (shown masked here):",
     "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
     "RackTopComponent_importRack=Import…",
     "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
@@ -126,7 +126,8 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_clipboardTooLarge=The clipboard text is too large to be a rack.",
     "RackTopComponent_clipboardNotJson=The clipboard text is not a rack — copy the whole file, from its first brace to its last.",
     "RackTopComponent_clipboardNoDevices=The clipboard holds JSON, but not a rack: it has no devices.",
-    "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again."
+    "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again.",
+    "RackTopComponent_galleryAimMoved=The project changed while the gallery was open — nothing was mounted. Choose the rack again."
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -770,8 +771,9 @@ public final class RackTopComponent extends TopComponent {
             case REMOVE -> removeKept(entry);
             case MOUNT -> {
                 if (!aimedAt.equals(rack.getProjectDir())) {
-                    // the gallery is modal and pumps events: the re-aim law
-                    error(Bundle.RackTopComponent_importAimMoved());
+                    // the gallery is modal and pumps events: the re-aim law — said
+                    // in the gallery's own words (there is no manifest and no import here)
+                    error(Bundle.RackTopComponent_galleryAimMoved());
                     return;
                 }
                 switch (entry.source()) {
