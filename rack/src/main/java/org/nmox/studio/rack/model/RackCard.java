@@ -58,14 +58,39 @@ public record RackCard(String name, String description, String author,
         requires = cleanList(requires, true);
     }
 
-    /** The card of a rack document; {@link #EMPTY} when it carries none. */
+    /** The card of a rack document in the reader's language; {@link #EMPTY} when it carries none. */
     public static RackCard of(JSONObject doc) {
+        return of(doc, Locale.getDefault().getLanguage());
+    }
+
+    /**
+     * The card as a reader of {@code language} meets it. A rack may carry
+     * {@code name.<lang>} / {@code description.<lang>} siblings (the learning
+     * catalogue's mechanism, v2.133.0): the racks that ship with the product
+     * speak the reader's language, a stranger's file says what its author
+     * wrote, and an absent or blank sibling falls back to the base field —
+     * FIELD BY FIELD, so translating only the description is a complete thing
+     * to do. The siblings are read, never written: Share builds a fresh header
+     * from what the sender typed.
+     */
+    public static RackCard of(JSONObject doc, String language) {
         JSONObject header = doc == null ? null : doc.optJSONObject(RackShare.SHARED);
         if (header == null) {
             return EMPTY;
         }
-        return new RackCard(text(header, "name"), text(header, "description"), text(header, "author"),
+        return new RackCard(localized(header, "name", language), localized(header, "description", language),
+                text(header, "author"),
                 strings(header.optJSONArray("kinds")), strings(header.optJSONArray("requires")));
+    }
+
+    private static String localized(JSONObject header, String key, String language) {
+        if (language != null && !language.isBlank()) {
+            String theirs = text(header, key + "." + language.toLowerCase(Locale.ROOT));
+            if (!theirs.isBlank()) {
+                return theirs;
+            }
+        }
+        return text(header, key);
     }
 
     /** Writes the fields that say something into a {@code shared} header; blank ones are left out. */

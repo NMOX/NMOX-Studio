@@ -83,6 +83,21 @@ class RackCardTest {
     }
 
     @Test
+    @DisplayName("a rack speaks the reader's language field by field: a translated description beside an untranslated name is complete, a blank sibling falls back")
+    void languageSiblings() {
+        JSONObject header = new JSONObject().put("name", "Rust watch loop").put("description", "Tests on save.")
+                .put("description.de", "Tests bei jedem Speichern.").put("name.fr", "   ");
+        assertThat(RackCard.of(docWith(header), "de").description()).isEqualTo("Tests bei jedem Speichern.");
+        assertThat(RackCard.of(docWith(header), "de").name()).as("no German name: the base").isEqualTo("Rust watch loop");
+        assertThat(RackCard.of(docWith(header), "fr").name()).as("a blank sibling is absent").isEqualTo("Rust watch loop");
+        assertThat(RackCard.of(docWith(header), "").description()).isEqualTo("Tests on save.");
+        assertThat(RackCard.of(docWith(header), null).description()).isEqualTo("Tests on save.");
+        JSONObject written = new JSONObject();
+        RackCard.of(docWith(header), "de").writeTo(written);
+        assertThat(written.keySet()).as("siblings are read, never written").containsExactlyInAnyOrder("name", "description");
+    }
+
+    @Test
     @DisplayName("requires are bare tool names to look up, never a path or a command line")
     void requiresAreBareNames() {
         RackCard card = new RackCard("", "", "", null, List.of("cargo", "docker-compose", "python3.12", "g++",
