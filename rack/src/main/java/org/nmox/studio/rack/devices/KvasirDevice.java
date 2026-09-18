@@ -133,10 +133,21 @@ public class KvasirDevice extends RackDevice {
     @Override
     public void receive(org.nmox.studio.rack.model.Port in,
             org.nmox.studio.rack.model.Signal signal) {
+        // Only a LOW trigger is a failure to explain: FAIL carries false, and
+        // DONE carries the run's success bit (Signal.high — true = success-ish).
+        // Without this guard, VERITAS done → EXPLAIN consulted the model on
+        // every GREEN run (the 2026-09-17 rack audit; a refused launch's
+        // FAIL/DONE both carry false and are explained like any failure).
         if ("explain".equals(in.getId())
-                && signal.type() == org.nmox.studio.rack.model.SignalType.TRIGGER) {
+                && signal.type() == org.nmox.studio.rack.model.SignalType.TRIGGER
+                && !signal.high()) {
             onAutoExplain();
         }
+    }
+
+    /** Test seam: what the verdict LCD shows (multi-line), read after the EDT has painted. */
+    String verdictText() {
+        return verdict.getShownText();
     }
 
     /**
