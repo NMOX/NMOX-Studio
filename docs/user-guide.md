@@ -287,22 +287,50 @@ an LCD tells you what happened in words.
   Node package gets CRATE and NPM-9000 with its scripts. It is a starter,
   not a save — nothing is written until you press **Save Patch** — and a
   directory with no manifest keeps the one MONITOR a first launch shows.
-- **Share a rack as a file** (since v2.176.0). **Share…** writes this rack
-  wherever you choose, with every path under your home directory rewritten
-  to `~` (a home path is a username) and nothing else touched — the
-  commands and settings are the point. **Import…** opens a rack someone
-  sent you and shows what it holds *before* anything mounts: every device
-  (naming any this install lacks — they mount as placeholders that keep
-  their cables), the cable count, and every setting that reads like a
-  command, path or address. Mount is not the default button. A shared rack
-  arrives at rest — a REFLEX saved armed or a TEMPO saved running comes in
-  switched off — and nothing runs until you press GO, behind Workspace
-  Trust like anything else. A plain saved `.nmoxrack.json` opens through the
-  same door.
+- **The Rack Gallery** (since v2.179.0). **Tools ▸ Rack Gallery…** — or
+  **Rack Gallery…** at the top of the rack's **Presets ▾** menu — puts every
+  rack this install can mount on one shelf: the community racks that ship
+  with the product, the built-in presets, the starters, and your own. Racks
+  that fit the aimed project come first. Select one and the page beside the
+  list says what it is for, which tools it needs **and which of them this
+  machine lacks**, the devices it mounts and how they are wired, one line per
+  cable, before anything mounts. Type in **Find** to search by job, tool,
+  device or project kind. The racks are listed in [racks.md](racks.md).
+- **Share a rack** (since v2.176.0; one dialog since v2.179.0). **Share…**
+  asks what the rack is called and what it does, and shows **what leaves with
+  it** before it goes: every command, path and address in its settings. If
+  something looks like a credential it is flagged at the top, masked; so is
+  any path that still names somebody's home directory. Your own home
+  directory is rewritten to `~` wherever it appears — inside a command too —
+  because a home path is a username. *Shared by* stays empty unless you type a
+  name. Then choose where it goes: **Save to File…**, **Copy to Clipboard** (a
+  rack is small enough to paste into a chat or an issue), or **Keep in My
+  Racks**, which puts it in `~/.nmox/presets.d` so it joins the Presets menu
+  and the gallery on every project. A kept rack of the same name is never
+  overwritten — you are told which file is in the way. **Remove from My
+  Racks…** in the gallery is the way back out.
+- **Import a rack** (since v2.176.0). **Import…** opens a rack someone sent
+  you — from a file, or **Import Rack from Clipboard** in the Presets menu and
+  the gallery for one pasted into a chat (a Markdown code fence around it is
+  fine) — and shows a page *before* anything mounts: what the rack says it is
+  and who shared it, every device (naming any this install lacks — they mount
+  as placeholders that keep their cables), every setting that reads like a
+  command, path or address, and **what this install cannot give it**: the
+  rack is mounted into a throwaway rack first, and any cable into a jack you
+  do not have, or setting your devices do not understand, is named. A rack
+  made with a newer NMOX Studio says so; one in a newer file *format* is
+  refused outright. Mount is not the default button. A shared rack arrives at
+  rest — a REFLEX saved armed, a TEMPO saved running, a TAIL saved following
+  come in switched off, and so does every switch of a plugin device — and
+  nothing runs until you press GO, behind Workspace Trust like anything else.
+  A rack you kept in My Racks, and a plain saved `.nmoxrack.json`, open
+  through the same door. The format is documented in
+  [rack-files.md](rack-files.md).
 
 ![Tab flips the rack — patch cables wire MAESTRO through CRATE, DYNAMO, and IGNITION into VITALS](images/rack-rear.png)
 
 **Coordination, when your pipeline grows:**
+
 - **QUORUM** joins lanes: it fires only when *all* of its wired inputs
   have succeeded — the classic "wait for lint AND test AND typecheck".
 - **ENABLE gates** on long-runners: a dev server's ENABLE input means

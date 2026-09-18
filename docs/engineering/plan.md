@@ -1,5 +1,30 @@
 # The Plan
 
+*Currency addendum 2026-09-18 (evening), at v2.179.0 — a sanity check, then an
+outside steer. David asked for a review of the project for false claims; it
+found two in the day-old rack batch (a TAIL saved following started at mount
+while the docs said every rack arrives at rest; a home path inside a COMMAND
+left with the username in it) and six stale counts in CLAUDE.md, the one live
+doc no census read. He then relayed a second reviewer's advice — make the rack
+ecosystem undeniable, a few excellent racks easy to discover, share, inspect and
+trust, and no marketplace — and that became the release: `RackCard`, the Rack
+Gallery over ONE in-repo directory of rack files that a pull request adds to,
+Share as one dialog with an audit, Import with a dry run. Laws worth keeping:
+**a hand-kept set next to a fleet is the decorative-gate shape again** (the
+v2.178.0 review named it in four gates and missed the fifth, in product code —
+the device now declares, a ledger derives); **a "walked live" proof is true of
+its fixture** (the v2.176.0 walk's paths were all whole values, so "no /Users/
+in the file" proved nothing about commands — name what the fixture could not
+exercise); **a probe must arm nothing** (the dry run sets every `true` off
+whatever the ledger says); **walk with a throwaway HOME** when a feature writes
+under `~` (`-J-Duser.home=…` — the real presets.d was never touched); **mixing
+JButtons and strings in DialogDescriptor options moves the default button** —
+pass instances, and the initial value by identity; **a replacement bounded by
+"the next bullet" eats whatever sits between** (an image and a heading, caught
+by reading the diff's minus lines — read them every time). Open: ledger 102
+(plugin knobs run plugin code at mount), 103 (three unwalked edges), 104 (the
+silent auto-load failure).*
+
 *Currency addendum 2026-09-18, at v2.178.0 — the arc review, run as probes by an
 agent with seven lenses, closes the overnight batch. The re-aim law (a result
 belongs to the workspace that produced it) was broken twice in code a day old —

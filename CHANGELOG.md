@@ -4,6 +4,130 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.179.0] - 2026-09-18
+
+**A rack is a workflow you can hand to someone: the Rack Gallery, racks that say what they are, and a Share/Import that tells the truth.**
+
+Steered by an outside review of the project ("make the rack ecosystem itself
+undeniable — a few excellent racks easy to discover, share, inspect and trust;
+not a marketplace"), and opened by a sanity check of v2.176.0–v2.178.0 that
+found two shipped claims the code did not back.
+
+- **Two false claims, fixed.** *"Imported racks arrive at rest"* was false for
+  TAIL: `RackShare.SELF_STARTING` was a hand-kept set of two keys (`armed`,
+  `running`), and a TAIL saved with FOLLOW on started polling a path the
+  SENDER chose the moment the rack mounted — uncounted in the manifest. The
+  set is gone: a device declares a self-starting switch where it registers it
+  (`paramSelfStarting`), `SelfStarting.keysFor` derives the answer per type,
+  and `SelfStartingLedgerTest` derives every persisted toggle in the fleet and
+  fails by name until each is classified SELF-STARTING or SETTING with a
+  reason, with a behavioural proof per self-starter. Every toggle of a plugin
+  or JSON device arrives off by decision — restoring one runs plugin code
+  holding `DeviceServices` — and so does every `true` of a device this install
+  lacks. *"Every state value under the sender's home rewritten to `~`"* was
+  true only of a value that BEGAN with the home: `tail -f
+  /Users/you/logs/app.log` left with the username in it. The home is hidden
+  wherever it sits at a path boundary (start, whitespace, a quote, `=`; never
+  after `:` or `/`, so `host:/Users/x` and `/srv/Users/x` stay), one linear
+  pass, and Import expands `~` by the same boundaries — SOLDER runs argv with
+  no shell, so nothing else would. Found reviewing that fix, failing-first:
+  under a slash-spelled home every backslash in the rest of the token was
+  re-spelled `/`, so `my\ notes` named a different file — re-spelled only
+  under a drive-letter or UNC home.
+- **A rack says what it is.** `model.RackCard` rides the `shared` header:
+  name, description, optional author, the project kinds it is made for, the
+  tools it needs, and `name.<lang>`/`description.<lang>` siblings (the
+  v2.133.0 mechanism, field-by-field fallback). Every field is a stranger's
+  text: a wrong type is an absent field, control characters fold to a space (a
+  newline in a name cannot forge a line of the manifest), clipped by code
+  points, `requires` held to bare tool names. The author is empty unless
+  typed — a name is never read from the machine.
+- **Share… is one dialog.** Name it, say what it does, and read *what leaves
+  with this rack* before it goes: anything that looks like a credential first
+  (masked — the audit is never a second copy of the secret), then any path
+  that still names somebody's home, then every setting the receiver's manifest
+  will list. Needed tools are suggested from the rack's own commands. It goes
+  to a file, to the clipboard, or into **My Racks** (`~/.nmox/presets.d`) —
+  never over a kept rack of the same name, refused by name.
+- **Import… finds what this install cannot give a rack, before it mounts.**
+  `model.RackCompat` mounts the file into a throwaway rack (every switch off,
+  scratch directory, shut down) and names the cables it could not connect and
+  the settings its devices do not have; a file made with a newer NMOX Studio
+  says so; a file in a newer FORMAT is refused before any dialog. The manifest
+  opens with the card. **Import Rack from Clipboard** takes the same door.
+  Found on the way, failing-first: `RackIO.fromJson` threw org.json's
+  exception on a cable entry that is not an object — AFTER clearing the rack —
+  so a hostile file left half a rack and no undo; cable slots are dropped by
+  name now, like the device slots v2.178.0 hardened.
+- **Kept racks take the shared door.** A file in `presets.d` mounted through
+  Load Patch's path, which expands no `~` and sets nothing at rest — wrong for
+  a rack kept from Share and wrong for one a stranger sent. It mounts through
+  the manifest, the dry run and arrival at rest like any import, and **Remove
+  from My Racks…** is the inverse the drop-in directory never had (confined to
+  that directory on real paths; a symlink planted there is refused).
+- **The Rack Gallery.** `Tools ▸ Rack Gallery…` (and **Rack Gallery…** atop the
+  rack's Presets menu): every rack this install can mount on one shelf — ten
+  community racks that ship as FILES, the sixteen presets, the eight starters,
+  and your own — racks that fit the aimed project first, each with what it is
+  for, the tools it needs *and which of them this machine lacks* (a PATH lookup,
+  never a run), its devices, and its wiring one line per cable
+  (`REFLEX CHANGED ▸ GLOSS RUN, PURITY RUN`), before anything mounts. Search
+  rides the product's one term matcher. `rack.gallery` is the pure catalog
+  (`RackGallery`, `RackWiring`, `RackJudge`); the window only chooses, and the
+  mount goes through the doors the rack already has — a preset or starter asks
+  the replace question, a file takes the shared door.
+- **Ten racks worth sharing, and a way to add the eleventh.** A Rust save loop
+  (format and clippy in parallel, a QUORUM, then `cargo test`, a failure to
+  KVASIR), Go restart-on-green, a Python quality loop with a coverage floor, an
+  API smoke test that gates a load bench, Next.js E2E with triage, a monorepo
+  package gate, a static site under a Lighthouse floor and an uptime sentinel, a
+  contract gas loop, a compose bench, a parallel release gate. They live in ONE
+  directory, `rack/src/main/resources/org/nmox/studio/rack/gallery/racks/`, and
+  a pull request is how one joins: `CommunityRacksGateTest` derives its
+  population from that directory AND its index and mounts each rack for real —
+  a device, jack or cable that does not exist fails by file and by name, as do
+  anything that would start by itself, an absolute or home path, an address that
+  is not loopback, a missing card. The loader runs the same judge, so a bad file
+  can never break the shelf. No account, no upload, no server. `docs/racks.md`
+  is GENERATED from the catalog (`RackGalleryDocsTest`), `docs/rack-files.md`
+  is the format, and both the doc's worked example and the README's wiring
+  sketch are compared with the shipped file and the generated reference.
+  Each community rack carries its card in all fifteen languages
+  (`CommunityRacksSpeakTest`, populations derived from the directory and
+  `UiLocale.SUPPORTED`).
+- **Walked in the assembled app**, throwaway userdir AND a throwaway home so
+  nothing touched a real `~/.nmox`: the gallery on a Rust fixture listed *Rust
+  save loop · community · fits this project* first and said `cargo` was on the
+  machine; `lighthouse` found the static-site rack and the Ship Gate preset;
+  Mount went through the manifest and landed REFLEX, GLOSS, PURITY, QUORUM and
+  VERITAS with QUORUM's two inputs cabled; Share's dialog kept it as
+  `my-rust-loop.nmoxrack.json` with its card and no home path, and the gallery
+  then listed it under *yours* with Remove armed; Copy to Clipboard produced
+  valid JSON; and a prepared file showed, on one page, *Shared by Ada*, *1 saved
+  armed or running arrive at rest* (the TAIL), two unknown devices, its
+  settings, *made with a newer NMOX Studio*, and *SURGE running ▸ STELLAR
+  enable* as a cable this install cannot connect. Zero SEVERE in the log, zero
+  processes left. **The walk found four things, all fixed**: a rack made by the
+  dev build read "newer than this install" (the `1.0` sentinel compared as a
+  version — an unstamped build has no version now); a rack of AUTO lanes showed
+  *Settings that travel:* over an empty pane (it says nothing travels); Mount
+  painted as the gallery's default beside a search field (options mixed buttons
+  with strings, and the platform matches the initial value by identity — Close
+  is handed over as itself); each Import-from-File left a ghost gallery window
+  behind the chooser that adopted it (the doors open a turn later). **Not
+  walked**: the final mount of the prepared file (the replace question's Yes is
+  out of the background tools' reach; arrival at rest is proven behaviourally by
+  `SelfStartingLedgerTest`), Import from Clipboard end to end (`RackText` and
+  the door gate hold it), and Remove from My Racks (`MyRacks` tests).
+- **Also found, by looking.** The user guide said "Patches persist per project
+  automatically" in fifteen languages; nothing autosaves — Save Patch writes,
+  aiming loads. CLAUDE.md's reference body quoted 72 grammars (88), 16
+  manifests (60), 14 templates (15), 19 release assets (21) because the docs
+  census never read it; its undated body is in `DocsCountGateTest` now, mutant
+  by name. Ledger 102–104 record what stays open: a plugin device's KNOB also
+  runs plugin code at mount (a knob has no "off"), the three unwalked edges of
+  v2.176–v2.178, and the patch auto-load that fails silently on aim.
+
 ## [2.178.0] - 2026-09-18
 
 **The overnight batch's own review: seven lenses over the fresh code, run as probes.**
@@ -22450,6 +22574,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.178.0...v2.179.0
 [2.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.177.0...v2.178.0
 [2.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.176.0...v2.177.0
 [2.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.175.0...v2.176.0
