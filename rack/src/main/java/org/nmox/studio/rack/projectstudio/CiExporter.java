@@ -78,6 +78,10 @@ public final class CiExporter {
      * jack. Package-private for the tests.
      */
     record Steps(List<RackDevice> ordered, Set<RackDevice> onFailure) {
+        Steps {
+            ordered = List.copyOf(ordered); // callers keep no mutation handle (the Step idiom)
+            onFailure = Set.copyOf(onFailure);
+        }
     }
 
     /** The verdict jacks a cable must leave from to say "this step runs after me". */
