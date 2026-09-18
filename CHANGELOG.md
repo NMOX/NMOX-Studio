@@ -28,7 +28,11 @@ All notable changes to NMOX Studio are documented here. The format follows
   and UNUSED (only on a complete census; any dynamic `` t(`a.${x}`) `` downgrades the
   whole run to "possibly unused"; Angular unused = extract-vs-target; Lingui skipped
   and said). The source locale is `en`, else the config's, else the largest — the
-  rule is named in the status sentence. A parse failure publishes nothing (stale
+  rule is named in the status sentence. Walked live in the assembled app on an
+  i18next fixture: Action Items read `Error: 1 Warning: 7` — the placeholder
+  mismatch (`[name] ≠ [nom]`) as the one error, `errors.500` identical, `nav.about`
+  missing, and the possibly-unused rows naming the `errors.${…}` lookup, each with
+  its catalog file and location. A parse failure publishes nothing (stale
   squiggles stay true); a clean run publishes an empty batch. The bounded project
   walk is the one `CssTokens` used, promoted to `BoundedWalk` on its second
   consumer. Fifteen languages, with real plural forms.
