@@ -201,13 +201,37 @@ class SelfStartingLedgerTest {
         JSONObject patch = new JSONObject().put("version", 1).put("devices", devices).put("cables", new JSONArray());
         JSONObject shared = RackShare.export(patch, Path.of(System.getProperty("user.home")), "test");
 
-        assertThat(RackShare.inspect(shared, id -> true).atRest())
-                .as("the manifest counts every device that arrives at rest").isEqualTo(pairs.size());
-
         assertThat(startedAfterLoading(patch, project, pairs))
                 .as("control: the raw patch DOES start them, so the next assertion can fail").containsExactlyElementsOf(pairs);
         assertThat(startedAfterLoading(RackShare.imported(shared, project), project, pairs))
                 .as("imported: nothing starts until the receiver presses it").isEmpty();
+    }
+
+    @Test
+    @DisplayName("the manifest's at-rest count is every SELF_STARTING device saved on — the number the receiver reads agrees with what the mount does")
+    void manifestCountsThem() {
+        JSONArray devices = new JSONArray();
+        int expected = 0;
+        for (Map.Entry<String, Row> e : LEDGER.entrySet()) {
+            String pair = e.getKey();
+            devices.put(new JSONObject().put("type", pair.substring(0, pair.indexOf('.')))
+                    .put("state", new JSONObject().put(pair.substring(pair.indexOf('.') + 1), "true")));
+            if (e.getValue().verdict() == Verdict.SELF_STARTING) {
+                expected++;
+            }
+        }
+        JSONObject shared = new JSONObject().put(RackShare.SHARED, new JSONObject()).put("devices", devices);
+        assertThat(RackShare.inspect(shared, id -> true).atRest())
+                .as("settings saved on are not arrivals at rest; self-starting switches are").isEqualTo(expected);
+
+        JSONArray mounted = RackShare.imported(shared, Path.of(System.getProperty("user.home"))).getJSONArray("devices");
+        int i = 0;
+        for (Map.Entry<String, Row> e : LEDGER.entrySet()) {
+            String key = e.getKey().substring(e.getKey().indexOf('.') + 1);
+            assertThat(mounted.getJSONObject(i++).getJSONObject("state").getString(key))
+                    .as(e.getKey() + ": a SETTING travels as the sender left it, a SELF_STARTING switch arrives off")
+                    .isEqualTo(e.getValue().verdict() == Verdict.SETTING ? "true" : "false");
+        }
     }
 
     private static List<String> startedAfterLoading(JSONObject doc, Path project, List<String> pairs) throws Exception {
