@@ -125,12 +125,21 @@ class StarterRacksTest {
     void templatesShareTheWirings() throws Exception {
         // the shared builders are one-liners over StarterRacks; a template that
         // re-inlined its rack would be a second home the aim path could not see
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/projectstudio/ProjectTemplates.java"));
+        // comments stripped: a re-inlined rack under a comment naming the
+        // shared wiring satisfied this gate on the 2026-09-17 arc review
+        String src = org.nmox.studio.rack.GateSources.stripComments(
+                Files.readString(Path.of("src/main/java/org/nmox/studio/rack/projectstudio/ProjectTemplates.java"))
+                        .replace("\r\n", "\n"));
         for (String wiring : List.of("POLYGLOT", "VITE", "ANGULAR", "EXPRESS", "STATIC", "ELIXIR")) {
-            assertThat(src).as("templates read StarterRacks." + wiring).contains("StarterRacks." + wiring);
+            assertThat(src).as("templates read StarterRacks." + wiring).contains("buildPatchFrom(StarterRacks." + wiring + ")");
         }
         assertThat(src.split("rack\\.connect\\(").length - 1)
                 .as("only TS_LIBRARY keeps a wiring of its own (tsc + vitest, no aim-path twin)")
                 .isEqualTo(6);
+        // the outcome, not the mechanism: a rack built by any helper is still
+        // a lambda handed to buildPatchFrom — exactly one such lambda exists
+        assertThat(src.split("buildPatchFrom\\(rack ->").length - 1)
+                .as("inline rack lambdas in the templates: TS_LIBRARY's and no other")
+                .isEqualTo(1);
     }
 }

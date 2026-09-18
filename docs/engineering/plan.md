@@ -1,5 +1,19 @@
 # The Plan
 
+*Currency addendum 2026-09-18, at v2.178.0 — the arc review, run as probes by an
+agent with seven lenses, closes the overnight batch. The re-aim law (a result
+belongs to the workspace that produced it) was broken twice in code a day old —
+a modal that pumps events is a window in which the aim can move, and a bus with
+no re-aim clearing keeps whatever was last published — and both fixes are the
+same shape: capture the aim at the gesture, re-check it at the effect. The
+gate-honesty lens is the one to keep: four of five new source gates were
+decorative, each defeated by a comment carrying the literal, a hand-kept list,
+or a second call site. The rule that came out of it: a source gate derives its
+population from the generated artifact or the source shape (`addOutPort("ready"`,
+not a list), strips comments before matching (`GateSources.stripComments`), and
+counts call sites rather than testing presence. Eleven commits, eleven mutants
+by name, nothing walked — the fixes are refusals and gates, proven behaviourally.*
+
 *Currency addendum 2026-09-18, at v2.177.0 — the morning half of the overnight
 batch, built in a second worktree from the same base while the rack batch was in
 flight: i18n tooling for the user's OWN web project. `editor.i18n` reads the

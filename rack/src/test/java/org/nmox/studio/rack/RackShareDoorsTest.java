@@ -16,9 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RackShareDoorsTest {
 
+    /** The CODE of the window class — comments blanked, so a literal in a comment cannot satisfy a gate (the 2026-09-17 arc review). */
     private static String source() throws Exception {
-        return Files.readString(Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java"))
-                .replace("\r\n", "\n");
+        return GateSources.stripComments(Files.readString(Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java"))
+                .replace("\r\n", "\n"));
     }
 
     @Test
@@ -47,8 +48,30 @@ class RackShareDoorsTest {
         int fromJson = body.indexOf("RackIO.fromJson(");
         assertThat(List.of(inspect, dialog, confirm, imported, fromJson)).allMatch(i -> i > 0);
         assertThat(inspect).as("the manifest is read first").isLessThan(dialog);
+        // a stranger's file can hold anything: the manifest read sits inside a
+        // try whose catch speaks, not bare on the EDT (the 2026-09-17 arc review)
+        int tryAt = body.lastIndexOf("try {", inspect);
+        int catchAt = body.indexOf("catch (RuntimeException", inspect);
+        assertThat(tryAt).as("inspect is guarded").isPositive();
+        assertThat(catchAt).as("the guard's catch comes before the dialog").isPositive().isLessThan(dialog);
+        assertThat(body.substring(catchAt, dialog)).as("the catch refuses out loud")
+                .contains("RackTopComponent_importFailed(");
         assertThat(dialog).as("then shown, then the replace question").isLessThan(confirm);
         assertThat(confirm).as("only then is anything mounted").isLessThan(fromJson);
+        // the manifest is modal and the aim can move under it: the mount lands
+        // only in the rack the import was asked FOR (the v1.172.0 law, the
+        // 2026-09-17 arc review) — captured before the read, checked after the
+        // dialog, before the replace question and the mount
+        String importBody = src.substring(src.indexOf("private void importRack()"), mount);
+        int captured = importBody.indexOf("aimedAt = rack.getProjectDir();");
+        assertThat(captured).as("the aim is captured at pick time").isPositive()
+                .isLessThan(importBody.indexOf("SAVE_RP.post("));
+        assertThat(importBody).contains("mountShared(doc, aimedAt)");
+        int guard = body.indexOf("if (!aimedAt.equals(rack.getProjectDir()))");
+        assertThat(guard).as("the moved-aim guard sits between the manifest dialog and the replace question")
+                .isGreaterThan(dialog).isLessThan(confirm);
+        assertThat(body.substring(guard, confirm)).as("a moved aim refuses out loud and returns")
+                .contains("RackTopComponent_importAimMoved()").contains("return;");
         assertThat(body).as("what mounts is the file made local — never the raw shared document")
                 .contains("RackIO.fromJson(rack, org.nmox.studio.rack.model.RackShare.imported(");
         assertThat(body).as("a reflexive Enter must not mount a stranger's rack: Cancel is the default (v1.98.0)")
@@ -67,6 +90,6 @@ class RackShareDoorsTest {
         String body = src.substring(imp, src.indexOf("private void mountShared(", imp));
         assertThat(body).contains("SAVE_RP.post(");
         assertThat(body).contains("RackIO.readDocument(");
-        assertThat(body).contains("invokeLater(() -> mountShared(doc))");
+        assertThat(body).contains("invokeLater(() -> mountShared(doc, aimedAt))");
     }
 }

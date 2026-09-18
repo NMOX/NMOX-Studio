@@ -50,7 +50,7 @@ class ServingAnnounceOrderGateTest {
                     continue;
                 }
                 String source = Files.readString(file, StandardCharsets.UTF_8);
-                if (source.contains("emit(\"ready\"")) {
+                if (EMIT_READY.matcher(source).find()) {
                     offenders.add(file.getFileName().toString());
                 }
             }
@@ -59,6 +59,48 @@ class ServingAnnounceOrderGateTest {
                 .as("devices emitting READY by hand (route through announceServing: URL first)")
                 .isEmpty();
     }
+
+    /** {@code emit("ready"} however it is spaced — a literal match let {@code emit( "ready"} walk past. */
+    private static final java.util.regex.Pattern EMIT_READY = java.util.regex.Pattern.compile("emit\\(\\s*\"ready\"");
+
+    /**
+     * The behavioural law's population is hand-kept, and a hand-kept
+     * population cannot prove itself complete (the v2.144.0 ledger shape): a
+     * device that declares a READY out-jack but is not in {@link #servers()}
+     * could emit READY through a constant, in the wrong order, and neither
+     * law would see it — the 2026-09-17 arc review ran exactly that mutant
+     * and it lived. So the population is DERIVED here: every device source
+     * declaring {@code addOutPort("ready"} must be driven by the behavioural
+     * law, by class.
+     */
+    @Test
+    @DisplayName("Population law: every device declaring a READY out-jack is driven by the behavioural law")
+    void everyReadyJackDeviceIsDriven() throws IOException {
+        java.util.Set<String> declared = new java.util.TreeSet<>();
+        try (Stream<Path> files = Files.list(Path.of("src/main/java/org/nmox/studio/rack/devices"))) {
+            for (Path file : files.filter(p -> p.toString().endsWith(".java")).toList()) {
+                String source = Files.readString(file, StandardCharsets.UTF_8);
+                if (READY_JACK.matcher(source).find()) {
+                    declared.add(file.getFileName().toString().replace(".java", ""));
+                }
+            }
+        }
+        java.util.Set<String> driven = new java.util.TreeSet<>();
+        for (Server server : servers()) {
+            CommandDevice device = server.maker().get();
+            try {
+                driven.add(device.getClass().getSimpleName());
+            } finally {
+                device.dispose();
+            }
+        }
+        assertThat(declared).as("devices with a READY jack, read from the source").isNotEmpty();
+        assertThat(driven).as("every READY-jack device has a banner in servers(); every servers() entry has a READY jack")
+                .containsExactlyInAnyOrderElementsOf(declared);
+    }
+
+    private static final java.util.regex.Pattern READY_JACK =
+            java.util.regex.Pattern.compile("addOutPort\\(\\s*\"ready\"");
 
     /** Records every arriving signal in order, as id:payload-or-high. */
     private static final class Probe extends RackDevice {

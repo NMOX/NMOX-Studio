@@ -32,6 +32,12 @@ class I18nDoorsTest {
         int perform = src.indexOf("public void actionPerformed(");
         String body = src.substring(perform, src.indexOf("static void run(", perform));
         assertThat(body).as("the disk reads are posted to the lane").contains("RP.post(() -> run(");
+        // the outcome, not the mechanism: the run is called ONCE in the action,
+        // and that once is the posted one — an inline run( beside the post
+        // satisfied the line above on the 2026-09-17 arc review
+        int posted = body.indexOf("RP.post(() -> run(") + "RP.post(() -> ".length();
+        assertThat(body.indexOf("run(")).as("the first run( is the posted one").isEqualTo(posted);
+        assertThat(body.lastIndexOf("run(")).as("and there is no other").isEqualTo(posted);
         assertThat(body).as("nothing reads the project on the dispatch thread")
                 .doesNotContain("I18nCatalogs.detect(").doesNotContain("I18nUsage.scan(");
         assertThat(src).as("a raw thread would fail DaemonThreadGateTest too").doesNotContain("new Thread(");

@@ -46,6 +46,49 @@ class LegacyPortIdsTest {
     }
 
     @Test
+    @DisplayName("A cable the load cannot keep is SAID by name: stellar.enable (a port removed) and a halt+stop pair on one TEMPO (a duplicate after aliasing) each log a WARNING; the rest of the patch loads")
+    void droppedCablesSpeak() {
+        JSONObject patch = new JSONObject()
+                .put("version", 1)
+                .put("devices", new JSONArray()
+                        .put(device("dev-server")).put(device("tempo")).put(device("stellar")))
+                .put("cables", new JSONArray()
+                        .put(cable(0, "ready", 1, "halt"))        // aliases to stop: kept
+                        .put(cable(0, "ready", 1, "stop"))        // the same cable again: a duplicate
+                        .put(cable(0, "running", 2, "enable")));  // STELLAR lost ENABLE on 2026-09-17
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(RackIO.class.getName());
+        List<String> said = new java.util.ArrayList<>();
+        java.util.logging.Handler handler = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord r) {
+                if (r.getLevel().intValue() >= java.util.logging.Level.WARNING.intValue()) {
+                    said.add(java.text.MessageFormat.format(r.getMessage(), r.getParameters()));
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        log.addHandler(handler);
+        Rack rack = new Rack();
+        try {
+            RackIO.fromJson(rack, patch);
+            assertThat(rack.getCables()).as("the one cable that can exist").hasSize(1);
+            assertThat(said).as("each loss named, nothing else").hasSize(2);
+            assertThat(said.get(0)).contains("dev-server.ready -> tempo.stop").contains("duplicate");
+            assertThat(said.get(1)).contains("dev-server.running -> stellar.enable").contains("stellar.enable has no such port");
+        } finally {
+            log.removeHandler(handler);
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("A patch saved with tempo.halt, debug.live and tunnel.live loads with every cable intact")
     void legacyIdsLoadTheirCables() {
         // 0 SURGE, 1 TEMPO, 2 INSPECTOR, 3 WORMHOLE, 4 MONITOR-ish probe (a console)

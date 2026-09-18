@@ -113,7 +113,7 @@ public final class RackShare {
             return out;
         }
         for (int i = 0; i < devices.length(); i++) {
-            JSONObject state = devices.getJSONObject(i).optJSONObject("state");
+            JSONObject state = deviceAt(devices, i).optJSONObject("state");
             if (state == null) {
                 continue;
             }
@@ -143,7 +143,7 @@ public final class RackShare {
         JSONArray deviceArr = shared.optJSONArray("devices");
         if (deviceArr != null) {
             for (int i = 0; i < deviceArr.length(); i++) {
-                JSONObject dj = deviceArr.getJSONObject(i);
+                JSONObject dj = deviceAt(deviceArr, i);
                 String typeId = dj.optString("type", "?");
                 boolean isKnown = known.test(typeId);
                 devices.add(new Device(typeId, isKnown));
@@ -212,6 +212,22 @@ public final class RackShare {
         return digits;
     }
 
+    /**
+     * The device object at {@code i}, or a refusal that names the slot: a
+     * file from another machine can hold anything in its {@code devices}
+     * array, and org.json's own message ("JSONArray[0] is not a JSONObject")
+     * used to escape {@code inspect} uncaught on the EDT — a red exception
+     * dialog where a refusal belongs (the 2026-09-17 arc review, hostile
+     * input lens).
+     */
+    private static JSONObject deviceAt(JSONArray devices, int i) {
+        JSONObject dj = devices.optJSONObject(i);
+        if (dj == null) {
+            throw new IllegalArgumentException("devices[" + i + "] is not a device object");
+        }
+        return dj;
+    }
+
     private static String slashes(String path) {
         return path.replace('\\', '/');
     }
@@ -222,7 +238,7 @@ public final class RackShare {
             return;
         }
         for (int i = 0; i < devices.length(); i++) {
-            JSONObject state = devices.getJSONObject(i).optJSONObject("state");
+            JSONObject state = deviceAt(devices, i).optJSONObject("state");
             if (state == null) {
                 continue;
             }

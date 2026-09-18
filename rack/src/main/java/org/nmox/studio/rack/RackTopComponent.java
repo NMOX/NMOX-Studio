@@ -101,7 +101,8 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_importSettings=Settings this rack carries — read them before mounting:",
     "RackTopComponent_importMount=Mount",
     "RackTopComponent_importFailed=Could not import the rack: {0}",
-    "RackTopComponent_theSharedRack=the shared rack"
+    "RackTopComponent_theSharedRack=the shared rack",
+    "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again."
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -596,6 +597,10 @@ public final class RackTopComponent extends TopComponent {
         if (picked == null) {
             return;
         }
+        // the project the import was asked FOR: a result belongs to the
+        // workspace that produced it (the v1.172.0 law), and the aim can move
+        // under the manifest dialog — the OpenProjects bridge, a --open handshake
+        final File aimedAt = rack.getProjectDir();
         SAVE_RP.post(() -> {
             org.json.JSONObject doc;
             try {
@@ -604,14 +609,22 @@ public final class RackTopComponent extends TopComponent {
                 java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_importFailed(ex.getMessage())));
                 return;
             }
-            java.awt.EventQueue.invokeLater(() -> mountShared(doc));
+            java.awt.EventQueue.invokeLater(() -> mountShared(doc, aimedAt));
         });
     }
 
-    /** EDT: the manifest, the two confirmations, the mount. */
-    private void mountShared(org.json.JSONObject doc) {
-        org.nmox.studio.rack.model.RackShare.Manifest manifest = org.nmox.studio.rack.model.RackShare.inspect(
-                doc, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+    /** EDT: the manifest, the two confirmations, the mount — into {@code aimedAt}'s rack and no other. */
+    private void mountShared(org.json.JSONObject doc, File aimedAt) {
+        org.nmox.studio.rack.model.RackShare.Manifest manifest;
+        try {
+            manifest = org.nmox.studio.rack.model.RackShare.inspect(
+                    doc, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        } catch (RuntimeException ex) {
+            // a stranger's file can hold anything: a refusal, never a red
+            // exception dialog (the 2026-09-17 arc review, hostile input lens)
+            error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
+            return;
+        }
         // the manifest dialog: OK is not the default — a reflexive Enter must not
         // mount a stranger's rack (the v1.98.0 safe-default idiom)
         Object mount = Bundle.RackTopComponent_importMount();
@@ -623,6 +636,14 @@ public final class RackTopComponent extends TopComponent {
                 new Object[]{mount, org.openide.NotifyDescriptor.CANCEL_OPTION},
                 org.openide.NotifyDescriptor.CANCEL_OPTION);
         if (!mount.equals(DialogDisplayer.getDefault().notify(ask))) {
+            return;
+        }
+        if (!aimedAt.equals(rack.getProjectDir())) {
+            // the manifest is modal and pumps events: the rack under it can be
+            // another project's by the time Mount is pressed (the 2026-09-17
+            // arc review, re-aim lens) — mount nothing, say so, no confirm
+            // asked about a project the reader never chose
+            error(Bundle.RackTopComponent_importAimMoved());
             return;
         }
         if (!confirmReplace(Bundle.RackTopComponent_theSharedRack())) {

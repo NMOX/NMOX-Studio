@@ -91,6 +91,24 @@ class CabledUrlTest {
     }
 
     @Test
+    @DisplayName("The refusal's quoted head is cut between code points — an emoji astride the cut survives whole, never as a lone surrogate (the v1.149.0 class)")
+    void refusalHeadCutsBetweenCodePoints() throws Exception {
+        String payload = "a".repeat(CabledUrl.HEAD_CHARS - 1) + "😀" + "tail";
+        List<String> refused = new ArrayList<>();
+        CabledUrl cabled = new CabledUrl();
+        assertThat(cabled.deliver(Signal.data(payload), new LcdDisplay(200, 1), refused::add)).isFalse();
+        String head = refused.get(0);
+        assertThat(head).endsWith("😀…");
+        for (int i = 0; i < head.length(); i++) {
+            char c = head.charAt(i);
+            if (Character.isHighSurrogate(c)) {
+                assertThat(i + 1 < head.length() && Character.isLowSurrogate(head.charAt(i + 1)))
+                        .as("a high surrogate at " + i + " is followed by its low half").isTrue();
+            }
+        }
+    }
+
+    @Test
     @DisplayName("A payload that is not a URL is refused out loud and never becomes the URL")
     void nonUrlRefusesOutLoud() throws Exception {
         LcdDisplay lcd = new LcdDisplay(200, 1);

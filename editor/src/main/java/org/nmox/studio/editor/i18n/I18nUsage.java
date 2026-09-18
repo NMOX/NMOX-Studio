@@ -125,13 +125,27 @@ public final class I18nUsage {
             refs.add(new Ref(null, m.group(2)));
         }
         m = MESSAGE_OBJECT.matcher(src);
+        int[] closers = null;
+        // every character of a descriptor body is read ONCE: a nested call's
+        // body lies inside its parent's and an unclosed call's runs to the end,
+        // so the bodies only ever nest — a watermark over the text reads each
+        // once where a substring per match read 10,000 tails of one file
+        int scannedTo = 0;
         while (m.find()) {
-            int close = balanced(src, m.end() - 1);
-            String body = src.substring(m.end(), close < 0 ? src.length() : close);
-            Matcher id = ID_FIELD.matcher(body);
+            if (closers == null) {
+                closers = closers(src);   // one pass for every match, never a rescan per match
+            }
+            int close = closers[m.end() - 1];
+            int end = close < 0 ? src.length() : close;
+            int from = Math.max(m.end(), scannedTo);
+            if (from >= end) {
+                continue;
+            }
+            Matcher id = ID_FIELD.matcher(src).region(from, end);
             while (id.find()) {
                 refs.add(new Ref(null, id.group(2)));
             }
+            scannedTo = end;
         }
         m = PARAGLIDE.matcher(src);
         while (m.find()) {
@@ -183,7 +197,10 @@ public final class I18nUsage {
             char quote = src.charAt(arg);
             if (quote == '\'' || quote == '"' || quote == '`') {
                 int end = src.indexOf(quote, arg + 1);
-                if (end < 0 || src.lastIndexOf('\n', end) > arg) {
+                // lastIndexOf('\n', end) walked back to the file's START for
+                // every key on a newline-free line: 30,000 keys cost 1.4 s
+                // (the 2026-09-17 arc review); the span itself is the bound
+                if (end < 0 || newlineBetween(src, arg, end)) {
                     continue;         // unterminated on its line: not a key
                 }
                 String key = src.substring(arg + 1, end);
@@ -204,6 +221,9 @@ public final class I18nUsage {
             int stop = arg;
             while (stop < n && stop - arg < DYNAMIC_CHARS && src.charAt(stop) != ')' && src.charAt(stop) != '\n') {
                 stop++;
+            }
+            if (stop > arg && stop < n && Character.isHighSurrogate(src.charAt(stop - 1))) {
+                stop--;   // the cap never splits a pair: a lone surrogate is the v1.149.0 class
             }
             String text = src.substring(arg, stop).strip();
             if (!text.isEmpty() && !dynamic.contains(text)) {
@@ -257,21 +277,37 @@ public final class I18nUsage {
         return out;
     }
 
-    /** Index of the paren closing the one at {@code open}, or -1. */
-    private static int balanced(String s, int open) {
-        int depth = 0;
-        for (int i = open; i < s.length(); i++) {
+    /**
+     * For every {@code (} in {@code s}, the index of the {@code )} that closes
+     * it, or -1 — one stack pass over the text. The first cut rescanned from
+     * each {@code defineMessages(} to the end of the file when nothing closed
+     * it, which made 10,000 unclosed calls in one 160 KB file cost 4.8 s per
+     * file (the 2026-09-17 arc review, hostile-input lens); the census reads
+     * up to 400 such files.
+     */
+    static int[] closers(String s) {
+        int[] close = new int[s.length()];
+        java.util.Arrays.fill(close, -1);
+        java.util.ArrayDeque<Integer> open = new java.util.ArrayDeque<>();
+        for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
             if (c == '(') {
-                depth++;
-            } else if (c == ')') {
-                depth--;
-                if (depth == 0) {
-                    return i;
-                }
+                open.push(i);
+            } else if (c == ')' && !open.isEmpty()) {
+                close[open.pop()] = i;
             }
         }
-        return -1;
+        return close;
+    }
+
+    /** True when a newline sits strictly between {@code from} and {@code to} — a scan of the span, never back to the file's start. */
+    private static boolean newlineBetween(String s, int from, int to) {
+        for (int k = from + 1; k < to; k++) {
+            if (s.charAt(k) == '\n') {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** {@code <!-- … -->} blanked to spaces, newlines kept, offsets preserved. */
