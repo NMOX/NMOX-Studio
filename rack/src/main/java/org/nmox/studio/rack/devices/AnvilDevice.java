@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +43,6 @@ public class AnvilDevice extends CommandDevice {
     private final Knob blockTimeKnob;
     private final LcdDisplay chainIdLcd;
     private final LcdDisplay forkUrlLcd;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private final AtomicInteger accountCount = new AtomicInteger();
     private volatile String firstAccount;
     private volatile String firstBalance;
@@ -111,7 +109,6 @@ public class AnvilDevice extends CommandDevice {
             });
             return;
         }
-        readyFired.set(false);
         accountCount.set(0);
         firstAccount = null;
         firstBalance = null;
@@ -164,11 +161,8 @@ public class AnvilDevice extends CommandDevice {
         if (listening.find()) {
             String url = "http://" + listening.group(1);
             onEdt(() -> statusLcd.setText("CHAIN UP  " + url + "  id " + chainIdLcd.getText().trim()));
-            emit("url", Signal.data(url));
-            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
+            // URL then READY, one home (CommandDevice.announceServing)
+            announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
         }
     }
 

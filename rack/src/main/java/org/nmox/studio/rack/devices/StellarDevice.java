@@ -222,8 +222,9 @@ public class StellarDevice extends CommandDevice {
         // consumers, and net-stop tears the container down.
         if (exitCode == 0 && "net-start".equals(launchedVerb)) {
             onEdt(() -> statusLcd.setText("LOCAL NET UP (docker) — " + LOCAL_RPC_URL));
-            emit("url", Signal.data(LOCAL_RPC_URL));
-            emit("ready", Signal.trigger());
+            // URL then READY through the one home, cables only: this process
+            // does not own the container, so no registry entry (the v1.93.0 law)
+            announceServingUnowned(LOCAL_RPC_URL);
         }
     }
 

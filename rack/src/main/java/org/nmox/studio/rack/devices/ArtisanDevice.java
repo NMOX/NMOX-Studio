@@ -3,7 +3,6 @@ package org.nmox.studio.rack.devices;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nmox.studio.rack.model.Port;
@@ -41,10 +40,8 @@ public class ArtisanDevice extends CommandDevice {
     private final Led currentLed;
     private final Led outdatedLed;
     private final Knob actionKnob;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
-    private volatile String announcedUrl;
 
     public ArtisanDevice() {
         super("artisan", "ARTISAN", "LARAVEL CONSOLE", new Color(0xFF, 0x2D, 0x20), 3);
@@ -133,7 +130,6 @@ public class ArtisanDevice extends CommandDevice {
     }
 
     private void serve() {
-        readyFired.set(false);
         if (launch(List.of("php", "artisan", "serve"))) {
             emit("serving", Signal.gate(true));
         }
@@ -166,14 +162,9 @@ public class ArtisanDevice extends CommandDevice {
         Matcher m = LOCAL_URL.matcher(line);
         if (m.find()) {
             String url = m.group(1);
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
-            if (!url.equals(announcedUrl)) {
-                announcedUrl = url;
+            // URL then READY, one home (CommandDevice.announceServing)
+            if (announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB)) {
                 onEdt(() -> statusLcd.setText("SERVING  " + url));
-                emit("url", Signal.data(url));
-                registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.WEB);
             }
         }
     }
@@ -182,7 +173,7 @@ public class ArtisanDevice extends CommandDevice {
     protected void onFinished(int exitCode) {
         deregisterServing();
         emit("serving", Signal.gate(false));
-        announcedUrl = null;
+        clearServingAnnouncement();
     }
 
     /**

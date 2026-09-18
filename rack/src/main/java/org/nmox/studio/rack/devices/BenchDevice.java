@@ -31,6 +31,8 @@ public class BenchDevice extends CommandDevice {
     private final Knob connectionsKnob;
     private final Knob minKnob;
     private final LcdDisplay urlLcd;
+    /** The URL a cable delivered, until the EDT paints it (see {@link CabledUrl}). */
+    private final CabledUrl cabledUrl = new CabledUrl();
     private final LcdDisplay resultLcd;
     private final VuMeter reqMeter;
     private volatile long lastReqPerSec = -1;
@@ -91,9 +93,11 @@ public class BenchDevice extends CommandDevice {
     @Override
     public void receive(org.nmox.studio.rack.model.Port in, org.nmox.studio.rack.model.Signal signal) {
         if ("url".equals(in.getId())) {
-            if (signal.payload() != null && signal.payload().startsWith("http")) {
-                onEdt(() -> urlLcd.setText(signal.payload()));
-            }
+            // a non-URL payload is refused on the status line (refusals speak)
+            cabledUrl.deliver(signal, urlLcd, reason -> onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText(reason);
+            }));
         } else {
             super.receive(in, signal);
         }
@@ -121,7 +125,9 @@ public class BenchDevice extends CommandDevice {
         return List.of("npx", "autocannon",
                 "-d", duration,
                 "-c", CONNECTIONS[connectionsKnob.getSelectedIndex()],
-                urlLcd.getText().trim());
+                // the cabled URL until the EDT paints it (FIRE rides the router
+                // thread one signal after URL — the SCOPE 4200-opens-5173 class)
+                cabledUrl.resolve(urlLcd));
     }
 
     @Override

@@ -3,7 +3,6 @@ package org.nmox.studio.rack.devices;
 import java.awt.Color;
 import java.io.File;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.nmox.studio.rack.model.Port;
@@ -45,7 +44,6 @@ public class AnchorDevice extends CommandDevice {
     private final Led currentLed;
     private final Led outdatedLed;
     private final Knob actionKnob;
-    private final AtomicBoolean readyFired = new AtomicBoolean();
     private volatile String installedVersion;
     private volatile String latestVersion;
 
@@ -142,7 +140,6 @@ public class AnchorDevice extends CommandDevice {
             });
             return;
         }
-        readyFired.set(false);
         if (launch(buildCommand())) {
             emit("serving", Signal.gate(true));
         }
@@ -195,11 +192,8 @@ public class AnchorDevice extends CommandDevice {
         if (rpc.find()) {
             String url = rpc.group(1);
             onEdt(() -> statusLcd.setText("VALIDATOR UP  " + url));
-            emit("url", Signal.data(url));
-            registerServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
-            if (readyFired.compareAndSet(false, true)) {
-                emit("ready", Signal.trigger());
-            }
+            // URL then READY, one home (CommandDevice.announceServing)
+            announceServing(url, org.nmox.studio.rack.service.ServingRegistry.Kind.CHAIN);
         }
     }
 

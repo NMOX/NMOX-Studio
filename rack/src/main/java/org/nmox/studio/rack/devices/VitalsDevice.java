@@ -31,6 +31,8 @@ public class VitalsDevice extends CommandDevice {
     private static final String DEFAULT_URL = "http://localhost:5173";
 
     private final LcdDisplay urlLcd;
+    /** The URL a cable delivered, until the EDT paints it (see {@link CabledUrl}). */
+    private final CabledUrl cabledUrl = new CabledUrl();
     private final Knob minKnob;
     private final Knob gateKnob;
     private final VuMeter perfMeter = new VuMeter("PERF", false);
@@ -97,7 +99,9 @@ public class VitalsDevice extends CommandDevice {
      * the LCD showing the pick as "auto: &lt;url&gt;".
      */
     String effectiveUrl() {
-        String dialed = urlLcd.getText().trim();
+        // the cabled URL until the EDT paints it (RUN rides the router thread
+        // one signal after URL — the SCOPE 4200-opens-5173 class)
+        String dialed = cabledUrl.resolve(urlLcd);
         if (!AutoUrl.isAuto(dialed, DEFAULT_URL)) {
             return dialed;
         }
@@ -223,9 +227,11 @@ public class VitalsDevice extends CommandDevice {
     @Override
     public void receive(Port in, Signal signal) {
         if ("url".equals(in.getId())) {
-            if (signal.payload() != null && signal.payload().startsWith("http")) {
-                onEdt(() -> urlLcd.setText(signal.payload()));
-            }
+            // a non-URL payload is refused on the status line (refusals speak)
+            cabledUrl.deliver(signal, urlLcd, reason -> onEdt(() -> {
+                statusLcd.setTextColor(RackStyle.LCD_AMBER);
+                statusLcd.setText(reason);
+            }));
             return;
         }
         super.receive(in, signal);
