@@ -47,6 +47,7 @@ import org.openide.util.RequestProcessor;
     "CheckTranslationsAction_aimFirst=Aim the studio at a project first (open a folder or project).",
     "CheckTranslationsAction_noCatalogs=Translations: no catalogs found under {0} — i18next, vue-i18n, Angular XLIFF, Lingui, Paraglide, react-intl, svelte-i18n, or a locales/ folder beside an i18n.js",
     "CheckTranslationsAction_parseError=Translations: could not read {0} ({1}) — nothing published",
+    "CheckTranslationsAction_aimMoved=Translations: the project changed while checking — nothing published. Run again.",
     "CheckTranslationsAction_summary=Translations: {0}",
     "CheckTranslationsAction_join=, ",
     "CheckTranslationsAction_catalogs={1,choice,0#{0} catalogs|1#{0} catalog|1<{0} catalogs}",
@@ -85,11 +86,24 @@ public final class CheckTranslationsAction implements ActionListener {
             return;
         }
         // the catalogs and the source walk are disk reads: never on the EDT
-        RP.post(() -> run(project.toPath()));
+        RP.post(() -> run(project.toPath(), CheckTranslationsAction::aimedDir));
     }
 
-    /** The whole run, off the EDT; only the status sentence hops back. */
-    static void run(Path root) {
+    /** The project aimed NOW, or null — read again at publish time, never assumed from click time. */
+    static File aimedDir() {
+        ProjectAim aim = ProjectAim.find();
+        return aim == null ? null : aim.projectDir();
+    }
+
+    /**
+     * The whole run, off the EDT; only the status sentence hops back. The
+     * findings publish only if {@code aimNow} still answers {@code root}: a
+     * result belongs to the workspace that produced it (the v1.172.0 law), and
+     * a walk of four hundred files takes long enough for the aim to move —
+     * publishing then would land the OLD project's rows as the bus's current
+     * {@code i18n} batch (the 2026-09-17 arc review, re-aim lens).
+     */
+    static void run(Path root, java.util.function.Supplier<File> aimNow) {
         I18nCatalogs.Catalogs catalogs;
         try {
             catalogs = I18nCatalogs.detect(root);
@@ -109,8 +123,18 @@ public final class CheckTranslationsAction implements ActionListener {
                 && catalogs.format() != I18nCatalogs.Format.ANGULAR_XLIFF
                 ? I18nUsage.scan(root) : null;
         I18nCheck.Report report = I18nCheck.run(catalogs, usage);
+        if (!stillAimed(root, aimNow.get())) {
+            status(Bundle.CheckTranslationsAction_aimMoved());
+            return;
+        }
         DiagnosticsBus.publish(TOOL, problems(report));
         status(sentence(catalogs, report));
+    }
+
+    /** True when the project aimed now is the one the run read. */
+    static boolean stillAimed(Path root, File now) {
+        return now != null
+                && root.toAbsolutePath().normalize().equals(now.toPath().toAbsolutePath().normalize());
     }
 
     /** The status sentence: the fragments joined the language's own way. */
