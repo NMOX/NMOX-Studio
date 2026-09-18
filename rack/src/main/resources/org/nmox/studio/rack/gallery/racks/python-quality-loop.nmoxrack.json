@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Python quality loop",
+    "description": "A Python save runs ruff through SOLDER, then pytest with coverage held at an 80% floor, so a green suite with thin coverage still fails; a failed run goes to KVASIR for an explanation. The floor needs the pytest-cov plugin installed.",
+    "kinds": ["PYTHON"],
+    "requires": ["python3", "pytest", "ruff"]
+  },
+  "devices": [
+    {"type": "reflex", "state": {"armed": "false", "filter": "0", "glob": "py"}},
+    {"type": "cmd", "state": {"command": "ruff check ."}},
+    {"type": "test", "state": {"framework": "0", "coverage": "true", "covMin": "4"}},
+    {"type": "kvasir"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "fail", "toDevice": 3, "toPort": "explain"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 4, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 4, "toPort": "in"},
+    {"fromDevice": 3, "fromPort": "out", "toDevice": 4, "toPort": "in"}
+  ]
+}

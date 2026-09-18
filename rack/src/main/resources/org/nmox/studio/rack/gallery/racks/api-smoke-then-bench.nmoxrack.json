@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "API smoke, then bench",
+    "description": "SURGE starts the service; the moment it is READY, PING calls the health route, and only a passing smoke test lets GAUNTLET load-test the live address against a 100 requests-per-second floor. For checking that a change did not quietly cost throughput.",
+    "kinds": ["NODE"],
+    "requires": ["node", "npx"]
+  },
+  "devices": [
+    {"type": "dev-server", "state": {"server": "0", "port": "0"}},
+    {"type": "http", "state": {"method": "0", "url": "http://localhost:3000/health"}},
+    {"type": "bench", "state": {"duration": "0", "connections": "0", "url": "http://localhost:3000", "min": "1"}},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "ready", "toDevice": 1, "toPort": "send"},
+    {"fromDevice": 0, "fromPort": "url", "toDevice": 2, "toPort": "url"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "out", "toDevice": 3, "toPort": "in"},
+    {"fromDevice": 1, "fromPort": "body", "toDevice": 3, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 3, "toPort": "in"}
+  ]
+}

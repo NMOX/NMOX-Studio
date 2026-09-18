@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Rust save loop",
+    "description": "Every Rust save checks formatting and runs clippy side by side; cargo test runs only when both pass, and a failed test run goes to KVASIR for an explanation. For a crate you are changing all day.",
+    "kinds": ["RUST"],
+    "requires": ["cargo"]
+  },
+  "devices": [
+    {"type": "reflex", "state": {"armed": "false", "filter": "0", "glob": "rs"}},
+    {"type": "format", "state": {"write": "false"}},
+    {"type": "lint", "state": {"fix": "false"}},
+    {"type": "join", "state": {"mode": "0"}},
+    {"type": "test"},
+    {"type": "kvasir"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "done", "toDevice": 3, "toPort": "in1"},
+    {"fromDevice": 2, "fromPort": "done", "toDevice": 3, "toPort": "in2"},
+    {"fromDevice": 3, "fromPort": "ok", "toDevice": 4, "toPort": "run"},
+    {"fromDevice": 4, "fromPort": "fail", "toDevice": 5, "toPort": "explain"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 5, "fromPort": "out", "toDevice": 6, "toPort": "in"}
+  ]
+}

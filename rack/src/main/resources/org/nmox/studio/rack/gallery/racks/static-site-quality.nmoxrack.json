@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Static site quality",
+    "description": "IGNITION serves the folder and SCOPE opens it; the same READY runs a Lighthouse audit that must hold 90 in all four categories. While the site is served, every fourth TEMPO tick has BEACON confirm it still answers. Re-aim BEACON at the live URL once the site is deployed.",
+    "kinds": ["STATIC"],
+    "requires": ["python3", "npx"]
+  },
+  "devices": [
+    {"type": "run", "state": {"target": "0"}},
+    {"type": "browser", "state": {"url": "http://localhost:8000"}},
+    {"type": "vitals", "state": {"url": "http://localhost:8000", "min": "4", "gate": "5"}},
+    {"type": "tempo", "state": {"rate": "3", "running": "false"}},
+    {"type": "beacon", "state": {"url": "http://localhost:8000", "min": "0"}},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "url", "toDevice": 1, "toPort": "url"},
+    {"fromDevice": 0, "fromPort": "ready", "toDevice": 1, "toPort": "open"},
+    {"fromDevice": 0, "fromPort": "url", "toDevice": 2, "toPort": "url"},
+    {"fromDevice": 0, "fromPort": "ready", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "running", "toDevice": 3, "toPort": "enable"},
+    {"fromDevice": 3, "fromPort": "bar", "toDevice": 4, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "out", "toDevice": 5, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 5, "toPort": "in"}
+  ]
+}

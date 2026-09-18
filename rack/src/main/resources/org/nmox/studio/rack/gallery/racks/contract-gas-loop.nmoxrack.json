@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Contract gas loop",
+    "description": "A Solidity save runs forge build, then forge test; a green suite is checked by GOVERNOR against the committed gas snapshot and analysed by PURITY with slither when it is installed, and a red one goes to KVASIR for an explanation. For catching a gas regression on the save that caused it.",
+    "kinds": ["FOUNDRY"],
+    "requires": ["forge"]
+  },
+  "devices": [
+    {"type": "reflex", "state": {"armed": "false", "filter": "0", "glob": "sol"}},
+    {"type": "build", "state": {"watch": "false"}},
+    {"type": "test"},
+    {"type": "gas-budget", "state": {"tolerance": "0"}},
+    {"type": "lint", "state": {"fix": "false"}},
+    {"type": "kvasir"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "ok", "toDevice": 3, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "ok", "toDevice": 4, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "fail", "toDevice": 5, "toPort": "explain"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 3, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 5, "fromPort": "out", "toDevice": 6, "toPort": "in"}
+  ]
+}

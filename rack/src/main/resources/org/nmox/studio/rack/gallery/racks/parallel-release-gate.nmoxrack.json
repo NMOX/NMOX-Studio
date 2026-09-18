@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Parallel release gate",
+    "description": "One press of MAESTRO runs three lanes at once: the tests, a production build weighed by PRISM against a 500 KB budget, and the security audit. QUORUM lets PREFLIGHT run only when every lane passed, and only a PREFLIGHT pass reaches the LAUNCHPAD, which stays unarmed until you arm it.",
+    "kinds": ["NODE"],
+    "requires": ["node", "npm", "git"]
+  },
+  "devices": [
+    {"type": "master"},
+    {"type": "test"},
+    {"type": "build", "state": {"prod": "true", "watch": "false"}},
+    {"type": "bundle-size", "state": {"dir": "dist", "max": "2"}},
+    {"type": "audit"},
+    {"type": "join", "state": {"mode": "0"}},
+    {"type": "preflight"},
+    {"type": "deploy"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "trig1", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "trig2", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "trig3", "toDevice": 4, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "ok", "toDevice": 3, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "done", "toDevice": 5, "toPort": "in1"},
+    {"fromDevice": 2, "fromPort": "fail", "toDevice": 5, "toPort": "in2"},
+    {"fromDevice": 3, "fromPort": "ok", "toDevice": 5, "toPort": "in2"},
+    {"fromDevice": 3, "fromPort": "fail", "toDevice": 5, "toPort": "in2"},
+    {"fromDevice": 4, "fromPort": "done", "toDevice": 5, "toPort": "in3"},
+    {"fromDevice": 5, "fromPort": "ok", "toDevice": 6, "toPort": "run"},
+    {"fromDevice": 6, "fromPort": "ok", "toDevice": 7, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 8, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 8, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "out", "toDevice": 8, "toPort": "in"},
+    {"fromDevice": 6, "fromPort": "out", "toDevice": 8, "toPort": "in"},
+    {"fromDevice": 7, "fromPort": "out", "toDevice": 8, "toPort": "in"}
+  ]
+}

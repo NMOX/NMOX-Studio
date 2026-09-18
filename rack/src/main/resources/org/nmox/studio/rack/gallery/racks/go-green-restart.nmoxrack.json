@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Go: restart on green",
+    "description": "A Go save runs go test; only a green run restarts the service through IGNITION and runs go vet. While the service is up, TEMPO has PING call its health route every ten seconds. The running server is never replaced by code that fails its tests.",
+    "kinds": ["GO"],
+    "requires": ["go"]
+  },
+  "devices": [
+    {"type": "reflex", "state": {"armed": "false", "filter": "0", "glob": "go"}},
+    {"type": "test"},
+    {"type": "run"},
+    {"type": "tempo", "state": {"rate": "1", "running": "false"}},
+    {"type": "http", "state": {"method": "0", "url": "http://localhost:8080/health"}},
+    {"type": "lint", "state": {"fix": "false"}},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 5, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "running", "toDevice": 3, "toPort": "enable"},
+    {"fromDevice": 3, "fromPort": "tick", "toDevice": 4, "toPort": "send"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "body", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 5, "fromPort": "out", "toDevice": 6, "toPort": "in"}
+  ]
+}

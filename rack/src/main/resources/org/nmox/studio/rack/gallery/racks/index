@@ -1,0 +1,13 @@
+# The community racks, one file name per line, in shelf order.
+# A classpath cannot be listed, so this index IS the shelf: a rack file
+# missing from it never ships, and CommunityRacksGateTest fails the build.
+rust-save-loop.nmoxrack.json
+go-green-restart.nmoxrack.json
+python-quality-loop.nmoxrack.json
+api-smoke-then-bench.nmoxrack.json
+nextjs-e2e-triage.nmoxrack.json
+workspace-package-gate.nmoxrack.json
+static-site-quality.nmoxrack.json
+contract-gas-loop.nmoxrack.json
+compose-bench.nmoxrack.json
+parallel-release-gate.nmoxrack.json

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Next.js E2E with triage",
+    "description": "NEXUS serves the app and SPECTER runs the Playwright or Cypress suite the moment it is READY. A failing suite goes straight to KVASIR for an explanation, the long output scrolls in PHOSPHOR, and SCOPE opens the HTML report when SPECTER serves it.",
+    "kinds": ["NODE"],
+    "requires": ["node", "npx"]
+  },
+  "devices": [
+    {"type": "nextjs"},
+    {"type": "e2e"},
+    {"type": "kvasir"},
+    {"type": "browser", "state": {"url": "http://localhost:3000"}},
+    {"type": "terminal"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "ready", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "fail", "toDevice": 2, "toPort": "explain"},
+    {"fromDevice": 1, "fromPort": "url", "toDevice": 3, "toPort": "url"},
+    {"fromDevice": 1, "fromPort": "ready", "toDevice": 3, "toPort": "open"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 4, "toPort": "in"},
+    {"fromDevice": 0, "fromPort": "out", "toDevice": 5, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 5, "toPort": "in"}
+  ]
+}

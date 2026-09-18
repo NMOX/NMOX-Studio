@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Workspace package gate",
+    "description": "For a JavaScript monorepo: dial one package on WAYPOINT and every lane runs there. A save type-checks, lints and tests that package side by side, and QUORUM builds it only when all three pass, so one package is proven without running the whole repository.",
+    "kinds": ["NODE"],
+    "requires": ["node", "npx"]
+  },
+  "devices": [
+    {"type": "waypoint"},
+    {"type": "reflex", "state": {"armed": "false", "filter": "1", "glob": ""}},
+    {"type": "typecheck", "state": {"watch": "false", "strict": "false"}},
+    {"type": "lint", "state": {"fix": "false"}},
+    {"type": "test"},
+    {"type": "join", "state": {"mode": "0"}},
+    {"type": "build", "state": {"prod": "true", "watch": "false"}},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 1, "fromPort": "changed", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "changed", "toDevice": 3, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "changed", "toDevice": 4, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "done", "toDevice": 5, "toPort": "in1"},
+    {"fromDevice": 3, "fromPort": "done", "toDevice": 5, "toPort": "in2"},
+    {"fromDevice": 4, "fromPort": "done", "toDevice": 5, "toPort": "in3"},
+    {"fromDevice": 5, "fromPort": "ok", "toDevice": 6, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 7, "toPort": "in"},
+    {"fromDevice": 3, "fromPort": "out", "toDevice": 7, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "out", "toDevice": 7, "toPort": "in"},
+    {"fromDevice": 6, "fromPort": "out", "toDevice": 7, "toPort": "in"}
+  ]
+}

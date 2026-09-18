@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Compose bench",
+    "description": "SOLDER brings the stack up with docker compose and streams it to PHOSPHOR, TAIL follows the app log onto MONITOR when you flip FOLLOW, and while HARBOR sees the Docker engine running TEMPO has PING check the health route every thirty seconds.",
+    "requires": ["docker"]
+  },
+  "devices": [
+    {"type": "docker"},
+    {"type": "cmd", "state": {"command": "docker compose up --build"}},
+    {"type": "tail", "state": {"path": "logs/app.log", "follow": "false"}},
+    {"type": "tempo", "state": {"rate": "2", "running": "false"}},
+    {"type": "http", "state": {"method": "0", "url": "http://localhost:8080/health"}},
+    {"type": "terminal"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "running", "toDevice": 3, "toPort": "enable"},
+    {"fromDevice": 3, "fromPort": "tick", "toDevice": 4, "toPort": "send"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 5, "toPort": "in"},
+    {"fromDevice": 0, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 6, "toPort": "in"},
+    {"fromDevice": 4, "fromPort": "body", "toDevice": 6, "toPort": "in"}
+  ]
+}
