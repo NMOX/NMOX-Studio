@@ -210,13 +210,18 @@ what runs, in what order, in parallel or not, and what happens when
 something fails — and it is a small file, so it travels.
 
 ```
-REFLEX changed ▸ GLOSS run          a save checks formatting…
-REFLEX changed ▸ PURITY run         …and runs clippy, at the same time
-GLOSS done     ▸ QUORUM in1
-PURITY done    ▸ QUORUM in2         QUORUM waits for both
-QUORUM ok      ▸ VERITAS run        cargo test only when both passed
-VERITAS fail   ▸ KVASIR explain     a failure is explained, hands-free
+REFLEX CHANGED ▸ GLOSS RUN, PURITY RUN
+GLOSS DONE ▸ QUORUM IN 1
+PURITY DONE ▸ QUORUM IN 2
+QUORUM OK ▸ VERITAS RUN
+VERITAS FAIL ▸ KVASIR EXPLAIN
 ```
+
+A save checks formatting and runs clippy *at the same time*; QUORUM waits for
+both; `cargo test` runs only when both passed; a failure is explained,
+hands-free. Parallel steps, a join, a conditional and an error path — visible
+at once, changed by moving a cable.
+
 
 That is the *Rust save loop*, one of the racks in the **Rack Gallery**
 (Tools ▸ Rack Gallery…, or **Presets ▾** on the rack): community racks,
