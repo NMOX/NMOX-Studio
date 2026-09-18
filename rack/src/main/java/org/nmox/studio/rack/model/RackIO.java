@@ -110,16 +110,30 @@ public final class RackIO {
         JSONArray cableArr = root.optJSONArray("cables");
         if (cableArr != null) {
             for (int i = 0; i < cableArr.length(); i++) {
-                JSONObject cj = cableArr.getJSONObject(i);
-                int fi = cj.getInt("fromDevice"), ti = cj.getInt("toDevice");
+                // By the time cables load, the rack has been CLEARED and its
+                // devices mounted: an exception here leaves the user with half a
+                // rack and no way back (loading is an undo boundary). A cable
+                // entry that is not an object, or names no device or jack, is one
+                // lost cable said by name — never org.json's exception (found by
+                // RackCompatTest, 2026-09-18: v2.178.0 hardened the device slots
+                // of a stranger's file and not the cable slots).
+                JSONObject cj = cableArr.optJSONObject(i);
+                if (cj == null) {
+                    LOG.log(java.util.logging.Level.WARNING,
+                            "rack patch cable #{0} dropped: not a cable entry", i + 1);
+                    continue;
+                }
+                int fi = cj.optInt("fromDevice", -1), ti = cj.optInt("toDevice", -1);
                 if (fi < 0 || fi >= devices.size() || ti < 0 || ti >= devices.size()) {
+                    LOG.log(java.util.logging.Level.WARNING,
+                            "rack patch cable #{0} dropped: it names a device slot this patch does not have", i + 1);
                     continue;
                 }
                 RackDevice fd = devices.get(fi);
                 RackDevice td = devices.get(ti);
                 // a renamed jack keeps its cables: the saved id maps to today's
-                String fromId = currentPortId(fd, cj.getString("fromPort"));
-                String toId = currentPortId(td, cj.getString("toPort"));
+                String fromId = currentPortId(fd, cj.optString("fromPort", ""));
+                String toId = currentPortId(td, cj.optString("toPort", ""));
                 Port from = fd.getPort(fromId);
                 Port to = td.getPort(toId);
                 // a missing device adopts the ports its saved cables name,
