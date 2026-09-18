@@ -93,6 +93,10 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_shareFilter=Rack patch (*.nmoxrack.json)",
     "RackTopComponent_sharedLabel={0}  [shared]",
     "RackTopComponent_shareFailed=Could not share the rack: {0}",
+    "RackTopComponent_copiedLabel={0}  [copied]",
+    "RackTopComponent_keptLabel=[kept as {0}]",
+    "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
+    "RackTopComponent_leavingSummary={0} devices, {1} cables. Settings that travel:",
     "RackTopComponent_importRack=Import…",
     "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
     "RackTopComponent_importTitle=Import Rack",
@@ -546,8 +550,61 @@ public final class RackTopComponent extends TopComponent {
      * naming the product version — see {@link org.nmox.studio.rack.model.RackShare}.
      * The snapshot is taken on the EDT; only the write rides the lane.
      */
+    /**
+     * Share… (v2.179.0): one dialog the rack leaves through. The sender names
+     * it, reads what travels inside it, and picks a file, the clipboard or My
+     * Racks. The rack is snapshotted at the gesture — what the sender read is
+     * what leaves, whatever the rack does while the dialog is up — and the
+     * kind detection (a disk walk) runs before the dialog, off the EDT.
+     */
     private void shareRack() {
-        File dir = rack.getProjectDir();
+        final File dir = rack.getProjectDir();
+        final org.json.JSONObject shared = org.nmox.studio.rack.model.RackShare.export(
+                RackIO.toJson(rack), java.nio.file.Path.of(System.getProperty("user.home")),
+                org.nmox.studio.core.util.ProductVersion.number());
+        SAVE_RP.post(() -> {
+            org.nmox.studio.rack.devices.ProjectInspector.ProjectKind kind =
+                    org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
+            String kindName = kind == null || "NONE".equals(kind.name()) || "LEARN".equals(kind.name())
+                    ? null : kind.name();
+            java.awt.EventQueue.invokeLater(() -> shareSnapshot(shared, dir, kindName));
+        });
+    }
+
+    /** EDT: the dialog, then the destination the sender picked. */
+    private void shareSnapshot(org.json.JSONObject shared, File dir, String kindName) {
+        java.util.Optional<org.nmox.studio.rack.sharing.ShareDialog.Result> asked =
+                org.nmox.studio.rack.sharing.ShareDialog.ask(dir.getName(), kindName,
+                        org.nmox.studio.rack.sharing.ShareCards.suggestRequires(shared), leavingText(shared));
+        if (asked.isEmpty()) {
+            return;
+        }
+        asked.get().card().writeTo(shared.getJSONObject(org.nmox.studio.rack.model.RackShare.SHARED));
+        String projectName = dir.getName();
+        switch (asked.get().destination()) {
+            case FILE -> shareToFile(shared, dir, asked.get().card().name(), projectName);
+            case CLIPBOARD -> {
+                java.awt.Toolkit.getDefaultToolkit().getSystemClipboard().setContents(
+                        new java.awt.datatransfer.StringSelection(
+                                org.nmox.studio.rack.sharing.RackText.render(shared)), null);
+                flashLabel(Bundle.RackTopComponent_copiedLabel(projectName));
+            }
+            case MY_RACKS -> SAVE_RP.post(() -> {
+                try {
+                    File kept = org.nmox.studio.rack.sharing.MyRacks.keep(shared, asked.get().card().name());
+                    java.awt.EventQueue.invokeLater(() -> flashLabel(Bundle.RackTopComponent_keptLabel(kept.getName())));
+                } catch (org.nmox.studio.rack.sharing.MyRacks.AlreadyKeptException taken) {
+                    java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_alreadyKept(taken.getMessage())));
+                } catch (IOException ex) {
+                    java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_shareFailed(ex.getMessage())));
+                }
+            });
+            default -> {
+            }
+        }
+    }
+
+    private void shareToFile(org.json.JSONObject shared, File dir, String rackName, String projectName) {
         File picked = new org.openide.filesystems.FileChooserBuilder(RackTopComponent.class)
                 .setTitle(Bundle.RackTopComponent_shareTitle())
                 .setDefaultWorkingDirectory(dir)
@@ -559,23 +616,34 @@ public final class RackTopComponent extends TopComponent {
             return;
         }
         File target = picked.getName().endsWith(".json") ? picked : new File(picked.getPath() + ".nmoxrack.json");
-        org.json.JSONObject shared = org.nmox.studio.rack.model.RackShare.export(
-                RackIO.toJson(rack), java.nio.file.Path.of(System.getProperty("user.home")),
-                org.nmox.studio.core.util.ProductVersion.number());
-        String projectName = dir.getName();
         SAVE_RP.post(() -> {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), shared.toString(2));
-                java.awt.EventQueue.invokeLater(() -> {
-                    projectLabel.setText(PlainText.plain(Bundle.RackTopComponent_sharedLabel(projectName)));
-                    javax.swing.Timer revert = new javax.swing.Timer(2000, ev -> updateProjectLabel());
-                    revert.setRepeats(false);
-                    revert.start();
-                });
+                java.awt.EventQueue.invokeLater(() -> flashLabel(Bundle.RackTopComponent_sharedLabel(projectName)));
             } catch (IOException ex) {
                 java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_shareFailed(ex.getMessage())));
             }
         });
+    }
+
+    /** EDT: a two-second word on the project label, then the label again. */
+    private void flashLabel(String text) {
+        projectLabel.setText(PlainText.plain(text));
+        javax.swing.Timer revert = new javax.swing.Timer(2000, ev -> updateProjectLabel());
+        revert.setRepeats(false);
+        revert.start();
+    }
+
+    /** What the sender reads before the rack goes: every setting the receiver's manifest will list. */
+    static String leavingText(org.json.JSONObject shared) {
+        org.nmox.studio.rack.model.RackShare.Manifest manifest = org.nmox.studio.rack.model.RackShare.inspect(
+                shared, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        StringBuilder sb = new StringBuilder();
+        sb.append(Bundle.RackTopComponent_leavingSummary(manifest.devices().size(), manifest.cables())).append("\n");
+        for (org.nmox.studio.rack.model.RackShare.Setting st : manifest.settings()) {
+            sb.append("  ").append(st.typeId()).append(" · ").append(st.key()).append(": ").append(st.value()).append("\n");
+        }
+        return sb.toString();
     }
 
     /**
