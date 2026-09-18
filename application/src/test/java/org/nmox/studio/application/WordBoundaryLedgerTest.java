@@ -77,7 +77,6 @@ class WordBoundaryLedgerTest {
             + "change it. Widening these would break the editor for everyone";
 
     private static final List<String> CODE_SYNTAX_FILES = List.of(
-            "RackJudge.java", // a Windows drive LETTER (C:) in a path — ASCII by the OS's own rule
             "ClassicApiMatcher.java", "CssClassCompletionItem.java", "CssClasses.java",
             "CssColors.java", "CssCompletionProvider.java", "CssFutures.java", "CssTokens.java",
             "Emmet.java", "EnvKeys.java", "ExplainQueries.java", "Highlights.java",
