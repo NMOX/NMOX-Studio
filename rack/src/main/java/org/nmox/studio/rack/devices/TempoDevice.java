@@ -59,7 +59,8 @@ public class TempoDevice extends RackDevice {
         addOutPort("running", "RUNNING", SignalType.GATE);
 
         param("rate", rateKnob);
-        param("running", runSwitch);
+        // restoring CLOCK=RUN starts the timer that fires TICK/BAR: self-starting
+        paramSelfStarting("running", runSwitch);
     }
 
     /**

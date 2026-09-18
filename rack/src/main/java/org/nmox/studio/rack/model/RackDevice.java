@@ -42,6 +42,10 @@ public abstract class RackDevice extends JPanel {
     private final List<Port> ports = new ArrayList<>();
     private final Map<String, Supplier<String>> paramGetters = new LinkedHashMap<>();
     private final Map<String, Consumer<String>> paramSetters = new LinkedHashMap<>();
+    /** Every key persisted through the ToggleSwitch overloads, in registration order. */
+    private final java.util.Set<String> toggleKeys = new java.util.LinkedHashSet<>();
+    /** The subset whose restore STARTS something; see {@link #paramSelfStarting}. */
+    private final java.util.Set<String> selfStartingKeys = new java.util.LinkedHashSet<>();
 
     private Rack rack;
     private boolean front = true;
@@ -638,9 +642,43 @@ public abstract class RackDevice extends JPanel {
         }
     }
 
+    /**
+     * Persists a switch that is a SETTING: restoring it on changes what the
+     * NEXT press does (a flag on a command, an env var) and starts nothing.
+     * A switch whose restore starts a timer, a watcher, a poll or a process
+     * belongs to {@link #paramSelfStarting} instead — {@code SelfStartingLedgerTest}
+     * classifies every (device, key) pair and fails on one nobody decided about.
+     */
     protected void param(String key, ToggleSwitch toggle) {
+        toggleKeys.add(key);
         paramGetters.put(key, () -> String.valueOf(toggle.isOn()));
         paramSetters.put(key, v -> toggle.setOn(Boolean.parseBoolean(v)));
+    }
+
+    /**
+     * Persists a switch whose restore STARTS something by itself — REFLEX's
+     * watcher, TEMPO's clock, TAIL's poll of a saved path. Same persistence
+     * as {@link #param(String, ToggleSwitch)}; the difference is that the key
+     * is declared, so a rack that arrives from another machine
+     * ({@link RackShare#imported}) can set it off and count it, and the
+     * receiver starts it by pressing it. The declaration lives HERE, beside
+     * the switch, because a hand-kept list of key names elsewhere was one
+     * device away from wrong (v2.176.0 shipped {@code armed}/{@code running}
+     * and missed TAIL's {@code follow}).
+     */
+    protected void paramSelfStarting(String key, ToggleSwitch toggle) {
+        param(key, toggle);
+        selfStartingKeys.add(key);
+    }
+
+    /** Every state key backed by a switch, self-starting or not. */
+    public java.util.Set<String> toggleKeys() {
+        return java.util.Collections.unmodifiableSet(new java.util.LinkedHashSet<>(toggleKeys));
+    }
+
+    /** The switch keys whose restore starts something; a shared rack arrives with these off. */
+    public java.util.Set<String> selfStartingKeys() {
+        return java.util.Collections.unmodifiableSet(new java.util.LinkedHashSet<>(selfStartingKeys));
     }
 
     /**

