@@ -91,7 +91,7 @@ class UserPresetsTest {
     }
 
     @Test
-    @DisplayName("the menu wires customs through loadPatch and keeps the replace-confirm")
+    @DisplayName("the menu wires customs through the shared door: off-EDT read, manifest, replace confirm, arrival at rest")
     void menuWiring() throws Exception {
         // CRLF checkouts (the windows lane) — normalize before asserting
         String src = Files.readString(Path.of("src", "main", "java", "org",
@@ -101,15 +101,23 @@ class UserPresetsTest {
         assertThat(src)
                 .as("customs must join the menu, or the drop-in dir is dead")
                 .contains("UserPresets.list()");
+        // v2.179.0: a file in the drop-in dir may be one the user KEPT from Share
+        // (its paths spelled ~/…, which only RackShare.imported expands) or one a
+        // stranger sent — so it takes the import door, not Load Patch's. That
+        // door keeps both older laws: the read is off the EDT (importFile posts
+        // to SAVE_RP) and the replace confirm still asks (inside mountShared,
+        // pinned in order by RackShareDoorsTest).
         assertThat(src)
-                .as("a custom preset must apply through the off-EDT read path"
-                        + " Load Patch already uses, never a same-thread parse")
-                .contains("loadPatch(custom.file())");
+                .as("a kept rack mounts through the import door")
+                .contains("item.addActionListener(a -> importFile(custom.file()));");
         assertThat(src)
-                .as("a preset click destroys the current wiring with undo"
-                        + " powerless (v1.280.0) — customs need the same"
-                        + " confirm the built-ins have")
-                .contains("confirmReplace(Bundle.RackTopComponent_thePreset(custom.name())"); // v2.97.0: the sentence is a bundle value now; the confirm is the law
+                .as("never straight through Load Patch: ~ would stay unexpanded and nothing would arrive at rest")
+                .doesNotContain("loadPatch(custom.file())");
+        int door = src.indexOf("private void importFile(File picked)");
+        assertThat(door).as("the import door exists").isPositive();
+        String body = src.substring(door, src.indexOf("public void showGallery()", door));
+        assertThat(body).as("the read rides the save lane, off the EDT").contains("SAVE_RP.post(")
+                .contains("RackIO.readDocument(picked)").contains("mountShared(doc, aimedAt)");
         assertThat(src)
                 .as("the drop-in scan is file IO and stays off the EDT")
                 .contains("RequestProcessor.getDefault().post");

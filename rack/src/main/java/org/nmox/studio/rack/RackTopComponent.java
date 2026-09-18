@@ -97,6 +97,8 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_keptLabel=[kept as {0}]",
     "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
     "RackTopComponent_leavingSummary={0} devices, {1} cables. Settings that travel:",
+    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — take it out of the rack before sharing (shown masked here):",
+    "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
     "RackTopComponent_importRack=Import…",
     "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
     "RackTopComponent_importTitle=Import Rack",
@@ -113,6 +115,12 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_importLostSettings=Settings this install's devices do not have — ignored:",
     "RackTopComponent_importTooNew=This rack file is in format {0}; this install reads format {1}. Update NMOX Studio to import it.",
     "RackTopComponent_importClipboard=Import Rack from Clipboard",
+    "RackTopComponent_gallery=Rack Gallery…",
+    "RackTopComponent_removeConfirm=Remove {0} from My Racks? The file is deleted; racks already mounted from it are not touched.",
+    "RackTopComponent_removeTitle=Remove from My Racks",
+    "RackTopComponent_removedLabel=[removed {0}]",
+    "RackTopComponent_removeFailed=Could not remove the rack: {0}",
+    "RackTopComponent_theRack=the {0} rack",
     "RackTopComponent_clipboardEmpty=The clipboard holds no text.",
     "RackTopComponent_clipboardTooLarge=The clipboard text is too large to be a rack.",
     "RackTopComponent_clipboardNotJson=The clipboard text is not a rack — copy the whole file, from its first brace to its last.",
@@ -494,6 +502,10 @@ public final class RackTopComponent extends TopComponent {
     private void showPresetsMenu(JButton anchor,
             java.util.List<org.nmox.studio.rack.projectstudio.UserPresets.Custom> yours) {
         javax.swing.JPopupMenu menu = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem gallery = new javax.swing.JMenuItem(Bundle.RackTopComponent_gallery());
+        gallery.addActionListener(a -> showGallery());
+        menu.add(gallery);
+        menu.addSeparator();
         for (org.nmox.studio.rack.projectstudio.RackPresets preset
                 : org.nmox.studio.rack.projectstudio.RackPresets.values()) {
             javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(preset.getDisplayName()));
@@ -516,12 +528,11 @@ public final class RackTopComponent extends TopComponent {
             for (org.nmox.studio.rack.projectstudio.UserPresets.Custom custom : yours) {
                 javax.swing.JMenuItem item = new javax.swing.JMenuItem(PlainText.plain(Bundle.RackTopComponent_yoursItem(custom.name())));
                 item.setToolTipText(PlainText.plain(custom.file().getAbsolutePath()));
-                item.addActionListener(a -> {
-                    if (!confirmReplace(Bundle.RackTopComponent_thePreset(custom.name()))) {
-                        return;
-                    }
-                    loadPatch(custom.file());
-                });
+                // a file in the drop-in dir is a FILE: it may be one the user kept
+                // from Share (its paths spelled ~/…, which only the shared door
+                // expands) or one a stranger sent them — it mounts through the
+                // manifest, the dry run and arrival at rest like any import (v2.179.0)
+                item.addActionListener(a -> importFile(custom.file()));
                 menu.add(item);
             }
         }
@@ -649,16 +660,37 @@ public final class RackTopComponent extends TopComponent {
         revert.start();
     }
 
-    /** What the sender reads before the rack goes: every setting the receiver's manifest will list. */
+    /**
+     * What the sender reads before the rack goes: first anything that should
+     * give them pause — a value that looks like a credential (shown MASKED; the
+     * audit must never be a second copy of the secret) and any path that still
+     * names somebody's home after the rewrite — then every setting the
+     * receiver's manifest will list.
+     */
     static String leavingText(org.json.JSONObject shared) {
-        org.nmox.studio.rack.model.RackShare.Manifest manifest = org.nmox.studio.rack.model.RackShare.inspect(
-                shared, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        org.nmox.studio.rack.model.RackShare.Audit audit = org.nmox.studio.rack.model.RackShare.audit(shared);
+        int devices = shared.optJSONArray("devices") == null ? 0 : shared.optJSONArray("devices").length();
+        int cables = shared.optJSONArray("cables") == null ? 0 : shared.optJSONArray("cables").length();
         StringBuilder sb = new StringBuilder();
-        sb.append(Bundle.RackTopComponent_leavingSummary(manifest.devices().size(), manifest.cables())).append("\n");
-        for (org.nmox.studio.rack.model.RackShare.Setting st : manifest.settings()) {
+        if (!audit.secretLooking().isEmpty()) {
+            sb.append(Bundle.RackTopComponent_leavingSecrets()).append("\n");
+            appendSettings(sb, audit.secretLooking());
+            sb.append("\n");
+        }
+        if (!audit.personalPaths().isEmpty()) {
+            sb.append(Bundle.RackTopComponent_leavingPaths()).append("\n");
+            appendSettings(sb, audit.personalPaths());
+            sb.append("\n");
+        }
+        sb.append(Bundle.RackTopComponent_leavingSummary(devices, cables)).append("\n");
+        appendSettings(sb, audit.settings());
+        return sb.toString();
+    }
+
+    private static void appendSettings(StringBuilder sb, java.util.List<org.nmox.studio.rack.model.RackShare.Setting> settings) {
+        for (org.nmox.studio.rack.model.RackShare.Setting st : settings) {
             sb.append("  ").append(st.typeId()).append(" · ").append(st.key()).append(": ").append(st.value()).append("\n");
         }
-        return sb.toString();
     }
 
     /**
@@ -680,6 +712,11 @@ public final class RackTopComponent extends TopComponent {
         if (picked == null) {
             return;
         }
+        importFile(picked);
+    }
+
+    /** EDT. Reads {@code picked} off the EDT and offers it for mounting into the rack aimed at NOW. */
+    private void importFile(File picked) {
         // the project the import was asked FOR: a result belongs to the
         // workspace that produced it (the v1.172.0 law), and the aim can move
         // under the manifest dialog — the OpenProjects bridge, a --open handshake
@@ -693,6 +730,88 @@ public final class RackTopComponent extends TopComponent {
                 return;
             }
             java.awt.EventQueue.invokeLater(() -> mountShared(doc, aimedAt));
+        });
+    }
+
+    /**
+     * EDT. The Rack Gallery (v2.179.0): the window chooses, the doors below do
+     * the mounting. A preset or a starter is the product's own wiring and asks
+     * only the replace question, as the Presets menu always has; a community or
+     * kept rack is a FILE and takes the shared door — manifest, dry run, arrival
+     * at rest — with its document read off the EDT.
+     */
+    public void showGallery() {
+        final File aimedAt = rack.getProjectDir();
+        java.util.Optional<org.nmox.studio.rack.sharing.RackGalleryDialog.Result> asked =
+                org.nmox.studio.rack.sharing.RackGalleryDialog.ask(aimedAt);
+        if (asked.isEmpty()) {
+            return;
+        }
+        org.nmox.studio.rack.gallery.RackGallery.Entry entry = asked.get().entry();
+        switch (asked.get().action()) {
+            case IMPORT_FILE -> importRack();
+            case IMPORT_CLIPBOARD -> importFromClipboard();
+            case REMOVE -> removeKept(entry);
+            case MOUNT -> {
+                if (!aimedAt.equals(rack.getProjectDir())) {
+                    // the gallery is modal and pumps events: the re-aim law
+                    error(Bundle.RackTopComponent_importAimMoved());
+                    return;
+                }
+                switch (entry.source()) {
+                    case PRESET, STARTER -> {
+                        if (!confirmReplace(Bundle.RackTopComponent_theRack(entry.card().name()))) {
+                            return;
+                        }
+                        try {
+                            RackIO.fromJson(rack, entry.patch());
+                            markPersisted();
+                        } catch (RuntimeException ex) {
+                            error(Bundle.RackTopComponent_presetFailed(ex.getMessage()));
+                        }
+                    }
+                    default -> SAVE_RP.post(() -> {
+                        org.json.JSONObject doc;
+                        try {
+                            doc = entry.patch();
+                        } catch (RuntimeException ex) {
+                            java.awt.EventQueue.invokeLater(
+                                    () -> error(Bundle.RackTopComponent_importFailed(ex.getMessage())));
+                            return;
+                        }
+                        java.awt.EventQueue.invokeLater(() -> mountShared(doc, aimedAt));
+                    });
+                }
+            }
+            default -> {
+            }
+        }
+    }
+
+    /** EDT. Removing a kept rack deletes a file: asked first, No by default (v1.98.0), done off the EDT. */
+    private void removeKept(org.nmox.studio.rack.gallery.RackGallery.Entry entry) {
+        File file = entry.file();
+        if (file == null) {
+            return;
+        }
+        org.openide.NotifyDescriptor ask = new org.openide.NotifyDescriptor(
+                org.nmox.studio.core.util.PlainDialogs.plain(
+                        Bundle.RackTopComponent_removeConfirm(file.getName()), Bundle.RackTopComponent_removeTitle()),
+                Bundle.RackTopComponent_removeTitle(),
+                org.openide.NotifyDescriptor.YES_NO_OPTION,
+                org.openide.NotifyDescriptor.WARNING_MESSAGE,
+                null,
+                org.openide.NotifyDescriptor.NO_OPTION);
+        if (!org.openide.NotifyDescriptor.YES_OPTION.equals(DialogDisplayer.getDefault().notify(ask))) {
+            return;
+        }
+        SAVE_RP.post(() -> {
+            try {
+                org.nmox.studio.rack.sharing.MyRacks.remove(file);
+                java.awt.EventQueue.invokeLater(() -> flashLabel(Bundle.RackTopComponent_removedLabel(file.getName())));
+            } catch (IOException ex) {
+                java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_removeFailed(ex.getMessage())));
+            }
         });
     }
 

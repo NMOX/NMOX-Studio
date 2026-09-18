@@ -274,7 +274,9 @@ an LCD tells you what happened in words.
   rewires. Removing a running device stops its process first.
 - **Presets** give you a full wired rack in one click — Ship Gate, Dev
   Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench,
-  Uptime Watch. Patches persist per project automatically.
+  Uptime Watch. **Save Patch** writes the rack beside the project as
+  `.nmoxrack.json`; aiming that project again loads it. Nothing is saved
+  until you press it.
 - **A project starts wired for what it is** (since v2.176.0). Open a
   checkout that has no saved patch and the rack mounts the same starter
   the New Project wizard would have written beside it: a Rust or Go or
