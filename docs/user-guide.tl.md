@@ -92,7 +92,7 @@ Ang rack ang puso ng produkto. Bawat kasangkapan sa daloy ng iyong trabaho — n
 - **Magpatakbo ng isang bagay** sa pagpindot ng GO ng isang kagamitan. Ilapit muna ang cursor: ipinapakita ng tooltip ang eksaktong linya ng utos na tatakbo. Walang mahika.
 - **Ikabit ang isang daloy:** pindutin ang **Tab** upang ibaling ang rack sa likuran nito. Hilahin ang patch cable mula sa jack na **OK** ng isang kagamitan papunta sa jack na **GO** ng susunod. Ngayon ang `i-install → buuin → subukin` ay iisang pindot na lamang: umaandar ang tanikala nang mag-isa at humihinto sa unang pagkabigo. Umaagos ang output sa pantalang posporo ng kagamitang MONITOR.
 - **Bawiin ang anumang pagbabago sa istruktura** sa pamamagitan ng **⌘Z** — pagdaragdag, pagtatanggal, muling pagkakabit. Ang pagtanggal ng tumatakbong kagamitan ay pinapatigil muna ang proseso nito.
-- **Ang mga preset** ay nagbibigay ng buong nakakabit na rack sa isang pindot — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Kusang naiimbak ang mga kabitan kada proyekto.
+- **Ang mga preset** ay nagbibigay ng buong nakakabit na rack sa isang pindot — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Isinusulat ng **I-save ang Patch** ang rack sa tabi ng proyekto bilang `.nmoxrack.json`; kapag tumutok muli sa proyektong iyon, nilo-load ito. Walang nai-save hanggang pindutin mo ito.
 
 ![Ibinabaling ng Tab ang rack — dinadala ng mga patch cable ang MAESTRO sa CRATE, DYNAMO at IGNITION hanggang sa VITALS](images/tl/rack-rear.png)
 

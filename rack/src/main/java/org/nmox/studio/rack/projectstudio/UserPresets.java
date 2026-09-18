@@ -44,7 +44,8 @@ public final class UserPresets {
         return listFrom(dropInDir());
     }
 
-    static List<Custom> listFrom(File dir) {
+    /** Presets from {@code dir}, filename order — the seam the tests and the rack gallery read through. */
+    public static List<Custom> listFrom(File dir) {
         List<Custom> out = new ArrayList<>();
         File[] files = dir.listFiles((d, n) -> n.endsWith(".json"));
         if (files == null) {

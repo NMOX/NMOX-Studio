@@ -56,6 +56,12 @@ class WordBoundaryLedgerTest {
             "SearchTerms.java",
             "the one term matcher behind every search surface: a mark joins the word in "
             + "front of it (v2.114.0), and a mark with no word in front of it separates",
+            "ShareCards.java",
+            "turns the NAME a person gave their rack into a filename (v2.179.0): a mark "
+            + "stays with its letter (NON_SPACING_MARK and COMBINING_SPACING_MARK are kept), "
+            + "so a rack named in Hindi keeps its name instead of being cut into single "
+            + "letters — the v2.114.0 bug, not repeated. Its other scan reads the first "
+            + "word of a COMMAND, which is ASCII by the tool-name rule and asks no script",
             "CodeSpellTokenListProvider.java",
             "scans comments and strings for words to spell-check — and DELIBERATELY keeps "
             + "the letters-only rule: its two-letter minimum means a Devanagari word "

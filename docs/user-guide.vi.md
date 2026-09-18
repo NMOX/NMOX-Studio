@@ -92,7 +92,7 @@ Giá là trái tim của sản phẩm. Mọi công cụ trong luồng làm việ
 - **Chạy một thứ gì đó** bằng cách nhấn nút GO của một thiết bị. Hãy rê chuột lên trước: chú giải cho thấy đúng dòng lệnh sẽ được chạy. Không có phép màu nào cả.
 - **Đấu một dây chuyền:** nhấn **Tab** để lật giá ra mặt sau. Kéo một sợi dây patch từ giắc **OK** của thiết bị này tới giắc **GO** của thiết bị kế tiếp. Giờ `cài → dựng → kiểm thử` chỉ còn một phím: dây chuyền tự chạy và dừng ngay ở lần hỏng đầu tiên. Kết quả trôi trên màn hình lân quang của thiết bị MONITOR.
 - **Hoàn tác mọi thay đổi cấu trúc** bằng **⌘Z** — thêm, bớt, đấu lại. Gỡ một thiết bị đang chạy sẽ dừng tiến trình của nó trước.
-- **Các bộ dựng sẵn** trao cho bạn cả một giá đã đấu dây chỉ với một cú nhấp — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Các sơ đồ được lưu theo từng dự án một cách tự động.
+- **Các bộ dựng sẵn** trao cho bạn cả một giá đã đấu dây chỉ với một cú nhấp — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Lưu bản đấu nối** ghi giá bên cạnh dự án thành `.nmoxrack.json`; nhắm lại vào dự án đó sẽ nạp nó. Không có gì được lưu cho đến khi bạn nhấn nút này.
 
 ![Tab lật giá lại — những sợi dây patch dẫn MAESTRO qua CRATE, DYNAMO và IGNITION tới VITALS](images/vi/rack-rear.png)
 

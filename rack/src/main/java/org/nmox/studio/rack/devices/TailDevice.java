@@ -50,7 +50,8 @@ public class TailDevice extends RackDevice {
         addOutPort("out", "OUT", SignalType.DATA);
 
         param("path", pathLcd);
-        param("follow", followSwitch);
+        // restoring FOLLOW starts a 1s poll of the saved path: self-starting
+        paramSelfStarting("follow", followSwitch);
     }
 
     private void sync() {

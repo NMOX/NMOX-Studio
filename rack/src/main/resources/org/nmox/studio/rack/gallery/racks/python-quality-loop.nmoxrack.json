@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "Python quality loop",
+    "description": "A Python save runs ruff through SOLDER, then pytest with coverage held at an 80% floor, so a green suite with thin coverage still fails; a failed run goes to KVASIR for an explanation. The floor needs the pytest-cov plugin installed.",
+    "name.ar": "حلقة جودة Python",
+    "description.ar": "كل حفظ في Python بيشغّل ruff عن طريق SOLDER وبعده pytest مع تغطية متثبتة على حد أدنى 80%، فالمجموعة الخضرا اللي تغطيتها ضعيفة بتفشل برضه؛ والتشغيل الفاشل بيروح لـ KVASIR عشان يشرحه. الحد الأدنى محتاج إضافة pytest-cov متسطّبة.",
+    "name.de": "Python-Qualitätsschleife",
+    "description.de": "Ein Python-Speichern führt ruff über SOLDER aus, dann pytest mit einer Coverage-Untergrenze von 80 %, sodass eine grüne Suite mit dünner Abdeckung trotzdem scheitert; ein fehlgeschlagener Lauf geht zur Erklärung an KVASIR. Die Untergrenze braucht das installierte Plugin pytest-cov.",
+    "name.es": "Bucle de calidad de Python",
+    "description.es": "Un guardado de Python ejecuta ruff mediante SOLDER y luego pytest con la cobertura sujeta a un mínimo del 80 %, así que una suite en verde con poca cobertura falla igualmente; una ejecución fallida va a KVASIR para que la explique. El mínimo necesita instalado el plugin pytest-cov.",
+    "name.fr": "Boucle qualité Python",
+    "description.fr": "Un enregistrement Python lance ruff via SOLDER, puis pytest avec une couverture tenue à un plancher de 80 %, si bien qu’une suite verte à faible couverture échoue quand même ; une exécution en échec part chez KVASIR pour explication. Le plancher exige le plugin pytest-cov installé.",
+    "name.he": "לולאת איכות ל‑Python",
+    "description.he": "שמירה של Python מריצה את ruff דרך SOLDER ואחריו את pytest עם כיסוי שמוחזק ברף של 80%, כך שחבילה ירוקה עם כיסוי דל עדיין נכשלת; ריצה שנכשלה עוברת אל KVASIR לקבלת הסבר. הרף דורש שהתוסף pytest-cov יהיה מותקן.",
+    "name.hi": "Python गुणवत्ता लूप",
+    "description.hi": "Python में हर बार सहेजने पर SOLDER के ज़रिए ruff चलता है, फिर pytest, जिसमें कवरेज 80% की न्यूनतम सीमा पर रखी जाती है, इसलिए कम कवरेज वाला हरा सूट भी विफल होता है; विफल रन व्याख्या के लिए KVASIR के पास जाता है। इस सीमा के लिए pytest-cov प्लगइन इंस्टॉल होना चाहिए।",
+    "name.id": "Lup Kualitas Python",
+    "description.id": "Setiap penyimpanan Python menjalankan ruff melalui SOLDER, lalu pytest dengan cakupan ditahan pada batas bawah 80%, sehingga rangkaian hijau dengan cakupan tipis tetap gagal; hasil yang gagal dikirim ke KVASIR untuk dijelaskan. Batas bawah itu memerlukan plugin pytest-cov terpasang.",
+    "name.pl": "Pętla jakości Pythona",
+    "description.pl": "Zapis w Pythonie uruchamia ruff przez SOLDER, potem pytest z pokryciem trzymanym na progu 80%, więc zielony zestaw z cienkim pokryciem i tak nie przechodzi; nieudany przebieg trafia do KVASIR po wyjaśnienie. Próg wymaga zainstalowanej wtyczki pytest-cov.",
+    "name.pt": "Ciclo de qualidade Python",
+    "description.pt": "Um salvamento de Python roda ruff pelo SOLDER e depois pytest com a cobertura presa a um piso de 80%, então uma suíte verde com cobertura rala falha mesmo assim; uma execução que falha vai ao KVASIR para explicação. O piso precisa do plugin pytest-cov instalado.",
+    "name.ru": "Цикл качества Python",
+    "description.ru": "Сохранение в Python запускает ruff через SOLDER, затем pytest с покрытием не ниже порога 80%, так что зелёный набор с тонким покрытием всё равно падает; неудачный прогон уходит в KVASIR за объяснением. Порогу нужен установленный плагин pytest-cov.",
+    "name.tl": "Loop ng Kalidad ng Python",
+    "description.tl": "Ang bawat pag-save ng Python ay nagpapatakbo ng ruff sa pamamagitan ng SOLDER, saka pytest na may coverage na pinananatili sa sahig na 80%, kaya ang green na suite na may manipis na coverage ay bumabagsak din; ang bumagsak na takbo ay ipinapadala sa KVASIR para ipaliwanag. Kailangan ng sahig ang naka-install na plugin na pytest-cov.",
+    "name.uk": "Цикл якості Python",
+    "description.uk": "Збереження в Python запускає ruff через SOLDER, потім pytest із покриттям не нижче порога 80%, тож зелений набір із тонким покриттям усе одно падає; невдалий прогін іде до KVASIR по пояснення. Порогу потрібен встановлений плагін pytest-cov.",
+    "name.vi": "Vòng lặp chất lượng Python",
+    "description.vi": "Mỗi lần lưu Python chạy ruff qua SOLDER, rồi pytest với độ phủ giữ ở mức sàn 80%, nên một bộ kiểm thử xanh mà độ phủ mỏng vẫn thất bại; lần chạy hỏng được gửi tới KVASIR để giải thích. Mức sàn cần plugin pytest-cov đã được cài.",
+    "name.zh": "Python 质量循环",
+    "description.zh": "每次保存 Python 文件都会经 SOLDER 运行 ruff，再运行 pytest，并把覆盖率下限定在 80%，因此覆盖率单薄的通过套件仍会失败；失败的运行交给 KVASIR 解释。该下限需要安装 pytest-cov 插件。",
+    "kinds": ["PYTHON"],
+    "requires": ["python3", "pytest", "ruff"]
+  },
+  "devices": [
+    {"type": "reflex", "state": {"armed": "false", "filter": "0", "glob": "py"}},
+    {"type": "cmd", "state": {"command": "ruff check ."}},
+    {"type": "test", "state": {"framework": "0", "coverage": "true", "covMin": "4"}},
+    {"type": "kvasir"},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "changed", "toDevice": 1, "toPort": "run"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 2, "fromPort": "fail", "toDevice": 3, "toPort": "explain"},
+    {"fromDevice": 1, "fromPort": "out", "toDevice": 4, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 4, "toPort": "in"},
+    {"fromDevice": 3, "fromPort": "out", "toDevice": 4, "toPort": "in"}
+  ]
+}

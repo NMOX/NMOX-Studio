@@ -68,7 +68,8 @@ public class ReflexDevice extends RackDevice {
         addOutPort("changed", "CHANGED", SignalType.TRIGGER);
         addOutPort("path", "PATH", SignalType.DATA);
 
-        param("armed", armSwitch);
+        // restoring WATCH starts a FileWatcher over the project: self-starting
+        paramSelfStarting("armed", armSwitch);
         param("filter", filterKnob);
         param("glob", globLcd);
     }
@@ -98,6 +99,11 @@ public class ReflexDevice extends RackDevice {
     @Override
     protected void onAttached() {
         restartWatcher();
+    }
+
+    /** Test seam: is a FileWatcher actually running over the project? */
+    synchronized boolean isWatching() {
+        return watcher != null;
     }
 
     @Override

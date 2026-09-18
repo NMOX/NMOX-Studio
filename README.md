@@ -204,6 +204,42 @@ and more. Patches persist per project, ship as presets, and export to
 GitHub Actions. **[The full device reference](docs/devices.md)** is
 generated from the catalog itself — CI fails if it drifts.
 
+### 🎛 A rack is a workflow you can hand to someone
+A rack is not configuration. It is a development workflow you can *see* —
+what runs, in what order, in parallel or not, and what happens when
+something fails — and it is a small file, so it travels.
+
+```
+REFLEX CHANGED ▸ GLOSS RUN, PURITY RUN
+GLOSS DONE ▸ QUORUM IN 1
+PURITY DONE ▸ QUORUM IN 2
+QUORUM OK ▸ VERITAS RUN
+VERITAS FAIL ▸ KVASIR EXPLAIN
+```
+
+A save checks formatting and runs clippy *at the same time*; QUORUM waits for
+both; `cargo test` runs only when both passed; a failure is explained,
+hands-free. Parallel steps, a join, a conditional and an error path — visible
+at once, changed by moving a cable.
+
+
+That is the *Rust save loop*, one of the racks in the **Rack Gallery**
+(Tools ▸ Rack Gallery…, or **Presets ▾** on the rack): community racks,
+the built-in presets, the starters and your own on one shelf, each saying
+what it is for, which tools it needs (and which of them this machine
+lacks), and how it is wired — before it mounts. **Share…** sends yours as a
+file, to the clipboard (a rack is small enough to paste into a chat), or
+into **My Racks**; you name it, and you read every command and path that
+leaves with it first — your home directory is rewritten to `~` even inside
+a command, and anything that looks like a credential is flagged. **Import…**
+shows what a rack holds *and what this install cannot give it* — a cable
+into a jack you do not have, by name — found by a dry run before anything
+mounts. It arrives at rest: nothing watches, ticks or follows until you
+press it, and every GO stays behind Workspace Trust. No account, no server:
+the gallery's community racks are a reviewed directory in this repository,
+and **[adding one is a pull request](docs/rack-files.md)**. The racks are
+listed in **[docs/racks.md](docs/racks.md)**, generated from the files.
+
 ### 🔧 Write your own device
 The fleet is no longer fixed. Drop a JSON file in `~/.nmox/devices.d/`
 and a real device appears on the shelf: knobs, buttons, LEDs, ports,

@@ -92,7 +92,7 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 - **运行点什么**：按下设备的 GO 按钮。先把光标停在上面：提示会显示将要执行的确切命令行。没有魔法。
 - **连成一条流水线**：按 **Tab** 把机架翻到背面。从一台设备的 **OK** 插孔拉一根跳线到下一台设备的 **GO** 插孔。现在`安装 → 构建 → 测试`只需一次按键：链条自己往下走，并在第一个失败处停住。输出会滚过 MONITOR 设备的荧光屏。
 - **撤销任何结构性改动**：用 **⌘Z** — 添加、移除、重新接线。移除一台正在运行的设备会先停掉它的进程。
-- **预设**只需一次点击就给你一整个接好线的机架 — Ship Gate、Dev Intelligence、Monorepo Lanes、E2E Loop、LAMP Bench、Web3 Bench、Uptime Watch。接线方案会按项目自动保存。
+- **预设**只需一次点击就给你一整个接好线的机架 — Ship Gate、Dev Intelligence、Monorepo Lanes、E2E Loop、LAMP Bench、Web3 Bench、Uptime Watch。**保存配线**会把机架以 `.nmoxrack.json` 写在项目旁边；再次指定该项目时就会加载它。在你按下它之前，什么都不会保存。
 
 ![Tab 把机架翻过来 — 跳线把 MAESTRO 经由 CRATE、DYNAMO 和 IGNITION 接到 VITALS](images/zh/rack-rear.png)
 

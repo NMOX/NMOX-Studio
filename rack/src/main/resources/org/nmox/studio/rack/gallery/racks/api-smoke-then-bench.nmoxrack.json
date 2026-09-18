@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "shared": {
+    "product": "2.179.0",
+    "name": "API smoke, then bench",
+    "description": "SURGE starts the service; the moment it is READY, PING calls the health route, and only a passing smoke test lets GAUNTLET load-test the live address against a 100 requests-per-second floor. For checking that a change did not quietly cost throughput.",
+    "name.ar": "اختبار دخان للـ API، وبعده اختبار حمل",
+    "description.ar": "SURGE بيشغّل الخدمة؛ وأول ما تبقى READY بينادي PING على مسار الصحة، واختبار الدخان الناجح بس هو اللي بيخلّي GAUNTLET يختبر الحمل على العنوان الحي قصاد حد أدنى 100 طلب في الثانية. عشان تتأكدوا إن التغيير ماقلّلش الإنتاجية من غير ما حد ياخد باله.",
+    "name.de": "API-Smoke-Test, dann Lasttest",
+    "description.de": "SURGE startet den Dienst; sobald er READY ist, ruft PING die Health-Route auf, und nur ein bestandener Smoke-Test lässt GAUNTLET die Live-Adresse gegen eine Untergrenze von 100 Anfragen pro Sekunde belasten. Um zu prüfen, dass eine Änderung nicht unbemerkt Durchsatz gekostet hat.",
+    "name.es": "Prueba de humo de la API, luego carga",
+    "description.es": "SURGE arranca el servicio; en cuanto está READY, PING llama a la ruta de salud, y solo una prueba de humo superada permite a GAUNTLET lanzar la prueba de carga sobre la dirección en vivo contra un mínimo de 100 peticiones por segundo. Para comprobar que un cambio no costó rendimiento sin avisar.",
+    "name.fr": "Smoke test d’API, puis charge",
+    "description.fr": "SURGE démarre le service ; dès qu’il est READY, PING appelle la route de santé, et seul un smoke test réussi laisse GAUNTLET tester en charge l’adresse réelle contre un plancher de 100 requêtes par seconde. Pour vérifier qu’un changement n’a pas discrètement coûté du débit.",
+    "name.he": "בדיקת עשן ל‑API, ואז עומס",
+    "description.he": "SURGE מפעיל את השירות; ברגע שהוא READY,‏ PING קורא לנתיב התקינות, ורק בדיקת עשן שעברה מאפשרת ל‑GAUNTLET להעמיס על הכתובת החיה מול רף של 100 בקשות בשנייה. כדי לוודא ששינוי לא עלה בשקט בתפוקה.",
+    "name.hi": "API स्मोक टेस्ट, फिर लोड टेस्ट",
+    "description.hi": "SURGE सेवा शुरू करता है; जैसे ही वह READY होती है, PING हेल्थ रूट कॉल करता है, और स्मोक टेस्ट पास होने पर ही GAUNTLET लाइव पते पर 100 अनुरोध प्रति सेकंड की न्यूनतम सीमा के विरुद्ध लोड टेस्ट करता है। यह जाँचने के लिए कि किसी बदलाव ने चुपचाप थ्रूपुट नहीं घटाया।",
+    "name.id": "Uji Asap API, lalu Uji Beban",
+    "description.id": "SURGE memulai layanan; begitu READY, PING memanggil rute kesehatan, dan hanya uji asap yang lulus yang membuat GAUNTLET menguji beban alamat yang hidup terhadap batas bawah 100 permintaan per detik. Untuk memeriksa bahwa sebuah perubahan tidak diam-diam mengurangi throughput.",
+    "name.pl": "Smoke test API, potem obciążenie",
+    "description.pl": "SURGE uruchamia usługę; gdy tylko jest READY, PING wywołuje trasę kondycji, a dopiero zaliczony smoke test pozwala GAUNTLET obciążyć żywy adres względem progu 100 żądań na sekundę. Do sprawdzenia, czy zmiana po cichu nie kosztowała przepustowości.",
+    "name.pt": "Smoke test da API, depois carga",
+    "description.pt": "SURGE inicia o serviço; assim que ele fica READY, PING chama a rota de saúde, e só um smoke test aprovado deixa o GAUNTLET fazer o teste de carga no endereço ativo contra um piso de 100 requisições por segundo. Para conferir se uma mudança não custou vazão sem avisar.",
+    "name.ru": "Смоук-тест API, затем нагрузка",
+    "description.ru": "SURGE запускает сервис; как только он READY, PING вызывает маршрут проверки состояния, и только пройденный смоук-тест позволяет GAUNTLET нагрузить живой адрес с порогом 100 запросов в секунду. Чтобы убедиться, что изменение незаметно не съело пропускную способность.",
+    "name.tl": "Smoke test ng API, saka load test",
+    "description.tl": "Pinapaandar ng SURGE ang serbisyo; sa sandaling ito ay READY, tinatawag ng PING ang health route, at tanging pumasang smoke test ang nagpapahintulot sa GAUNTLET na i-load-test ang live na address laban sa sahig na 100 request kada segundo. Para tiyaking hindi palihim na binawasan ng isang pagbabago ang throughput.",
+    "name.uk": "Смоук-тест API, потім навантаження",
+    "description.uk": "SURGE запускає сервіс; щойно він READY, PING викликає маршрут перевірки стану, і лише пройдений смоук-тест дозволяє GAUNTLET навантажити живу адресу з порогом 100 запитів за секунду. Щоб переконатися, що зміна непомітно не з’їла пропускну здатність.",
+    "name.vi": "Kiểm thử khói API, rồi thử tải",
+    "description.vi": "SURGE khởi động dịch vụ; ngay khi nó READY, PING gọi tuyến kiểm tra sức khỏe, và chỉ khi kiểm thử khói đạt thì GAUNTLET mới thử tải địa chỉ đang chạy với mức sàn 100 yêu cầu mỗi giây. Để kiểm tra rằng một thay đổi không âm thầm làm giảm thông lượng.",
+    "name.zh": "API 冒烟测试，再压测",
+    "description.zh": "SURGE 启动服务；一旦 READY，PING 就调用健康检查路由，只有冒烟测试通过，GAUNTLET 才会以每秒 100 个请求的下限对线上地址做压力测试。用来确认某次改动没有悄悄拖累吞吐量。",
+    "kinds": ["NODE"],
+    "requires": ["node", "npx"]
+  },
+  "devices": [
+    {"type": "dev-server", "state": {"server": "0", "port": "0"}},
+    {"type": "http", "state": {"method": "0", "url": "http://localhost:3000/health"}},
+    {"type": "bench", "state": {"duration": "0", "connections": "0", "url": "http://localhost:3000", "min": "1"}},
+    {"type": "console"}
+  ],
+  "cables": [
+    {"fromDevice": 0, "fromPort": "ready", "toDevice": 1, "toPort": "send"},
+    {"fromDevice": 0, "fromPort": "url", "toDevice": 2, "toPort": "url"},
+    {"fromDevice": 1, "fromPort": "ok", "toDevice": 2, "toPort": "run"},
+    {"fromDevice": 0, "fromPort": "out", "toDevice": 3, "toPort": "in"},
+    {"fromDevice": 1, "fromPort": "body", "toDevice": 3, "toPort": "in"},
+    {"fromDevice": 2, "fromPort": "out", "toDevice": 3, "toPort": "in"}
+  ]
+}

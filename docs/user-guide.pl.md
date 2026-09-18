@@ -92,7 +92,7 @@ Stojak jest sercem produktu. Każde narzędzie twojego procesu pracy — npm, bu
 - **Uruchom coś**, naciskając przycisk GO urządzenia. Najpierw najedź na niego: podpowiedź pokaże dokładny wiersz poleceń, który zostanie wykonany. Żadnej magii.
 - **Okabluj potok:** naciśnij **Tab**, aby obrócić stojak tyłem. Przeciągnij kabel krosowy z gniazda **OK** jednego urządzenia do gniazda **GO** następnego. Teraz `instalacja → budowa → testy` to jedno naciśnięcie: łańcuch idzie sam i zatrzymuje się na pierwszej porażce. Wyjście przewija się po luminoforowym ekranie urządzenia MONITOR.
 - **Cofnij dowolną zmianę struktury** przez **⌘Z** — dodanie, usunięcie, przełożenie kabli. Usunięcie działającego urządzenia najpierw zatrzymuje jego proces.
-- **Zestawy** dają cały okablowany stojak jednym kliknięciem — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Układy zapisują się per projekt automatycznie.
+- **Zestawy** dają cały okablowany stojak jednym kliknięciem — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Zapisz patch** zapisuje stojak obok projektu jako `.nmoxrack.json`; ponowne wskazanie tego projektu go wczytuje. Nic nie jest zapisywane, dopóki nie naciśniesz tego przycisku.
 
 ![Tab obraca stojak — kable krosowe prowadzą MAESTRO przez CRATE, DYNAMO i IGNITION do VITALS](images/pl/rack-rear.png)
 

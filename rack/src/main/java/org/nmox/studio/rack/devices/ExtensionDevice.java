@@ -316,7 +316,14 @@ public final class ExtensionDevice extends RackDevice {
             require("toggle key", key);
             require("toggle label", label);
             ToggleSwitch toggle = flow(new ToggleSwitch(label, initial), label);
-            param(key, toggle);
+            // EVERY extension toggle is self-starting, by decision: restoring
+            // one calls setOn, setOn runs the plugin's onChange (below), and
+            // that Runnable is arbitrary plugin code holding DeviceServices —
+            // it can exec (trust-gated, but a trusted workspace runs it) or
+            // start its own timer. The host cannot tell a flag from a watcher,
+            // so a shared rack arrives with all of them off (RackShare,
+            // SelfStarting). ExtensionSelfStartTest pins the path to exec.
+            paramSelfStarting(key, toggle);
             return new ToggleHandle() {
                 @Override
                 public void onChange(Runnable r) {
