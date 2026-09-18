@@ -792,6 +792,17 @@ catalogs are not read yet: a vue-i18n project keeping its catalogs
 in `.yaml` gets one finding on its package.json line saying so, and
 nothing is guessed.
 
+The same catalogs feed the editor. Inside a lookup — `t('`, `$t('`,
+`i18n.t('`, `data-i18n="`, `i18nKey="`, `<FormattedMessage id="`,
+`formatMessage({id:'`, `keypath="`, `$_('`, or Paraglide's `m.` — ⌃Space
+offers the source catalog's keys, each row naming its file and the
+source value (truncated, the way an env value is shown); a namespaced
+prefix (`common:`) narrows to that file. **⌘-click** a key to land on
+its line in the source catalog; a key declared nowhere says so on the
+status line, naming the catalog folder. Both work in JS/TS, HTML, Vue,
+Svelte and Angular templates, and neither fires inside `fetch('…')` or
+a template literal with `${…}` in it.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by
