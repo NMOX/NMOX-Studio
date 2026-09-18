@@ -92,7 +92,7 @@ Rak adalah jantung produk ini. Setiap perkakas dalam alur kerja Anda — npm, pe
 - **Jalankan sesuatu** dengan menekan tombol GO sebuah perangkat. Arahkan kursor dulu ke atasnya: keterangannya menampilkan baris perintah persis yang akan dijalankan. Tidak ada sihir.
 - **Rangkai sebuah alur:** tekan **Tab** untuk memutar rak ke sisi belakangnya. Tarik kabel patch dari jack **OK** satu perangkat ke jack **GO** perangkat berikutnya. Kini `pasang → bangun → uji` hanya satu tekanan: rantainya berjalan sendiri dan berhenti pada kegagalan pertama. Keluarannya bergulir di layar fosfor perangkat MONITOR.
 - **Batalkan perubahan struktur apa pun** dengan **⌘Z** — menambah, membuang, merangkai ulang. Membuang perangkat yang sedang berjalan menghentikan prosesnya lebih dulu.
-- **Prasetel** memberi Anda satu rak penuh yang sudah dirangkai dengan sekali klik — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Rangkaian tersimpan per proyek secara otomatis.
+- **Prasetel** memberi Anda satu rak penuh yang sudah dirangkai dengan sekali klik — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Simpan Patch** menulis rak di samping proyek sebagai `.nmoxrack.json`; mengarahkan proyek itu lagi akan memuatnya. Tidak ada yang tersimpan sampai Anda menekannya.
 
 ![Tab memutar rak — kabel patch menuntun MAESTRO melalui CRATE, DYNAMO dan IGNITION sampai ke VITALS](images/id/rack-rear.png)
 

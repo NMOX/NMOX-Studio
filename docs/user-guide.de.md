@@ -92,7 +92,7 @@ Das Rack ist das Herz des Produkts. Jedes Werkzeug Ihres Arbeitsablaufs — npm,
 - **Etwas ausführen**, indem Sie den GO-Knopf eines Geräts drücken. Fahren Sie vorher darüber: Der Hinweis zeigt die genaue Befehlszeile, die ausgeführt wird. Keine Magie.
 - **Eine Kette verkabeln:** Drücken Sie **Tab**, um das Rack auf seine Rückseite zu drehen. Ziehen Sie ein Patchkabel von der **OK**-Buchse eines Geräts zur **GO**-Buchse des nächsten. Jetzt ist `installieren → bauen → testen` ein einziger Tastendruck: Die Kette läuft von selbst und hält beim ersten Fehlschlag an. Die Ausgabe läuft über den Phosphorschirm des MONITOR-Geräts.
 - **Jede strukturelle Änderung rückgängig machen** mit **⌘Z** — Hinzufügen, Entfernen, Umverkabeln. Ein laufendes Gerät zu entfernen hält zuerst seinen Prozess an.
-- **Vorlagen** geben Ihnen mit einem Klick ein ganzes verkabeltes Rack — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Verkabelungen werden je Projekt automatisch gesichert.
+- **Vorlagen** geben Ihnen mit einem Klick ein ganzes verkabeltes Rack — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Patch speichern** schreibt das Rack als `.nmoxrack.json` neben das Projekt; zielen Sie erneut auf dieses Projekt, wird es geladen. Nichts wird gespeichert, bevor Sie diesen Knopf drücken.
 
 ![Tab dreht das Rack — Patchkabel führen MAESTRO über CRATE, DYNAMO und IGNITION bis zu VITALS](images/de/rack-rear.png)
 

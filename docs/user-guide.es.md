@@ -92,7 +92,7 @@ El rack es el corazón del producto. Cada herramienta de tu flujo de trabajo —
 - **Ejecuta algo** pulsando el botón GO de un dispositivo. Pasa antes el cursor por encima: el mensaje muestra la línea de comandos exacta que se ejecutará. Sin magia.
 - **Cablea una tubería:** pulsa **Tab** para girar el rack y ver su parte trasera. Arrastra un cable de conexión desde el jack **OK** de un dispositivo hasta el jack **GO** del siguiente. Ahora `instalar → construir → probar` es una sola pulsación: la cadena se ejecuta sola y se detiene en el primer fallo. La salida corre por la pantalla de fósforo del dispositivo MONITOR.
 - **Deshaz cualquier cambio estructural** con **⌘Z** — añadir, quitar y recablear dispositivos. Quitar un dispositivo en marcha detiene antes su proceso.
-- **Los preajustes** te dan un rack entero ya cableado con un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Los montajes se guardan por proyecto automáticamente.
+- **Los preajustes** te dan un rack entero ya cableado con un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Guardar patch** escribe el rack junto al proyecto como `.nmoxrack.json`; al apuntar de nuevo a ese proyecto, se carga. No se guarda nada hasta que lo pulsas.
 
 ![Tab gira el rack — los cables conectan MAESTRO a través de CRATE, DYNAMO e IGNITION hasta VITALS](images/es/rack-rear.png)
 

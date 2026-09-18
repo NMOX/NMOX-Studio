@@ -92,7 +92,7 @@ Le rack est le cœur du produit. Chaque outil de votre flux de travail — npm, 
 - **Lancez quelque chose** en pressant le bouton GO d’un appareil. Survolez-le d’abord : l’infobulle montre la ligne de commande exacte qui sera exécutée. Aucune magie.
 - **Câblez un pipeline :** pressez **Tab** pour retourner le rack et voir sa face arrière. Tirez un cordon depuis la prise **OK** d’un appareil vers la prise **GO** du suivant. Désormais `installer → construire → tester` tient en une frappe : la chaîne se déroule seule et s’arrête au premier échec. La sortie défile sur l’écran phosphore de l’appareil MONITOR.
 - **Annulez toute modification de structure** avec **⌘Z** — ajouts, retraits et recâblages. Retirer un appareil en marche arrête d’abord son processus.
-- **Les préréglages** vous donnent un rack entier déjà câblé en un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. Les montages sont enregistrés par projet automatiquement.
+- **Les préréglages** vous donnent un rack entier déjà câblé en un clic — Ship Gate, Dev Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench, Uptime Watch. **Enregistrer le patch** écrit le rack à côté du projet sous le nom `.nmoxrack.json` ; viser de nouveau ce projet le recharge. Rien n’est enregistré tant que vous n’appuyez pas dessus.
 
 ![Tab retourne le rack — les cordons relient MAESTRO à travers CRATE, DYNAMO et IGNITION jusqu’à VITALS](images/fr/rack-rear.png)
 
