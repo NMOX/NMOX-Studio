@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.176.0] - 2026-09-17
+
+**A rack starts wired for what the project is, and travels as a file.**
+
+- **Starter racks by project kind.** Aiming a project with no `.nmoxrack.json` used
+  to mount one CONSOLE, whatever the project was. `projectstudio.StarterRacks` now
+  decides from the same `ProjectKind` detection the lanes use: a Cargo/Go/Python
+  toolchain gets REFLEX → RUN/DEBUG/TEST with a CONSOLE; a Node project is sniffed
+  further — Angular gets HALO, a Vite dependency gets VELOCITY, Express/Fastify/
+  Koa/Hono/hapi get the EXPRESS bench, plain Node gets PACKAGE MANAGER + NPM-9000;
+  PHP mounts the LAMP Bench, a classic script-tag site the Classic Web Bench,
+  Elixir/Erlang/Gleam the BEAM rack, a Foundry repo LOCAL CHAIN + TEST; a learning
+  space or a bare directory keeps the bare starter. The New Project wizard's
+  templates now share the SAME wirings (`ProjectTemplates` builds its patches from
+  `StarterRacks`), so a project created here and a project opened from disk start
+  identical, and `templatesShareTheWirings` refuses a second copy. A starter that
+  names a jack that does not exist fails at mount by name
+  (`starter rack cannot cable reflex.changed -> …`) rather than mounting a rack
+  with a cable quietly missing — the first cut compared a rack against its own
+  patch and could not see that. `StarterRacksTest` mounts every starter for real
+  (no placeholder, every cable) and decides every kind; three mutants by name.
+- **Share… / Import… a rack as a file.** Two doors beside Save/Load Patch on the
+  rack toolbar. Share writes the current rack through `model.RackShare.export`:
+  the patch plus a `shared` header naming only the product version, with every
+  state value under the sender's home rewritten to `~/…` — a home path is a
+  username, and a rack should not disclose its author. Import reads a shared (or
+  plain) patch off the EDT and shows what it holds BEFORE anything mounts: the
+  device list with the types this install lacks marked (they mount as
+  placeholders keeping their slot and cables, the v1.54.0 rule), the cable count,
+  every setting that reads like a command, path or address, and how many devices
+  were saved armed or running — because they arrive at rest: `RackShare.imported`
+  sets every `armed`/`running` flag off, so a REFLEX starts watching and a TEMPO
+  starts firing only when the receiver presses them. The manifest dialog's
+  default is Cancel, the replace confirm still asks, and the mounted rack is
+  unsaved work (no `markPersisted`) until the receiver saves it. Walked live: a
+  Rust fixture mounted the polyglot starter on aim; Share wrote a file with no
+  `/Users/` in it; Import showed the manifest, Return cancelled with the rack
+  unchanged, Mount landed REFLEX at WATCH OFF, TEMPO's clock at HALT, SOLDER
+  holding `npm run build` unrun, and MISSING naming `com.example.uptime`. Fifteen
+  languages; `RackShareTest` (six) + `RackShareDoorsTest` (three source gates:
+  export not raw, inspect → dialog → confirm → mount in that order, the Cancel
+  default, the import read off the EDT); three mutants by name.
+
 ## [2.175.0] - 2026-09-17
 
 **The release proof stops failing at random, and it was the proof's own stopwatch.**
@@ -22282,6 +22325,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.175.0...v2.176.0
 [2.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.174.0...v2.175.0
 [2.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.173.0...v2.174.0
 [2.173.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.172.0...v2.173.0
