@@ -4,6 +4,53 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.178.0] - 2026-09-18
+
+**The overnight batch's own review: seven lenses over the fresh code, run as probes.**
+
+- **A result belongs to the workspace that produced it — twice, in day-old code.**
+  Import… mounted the shared rack into whichever project was aimed by the time
+  Mount was pressed: the manifest dialog is modal and pumps events, so an
+  OpenProjects bridge or an `--open` handshake could move the aim underneath it
+  and the rack — and its replace question — would land on a project the reader
+  never chose. The aim is captured when the file is picked and checked again
+  after the dialog; a moved aim refuses by name and mounts nothing. Check
+  Translations… had the same shape one module over: it published under a project
+  no longer aimed, and the bus has no re-aim clearing, so the OLD project's rows
+  became the current `i18n` batch — it re-reads the aim at publish time now and
+  keeps the last good batch when the aim has moved. Both gate-pinned, both
+  mutants by name.
+- **Bounded reads.** `RackIO.readDocument` had no size cap, and Import… reads a
+  stranger's file through it — refused over 8 MiB by name before the read, the
+  file untouched (not corrupt, so no `.bak`).
+- **Hostile input.** A shared file whose `devices` holds a non-object crashed
+  Import with a red exception dialog (refused by slot now, spoken); a `.po`
+  `msgid "hello` with no closing quote parsed to a garbage key (a named parse
+  failure); `I18nUsage`'s source scan was quadratic twice — 4.8 s for ten
+  thousand unclosed `defineMessages(`, 1.4 s for thirty thousand keys on one
+  newline-free line, per file in a four-hundred-file census — one pass with a
+  watermark now, both mutants time out by name; two 40-character cuts (a cabled
+  URL's refusal head, a dynamic-lookup argument) split a surrogate pair, the
+  v1.149.0 class again.
+- **Legacy aliases.** A cable `RackIO.fromJson` could not keep — `stellar.enable`
+  after the port went, or `halt`+`stop` on one TEMPO — was dropped in silence; it
+  logs at WARNING naming the cable.
+- **Gate honesty.** Four of the five new gates let the mutant they exist to catch
+  live: a READY-jack device left out of a hand-kept list, a Cancel-default literal
+  moved into a comment, a wiring re-inlined behind a comment naming the shared
+  one, an inline `run(` beside the posted one. `ServingAnnounceOrderGateTest`
+  derives its population from `addOutPort("ready"` sources and matches the
+  `emit("ready"` shape; both source gates strip comments first
+  (`GateSources.stripComments`); the EDT gate counts exactly one posted `run(`.
+  All four re-run and die. `RefusedLaunchSpeaksTest`, behavioural, had killed its
+  mutant as shipped.
+- Clean under probe: every new read off the EDT; no lost-URL window in
+  `CabledUrl`; READY once for a banner printed twice; all fourteen READY-jack
+  devices' exit paths deregister and lower their gate; array/oversize/deep JSON
+  and a DOCTYPE'd XLIFF all refuse without publishing; `~`, `~foo` and `~/../..`
+  behave and the manifest shows them. Eleven commits, one mutant by name each;
+  two new message keys in fifteen languages.
+
 ## [2.177.0] - 2026-09-18
 
 **Your project's translations read the way the IDE's own do.**
@@ -22403,6 +22450,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.177.0...v2.178.0
 [2.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.176.0...v2.177.0
 [2.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.175.0...v2.176.0
 [2.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.174.0...v2.175.0
