@@ -66,6 +66,15 @@ class ShipScriptsGateTest {
                 .as("last=\"true\" is what the platform reads; it must agree with the installed jars, "
                         + "and a harness line that only narrates cannot fail when they disagree")
                 .contains("GAUNTLET-FAIL: last=");
+        // v2.175.0: the TERM can land mid-write, leaving a module backed up and not
+        // written back — the boot proof then reports 10 of 11 and blames the release
+        // for the harness's timing. An interrupted pass is finished, not judged.
+        assertThat(s)
+                .as("a half-written cluster is completed before the boot proof reads it")
+                .contains("letting the pass finish");
+        assertThat(s)
+                .as("and if it still is not whole, the harness says THAT, not that the boot failed")
+                .contains("GAUNTLET-FAIL: the updater left");
         assertThat(s.lines().filter(l -> l.contains("1 expected")))
                 .as("the retired label: a history file leaves TWO entries for a clean single update, "
                         + "so calling one expected made every healthy run read as suspicious")

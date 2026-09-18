@@ -55,6 +55,23 @@ moved() { local n=0 f; for f in "$CL"/nmoxstudio/update_tracking/org-nmox-*.xml;
 for i in $(seq 1 360); do n=$(moved); [ "$n" -ge 11 ] && break; kill -0 "$UPD" 2>/dev/null || break; sleep 5; done
 echo "update_tracking last=true moved off $FROMV: $n of 11 ($((i*5))s)"; sleep 10
 kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null; echo "update RC=$? (TERMed after tracking; 143 expected)"
+# The TERM can land MID-WRITE. The headless loop starts another pass every ~6 s
+# and a pass rewrites the modules alphabetically, so apiclient — the first one —
+# can be backed up and not yet written back when the signal arrives, leaving ten
+# jars in modules/ and eleven in update/backup. That is the harness, not the
+# product: measured 2026-09-17 on v2.174.0, one run booted 10 of 11 with
+# apiclient absent and the very next run booted 11 of 11 from the same bytes.
+# A proof that fails at random teaches you to ignore it, so let an interrupted
+# pass finish rather than judging the half-written image.
+jars() { ls "$CL"/nmoxstudio/modules/org-nmox-*.jar 2>/dev/null | wc -l | tr -d ' '; }
+for attempt in 1 2 3; do
+  [ "$(jars)" -ge 11 ] && break
+  echo "harness: the TERM landed mid-write ($(jars) of 11 module jars); letting the pass finish"
+  "$BIN" --jdkhome "$JH" --userdir "$G/ud" --cachedir "$G/cd" --nosplash --modules --update-all \
+      -J-Dnetbeans.close=true >> "$G/update.log" 2>&1 &
+  UPD=$!; sleep 25; kill -TERM "$UPD" 2>/dev/null; wait "$UPD" 2>/dev/null
+done
+[ "$(jars)" -ge 11 ] || { echo "GAUNTLET-FAIL: the updater left $(jars) of 11 module jars in the cluster"; exit 1; }
 grep -E 'updates=|Will update' "$G/update.log" | head -3
 LATEST=$(for j in "$CL"/nmoxstudio/modules/org-nmox-*.jar; do unzip -p "$j" META-INF/MANIFEST.MF | grep -m1 OpenIDE-Module-Specification-Version | tr -d '\r' | awk '{print $2}'; done | sort -V | tail -1)
 echo "after: $(census) -> installed $LATEST"
