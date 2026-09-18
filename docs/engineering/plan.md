@@ -1,5 +1,22 @@
 # The Plan
 
+*Currency addendum 2026-09-17, at v2.175.0 — a proof that fails at random is a
+proof people re-run instead of read. The close gauntlet reported ten of eleven
+modules after v2.174.0's update and blamed the release; the same bytes booted
+eleven of eleven the next run. The fault was the harness's own stopwatch: it waits
+for `update_tracking`, sleeps a fixed ten seconds and TERMs the updater, while the
+headless `--update-all` CLI loops every ~6 s and each pass rewrites the modules in
+ALPHABETICAL order — so the signal can arrive after a fresh pass has backed up
+`apiclient`, the first module, and before it is written back. The victim being
+alphabetical rather than arbitrary is exactly what made it read as a real defect
+aimed at one module, and it is the tell worth remembering: when a flake always
+names the same thing, ask what ORDER puts that thing first. The harness now
+finishes an interrupted pass rather than judging a half-written image, and says
+"the updater left N of 11" when it genuinely cannot. Also recorded from the same
+session: a mutant that rewrites only a log message's prefix, while the gate reads a
+phrase later in the same line, proves nothing — enumerate what the gate matches
+before mutating it.*
+
 *Currency addendum 2026-09-17, at v2.174.0 — a claim is only proven on the
 platform it names, and only by the commit that ships. v2.172.0 said "macOS and
 Windows" and was true on macOS alone: the Windows library was looked for at

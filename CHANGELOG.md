@@ -4,6 +4,34 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.175.0] - 2026-09-17
+
+**The release proof stops failing at random, and it was the proof's own stopwatch.**
+
+- **What happened.** The close proof for v2.174.0 — a stock v2.173.0 portable
+  updating itself in-app — booted with ten of its eleven modules and reported
+  `GAUNTLET-FAIL`. API Studio's jar was simply absent from the cluster: eleven jars
+  in the updater's backup, ten in `modules/`, and no complaint anywhere in the log,
+  because nothing had failed. Re-running the same bytes booted eleven of eleven.
+- **Why.** The harness waits for `update_tracking` to move all eleven modules, sleeps
+  a fixed ten seconds, then TERMs the updater. But the headless `--update-all` CLI
+  loops — the running JVM never sees its own update, so it finds the same eleven
+  again every ~6 s — and a pass rewrites the modules in alphabetical order. Ten
+  seconds lands wherever it lands, so the signal can arrive after a fresh pass has
+  backed up `apiclient`, the first module, and before it is written back. The victim
+  is alphabetical, not arbitrary, which is what made it look like a real defect
+  aimed at one module.
+- **The fix.** An interrupted pass is finished rather than judged: the harness counts
+  the cluster's module jars after the TERM and, while any are missing, lets the
+  updater run once more and TERMs again. If the cluster is still short it says
+  exactly that — the updater left N of 11 — instead of letting the boot proof report
+  a product failure it did not have. `ShipScriptsGateTest` pins both halves; the
+  mutant that deletes the retry dies by name.
+- **Why it is worth a release of its own.** A proof that fails at random is a proof
+  people learn to re-run rather than read, and this one is the last gate between a
+  tag and the claim that an existing install can reach it. It found this itself, on
+  the release it was proving, which is the argument for having it.
+
 ## [2.174.0] - 2026-09-17
 
 **Windows really does take WebKit's own text path, and the pipeline notices a
@@ -22254,6 +22282,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.174.0...v2.175.0
 [2.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.173.0...v2.174.0
 [2.173.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.172.0...v2.173.0
 [2.172.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.171.0...v2.172.0
