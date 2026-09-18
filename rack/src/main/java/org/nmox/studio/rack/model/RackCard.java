@@ -1,0 +1,195 @@
+package org.nmox.studio.rack.model;
+
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+/**
+ * What a rack file says about itself: the card a reader meets before the
+ * wiring. Until v2.179.0 a rack's only name was its filename, which is fine
+ * for a file beside a project and useless for one passed between people — a
+ * rack worth sharing has to be able to say what it is for.
+ *
+ * <p>The card rides the {@code shared} header of a rack file (see
+ * {@link RackShare}), beside the product version:
+ *
+ * <pre>{@code
+ * "shared": {
+ *   "product": "2.179.0",
+ *   "name": "Rust watch loop",
+ *   "description": "REFLEX watches src/, VERITAS runs cargo test on every save.",
+ *   "author": "",
+ *   "kinds": ["RUST"],
+ *   "requires": ["cargo"]
+ * }
+ * }</pre>
+ *
+ * <p>Every field is optional and every field is a STRANGER'S TEXT: read
+ * tolerantly (a wrong type is an absent field, never an exception), stripped
+ * of control characters (a newline in a name could forge a line of the import
+ * manifest), and clipped by code points. {@code author} is empty unless the
+ * sender typed one — a name is never inferred from the machine. {@code kinds}
+ * are {@code ProjectKind} names and only steer ranking; an unknown one is
+ * kept and matches nothing. {@code requires} are BARE tool names the gallery
+ * looks up on the PATH and never runs — anything with a path separator or
+ * whitespace is dropped (the doctor.d rule).
+ */
+public record RackCard(String name, String description, String author,
+        List<String> kinds, List<String> requires) {
+
+    public static final int MAX_NAME = 60;
+    public static final int MAX_DESCRIPTION = 400;
+    public static final int MAX_AUTHOR = 60;
+    public static final int MAX_LIST = 12;
+    public static final int MAX_ITEM = 40;
+
+    /** A file that says nothing about itself: every plain Save Patch file. */
+    public static final RackCard EMPTY = new RackCard("", "", "", List.of(), List.of());
+
+    public RackCard {
+        name = clean(name, MAX_NAME);
+        description = clean(description, MAX_DESCRIPTION);
+        author = clean(author, MAX_AUTHOR);
+        kinds = cleanList(kinds, false);
+        requires = cleanList(requires, true);
+    }
+
+    /** The card of a rack document; {@link #EMPTY} when it carries none. */
+    public static RackCard of(JSONObject doc) {
+        JSONObject header = doc == null ? null : doc.optJSONObject(RackShare.SHARED);
+        if (header == null) {
+            return EMPTY;
+        }
+        return new RackCard(text(header, "name"), text(header, "description"), text(header, "author"),
+                strings(header.optJSONArray("kinds")), strings(header.optJSONArray("requires")));
+    }
+
+    /** Writes the fields that say something into a {@code shared} header; blank ones are left out. */
+    public void writeTo(JSONObject header) {
+        putIfSaid(header, "name", name);
+        putIfSaid(header, "description", description);
+        putIfSaid(header, "author", author);
+        if (!kinds.isEmpty()) {
+            header.put("kinds", new JSONArray(kinds));
+        }
+        if (!requires.isEmpty()) {
+            header.put("requires", new JSONArray(requires));
+        }
+    }
+
+    public boolean isBlank() {
+        return name.isEmpty() && description.isEmpty() && author.isEmpty()
+                && kinds.isEmpty() && requires.isEmpty();
+    }
+
+    /** True when this rack says it fits {@code kind} (a {@code ProjectKind} name), case-insensitively. */
+    public boolean fits(String kind) {
+        if (kind == null) {
+            return false;
+        }
+        String k = kind.toUpperCase(Locale.ROOT);
+        return kinds.contains(k);
+    }
+
+    private static void putIfSaid(JSONObject header, String key, String value) {
+        if (!value.isEmpty()) {
+            header.put(key, value);
+        }
+    }
+
+    /** Only a JSON string is text: a number or an object in a name's place is an absent name. */
+    private static String text(JSONObject header, String key) {
+        return header.opt(key) instanceof String s ? s : "";
+    }
+
+    private static List<String> strings(JSONArray array) {
+        List<String> out = new ArrayList<>();
+        if (array != null) {
+            // the read is bounded too: a hostile million-entry array costs MAX_LIST looks
+            for (int i = 0; i < array.length() && out.size() < MAX_LIST; i++) {
+                if (array.opt(i) instanceof String s) {
+                    out.add(s);
+                }
+            }
+        }
+        return out;
+    }
+
+    /** Control characters become spaces, runs of whitespace one space, the rest clipped by code points. */
+    static String clean(String raw, int max) {
+        if (raw == null) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder(Math.min(raw.length(), max * 2));
+        boolean space = false;
+        int kept = 0;
+        for (int i = 0; i < raw.length() && kept < max;) {
+            int cp = raw.codePointAt(i);
+            i += Character.charCount(cp);
+            // a lone surrogate is malformed text, not a character to keep
+            boolean lone = cp <= 0xFFFF && Character.isSurrogate((char) cp);
+            if (Character.isISOControl(cp) || Character.isWhitespace(cp) || lone
+                    || cp == 0x2028 || cp == 0x2029) {
+                space = sb.length() > 0;
+                continue;
+            }
+            if (space) {
+                sb.append(' ');
+                kept++;
+                space = false;
+                if (kept >= max) {
+                    break;
+                }
+            }
+            sb.appendCodePoint(cp);
+            kept++;
+        }
+        // a clip that lands on the joining space must not leave it dangling
+        return sb.toString().stripTrailing();
+    }
+
+    private static List<String> cleanList(List<String> raw, boolean bareToolNames) {
+        if (raw == null) {
+            return List.of();
+        }
+        Set<String> out = new LinkedHashSet<>();
+        for (String item : raw) {
+            if (out.size() >= MAX_LIST) {
+                break;
+            }
+            String v = clean(item, MAX_ITEM);
+            if (v.isEmpty()) {
+                continue;
+            }
+            if (bareToolNames) {
+                if (!isBareTool(v)) {
+                    continue;
+                }
+            } else {
+                v = v.toUpperCase(Locale.ROOT);
+            }
+            out.add(v);
+        }
+        return List.copyOf(out);
+    }
+
+    /** {@code cargo}, {@code docker-compose}, {@code python3.12}: a name to look up, never a path or a command line. */
+    static boolean isBareTool(String v) {
+        if (v.isEmpty() || v.startsWith("-") || v.startsWith(".")) {
+            return false;
+        }
+        for (int i = 0; i < v.length(); i++) {
+            char c = v.charAt(i);
+            boolean ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                    || c == '-' || c == '_' || c == '.' || c == '+';
+            if (!ok) {
+                return false;
+            }
+        }
+        return true;
+    }
+}
