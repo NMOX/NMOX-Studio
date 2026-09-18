@@ -191,11 +191,17 @@ public final class RackShare {
             if (state == null) {
                 continue;
             }
-            Set<String> off = keysOf(selfStartingByType, dj.optString("type", "?"));
+            // asked only once a switch reads on: for a built-in, asking builds the device
+            Set<String> off = null;
             for (String key : new ArrayList<>(state.keySet())) {
                 String value = state.optString(key, "");
-                if (arrivesOff(off, key, value)) {
-                    state.put(key, "false");
+                if (readsOn(value)) {
+                    if (off == null) {
+                        off = keysOf(selfStartingByType, dj.optString("type", "?"));
+                    }
+                    if (arrivesOff(off, key)) {
+                        state.put(key, "false");
+                    }
                 } else {
                     // written back only when it changed: a value that was not a
                     // string stays what it was, for RackIO to judge as it always has
@@ -245,12 +251,15 @@ public final class RackShare {
                 if (state == null) {
                     continue;
                 }
-                Set<String> off = keysOf(selfStartingByType, typeId);
+                Set<String> off = null;
                 boolean rests = false;
                 for (String key : state.keySet()) {
                     String value = state.optString(key, "");
-                    if (arrivesOff(off, key, value) && "true".equalsIgnoreCase(value)) {
-                        rests = true;
+                    if (readsOn(value)) {
+                        if (off == null) {
+                            off = keysOf(selfStartingByType, typeId);
+                        }
+                        rests |= arrivesOff(off, key);
                     } else if (worthReading(value)) {
                         settings.add(new Setting(typeId, key, value));
                     }
@@ -350,9 +359,19 @@ public final class RackShare {
         return keys == null ? EVERY_SWITCH : keys;
     }
 
-    /** A named self-starting key always arrives off; under {@link #EVERY_SWITCH} so does anything reading {@code true}. */
-    private static boolean arrivesOff(Set<String> keys, String key, String value) {
-        return keys.contains(key) || (keys.contains("*") && "true".equalsIgnoreCase(value));
+    /**
+     * A switch saved ON, read the way {@code RackDevice.param} restores one
+     * ({@code Boolean.parseBoolean}: {@code true} in any case, nothing else).
+     * Only such a value can start anything, so only such a value is ever set
+     * off — a self-starting key holding anything else is already at rest.
+     */
+    private static boolean readsOn(String value) {
+        return "true".equalsIgnoreCase(value);
+    }
+
+    /** For a value that {@link #readsOn}: its key was declared self-starting, or the answer was {@link #EVERY_SWITCH}. */
+    private static boolean arrivesOff(Set<String> keys, String key) {
+        return keys.contains(key) || keys.contains("*");
     }
 
     // ---- the home rewrite: one linear scan each way, no regex ----
@@ -438,7 +457,7 @@ public final class RackShare {
         if (value == null || prefix == null || prefix.length() < 2 || value.length() < prefix.length()) {
             return value;
         }
-        boolean ignoreCase = prefix.length() > 1 && prefix.charAt(1) == ':';
+        boolean ignoreCase = prefix.charAt(1) == ':'; // a drive-letter home; the guard above left at least two characters
         // Only a Windows-spelled home (a drive letter, or a UNC share) has
         // backslash SEPARATORS to re-spell. Under a slash-spelled home a
         // backslash is a character of the path — "my\ notes" — and turning it
@@ -515,16 +534,20 @@ public final class RackShare {
     /**
      * True when the value still names somebody's home: {@code /Users/<name>},
      * {@code /home/<name>} or {@code X:\Users\<name>} (either separator). The
-     * boundaries are the rewrite's plus {@code :} — a remote path
-     * ({@code host:/home/david/x}) is rightly left alone by the rewrite and
-     * still carries a name, which is exactly what the sender should be shown.
+     * audit is deliberately WIDER than the rewrite: anything may stand before
+     * the root except a path-name character, so a remote path
+     * ({@code host:/home/david/x}) and a file URL
+     * ({@code file:///Users/david/site/}) — which the rewrite rightly leaves
+     * alone, since {@code ~} means nothing in either — are still shown to the
+     * sender, because they still carry a name. {@code /srv/Users/x} and
+     * {@code http://localhost/Users/x} are not homes and are not flagged.
      */
     static boolean namesAHome(String value) {
         if (value == null) {
             return false;
         }
         for (int i = 0; i < value.length(); i++) {
-            if (!opensPath(value, i) && value.charAt(i - 1) != ':') {
+            if (i > 0 && pathNameChar(value.charAt(i - 1))) {
                 continue;
             }
             int nameStart = -1;
@@ -556,7 +579,7 @@ public final class RackShare {
     /** {@code C:\Users\} or {@code c:/users/} at {@code at}: any drive letter, either separator, any case. */
     private static boolean isDriveUsers(String value, int at) {
         if (at + DRIVE_USERS_LENGTH > value.length()
-                || !Character.isLetter(value.charAt(at)) || value.charAt(at + 1) != ':') {
+                || !asciiLetter(value.charAt(at)) || value.charAt(at + 1) != ':') {
             return false;
         }
         return isSeparator(value.charAt(at + 2)) && value.regionMatches(true, at + 3, "Users", 0, 5)
@@ -682,13 +705,27 @@ public final class RackShare {
         return (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9');
     }
 
-    /** A letter, digit, {@code -} or {@code _} at {@code at}; false off either end. */
+    private static boolean asciiLetter(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    /** A character a directory name ends with: after one, {@code /Users/} is a directory somewhere else, not a home root. */
+    private static boolean pathNameChar(char c) {
+        return asciiLetter(c) || (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '_' || c == '~';
+    }
+
+    /**
+     * An ASCII letter or digit, {@code -} or {@code _} at {@code at}; false off
+     * either end. ASCII on purpose: this is the alphabet credentials are issued
+     * in (a token format decides it, not the reader's script), so no Unicode
+     * letter class is consulted.
+     */
     private static boolean wordChar(String value, int at) {
         if (at < 0 || at >= value.length()) {
             return false;
         }
         char c = value.charAt(at);
-        return Character.isLetterOrDigit(c) || c == '-' || c == '_';
+        return asciiLetter(c) || (c >= '0' && c <= '9') || c == '-' || c == '_';
     }
 
     private static int tokenRun(String value, int from) {

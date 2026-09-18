@@ -300,6 +300,28 @@ class RackShareTest {
                 .getJSONObject("state").getString("follow")).isEqualTo("false");
     }
 
+    @Test
+    @DisplayName("the resolver is asked only about a device that has a switch saved ON — asking builds the device, and a manifest should not build a rack to be read")
+    void resolverIsAskedOnlyWhenASwitchIsOn() {
+        java.util.List<String> asked = new java.util.ArrayList<>();
+        java.util.function.Function<String, Set<String>> counting = type -> {
+            asked.add(type);
+            return selfStarting(type);
+        };
+        JSONObject shared = RackShare.export(patch(), HOME, "x");
+        RackShare.inspect(shared, t -> true, counting);
+        assertThat(asked).as("patch() saves exactly two switches on: reflex.armed and tempo.running")
+                .containsExactly("reflex", "tempo");
+        asked.clear();
+        RackShare.imported(shared, RECEIVER, counting);
+        assertThat(asked).containsExactly("reflex", "tempo");
+        JSONObject quiet = new JSONObject().put("devices", new JSONArray().put(new JSONObject().put("type", "tail")
+                .put("state", new JSONObject().put("follow", "false").put("path", "~/x.log"))));
+        asked.clear();
+        assertThat(RackShare.inspect(quiet, t -> true, counting).atRest()).isZero();
+        assertThat(asked).as("a switch saved off is already at rest").isEmpty();
+    }
+
     // ---- the audit ----
 
     private static final java.util.Map<String, java.util.function.Predicate<String>> DETECTORS = new java.util.LinkedHashMap<>();
@@ -372,11 +394,13 @@ class RackShareTest {
     @DisplayName("personal paths: a home that survived the rewrite — another user's, another platform's, a remote one — is shown to the sender; ~ and shared directories are not")
     void auditFindsHomesThatSurvived() {
         for (String personal : new String[]{"/Users/alice/x", "tail -f /home/bob/app.log", "C:\\Users\\carol\\x",
-                "type c:/users/dave", "LOG=/home/erin", "cat \"/Users/frank/My Docs\"", "copy x host:/home/gina/dst", "/home/h"}) {
+                "type c:/users/dave", "LOG=/home/erin", "cat \"/Users/frank/My Docs\"", "copy x host:/home/gina/dst", "/home/h",
+                "file:///Users/ivy/site/index.html", "open(/home/jo/x)", "copy x host:C:\\Users\\kim\\y"}) {
             assertThat(RackShare.namesAHome(personal)).as("names somebody: " + personal).isTrue();
         }
         for (String fine : new String[]{"~/x", "tail -f ~/logs/app.log", "/Users/Shared/tools", "C:\\Users\\Public\\x",
-                "/srv/Users/x", "/usr/home/x", "/Users/", "/home", "/var/log/app.log", "http://localhost/Users/x", ""}) {
+                "C:/Users/Public/x", "/srv/Users/x", "/usr/home/x", "~/home/site", "/Users/", "/home", "/var/log/app.log",
+                "http://localhost/Users/x", "xC:\\Users\\lee", ""}) {
             assertThat(RackShare.namesAHome(fine)).as("names nobody: " + fine).isFalse();
         }
         assertThat(RackShare.namesAHome(null)).isFalse();
