@@ -84,11 +84,14 @@ public final class I18nUsage {
                 BoundedWalk.complete(files, MAX_SOURCE_FILES));
     }
 
-    // the call names whose first argument is a key
-    private static final Pattern QUOTED_CALL = Pattern.compile(
-            "(?<![\\w$])(?:[\\w$]+\\.)?(?:\\$?tc?|\\$_|_|\\$format)\\s*\\(\\s*(['\"`])");
-    private static final Pattern DYNAMIC_CALL = Pattern.compile(
-            "(?<![\\w$])(?:this\\.|i18n\\.|i18next\\.)?(?:\\$?tc?|\\$_|\\$format)\\s*\\(\\s*(?!['\"`)\\s])([^)\\n]{1,40})");
+    /** The call names whose first argument is a key. */
+    private static final Set<String> CALLS = Set.of("t", "tc", "$t", "$tc", "$_", "_", "$format");
+    /** Of those, the ones whose unquoted argument is a dynamic lookup ({@code _(x)} is anyone's). */
+    private static final Set<String> DYNAMIC_CALLS = Set.of("t", "tc", "$t", "$tc", "$_", "$format");
+    /** The qualifiers a dynamic call may carry: {@code this.$t(x)}, {@code i18n.t(x)}. */
+    private static final Set<String> DYNAMIC_QUALIFIERS = Set.of("this", "i18n", "i18next");
+    /** The longest dynamic argument recorded, so a prefix stays readable. */
+    private static final int DYNAMIC_CHARS = 40;
     private static final Pattern ATTRIBUTE = Pattern.compile(
             "\\b(?:i18nKey|data-i18n|keypath)\\s*=\\s*([\"'])([^\"']+)\\1");
     private static final Pattern V_T = Pattern.compile("\\bv-t\\s*=\\s*\"'([^']+)'\"");
@@ -108,29 +111,8 @@ public final class I18nUsage {
         List<String> dynamic = new ArrayList<>();
         List<String> fileNamespaces = fileNamespaces(src);
 
-        Matcher m = QUOTED_CALL.matcher(src);
-        while (m.find()) {
-            char quote = m.group(1).charAt(0);
-            int start = m.end();
-            int end = src.indexOf(quote, start);
-            if (end < 0 || src.lastIndexOf('\n', end) >= start) {
-                continue;             // unterminated on its line: not a key
-            }
-            String key = src.substring(start, end);
-            if (quote == '`' && key.contains("${")) {
-                dynamic.add(key.substring(0, key.indexOf("${")) + "${…}");
-                continue;
-            }
-            addRef(refs, key, fileNamespaces);
-        }
-        m = DYNAMIC_CALL.matcher(src);
-        while (m.find()) {
-            String arg = m.group(1).strip();
-            if (!arg.isEmpty() && !dynamic.contains(arg)) {
-                dynamic.add(arg);
-            }
-        }
-        m = ATTRIBUTE.matcher(src);
+        scanCalls(src, refs, dynamic, fileNamespaces);
+        Matcher m = ATTRIBUTE.matcher(src);
         while (m.find()) {
             addRef(refs, m.group(2), fileNamespaces);
         }
@@ -156,6 +138,84 @@ public final class I18nUsage {
             refs.add(new Ref(null, m.group(1)));
         }
         return new Usage(Set.copyOf(refs), List.copyOf(dynamic), true);
+    }
+
+    /**
+     * Every lookup CALL in the text, by hand rather than by regex: a
+     * pattern with an optional qualifier group before an alternation of
+     * short names is the shape find-sec-bugs flags as ReDoS-prone, and
+     * the house law since v1.32.0 is fix-by-idiom, never exclusion. For
+     * each {@code (}: walk back over spaces to the callee chain
+     * ({@code [\w$.]}), require its last segment to be a lookup name and
+     * a non-identifier character before the chain (so {@code myt(} and
+     * {@code fetch(} stay out), then walk forward over whitespace: a
+     * quote opens a key, read to the closing quote on the same line
+     * (a template holding {@code ${} is dynamic); anything else after a
+     * {@code t}-family callee is a dynamic lookup, its argument kept.
+     */
+    static void scanCalls(String src, Set<Ref> refs, List<String> dynamic, List<String> fileNamespaces) {
+        int n = src.length();
+        for (int paren = src.indexOf('('); paren >= 0; paren = src.indexOf('(', paren + 1)) {
+            int nameEnd = paren;
+            while (nameEnd > 0 && src.charAt(nameEnd - 1) == ' ') {
+                nameEnd--;
+            }
+            int nameStart = nameEnd;
+            while (nameStart > 0 && (isIdentChar(src.charAt(nameStart - 1)) || src.charAt(nameStart - 1) == '.')) {
+                nameStart--;
+            }
+            if (nameStart == nameEnd || (nameStart > 0 && isIdentChar(src.charAt(nameStart - 1)))) {
+                continue;
+            }
+            String chain = src.substring(nameStart, nameEnd);
+            int dot = chain.lastIndexOf('.');
+            String callee = chain.substring(dot + 1);
+            if (!CALLS.contains(callee)) {
+                continue;
+            }
+            int arg = paren + 1;
+            while (arg < n && Character.isWhitespace(src.charAt(arg))) {
+                arg++;
+            }
+            if (arg >= n) {
+                continue;
+            }
+            char quote = src.charAt(arg);
+            if (quote == '\'' || quote == '"' || quote == '`') {
+                int end = src.indexOf(quote, arg + 1);
+                if (end < 0 || src.lastIndexOf('\n', end) > arg) {
+                    continue;         // unterminated on its line: not a key
+                }
+                String key = src.substring(arg + 1, end);
+                if (quote == '`' && key.contains("${")) {
+                    dynamic.add(key.substring(0, key.indexOf("${")) + "${…}");
+                } else {
+                    addRef(refs, key, fileNamespaces);
+                }
+                continue;
+            }
+            if (quote == ')' || !DYNAMIC_CALLS.contains(callee)) {
+                continue;
+            }
+            String qualifier = dot < 0 ? "" : chain.substring(0, dot);
+            if (!qualifier.isEmpty() && !DYNAMIC_QUALIFIERS.contains(qualifier)) {
+                continue;
+            }
+            int stop = arg;
+            while (stop < n && stop - arg < DYNAMIC_CHARS && src.charAt(stop) != ')' && src.charAt(stop) != '\n') {
+                stop++;
+            }
+            String text = src.substring(arg, stop).strip();
+            if (!text.isEmpty() && !dynamic.contains(text)) {
+                dynamic.add(text);
+            }
+        }
+    }
+
+    /** A JavaScript identifier character, as the language spec spells it in ASCII. */
+    private static boolean isIdentChar(char c) {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')
+                || c == '_' || c == '$';
     }
 
     /**

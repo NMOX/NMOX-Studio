@@ -1095,7 +1095,20 @@ public final class I18nCatalogs {
             throws ParseFailure {
         Document doc;
         try {
-            doc = secureBuilder().parse(new org.xml.sax.InputSource(new java.io.StringReader(text)));
+            // the hardening sits in the SAME method as the parse: find-sec-bugs'
+            // XXE detector reads one method at a time, and a helper it cannot
+            // see into reads as an unhardened parse (the v2.177.0 verify find)
+            DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
+            f.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            f.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            f.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            f.setXIncludeAware(false);
+            f.setExpandEntityReferences(false);
+            f.setNamespaceAware(false);
+            DocumentBuilder builder = f.newDocumentBuilder();
+            doc = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(text)));
         } catch (Exception malformed) {
             throw new ParseFailure(file, malformed.getMessage());
         }
@@ -1141,19 +1154,6 @@ public final class I18nCatalogs {
             out.put(id, new Entry(value, line, untranslated ? (state == null || state.isEmpty() ? "empty" : state) : null));
         }
         return out;
-    }
-
-    private static DocumentBuilder secureBuilder() throws Exception {
-        DocumentBuilderFactory f = DocumentBuilderFactory.newInstance();
-        f.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-        f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        f.setFeature("http://xml.org/sax/features/external-general-entities", false);
-        f.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
-        f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-        f.setXIncludeAware(false);
-        f.setExpandEntityReferences(false);
-        f.setNamespaceAware(false);
-        return f.newDocumentBuilder();
     }
 
     private static Element firstChild(Element parent, String tag) {
