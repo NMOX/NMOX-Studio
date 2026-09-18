@@ -85,10 +85,14 @@ public final class RackShare {
         JSONObject header = new JSONObject();
         header.put("product", productVersion == null ? "" : productVersion);
         out.put(SHARED, header);
-        String prefix = home == null ? null : home.toAbsolutePath().normalize().toString();
+        // compared with one separator so a Windows home (C:\Users\x) matches a value
+        // spelled either way; the shared tail is always written with '/' — the file
+        // travels between platforms, and imported() expands it with the receiver's
+        String prefix = home == null ? null : slashes(home.toAbsolutePath().normalize().toString());
         rewriteStates(out, value -> {
-            if (prefix != null && (value.equals(prefix) || value.startsWith(prefix + "/"))) {
-                return "~" + value.substring(prefix.length());
+            String v = slashes(value);
+            if (prefix != null && (v.equals(prefix) || v.startsWith(prefix + "/"))) {
+                return "~" + v.substring(prefix.length());
             }
             return value;
         });
@@ -118,7 +122,7 @@ public final class RackShare {
                 if (SELF_STARTING.contains(key)) {
                     state.put(key, "false");
                 } else if (prefix != null && (value.equals("~") || value.startsWith("~/"))) {
-                    state.put(key, prefix + value.substring(1));
+                    state.put(key, prefix + value.substring(1).replace('/', java.io.File.separatorChar));
                 }
             }
         }
@@ -206,6 +210,10 @@ public final class RackShare {
             }
         }
         return digits;
+    }
+
+    private static String slashes(String path) {
+        return path.replace('\\', '/');
     }
 
     private static void rewriteStates(JSONObject patch, java.util.function.UnaryOperator<String> rewrite) {

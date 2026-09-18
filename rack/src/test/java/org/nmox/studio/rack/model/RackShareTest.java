@@ -16,19 +16,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 class RackShareTest {
 
     private static final Path HOME = Path.of("/Users/sender");
+    /** The sender's home as this platform spells it, with '/' — Windows makes it {@code D:/Users/sender}. */
+    private static final String SENDER = HOME.toAbsolutePath().normalize().toString().replace('\\', '/');
+    private static final Path RECEIVER = Path.of("/home/receiver");
 
     private static JSONObject patch() {
         JSONObject root = new JSONObject();
         root.put("version", 1);
         JSONArray devices = new JSONArray();
         devices.put(new JSONObject().put("type", "tail").put("state", new JSONObject()
-                .put("file", "/Users/sender/proj/logs/app.log").put("lines", "40")));
+                .put("file", SENDER + "/proj/logs/app.log").put("lines", "40")));
         devices.put(new JSONObject().put("type", "reflex").put("state", new JSONObject()
                 .put("armed", "true").put("filter", "1")));
         devices.put(new JSONObject().put("type", "tempo").put("state", new JSONObject()
                 .put("running", "true").put("rate", "2")));
         devices.put(new JSONObject().put("type", "cmd").put("state", new JSONObject()
-                .put("command", "npm run build").put("cwd", "/Users/sender")));
+                .put("command", "npm run build").put("cwd", SENDER)));
         devices.put(new JSONObject().put("type", "com.example.uptime").put("state", new JSONObject()));
         devices.put(new JSONObject().put("type", "console").put("state", new JSONObject().put("tap", "1")));
         root.put("devices", devices);
@@ -54,20 +57,22 @@ class RackShareTest {
         assertThat(devices.getJSONObject(3).getJSONObject("state").getString("command"))
                 .as("everything that is not a home path travels verbatim — the commands ARE the point")
                 .isEqualTo("npm run build");
-        assertThat(shared.toString()).as("no trace of the sender's home").doesNotContain("/Users/sender");
-        assertThat(patch().toString()).as("export never mutates its input").contains("/Users/sender");
+        assertThat(shared.toString()).as("no trace of the sender's home").doesNotContain(SENDER);
+        assertThat(patch().toString()).as("export never mutates its input").contains(SENDER);
     }
 
     @Test
     @DisplayName("import expands ~ to the receiver's home, sets every self-starting flag off, and drops the header so what mounts is a plain patch")
     void importArrivesAtRest() {
         JSONObject shared = RackShare.export(patch(), HOME, "2.176.0");
-        JSONObject mounted = RackShare.imported(shared, Path.of("/home/receiver"));
+        JSONObject mounted = RackShare.imported(shared, RECEIVER);
+        String receiver = RECEIVER.toAbsolutePath().normalize().toString();
         assertThat(mounted.has(RackShare.SHARED)).isFalse();
         JSONArray devices = mounted.getJSONArray("devices");
         assertThat(devices.getJSONObject(0).getJSONObject("state").getString("file"))
-                .isEqualTo("/home/receiver/proj/logs/app.log");
-        assertThat(devices.getJSONObject(3).getJSONObject("state").getString("cwd")).isEqualTo("/home/receiver");
+                .as("expanded with the receiver's own separator")
+                .isEqualTo(RECEIVER.toAbsolutePath().normalize().resolve("proj").resolve("logs").resolve("app.log").toString());
+        assertThat(devices.getJSONObject(3).getJSONObject("state").getString("cwd")).isEqualTo(receiver);
         assertThat(devices.getJSONObject(1).getJSONObject("state").getString("armed"))
                 .as("a watcher saved armed must not start watching because a file was opened").isEqualTo("false");
         assertThat(devices.getJSONObject(2).getJSONObject("state").getString("running"))
@@ -127,11 +132,11 @@ class RackShareTest {
     void onlyThePrefixIsHome() {
         JSONObject root = new JSONObject().put("version", 1)
                 .put("devices", new JSONArray().put(new JSONObject().put("type", "tail").put("state",
-                        new JSONObject().put("file", "/srv/Users/sender/x").put("note", "/Users/senderling/y"))))
+                        new JSONObject().put("file", "/srv" + SENDER + "/x").put("note", SENDER + "ling/y"))))
                 .put("cables", new JSONArray());
         JSONObject shared = RackShare.export(root, HOME, "x");
         JSONObject state = shared.getJSONArray("devices").getJSONObject(0).getJSONObject("state");
-        assertThat(state.getString("file")).isEqualTo("/srv/Users/sender/x");
-        assertThat(state.getString("note")).as("/Users/senderling is another user").isEqualTo("/Users/senderling/y");
+        assertThat(state.getString("file")).isEqualTo("/srv" + SENDER + "/x");
+        assertThat(state.getString("note")).as("/Users/senderling is another user").isEqualTo(SENDER + "ling/y");
     }
 }
