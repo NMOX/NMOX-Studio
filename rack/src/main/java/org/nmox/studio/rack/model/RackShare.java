@@ -182,11 +182,30 @@ public final class RackShare {
             return false;
         }
         String v = value.trim();
-        if (v.matches("-?[0-9]+(\\.[0-9]+)?") || v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false")) {
+        if (isNumber(v) || v.equalsIgnoreCase("true") || v.equalsIgnoreCase("false")) {
             return false;
         }
         return v.contains(" ") || v.contains("/") || v.contains("\\") || v.contains("://")
                 || v.toLowerCase(Locale.ROOT).startsWith("~");
+    }
+
+    /** {@code -12}, {@code 3.5}: a knob position or a count — one linear pass, no regex. */
+    static boolean isNumber(String v) {
+        int i = v.startsWith("-") ? 1 : 0;
+        boolean digits = false;
+        boolean dot = false;
+        for (; i < v.length(); i++) {
+            char c = v.charAt(i);
+            if (c >= '0' && c <= '9') {
+                digits = true;
+            } else if (c == '.' && !dot && digits) {
+                dot = true;
+                digits = false;
+            } else {
+                return false;
+            }
+        }
+        return digits;
     }
 
     private static void rewriteStates(JSONObject patch, java.util.function.UnaryOperator<String> rewrite) {

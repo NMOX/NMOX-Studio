@@ -622,7 +622,7 @@ public final class RackTopComponent extends TopComponent {
                 org.openide.NotifyDescriptor.PLAIN_MESSAGE,
                 new Object[]{mount, org.openide.NotifyDescriptor.CANCEL_OPTION},
                 org.openide.NotifyDescriptor.CANCEL_OPTION);
-        if (DialogDisplayer.getDefault().notify(ask) != mount) {
+        if (!mount.equals(DialogDisplayer.getDefault().notify(ask))) {
             return;
         }
         if (!confirmReplace(Bundle.RackTopComponent_theSharedRack())) {
