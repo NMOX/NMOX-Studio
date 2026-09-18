@@ -104,6 +104,29 @@ class StarterRacksTest {
     }
 
     @Test
+    @DisplayName("all() and presetBehind() between them answer every starter forKind can hand out — the gallery lists each wiring exactly once")
+    void everyStarterIsListedOnceOrIsAPreset(@TempDir Path tmp) throws Exception {
+        List<String> listed = StarterRacks.all().stream().map(StarterRacks.Starter::id).toList();
+        assertThat(listed).doesNotHaveDuplicates();
+        java.util.Set<String> handedOut = new java.util.TreeSet<>(List.of("angular", "vite", "express", "node"));
+        for (ProjectKind kind : ProjectKind.values()) {
+            StarterRacks.forKind(kind, tmp.toFile()).ifPresent(s -> handedOut.add(s.id()));
+        }
+        for (String id : handedOut) {
+            boolean own = listed.contains(id);
+            boolean preset = StarterRacks.presetBehind(id).isPresent();
+            assertThat(own ^ preset).as("starter '" + id + "' is listed by all() or is a preset re-used — exactly one").isTrue();
+        }
+        assertThat(StarterRacks.presetBehind("lamp")).contains(RackPresets.LAMP_BENCH);
+        assertThat(StarterRacks.presetBehind("classic")).contains(RackPresets.CLASSIC_WEB);
+        // a listed starter serializes to the very patch forKind's twin does: one wiring, two doors
+        StarterRacks.Starter polyglot = StarterRacks.all().stream().filter(s -> s.id().equals("polyglot"))
+                .findFirst().orElseThrow();
+        assertThat(polyglot.buildPatch().toString())
+                .isEqualTo(StarterRacks.forKind(ProjectKind.RUST, tmp.toFile()).orElseThrow().buildPatch().toString());
+    }
+
+    @Test
     @DisplayName("a toolchain project gets the polyglot loop; a bare directory gets nothing")
     void toolchainsAndBareDirectories(@TempDir Path tmp) throws Exception {
         Path rust = Files.createDirectory(tmp.resolve("crate"));

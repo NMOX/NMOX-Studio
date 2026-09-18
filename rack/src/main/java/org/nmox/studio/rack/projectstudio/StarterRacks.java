@@ -193,6 +193,44 @@ public final class StarterRacks {
     private StarterRacks() {
     }
 
+    private static final String LAMP = "lamp";
+    private static final String CLASSIC = "classic";
+
+    /**
+     * Every starter whose wiring lives HERE, for the rack gallery to list
+     * (v2.179.0). The two starters that are a preset re-used ({@code lamp},
+     * {@code classic}) are deliberately absent: they are already on the
+     * gallery's shelf as presets, and {@link #presetBehind} says which, so
+     * one wiring is never listed twice. {@code static} is the wiring the
+     * Vanilla Web template is born with; no detected kind answers it (a
+     * script-tag site gets the Classic Web Bench), but it is a rack the
+     * product hands out, so it is listed. {@code StarterRacksTest} holds this
+     * list and {@code presetBehind} against everything {@link #forKind} can
+     * answer, so a starter added tomorrow cannot be missing from both.
+     */
+    public static java.util.List<Starter> all() {
+        return java.util.List.of(
+                new Starter("polyglot", POLYGLOT),
+                new Starter("node", NODE),
+                new Starter("vite", VITE),
+                new Starter("angular", ANGULAR),
+                new Starter("express", EXPRESS),
+                new Starter("static", STATIC),
+                new Starter("beam", ELIXIR),
+                new Starter("foundry", FOUNDRY));
+    }
+
+    /** The preset a starter id re-uses, or empty when the starter's wiring is its own. */
+    public static Optional<RackPresets> presetBehind(String starterId) {
+        if (LAMP.equals(starterId)) {
+            return Optional.of(RackPresets.LAMP_BENCH);
+        }
+        if (CLASSIC.equals(starterId)) {
+            return Optional.of(RackPresets.CLASSIC_WEB);
+        }
+        return Optional.empty();
+    }
+
     /** The starter for the project at {@code projectDir}, or empty for a kind in {@link #BARE}. */
     public static Optional<Starter> forProject(File projectDir) {
         return forKind(ProjectInspector.detectKind(projectDir), projectDir);
@@ -210,8 +248,8 @@ public final class StarterRacks {
         }
         return Optional.of(switch (kind) {
             case NODE -> nodeStarter(projectDir);
-            case PHP -> new Starter("lamp", RackPresets.LAMP_BENCH::wire);
-            case STATIC, BOWER, GRUNT, GULP, WEBPACK -> new Starter("classic", RackPresets.CLASSIC_WEB::wire);
+            case PHP -> new Starter(LAMP, RackPresets.LAMP_BENCH::wire);
+            case STATIC, BOWER, GRUNT, GULP, WEBPACK -> new Starter(CLASSIC, RackPresets.CLASSIC_WEB::wire);
             case ELIXIR, ERLANG, GLEAM -> new Starter("beam", ELIXIR);
             case FOUNDRY -> new Starter("foundry", FOUNDRY);
             default -> new Starter("polyglot", POLYGLOT);
