@@ -4,6 +4,46 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.177.0] - 2026-09-18
+
+**Your project's translations read the way the IDE's own do.**
+
+- **Tools ▸ Check Translations…** reads a web project's catalogs as data — never a
+  spawn — and publishes what it finds to the `i18n` diagnostics tool, so the
+  findings squiggle in the editor, list in Action Items and answer over the Agent
+  Port like PURITY's. Detection, first match wins: Angular (`angular.json` i18n or
+  `src/locale/messages*.xlf`), Lingui (`lingui.config.*` / `.po`), inlang/Paraglide
+  (`project.inlang/settings.json`), i18next (`public/locales/<lng>/<ns>.json`,
+  namespaces per file), vue-i18n, svelte-i18n, react-intl/FormatJS, and the I18n
+  Kit's own `locales/*.json` + `data-i18n`. Parsers: nested and flat JSON, `.po`
+  (multi-line, `#~` obsolete), XLIFF 1.2 and 2.0 through a DOM with doctype and
+  external entities refused; YAML catalogs are refused honestly with one finding
+  rather than guessed. Three checks with their traps pinned by tests: MISSING per
+  locale (CLDR plural and context suffixes folded to the base key; an Angular
+  `<target state="new">` counts as missing; `$schema` ignored), IDENTICAL to source
+  (the source locale, letterless values, ICU `plural`/`select` values and vue-i18n
+  `a | b` values exempt; a warning, capped at 50 per locale, never an error),
+  PLACEHOLDER MISMATCH (`{{x}}`, `{x}`, `{0}`, `%s` and ICU argument names — the
+  `LocaleBundleParityTest` law over the user's own files; this one is an error),
+  and UNUSED (only on a complete census; any dynamic `` t(`a.${x}`) `` downgrades the
+  whole run to "possibly unused"; Angular unused = extract-vs-target; Lingui skipped
+  and said). The source locale is `en`, else the config's, else the largest — the
+  rule is named in the status sentence. A parse failure publishes nothing (stale
+  squiggles stay true); a clean run publishes an empty batch. The bounded project
+  walk is the one `CssTokens` used, promoted to `BoundedWalk` on its second
+  consumer. Fifteen languages, with real plural forms.
+- **Keys complete and jump.** Inside `t('`, `$t('`, `i18n.t('`, `data-i18n="`,
+  `i18nKey="`, `<FormattedMessage id="`, `keypath="`, `$_('` and Paraglide's `m.`,
+  ⌃Space lists the source catalog's keys with `en.json · "Hello!"` as provenance
+  (values truncated at 24 code points), on JavaScript, TypeScript, HTML, Vue,
+  Svelte and Angular templates; ⌘-click a key opens the source catalog at its
+  line, and an undeclared key says so on the status line.
+- Two find-sec-bugs findings in the new code fixed by idiom (XXE hardening on the
+  factory the parse reads; the call-shape regex replaced by a hand scanner). Ten
+  test classes (`I18nCatalogsTest` 20, `I18nCheckTest` 17, `I18nUsageTest`,
+  `IcuArgsTest`, `I18nDoorsTest`, `CheckTranslationsActionTest`, `I18nKeysTest`,
+  `I18nKeyHyperlinkTest`); five mutants by name.
+
 ## [2.176.0] - 2026-09-17
 
 **A rack starts wired for what the project is, and travels as a file.**
@@ -22359,6 +22399,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.176.0...v2.177.0
 [2.176.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.175.0...v2.176.0
 [2.175.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.174.0...v2.175.0
 [2.174.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.173.0...v2.174.0
