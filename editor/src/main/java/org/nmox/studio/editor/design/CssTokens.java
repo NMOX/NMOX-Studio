@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,14 +42,10 @@ public final class CssTokens {
     private static final Pattern DECLARATION_LINE = Pattern.compile(
             "(--[A-Za-z0-9_-]+)\\s*:\\s*([^;}\\n]+)");
 
-    /** Directories a token scan must never descend into. */
-    private static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "out", "coverage",
-            "target", ".next", ".nuxt", ".angular", ".svelte-kit");
-
     /** Bounded scan: files (by count and size) a project sweep may read. */
     static final int MAX_FILES = 60;
-    static final int MAX_FILE_BYTES = 256 * 1024;
+    static final int MAX_FILE_BYTES =
+            (int) org.nmox.studio.editor.fullstack.BoundedWalk.MAX_FILE_BYTES;
 
     // ---- document-local ---------------------------------------------------
 
@@ -111,9 +106,11 @@ public final class CssTokens {
      * commented-out {@code // --x: red} used to REGISTER as a live
      * token. The {@code //} is blanked only when preceded by
      * whitespace or line start, so {@code https://} inside a value
-     * (no space before the slashes) survives untouched.
+     * (no space before the slashes) survives untouched. Public since
+     * v2.177.0: the translation-usage scan blanks JS/TS comments the
+     * same way before reading a source file's lookups.
      */
-    static String blankComments(String css) {
+    public static String blankComments(String css) {
         StringBuilder sb = new StringBuilder(css);
         int i = 0;
         while ((i = sb.indexOf("/*", i)) >= 0) {
@@ -190,38 +187,20 @@ public final class CssTokens {
      * FilePulse law: promote on the second copy, never grow it).
      */
     static List<File> collectStylesheets(File root) {
-        List<File> sheets = new ArrayList<>();
-        collect(root, sheets, 0);
-        return sheets;
+        // the loop itself (skip dirs, depth, size, count) is BoundedWalk
+        // since v2.177.0, when the translation checker became the third
+        // consumer of what had been this method's private walk
+        return org.nmox.studio.editor.fullstack.BoundedWalk.collect(root,
+                CssTokens::isStylesheetName, MAX_FILES);
     }
 
-    private static void collect(File dir, List<File> sheets, int depth) {
-        if (depth > 6 || sheets.size() >= MAX_FILES) {
-            return;
-        }
-        File[] children = dir.listFiles();
-        if (children == null) {
-            return;
-        }
-        for (File f : children) {
-            if (sheets.size() >= MAX_FILES) {
-                return;
-            }
-            String name = f.getName();
-            if (f.isDirectory()) {
-                if (!SKIP_DIRS.contains(name) && !name.startsWith(".")) {
-                    collect(f, sheets, depth + 1);
-                }
-            } else if ((name.endsWith(".css") || name.endsWith(".scss")
-                    || name.endsWith(".less") || name.endsWith(".sass")
-                    || name.endsWith(".html") || name.endsWith(".htm")
-                    // v2.26.0: the markup FAMILY declares tokens too — a
-                    // Vue/Svelte component's <style> block is a stylesheet
-                    || name.endsWith(".vue") || name.endsWith(".svelte"))
-                    && f.length() <= MAX_FILE_BYTES) {
-                sheets.add(f);
-            }
-        }
+    private static boolean isStylesheetName(String name) {
+        return name.endsWith(".css") || name.endsWith(".scss")
+                || name.endsWith(".less") || name.endsWith(".sass")
+                || name.endsWith(".html") || name.endsWith(".htm")
+                // v2.26.0: the markup FAMILY declares tokens too — a
+                // Vue/Svelte component's <style> block is a stylesheet
+                || name.endsWith(".vue") || name.endsWith(".svelte");
     }
 
     private static List<ProjectToken> parseFile(File f) {

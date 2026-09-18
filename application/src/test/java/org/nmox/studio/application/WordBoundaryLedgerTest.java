@@ -74,6 +74,9 @@ class WordBoundaryLedgerTest {
             "ClassicApiMatcher.java", "CssClassCompletionItem.java", "CssClasses.java",
             "CssColors.java", "CssCompletionProvider.java", "CssFutures.java", "CssTokens.java",
             "Emmet.java", "EnvKeys.java", "ExplainQueries.java", "Highlights.java",
+            // v2.177.0: a translation key is an identifier the catalog dialect
+            // defines (letters, digits, _ . - :), never a person's prose
+            "I18nKeys.java",
             "IrcClient.java", "JavaScriptCompletionProvider.java", "JavaScriptLexer.java",
             "JsOccurrencesHighlighter.java", "Keyframes.java", "NgSelectorHyperlink.java",
             "NgTemplateCompletion.java", "NgTemplateHyperlinkEnabler.java", "PairLogic.java",

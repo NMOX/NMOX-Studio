@@ -93,16 +93,42 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
                         line++;
                     }
                 }
-                LineCookie lc = DataObject.find(fo).getLookup().lookup(LineCookie.class);
-                if (lc != null) {
-                    lc.getLineSet().getCurrent(line)
-                            .show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                }
+                show(fo, line);
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
                         Bundle.ProjectJumpHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
             }
         });
+    }
+
+    /**
+     * Open {@code file} at a 1-based {@code line}, from any thread — for a
+     * jump whose target the resolver already knows by line (v2.177.0, the
+     * translation catalogs: org.json keeps no offsets, so the catalog
+     * reader records lines).
+     */
+    protected static void openLine(File file, int line) {
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                if (fo == null) {
+                    return;
+                }
+                show(fo, Math.max(0, line - 1));
+            } catch (Exception ex) {
+                StatusDisplayer.getDefault().setStatusText(
+                        Bundle.ProjectJumpHyperlink_couldNotOpen(file.getName(), ex.getMessage()));
+            }
+        });
+    }
+
+    /** Already on the EDT: the platform's own open-and-focus at a 0-based line. */
+    private static void show(FileObject fo, int line) throws java.io.IOException {
+        LineCookie lc = DataObject.find(fo).getLookup().lookup(LineCookie.class);
+        if (lc != null) {
+            lc.getLineSet().getCurrent(line)
+                    .show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+        }
     }
 
     protected static void status(String message) {
@@ -158,7 +184,7 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
     }
 
     /** The file's project root (marker walk, capped). */
-    protected static File projectDirOf(Document doc) {
+    public static File projectDirOf(Document doc) {
         FileObject fo = NbEditorUtilities.getFileObject(doc);
         File f = fo == null ? null : FileUtil.toFile(fo);
         if (f == null) {
