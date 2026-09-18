@@ -44,6 +44,9 @@ public final class RackIO {
         return LEGACY_PORT_IDS.getOrDefault(device.getTypeId() + "." + savedId, savedId);
     }
 
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(RackIO.class.getName());
+
     private RackIO() {
     }
 
@@ -131,9 +134,18 @@ public final class RackIO {
                 }
                 // a port a device no longer has (STELLAR's ENABLE, removed
                 // 2026-09-17) loses its cable and nothing else: the patch
-                // still loads, every other cable intact
-                if (from != null && to != null) {
-                    rack.connect(from, to);
+                // still loads, every other cable intact — and the loss is
+                // SAID, by name (refusals speak; the 2026-09-17 arc review
+                // found this branch silent, and Rack.connect's null for a
+                // duplicate or illegal pair silent beside it)
+                String cable = fd.getTypeId() + "." + fromId + " -> " + td.getTypeId() + "." + toId;
+                if (from == null || to == null) {
+                    LOG.log(java.util.logging.Level.WARNING,
+                            "rack patch cable {0} dropped: {1} has no such port",
+                            new Object[]{cable, from == null ? fd.getTypeId() + "." + fromId : td.getTypeId() + "." + toId});
+                } else if (rack.connect(from, to) == null) {
+                    LOG.log(java.util.logging.Level.WARNING,
+                            "rack patch cable {0} not connected: duplicate, incompatible or a loop", cable);
                 }
             }
         }
