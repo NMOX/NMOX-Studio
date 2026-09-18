@@ -91,6 +91,12 @@ class GalleryTextTest {
         String shipped = Files.readString(Path.of("src", "main", "resources", "org", "nmox", "studio", "rack",
                 "gallery", "racks", "rust-save-loop.nmoxrack.json"), StandardCharsets.UTF_8)
                 .replace("\r\n", "\n").strip();
+        // the shipped file also carries its card in every language (name.xx /
+        // description.xx, one per line); the doc shows the English rack, so
+        // those lines — and only those — are set aside before comparing
+        shipped = shipped.lines()
+                .filter(line -> !line.strip().matches("\"(name|description)\\.[a-z]{2}\": .*"))
+                .collect(java.util.stream.Collectors.joining("\n"));
         assertThat(shown).isEqualTo(shipped);
         // and the prose beside it names the devices the file actually mounts
         RackCard card = RackCard.of(new JSONObject(shipped), "");
