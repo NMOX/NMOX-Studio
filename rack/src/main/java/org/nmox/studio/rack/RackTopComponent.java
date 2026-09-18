@@ -106,6 +106,17 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_importMount=Mount",
     "RackTopComponent_importFailed=Could not import the rack: {0}",
     "RackTopComponent_theSharedRack=the shared rack",
+    "RackTopComponent_importSharedBy=Shared by {0}",
+    "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install — update to get everything it uses.",
+    "RackTopComponent_importCarriesWhole=Every cable and setting it uses exists in this install.",
+    "RackTopComponent_importLostCables=Cables this install cannot connect — it will mount WITHOUT them:",
+    "RackTopComponent_importLostSettings=Settings this install's devices do not have — ignored:",
+    "RackTopComponent_importTooNew=This rack file is in format {0}; this install reads format {1}. Update NMOX Studio to import it.",
+    "RackTopComponent_importClipboard=Import Rack from Clipboard",
+    "RackTopComponent_clipboardEmpty=The clipboard holds no text.",
+    "RackTopComponent_clipboardTooLarge=The clipboard text is too large to be a rack.",
+    "RackTopComponent_clipboardNotJson=The clipboard text is not a rack — copy the whole file, from its first brace to its last.",
+    "RackTopComponent_clipboardNoDevices=The clipboard holds JSON, but not a rack: it has no devices.",
     "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again."
 })
 public final class RackTopComponent extends TopComponent {
@@ -514,6 +525,10 @@ public final class RackTopComponent extends TopComponent {
                 menu.add(item);
             }
         }
+        menu.addSeparator();
+        javax.swing.JMenuItem fromClipboard = new javax.swing.JMenuItem(Bundle.RackTopComponent_importClipboard());
+        fromClipboard.addActionListener(a -> importFromClipboard());
+        menu.add(fromClipboard);
         menu.show(anchor, 0, anchor.getHeight());
     }
 
@@ -681,6 +696,38 @@ public final class RackTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * EDT. The clipboard door (v2.179.0): a rack pasted into a chat comes back
+     * through the same manifest, the same two questions and the same arrival at
+     * rest as a file. What is on a clipboard is a stranger's text — capped and
+     * refused by reason in {@code RackText}.
+     */
+    void importFromClipboard() {
+        String pasted = null;
+        try {
+            java.awt.datatransfer.Clipboard clipboard = java.awt.Toolkit.getDefaultToolkit().getSystemClipboard();
+            if (clipboard.isDataFlavorAvailable(java.awt.datatransfer.DataFlavor.stringFlavor)) {
+                pasted = (String) clipboard.getData(java.awt.datatransfer.DataFlavor.stringFlavor);
+            }
+        } catch (java.awt.datatransfer.UnsupportedFlavorException | IOException | IllegalStateException ex) {
+            // the clipboard is busy or holds something that is not text: the empty refusal below says so
+            pasted = null;
+        }
+        org.json.JSONObject doc;
+        try {
+            doc = org.nmox.studio.rack.sharing.RackText.parse(pasted);
+        } catch (org.nmox.studio.rack.sharing.RackText.NotARackException refused) {
+            error(switch (refused.reason()) {
+                case EMPTY -> Bundle.RackTopComponent_clipboardEmpty();
+                case TOO_LARGE -> Bundle.RackTopComponent_clipboardTooLarge();
+                case NOT_JSON -> Bundle.RackTopComponent_clipboardNotJson();
+                case NO_DEVICES -> Bundle.RackTopComponent_clipboardNoDevices();
+            });
+            return;
+        }
+        mountShared(doc, rack.getProjectDir());
+    }
+
     /** EDT: the manifest, the two confirmations, the mount — into {@code aimedAt}'s rack and no other. */
     private void mountShared(org.json.JSONObject doc, File aimedAt) {
         org.nmox.studio.rack.model.RackShare.Manifest manifest;
@@ -693,11 +740,27 @@ public final class RackTopComponent extends TopComponent {
             error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
             return;
         }
+        // what this install cannot give the file, found by a dry run BEFORE the
+        // question is asked (v2.179.0): a rack that arrives one cable short
+        // looks complete and does something else
+        org.nmox.studio.rack.model.RackCompat.Report compat;
+        try {
+            compat = org.nmox.studio.rack.model.RackCompat.check(
+                    doc, org.nmox.studio.core.util.ProductVersion.number());
+        } catch (RuntimeException ex) {
+            error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
+            return;
+        }
+        if (compat.formatTooNew()) {
+            error(Bundle.RackTopComponent_importTooNew(compat.format(), org.nmox.studio.rack.model.RackCompat.FORMAT));
+            return;
+        }
+        String manifestBody = manifestText(manifest, org.nmox.studio.rack.model.RackCard.of(doc), compat);
         // the manifest dialog: OK is not the default — a reflexive Enter must not
         // mount a stranger's rack (the v1.98.0 safe-default idiom)
         Object mount = Bundle.RackTopComponent_importMount();
         org.openide.NotifyDescriptor ask = new org.openide.NotifyDescriptor(
-                org.nmox.studio.core.util.PlainDialogs.plain(manifestText(manifest), Bundle.RackTopComponent_importTitle()),
+                org.nmox.studio.core.util.PlainDialogs.plain(manifestBody, Bundle.RackTopComponent_importTitle()),
                 Bundle.RackTopComponent_importTitle(),
                 org.openide.NotifyDescriptor.OK_CANCEL_OPTION,
                 org.openide.NotifyDescriptor.PLAIN_MESSAGE,
@@ -727,7 +790,47 @@ public final class RackTopComponent extends TopComponent {
         }
     }
 
-    /** The manifest as the reader sees it: one device per line, then what needs reading. */
+    /**
+     * The whole page a reader meets before Mount: what the rack says it is, what
+     * it holds, and what this install cannot give it. The card is a stranger's
+     * text — {@code RackCard} has already folded its control characters, so a
+     * name cannot forge one of the lines below it.
+     */
+    static String manifestText(org.nmox.studio.rack.model.RackShare.Manifest m,
+            org.nmox.studio.rack.model.RackCard card, org.nmox.studio.rack.model.RackCompat.Report compat) {
+        StringBuilder sb = new StringBuilder();
+        if (!card.name().isEmpty()) {
+            sb.append(card.name()).append("\n");
+        }
+        if (!card.description().isEmpty()) {
+            sb.append(card.description()).append("\n");
+        }
+        if (!card.author().isEmpty()) {
+            sb.append(Bundle.RackTopComponent_importSharedBy(card.author())).append("\n");
+        }
+        if (sb.length() > 0) {
+            sb.append("\n");
+        }
+        sb.append(manifestText(m));
+        sb.append("\n");
+        if (compat.madeWithNewer()) {
+            sb.append(Bundle.RackTopComponent_importMadeWithNewer(compat.madeWith())).append("\n");
+        }
+        if (compat.carriesWhole()) {
+            sb.append(Bundle.RackTopComponent_importCarriesWhole()).append("\n");
+        }
+        if (!compat.lostCables().isEmpty()) {
+            sb.append(Bundle.RackTopComponent_importLostCables()).append("\n");
+            compat.lostCables().forEach(c -> sb.append("  ").append(c).append("\n"));
+        }
+        if (!compat.lostSettings().isEmpty()) {
+            sb.append(Bundle.RackTopComponent_importLostSettings()).append("\n");
+            compat.lostSettings().forEach(c -> sb.append("  ").append(c).append("\n"));
+        }
+        return sb.toString();
+    }
+
+    /** The manifest's middle: one device per line, then what needs reading. */
     static String manifestText(org.nmox.studio.rack.model.RackShare.Manifest m) {
         StringBuilder sb = new StringBuilder();
         sb.append(Bundle.RackTopComponent_importSummary(m.devices().size(), m.cables(), m.atRest())).append("\n\n");

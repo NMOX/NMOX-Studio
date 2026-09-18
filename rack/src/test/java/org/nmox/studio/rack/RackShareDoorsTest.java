@@ -56,6 +56,16 @@ class RackShareDoorsTest {
         assertThat(catchAt).as("the guard's catch comes before the dialog").isPositive().isLessThan(dialog);
         assertThat(body.substring(catchAt, dialog)).as("the catch refuses out loud")
                 .contains("RackTopComponent_importFailed(");
+        // what this install cannot give the file is found BEFORE the question
+        // (v2.179.0): the dry run sits between the manifest read and the dialog,
+        // and a format this install does not read is refused with no dialog at all
+        int compat = body.indexOf("RackCompat.check(");
+        assertThat(compat).as("the dry run precedes the question").isGreaterThan(inspect).isLessThan(dialog);
+        int tooNew = body.indexOf("if (compat.formatTooNew())");
+        assertThat(tooNew).as("a newer format is refused before any dialog").isGreaterThan(compat).isLessThan(dialog);
+        assertThat(body.substring(tooNew, dialog)).contains("RackTopComponent_importTooNew(").contains("return;");
+        assertThat(body).as("the reader is shown the card and the losses, not the bare device list")
+                .contains("manifestText(manifest, org.nmox.studio.rack.model.RackCard.of(doc), compat)");
         assertThat(dialog).as("then shown, then the replace question").isLessThan(confirm);
         assertThat(confirm).as("only then is anything mounted").isLessThan(fromJson);
         // the manifest is modal and the aim can move under it: the mount lands
@@ -80,6 +90,20 @@ class RackShareDoorsTest {
         // (a gate that matches a comment is the v2.160.0 wiring-gate scar)
         assertThat(body).as("an imported rack is unsaved work, not the project's persisted patch")
                 .doesNotContain("markPersisted();");
+    }
+
+    @Test
+    @DisplayName("the clipboard door has no mount of its own: pasted text is parsed by RackText and handed to mountShared — same manifest, same two questions, same arrival at rest")
+    void clipboardTakesTheSameDoor() throws Exception {
+        String src = source();
+        int door = src.indexOf("void importFromClipboard()");
+        assertThat(door).isPositive();
+        String body = src.substring(door, src.indexOf("private void mountShared(", door));
+        assertThat(body).contains("RackText.parse(");
+        assertThat(body).as("the aim is the one at the gesture").contains("mountShared(doc, rack.getProjectDir());");
+        assertThat(body).as("never a second, unguarded mount").doesNotContain("RackIO.fromJson(");
+        assertThat(body).as("every refusal reason speaks").contains("case EMPTY").contains("case TOO_LARGE")
+                .contains("case NOT_JSON").contains("case NO_DEVICES");
     }
 
     @Test
