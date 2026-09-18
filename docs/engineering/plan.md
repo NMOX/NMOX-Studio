@@ -16,7 +16,14 @@ the parse reads, in the same method; a ReDoS-flagged call regex → a hand scann
 are now the pre-empt list for any new parser. The harness scar this batch added:
 a re-verify without `clean` re-copies the hand `Bundle.properties` over the
 `@Messages`-merged one and fails ui on MissingResource — the v2.102.1 class; every
-verdict is a CLEAN verify.*
+verdict is a CLEAN verify. And the scar that nearly shipped: a `git add -A` in
+the main checkout swept 254 throwaway files — a walk's userdir, cache dir and
+fixture under `scratchpad/`, never gitignored — into a docs commit and onto the
+v2.176.0 PR with CI green on two lanes; a `git status` count in the sibling
+worktree (190 where 0 was expected) is what caught it, the two commits were
+rewritten without the sweep and force-pushed with lease before the gate could
+merge, and `scratchpad/` is in `.gitignore` now. *A commit is what `git add`
+saw, not what you meant; enumerate the paths.**
 
 *Currency addendum 2026-09-17/18, at v2.176.0 — the overnight batch, built by
 two worktree agents on one branch. (A) Starter racks by project kind:
