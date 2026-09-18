@@ -1065,7 +1065,7 @@ public final class I18nCatalogs {
             trailingBackslashes++;
         }
         // an odd run of backslashes before the last quote escapes it: still open
-        if (s.length() < 2 || !s.startsWith("\"") || !s.endsWith("\"") || trailingBackslashes % 2 == 1) {
+        if (s.length() < 2 || !s.startsWith("\"") || !s.endsWith("\"") || (trailingBackslashes & 1) == 1) {
             throw new ParseFailure(file, "unterminated string at line " + line);
         }
         return poString(s);
