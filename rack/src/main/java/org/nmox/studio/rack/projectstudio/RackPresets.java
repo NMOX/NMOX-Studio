@@ -311,15 +311,17 @@ public enum RackPresets {
         @Override
         void wire(Rack rack) {
             RackDevice master = add(rack, DeviceType.MASTER, null);
-            // each console's RUN fires its dialed ACTION (both default to
-            // their no-network test lane, so the bench works tool-light)
+            // each trig fires the console's dialed ACTION (both default to
+            // their no-network test lane, so the bench works tool-light):
+            // STELLAR's ACTION jack (its RUN is BUILD since 2026-09-17, like
+            // every other CommandDevice), ANCHOR's RUN (its knob's verb)
             RackDevice stellar = add(rack, DeviceType.SOROBAN, null);
             RackDevice anchor = add(rack, DeviceType.SOLANA, null);
             // the EVM devnet free-runs beside them, exactly as in Web3 Bench;
             // ANCHOR's own START boots the Solana validator the same way
             RackDevice anvil = add(rack, DeviceType.LOCAL_CHAIN, null);
             RackDevice console = add(rack, DeviceType.CONSOLE, null);
-            rack.connect(master.getPort("trig1"), stellar.getPort("run"));
+            rack.connect(master.getPort("trig1"), stellar.getPort("action"));
             rack.connect(master.getPort("trig2"), anchor.getPort("run"));
             rack.connect(stellar.getPort("out"), console.getPort("in"));
             rack.connect(anchor.getPort("out"), console.getPort("in"));

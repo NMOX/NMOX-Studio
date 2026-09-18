@@ -156,8 +156,9 @@ class StellarDeviceTest {
         try {
             assertThat(device.getPorts().stream()
                     .map(org.nmox.studio.rack.model.Port::getId))
-                    .doesNotContain("serving")
-                    .contains("url", "ready", "run", "stop", "enable");
+                    // no ENABLE either: no verb honours a gate contract (2026-09-17)
+                    .doesNotContain("serving", "enable")
+                    .contains("url", "ready", "run", "stop", "action");
         } finally {
             device.dispose();
         }

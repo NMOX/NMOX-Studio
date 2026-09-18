@@ -150,9 +150,10 @@ class DeviceSecondReachTest {
             anchor.receive(anchor.getPort("stop"), Signal.trigger(true));
             stellar.receive(stellar.getPort("stop"), Signal.trigger(true));
             anvil.receive(anvil.getPort("stop"), Signal.trigger(true));
-            // enable-low routes to the stop side of the gate
+            // enable-low routes to the stop side of the gate (STELLAR has no
+            // ENABLE since 2026-09-17: its ACTION jack refuses without soroban-sdk)
             anchor.receive(anchor.getPort("enable"), Signal.gate(false));
-            stellar.receive(stellar.getPort("enable"), Signal.gate(false));
+            stellar.receive(stellar.getPort("action"), Signal.trigger(true));
             anvil.receive(anvil.getPort("enable"), Signal.gate(false));
             settle(rack);
             assertThat(anchor.isLive()).isFalse();

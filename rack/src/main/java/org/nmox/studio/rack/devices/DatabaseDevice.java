@@ -26,7 +26,13 @@ public class DatabaseDevice extends CommandDevice {
     private final Led connectedLed;
     private final Led errorLed;
     
-    private String lastAction = "ping";
+    /**
+     * The verb that actually launched, captured at launch and consulted by
+     * onFinished (the STELLAR v1.135.0 exit-attribution law): the CONNECTED
+     * gate is a ping's verdict, never a migration's. Also what
+     * {@link #buildCommand()} builds for the button tooltips and CI export.
+     */
+    private volatile String lastAction = "ping";
 
     public DatabaseDevice() {
         super("database", "NEPTUNE", "DATABASE CONSOLE", new Color(51, 153, 255), 3);
@@ -155,18 +161,28 @@ public class DatabaseDevice extends CommandDevice {
             connectedLed.setOn(success);
             errorLed.setOn(!success);
         });
-        emit("connected", Signal.gate(success));
+        // CONNECTED answers "can I reach the database?" — a ping's verdict.
+        // A migration's exit used to drive the same gate, so a failed
+        // migrate.sql read as "not connected" and a green one as "connected"
+        // without any connection having been tested (the 2026-09-17 audit)
+        if ("ping".equals(lastAction)) {
+            emit("connected", Signal.gate(success));
+        }
     }
 
     @Override
     public void receive(Port in, Signal signal) {
         if (signal.type() == SignalType.TRIGGER) {
-            if ("ping".equals(in.getId())) {
-                ping();
-            } else if ("migrate".equals(in.getId())) {
-                migrate();
-            } else {
-                super.receive(in, signal);
+            switch (in.getId()) {
+                case "ping" -> ping();
+                case "migrate" -> migrate();
+                // RUN is always a ping. It used to fall to primaryAction →
+                // buildCommand(), which switches on whichever BUTTON was
+                // pressed last: a RUN cable pinged until someone pressed
+                // MIGRATE on the faceplate, after which the same cable ran
+                // migrations (the 2026-09-17 rack audit)
+                case "run" -> ping();
+                default -> super.receive(in, signal);
             }
         }
     }

@@ -51,7 +51,7 @@ class AnchorDeviceTest {
         try {
             assertThat(device.getPorts().stream()
                     .map(org.nmox.studio.rack.model.Port::getId))
-                    .contains("serving", "url", "ready", "run", "stop", "enable");
+                    .contains("serving", "url", "ready", "start", "run", "stop", "enable");
         } finally {
             device.dispose();
         }

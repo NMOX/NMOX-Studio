@@ -79,11 +79,10 @@ public class GovernorDevice extends CommandDevice {
         firstDiff = null;
         // no snapshot means nothing to hold the line against: fail closed
         if (!new File(commandDir(), ".gas-snapshot").isFile()) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO .gas-snapshot — RUN forge snapshot FIRST");
-            });
-            emit("fail", Signal.trigger(false));
+            // FAIL and DONE both: this refusal used to emit FAIL alone, so a
+            // QUORUM wired on DONE waited forever for a lane that had already
+            // answered (the 2026-09-17 rack audit)
+            refuseLaunch("NO .gas-snapshot — RUN forge snapshot FIRST");
             return;
         }
         launch(buildCommand());

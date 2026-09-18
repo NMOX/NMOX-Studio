@@ -253,6 +253,28 @@ public abstract class CommandDevice extends RackDevice {
     }
 
     /**
+     * A refused launch speaks on the patch bay as well as the faceplate.
+     *
+     * <p>The LCD said "NO PROJECT MANIFEST" or "UNTRUSTED WORKSPACE" and
+     * nothing left the rear jacks, so a pipeline waiting on this device
+     * waited forever: POLYGLOT_GAUNTLET's QUORUM is wired on DONE and
+     * never fired when one lane was refused (the 2026-09-17 rack audit).
+     * A refusal is a verdict — FAIL and DONE both carry {@code false},
+     * exactly what a run that failed emits, so every downstream reads it
+     * the same way (KVASIR's EXPLAIN keys on that bit). Every refusal in
+     * the family routes through here: the base launch guards, GOVERNOR's
+     * missing snapshot, the chain consoles' missing tools and manifests.
+     */
+    protected final void refuseLaunch(String reason) {
+        onEdt(() -> {
+            statusLcd.setTextColor(RackStyle.LCD_AMBER);
+            statusLcd.setText(reason);
+        });
+        emit("fail", Signal.trigger(false));
+        emit("done", Signal.trigger(false));
+    }
+
+    /**
      * Launches a command with the full standard treatment: LEDs, meter,
      * status LCD, OUT data per line, OK/FAIL/DONE triggers on exit.
      */
@@ -291,24 +313,15 @@ public abstract class CommandDevice extends RackDevice {
             // otherwise. Say it instead. DebugDevice has spoken this exact
             // refusal honestly since v1.77.1; this brings the whole family up
             // to that bar at the one choke point they all pass through.
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText(noCommandReason());
-            });
+            refuseLaunch(noCommandReason());
             return false;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
-            });
+            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             return false;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
-            });
+            refuseLaunch("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             return false;
         }
         // captured per launch: a relaunch must not skew a still-running
@@ -379,17 +392,11 @@ public abstract class CommandDevice extends RackDevice {
             return;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
-            });
+            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
             return;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
-            });
+            refuseLaunch("UNTRUSTED WORKSPACE — EXECUTION REFUSED");
             return;
         }
         final long launchedAt = System.currentTimeMillis();

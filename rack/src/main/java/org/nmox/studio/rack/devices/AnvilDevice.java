@@ -25,6 +25,13 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  * fork of any live network; BLOCK-TIME switches instant mining to a
  * fixed cadence. The IDE never touches keys: anvil's own unlocked
  * accounts sign everything, on localhost only.
+ *
+ * <p>Jacks: START boots the chain and is what saved patches cable; the
+ * inherited RUN in-jack is an alias for START (both call {@code
+ * startChain}) — kept because RUN is the one jack every CommandDevice
+ * has and a MAESTRO trig wired to it must not go dead, and kept
+ * documented because two jacks doing one thing is otherwise a puzzle
+ * on the rear panel (the 2026-09-17 rack audit).
  */
 public class AnvilDevice extends CommandDevice {
 
@@ -103,10 +110,9 @@ public class AnvilDevice extends CommandDevice {
 
     private void startChain() {
         if (!anvilOnPath()) {
-            onEdt(() -> {
-                statusLcd.setTextColor(RackStyle.LCD_AMBER);
-                statusLcd.setText("anvil not found — curl -L https://foundry.paradigm.xyz | bash");
-            });
+            // FAIL + DONE, so a cabled lane hears the verdict (the refusal
+            // family's one home; the 2026-09-17 rack audit)
+            refuseLaunch("anvil not found — curl -L https://foundry.paradigm.xyz | bash");
             return;
         }
         accountCount.set(0);
