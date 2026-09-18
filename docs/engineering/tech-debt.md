@@ -67,6 +67,44 @@ in that state. The guard itself was reviewed and is sufficient: no
 superseded task ever loads the wrong page, so this is a wait, not a wrong
 page.
 
+### 102. A plugin device's KNOB also runs plugin code when a rack mounts
+
+Recorded by v2.179.0, which made arrival at rest true for switches. An
+imported rack sets every self-starting switch off — for a built-in, the ones
+its constructor declares (`paramSelfStarting`, held by
+`SelfStartingLedgerTest`); for a plugin or JSON device, EVERY switch, because
+restoring one runs the plugin's `onChange` Runnable, which holds
+`DeviceServices` and can reach `exec` (`ExtensionSelfStartTest` proves the
+path). A plugin KNOB has the same shape — `ExtensionDevice` wires
+`KnobHandle.onChange`, and `Knob.setSelectedIndex` fires it on restore — and
+no equivalent answer: a knob has no "off".
+
+**Why it is deferred.** Every `exec` a plugin makes is still behind Workspace
+Trust, so this is not an ungated spawn; it is a plugin doing something at mount
+rather than at a press, in a workspace the user already trusts. The fixes each
+change the frozen Device SPI's behaviour (suppress change callbacks during
+`applyState`; or restore extension knobs silently and fire one `onAttached`),
+and that wants a plugin author's eye on what breaks — JSON devices, the only
+plugins that ship, declare no knob callbacks that exec. The built-in fleet's
+knob listeners were not audited for starts-on-restore either; none is known.
+
+### 103. The three v2.176–v2.178 edges never walked in the app
+
+The re-aim and oversize refusals of v2.178.0 (proven behaviourally, not seen),
+and ⌃Space translation-key completion and ⌘-click to the catalog line from
+v2.177.0 (test-pinned; the background tools cannot drive a completion popup or
+a modifier-click). They need a real popup and a real modifier-click: a screen
+walk with full control, or a person.
+
+### 104. An oversize or corrupt rack patch on AIM only logs
+
+`RackService.autoLoadPatch` catches the load failure and writes a WARNING; the
+user sees an empty rack and no sentence. Load Patch and Import speak for the
+same file. It predates v2.176.0 and nothing is lost (saves are click-only, the
+corrupt file is kept as `.bak`, an oversize one is untouched) — it is a refusal
+that does not speak, which is a standing law. Deferred only because the right
+surface (a balloon, the rack's own placard) wants a look at the running app.
+
 ## Closed by v2.165.0 (the Browser shapes complex scripts)
 
 ### 99. The in-app Browser paints Arabic letters unjoined — CLOSED
