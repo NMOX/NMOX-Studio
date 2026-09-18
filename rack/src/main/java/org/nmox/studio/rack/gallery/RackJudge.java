@@ -392,8 +392,9 @@ public final class RackJudge {
         if (first == '/' || first == '\\') {
             return true;
         }
-        // C:\ or C:/
-        return end - start >= 3 && Character.isLetter(first) && v.charAt(start + 1) == ':'
+        // C:\ or C:/ — a drive letter is ASCII by definition, not "a letter" in any script
+        boolean drive = (first >= 'A' && first <= 'Z') || (first >= 'a' && first <= 'z');
+        return end - start >= 3 && drive && v.charAt(start + 1) == ':'
                 && (v.charAt(start + 2) == '\\' || v.charAt(start + 2) == '/');
     }
 

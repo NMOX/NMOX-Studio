@@ -174,8 +174,10 @@ public final class RackGallery {
                     built.wiring(), fits, null, "", () -> new JSONObject(built.json())));
         }
         out.addAll(yours(dropInDir, language, fit));
-        // stable: within one group the order above is the order shown
-        out.sort(Comparator.comparing((Entry e) -> !e.fitsProject()).thenComparing(e -> e.source().rank()));
+        // a sort over two small integers, never over a name (the shelf order is
+        // the product's, not the alphabet's); stable, so within one group the
+        // order above is the order shown
+        out.sort(Comparator.comparingInt(e -> (e.fitsProject() ? 0 : Source.values().length) + e.source().rank()));
         return List.copyOf(out);
     }
 
