@@ -16,9 +16,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RackShareDoorsTest {
 
+    /** The CODE of the window class — comments blanked, so a literal in a comment cannot satisfy a gate (the 2026-09-17 arc review). */
     private static String source() throws Exception {
-        return Files.readString(Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java"))
-                .replace("\r\n", "\n");
+        return GateSources.stripComments(Files.readString(Path.of("src/main/java/org/nmox/studio/rack/RackTopComponent.java"))
+                .replace("\r\n", "\n"));
     }
 
     @Test
