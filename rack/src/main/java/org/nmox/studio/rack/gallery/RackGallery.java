@@ -39,8 +39,11 @@ import org.openide.util.NbBundle;
  *
  * <p><b>Call off the EDT.</b> Listing reads the drop-in directory, the
  * classpath and the aimed project's manifests, and the first listing builds
- * the presets' throwaway racks; {@link #missingTools} walks the PATH. Nothing
- * here touches Swing, runs a process or writes a file — a user's corrupt
+ * the presets' throwaway racks and judges the community racks by mounting
+ * them (devices are built and disposed, never shown — what
+ * {@code RackPresets.buildPatch} has always done); {@link #missingTools} walks
+ * the PATH. Nothing here opens a window, runs a process or writes a file — a
+ * user's corrupt
  * drop-in is skipped with its reason logged, not moved aside (listing a shelf
  * must not rename files on it; {@code RackIO.readDocument} does, which is why
  * it is not used here).
