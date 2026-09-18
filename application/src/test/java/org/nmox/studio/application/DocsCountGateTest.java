@@ -45,10 +45,49 @@ class DocsCountGateTest {
         // for two releases because this census missed it (v2.34.2)
         docs.add(Path.of("..", "docs", "kitchen-sink.md"));
         docs.add(Path.of("..", "docs", "engineering", "codebase-guide.md"));
+        // CLAUDE.md's reference body quotes counts too, and a 2026-09-18
+        // review found six of them stale by up to forty releases (72
+        // grammars against 88, 16 manifests against 60) — the file most
+        // often read first was the one file no census read. Only its
+        // undated body is live: see liveLines.
+        docs.add(CLAUDE_MD);
         try (Stream<Path> tutorials = Files.list(Path.of("..", "docs", "tutorials"))) {
             tutorials.filter(p -> p.getFileName().toString().endsWith(".md")).forEach(docs::add);
         }
         return docs;
+    }
+
+    private static final Path CLAUDE_MD = Path.of("..", "CLAUDE.md");
+
+    /**
+     * A document's lines with the dated parts blanked, numbering kept.
+     * CLAUDE.md opens with a status paragraph and closes with a version
+     * history that both quote the counts of their day on purpose ("v1.92.0:
+     * 78 total"); what it tells a reader TODAY sits between the Module
+     * Structure heading and Known Issues. Every other live doc is live
+     * throughout.
+     */
+    private static List<String> liveLines(Path doc) throws IOException {
+        List<String> lines = new ArrayList<>(Files.readAllLines(doc));
+        if (!doc.equals(CLAUDE_MD)) {
+            return lines;
+        }
+        boolean live = false;
+        boolean sawBody = false;
+        for (int i = 0; i < lines.size(); i++) {
+            String line = lines.get(i);
+            if (line.startsWith("## Module Structure")) {
+                live = true;
+                sawBody = true;
+            } else if (line.startsWith("## Known Issues")) {
+                live = false;
+            }
+            if (!live) {
+                lines.set(i, "");
+            }
+        }
+        assertThat(sawBody).as("CLAUDE.md lost its '## Module Structure' heading — the census reads nothing").isTrue();
+        return lines;
     }
 
     /**
@@ -59,7 +98,7 @@ class DocsCountGateTest {
     private static List<String> claims(Pattern claim, List<Integer> found) throws IOException {
         List<String> where = new ArrayList<>();
         for (Path doc : liveDocs()) {
-            List<String> lines = Files.readAllLines(doc);
+            List<String> lines = liveLines(doc);
             for (int i = 0; i < lines.size(); i++) {
                 Matcher m = claim.matcher(lines.get(i));
                 while (m.find()) {
@@ -194,7 +233,7 @@ class DocsCountGateTest {
         List<String> stale = new ArrayList<>();
         int seen = 0;
         for (Path doc : liveDocs()) {
-            List<String> lines = Files.readAllLines(doc);
+            List<String> lines = liveLines(doc);
             for (int i = 0; i < lines.size(); i++) {
                 Matcher m = claim.matcher(lines.get(i));
                 while (m.find()) {
