@@ -33,6 +33,7 @@ import org.openide.util.NbBundle.Messages;
     "ShareDialog_title=Share Rack",
     "ShareDialog_name=Name:",
     "ShareDialog_description=What it does:",
+    "ShareDialog_descriptionName=What the rack does",
     "ShareDialog_author=Shared by:",
     "ShareDialog_authorHint=Optional — left blank, the file names nobody",
     "ShareDialog_requires=Needs on the PATH:",
@@ -69,6 +70,7 @@ public final class ShareDialog {
             List<String> suggestedRequires, String leavingText) {
         JTextField nameField = new JTextField(suggestedName == null ? "" : suggestedName, 32);
         JTextArea descriptionArea = new JTextArea(3, 32);
+        descriptionArea.getAccessibleContext().setAccessibleName(Bundle.ShareDialog_descriptionName());
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
         JTextField authorField = new JTextField("", 32);
@@ -76,7 +78,10 @@ public final class ShareDialog {
         JTextField requiresField = new JTextField(String.join(", ", suggestedRequires), 32);
         requiresField.setToolTipText(PlainText.plain(Bundle.ShareDialog_requiresHint()));
         boolean hasKind = detectedKind != null && !detectedKind.isBlank();
-        JCheckBox fitsBox = new JCheckBox(hasKind ? PlainText.plain(Bundle.ShareDialog_fits(detectedKind)) : "", hasKind);
+        // the label's text is decided first, then guarded whole: the button gate
+        // reads the constructor's HEAD, and a ternary there is not a guard
+        String fitsText = hasKind ? Bundle.ShareDialog_fits(detectedKind) : "";
+        JCheckBox fitsBox = new JCheckBox(PlainText.plain(fitsText), hasKind);
         JTextArea leavingArea = new JTextArea(leavingText == null ? "" : leavingText, 9, 32);
         leavingArea.setEditable(false);
         leavingArea.setLineWrap(false);

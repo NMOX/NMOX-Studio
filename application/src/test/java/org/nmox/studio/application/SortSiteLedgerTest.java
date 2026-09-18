@@ -79,6 +79,10 @@ class SortSiteLedgerTest {
                     "npm package names, which npm itself restricts to lowercase ASCII, "
                     + "so a collator would order them identically at more cost"),
             Map.entry("UserDevices.java", DROP_IN),
+            Map.entry("RackGallery.java",
+                    "the gallery's shelf order: racks that fit the aimed project first, then by "
+                    + "where a rack comes from (a fixed rank) — a boolean and an int, no string is "
+                    + "compared, and within a group the listing order stands (the sort is stable)"),
             Map.entry("UserPresets.java", DROP_IN),
             Map.entry("UserProbes.java", DROP_IN),
             Map.entry("UserTemplates.java", DROP_IN),

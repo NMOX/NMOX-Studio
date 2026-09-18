@@ -33,6 +33,12 @@ you are, and says plainly where the untranslated rest of the manual lives.
   and number in it is real.
 - **[🎛️ The Device Reference](devices.md)** — every device in the rack,
   its knobs and its jacks. Generated from the source, so it never drifts.
+- **[🗄️ The Rack Gallery](racks.md)** — every rack the product hands out:
+  what each is for, what it needs, and how it is wired. Generated from the
+  rack files themselves.
+- **[📄 Rack files](rack-files.md)** — a rack as a portable, inspectable
+  workflow: the format, what happens when a file travels between people, and
+  how to contribute a rack to the gallery.
 - **[🖼️ The visual tour](tour.md)** — every major feature on one page,
   with real screenshots; the phosphor-styled version is the website,
   <https://nmox.github.io/NMOX-Studio/>.
