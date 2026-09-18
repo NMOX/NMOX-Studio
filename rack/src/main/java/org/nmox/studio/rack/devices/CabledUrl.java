@@ -69,9 +69,15 @@ final class CabledUrl {
         return pending;
     }
 
+    /** The refused payload's head, in code points — a cut between the halves of an emoji is the v1.149.0 class. */
+    static final int HEAD_CHARS = 40;
+
     private static String head(String payload) {
         String oneLine = payload.replace('\n', ' ').replace('\r', ' ').trim();
-        return oneLine.length() <= 40 ? oneLine : oneLine.substring(0, 40) + "…";
+        if (oneLine.codePointCount(0, oneLine.length()) <= HEAD_CHARS) {
+            return oneLine;
+        }
+        return oneLine.substring(0, oneLine.offsetByCodePoints(0, HEAD_CHARS)) + "…";
     }
 
     /** RackDevice.onEdt's rule (run now on the EDT, else invokeLater), for a non-device class. */
