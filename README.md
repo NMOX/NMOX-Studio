@@ -89,6 +89,9 @@ itself across every release since v1.51.
 (⌥⌘E) in HTML, Angular templates, and stylesheets; `class="…"`
 completion from the project's real stylesheets with ⌘-click between a
 class and its rule — both directions — and project-wide Rename Class;
+your translation catalogs read the same way (Tools ▸ Check
+Translations… reports missing, copied and mis-placeholdered keys across
+i18next, vue-i18n, Angular XLIFF, Lingui, Paraglide and react-intl);
 tsserver/eslint/Prettier out of the box; breakpoints in Node and Chrome;
 a Task Board (⌥⌘1) beside the code. *Designers*: color swatches on every
 literal **and through `var()` tokens**, project-wide token completion

@@ -745,6 +745,53 @@ registers it.
 
 ![process.env completion from the project's own .env](images/env-completion.png)
 
+### Translations in your project
+
+A web project's own translation catalogs are data the editor reads,
+the way it reads your stylesheets and your `.env`. **Tools ▸ Check
+Translations…** finds the catalogs (i18next's `public/locales/<lng>/`,
+vue-i18n and svelte-i18n's `src/locales/`, Angular's
+`src/locale/messages.xlf` with its `messages.<lng>.xlf` siblings in
+XLIFF 1.2 or 2.0, Lingui's `.po` files, Paraglide's `messages/`,
+react-intl's `src/lang/`, or the I18n Kit's own `locales/` beside its
+`i18n.js`), picks the source locale (`en` when there is one, else the
+locale your config names, else the largest catalog) and reports three
+things, off the paint thread, as squiggles on the catalog files and
+rows in Action Items:
+
+- **Missing** — a source key a locale does not have. Plural and
+  context forms are compared on their base key, so a Polish
+  `items_few` beside an English `items_one` is a translation, not a
+  gap; an Angular unit still in state `new` or a Lingui `msgstr ""`
+  counts as missing on its own line.
+- **Identical to the source** — a value copied rather than
+  translated. Values with no letters, ICU plurals and selects,
+  vue-i18n `a | b` forms and the source locale itself are never
+  counted; at most fifty are listed per locale and the status line
+  says how many more.
+- **Placeholder mismatch** — the one that is a bug: a translation
+  whose `{{name}}`, `{name}`, `{0}`, `%s` or ICU argument set differs
+  from the source's. This one is an error.
+
+A fourth, **unused**, names source keys no source file references —
+`t('k')`, `$t`, `i18n.t`, `<Trans i18nKey>`, `data-i18n`,
+`<FormattedMessage id>`, `formatMessage({id})`, `keypath`, `$_`,
+`m.key(` — and it is honest about its limits: it runs only when the
+source walk read every file (the walk is bounded), and the moment
+any dynamic lookup exists (`` t(`errors.${code}`) ``, `t(prefix +
+k)`) every unused key becomes *possibly unused* with the dynamic
+prefixes named. Angular judges unused as ids a translation carries
+that `messages.xlf` no longer has; Lingui keys are source text and
+the check is skipped, and the sentence says so.
+
+The status line ends the run in one sentence (`Translations: 3
+catalogs, de missing 4, fr identical 2, 1 key possibly unused`). A
+catalog that will not parse publishes nothing — the previous run's
+findings stay true and the file is named on the status line. YAML
+catalogs are not read yet: a vue-i18n project keeping its catalogs
+in `.yaml` gets one finding on its package.json line saying so, and
+nothing is guessed.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by
