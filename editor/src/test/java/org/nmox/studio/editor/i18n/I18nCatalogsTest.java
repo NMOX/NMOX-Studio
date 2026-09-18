@@ -280,6 +280,30 @@ class I18nCatalogsTest {
     }
 
     @Test
+    @DisplayName("Lingui .po: a string that never closes its quote is a ParseFailure naming the file and line — never the key \"hello (an odd run of backslashes before the quote still counts as open)")
+    void unterminatedPoStringRefuses(@TempDir Path root) throws Exception {
+        Files.writeString(root.resolve("lingui.config.json"),
+                "{\"sourceLocale\":\"en\",\"catalogs\":[{\"path\":\"src/locales/{locale}/messages\"}]}");
+        Files.createDirectories(root.resolve("src/locales/en"));
+        Files.createDirectories(root.resolve("src/locales/de"));
+        Files.writeString(root.resolve("src/locales/de/messages.po"), "msgid \"hello\"\nmsgstr \"Hallo\"\n");
+        Files.writeString(root.resolve("src/locales/en/messages.po"),
+                "msgid \"\"\nmsgstr \"\"\n\nmsgid \"hello\nmsgstr \"Hello\"\n");
+        I18nCatalogs.ParseFailure failed = org.junit.jupiter.api.Assertions.assertThrows(
+                I18nCatalogs.ParseFailure.class, () -> I18nCatalogs.detect(root));
+        assertThat(failed.file().getFileName().toString()).isEqualTo("messages.po");
+        assertThat(failed.getMessage()).contains("line 4");
+
+        Files.writeString(root.resolve("src/locales/en/messages.po"), "msgid \"hello\"\nmsgstr \"Hello\\\"\n");
+        assertThat(org.junit.jupiter.api.Assertions.assertThrows(I18nCatalogs.ParseFailure.class,
+                () -> I18nCatalogs.detect(root)).getMessage()).contains("line 2");
+
+        Files.writeString(root.resolve("src/locales/en/messages.po"), "msgid \"hello\"\nmsgstr \"Hello\\\\\"\n");
+        assertThat(I18nCatalogs.detect(root).source().get(0).entries().get("hello").value())
+                .as("an even run is an escaped backslash: closed").isEqualTo("Hello\\");
+    }
+
+    @Test
     @DisplayName("Lingui with a JS config: the default layout is assumed and the rule says so")
     void linguiJsConfig(@TempDir Path root) throws Exception {
         write(root, "lingui.config.js", "module.exports = { locales: ['en', 'de'] }");

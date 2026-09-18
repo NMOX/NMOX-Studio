@@ -730,7 +730,7 @@ public final class I18nCatalogs {
     }
 
     static Map<String, Entry> po(Path file) throws ParseFailure {
-        return cached(file, (text, f) -> parsePo(text));
+        return cached(file, (text, f) -> parsePo(text, f));
     }
 
     static Map<String, Entry> xliff(Path file, boolean sourceSide) throws ParseFailure {
@@ -962,9 +962,13 @@ public final class I18nCatalogs {
      * msgid) skipped. The key is the msgid, prefixed {@code ctxt|} when a
      * context is set — Lingui's explicit ids ride the msgid, so this is
      * the id in both of its modes. An empty msgstr is an entry in state
-     * {@code untranslated}, on its own line.
+     * {@code untranslated}, on its own line. A string that never closes its
+     * quote is a {@link ParseFailure} naming the line: gettext refuses such a
+     * file, and reading past it would key the report on garbage (the
+     * 2026-09-17 arc review found {@code msgid "hello} becoming the key
+     * {@code "hello}).
      */
-    static Map<String, Entry> parsePo(String text) {
+    static Map<String, Entry> parsePo(String text, Path file) throws ParseFailure {
         Map<String, Entry> out = new LinkedHashMap<>();
         String ctxt = null;
         String id = null;
@@ -1000,27 +1004,27 @@ public final class I18nCatalogs {
             }
             if (l.startsWith("msgctxt ")) {
                 field = "ctxt";
-                ctxt = poString(l.substring(8));
+                ctxt = poStringAt(l.substring(8), file, line);
             } else if (l.startsWith("msgid_plural ")) {
                 field = "plural";
             } else if (l.startsWith("msgid ")) {
                 field = "id";
-                id = poString(l.substring(6));
+                id = poStringAt(l.substring(6), file, line);
                 idLine = line;
             } else if (l.startsWith("msgstr[")) {
                 int close = l.indexOf(']');
                 boolean first = close > 0 && l.startsWith("msgstr[0]");
                 field = first ? "str" : "strN";
                 if (first) {
-                    str = new StringBuilder(poString(l.substring(close + 1).strip()));
+                    str = new StringBuilder(poStringAt(l.substring(close + 1).strip(), file, line));
                     strLine = line;
                 }
             } else if (l.startsWith("msgstr ")) {
                 field = "str";
-                str = new StringBuilder(poString(l.substring(7)));
+                str = new StringBuilder(poStringAt(l.substring(7), file, line));
                 strLine = line;
             } else if (l.startsWith("\"") && field != null) {
-                String piece = poString(l);
+                String piece = poStringAt(l, file, line);
                 switch (field) {
                     case "ctxt" -> ctxt = (ctxt == null ? "" : ctxt) + piece;
                     case "id" -> id = (id == null ? "" : id) + piece;
@@ -1051,6 +1055,20 @@ public final class I18nCatalogs {
         } else {
             out.put(key, new Entry(value, idLine, null));
         }
+    }
+
+    /** {@link #poString} for a line the catalog must have closed: an unterminated quote refuses by line. */
+    private static String poStringAt(String quoted, Path file, int line) throws ParseFailure {
+        String s = quoted.strip();
+        int trailingBackslashes = 0;
+        for (int k = s.length() - 2; k >= 1 && s.charAt(k) == '\\'; k--) {
+            trailingBackslashes++;
+        }
+        // an odd run of backslashes before the last quote escapes it: still open
+        if (s.length() < 2 || !s.startsWith("\"") || !s.endsWith("\"") || trailingBackslashes % 2 == 1) {
+            throw new ParseFailure(file, "unterminated string at line " + line);
+        }
+        return poString(s);
     }
 
     /** The content of one quoted PO string, escapes resolved. */
