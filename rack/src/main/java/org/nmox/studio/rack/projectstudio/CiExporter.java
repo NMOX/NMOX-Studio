@@ -15,6 +15,7 @@ import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.model.Cable;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
+import org.nmox.studio.rack.model.SignalType;
 
 /**
  * Compiles the rack patch into a GitHub Actions workflow: the same
@@ -47,7 +48,8 @@ public final class CiExporter {
         }
 
         File root = rack.getProjectDir();
-        for (RackDevice device : orderedStepDevices(rack)) {
+        Steps steps = steps(rack);
+        for (RackDevice device : steps.ordered()) {
             CommandDevice cd = (CommandDevice) device;
             List<String> command = cd.exportCommand();
             if (command == null || command.isEmpty()) {
@@ -55,6 +57,12 @@ public final class CiExporter {
             }
             yaml.append("      - name: ").append(device.getTitle())
                     .append(" (").append(device.getTypeId()).append(")\n");
+            if (steps.onFailure().contains(device)) {
+                // a step fed only by FAIL cables is the failure path — a
+                // notify-on-failure SOLDER exported as a plain sequential step
+                // ran on the SUCCESS path (the 2026-09-17 rack audit)
+                yaml.append("        if: failure()\n");
+            }
             String dir = relative(root, cd.exportDir());
             if (!dir.isEmpty()) {
                 yaml.append("        working-directory: ").append(dir).append('\n');
@@ -65,10 +73,31 @@ public final class CiExporter {
     }
 
     /**
-     * Step devices in cable order: Kahn's algorithm over trigger cables
-     * between exportable devices, stable by rack position otherwise.
+     * The exported steps in order, and the ones that belong to the failure
+     * path: a step every incoming verdict cable of which comes from a FAIL
+     * jack. Package-private for the tests.
      */
-    static List<RackDevice> orderedStepDevices(Rack rack) {
+    record Steps(List<RackDevice> ordered, Set<RackDevice> onFailure) {
+    }
+
+    /** The verdict jacks a cable must leave from to say "this step runs after me". */
+    private static final Set<String> VERDICT_PORTS = Set.of("ok", "done", "fail");
+
+    /**
+     * Step devices in cable order: Kahn's algorithm over the VERDICT
+     * cables between exportable devices — a TRIGGER leaving {@code ok},
+     * {@code done} or {@code fail} — stable by rack position otherwise.
+     *
+     * <p>Every cable used to order, whatever jack it left: a DATA {@code
+     * url} cable sequenced two steps that share no verdict, and a {@code
+     * VERITAS fail → SOLDER run} notify-on-failure cable exported SOLDER as
+     * an ordinary step on the success path (the 2026-09-17 rack audit). A
+     * FAIL cable still orders its target after its source — the step must
+     * run after the verdict it reacts to — and marks it for {@code if:
+     * failure()} unless an OK/DONE cable also feeds it, in which case the
+     * device is on both paths and stays an ordinary step.
+     */
+    static Steps steps(Rack rack) {
         List<RackDevice> candidates = new ArrayList<>();
         for (RackDevice d : rack.getDevices()) {
             if (d instanceof CommandDevice && DeviceCatalog.byId(d.getTypeId())
@@ -78,15 +107,22 @@ public final class CiExporter {
         }
         Map<RackDevice, Integer> indegree = new LinkedHashMap<>();
         Map<RackDevice, List<RackDevice>> next = new LinkedHashMap<>();
+        Set<RackDevice> failFed = new LinkedHashSet<>();
+        Set<RackDevice> successFed = new LinkedHashSet<>();
         for (RackDevice d : candidates) {
             indegree.put(d, 0);
         }
         for (Cable cable : rack.getCables()) {
             RackDevice from = cable.getFrom().getDevice();
             RackDevice to = cable.getTo().getDevice();
+            String jack = cable.getFrom().getId();
+            if (cable.getFrom().getType() != SignalType.TRIGGER || !VERDICT_PORTS.contains(jack)) {
+                continue; // data and gate cables carry no "after me"
+            }
             if (indegree.containsKey(from) && indegree.containsKey(to) && from != to) {
                 indegree.merge(to, 1, Integer::sum);
                 next.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
+                ("fail".equals(jack) ? failFed : successFed).add(to);
             }
         }
         Deque<RackDevice> ready = new ArrayDeque<>();
@@ -115,7 +151,8 @@ public final class CiExporter {
                 ordered.add(d);
             }
         }
-        return ordered;
+        failFed.removeAll(successFed);
+        return new Steps(ordered, failFed);
     }
 
     /** Toolchain setup actions for every kind the project carries. */
