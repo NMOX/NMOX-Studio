@@ -21,3 +21,6 @@ jdk17/
 # "build/" ignore would eat new files in it silently - keep it visible.
 !tools/src/main/java/org/nmox/studio/tools/build/
 !tools/src/test/java/org/nmox/studio/tools/build/
+
+# session walk fixtures, throwaway userdirs and cache dirs — never part of a release
+scratchpad/

@@ -71,7 +71,11 @@ All notable changes to NMOX Studio are documented here. The format follows
   explains, because the first cut suppressed those too and
   `DeviceSecondReachTest` caught it (`Signal.trigger(boolean)` now carries an
   ok/fail note beside the bit). A non-URL delivered to a `url` in-jack says
-  `NOT A URL — …` on the LCD. `docs/devices.md` regenerated (SCOPE's usage tells
+  `NOT A URL — …` on the LCD. Walked live in the assembled app: a script-tag site
+  mounted the Classic Web Bench on aim, IGNITE raised the trust prompt and then
+  served `http://localhost:8000`, the URL reached VITALS by cable before READY
+  triggered it, and a real Lighthouse audit came back `OK 18.487s`.
+  `docs/devices.md` regenerated (SCOPE's usage tells
   the truth); fourteen mutants by name across `CabledUrlTest`,
   `ScopeOpensCabledUrlTest`, `ServingAnnounceOrderGateTest`,
   `RefusedLaunchSpeaksTest`, `NeptuneRunIsPingTest`, `ChainConsoleJacksTest`,
