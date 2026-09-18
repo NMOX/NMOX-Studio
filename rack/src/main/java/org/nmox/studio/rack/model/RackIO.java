@@ -168,7 +168,20 @@ public final class RackIO {
     }
 
     public static void load(Rack rack, File file) throws IOException {
-        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        String text;
+        try {
+            text = readCapped(file);
+        } catch (PatchTooLargeException tooLarge) {
+            // load()'s contract is "replace the rack's contents" (the v1.107.0
+            // corrupt-patch rule): a patch refused unread cannot supply them,
+            // so the previous project's devices must not stay mounted — but
+            // the file is not corrupt, so it is not moved aside
+            for (RackDevice d : rack.getDevices()) {
+                rack.removeDevice(d);
+            }
+            rack.clearUndoHistory();
+            throw tooLarge;
+        }
         JSONObject root;
         try {
             root = new JSONObject(text);
@@ -200,7 +213,7 @@ public final class RackIO {
      * IOException is thrown, the same data-safety guarantee {@link #load} gives.
      */
     public static JSONObject readDocument(File file) throws IOException {
-        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        String text = readCapped(file);
         try {
             return new JSONObject(text);
         } catch (JSONException corrupt) {
@@ -208,6 +221,31 @@ public final class RackIO {
             throw new IOException("Corrupt rack patch " + file.getName()
                     + " (kept as .bak): " + corrupt.getMessage(), corrupt);
         }
+    }
+
+    /**
+     * The most a patch file may be before it is refused unread: a saved rack
+     * is a few kilobytes, and since v2.176.0 Import… reads a file from another
+     * machine — the bounded-read law (every outside read capped) reached the
+     * one text read in this class on the 2026-09-17 arc review.
+     */
+    static final long MAX_PATCH_BYTES = 8L * 1024 * 1024;
+
+    /** A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and never moved aside. */
+    static final class PatchTooLargeException extends IOException {
+        PatchTooLargeException(String message) {
+            super(message);
+        }
+    }
+
+    /** The patch text, or a refusal naming the size — the file is untouched either way. */
+    private static String readCapped(File file) throws IOException {
+        long size = Files.size(file.toPath());
+        if (size > MAX_PATCH_BYTES) {
+            throw new PatchTooLargeException("Rack patch " + file.getName() + " is " + (size / 1024)
+                    + " KiB, over the " + (MAX_PATCH_BYTES / 1024 / 1024) + " MiB cap — not read");
+        }
+        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
     }
 
     /** Renames a corrupt patch to {@code <name>.bak} so save() can't clobber it. */

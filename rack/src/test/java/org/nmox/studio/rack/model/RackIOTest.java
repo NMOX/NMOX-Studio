@@ -11,6 +11,31 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class RackIOTest {
 
     @Test
+    @DisplayName("A patch over the size cap is refused before a byte is read, by name, and never moved aside — load() empties the rack (the previous project's devices must not stay), readDocument() just refuses")
+    void oversizePatchIsRefusedUnread(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tmp) throws Exception {
+        java.io.File big = tmp.resolve(RackIO.DEFAULT_FILENAME).toFile();
+        try (java.io.RandomAccessFile raf = new java.io.RandomAccessFile(big, "rw")) {
+            raf.setLength(RackIO.MAX_PATCH_BYTES + 1); // sparse: the size is the whole point
+        }
+        Rack rack = new Rack();
+        try {
+            rack.addDevice(DeviceType.CONSOLE.create());
+            assertThatThrownBy(() -> RackIO.load(rack, big))
+                    .isInstanceOf(java.io.IOException.class)
+                    .hasMessageContaining(RackIO.DEFAULT_FILENAME)
+                    .hasMessageContaining("over the");
+            assertThat(rack.getDevices()).as("load replaces the contents: an unreadable patch supplies none").isEmpty();
+            assertThatThrownBy(() -> RackIO.readDocument(big))
+                    .isInstanceOf(java.io.IOException.class)
+                    .hasMessageContaining("over the");
+            assertThat(big).as("not corrupt, so not moved aside").exists();
+            assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".bak")).doesNotExist();
+        } finally {
+            rack.shutdown();
+        }
+    }
+
+    @Test
     @DisplayName("Should round-trip devices, control state and cables through JSON")
     void shouldRoundTripPatch() {
         Rack rack = new Rack();
