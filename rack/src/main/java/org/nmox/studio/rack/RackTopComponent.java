@@ -86,7 +86,22 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_thePreset=the {0} preset",
     "RackTopComponent_presetFailed=Could not wire the preset: {0}",
     "RackTopComponent_yoursItem={0} · yours",
-    "RackTopComponent_loadFailed=Could not load the patch: {0}"
+    "RackTopComponent_loadFailed=Could not load the patch: {0}",
+    "RackTopComponent_shareRack=Share…",
+    "RackTopComponent_shareTooltip=Save this rack as a file another NMOX Studio user can import — commands and settings travel, your home directory does not",
+    "RackTopComponent_shareTitle=Share Rack As",
+    "RackTopComponent_shareFilter=Rack patch (*.nmoxrack.json)",
+    "RackTopComponent_sharedLabel={0}  [shared]",
+    "RackTopComponent_shareFailed=Could not share the rack: {0}",
+    "RackTopComponent_importRack=Import…",
+    "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
+    "RackTopComponent_importTitle=Import Rack",
+    "RackTopComponent_importSummary={0} devices, {1} cables. Nothing runs on import; {2} saved armed or running arrive at rest.",
+    "RackTopComponent_importUnknown=Not in this install (they mount as placeholders that keep their cables): {0}",
+    "RackTopComponent_importSettings=Settings this rack carries — read them before mounting:",
+    "RackTopComponent_importMount=Mount",
+    "RackTopComponent_importFailed=Could not import the rack: {0}",
+    "RackTopComponent_theSharedRack=the shared rack"
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -306,6 +321,19 @@ public final class RackTopComponent extends TopComponent {
         });
         bar.add(load);
 
+        // Share / Import (v2.176.0): the patch format has always been a file; these
+        // are the two doors that let it travel between people. Share writes a
+        // portable copy wherever the user says; Import shows what a file holds
+        // BEFORE anything mounts, and mounts it at rest — nothing runs until GO.
+        JButton share = new JButton(Bundle.RackTopComponent_shareRack());
+        share.setToolTipText(PlainText.plain(Bundle.RackTopComponent_shareTooltip()));
+        share.addActionListener(e -> shareRack());
+        bar.add(share);
+        JButton importButton = new JButton(Bundle.RackTopComponent_importRack());
+        importButton.setToolTipText(PlainText.plain(Bundle.RackTopComponent_importTooltip()));
+        importButton.addActionListener(e -> importRack());
+        bar.add(importButton);
+
         JButton presets = new JButton(Bundle.RackTopComponent_presetsButton());
         presets.setToolTipText(Bundle.RackTopComponent_presetsTooltip());
         presets.addActionListener(e -> {
@@ -507,6 +535,128 @@ public final class RackTopComponent extends TopComponent {
                 }
             });
         });
+    }
+
+    // ---- share / import (v2.176.0) ----
+
+    /**
+     * Writes this rack as a shared file: the patch with every path under this
+     * user's home rewritten to {@code ~} (a home path is a username) and a header
+     * naming the product version — see {@link org.nmox.studio.rack.model.RackShare}.
+     * The snapshot is taken on the EDT; only the write rides the lane.
+     */
+    private void shareRack() {
+        File dir = rack.getProjectDir();
+        File picked = new org.openide.filesystems.FileChooserBuilder(RackTopComponent.class)
+                .setTitle(Bundle.RackTopComponent_shareTitle())
+                .setDefaultWorkingDirectory(dir)
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        Bundle.RackTopComponent_shareFilter(), "json"))
+                .setFilesOnly(true)
+                .showSaveDialog();
+        if (picked == null) {
+            return;
+        }
+        File target = picked.getName().endsWith(".json") ? picked : new File(picked.getPath() + ".nmoxrack.json");
+        org.json.JSONObject shared = org.nmox.studio.rack.model.RackShare.export(
+                RackIO.toJson(rack), java.nio.file.Path.of(System.getProperty("user.home")),
+                org.nmox.studio.core.util.ProductVersion.number());
+        String projectName = dir.getName();
+        SAVE_RP.post(() -> {
+            try {
+                org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), shared.toString(2));
+                java.awt.EventQueue.invokeLater(() -> {
+                    projectLabel.setText(PlainText.plain(Bundle.RackTopComponent_sharedLabel(projectName)));
+                    javax.swing.Timer revert = new javax.swing.Timer(2000, ev -> updateProjectLabel());
+                    revert.setRepeats(false);
+                    revert.start();
+                });
+            } catch (IOException ex) {
+                java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_shareFailed(ex.getMessage())));
+            }
+        });
+    }
+
+    /**
+     * Mounts a rack someone shared: read and parse off the EDT, then on the EDT
+     * show the manifest (devices, cables, what this install lacks, the settings
+     * worth reading) with Cancel as the default, ask the replace question if the
+     * current rack has unsaved work, and only then mount the file made local —
+     * {@code ~} expanded, every self-starting flag off. A plain Save Patch file
+     * takes the same door. Nothing here spawns; every GO stays behind Workspace Trust.
+     */
+    private void importRack() {
+        File picked = new org.openide.filesystems.FileChooserBuilder(RackTopComponent.class)
+                .setTitle(Bundle.RackTopComponent_importTitle())
+                .setDefaultWorkingDirectory(rack.getProjectDir())
+                .setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter(
+                        Bundle.RackTopComponent_shareFilter(), "json"))
+                .setFilesOnly(true)
+                .showOpenDialog();
+        if (picked == null) {
+            return;
+        }
+        SAVE_RP.post(() -> {
+            org.json.JSONObject doc;
+            try {
+                doc = RackIO.readDocument(picked);
+            } catch (IOException | RuntimeException ex) {
+                java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_importFailed(ex.getMessage())));
+                return;
+            }
+            java.awt.EventQueue.invokeLater(() -> mountShared(doc));
+        });
+    }
+
+    /** EDT: the manifest, the two confirmations, the mount. */
+    private void mountShared(org.json.JSONObject doc) {
+        org.nmox.studio.rack.model.RackShare.Manifest manifest = org.nmox.studio.rack.model.RackShare.inspect(
+                doc, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        // the manifest dialog: OK is not the default — a reflexive Enter must not
+        // mount a stranger's rack (the v1.98.0 safe-default idiom)
+        Object mount = Bundle.RackTopComponent_importMount();
+        org.openide.NotifyDescriptor ask = new org.openide.NotifyDescriptor(
+                org.nmox.studio.core.util.PlainDialogs.plain(manifestText(manifest), Bundle.RackTopComponent_importTitle()),
+                Bundle.RackTopComponent_importTitle(),
+                org.openide.NotifyDescriptor.OK_CANCEL_OPTION,
+                org.openide.NotifyDescriptor.PLAIN_MESSAGE,
+                new Object[]{mount, org.openide.NotifyDescriptor.CANCEL_OPTION},
+                org.openide.NotifyDescriptor.CANCEL_OPTION);
+        if (DialogDisplayer.getDefault().notify(ask) != mount) {
+            return;
+        }
+        if (!confirmReplace(Bundle.RackTopComponent_theSharedRack())) {
+            return;
+        }
+        try {
+            RackIO.fromJson(rack, org.nmox.studio.rack.model.RackShare.imported(
+                    doc, java.nio.file.Path.of(System.getProperty("user.home"))));
+            // deliberately NOT markPersisted(): an imported rack is unsaved work
+            // until Save Patch writes it beside this project
+        } catch (RuntimeException ex) {
+            error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
+        }
+    }
+
+    /** The manifest as the reader sees it: one device per line, then what needs reading. */
+    static String manifestText(org.nmox.studio.rack.model.RackShare.Manifest m) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(Bundle.RackTopComponent_importSummary(m.devices().size(), m.cables(), m.atRest())).append("\n\n");
+        for (org.nmox.studio.rack.model.RackShare.Device d : m.devices()) {
+            String title = org.nmox.studio.rack.devices.DeviceCatalog.byId(d.typeId())
+                    .map(org.nmox.studio.rack.devices.DeviceCatalog.Entry::title).orElse(d.typeId());
+            sb.append("  ").append(d.known() ? title : d.typeId() + " ?").append("\n");
+        }
+        if (!m.unknownTypes().isEmpty()) {
+            sb.append("\n").append(Bundle.RackTopComponent_importUnknown(String.join(", ", m.unknownTypes()))).append("\n");
+        }
+        if (!m.settings().isEmpty()) {
+            sb.append("\n").append(Bundle.RackTopComponent_importSettings()).append("\n");
+            for (org.nmox.studio.rack.model.RackShare.Setting st : m.settings()) {
+                sb.append("  ").append(st.typeId()).append(" · ").append(st.key()).append(": ").append(st.value()).append("\n");
+            }
+        }
+        return sb.toString();
     }
 
     // ---- platform dialogs (parented, keyboard-correct, consistent chrome) ----
