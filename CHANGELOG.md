@@ -46,6 +46,36 @@ All notable changes to NMOX Studio are documented here. The format follows
   languages; `RackShareTest` (six) + `RackShareDoorsTest` (three source gates:
   export not raw, inspect → dialog → confirm → mount in that order, the Cancel
   default, the import read off the EDT); three mutants by name.
+- **The rack's jacks say what they do.** A read-only audit of every device's ports
+  against its workflows found nine mismatches; all are fixed and each is pinned.
+  SCOPE, PING, VITALS and GAUNTLET opened the URL their LCD showed rather than the
+  one a cable had just delivered — READY fired before URL, and the LCD was read on
+  the router thread — so a serve → SCOPE cable could open the previous page;
+  `devices.CabledUrl` holds the delivered address until the paint lands and every
+  server announces URL before READY through one `CommandDevice.announceServing`
+  (a hand-rolled `emit("ready"` in a device fails the build). A refused launch
+  (no verb for this toolchain, no manifest, an untrusted workspace, a missing
+  chain tool) used to go silent on the patch bay so a QUORUM behind it waited for
+  ever; refusals now emit FAIL then DONE with the failure bit. NEPTUNE's RUN
+  replayed whatever button was last pressed — it is a ping now, and CONNECTED is
+  a ping verdict. STELLAR's ENABLE jack (which ran the knob's verb) is an ACTION
+  jack, its RUN builds like every other console, ANCHOR gained START, and a saved
+  patch naming `stellar.enable` loads without the cable rather than as a
+  placeholder. Four ids disagreed with their labels (TEMPO `halt`/STOP, INSPECTOR
+  and WORMHOLE `live`/RUNNING); the ids follow the labels and `RackIO` keeps a
+  legacy-id alias table so old patches load unchanged. CI export ordered steps
+  over every cable, DATA and GATE included; it orders over `ok`/`done`/`fail`
+  trigger cables only, and a step fed solely by `fail` gets `if: failure()`.
+  KVASIR's EXPLAIN jack explained green runs; it now ignores an explicit OK
+  verdict — and only that: a bare pulse from MASTER, REFLEX or TEMPO still
+  explains, because the first cut suppressed those too and
+  `DeviceSecondReachTest` caught it (`Signal.trigger(boolean)` now carries an
+  ok/fail note beside the bit). A non-URL delivered to a `url` in-jack says
+  `NOT A URL — …` on the LCD. `docs/devices.md` regenerated (SCOPE's usage tells
+  the truth); fourteen mutants by name across `CabledUrlTest`,
+  `ScopeOpensCabledUrlTest`, `ServingAnnounceOrderGateTest`,
+  `RefusedLaunchSpeaksTest`, `NeptuneRunIsPingTest`, `ChainConsoleJacksTest`,
+  `LegacyPortIdsTest`, `CiExporterTest` and `KvasirExplainHonoursSuccessBitTest`.
 
 ## [2.175.0] - 2026-09-17
 

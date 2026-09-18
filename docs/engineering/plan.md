@@ -1,5 +1,36 @@
 # The Plan
 
+*Currency addendum 2026-09-17/18, at v2.176.0 — the overnight batch, built by
+two worktree agents on one branch. (A) Starter racks by project kind:
+`projectstudio.StarterRacks` decides from the same `ProjectKind` detection the
+lanes use, and the New Project wizard's templates build their patches from the
+SAME wirings, so a project created here and one opened from disk start identical
+— the first cut compared a rack against its own patch and could not see a
+silently missing cable, so a starter that names a jack that does not exist now
+fails at mount by name. (B) Share…/Import… a rack as a file: the sender's home
+rewritten to `~` (a home path is a username), a manifest BEFORE anything mounts
+(unknown types, cable count, every command/path/address, how many devices arrive
+at rest), armed/running flags off on import, Cancel the default, the mounted rack
+unsaved work; walked live in the assembled app. (C) The jack audit: an agent read
+every device's ports against its workflows and found nine mismatches — SCOPE
+opening the LCD's URL instead of the cabled one (READY before URL, the LCD read on
+the router thread), refusals silent on the patch bay, NEPTUNE's RUN replaying the
+last button, STELLAR's ENABLE running the knob, four ids disagreeing with their
+labels, CI export ordering over DATA cables, KVASIR explaining green runs — all
+fixed behind one `CommandDevice.announceServing` helper, a `refuseLaunch` choke
+point, a `RackIO` legacy-id alias table and fourteen mutants by name. Two laws
+from the fold. **A pulse is not a verdict**: the first KVASIR guard suppressed
+every high trigger and so killed "explain now" from a MASTER button and "explain
+on save" from REFLEX; an existing behavioural test caught it, and
+`Signal.trigger(boolean)` now carries an ok/fail note so a device can tell an OK
+verdict from a bare pulse. **Message a paused agent with its own evidence**: the
+rack agent stopped mid-proof "waiting for a notification" while its suite had
+already finished on disk; reading its surefire reports and sending it the two
+assertion lines plus the decision rule for each got it to a green verify in one
+resume — a paused agent's state is in its worktree, not in its last sentence.
+The i18n batch (D1/D2, v2.177.0) built in parallel in a second worktree from the
+same base.*
+
 *Currency addendum 2026-09-17, at v2.175.0 — a proof that fails at random is a
 proof people re-run instead of read. The close gauntlet reported ten of eleven
 modules after v2.174.0's update and blamed the release; the same bytes booted
