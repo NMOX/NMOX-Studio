@@ -610,8 +610,16 @@ public final class RackTopComponent extends TopComponent {
 
     /** EDT: the manifest, the two confirmations, the mount. */
     private void mountShared(org.json.JSONObject doc) {
-        org.nmox.studio.rack.model.RackShare.Manifest manifest = org.nmox.studio.rack.model.RackShare.inspect(
-                doc, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        org.nmox.studio.rack.model.RackShare.Manifest manifest;
+        try {
+            manifest = org.nmox.studio.rack.model.RackShare.inspect(
+                    doc, id -> org.nmox.studio.rack.devices.DeviceCatalog.byId(id).isPresent());
+        } catch (RuntimeException ex) {
+            // a stranger's file can hold anything: a refusal, never a red
+            // exception dialog (the 2026-09-17 arc review, hostile input lens)
+            error(Bundle.RackTopComponent_importFailed(ex.getMessage()));
+            return;
+        }
         // the manifest dialog: OK is not the default — a reflexive Enter must not
         // mount a stranger's rack (the v1.98.0 safe-default idiom)
         Object mount = Bundle.RackTopComponent_importMount();

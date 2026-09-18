@@ -102,6 +102,26 @@ class RackShareTest {
     }
 
     @Test
+    @DisplayName("a device entry that is not an object is refused by its slot from inspect, imported and export alike — never org.json's own exception; a header alone is an empty manifest")
+    void hostileDeviceEntryIsRefusedByName() {
+        JSONObject hostile = new JSONObject("{\"shared\":{},\"devices\":[{\"type\":\"tempo\",\"state\":{}},1]}");
+        for (String door : java.util.List.of("inspect", "imported", "export")) {
+            Throwable t = org.assertj.core.api.Assertions.catchThrowable(() -> {
+                switch (door) {
+                    case "inspect" -> RackShare.inspect(hostile, id -> true);
+                    case "imported" -> RackShare.imported(hostile, RECEIVER);
+                    default -> RackShare.export(hostile, HOME, "2.176.0");
+                }
+            });
+            assertThat(t).as(door + " refuses").isInstanceOf(IllegalArgumentException.class);
+            assertThat(t.getMessage()).as(door + " names the slot").contains("devices[1]");
+        }
+        JSONObject noDevices = new JSONObject("{\"shared\":{}}");
+        assertThat(RackShare.inspect(noDevices, id -> true).devices()).as("a header alone is an empty manifest").isEmpty();
+        assertThat(RackShare.imported(noDevices, RECEIVER).has("shared")).isFalse();
+    }
+
+    @Test
     @DisplayName("a plain Save Patch file is not a shared one, and inspecting it still works")
     void plainPatchIsNotShared() {
         assertThat(RackShare.isShared(patch())).isFalse();

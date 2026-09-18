@@ -47,6 +47,14 @@ class RackShareDoorsTest {
         int fromJson = body.indexOf("RackIO.fromJson(");
         assertThat(List.of(inspect, dialog, confirm, imported, fromJson)).allMatch(i -> i > 0);
         assertThat(inspect).as("the manifest is read first").isLessThan(dialog);
+        // a stranger's file can hold anything: the manifest read sits inside a
+        // try whose catch speaks, not bare on the EDT (the 2026-09-17 arc review)
+        int tryAt = body.lastIndexOf("try {", inspect);
+        int catchAt = body.indexOf("catch (RuntimeException", inspect);
+        assertThat(tryAt).as("inspect is guarded").isPositive();
+        assertThat(catchAt).as("the guard's catch comes before the dialog").isPositive().isLessThan(dialog);
+        assertThat(body.substring(catchAt, dialog)).as("the catch refuses out loud")
+                .contains("RackTopComponent_importFailed(");
         assertThat(dialog).as("then shown, then the replace question").isLessThan(confirm);
         assertThat(confirm).as("only then is anything mounted").isLessThan(fromJson);
         assertThat(body).as("what mounts is the file made local — never the raw shared document")
