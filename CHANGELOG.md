@@ -52,6 +52,14 @@ today.
 - The ledger says what is true: **108 shipped in v2.181.0 and was still filed
   as open**, with its "not yet executed" decision intact. Both corrected, and
   the nine places the sweep would have been wrong are recorded with it.
+- **A gate that reads prose is wrong in both directions.** `PlainStatusGateTest`
+  scanned raw source, so this release's own javadoc — which *documents* the
+  platform's `setStatusText(String)` contract — was read as a call site with an
+  argument of `String`. v2.178.0 found four gates a comment could **satisfy**;
+  this is one a comment could **trip**. The rack has stripped comments since
+  that sweep and this module was missed by it; `GateSources` is promoted here
+  on its second consumer rather than copied, and the gate still names a planted
+  unguarded call by file and line.
 
 ## [2.181.0] - 2026-09-19
 
