@@ -89,8 +89,20 @@ failure carries no message, from `getClass().getSimpleName()`, which is a Java
 class name. So a Vietnamese reader gets a Vietnamese sentence ending in
 English or in `JSONException`.
 
-**Found by the translators**, twice, independently: the European group and the
-no-plural group each reported it without seeing the other's work. No gate can
+**And the file name is printed twice.** `{0}` is `patch.getName()`, while the
+engine's message already opens with `"Corrupt rack patch " + file.getName()`,
+so the sentence renders `…so the rack is empty: .nmoxrack.json — Corrupt rack
+patch .nmoxrack.json (kept as .bak): …`. That half is wrong in ENGLISH too,
+and it was invisible to `PatchNotLoadedSpeaksTest` because the test asserts
+`contains(".nmoxrack.json")` on a hand-written message — which passes whether
+the name appears once or twice. *An assertion that a string is present cannot
+see that it is present twice.*
+
+**Found by the translators**, three times, independently: the European group,
+the no-plural group and the Slavic/RTL group each reported the English splice
+without seeing the others' work, and the Slavic group found the duplication
+on top of it by rendering the sentence with a real exception rather than
+reading it. No gate can
 see it — every bundle is complete, the parity gate is green, and the English
 enters BELOW the bundles as an argument. That is exactly ledger 88's shape
 (`LiveRuns.since()` splicing the word "since"), one layer down.
