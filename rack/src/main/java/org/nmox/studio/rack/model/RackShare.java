@@ -369,6 +369,30 @@ public final class RackShare {
         return "true".equalsIgnoreCase(value);
     }
 
+    /**
+     * THE decision, in one place: would restoring {@code key=value} on a device
+     * of {@code typeId} start something by itself? {@link #imported} sets off
+     * exactly the settings this answers true for, {@link #inspect} counts them,
+     * and the community-rack gate ({@code gallery.RackJudge}) refuses a rack that
+     * ships with one — all three through these same two tests, so a device that
+     * declares a new self-starting switch tomorrow changes all three at once.
+     * (v2.179.0's judge kept its own list — {@code armed}, {@code running},
+     * TAIL's {@code follow} — written in parallel with the authority it
+     * duplicated: the hand-kept-set defect the release existed to remove,
+     * rebuilt one package over. Found by an outside review the day it shipped.)
+     *
+     * @param selfStartingByType as for {@link #imported(JSONObject, Path, Function)}
+     */
+    public static boolean startsByItself(String typeId, String key, String value,
+            Function<String, Set<String>> selfStartingByType) {
+        return value != null && readsOn(value) && arrivesOff(keysOf(selfStartingByType, typeId), key);
+    }
+
+    /** {@link #startsByItself(String, String, String, Function)} by this install's device declarations. */
+    public static boolean startsByItself(String typeId, String key, String value) {
+        return startsByItself(typeId, key, value, org.nmox.studio.rack.devices.SelfStarting::keysFor);
+    }
+
     /** For a value that {@link #readsOn}: its key was declared self-starting, or the answer was {@link #EVERY_SWITCH}. */
     private static boolean arrivesOff(Set<String> keys, String key) {
         return keys.contains(key) || keys.contains("*");

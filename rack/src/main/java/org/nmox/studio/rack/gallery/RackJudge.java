@@ -45,9 +45,12 @@ import org.nmox.studio.rack.model.RackShare;
  * every cable arrives; a cable that does not is named with the reason
  * (the {@code StarterRacks} rule: a rack one cable short with nothing said
  * is the defect this exists to see);</li>
- * <li>it arrives at rest — no {@code armed}/{@code running} flag, and no
- * TAIL {@code follow}, is on: nothing watches, ticks or tails until the
- * receiver presses it;</li>
+ * <li>it arrives at rest — no setting is on that would start something by
+ * itself. WHICH settings those are is not this class's knowledge: it asks
+ * {@link RackShare#startsByItself}, the same decision {@code RackShare.imported}
+ * switches off by, fed by what each device DECLARES
+ * ({@code RackDevice.paramSelfStarting}). A device that declares a new one
+ * tomorrow is refused here the same day, with no edit to this file;</li>
  * <li>nothing from the author's machine — no absolute path, no {@code ~},
  * no home-looking path, and no address but loopback in any setting;</li>
  * <li>{@code requires} are bare tool names and {@code kinds} are real
@@ -97,13 +100,23 @@ public final class RackJudge {
 
     /** Every reason this document may not ship as a community rack; empty when it may. */
     public static List<String> problems(String fileName, JSONObject doc) {
+        return problems(fileName, doc, org.nmox.studio.rack.devices.SelfStarting::keysFor);
+    }
+
+    /**
+     * The same judgement with the self-starting declarations supplied — the
+     * seam a test uses to declare a switch that no device has declared yet, and
+     * watch this gate refuse it.
+     */
+    static List<String> problems(String fileName, JSONObject doc,
+            java.util.function.Function<String, java.util.Set<String>> selfStartingByType) {
         List<String> found = new ArrayList<>();
         if (doc == null) {
             return List.of(fileName + ": missing");
         }
         topLevel(doc, found);
         header(doc, found);
-        boolean devicesSound = devices(doc, found);
+        boolean devicesSound = devices(doc, found, selfStartingByType);
         boolean cablesSound = cables(doc, found);
         // mounted whenever the SHAPE allows it, whatever else is wrong, so a
         // contributor reads every problem in one run rather than one per push
@@ -176,7 +189,8 @@ public final class RackJudge {
     }
 
     /** True when the device list is sound enough to try mounting. */
-    private static boolean devices(JSONObject doc, List<String> found) {
+    private static boolean devices(JSONObject doc, List<String> found,
+            java.util.function.Function<String, java.util.Set<String>> selfStartingByType) {
         JSONArray devices = doc.optJSONArray("devices");
         if (devices == null || devices.isEmpty()) {
             found.add("no devices");
@@ -215,13 +229,14 @@ public final class RackJudge {
             }
             JSONObject state = dj.optJSONObject("state");
             if (state != null) {
-                sound &= state(where, type, state, found);
+                sound &= state(where, type, state, found, selfStartingByType);
             }
         }
         return sound;
     }
 
-    private static boolean state(String where, String type, JSONObject state, List<String> found) {
+    private static boolean state(String where, String type, JSONObject state, List<String> found,
+            java.util.function.Function<String, java.util.Set<String>> selfStartingByType) {
         boolean sound = true;
         for (String key : sorted(state.keySet())) {
             if (!(state.opt(key) instanceof String value)) {
@@ -231,9 +246,8 @@ public final class RackJudge {
                 continue;
             }
             String setting = where + "." + RackWiring.plain(key);
-            boolean selfStarting = "armed".equals(key) || "running".equals(key)
-                    || ("follow".equals(key) && "tail".equals(type));
-            if (selfStarting && "true".equalsIgnoreCase(value.trim())) {
+            // not a list kept here: the one decision imported() switches off by
+            if (RackShare.startsByItself(type, key, value, selfStartingByType)) {
                 found.add(setting + " is on — a community rack arrives at rest");
             }
             if (value.indexOf('~') >= 0) {
