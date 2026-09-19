@@ -30,6 +30,12 @@ class StudioSafetyGateTest {
                 StandardCharsets.UTF_8);
     }
 
+    private static String runnerSource() throws Exception {
+        return Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/web3/engine/WatchRunner.java"),
+                StandardCharsets.UTF_8);
+    }
+
     private static String method(String src, String signature) {
         int m = src.indexOf(signature);
         assertThat(m).as(signature + " exists").isPositive();
@@ -79,20 +85,22 @@ class StudioSafetyGateTest {
     }
 
     @Test
-    @DisplayName("stopWatch revokes cursor ownership and every lane asks its session")
+    @DisplayName("WatchRunner.stop revokes cursor ownership and every lane asks its session")
     void watchGenerationGuard() throws Exception {
-        String src = source();
-        String stop = method(src, "private void stopWatch()");
+        // the orchestration left the TopComponent in v2.186.0 (ledger 113);
+        // the law did not move, so neither did this gate — it reads the runner
+        String src = runnerSource();
+        String stop = method(src, "public void stop()");
         assertThat(stop)
-                .contains("watchGeneration.incrementAndGet()")
+                .contains("generation.incrementAndGet()")
                 .as("STOP closes the live subscription with the session")
-                .contains("session.retire()");
-        assertThat(stop.indexOf("watchGeneration.incrementAndGet()"))
+                .contains(".retire()");
+        assertThat(stop.indexOf("generation.incrementAndGet()"))
                 .as("the bump happens BEFORE the retire, so nothing in flight can re-attach")
-                .isLessThan(stop.indexOf("session.retire()"));
-        // the guard itself is behavior-tested in WatchReconcilerTest;
-        // these pin that the TopComponent's lanes actually route through it
-        String tick = method(src, "private void watchTick(WatchReconciler session)");
+                .isLessThan(stop.indexOf(".retire()"));
+        // the guard itself is behavior-tested in WatchReconcilerTest and driven
+        // end to end in WatchRunnerTest; these pin that every lane routes through it
+        String tick = method(src, "private void tick(WatchReconciler session)");
         assertThat(tick)
                 .as("both fetch lanes ride the pure clamped plan (WatchCursor.plan inside)")
                 .contains("session.pollPlan(")
@@ -102,9 +110,22 @@ class StudioSafetyGateTest {
         assertThat(head).contains("session.onHead(").contains("session.commitHead(");
         String log = method(src, "private boolean feedLog(");
         assertThat(log).contains("session.acceptLog(");
-        assertThat(method(src, "private void openWatch("))
+        assertThat(method(src, "private void open("))
                 .as("a socket is only kept once the session accepts it")
                 .contains("session.attach(")
-                .contains("WatchEndpoint.wsUrl(");
+                .contains("source.wsUrl()");
+        assertThat(method(src, "private void feedBlock("))
+                .as("a dying tick's row never lands in the next session's feed")
+                .contains("session.current()");
+    }
+
+    @Test
+    @DisplayName("The Watch orchestration carries no Swing; the pane does its own hop")
+    void watchRunnerHoldsNoSwing() throws Exception {
+        assertThat(runnerSource())
+                .as("ledger 113: WatchRunner is engine code, testable without a display")
+                .doesNotContain("javax.swing")
+                .doesNotContain("SwingUtilities")
+                .doesNotContain("java.awt");
     }
 }
