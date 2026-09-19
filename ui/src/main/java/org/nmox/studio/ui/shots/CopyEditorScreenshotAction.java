@@ -22,7 +22,7 @@ import org.openide.windows.WindowManager;
  */
 @ActionID(category = "Tools", id = "org.nmox.studio.ui.shots.CopyEditorScreenshotAction")
 @ActionRegistration(displayName = "#CTL_CopyEditorScreenshot", lazy = true)
-@ActionReference(path = "Menu/Tools", position = 107)
+@ActionReference(path = "Menu/Tools", position = 98)
 @Messages({
     "CTL_CopyEditorScreenshot=Copy Editor Screenshot",
     "CopyEditorScreenshotAction_nothingOpen=Not copied — nothing is open in the editor area",

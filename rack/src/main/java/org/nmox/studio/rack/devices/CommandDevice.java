@@ -287,6 +287,21 @@ public abstract class CommandDevice extends RackDevice {
             org.nmox.studio.rack.service.WorkspaceTrust::requestTrust;
 
     /**
+     * Puts the trust gate back to production — the real prompt.
+     *
+     * <p>Six test classes each kept their own {@code originalTrust} field and
+     * their own restore. Each was correct; together they were six chances to
+     * forget, and what this seam disables is the gate that stands between a
+     * cloned repository and a spawned process. A forgotten restore leaks
+     * {@code trustCheck = f -> true} into every later test in the fork, and the
+     * build stays green while proving nothing about the law it is there to
+     * prove. One restore, stated once.
+     */
+    static void resetTrustCheck() {
+        trustCheck = org.nmox.studio.rack.service.WorkspaceTrust::requestTrust;
+    }
+
+    /**
      * {@link #launch} with extra environment for this run only (e.g.
      * MAVEN_OPTS). Returns whether the command was actually handed to
      * the executor — false on every refusal (no command, no manifest,

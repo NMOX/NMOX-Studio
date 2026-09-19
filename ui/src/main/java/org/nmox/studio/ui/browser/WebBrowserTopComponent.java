@@ -141,19 +141,27 @@ public final class WebBrowserTopComponent extends TopComponent {
     /** How long the first page waits for text shaping to install before loading anyway. */
     static final long SHAPING_WAIT_MS = 2500;
 
+    /** The one deadline every open shares; see {@link ShapingDeadline} (ledger 101). */
+    private static final ShapingDeadline SHAPING_DEADLINE = new ShapingDeadline(SHAPING_WAIT_MS);
+
     /**
-     * EDT. The first page loads once text shaping has installed, or after
-     * {@link #SHAPING_WAIT_MS} (v2.172.0). Since then shaping can switch
-     * WebKit's own complex-text path on, and a page laid out before the switch
-     * keeps the old widths while it paints with the new glyphs until something
-     * lays it out again.
+     * EDT. The first page loads once text shaping has installed, or when the
+     * shared deadline passes (v2.172.0; made shared in ledger 101). Since then
+     * shaping can switch WebKit's own complex-text path on, and a page laid out
+     * before the switch keeps the old widths while it paints with the new
+     * glyphs until something lays it out again.
      */
     private void loadWhenShaped(org.openide.util.RequestProcessor.Task shaping, String target) {
         FxBrowserPanel first = browser;
         int asked = first.loadCount();
         FIRST_LOAD_RP.post(() -> {
             try {
-                shaping.waitFinished(SHAPING_WAIT_MS);
+                // read when the task RUNS, not when it is posted: time spent
+                // queued behind an earlier open counts against the deadline
+                long leftMs = SHAPING_DEADLINE.leftMs(System.nanoTime());
+                if (leftMs > 0) { // 0 means do not wait — waitFinished(0) waits forever
+                    shaping.waitFinished(leftMs);
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
