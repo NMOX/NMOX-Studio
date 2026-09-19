@@ -8,8 +8,6 @@
 the file that produced it, change its style from DevTools, and watch
 the change arrive in your stylesheet — without retyping anything.*
 
-![The Browser with nothing serving — where this tutorial starts](../images/tabs/browser-to-source.png)
-
 The oldest split in web development is that the browser and the editor
 know different things: the browser knows *which element you mean*, the
 editor knows *where the code lives*, and you carry information between
