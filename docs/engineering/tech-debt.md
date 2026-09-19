@@ -140,6 +140,27 @@ every one of them reads as complete from the outside.
   never added; `arm()` already calls `dismiss("")` first, so re-arming is
   correct without it. **Decision: delete it.**
 
+### 116. The read-failure clobber has two more homes
+
+v2.184.0 fixed the class in the three files it was briefed for — the task
+board, the database workspace and the contract workspace — and the agent
+that fixed it found two more while reading. Both throw correctly at the IO
+layer and both consumers swallow it:
+
+- `apiclient/.../api/WorkspaceIO.java` — `ApiClientTopComponent.readWorkspace`
+  catches `Exception` and falls back to `starterWorkspace()`.
+- `infra/.../model/GraphIO.java` — `InfraDesignerTopComponent` catches
+  `Exception`, calls `graph.clear()`, and stamps `designSync.recordOwn(...)`
+  in a **`finally`**, so the file is marked as ours on the catch path too.
+
+**Decided, not done, and the reason is scope rather than doubt.** The fix is
+exactly the one that shipped: a typed read failure the caller binds
+read-only, no ownership stamp for a file that was never read. It was left
+out of v2.184.0 to keep a data-loss change inside the surface that had been
+probed and measured — the three that shipped were each proven destroying a
+9.4 MB file before a line was changed, and the same proof is owed here. It
+is the next thing to do in this family.
+
 ### 115. Two gates whose population or path is smaller than their claim
 
 - **`GrammarBundleTest`** filters by filename `*Grammar.java`, so
