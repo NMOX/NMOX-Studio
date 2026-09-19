@@ -4,6 +4,38 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.185.0] - 2026-09-19
+
+**The picture that proves the previous release's claim — and the retraction
+it forced.**
+
+v2.184.0 said the Browser's empty state shows a page of ours rather than
+fetching a news site, and proved it by measuring **zero outbound
+connections**. That rules out the old behaviour and establishes nothing
+about the new one: a blank pane makes no requests either. *An absence is
+not a presence.*
+
+So the docs forge now photographs the Browser, and the picture is the
+positive evidence — the tab titled **New Media On X** (the `<title>`
+rendered, so `loadContent` worked), **"Nothing is serving yet"**, the door
+reading **"press GO on a rack device"**, an **empty address bar** (the
+truth about a page with no address), and no serving chip on the status
+line.
+
+**And a retraction.** Between releases I called a serving at forge boot a
+"phantom" — a registration with no process. That was wrong, and it was
+wrong the same way: I ran `curl` against the port **after the app had
+exited**, where of course nothing answers. Aimed at a bare directory the
+chip is absent and the empty state appears; aimed at `~/NMOX` — a real
+Deno project whose starter rack carries a dev-server device defaulting to
+port 3000 — a serving is registered and legitimately wins. There was no
+phantom. The only defect was my aim, and the measurement could not have
+told the difference.
+
+What survives as a real, narrower gap, recorded rather than claimed: when
+a registered serving does not answer, the Browser shows a blank pane
+instead of saying so. Pre-existing, and not what I said it was.
+
 ## [2.184.0] - 2026-09-19
 
 **The senior-developer pass: three read-only surveys over the 910-file
@@ -23045,6 +23077,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.184.0...v2.185.0
 [2.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.183.0...v2.184.0
 [2.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.182.0...v2.183.0
 [2.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.181.0...v2.182.0

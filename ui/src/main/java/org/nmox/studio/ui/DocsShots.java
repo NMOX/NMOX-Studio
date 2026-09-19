@@ -55,6 +55,11 @@ public class DocsShots implements Runnable {
         SHOTS.put("ApiClientTopComponent", "api-studio.png");
         SHOTS.put("DockerPanelTopComponent", "docker-panel.png");
         SHOTS.put("BlockStudioTopComponent", "block-studio.png");
+        // v2.185.0: the Browser's EMPTY state. The claim that it shows a page
+        // of ours rather than fetching a news site was provable only by the
+        // ABSENCE of a network call — and an absence is equally consistent
+        // with a blank pane. A painted window is the positive evidence.
+        SHOTS.put("WebBrowserTopComponent", "browser.png");
     }
 
     /**
