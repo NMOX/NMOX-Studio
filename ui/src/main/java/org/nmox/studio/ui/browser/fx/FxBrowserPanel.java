@@ -81,6 +81,16 @@ public final class FxBrowserPanel extends JPanel {
         void titleChanged(String title);
     }
 
+    /**
+     * Hears, on the EDT, that a load never answered, with the address that did
+     * not: a failure at the socket leaves the WebView showing nothing at all,
+     * so whoever hosts this panel owes the reader a reason.
+     */
+    public interface LoadFailedListener {
+
+        void loadFailed(String url);
+    }
+
     private final JFXPanel fxPanel = new JFXPanel();
     private final ConsoleModel console = new ConsoleModel();
     private final NetworkModel network = new NetworkModel();
@@ -96,6 +106,17 @@ public final class FxBrowserPanel extends JPanel {
     private final JLabel zoomLabel = new JLabel("100%");
     private final JToggleButton devToolsToggle = new JToggleButton(Bundle.FxBrowserPanel_devToolsToggle());
     private final TitleListener titleListener;
+    /** Set once by the host right after construction; read on the EDT. */
+    private volatile LoadFailedListener loadFailedListener;
+    /**
+     * The address {@link #loadUrl} last asked for, or null when the current
+     * document is one we built ourselves. Written on the EDT, read on the FX
+     * thread when a load fails, hence volatile. It is the fallback name for a
+     * failure the engine reports with no location of its own — and its null
+     * means "this document has no address", which is what keeps a failing
+     * local page from being answered with another local page.
+     */
+    private volatile String lastRequested;
 
     /** FX-thread-only after init. */
     private WebEngine engine;
@@ -197,7 +218,11 @@ public final class FxBrowserPanel extends JPanel {
         engine.locationProperty().addListener((obs, old, loc) -> {
             lastLocation = loc; // volatile write on FX; read by the EDT
             SwingUtilities.invokeLater(() -> {
-                if (!urlField.isFocusOwner() && loc != null) {
+                // a blank location is what loadContent reports for a document
+                // this product built; the field is set by whoever asked for
+                // that document (empty for the start page, the failed address
+                // for the failure page) and the engine must not clobber it
+                if (!urlField.isFocusOwner() && loc != null && !loc.isBlank()) {
                     urlField.setText(loc);
                 }
             });
@@ -214,10 +239,22 @@ public final class FxBrowserPanel extends JPanel {
                 installBridge();
                 loadedLocation = engine.getLocation();
             } else if (state == Worker.State.FAILED) {
+                // FAILED is a failure to LOAD — refused, unresolvable, timed
+                // out. A 404 is a document and arrives SUCCEEDED, so this is
+                // exactly the case that used to paint nothing at all.
                 String loc = engine.getLocation();
+                String failed = loc == null || loc.isBlank() ? lastRequested : loc;
                 long at = System.currentTimeMillis();
-                SwingUtilities.invokeLater(()
-                        -> console.add("error", Bundle.FxBrowserPanel_loadFailed(loc), at));
+                SwingUtilities.invokeLater(() -> {
+                    console.add("error", Bundle.FxBrowserPanel_loadFailed(failed), at);
+                    LoadFailedListener l = loadFailedListener;
+                    // no address means the document was one we built: there is
+                    // nothing to name, and answering a local page with another
+                    // local page is how a loop starts
+                    if (l != null && failed != null && !failed.isBlank()) {
+                        l.loadFailed(failed);
+                    }
+                });
             }
         });
         // the WebView sits centered in a neutral backdrop so a viewport
@@ -268,9 +305,15 @@ public final class FxBrowserPanel extends JPanel {
         return loads;
     }
 
+    /** EDT. Installs the host's hook for a load that never answered. */
+    public void setLoadFailedListener(LoadFailedListener l) {
+        this.loadFailedListener = l;
+    }
+
     /** EDT. Loads a URL (already scheme-complete). */
     public void loadUrl(String url) {
         loads++;
+        lastRequested = url;
         urlField.setText(url);
         if (LoopbackUrls.needsProbe(url)) {
             // localhost URLs first learn which loopback stack actually
@@ -297,8 +340,24 @@ public final class FxBrowserPanel extends JPanel {
      * overtaken.
      */
     public void loadContent(String html) {
+        loadContent(html, "");
+    }
+
+    /**
+     * EDT. Shows a document this product built, with {@code address} left in
+     * the address bar.
+     *
+     * <p>The one page that wants this is the failure page: the address it
+     * names did not answer, and leaving it in the field is what makes the
+     * retry it offers real — pressing Enter there loads it again. The
+     * document itself still has no address of its own, so
+     * {@link #lastRequested} is cleared and the engine's own blank location is
+     * ignored rather than allowed to wipe the field.
+     */
+    public void loadContent(String html, String address) {
         loads++;
-        urlField.setText("");
+        lastRequested = null;
+        urlField.setText(address);
         onFx(() -> engine.loadContent(html, "text/html"));
     }
 
