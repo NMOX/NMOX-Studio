@@ -98,6 +98,40 @@ it after the modal), and v2.177.0's ⌃Space translation-key completion and
 modifier-click: a screen walk with full control, or a person.
 
 
+## Open — recorded by v2.180.0 (the rack debt night)
+
+### 107. A house typography decision the JDK bypasses, under French
+
+`docs/i18n/conventions.md` states it plainly: *"French typography uses a narrow
+no-break space (U+202F)… We use U+00A0 everywhere because not every Swing font
+carries U+202F, and a box in place of a space is worse than a space slightly
+too wide."* That rule governs the text this product WRITES.
+
+It does not govern the text the JDK writes. A bare numeric `{1}` in a
+MessageFormat is grouped by the platform, and **French's group separator on
+JDK 25.0.4.1 is U+202F** — measured, beside `.` for es/de/pt and `,` for
+en/hi/tl/zh. So a written, measured house decision is bypassed below the bundle
+layer, where no bundle gate can see it, and it reaches **every bare numeric
+argument in the product under French**, not one key.
+
+**Found by a translator**, on `RackService_patchTooLarge`, while checking what
+its own rendering actually contained rather than reading it.
+
+**Why it is deferred rather than fixed.** On this machine it is not a defect:
+`Dialog`, `SansSerif`, `Serif`, `Monospaced`, `Helvetica Neue`, `Lucida Grande`
+and `Menlo` all report `canDisplay(U+202F) == true`, so French numbers render
+correctly. The convention's worry is about font sets generally, and **only
+macOS has been measured** — Linux and Windows are unverified, and Linux is
+where a thin Noto/DejaVu set would show it first.
+
+**What would close it**, in order: measure `canDisplay(U+202F)` across the
+fonts the Linux and Windows builds actually resolve for the UI; if any misses
+it, decide whether to keep the JDK's correct French typography (and accept a
+box on that font set) or to format numbers through a seam that substitutes
+U+00A0 — which would mean the product overriding the platform's own idea of
+correct French, and should be argued rather than assumed. Leaving `{1}` bare is
+still right for grouping; this is about which space character arrives with it.
+
 ## Closed by v2.180.0 (the rack debt night)
 
 ### 106. A refusal's REASON reaches a translated build in English — CLOSED

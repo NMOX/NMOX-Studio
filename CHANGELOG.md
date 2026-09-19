@@ -82,6 +82,11 @@ languages with no grammatical plural writing no branches at all.
 - The two silent catches in the rack engine say why they are silent. A sweep
   found 70 catch blocks with no statement; 67 already carried a reason.
 - The French bundles spell the apostrophe one way: 46 values across two files.
+- **Ledger 107 recorded, measured:** a bare numeric argument is grouped by the
+  JDK, and French's group separator is U+202F — the one character
+  `docs/i18n/conventions.md` deliberately keeps out of the product's own text,
+  bypassed below the bundle layer where no gate can see it. Not a defect on
+  macOS (seven UI fonts all carry it, measured); Linux and Windows unverified.
 
 ### Walked
 
