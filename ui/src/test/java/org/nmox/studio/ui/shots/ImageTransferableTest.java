@@ -36,7 +36,10 @@ class ImageTransferableTest {
                 .contains("Bundle.ShotSaver_copyNoSize(");
         assertThat(body).doesNotContain("JFileChooser").doesNotContain("ImageIO");
         String action = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/shots/CopyEditorScreenshotAction.java"));
-        assertThat(action).contains("path = \"Menu/Tools\", position = 107")
+        // the FOLDER, not the number: a position literal here is a second home
+        // for a fact LayerPositionCensusTest owns from the assembled cluster,
+        // and v2.184.0 moved this family to make the menu contiguous
+        assertThat(action).contains("path = \"Menu/Tools\"")
                 .contains("SaveEditorScreenshotAction.selectedEditor(")
                 .contains("ShotSaver.copy(");
     }

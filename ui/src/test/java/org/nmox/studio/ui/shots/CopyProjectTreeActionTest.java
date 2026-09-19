@@ -13,7 +13,8 @@ class CopyProjectTreeActionTest {
     @DisplayName("the walk rides the RP, the clipboard follows on the EDT, the aim comes from the core seam, and no project is a spoken refusal")
     void wiring() throws Exception {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/ui/shots/CopyProjectTreeAction.java"));
-        assertThat(src).contains("path = \"Menu/Tools\", position = 108")
+        // the folder, not the number — see ImageTransferableTest
+        assertThat(src).contains("path = \"Menu/Tools\"")
                 .contains("ProjectAim.find()")
                 .contains("no project is aimed")
                 .contains("RP.post(")
