@@ -186,9 +186,34 @@ public class RackOptionsPanelController extends OptionsPanelController {
         }
         kvasirProvider = new javax.swing.JComboBox<>(providerLabels);
         kvasirProvider.getAccessibleContext().setAccessibleName(Bundle.RackOptionsPanelController_providerCombo());
+        kvasirProvider.addActionListener(e -> changed());
         doToken = new JPasswordField(28);
         hetznerToken = new JPasswordField(28);
         cloudflareToken = new JPasswordField(28);
+        // Every control tells the dialog, not just the two that happened to
+        // be wired: picking a KVASIR provider or pasting a cloud token moved
+        // a setting, and a user who did only that and found Apply still grey
+        // met the v2.184.0 defect in four more controls. A token field speaks
+        // through its document — there is no "action" until Enter, and Enter
+        // is not how a pasted secret arrives.
+        for (JPasswordField token : new JPasswordField[]{doToken, hetznerToken, cloudflareToken}) {
+            token.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                @Override
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+
+                @Override
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+
+                @Override
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+            });
+        }
 
         c.gridwidth = 2;
         panel.add(openServedPage, c);
