@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The transport's security laws, proven against a REAL running port:
  * loopback bind witnessed, the bearer token demanded (401 without,
  * with wrong), any Origin header refused (403 — the DNS-rebinding
- * defense), GET refused (405), over-cap bodies refused (413), and the
+ * defense), a non-SSE GET refused (405); the Streamable HTTP event stream is the one GET that is served, over-cap bodies refused (413), and the
  * happy path answering real JSON only with the right token.
  */
 class AgentPortSecurityTest {

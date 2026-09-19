@@ -27,8 +27,15 @@ import org.nmox.studio.core.spi.LiveServings;
  * otherwise); REFUSES any request carrying an Origin header outright —
  * a browser page rebinding to localhost sends one, a native MCP client
  * does not (the spec's own DNS-rebinding defense, made total); caps
- * the request body; and answers only POST (the stateless shape — GET's
- * SSE listening channel is honestly 405, not half-implemented).
+ * the request body; and answers exactly two verbs — POST for every
+ * request/response exchange, and GET for the Streamable HTTP event
+ * stream (v2.84.0), which is served only when the SAME checks pass and
+ * the client actually asks for {@code text/event-stream}. Any other GET
+ * is 405. This sentence used to say the port answered POST alone and
+ * that GET was "honestly 405, not half-implemented": true when it was
+ * written, false from v2.84.0 onward, and the kind of stale claim an
+ * auditor reads first — the inline comment at the 405 has said "the SSE
+ * GET was served above" ever since.
  */
 public final class AgentPort {
 
