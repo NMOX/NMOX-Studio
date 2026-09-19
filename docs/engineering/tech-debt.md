@@ -324,9 +324,9 @@ invisible character inside a CSS declaration, and 108 of 360 files are
 escaped-ASCII where a raw U+2066 would have shipped mojibake. *A large
 mechanical change that meets no resistance anywhere is one nobody checked.*
 
-## Closed by v2.182.0
+## Closed by v2.182.0 and CORRECTED by v2.183.0
 
-### 109. The aim's refusal vanished before it could be read — CLOSED
+### 109. The aim's refusal vanished before it could be read — CLOSED (v2.182.0 was WRONG; v2.183.0 closes it)
 
 Ledger 104 gave the aim-time patch refusal a voice on the status line, and the
 Hebrew walk of the RTL sweep found what that voice is worth: **the sentence is
@@ -369,6 +369,29 @@ sentence explaining an empty rack matters more — but that is exactly why the
 linger is bounded rather than "until something replaces it". Three mutants by
 name: `theImportanceIsAboveZero`, `theLingerIsLongerThanTheDefaultAndStillBounded`,
 `theHelperKeepsTheMessageAliveAndBoundsIt`.
+
+**v2.182.0 CLAIMED fifteen seconds and did not deliver them.** It was walked
+AFTER the tag, and in a clean instance with a single refusal the sentence was
+present at T+2 s and gone by T+9 s — twice. The three tests asserted
+`PATCH_REFUSAL_IMPORTANCE == 100` and `PATCH_REFUSAL_LINGER_MS == 15_000`; not
+one of them asserted the sentence was still on screen. *A check that answers an
+easier question passes* — the lesson this arc had already written down, shipped
+as an instance of itself.
+
+**What was actually wrong (v2.183.0).** `NbStatusDisplayer` keeps only a
+`WeakReference` to each message **and** gives `MessageImpl` a `finalize()` that
+calls `run()`, which removes it from the strip. A message nobody holds dies at
+the first garbage collection — and a project opening allocates heavily, which
+is precisely when this one is set. v2.182.0 assigned the returned `Message` to
+a **local** and reasoned that `clear(ms)`'s pending RequestProcessor task would
+keep it alive. It did not check. The same commit's javadoc named the hazard
+("the list holds only a WeakReference, so a message set and dropped can vanish
+at a GC") and the code walked past it.
+
+The `Message` is held in a field now. Re-walked on the same fixture: **still on
+screen at T+9 s**, where it had died, and gone after its bound. The new test
+pins the FIELD, and reverting to v2.182.0's local kills it by name
+(`theMessageIsHeldSoAGarbageCollectionCannotTakeIt`).
 
 **Not done, and honest about it:** the rack's own placard is still the better
 home for this sentence — it is where the reader is already looking when they
