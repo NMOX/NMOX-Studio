@@ -100,6 +100,33 @@ modifier-click: a screen walk with full control, or a person.
 
 ## Open — recorded by v2.180.0 (the rack debt night)
 
+### 109. The aim's refusal is overwritten before it can be read
+
+Ledger 104 gave the aim-time patch refusal a voice on the status line, and the
+Hebrew walk of the RTL sweep found what that voice is worth: **the sentence is
+painted and then replaced within roughly two seconds**, while the project is
+still opening. It was captured only by firing the aim and photographing without
+waiting; every capture taken four seconds later found the strip empty.
+
+`RackService.status()` calls `StatusDisplayer.setStatusText` correctly and
+`RackService` holds only one other `status()` call, so the overwriter is
+outside this class — the platform's own project-open progress is the obvious
+suspect and **was not proven**. That is the open question.
+
+**Why it matters.** This is the refusal the user did not ask for: it explains
+an empty rack they are about to wonder about. A sentence that is correct,
+translated into fifteen languages and gone before it can be read is the
+v2.85.0 class (*a copy notice ERASED the response verdict*), one surface over.
+
+**What would close it**: identify what writes the status line after the aim,
+then give this sentence a surface that outlives it — the rack's own placard is
+the obvious candidate, since an empty rack is exactly what the sentence is
+about, and the reader is looking at it.
+
+**What is already proven and is NOT in question:** the sentence's content
+(`PatchNotLoadedSpeaksTest`), that the catch reaches the status line at all,
+and that it renders correctly in Hebrew — photographed live.
+
 ### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash
 
 A dotfile that arrives as `{0}` after an RTL word lays out as
@@ -151,6 +178,16 @@ translated value with an unguarded placeholder fails on the commit that adds it.
 The ledger shape (classify each of the 927) is the right answer when guarding
 has a cost — here it has none, and it would ask 503 questions nobody can
 currently answer.
+
+**WALKED in Hebrew (the ceiling the Bidi proof could not close).** The
+assembled build with the sweep, booted `--locale he` on a project with a
+corrupt patch: the refusal painted with `.nmoxrack.json` reading dot-first,
+photographed. The control settles that the guard is what does it — with the
+isolates stripped, the leading dot **detaches and lands at the opposite end of
+the sentence** (`…הראק ריק: .`) and the name renders bare. *A containment
+assertion could not tell these apart* — `contains(".nmoxrack.json")` passes on
+the broken control, because `.nmoxrack.json.bak` contains that substring; only
+reading the visual order did. Zero SEVERE, zero orphans.
 
 **Deferred from v2.180.0 deliberately**, not for lack of a decision: 927
 mechanical edits across eleven modules is its own unit with its own verify, and
