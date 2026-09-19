@@ -59,7 +59,7 @@ public class DocsShots implements Runnable {
         // of ours rather than fetching a news site was provable only by the
         // ABSENCE of a network call — and an absence is equally consistent
         // with a blank pane. A painted window is the positive evidence.
-        SHOTS.put("WebBrowserTopComponent", "browser.png");
+        SHOTS.put("WebBrowserTopComponent", "browser-to-source.png");
     }
 
     /**

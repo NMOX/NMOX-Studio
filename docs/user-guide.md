@@ -1467,7 +1467,7 @@ the bundled runtime) with the chrome you expect — URL bar (a bare
 `example.com` gets `https://`), back/forward, reload/stop, load
 progress, zoom buttons — and, since v1.206.0, **developer tools**: the
 **DevTools** button in the toolbar opens a bottom pane with seven tabs.
-![The Browser with nothing serving: "Nothing is serving yet", the door that starts one, and an empty address bar](images/tabs/browser.png)
+![The Browser with nothing serving: "Nothing is serving yet", the door that starts one, and an empty address bar](images/tabs/browser-to-source.png)
 
 A bare open lands on your project's live dev server when one is
 running. When nothing is serving it shows a page of the product's own,
