@@ -209,7 +209,7 @@ public final class DeployPlanner {
                 JSONObject pool = new JSONObject()
                         .put("size", p.get("nodeSize"))
                         .put("name", node.label + "-pool")
-                        .put("count", Integer.parseInt(p.getOrDefault("nodeCount", "3")))
+                        .put("count", intProp(p, "nodeCount", 3))
                         .put("auto_scale", Boolean.parseBoolean(p.getOrDefault("autoscale", "false")));
                 body.put("name", node.label).put("region", p.get("region"))
                         .put("version", "latest")
@@ -224,7 +224,7 @@ public final class DeployPlanner {
                         Bundle.DeployPlanner_createKubernetes(node.label));
             }
             case LOAD_BALANCER -> {
-                String[] rule = p.getOrDefault("forwardingRule", "http-80").split("-");
+                String[] rule = forwardingRule(p);
                 JSONObject forwarding = new JSONObject()
                         .put("entry_protocol", rule[0]).put("entry_port", Integer.parseInt(rule[1]))
                         .put("target_protocol", "http").put("target_port", 80);
@@ -261,7 +261,7 @@ public final class DeployPlanner {
             }
             case VOLUME -> {
                 body.put("name", node.label).put("region", p.get("region"))
-                        .put("size_gigabytes", Integer.parseInt(p.getOrDefault("sizeGb", "100")))
+                        .put("size_gigabytes", intProp(p, "sizeGb", 100))
                         .put("filesystem_type", p.getOrDefault("fs", "ext4"));
                 yield DoRequest.post("/v2/volumes", body, node.id,
                         Bundle.DeployPlanner_createVolume(p.get("sizeGb"), node.label));
@@ -289,7 +289,7 @@ public final class DeployPlanner {
                                 + ".digitaloceanspaces.com";
                     }
                 }
-                body.put("origin", origin).put("ttl", Integer.parseInt(p.getOrDefault("ttl", "3600")));
+                body.put("origin", origin).put("ttl", intProp(p, "ttl", 3600));
                 for (InfraNode prov : providers) {
                     if (prov.kind == NodeKind.CERTIFICATE) {
                         body.put("certificate_id", idOf(prov));
@@ -313,7 +313,7 @@ public final class DeployPlanner {
                         .put("version", p.get("version"))
                         .put("region", p.get("region"))
                         .put("size", p.get("size"))
-                        .put("num_nodes", Integer.parseInt(p.getOrDefault("nodes", "1")));
+                        .put("num_nodes", intProp(p, "nodes", 1));
                 for (InfraNode prov : providers) {
                     if (prov.kind == NodeKind.VPC) {
                         body.put("private_network_uuid", idOf(prov));
@@ -329,7 +329,7 @@ public final class DeployPlanner {
                                 .put("repo", p.getOrDefault("repo", "owner/app"))
                                 .put("branch", "main").put("deploy_on_push", true))
                         .put("instance_size_slug", p.getOrDefault("instance", "basic-xxs"))
-                        .put("instance_count", Integer.parseInt(p.getOrDefault("instances", "1")));
+                        .put("instance_count", intProp(p, "instances", 1));
                 JSONObject spec = new JSONObject()
                         .put("name", node.label)
                         .put("region", p.getOrDefault("region", "nyc"))
@@ -387,7 +387,7 @@ public final class DeployPlanner {
                 }
                 body.put("type", p.get("metric"))
                         .put("compare", "GreaterThan")
-                        .put("value", Integer.parseInt(p.getOrDefault("threshold", "80")))
+                        .put("value", intProp(p, "threshold", 80))
                         .put("window", "5m")
                         .put("entities", entities)
                         .put("alerts", new JSONObject()
@@ -453,7 +453,7 @@ public final class DeployPlanner {
             }
             case HZ_VOLUME -> {
                 body.put("name", node.label)
-                        .put("size", Integer.parseInt(p.getOrDefault("sizeGb", "50")))
+                        .put("size", intProp(p, "sizeGb", 50))
                         .put("location", p.getOrDefault("location", "fsn1"))
                         .put("format", p.getOrDefault("format", "ext4"));
                 yield DoRequest.post("/volumes", body, node.id, Bundle.DeployPlanner_createHzVolume(node.label));
@@ -570,4 +570,59 @@ public final class DeployPlanner {
         }
         return rules;
     }
+
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(DeployPlanner.class.getName());
+
+    /**
+     * A whole number from a node's properties, never a throw.
+     *
+     * <p>These properties come out of {@code .nmoxinfra.json}, a file the user
+     * keeps in their repository and can hand-edit — the house has a
+     * parse-time-heal law for exactly that reason. This planner read them with
+     * bare {@code Integer.parseInt} at eight sites, so a {@code "nodeCount"}
+     * of {@code ""} threw a {@code NumberFormatException} from inside a deploy
+     * planner and said nothing a user could act on.
+     *
+     * <p>{@code NodeKind} already read the same properties tolerantly for its
+     * cost estimate, with its own private copy of this. Now there is one, it
+     * is public to its package, and a value that will not parse falls back to
+     * the DECLARED default and says so in the log rather than in a stack
+     * trace.
+     */
+    static int intProp(Map<String, String> p, String key, int dflt) {
+        String raw = p.get(key);
+        if (raw == null || raw.isBlank()) {
+            return dflt;
+        }
+        try {
+            return Integer.parseInt(raw.trim());
+        } catch (NumberFormatException ex) {
+            LOG.log(java.util.logging.Level.WARNING,
+                    "Property {0} is not a whole number ({1}); using {2}",
+                    new Object[]{key, raw, dflt});
+            return dflt;
+        }
+    }
+
+    /**
+     * A load balancer's {@code protocol-port} forwarding rule, never a throw.
+     *
+     * <p>The rule was read as {@code value.split("-")} and then indexed at
+     * {@code [1]} with no check, so a hand-edited {@code "forwardingRule":
+     * "https"} threw an {@code ArrayIndexOutOfBoundsException} out of the
+     * planner. The declared default is {@code http-80}, and that is what an
+     * unreadable value falls back to.
+     */
+    static String[] forwardingRule(Map<String, String> p) {
+        String raw = p.getOrDefault("forwardingRule", "http-80");
+        String[] parts = raw.split("-", 2);
+        if (parts.length == 2 && !parts[0].isBlank() && parts[1].matches("\\d+")) {
+            return parts;
+        }
+        LOG.log(java.util.logging.Level.WARNING,
+                "forwardingRule {0} is not protocol-port; using http-80", raw);
+        return new String[]{"http", "80"};
+    }
+
 }
