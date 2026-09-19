@@ -88,7 +88,7 @@ class RackGalleryDocsTest {
         md.append("   `name.<lang>` / `description.<lang>` siblings.\n");
         md.append("4. Run the gate: `mvn -pl rack -am test -Dtest=CommunityRacksGateTest`. It fails\n");
         md.append("   by file name with the reason: only built-in devices, every cable really\n");
-        md.append("   mounts, nothing armed or running, no absolute or home path, no address but\n");
+        md.append("   mounts, nothing switched on that would start by itself, no absolute or home path, no address but\n");
         md.append("   localhost, bare tool names, real project kinds.\n");
         md.append("5. Regenerate this file (the command above) and open the pull request.\n");
 

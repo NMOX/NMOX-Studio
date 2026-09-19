@@ -30,7 +30,7 @@ The community racks live in one directory, and a pull request is how one joins:
    `name.<lang>` / `description.<lang>` siblings.
 4. Run the gate: `mvn -pl rack -am test -Dtest=CommunityRacksGateTest`. It fails
    by file name with the reason: only built-in devices, every cable really
-   mounts, nothing armed or running, no absolute or home path, no address but
+   mounts, nothing switched on that would start by itself, no absolute or home path, no address but
    localhost, bare tool names, real project kinds.
 5. Regenerate this file (the command above) and open the pull request.
 
