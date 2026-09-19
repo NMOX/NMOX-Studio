@@ -145,11 +145,6 @@ public final class GhostText {
                 more > 0 ? Bundle.GhostText_armedAll(String.valueOf(more + 1)) : Bundle.GhostText_armed());
     }
 
-    /** Whether a ghost is armed on this pane. */
-    public boolean armed() {
-        return insertion != null;
-    }
-
     private void accept() {
         String text = insertion;
         int at = offset;

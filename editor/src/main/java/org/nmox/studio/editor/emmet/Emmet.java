@@ -132,7 +132,7 @@ public final class Emmet {
                 if (i > 0) {
                     out.newline(0);
                 }
-                render(roots.get(i), out, 0, 1, 1);
+                render(roots.get(i), out, 0, 1);
             }
             return new Expansion(out.sb.toString(),
                     out.caret >= 0 ? out.caret : out.sb.length());
@@ -431,10 +431,9 @@ public final class Emmet {
         }
     }
 
-    private static void render(Node n, Out out, int depth, int index, int count) {
+    private static void render(Node n, Out out, int depth, int index) {
         for (int rep = 1; rep <= n.times; rep++) {
             int idx = n.times > 1 ? rep : index;
-            int total = n.times > 1 ? n.times : count;
             if (rep > 1) {
                 out.newline(depth);
             }
@@ -443,7 +442,7 @@ public final class Emmet {
                     if (c > 0) {
                         out.newline(depth);
                     }
-                    render(n.children.get(c), out, depth, idx, total);
+                    render(n.children.get(c), out, depth, idx);
                 }
                 continue;
             }
@@ -460,7 +459,7 @@ public final class Emmet {
             }
             out.sb.append('<').append(n.name);
             if (n.id != null) {
-                out.sb.append(" id=\"").append(number(n.id, idx, total)).append('"');
+                out.sb.append(" id=\"").append(number(n.id, idx)).append('"');
             }
             if (!n.classes.isEmpty()) {
                 out.sb.append(" class=\"");
@@ -468,7 +467,7 @@ public final class Emmet {
                     if (c > 0) {
                         out.sb.append(' ');
                     }
-                    out.sb.append(number(n.classes.get(c), idx, total));
+                    out.sb.append(number(n.classes.get(c), idx));
                 }
                 out.sb.append('"');
             }
@@ -482,7 +481,7 @@ public final class Emmet {
                 if (e.getValue().isEmpty()) {
                     out.markCaret();
                 } else {
-                    out.sb.append(number(e.getValue(), idx, total));
+                    out.sb.append(number(e.getValue(), idx));
                 }
                 out.sb.append('"');
             }
@@ -494,11 +493,11 @@ public final class Emmet {
             if (!n.children.isEmpty()) {
                 for (Node child : n.children) {
                     out.newline(depth + 1);
-                    render(child, out, depth + 1, 1, 1);
+                    render(child, out, depth + 1, 1);
                 }
                 out.newline(depth);
             } else if (n.text != null) {
-                out.sb.append(number(n.text, idx, total));
+                out.sb.append(number(n.text, idx));
             } else {
                 out.markCaret();
             }
@@ -554,7 +553,7 @@ public final class Emmet {
     }
 
     /** {@code $} numbering: {@code item$} → item1..itemN; {@code $$} pads. */
-    private static String number(String s, int index, int count) {
+    private static String number(String s, int index) {
         if (s.indexOf('$') < 0) {
             return s;
         }

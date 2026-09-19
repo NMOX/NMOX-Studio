@@ -66,13 +66,15 @@ class JavaScriptLexerEdgeTest {
     }
 
     @Test
-    @DisplayName("Template literals swallow ${} expressions, lone $ signs and escaped backticks")
+    @DisplayName("Template literals keep lone $ signs and escaped backticks as text; ${} opens an expression")
     void templateLiteralShapes() {
-        assertThat(lex("`a${x + 1}b`")).contains("TEMPLATE_STRING:`a${x + 1}b`");
         assertThat(lex("`cost $5`")).contains("TEMPLATE_STRING:`cost $5`");
         assertThat(lex("`a\\`b`")).contains("TEMPLATE_STRING:`a\\`b`");
-        // nested braces inside the expression stay inside the template
-        assertThat(lex("`v${ {a: 1}.a }w`")).contains("TEMPLATE_STRING:`v${ {a: 1}.a }w`");
+        // an interpolation is JavaScript, not string: the whole sequence and
+        // its boundary cases live in TemplateInterpolationTest
+        assertThat(lex("`a${x + 1}b`"))
+                .contains("TEMPLATE_EXPRESSION:${", "IDENTIFIER:x", "TEMPLATE_EXPRESSION:}")
+                .doesNotContain("TEMPLATE_STRING:`a${x + 1}b`");
     }
 
     @Test
