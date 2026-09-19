@@ -1,5 +1,20 @@
 # The Plan
 
+*Currency addendum 2026-09-18 (night), at v2.179.1 — the outside reviewer read
+the v2.179.0 summary and asked one question: does `RackJudge` duplicate what
+`SelfStarting` now owns? It did — `armed`, `running`, `tail.follow`, hard-coded
+in the community gate by the gallery agent, which forked from the same pinned
+contract commit as the agent BUILDING the authority and could not see it. The
+fold review read each agent's work for bugs and never asked what the two knew
+in common. **The law: when units are built in parallel, the fold gets one more
+lens — for every authority a unit introduces, grep the sibling units for the
+knowledge it now owns.** A duplicate that is correct on the day it ships is
+invisible to every test of today's behaviour (thirty judge tests stayed green
+under the mutant); only a test that DECLARES something new can see it, so the
+judge grew a resolver seam for exactly that. Second law, same incident: **a
+summary written for an outsider is a review instrument** — the defect was found
+from one paragraph, by someone asking whether two nouns in it were one thing.*
+
 *Currency addendum 2026-09-18 (evening), at v2.179.0 — a sanity check, then an
 outside steer. David asked for a review of the project for false claims; it
 found two in the day-old rack batch (a TAIL saved following started at mount

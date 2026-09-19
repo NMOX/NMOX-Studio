@@ -4,6 +4,41 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.179.1] - 2026-09-18
+
+**The community-rack gate keeps no list: one authority for "this setting starts by itself".**
+
+- **v2.179.0 fixed a hand-kept set and shipped a second copy of it in the same
+  release.** `RackShare` had listed `armed` and `running` and missed TAIL's
+  `follow`; the fix made a device DECLARE its self-starting switches
+  (`paramSelfStarting`) and `devices.SelfStarting` derive the answer. But
+  `gallery.RackJudge` — the gate every community rack must pass — was written
+  by a parallel agent that could not yet see that authority, and hard-coded
+  `armed`, `running`, and `follow` on `tail`. Both were correct the day they
+  shipped, which is exactly how the first one went wrong: a device that declared
+  a NEW self-starting switch would have been switched off by Import and waved
+  through by the community gate, and a rack could ship with it on. Found by an
+  outside review of the release, hours after it shipped.
+- **One decision.** `RackShare.startsByItself(typeId, key, value)` — *would
+  restoring this setting on this device start something by itself?* — is what
+  `imported()` switches off by, what `inspect()` counts, and now what the judge
+  refuses by. `RackJudge` names no switch. It also reads a value the way a
+  device restores one (`Boolean.parseBoolean`): v2.179.0's judge trimmed first,
+  so it refused `" true "`, which restores as OFF and starts nothing.
+- **The regression the review asked for.** `RackJudgeOneAuthorityTest`: *a newly
+  declared self-starting switch cannot ship enabled* — VERITAS's coverage switch
+  is a setting today and a rack with it on passes; declare it through the
+  judge's resolver seam and the same rack is refused by name, while Import sets
+  the same switch off. *Across the fleet, derived from what each device
+  declares*, the judge refuses exactly the settings Import switches off — every
+  declared switch and no other. And the judge's source names no switch. Two
+  mutants by name: v2.179.0's exact list restored kills three of the four tests
+  (while `RackJudgeTest`'s thirty and `CommunityRacksGateTest` stay GREEN — the
+  existing suites could not see it); exempting one device reads
+  `tempo.running: declared=true judgeRefuses=false importSwitchesOff=true`.
+- `docs/racks.md` regenerated: the contributor rule says *nothing switched on
+  that would start by itself* rather than naming two of the switches.
+
 ## [2.179.0] - 2026-09-18
 
 **A rack is a workflow you can hand to someone: the Rack Gallery, racks that say what they are, and a Share/Import that tells the truth.**
@@ -22584,6 +22619,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.179.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.0...v2.179.1
 [2.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.178.0...v2.179.0
 [2.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.177.0...v2.178.0
 [2.177.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.176.0...v2.177.0
