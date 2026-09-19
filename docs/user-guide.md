@@ -1468,8 +1468,13 @@ the bundled runtime) with the chrome you expect — URL bar (a bare
 progress, zoom buttons — and, since v1.206.0, **developer tools**: the
 **DevTools** button in the toolbar opens a bottom pane with seven tabs.
 A bare open lands on your project's live dev server when one is
-running, else a home page; the rack's SCOPE device and every
-Open-in-Browser action route here too.
+running. When nothing is serving it shows a page of the product's own,
+built in-process and fetching nothing from the network — it names what
+is empty and the door that starts a server, in your own language. (Until
+v2.184.0 that empty state was a third-party news site, which meant
+opening a pane to look at your own app made an outbound request you
+never asked for.) The rack's SCOPE device and every Open-in-Browser
+action route here too.
 
 Pages in Arabic, Persian, Hindi and the other Indic scripts paint shaped —
 letters joined, vowel signs and conjuncts in place — since v2.165.0.
