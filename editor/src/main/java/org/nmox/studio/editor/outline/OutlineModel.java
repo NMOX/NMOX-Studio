@@ -81,6 +81,15 @@ public final class OutlineModel {
     }
 
     /** The extractor family for a mime, for consumers outside this package (sticky scroll's range rules). */
+    /**
+     * The outline family for a mime — NEVER null.
+     *
+     * <p>{@link #family} ends in {@code default -> "generic"}, so every mime
+     * has a family and an unfamiliar text file gets a brace-and-indent read
+     * rather than nothing. A caller that guards on this returning null is
+     * writing a refusal that cannot speak; {@code SymbolIndexProvider} had
+     * one.
+     */
     public static String familyOf(String mime) {
         return family(mime);
     }
