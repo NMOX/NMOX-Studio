@@ -104,12 +104,12 @@ class SassCompilerTest {
         org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
         File bin = new File(dir, "node_modules/.bin");
         assertThat(bin.mkdirs()).isTrue();
-        File sass = new File(bin, "sass");
+        // the .cmd form, as its sibling test above uses: an executable
+        // bit is a POSIX idea and the Windows lane is a blocking gate
+        File sass = new File(bin, "sass.cmd");
         assertThat(sass.createNewFile()).isTrue();
-        assertThat(sass.setExecutable(true)).isTrue();
 
-        String untrusted = SassCompiler.resolveBinary(dir);
-        assertThat(untrusted)
+        assertThat(SassCompiler.resolveBinary(dir))
                 .as("an untrusted workspace never runs its own committed sass")
                 .isNotEqualTo(sass.getAbsolutePath());
 
