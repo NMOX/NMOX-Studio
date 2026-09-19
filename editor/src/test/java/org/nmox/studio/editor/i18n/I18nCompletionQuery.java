@@ -32,6 +32,13 @@ import org.openide.filesystems.FileUtil;
  * read back off the same result set the popup would have rendered —
  * read from the shipped bytecode, not from folklore.
  *
+ * <p>The {@code CompletionImpl} is the platform's real process-wide
+ * singleton, because finishing a result set notifies it. That is a
+ * shared state this harness borrows rather than owns, and it showed:
+ * the ORDER of the items read back measured alphabetical when one test
+ * class ran alone and file order inside the full suite. Callers assert
+ * WHICH items and WHAT each says, never their order.
+ *
  * <p><b>Ceiling, stated:</b> this proves the provider ANSWERS, with
  * which items and which provenance. It does not prove the popup PAINTS
  * them — no instrument in this repo can, and inventing one would be the

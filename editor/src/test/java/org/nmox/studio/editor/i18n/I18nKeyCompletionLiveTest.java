@@ -68,7 +68,7 @@ class I18nKeyCompletionLiveTest {
                 I18nCompletionQuery.write(root, rel, source), source);
     }
 
-    /** What a real ⌃Space at the caret after {@code partial} offers, as shown text. */
+    /** What a real ⌃Space at the caret offers, as shown text. */
     private static List<String> offered(Document doc, int caret) throws Exception {
         List<? extends CompletionItem> items = I18nCompletionQuery.items(1, doc, caret);
         assertThat(items).as("COMPLETION (1) must produce a task").isNotNull();
@@ -81,6 +81,18 @@ class I18nKeyCompletionLiveTest {
         }).toList();
     }
 
+    /** The offered item whose name is {@code key} — never an index. */
+    private static CompletionItem item(Document doc, int caret, String key) throws Exception {
+        List<? extends CompletionItem> items = I18nCompletionQuery.items(1, doc, caret);
+        assertThat(items).isNotNull();
+        for (CompletionItem i : items) {
+            if (I18nCompletionQuery.shown(i).startsWith(key + " · ")) {
+                return i;
+            }
+        }
+        throw new AssertionError(key + " was not offered: " + offered(doc, caret));
+    }
+
     @Test
     @DisplayName("a real ⌃Space inside t(' offers the project's own keys with catalog·value provenance")
     void realQueryOffersKeysWithProvenance(@TempDir Path root) throws Exception {
@@ -89,14 +101,20 @@ class I18nKeyCompletionLiveTest {
         Document doc = docOn(root, "src/app.js", js);
         int caret = js.indexOf("'t'") + 2;
 
-        // the catalog's keys are a sorted map, so the popup's order is the catalog's
-        assertThat(offered(doc, caret)).containsExactly(
+        // ORDER is deliberately not pinned. The items are read back after
+        // the result set is finished, and finishing hands them to the
+        // platform's own CompletionImpl — a process-wide singleton this
+        // harness borrows. Pinning their order pins that shared state, and
+        // it measured BOTH ways: alphabetical when this class ran alone,
+        // file order inside the full suite. What the provider decides is
+        // WHICH items and WHAT each one says.
+        assertThat(offered(doc, caret)).containsExactlyInAnyOrder(
                 "tagline · en/common.json · &quot;Shop well&quot;",
                 "title · en/common.json · &quot;Home&quot;");
-        List<? extends CompletionItem> items = I18nCompletionQuery.items(1, doc, caret);
         // the accept span is the typed prefix alone — the popup rewrites "t", never the quote
-        assertThat(I18nCompletionQuery.span(items.get(1))).isEqualTo(caret - 1 + "+1");
-        assertThat(items.get(1).getInsertPrefix()).hasToString("title");
+        CompletionItem title = item(doc, caret, "title");
+        assertThat(I18nCompletionQuery.span(title)).isEqualTo(caret - 1 + "+1");
+        assertThat(title.getInsertPrefix()).hasToString("title");
         // the SOURCE catalog answers; the German sibling never appears
         assertThat(offered(doc, caret)).noneMatch(s -> s.contains("de/common.json"));
     }
