@@ -838,9 +838,13 @@ public final class InfraDesignerTopComponent extends TopComponent {
         loading = true;
         try {
             File file = designFile();
+            // a new file is a new episode; re-reading the SAME unreadable one
+            // must not repeat a balloon the user has already seen
+            if (!file.equals(boundDesignFile)) {
+                readOnlyNotified = false;
+            }
             boundDesignFile = file; // edits from here on belong to THIS file
             designReadOnly = false;
-            readOnlyNotified = false;
             if (file.isFile()) {
                 // corrupt file: GraphIO copies it to .bak BEFORE handing back
                 // the empty fallback, so the next autosave can't destroy the
@@ -854,12 +858,13 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 } else if (designReadOnly) {
                     // a different failure and a different promise: nothing was
                     // read, so nothing is copied aside and nothing is written
-                    balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
-                            Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME),
-                            null);
+                    sayReadOnly();
+                } else {
+                    readOnlyNotified = false; // the episode is over
                 }
             } else {
                 graph.clear();
+                readOnlyNotified = false;
             }
             canvas.fit();
         } catch (RuntimeException unexpected) {
@@ -888,6 +893,20 @@ public final class InfraDesignerTopComponent extends TopComponent {
     }
 
     /**
+     * Says the design is read-only — once per episode, not once per
+     * debounce tick. The episode ends when the file is read again (or a
+     * different project is bound), and only then may it speak again.
+     */
+    private void sayReadOnly() {
+        if (readOnlyNotified) {
+            return;
+        }
+        readOnlyNotified = true;
+        balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
+                Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME), null);
+    }
+
+    /**
      * EDT: the graph is EDT-confined, so the JSON snapshot is taken here
      * and only the disk write rides the save lane (debt #16). The design
      * file binds NOW — a project re-aim between the debounce fire and
@@ -906,11 +925,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     .log(java.util.logging.Level.WARNING,
                             "Refusing to save over an unreadable {0}",
                             GraphIO.DEFAULT_FILENAME);
-            if (!readOnlyNotified) {
-                readOnlyNotified = true;
-                balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
-                        Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME), null);
-            }
+            sayReadOnly();
             return;
         }
         // the bound file, not the live aim: after a re-aim the debounce may
@@ -993,9 +1008,19 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the graphChanged it fires never schedules a spurious save
                 // (the v1.33.2 guard stays intact).
                 load();
-                balloon(Bundle.InfraDesigner_reloadedTitle(GraphIO.DEFAULT_FILENAME),
-                        Bundle.InfraDesigner_reloadedDetail(),
-                        null);
+                if (!designReadOnly) {
+                    balloon(Bundle.InfraDesigner_reloadedTitle(GraphIO.DEFAULT_FILENAME),
+                            Bundle.InfraDesigner_reloadedDetail(),
+                            null);
+                }
+                // A read-only bind records no stamp, so the FIRST check after
+                // one always reads as a foreign version and lands here with
+                // nothing having changed. Re-reading is right — it is how an
+                // unreadable design comes back by itself once the permissions
+                // are fixed or the file is trimmed — but claiming "reloaded,
+                // the file changed outside the designer" when it did not, and
+                // could not be read anyway, would be the window telling the
+                // user something untrue. load() has already spoken.
             }
             case CONFLICT -> {
                 // Foreign edit vs unsaved canvas edits: NEVER clobber silently.

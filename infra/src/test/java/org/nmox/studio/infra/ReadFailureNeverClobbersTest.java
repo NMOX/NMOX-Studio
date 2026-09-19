@@ -40,6 +40,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the code this test was written against, both failed: <b>9,437,184 bytes
  * became 48</b>, with {@link DesignSync} answering NONE for the file's real
  * stamp.
+ *
+ * <p><b>An honest ceiling.</b> {@code readOnlyNotified} is asserted as a
+ * flag, not as a balloon count — {@code balloon} is a static call into the
+ * platform's {@code NotificationDisplayer}, swallowed in tests, so "said it
+ * once" is not observable from out here. The flag proves the episode
+ * BOUNDARIES (it is set on the way in and cleared when the file reads
+ * again); the file-identity guard that lets a DIFFERENT unreadable design
+ * speak for itself differs from the naive version only in how many balloons
+ * appear, so it is pinned by reading rather than by a mutant.
  */
 class ReadFailureNeverClobbersTest {
 
@@ -146,6 +155,116 @@ class ReadFailureNeverClobbersTest {
         } finally {
             Files.setPosixFilePermissions(f.toPath(), PosixFilePermissions.fromString("rw-------"));
         }
+    }
+
+    /**
+     * A read-only bind records no stamp, so the first 2-second check after
+     * one sees a version it does not know and lands in the RELOAD branch
+     * with nothing having changed. Re-reading there is right — it is how an
+     * unreadable design comes back once the permissions are fixed — but it
+     * must not write, must not take ownership, and must not tell the user
+     * the file "changed outside the designer" when it did not.
+     */
+    @Test
+    @DisplayName("the first external check after a read-only bind re-reads without clobbering")
+    void externalCheckAfterReadOnlyBindIsSafe(@TempDir File dir) throws Exception {
+        File f = new File(dir, GraphIO.DEFAULT_FILENAME);
+        writeOverCap(f);
+        long before = f.length();
+
+        String home = System.getProperty("user.home");
+        System.setProperty("user.home", dir.getAbsolutePath());
+        Object window;
+        try {
+            final Object[] made = new Object[1];
+            SwingUtilities.invokeAndWait(() -> made[0] = new InfraDesignerTopComponent());
+            window = made[0];
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(made[0], "load");
+                    // the check's EDT half, with the stamp its lane read
+                    Method handle = made[0].getClass().getDeclaredMethod(
+                            "handleExternalStamp", DesignSync.Stamp.class);
+                    handle.setAccessible(true);
+                    handle.invoke(made[0], DesignSync.Stamp.of(f));
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            flushSaveLane();
+        } finally {
+            System.setProperty("user.home", home);
+        }
+
+        assertThat(f.length())
+                .as("the re-read refused again; nothing was written")
+                .isEqualTo(before);
+        assertThat((boolean) field(window, "designReadOnly"))
+                .as("still unreadable, so still read-only — the re-read did not"
+                        + " quietly promote a stand-in canvas to the real design")
+                .isTrue();
+        assertThat((boolean) field(window, "readOnlyNotified"))
+                .as("the user was told once, not once per check")
+                .isTrue();
+    }
+
+    /**
+     * The other end of the read-only bind: it is a STATE, not a verdict for
+     * the session. A design that becomes readable again — permissions
+     * fixed, an over-cap file trimmed — is picked up by the same check, and
+     * the designer stops refusing and stops saying so.
+     */
+    @Test
+    @DisplayName("a design that becomes readable again ends the read-only episode")
+    void readOnlyEpisodeEndsWhenTheFileCanBeRead(@TempDir File dir) throws Exception {
+        File f = new File(dir, GraphIO.DEFAULT_FILENAME);
+        writeOverCap(f);
+
+        String home = System.getProperty("user.home");
+        System.setProperty("user.home", dir.getAbsolutePath());
+        Object window;
+        try {
+            final Object[] made = new Object[1];
+            SwingUtilities.invokeAndWait(() -> made[0] = new InfraDesignerTopComponent());
+            window = made[0];
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(made[0], "load");
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            assertThat((boolean) field(window, "designReadOnly")).isTrue();
+            assertThat((boolean) field(window, "readOnlyNotified"))
+                    .as("the refusal spoke on the way in").isTrue();
+
+            // the user trims the file — now it reads
+            InfraGraph real = new InfraGraph();
+            real.addNode(NodeKind.DROPLET, 5, 5);
+            GraphIO.save(real, f);
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(made[0], "load");
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+        } finally {
+            System.setProperty("user.home", home);
+        }
+
+        assertThat((boolean) field(window, "designReadOnly"))
+                .as("the design is readable, so saves resume").isFalse();
+        assertThat((boolean) field(window, "readOnlyNotified"))
+                .as("the episode is over — a LATER one must be free to speak again")
+                .isFalse();
+        InfraGraph graph = (InfraGraph) field(window, "graph");
+        assertThat(graph.getNodes())
+                .as("the real design came back by itself").hasSize(1);
+        DesignSync sync = (DesignSync) field(window, "designSync");
+        assertThat(sync.check(DesignSync.Stamp.of(f), false))
+                .as("and NOW the file is ours — it was read")
+                .isEqualTo(DesignSync.Verdict.NONE);
     }
 
     @Test
