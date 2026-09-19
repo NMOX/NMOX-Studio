@@ -1,5 +1,37 @@
 # The Plan
 
+*Currency addendum 2026-09-19 (the morning after), at v2.181.0 — the units
+pipelined while v2.180.0 flew, plus the review of v2.180.0 itself. Three
+lessons, and all three are the same lesson wearing different clothes.*
+
+*1. **A check that answers an easier question passes.** Three times in two
+days: `contains(".nmoxrack.json")` passed on a sentence printing the name
+twice, then passed again on a BROKEN right-to-left control (because
+`.nmoxrack.json.bak` contains that substring), and `canDisplay(U+202F)`
+returned true for a glyph with zero advance. Each was cheap, plausible, and
+answered something adjacent to the question. **Run the control** — a check that
+has not been shown to FAIL on the broken input has not been shown to check
+anything, which is the mutation law applied to assertions rather than code.*
+
+*2. **A gate's population is the thing it is about, not the shape it was
+written against.** `BoundedReadLedgerTest` matched three method spellings and
+never saw `FileObject.asText()`; `NativeTypographyGateTest` matched a literal
+dot and never saw a placeholder carrying one. Both quoted the derive-the-
+population law in their own javadoc. The fourth and fifth instances of the
+v2.19.1 / v2.146.0 family.*
+
+*3. **A review of code that shipped hours ago still pays.** v2.180.0's units
+each carried mutation-proven tests and a clean report, and the review found two
+real defects — one reachable by exactly the hostile input the new class was
+written for. **A report that reads clean is not a review.***
+
+*Also recorded: the sweep met resistance in nine places and only three were
+caught by a test — it wrote a literal newline into a properties file, nested
+`⁦{1}⁦⁩{2}⁩` that MessageFormat parses happily, and its own first gate cut was
+vacuous because it read the context beside an element rather than before its
+guard. A large mechanical change that meets no resistance anywhere is a change
+nobody checked.*
+
 *Currency addendum 2026-09-19 (the rack debt night), at v2.180.0 — David asked
 for tech debt wiped out and the rack examined. Five ledger items closed (102,
 104, 105, 106, and 103's three rack edges walked), two whole CLASSES swept, and

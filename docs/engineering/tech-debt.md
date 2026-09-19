@@ -100,6 +100,33 @@ modifier-click: a screen walk with full control, or a person.
 
 ## Open — recorded by v2.180.0 (the rack debt night)
 
+### 109. The aim's refusal is overwritten before it can be read
+
+Ledger 104 gave the aim-time patch refusal a voice on the status line, and the
+Hebrew walk of the RTL sweep found what that voice is worth: **the sentence is
+painted and then replaced within roughly two seconds**, while the project is
+still opening. It was captured only by firing the aim and photographing without
+waiting; every capture taken four seconds later found the strip empty.
+
+`RackService.status()` calls `StatusDisplayer.setStatusText` correctly and
+`RackService` holds only one other `status()` call, so the overwriter is
+outside this class — the platform's own project-open progress is the obvious
+suspect and **was not proven**. That is the open question.
+
+**Why it matters.** This is the refusal the user did not ask for: it explains
+an empty rack they are about to wonder about. A sentence that is correct,
+translated into fifteen languages and gone before it can be read is the
+v2.85.0 class (*a copy notice ERASED the response verdict*), one surface over.
+
+**What would close it**: identify what writes the status line after the aim,
+then give this sentence a surface that outlives it — the rack's own placard is
+the obvious candidate, since an empty rack is exactly what the sentence is
+about, and the reader is looking at it.
+
+**What is already proven and is NOT in question:** the sentence's content
+(`PatchNotLoadedSpeaksTest`), that the catch reaches the status line at all,
+and that it renders correctly in Hebrew — photographed live.
+
 ### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash
 
 A dotfile that arrives as `{0}` after an RTL word lays out as
@@ -152,6 +179,16 @@ The ledger shape (classify each of the 927) is the right answer when guarding
 has a cost — here it has none, and it would ask 503 questions nobody can
 currently answer.
 
+**WALKED in Hebrew (the ceiling the Bidi proof could not close).** The
+assembled build with the sweep, booted `--locale he` on a project with a
+corrupt patch: the refusal painted with `.nmoxrack.json` reading dot-first,
+photographed. The control settles that the guard is what does it — with the
+isolates stripped, the leading dot **detaches and lands at the opposite end of
+the sentence** (`…הראק ריק: .`) and the name renders bare. *A containment
+assertion could not tell these apart* — `contains(".nmoxrack.json")` passes on
+the broken control, because `.nmoxrack.json.bak` contains that substring; only
+reading the visual order did. Zero SEVERE, zero orphans.
+
 **Deferred from v2.180.0 deliberately**, not for lack of a decision: 927
 mechanical edits across eleven modules is its own unit with its own verify, and
 that release was already green carrying seven. **Not in the 927 and still
@@ -159,7 +196,7 @@ unclassified:** 639 placeholders that sit at value START, where the paragraph
 direction governs rather than a preceding letter — the `RTL_NEUTRAL_OPENS_LATIN`
 case the gate already handles for literals, needing the same treatment.
 
-### 107. A house typography decision the JDK bypasses, under French
+### 107. A house typography decision the JDK bypasses, under French — Linux measured clean, Windows open
 
 `docs/i18n/conventions.md` states it plainly: *"French typography uses a narrow
 no-break space (U+202F)… We use U+00A0 everywhere because not every Swing font
@@ -176,20 +213,129 @@ argument in the product under French**, not one key.
 **Found by a translator**, on `RackService_patchTooLarge`, while checking what
 its own rendering actually contained rather than reading it.
 
-**Why it is deferred rather than fixed.** On this machine it is not a defect:
-`Dialog`, `SansSerif`, `Serif`, `Monospaced`, `Helvetica Neue`, `Lucida Grande`
-and `Menlo` all report `canDisplay(U+202F) == true`, so French numbers render
-correctly. The convention's worry is about font sets generally, and **only
-macOS has been measured** — Linux and Windows are unverified, and Linux is
-where a thin Noto/DejaVu set would show it first.
+#### Measured 2026-09-18 — Linux closed, and the macOS clearance withdrawn
 
-**What would close it**, in order: measure `canDisplay(U+202F)` across the
-fonts the Linux and Windows builds actually resolve for the UI; if any misses
-it, decide whether to keep the JDK's correct French typography (and accept a
-box on that font set) or to format numbers through a seam that substitutes
-U+00A0 — which would mean the product overriding the platform's own idea of
-correct French, and should be argued rather than assumed. Leaving `{1}` bare is
-still right for grouping; this is about which space character arrives with it.
+**The separator is the JDK's data, not the platform's.** The same probe run on
+Linux (Zulu 25.0.4.1, `debian:trixie-slim`) and macOS (25.0.4.1) gives
+byte-identical answers over the exact fifteen tags `UiLocale.SUPPORTED` ships:
+`fr` is U+202F on both, `ru`/`uk`/`pl` are U+00A0 (the house character already),
+`es`/`de`/`pt`/`id`/`vi` `.`, and `en`/`tl`/`zh`/`hi`/`he`/`ar` `,`. Two
+controls worth keeping: **`fr-CA` is U+00A0, so this is `fr` specifically**, and
+`ar` reports zero digit U+0030 with a comma on this JDK, so
+`UiLocale.readableDigits` — written in v2.152.0 against a CLDR that gave `ar`
+Arabic-Indic digits — is a correct no-op here rather than a live rewrite.
+
+**`canDisplay` was the wrong question, and it is what cleared macOS above.** A
+font can carry U+202F at **zero advance**: `canDisplay` returns true, nothing is
+drawn, and no width is reserved, so the separator does not look wrong — it
+disappears. The probe therefore asks three things per font: the glyph, the
+advance in px, and the count of dark pixels painted at 64pt beside a control
+character (U+E000) that is guaranteed absent.
+
+**Linux: clean, on every realistic font set — CLOSED.** Measured in the
+v2.173.0 probe-kit shape (`debian:trixie-slim` + `fontconfig` + a Zulu 25
+copied in), on **both arm64 and amd64**, under a generated `fr_FR.UTF-8`
+(`sun.jnu.encoding=UTF-8`, not the C-locale default that would have faked the
+result):
+
+- Every logical family (`Dialog`, `DialogInput`, `SansSerif`, `Serif`,
+  `Monospaced`) paints U+202F with **no ink** and a real narrow advance
+  (10.62px against a 16.64px space at 64pt, Noto), while the control paints a
+  396px box. The rendered PNG shows `1 234 567` above a control line of
+  `1□234□567` — two instruments agreeing.
+- 188 of the 199 families in `fonts-noto-core` lack the glyph, but they are
+  script fonts; `Monospaced`'s own slot 0 (`Noto Mono`) lacks it too and the
+  composite answers from slot 1 (`Noto Sans Mono`). Fallback, working.
+- The thin set is **not** a risk and the "no fonts at all" case is unreachable:
+  `fontconfig-config` *depends* on one of `fonts-dejavu-core | fonts-liberation |
+  fonts-croscore | fonts-freefont-otf | fonts-freefont-ttf | fonts-urw-base35 |
+  fonts-texgyre`, so a Debian box with fontconfig always has one of those seven.
+  DejaVu alone: all three families carry U+202F, no ink, 12.78px.
+- **The desktop-font case is the one that could have bitten, and does not.**
+  `FlatLaf.LinuxFontPolicy` (decompiled from the shipped `flatlaf-3.7.2.jar`)
+  takes the session's own font name — GNOME `gnome.Gtk/FontName`, KDE
+  `kdeglobals [General] font=` — and builds it with `FlatLaf.createCompositeFont`,
+  which is `StyleContext.getDefaultStyleContext().getFont(…)`. That wrapping is
+  load-bearing and was measured, not assumed: through `new Font(name,…)`
+  **Open Sans, Cousine and Liberation Mono paint a 312–396px BOX** and Cantarell,
+  Nimbus Sans and Nimbus Mono PS paint nothing at all; through `StyleContext`
+  every one of them becomes a COMPOSITE, answers `canDisplay` true, paints no
+  ink, and gets the 10.62px narrow advance. Cantarell — the GNOME default, which
+  does not carry the glyph — renders `1 234 567` correctly, visibly narrower
+  than the U+00A0 line.
+
+**macOS: the chrome is right, the logical family is not.** On the shipped
+bundled runtime (Azul 25.0.4+7, `/Applications/NMOX Studio.app/…/jre`) with
+`FlatDarkLaf` installed as the conf does, every UI key — `defaultFont`,
+`Label.font`, `TextField.font`, `Table.font`, `ToolTip.font`, `MenuItem.font`,
+`TextArea.font` and a bare `new JLabel().getFont()` — resolves to **Helvetica
+Neue**, whose U+202F advances 8.90px against a 17.79px space and paints no ink.
+So the status line, dialogs and every platform label are correct. But
+**`Dialog`, `SansSerif`, `Lucida Grande`, `Geneva` and `SF Pro` advance U+202F
+by 0.00px**: painted, the French number is `1234567`, pixel-identical to the
+same digits with no separator at all. `Serif` (12.81px), `Monospaced` and
+`Menlo` (38.53px) are fine.
+
+That is **latent, not shipped**: 22 sites in 8 files build their own
+`new Font(Font.SANS_SERIF, …)` (`MainWindow`'s Welcome, `RackStyle`'s
+faceplates, `IconForge`, `ProjectExplorerTopComponent`, four infra panels), and
+none of them formats a number — infra's money strings go through
+`Numbers.display` into confirm dialogs and text areas, which are FlatLaf chrome.
+The hazard is that the next counted sentence painted on one of those surfaces
+loses its separator under French, silently, on the maintainer's own platform.
+
+**Windows: still unmeasured. Exactly what to measure, and where.** The
+`windows-installer-check` workflow already runs `windows-latest` with
+`setup-java` Zulu 25 and Maven, and its `webkit-text-path` job is the precedent
+for a targeted measurement job, so a third job (or a step) could carry this: it
+needs a JVM and no linked runtime. Three questions, in order:
+
+1. `DecimalFormatSymbols.getInstance(Locale.FRANCE).getGroupingSeparator()` —
+   expected U+202F, since this is CLDR data and both measured platforms agree,
+   but it is one line and must not be inferred.
+2. Segoe UI's own U+202F **advance and ink**, not `canDisplay` — macOS is the
+   proof that the third answer differs from the first two.
+3. **Whether the composite wrap happens at all.** On Windows FlatLaf reads
+   `win.defaultGUI.font` / `win.messagebox.font` (decompiled) and builds it
+   through the same `StyleContext.getFont`, but that method only wraps when
+   `FontUtilities.fontSupportsDefaultEncoding` is false. On Linux, under
+   `fr_FR.UTF-8`, it wrapped. A Windows `sun.jnu.encoding` follows the OS ANSI
+   codepage, so the answer may differ — and if it does not wrap, Segoe UI's own
+   metrics govern and question 2 becomes the whole answer.
+
+Honest limit of that job: a `windows-latest` runner is Windows Server under an
+en-US codepage. It can answer 1 and 2 faithfully (Segoe UI is a core OS font)
+and 3 only for its own codepage; a non-Western Windows install stays unknown
+until someone runs it there.
+
+**The decision, stated rather than assumed.** Do **not** substitute U+00A0 for
+the JDK's French separator. U+202F is correct French typography, the platform's
+own data, and it is measured to render correctly in the font the product
+actually paints chrome with on both measured platforms; overriding it would
+make the product wrong on purpose everywhere in order to protect a surface that
+is not currently exposed. The conventions file's rule stands where it was
+written — for text the product AUTHORS — and its stated reason ("a box in place
+of a space") turns out not to apply here anyway: on Linux fallback prevents the
+box, and on macOS the failure mode is a vanishing space, not a box.
+
+**What remains**: the Windows measurement above, and a decision on the macOS
+`Font.SANS_SERIF` zero-width case the day a counted sentence is painted on a
+self-painted surface — at which point the fix is that surface asking for the
+chrome font rather than a logical family, not a rewrite of the separator.
+
+**The law worth keeping**: *`canDisplay` answers whether a glyph exists, not
+whether it has width or ink. A font can carry a space at zero advance, which
+passes every existence check and deletes the character from the screen — ask
+the pixels.*
+
+**Repeating the probe**: build `debian:trixie-slim` with `fontconfig` plus the
+font set under test, copy a Zulu 25 in from `azul/zulu-openjdk-debian:25`,
+generate `fr_FR.UTF-8` (a slim image has no locales, and without one
+`sun.jnu.encoding` is ASCII and the composite wrap fires for the wrong reason),
+then for each font print the glyph code, the advance, and the dark-pixel count
+at 64pt beside a U+E000 control — and render the real
+`NumberFormat.getIntegerInstance(Locale.FRANCE).format(1234567)` to a PNG and
+look at it.
 
 ## Closed by v2.180.0 (the rack debt night)
 

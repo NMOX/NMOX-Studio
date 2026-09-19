@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * The one whole-file read in the product that asks how big the file is
@@ -122,11 +124,52 @@ public final class BoundedReads {
             // a typo in it, wrong for a file we refused on purpose. The one
             // place that knows the fact says it, so every caller speaks by
             // construction rather than by twenty-six remembered log lines.
-            LOG.log(java.util.logging.Level.WARNING, "{0} ({1})",
-                    new Object[]{message, file});
+            if (notSaidLately(file, size)) {
+                LOG.log(java.util.logging.Level.WARNING, "{0} ({1})",
+                        new Object[]{message, file});
+            }
             throw new TooLarge(message, name, size, maxBytes);
         }
         return Files.readString(file, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * How many refused files this class remembers having named. Bounded
+     * because the population is a stranger's directory: a repository full
+     * of over-cap files must not be able to grow this instead of the heap
+     * the cap protects. The oldest fact is forgotten first, and forgetting
+     * only ever makes the reader speak AGAIN — never stay quiet.
+     */
+    private static final int REMEMBERED_REFUSALS = 256;
+
+    /** file → the size it was when this class last named it. */
+    private static final Map<String, Long> SAID =
+            new LinkedHashMap<>(16, 0.75f, true) {
+                private static final long serialVersionUID = 1L;
+
+                @Override
+                protected boolean removeEldestEntry(Map.Entry<String, Long> eldest) {
+                    return size() > REMEMBERED_REFUSALS;
+                }
+            };
+
+    /**
+     * True when this refusal is news. Several callers re-read the same file
+     * for as long as the IDE is open — {@code WebProject.getDisplayName}
+     * runs on a Projects-tree PAINT and caches only successes, so without
+     * this an over-cap {@code package.json} in a cloned repo would write a
+     * WARNING per repaint, from the EDT, for the life of the session. The
+     * cap exists so a stranger's file cannot take the heap; a refusal that
+     * repeats without end would hand the same file the log instead.
+     *
+     * <p>The FACT is the file at a size, not the file: a file that grew or
+     * shrank and is still over the cap is a new thing to know, and says so.
+     */
+    private static boolean notSaidLately(Path file, long size) {
+        String key = file.toAbsolutePath().toString();
+        synchronized (SAID) {
+            return !Long.valueOf(size).equals(SAID.put(key, size));
+        }
     }
 
     /** {@link #read(Path)} for a caller holding a {@link File}. */

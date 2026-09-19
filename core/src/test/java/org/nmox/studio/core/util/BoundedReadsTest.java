@@ -100,4 +100,109 @@ class BoundedReadsTest {
                 .isInstanceOf(IOException.class)
                 .isNotInstanceOf(BoundedReads.TooLarge.class);
     }
+
+    // ---- the refusal speaks once per fact, not once per read ---------------
+
+    /**
+     * The refusal is logged HERE so every caller speaks by construction —
+     * which means this class also owns how OFTEN it speaks. Several of the
+     * callers re-read the same file forever: {@code WebProject.getDisplayName}
+     * runs on a Projects-tree PAINT and caches only successes, so an
+     * over-cap {@code package.json} in a cloned repo would reach this refusal
+     * on every repaint, writing a WARNING to {@code messages.log} from the
+     * EDT each time. A log flood driven by a stranger's file is the same
+     * class of defect as the heap this cap exists to protect.
+     */
+    private static java.util.List<java.util.logging.LogRecord> tapRefusals(Runnable body) {
+        java.util.logging.Logger log =
+                java.util.logging.Logger.getLogger(BoundedReads.class.getName());
+        java.util.List<java.util.logging.LogRecord> seen =
+                java.util.Collections.synchronizedList(new java.util.ArrayList<>());
+        java.util.logging.Handler tap = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord record) {
+                seen.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        log.addHandler(tap);
+        try {
+            body.run();
+        } finally {
+            log.removeHandler(tap);
+        }
+        return seen;
+    }
+
+    private static void refuse(Path file) {
+        try {
+            BoundedReads.read(file, 4);
+        } catch (IOException expected) {
+            // the refusal is the point; what it LOGS is what this measures
+        }
+    }
+
+    @Test
+    @DisplayName("a file refused over and over is named once, not once per read")
+    void theRefusalSpeaksOncePerFact(@TempDir Path tmp) throws IOException {
+        Path big = tmp.resolve("package.json");
+        Files.writeString(big, "0123456789", StandardCharsets.UTF_8);
+
+        var records = tapRefusals(() -> {
+            for (int paint = 0; paint < 50; paint++) {
+                refuse(big);
+            }
+        });
+
+        assertThat(records)
+                .as("a paint loop over one over-cap file must not write 50 WARNINGs — "
+                        + "the reader says a fact once")
+                .hasSize(1);
+        assertThat(records.get(0).getLevel()).isEqualTo(java.util.logging.Level.WARNING);
+    }
+
+    @Test
+    @DisplayName("one file's silence never silences another's refusal")
+    void everyRefusedFileGetsItsOwnSentence(@TempDir Path tmp) throws IOException {
+        Path a = tmp.resolve("a.json");
+        Path b = tmp.resolve("b.json");
+        Files.writeString(a, "0123456789", StandardCharsets.UTF_8);
+        Files.writeString(b, "0123456789", StandardCharsets.UTF_8);
+
+        var records = tapRefusals(() -> {
+            refuse(a);
+            refuse(a);
+            refuse(b);
+            refuse(b);
+        });
+
+        assertThat(records).hasSize(2);
+        assertThat(records.stream().map(r -> String.valueOf(r.getParameters()[0])).toList())
+                .as("each file is named in its own refusal")
+                .anyMatch(s -> s.contains("a.json"))
+                .anyMatch(s -> s.contains("b.json"));
+    }
+
+    @Test
+    @DisplayName("a file that changed size is a new fact, and the reader says it again")
+    void aChangedSizeSpeaksAgain(@TempDir Path tmp) throws IOException {
+        Path f = tmp.resolve("grown.json");
+        Files.writeString(f, "0123456789", StandardCharsets.UTF_8);
+        refuse(f);
+
+        Files.writeString(f, "0123456789abcdef", StandardCharsets.UTF_8);
+        var records = tapRefusals(() -> refuse(f));
+
+        assertThat(records)
+                .as("silence is per FACT: the file is a different size now, so the reader "
+                        + "must not stay quiet about it")
+                .hasSize(1);
+    }
 }
