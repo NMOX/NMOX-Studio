@@ -265,6 +265,7 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_removeConnectionTitle=Remove Connection",
     "DbStudioTopComponent_removedConnection=Removed {0}",
     "DbStudioTopComponent_couldNotRead=Couldn''t read {0} — starting empty",
+    "DbStudioTopComponent_workspaceReadOnly={0} could not be read — connections are read-only so nothing overwrites it",
     "DbStudioTopComponent_backupKept=The unreadable original was kept at {0}.",
     "DbStudioTopComponent_connectionCount={0,choice,0#{0,number,0} connections|1#{0,number,0} connection|1<{0,number,0} connections}",
     "DbStudioTopComponent_cannotSave=DB Studio can't save its connections",
@@ -2212,6 +2213,16 @@ public final class DbStudioTopComponent extends TopComponent {
     /** EDT-confined reload sequence; only {@link #reloadWorkspace} bumps it. */
     private long reloadSeq;
 
+    /**
+     * EDT-confined: true while the bound {@code .nmoxdb.json} exists and
+     * could not be read, so the connection, history and saved-query lists
+     * are a stand-in rather than this project's workspace. Every save
+     * refuses while it is set — the never-clobber law reaching the case
+     * where there is nothing to compare against, because we hold none of
+     * the file's bytes.
+     */
+    private boolean workspaceReadOnly;
+
     private void reloadWorkspace() {
         // The FILE READ (and the save-lane drain it must run behind) ride
         // RP, never the EDT (ledger 54 M5; the web3 v1.100.0 idiom): a slow
@@ -2289,10 +2300,21 @@ public final class DbStudioTopComponent extends TopComponent {
         publishSearch();
         status(specs.isEmpty() ? " "
                 : Bundle.DbStudioTopComponent_connectionCount(specs.size()), Color.GRAY);
-        // the freshly loaded version is now "ours" — only later foreign
-        // writes should trigger the external-reload flow. The stamp was
-        // computed off-EDT right after the read (same file, same moment).
-        externalEdits.recordOwn(ownStamp);
+        // A file we never read is never ours. Recording ownership here
+        // unconditionally was half of the loss: the other half is that
+        // saveWorkspace() writes without consulting anyone, so the studio
+        // needs an explicit read-only bind rather than a stamp it can
+        // compare against — we hold none of the file's bytes to compare.
+        workspaceReadOnly = outcome.unreadable();
+        if (workspaceReadOnly) {
+            status(Bundle.DbStudioTopComponent_workspaceReadOnly(DbWorkspaceIO.FILENAME),
+                    Color.GRAY);
+        } else {
+            // the freshly loaded version is now "ours" — only later foreign
+            // writes should trigger the external-reload flow. The stamp was
+            // computed off-EDT right after the read (same file, same moment).
+            externalEdits.recordOwn(ownStamp);
+        }
         offerEnvConnection();
         if (isOpened()) {
             restartWorkspaceWatcher(); // the project dir may have changed
@@ -2316,6 +2338,15 @@ public final class DbStudioTopComponent extends TopComponent {
      * made), but the write half gets the same off-EDT care.
      */
     private void saveWorkspace() {
+        if (workspaceReadOnly) {
+            // the bound .nmoxdb.json exists and could not be read, so the
+            // lists above are a stand-in: writing them would replace every
+            // connection, saved query and history row with nothing. The
+            // refusal speaks rather than failing silently.
+            status(Bundle.DbStudioTopComponent_workspaceReadOnly(DbWorkspaceIO.FILENAME),
+                    Color.GRAY);
+            return;
+        }
         File file = new File(projectDir(), DbWorkspaceIO.FILENAME);
         String json = DbWorkspaceIO.toJson(new DbWorkspaceIO.Workspace(
                 specs, persistedHistory, savedQueries));

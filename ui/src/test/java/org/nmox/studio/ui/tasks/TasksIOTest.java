@@ -22,12 +22,12 @@ class TasksIOTest {
     @DisplayName("no file yet: the starter board, and a save round-trips")
     void absentThenSave(@TempDir File dir) throws Exception {
         SelfWriteTracker tracker = new SelfWriteTracker();
-        TaskBoard b = TasksIO.load(dir);
+        TaskBoard b = TasksIO.load(dir).board();
         assertThat(b.columnCount()).isEqualTo(3);
         b.addCard(0, "first", "");
         TasksIO.save(dir, b, tracker);
         assertThat(TasksIO.fileFor(dir)).exists();
-        TaskBoard back = TasksIO.load(dir);
+        TaskBoard back = TasksIO.load(dir).board();
         assertThat(back.column(0).cards()).extracting(TaskBoard.Card::title)
                 .containsExactly("first");
     }
@@ -37,7 +37,7 @@ class TasksIOTest {
     void corruptKeepsBak(@TempDir File dir) throws Exception {
         File f = TasksIO.fileFor(dir);
         Files.writeString(f.toPath(), "{ definitely not a board");
-        TaskBoard b = TasksIO.load(dir);
+        TaskBoard b = TasksIO.load(dir).board();
         assertThat(b.columnCount())
                 .as("fallback is the starter board")
                 .isEqualTo(3);
