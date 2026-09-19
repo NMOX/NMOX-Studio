@@ -51,9 +51,22 @@ class ReloadOffEdtGateTest {
         String body = method(src, "private void offerEnvConnection()");
         int guard = body.indexOf("envOfferedProjects.add(");
         int post = body.indexOf("RP.post(");
-        int read = body.indexOf("Files.readString(");
+        int read = firstRead(body);
         assertThat(guard).as("the once-per-project guard exists").isPositive();
         assertThat(post).as("the offer posts to RP").isGreaterThan(guard);
         assertThat(read).as("the .env read rides RP").isGreaterThan(post);
+    }
+
+    /**
+     * Where the .env is read, whichever reader does it. This gate is about
+     * the THREAD, not the spelling: v2.180.0 moved the read behind
+     * {@code BoundedReads} (a clone brings the .env and the aim reads it
+     * unasked) and a gate pinned to {@code Files.readString(} failed on a
+     * change that kept its own law perfectly.
+     */
+    private static int firstRead(String body) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+                "(?:Files|BoundedReads)\\s*\\.\\s*read(?:String|Lines)?\\s*\\(").matcher(body);
+        return m.find() ? m.start() : -1;
     }
 }

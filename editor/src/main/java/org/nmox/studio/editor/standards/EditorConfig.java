@@ -81,7 +81,8 @@ public final class EditorConfig {
         boolean root = false;
         List<Section> sections = new ArrayList<>();
         Map<String, String> current = null;
-        for (String raw : Files.readAllLines(cfg.toPath())) {
+        // read on EVERY save, over a file the clone brought
+        for (String raw : org.nmox.studio.core.util.BoundedReads.readLines(cfg.toPath())) {
             String line = raw.strip();
             if (line.isEmpty() || line.startsWith("#") || line.startsWith(";")) {
                 continue;

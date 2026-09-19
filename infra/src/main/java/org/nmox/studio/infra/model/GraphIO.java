@@ -109,7 +109,9 @@ public final class GraphIO {
     }
 
     public static void load(InfraGraph graph, File file) throws IOException {
-        fromJson(graph, new JSONObject(Files.readString(file.toPath(), StandardCharsets.UTF_8)));
+        // .nmoxinfra.json sits beside the project and travels with a clone
+        fromJson(graph, new JSONObject(
+                org.nmox.studio.core.util.BoundedReads.read(file.toPath())));
     }
 
     /**
@@ -122,7 +124,7 @@ public final class GraphIO {
      * nothing readable to back up.
      */
     public static File loadGuarded(InfraGraph graph, File file) throws IOException {
-        String text = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+        String text = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
         try {
             fromJson(graph, new JSONObject(text));
             return null;

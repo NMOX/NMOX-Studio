@@ -190,7 +190,7 @@ public final class PrettierFormatter {
      */
     private static boolean mentionsPrettier(File packageJson) {
         try {
-            return Files.readString(packageJson.toPath(), StandardCharsets.UTF_8)
+            return org.nmox.studio.core.util.BoundedReads.read(packageJson.toPath())
                     .contains("\"prettier\"");
         } catch (IOException ex) {
             return false;

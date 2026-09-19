@@ -331,7 +331,8 @@ public final class DbWorkspaceIO {
         }
         String json;
         try {
-            json = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            // .nmoxdb.json sits beside the project and travels with a clone
+            json = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Cannot read " + file, e);
             return new LoadOutcome(Workspace.empty(), null);
@@ -366,7 +367,7 @@ public final class DbWorkspaceIO {
             return Workspace.empty();
         }
         try {
-            return workspaceFromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8));
+            return workspaceFromJson(org.nmox.studio.core.util.BoundedReads.read(file.toPath()));
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Cannot read " + file, e);
             return Workspace.empty();

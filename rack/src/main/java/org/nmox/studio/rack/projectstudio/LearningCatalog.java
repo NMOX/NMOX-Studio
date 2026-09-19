@@ -229,7 +229,7 @@ public final class LearningCatalog {
         List<Space> out = new ArrayList<>();
         for (File f : files) {
             try {
-                String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                String json = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
                 out.addAll(parse(new JSONObject(json)));
             } catch (IOException | RuntimeException ex) {
                 onBadFile.accept(f, ex);

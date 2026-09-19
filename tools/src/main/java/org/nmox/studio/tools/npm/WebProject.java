@@ -104,8 +104,11 @@ public class WebProject implements Project {
                     if (cached != null && stamp == cachedNameStamp) {
                         return cached;
                     }
-                    // package.json is spec-UTF-8; readString decodes it as such
-                    String content = Files.readString(FileUtil.toFile(packageJson).toPath());
+                    // package.json is spec-UTF-8; the reader decodes it as such.
+                    // This runs on a PAINT — the tree label — over a manifest a
+                    // clone brought, so it is bounded before it is read.
+                    String content = org.nmox.studio.core.util.BoundedReads
+                            .read(FileUtil.toFile(packageJson).toPath());
                     JSONObject json = new JSONObject(content);
                     String name = json.has("name") ? json.getString("name") : getName();
                     cachedName = name;

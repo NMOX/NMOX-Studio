@@ -37,7 +37,9 @@ public final class BlockIO {
         if (!f.isFile()) {
             return null;
         }
-        return BlockWorkspace.fromJson(new JSONObject(Files.readString(f.toPath())));
+        // .nmoxblocks.json sits beside the project and travels with a clone
+        return BlockWorkspace.fromJson(new JSONObject(
+                org.nmox.studio.core.util.BoundedReads.read(f.toPath())));
     }
 
     public static void save(File projectDir, BlockWorkspace ws) throws IOException {

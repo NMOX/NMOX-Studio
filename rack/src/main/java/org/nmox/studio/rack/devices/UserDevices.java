@@ -100,7 +100,7 @@ public final class UserDevices {
         for (File f : files) {
             String json;
             try {
-                json = Files.readString(f.toPath());
+                json = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
             } catch (IOException | RuntimeException ex) {
                 LOG.log(Level.WARNING, "device file {0} skipped: unreadable ({1})",
                         new Object[]{f.getName(), ex.toString()});

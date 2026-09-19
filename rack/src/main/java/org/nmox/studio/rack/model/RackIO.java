@@ -2,7 +2,6 @@ package org.nmox.studio.rack.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
@@ -13,6 +12,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.AtomicFiles;
+import org.nmox.studio.core.util.BoundedReads;
 import org.nmox.studio.rack.devices.DeviceCatalog;
 
 /**
@@ -287,14 +287,20 @@ public final class RackIO {
         }
     }
 
-    /** The patch text, or a refusal naming the size — the file is untouched either way. */
+    /**
+     * The patch text, or a refusal naming the size — the file is untouched
+     * either way. The measuring is {@link BoundedReads}' since v2.180.0 (this
+     * was its first home and its fifth consumer promoted it); the wording and
+     * the exception TYPE stay this class's, because {@link #load} branches on
+     * that type to decide whether to empty the rack.
+     */
     private static String readCapped(File file) throws IOException {
-        long size = Files.size(file.toPath());
-        if (size > MAX_PATCH_BYTES) {
-            throw new PatchTooLargeException("Rack patch " + file.getName() + " is " + (size / 1024)
-                    + " KiB, over the " + (MAX_PATCH_BYTES / 1024 / 1024) + " MiB cap — not read");
+        try {
+            return BoundedReads.read(file.toPath(), MAX_PATCH_BYTES);
+        } catch (BoundedReads.TooLarge tooLarge) {
+            throw new PatchTooLargeException(BoundedReads.refusal("Rack patch",
+                    tooLarge.fileName(), tooLarge.size(), tooLarge.maxBytes()));
         }
-        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
     }
 
     /** Renames a corrupt patch to {@code <name>.bak} so save() can't clobber it. */

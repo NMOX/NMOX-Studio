@@ -162,7 +162,8 @@ public final class ClassicLibraryDetector {
             return;
         }
         try {
-            JSONObject root = new JSONObject(Files.readString(manifest, StandardCharsets.UTF_8));
+            JSONObject root = new JSONObject(
+                    org.nmox.studio.core.util.BoundedReads.read(manifest));
             collectDeps(root.optJSONObject("dependencies"), libs);
             if (includeDev) {
                 collectDeps(root.optJSONObject("devDependencies"), libs);

@@ -146,7 +146,7 @@ public final class ArtifactScanner {
         String content;
         long mtime;
         try {
-            content = Files.readString(file, StandardCharsets.UTF_8);
+            content = org.nmox.studio.core.util.BoundedReads.read(file);
             mtime = Files.getLastModifiedTime(file).toMillis();
         } catch (IOException | RuntimeException unreadable) {
             return; // half-written or binary-masquerading file: skip

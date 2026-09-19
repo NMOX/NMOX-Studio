@@ -54,7 +54,7 @@ final class InstallGuard {
         }
         try {
             org.json.JSONObject json = new org.json.JSONObject(
-                    java.nio.file.Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+                    org.nmox.studio.core.util.BoundedReads.read(pkg.toPath()));
             return declares(json, "dependencies") || declares(json, "devDependencies");
         } catch (java.io.IOException | RuntimeException malformed) {
             return false;

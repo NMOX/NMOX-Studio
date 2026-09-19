@@ -260,7 +260,8 @@ public final class WorkspaceIO {
         if (!f.isFile()) {
             return null;
         }
-        return fromJson(Files.readString(f.toPath(), StandardCharsets.UTF_8));
+        // .nmoxapi.json sits beside the project and travels with a clone
+        return fromJson(org.nmox.studio.core.util.BoundedReads.read(f.toPath()));
     }
 
     /**
@@ -286,7 +287,7 @@ public final class WorkspaceIO {
         if (!f.isFile()) {
             return new LoadOutcome(null, null);
         }
-        String text = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+        String text = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
         try {
             return new LoadOutcome(fromJson(text), null);
         } catch (RuntimeException malformed) {

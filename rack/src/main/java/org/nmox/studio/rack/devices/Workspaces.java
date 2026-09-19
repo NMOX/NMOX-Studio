@@ -61,8 +61,8 @@ public final class Workspaces {
         File pkg = new File(root, "package.json");
         if (pkg.isFile()) {
             try {
-                JSONObject o = new JSONObject(Files.readString(pkg.toPath(),
-                        java.nio.charset.StandardCharsets.UTF_8));
+                JSONObject o = new JSONObject(
+                        org.nmox.studio.core.util.BoundedReads.read(pkg.toPath()));
                 Object ws = o.opt("workspaces");
                 JSONArray arr = ws instanceof JSONArray a ? a
                         : ws instanceof JSONObject wo ? wo.optJSONArray("packages") : null;
@@ -76,11 +76,13 @@ public final class Workspaces {
             }
         }
         File pnpm = new File(root, "pnpm-workspace.yaml");
-        if (pnpm.isFile() && pnpm.length() < 64 * 1024) {
+        if (pnpm.isFile()) {
             try {
                 boolean inPackages = false;
-                for (String raw : Files.readAllLines(pnpm.toPath(),
-                        java.nio.charset.StandardCharsets.UTF_8)) {
+                // this one always had a ceiling of its own; it goes through the
+                // shared reader so the file has one way of reading a clone's text
+                for (String raw : org.nmox.studio.core.util.BoundedReads
+                        .readLines(pnpm.toPath(), 64 * 1024)) {
                     String line = raw.strip();
                     if (line.startsWith("packages:")) {
                         inPackages = true;
@@ -154,8 +156,8 @@ public final class Workspaces {
             return null;
         }
         try {
-            String name = new JSONObject(Files.readString(pkg.toPath(),
-                    java.nio.charset.StandardCharsets.UTF_8)).optString("name", "");
+            String name = new JSONObject(org.nmox.studio.core.util.BoundedReads
+                    .read(pkg.toPath())).optString("name", "");
             return name.isBlank() ? dir.getName() : name;
         } catch (IOException | org.json.JSONException ex) {
             return dir.getName();

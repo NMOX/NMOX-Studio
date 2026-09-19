@@ -74,9 +74,11 @@ final class TasksIO {
         }
         String text;
         try {
-            text = Files.readString(f.toPath());
+            // .nmoxtasks.json sits beside the project and travels with a clone
+            text = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "Unreadable {0}; starting empty", f);
+            LOG.log(Level.INFO, "Unreadable {0}; starting empty ({1})",
+                    new Object[]{f, ex.getMessage()});
             return starterBoard();
         }
         try {

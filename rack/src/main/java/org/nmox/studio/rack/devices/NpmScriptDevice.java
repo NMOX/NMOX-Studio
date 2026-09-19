@@ -72,8 +72,7 @@ public class NpmScriptDevice extends CommandDevice {
         }
         try {
             org.json.JSONObject json = new org.json.JSONObject(
-                    java.nio.file.Files.readString(pkg.toPath(),
-                            java.nio.charset.StandardCharsets.UTF_8));
+                    org.nmox.studio.core.util.BoundedReads.read(pkg.toPath()));
             org.json.JSONObject scripts = json.optJSONObject("scripts");
             if (scripts != null) {
                 for (String key : scripts.keySet()) {

@@ -79,8 +79,7 @@ public class DynamoDevice extends CommandDevice {
         List<String> names = new ArrayList<>();
         if (file != null) {
             try {
-                String source = Files.readString(file.toPath(),
-                        java.nio.charset.StandardCharsets.UTF_8);
+                String source = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
                 names.addAll("gulp".equals(runner)
                         ? TaskfileParser.gulpTasks(source)
                         : TaskfileParser.gruntTasks(source));

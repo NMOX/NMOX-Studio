@@ -1,8 +1,8 @@
 package org.nmox.studio.rack.devices;
 
 import java.io.File;
-import java.nio.file.Files;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.BoundedReads;
 
 /**
  * Reads the project's package.json so devices can resolve their AUTO
@@ -355,7 +355,9 @@ public final class ProjectInspector {
             return entry.json;
         }
         try {
-            JSONObject json = new JSONObject(Files.readString(pkg.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            // every toolchain answer this class gives starts here, and it
+            // runs on AIM: the manifest is whatever the clone brought
+            JSONObject json = new JSONObject(BoundedReads.read(pkg.toPath()));
             packageJsonCache.put(pkg, new CacheEntry(currentMod, json));
             return json;
         } catch (Exception ex) {
@@ -418,7 +420,7 @@ public final class ProjectInspector {
             return null;
         }
         try {
-            java.util.regex.Matcher m = pattern.matcher(Files.readString(mixExs.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            java.util.regex.Matcher m = pattern.matcher(BoundedReads.read(mixExs.toPath()));
             return m.find() ? m.group(1) : null;
         } catch (Exception ex) {
             return null;
@@ -470,12 +472,13 @@ public final class ProjectInspector {
     }
 
     private static boolean cargoTomlMentions(File cargoToml, String needle) {
-        if (!cargoToml.isFile() || cargoToml.length() > CARGO_SCAN_CAP) {
+        if (!cargoToml.isFile()) {
             return false;
         }
         try {
-            return Files.readString(cargoToml.toPath(),
-                    java.nio.charset.StandardCharsets.UTF_8).contains(needle);
+            // this one always had its own ceiling; it goes through the shared
+            // one so the class has a single way of reading a stranger's file
+            return BoundedReads.read(cargoToml.toPath(), CARGO_SCAN_CAP).contains(needle);
         } catch (Exception unreadable) {
             return false;
         }
@@ -522,8 +525,7 @@ public final class ProjectInspector {
         }
         try {
             boolean inCrate = false;
-            for (String line : Files.readAllLines(lock.toPath(),
-                    java.nio.charset.StandardCharsets.UTF_8)) {
+            for (String line : BoundedReads.readLines(lock.toPath())) {
                 String t = line.trim();
                 if (t.startsWith("name = ")) {
                     inCrate = t.equals("name = \"" + crate + "\"");
@@ -543,7 +545,7 @@ public final class ProjectInspector {
             return null;
         }
         try {
-            JSONObject json = new JSONObject(Files.readString(lock.toPath(), java.nio.charset.StandardCharsets.UTF_8));
+            JSONObject json = new JSONObject(BoundedReads.read(lock.toPath()));
             for (String section : new String[]{"packages", "packages-dev"}) {
                 org.json.JSONArray packages = json.optJSONArray(section);
                 if (packages == null) {

@@ -1285,7 +1285,8 @@ public final class DbStudioTopComponent extends TopComponent {
             }
             String content;
             try {
-                content = Files.readString(envFile.toPath(), StandardCharsets.UTF_8);
+                // the .env arrived with the clone and nobody asked for this read
+                content = org.nmox.studio.core.util.BoundedReads.read(envFile.toPath());
             } catch (IOException unreadable) {
                 return; // no signal, no offer
             }
