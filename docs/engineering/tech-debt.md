@@ -77,6 +77,38 @@ v2.177.0 (test-pinned; the background tools cannot drive a completion popup or
 a modifier-click). They need a real popup and a real modifier-click: a screen
 walk with full control, or a person.
 
+## Open — recorded by v2.180.0 (the rack debt night)
+
+### 106. A refusal's REASON reaches a translated build in English
+
+`RackService.patchNotLoadedText` renders ledger 104's new sentence in the
+reader's language and then splices `failure.getMessage()` into it as `{1}` —
+and that message comes from `RackIO` in English ("Corrupt rack patch X (kept
+as .bak): …", "…is 9216 KiB, over the 8 MiB cap — not read"), or, when the
+failure carries no message, from `getClass().getSimpleName()`, which is a Java
+class name. So a Vietnamese reader gets a Vietnamese sentence ending in
+English or in `JSONException`.
+
+**Found by the translators**, twice, independently: the European group and the
+no-plural group each reported it without seeing the other's work. No gate can
+see it — every bundle is complete, the parity gate is green, and the English
+enters BELOW the bundles as an argument. That is exactly ledger 88's shape
+(`LiveRuns.since()` splicing the word "since"), one layer down.
+
+**Why it is deferred.** The house answer is known and is not a translation
+job: **an argument is data** (v2.100.0) — the engine must return what happened
+rather than a sentence about it, and the consumer must render it. That means
+`RackIO`'s two refusals become typed outcomes carrying their facts (the kind,
+and the size in KiB for the oversize one), `RackService` renders each in the
+reader's own key, and those keys need writing in fifteen languages. It is a
+clean pass of its own, and it was not worth reopening a string review that had
+just closed. The sentence's own half — the part that says the rack is empty
+and names the file — is translated correctly today.
+
+**Scope note:** the same question should be asked of every other place a
+caught exception's message is shown to a user rather than logged. That
+population was not measured.
+
 ## Closed by v2.180.0 (the rack debt night)
 
 ### 102. A plugin device's KNOB also runs plugin code when a rack mounts — CLOSED
