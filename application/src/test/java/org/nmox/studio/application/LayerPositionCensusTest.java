@@ -248,7 +248,7 @@ class LayerPositionCensusTest {
         // Contiguity is NOT consecutive integers: 91 and 94 are simply
         // unoccupied, and leaving room between families is deliberate. The
         // property is that nothing FOREIGN sits inside our run.
-        Map<String, Integer> folder = census().getOrDefault("/Menu/Tools/", Map.of());
+        Map<String, Integer> folder = census().getOrDefault("Menu/Tools/", Map.of());
         java.util.List<Integer> ours = folder.entrySet().stream()
                 .filter(e -> e.getValue() != null && e.getKey().contains("(org-nmox-"))
                 .map(Map.Entry::getValue)
@@ -272,7 +272,7 @@ class LayerPositionCensusTest {
     @Test
     @DisplayName("Language Servers is the one NMOX Tools row outside that run, and it is grouped by function on purpose")
     void languageServersIsBlessedWhereItSits() throws Exception {
-        Map<String, Integer> folder = census().getOrDefault("/Menu/Tools/", Map.of());
+        Map<String, Integer> folder = census().getOrDefault("Menu/Tools/", Map.of());
         java.util.List<String> far = folder.entrySet().stream()
                 .filter(e -> e.getValue() != null && e.getKey().contains("(org-nmox-")
                         && e.getValue() >= 1000)
