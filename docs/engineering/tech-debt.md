@@ -100,126 +100,6 @@ modifier-click: a screen walk with full control, or a person.
 
 ## Open — recorded by v2.180.0 (the rack debt night)
 
-### 109. The aim's refusal is overwritten before it can be read
-
-Ledger 104 gave the aim-time patch refusal a voice on the status line, and the
-Hebrew walk of the RTL sweep found what that voice is worth: **the sentence is
-painted and then replaced within roughly two seconds**, while the project is
-still opening. It was captured only by firing the aim and photographing without
-waiting; every capture taken four seconds later found the strip empty.
-
-**Diagnosed (v2.181.0), and the suspect recorded above was wrong.** Nothing
-overwrites it. `org.netbeans.core.NbStatusDisplayer.setStatusText(String)`
-reads, in bytecode:
-
-```
-add(text, 0);
-MessageImpl.clear(SURVIVING_TIME);
-```
-
-with `SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000)`.
-**A plain status message is designed to clear itself after five seconds.** The
-entry above guessed at the platform's project-open progress; that guess is
-withdrawn — no other writer is involved, and none of our own `setStatusText`
-callers sits on an aim path (checked: palette, CI export, Docker, Agent Port,
-the two search providers and KVASIR are all user gestures).
-
-**Why five seconds is still not enough here.** The clock starts when the rack
-loads the patch, which is *during* project opening — before the window has
-settled and while the reader's attention is anywhere but the status strip. The
-sentence is correct and translated fifteen times and can still be missed
-entirely.
-
-**Two ways out, both real.** `StatusDisplayer.setStatusText(String, int)`
-returns a `Message` whose lifetime the caller controls, so the refusal could
-persist until something replaces it — cheapest, and it keeps one surface for
-all aim feedback. Or the rack's own placard says it, which is where the reader
-is already looking when they wonder why the rack is empty. The placard is the
-better answer and the larger change; the `Message` overload is the one that
-could ship tomorrow.
-
-**Why it matters.** This is the refusal the user did not ask for: it explains
-an empty rack they are about to wonder about. A sentence that is correct,
-translated into fifteen languages and gone before it can be read is the
-v2.85.0 class (*a copy notice ERASED the response verdict*), one surface over.
-
-**What would close it**: identify what writes the status line after the aim,
-then give this sentence a surface that outlives it — the rack's own placard is
-the obvious candidate, since an empty rack is exactly what the sentence is
-about, and the reader is looking at it.
-
-**What is already proven and is NOT in question:** the sentence's content
-(`PatchNotLoadedSpeaksTest`), that the catch reaches the status line at all,
-and that it renders correctly in Hebrew — photographed live.
-
-### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash
-
-A dotfile that arrives as `{0}` after an RTL word lays out as
-`[nmoxrack.json][.]` — the leading dot detaches and draws AFTER the name. That
-is the defect `docs/i18n/conventions.md` already describes for literals, and
-the gate that holds it, `NativeTypographyGateTest`, matches a **literal** dot
-followed by a Latin letter. A dotfile arriving as an argument has no dot in the
-bundle value, so there is nothing to match. **Ledger 88's shape, one layer
-over**: the defect enters through an argument, below where the gate looks.
-
-**Found by a translator**, in its own committed work from the same night, by
-laying the strings out through `java.text.Bidi` rather than reading them.
-
-**Measured** (v2.180.0, all eleven modules' `Bundle_ar` / `Bundle_he`, with
-`\uXXXX` decoded first because the branding overlays are escaped):
-
-- 2,871 placeholders in ar/he values; **1,841 unguarded with an RTL character
-  last before them**, collapsing to **927 distinct (package, key, argument)
-  pairs** — ui 401, rack 267, editor 154, web3/infra 127 each, apiclient 119,
-  dbstudio 94, branding 58, tools 15, project 10.
-- Of those 927: **115 can lead with a neutral** (a dotfile, path, glob, flag,
-  `.bak`) — the real risk; 128 carry a number and 181 a bare Latin word, both
-  measured correct bare; **503 are undetermined**, because the call site is
-  `ex.getMessage()` or `node.label` and **only 1 of the 927 keys carries the
-  `# {0} - …` comment** the house convention provides for exactly this.
-- Twelve real shipped values laid out with real arguments: **six read wrongly
-  today**, including `ApiClientTopComponent_couldNotRead`,
-  `DbStudioTopComponent_reloaded` and `RackTopComponent_noPatchInProject`.
-
-**The defect tracks the runtime VALUE, not the key.** `ApiClientTopComponent_savedFile`
-is correct for `response.json` and breaks the moment a user saves a dotfile, so
-the population cannot be split into safe and unsafe keys by inspection.
-
-**Two things the measurement settles.** First, the guard is **provably inert
-where it is unnecessary**: for a number, RTL text, a bare Latin word and a Latin
-phrase, the rendering with a guard is byte-identical to bare — because the guard
-is a zero-width strong-L character and only changes behaviour for a neutral
-adjacent to the placeholder's content. Second, **LRM alone is not enough**: it
-fixes a leading neutral and cannot fix a trailing one, so
-`http://localhost:8080/` renders with its slash at the front either way. A sweep
-must ISOLATE the placeholder — `LRI…PDI` (U+2066…U+2069) over `LRE…PDF`, because
-isolates do not leak into neighbouring text.
-
-**The decision, not yet executed.** Take the strong form: require every
-RTL-context placeholder to be isolated, with the population DERIVED (walk back
-from each `{n}` to the first strong directional character; flag it if that
-character is RTL). No literal matching and no hand-kept list, and a new
-translated value with an unguarded placeholder fails on the commit that adds it.
-The ledger shape (classify each of the 927) is the right answer when guarding
-has a cost — here it has none, and it would ask 503 questions nobody can
-currently answer.
-
-**WALKED in Hebrew (the ceiling the Bidi proof could not close).** The
-assembled build with the sweep, booted `--locale he` on a project with a
-corrupt patch: the refusal painted with `.nmoxrack.json` reading dot-first,
-photographed. The control settles that the guard is what does it — with the
-isolates stripped, the leading dot **detaches and lands at the opposite end of
-the sentence** (`…הראק ריק: .`) and the name renders bare. *A containment
-assertion could not tell these apart* — `contains(".nmoxrack.json")` passes on
-the broken control, because `.nmoxrack.json.bak` contains that substring; only
-reading the visual order did. Zero SEVERE, zero orphans.
-
-**Deferred from v2.180.0 deliberately**, not for lack of a decision: 927
-mechanical edits across eleven modules is its own unit with its own verify, and
-that release was already green carrying seven. **Not in the 927 and still
-unclassified:** 639 placeholders that sit at value START, where the paragraph
-direction governs rather than a preceding letter — the `RTL_NEUTRAL_OPENS_LATIN`
-case the gate already handles for literals, needing the same treatment.
 
 ### 107. A house typography decision the JDK bypasses, under French — Linux measured clean, Windows open
 
@@ -361,6 +241,153 @@ then for each font print the glyph code, the advance, and the dark-pixel count
 at 64pt beside a U+E000 control — and render the real
 `NumberFormat.getIntegerInstance(Locale.FRANCE).format(1234567)` to a PNG and
 look at it.
+
+## Closed by v2.181.0
+
+### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash — CLOSED
+
+A dotfile that arrives as `{0}` after an RTL word lays out as
+`[nmoxrack.json][.]` — the leading dot detaches and draws AFTER the name. That
+is the defect `docs/i18n/conventions.md` already describes for literals, and
+the gate that holds it, `NativeTypographyGateTest`, matches a **literal** dot
+followed by a Latin letter. A dotfile arriving as an argument has no dot in the
+bundle value, so there is nothing to match. **Ledger 88's shape, one layer
+over**: the defect enters through an argument, below where the gate looks.
+
+**Found by a translator**, in its own committed work from the same night, by
+laying the strings out through `java.text.Bidi` rather than reading them.
+
+**Measured** (v2.180.0, all eleven modules' `Bundle_ar` / `Bundle_he`, with
+`\uXXXX` decoded first because the branding overlays are escaped):
+
+- 2,871 placeholders in ar/he values; **1,841 unguarded with an RTL character
+  last before them**, collapsing to **927 distinct (package, key, argument)
+  pairs** — ui 401, rack 267, editor 154, web3/infra 127 each, apiclient 119,
+  dbstudio 94, branding 58, tools 15, project 10.
+- Of those 927: **115 can lead with a neutral** (a dotfile, path, glob, flag,
+  `.bak`) — the real risk; 128 carry a number and 181 a bare Latin word, both
+  measured correct bare; **503 are undetermined**, because the call site is
+  `ex.getMessage()` or `node.label` and **only 1 of the 927 keys carries the
+  `# {0} - …` comment** the house convention provides for exactly this.
+- Twelve real shipped values laid out with real arguments: **six read wrongly
+  today**, including `ApiClientTopComponent_couldNotRead`,
+  `DbStudioTopComponent_reloaded` and `RackTopComponent_noPatchInProject`.
+
+**The defect tracks the runtime VALUE, not the key.** `ApiClientTopComponent_savedFile`
+is correct for `response.json` and breaks the moment a user saves a dotfile, so
+the population cannot be split into safe and unsafe keys by inspection.
+
+**Two things the measurement settles.** First, the guard is **provably inert
+where it is unnecessary**: for a number, RTL text, a bare Latin word and a Latin
+phrase, the rendering with a guard is byte-identical to bare — because the guard
+is a zero-width strong-L character and only changes behaviour for a neutral
+adjacent to the placeholder's content. Second, **LRM alone is not enough**: it
+fixes a leading neutral and cannot fix a trailing one, so
+`http://localhost:8080/` renders with its slash at the front either way. A sweep
+must ISOLATE the placeholder — `LRI…PDI` (U+2066…U+2069) over `LRE…PDF`, because
+isolates do not leak into neighbouring text.
+
+**The decision, executed in v2.181.0.** Take the strong form: require every
+RTL-context placeholder to be isolated, with the population DERIVED (walk back
+from each `{n}` to the first strong directional character; flag it if that
+character is RTL). No literal matching and no hand-kept list, and a new
+translated value with an unguarded placeholder fails on the commit that adds it.
+The ledger shape (classify each of the 927) is the right answer when guarding
+has a cost — here it has none, and it would ask 503 questions nobody can
+currently answer.
+
+**WALKED in Hebrew (the ceiling the Bidi proof could not close).** The
+assembled build with the sweep, booted `--locale he` on a project with a
+corrupt patch: the refusal painted with `.nmoxrack.json` reading dot-first,
+photographed. The control settles that the guard is what does it — with the
+isolates stripped, the leading dot **detaches and lands at the opposite end of
+the sentence** (`…הראק ריק: .`) and the name renders bare. *A containment
+assertion could not tell these apart* — `contains(".nmoxrack.json")` passes on
+the broken control, because `.nmoxrack.json.bak` contains that substring; only
+reading the visual order did. Zero SEVERE, zero orphans.
+
+**Shipped in v2.181.0**: 2,198 arguments isolated across 1,583 values in 120
+files, with `RtlPlaceholderIsolationGateTest` deriving both populations. The
+639 at value start were measured rather than swept blind — **194 are genuinely
+safe and deliberately left bare**, because their values contain no RTL letter
+at all, so Swing draws them in logical order and an isolate would assert
+something untrue about the value; the other 435 are guarded, and 6 are
+`{0,choice,…}` at value start, skipped because a left-to-right isolate around a
+choice element would lay its RTL branch text out backwards.
+
+**Where the sweep would have been wrong** — it met resistance nine times and
+only THREE were caught by a test: it wrote a literal newline into a properties
+file, it nested `⁦{1}⁦⁩{2}⁩` for adjacent arguments which **MessageFormat parses
+happily**, its own first gate cut was vacuous (it read the context beside an
+element rather than before its guard, so `checked` was 0), it would have put an
+invisible character inside a CSS declaration, and 108 of 360 files are
+escaped-ASCII where a raw U+2066 would have shipped mojibake. *A large
+mechanical change that meets no resistance anywhere is one nobody checked.*
+
+## Closed by v2.182.0
+
+### 109. The aim's refusal vanished before it could be read — CLOSED
+
+Ledger 104 gave the aim-time patch refusal a voice on the status line, and the
+Hebrew walk of the RTL sweep found what that voice is worth: **the sentence is
+painted and then replaced within roughly two seconds**, while the project is
+still opening. It was captured only by firing the aim and photographing without
+waiting; every capture taken four seconds later found the strip empty.
+
+**Diagnosed (v2.181.0), and the suspect recorded above was wrong.** Nothing
+overwrites it. `org.netbeans.core.NbStatusDisplayer.setStatusText(String)`
+reads, in bytecode:
+
+```
+add(text, 0);
+MessageImpl.clear(SURVIVING_TIME);
+```
+
+with `SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000)`.
+**A plain status message is designed to clear itself after five seconds.** The
+entry above guessed at the platform's project-open progress; that guess is
+withdrawn — no other writer is involved, and none of our own `setStatusText`
+callers sits on an aim path (checked: palette, CI export, Docker, Agent Port,
+the two search providers and KVASIR are all user gestures).
+
+**Why five seconds is still not enough here.** The clock starts when the rack
+loads the patch, which is *during* project opening — before the window has
+settled and while the reader's attention is anywhere but the status strip. The
+sentence is correct and translated fifteen times and can still be missed
+entirely.
+
+**What closed it.** The `Message` overload, with both numbers made laws:
+importance **100** (above zero, which is the entire point — zero is the branch
+that schedules its own deletion — and well under the platform's own 700–1000
+family, so an editor annotation or a find still wins the strip) and a linger of
+**15 s**, bounded by the returned `Message`'s own `clear`.
+
+**The cost is written where it is paid.** An importance above zero outranks
+every plain `setStatusText`, so while the refusal shows it also HIDES ordinary
+status text. During a project open that traffic is progress noise and a
+sentence explaining an empty rack matters more — but that is exactly why the
+linger is bounded rather than "until something replaces it". Three mutants by
+name: `theImportanceIsAboveZero`, `theLingerIsLongerThanTheDefaultAndStillBounded`,
+`theHelperKeepsTheMessageAliveAndBoundsIt`.
+
+**Not done, and honest about it:** the rack's own placard is still the better
+home for this sentence — it is where the reader is already looking when they
+wonder why the rack is empty. This is the fix that could ship today, not the
+one that ends the question.
+
+**Why it matters.** This is the refusal the user did not ask for: it explains
+an empty rack they are about to wonder about. A sentence that is correct,
+translated into fifteen languages and gone before it can be read is the
+v2.85.0 class (*a copy notice ERASED the response verdict*), one surface over.
+
+**What would close it**: identify what writes the status line after the aim,
+then give this sentence a surface that outlives it — the rack's own placard is
+the obvious candidate, since an empty rack is exactly what the sentence is
+about, and the reader is looking at it.
+
+**What is already proven and is NOT in question:** the sentence's content
+(`PatchNotLoadedSpeaksTest`), that the catch reaches the status line at all,
+and that it renders correctly in Hebrew — photographed live.
 
 ## Closed by v2.180.0 (the rack debt night)
 
