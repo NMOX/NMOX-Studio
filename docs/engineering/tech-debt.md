@@ -1141,7 +1141,7 @@ all 11 in place and every product module then failed enable (the
 refuse-by-range cascade), originals in update/backup. The gauntlet
 law: never script --update-all across a platform boundary.
 
-## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
+## Closed — every item here was delivered (added v1.356.0, the toolchain walks)
 
 ### 83. ~~One LSP server process per mime per project~~ — CLOSED v2.19.0 (the senior-RCP pass)
 
@@ -1185,7 +1185,7 @@ implementing MultiMime) instead of the OUTCOME (any multi-mime
 registration in the generated layer) — the gate now derives its
 population from the layer itself, failing-first proven.
 
-## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
+## Closed — every item here was delivered (added v1.283.0, the Task Rack walk)
 
 ### 76. ~~Tooltips never reach an LCD on a rack faceplate~~ — CLOSED 2026-08-11 (the bisect with David)
 The bug was in the VERDICT, not the code. A property-gated probe
@@ -1387,7 +1387,7 @@ CSL stays quiet on the returned NONE while ngserver answers the
 definition. Live-proven: ⌘B on `heading` inside {{ heading }} in
 app.component.html landed the caret on the class property (12:3).
 
-## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
+## Closed — every item here was delivered (added v1.243.0, the deps housekeeping)
 
 ### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0
 David's call, 2026-08-03: advance. The product baseline moved to
@@ -1421,7 +1421,7 @@ Name/Size values. WrapLayoutTest (3 behavior tests incl. the one-row
 lie), PropertyPanelLayoutTest, and ConsoleBarLayoutGateTest pin all
 three; mutation-proven ×3.
 
-## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
+## Closed — every item here was delivered (added v1.241.0, the Angular truth release)
 
 ### 73. ~~Suffixless Angular templates are invisible to the template intelligence~~ — CLOSED 2026-08-11 (David's call: invest)
 The programmatic resolver the deferral asked for exists:
@@ -1674,7 +1674,7 @@ nothing tying them. `KitCatalogParityTest` now fails the build the
 moment they disagree — the soroban-sdk "23" pin-rot lesson made
 structural. Mutation-proven (kit→26 vs catalog→27 fails loud).
 
-## Open — deferred deliberately, with reasons (added v1.76.0, the fourth review)
+## Closed — every item here was delivered (added v1.76.0, the fourth review)
 
 ### 46. CiExporter emits no setup step for the post-v1.59 toolchains — CLOSED (v1.79.0)
 Closed in the v1.79.0 debt sprint: every kind an exported lane can speak
@@ -1705,7 +1705,7 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
-## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
+## Closed — every item here was delivered (added v1.102.0, the first editor review)
 
 ### 56. Unify the seven capped HTTP-read sites into one core helper — CLOSED (v1.124.0)
 
@@ -1734,7 +1734,7 @@ closed in v1.123.0 — the ledger holds NO actionable open items; 51 and
 45 remain deferred with standing reasons (additive-when-a-plugin-needs-it
 / waits-on-platform).
 
-## Open — deferred deliberately, with reasons (added v1.106.0, the first core review)
+## Closed — every item here was delivered (added v1.106.0, the first core review)
 
 The v1.106.0 core-module review's HIGH finding — `ProcessSupport.runBounded`'s
 uncapped output accumulator (an OOM vector on a runaway child, and the
@@ -1773,7 +1773,7 @@ aimed project, and the chip's git spawn is already bounded elsewhere.
 Fix by reading a bounded prefix (`BufferedReader.readLine()` or a capped
 `readNBytes`) instead of the whole file.
 
-## Open — deferred deliberately, with reasons (added v1.107.0, the first rack-engine review)
+## Closed — every item here was delivered (added v1.107.0, the first rack-engine review)
 
 The v1.107.0 rack-engine review's two MED findings were fixed in that
 release (FlightRecorder journal I/O off the singleton monitor onto
@@ -1988,7 +1988,7 @@ contract corrects, and a TRIGGER only after exit), and the host now says
 plugin that calls `emitGate` before `exec` would still be exposed, and none
 has been written. Same condition, same answer.
 
-## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
+## Closed — every item here was delivered (added v1.89.0, the fifth review)
 
 ### 50. Console in-jacks STOP/ENABLE are inert across the family — CLOSED (v1.90.0)
 
@@ -2300,7 +2300,7 @@ its stamp diff, keeping only the artifact-tree diff a single-file pulse cannot
 express. `FileWatcher` stays separate on purpose: it is a debounced recursive
 tree watcher with skip-dirs, not a file stamp.)*
 
-## Open — deferred deliberately, with reasons (added v1.38.1)
+## Closed — every item here was delivered (added v1.38.1)
 
 ### 27. ~~The Breakpoints window never lists DAP breakpoints~~ — CLOSED v2.154.0: it lists them; a filter hid them
 **Re-walked 2026-09-14 on the 2.153.0 portable (RELEASE310).** One DAP
@@ -2415,7 +2415,7 @@ cycle each time. The fixtures now hold themselves alive on a shell
 builtin and spawn nothing, so the abort has nothing to strand; the
 kill's blindness is unchanged.
 
-## Open — deferred deliberately, with reasons (added v1.37.0)
+## Closed — every item here was delivered (added v1.37.0)
 
 ### 25. ~~One debug session per run: child processes run undebugged~~ — CLOSED v2.156.0: every child process and worker is a session of its own
 **Closed 2026-09-15.** The "platform change" this entry waited on already
