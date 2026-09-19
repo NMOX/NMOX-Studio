@@ -108,10 +108,35 @@ painted and then replaced within roughly two seconds**, while the project is
 still opening. It was captured only by firing the aim and photographing without
 waiting; every capture taken four seconds later found the strip empty.
 
-`RackService.status()` calls `StatusDisplayer.setStatusText` correctly and
-`RackService` holds only one other `status()` call, so the overwriter is
-outside this class — the platform's own project-open progress is the obvious
-suspect and **was not proven**. That is the open question.
+**Diagnosed (v2.181.0), and the suspect recorded above was wrong.** Nothing
+overwrites it. `org.netbeans.core.NbStatusDisplayer.setStatusText(String)`
+reads, in bytecode:
+
+```
+add(text, 0);
+MessageImpl.clear(SURVIVING_TIME);
+```
+
+with `SURVIVING_TIME = Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000)`.
+**A plain status message is designed to clear itself after five seconds.** The
+entry above guessed at the platform's project-open progress; that guess is
+withdrawn — no other writer is involved, and none of our own `setStatusText`
+callers sits on an aim path (checked: palette, CI export, Docker, Agent Port,
+the two search providers and KVASIR are all user gestures).
+
+**Why five seconds is still not enough here.** The clock starts when the rack
+loads the patch, which is *during* project opening — before the window has
+settled and while the reader's attention is anywhere but the status strip. The
+sentence is correct and translated fifteen times and can still be missed
+entirely.
+
+**Two ways out, both real.** `StatusDisplayer.setStatusText(String, int)`
+returns a `Message` whose lifetime the caller controls, so the refusal could
+persist until something replaces it — cheapest, and it keeps one surface for
+all aim feedback. Or the rack's own placard says it, which is where the reader
+is already looking when they wonder why the rack is empty. The placard is the
+better answer and the larger change; the `Message` overload is the one that
+could ship tomorrow.
 
 **Why it matters.** This is the refusal the user did not ask for: it explains
 an empty rack they are about to wonder about. A sentence that is correct,
