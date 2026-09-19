@@ -28,10 +28,11 @@ import org.openide.util.NbBundle.Messages;
  * bar — an empty address bar is the truth about a page with no address.
  */
 @Messages({
+    // the browser TAB's name; the visible heading is StartPage_nothingServing
     "StartPage_title=New Media On X",
     "StartPage_nothingServing=Nothing is serving yet",
     "StartPage_whatHappens=Run your project and its page opens here.",
-    "StartPage_door=Run ▸ Run Project, or press a console''s ▶ on the rack.",
+    "StartPage_door=Run ▸ Run Project, or press GO on a rack device.",
     "StartPage_offline=This page is part of NMOX Studio. It asks the network for nothing."
 })
 final class StartPage {
@@ -41,7 +42,8 @@ final class StartPage {
 
     /** The page the Browser shows when no project is serving. */
     static String html() {
-        return document(Bundle.StartPage_title(), Bundle.StartPage_nothingServing(),
+        return document(java.util.Locale.getDefault(),
+                Bundle.StartPage_title(), Bundle.StartPage_nothingServing(),
                 Bundle.StartPage_whatHappens(), Bundle.StartPage_door(), Bundle.StartPage_offline());
     }
 
@@ -54,11 +56,12 @@ final class StartPage {
      * the class of defect {@code PlainText} exists to close. Escaping costs
      * nothing and removes the assumption.
      */
-    static String document(String title, String heading, String whatHappens,
-            String door, String offline) {
+    static String document(java.util.Locale locale, String title, String heading,
+            String whatHappens, String door, String offline) {
+        boolean rtl = org.nmox.studio.core.util.TextDirection.isRightToLeft(locale);
         return """
                <!DOCTYPE html>
-               <html><head><meta charset="utf-8"><title>%s</title>
+               <html lang="%s" dir="%s"><head><meta charset="utf-8"><title>%s</title>
                <style>
                  :root { color-scheme: dark light; }
                  body { margin: 0; display: flex; min-height: 100vh;
@@ -83,7 +86,8 @@ final class StartPage {
                  <p class="door">%s</p>
                  <p class="offline">%s</p>
                </main></body></html>
-               """.formatted(PlainText.escape(title), PlainText.escape(heading),
+               """.formatted(PlainText.escape(locale.getLanguage()), rtl ? "rtl" : "ltr",
+                PlainText.escape(title), PlainText.escape(heading),
                 PlainText.escape(whatHappens), PlainText.escape(door), PlainText.escape(offline));
     }
 }

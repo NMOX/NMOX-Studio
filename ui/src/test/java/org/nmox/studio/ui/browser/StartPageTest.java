@@ -49,14 +49,55 @@ class StartPageTest {
     @Test
     @DisplayName("a string carrying markup is shown as text, not rendered — our own bundles are still input")
     void everyPartIsEscaped() {
-        String html = StartPage.document("t", "<img src=x onerror=alert(1)>",
-                "a & b", "\"quoted\"", "o");
+        String html = StartPage.document(java.util.Locale.ENGLISH, "t",
+                "<img src=x onerror=alert(1)>", "a & b", "\"quoted\"", "o");
         assertThat(html)
                 .as("the markup-render class: our own text is written by fifteen translators, "
                         + "and 'our text cannot contain markup' is the assumption that keeps failing")
                 .doesNotContain("<img")
                 .contains("&lt;img")
                 .contains("a &amp; b");
+    }
+
+    @Test
+    @DisplayName("the document declares its language AND its direction — without dir, a Hebrew sentence draws its full stop at the wrong end")
+    void theDocumentDeclaresItsDirection() {
+        // measured by the translator with java.text.Bidi: under a base LTR
+        // direction the Hebrew door sentence splits and the sentence-final
+        // period is drawn at the far right, before the first word. No
+        // translation can fix that; only the document can.
+        assertThat(StartPage.document(java.util.Locale.forLanguageTag("he"),
+                "t", "h", "w", "d", "o"))
+                .contains("lang=\"he\"").contains("dir=\"rtl\"");
+        assertThat(StartPage.document(java.util.Locale.forLanguageTag("ar"),
+                "t", "h", "w", "d", "o")).contains("dir=\"rtl\"");
+        assertThat(StartPage.document(java.util.Locale.ENGLISH, "t", "h", "w", "d", "o"))
+                .contains("lang=\"en\"").contains("dir=\"ltr\"");
+    }
+
+    @Test
+    @DisplayName("the door names a control that exists — GO on a rack device, the product's own words")
+    void theDoorNamesARealControl() {
+        // the rack's faceplates carry DEV/STOP/BUILD/PREVIEW/CHECK and GO.
+        // There is no play glyph on any of them; the product's own
+        // GettingStarted_runGesture says "▶ (F6), or GO on a rack device",
+        // where the play glyph is the IDE TOOLBAR's button. The first draft of
+        // this page said "press a console's ▶ on the rack" and would have
+        // shipped that wrong door in fifteen languages.
+        assertThat(Bundle.StartPage_door()).contains("GO").doesNotContain("▶");
+    }
+
+    @Test
+    @DisplayName("no value carries a doubled apostrophe — these keys never reach MessageFormat")
+    void noValueIsWrittenForMessageFormat() {
+        // NbBundle.getMessage(Class, String) with no arguments is
+        // getBundle(clazz).getString(key) — read from the platform's bytecode.
+        // Nothing formats, so a doubled apostrophe written for MessageFormat's
+        // sake ships on screen as two characters.
+        for (String value : new String[]{Bundle.StartPage_title(), Bundle.StartPage_nothingServing(),
+            Bundle.StartPage_whatHappens(), Bundle.StartPage_door(), Bundle.StartPage_offline()}) {
+            assertThat(value).doesNotContain("''");
+        }
     }
 
     @Test
