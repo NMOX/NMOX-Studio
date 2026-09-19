@@ -71,21 +71,38 @@ class GrammarBundleTest {
      * derivation that returns nothing makes every assertion below
      * vacuous.
      *
-     * <p><b>What this can and cannot catch.</b> A typo'd resource PATH
-     * cannot reach here: the platform's {@code CreateRegistrationProcessor}
-     * calls {@code LayerBuilder.validateResource} and then reads the
+     * <p><b>What the compiler already proves, and what it does not.</b>
+     * A typo'd resource PATH cannot reach here, in the old population
+     * or the new: the platform's {@code CreateRegistrationProcessor}
+     * calls {@code LayerBuilder.validateResource} and then READS the
      * grammar to extract its scope name, so a path that names nothing
-     * fails javac with a {@code LayerGenerationException} — measured,
-     * not assumed (v2.186.0). What is NOT compile-checked is whether
-     * the bytes the processor read at compile time are the bytes that
-     * SHIP: the processor resolves against the source path, the product
-     * loads {@code nbresloc:} from the module jar. So the law here is
-     * the packaged one — the registered resource is present in the
-     * build output, parses, and its {@code scopeName} is the one the
-     * layer promises TM4E it will find.
+     * fails javac ("Cannot find resource …") — measured in v2.186.0 by
+     * planting one, which means the sentence this gate carried for four
+     * years ("a typo would silently kill that language's highlighting")
+     * was never the thing it could catch. What the compiler does not
+     * see is the three laws below, all true today and all unheld until
+     * now, over a population that includes the 55 registrations the
+     * filename filter could not reach:
+     *
+     * <ol>
+     *   <li>the registered grammar is in the BUILD OUTPUT, parses, and
+     *       carries the scope the layer promises TM4E it will find —
+     *       the processor resolves at compile time, the product loads
+     *       {@code nbresloc:} out of the module jar;</li>
+     *   <li>no editor mime carries two grammars: a second one on the
+     *       same mime does not merge, it shadows, and only the running
+     *       lexer would say which won;</li>
+     *   <li>an {@code x-nmox-embed-*} mime carries its grammar and
+     *       NOTHING else. {@link EmbeddedScopeGrammars} says so in
+     *       prose — "Do not add editor bindings (CSL, loaders) to these
+     *       mimes" — because those mimes exist only to put a scope in
+     *       TM4E's registry for cross-grammar includes; no file
+     *       resolves to one, so anything else registered there is
+     *       machinery nothing can ever reach.</li>
+     * </ol>
      */
     @org.junit.jupiter.api.Test
-    @DisplayName("Every registered grammar ships, parses, and owns its declared scope")
+    @DisplayName("Every registered grammar ships under its scope, alone on its mime")
     void registeredGrammarsShipUnderTheirScope() throws Exception {
         java.nio.file.Path layer = java.nio.file.Path.of(
                 "target/classes/META-INF/generated-layer.xml");
@@ -95,27 +112,21 @@ class GrammarBundleTest {
         dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
         org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(layer.toFile());
 
-        int registrations = 0;
         java.util.Map<String, String> scopeByResource = new java.util.LinkedHashMap<>();
-        org.w3c.dom.NodeList files = doc.getElementsByTagName("file");
-        for (int i = 0; i < files.getLength(); i++) {
-            org.w3c.dom.Element file = (org.w3c.dom.Element) files.item(i);
-            String scope = attr(file, "textmate-grammar");
-            if (scope == null) {
-                continue;
-            }
-            registrations++;
-            String url = file.getAttribute("url");
-            assertThat(url).as(file.getAttribute("name") + " declares a resource url")
-                    .startsWith("nbresloc:/");
-            scopeByResource.put(url.substring("nbresloc:".length()), scope);
-        }
+        java.util.Map<String, java.util.List<String>> grammarsByMime =
+                new java.util.LinkedHashMap<>();
+        java.util.List<String> strayOnEmbedMime = new java.util.ArrayList<>();
+        int[] registrations = {0};
+        walk(doc.getDocumentElement(), "", scopeByResource, grammarsByMime,
+                strayOnEmbedMime, registrations);
 
-        // 131 registrations across 88 distinct grammar files today (76
-        // from the per-language classes, 49 embed-only scopes, 6
-        // Angular); the floor keeps a derivation that finds nothing —
-        // a renamed attr, a moved layer — from passing vacuously
-        assertThat(registrations)
+        // 131 registrations across 88 distinct grammar files today: 76
+        // from the per-language classes, 50 on embed-only mimes, and 5
+        // more from NgTemplateGrammars (four injections into
+        // text.html.basic plus the html grammar on text/x-ng-template).
+        // The floor keeps a derivation that finds nothing — a renamed
+        // attr, a moved layer — from passing vacuously
+        assertThat(registrations[0])
                 .as("grammar registrations derived from the generated layer")
                 .isGreaterThan(110);
         assertThat(scopeByResource)
@@ -132,6 +143,56 @@ class GrammarBundleTest {
                 assertThat(json.optString("scopeName"))
                         .as(resource + " scopeName as the layer registered it")
                         .isEqualTo(e.getValue());
+            }
+        }
+
+        assertThat(grammarsByMime.entrySet().stream()
+                .filter(e -> e.getValue().size() > 1).toList())
+                .as("a mime with two grammars has one that never tokenizes anything")
+                .isEmpty();
+
+        assertThat(strayOnEmbedMime)
+                .as("an embed-only mime is a scope for TM4E's registry, not an editor")
+                .isEmpty();
+    }
+
+    /** Collects the layer's grammar registrations and what shares their mimes. */
+    private static void walk(org.w3c.dom.Element folder, String path,
+            java.util.Map<String, String> scopeByResource,
+            java.util.Map<String, java.util.List<String>> grammarsByMime,
+            java.util.List<String> strayOnEmbedMime, int[] registrations) {
+        org.w3c.dom.NodeList children = folder.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            if (!(children.item(i) instanceof org.w3c.dom.Element child)) {
+                continue;
+            }
+            String here = path + "/" + child.getAttribute("name");
+            if ("folder".equals(child.getTagName())) {
+                if (path.contains("/x-nmox-embed-")) {
+                    strayOnEmbedMime.add(here); // an editor folder on a scope-only mime
+                }
+                walk(child, here, scopeByResource, grammarsByMime,
+                        strayOnEmbedMime, registrations);
+                continue;
+            }
+            String scope = attr(child, "textmate-grammar");
+            if (scope == null) {
+                // an embed-only mime's folder holds its grammar and no
+                // editor machinery — see law 3
+                if (path.contains("/x-nmox-embed-")) {
+                    strayOnEmbedMime.add(here);
+                }
+                continue;
+            }
+            registrations[0]++;
+            String url = child.getAttribute("url");
+            assertThat(url).as(here + " declares a resource url").startsWith("nbresloc:/");
+            scopeByResource.put(url.substring("nbresloc:".length()), scope);
+            if (attr(child, "inject-to") == null) {
+                // an injection rides the host grammar's scope, not a mime;
+                // only a mime-bound grammar competes to tokenize a file
+                grammarsByMime.computeIfAbsent(path, m -> new java.util.ArrayList<>())
+                        .add(child.getAttribute("name"));
             }
         }
     }
