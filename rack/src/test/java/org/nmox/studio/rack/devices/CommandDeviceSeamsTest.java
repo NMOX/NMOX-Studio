@@ -38,11 +38,10 @@ class CommandDeviceSeamsTest {
     @TempDir
     Path projectDir;
 
-    private final Predicate<File> originalTrust = CommandDevice.trustCheck;
 
     @AfterEach
     void restoreTrust() {
-        CommandDevice.trustCheck = originalTrust;
+        CommandDevice.resetTrustCheck();
     }
 
     /** A minimal command device whose argv the test dictates. */

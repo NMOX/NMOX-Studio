@@ -42,7 +42,7 @@ The **Project Studio** tab, docked beside the Workbench, or `File ▸ New Projec
 
 ## What you just learned
 
-- New projects are recognized by any of 60 manifest names (package.json,
+- New projects are recognized by any of 63 manifest names (package.json,
   Cargo.toml, go.mod, pom.xml, gleam.toml, …) plus four detected by glob
   (`.csproj`, `.fsproj`, `.sln`, `.nimble`) — even a script-tag site
   with no manifest opens as a STATIC project.

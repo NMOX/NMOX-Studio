@@ -32,11 +32,10 @@ class ChainConsoleJacksTest {
     @TempDir
     Path root;
 
-    private final Predicate<java.io.File> originalTrust = CommandDevice.trustCheck;
 
     @AfterEach
     void restoreTrust() {
-        CommandDevice.trustCheck = originalTrust;
+        CommandDevice.resetTrustCheck();
     }
 
     private static void flushEdt() throws Exception {

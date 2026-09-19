@@ -54,6 +54,38 @@ class TextSearchTest {
     }
 
     @Test
+    @DisplayName("a capped WALK is a floor on the project, not a reason to stop reading: every listed file is still searched (v2.184.0)")
+    void theWalkCapDoesNotEndTheSearch() throws Exception {
+        // the FILE cap had never been exercised — only the HIT cap — which is
+        // how `truncated` came to be one variable for both and ended the
+        // per-file loop before its first iteration, so a project over the cap
+        // answered filesScanned: 1. This repo has ~5,600 eligible files, so
+        // that was every real search here.
+        int files = TextSearch.MAX_FILES + 100;
+        for (int i = 0; i < files; i++) {
+            Files.writeString(root.resolve("f" + i + ".txt"), "alpha needle here\n");
+        }
+
+        TextSearch.Answer none = TextSearch.search(root, "nonesuch", 50);
+        assertThat(none.filesScanned())
+                .as("the walk's cap bounds what is READ, and every file it listed is read")
+                .isEqualTo(TextSearch.MAX_FILES);
+        assertThat(none.hits()).isEmpty();
+        assertThat(none.truncated())
+                .as("a capped walk is reported even when nothing matched — the answer is a floor, not a total")
+                .isTrue();
+
+        TextSearch.Answer many = TextSearch.search(root, "needle", TextSearch.MAX_HITS);
+        assertThat(many.hits()).hasSize(TextSearch.MAX_HITS);
+        assertThat(many.filesScanned())
+                .as("one hit per file, so the hit cap stops it one file PAST the cap — the extra file is"
+                        + " what proves a further match exists, which is what makes the hit cap exact;"
+                        + " what it must never be is 1")
+                .isEqualTo(TextSearch.MAX_HITS + 1);
+        assertThat(many.truncated()).isTrue();
+    }
+
+    @Test
     @DisplayName("secret-bearing files are never searched: .env values, npmrc tokens, private keys stay out of an agent's reach (v2.84.0)")
     void secretsNeverSearched() throws Exception {
         java.nio.file.Files.createDirectories(root.resolve("src"));

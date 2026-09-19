@@ -187,8 +187,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * flush must never queue behind one (debt #16; the careful parts
      * are documented on the lane class).
      */
-    private static final org.nmox.studio.infra.model.SaveLane SAVES =
-            new org.nmox.studio.infra.model.SaveLane("Infra Designer saves");
+    private static final org.nmox.studio.core.util.SaveLane SAVES =
+            new org.nmox.studio.core.util.SaveLane("Infra Designer saves");
     /** Discriminates our own .nmoxinfra.json writes from foreign edits. */
     private final org.nmox.studio.infra.model.DesignSync designSync =
             new org.nmox.studio.infra.model.DesignSync();

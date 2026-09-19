@@ -1,19 +1,19 @@
 package org.nmox.studio.editor.design;
 
+
+
 import java.io.File;
 import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -85,7 +85,7 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
             return;
         }
         String name = text.substring(span[0], span[1]);
-        File dir = projectDirOf(doc);
+        File dir = ProjectRoot.of(doc);
         RP.post(() -> {
             List<CssClasses.Usage> usages =
                     CssClasses.findUsages(dir, name, USAGE_CAP);
@@ -160,24 +160,6 @@ public final class CssClassUsageHyperlink implements HyperlinkProviderExt {
         @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
         }
-    }
-
-    private static File projectDirOf(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
-        File f = fo == null ? null : FileUtil.toFile(fo);
-        if (f == null) {
-            return null;
-        }
-        File dir = f.getParentFile();
-        File cursor = dir;
-        for (int up = 0; cursor != null && up < 6; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "package.json").isFile()
-                    || new File(cursor, "angular.json").isFile()
-                    || new File(cursor, ".git").exists()) {
-                return cursor;
-            }
-        }
-        return dir;
     }
 
     private static void openAt(File file, int offset) {

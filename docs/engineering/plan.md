@@ -1,5 +1,52 @@
 # The Plan
 
+*Currency addendum 2026-09-19 (the senior-developer pass), at v2.184.0.*
+
+*David asked for a senior Java developer's review: refactor what warrants it,
+finish what is unfinished, and decide what had been deferred to him, on NMOX's
+principles with the motto — peace, love and harmony — implemented rather than
+quoted. **The motto is now three review questions** in the codebase guide, and
+every existing house law turns out to be one of the three made specific, which
+is the argument they are the real principles. One thing is added: when two
+conflict, **peace wins**, because a surprising product cannot be fixed by being
+internally consistent about it.*
+
+***The method was three read-only surveys, one dimension each*** *— one fact
+with two homes, work never finished, Java craft — over the 910 product files,
+each brief saying what does NOT count (this codebase's documented refusals and
+ceilings are features, not findings), capping at twelve, and demanding
+file:line plus "would a careful senior dev do this on a Tuesday". They returned
+shipped defects rather than nits.*
+
+***And two of their headline claims did not survive checking.*** *A missing
+`.cmd` suffix was reported as a live Windows bug affecting every npm-shim
+console; the three callers probe real binaries, so it is a latent trap. And no
+caller reaches the un-canonicalised containment path today. Both are recorded
+in the ledger as CORRECTED rather than fixed — **an agent's report is a lead,
+not a verdict**, and a corrected claim is worth more than a fix applied to
+nothing.*
+
+***The defects clustered in shape, not logic***: a test seam restored to a lane
+it invented (so every later rack test spawned on the platform's shared
+processor), an interval that looked right because `VK_F13` is 61440 rather than
+124, one flag carrying two meanings so a search read one file, a read-failure
+branch that replaced the user's board and then disarmed the never-clobber
+guard, and three Options panels each implementing half of the platform's
+contract. None of these is a wrong expression; each is a shape that made the
+wrong thing easy.*
+
+***The scar, and it was mine***: *a translation agent ran in the LIVE tree
+while the chain was committing, so its fourteen files were swept into two
+unrelated commits — the "one working tree, one chain" hazard, self-inflicted by
+not giving a doc agent a worktree. **Every agent gets `isolation: worktree`**,
+including the ones that only touch text.*
+
+*That translator then found three defects in English written the same hour,
+including a sentence naming a control that does not exist — the v2.118.0
+wayfinding class, in brand-new text. **Translation remains the cheapest review
+this project has.***
+
+
 *Currency addendum 2026-09-19 (the correction), at v2.183.0 — v2.182.0 shipped
 a claim that was not true, and the way it happened is worth more than the fix.*
 

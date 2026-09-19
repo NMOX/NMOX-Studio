@@ -69,6 +69,22 @@ class SharingPureTest {
                 .isEqualTo(hindi);
         String longName = "a".repeat(200);
         assertThat(ShareCards.fileStem(longName)).hasSize(48);
+        // the cap is read ONCE per iteration and a join appends TWO code
+        // points, so a name whose 48th kept code point follows a separator
+        // came out 49 long — the plain-run case above could never see it
+        // because it never joins (v2.184.0)
+        String joinsAtTheCap = "a".repeat(47) + " bbb";
+        assertThat(ShareCards.fileStem(joinsAtTheCap))
+                .as("a hyphen joined at the boundary must not push the stem past its stated 48")
+                .isEqualTo("a".repeat(47));
+        for (int run = 1; run <= 60; run++) {
+            String name = ("ab ".repeat(run)).strip();
+            String stem = ShareCards.fileStem(name);
+            assertThat(stem.codePointCount(0, stem.length()))
+                    .as("at most 48 code points for any join pattern (%s)", name)
+                    .isLessThanOrEqualTo(48);
+            assertThat(stem).as("and never left with a dangling join").doesNotEndWith("-");
+        }
     }
 
     @Test

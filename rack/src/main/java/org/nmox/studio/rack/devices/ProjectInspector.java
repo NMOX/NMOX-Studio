@@ -104,6 +104,26 @@ public final class ProjectInspector {
         public String manifest() {
             return manifests.length > 0 ? manifests[0] : "";
         }
+
+        /**
+         * EVERY marker this kind is detected by, not just the first.
+         *
+         * <p>Only {@link #manifest()} used to be reachable, so a consumer that
+         * needed the whole set had to keep its own copy — and
+         * {@code WebProjectFactory}, whose javadoc says "every manifest the
+         * rack understands makes a real platform project", kept a hand-written
+         * list of 60 that had drifted from this one. It was missing
+         * {@code setup.py}, {@code Rakefile} and {@code bun.lockb}, so a
+         * Python project carrying only a {@code setup.py} had working rack
+         * lanes and no door: it could not be opened as a project at all. That
+         * file already records the same class being found and fixed once, for
+         * {@code CMakeLists.txt} and {@code Makefile} — *the lanes existed;
+         * the door didn't*. It recurred because the fix was a longer list
+         * rather than one home.
+         */
+        public String[] manifests() {
+            return manifests.clone();
+        }
     }
 
     /** Directories never scanned for nested project manifests. */

@@ -287,6 +287,21 @@ public final class FxBrowserPanel extends JPanel {
         }
     }
 
+    /**
+     * EDT. Shows a document this product built, with no address.
+     *
+     * <p>The address bar is cleared rather than filled with a {@code data:}
+     * blob or a temp-file path: a page with no address should not pretend to
+     * have one, and there is nothing here for the user to copy or retype.
+     * It still counts as a load, so a deferred first load can tell it was
+     * overtaken.
+     */
+    public void loadContent(String html) {
+        loads++;
+        urlField.setText("");
+        onFx(() -> engine.loadContent(html, "text/html"));
+    }
+
     /** One lane so overlapping localhost probes stay ordered. */
     private static final org.openide.util.RequestProcessor LOOPBACK_RP =
             new org.openide.util.RequestProcessor("Browser Loopback Probe", 1);

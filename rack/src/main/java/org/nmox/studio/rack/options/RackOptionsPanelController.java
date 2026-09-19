@@ -130,9 +130,29 @@ public class RackOptionsPanelController extends OptionsPanelController {
         return true;
     }
 
+    /**
+     * True once the panel has been built — deliberately coarse, and now said
+     * out loud rather than returned as a bare {@code true}.
+     *
+     * <p>Three of this panel's six controls are {@link JPasswordField}s
+     * holding cloud tokens, and the tokens live in the OS keychain. Reading
+     * them back to compare would mean a blocking keychain call (possibly an
+     * OS unlock prompt) every time the dialog asked whether anything moved,
+     * on the paint thread. So this panel does not claim to know; it claims
+     * only that it has been shown, which is honest and cheap.
+     *
+     * <p>It used to return {@code true} before the panel existed, so the
+     * dialog believed there were unsaved changes in a panel the user had
+     * never opened.
+     */
     @Override
     public boolean isChanged() {
-        return true;
+        return panel != null;
+    }
+
+    /** Tells the Options dialog a control moved, which is what enables Apply. */
+    private void changed() {
+        pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, null, isChanged());
     }
 
     @Override
@@ -152,10 +172,12 @@ public class RackOptionsPanelController extends OptionsPanelController {
         c.gridy = 0;
 
         reflexInterval = new JSpinner(new SpinnerNumberModel(1200, 200, 10_000, 100));
+        reflexInterval.addChangeListener(e -> changed());
         // Opinionated developers keep an external browser open on a second
         // monitor; closing the loop for them would be taking the wheel.
         openServedPage = new javax.swing.JCheckBox(
                 Bundle.RackOptionsPanelController_openServedPage(), true);
+        openServedPage.addItemListener(e -> changed());
         org.nmox.studio.rack.engine.KvasirProvider[] providers =
                 org.nmox.studio.rack.engine.KvasirProvider.values();
         String[] providerLabels = new String[providers.length];

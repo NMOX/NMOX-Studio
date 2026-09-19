@@ -210,6 +210,42 @@ class TasksLawsGateTest {
     }
 
     @Test
+    @DisplayName("a file we never read is never ours, and never written over")
+    void unreadableBoardIsBoundReadOnly() throws Exception {
+        String src = tc();
+        // The seam ({@code TasksIO.load} reporting unreadable) has its own
+        // tests; this is the OTHER half the v1.321.0 law asks for — that the
+        // window consults it. Both halves matter and neither implies the
+        // other: an unconditional stamp here, with a perfectly correct seam,
+        // is the whole original defect (9,437,184 bytes → 341, measured).
+        int reload = src.indexOf("private void reload()");
+        assertThat(reload).isPositive();
+        String body = src.substring(reload, src.indexOf("\n    }", reload));
+        assertThat(body)
+                .as("ownership is recorded for a read that HAPPENED — a stamp"
+                        + " on a file we could not read disarms the"
+                        + " never-clobber guard for every later gesture")
+                .contains("!outcome.unreadable()")
+                .contains("tracker.noteSync(f)");
+        assertThat(body.indexOf("!outcome.unreadable()"))
+                .as("the guard sits on the stamp, not somewhere after it")
+                .isLessThan(body.indexOf("tracker.noteSync(f)"));
+
+        int m = src.indexOf("private boolean mutate(");
+        String mutate = src.substring(m, src.indexOf("\n    }", m));
+        assertThat(mutate)
+                .as("a read-only board refuses every mutation OUT LOUD: unlike"
+                        + " a foreign edit there is nothing to reload to, so"
+                        + " the gesture must stop rather than write a"
+                        + " stand-in board over work nobody has seen")
+                .contains("if (readOnly) {")
+                .contains("Bundle.TasksTopComponent_unreadable(");
+        assertThat(mutate.indexOf("if (readOnly) {"))
+                .as("the refusal comes before the mutation runs at all")
+                .isLessThan(mutate.indexOf("mutation.getAsBoolean()"));
+    }
+
+    @Test
     @DisplayName("a moved card keeps focus so the keyboard gesture can repeat")
     void keyboardMoveKeepsSelection() throws Exception {
         // rebuild() discards every JList, so without this the first ⌘↓ moved

@@ -31,7 +31,10 @@ class RackOptionsPanelControllerTest {
     void validityContract() {
         RackOptionsPanelController c = new RackOptionsPanelController();
         assertThat(c.isValid()).isTrue();
-        assertThat(c.isChanged()).isTrue();
+        assertThat(c.isChanged())
+                .as("a panel nobody has opened has no unsaved changes; this used to "
+                        + "return a bare true, so the dialog believed otherwise")
+                .isFalse();
         assertThat(c.getHelpCtx()).isNotNull();
     }
 

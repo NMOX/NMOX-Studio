@@ -263,8 +263,8 @@ public final class ApiClientTopComponent extends TopComponent {
      * {@link #RP} — RP's throughput 2 could interleave two writes
      * (debt #16; the careful parts are documented on the lane class).
      */
-    private static final org.nmox.studio.apiclient.api.SaveLane SAVES =
-            new org.nmox.studio.apiclient.api.SaveLane("API Studio workspace saves");
+    private static final org.nmox.studio.core.util.SaveLane SAVES =
+            new org.nmox.studio.core.util.SaveLane("API Studio workspace saves");
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);

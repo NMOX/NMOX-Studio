@@ -26,11 +26,10 @@ class ThirdReachSmallsTest {
     @TempDir
     Path root;
 
-    private final Predicate<File> originalTrust = CommandDevice.trustCheck;
 
     @AfterEach
     void restore() {
-        CommandDevice.trustCheck = originalTrust;
+        CommandDevice.resetTrustCheck();
     }
 
     @Test

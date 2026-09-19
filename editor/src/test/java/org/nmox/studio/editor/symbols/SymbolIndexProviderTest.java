@@ -61,7 +61,11 @@ class SymbolIndexProviderTest {
             Files.deleteIfExists(outside);
         }
         assertThat(provider().outline(root.toFile(), "nonesuch.js").refusal()).startsWith("no such file");
-        assertThat(provider().outline(root.toFile(), "notes.bin").refusal()).startsWith("no outline for this file type");
+        // the message now matches the branch that actually fires. This case
+        // has always taken the NULL-MIME branch, under a message describing a
+        // sibling condition that could never be true: OutlineModel.family()
+        // ends in `default -> "generic"`, so familyOf() never returns null.
+        assertThat(provider().outline(root.toFile(), "notes.bin").refusal()).startsWith("no file type for");
         assertThat(provider().outline(root.toFile(), "").refusal()).isEqualTo("no file named");
     }
 

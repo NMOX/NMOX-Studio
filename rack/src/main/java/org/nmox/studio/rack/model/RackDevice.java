@@ -373,6 +373,25 @@ public abstract class RackDevice extends JPanel {
      */
     static java.util.function.Consumer<Runnable> execLane = EXEC_RP::post;
 
+    /**
+     * Puts the exec lane back to production. Tests must restore through here
+     * rather than writing a lane of their own.
+     *
+     * <p>Not tidiness — the reason is a measured defect. {@code AsyncExecTest}
+     * used to restore by <i>inventing</i> a lane, posting to
+     * {@code RequestProcessor.getDefault()} rather than to {@link #EXEC_RP},
+     * with a comment saying "back to a real async lane". It is a real async
+     * lane; it is not <i>this</i> one. Surefire reuses a fork per module, so
+     * every rack test that ran afterwards spawned devices on the platform's
+     * shared processor instead of the dedicated eight-wide
+     * {@code nmox-device-exec} — quietly, and for as long as nobody read that
+     * line. A production default that a test can spell is a production default
+     * that will drift; there is one home for it now, and it is here.
+     */
+    static void resetExecLane() {
+        execLane = EXEC_RP::post;
+    }
+
     private static final java.util.concurrent.atomic.AtomicLong RUN_SEQ =
             new java.util.concurrent.atomic.AtomicLong();
 

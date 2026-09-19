@@ -205,17 +205,22 @@ public final class ManageExperimentsAction implements ActionListener {
         });
         // move + git init / recursive delete run on EXPERIMENTS_RP with a
         // ProgressHandle — node_modules trees made these minute-long EDT
-        // freezes. All three buttons grey while a worker runs (Open on a
-        // dir being discarded would aim the studio at a vanishing tree).
+        // freezes. EVERY button greys while a worker runs (Open on a dir
+        // being discarded would aim the studio at a vanishing tree; so would
+        // Duplicate, which walks the same tree). The list is derived from the
+        // buttons rather than counted in a comment: v2.184.0 found a comment
+        // reading "All three buttons" beside four, with Duplicate live
+        // throughout a discard — a count in prose cannot be kept true.
+        JButton[] workButtons = {open, duplicate, promote, discard};
         Runnable disableButtons = () -> {
-            open.setEnabled(false);
-            promote.setEnabled(false);
-            discard.setEnabled(false);
+            for (JButton b : workButtons) {
+                b.setEnabled(false);
+            }
         };
         Runnable enableButtons = () -> {
-            open.setEnabled(true);
-            promote.setEnabled(true);
-            discard.setEnabled(true);
+            for (JButton b : workButtons) {
+                b.setEnabled(true);
+            }
         };
 
         duplicate.addActionListener(a -> {
@@ -223,7 +228,7 @@ public final class ManageExperimentsAction implements ActionListener {
             if (dir == null) {
                 return;
             }
-            duplicate.setEnabled(false);
+            disableButtons.run();
             EXPERIMENTS_RP.post(() -> {
                 try {
                     File fork = Experiments.duplicate(dir);
@@ -235,7 +240,7 @@ public final class ManageExperimentsAction implements ActionListener {
                     });
                 } catch (Exception ex) {
                     SwingUtilities.invokeLater(() -> {
-                        duplicate.setEnabled(true);
+                        enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 org.nmox.studio.core.util.PlainDialogs.plain(Bundle.ManageExperimentsAction_couldNotDuplicate(ex.getMessage()),
                                         Bundle.ManageExperimentsAction_messageName()),

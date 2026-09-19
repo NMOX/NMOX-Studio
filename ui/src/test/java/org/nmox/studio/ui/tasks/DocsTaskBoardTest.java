@@ -28,7 +28,7 @@ class DocsTaskBoardTest {
     private TaskBoard staged(Path home) throws Exception {
         File dir = new DocsTaskBoard().stage(home.toFile(), FIXTURES, "en");
         assertThat(dir).isEqualTo(DocsFixtures.projectDir(home.toFile()));
-        return TasksIO.load(dir);
+        return TasksIO.load(dir).board();
     }
 
     @Test

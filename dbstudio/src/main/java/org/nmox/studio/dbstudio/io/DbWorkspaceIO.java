@@ -310,9 +310,23 @@ public final class DbWorkspaceIO {
     /**
      * A guarded load: the {@code workspace} is never null (empty on any
      * failure, like {@link #loadWorkspace}); {@code backup} is non-null
-     * when the file EXISTED but failed to parse and was copied aside.
+     * when the file EXISTED but failed to parse and was copied aside;
+     * {@code unreadable} is true when the file EXISTS and its bytes could
+     * not be read at all.
+     *
+     * <p>Those last two are different failures and were treated as one.
+     * A PARSE failure hands back bytes we have seen and kept as
+     * {@code .bak}, so the empty workspace may replace them. A READ
+     * failure — a permission error, a transient fault, or
+     * {@link org.nmox.studio.core.util.BoundedReads.TooLarge}, which is
+     * an {@link IOException} like any other — hands back nothing at all,
+     * and the empty workspace it used to come with was indistinguishable
+     * from a fresh project: the studio recorded the file as its own and
+     * the next change wrote an empty workspace over every connection,
+     * every saved query and the whole history, with no backup. Measured
+     * on an over-cap file: 9,437,184 bytes became 71.
      */
-    public record LoadOutcome(Workspace workspace, File backup) {
+    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
     }
 
     /**
@@ -327,25 +341,30 @@ public final class DbWorkspaceIO {
     public static LoadOutcome loadWorkspaceGuarded(File dir) {
         File file = new File(dir, FILENAME);
         if (!file.isFile()) {
-            return new LoadOutcome(Workspace.empty(), null);
+            return new LoadOutcome(Workspace.empty(), null, false);
         }
         String json;
         try {
             // .nmoxdb.json sits beside the project and travels with a clone
             json = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
         } catch (IOException e) {
+            // No .bak here, and that is deliberate: the parse failure copies
+            // the bytes aside because they are about to be replaced, while
+            // a file we could not read must not be written over at all — so
+            // there is nothing to rescue it from. The caller binds the
+            // workspace read-only instead.
             LOG.log(Level.WARNING, "Cannot read " + file, e);
-            return new LoadOutcome(Workspace.empty(), null);
+            return new LoadOutcome(Workspace.empty(), null, true);
         }
         if (json.isBlank()) {
-            return new LoadOutcome(Workspace.empty(), null); // nothing to lose
+            return new LoadOutcome(Workspace.empty(), null, false); // nothing to lose
         }
         try {
-            return new LoadOutcome(parseStrict(json), null);
+            return new LoadOutcome(parseStrict(json), null, false);
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
-            return new LoadOutcome(Workspace.empty(), backupCorrupt(file));
+            return new LoadOutcome(Workspace.empty(), backupCorrupt(file), false);
         }
     }
 

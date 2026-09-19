@@ -96,6 +96,17 @@ public final class ShareCards {
                 if (hyphen && sb.length() > 0) {
                     sb.append('-');
                     kept++;
+                    // the loop guard is read ONCE per iteration and this
+                    // iteration appends TWO code points, so the cap must be
+                    // re-checked after the joining hyphen — without this a
+                    // name whose 48th kept code point follows a separator
+                    // came out 49 long, measured (v2.184.0). RackCard.clean
+                    // has carried this re-check since it was written; this
+                    // is the same shape, and the trailing hyphen a break
+                    // here can leave is stripped below.
+                    if (kept >= 48) {
+                        break;
+                    }
                 }
                 hyphen = false;
                 sb.appendCodePoint(cp);
@@ -103,6 +114,10 @@ public final class ShareCards {
             } else {
                 hyphen = true;
             }
+        }
+        // a clip that lands on the joining hyphen must not leave it dangling
+        while (sb.length() > 0 && sb.charAt(sb.length() - 1) == '-') {
+            sb.setLength(sb.length() - 1);
         }
         return sb.length() == 0 ? "rack" : sb.toString();
     }

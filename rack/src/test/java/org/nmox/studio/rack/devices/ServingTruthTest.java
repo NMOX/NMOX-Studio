@@ -32,11 +32,10 @@ class ServingTruthTest {
     @TempDir
     Path dir;
 
-    private final Predicate<java.io.File> originalTrust = CommandDevice.trustCheck;
 
     @AfterEach
     void restoreTrust() {
-        CommandDevice.trustCheck = originalTrust;
+        CommandDevice.resetTrustCheck();
     }
 
     private static final class GateProbe extends RackDevice {

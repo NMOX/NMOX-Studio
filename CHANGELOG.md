@@ -4,6 +4,166 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.184.0] - 2026-09-19
+
+**The senior-developer pass: three read-only surveys over the 910-file
+product source, then the defects they found — most of them hiding inside
+shape rather than logic.**
+
+David's brief was to review the code as a senior Java developer, refactor
+what warranted it, finish what was unfinished, and decide the items that
+had been deferred to him — on NMOX's principles (New Media On X, the Unix
+philosophy) with the motto, *peace, love and harmony*, implemented rather
+than quoted.
+
+**The motto is written down as three review questions** in the codebase
+guide, next to the house laws that turn out to be those three made
+specific: peace is nothing surprising the user, love is care for the next
+reader, harmony is one fact with one home. Not new — every one of them is
+already paid for by a shipped bug, which is the argument that they are
+the real principles. The section adds one thing: **when two conflict,
+peace wins**, because a surprising product cannot be fixed by being
+internally consistent about it.
+
+### The defects
+
+- **Every rack test after `AsyncExecTest` spawned on the wrong lane.** It
+  restored `RackDevice.execLane` by writing a lane itself —
+  `RequestProcessor.getDefault()::post` — under a comment reading "back to
+  a real async lane". It is a real async lane; it is not the production
+  one, the dedicated eight-wide `nmox-device-exec`. Surefire reuses one
+  fork per module. Six sibling classes each hand-rolled a restore of
+  `CommandDevice.trustCheck`, the gate between a cloned repository and a
+  spawned process: six correct copies are six chances to forget, and a
+  forgotten one leaks `f -> true` into the fork while the build stays
+  green. One `reset()` per seam now, population DERIVED from the reset
+  methods.
+- **`VK_F13` is 61440, not 124.** So Show Keystrokes' single
+  `VK_F1..VK_F24` interval spans 112–61451 and painted `'`, `` ` ``, `@`,
+  `:`, Delete and the dead-accent keys large at the bottom of the screen
+  with no modifier held — in a presentation feature whose own javadoc and
+  user-facing string promise "plain typing never does".
+- **`search_text` read exactly one file** on any project past the walk
+  cap: one `truncated` flag carried two meanings and `if (truncated)
+  break` was already true before the first iteration. Measured here at
+  5,625 eligible files against a cap of 2,000. The comment beside it
+  claimed the flag was "EXACT".
+- **A read failure replaced the user's task board and then disarmed the
+  guard that would have saved it** — the parse branch wrote a `.bak`, the
+  read branch did not, and the consumer recorded ownership of the real
+  file anyway, so the first card edit wrote a starter board over it.
+- **A Python repository carrying only `setup.py` could not be opened.**
+  The factory's hand-kept manifest list had drifted from the kinds the
+  rack detects, in the same file that records this class being found and
+  fixed once before — *the lanes existed; the door didn't*. Derived now.
+- **Apply was permanently grey in all three Options panels.** Every one
+  implements `isChanged()` correctly; a grep for `firePropertyChange`
+  across 910 files returned only accessibility notifications. Half a
+  contract, implemented three times.
+- **A `NullPointerException` was reported to the user as their database's
+  verdict** — `throws Exception` for one branch forced five
+  `catch (Exception)`, and `test()` turns a caught exception into the
+  connection's answer.
+- **`const keyword = 1;` painted `keyword` in keyword colour** — a
+  "cache" built by walking the token ids for categories starting with
+  "keyword", which matches exactly one constant, so the whole map was
+  `{"keyword" -> KEYWORD}`: dead for every real keyword and wrong for one
+  identifier.
+- **A hand-edited `.nmoxinfra.json` threw out of a deploy planner** —
+  eight raw `Integer.parseInt` and an unchecked `rule[1]`, beside a
+  tolerant reader of the same properties one class away.
+- A refusal that could never fire (`familyOf` cannot return null), four
+  shelf buttons where three were greyed, a 49th code point where the
+  javadoc says 48, and the Agent Port's class javadoc claiming it answers
+  one verb when it answers two.
+
+### One fact, one home
+
+`ProjectRoot` (the project-root rule, written **twelve** times in the
+editor module), `SaveLane` (an 81-line class byte-identical modulo its
+package in **four** modules), `ToolLocator.foundIn` (the rack's copy
+missing the `.cmd` arm — latent, not live: all four probes are real
+binaries) and `ScratchDirs` (three temp dirs, one of which never healed).
+
+The shared PATH predicate also fixed something nobody asked about: the
+bare-name test was `canExecute()`, and a **directory** is executable, so
+a folder named `node` on PATH counted as the tool.
+
+### The decisions that were waiting
+
+- **The Browser no longer loads Hacker News.** An IDE should not make an
+  outbound request the user did not ask for, and opening a pane to look at
+  your own running app is as clear a case as there is; the request is also
+  a small disclosure. `StartPage` is built in-process, rendered through
+  `loadContent` so there is no temp file and no misleading address bar,
+  and translated like any chrome. A live serving still wins.
+- **The Tools menu is contiguous**, and the entry was wrong about why it
+  was deferred: the assembled cluster's layers show ONE platform row
+  between the groups, not seven — and the risk that justified waiting is
+  now gated by the census that found it. Language Servers stays beside
+  Plugin Manager, grouped by function rather than by author.
+- **Ledger 101 decided without the walk it was waiting for**, because one
+  of its two candidate shapes is right under any measurement: shaping
+  installs once per JVM, so the deadline belongs to the JVM. The obvious
+  version of that fix steps on a landmine — read from the platform's
+  bytecode, `Task.waitFinished(0)` does not return at once; it logs
+  "infinite wait, again" and loops untimed.
+- **Ledger 86 is deliberately NOT decided**, and says so. It is a purchase
+  and an identity — an Apple enrolment in David's name, a monthly Windows
+  subscription — and no principle about code quality settles whether to
+  spend someone else's money. The engineering half has been ready since
+  v2.43.0.
+- Ledger 100's KEY is decided (the `FontResource`, because a bold face is
+  a different file); 107 gets its carrier (`windows-installer-check`, the
+  only lane that can answer). Six new items record what this pass found
+  and did not fix, each with its decision, because a finding without a
+  decision is just a list.
+
+### The translators found three defects in hours-old English
+
+`console''s` would have shipped as two characters (these keys never reach
+MessageFormat — they read the bytecode to prove it); the page had no
+`dir`, so every RTL sentence drew its full stop at the wrong end; and
+**"press a console's ▶ on the rack" names a control that does not
+exist** — `grep -rn "▶" rack/src/main/java` returns one comment about the
+IDE toolbar, and the product's own words are "GO on a rack device". The
+v2.118.0 wayfinding class, in text written the same hour.
+
+### The walk, and what it did not cover
+
+Walked in the assembled build on a throwaway userdir, on the JavaFX
+runtime (a plain JDK has no FX, so the Browser would show its unavailable
+pane instead of anything this release changed). **Zero SEVERE, zero
+orphans.**
+
+**Observed:** opening the Browser with nothing serving makes **zero
+non-loopback connections** from the JVM — measured with `lsof` against
+the process, before and after. With the old default that same open
+fetched `news.ycombinator.com`. That is the claim "asks the network for
+nothing", observed rather than asserted.
+
+**Not observed, and said plainly:** the pixels. The dev launcher
+registers with macOS as `java` rather than the product's bundle id, so
+the granted-app screenshot channel cannot see it and `screencapture`
+could not be given a window id from this shell. What the page *says* —
+its five sentences, its escaping, its `lang`/`dir` per locale, its
+well-formedness, and that no remote URL appears anywhere in it — is
+covered by `StartPageTest` instead.
+
+**Also not observed:** the Options dialog's Apply button changing state.
+The dialog opens (the window is there), but Swing's accessibility bridge
+exposes no button names to System Events for this process, and the same
+bundle-id gap blocks the channel that can press them. The fire is pinned
+by `OptionsControllersSpeakTest` and its mutant; the enabled-state
+transition is owed to a walk with a real screen.
+
+### Two survey claims corrected rather than fixed
+
+A report is a lead, not a verdict. The missing `.cmd` suffix was reported
+as a live Windows bug affecting every npm-shim console; the three callers
+probe real binaries. And no caller reaches the un-canonicalised
+containment path today. Both are recorded as corrected.
+
 ## [2.183.0] - 2026-09-19
 
 **v2.182.0 claimed fifteen seconds and did not deliver them. This is the
@@ -22885,6 +23045,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.183.0...v2.184.0
 [2.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.182.0...v2.183.0
 [2.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.181.0...v2.182.0
 [2.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.180.0...v2.181.0

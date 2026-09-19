@@ -5,26 +5,17 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 import org.netbeans.spi.lexer.TokenFactory;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Lexer for JavaScript language.
  * Provides syntax highlighting by tokenizing JavaScript source code.
- * Optimized for performance with caching and efficient character processing.
+ * Keywords resolve through JavaScriptLanguageHierarchy's flyweight map, which
+ * is the one table; this class keeps none of its own.
  */
 public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
     
     private static final int EOF = LexerInput.EOF;
-    
-    private static final Map<String, JavaScriptTokenId> KEYWORD_CACHE = new HashMap<>();
-    static {
-        for (JavaScriptTokenId tokenId : JavaScriptTokenId.values()) {
-            if (tokenId.primaryCategory().startsWith("keyword")) {
-                KEYWORD_CACHE.put(tokenId.name().toLowerCase(java.util.Locale.ROOT), tokenId);
-            }
-        }
-    }
     
     private final LexerInput input;
     private final TokenFactory<JavaScriptTokenId> tokenFactory;
@@ -334,10 +325,13 @@ public class JavaScriptLexer implements Lexer<JavaScriptTokenId> {
         CharSequence text = input.readText();
         String str = text.toString();
         
-        JavaScriptTokenId keywordId = KEYWORD_CACHE.get(str);
-        if (keywordId == null) {
-            keywordId = JavaScriptLanguageHierarchy.getToken(str);
-        }
+        // ONE keyword table: the hierarchy's flyweight map. A second one used
+        // to be consulted first — built by walking the token ids for
+        // categories starting with "keyword", which matches exactly one
+        // constant, so it was the single entry {"keyword" -> KEYWORD}. It
+        // missed every real keyword and hit only the identifier `keyword`,
+        // painting an ordinary variable name in keyword colour.
+        JavaScriptTokenId keywordId = JavaScriptLanguageHierarchy.getToken(str);
         
         if (keywordId != null) {
             // after most keywords (return, typeof, case …) a '/' starts a

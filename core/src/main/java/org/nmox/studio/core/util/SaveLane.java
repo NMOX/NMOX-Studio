@@ -1,4 +1,4 @@
-package org.nmox.studio.web3.engine;
+package org.nmox.studio.core.util;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -6,6 +6,13 @@ import org.openide.util.RequestProcessor;
 
 /**
  * The workspace autosave's off-EDT write lane (debt ledger #16).
+ *
+ * <p>It lives in core because four studios needed it and each got its
+ * own byte-identical copy — API Studio, DB Studio, Contract Studio and
+ * the Infra Designer, agreeing down to the javadoc. The v2.131.0 law
+ * says the defect is the second home, not the disagreement, and this
+ * class is why: the three guarantees below are one reasoning, and four
+ * homes meant a fix to that reasoning had to be remembered four times.
  *
  * <p>The studio's Swing debounce timer stays the CLOCK; only the write
  * body rides here. One single-throughput {@link RequestProcessor} is

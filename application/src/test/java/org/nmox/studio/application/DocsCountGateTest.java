@@ -154,15 +154,17 @@ class DocsCountGateTest {
     @Test
     @DisplayName("every live doc that counts manifests agrees with WebProjectFactory")
     void manifestCount() throws Exception {
-        // The MANIFESTS array is the door: a name in it opens that
-        // checkout as a platform project. Count the literals between
-        // the declaration and its closing brace.
-        String factory = Files.readString(Path.of("..", "tools", "src", "main", "java", "org",
-                "nmox", "studio", "tools", "npm", "WebProjectFactory.java"));
-        int start = factory.indexOf("MANIFESTS = {");
-        assertThat(start).as("the MANIFESTS array should exist").isGreaterThan(0);
-        String array = factory.substring(start, factory.indexOf("};", start));
-        long manifests = Pattern.compile("\"[^\"]+\"").matcher(array).results().count();
+        // The manifests are the door: a name among them opens that checkout
+        // as a platform project. This used to COUNT THE LITERALS between
+        // `MANIFESTS = {` and its closing brace — a population that was a
+        // spelling rather than an outcome, and v2.184.0 broke it by making
+        // the list DERIVED from ProjectKind: the literals dropped to the
+        // three the factory adds itself, and the gate read 2 where the real
+        // answer is past sixty. Ask the factory instead of reading how it is
+        // written; the same class this project has now paid for in
+        // MultiMimeSingletonGateTest (v2.19.1), the popup census (v2.146.0)
+        // and the bounded-read ledger (v2.181.0).
+        long manifests = countManifests();
         assertThat(manifests).as("the factory should recognize manifests").isGreaterThan(40);
 
         List<Integer> found = new ArrayList<>();
@@ -251,4 +253,29 @@ class DocsCountGateTest {
         assertThat(seen).as("no live doc counts languages at all — did the phrasing change?").isPositive();
         assertThat(stale).as("stale language counts (truth is %d)", languages).isEmpty();
     }
+
+    /**
+     * How many manifest names the factory opens a project on, read out of the
+     * built classes rather than out of the source text.
+     *
+     * <p>Reflection because {@code application} has no compile dependency on
+     * {@code tools}: the gate runs after the cluster is assembled, so the jar
+     * is on disk either way, and asking the code is the only reading that
+     * cannot be invalidated by rewriting how the list is produced.
+     */
+    private static long countManifests() throws Exception {
+        Path classes = Path.of("..", "tools", "target", "classes");
+        assertThat(Files.isDirectory(classes))
+                .as("tools must be compiled for this gate: %s", classes.toAbsolutePath())
+                .isTrue();
+        try (java.net.URLClassLoader loader = new java.net.URLClassLoader(
+                new java.net.URL[]{classes.toUri().toURL(), Path.of("..", "rack", "target", "classes")
+                    .toUri().toURL()}, DocsCountGateTest.class.getClassLoader())) {
+            Class<?> factory = loader.loadClass("org.nmox.studio.tools.npm.WebProjectFactory");
+            java.lang.reflect.Method walked = factory.getDeclaredMethod("walkedManifests");
+            walked.setAccessible(true);
+            return ((List<?>) walked.invoke(null)).size();
+        }
+    }
+
 }

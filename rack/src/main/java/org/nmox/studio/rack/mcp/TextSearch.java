@@ -70,7 +70,17 @@ final class TextSearch {
     record Hit(String file, int line, String text) {
     }
 
-    /** The answer: hits, how many files were read, whether any cap bit. */
+    /**
+     * The answer: hits, how many files were read, whether the answer may be
+     * missing matches. {@code truncated} reports EITHER cause — the hit cap
+     * bit, or the walk stopped short of the project ({@link #MAX_FILES} or an
+     * unreadable subtree) so files past it were never opened. The two are
+     * deliberately one flag because a reader can only act on one question:
+     * is this everything? They are NOT one variable, which is the bug
+     * v2.184.0 fixed — the walk's floor was raised before the per-file loop
+     * and the loop's own {@code break} then ended the search after ONE file,
+     * so every project over the cap answered {@code filesScanned: 1}.
+     */
     record Answer(List<Hit> hits, int filesScanned, boolean truncated) {
     }
 
@@ -81,9 +91,12 @@ final class TextSearch {
         String needle = query.toLowerCase(Locale.ROOT);
         int cap = Math.min(limit, MAX_HITS);
         List<Path> files = new ArrayList<>();
-        boolean truncated = collect(root, files);
+        // a capped walk is a FLOOR on the project, not a reason to stop
+        // reading the files it did list (McpCompletions' shape, v2.85.0)
+        boolean walkCapped = collect(root, files);
         List<Hit> hits = new ArrayList<>();
         int scanned = 0;
+        boolean hitCap = false;
         for (Path file : files) {
             String text = readText(file);
             if (text == null) {
@@ -93,21 +106,21 @@ final class TextSearch {
             String[] lines = text.split("\\r?\\n", -1);
             for (int i = 0; i < lines.length; i++) {
                 if (lines[i].toLowerCase(Locale.ROOT).contains(needle)) {
-                    // truncated is EXACT: it is set only when a (cap+1)th match
-                    // exists — a file with exactly cap matches is complete
+                    // the hit cap is EXACT: it bites only when a (cap+1)th
+                    // match exists — a file with exactly cap matches is complete
                     if (hits.size() >= cap) {
-                        truncated = true;
+                        hitCap = true;
                         break;
                     }
                     hits.add(new Hit(root.relativize(file).toString().replace(java.io.File.separatorChar, '/'),
                             i + 1, clip(lines[i].strip())));
                 }
             }
-            if (truncated) {
+            if (hitCap) {
                 break;
             }
         }
-        return new Answer(List.copyOf(hits), scanned, truncated);
+        return new Answer(List.copyOf(hits), scanned, hitCap || walkCapped);
     }
 
     /** The project's files relative to root, forward-slashed, the same walk and caps search uses (v2.84.0). */
