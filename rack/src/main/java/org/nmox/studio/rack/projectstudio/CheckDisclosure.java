@@ -59,7 +59,8 @@ public final class CheckDisclosure {
             if (c.isFileKind()) {
                 b.append("  my ").append(c.filePath()).append(":\n");
                 try {
-                    File target = LearningSpace.resolveInside(spaceDir, c.filePath());
+                    File target = org.nmox.studio.core.util.Containment
+                            .resolve(spaceDir, c.filePath());
                     String text = target == null || !target.isFile() ? "(missing)"
                             : Files.readString(target.toPath(), StandardCharsets.UTF_8);
                     b.append(cap(text)).append('\n');

@@ -1,5 +1,6 @@
 package org.nmox.studio.ui.site;
 
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.core.util.Threads;
 import com.sun.net.httpserver.HttpServer;
 import java.io.File;
@@ -66,7 +67,13 @@ public final class SiteServer {
                 // and write nothing anyway — a browser's probe HEADs would
                 // spam messages.log (live-probed, the v2.40.1 review find)
                 boolean head = "HEAD".equals(method);
-                File target = resolveInside(root, path.substring(1));
+                // canonical containment, the one home (ledger 111): the
+                // resolved target must stay inside the site root, or the
+                // answer is 404. This surface used to accept the root
+                // ITSELF and hand a directory to isFile() — the request
+                // that reaches here for a directory is already
+                // root/index.html, so nothing legitimate asked for it
+                File target = Containment.resolve(root, path.substring(1));
                 if (target == null || !target.isFile()) {
                     byte[] miss = "404 — not part of this site".getBytes(
                             java.nio.charset.StandardCharsets.UTF_8);
@@ -97,21 +104,6 @@ public final class SiteServer {
         }));
         server.start();
         return url();
-    }
-
-    /**
-     * Canonical containment (the v1.310.0 rule): the resolved target
-     * must stay inside the site root, or the answer is null → 404.
-     * Package-private so the refusal is behaviorally testable.
-     */
-    static File resolveInside(File root, String rel) {
-        try {
-            File base = root.getCanonicalFile();
-            File target = new File(root, rel).getCanonicalFile();
-            return target.toPath().startsWith(base.toPath()) ? target : null;
-        } catch (IOException bad) {
-            return null;
-        }
     }
 
     /** The actual bound address — the loopback law's witness. */

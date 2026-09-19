@@ -1,13 +1,13 @@
 package org.nmox.studio.ui.browser.devtools;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.nmox.studio.core.spi.LiveServings;
+import org.nmox.studio.core.util.Containment;
 
 /**
  * Maps the Browser's current page URL back to the source file on disk
@@ -122,22 +122,16 @@ public final class PageSourceResolver {
                 ? new String[]{rel + "index.html", "public/" + rel + "index.html"}
                 : new String[]{rel, "public/" + rel, rel + "/index.html", "public/" + rel + "/index.html"};
         for (String candidate : candidates) {
-            File f = insideOnly(projectDir, candidate);
+            // canonical containment, the one home (ledger 111). This
+            // surface's own spelling was a STRING prefix test against a
+            // canonical root while canonicalizing only the target — it
+            // happened to be correct because it appended the separator,
+            // but it was a fourth rule for one decision
+            File f = Containment.resolve(projectDir, candidate);
             if (f != null && f.isFile()) {
                 return f;
             }
         }
         return null;
-    }
-
-    /** Canonical containment guard; null when the path escapes the root. */
-    private static File insideOnly(File root, String relative) {
-        try {
-            File f = new File(root, relative).getCanonicalFile();
-            String rootPath = root.getCanonicalPath() + File.separator;
-            return f.getPath().startsWith(rootPath) ? f : null;
-        } catch (IOException e) {
-            return null;
-        }
     }
 }
