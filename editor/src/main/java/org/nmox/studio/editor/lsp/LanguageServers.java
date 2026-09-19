@@ -962,6 +962,45 @@ public final class LanguageServers {
         }
     }
 
+    /**
+     * Cairo via scarb's own bundled server ({@code scarb cairo-language-server}).
+     *
+     * <p>Added v2.184.0. The LSP catalog has listed Cairo since v1.134.0 —
+     * whose changelog says "scarb serves the LSP" — and the Language Servers
+     * panel rendered a row with status for it, but no provider anywhere
+     * launched the binary, so a user who installed scarb got no intelligence
+     * and the panel's own health report could never fire for it. 41 of the
+     * catalog's 43 entries had a provider; these were the two that did not.
+     *
+     * <p>Honest limit: the launch is written in the shape every other entry
+     * uses and has NOT been verified against a real scarb install. A missing
+     * or failing server degrades the way all of them do — {@link #provide}
+     * reports the install hint once per session and the editor keeps its
+     * grammar, outline and completion.
+     */
+    @MimeRegistration(mimeType = "text/x-cairo", service = LanguageServerProvider.class)
+    public static final class CairoServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("scarb", "cairo-language-server"));
+        }
+    }
+
+    /**
+     * Move via move-analyzer (the Sui toolchain's language server).
+     *
+     * <p>Added v2.184.0, with the same history and the same honest limit as
+     * {@link CairoServer}: claimed by v1.137.0, catalogued, and never
+     * launched.
+     */
+    @MimeRegistration(mimeType = "text/x-move", service = LanguageServerProvider.class)
+    public static final class MoveServer implements LanguageServerProvider {
+        @Override
+        public LanguageServerDescription startServer(Lookup lookup) {
+            return provide(lookup, List.of("move-analyzer"));
+        }
+    }
+
     /** D via serve-d. */
     @MimeRegistration(mimeType = "text/x-d", service = LanguageServerProvider.class)
     public static final class DServer implements LanguageServerProvider {
