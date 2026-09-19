@@ -668,15 +668,28 @@ public class RackService {
      * rather than stacking: {@code NbStatusDisplayer.add} REPLACES an existing
      * message of equal importance, so successive failed aims never queue up.
      */
+    /**
+     * The message currently shown, held so it cannot be collected before its
+     * time. **This field is the fix, and v2.182.0 shipped without it.**
+     *
+     * <p>`NbStatusDisplayer` keeps only a {@code WeakReference} to each
+     * message AND gives {@code MessageImpl} a {@code finalize()} that calls
+     * {@code run()}, which removes it from the strip. So a message nobody
+     * holds disappears at the first garbage collection — and a project
+     * opening allocates heavily, which is exactly when this one is set.
+     * v2.182.0 reasoned that {@code clear(ms)}'s pending RequestProcessor task
+     * would hold it and did not check; walked afterwards, the sentence died
+     * between two and nine seconds instead of the fifteen it asked for.
+     */
+    private static volatile org.openide.awt.StatusDisplayer.Message patchRefusalShown;
+
     private static void statusThatLingers(String text) {
         try {
-            org.openide.awt.StatusDisplayer.Message shown =
-                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                            org.nmox.studio.core.util.PlainStatus.text(text), PATCH_REFUSAL_IMPORTANCE);
-            // clear(ms) posts the removal on the platform's own RP, which holds
-            // the message strongly until it runs — the list itself keeps only a
-            // WeakReference, so without this the sentence could vanish at a GC
-            shown.clear(PATCH_REFUSAL_LINGER_MS);
+            // held in a field, not a local: see patchRefusalShown for why the
+            // pending clear() task is not enough to keep it alive
+            patchRefusalShown = org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                    org.nmox.studio.core.util.PlainStatus.text(text), PATCH_REFUSAL_IMPORTANCE);
+            patchRefusalShown.clear(PATCH_REFUSAL_LINGER_MS);
         } catch (RuntimeException | LinkageError ignored) {
             // status line unavailable (tests, stripped platform)
         }
