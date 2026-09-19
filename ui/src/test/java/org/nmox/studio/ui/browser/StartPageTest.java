@@ -60,6 +60,20 @@ class StartPageTest {
     }
 
     @Test
+    @DisplayName("the document is well formed — a page we generate should survive a strict parser, not only a forgiving one")
+    void theDocumentIsWellFormed() throws Exception {
+        // WebKit would forgive an unclosed tag; a strict parse is the cheap
+        // way to prove the template never drifts into something malformed
+        // while still looking fine on screen.
+        javax.xml.parsers.DocumentBuilderFactory f =
+                javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        f.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        f.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        String xml = StartPage.html().replace("<!DOCTYPE html>", "");
+        f.newDocumentBuilder().parse(new org.xml.sax.InputSource(new java.io.StringReader(xml)));
+    }
+
+    @Test
     @DisplayName("the document declares its language AND its direction — without dir, a Hebrew sentence draws its full stop at the wrong end")
     void theDocumentDeclaresItsDirection() {
         // measured by the translator with java.text.Bidi: under a base LTR

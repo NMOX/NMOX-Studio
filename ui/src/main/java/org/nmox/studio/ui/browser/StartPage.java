@@ -61,7 +61,7 @@ final class StartPage {
         boolean rtl = org.nmox.studio.core.util.TextDirection.isRightToLeft(locale);
         return """
                <!DOCTYPE html>
-               <html lang="%s" dir="%s"><head><meta charset="utf-8"><title>%s</title>
+               <html lang="%s" dir="%s"><head><meta charset="utf-8"/><title>%s</title>
                <style>
                  :root { color-scheme: dark light; }
                  body { margin: 0; display: flex; min-height: 100vh;
