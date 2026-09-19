@@ -64,8 +64,8 @@ class RackCountsReadRightTest {
     void theAtRestClauseSpeaksOnlyWhenItApplies() {
         assertThat(imported(7, 10, 0)).as("a rack with nothing switched on says nothing about it")
                 .doesNotContain("at rest");
-        assertThat(imported(7, 10, 1)).contains("One device was saved switched on; it arrives at rest.");
-        assertThat(imported(7, 10, 3)).contains("3 devices were saved switched on; they arrive at rest.");
+        assertThat(imported(7, 10, 1)).contains("One device was saved with a switch on; it arrives at rest.");
+        assertThat(imported(7, 10, 3)).contains("3 devices were saved with a switch on; they arrive at rest.");
     }
 
     @Test

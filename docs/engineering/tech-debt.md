@@ -67,26 +67,7 @@ in that state. The guard itself was reviewed and is sufficient: no
 superseded task ever loads the wrong page, so this is a wait, not a wrong
 page.
 
-### 102. A plugin device's KNOB also runs plugin code when a rack mounts
-
-Recorded by v2.179.0, which made arrival at rest true for switches. An
-imported rack sets every self-starting switch off — for a built-in, the ones
-its constructor declares (`paramSelfStarting`, held by
-`SelfStartingLedgerTest`); for a plugin or JSON device, EVERY switch, because
-restoring one runs the plugin's `onChange` Runnable, which holds
-`DeviceServices` and can reach `exec` (`ExtensionSelfStartTest` proves the
-path). A plugin KNOB has the same shape — `ExtensionDevice` wires
-`KnobHandle.onChange`, and `Knob.setSelectedIndex` fires it on restore — and
-no equivalent answer: a knob has no "off".
-
-**Why it is deferred.** Every `exec` a plugin makes is still behind Workspace
-Trust, so this is not an ungated spawn; it is a plugin doing something at mount
-rather than at a press, in a workspace the user already trusts. The fixes each
-change the frozen Device SPI's behaviour (suppress change callbacks during
-`applyState`; or restore extension knobs silently and fire one `onAttached`),
-and that wants a plugin author's eye on what breaks — JSON devices, the only
-plugins that ship, declare no knob callbacks that exec. The built-in fleet's
-knob listeners were not audited for starts-on-restore either; none is known.
+## Open — recorded by v2.179.0 (the rack ecosystem release)
 
 ### 103. The three v2.176–v2.178 edges never walked in the app
 
@@ -96,25 +77,70 @@ v2.177.0 (test-pinned; the background tools cannot drive a completion popup or
 a modifier-click). They need a real popup and a real modifier-click: a screen
 walk with full control, or a person.
 
-### 104. An oversize or corrupt rack patch on AIM only logs
+## Closed by v2.180.0 (the rack debt night)
 
-`RackService.autoLoadPatch` catches the load failure and writes a WARNING; the
-user sees an empty rack and no sentence. Load Patch and Import speak for the
-same file. It predates v2.176.0 and nothing is lost (saves are click-only, the
-corrupt file is kept as `.bak`, an oversize one is untouched) — it is a refusal
-that does not speak, which is a standing law. Deferred only because the right
-surface (a balloon, the rack's own placard) wants a look at the running app.
+### 102. A plugin device's KNOB also runs plugin code when a rack mounts — CLOSED
 
-### 105. "1 devices, 1 cables": three rack sentences count without a plural
+**What it was.** Restoring a saved value fired the plugin's `onChange`
+Runnable, which holds `DeviceServices` and can reach `exec`. v2.179.0 answered
+the SWITCH half by switching every plugin toggle off on import; a knob has no
+"off", so the mount ran plugin code for a value the user never touched.
 
-`RackTopComponent_importSummary` (v2.176.0) and v2.179.0's `leavingSummary` /
-`leavingNothing` render `{0} devices, {1} cables` for any count, so a
-one-device rack reads "1 devices". Found by the translators, who dodged it in
-Polish, Russian and Ukrainian by writing the count after a label. The house
-answer exists (`core.util.Plural`, the `{n,choice,…}` forms the l10n arc uses
-with three Slavic branches) and costs three keys re-authored in fifteen
-languages with real plural forms. Deferred as a translator pass of its own
-rather than squeezed into a release whose strings were already reviewed.
+**What closed it.** The answer the deferral asked for, taken from the other
+end: the callbacks are not suppressed by the caller, the device knows it is
+restoring. `RackDevice.applyState` raises a flag for the length of the restore
+and `ExtensionDevice` wraps every plugin `onChange` so it does not run while it
+is set — for knobs and toggles alike. **A restore is not a gesture.** The
+plugin is then told once, after the whole state is in, through a new
+`DeviceLogic.onStateRestored(services)` default method: additive to the frozen
+SPI, and the hook `onAttached` could never be (a device is racked BEFORE its
+state is applied, so `onAttached` fires with the defaults still in place).
+`ExtensionSelfStartTest` proves all three legs — the callback does not run
+during a restore, the plugin is told after it, and an ordinary press still
+runs it. Its predecessor had been written to PROVE the hole existed, as the
+justification for switching every plugin toggle off; it is inverted now, and
+the switch-off stays as the second defence for a plugin that reaches `exec`
+from something other than a knob callback.
+
+### 104. An oversize or corrupt rack patch on AIM only logs — CLOSED
+
+**What it was.** `RackService.autoLoadPatch` caught the load failure and wrote
+a WARNING; the reader got an empty rack and no sentence. Every other refusal
+in the product speaks — this was the one the user did not ask for.
+
+**What closed it.** It says so on the status line, where the rest of the aim
+already speaks, naming the file and carrying the engine's own reason (which
+already distinguishes "kept as .bak" from "over the 8 MiB cap — not read").
+The surface the deferral wanted a running app to choose turned out to be the
+one already in use for everything else about aiming. `PatchNotLoadedSpeaksTest`
+holds the sentence and reads `autoLoadPatch`'s catch to prove the call site
+exists — a message with green tests and no call site is a payload without a
+gate.
+
+### 105. "1 devices, 1 cables": three rack sentences count without a plural — CLOSED
+
+**What it was.** `importSummary` (v2.176.0), `leavingSummary` and
+`leavingNothing` (v2.179.0) rendered `{0} devices, {1} cables` at every count.
+Found by the translators, who had quietly dodged it in Polish, Russian and
+Ukrainian by writing the count after a label.
+
+**What closed it.** All three take `{n,choice,…}` branches, and the at-rest
+clause — which used to be fused into `importSummary` as "{2} were saved armed
+or running", a sentence about nothing on every rack that had none — is its own
+key, said only when there is one. The ChoiceFormat trap bit during the fix and
+is worth keeping: a value BELOW the first limit takes the FIRST branch, so
+`{0,choice,1#…|1<…}` renders 0 as the singular; every count carries an explicit
+`0#`. `RackCountsReadRightTest` reads each sentence at 0, 1 and many.
+
+**What it uncovered.** `PluralCopyGateTest` has held the plural law since
+v2.85.0 and could not see this: its population is a hand-kept list of five
+nouns, matched only in Java string concatenation, so a count living inside a
+message value was invisible to it — the v2.147.0 shape, a gate whose population
+is a SHAPE rather than the thing it is about. A census of every English message
+value across the ten modules found 33 further candidates behind 41 verbs
+wrongly matched (`{0} installs into the project`) and 14 keys correctly using
+the house's own `…One`/`…Many` idiom.
+
 
 ## Closed by v2.165.0 (the Browser shapes complex scripts)
 
