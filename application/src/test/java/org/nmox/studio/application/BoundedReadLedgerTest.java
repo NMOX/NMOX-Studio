@@ -52,9 +52,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BoundedReadLedgerTest {
 
-    /** A whole-file read, however the formatter broke the line. */
+    /**
+     * A whole-file read, however the formatter broke the line — and
+     * whichever API spells it. {@code Files.readString} is the JDK's way and
+     * {@code FileObject.asText()} is the platform's; both hand back the
+     * entire file as one String, so a population written as the first
+     * spelling alone is a gate that a one-word change walks past. It did:
+     * this ledger shipped in v2.180.0 naming only the JDK three, while seven
+     * {@code asText()} reads of a project's own files sat outside it
+     * unclassified — the v2.19.1 law (gate the OUTCOME, not the spelling)
+     * turned on the gate that quotes it.
+     */
     private static final Pattern RAW_READ = Pattern.compile(
-            "Files\\s*\\.\\s*(readString|readAllBytes|readAllLines)\\s*\\(");
+            "Files\\s*\\.\\s*(readString|readAllBytes|readAllLines)\\s*\\(|"
+            + "\\.\\s*as(Text|Lines)\\s*\\(\\s*\\)");
 
     /**
      * A call to the bounded reader, however the formatter broke the line.
@@ -171,7 +182,34 @@ class BoundedReadLedgerTest {
             Map.entry("A11yKit.java",
                 "CHOSEN: the kit reads the entry page it is about to wire, at the press"),
             Map.entry("I18nKit.java",
-                "CHOSEN: the kit reads the entry page it is about to wire, at the press")
+                "CHOSEN: the kit reads the entry page it is about to wire, at the press"),
+
+            // --- the platform's spelling of the same gesture: the file the
+            // click is on its way to OPEN, read once to turn an offset into
+            // a line number. The editor loads that file whole a moment
+            // later, so a ceiling here would refuse what the platform is
+            // about to read anyway — and refuse a file the user picked.
+            Map.entry("CssClassHyperlink.java",
+                "CHOSEN: ⌘-click a class → openAt reads the rule's file to count lines to "
+                + "the offset, and the editor opens that same file in the next breath"),
+            Map.entry("CssClassUsageHyperlink.java",
+                "CHOSEN: the reverse jump's openAt reads the markup file it is opening, to "
+                + "turn the usage's offset into a line"),
+            Map.entry("CssVarHyperlink.java",
+                "CHOSEN: the design-token jump's openAt reads the declaring stylesheet it "
+                + "is opening, to turn the declaration's offset into a line"),
+            Map.entry("JsClassHyperlink.java",
+                "CHOSEN: the class jump from JavaScript reads the stylesheet it is opening, "
+                + "to turn the rule's offset into a line"),
+            Map.entry("NgSelectorHyperlink.java",
+                "CHOSEN: the Angular selector jump reads the component file it is opening, "
+                + "to turn the selector's offset into a line"),
+            Map.entry("ProjectJumpHyperlink.java",
+                "CHOSEN: the shared fetch→route and env-key jumps read the file they are "
+                + "opening, to turn the target's offset into a line"),
+            Map.entry("CopyTsTypesAction.java",
+                "CHOSEN: Copy TS Types reads the .json the user right-clicked, and only "
+                + "when it is not already open — an open buffer wins (v2.34.1)")
     );
 
     /**
