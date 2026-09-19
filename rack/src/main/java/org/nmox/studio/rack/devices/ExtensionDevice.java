@@ -84,6 +84,35 @@ public final class ExtensionDevice extends RackDevice {
         }
     }
 
+    /**
+     * A plugin callback that a RESTORE never runs. Setting a control's value
+     * while loading a patch moves it, and a moved control tells its listeners
+     * — so before v2.180.0 mounting a saved rack ran every plugin knob and
+     * toggle callback, arbitrary code holding {@link DeviceServices}, as
+     * though the user had just dialled them (ledger 102). The plugin is told
+     * once afterwards instead, through {@code onStateRestored}, which is also
+     * the only moment that can carry the restored values: a device is racked
+     * before its state is applied, so {@code onAttached} runs too early.
+     *
+     * <p>A gesture is unaffected — this is the restore phase alone.
+     */
+    private Runnable whenNotRestoring(Runnable pluginCallback) {
+        return () -> {
+            if (!isRestoringState()) {
+                pluginCallback.run();
+            }
+        };
+    }
+
+    @Override
+    protected void onStateRestored() {
+        try {
+            logic.onStateRestored(services);
+        } catch (RuntimeException ex) {
+            // a plugin's read-back failure must not break the patch load
+        }
+    }
+
     @Override
     public void receive(Port in, Signal signal) {
         if (isDisposed()) {
@@ -266,7 +295,7 @@ public final class ExtensionDevice extends RackDevice {
             return new KnobHandle() {
                 @Override
                 public void onChange(Runnable r) {
-                    knob.addChangeListener(r);
+                    knob.addChangeListener(whenNotRestoring(r));
                 }
 
                 @Override
@@ -316,18 +345,18 @@ public final class ExtensionDevice extends RackDevice {
             require("toggle key", key);
             require("toggle label", label);
             ToggleSwitch toggle = flow(new ToggleSwitch(label, initial), label);
-            // EVERY extension toggle is self-starting, by decision: restoring
-            // one calls setOn, setOn runs the plugin's onChange (below), and
-            // that Runnable is arbitrary plugin code holding DeviceServices —
-            // it can exec (trust-gated, but a trusted workspace runs it) or
-            // start its own timer. The host cannot tell a flag from a watcher,
-            // so a shared rack arrives with all of them off (RackShare,
-            // SelfStarting). ExtensionSelfStartTest pins the path to exec.
+            // EVERY extension toggle is self-starting, by decision: the host
+            // cannot tell a plugin's flag from its watcher, so a shared rack
+            // arrives with all of them off (RackShare, SelfStarting), and
+            // ExtensionSelfStartTest pins that a toggle reaches exec at all.
+            // That covers a rack ARRIVING; restoring your own saved patch is
+            // the other half, and it is closed below — a restore never runs
+            // the plugin's callback (ledger 102, v2.180.0).
             paramSelfStarting(key, toggle);
             return new ToggleHandle() {
                 @Override
                 public void onChange(Runnable r) {
-                    toggle.addChangeListener(r);
+                    toggle.addChangeListener(whenNotRestoring(r));
                 }
 
                 @Override

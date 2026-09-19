@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
+import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 import org.nmox.studio.core.spi.device.DeviceCategory;
 import org.nmox.studio.core.spi.device.DeviceDescriptor;
@@ -23,16 +24,30 @@ import org.nmox.studio.rack.model.RackShare;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The decision about extension devices, pinned: a restored extension toggle
- * CAN reach {@code services.exec}, so every toggle of a device that is not a
- * built-in arrives off when a rack is imported.
+ * Two defences over extension devices, and why BOTH are kept.
  *
- * <p>The path: {@code RackIO.fromJson} → {@code applyState} → the setter
- * {@code ExtensionDevice.Face.toggle} registered → {@code ToggleSwitch.setOn}
- * → the change listener the plugin passed to {@code ToggleHandle.onChange} —
- * arbitrary plugin code holding {@code DeviceServices}. Workspace Trust still
- * stands in front of the spawn, but in a workspace the receiver already
- * trusts, a stranger's file would run the plugin's command by being opened.
+ * <p>A plugin's {@code ToggleHandle.onChange} is arbitrary code holding
+ * {@code DeviceServices}, so it can reach {@code services.exec}. Until
+ * v2.180.0 a patch load ran it: {@code RackIO.fromJson} → {@code applyState}
+ * → the setter {@code ExtensionDevice.Face.toggle} registered →
+ * {@code ToggleSwitch.setOn} → the plugin's listener. Workspace Trust still
+ * stood in front of the spawn, but in a workspace the receiver already
+ * trusted, opening a file ran a stranger's command (ledger 102).
+ *
+ * <ul>
+ * <li><b>A restore is not a gesture</b> (v2.180.0): loading ANY patch — a
+ * stranger's or your own — never runs a plugin's knob or toggle callback.
+ * The plugin is told once afterwards through
+ * {@code DeviceLogic.onStateRestored}, the only hook that can carry the
+ * restored values.</li>
+ * <li><b>Every extension switch arrives off</b> (v2.179.0): a rack that was
+ * IMPORTED also has those switches turned off before it is mounted, because
+ * the host cannot tell a plugin's flag from its watcher — so a stranger's
+ * rack never even shows one on.</li>
+ * </ul>
+ *
+ * <p>Neither makes the other redundant: the first stops plugin code running,
+ * the second stops a stranger's rack arriving armed on the face.
  */
 class ExtensionSelfStartTest {
 
@@ -73,19 +88,103 @@ class ExtensionSelfStartTest {
     }
 
     @Test
-    @DisplayName("restoring an extension toggle ON runs the plugin's onChange, and that reaches services.exec — the trust gate is asked, which only exec does")
-    void restoredToggleReachesExec() {
+    @DisplayName("a RESTORE never runs the plugin's callback: a patch value cannot walk into services.exec — while the same value set by a gesture still does")
+    void restoreNeverRunsThePluginCallback() {
         List<File> asked = new ArrayList<>();
         ExtensionDevice.trustGate = dir -> {
             asked.add(dir);
-            return false; // decline: the point is that exec was REACHED, not that anything ran
+            return false; // decline: the point is whether exec was REACHED, not that anything ran
         };
         ExtensionDevice device = new ExtensionDevice(watcherPlugin());
         assertThat(asked).as("building and mounting the plugin asks for nothing").isEmpty();
 
         device.applyState(Map.of("watch", "true"));
 
-        assertThat(asked).as("a patch value alone walked into the plugin's exec call").hasSize(1);
+        assertThat(asked)
+                .as("a patch value alone must not reach the plugin's exec call (ledger 102)").isEmpty();
+        assertThat(device.getState().get("watch"))
+                .as("the value is still restored — the face shows it, only the callback is skipped")
+                .isEqualTo("true");
+
+    }
+
+    @Test
+    @DisplayName("the suppression is the RESTORE phase alone, not a mute button: the same switch moved outside a restore still runs the plugin's callback")
+    void outsideARestoreTheCallbackStillRuns() throws Exception {
+        List<File> asked = new ArrayList<>();
+        ExtensionDevice.trustGate = dir -> {
+            asked.add(dir);
+            return false;
+        };
+        List<DeviceFace.ToggleHandle> handle = new ArrayList<>();
+        ExtensionDevice device = new ExtensionDevice(new DeviceExtension() {
+            @Override
+            public DeviceDescriptor descriptor() {
+                return watcherPlugin().descriptor();
+            }
+
+            @Override
+            public DeviceLogic build(DeviceFace face, DeviceServices services) {
+                var watch = face.toggle("watch", "WATCH", false);
+                handle.add(watch);
+                watch.onChange(() -> {
+                    if (watch.isOn()) {
+                        services.exec(List.of("stranger-chosen-tool", "--watch"), line -> { }, code -> { });
+                    }
+                });
+                return new DeviceLogic() {
+                };
+            }
+        });
+
+        device.applyState(Map.of("watch", "true"));
+        assertThat(asked).as("restored: the callback is skipped").isEmpty();
+
+        // the plugin moves its own switch — no restore in sight
+        handle.get(0).setOn(false);
+        flushEdt();
+        handle.get(0).setOn(true);
+        flushEdt();
+        assertThat(asked).as("moved outside a restore, the callback runs and reaches exec").hasSize(1);
+    }
+
+    private static void flushEdt() throws Exception {
+        SwingUtilities.invokeAndWait(() -> { });
+    }
+
+    @Test
+    @DisplayName("the plugin is TOLD once after a restore — the hook onAttached cannot serve, because a device is racked before its state is applied")
+    void thePluginIsToldAfterTheRestore() {
+        List<String> calls = new ArrayList<>();
+        ExtensionDevice device = new ExtensionDevice(new DeviceExtension() {
+            @Override
+            public DeviceDescriptor descriptor() {
+                return watcherPlugin().descriptor();
+            }
+
+            @Override
+            public DeviceLogic build(DeviceFace face, DeviceServices services) {
+                var watch = face.toggle("watch", "WATCH", false);
+                return new DeviceLogic() {
+                    @Override
+                    public void onAttached(DeviceServices s) {
+                        calls.add("onAttached:" + watch.isOn());
+                    }
+
+                    @Override
+                    public void onStateRestored(DeviceServices s) {
+                        calls.add("onStateRestored:" + watch.isOn());
+                    }
+                };
+            }
+        });
+
+        device.applyState(Map.of("watch", "true"));
+        assertThat(calls).as("told once, with the restored value readable").containsExactly("onStateRestored:true");
+
+        calls.clear();
+        device.applyState(Map.of("nothing-this-device-has", "x"));
+        assertThat(calls).as("a state that sets nothing restores nothing, and says nothing").isEmpty();
     }
 
     @Test

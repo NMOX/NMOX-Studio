@@ -45,6 +45,26 @@ public interface DeviceLogic {
     }
 
     /** The rack aimed at a different project directory. */
+    /**
+     * The device's saved settings have just been restored from a patch, and
+     * the face already shows them. Read them back here with the handles'
+     * {@code selected()} / {@code isOn()} if you cache them.
+     *
+     * <p>Your {@code onChange} callbacks did NOT fire for those values, on
+     * purpose: a restore is not a gesture. Before v2.180.0 they did, so
+     * mounting a saved rack ran a plugin's knob and toggle callbacks — code
+     * that can reach {@link DeviceServices#exec} — as though the user had
+     * just dialled every control. That made the product's promise about a
+     * shared rack ("nothing runs until you press it") true only for the
+     * switches the host could name.
+     *
+     * <p>This fires after the restore, where {@link #onAttached} cannot help:
+     * a device is racked BEFORE its state is applied, so {@code onAttached}
+     * sees the defaults.
+     */
+    default void onStateRestored(DeviceServices services) {
+    }
+
     default void onProjectChanged(File dir) {
     }
 
