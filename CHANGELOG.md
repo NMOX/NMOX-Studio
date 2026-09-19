@@ -129,6 +129,34 @@ exist** — `grep -rn "▶" rack/src/main/java` returns one comment about the
 IDE toolbar, and the product's own words are "GO on a rack device". The
 v2.118.0 wayfinding class, in text written the same hour.
 
+### The walk, and what it did not cover
+
+Walked in the assembled build on a throwaway userdir, on the JavaFX
+runtime (a plain JDK has no FX, so the Browser would show its unavailable
+pane instead of anything this release changed). **Zero SEVERE, zero
+orphans.**
+
+**Observed:** opening the Browser with nothing serving makes **zero
+non-loopback connections** from the JVM — measured with `lsof` against
+the process, before and after. With the old default that same open
+fetched `news.ycombinator.com`. That is the claim "asks the network for
+nothing", observed rather than asserted.
+
+**Not observed, and said plainly:** the pixels. The dev launcher
+registers with macOS as `java` rather than the product's bundle id, so
+the granted-app screenshot channel cannot see it and `screencapture`
+could not be given a window id from this shell. What the page *says* —
+its five sentences, its escaping, its `lang`/`dir` per locale, its
+well-formedness, and that no remote URL appears anywhere in it — is
+covered by `StartPageTest` instead.
+
+**Also not observed:** the Options dialog's Apply button changing state.
+The dialog opens (the window is there), but Swing's accessibility bridge
+exposes no button names to System Events for this process, and the same
+bundle-id gap blocks the channel that can press them. The fire is pinned
+by `OptionsControllersSpeakTest` and its mutant; the enabled-state
+transition is owed to a walk with a real screen.
+
 ### Two survey claims corrected rather than fixed
 
 A report is a lead, not a verdict. The missing `.cmd` suffix was reported
