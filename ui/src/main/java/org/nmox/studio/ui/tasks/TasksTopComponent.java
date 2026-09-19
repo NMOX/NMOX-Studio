@@ -216,7 +216,8 @@ import org.openide.windows.TopComponent;
     "TasksTopComponent_alreadyLast=Already the last column",
     "TasksTopComponent_deleteColumn=Delete Column…",
     "TasksTopComponent_deleteEmptyColumnQuestion=Delete this empty column?",
-    "TasksTopComponent_deleteColumnWithCardsQuestion=Delete this column AND its {0} cards?",
+    "TasksTopComponent_deleteColumnWithCardsQuestion=Delete this column AND its "
+        + "{0,choice,0#{0} cards|1#{0} card|1<{0} cards}?",
     "TasksTopComponent_deleteColumnTitle=Delete Column",
     "TasksTopComponent_boardKeepsOneColumn=A board keeps at least one column"
 })
@@ -1262,7 +1263,8 @@ public final class TasksTopComponent extends TopComponent {
             NotifyDescriptor d = new NotifyDescriptor(
                     org.nmox.studio.core.util.PlainDialogs.plain(n == 0
                             ? Bundle.TasksTopComponent_deleteEmptyColumnQuestion()
-                            : Bundle.TasksTopComponent_deleteColumnWithCardsQuestion(String.valueOf(n)),
+                            // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+                            : Bundle.TasksTopComponent_deleteColumnWithCardsQuestion(n),
                             Bundle.TasksTopComponent_messageA11y()),
                     Bundle.TasksTopComponent_deleteColumnTitle(), NotifyDescriptor.YES_NO_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE, null,

@@ -56,14 +56,17 @@ import org.openide.util.RequestProcessor;
     "EditWithKvasirAction_modelDepth=Model depth",
     "EditWithKvasirAction_instructionField=Edit instruction",
     "EditWithKvasirAction_sendsNote=<html><small>Sends only the selection, the file name, the language, and your instruction. The reply replaces the selection only after you approve the preview.</small></html>",
-    "EditWithKvasirAction_prompt=<html>What should KVASIR change in the selection ({0} chars of <b>{1}</b>)?</html>",
+    "EditWithKvasirAction_prompt=<html>What should KVASIR change in the selection "
+        + "({0,choice,0#{0} chars|1#{0} char|1<{0} chars} of <b>{1}</b>)?</html>",
     "EditWithKvasirAction_title=Edit with KVASIR",
     "EditWithKvasirAction_emptyInstruction=Say what to change — an empty instruction sends nothing.",
     "EditWithKvasirAction_drafting=KVASIR is drafting the edit…",
     "EditWithKvasirAction_discarded=KVASIR edit discarded — the file is untouched.",
     "EditWithKvasirAction_currentSelection=Current selection",
     "EditWithKvasirAction_proposes=KVASIR proposes",
-    "EditWithKvasirAction_previewNote=<html>Apply replaces the selection in <b>{0}</b> as one undo unit ({1} → {2} chars, {3} → {4} lines). Nothing else in the file changes.</html>",
+    "EditWithKvasirAction_previewNote=<html>Apply replaces the selection in <b>{0}</b> as one undo unit "
+        + "({1} → {2,choice,0#{2} chars|1#{2} char|1<{2} chars}, "
+        + "{3} → {4,choice,0#{4} lines|1#{4} line|1<{4} lines}). Nothing else in the file changes.</html>",
     "EditWithKvasirAction_apply=Apply",
     "EditWithKvasirAction_keepCurrent=Keep Current Code",
     "EditWithKvasirAction_previewTitle=KVASIR edit — preview",
@@ -109,7 +112,8 @@ public final class EditWithKvasirAction implements ActionListener {
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel(Bundle.EditWithKvasirAction_prompt(String.valueOf(selection.length()), PlainText.escape(fileName))),
+        // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+        panel.add(new JLabel(Bundle.EditWithKvasirAction_prompt(selection.length(), PlainText.escape(fileName))),
                 BorderLayout.NORTH);
         panel.add(instruction, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);
@@ -168,7 +172,10 @@ public final class EditWithKvasirAction implements ActionListener {
         diff.add(titled(Bundle.EditWithKvasirAction_proposes(), replacement));
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel(Bundle.EditWithKvasirAction_previewNote(PlainText.escape(fileName), String.valueOf(original.length()), String.valueOf(replacement.length()), String.valueOf(countLines(original)), String.valueOf(countLines(replacement)))),
+        // the counts ride as NUMBERS: a ChoiceFormat branch refuses a String
+        panel.add(new JLabel(Bundle.EditWithKvasirAction_previewNote(PlainText.escape(fileName),
+                original.length(), replacement.length(),
+                countLines(original), countLines(replacement))),
                 BorderLayout.NORTH);
         panel.add(diff, BorderLayout.CENTER);
         Object applyOption = Bundle.EditWithKvasirAction_apply();

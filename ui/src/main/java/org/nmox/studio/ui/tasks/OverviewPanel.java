@@ -60,7 +60,8 @@ import javax.swing.JPanel;
     "OverviewPanel_retroNotesA11y=Retro notes",
     "OverviewPanel_unowned=unowned",
     "OverviewPanel_blockerMeta={0} · {1}d · {2}",
-    "OverviewPanel_blockerA11y=Blocked: {0}, owner {1}, {2} days, unblock: {3}",
+    "OverviewPanel_blockerA11y=Blocked: {0}, owner {1}, "
+        + "{2,choice,0#{2} days|1#{2} day|1<{2} days}, unblock: {3}",
     "OverviewPanel_running=\u23f1 {0}",
     "OverviewPanel_timeMeta=today {0} · week {1}",
     "OverviewPanel_clockRunningSuffix=, clock running",
@@ -276,8 +277,9 @@ final class OverviewPanel extends JPanel {
         meta.setFont(mono(Font.PLAIN, 11f));
         row.add(title, BorderLayout.LINE_START);
         row.add(meta, BorderLayout.LINE_END);
+        // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
         row.getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_blockerA11y(
-                b.title(), owner, String.valueOf(b.sinceDays()), b.action()));
+                b.title(), owner, b.sinceDays(), b.action()));
         return row;
     }
 

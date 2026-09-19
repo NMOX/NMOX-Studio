@@ -45,7 +45,8 @@ import org.openide.util.RequestProcessor;
 @org.openide.util.NbBundle.Messages({
     "CssClassUsageHyperlink_tooltip=Go to the class's usages in markup",
     "CssClassUsageHyperlink_noUsages=.{0} has no class=\"\" usages in this project''s markup",
-    "CssClassUsageHyperlink_openedFirst={0} usages in {1} file(s) — opened the first",
+    "CssClassUsageHyperlink_openedFirst={0,choice,0#{0} usages|1#{0} usage|1<{0} usages} in "
+        + "{1,choice,0#{1} files|1#{1} file|1<{1} files} — opened the first",
     "CssClassUsageHyperlink_listCapped=(list capped)",
     "CssClassUsageHyperlink_couldNotOpen=Could not open {0}: {1}"
 })

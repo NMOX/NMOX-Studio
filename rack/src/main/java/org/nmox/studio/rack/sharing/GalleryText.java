@@ -30,7 +30,7 @@ import org.openide.util.NbBundle.Messages;
     "GalleryText_missing=Not found on this machine: {0} — Tools ▸ Environment Doctor… says how to install them.",
     "GalleryText_allFound=Everything it needs is on this machine.",
     "# {0} - number of devices, {1} - number of cables",
-    "GalleryText_devices=Devices ({0}), {1} cables:",
+    "GalleryText_devices=Devices ({0}), {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}:",
     "GalleryText_wiring=Wiring:",
     "GalleryText_noWiring=No cables: the devices stand side by side.",
     "GalleryText_unnamed=(unnamed rack)"

@@ -36,7 +36,7 @@ import org.openide.DialogDisplayer;
     "ChannelListDialog_channels=Channels",
     "ChannelListDialog_filterChannels=Filter channels",
     "ChannelListDialog_showingFirst=Showing first {0} of {1} channels",
-    "ChannelListDialog_count={0} channels",
+    "ChannelListDialog_count={0,choice,0#{0} channels|1#{0} channel|1<{0} channels}",
     "ChannelListDialog_filterLabel=Filter:",
     "ChannelListDialog_title=Channels on {0} (double-click to join)",
     "ChannelListDialog_colChannel=Channel",
@@ -105,7 +105,8 @@ final class ChannelListDialog {
 
         String count = totalSeen > rows.size()
                 ? Bundle.ChannelListDialog_showingFirst(String.valueOf(rows.size()), String.valueOf(totalSeen))
-                : Bundle.ChannelListDialog_count(String.valueOf(rows.size()));
+                // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+                : Bundle.ChannelListDialog_count(rows.size());
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel top = new JPanel(new BorderLayout(8, 0));

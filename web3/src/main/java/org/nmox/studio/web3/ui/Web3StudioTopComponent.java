@@ -306,7 +306,9 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_importCapReached=Import cap reached ({0}) \u2014 remove one first",
     "Web3StudioTopComponent_abiDidNotParse=ABI didn''t parse: {0}",
     "Web3StudioTopComponent_abiEmpty=That ABI has no functions or events \u2014 nothing to interact with",
-    "Web3StudioTopComponent_importedStatus=Imported \"{0}\" \u2014 {1} functions, {2} events",
+    "Web3StudioTopComponent_importedStatus=Imported \"{0}\" \u2014 "
+        + "{1,choice,0#{1} functions|1#{1} function|1<{1} functions}, "
+        + "{2,choice,0#{2} events|1#{2} event|1<{2} events}",
     "Web3StudioTopComponent_noImportedAbis=No imported ABIs to remove",
     "Web3StudioTopComponent_importedToRemoveA11y=Imported contract to remove",
     "Web3StudioTopComponent_removeImportedTitle=Remove imported ABI",
@@ -337,7 +339,7 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_ownerLookupFailed=Owner lookup failed: {0}",
     "Web3StudioTopComponent_erc20NotConnected=\u2b21 ERC-20 \u2014 connect to a network to read "
         + "the token's name, symbol and supply",
-    "Web3StudioTopComponent_decimalsPart=  \u00b7 {0} decimals",
+    "Web3StudioTopComponent_decimalsPart=  \u00b7 {0,choice,0#{0} decimals|1#{0} decimal|1<{0} decimals}",
     "Web3StudioTopComponent_supplyPart=  \u00b7 supply {0}",
     "Web3StudioTopComponent_supplyRawPart=  \u00b7 supply {0} (raw \u2014 decimals not in ABI)",
     "Web3StudioTopComponent_addressPrompt=Address:",
@@ -359,7 +361,7 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_saveCsv=Save CSV\u2026",
     "Web3StudioTopComponent_saveCsvA11y=Save history as CSV",
     "Web3StudioTopComponent_saveCsvTitle=Save event history",
-    "Web3StudioTopComponent_savedEvents=Saved {0} events to {1}",
+    "Web3StudioTopComponent_savedEvents=Saved {0,choice,0#{0} events|1#{0} event|1<{0} events} to {1}",
     "Web3StudioTopComponent_saveFailed=Save failed: {0}",
     "Web3StudioTopComponent_historyWindowTitle=Events \u2014 {0} \u00b7 blocks {1}\u2013{2} \u00b7 {3} found",
     "Web3StudioTopComponent_txHashPrompt=Transaction hash:",
@@ -2543,9 +2545,10 @@ public final class Web3StudioTopComponent extends TopComponent {
         applyImported(grown);
         saveWorkspace();
         publishSearch();
+        // the counts ride as NUMBERS: a ChoiceFormat branch refuses a String
         status(Bundle.Web3StudioTopComponent_importedStatus(name,
-                String.valueOf(artifact.functions().size()),
-                String.valueOf(artifact.events().size())), ACCENT);
+                artifact.functions().size(),
+                artifact.events().size()), ACCENT);
         if (!address.isEmpty()) {
             openInteractFor(InteractSession.attached(artifact, address, hasAccounts()));
         }
@@ -3028,7 +3031,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             b.append(Bundle.Web3StudioTopComponent_nameSymbolAbsent());
         }
         if (m.decimals() != null) {
-            b.append(Bundle.Web3StudioTopComponent_decimalsPart(String.valueOf(m.decimals())));
+            // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+            b.append(Bundle.Web3StudioTopComponent_decimalsPart(m.decimals()));
         }
         if (m.totalSupply() != null) {
             if (m.decimals() != null) {
@@ -3207,7 +3211,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(),
                         org.nmox.studio.web3.engine.EventHistory.toCsv(rows));
-                status(Bundle.Web3StudioTopComponent_savedEvents(String.valueOf(rows.size()),
+                // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+                status(Bundle.Web3StudioTopComponent_savedEvents(rows.size(),
                         target.getName()), ACCENT);
             } catch (Exception failure) {
                 status(Bundle.Web3StudioTopComponent_saveFailed(failure.getMessage()), FAIL_RED);
