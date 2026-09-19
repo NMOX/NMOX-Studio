@@ -15,73 +15,97 @@ public final class ProjectInspector {
     private ProjectInspector() {
     }
 
-    /** The toolchain a project belongs to, detected from its manifest. */
+    /**
+     * The toolchain a project belongs to, detected from its manifest.
+     *
+     * <p>Each constant declares three facts about itself, in this order:
+     * {@code KIND(run target, test runner, manifests…)}. The two tokens
+     * are the vocabulary IGNITION's TARGET knob and VERITAS's RUNNER knob
+     * speak, and {@code null} means "this toolchain names no such verb" —
+     * never a stand-in for another toolchain's. What a consumer DOES with
+     * a null is the consumer's decision: IGNITION greys honestly, VERITAS
+     * falls back to the project's own npm harness.
+     *
+     * <p>This used to be four hand-kept mirrors (a knob array, a
+     * {@code ProjectKind -> String} switch and its inverse in RunDevice,
+     * the same shape again in TestDevice) that agreed only by discipline,
+     * and both inverses answered {@code NODE} by default — so a kind
+     * nobody had decided about compiled, shipped, and ran a node command
+     * under another toolchain's name. Adding a language is the most
+     * repeated change in this repository; it costs one line here now.
+     */
     public enum ProjectKind {
-        BUN("bun.lock", "bun.lockb", "bunfig.toml"),
-        DENO("deno.json", "deno.jsonc"),
+        BUN("bun", "bun", "bun.lock", "bun.lockb", "bunfig.toml"),
+        DENO("deno", "deno", "deno.json", "deno.jsonc"),
         // CLARITY outranks NODE deliberately: every `clarinet new` scaffold
         // (and our Contract Kit's) carries a package.json whose only job is
         // the vitest/simnet test harness — NODE-first would shadow the
         // contract toolchain forever. The inverse of the ELM rule below,
         // for the inverse reason: there the app is the point, here the
-        // contracts are.
-        CLARITY("Clarinet.toml"),
-        NODE("package.json"),
-        RUST("Cargo.toml"),
-        FOUNDRY("foundry.toml"),
-        GO("go.mod"),
-        ELIXIR("mix.exs"),
-        ERLANG("rebar.config"),
-        GLEAM("gleam.toml"),
-        CLOJURE("deps.edn", "project.clj"),
-        SWIFT("Package.swift"),
-        DOTNET(), // *.csproj / *.fsproj / *.sln - glob-detected below
-        DART("pubspec.yaml"),
-        SCALA("build.sbt"),
-        HASKELL("stack.yaml", "cabal.project"),
-        ZIG("build.zig"),
-        OCAML("dune-project"),
-        CRYSTAL("shard.yml"),
-        JULIA("Project.toml", "JuliaProject.toml"),
-        NIM(), // *.nimble - glob-detected below, like DOTNET
-        DLANG("dub.json", "dub.sdl"),
-        RACKET("info.rkt"),
-        VLANG("v.mod"),
-        CAIRO("Scarb.toml"),
-        MOVE("Move.toml"),
-        AIKEN("aiken.toml"),
-        FORTRAN("fpm.toml"),
-        ADA("alire.toml"),
+        // contracts are. Its tests ARE that harness, so it names no runner.
+        CLARITY("clarity", null, "Clarinet.toml"),
+        // NODE names no runner of its own: which one a Node project uses is
+        // read from its package.json (the "test" script, then the declared
+        // framework), not from the kind.
+        NODE("node", null, "package.json"),
+        RUST("rust", "cargo", "Cargo.toml"),
+        // a Foundry repo builds and tests contracts; there is nothing to RUN
+        FOUNDRY(null, "forge", "foundry.toml"),
+        GO("go", "go", "go.mod"),
+        ELIXIR("elixir", "mix", "mix.exs"),
+        ERLANG("erlang", "rebar3", "rebar.config"),
+        GLEAM("gleam", "gleam", "gleam.toml"),
+        CLOJURE("clojure", "clojure", "deps.edn", "project.clj"),
+        SWIFT("swift", "swift", "Package.swift"),
+        DOTNET("dotnet", "dotnet"), // *.csproj / *.fsproj / *.sln - glob-detected below
+        DART("dart", "dart", "pubspec.yaml"),
+        SCALA("scala", "sbt", "build.sbt"),
+        HASKELL("haskell", "stack", "stack.yaml", "cabal.project"),
+        ZIG("zig", "zig", "build.zig"),
+        OCAML("ocaml", "dune", "dune-project"),
+        CRYSTAL("crystal", "crystal", "shard.yml"),
+        JULIA("julia", "julia", "Project.toml", "JuliaProject.toml"),
+        NIM("nim", "nim"), // *.nimble - glob-detected below, like DOTNET
+        DLANG("dlang", "dlang", "dub.json", "dub.sdl"),
+        RACKET("racket", "racket", "info.rkt"),
+        VLANG("vlang", "vlang", "v.mod"),
+        CAIRO("cairo", "cairo", "Scarb.toml"),
+        MOVE("move", "move", "Move.toml"),
+        AIKEN("aiken", "aiken", "aiken.toml"),
+        FORTRAN("fortran", "fortran", "fpm.toml"),
+        ADA("ada", "ada", "alire.toml"),
         // the functional web: these almost always sit beside a package.json,
         // so NODE outranks them in detectKind — detectKinds still lists them
         // and explicit knob targets speak their toolchains
-        ELM("elm.json"),
-        RESCRIPT("rescript.json", "bsconfig.json"),
-        PURESCRIPT("spago.yaml", "spago.dhall"),
+        ELM("elm", "elm", "elm.json"),
+        RESCRIPT("rescript", "rescript", "rescript.json", "bsconfig.json"),
+        PURESCRIPT("purescript", "purescript", "spago.yaml", "spago.dhall"),
         // Tact (TON) is npm-carried by design: the compiler is an npm dep
         // and the kit's build/test are package.json scripts, so NODE
         // rightly outranks — detectKinds still lists it and ROSETTA can
-        // dial it explicitly
-        TACT("tact.config.json"),
-        MAVEN("pom.xml"),
-        GRADLE("build.gradle", "build.gradle.kts"),
-        PYTHON("pyproject.toml", "requirements.txt", "setup.py"),
-        RUBY("Gemfile", "Rakefile"),
-        PHP("composer.json"),
-        CMAKE("CMakeLists.txt"),
-        MAKE("Makefile"),
+        // dial it explicitly. Its tests ride that npm harness.
+        TACT("tact", null, "tact.config.json"),
+        MAVEN("maven", "mvn", "pom.xml"),
+        GRADLE("gradle", "gradle", "build.gradle", "build.gradle.kts"),
+        PYTHON("python", "pytest", "pyproject.toml", "requirements.txt", "setup.py"),
+        RUBY("ruby", "rspec", "Gemfile", "Rakefile"),
+        PHP("php", "phpunit", "composer.json"),
+        // both run through the Makefile; neither names a test verb of its own
+        CMAKE("make", null, "CMakeLists.txt"),
+        MAKE("make", null, "Makefile"),
         // ---- classic web (v1.34): every real toolchain manifest above
-        // outranks these, and they outrank NONE ----
-        WEBPACK("webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"),
-        GRUNT("Gruntfile.js", "Gruntfile.coffee"),
-        GULP("gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs"),
-        BOWER("bower.json"),
+        // outranks these, and they outrank NONE. Their runnable artifact IS
+        // their folder, so they all name the `static` serve target ----
+        WEBPACK("webpack", null, "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs"),
+        GRUNT("static", null, "Gruntfile.js", "Gruntfile.coffee"),
+        GULP("static", null, "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs"),
+        BOWER("static", null, "bower.json"),
         /**
          * The last resort, root-only, and only when nothing else matched:
          * a bare directory with an index.html is a project too — the
          * oldest stack on the web deserves to open like any other.
          */
-        STATIC("index.html", "index.htm"),
+        STATIC("static", null, "index.html", "index.htm"),
         /**
          * A learning space (v2.58.0): the catalog's marker file IS its
          * manifest, and the rack's pre-wired driver IS its toolchain. The
@@ -91,14 +115,86 @@ public final class ProjectInspector {
          * known manifest (c, cobol, odin, pascal, haxe, perl, graphql,
          * and the new WIT space) DEAD on RUN: SOLDER refused
          * "NO PROJECT MANIFEST" because detectKind saw NONE.
+         *
+         * <p>It names neither verb: the space's own SOLDER driver is its
+         * toolchain, and guessing `node index.js` for a COBOL space is
+         * exactly the lie this vocabulary exists to stop telling.
          */
-        LEARN(".nmox-learn"),
-        NONE();
+        LEARN(null, null, ".nmox-learn"),
+        NONE(null, null);
 
+        private final String runTarget;
+        private final String testRunner;
         private final String[] manifests;
 
-        ProjectKind(String... manifests) {
+        /**
+         * @param runTarget IGNITION's TARGET token for this toolchain, or
+         *     null when it names no run verb
+         * @param testRunner VERITAS's RUNNER token, or null when the kind
+         *     names no runner of its own
+         * @param manifests every file name this kind is detected by, most
+         *     canonical first
+         */
+        ProjectKind(String runTarget, String testRunner, String... manifests) {
+            this.runTarget = runTarget;
+            this.testRunner = testRunner;
             this.manifests = manifests;
+        }
+
+        /**
+         * IGNITION's TARGET token for this toolchain — {@code cargo run}'s
+         * "rust", {@code go run .}'s "go" — or null when the toolchain has
+         * no run verb at all (a Foundry repo, a learning space, an unaimed
+         * rack). Null routes to the honest-grey path every console already
+         * has; it must never be answered with another toolchain's token.
+         */
+        public String runTarget() {
+            return runTarget;
+        }
+
+        /**
+         * VERITAS's RUNNER token for this toolchain, or null when the kind
+         * names no runner of its own — Node, Clarity and Tact projects run
+         * the harness their own package.json declares, and the classic-web
+         * kinds have no suite to run.
+         */
+        public String testRunner() {
+            return testRunner;
+        }
+
+        /**
+         * The kind that owns a TARGET token, or null when no kind names it.
+         *
+         * <p>Derived by walking {@link #values()}, so it cannot drift from
+         * the declarations above. Two tokens are named by several kinds —
+         * `static` (the classic-web trio plus STATIC) and `make` (CMAKE and
+         * MAKE) — and the owner is the LAST declaration, which is the
+         * lowest-precedence kind: those tokens name a generic fallback
+         * command ("serve this folder", "run the Makefile") and the generic
+         * kind is by construction the least specific, which is why
+         * precedence order already puts it last.
+         */
+        public static ProjectKind forRunTarget(String target) {
+            return owner(target, ProjectKind::runTarget);
+        }
+
+        /** The kind that owns a RUNNER token, or null when no kind names it. */
+        public static ProjectKind forTestRunner(String runner) {
+            return owner(runner, ProjectKind::testRunner);
+        }
+
+        private static ProjectKind owner(String token,
+                java.util.function.Function<ProjectKind, String> fact) {
+            if (token == null) {
+                return null;
+            }
+            ProjectKind owner = null;
+            for (ProjectKind kind : values()) {
+                if (token.equals(fact.apply(kind))) {
+                    owner = kind; // last declaration wins; see forRunTarget
+                }
+            }
+            return owner;
         }
 
         public String manifest() {

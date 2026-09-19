@@ -22,14 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class VeritasRunnerMatrixTest {
 
-    // Mirror of TestDevice.FRAMEWORKS (append-only by law); the argv
-    // assertions verify the index mapping stays true.
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha",
-        "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit",
-        "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig",
-        "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang",
-        "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move",
-        "aiken"};
+    // The device's OWN knob array (append-only by law). The hand-kept
+    // mirror this replaces had already drifted: it stopped at "aiken" and
+    // never learned the "node" position v1.252.0 appended — a mirror of
+    // four (debt ledger 112), and the one nobody was watching.
+    // KindVocabularyGateTest pins the order; this reads it.
+    private static final List<String> FRAMEWORKS = TestDevice.runners();
 
     @TempDir
     Path root;
@@ -59,7 +57,7 @@ class VeritasRunnerMatrixTest {
 
     private List<String> commandFor(String framework, boolean cover, String... files)
             throws IOException {
-        int index = List.of(FRAMEWORKS).indexOf(framework);
+        int index = FRAMEWORKS.indexOf(framework);
         assertThat(index).as("knob position " + framework).isNotNegative();
         Rack rack = new Rack();
         rack.setProjectDir(freshDir(files).toFile());

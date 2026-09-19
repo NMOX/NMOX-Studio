@@ -28,14 +28,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class RunTargetMatrixTest {
 
-    // Mirror of RunDevice.TARGETS (append-only by law); the assertions on
-    // each argv's first token verify the index mapping stays true.
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust",
-        "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell",
-        "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun",
-        "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm",
-        "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken",
-        "clarity", "tact"};
+    // The device's OWN knob array (append-only by law). This used to be a
+    // hand-kept mirror — one of the four that made up debt ledger 112 —
+    // and it had already drifted: its sibling in VeritasRunnerMatrixTest
+    // was missing the "node" position added in v1.252.0.
+    // KindVocabularyGateTest pins the order; this reads it.
+    private static final List<String> TARGETS = RunDevice.targets();
 
     @TempDir
     Path root;
@@ -57,7 +55,7 @@ class RunTargetMatrixTest {
 
     /** buildCommand with the TARGET knob dialed to the named position. */
     private List<String> commandFor(String target, String... files) throws IOException {
-        int index = List.of(TARGETS).indexOf(target);
+        int index = TARGETS.indexOf(target);
         assertThat(index).as("knob position " + target).isNotNegative();
         Rack rack = new Rack();
         rack.setProjectDir(freshDir(files).toFile());
@@ -272,12 +270,12 @@ class RunTargetMatrixTest {
             RunDevice run = new RunDevice();
             rack.addDevice(run);
             run.applyState(Map.of("target",
-                    String.valueOf(List.of(TARGETS).indexOf("rust")),
+                    String.valueOf(TARGETS.indexOf("rust")),
                     "args", "--verbose \"two words\""));
             assertThat(run.buildCommand())
                     .containsExactly("cargo", "run", "--", "--verbose", "two words");
             run.applyState(Map.of("target",
-                    String.valueOf(List.of(TARGETS).indexOf("go")), "args", "-x"));
+                    String.valueOf(TARGETS.indexOf("go")), "args", "-x"));
             assertThat(run.buildCommand()).containsExactly("go", "run", ".", "-x");
         } finally {
             rack.shutdown();
