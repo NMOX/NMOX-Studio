@@ -40,19 +40,54 @@ class PatchNotLoadedSpeaksTest {
     }
 
     @Test
-    @DisplayName("the sentence names the file, says the rack is empty, and carries the reason — which already says whether the file was kept as .bak or left unread")
-    void theSentenceSaysAllThree() {
+    @DisplayName("the two refusals a reader can act on are said in the reader's OWN language, with no English argument and the file named ONCE")
+    void theTwoActionableRefusalsSpeakWholly() throws Exception {
         File patch = new File("/projects/shop/.nmoxrack.json");
 
-        String corrupt = RackService.patchNotLoadedText(patch,
-                new IOException("Corrupt rack patch .nmoxrack.json (kept as .bak): Expected a ',' or '}'"));
-        assertThat(corrupt).contains(".nmoxrack.json").contains("empty").contains("kept as .bak");
+        java.io.IOException tooLarge = null;
+        java.io.File big = java.io.File.createTempFile("big", ".nmoxrack.json");
+        try {
+            byte[] block = new byte[1024 * 1024];
+            try (java.io.OutputStream out = java.nio.file.Files.newOutputStream(big.toPath())) {
+                for (int i = 0; i < 9; i++) {
+                    out.write(block);
+                }
+            }
+            try {
+                org.nmox.studio.rack.model.RackIO.readDocument(big);
+            } catch (java.io.IOException refused) {
+                tooLarge = refused;
+            }
+        } finally {
+            big.delete();
+        }
+        assertThat(tooLarge).as("a 9 MiB patch is refused").isNotNull();
+        String big9 = RackService.patchNotLoadedText(patch, tooLarge);
+        // GROUPED, because a size is read by a person: MessageFormat writes 9,216
+        // under this test's English and 9.216 under German — the v2.104.0 Numbers law
+        assertThat(big9).contains("9,216 KiB").contains("8 MiB").contains("empty");
+        assertThat(big9).as("the file named once, never twice")
+                .containsOnlyOnce(".nmoxrack.json");
 
-        String tooLarge = RackService.patchNotLoadedText(patch,
-                new IOException("Rack patch .nmoxrack.json is 9216 KiB, over the 8 MiB cap — not read"));
-        assertThat(tooLarge).contains("over the 8 MiB cap").contains("not read");
-
-        assertThat(corrupt).as("the file NAME, never the reader's directory layout")
+        java.io.File bad = java.io.File.createTempFile("bad", ".nmoxrack.json");
+        java.io.IOException corrupt = null;
+        try {
+            java.nio.file.Files.writeString(bad.toPath(), "{ \"devices\": [ ");
+            try {
+                org.nmox.studio.rack.model.RackIO.readDocument(bad);
+            } catch (java.io.IOException refused) {
+                corrupt = refused;
+            }
+        } finally {
+            bad.delete();
+            new java.io.File(bad.getPath() + ".bak").delete();
+        }
+        assertThat(corrupt).as("a truncated patch is refused").isNotNull();
+        String text = RackService.patchNotLoadedText(patch, corrupt);
+        assertThat(text).contains("not valid JSON").contains(".bak");
+        assertThat(text).as("the PARSER's English complaint stays in the log, never on the status line")
+                .doesNotContain("Expected").doesNotContain("character");
+        assertThat(text).as("the reader's own directory layout is never printed")
                 .doesNotContain("/projects/shop");
     }
 

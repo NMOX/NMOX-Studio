@@ -248,8 +248,8 @@ public final class RackIO {
                 rack.removeDevice(d);
             }
             rack.clearUndoHistory();
-            throw new IOException("Corrupt rack patch " + file.getName()
-                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+            throw new CorruptPatchException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), file.getName() + ".bak", corrupt);
         }
         fromJson(rack, root);
     }
@@ -267,8 +267,8 @@ public final class RackIO {
             return new JSONObject(text);
         } catch (JSONException corrupt) {
             backupCorrupt(file);
-            throw new IOException("Corrupt rack patch " + file.getName()
-                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+            throw new CorruptPatchException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), file.getName() + ".bak", corrupt);
         }
     }
 
@@ -280,10 +280,48 @@ public final class RackIO {
      */
     static final long MAX_PATCH_BYTES = 8L * 1024 * 1024;
 
-    /** A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and never moved aside. */
-    static final class PatchTooLargeException extends IOException {
-        PatchTooLargeException(String message) {
+    /**
+     * A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and
+     * never moved aside. It carries the SIZE as a number, not only inside its
+     * message, so a consumer can say what happened in the reader's own language
+     * (ledger 106: an argument is data — v2.100.0).
+     */
+    public static final class PatchTooLargeException extends IOException {
+        private final long size;
+
+        PatchTooLargeException(String message, long size) {
             super(message);
+            this.size = size;
+        }
+
+        /** The file's size in KiB — what a reader needs to know, in a unit they read. */
+        public long kib() {
+            return size / 1024;
+        }
+
+        /** The ceiling in MiB, so a sentence can name it without knowing this class's constant. */
+        public static long capMib() {
+            return MAX_PATCH_BYTES / 1024 / 1024;
+        }
+    }
+
+    /**
+     * A patch whose bytes are not JSON. The parser's own complaint stays in
+     * {@code getMessage()} for the log; the consumer's sentence needs only the
+     * name of the backup, because a parser's English is not a translation the
+     * product can offer (ledger 106).
+     */
+    public static final class CorruptPatchException extends IOException {
+        private final String backupName;
+
+        CorruptPatchException(String message, String backupName, Throwable cause) {
+            super(message, cause);
+            this.backupName = backupName;
+        }
+
+        /** The file the user's bytes were kept as, so nothing they wrote is lost silently. */
+        public String backupName() {
+            return backupName;
         }
     }
 
@@ -299,7 +337,7 @@ public final class RackIO {
             return BoundedReads.read(file.toPath(), MAX_PATCH_BYTES);
         } catch (BoundedReads.TooLarge tooLarge) {
             throw new PatchTooLargeException(BoundedReads.refusal("Rack patch",
-                    tooLarge.fileName(), tooLarge.size(), tooLarge.maxBytes()));
+                    tooLarge.fileName(), tooLarge.size(), tooLarge.maxBytes()), tooLarge.size());
         }
     }
 

@@ -31,7 +31,12 @@ import org.openide.util.lookup.ServiceProvider;
     "RackService_stoppingMany=Stopping {0} tools…",
     "RackService_switchTitle=Switch Project",
     "# {0} - file name, {1} - the reason, already a sentence",
-    "RackService_patchNotLoaded=Could not load this project\u2019s saved rack, so the rack is empty: {0} \u2014 {1}"
+    "# {0} - the patch file's name; {1} - the failure, in English from the engine",
+    "RackService_patchNotLoaded=Could not load this project\u2019s saved rack, so the rack is empty: {0} \u2014 {1}",
+    "# {0} - the patch file's name; {1} - its size in KiB; {2} - the cap in MiB",
+    "RackService_patchTooLarge=Could not load this project\u2019s saved rack, so the rack is empty: {0} is {1} KiB, over the {2} MiB limit.",
+    "# {0} - the patch file's name; {1} - the name it was kept under",
+    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}."
 })
 public class RackService {
 
@@ -601,6 +606,19 @@ public class RackService {
      * patch it refuses supplies none (v1.107.0).
      */
     static String patchNotLoadedText(File patch, Exception failure) {
+        // ledger 106: the engine says WHAT HAPPENED, this says it in the
+        // reader's language. The two refusals a reader can act on carry their
+        // facts as data; anything else falls back to the engine's sentence,
+        // which is English — honest, because there is nothing else to say.
+        if (failure instanceof RackIO.PatchTooLargeException tooLarge) {
+            return Bundle.RackService_patchTooLarge(patch.getName(),
+                    tooLarge.kib(), RackIO.PatchTooLargeException.capMib());
+        }
+        if (failure instanceof RackIO.CorruptPatchException corrupt) {
+            // the parser's own complaint is already in the WARNING below; it is
+            // English and untranslatable, so it never reaches the status line
+            return Bundle.RackService_patchCorrupt(patch.getName(), corrupt.backupName());
+        }
         String reason = failure.getMessage();
         if (reason == null || reason.isBlank()) {
             reason = failure.getClass().getSimpleName();
