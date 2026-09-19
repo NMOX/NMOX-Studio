@@ -81,7 +81,8 @@ class ApiStudioLifecycleGateTest {
     void reAimClearsTheArmedResponse() throws Exception {
         String source = source();
 
-        String apply = method(source, "private void applyWorkspace(Workspace loaded, File dir)");
+        String apply = method(source,
+                "private void applyWorkspace(WorkspaceIO.LoadOutcome outcome, File dir)");
         assertThat(apply)
                 .as("every re-aim must forget the previous project's response")
                 .contains("clearResponse()");
