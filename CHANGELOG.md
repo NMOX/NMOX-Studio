@@ -4,6 +4,63 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.182.0] - 2026-09-19
+
+**The refusal that explains an empty rack stays long enough to read.**
+
+Ledger 104 gave the aim-time patch refusal a voice; the v2.181.0 Hebrew walk
+measured what that voice was worth and found the sentence gone within about
+five seconds — correct, translated into fifteen languages, and missed.
+
+**Nothing was overwriting it.** The entry had named the platform's project-open
+progress as the obvious suspect, flagged unproven. That guess is withdrawn.
+Read from the shipped bytecode,
+`org.netbeans.core.NbStatusDisplayer.setStatusText(String)` is:
+
+```
+add(text, 0);
+MessageImpl.clear(SURVIVING_TIME);     // Integer.getInteger("…DISPLAY_TIME", 5000)
+```
+
+**A plain status message deletes itself.** The two-argument form calls
+`add(text, importance)` and returns without scheduling any clear.
+
+- The refusal is set at **importance 100** — above zero, which is the entire
+  point, and well under the platform's own 700–1000 family
+  (`IMPORTANCE_ERROR_HIGHLIGHT` … `IMPORTANCE_ANNOTATION`, read from the class
+  file) so an editor annotation or a find still wins the strip.
+- It lingers **15 s**, bounded by the returned `Message`'s own `clear` — the
+  list holds only a `WeakReference`, so a message that is set and dropped can
+  vanish at a GC.
+- **The cost is written where it is paid**: an importance above zero outranks
+  every plain `setStatusText`, so while the refusal shows it also *hides*
+  ordinary status text. During a project open that traffic is progress noise
+  and a sentence explaining an empty rack matters more — but that is exactly
+  why the linger is bounded rather than "until something replaces it".
+
+Three mutants by name: `theImportanceIsAboveZero`,
+`theLingerIsLongerThanTheDefaultAndStillBounded`,
+`theHelperKeepsTheMessageAliveAndBoundsIt`.
+
+**Not the end of the question, and said so**: the rack's own placard is still
+the better home for this sentence, because it is where the reader is already
+looking when they wonder why the rack is empty. This is the fix that could ship
+today.
+
+### Also
+
+- The ledger says what is true: **108 shipped in v2.181.0 and was still filed
+  as open**, with its "not yet executed" decision intact. Both corrected, and
+  the nine places the sweep would have been wrong are recorded with it.
+- **A gate that reads prose is wrong in both directions.** `PlainStatusGateTest`
+  scanned raw source, so this release's own javadoc — which *documents* the
+  platform's `setStatusText(String)` contract — was read as a call site with an
+  argument of `String`. v2.178.0 found four gates a comment could **satisfy**;
+  this is one a comment could **trip**. The rack has stripped comments since
+  that sweep and this module was missed by it; `GateSources` is promoted here
+  on its second consumer rather than copied, and the gate still names a planted
+  unguarded call by file and line.
+
 ## [2.181.0] - 2026-09-19
 
 **Arabic and Hebrew read their own file names, and the review of what shipped
@@ -22790,6 +22847,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.181.0...v2.182.0
 [2.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.180.0...v2.181.0
 [2.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.1...v2.180.0
 [2.179.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.0...v2.179.1

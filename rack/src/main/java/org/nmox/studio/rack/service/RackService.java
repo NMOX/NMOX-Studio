@@ -626,6 +626,62 @@ public class RackService {
         return Bundle.RackService_patchNotLoaded(patch.getName(), reason);
     }
 
+    /**
+     * The importance this refusal is set at. It must be ABOVE ZERO, and that
+     * is not a preference — it is the whole fix (ledger 109). Read from the
+     * shipped bytecode: {@code NbStatusDisplayer.setStatusText(String)} is
+     * {@code add(text, 0)} followed by {@code clear(SURVIVING_TIME)}, where
+     * SURVIVING_TIME is
+     * {@code Integer.getInteger("org.openide.awt.StatusDisplayer.DISPLAY_TIME", 5000)}
+     * — so a plain status message deletes itself after five seconds. The
+     * two-argument form calls {@code add(text, importance)} and returns
+     * WITHOUT scheduling a clear, which is why the sentence can outlive the
+     * project opening that hides it.
+     *
+     * <p>The value sits well below the platform's own family
+     * ({@code IMPORTANCE_ERROR_HIGHLIGHT} through
+     * {@code IMPORTANCE_ANNOTATION}, 700–1000, read from the class file), so
+     * an editor annotation or a find still wins the strip.
+     */
+    private static final int PATCH_REFUSAL_IMPORTANCE = 100;
+
+    /**
+     * How long the refusal stays. **Persisting costs something**, and the cost
+     * is stated here rather than discovered later: a message with importance
+     * above zero outranks every plain {@code setStatusText}, so for this long
+     * it also HIDES ordinary status text. That is the trade the fix makes —
+     * during a project open the plain traffic is progress noise and a refusal
+     * that explains an empty rack matters more — but it is why the linger is
+     * bounded rather than "until something replaces it".
+     *
+     * <p>Five seconds was measured too short in the v2.181.0 Hebrew walk: the
+     * clock starts when the rack loads the patch, which is DURING project
+     * opening, before the window has settled and while the reader is looking
+     * anywhere but the status strip.
+     */
+    private static final int PATCH_REFUSAL_LINGER_MS = 15_000;
+
+    /**
+     * A status message that outlives the project opening which would otherwise
+     * bury it — see {@link #PATCH_REFUSAL_IMPORTANCE} for why the plain
+     * {@link #status} cannot do this. A second refusal replaces the first
+     * rather than stacking: {@code NbStatusDisplayer.add} REPLACES an existing
+     * message of equal importance, so successive failed aims never queue up.
+     */
+    private static void statusThatLingers(String text) {
+        try {
+            org.openide.awt.StatusDisplayer.Message shown =
+                    org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                            org.nmox.studio.core.util.PlainStatus.text(text), PATCH_REFUSAL_IMPORTANCE);
+            // clear(ms) posts the removal on the platform's own RP, which holds
+            // the message strongly until it runs — the list itself keeps only a
+            // WeakReference, so without this the sentence could vanish at a GC
+            shown.clear(PATCH_REFUSAL_LINGER_MS);
+        } catch (RuntimeException | LinkageError ignored) {
+            // status line unavailable (tests, stripped platform)
+        }
+    }
+
     /** Best-effort status line; unavailable in plain unit tests. */
     private static void status(String text) {
         try {
@@ -752,7 +808,7 @@ public class RackService {
                 // rack with the reason in a log file they never open. The load
                 // is not something they asked for, so this must not be a
                 // dialog — the status line, where the rest of the aim speaks.
-                status(patchNotLoadedText(patch, ex));
+                statusThatLingers(patchNotLoadedText(patch, ex));
             }
         } else {
             // A project with NO patch used to keep the PREVIOUS project's

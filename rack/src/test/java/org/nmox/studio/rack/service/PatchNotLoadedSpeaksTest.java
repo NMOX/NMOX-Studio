@@ -109,8 +109,10 @@ class PatchNotLoadedSpeaksTest {
         String body = src.substring(auto, src.indexOf("private void resetToStarterRack", auto));
         int caught = body.indexOf("catch (Exception");
         assertThat(caught).as("the load is guarded").isPositive();
+        // WHICH status helper is ledger 109's business (PatchRefusalLingersTest);
+        // this test owns only that the catch speaks the sentence at all
         assertThat(body.substring(caught))
                 .as("a refusal the reader did not ask for still speaks where the rest of the aim speaks")
-                .contains("status(patchNotLoadedText(");
+                .matches(java.util.regex.Pattern.compile(".*status\\w*\\(patchNotLoadedText\\(.*", java.util.regex.Pattern.DOTALL));
     }
 }

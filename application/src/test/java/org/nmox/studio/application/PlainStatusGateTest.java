@@ -37,7 +37,10 @@ class PlainStatusGateTest {
                     if (p.getFileName().toString().equals("PlainStatus.java")) {
                         continue;
                     }
-                    String body = Files.readString(p);
+                    // CODE, never the prose around it: a javadoc that DOCUMENTS the
+                    // platform's own setStatusText(String) contract is not a call site
+                    // (v2.182.0 — the rack has stripped since v2.178.0, this module had not)
+                    String body = GateSources.stripComments(Files.readString(p));
                     int pos = 0;
                     while (true) {
                         int k = body.indexOf("setStatusText(", pos);

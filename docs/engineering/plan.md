@@ -1,5 +1,25 @@
 # The Plan
 
+*Currency addendum 2026-09-19 (the third release), at v2.182.0 — one small
+fix, and its lesson is about how the previous entry was written.*
+
+*Ledger 109 recorded a defect found by a walk AND a suspicion about its cause,
+with the suspicion explicitly marked unproven. The cause turned out to be
+something else entirely: a plain `setStatusText` schedules its own deletion at
+five seconds — read from `NbStatusDisplayer`'s bytecode, not recalled. **Because
+the guess was labelled a guess, it could be withdrawn in one line instead of
+having shipped as a claim.** Same shape as the macOS U+202F clearance withdrawn
+a release earlier. Record the suspicion if it helps the next reader, but say
+which part is measured and which is not.*
+
+*Two scars from this release's own work, both self-inflicted and both already
+written down elsewhere in this file: `surefire:test` does not recompile, so a
+test edit ran against a stale class and looked like a regex bug (the v2.128.0
+stale-compile law); and a ledger entry can go stale in the direction of
+CLAIMING MORE than is true — 108 shipped in v2.181.0 and was still filed under
+Open with a "not yet executed" decision. The debt ledger needs the same docs
+truth pass as the changelog, in the same ship.*
+
 *Currency addendum 2026-09-19 (the morning after), at v2.181.0 — the units
 pipelined while v2.180.0 flew, plus the review of v2.180.0 itself. Three
 lessons, and all three are the same lesson wearing different clothes.*
