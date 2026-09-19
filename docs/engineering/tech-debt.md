@@ -100,6 +100,65 @@ modifier-click: a screen walk with full control, or a person.
 
 ## Open — recorded by v2.180.0 (the rack debt night)
 
+### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash
+
+A dotfile that arrives as `{0}` after an RTL word lays out as
+`[nmoxrack.json][.]` — the leading dot detaches and draws AFTER the name. That
+is the defect `docs/i18n/conventions.md` already describes for literals, and
+the gate that holds it, `NativeTypographyGateTest`, matches a **literal** dot
+followed by a Latin letter. A dotfile arriving as an argument has no dot in the
+bundle value, so there is nothing to match. **Ledger 88's shape, one layer
+over**: the defect enters through an argument, below where the gate looks.
+
+**Found by a translator**, in its own committed work from the same night, by
+laying the strings out through `java.text.Bidi` rather than reading them.
+
+**Measured** (v2.180.0, all eleven modules' `Bundle_ar` / `Bundle_he`, with
+`\uXXXX` decoded first because the branding overlays are escaped):
+
+- 2,871 placeholders in ar/he values; **1,841 unguarded with an RTL character
+  last before them**, collapsing to **927 distinct (package, key, argument)
+  pairs** — ui 401, rack 267, editor 154, web3/infra 127 each, apiclient 119,
+  dbstudio 94, branding 58, tools 15, project 10.
+- Of those 927: **115 can lead with a neutral** (a dotfile, path, glob, flag,
+  `.bak`) — the real risk; 128 carry a number and 181 a bare Latin word, both
+  measured correct bare; **503 are undetermined**, because the call site is
+  `ex.getMessage()` or `node.label` and **only 1 of the 927 keys carries the
+  `# {0} - …` comment** the house convention provides for exactly this.
+- Twelve real shipped values laid out with real arguments: **six read wrongly
+  today**, including `ApiClientTopComponent_couldNotRead`,
+  `DbStudioTopComponent_reloaded` and `RackTopComponent_noPatchInProject`.
+
+**The defect tracks the runtime VALUE, not the key.** `ApiClientTopComponent_savedFile`
+is correct for `response.json` and breaks the moment a user saves a dotfile, so
+the population cannot be split into safe and unsafe keys by inspection.
+
+**Two things the measurement settles.** First, the guard is **provably inert
+where it is unnecessary**: for a number, RTL text, a bare Latin word and a Latin
+phrase, the rendering with a guard is byte-identical to bare — because the guard
+is a zero-width strong-L character and only changes behaviour for a neutral
+adjacent to the placeholder's content. Second, **LRM alone is not enough**: it
+fixes a leading neutral and cannot fix a trailing one, so
+`http://localhost:8080/` renders with its slash at the front either way. A sweep
+must ISOLATE the placeholder — `LRI…PDI` (U+2066…U+2069) over `LRE…PDF`, because
+isolates do not leak into neighbouring text.
+
+**The decision, not yet executed.** Take the strong form: require every
+RTL-context placeholder to be isolated, with the population DERIVED (walk back
+from each `{n}` to the first strong directional character; flag it if that
+character is RTL). No literal matching and no hand-kept list, and a new
+translated value with an unguarded placeholder fails on the commit that adds it.
+The ledger shape (classify each of the 927) is the right answer when guarding
+has a cost — here it has none, and it would ask 503 questions nobody can
+currently answer.
+
+**Deferred from v2.180.0 deliberately**, not for lack of a decision: 927
+mechanical edits across eleven modules is its own unit with its own verify, and
+that release was already green carrying seven. **Not in the 927 and still
+unclassified:** 639 placeholders that sit at value START, where the paragraph
+direction governs rather than a preceding letter — the `RTL_NEUTRAL_OPENS_LATIN`
+case the gate already handles for literals, needing the same treatment.
+
 ### 107. A house typography decision the JDK bypasses, under French
 
 `docs/i18n/conventions.md` states it plainly: *"French typography uses a narrow

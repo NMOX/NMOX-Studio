@@ -82,6 +82,16 @@ languages with no grammatical plural writing no branches at all.
 - The two silent catches in the rack engine say why they are silent. A sweep
   found 70 catch blocks with no statement; 67 already carried a reason.
 - The French bundles spell the apostrophe one way: 46 values across two files.
+- **Ledger 108 recorded, measured:** a dotfile arriving as `{0}` after an RTL
+  word strands its leading dot — and `NativeTypographyGateTest` matches a
+  LITERAL dot, so a placeholder carries the defect past it. Found by a
+  translator in its own same-night work, by laying the strings out through
+  `java.text.Bidi` rather than reading them. Measured across eleven modules:
+  927 unguarded placeholders in Arabic and Hebrew, **six of twelve real values
+  sampled read wrongly today**. The guard is provably inert where unnecessary,
+  LRM alone is not enough (a trailing slash still jumps to the front), and the
+  population is fully derivable — the decision is written down and the sweep is
+  its own unit.
 - **Ledger 107 recorded, measured:** a bare numeric argument is grouped by the
   JDK, and French's group separator is U+202F — the one character
   `docs/i18n/conventions.md` deliberately keeps out of the product's own text,
