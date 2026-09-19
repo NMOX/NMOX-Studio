@@ -69,17 +69,38 @@ page.
 
 ## Open — recorded by v2.179.0 (the rack ecosystem release)
 
-### 103. The three v2.176–v2.178 edges never walked in the app
+### 103. The v2.176–v2.179 edges never walked in the app
 
-The re-aim and oversize refusals of v2.178.0 (proven behaviourally, not seen),
-and ⌃Space translation-key completion and ⌘-click to the catalog line from
-v2.177.0 (test-pinned; the background tools cannot drive a completion popup or
-a modifier-click). They need a real popup and a real modifier-click: a screen
-walk with full control, or a person.
+**The three RACK edges are now walked** (v2.180.0, in the shipped 2.179.1 with
+a throwaway userdir *and* a throwaway home):
 
-## Open — recorded by v2.180.0 (the rack debt night)
+- **Import from Clipboard, end to end** — a prepared rack on the clipboard,
+  the manifest read, Mount pressed, TAIL and TEMPO mounted with `~/logs/app.log`
+  expanded to the RECEIVER's home and TEMPO's CLOCK reading HALT. The at-rest
+  law seen rather than asserted.
+- **The final mount of a prepared file.** v2.179.0 recorded the replace
+  question's Yes as out of the background tools' reach; that was true only of
+  the KEYBOARD. `Yes` is exposed as an `AXButton` and `AXPress` presses it —
+  the Web Pipeline preset replaced a non-empty rack. *The walk tools' limit was
+  the input method, not the dialog.*
+- **Remove from My Racks** — Share → Keep in My Racks wrote
+  `~/.nmox/presets.d/shop.nmoxrack.json` with no `/Users/` in it and the entry
+  appeared in the Presets menu as `shop · yours`; Remove is enabled only for a
+  rack that is yours, confirms with the safe default, and removed the file
+  while the project's own `.nmoxrack.json.bak` stayed untouched.
 
-### 106. A refusal's REASON reaches a translated build in English
+Zero SEVERE across the session, zero orphans.
+
+**What is still owed.** The v2.178.0 re-aim refusal (proven behaviourally, and
+its code re-read this night: every import door captures the aim and re-checks
+it after the modal), and v2.177.0's ⌃Space translation-key completion and
+⌘-click to the catalog line. Those two need a real completion popup and a real
+modifier-click: a screen walk with full control, or a person.
+
+
+## Closed by v2.180.0 (the rack debt night)
+
+### 106. A refusal's REASON reaches a translated build in English — CLOSED
 
 `RackService.patchNotLoadedText` renders ledger 104's new sentence in the
 reader's language and then splices `failure.getMessage()` into it as `{1}` —
@@ -107,21 +128,23 @@ see it — every bundle is complete, the parity gate is green, and the English
 enters BELOW the bundles as an argument. That is exactly ledger 88's shape
 (`LiveRuns.since()` splicing the word "since"), one layer down.
 
-**Why it is deferred.** The house answer is known and is not a translation
-job: **an argument is data** (v2.100.0) — the engine must return what happened
-rather than a sentence about it, and the consumer must render it. That means
-`RackIO`'s two refusals become typed outcomes carrying their facts (the kind,
-and the size in KiB for the oversize one), `RackService` renders each in the
-reader's own key, and those keys need writing in fifteen languages. It is a
-clean pass of its own, and it was not worth reopening a string review that had
-just closed. The sentence's own half — the part that says the rack is empty
-and names the file — is translated correctly today.
+**What closed it.** The house answer, taken the same night the translators
+found it: **an argument is data** (v2.100.0). `RackIO`'s two refusals a reader
+can act on became typed outcomes carrying their facts — `PatchTooLargeException`
+the measured size, a new `CorruptPatchException` the name the bytes were kept
+under — and `RackService` renders each in the reader's own key. Both halves of
+the defect close at once: the file is named once because the sentence names it,
+and no English crosses because there is none left to cross.
 
-**Scope note:** the same question should be asked of every other place a
-caught exception's message is shown to a user rather than logged. That
-population was not measured.
+**The parser's own complaint stays English, in the log.** org.json's
+"Expected a ',' or ']' at 97" is a parser's technical text, not prose this
+product can translate, so it goes where it already went — the WARNING — and
+never reaches the status line. An unexpected failure still falls back to the
+engine's sentence, which is English and says so here.
 
-## Closed by v2.180.0 (the rack debt night)
+**Scope note, still open:** the same question should be asked of every other
+place a caught exception's message is SHOWN to a user rather than logged. That
+population was not measured, and this entry is the reason to measure it.
 
 ### 102. A plugin device's KNOB also runs plugin code when a rack mounts — CLOSED
 

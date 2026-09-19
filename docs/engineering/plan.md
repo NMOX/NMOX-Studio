@@ -1,5 +1,46 @@
 # The Plan
 
+*Currency addendum 2026-09-19 (the rack debt night), at v2.180.0 — David asked
+for tech debt wiped out and the rack examined. Five ledger items closed (102,
+104, 105, 106, and 103's three rack edges walked), two whole CLASSES swept, and
+the night's most useful instrument was not a gate.*
+
+*Four lessons worth keeping:*
+
+*1. **An assertion that a string is present cannot see that it is present
+twice.** `PatchNotLoadedSpeaksTest` asserted `contains(".nmoxrack.json")` on a
+sentence that printed the file name twice, and passed. A translator group found
+it by rendering the sentence with a REAL exception instead of reading it. The
+general form: a containment assertion is blind to duplication, ordering and
+everything else in the string — when a sentence's SHAPE matters, render it and
+read the whole thing.*
+
+*2. **Three translator groups, unable to see each other, found three defects in
+the same night's own English** — two of them independently reporting that "one
+device was saved switched on" gives the DEVICE a property only its SWITCH has.
+Independent convergence is what made it decisive rather than a matter of taste.
+The pattern is now four releases old (v2.153.0, v2.150.0, v2.138.0, this one)
+and reliable: a translator must decide what a sentence MEANS, and a sentence
+nobody can decide about is a sentence that is wrong.*
+
+*3. **A gate's population is the thing it is about, not the shape it was
+written against.** `PluralCopyGateTest` had held the plural law since v2.85.0
+over five hand-kept nouns matched in Java CONCATENATION — so a count living
+inside a message VALUE was invisible to it, which is exactly how "1 devices"
+shipped green. Derived from the message values, the population is 88. Same
+shape as v2.147.0 and v2.146.0; the third instance in the gate family.*
+
+*4. **The walk tools' limit was the input method, not the dialog.** v2.179.0
+recorded the replace question's Yes as out of the background tools' reach
+because tab-and-space pressed No. `Yes` is an ordinary `AXButton` and `AXPress`
+presses it. Two of ledger 103's three edges were closed by trying a different
+verb on the same object — before recording an affordance as unreachable, try
+every tool on it, not every keystroke.*
+
+*Also measured: the rack has 70 catch blocks with no statement and 67 already
+carried a written reason — the discipline is real, and the sweep's value was
+confirming it rather than fixing it.*
+
 *Currency addendum 2026-09-18 (night), at v2.179.1 — the outside reviewer read
 the v2.179.0 summary and asked one question: does `RackJudge` duplicate what
 `SelfStarting` now owns? It did — `armed`, `running`, `tail.follow`, hard-coded
