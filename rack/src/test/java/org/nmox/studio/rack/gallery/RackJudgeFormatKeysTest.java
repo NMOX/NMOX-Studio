@@ -4,6 +4,7 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -165,7 +166,7 @@ class RackJudgeFormatKeysTest {
     }
 
     private static Set<String> and(Set<String> keys, String more) {
-        java.util.Set<String> out = new java.util.LinkedHashSet<>(keys);
+        Set<String> out = new LinkedHashSet<>(keys);
         out.add(more);
         return Set.copyOf(out);
     }

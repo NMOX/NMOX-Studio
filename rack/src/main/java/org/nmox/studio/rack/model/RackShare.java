@@ -2,6 +2,7 @@ package org.nmox.studio.rack.model;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -87,7 +88,7 @@ public final class RackShare {
     public static final Set<String> HEADER_KEYS = with(RackCard.FIELDS, PRODUCT);
 
     private static Set<String> with(Set<String> keys, String more) {
-        Set<String> out = new java.util.LinkedHashSet<>(keys);
+        Set<String> out = new LinkedHashSet<>(keys);
         out.add(more);
         return Set.copyOf(out);
     }
