@@ -4,6 +4,74 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.181.0] - 2026-09-19
+
+**Arabic and Hebrew read their own file names, and the review of what shipped
+yesterday found two defects in it.**
+
+### An argument landing in a right-to-left sentence is isolated
+
+A dotfile arriving as `{0}` after an RTL word strands its leading dot: the
+reader sees `nmoxrack.json` with the dot at the far end of the sentence.
+`NativeTypographyGateTest` could not see it, because its rule matches a
+**literal** dot in the value and a placeholder has none — ledger 88's shape,
+one layer over, where the defect enters through an argument below where the
+gate looks.
+
+- **2,198 arguments isolated across 1,583 values in 120 files**, with
+  `LRI…PDI` rather than LRM: LRM fixes a *leading* neutral and cannot fix a
+  *trailing* one, so `http://localhost:8080/` still draws its slash at the
+  front under an LRM. Measured, not reasoned.
+- **The gate derives its population**: walk back from each `{n}` to the first
+  strong directional character, treating an isolate as opaque; RTL, or
+  nothing-strong in an RTL value, must be isolated. No literal matching and no
+  hand-kept list, so a new translated value with an unguarded placeholder fails
+  on the commit that adds it. The v2.151.0 literal-dot rule stays — it still
+  catches a dot written *in* a value.
+- **194 placeholders at value start are deliberately NOT guarded**: their
+  values contain no RTL letter at all, so Swing draws them in logical order and
+  an isolate would assert something untrue about the value.
+- **Walked in Hebrew.** The assembled build on a corrupt patch paints
+  `.nmoxrack.json` dot-first; with the isolates stripped, the control shows the
+  dot detaching to the opposite end of the sentence. *A containment assertion
+  cannot tell those apart* — `contains(".nmoxrack.json")` passes on the broken
+  control, because `.nmoxrack.json.bak` contains that substring.
+
+### The arc review of v2.180.0, which shipped hours earlier
+
+- **The cap stopped a file taking the heap and handed it the log instead.**
+  `BoundedReads` logged its refusal unbounded, and `WebProject.getDisplayName()`
+  caches only successes — so an over-cap `package.json` was re-read and
+  re-logged **from the EDT on every repaint** of the Projects tree, by exactly
+  the hostile input the class was written for. The fact is now the file *at a
+  size*, remembered in a bounded LRU; forgetting only ever makes the reader
+  speak again, never stay quiet.
+- **A gate's population was a spelling, not an outcome.** The bounded-read
+  ledger matched `Files.readString|readAllBytes|readAllLines` and never saw
+  `FileObject.asText()` — the platform's own whole-file read, seven sites,
+  outside the gate while it called itself complete. Proven by planting one: the
+  mutant **lived** against the shipped gate. That is the v2.19.1 law failing in
+  the gate that quotes it two lines above.
+
+### Ledger 107 measured, and a clearance withdrawn
+
+`canDisplay` is the wrong question. It answers whether a glyph exists, not
+whether it has width or ink — and on macOS `Dialog`, `SansSerif`,
+`Lucida Grande`, `Geneva` and `SF Pro` advance U+202F by **0.00px**, so
+French's group separator does not box, it *vanishes*. That is the check which
+cleared macOS in the first place, so the clearance is withdrawn. Linux measured
+clean on every realistic font set (arm64 and amd64, under a generated
+`fr_FR.UTF-8`, with FlatLaf's own `StyleContext` path that turns a boxing font
+into a correct composite). No code change: U+202F is correct French typography
+and renders correctly in the font the product actually paints chrome with.
+
+### Also
+
+- **Ledger 109 recorded**: the aim's patch refusal is painted and replaced
+  within about two seconds, while the project is still opening — correct,
+  translated into fifteen languages, and gone before it can be read. What
+  overwrites it is **not** proven, and that is the open question.
+
 ## [2.180.0] - 2026-09-19
 
 **The rack's debt night: five ledger items closed, two classes swept, and the
@@ -22722,6 +22790,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.180.0...v2.181.0
 [2.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.1...v2.180.0
 [2.179.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.0...v2.179.1
 [2.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.178.0...v2.179.0
