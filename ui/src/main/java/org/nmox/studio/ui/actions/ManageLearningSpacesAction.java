@@ -174,6 +174,24 @@ public final class ManageLearningSpacesAction implements ActionListener {
                 true, new Object[]{DialogDescriptor.CLOSED_OPTION}, null, 0, null, null);
         java.awt.Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
 
+        // EVERY button greys while a move or a recursive delete runs: Open on
+        // a dir being discarded would aim the studio at a vanishing tree, and
+        // Promote would move one. Derived from the buttons rather than spelled
+        // out per handler — v2.184.0 found Promote live throughout a discard
+        // (and disabling nothing during its own move), the same shape as
+        // ManageExperimentsAction's "All three buttons" beside four.
+        JButton[] workButtons = {open, promote, discard};
+        Runnable disableButtons = () -> {
+            for (JButton b : workButtons) {
+                b.setEnabled(false);
+            }
+        };
+        Runnable enableButtons = () -> {
+            for (JButton b : workButtons) {
+                b.setEnabled(true);
+            }
+        };
+
         promote.addActionListener(a -> {
             File dir = list.getSelectedValue();
             if (dir == null) {
@@ -187,6 +205,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
                 return;
             }
             File destParent = chooser.getSelectedFile();
+            disableButtons.run();
             SPACES_RP.post(() -> {
                 try {
                     File promoted = LearningSpace.promote(dir, destParent);
@@ -202,8 +221,11 @@ public final class ManageLearningSpacesAction implements ActionListener {
                     });
                 } catch (Exception ex) {
                     String message = Bundle.ManageLearningSpacesAction_couldNotPromote(ex.getMessage());
-                    SwingUtilities.invokeLater(() -> DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageLearningSpacesAction_messageName()), NotifyDescriptor.ERROR_MESSAGE)));
+                    SwingUtilities.invokeLater(() -> {
+                        enableButtons.run();
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageLearningSpacesAction_messageName()), NotifyDescriptor.ERROR_MESSAGE));
+                    });
                 }
             });
         });
@@ -235,8 +257,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
             if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.YES_OPTION) {
                 return;
             }
-            open.setEnabled(false);
-            discard.setEnabled(false);
+            disableButtons.run();
             SPACES_RP.post(() -> {
                 org.netbeans.api.progress.ProgressHandle handle =
                         org.netbeans.api.progress.ProgressHandle.createHandle(Bundle.ManageLearningSpacesAction_discarding());
@@ -250,8 +271,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
                         aim.forgetRecentProject(dir);
                     }
                     SwingUtilities.invokeLater(() -> {
-                        open.setEnabled(true);
-                        discard.setEnabled(true);
+                        enableButtons.run();
                         model.removeElement(dir);
                         if (model.isEmpty()) {
                             dialog.dispose();
@@ -262,8 +282,7 @@ public final class ManageLearningSpacesAction implements ActionListener {
                 } catch (Exception ex) {
                     String message = Bundle.ManageLearningSpacesAction_couldNotDiscard(ex.getMessage());
                     SwingUtilities.invokeLater(() -> {
-                        open.setEnabled(true);
-                        discard.setEnabled(true);
+                        enableButtons.run();
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 org.nmox.studio.core.util.PlainDialogs.plain(message, Bundle.ManageLearningSpacesAction_messageName()), NotifyDescriptor.ERROR_MESSAGE));
                     });

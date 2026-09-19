@@ -93,7 +93,17 @@ public final class KeystrokeHud {
             default -> { }
         }
         boolean chord = (modifiersEx & (KeyEvent.META_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK)) != 0;
-        boolean function = (keyCode >= KeyEvent.VK_F1 && keyCode <= KeyEvent.VK_F24) || keyCode == KeyEvent.VK_ESCAPE;
+        // TWO intervals, because the function keys are NOT contiguous:
+        // VK_F1..VK_F12 are 112..123 but VK_F13 jumps to 0xF000 (61440), so a
+        // single F1..F24 range spans 112..61451 and swallows the punctuation
+        // and editing keys in between — VK_DELETE(127), VK_BACK_QUOTE(192),
+        // VK_QUOTE(222), VK_AT(512), VK_COLON(513) and more. This is Show
+        // Keystrokes: a password holding a quote or a backtick would have
+        // flashed that key to the room, which the promise above forbids
+        // (measured on JDK 25, v2.184.0).
+        boolean function = (keyCode >= KeyEvent.VK_F1 && keyCode <= KeyEvent.VK_F12)
+                || (keyCode >= KeyEvent.VK_F13 && keyCode <= KeyEvent.VK_F24)
+                || keyCode == KeyEvent.VK_ESCAPE;
         return chord || function;
     }
 
