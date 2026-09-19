@@ -290,8 +290,8 @@ public final class DbStudioTopComponent extends TopComponent {
      * a close flush must never queue behind a long query (debt #16; the
      * careful parts are documented on the lane class).
      */
-    private static final org.nmox.studio.dbstudio.io.SaveLane SAVES =
-            new org.nmox.studio.dbstudio.io.SaveLane("DB Studio workspace saves");
+    private static final org.nmox.studio.core.util.SaveLane SAVES =
+            new org.nmox.studio.core.util.SaveLane("DB Studio workspace saves");
 
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);

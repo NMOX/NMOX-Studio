@@ -402,8 +402,8 @@ public final class Web3StudioTopComponent extends TopComponent {
      * a close flush must never queue behind a slow RPC (debt #16; the
      * careful parts are documented on the lane class).
      */
-    private static final org.nmox.studio.web3.engine.SaveLane SAVES =
-            new org.nmox.studio.web3.engine.SaveLane("Contract Studio workspace saves");
+    private static final org.nmox.studio.core.util.SaveLane SAVES =
+            new org.nmox.studio.core.util.SaveLane("Contract Studio workspace saves");
 
     /** Always first in the combo, never persisted — the devnet ANVIL provides. */
     static final Network LOCAL_ANVIL =

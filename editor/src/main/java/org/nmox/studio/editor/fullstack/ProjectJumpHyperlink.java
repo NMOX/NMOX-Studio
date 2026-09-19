@@ -9,7 +9,7 @@ import javax.swing.text.Document;
 
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -74,7 +74,7 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
         if (span == null) {
             return;
         }
-        File dir = projectDirOf(doc);
+        File dir = ProjectRoot.of(doc);
         RP.post(() -> click(text, span, dir));
     }
 
@@ -183,22 +183,4 @@ public abstract class ProjectJumpHyperlink implements HyperlinkProviderExt {
         }
     }
 
-    /** The file's project root (marker walk, capped). */
-    public static File projectDirOf(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
-        File f = fo == null ? null : FileUtil.toFile(fo);
-        if (f == null) {
-            return null;
-        }
-        File dir = f.getParentFile();
-        File cursor = dir;
-        for (int up = 0; cursor != null && up < 6; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "package.json").isFile()
-                    || new File(cursor, "angular.json").isFile()
-                    || new File(cursor, ".git").exists()) {
-                return cursor;
-            }
-        }
-        return dir;
-    }
 }

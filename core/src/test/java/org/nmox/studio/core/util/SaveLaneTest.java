@@ -1,4 +1,4 @@
-package org.nmox.studio.apiclient.api;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 import java.io.IOException;

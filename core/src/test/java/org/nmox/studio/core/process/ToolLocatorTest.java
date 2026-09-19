@@ -97,4 +97,37 @@ class ToolLocatorTest {
             ToolLocator.reset(); // forget every fixture-home lookup
         }
     }
+
+    @Test
+    @DisplayName("foundIn knows both Windows suffixes — the .cmd arm npm shims need")
+    void foundInKnowsBothSuffixes(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tmp)
+            throws Exception {
+        File dir = tmp.toFile();
+        File bare = new File(dir, "native-tool");
+        assertThat(bare.createNewFile()).isTrue();
+        assertThat(bare.setExecutable(true)).isTrue();
+        assertThat(new File(dir, "win-native.exe").createNewFile()).isTrue();
+        // the arm CommandDevice.toolOnPath was missing: npm writes its
+        // shims as .cmd on Windows, and without it no npm-installed tool
+        // is ever found there (the v1.42.0 lane's finding)
+        assertThat(new File(dir, "npm-shim.cmd").createNewFile()).isTrue();
+
+        assertThat(ToolLocator.foundIn(dir, "native-tool")).isEqualTo(bare);
+        assertThat(ToolLocator.foundIn(dir, "win-native"))
+                .isEqualTo(new File(dir, "win-native.exe"));
+        assertThat(ToolLocator.foundIn(dir, "npm-shim"))
+                .isEqualTo(new File(dir, "npm-shim.cmd"));
+        assertThat(ToolLocator.foundIn(dir, "absent-tool")).isNull();
+    }
+
+    @Test
+    @DisplayName("a DIRECTORY named like the tool is not the tool")
+    @DisabledOnOs(OS.WINDOWS)
+    void foundInRefusesADirectory(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tmp) {
+        // directories are executable, so a bare canExecute() says yes to
+        // a folder called node_modules/node — isFile() is load-bearing
+        File dir = tmp.toFile();
+        assertThat(new File(dir, "node").mkdir()).isTrue();
+        assertThat(ToolLocator.foundIn(dir, "node")).isNull();
+    }
 }

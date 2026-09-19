@@ -17,6 +17,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
+import org.nmox.studio.editor.ProjectRoot;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -150,7 +151,7 @@ public final class RenameClassAction implements ActionListener {
                 dirty.add(f.getAbsolutePath());
             }
         }
-        File root = projectDirOf();
+        File root = ProjectRoot.of(context.getPrimaryFile());
         RP.post(() -> rename(root, oldName, newName, dirty));
     }
 
@@ -248,23 +249,6 @@ public final class RenameClassAction implements ActionListener {
         } finally {
             lock.releaseLock();
         }
-    }
-
-    private File projectDirOf() {
-        File f = FileUtil.toFile(context.getPrimaryFile());
-        if (f == null) {
-            return null;
-        }
-        File dir = f.getParentFile();
-        File cursor = dir;
-        for (int up = 0; cursor != null && up < 6; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "package.json").isFile()
-                    || new File(cursor, "angular.json").isFile()
-                    || new File(cursor, ".git").exists()) {
-                return cursor;
-            }
-        }
-        return dir;
     }
 
     private static void status(String message) {

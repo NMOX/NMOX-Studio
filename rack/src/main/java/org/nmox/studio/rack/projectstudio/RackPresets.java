@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.projectstudio;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.function.Consumer;
 import org.json.JSONObject;
@@ -445,19 +444,17 @@ public enum RackPresets {
         }
     }
 
-    private static volatile File scratchDir;
+    private static final java.util.concurrent.atomic.AtomicReference<File> SCRATCH =
+            new java.util.concurrent.atomic.AtomicReference<>();
 
+    /**
+     * An empty dir for the throwaway rack. This call site used to test
+     * only for null, so a temp directory the OS reaped mid-session was
+     * handed out dead forever while its two siblings re-created theirs;
+     * {@link org.nmox.studio.rack.model.ScratchDirs} owns that rule now.
+     */
     private static File scratchDir() {
-        if (scratchDir == null) {
-            try {
-                File dir = java.nio.file.Files.createTempDirectory("nmox-preset").toFile();
-                dir.deleteOnExit();
-                scratchDir = dir;
-            } catch (IOException ex) {
-                scratchDir = new File(System.getProperty("java.io.tmpdir"));
-            }
-        }
-        return scratchDir;
+        return org.nmox.studio.rack.model.ScratchDirs.cached(SCRATCH, "nmox-preset");
     }
 
     /**
