@@ -75,6 +75,10 @@ public class FormatOnSaveOptionsController extends OptionsPanelController {
             return panel;
         }
         enabled = new JCheckBox(Bundle.FormatOnSave_enabled());
+        // tell the dialog, or Apply never lights up — isChanged() above was
+        // written and correct, and nothing ever asked it
+        enabled.addItemListener(e ->
+                pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, null, isChanged()));
         JLabel detail = new JLabel(Bundle.FormatOnSave_detail());
         JPanel column = new JPanel();
         column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
