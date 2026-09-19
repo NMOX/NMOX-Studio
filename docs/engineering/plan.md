@@ -1,5 +1,28 @@
 # The Plan
 
+*Currency addendum 2026-09-19 (the correction), at v2.183.0 — v2.182.0 shipped
+a claim that was not true, and the way it happened is worth more than the fix.*
+
+***A constant is not a behaviour.*** *v2.182.0's three tests asserted
+`PATCH_REFUSAL_IMPORTANCE == 100` and `PATCH_REFUSAL_LINGER_MS == 15_000`, and
+every one passed while the sentence died at a garbage collection between two
+and nine seconds. The tests were about the numbers the code asks for; the claim
+was about what a reader sees. **When a release claims a behaviour, at least one
+proof must observe that behaviour** — here that meant the walk, and the walk
+came after the tag.*
+
+*Two aggravating details, both mine: the javadoc in the same commit NAMED the
+hazard ("the list holds only a WeakReference, so a message set and dropped can
+vanish at a GC") and the code walked past it; and this arc had already written
+"a check that answers an easier question passes" into its own lessons two
+releases earlier. **Writing a lesson down is not the same as applying it** —
+the place to apply it is the moment you choose what a test asserts.*
+
+*Sequencing lesson: the walk belongs BEFORE the tag for any release whose
+headline is a behaviour. v2.180.0 and v2.181.0 both walked before shipping and
+both were sound; v2.182.0 walked after and shipped a false claim. A published
+tag is never moved, so the cost of that ordering is permanent and public.*
+
 *Currency addendum 2026-09-19 (the third release), at v2.182.0 — one small
 fix, and its lesson is about how the previous entry was written.*
 

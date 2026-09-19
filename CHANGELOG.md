@@ -4,6 +4,44 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.183.0] - 2026-09-19
+
+**v2.182.0 claimed fifteen seconds and did not deliver them. This is the
+correction.**
+
+v2.182.0 set the aim's patch refusal at importance 100 with a 15 s bound, and
+its three tests asserted `PATCH_REFUSAL_IMPORTANCE == 100` and
+`PATCH_REFUSAL_LINGER_MS == 15_000`. **Not one of them asserted the sentence
+was still on screen.** Walked after the tag, in a clean instance with a single
+refusal, it was present at T+2 s and gone by T+9 s — measured twice.
+
+*A check that answers an easier question passes.* This arc wrote that line down
+two releases ago and then shipped an instance of it.
+
+### What was actually wrong
+
+`NbStatusDisplayer` keeps only a `WeakReference` to each message **and** gives
+`MessageImpl` a `finalize()` that calls `run()`, which removes it from the
+strip. **A message nobody holds dies at the first garbage collection** — and a
+project opening allocates heavily, which is exactly when this one is set.
+
+v2.182.0 assigned the returned `Message` to a **local** and reasoned that
+`clear(ms)`'s pending RequestProcessor task would keep it alive. It did not
+check. The same commit's javadoc named the hazard — *"the list holds only a
+WeakReference, so a message set and dropped can vanish at a GC"* — and the code
+walked past it.
+
+### The fix, and the test that would have caught it
+
+The `Message` is held in a field. Re-walked on the same fixture: **still on
+screen at T+9 s**, where it had died, and gone after its bound.
+
+The new test pins the **field**, not the constants, and reverting to v2.182.0's
+local kills it by name: `theMessageIsHeldSoAGarbageCollectionCannotTakeIt`.
+
+A published tag is never moved, so v2.182.0 stands with its claim; ledger 109
+records what it said, what was measured, and why.
+
 ## [2.182.0] - 2026-09-19
 
 **The refusal that explains an empty rack stays long enough to read.**
@@ -22847,6 +22885,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.182.0...v2.183.0
 [2.182.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.181.0...v2.182.0
 [2.181.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.180.0...v2.181.0
 [2.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.1...v2.180.0

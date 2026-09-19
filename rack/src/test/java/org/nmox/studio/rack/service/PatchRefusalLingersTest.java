@@ -91,6 +91,28 @@ class PatchRefusalLingersTest {
     }
 
     @Test
+    @DisplayName("the Message is held in a FIELD, not a local — v2.182.0 asserted the constants, shipped, and the walk found the sentence dying at a GC instead of at its bound")
+    void theMessageIsHeldSoAGarbageCollectionCannotTakeIt() throws Exception {
+        String src = source();
+        int helper = src.indexOf("private static void statusThatLingers(String text)");
+        assertThat(helper).as("the lingering helper exists").isPositive();
+        String body = src.substring(helper, src.indexOf("private static void status(String text)", helper));
+
+        // NbStatusDisplayer keeps only a WeakReference to each message AND gives
+        // MessageImpl a finalize() that removes it — so a message nobody holds
+        // dies at the first GC, and a project opening allocates heavily.
+        assertThat(body)
+                .as("assigned to the held field, never to a local the method drops on return")
+                .contains("patchRefusalShown = ");
+        assertThat(body)
+                .as("a local would compile and pass every constant assertion — that is exactly what v2.182.0 shipped")
+                .doesNotContain("Message shown =");
+
+        assertThat(src).as("and the field is really a field, kept for the life of the message")
+                .contains("private static volatile org.openide.awt.StatusDisplayer.Message patchRefusalShown");
+    }
+
+    @Test
     @DisplayName("the lingering helper holds the returned Message and clears it — the list keeps only a WeakReference, so a set with no clear could vanish at a GC")
     void theHelperKeepsTheMessageAliveAndBoundsIt() throws Exception {
         String src = source();
