@@ -281,7 +281,7 @@ class BoundedReadLedgerTest {
         Set<String> found = new TreeSet<>();
         List<String> where = new ArrayList<>();
         for (Path p : sources()) {
-            String body = stripComments(read(p));
+            String body = GateSources.stripComments(read(p));
             Matcher m = RAW_READ.matcher(body);
             while (m.find()) {
                 found.add(p.getFileName().toString());
@@ -327,7 +327,7 @@ class BoundedReadLedgerTest {
                 missing.add(e.getKey());
                 continue;
             }
-            if (!BOUNDED_CALL.matcher(stripComments(read(p))).find()) {
+            if (!BOUNDED_CALL.matcher(GateSources.stripComments(read(p))).find()) {
                 uncapped.add(e.getKey() + " — " + e.getValue());
             }
         }
@@ -356,27 +356,6 @@ class BoundedReadLedgerTest {
     }
 
     /** Comment-stripped source: a gate that matches a literal must read the CODE. */
-    private static String stripComments(String src) {
-        StringBuilder sb = new StringBuilder();
-        boolean inBlock = false;
-        for (String lineText : src.split("\n", -1)) {
-            String t = lineText.strip();
-            if (inBlock) {
-                if (t.contains("*/")) {
-                    inBlock = false;
-                }
-                sb.append('\n');
-                continue;
-            }
-            if (t.startsWith("/*")) {
-                inBlock = !t.contains("*/");
-                sb.append('\n');
-                continue;
-            }
-            sb.append(t.startsWith("//") ? "" : lineText).append('\n');
-        }
-        return sb.toString();
-    }
 
     /** 1-based line of an offset, so a finding names its place. */
     private static int line(String body, int offset) {
