@@ -41,6 +41,20 @@ public final class SassCompiler {
         Exec run(List<String> command, File workDir) throws IOException, InterruptedException;
     }
 
+    /**
+     * Finds the sass binary for a directory; a seam so the argv can be
+     * asserted on a machine that has no sass.
+     *
+     * <p>It exists because the resolution runs BEFORE the runner and
+     * returns null when nothing is installed, so on the three CI lanes
+     * — none of which carry dart-sass — a test that injected only the
+     * {@link Runner} proved the compiler did nothing and never reached
+     * the argv it was named for (ledger 115, v2.186.0).
+     */
+    interface BinaryResolver {
+        String resolve(File startDir);
+    }
+
     record Exec(int exitCode, String stderr) {
     }
 
@@ -53,13 +67,19 @@ public final class SassCompiler {
     }
 
     private final Runner runner;
+    private final BinaryResolver binaries;
 
     public SassCompiler() {
-        this(SassCompiler::exec);
+        this(SassCompiler::exec, SassCompiler::resolveBinary);
     }
 
     SassCompiler(Runner runner) {
+        this(runner, SassCompiler::resolveBinary);
+    }
+
+    SassCompiler(Runner runner, BinaryResolver binaries) {
         this.runner = runner;
+        this.binaries = binaries;
     }
 
     /** Compile {@code scss} to its sibling .css. */
@@ -68,7 +88,7 @@ public final class SassCompiler {
             return new Result(Outcome.PARTIAL, null, null);
         }
         File dir = scss.getParentFile();
-        String binary = dir == null ? null : resolveBinary(dir);
+        String binary = dir == null ? null : binaries.resolve(dir);
         if (binary == null) {
             return new Result(Outcome.NO_SASS, null, null);
         }

@@ -54,23 +54,97 @@ class GrammarBundleTest {
     }
 
     /**
-     * Every grammar registration class must point at a real bundled
-     * resource - a typo in the annotation would silently kill that
-     * language's highlighting at runtime.
+     * Every grammar the build REGISTERED must ship beside it, saying the
+     * same scope name it was registered under.
+     *
+     * <p><b>Why the layer and not the sources.</b> Until v2.186.0 this
+     * read {@code src/main/java/…/*Grammar.java} by FILENAME, so
+     * {@link EmbeddedScopeGrammars} (49 registrations) and
+     * {@link NgTemplateGrammars} (6, every Angular-template grammar)
+     * were invisible — 55 of 131 outside a gate whose stated purpose
+     * covers them. The generated layer states the real population:
+     * every {@code @GrammarRegistration} and
+     * {@code @GrammarInjectionRegistration} becomes one {@code <file>}
+     * carrying a {@code textmate-grammar} attr, whatever class declared
+     * it, so a new registration class is covered on the commit that
+     * adds it. The derivation carries a non-empty floor because a
+     * derivation that returns nothing makes every assertion below
+     * vacuous.
+     *
+     * <p><b>What this can and cannot catch.</b> A typo'd resource PATH
+     * cannot reach here: the platform's {@code CreateRegistrationProcessor}
+     * calls {@code LayerBuilder.validateResource} and then reads the
+     * grammar to extract its scope name, so a path that names nothing
+     * fails javac with a {@code LayerGenerationException} — measured,
+     * not assumed (v2.186.0). What is NOT compile-checked is whether
+     * the bytes the processor read at compile time are the bytes that
+     * SHIP: the processor resolves against the source path, the product
+     * loads {@code nbresloc:} from the module jar. So the law here is
+     * the packaged one — the registered resource is present in the
+     * build output, parses, and its {@code scopeName} is the one the
+     * layer promises TM4E it will find.
      */
     @org.junit.jupiter.api.Test
-    @DisplayName("Every @GrammarRegistration references a bundled grammar file")
-    void registrationsReferenceRealFiles() throws Exception {
-        java.io.File dir = new java.io.File("src/main/java/org/nmox/studio/editor/grammars");
-        org.junit.jupiter.api.Assumptions.assumeTrue(dir.isDirectory());
-        java.util.regex.Pattern p = java.util.regex.Pattern.compile("grammar = \"([^\"]+)\"");
-        for (java.io.File src : dir.listFiles((d, n) -> n.endsWith("Grammar.java"))) {
-            String code = java.nio.file.Files.readString(src.toPath());
-            java.util.regex.Matcher m = p.matcher(code);
-            while (m.find()) {
-                assertThat(GrammarBundleTest.class.getResource(m.group(1)))
-                        .as(src.getName() + " -> " + m.group(1)).isNotNull();
+    @DisplayName("Every registered grammar ships, parses, and owns its declared scope")
+    void registeredGrammarsShipUnderTheirScope() throws Exception {
+        java.nio.file.Path layer = java.nio.file.Path.of(
+                "target/classes/META-INF/generated-layer.xml");
+        assertThat(layer).as("the generated layer this module built").exists();
+        javax.xml.parsers.DocumentBuilderFactory dbf =
+                javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+        org.w3c.dom.Document doc = dbf.newDocumentBuilder().parse(layer.toFile());
+
+        int registrations = 0;
+        java.util.Map<String, String> scopeByResource = new java.util.LinkedHashMap<>();
+        org.w3c.dom.NodeList files = doc.getElementsByTagName("file");
+        for (int i = 0; i < files.getLength(); i++) {
+            org.w3c.dom.Element file = (org.w3c.dom.Element) files.item(i);
+            String scope = attr(file, "textmate-grammar");
+            if (scope == null) {
+                continue;
+            }
+            registrations++;
+            String url = file.getAttribute("url");
+            assertThat(url).as(file.getAttribute("name") + " declares a resource url")
+                    .startsWith("nbresloc:/");
+            scopeByResource.put(url.substring("nbresloc:".length()), scope);
+        }
+
+        // 131 registrations across 88 distinct grammar files today (76
+        // from the per-language classes, 49 embed-only scopes, 6
+        // Angular); the floor keeps a derivation that finds nothing —
+        // a renamed attr, a moved layer — from passing vacuously
+        assertThat(registrations)
+                .as("grammar registrations derived from the generated layer")
+                .isGreaterThan(110);
+        assertThat(scopeByResource)
+                .as("distinct grammar files behind those registrations")
+                .hasSizeGreaterThan(70);
+
+        for (java.util.Map.Entry<String, String> e : scopeByResource.entrySet()) {
+            String resource = e.getKey();
+            try (InputStream in = GrammarBundleTest.class.getResourceAsStream(resource)) {
+                assertThat(in).as(resource + " ships beside its registration").isNotNull();
+                String text = new String(in.readAllBytes(),
+                        java.nio.charset.StandardCharsets.UTF_8);
+                org.json.JSONObject json = new org.json.JSONObject(text);
+                assertThat(json.optString("scopeName"))
+                        .as(resource + " scopeName as the layer registered it")
+                        .isEqualTo(e.getValue());
             }
         }
+    }
+
+    /** The {@code stringvalue} of a child {@code <attr name=…>}, or null. */
+    private static String attr(org.w3c.dom.Element file, String name) {
+        org.w3c.dom.NodeList attrs = file.getElementsByTagName("attr");
+        for (int i = 0; i < attrs.getLength(); i++) {
+            org.w3c.dom.Element a = (org.w3c.dom.Element) attrs.item(i);
+            if (name.equals(a.getAttribute("name"))) {
+                return a.getAttribute("stringvalue");
+            }
+        }
+        return null;
     }
 }
