@@ -276,7 +276,10 @@ an LCD tells you what happened in words.
   Intelligence, Monorepo Lanes, E2E Loop, LAMP Bench, Web3 Bench,
   Uptime Watch. **Save Patch** writes the rack beside the project as
   `.nmoxrack.json`; aiming that project again loads it. Nothing is saved
-  until you press it.
+  until you press it. If that file cannot be loaded — it is not valid
+  JSON, or it is over the 8 MiB limit — the rack comes up empty and the
+  status line says which, naming the file. A file that is not valid JSON
+  is kept as `.nmoxrack.json.bak`, so nothing you wrote is lost.
 - **A project starts wired for what it is** (since v2.176.0). Open a
   checkout that has no saved patch and the rack mounts the same starter
   the New Project wizard would have written beside it: a Rust or Go or

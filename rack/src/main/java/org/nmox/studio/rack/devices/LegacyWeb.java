@@ -4,13 +4,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.BoundedReads;
 
 /**
  * Detects the classic web libraries a project actually ships — jQuery,
@@ -118,9 +118,11 @@ public final class LegacyWeb {
         }
         JSONObject json;
         try {
-            json = new JSONObject(Files.readString(manifest.toPath(), StandardCharsets.UTF_8));
+            json = new JSONObject(BoundedReads.read(manifest.toPath()));
         } catch (IOException | RuntimeException unreadable) {
-            return; // detection is decoration; a broken manifest is not our fight
+            // detection is decoration; a broken manifest is not our fight,
+            // and neither is an absurd one — BoundedReads names it in the log
+            return;
         }
         for (String section : new String[]{"dependencies", "devDependencies"}) {
             JSONObject deps = json.optJSONObject(section);

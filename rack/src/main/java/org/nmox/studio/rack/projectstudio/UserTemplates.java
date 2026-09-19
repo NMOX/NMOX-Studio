@@ -97,7 +97,7 @@ public final class UserTemplates {
         Arrays.sort(files, java.util.Comparator.comparing(File::getName));
         for (File f : files) {
             try {
-                out.add(parse(Files.readString(f.toPath(), StandardCharsets.UTF_8), f));
+                out.add(parse(org.nmox.studio.core.util.BoundedReads.read(f.toPath()), f));
             } catch (Exception ex) {
                 // one bad file must not hide the good ones — the learn-catalog law
                 skipped.add(new Skipped(f.getName(), ex.getMessage()));

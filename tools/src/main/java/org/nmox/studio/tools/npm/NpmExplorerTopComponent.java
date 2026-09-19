@@ -298,7 +298,7 @@ public final class NpmExplorerTopComponent extends TopComponent {
         aimPublisher.publish(dir);
 
         try {
-            String content = Files.readString(packageJson.toPath(), java.nio.charset.StandardCharsets.UTF_8);
+            String content = org.nmox.studio.core.util.BoundedReads.read(packageJson.toPath());
             JSONObject json = new JSONObject(content);
             
             rootNode.removeAllChildren();

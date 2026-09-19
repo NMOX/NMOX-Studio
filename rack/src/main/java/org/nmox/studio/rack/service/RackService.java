@@ -29,7 +29,14 @@ import org.openide.util.lookup.ServiceProvider;
     "RackService_switchMany={0} are still running in {1}.\nStop and switch to {2}?",
     "RackService_stoppingOne=Stopping {0} tool…",
     "RackService_stoppingMany=Stopping {0} tools…",
-    "RackService_switchTitle=Switch Project"
+    "RackService_switchTitle=Switch Project",
+    "# {0} - file name, {1} - the reason, already a sentence",
+    "# {0} - the patch file's name; {1} - the failure, in English from the engine",
+    "RackService_patchNotLoaded=Could not load this project\u2019s saved rack, so the rack is empty: {0} \u2014 {1}",
+    "# {0} - the patch file's name; {1} - its size in KiB; {2} - the cap in MiB",
+    "RackService_patchTooLarge=Could not load this project\u2019s saved rack, so the rack is empty: {0} is {1} KiB, over the {2} MiB limit.",
+    "# {0} - the patch file's name; {1} - the name it was kept under",
+    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}."
 })
 public class RackService {
 
@@ -589,6 +596,36 @@ public class RackService {
         r.stopAsync(live, proceed);
     }
 
+    /**
+     * What a reader is told when the project's own patch did not load. Pure so
+     * the sentence is tested without a status line: it names the FILE (the
+     * thing they can look at), carries {@code RackIO}'s own reason — which
+     * already says whether the file was kept as {@code .bak} or left untouched
+     * and unread — and states what they are now looking at, because
+     * {@code RackIO.load}'s contract is to replace the rack's contents and a
+     * patch it refuses supplies none (v1.107.0).
+     */
+    static String patchNotLoadedText(File patch, Exception failure) {
+        // ledger 106: the engine says WHAT HAPPENED, this says it in the
+        // reader's language. The two refusals a reader can act on carry their
+        // facts as data; anything else falls back to the engine's sentence,
+        // which is English — honest, because there is nothing else to say.
+        if (failure instanceof RackIO.PatchTooLargeException tooLarge) {
+            return Bundle.RackService_patchTooLarge(patch.getName(),
+                    tooLarge.kib(), RackIO.PatchTooLargeException.capMib());
+        }
+        if (failure instanceof RackIO.CorruptPatchException corrupt) {
+            // the parser's own complaint is already in the WARNING below; it is
+            // English and untranslatable, so it never reaches the status line
+            return Bundle.RackService_patchCorrupt(patch.getName(), corrupt.backupName());
+        }
+        String reason = failure.getMessage();
+        if (reason == null || reason.isBlank()) {
+            reason = failure.getClass().getSimpleName();
+        }
+        return Bundle.RackService_patchNotLoaded(patch.getName(), reason);
+    }
+
     /** Best-effort status line; unavailable in plain unit tests. */
     private static void status(String text) {
         try {
@@ -710,6 +747,12 @@ public class RackService {
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(RackService.class.getName())
                         .warning("Could not load rack patch " + patch + ": " + ex);
+                // REFUSALS SPEAK (ledger 104): aiming a project whose patch is
+                // corrupt or over the cap left the reader looking at an empty
+                // rack with the reason in a log file they never open. The load
+                // is not something they asked for, so this must not be a
+                // dialog — the status line, where the rest of the aim speaks.
+                status(patchNotLoadedText(patch, ex));
             }
         } else {
             // A project with NO patch used to keep the PREVIOUS project's

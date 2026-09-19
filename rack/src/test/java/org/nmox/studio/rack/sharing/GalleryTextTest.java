@@ -60,7 +60,9 @@ class GalleryTextTest {
         String pending = GalleryText.detail(e, null);
         assertThat(pending).contains("Rust save loop").contains("Tests on every save.").contains("Shared by Ada")
                 .contains("Made for: RUST").contains("Needs on the PATH: cargo, rustfmt")
-                .contains("Devices (2), 1 cables:").contains("  REFLEX").contains("Wiring:")
+                // one cable reads "1 cable" — the plural law, which this
+                // assertion pinned the wrong way round until ledger 105's sweep
+                .contains("Devices (2), 1 cable:").contains("  REFLEX").contains("Wiring:")
                 .contains("  REFLEX changed > VERITAS run");
         assertThat(pending).as("no verdict before the lookup answers — never a guess")
                 .doesNotContain("Not found").doesNotContain("Everything it needs");

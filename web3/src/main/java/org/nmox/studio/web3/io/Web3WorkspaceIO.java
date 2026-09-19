@@ -156,7 +156,8 @@ public final class Web3WorkspaceIO {
             return Workspace.empty();
         }
         try {
-            return fromJson(Files.readString(file.toPath(), StandardCharsets.UTF_8));
+            // .nmoxweb3.json sits beside the project and travels with a clone
+            return fromJson(org.nmox.studio.core.util.BoundedReads.read(file.toPath()));
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Cannot read " + file, e);
             return Workspace.empty();
@@ -189,7 +190,7 @@ public final class Web3WorkspaceIO {
         }
         String json;
         try {
-            json = Files.readString(file.toPath(), StandardCharsets.UTF_8);
+            json = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
         } catch (IOException e) {
             LOG.log(Level.WARNING, "Cannot read " + file, e);
             return new LoadOutcome(Workspace.empty(), null);

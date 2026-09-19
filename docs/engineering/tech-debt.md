@@ -67,54 +67,240 @@ in that state. The guard itself was reviewed and is sufficient: no
 superseded task ever loads the wrong page, so this is a wait, not a wrong
 page.
 
-### 102. A plugin device's KNOB also runs plugin code when a rack mounts
+## Open — recorded by v2.179.0 (the rack ecosystem release)
 
-Recorded by v2.179.0, which made arrival at rest true for switches. An
-imported rack sets every self-starting switch off — for a built-in, the ones
-its constructor declares (`paramSelfStarting`, held by
-`SelfStartingLedgerTest`); for a plugin or JSON device, EVERY switch, because
-restoring one runs the plugin's `onChange` Runnable, which holds
-`DeviceServices` and can reach `exec` (`ExtensionSelfStartTest` proves the
-path). A plugin KNOB has the same shape — `ExtensionDevice` wires
-`KnobHandle.onChange`, and `Knob.setSelectedIndex` fires it on restore — and
-no equivalent answer: a knob has no "off".
+### 103. The v2.176–v2.179 edges never walked in the app
 
-**Why it is deferred.** Every `exec` a plugin makes is still behind Workspace
-Trust, so this is not an ungated spawn; it is a plugin doing something at mount
-rather than at a press, in a workspace the user already trusts. The fixes each
-change the frozen Device SPI's behaviour (suppress change callbacks during
-`applyState`; or restore extension knobs silently and fire one `onAttached`),
-and that wants a plugin author's eye on what breaks — JSON devices, the only
-plugins that ship, declare no knob callbacks that exec. The built-in fleet's
-knob listeners were not audited for starts-on-restore either; none is known.
+**The three RACK edges are now walked** (v2.180.0, in the shipped 2.179.1 with
+a throwaway userdir *and* a throwaway home):
 
-### 103. The three v2.176–v2.178 edges never walked in the app
+- **Import from Clipboard, end to end** — a prepared rack on the clipboard,
+  the manifest read, Mount pressed, TAIL and TEMPO mounted with `~/logs/app.log`
+  expanded to the RECEIVER's home and TEMPO's CLOCK reading HALT. The at-rest
+  law seen rather than asserted.
+- **The final mount of a prepared file.** v2.179.0 recorded the replace
+  question's Yes as out of the background tools' reach; that was true only of
+  the KEYBOARD. `Yes` is exposed as an `AXButton` and `AXPress` presses it —
+  the Web Pipeline preset replaced a non-empty rack. *The walk tools' limit was
+  the input method, not the dialog.*
+- **Remove from My Racks** — Share → Keep in My Racks wrote
+  `~/.nmox/presets.d/shop.nmoxrack.json` with no `/Users/` in it and the entry
+  appeared in the Presets menu as `shop · yours`; Remove is enabled only for a
+  rack that is yours, confirms with the safe default, and removed the file
+  while the project's own `.nmoxrack.json.bak` stayed untouched.
 
-The re-aim and oversize refusals of v2.178.0 (proven behaviourally, not seen),
-and ⌃Space translation-key completion and ⌘-click to the catalog line from
-v2.177.0 (test-pinned; the background tools cannot drive a completion popup or
-a modifier-click). They need a real popup and a real modifier-click: a screen
-walk with full control, or a person.
+Zero SEVERE across the session, zero orphans.
 
-### 104. An oversize or corrupt rack patch on AIM only logs
+**What is still owed.** The v2.178.0 re-aim refusal (proven behaviourally, and
+its code re-read this night: every import door captures the aim and re-checks
+it after the modal), and v2.177.0's ⌃Space translation-key completion and
+⌘-click to the catalog line. Those two need a real completion popup and a real
+modifier-click: a screen walk with full control, or a person.
 
-`RackService.autoLoadPatch` catches the load failure and writes a WARNING; the
-user sees an empty rack and no sentence. Load Patch and Import speak for the
-same file. It predates v2.176.0 and nothing is lost (saves are click-only, the
-corrupt file is kept as `.bak`, an oversize one is untouched) — it is a refusal
-that does not speak, which is a standing law. Deferred only because the right
-surface (a balloon, the rack's own placard) wants a look at the running app.
 
-### 105. "1 devices, 1 cables": three rack sentences count without a plural
+## Open — recorded by v2.180.0 (the rack debt night)
 
-`RackTopComponent_importSummary` (v2.176.0) and v2.179.0's `leavingSummary` /
-`leavingNothing` render `{0} devices, {1} cables` for any count, so a
-one-device rack reads "1 devices". Found by the translators, who dodged it in
-Polish, Russian and Ukrainian by writing the count after a label. The house
-answer exists (`core.util.Plural`, the `{n,choice,…}` forms the l10n arc uses
-with three Slavic branches) and costs three keys re-authored in fifteen
-languages with real plural forms. Deferred as a translator pass of its own
-rather than squeezed into a release whose strings were already reviewed.
+### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash
+
+A dotfile that arrives as `{0}` after an RTL word lays out as
+`[nmoxrack.json][.]` — the leading dot detaches and draws AFTER the name. That
+is the defect `docs/i18n/conventions.md` already describes for literals, and
+the gate that holds it, `NativeTypographyGateTest`, matches a **literal** dot
+followed by a Latin letter. A dotfile arriving as an argument has no dot in the
+bundle value, so there is nothing to match. **Ledger 88's shape, one layer
+over**: the defect enters through an argument, below where the gate looks.
+
+**Found by a translator**, in its own committed work from the same night, by
+laying the strings out through `java.text.Bidi` rather than reading them.
+
+**Measured** (v2.180.0, all eleven modules' `Bundle_ar` / `Bundle_he`, with
+`\uXXXX` decoded first because the branding overlays are escaped):
+
+- 2,871 placeholders in ar/he values; **1,841 unguarded with an RTL character
+  last before them**, collapsing to **927 distinct (package, key, argument)
+  pairs** — ui 401, rack 267, editor 154, web3/infra 127 each, apiclient 119,
+  dbstudio 94, branding 58, tools 15, project 10.
+- Of those 927: **115 can lead with a neutral** (a dotfile, path, glob, flag,
+  `.bak`) — the real risk; 128 carry a number and 181 a bare Latin word, both
+  measured correct bare; **503 are undetermined**, because the call site is
+  `ex.getMessage()` or `node.label` and **only 1 of the 927 keys carries the
+  `# {0} - …` comment** the house convention provides for exactly this.
+- Twelve real shipped values laid out with real arguments: **six read wrongly
+  today**, including `ApiClientTopComponent_couldNotRead`,
+  `DbStudioTopComponent_reloaded` and `RackTopComponent_noPatchInProject`.
+
+**The defect tracks the runtime VALUE, not the key.** `ApiClientTopComponent_savedFile`
+is correct for `response.json` and breaks the moment a user saves a dotfile, so
+the population cannot be split into safe and unsafe keys by inspection.
+
+**Two things the measurement settles.** First, the guard is **provably inert
+where it is unnecessary**: for a number, RTL text, a bare Latin word and a Latin
+phrase, the rendering with a guard is byte-identical to bare — because the guard
+is a zero-width strong-L character and only changes behaviour for a neutral
+adjacent to the placeholder's content. Second, **LRM alone is not enough**: it
+fixes a leading neutral and cannot fix a trailing one, so
+`http://localhost:8080/` renders with its slash at the front either way. A sweep
+must ISOLATE the placeholder — `LRI…PDI` (U+2066…U+2069) over `LRE…PDF`, because
+isolates do not leak into neighbouring text.
+
+**The decision, not yet executed.** Take the strong form: require every
+RTL-context placeholder to be isolated, with the population DERIVED (walk back
+from each `{n}` to the first strong directional character; flag it if that
+character is RTL). No literal matching and no hand-kept list, and a new
+translated value with an unguarded placeholder fails on the commit that adds it.
+The ledger shape (classify each of the 927) is the right answer when guarding
+has a cost — here it has none, and it would ask 503 questions nobody can
+currently answer.
+
+**Deferred from v2.180.0 deliberately**, not for lack of a decision: 927
+mechanical edits across eleven modules is its own unit with its own verify, and
+that release was already green carrying seven. **Not in the 927 and still
+unclassified:** 639 placeholders that sit at value START, where the paragraph
+direction governs rather than a preceding letter — the `RTL_NEUTRAL_OPENS_LATIN`
+case the gate already handles for literals, needing the same treatment.
+
+### 107. A house typography decision the JDK bypasses, under French
+
+`docs/i18n/conventions.md` states it plainly: *"French typography uses a narrow
+no-break space (U+202F)… We use U+00A0 everywhere because not every Swing font
+carries U+202F, and a box in place of a space is worse than a space slightly
+too wide."* That rule governs the text this product WRITES.
+
+It does not govern the text the JDK writes. A bare numeric `{1}` in a
+MessageFormat is grouped by the platform, and **French's group separator on
+JDK 25.0.4.1 is U+202F** — measured, beside `.` for es/de/pt and `,` for
+en/hi/tl/zh. So a written, measured house decision is bypassed below the bundle
+layer, where no bundle gate can see it, and it reaches **every bare numeric
+argument in the product under French**, not one key.
+
+**Found by a translator**, on `RackService_patchTooLarge`, while checking what
+its own rendering actually contained rather than reading it.
+
+**Why it is deferred rather than fixed.** On this machine it is not a defect:
+`Dialog`, `SansSerif`, `Serif`, `Monospaced`, `Helvetica Neue`, `Lucida Grande`
+and `Menlo` all report `canDisplay(U+202F) == true`, so French numbers render
+correctly. The convention's worry is about font sets generally, and **only
+macOS has been measured** — Linux and Windows are unverified, and Linux is
+where a thin Noto/DejaVu set would show it first.
+
+**What would close it**, in order: measure `canDisplay(U+202F)` across the
+fonts the Linux and Windows builds actually resolve for the UI; if any misses
+it, decide whether to keep the JDK's correct French typography (and accept a
+box on that font set) or to format numbers through a seam that substitutes
+U+00A0 — which would mean the product overriding the platform's own idea of
+correct French, and should be argued rather than assumed. Leaving `{1}` bare is
+still right for grouping; this is about which space character arrives with it.
+
+## Closed by v2.180.0 (the rack debt night)
+
+### 106. A refusal's REASON reaches a translated build in English — CLOSED
+
+`RackService.patchNotLoadedText` renders ledger 104's new sentence in the
+reader's language and then splices `failure.getMessage()` into it as `{1}` —
+and that message comes from `RackIO` in English ("Corrupt rack patch X (kept
+as .bak): …", "…is 9216 KiB, over the 8 MiB cap — not read"), or, when the
+failure carries no message, from `getClass().getSimpleName()`, which is a Java
+class name. So a Vietnamese reader gets a Vietnamese sentence ending in
+English or in `JSONException`.
+
+**And the file name is printed twice.** `{0}` is `patch.getName()`, while the
+engine's message already opens with `"Corrupt rack patch " + file.getName()`,
+so the sentence renders `…so the rack is empty: .nmoxrack.json — Corrupt rack
+patch .nmoxrack.json (kept as .bak): …`. That half is wrong in ENGLISH too,
+and it was invisible to `PatchNotLoadedSpeaksTest` because the test asserts
+`contains(".nmoxrack.json")` on a hand-written message — which passes whether
+the name appears once or twice. *An assertion that a string is present cannot
+see that it is present twice.*
+
+**Found by the translators**, three times, independently: the European group,
+the no-plural group and the Slavic/RTL group each reported the English splice
+without seeing the others' work, and the Slavic group found the duplication
+on top of it by rendering the sentence with a real exception rather than
+reading it. No gate can
+see it — every bundle is complete, the parity gate is green, and the English
+enters BELOW the bundles as an argument. That is exactly ledger 88's shape
+(`LiveRuns.since()` splicing the word "since"), one layer down.
+
+**What closed it.** The house answer, taken the same night the translators
+found it: **an argument is data** (v2.100.0). `RackIO`'s two refusals a reader
+can act on became typed outcomes carrying their facts — `PatchTooLargeException`
+the measured size, a new `CorruptPatchException` the name the bytes were kept
+under — and `RackService` renders each in the reader's own key. Both halves of
+the defect close at once: the file is named once because the sentence names it,
+and no English crosses because there is none left to cross.
+
+**The parser's own complaint stays English, in the log.** org.json's
+"Expected a ',' or ']' at 97" is a parser's technical text, not prose this
+product can translate, so it goes where it already went — the WARNING — and
+never reaches the status line. An unexpected failure still falls back to the
+engine's sentence, which is English and says so here.
+
+**Scope note, still open:** the same question should be asked of every other
+place a caught exception's message is SHOWN to a user rather than logged. That
+population was not measured, and this entry is the reason to measure it.
+
+### 102. A plugin device's KNOB also runs plugin code when a rack mounts — CLOSED
+
+**What it was.** Restoring a saved value fired the plugin's `onChange`
+Runnable, which holds `DeviceServices` and can reach `exec`. v2.179.0 answered
+the SWITCH half by switching every plugin toggle off on import; a knob has no
+"off", so the mount ran plugin code for a value the user never touched.
+
+**What closed it.** The answer the deferral asked for, taken from the other
+end: the callbacks are not suppressed by the caller, the device knows it is
+restoring. `RackDevice.applyState` raises a flag for the length of the restore
+and `ExtensionDevice` wraps every plugin `onChange` so it does not run while it
+is set — for knobs and toggles alike. **A restore is not a gesture.** The
+plugin is then told once, after the whole state is in, through a new
+`DeviceLogic.onStateRestored(services)` default method: additive to the frozen
+SPI, and the hook `onAttached` could never be (a device is racked BEFORE its
+state is applied, so `onAttached` fires with the defaults still in place).
+`ExtensionSelfStartTest` proves all three legs — the callback does not run
+during a restore, the plugin is told after it, and an ordinary press still
+runs it. Its predecessor had been written to PROVE the hole existed, as the
+justification for switching every plugin toggle off; it is inverted now, and
+the switch-off stays as the second defence for a plugin that reaches `exec`
+from something other than a knob callback.
+
+### 104. An oversize or corrupt rack patch on AIM only logs — CLOSED
+
+**What it was.** `RackService.autoLoadPatch` caught the load failure and wrote
+a WARNING; the reader got an empty rack and no sentence. Every other refusal
+in the product speaks — this was the one the user did not ask for.
+
+**What closed it.** It says so on the status line, where the rest of the aim
+already speaks, naming the file and carrying the engine's own reason (which
+already distinguishes "kept as .bak" from "over the 8 MiB cap — not read").
+The surface the deferral wanted a running app to choose turned out to be the
+one already in use for everything else about aiming. `PatchNotLoadedSpeaksTest`
+holds the sentence and reads `autoLoadPatch`'s catch to prove the call site
+exists — a message with green tests and no call site is a payload without a
+gate.
+
+### 105. "1 devices, 1 cables": three rack sentences count without a plural — CLOSED
+
+**What it was.** `importSummary` (v2.176.0), `leavingSummary` and
+`leavingNothing` (v2.179.0) rendered `{0} devices, {1} cables` at every count.
+Found by the translators, who had quietly dodged it in Polish, Russian and
+Ukrainian by writing the count after a label.
+
+**What closed it.** All three take `{n,choice,…}` branches, and the at-rest
+clause — which used to be fused into `importSummary` as "{2} were saved armed
+or running", a sentence about nothing on every rack that had none — is its own
+key, said only when there is one. The ChoiceFormat trap bit during the fix and
+is worth keeping: a value BELOW the first limit takes the FIRST branch, so
+`{0,choice,1#…|1<…}` renders 0 as the singular; every count carries an explicit
+`0#`. `RackCountsReadRightTest` reads each sentence at 0, 1 and many.
+
+**What it uncovered.** `PluralCopyGateTest` has held the plural law since
+v2.85.0 and could not see this: its population is a hand-kept list of five
+nouns, matched only in Java string concatenation, so a count living inside a
+message value was invisible to it — the v2.147.0 shape, a gate whose population
+is a SHAPE rather than the thing it is about. A census of every English message
+value across the ten modules found 33 further candidates behind 41 verbs
+wrongly matched (`{0} installs into the project`) and 14 keys correctly using
+the house's own `…One`/`…Many` idiom.
+
 
 ## Closed by v2.165.0 (the Browser shapes complex scripts)
 

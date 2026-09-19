@@ -549,7 +549,7 @@ public final class LanguageServers {
         // (e.g. a stylelint devDependency) starts a server that idles
         File pkg = new File(dir, "package.json");
         try {
-            return pkg.isFile() && java.nio.file.Files.readString(pkg.toPath())
+            return pkg.isFile() && org.nmox.studio.core.util.BoundedReads.read(pkg.toPath())
                     .contains("\"stylelint\"");
         } catch (IOException ex) {
             return false;
@@ -571,7 +571,7 @@ public final class LanguageServers {
         // idles, while parsing JSON on every file-open would cost more.
         File pkg = new File(dir, "package.json");
         try {
-            return pkg.isFile() && java.nio.file.Files.readString(pkg.toPath())
+            return pkg.isFile() && org.nmox.studio.core.util.BoundedReads.read(pkg.toPath())
                     .contains("\"eslintConfig\"");
         } catch (IOException ex) {
             return false;
@@ -1342,7 +1342,7 @@ public final class LanguageServers {
                 "node_modules/@vue/language-server/package.json");
         try {
             String version = new org.json.JSONObject(
-                    java.nio.file.Files.readString(pkg.toPath()))
+                    org.nmox.studio.core.util.BoundedReads.read(pkg.toPath()))
                     .optString("version", "");
             int dot = version.indexOf('.');
             return dot > 0 ? Integer.parseInt(version.substring(0, dot)) : -1;

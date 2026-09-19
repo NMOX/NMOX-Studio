@@ -41,6 +41,31 @@ import org.json.JSONObject;
 public record RackCard(String name, String description, String author,
         List<String> kinds, List<String> requires) {
 
+    /** What the sender called the rack. */
+    public static final String NAME = "name";
+    /** What it does, in a sentence or two. */
+    public static final String DESCRIPTION = "description";
+    /** Who wrote it, empty unless they typed it. */
+    public static final String AUTHOR = "author";
+    /** The {@code ProjectKind} names it says it fits. */
+    public static final String KINDS = "kinds";
+    /** The bare tool names it needs on the PATH. */
+    public static final String REQUIRES = "requires";
+
+    /**
+     * Every field of a card, declared where it is WRITTEN and READ: exactly
+     * what {@link #writeTo} writes and {@link #of} looks for. The community-rack
+     * gate ({@code gallery.RackJudge}) permits a header key only when this set
+     * or {@link #isLanguageSibling} knows it, and keeps no list of its own — it
+     * did until v2.179.2, so a field added here would have made the gate refuse
+     * every rack that used it as an "unknown header key" (the second-home
+     * defect v2.179.1 removed one authority over).
+     */
+    public static final Set<String> FIELDS = Set.of(NAME, DESCRIPTION, AUTHOR, KINDS, REQUIRES);
+
+    /** The fields a rack may translate — the ones {@link #localized} reads a {@code .<lang>} sibling of. */
+    public static final Set<String> TRANSLATED = Set.of(NAME, DESCRIPTION);
+
     public static final int MAX_NAME = 60;
     public static final int MAX_DESCRIPTION = 400;
     public static final int MAX_AUTHOR = 60;
@@ -78,9 +103,42 @@ public record RackCard(String name, String description, String author,
         if (header == null) {
             return EMPTY;
         }
-        return new RackCard(localized(header, "name", language), localized(header, "description", language),
-                text(header, "author"),
-                strings(header.optJSONArray("kinds")), strings(header.optJSONArray("requires")));
+        return new RackCard(localized(header, NAME, language), localized(header, DESCRIPTION, language),
+                text(header, AUTHOR),
+                strings(header.optJSONArray(KINDS)), strings(header.optJSONArray(REQUIRES)));
+    }
+
+    /**
+     * {@code name.de}, {@code description.pt-br}: a translation sibling of a
+     * {@link #TRANSLATED} field. The rule lives beside the reading it serves
+     * ({@link #localized}), so a reader of a rack file — the gate included —
+     * asks rather than spelling these prefixes a second time.
+     */
+    public static boolean isLanguageSibling(String key) {
+        if (key == null) {
+            return false;
+        }
+        for (String field : TRANSLATED) {
+            if (key.startsWith(field + ".") && isLanguageTag(key, field.length() + 1)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** {@code de}, {@code pt-br}, {@code zh_hans}: two to eight lower-case letters, {@code -} or {@code _}. */
+    private static boolean isLanguageTag(String key, int from) {
+        int length = key.length() - from;
+        if (length < 2 || length > 8) {
+            return false;
+        }
+        for (int i = from; i < key.length(); i++) {
+            char c = key.charAt(i);
+            if (!((c >= 'a' && c <= 'z') || c == '-' || c == '_')) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static String localized(JSONObject header, String key, String language) {
@@ -95,14 +153,14 @@ public record RackCard(String name, String description, String author,
 
     /** Writes the fields that say something into a {@code shared} header; blank ones are left out. */
     public void writeTo(JSONObject header) {
-        putIfSaid(header, "name", name);
-        putIfSaid(header, "description", description);
-        putIfSaid(header, "author", author);
+        putIfSaid(header, NAME, name);
+        putIfSaid(header, DESCRIPTION, description);
+        putIfSaid(header, AUTHOR, author);
         if (!kinds.isEmpty()) {
-            header.put("kinds", new JSONArray(kinds));
+            header.put(KINDS, new JSONArray(kinds));
         }
         if (!requires.isEmpty()) {
-            header.put("requires", new JSONArray(requires));
+            header.put(REQUIRES, new JSONArray(requires));
         }
     }
 

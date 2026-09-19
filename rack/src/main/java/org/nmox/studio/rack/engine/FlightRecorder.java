@@ -133,6 +133,8 @@ public final class FlightRecorder implements RackBus.Listener {
             try {
                 l.run();
             } catch (RuntimeException ignored) {
+                // a misbehaving listener must not stall the output pump,
+                // the same law RackBus.publish states at its own dispatch
             }
         }
     }

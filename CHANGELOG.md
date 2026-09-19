@@ -4,6 +4,109 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.180.0] - 2026-09-19
+
+**The rack's debt night: five ledger items closed, two classes swept, and the
+translators found three defects in the same night's own English.**
+
+### Ledger items closed
+
+- **102 — a restore is not a gesture.** Restoring a plugin device's saved knob
+  or switch ran the plugin's own `onChange` Runnable, which holds
+  `DeviceServices` and can reach `exec`: a rack MOUNT ran plugin code for a
+  value the user never touched. `RackDevice.applyState` raises a flag for the
+  length of the restore and `ExtensionDevice` wraps every plugin callback so it
+  does not run inside one. The plugin is told once afterwards through a new
+  `DeviceLogic.onStateRestored(services)` — additive to the frozen SPI, and the
+  hook `onAttached` could never be, because a device is racked BEFORE its state
+  is applied. Its predecessor test had been written to PROVE the hole existed;
+  it is inverted now, and v2.179.0's switch-off stays as the second defence.
+- **104 — the patch that would not load says so.** A corrupt or oversize
+  `.nmoxrack.json` on aim left an empty rack and wrote a WARNING to a file
+  nobody opens. It speaks on the status line now, where the rest of aiming
+  already speaks. *Photographed before the fix in the shipped 2.179.1: slots
+  01–10 empty, nothing on screen saying why.*
+- **105 — "1 devices, 1 cables".** Three rack sentences counted without a
+  plural, and the import manifest said "0 saved armed or running arrive at
+  rest" on every rack that had none — a clause about nothing. All take
+  `{n,choice,…}` branches; the at-rest clause is its own key, said only when
+  there is one. **The ChoiceFormat trap** bit during the fix and is worth
+  keeping: a value BELOW the first limit takes the FIRST branch, so
+  `{0,choice,1#…|1<…}` renders 0 as the singular.
+- **106 — a refusal's reason reached a translated build in English**, and
+  printed the file name twice. Opened and closed the same night: `RackIO`'s two
+  actionable refusals became typed outcomes carrying their facts, and
+  `RackService` renders each in the reader's own key. The parser's own
+  complaint stays in the log, where English is honest.
+- **103 — the three RACK edges are walked** (see below).
+
+### Two classes swept
+
+- **Every whole-file read is bounded or classified.** A sweep found 73
+  unguarded whole-file reads across the ten modules. The sharp ones are the
+  files a `git clone` brings that the IDE reads *because the user aimed at a
+  project* — a manifest on aim, `.editorconfig` on save, `package.json` on
+  every file open, the five studio workspace files, the drop-in dirs. Nobody
+  asked for those reads. `RackIO.readCapped` reached its fifth consumer and
+  moved to `core.util.BoundedReads`; 37 reads across 26 files measure before
+  they read, and `BoundedReadLedgerTest` derives its population from every
+  module's sources and fails by name on a new raw read.
+- **A counted sentence reads "1 card".** `PluralCopyGateTest` has held the
+  plural law since v2.85.0 with a hand-kept list of five nouns matched only in
+  Java string concatenation — so a count living inside a message VALUE was
+  invisible to it, which is how "1 devices" shipped green. The gate derives its
+  population now: 88 occurrences, 12 values branched in place (no new keys, so
+  the fourteen translations keep working), 26 classified with reasons.
+
+### The translators as instrument, three times
+
+Three groups worked on different language families and could not see each
+other. Two independently reported that *"One device was saved switched on"*
+gives the **device** a property only its **switch** has — `RackShare.inspect`
+counts a device because it carries a self-starting switch, and a device has no
+power state. The third rendered `patchNotLoaded` with a REAL exception instead
+of reading it and found the file name printed twice — **wrong in English**, and
+invisible to its test because `contains(".nmoxrack.json")` passes whether the
+name appears once or twice.
+
+Fifteen languages now read correctly at every count: Arabic with a real dual
+and its 11+ singular, Polish/Russian/Ukrainian keeping the label form that is
+right at every number, Hebrew declining a dual it does not have, and the four
+languages with no grammatical plural writing no branches at all.
+
+### Also
+
+- The community-rack gate keeps no key list either: the rack format's keys are
+  declared by the classes that write them (`RackIO`, `RackCard`, `RackShare`),
+  and `RackJudge` spells none of them.
+- The two silent catches in the rack engine say why they are silent. A sweep
+  found 70 catch blocks with no statement; 67 already carried a reason.
+- The French bundles spell the apostrophe one way: 46 values across two files.
+- **Ledger 108 recorded, measured:** a dotfile arriving as `{0}` after an RTL
+  word strands its leading dot — and `NativeTypographyGateTest` matches a
+  LITERAL dot, so a placeholder carries the defect past it. Found by a
+  translator in its own same-night work, by laying the strings out through
+  `java.text.Bidi` rather than reading them. Measured across eleven modules:
+  927 unguarded placeholders in Arabic and Hebrew, **six of twelve real values
+  sampled read wrongly today**. The guard is provably inert where unnecessary,
+  LRM alone is not enough (a trailing slash still jumps to the front), and the
+  population is fully derivable — the decision is written down and the sweep is
+  its own unit.
+- **Ledger 107 recorded, measured:** a bare numeric argument is grouped by the
+  JDK, and French's group separator is U+202F — the one character
+  `docs/i18n/conventions.md` deliberately keeps out of the product's own text,
+  bypassed below the bundle layer where no gate can see it. Not a defect on
+  macOS (seven UI fonts all carry it, measured); Linux and Windows unverified.
+
+### Walked
+
+In the shipped 2.179.1 with a throwaway userdir **and** a throwaway home:
+Import from Clipboard end to end (TEMPO arriving at HALT, `~` expanded to the
+receiver's home), the replace confirm's **Yes** — recorded by v2.179.0 as out
+of reach, and reachable by `AXPress` all along, *the walk tools' limit was the
+input method, not the dialog* — and Remove from My Racks with the project's own
+file untouched. Zero SEVERE, zero orphans.
+
 ## [2.179.1] - 2026-09-18
 
 **The community-rack gate keeps no list: one authority for "this setting starts by itself".**
@@ -22619,6 +22722,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.180.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.1...v2.180.0
 [2.179.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.179.0...v2.179.1
 [2.179.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.178.0...v2.179.0
 [2.178.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.177.0...v2.178.0

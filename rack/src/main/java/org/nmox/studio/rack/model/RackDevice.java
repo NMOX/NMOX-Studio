@@ -708,17 +708,57 @@ public abstract class RackDevice extends JPanel {
         return state;
     }
 
+    /**
+     * True while {@link #applyState} is restoring saved settings onto this
+     * device's controls. A control fires its change listeners when its value
+     * moves, and during a restore those moves are not gestures — see
+     * {@code ExtensionDevice}, which uses this to keep a plugin's callbacks
+     * out of a patch load.
+     *
+     * <p>Built-ins deliberately do NOT consult it: a REFLEX saved armed is
+     * meant to start watching when you load your own patch (v1.50.0), and a
+     * shared rack has those switches turned off before it ever gets here
+     * ({@code RackShare.imported}, by what each device declares).
+     */
+    protected final boolean isRestoringState() {
+        return restoringState;
+    }
+
+    private boolean restoringState;
+
+    /**
+     * Called once at the end of a {@link #applyState} that actually set
+     * something. The device is racked and its controls now show the saved
+     * values — the moment {@link #onAttached} cannot serve, because a device
+     * is racked before its state is applied.
+     */
+    protected void onStateRestored() {
+    }
+
     public void applyState(Map<String, String> state) {
-        state.forEach((k, v) -> {
-            Consumer<String> setter = paramSetters.get(k);
-            if (setter != null) {
+        boolean restored = false;
+        restoringState = true;
+        try {
+            for (Map.Entry<String, String> e : state.entrySet()) {
+                Consumer<String> setter = paramSetters.get(e.getKey());
+                if (setter == null) {
+                    continue;
+                }
                 try {
-                    setter.accept(v);
+                    setter.accept(e.getValue());
+                    restored = true;
                 } catch (RuntimeException ignored) {
                     // stale or malformed patch value; keep the default
                 }
             }
-        });
+        } finally {
+            // a throwing setter must not leave the device restoring forever,
+            // which would swallow every later gesture's callbacks
+            restoringState = false;
+        }
+        if (restored) {
+            onStateRestored();
+        }
     }
 
     // ---- view flipping ----

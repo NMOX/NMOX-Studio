@@ -31,7 +31,8 @@ public final class PackageJsonFile {
             throw new IOException("No package.json in " + projectDir);
         }
         try {
-            return new PackageJsonFile(f, new JSONObject(Files.readString(f.toPath(), StandardCharsets.UTF_8)));
+            return new PackageJsonFile(f, new JSONObject(
+                    org.nmox.studio.core.util.BoundedReads.read(f.toPath())));
         } catch (RuntimeException ex) {
             throw new IOException("Malformed package.json: " + ex.getMessage(), ex);
         }

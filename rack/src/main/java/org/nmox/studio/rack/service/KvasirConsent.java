@@ -46,7 +46,7 @@ import org.openide.util.NbPreferences;
     "KvasirConsent_failureTitle=KVASIR — send failure for explanation?",
     "KvasirConsent_kindMessage=<html><b>Send this to {0} for an explanation?</b><br><br>KVASIR will send <b>only</b> the following, and nothing else:<ul><li>{1}</li></ul>It sends <b>nothing</b> beyond the line above — no environment variables, no secrets, nothing it did not name.<br><br>Your API key is used to authenticate the request. This choice is remembered for this kind of request only.</html>",
     "KvasirConsent_kindTitle=KVASIR — send for explanation?",
-    "KvasirConsent_codeMessage=<html><b>Send this code selection to {0}?</b><br><br>Ask KVASIR will send <b>only</b> the following, and nothing else:<ul><li>the code you selected ({1} characters)</li><li>the file''s name: <code>{2}</code></li><li>its language: <code>{3}</code></li><li>your question</li></ul>It does <b>not</b> send the rest of the file, other files, environment variables, or any secret.<br><br>Your API key authenticates the request. This choice is remembered.</html>",
+    "KvasirConsent_codeMessage=<html><b>Send this code selection to {0}?</b><br><br>Ask KVASIR will send <b>only</b> the following, and nothing else:<ul><li>the code you selected ({1,choice,0#{1} characters|1#{1} character|1<{1} characters})</li><li>the file''s name: <code>{2}</code></li><li>its language: <code>{3}</code></li><li>your question</li></ul>It does <b>not</b> send the rest of the file, other files, environment variables, or any secret.<br><br>Your API key authenticates the request. This choice is remembered.</html>",
     "KvasirConsent_codeTitle=Ask KVASIR — send selected code?",
     "KvasirConsent_unknown=(unknown)"
 })
@@ -281,7 +281,8 @@ public final class KvasirConsent {
         if (GraphicsEnvironment.isHeadless()) {
             return true;
         }
-        String message = Bundle.KvasirConsent_codeMessage(recipient(), String.valueOf(q.code().length()),
+        // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+        String message = Bundle.KvasirConsent_codeMessage(recipient(), q.code().length(),
                 escape(q.fileName()), escape(q.language()));
         Object sendOption = Bundle.KvasirConsent_sendToKvasir();
         Object keepLocal = Bundle.KvasirConsent_keepLocal();

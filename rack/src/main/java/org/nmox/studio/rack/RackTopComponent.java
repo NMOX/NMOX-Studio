@@ -96,14 +96,19 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_copiedLabel={0}  [copied]",
     "RackTopComponent_keptLabel=[kept as {0}]",
     "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
-    "RackTopComponent_leavingSummary={0} devices, {1} cables. Settings that travel:",
-    "RackTopComponent_leavingNothing={0} devices, {1} cables. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
+    "# {0} - device count, {1} - cable count; both take plural branches",
+    "RackTopComponent_leavingSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Settings that travel:",
+    "# {0} - device count, {1} - cable count; both take plural branches",
+    "RackTopComponent_leavingNothing={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
     "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — remove before sharing (shown masked here):",
     "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
     "RackTopComponent_importRack=Import…",
     "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
     "RackTopComponent_importTitle=Import Rack",
-    "RackTopComponent_importSummary={0} devices, {1} cables. Nothing runs on import; {2} saved armed or running arrive at rest.",
+    "# {0} - device count, {1} - cable count; both take plural branches",
+    "RackTopComponent_importSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Nothing runs on import.",
+    "# {0} - how many devices were saved with a self-starting switch on; never shown for none",
+    "RackTopComponent_importAtRest={0,choice,1#One device was saved with a switch on; it arrives at rest.|1<{0} devices were saved with a switch on; they arrive at rest.}",
     "RackTopComponent_importUnknown=Not in this install (they mount as placeholders that keep their cables): {0}",
     "RackTopComponent_importSettings=Settings this rack carries — read them before mounting:",
     "RackTopComponent_importMount=Mount",
@@ -972,7 +977,13 @@ public final class RackTopComponent extends TopComponent {
     /** The manifest's middle: one device per line, then what needs reading. */
     static String manifestText(org.nmox.studio.rack.model.RackShare.Manifest m) {
         StringBuilder sb = new StringBuilder();
-        sb.append(Bundle.RackTopComponent_importSummary(m.devices().size(), m.cables(), m.atRest())).append("\n\n");
+        sb.append(Bundle.RackTopComponent_importSummary(m.devices().size(), m.cables())).append("\n");
+        // said only when there IS one: the old sentence read "0 saved armed or
+        // running arrive at rest" on every rack that had none (ledger 105)
+        if (m.atRest() > 0) {
+            sb.append(Bundle.RackTopComponent_importAtRest(m.atRest())).append("\n");
+        }
+        sb.append("\n");
         for (org.nmox.studio.rack.model.RackShare.Device d : m.devices()) {
             String title = org.nmox.studio.rack.devices.DeviceCatalog.byId(d.typeId())
                     .map(org.nmox.studio.rack.devices.DeviceCatalog.Entry::title).orElse(d.typeId());

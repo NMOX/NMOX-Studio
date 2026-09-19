@@ -36,8 +36,10 @@ import org.nmox.studio.rack.model.RackShare;
  * <ul>
  * <li>it says what it is — a non-blank {@code name} (≤ 60) and
  * {@code description} (≤ 400), nothing in the header the reader ignores;</li>
- * <li>it is a plain rack file — {@code version} 1, only {@code version},
- * {@code shared}, {@code devices}, {@code cables} at the top, ≤ 64 KiB;</li>
+ * <li>it is a plain rack file — {@code version} 1, nothing at any level that
+ * a reader would ignore, ≤ 64 KiB. WHICH keys those are is not this class's
+ * knowledge either: it asks the classes that write them ({@link Permitted}),
+ * so the format and the gate cannot disagree;</li>
  * <li>every device is a BUILT-IN catalog device, named by its current id —
  * a rack the product ships may not depend on a plugin;</li>
  * <li>it MOUNTS — loaded into a fresh headless {@link Rack} through
@@ -68,13 +70,33 @@ public final class RackJudge {
     /** The most devices a community rack may hold — a shelf item, not a data centre. */
     static final int MAX_DEVICES = 24;
 
-    private static final Set<String> TOP_LEVEL = Set.of("version", RackShare.SHARED, "devices", "cables");
-    private static final Set<String> HEADER = Set.of("product", "name", "description", "author", "kinds", "requires");
-    private static final Set<String> DEVICE_KEYS = Set.of("type", "state");
-    private static final Set<String> CABLE_KEYS = Set.of("fromDevice", "fromPort", "toDevice", "toPort");
     private static final Set<String> LOOPBACK = Set.of("localhost", "127.0.0.1", "[::1]", "0.0.0.0");
 
     private RackJudge() {
+    }
+
+    /**
+     * Which keys a rack file may name, level by level — asked of the classes
+     * that WRITE them, never listed here. {@link RackIO} writes the patch
+     * ({@code version}, the device slots, the cable harness),
+     * {@link RackShare#export} adds the {@code shared} header, and
+     * {@link RackCard} writes what is inside it; a field one of them gains
+     * tomorrow is permitted here the same day, with no edit to this file.
+     *
+     * <p>v2.179.1 removed a hand-kept set of self-starting switches from this
+     * class and left four more beside it — the same defect, four times over:
+     * a key added to the format would have made this gate refuse every rack
+     * that used it, in a file its author would not think to open. The record
+     * exists so a test can declare a key no authority has yet and watch the
+     * derivation carry it (the {@code selfStartingByType} seam's shape).
+     */
+    record Permitted(Set<String> topLevel, Set<String> header, Set<String> device, Set<String> cable) {
+
+        /** What this install's authorities declare — what shipping code judges by. */
+        static Permitted declared() {
+            return new Permitted(RackShare.TOP_LEVEL_KEYS, RackShare.HEADER_KEYS,
+                    RackIO.DEVICE_KEYS, RackIO.CABLE_KEYS);
+        }
     }
 
     /**
@@ -110,14 +132,24 @@ public final class RackJudge {
      */
     static List<String> problems(String fileName, JSONObject doc,
             java.util.function.Function<String, java.util.Set<String>> selfStartingByType) {
+        return problems(fileName, doc, selfStartingByType, Permitted.declared());
+    }
+
+    /**
+     * The same judgement with both declarations supplied — the second seam a
+     * test uses to name a key no authority carries yet, and watch this gate
+     * take it without an edit (and refuse it through the public door).
+     */
+    static List<String> problems(String fileName, JSONObject doc,
+            java.util.function.Function<String, java.util.Set<String>> selfStartingByType, Permitted permitted) {
         List<String> found = new ArrayList<>();
         if (doc == null) {
             return List.of(fileName + ": missing");
         }
-        topLevel(doc, found);
-        header(doc, found);
-        boolean devicesSound = devices(doc, found, selfStartingByType);
-        boolean cablesSound = cables(doc, found);
+        topLevel(doc, found, permitted);
+        header(doc, found, permitted);
+        boolean devicesSound = devices(doc, found, selfStartingByType, permitted);
+        boolean cablesSound = cables(doc, found, permitted);
         // mounted whenever the SHAPE allows it, whatever else is wrong, so a
         // contributor reads every problem in one run rather than one per push
         if (devicesSound && cablesSound) {
@@ -130,25 +162,25 @@ public final class RackJudge {
         return List.copyOf(out);
     }
 
-    private static void topLevel(JSONObject doc, List<String> found) {
+    private static void topLevel(JSONObject doc, List<String> found, Permitted permitted) {
         for (String key : sorted(doc.keySet())) {
-            if (!TOP_LEVEL.contains(key)) {
+            if (!permitted.topLevel().contains(key)) {
                 found.add("unknown top-level key \"" + RackWiring.plain(key) + "\"");
             }
         }
-        if (!(doc.opt("version") instanceof Integer v) || v != 1) {
+        if (!(doc.opt(RackIO.VERSION) instanceof Integer v) || v != 1) {
             found.add("version must be 1");
         }
     }
 
-    private static void header(JSONObject doc, List<String> found) {
+    private static void header(JSONObject doc, List<String> found, Permitted permitted) {
         JSONObject header = doc.optJSONObject(RackShare.SHARED);
         if (header == null) {
             found.add("no \"shared\" header — a community rack must say what it is");
             return;
         }
         for (String key : sorted(header.keySet())) {
-            if (!HEADER.contains(key) && !isLanguageSibling(key)) {
+            if (!permitted.header().contains(key) && !RackCard.isLanguageSibling(key)) {
                 found.add("unknown header key \"" + RackWiring.plain(key) + "\"");
             }
         }
@@ -156,16 +188,16 @@ public final class RackJudge {
         RackCard card = RackCard.of(doc, "");
         if (card.name().isBlank()) {
             found.add("name is blank");
-        } else if (codePoints(header.opt("name")) > RackCard.MAX_NAME) {
+        } else if (codePoints(header.opt(RackCard.NAME)) > RackCard.MAX_NAME) {
             found.add("name is over " + RackCard.MAX_NAME + " characters");
         }
         if (card.description().isBlank()) {
             found.add("description is blank");
-        } else if (codePoints(header.opt("description")) > RackCard.MAX_DESCRIPTION) {
+        } else if (codePoints(header.opt(RackCard.DESCRIPTION)) > RackCard.MAX_DESCRIPTION) {
             found.add("description is over " + RackCard.MAX_DESCRIPTION + " characters");
         }
-        JSONArray kinds = header.optJSONArray("kinds");
-        if (header.has("kinds") && kinds == null) {
+        JSONArray kinds = header.optJSONArray(RackCard.KINDS);
+        if (header.has(RackCard.KINDS) && kinds == null) {
             found.add("kinds must be an array");
         } else if (kinds != null) {
             for (int i = 0; i < kinds.length(); i++) {
@@ -178,8 +210,8 @@ public final class RackJudge {
                 found.add("kinds holds a duplicate or more than " + RackCard.MAX_LIST + " entries");
             }
         }
-        JSONArray requires = header.optJSONArray("requires");
-        if (header.has("requires") && requires == null) {
+        JSONArray requires = header.optJSONArray(RackCard.REQUIRES);
+        if (header.has(RackCard.REQUIRES) && requires == null) {
             found.add("requires must be an array");
         } else if (requires != null && card.requires().size() != requires.length()) {
             // RackCard keeps only bare tool names, once each: a shorter list is a dropped entry
@@ -190,8 +222,8 @@ public final class RackJudge {
 
     /** True when the device list is sound enough to try mounting. */
     private static boolean devices(JSONObject doc, List<String> found,
-            java.util.function.Function<String, java.util.Set<String>> selfStartingByType) {
-        JSONArray devices = doc.optJSONArray("devices");
+            java.util.function.Function<String, java.util.Set<String>> selfStartingByType, Permitted permitted) {
+        JSONArray devices = doc.optJSONArray(RackIO.DEVICES);
         if (devices == null || devices.isEmpty()) {
             found.add("no devices");
             return false;
@@ -203,14 +235,14 @@ public final class RackJudge {
         boolean sound = true;
         for (int i = 0; i < devices.length(); i++) {
             JSONObject dj = devices.optJSONObject(i);
-            if (dj == null || !(dj.opt("type") instanceof String type)) {
+            if (dj == null || !(dj.opt(RackIO.TYPE) instanceof String type)) {
                 found.add("devices[" + i + "] is not a device object with a type");
                 sound = false;
                 continue;
             }
             String where = "devices[" + i + "] " + RackWiring.plain(type);
             for (String key : sorted(dj.keySet())) {
-                if (!DEVICE_KEYS.contains(key)) {
+                if (!permitted.device().contains(key)) {
                     found.add(where + ": unknown key \"" + RackWiring.plain(key) + "\"");
                 }
             }
@@ -222,12 +254,12 @@ public final class RackJudge {
                 found.add(where + " is a retired id — use \"" + entry.get().id() + "\"");
                 sound = false;
             }
-            if (dj.has("state") && dj.optJSONObject("state") == null) {
+            if (dj.has(RackIO.STATE) && dj.optJSONObject(RackIO.STATE) == null) {
                 found.add(where + ": state must be an object");
                 sound = false;
                 continue;
             }
-            JSONObject state = dj.optJSONObject("state");
+            JSONObject state = dj.optJSONObject(RackIO.STATE);
             if (state != null) {
                 sound &= state(where, type, state, found, selfStartingByType);
             }
@@ -268,26 +300,28 @@ public final class RackJudge {
     }
 
     /** True when the cable list is sound enough to try mounting. */
-    private static boolean cables(JSONObject doc, List<String> found) {
-        JSONArray cables = doc.optJSONArray("cables");
+    private static boolean cables(JSONObject doc, List<String> found, Permitted permitted) {
+        JSONArray cables = doc.optJSONArray(RackIO.CABLES);
         if (cables == null || cables.isEmpty()) {
             found.add("no cables — a rack worth sharing is wired");
             return false;
         }
-        JSONArray devices = doc.optJSONArray("devices");
+        JSONArray devices = doc.optJSONArray(RackIO.DEVICES);
         int deviceCount = devices == null ? 0 : devices.length();
         boolean sound = true;
         Set<String> seen = new HashSet<>();
         for (int i = 0; i < cables.length(); i++) {
             JSONObject c = cables.optJSONObject(i);
-            if (c == null || !(c.opt("fromDevice") instanceof Integer from) || !(c.opt("toDevice") instanceof Integer to)
-                    || !(c.opt("fromPort") instanceof String fromPort) || !(c.opt("toPort") instanceof String toPort)) {
+            if (c == null || !(c.opt(RackIO.FROM_DEVICE) instanceof Integer from)
+                    || !(c.opt(RackIO.TO_DEVICE) instanceof Integer to)
+                    || !(c.opt(RackIO.FROM_PORT) instanceof String fromPort)
+                    || !(c.opt(RackIO.TO_PORT) instanceof String toPort)) {
                 found.add("cables[" + i + "] needs integer fromDevice/toDevice and string fromPort/toPort");
                 sound = false;
                 continue;
             }
             for (String key : sorted(c.keySet())) {
-                if (!CABLE_KEYS.contains(key)) {
+                if (!permitted.cable().contains(key)) {
                     found.add("cables[" + i + "]: unknown key \"" + RackWiring.plain(key) + "\"");
                 }
             }
@@ -323,8 +357,8 @@ public final class RackJudge {
             // even a rack refused for arriving armed watches nothing while judged
             RackIO.fromJson(rack, RackShare.imported(doc, null));
             List<RackDevice> mounted = rack.getDevices();
-            JSONArray devices = doc.getJSONArray("devices");
-            JSONArray cables = doc.getJSONArray("cables");
+            JSONArray devices = doc.getJSONArray(RackIO.DEVICES);
+            JSONArray cables = doc.getJSONArray(RackIO.CABLES);
             if (mounted.size() != devices.length()) {
                 found.add("mounted " + mounted.size() + " of " + devices.length() + " devices");
                 return;
@@ -332,10 +366,10 @@ public final class RackJudge {
             List<Cable> live = rack.getCables();
             for (int i = 0; i < cables.length(); i++) {
                 JSONObject c = cables.getJSONObject(i);
-                RackDevice from = mounted.get(c.getInt("fromDevice"));
-                RackDevice to = mounted.get(c.getInt("toDevice"));
-                String fromPort = c.getString("fromPort");
-                String toPort = c.getString("toPort");
+                RackDevice from = mounted.get(c.getInt(RackIO.FROM_DEVICE));
+                RackDevice to = mounted.get(c.getInt(RackIO.TO_DEVICE));
+                String fromPort = c.getString(RackIO.FROM_PORT);
+                String toPort = c.getString(RackIO.TO_PORT);
                 if (!arrived(live, from, fromPort, to, toPort)) {
                     found.add("cables[" + i + "] " + from.getTypeId() + "." + RackWiring.plain(fromPort) + " -> "
                             + to.getTypeId() + "." + RackWiring.plain(toPort) + " does not mount: "
@@ -455,28 +489,6 @@ public final class RackJudge {
             }
         }
         return false;
-    }
-
-    /** {@code name.de}, {@code description.pt-br}: the translation siblings {@link RackCard} reads. */
-    private static boolean isLanguageSibling(String key) {
-        String tail;
-        if (key.startsWith("name.")) {
-            tail = key.substring("name.".length());
-        } else if (key.startsWith("description.")) {
-            tail = key.substring("description.".length());
-        } else {
-            return false;
-        }
-        if (tail.length() < 2 || tail.length() > 8) {
-            return false;
-        }
-        for (int i = 0; i < tail.length(); i++) {
-            char c = tail.charAt(i);
-            if (!((c >= 'a' && c <= 'z') || c == '-' || c == '_')) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private static int codePoints(Object raw) {

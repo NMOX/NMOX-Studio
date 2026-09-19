@@ -40,7 +40,8 @@ import org.openide.util.NbBundle.Messages;
     "AskKvasirAction_questionField=Question about the selection",
     "AskKvasirAction_modelDepth=Model depth",
     "AskKvasirAction_sendsNote=<html><small>Sends only the selection, the file name, the language, and your question — never the rest of the file.</small></html>",
-    "AskKvasirAction_prompt=<html>Question about the selection ({0} chars of <b>{1}</b>) — empty asks for an explanation:</html>",
+    "AskKvasirAction_prompt=<html>Question about the selection "
+        + "({0,choice,0#{0} chars|1#{0} char|1<{0} chars} of <b>{1}</b>) — empty asks for an explanation:</html>",
     "AskKvasirAction_title=Ask KVASIR",
     "AskKvasirAction_unsavedBuffer=(unsaved buffer)"
 })
@@ -72,7 +73,8 @@ public final class AskKvasirAction implements ActionListener {
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panel.add(new JLabel(Bundle.AskKvasirAction_prompt(String.valueOf(preview.code().length()), PlainText.escape(preview.fileName()))),
+        // the count rides as a NUMBER: a ChoiceFormat branch refuses a String
+        panel.add(new JLabel(Bundle.AskKvasirAction_prompt(preview.code().length(), PlainText.escape(preview.fileName()))),
                 BorderLayout.NORTH);
         panel.add(question, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);

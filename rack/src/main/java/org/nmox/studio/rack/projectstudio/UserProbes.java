@@ -82,7 +82,7 @@ public final class UserProbes {
         Arrays.sort(files, Comparator.comparing(File::getName));
         for (File f : files) {
             try {
-                String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                String json = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
                 JSONObject o = new JSONObject(json);
                 String problem = problem(o, taken);
                 if (problem != null) {

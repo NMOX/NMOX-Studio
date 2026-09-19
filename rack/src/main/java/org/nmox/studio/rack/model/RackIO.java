@@ -2,16 +2,17 @@ package org.nmox.studio.rack.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.AtomicFiles;
+import org.nmox.studio.core.util.BoundedReads;
 import org.nmox.studio.rack.devices.DeviceCatalog;
 
 /**
@@ -22,6 +23,40 @@ import org.nmox.studio.rack.devices.DeviceCatalog;
 public final class RackIO {
 
     public static final String DEFAULT_FILENAME = ".nmoxrack.json";
+
+    /** The patch's version, which {@link #toJson} stamps and every reader checks. */
+    public static final String VERSION = "version";
+    /** The device stack, in mount order: a cable names its ends by INDEX into it. */
+    public static final String DEVICES = "devices";
+    /** The cable harness. */
+    public static final String CABLES = "cables";
+    /** A device slot's catalog type id. */
+    public static final String TYPE = "type";
+    /** A device slot's saved control positions, every value a string. */
+    public static final String STATE = "state";
+    /** A cable's OUT end: the device index and the port id. */
+    public static final String FROM_DEVICE = "fromDevice";
+    public static final String FROM_PORT = "fromPort";
+    /** A cable's IN end. */
+    public static final String TO_DEVICE = "toDevice";
+    public static final String TO_PORT = "toPort";
+
+    /**
+     * What the patch format holds, declared where it is WRITTEN. The
+     * community-rack gate ({@code gallery.RackJudge}) permits exactly these
+     * keys and keeps no copy of them: until v2.179.2 it hand-kept all three
+     * sets, so a key added to the format here would have made the gate refuse
+     * every rack that used it, with "unknown key" — the second-home defect
+     * v2.179.1 removed one authority over. {@code RackJudgeFormatKeysTest}
+     * holds each set equal to what {@link #toJson} really writes, so a key
+     * added to the writer and not to its set fails the build rather than
+     * quietly refusing a rack.
+     */
+    public static final Set<String> TOP_LEVEL_KEYS = Set.of(VERSION, DEVICES, CABLES);
+    /** @see #TOP_LEVEL_KEYS */
+    public static final Set<String> DEVICE_KEYS = Set.of(TYPE, STATE);
+    /** @see #TOP_LEVEL_KEYS */
+    public static final Set<String> CABLE_KEYS = Set.of(FROM_DEVICE, FROM_PORT, TO_DEVICE, TO_PORT);
 
     /**
      * Port ids a saved patch may still name, keyed {@code <typeId>.<oldId>}
@@ -52,28 +87,28 @@ public final class RackIO {
 
     public static JSONObject toJson(Rack rack) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put(VERSION, 1);
 
         List<RackDevice> devices = rack.getDevices();
         JSONArray deviceArr = new JSONArray();
         for (RackDevice d : devices) {
             JSONObject dj = new JSONObject();
-            dj.put("type", d.getTypeId());
-            dj.put("state", new JSONObject(d.getState()));
+            dj.put(TYPE, d.getTypeId());
+            dj.put(STATE, new JSONObject(d.getState()));
             deviceArr.put(dj);
         }
-        root.put("devices", deviceArr);
+        root.put(DEVICES, deviceArr);
 
         JSONArray cableArr = new JSONArray();
         for (Cable c : rack.getCables()) {
             JSONObject cj = new JSONObject();
-            cj.put("fromDevice", devices.indexOf(c.getFrom().getDevice()));
-            cj.put("fromPort", c.getFrom().getId());
-            cj.put("toDevice", devices.indexOf(c.getTo().getDevice()));
-            cj.put("toPort", c.getTo().getId());
+            cj.put(FROM_DEVICE, devices.indexOf(c.getFrom().getDevice()));
+            cj.put(FROM_PORT, c.getFrom().getId());
+            cj.put(TO_DEVICE, devices.indexOf(c.getTo().getDevice()));
+            cj.put(TO_PORT, c.getTo().getId());
             cableArr.put(cj);
         }
-        root.put("cables", cableArr);
+        root.put(CABLES, cableArr);
         return root;
     }
 
@@ -82,13 +117,13 @@ public final class RackIO {
         for (RackDevice d : rack.getDevices()) {
             rack.removeDevice(d);
         }
-        JSONArray deviceArr = root.optJSONArray("devices");
+        JSONArray deviceArr = root.optJSONArray(DEVICES);
         if (deviceArr == null) {
             return;
         }
         for (int i = 0; i < deviceArr.length(); i++) {
             JSONObject dj = deviceArr.getJSONObject(i);
-            String typeId = dj.getString("type");
+            String typeId = dj.getString(TYPE);
             // an unknown type id (a plugin device not installed here) keeps
             // its slot as a MissingDevice: cables are index-based, so
             // dropping it would silently re-route every cable saved after
@@ -97,7 +132,7 @@ public final class RackIO {
                     .map(DeviceCatalog.Entry::create)
                     .orElseGet(() -> new MissingDevice(typeId));
             rack.addDevice(device);
-            JSONObject state = dj.optJSONObject("state");
+            JSONObject state = dj.optJSONObject(STATE);
             if (state != null) {
                 Map<String, String> map = new LinkedHashMap<>();
                 for (String key : state.keySet()) {
@@ -107,7 +142,7 @@ public final class RackIO {
             }
         }
         List<RackDevice> devices = rack.getDevices();
-        JSONArray cableArr = root.optJSONArray("cables");
+        JSONArray cableArr = root.optJSONArray(CABLES);
         if (cableArr != null) {
             for (int i = 0; i < cableArr.length(); i++) {
                 // By the time cables load, the rack has been CLEARED and its
@@ -123,7 +158,7 @@ public final class RackIO {
                             "rack patch cable #{0} dropped: not a cable entry", i + 1);
                     continue;
                 }
-                int fi = cj.optInt("fromDevice", -1), ti = cj.optInt("toDevice", -1);
+                int fi = cj.optInt(FROM_DEVICE, -1), ti = cj.optInt(TO_DEVICE, -1);
                 if (fi < 0 || fi >= devices.size() || ti < 0 || ti >= devices.size()) {
                     LOG.log(java.util.logging.Level.WARNING,
                             "rack patch cable #{0} dropped: it names a device slot this patch does not have", i + 1);
@@ -132,8 +167,8 @@ public final class RackIO {
                 RackDevice fd = devices.get(fi);
                 RackDevice td = devices.get(ti);
                 // a renamed jack keeps its cables: the saved id maps to today's
-                String fromId = currentPortId(fd, cj.optString("fromPort", ""));
-                String toId = currentPortId(td, cj.optString("toPort", ""));
+                String fromId = currentPortId(fd, cj.optString(FROM_PORT, ""));
+                String toId = currentPortId(td, cj.optString(TO_PORT, ""));
                 Port from = fd.getPort(fromId);
                 Port to = td.getPort(toId);
                 // a missing device adopts the ports its saved cables name,
@@ -213,8 +248,8 @@ public final class RackIO {
                 rack.removeDevice(d);
             }
             rack.clearUndoHistory();
-            throw new IOException("Corrupt rack patch " + file.getName()
-                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+            throw new CorruptPatchException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), file.getName() + ".bak", corrupt);
         }
         fromJson(rack, root);
     }
@@ -232,8 +267,8 @@ public final class RackIO {
             return new JSONObject(text);
         } catch (JSONException corrupt) {
             backupCorrupt(file);
-            throw new IOException("Corrupt rack patch " + file.getName()
-                    + " (kept as .bak): " + corrupt.getMessage(), corrupt);
+            throw new CorruptPatchException("Corrupt rack patch " + file.getName()
+                    + " (kept as .bak): " + corrupt.getMessage(), file.getName() + ".bak", corrupt);
         }
     }
 
@@ -245,21 +280,65 @@ public final class RackIO {
      */
     static final long MAX_PATCH_BYTES = 8L * 1024 * 1024;
 
-    /** A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and never moved aside. */
-    static final class PatchTooLargeException extends IOException {
-        PatchTooLargeException(String message) {
+    /**
+     * A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and
+     * never moved aside. It carries the SIZE as a number, not only inside its
+     * message, so a consumer can say what happened in the reader's own language
+     * (ledger 106: an argument is data — v2.100.0).
+     */
+    public static final class PatchTooLargeException extends IOException {
+        private final long size;
+
+        PatchTooLargeException(String message, long size) {
             super(message);
+            this.size = size;
+        }
+
+        /** The file's size in KiB — what a reader needs to know, in a unit they read. */
+        public long kib() {
+            return size / 1024;
+        }
+
+        /** The ceiling in MiB, so a sentence can name it without knowing this class's constant. */
+        public static long capMib() {
+            return MAX_PATCH_BYTES / 1024 / 1024;
         }
     }
 
-    /** The patch text, or a refusal naming the size — the file is untouched either way. */
-    private static String readCapped(File file) throws IOException {
-        long size = Files.size(file.toPath());
-        if (size > MAX_PATCH_BYTES) {
-            throw new PatchTooLargeException("Rack patch " + file.getName() + " is " + (size / 1024)
-                    + " KiB, over the " + (MAX_PATCH_BYTES / 1024 / 1024) + " MiB cap — not read");
+    /**
+     * A patch whose bytes are not JSON. The parser's own complaint stays in
+     * {@code getMessage()} for the log; the consumer's sentence needs only the
+     * name of the backup, because a parser's English is not a translation the
+     * product can offer (ledger 106).
+     */
+    public static final class CorruptPatchException extends IOException {
+        private final String backupName;
+
+        CorruptPatchException(String message, String backupName, Throwable cause) {
+            super(message, cause);
+            this.backupName = backupName;
         }
-        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
+
+        /** The file the user's bytes were kept as, so nothing they wrote is lost silently. */
+        public String backupName() {
+            return backupName;
+        }
+    }
+
+    /**
+     * The patch text, or a refusal naming the size — the file is untouched
+     * either way. The measuring is {@link BoundedReads}' since v2.180.0 (this
+     * was its first home and its fifth consumer promoted it); the wording and
+     * the exception TYPE stay this class's, because {@link #load} branches on
+     * that type to decide whether to empty the rack.
+     */
+    private static String readCapped(File file) throws IOException {
+        try {
+            return BoundedReads.read(file.toPath(), MAX_PATCH_BYTES);
+        } catch (BoundedReads.TooLarge tooLarge) {
+            throw new PatchTooLargeException(BoundedReads.refusal("Rack patch",
+                    tooLarge.fileName(), tooLarge.size(), tooLarge.maxBytes()), tooLarge.size());
+        }
     }
 
     /** Renames a corrupt patch to {@code <name>.bak} so save() can't clobber it. */

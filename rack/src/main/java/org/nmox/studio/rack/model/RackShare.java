@@ -2,6 +2,7 @@ package org.nmox.studio.rack.model;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -64,6 +65,33 @@ public final class RackShare {
 
     /** The header a shared file carries beside the patch; absent on a plain patch. */
     public static final String SHARED = "shared";
+
+    /** The one header key that is not a card field: the product version {@link #export} stamps. */
+    public static final String PRODUCT = "product";
+
+    /**
+     * What a SHARED file may hold at its top level: the patch's own keys
+     * ({@link RackIO#TOP_LEVEL_KEYS}) plus the header {@link #export} adds. Like
+     * {@link #HEADER_KEYS} this is declared where the writing happens, so the
+     * community-rack gate can permit exactly what a share can produce instead of
+     * keeping a copy that goes stale (v2.179.1's defect, one authority over).
+     */
+    public static final Set<String> TOP_LEVEL_KEYS = with(RackIO.TOP_LEVEL_KEYS, SHARED);
+
+    /**
+     * What a {@code shared} header may hold: the product version and whatever
+     * {@link RackCard} writes — the union of the two authorities, never a third
+     * list. A {@code name.<lang>} sibling is a header key too; only
+     * {@link RackCard#isLanguageSibling} can say so, because the set of tags is
+     * open.
+     */
+    public static final Set<String> HEADER_KEYS = with(RackCard.FIELDS, PRODUCT);
+
+    private static Set<String> with(Set<String> keys, String more) {
+        Set<String> out = new LinkedHashSet<>(keys);
+        out.add(more);
+        return Set.copyOf(out);
+    }
 
     /**
      * A resolver's answer meaning "every switch": any state value that reads
@@ -143,7 +171,7 @@ public final class RackShare {
     public static JSONObject export(JSONObject patch, Path home, String productVersion, RackCard card) {
         JSONObject out = new JSONObject(patch.toString());
         JSONObject header = new JSONObject();
-        header.put("product", productVersion == null ? "" : productVersion);
+        header.put(PRODUCT, productVersion == null ? "" : productVersion);
         (card == null ? RackCard.EMPTY : card).writeTo(header);
         out.put(SHARED, header);
         // compared with one separator so a Windows home (C:\Users\x) matches a value
@@ -181,13 +209,13 @@ public final class RackShare {
         JSONObject out = new JSONObject(shared.toString());
         out.remove(SHARED);
         String prefix = home == null ? null : home.toAbsolutePath().normalize().toString();
-        JSONArray devices = out.optJSONArray("devices");
+        JSONArray devices = out.optJSONArray(RackIO.DEVICES);
         if (devices == null) {
             return out;
         }
         for (int i = 0; i < devices.length(); i++) {
             JSONObject dj = deviceAt(devices, i);
-            JSONObject state = dj.optJSONObject("state");
+            JSONObject state = dj.optJSONObject(RackIO.STATE);
             if (state == null) {
                 continue;
             }
@@ -197,7 +225,7 @@ public final class RackShare {
                 String value = state.optString(key, "");
                 if (readsOn(value)) {
                     if (off == null) {
-                        off = keysOf(selfStartingByType, dj.optString("type", "?"));
+                        off = keysOf(selfStartingByType, dj.optString(RackIO.TYPE, "?"));
                     }
                     if (arrivesOff(off, key)) {
                         state.put(key, "false");
@@ -237,17 +265,17 @@ public final class RackShare {
         List<Setting> settings = new ArrayList<>();
         List<String> unknown = new ArrayList<>();
         int atRest = 0;
-        JSONArray deviceArr = shared.optJSONArray("devices");
+        JSONArray deviceArr = shared.optJSONArray(RackIO.DEVICES);
         if (deviceArr != null) {
             for (int i = 0; i < deviceArr.length(); i++) {
                 JSONObject dj = deviceAt(deviceArr, i);
-                String typeId = dj.optString("type", "?");
+                String typeId = dj.optString(RackIO.TYPE, "?");
                 boolean isKnown = known.test(typeId);
                 devices.add(new Device(typeId, isKnown));
                 if (!isKnown && !unknown.contains(typeId)) {
                     unknown.add(typeId);
                 }
-                JSONObject state = dj.optJSONObject("state");
+                JSONObject state = dj.optJSONObject(RackIO.STATE);
                 if (state == null) {
                     continue;
                 }
@@ -269,9 +297,9 @@ public final class RackShare {
                 }
             }
         }
-        JSONArray cables = shared.optJSONArray("cables");
+        JSONArray cables = shared.optJSONArray(RackIO.CABLES);
         JSONObject header = shared.optJSONObject(SHARED);
-        String sharedBy = header == null ? null : header.optString("product", "");
+        String sharedBy = header == null ? null : header.optString(PRODUCT, "");
         return new Manifest(devices, cables == null ? 0 : cables.length(), settings, unknown, atRest,
                 sharedBy, RackCard.of(shared));
     }
@@ -285,12 +313,12 @@ public final class RackShare {
         List<Setting> settings = new ArrayList<>();
         List<Setting> personal = new ArrayList<>();
         List<Setting> secrets = new ArrayList<>();
-        JSONArray deviceArr = shared.optJSONArray("devices");
+        JSONArray deviceArr = shared.optJSONArray(RackIO.DEVICES);
         if (deviceArr != null) {
             for (int i = 0; i < deviceArr.length(); i++) {
                 JSONObject dj = deviceAt(deviceArr, i);
-                String typeId = dj.optString("type", "?");
-                JSONObject state = dj.optJSONObject("state");
+                String typeId = dj.optString(RackIO.TYPE, "?");
+                JSONObject state = dj.optJSONObject(RackIO.STATE);
                 if (state == null) {
                     continue;
                 }
@@ -790,12 +818,12 @@ public final class RackShare {
     }
 
     private static void rewriteStates(JSONObject patch, java.util.function.UnaryOperator<String> rewrite) {
-        JSONArray devices = patch.optJSONArray("devices");
+        JSONArray devices = patch.optJSONArray(RackIO.DEVICES);
         if (devices == null) {
             return;
         }
         for (int i = 0; i < devices.length(); i++) {
-            JSONObject state = deviceAt(devices, i).optJSONObject("state");
+            JSONObject state = deviceAt(devices, i).optJSONObject(RackIO.STATE);
             if (state == null) {
                 continue;
             }

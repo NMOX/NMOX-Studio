@@ -48,7 +48,7 @@ class RackLeavingTextTest {
     @DisplayName("a rack whose devices store no command says that nothing travels — never a heading over an empty pane")
     void nothingTravels() {
         String text = RackTopComponent.leavingText(shared());
-        assertThat(text).contains("1 devices, 0 cables").contains("No command, path or address travels");
+        assertThat(text).contains("1 device, 0 cables").contains("No command, path or address travels");
         assertThat(text).doesNotContain("Settings that travel:");
     }
 

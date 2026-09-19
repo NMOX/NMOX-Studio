@@ -79,9 +79,11 @@ public final class DockerRecipes {
         Arrays.sort(files, java.util.Comparator.comparing(File::getName));
         for (File f : files) {
             try {
-                out.add(parse(Files.readString(f.toPath(), StandardCharsets.UTF_8)));
+                out.add(parse(org.nmox.studio.core.util.BoundedReads.read(f.toPath())));
             } catch (Exception ex) {
-                // one bad file must not hide the good ones — the drop-in law
+                // one bad file must not hide the good ones — the drop-in law.
+                // An oversize drop-in lands here too, and its refusal message
+                // names the size, so the skipped row says what happened.
                 skipped.add(new Skipped(f.getName(), ex.getMessage()));
             }
         }

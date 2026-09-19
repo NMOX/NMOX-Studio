@@ -576,6 +576,9 @@ public final class CommandExecutor {
         try {
             IOProvider.getDefault().getIO("Rack: " + tabName, false).select();
         } catch (RuntimeException ignored) {
+            // headless (tests) or window system not ready, as in outputFor
+            // above: a request to FOCUS a tab that cannot be focused is not
+            // a refusal the caller needs to hear about.
         }
     }
 }
