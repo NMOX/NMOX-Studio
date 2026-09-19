@@ -1,23 +1,20 @@
 package org.nmox.studio.editor.design;
 
-import java.io.File;
+
+
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.nmox.studio.editor.ProjectRoot;
 
 /**
  * Design-token completion (v1.330.0): type {@code var(} in any
@@ -88,7 +85,7 @@ public class CssVarCompletionProvider implements CompletionProvider {
                         : CssTokens.declarations(text, "text/x-sass".equals(
                                 doc.getProperty("mimeType")))).forEach(
                         (name, t) -> tokens.put(name, t.value()));
-                for (CssTokens.ProjectToken t : CssTokens.scanProject(projectDir(doc))) {
+                for (CssTokens.ProjectToken t : CssTokens.scanProject(ProjectRoot.of(doc))) {
                     tokens.putIfAbsent(t.name(), t.value());
                 }
                 int anchor = caret - prefix.length();
@@ -103,24 +100,6 @@ public class CssVarCompletionProvider implements CompletionProvider {
             } finally {
                 result.finish();
             }
-        }
-
-        private static File projectDir(Document doc) {
-            FileObject fo = NbEditorUtilities.getFileObject(doc);
-            File f = fo == null ? null : FileUtil.toFile(fo);
-            if (f == null) {
-                return null;
-            }
-            File dir = f.getParentFile();
-            File cursor = dir;
-            for (int up = 0; cursor != null && up < 6; up++, cursor = cursor.getParentFile()) {
-                if (new File(cursor, "package.json").isFile()
-                        || new File(cursor, "angular.json").isFile()
-                        || new File(cursor, ".git").exists()) {
-                    return cursor;
-                }
-            }
-            return dir;
         }
     }
 }

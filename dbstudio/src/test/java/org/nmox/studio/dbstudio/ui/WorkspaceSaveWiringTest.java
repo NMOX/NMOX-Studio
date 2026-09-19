@@ -62,6 +62,40 @@ class WorkspaceSaveWiringTest {
     }
 
     @Test
+    @DisplayName("a file we never read is never ours, and never written over")
+    void unreadableWorkspaceIsBoundReadOnly() throws Exception {
+        String src = source();
+        // The seam (loadWorkspaceGuarded reporting unreadable) has its own
+        // tests; this is the OTHER half the v1.321.0 law asks for — that the
+        // studio consults it. Here the two halves are especially independent,
+        // because saveWorkspace() writes without consulting the stamp at all:
+        // skipping recordOwn alone would NOT have stopped the loss.
+        int apply = src.indexOf("private void applyReloadedWorkspace(");
+        assertThat(apply).isPositive();
+        String applyBody = src.substring(apply, src.indexOf("\n    }", apply));
+        assertThat(applyBody)
+                .as("ownership is recorded for a read that HAPPENED")
+                .contains("workspaceReadOnly = outcome.unreadable()");
+        assertThat(applyBody.indexOf("workspaceReadOnly = outcome.unreadable()"))
+                .as("the verdict is taken before the stamp it guards")
+                .isLessThan(applyBody.indexOf("externalEdits.recordOwn("));
+
+        int save = src.indexOf("private void saveWorkspace()");
+        assertThat(save).isPositive();
+        String saveBody = src.substring(save, src.indexOf("\n    }", save));
+        assertThat(saveBody)
+                .as("the write refuses OUT LOUD on a read-only workspace:"
+                        + " writing the stand-in lists would replace every"
+                        + " connection, saved query and history row with"
+                        + " nothing (9,437,184 bytes → 71, measured)")
+                .contains("if (workspaceReadOnly) {")
+                .contains("Bundle.DbStudioTopComponent_workspaceReadOnly(");
+        assertThat(saveBody.indexOf("if (workspaceReadOnly) {"))
+                .as("the refusal comes before the snapshot is even taken")
+                .isLessThan(saveBody.indexOf("SAVES.save("));
+    }
+
+    @Test
     @DisplayName("componentClosed drains the lane before teardown")
     void closeFlushesTheLane() throws Exception {
         String src = source();

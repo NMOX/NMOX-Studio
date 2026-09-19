@@ -28,6 +28,9 @@ public final class ToolLocator {
     private static final Map<String, String> CACHE = new ConcurrentHashMap<>();
     private static volatile String augmentedPath;
 
+    /** Windows PATHEXT, the two entries a developer toolchain actually ships. */
+    private static final List<String> WINDOWS_SUFFIXES = List.of(".exe", ".cmd");
+
     private ToolLocator() {
     }
 
@@ -42,22 +45,48 @@ public final class ToolLocator {
         }
         return CACHE.computeIfAbsent(command, name -> {
             for (String dir : searchDirs()) {
-                File candidate = new File(dir, name);
-                if (candidate.isFile() && candidate.canExecute()) {
-                    return candidate.getAbsolutePath();
-                }
-                // Windows: PATHEXT resolution, the common two suffice here
-                File exe = new File(dir, name + ".exe");
-                if (exe.isFile()) {
-                    return exe.getAbsolutePath();
-                }
-                File cmd = new File(dir, name + ".cmd");
-                if (cmd.isFile()) {
-                    return cmd.getAbsolutePath();
+                File found = foundIn(new File(dir), name);
+                if (found != null) {
+                    return found.getAbsolutePath();
                 }
             }
             return name;
         });
+    }
+
+    /**
+     * {@code name} as it exists inside ONE search directory, or null.
+     *
+     * <p>The suffixes are the whole point and the reason this is a named
+     * method rather than three lines inlined per caller. On Windows
+     * nothing is executable under the bare name: native tools ship
+     * {@code .exe} and npm ships {@code .cmd} shims, and the v1.42.0
+     * Windows lane found that without the {@code .cmd} arm NO language
+     * server was ever detected there. That fact had three homes — this
+     * one, {@code LanguageServerCatalog.foundIn} and the rack's
+     * {@code CommandDevice.toolOnPath} — and the rack's copy was missing
+     * {@code .cmd}, so a console probing for an npm-shipped tool would
+     * have greyed out on Windows while the editor found it. Nothing in
+     * the fleet probes an npm shim today, so it was a latent trap rather
+     * than a live bug; one home means it cannot become one.
+     *
+     * <p>Deliberately NOT cached: {@link #resolve} caches, and two
+     * callers must see a tool the user just installed — the LSP health
+     * panel re-checks right after its install flow, and a rack console
+     * re-probes when its GO button is pressed.
+     */
+    public static File foundIn(File dir, String name) {
+        File bare = new File(dir, name);
+        if (bare.isFile() && bare.canExecute()) {
+            return bare;
+        }
+        for (String suffix : WINDOWS_SUFFIXES) {
+            File shim = new File(dir, name + suffix);
+            if (shim.isFile()) {
+                return shim;
+            }
+        }
+        return null;
     }
 
     /** A command list with its executable resolved. */

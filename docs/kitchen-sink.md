@@ -251,8 +251,9 @@ nothing; now zero do).
 
 ## 8. The Browser (⌥⌘4), source-aware
 
-**Do:** ⌥⌘4 — it opens on Hacker News. Then point it at your served
-project and open DevTools.
+**Do:** ⌥⌘4 — with nothing serving it opens on a page of the product's
+own that asks the network for nothing, and names the door that starts a
+server. Run your project and it opens there instead; then open DevTools.
 
 **See:** A real WebKit browser in a tab, with viewport presets (the
 iPhone preset genuinely reflows — media queries fire for real) and

@@ -88,8 +88,18 @@ public final class SymbolIndexProvider implements SymbolIndex {
                 return new Outline(List.of(), "file larger than " + (ProjectSymbols.MAX_FILE_BYTES / 1024) + " KB: " + file);
             }
             String mime = mimeOf.apply(target);
-            if (mime == null || OutlineModel.familyOf(mime) == null) {
-                return new Outline(List.of(), "no outline for this file type: " + file);
+            // Only the null-mime half of this guard was ever live.
+            // OutlineModel.family() ends in `default -> "generic"` and can
+            // never return null, so `familyOf(mime) == null` was a refusal
+            // that could not speak. It was written for a model that declines
+            // types it does not know; this model deliberately knows them all,
+            // falling back to a generic brace-and-indent read that is useful
+            // on an unfamiliar TEXT file. Deleting the dead half rather than
+            // inventing a refusal to justify it: a file the generic reader
+            // cannot decode still refuses, through readString below, naming
+            // the real reason.
+            if (mime == null) {
+                return new Outline(List.of(), "no file type for: " + file);
             }
             String text = java.nio.file.Files.readString(target);
             List<Node> nodes = new ArrayList<>();

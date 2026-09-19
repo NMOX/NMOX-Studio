@@ -18,6 +18,11 @@ import org.nmox.studio.core.util.SelfWriteTracker;
  * write from a foreign one, and a corrupt file kept as {@code .bak}
  * before falling back to the starter board — user data is never
  * clobbered by a parse failure (the v1.39.0 law).
+ *
+ * <p>A file that could not be READ is the other half of that law and had
+ * no answer until now: {@link #load} reports it as
+ * {@link LoadOutcome#unreadable()} so the caller can refuse rather than
+ * pretend. A file we never read is never ours.
  */
 @org.openide.util.NbBundle.Messages({
     // the fresh board a project gets on its first open; these are
@@ -41,12 +46,29 @@ final class TasksIO {
     }
 
     /**
-     * The project's board: the parsed file when present and well-formed,
-     * the starter board when absent, and — on a malformed file — the
-     * starter board AFTER copying the bytes to {@code .nmoxtasks.json.bak}
-     * so the next save cannot destroy what the user (or their merge)
-     * wrote.
+     * What a load found.
+     *
+     * <p>{@code board} is never null: the parsed file, or the starter
+     * board on any failure. {@code unreadable} is the one fact the caller
+     * cannot work out for itself — the file EXISTS and its bytes could
+     * not be read at all, so the board handed back is a stand-in and NOT
+     * this project's board.
+     *
+     * <p>It is a returned fact rather than a thrown exception because the
+     * window has something to show either way; it is a fact at all
+     * because for two years it was not. The read-failure branch used to
+     * hand back the same starter board a fresh project gets, so
+     * {@code TasksTopComponent.reload} stamped the file as ours, the
+     * never-clobber guard saw nothing foreign, and the first card edit
+     * wrote a three-column starter over a board we had never read — with
+     * no {@code .bak}, because nothing had parsed. An over-cap file
+     * ({@link org.nmox.studio.core.util.BoundedReads.TooLarge} is an
+     * {@link IOException}) was destroyed by the very cap that refused to
+     * read it.
      */
+    record LoadOutcome(TaskBoard board, boolean unreadable) {
+    }
+
     /**
      * The starter board in the reader's own language.
      *
@@ -67,22 +89,40 @@ final class TasksIO {
                 Bundle.TasksIO_starterDoing(), Bundle.TasksIO_starterDone());
     }
 
-    static TaskBoard load(File projectDir) {
+    /**
+     * The project's board: the parsed file when present and well-formed,
+     * the starter board when absent, and — on a malformed file — the
+     * starter board AFTER copying the bytes to {@code .nmoxtasks.json.bak}
+     * so the next save cannot destroy what the user (or their merge)
+     * wrote. A file that cannot be READ comes back marked
+     * {@link LoadOutcome#unreadable()} instead, because the caller must
+     * not treat a stand-in board as this project's.
+     */
+    static LoadOutcome load(File projectDir) {
         File f = fileFor(projectDir);
         if (!f.isFile()) {
-            return starterBoard();
+            return new LoadOutcome(starterBoard(), false);
         }
         String text;
         try {
             // .nmoxtasks.json sits beside the project and travels with a clone
             text = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "Unreadable {0}; starting empty ({1})",
+            // Unknown bytes, not absent ones: the file is still there and
+            // still the user's board. No .bak is taken here and that is the
+            // point — the parse failure copies the bytes aside because they
+            // are about to be replaced, while nothing at all may be written
+            // over a file we could not read, so there is nothing to rescue
+            // it from. (Copying would also duplicate the very file the cap
+            // refused, and would fail outright on the permission errors that
+            // land here beside it.)
+            LOG.log(Level.WARNING,
+                    "Unreadable {0}; the board is read-only until it can be read ({1})",
                     new Object[]{f, ex.getMessage()});
-            return starterBoard();
+            return new LoadOutcome(starterBoard(), true);
         }
         try {
-            return TaskBoard.fromJson(text);
+            return new LoadOutcome(TaskBoard.fromJson(text), false);
         } catch (RuntimeException broken) {
             File bak = new File(projectDir, FILENAME + ".bak");
             try {
@@ -93,7 +133,7 @@ final class TasksIO {
             } catch (IOException io) {
                 LOG.log(Level.WARNING, "Malformed {0} and .bak failed", f);
             }
-            return starterBoard();
+            return new LoadOutcome(starterBoard(), false);
         }
     }
 

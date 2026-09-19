@@ -113,7 +113,7 @@ public final class CouchBackend implements DbBackend {
                 return Bundle.CouchBackend_notCouchDb();
             }
             return null;
-        } catch (Exception e) {
+        } catch (java.io.IOException e) {
             return humanize(e);
         }
     }
@@ -158,7 +158,7 @@ public final class CouchBackend implements DbBackend {
                 }
                 containers.add(new TableInfo("", "", db, "DATABASE"));
             }
-        } catch (Exception e) {
+        } catch (java.io.IOException e) {
             LOG.log(Level.WARNING, "listContainers: cannot list databases of {0}: {1}",
                     new Object[]{spec.name(), humanize(e)});
         }
@@ -183,7 +183,7 @@ public final class CouchBackend implements DbBackend {
             String body = post("/" + encodePath(container.name()) + "/_find",
                     "{\"selector\":{},\"limit\":1}");
             return shapeSample(parseFindDocs(body));
-        } catch (Exception e) {
+        } catch (java.io.IOException e) {
             LOG.log(Level.WARNING, "columns failed for " + container.name(), e);
             return new ArrayList<>();
         }
@@ -212,7 +212,7 @@ public final class CouchBackend implements DbBackend {
         if ("_all_dbs".equals(trimmed)) {
             try {
                 results.add(allDbsResult(parseAllDbs(get("/_all_dbs")), elapsedMs(start), trimmed));
-            } catch (Exception e) {
+            } catch (java.io.IOException e) {
                 results.add(errorResult(trimmed, elapsedMs(start), humanize(e)));
             }
             return results;
@@ -235,7 +235,7 @@ public final class CouchBackend implements DbBackend {
             DocumentGrid.Grid grid = DocumentGrid.fromJsonObjects(docs, rowLimit);
             results.add(new QueryResult(grid.columnNames(), grid.rows(), grid.rows().size(),
                     -1, grid.truncated(), elapsedMs(start), null, trimmed));
-        } catch (Exception e) {
+        } catch (java.io.IOException e) {
             results.add(errorResult(trimmed, elapsedMs(start), humanize(e)));
         }
         return results;
@@ -290,11 +290,17 @@ public final class CouchBackend implements DbBackend {
      * ({@code {"docs":[...], ...}}). A CouchDB error body
      * ({@code {"error":..., "reason":...}}) throws with the server's
      * reason so callers surface it verbatim.
+     *
+     * <p>An {@link java.io.IOException} rather than a runtime one: the
+     * callers report a caught exception as the connection's verdict, so the
+     * checked type is what keeps a genuine bug — a NullPointerException under
+     * this parser — from being shown to the user as the reason their database
+     * is unreachable.
      */
-    static List<JSONObject> parseFindDocs(String json) {
+    static List<JSONObject> parseFindDocs(String json) throws java.io.IOException {
         JSONObject root = new JSONObject(json);
         if (root.has("error")) {
-            throw new IllegalStateException(errorSummary(root));
+            throw new java.io.IOException(errorSummary(root));
         }
         List<JSONObject> docs = new ArrayList<>();
         JSONArray array = root.optJSONArray("docs");
@@ -396,11 +402,11 @@ public final class CouchBackend implements DbBackend {
 
     // ---- HTTP plumbing ----------------------------------------------
 
-    private String get(String path) throws Exception {
+    private String get(String path) throws java.io.IOException {
         return send(request(path).GET().build());
     }
 
-    private String post(String path, String body) throws Exception {
+    private String post(String path, String body) throws java.io.IOException {
         return send(request(path)
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
@@ -425,7 +431,7 @@ public final class CouchBackend implements DbBackend {
      * the status and, when the body is CouchDB's error JSON, its
      * reason.
      */
-    private String send(HttpRequest request) throws Exception {
+    private String send(HttpRequest request) throws java.io.IOException {
         try {
             HttpResponse<java.io.InputStream> response = HttpClientFactory.shared()
                     .send(request, HttpResponse.BodyHandlers.ofInputStream());
@@ -446,7 +452,7 @@ public final class CouchBackend implements DbBackend {
                         // status alone will have to do
                     }
                 }
-                throw new IllegalStateException("HTTP " + response.statusCode() + detail);
+                throw new java.io.IOException("HTTP " + response.statusCode() + detail);
             }
             if (truncated) {
                 // a _find/_all_docs against a huge collection (or a
@@ -454,14 +460,21 @@ public final class CouchBackend implements DbBackend {
                 // ofString() would have buffered it all and OOM'd the
                 // IDE (the apiclient v1.99.0 bug class). Refuse rather
                 // than return a JSON fragment DocumentGrid can't parse.
-                throw new IllegalStateException("Response over "
+                throw new java.io.IOException("Response over "
                         + (MAX_RESPONSE_BYTES / (1024 * 1024)) + "MB — narrow the query"
                         + " (add a limit or a selector).");
             }
             return body;
         } catch (InterruptedException e) {
+            // keep the flag AND narrow the type: this method used to declare
+            // `throws Exception` for this one branch alone, which forced every
+            // caller to catch Exception — and test() turns a caught exception
+            // into the connection's verdict, so a NullPointerException under
+            // the parser was reported to the user as "NullPointerException"
+            // being the reason their database was unreachable. A bug is not a
+            // verdict.
             Thread.currentThread().interrupt();
-            throw e;
+            throw new java.io.InterruptedIOException(e.getMessage());
         }
     }
 

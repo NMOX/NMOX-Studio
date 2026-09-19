@@ -1,18 +1,19 @@
 package org.nmox.studio.editor.design;
 
+
+
 import java.io.File;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
-
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -100,7 +101,7 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
             }
         }
         // elsewhere in the project: resolve off the EDT, jump on it
-        File dir = projectDirOf(doc);
+        File dir = ProjectRoot.of(doc);
         RP.post(() -> {
             CssClasses.ProjectSelector found = CssClasses.scanProject(dir).stream()
                     .filter(s -> s.name().equals(name))
@@ -166,24 +167,6 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
         @Override
         public void changedUpdate(javax.swing.event.DocumentEvent e) {
         }
-    }
-
-    private static File projectDirOf(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
-        File f = fo == null ? null : FileUtil.toFile(fo);
-        if (f == null) {
-            return null;
-        }
-        File dir = f.getParentFile();
-        File cursor = dir;
-        for (int up = 0; cursor != null && up < 6; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "package.json").isFile()
-                    || new File(cursor, "angular.json").isFile()
-                    || new File(cursor, ".git").exists()) {
-                return cursor;
-            }
-        }
-        return dir;
     }
 
     private static void jumpTo(Document doc, int offset) {

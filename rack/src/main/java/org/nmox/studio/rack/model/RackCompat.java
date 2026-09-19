@@ -1,7 +1,6 @@
 package org.nmox.studio.rack.model;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -170,20 +169,11 @@ public final class RackCompat {
         return fd + SEP + fromPort + SEP + td + SEP + toPort;
     }
 
-    private static volatile File scratchDir;
+    private static final java.util.concurrent.atomic.AtomicReference<File> SCRATCH =
+            new java.util.concurrent.atomic.AtomicReference<>();
 
     /** An empty directory for the throwaway rack: a fresh Rack aims at user.home, which a probe must never walk. */
     private static File scratchDir() {
-        File dir = scratchDir;
-        if (dir == null || !dir.isDirectory()) {
-            try {
-                dir = java.nio.file.Files.createTempDirectory("nmox-rack-compat").toFile();
-                dir.deleteOnExit();
-            } catch (IOException ex) {
-                dir = new File(System.getProperty("java.io.tmpdir"));
-            }
-            scratchDir = dir;
-        }
-        return dir;
+        return ScratchDirs.cached(SCRATCH, "nmox-rack-compat");
     }
 }

@@ -30,7 +30,8 @@ import org.openide.windows.TopComponent;
  *
  * <p>Laws: ZERO boot cost — the browser (and the JavaFX platform it
  * spins up) initializes on first open, not at startup; the component
- * opens at a live serving when one exists, else the home page. The
+ * opens at a live serving when one exists, else at a page of our own that
+ * asks the network for nothing ({@link StartPage}). The
  * page title (untrusted, capped at 30 chars) names the tab.
  */
 @TopComponent.Description(preferredID = "WebBrowserTopComponent",
@@ -133,33 +134,45 @@ public final class WebBrowserTopComponent extends TopComponent {
         });
         String target = pendingUrl != null ? pendingUrl : startUrl();
         pendingUrl = null;
-        if (target != null) {
-            loadWhenShaped(shaping, target);
-        }
+        // a null target means nothing is serving, and the Browser shows our
+        // own page rather than fetching anyone's
+        loadWhenShaped(shaping, target);
     }
 
     /** How long the first page waits for text shaping to install before loading anyway. */
     static final long SHAPING_WAIT_MS = 2500;
 
+    /** The one deadline every open shares; see {@link ShapingDeadline} (ledger 101). */
+    private static final ShapingDeadline SHAPING_DEADLINE = new ShapingDeadline(SHAPING_WAIT_MS);
+
     /**
-     * EDT. The first page loads once text shaping has installed, or after
-     * {@link #SHAPING_WAIT_MS} (v2.172.0). Since then shaping can switch
-     * WebKit's own complex-text path on, and a page laid out before the switch
-     * keeps the old widths while it paints with the new glyphs until something
-     * lays it out again.
+     * EDT. The first page loads once text shaping has installed, or when the
+     * shared deadline passes (v2.172.0; made shared in ledger 101). Since then
+     * shaping can switch WebKit's own complex-text path on, and a page laid out
+     * before the switch keeps the old widths while it paints with the new
+     * glyphs until something lays it out again.
      */
     private void loadWhenShaped(org.openide.util.RequestProcessor.Task shaping, String target) {
         FxBrowserPanel first = browser;
         int asked = first.loadCount();
         FIRST_LOAD_RP.post(() -> {
             try {
-                shaping.waitFinished(SHAPING_WAIT_MS);
+                // read when the task RUNS, not when it is posted: time spent
+                // queued behind an earlier open counts against the deadline
+                long leftMs = SHAPING_DEADLINE.leftMs(System.nanoTime());
+                if (leftMs > 0) { // 0 means do not wait — waitFinished(0) waits forever
+                    shaping.waitFinished(leftMs);
+                }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
             javax.swing.SwingUtilities.invokeLater(() -> {
                 if (browser == first && first.loadCount() == asked) { // nothing loaded meanwhile
-                    first.loadUrl(target);
+                    if (target == null) {
+                        first.loadContent(StartPage.html());
+                    } else {
+                        first.loadUrl(target);
+                    }
                 }
             });
         });
@@ -198,13 +211,19 @@ public final class WebBrowserTopComponent extends TopComponent {
         return FxAvailability.available();
     }
 
-    /** The home page a bare open lands on (v1.204.0, David's pick). */
-    static final String HOME_URL = "https://news.ycombinator.com/";
-
     /**
-     * The most useful first page: the aimed project's live dev server
-     * when one is running (the LiveServings facade — soft dependency,
-     * null without the rack), else the home page.
+     * The most useful first page: the aimed project's live dev server when one
+     * is running (the LiveServings facade — soft dependency, null without the
+     * rack). {@code null} means nothing is serving, and the Browser shows
+     * {@link StartPage} instead of reaching out.
+     *
+     * <p>A bare open used to land on {@code https://news.ycombinator.com/} —
+     * "David's pick", v1.204.0 — so opening a pane to look at your own app
+     * fetched a third-party website you had not asked for. This only ever
+     * decided the EMPTY state: a live serving already won, and anything routed
+     * here by SCOPE or by Run still lands on its own URL through
+     * {@link #showUrl}. An empty state is a better place to say what is empty
+     * than to show somebody else's front page.
      */
     private static String startUrl() {
         LiveServings servings = LiveServings.find();
@@ -215,10 +234,7 @@ public final class WebBrowserTopComponent extends TopComponent {
                 }
             }
         }
-        // no dev server running: a home page beats an empty pane —
-        // SCOPE/facade-routed opens still land on their own URL via
-        // showUrl, so this only decides what a bare ⌥⌘4 shows
-        return HOME_URL;
+        return null;
     }
 
     private static JPanel unavailablePanel() {

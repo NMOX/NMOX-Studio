@@ -2,7 +2,11 @@ package org.nmox.studio.tools.npm;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.api.project.Project;
+import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
 import org.openide.filesystems.FileObject;
@@ -25,29 +29,56 @@ public class WebProjectFactory implements ProjectFactory {
 
     public static final String PACKAGE_JSON = "package.json";
 
-    /** Every manifest the rack understands makes a real platform project. */
-    private static final String[] MANIFESTS = {
-        "package.json", "Cargo.toml", "go.mod", "mix.exs", "rebar.config",
-        "deps.edn", "project.clj", "Package.swift", "pom.xml", "build.gradle",
-        "build.gradle.kts", "pyproject.toml", "requirements.txt", "Gemfile",
-        "composer.json", "angular.json", "bun.lock", "bunfig.toml", "deno.json", "deno.jsonc",
-        "foundry.toml",
-        "Project.toml", "JuliaProject.toml", "dub.json", "dub.sdl", "info.rkt",
-        "elm.json", "rescript.json", "bsconfig.json", "spago.yaml", "spago.dhall",
-        "v.mod", "fpm.toml", "alire.toml", "Scarb.toml", "Move.toml",
-        "aiken.toml", "Clarinet.toml", "tact.config.json",
-        "gleam.toml", "pubspec.yaml", "build.sbt", "stack.yaml", "cabal.project",
-        "build.zig", "dune-project", "shard.yml",
-        // classic web (v1.34): manifest-only legacy repos open as projects
-        "bower.json", "Gruntfile.js", "Gruntfile.coffee",
-        "gulpfile.js", "gulpfile.babel.js", "gulpfile.mjs",
-        "webpack.config.js", "webpack.config.cjs", "webpack.config.mjs",
-        // Ember CLI + Remix/React Router framework mode (v1.92.0)
-        "ember-cli-build.js", "remix.config.js",
-        // v1.233.0: the kinds ProjectInspector always knew but this
-        // factory never recognized — their IDE lanes were wired to a
-        // project that could not open
-        "CMakeLists.txt", "Makefile"};
+    /**
+     * The kinds whose marker is a LAST RESORT rather than a manifest to walk
+     * up to: {@code ProjectInspector.detectKinds} only grants them at the
+     * project ROOT and only when nothing else matched. They are answered by
+     * {@link #lastResortMarker} instead, because walking ancestors for an
+     * {@code index.html} would make a project of every directory that holds
+     * one.
+     */
+    private static final Set<ProjectKind> LAST_RESORT =
+            Set.of(ProjectKind.STATIC, ProjectKind.LEARN);
+
+    /**
+     * Doors this factory opens that name no {@code ProjectKind} — an Angular
+     * workspace and the two framework manifests from v1.92.0, all of which
+     * the rack detects some other way.
+     */
+    private static final String[] NOT_A_KIND_MARKER = {
+        "angular.json", "ember-cli-build.js", "remix.config.js"};
+
+    /**
+     * Every manifest the rack understands makes a real platform project —
+     * DERIVED from {@code ProjectKind}, not copied from it.
+     *
+     * <p>It used to be sixty names written out by hand under that same
+     * sentence, and the sentence was not true. {@code setup.py},
+     * {@code Rakefile} and {@code bun.lockb} were markers the rack detected
+     * and this list had never learned, so a Python repository carrying only a
+     * {@code setup.py} had working Run, Build and Test lanes and no way to be
+     * opened: no {@code ActionProvider}, no F6, no OpenProjects.
+     *
+     * <p>That is the same defect recorded a few lines below for
+     * {@code CMakeLists.txt} and {@code Makefile} — <i>the lanes existed; the
+     * door didn't</i> — and it recurred within the same file because the fix
+     * then was a longer list rather than one home. A list you can derive was
+     * never a list to keep (v2.146.0), and {@code ProjectKindDoorsTest} now
+     * fails the build if a kind ever loses its door again.
+     */
+    private static final String[] MANIFESTS = manifests();
+
+    private static String[] manifests() {
+        LinkedHashSet<String> names = new LinkedHashSet<>();
+        for (ProjectKind kind : ProjectKind.values()) {
+            if (LAST_RESORT.contains(kind)) {
+                continue;
+            }
+            names.addAll(List.of(kind.manifests()));
+        }
+        names.addAll(List.of(NOT_A_KIND_MARKER));
+        return names.toArray(String[]::new);
+    }
 
     /**
      * The glob-detected kinds (v1.233.0): ProjectInspector detects
@@ -95,12 +126,65 @@ public class WebProjectFactory implements ProjectFactory {
         if (hasGlobbedManifest(projectDirectory)) {
             return true;
         }
-        // the static last resort, deliberate: a directory with an
-        // index.html is a project — a 2005 site deserves to open too.
-        // Kind precedence (any real manifest outranks STATIC) lives in
-        // ProjectInspector; recognition here is just a boolean.
-        return projectDirectory.getFileObject("index.html") != null
-                || projectDirectory.getFileObject("index.htm") != null;
+        return lastResortMarker(projectDirectory);
+    }
+
+    /**
+     * The last-resort doors, deliberate and root-only: a directory with an
+     * {@code index.html} is a project — a 2005 site deserves to open too —
+     * and so is a learning space, whose {@code .nmox-learn} marker IS its
+     * manifest and whose pre-wired rack driver IS its toolchain (v2.58.0).
+     *
+     * <p>These are checked here rather than walked up to like a manifest,
+     * because an ancestor walk would make a project of every directory that
+     * happens to hold an {@code index.html}. Kind precedence — any real
+     * manifest outranks both — lives in {@code ProjectInspector}; recognition
+     * here is just a boolean.
+     */
+    /**
+     * Whether a directory holding a file of this name opens as a project —
+     * the NAME-ONLY half of {@link #isProject}.
+     *
+     * <p>It cannot be the whole of it: the recursive-manifest rule needs a
+     * directory to ask about its parent. It reads the same three sources the
+     * real check does — the derived manifests, the globbed suffixes, the
+     * last-resort markers — so it is a second traversal, never a second list.
+     * {@code ProjectKindDoorsTest} asks the factory this question rather than
+     * comparing against a copy of the answer.
+     */
+    static boolean opensOn(String fileName) {
+        for (String manifest : MANIFESTS) {
+            if (manifest.equals(fileName)) {
+                return true;
+            }
+        }
+        if (!fileName.startsWith(".") && matchesGlobSuffix(fileName)) {
+            return true;
+        }
+        for (ProjectKind kind : LAST_RESORT) {
+            for (String marker : kind.manifests()) {
+                if (marker.equals(fileName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The manifests walked up to, for the gate that keeps the derivation honest. */
+    static List<String> walkedManifests() {
+        return List.of(MANIFESTS);
+    }
+
+    private static boolean lastResortMarker(FileObject dir) {
+        for (ProjectKind kind : LAST_RESORT) {
+            for (String marker : kind.manifests()) {
+                if (dir.getFileObject(marker) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**

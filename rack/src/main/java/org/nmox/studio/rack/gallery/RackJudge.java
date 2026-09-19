@@ -1,9 +1,7 @@
 package org.nmox.studio.rack.gallery;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -502,19 +500,11 @@ public final class RackJudge {
         return out;
     }
 
-    private static volatile File scratchDir;
+    private static final java.util.concurrent.atomic.AtomicReference<File> SCRATCH =
+            new java.util.concurrent.atomic.AtomicReference<>();
 
+    /** An empty dir for the throwaway rack; the rule lives in {@link org.nmox.studio.rack.model.ScratchDirs}. */
     private static File scratchDir() {
-        File dir = scratchDir;
-        if (dir == null || !dir.isDirectory()) {
-            try {
-                dir = Files.createTempDirectory("nmox-rack-judge").toFile();
-                dir.deleteOnExit();
-            } catch (IOException ex) {
-                dir = new File(System.getProperty("java.io.tmpdir"));
-            }
-            scratchDir = dir;
-        }
-        return dir;
+        return org.nmox.studio.rack.model.ScratchDirs.cached(SCRATCH, "nmox-rack-judge");
     }
 }

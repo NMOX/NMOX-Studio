@@ -167,20 +167,61 @@ final class JdbcCore {
     static final int MAX_CELL_CHARS = 64 * 1024;
 
     /**
-     * One cell as display text, capped at {@link #MAX_CELL_CHARS}. For LOB
-     * columns the length is checked from metadata FIRST so a giant value is
-     * never fully pulled into a String — only its capped prefix is read.
+     * The type codes a driver uses for text it may hold more of than a
+     * grid cell can show, and which it will serve through
+     * {@link ResultSet#getClob} so only the capped prefix is copied.
+     *
+     * <p>{@code LONGVARCHAR}/{@code LONGNVARCHAR} were missing and that
+     * mattered: MySQL and MariaDB do not report {@code CLOB} at all, so a
+     * {@code MEDIUMTEXT} (16 MiB) or {@code LONGTEXT} (4 GiB) arrived as
+     * {@code LONGVARCHAR} and fell to {@code getString} — the two column
+     * types that can actually take the heap were the two the metadata
+     * check never saw. (Read from the shipped driver: MariaDB
+     * Connector/J 3.5's {@code BlobColumn.getColumnType} answers -1 for a
+     * non-binary blob column over the medium size, and 12 below it.)
+     *
+     * <p>The plain {@code VARCHAR} that MySQL's own {@code TEXT},
+     * PostgreSQL's {@code text} and SQLite's {@code TEXT} all report is
+     * deliberately NOT here — see {@link #cell}.
+     */
+    private static boolean isCappableText(int type) {
+        return type == java.sql.Types.CLOB || type == java.sql.Types.NCLOB
+                || type == java.sql.Types.LONGVARCHAR
+                || type == java.sql.Types.LONGNVARCHAR;
+    }
+
+    /**
+     * One cell as display text, capped at {@link #MAX_CELL_CHARS}.
+     *
+     * <p>For a column the driver declares as long text or a CLOB the
+     * length is checked from metadata FIRST, so a giant value is never
+     * fully pulled into a String — only its capped prefix is read.
+     * Binary is never stringified at all.
+     *
+     * <p>THE CEILING, measured rather than assumed: a column declared
+     * simply {@code VARCHAR} is read whole and then truncated, and three
+     * engines put unbounded text there. PostgreSQL's {@code text} is
+     * {@code Types.VARCHAR} (oid 25 → 12 in pgjdbc's own type table) and
+     * is indistinguishable from {@code varchar(50)} by type code, and
+     * pgjdbc's {@code getClob} reads the value as a LARGE OBJECT OID, so
+     * there is no metadata-first route to take even if we could tell them
+     * apart. SQLite's {@code TEXT} is {@code Types.VARCHAR} too, and
+     * SQLite has no server-side length to ask for. MySQL's and MariaDB's
+     * own {@code TEXT} is {@code Types.VARCHAR} as well, but the engine
+     * bounds it at 64 KiB, which is the cap — so that one is not a
+     * hazard, only the larger siblings above were.
      */
     static String cell(ResultSet rs, int c) throws SQLException {
         int type = rs.getMetaData().getColumnType(c);
-        if (type == java.sql.Types.CLOB || type == java.sql.Types.NCLOB) {
-            java.sql.Clob clob = rs.getClob(c);
-            if (clob == null) {
-                return "NULL";
+        if (isCappableText(type)) {
+            String capped = cappedText(rs, c);
+            if (capped != null) {
+                return capped;
             }
-            long len = clob.length();
-            String prefix = clob.getSubString(1, (int) Math.min(len, MAX_CELL_CHARS));
-            return len > MAX_CELL_CHARS ? Bundle.JdbcCore_cellTruncated(prefix, len) : prefix;
+            // this driver does not serve this column through getClob (it is
+            // free not to: LONGVARCHAR carries no such obligation). Nothing
+            // was consumed, so getString below is still correct — just
+            // unbounded until it returns, exactly as before this branch.
         }
         if (type == java.sql.Types.BLOB || type == java.sql.Types.LONGVARBINARY
                 || type == java.sql.Types.VARBINARY || type == java.sql.Types.BINARY) {
@@ -198,6 +239,36 @@ final class JdbcCore {
                 ? Bundle.JdbcCore_cellTruncated(
                         value.substring(0, MAX_CELL_CHARS), value.length())
                 : value;
+    }
+
+    /**
+     * The cell read through its CLOB face — the prefix only — or
+     * {@code null} when this driver will not serve this column that way,
+     * which is the caller's signal to fall back to {@code getString}.
+     *
+     * <p>The fallback is honest rather than decorative: it is reached by a
+     * driver REFUSING, so nothing has been consumed and the plain read is
+     * still correct. It is not a way to pretend the cap engaged.
+     */
+    private static String cappedText(ResultSet rs, int c) {
+        java.sql.Clob clob;
+        try {
+            clob = rs.getClob(c);
+        } catch (SQLException unsupported) {
+            return null;
+        }
+        if (clob == null) {
+            return "NULL"; // SQL NULL, per the getClob contract
+        }
+        try {
+            long len = clob.length();
+            String prefix = clob.getSubString(1, (int) Math.min(len, MAX_CELL_CHARS));
+            return len > MAX_CELL_CHARS ? Bundle.JdbcCore_cellTruncated(prefix, len) : prefix;
+        } catch (SQLException unsupported) {
+            // some drivers hand back a Clob whose length()/getSubString()
+            // they never implemented
+            return null;
+        }
     }
 
     private static QueryResult executeOne(Connection connection, String statementSql,

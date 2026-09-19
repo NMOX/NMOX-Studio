@@ -113,6 +113,7 @@ import org.openide.windows.TopComponent;
     "CTL_TasksTopComponent=Task Board",
     "TasksTopComponent_tooltip=Per-project task board (.nmoxtasks.json)",
     "TasksTopComponent_changedOutside={0} changed outside the IDE — reloaded; repeat your change",
+    "TasksTopComponent_unreadable={0} could not be read — the board is read-only so nothing overwrites it",
     "TasksTopComponent_newCard=New Card…",
     "TasksTopComponent_newCardA11y=New card",
     "TasksTopComponent_newCardTip=Adds a card to the first column",
@@ -244,6 +245,14 @@ public final class TasksTopComponent extends TopComponent {
 
     private TaskBoard board = TasksIO.starterBoard();
     private File boundDir;
+    /**
+     * EDT-confined: true while the bound {@code .nmoxtasks.json} exists
+     * and could not be read, so {@link #board} is a stand-in rather than
+     * this project's board. Every mutation refuses while it is set — the
+     * never-clobber law reaches the case where there is nothing to
+     * compare against, because we hold none of the file's bytes.
+     */
+    private boolean readOnly;
     private boolean built;
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
@@ -333,18 +342,32 @@ public final class TasksTopComponent extends TopComponent {
         }
         int seq = ++loadSeq;
         IO_RP.post(() -> {
-            TaskBoard loaded = TasksIO.load(dir);
+            TasksIO.LoadOutcome outcome = TasksIO.load(dir);
             File f = TasksIO.fileFor(dir);
-            if (f.isFile()) {
+            // A file we never read is never ours. Stamping it here was the
+            // whole of the loss: an unreadable .nmoxtasks.json came back as
+            // the starter board, this line said the starter WAS the file,
+            // and mutate()'s foreign-edit guard then waved the first card
+            // edit through onto a board nobody had seen. The stamp belongs
+            // to a read that happened.
+            if (f.isFile() && !outcome.unreadable()) {
                 tracker.noteSync(f);
             }
             java.awt.EventQueue.invokeLater(() -> {
                 if (seq != loadSeq) {
                     return; // a newer aim/reload superseded this read
                 }
-                board = loaded;
+                board = outcome.board();
                 boundDir = dir;
+                readOnly = outcome.unreadable();
                 rebuild();
+                if (readOnly) {
+                    status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
+                }
+                // the pulse keeps watching: a file that becomes readable
+                // again (permissions fixed, an over-cap file trimmed) is a
+                // stamp change, so the next tick reloads and the board
+                // comes back by itself
                 restartFilePulse();
             });
         });
@@ -361,11 +384,22 @@ public final class TasksTopComponent extends TopComponent {
      * a reload with a status note rather than silently overwriting
      * someone's merge (the never-clobber law).
      *
+     * <p>A board bound READ-ONLY refuses before it mutates anything: the
+     * file exists and could not be read, so the board on screen is a
+     * stand-in and every save would be a three-column starter written
+     * over work nobody has seen. Unlike a foreign edit there is nothing
+     * to reload TO, so the gesture is refused out loud and the board is
+     * left exactly as it is.
+     *
      * @return true when the board accepted the mutation
      */
     private boolean mutate(java.util.function.BooleanSupplier mutation) {
         File dir = boundDir;
         if (dir == null) {
+            return false;
+        }
+        if (readOnly) {
+            status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
             return false;
         }
         if (!mutation.getAsBoolean()) {

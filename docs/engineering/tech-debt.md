@@ -20,6 +20,163 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — recorded by v2.184.0 (the senior-developer pass)
+
+A read-only survey of the 910 product files across three dimensions — one
+fact with two homes, work that was never finished, and shape that makes the
+next change expensive. Everything it found is here: fixed in v2.184.0 and
+marked so, or open with a decision attached. A finding without a decision
+is just a list.
+
+**Two claims in those surveys did not survive checking, and are recorded
+because a corrected claim is worth more than a fix applied to nothing.**
+The missing `.cmd` suffix in `CommandDevice.toolOnPath` was reported as a
+live Windows bug affecting "every console whose tool is an npm shim"; the
+three callers probe `slither`, `stellar` and `anchor`, which are real
+binaries, so it is a latent trap in a shared base class and nothing more.
+And `LearningSpace.resolveInside` was reported as returning an
+un-canonicalised path; it does, and that is worth fixing, but no caller
+today reaches it with a symlinked segment.
+
+### 110. Nine different answers to "which directories does a walk skip" — ~~OPEN~~
+
+Twelve declarations across four modules, nine distinct sets. Only
+`node_modules`, `.git`, `dist`, `build` and `coverage` appear in all twelve.
+`target` and `out` appear in eleven — **the exception being
+`core.util.HeavyDirs`, the class whose javadoc calls itself "one home … so
+the file tree and every later walk elide the same names"**, and which only
+two callers use. The sharpest instance: `editor/fullstack/Routes.java`
+privately re-declares a set byte-identical to the `public`
+`BoundedWalk.SKIP_DIRS` in the same package, and never references it.
+
+**Decided, not done.** The right home is `HeavyDirs`, widened, with each
+caller adding its own extras (`.nmox` for the two that must not descend into
+the IDE's own state, `.idea` for the file watcher) — several differences are
+legitimate and must survive the merge. It is not in v2.184.0 because
+choosing WHICH of the nine sets is correct changes what a dozen scans see,
+and that wants its own release with its own walk. What is not deferred is
+the reason it grew: nothing derives or gates this population, so a
+thirteenth copy can land tomorrow. The gate comes with the fix.
+
+### 111. Four canonical-containment guards, three of which call themselves the canonical one
+
+`LearningSpace.resolveInside` canonicalises both sides then returns the
+UNRESOLVED path, so a caller that passes the check still reads through the
+link. `SiteServer.resolveInside` accepts root-equals-root where
+`LearningSpace` refuses it. `PageSourceResolver.insideOnly` canonicalises
+only the target, then does a string prefix test against a canonical root.
+And `DockerRecipes.resolveInside` — **a write path** — is `normalize()`
+only, no canonicalisation at all, under a javadoc presenting it as the
+structural resolution of the v1.290.0 guard lesson.
+
+**Decided, not done.** One home in `core.util`, with the symlink policy and
+the root-equals-root policy each decided once. Held back deliberately:
+tightening a containment guard changes what is refused, and this family
+guards writes and a served docroot. It belongs in a release that can walk
+each refusal, not folded into twenty other changes. No instance is
+exploitable today — checked — so this is a hardening, not an incident.
+
+### 112. Four hand-maintained mirrors of one kind-to-token vocabulary
+
+`RunDevice` carries the target tokens three times (an append-only knob
+array, `ProjectKind -> String`, and its inverse) plus a third switch in
+`buildCommand`; `TestDevice` repeats the shape with its own vocabulary. The
+four currently AGREE — that is the finding. They agree by discipline, and
+both `default` arms answer `NODE`, so a missed arm compiles, ships, and
+mislabels instead of greying honestly. Two producible tokens are already
+absent from the knob arrays.
+
+**Decided, not done.** `ProjectKind` already declares its own facts where it
+is declared — v2.184.0 added `manifests()` for exactly that reason — so
+`runTarget()` / `testRunner()` belong beside them, with the inverse derived
+by streaming `values()` and `default` yielding null so the existing honest-
+grey path takes over. Adding a language is the most repeated change in this
+repository and today it costs six switch edits with no compiler help. Left
+out of v2.184.0 only for size; it is the next one worth doing.
+
+### 113. Contract Studio's Watch engine lives in a TopComponent and no CI run tests it
+
+About 400 lines of non-UI orchestration inside `Web3StudioTopComponent`:
+subscribe-or-poll selection, scheduled polling, head-gap backfill, two-lane
+dedup and decode, and a coalescer. Every COLLABORATOR has its own tested
+class — `WatchReconciler`, `WatchSocket`, `WatchFeed`, `WatchRows`,
+`WatchCursor`, `WatchEndpoint` — and the only test of the orchestration is
+`WatchStreamAnvilLiveTest`, whose javadoc says it is skipped when `anvil` is
+absent, which is every CI runner. So the socket-vs-poll choice, the gap
+fill, and the generation guard that stops a dying tick tearing a new
+session's cursors are verified on no CI run, in the most concurrency-dense
+code in the module.
+
+**Decided, not done.** Extract `engine/WatchRunner` taking a client
+supplier, the feed, and a three-method UI callback; the tab and its
+callbacks stay where they are. The existing fake WebSocket server in the
+test tree can drive it headlessly. Deferred for size, not for doubt.
+
+### 114. Half-built, and each half is visible
+
+Four places where the plumbing for a feature was written and the feature
+was not. Each is small; together they are a pattern worth naming, because
+every one of them reads as complete from the outside.
+
+- **`TEMPLATE_EXPRESSION`** — a JavaScript token id, a lexer state, AND a
+  registered colour in `syntax-colors.xml`, wired into the live dark profile.
+  Nothing ever emits it: `finishTemplateLiteral` counts `${`/`}` depth and
+  swallows the interpolation into one string token. The depth counting is
+  already there. **Decision: finish it** — the colour is authored and the
+  arithmetic exists; a `${user.name}` inside a template literal should lex as
+  JavaScript.
+- **Cairo and Move in the LSP catalog** — two rows the Language Servers panel
+  renders with status and a runnable install, and no `LanguageServerProvider`
+  anywhere launches either binary. 41 of the catalog's 43 have one. The
+  changelog claims both (v1.134.0 "scarb serves the LSP", v1.137.0
+  "move-analyzer LSP"), which makes this the v1.189.0 law: a claim the code
+  does not back. **Decision: add the two providers**, in the shape the other
+  65 use, and say plainly that neither has been live-verified.
+- **Emmet's `count`** — a repeat total threaded through five call sites and
+  never read; the shape of `$@` reverse numbering, declared and not built.
+  **Decision: delete it.** The javadoc promises only `$` and `$$`, both of
+  which work without it.
+- **`GhostText.armed()`** — public, zero readers. Written for a guard that was
+  never added; `arm()` already calls `dismiss("")` first, so re-arming is
+  correct without it. **Decision: delete it.**
+
+### 116. The read-failure clobber has two more homes
+
+v2.184.0 fixed the class in the three files it was briefed for — the task
+board, the database workspace and the contract workspace — and the agent
+that fixed it found two more while reading. Both throw correctly at the IO
+layer and both consumers swallow it:
+
+- `apiclient/.../api/WorkspaceIO.java` — `ApiClientTopComponent.readWorkspace`
+  catches `Exception` and falls back to `starterWorkspace()`.
+- `infra/.../model/GraphIO.java` — `InfraDesignerTopComponent` catches
+  `Exception`, calls `graph.clear()`, and stamps `designSync.recordOwn(...)`
+  in a **`finally`**, so the file is marked as ours on the catch path too.
+
+**Decided, not done, and the reason is scope rather than doubt.** The fix is
+exactly the one that shipped: a typed read failure the caller binds
+read-only, no ownership stamp for a file that was never read. It was left
+out of v2.184.0 to keep a data-loss change inside the surface that had been
+probed and measured — the three that shipped were each proven destroying a
+9.4 MB file before a line was changed, and the same proof is owed here. It
+is the next thing to do in this family.
+
+### 115. Two gates whose population or path is smaller than their claim
+
+- **`GrammarBundleTest`** filters by filename `*Grammar.java`, so
+  `EmbeddedScopeGrammars.java` (49 registrations) and `NgTemplateGrammars.java`
+  (6, including every Angular-template grammar) are invisible — **55 of 131
+  registrations outside a gate whose stated purpose is that a typo would
+  silently kill a language's highlighting**. All 55 resolve today, so this is
+  an unguarded surface rather than a live defect. **Decision: derive from the
+  generated layer**, as its sibling already does, with a non-empty floor.
+- **`SassCompilerTest.argvPinned`** puts its assertions inside
+  `if (outcome == COMPILED)`, and `SassCompiler.compile` resolves the binary
+  BEFORE the injected fake runner — so on any machine without dart-sass, which
+  is all three CI lanes, the test asserts only that the compiler did nothing.
+  The argv it is named for is never checked. **Decision: inject the binary
+  resolution too**, so the fake runner is always reached.
+
 ## Open — recorded by the v2.174.0 arc review of the shaping arc
 
 ### 100. A width fit is computed per SIZED font, not per font
@@ -35,9 +192,15 @@ whichever thread holds WebKit's page lock — the FX application thread
 during layout, the render thread during paint. So the cost lands on a
 frame, not on a background lane.
 
-**Why it is deferred.** The fix is to key on the font's family or its
-`FontResource` rather than the `WCFont`, and the honest version of that
-needs a measurement first: how much a fit actually costs on a real page
+**The key is DECIDED: the `FontResource`, not the family.** A bold face is a
+different file with different metrics, so "per family" would share a fit
+between faces that can legitimately disagree about it — the cache would be
+faster and sometimes wrong, which is worse than slow. That question is
+answerable from the code and does not need a machine to answer it, so it is
+answered here; what still needs a machine is whether the win is worth the
+change at all.
+
+**What remains deferred, and why.** The measurement: how much a fit actually costs on a real page
 (the repaint budget the v2.171.0 cache was built against was ~12 ms p90),
 and whether two `WCFont`s of one family can ever disagree about the fit —
 a bold face is a different file, so "per family" may be too coarse and
@@ -48,7 +211,7 @@ Linux run, where the fit matters and the fonts vary.
 path, which since v2.174.0 means Linux and unknown builds. macOS and
 Windows take WebKit's own path and never fit.
 
-### 101. The Browser's first-load waits are per-open and serialized
+### 101. ~~The Browser's first-load waits are per-open and serialized~~ — CLOSED v2.184.0
 
 **What it is.** `WebBrowserTopComponent.loadWhenShaped` posts each first
 load to a throughput-1 `RequestProcessor` and blocks up to 2,500 ms for
@@ -60,12 +223,22 @@ show a blank pane for about five seconds, a third for seven and a half,
 and the `browser == first` guard means the delay lands on exactly the page
 the user is waiting for.
 
-**Why it is deferred.** Two shapes fix it (cancel the superseded task, or
-make the deadline shared and absolute rather than per-open) and choosing
-between them wants the walk that shows the stall, which needs an install
-in that state. The guard itself was reviewed and is sufficient: no
-superseded task ever loads the wrong page, so this is a wait, not a wrong
-page.
+**Decided without the walk, because one of the two shapes is right under
+any measurement.** Shaping installs ONCE per JVM — `install()` is
+synchronized and memoizes its outcome — so the deadline belongs to the JVM
+and not to the tab, and a reopen should not start a fresh budget. That is
+true whatever a walk would have shown; the walk would only have told us how
+long the stall was. `ShapingDeadline` is armed by the first open and every
+later one waits the remainder.
+
+**The fix contains a landmine the obvious version steps on.** Read from the
+platform's own bytecode, `Task.waitFinished(0)` does NOT return at once: it
+logs "infinite wait, again" and loops on an untimed `Object.wait()`. So
+"wait whatever is left" with the remainder rounded down to zero would turn a
+2.5-second bound into no bound at all, on the lane holding the user's first
+page. Zero means DO NOT WAIT, the caller honours that literally, and a live
+deadline never answers zero. The clock is an argument, so every rule is a
+test rather than a sleep.
 
 ## Open — recorded by v2.179.0 (the rack ecosystem release)
 
@@ -243,6 +416,14 @@ at 64pt beside a U+E000 control — and render the real
 look at it.
 
 ## Closed by v2.181.0
+
+**Decided (v2.184.0): the Windows half rides `windows-installer-check`.**
+That job already links a real bundled runtime the way the release does, on
+a real Windows runner — it is the only lane in this project that can answer
+the question at all, and the probe is a font-metric read, not a UI test. The
+macOS half was measured and its clearance withdrawn; Linux measured clean.
+What is owed is the probe itself in that job, not another decision.
+
 
 ### 108. An RTL value's PLACEHOLDER can strand a leading dot or a trailing slash — CLOSED
 
@@ -764,7 +945,21 @@ the build until it states, with a reason, whether a newcomer meets it, and
 a second assertion pins the editor strip at exactly three. The decision is
 no longer whatever each window chose on the day it was written.
 
-**b. The in-app Browser's bare home is a news site.** With nothing serving,
+**b. ~~The in-app Browser's bare home is a news site~~ — DECIDED and CLOSED
+v2.184.0.** Replaced with a local start page. The principle settles it
+without needing a preference: an IDE should not make an outbound request the
+user did not ask for, and opening a pane to look at your OWN running app is
+about as clear a case as there is. The request is also a small disclosure —
+it tells someone else's server that this machine started an IDE, and when.
+`StartPage` is built in-process, rendered through `loadContent` so there is
+no temp file and no misleading address bar, translated like any chrome, and
+`StartPageTest` holds what "fetches nothing" means: no absolute or
+protocol-relative URL anywhere in the document, and no remote address left
+in the component to fall back to. Nothing else moved — a live serving still
+wins, and SCOPE- or Run-routed opens still land on their own URL. The
+original text follows.
+
+**b (the original entry). The in-app Browser's bare home is a news site.** With nothing serving,
 `⌥⌘4` loads `https://news.ycombinator.com/` and the tab renames itself
 "Hacker News" — an outbound request and a third-party page inside a work
 IDE, sitting between API Studio and IRC in the tab strip. The logic is
@@ -773,13 +968,30 @@ no-serving case is a stranger's website. A local start page naming the
 project's servings would be the honest empty state. Deferred: HOME_URL is
 recorded as "David's pick".
 
-**c. The Tools menu's two NMOX groups are split by seven platform rows.**
-Environment Doctor and Agent Port sit at 90/95; Save Screenshot, Save Editor
-Screenshot, Copy Editor Screenshot and Copy Project Tree as Markdown at
-105–108, with the platform's file verbs between them and no separator. Not
-a defect, just the same next-free-position drift the File menu had. Left
-alone because repositioning into the platform's own range is how v2.104.0
-found a real collision; the File menu was worth that risk and this is not.
+**c. ~~The Tools menu's two NMOX groups are split by seven platform rows~~ —
+DECIDED and CLOSED v2.184.0, and the entry was wrong about the count.**
+
+Read out of the assembled cluster's own layers rather than from memory,
+there is exactly ONE platform row between the two groups — `ToolsAction` at
+100 — not seven. The seven (Variables, Libraries, Server Manager, Cloud
+Manager, Templates, XML Catalog) come AFTER our second group, past a
+separator. The entry also never mentioned a THIRD NMOX row: Language Servers
+at 1450.
+
+The deferral's reason has expired. It was "repositioning into the platform's
+own range is how v2.104.0 found a real collision" — and what v2.104.0 built
+in response was `LayerPositionCensusTest`, which now reads the platform, ide,
+java and extra clusters for every folder we write into. The risk that
+justified waiting is the thing that is now gated: a collision fails the
+build. The capture family moved to 96–99 (free across the whole assembled
+cluster, checked), leaving one contiguous block at 90–99 ahead of the
+platform's row.
+
+**Language Servers stays at 1450, deliberately.** Grouping by author would
+put a diagnostics row among screenshot actions; grouping by FUNCTION puts it
+beside Plugin Manager, where both answer "what is installed". The complaint
+was never really that two groups had one author — it was that a family had
+been split by drift. That is fixed; this one is not drift.
 
 
 ### 87. Two stop registries, two populations — BLESSED (2026-09-05, v2.72.0; amended v2.74.0: the ■ is TOTAL)
@@ -807,6 +1019,19 @@ run: a test runner's tab is a place you return to, a dev server's tab
 is the run's own.
 
 ### 86. Official release signing — a v3.0 milestone (David's decision, 2026-08-27)
+
+**Re-read v2.184.0 during the senior pass and deliberately NOT decided.**
+This is not engineering debt with a deferred answer; it is a purchase and an
+identity. Apple Developer ID costs about $99 a year and requires David to
+enrol personally, and Windows Authenticode is a monthly subscription — no
+principle about code quality settles whether to spend someone else's money
+or use their legal identity. The engineering half is already done and
+waiting: NBM signing rides a secrets-gated release profile (v2.42.0), the
+certificate ships in-product at TRUST level (v2.43.0), and the release lane
+publishes a GPG-signed SHA256SUMS pair. If the accounts appear, the lane
+takes them; until then the self-signed chain is a deliberate position, not a
+gap. The entry stays open because the decision is outstanding, not because
+the work is.
 
 Until v3.0, the trust chain is deliberately SELF-SIGNED (v2.42.0):
 every module NBM jarsigner-signed with a self-signed 4096-bit RSA
@@ -1141,7 +1366,7 @@ all 11 in place and every product module then failed enable (the
 refuse-by-range cascade), originals in update/backup. The gauntlet
 law: never script --update-all across a platform boundary.
 
-## Open — deferred deliberately, with reasons (added v1.356.0, the toolchain walks)
+## Closed — every item here was delivered (added v1.356.0, the toolchain walks)
 
 ### 83. ~~One LSP server process per mime per project~~ — CLOSED v2.19.0 (the senior-RCP pass)
 
@@ -1185,7 +1410,7 @@ implementing MultiMime) instead of the OUTCOME (any multi-mime
 registration in the generated layer) — the gate now derives its
 population from the layer itself, failing-first proven.
 
-## Open — deferred deliberately, with reasons (added v1.283.0, the Task Rack walk)
+## Closed — every item here was delivered (added v1.283.0, the Task Rack walk)
 
 ### 76. ~~Tooltips never reach an LCD on a rack faceplate~~ — CLOSED 2026-08-11 (the bisect with David)
 The bug was in the VERDICT, not the code. A property-gated probe
@@ -1387,7 +1612,7 @@ CSL stays quiet on the returned NONE while ngserver answers the
 definition. Live-proven: ⌘B on `heading` inside {{ heading }} in
 app.component.html landed the caret on the class property (12:3).
 
-## Open — deferred deliberately, with reasons (added v1.243.0, the deps housekeeping)
+## Closed — every item here was delivered (added v1.243.0, the deps housekeeping)
 
 ### 74. ~~The OpenJFX major upgrade is chained to a bundled-JDK decision~~ — CLOSED v1.253.0
 David's call, 2026-08-03: advance. The product baseline moved to
@@ -1421,7 +1646,7 @@ Name/Size values. WrapLayoutTest (3 behavior tests incl. the one-row
 lie), PropertyPanelLayoutTest, and ConsoleBarLayoutGateTest pin all
 three; mutation-proven ×3.
 
-## Open — deferred deliberately, with reasons (added v1.241.0, the Angular truth release)
+## Closed — every item here was delivered (added v1.241.0, the Angular truth release)
 
 ### 73. ~~Suffixless Angular templates are invisible to the template intelligence~~ — CLOSED 2026-08-11 (David's call: invest)
 The programmatic resolver the deferral asked for exists:
@@ -1674,7 +1899,7 @@ nothing tying them. `KitCatalogParityTest` now fails the build the
 moment they disagree — the soroban-sdk "23" pin-rot lesson made
 structural. Mutation-proven (kit→26 vs catalog→27 fails loud).
 
-## Open — deferred deliberately, with reasons (added v1.76.0, the fourth review)
+## Closed — every item here was delivered (added v1.76.0, the fourth review)
 
 ### 46. CiExporter emits no setup step for the post-v1.59 toolchains — CLOSED (v1.79.0)
 Closed in the v1.79.0 debt sprint: every kind an exported lane can speak
@@ -1705,7 +1930,7 @@ resolves (dialing node on a Rust project is the user's call).
 DebugDeviceGreyTest pins all three behaviors, mutation-proven (reverting
 the default to node fails the grey assertion).
 
-## Open — deferred deliberately, with reasons (added v1.102.0, the first editor review)
+## Closed — every item here was delivered (added v1.102.0, the first editor review)
 
 ### 56. Unify the seven capped HTTP-read sites into one core helper — CLOSED (v1.124.0)
 
@@ -1734,7 +1959,7 @@ closed in v1.123.0 — the ledger holds NO actionable open items; 51 and
 45 remain deferred with standing reasons (additive-when-a-plugin-needs-it
 / waits-on-platform).
 
-## Open — deferred deliberately, with reasons (added v1.106.0, the first core review)
+## Closed — every item here was delivered (added v1.106.0, the first core review)
 
 The v1.106.0 core-module review's HIGH finding — `ProcessSupport.runBounded`'s
 uncapped output accumulator (an OOM vector on a runaway child, and the
@@ -1773,7 +1998,7 @@ aimed project, and the chip's git spawn is already bounded elsewhere.
 Fix by reading a bounded prefix (`BufferedReader.readLine()` or a capped
 `readNBytes`) instead of the whole file.
 
-## Open — deferred deliberately, with reasons (added v1.107.0, the first rack-engine review)
+## Closed — every item here was delivered (added v1.107.0, the first rack-engine review)
 
 The v1.107.0 rack-engine review's two MED findings were fixed in that
 release (FlightRecorder journal I/O off the singleton monitor onto
@@ -1988,7 +2213,7 @@ contract corrects, and a TRIGGER only after exit), and the host now says
 plugin that calls `emitGate` before `exec` would still be exposed, and none
 has been written. Same condition, same answer.
 
-## Open — deferred deliberately, with reasons (added v1.89.0, the fifth review)
+## Closed — every item here was delivered (added v1.89.0, the fifth review)
 
 ### 50. Console in-jacks STOP/ENABLE are inert across the family — CLOSED (v1.90.0)
 
@@ -2300,7 +2525,7 @@ its stamp diff, keeping only the artifact-tree diff a single-file pulse cannot
 express. `FileWatcher` stays separate on purpose: it is a debounced recursive
 tree watcher with skip-dirs, not a file stamp.)*
 
-## Open — deferred deliberately, with reasons (added v1.38.1)
+## Closed — every item here was delivered (added v1.38.1)
 
 ### 27. ~~The Breakpoints window never lists DAP breakpoints~~ — CLOSED v2.154.0: it lists them; a filter hid them
 **Re-walked 2026-09-14 on the 2.153.0 portable (RELEASE310).** One DAP
@@ -2415,7 +2640,7 @@ cycle each time. The fixtures now hold themselves alive on a shell
 builtin and spawn nothing, so the abort has nothing to strand; the
 kill's blindness is unchanged.
 
-## Open — deferred deliberately, with reasons (added v1.37.0)
+## Closed — every item here was delivered (added v1.37.0)
 
 ### 25. ~~One debug session per run: child processes run undebugged~~ — CLOSED v2.156.0: every child process and worker is a session of its own
 **Closed 2026-09-15.** The "platform change" this entry waited on already

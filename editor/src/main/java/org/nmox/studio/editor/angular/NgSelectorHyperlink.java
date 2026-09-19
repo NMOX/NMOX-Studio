@@ -11,6 +11,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -216,17 +217,14 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
         return f == null ? null : projectDirAbove(f.getParentFile());
     }
 
-    /** The nearest enclosing workspace root above {@code dir} (shared with the CSL finder). */
+    /**
+     * The nearest enclosing workspace root above {@code dir} (shared with
+     * the CSL finder). The marker rule is {@link ProjectRoot}'s — this
+     * climbs two levels further than the default because a component
+     * sits deeper than a stylesheet ({@code src/app/feature/sub/…}).
+     */
     static File projectDirAbove(File dir) {
-        File cursor = dir;
-        for (int up = 0; cursor != null && up < 8; up++, cursor = cursor.getParentFile()) {
-            if (new File(cursor, "angular.json").isFile()
-                    || new File(cursor, "package.json").isFile()
-                    || new File(cursor, ".git").exists()) {
-                return cursor;
-            }
-        }
-        return dir;
+        return ProjectRoot.above(dir, 8);
     }
 
     private static void openAt(File file, int offset) {

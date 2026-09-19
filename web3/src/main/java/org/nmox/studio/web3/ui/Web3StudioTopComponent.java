@@ -290,6 +290,7 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_removeNetworkTitle=Remove Network",
     "Web3StudioTopComponent_removedNetwork=Removed network {0}",
     "Web3StudioTopComponent_workspaceUnreadable=Couldn''t read {0} \u2014 starting empty",
+    "Web3StudioTopComponent_workspaceReadOnly={0} could not be read \u2014 the workspace is read-only so nothing overwrites it",
     "Web3StudioTopComponent_workspaceBackupKept=The unreadable original was kept at {0}.",
     "Web3StudioTopComponent_contractNameA11y=Contract name",
     "Web3StudioTopComponent_deployedAddressA11y=Deployed address, optional",
@@ -402,8 +403,8 @@ public final class Web3StudioTopComponent extends TopComponent {
      * a close flush must never queue behind a slow RPC (debt #16; the
      * careful parts are documented on the lane class).
      */
-    private static final org.nmox.studio.web3.engine.SaveLane SAVES =
-            new org.nmox.studio.web3.engine.SaveLane("Contract Studio workspace saves");
+    private static final org.nmox.studio.core.util.SaveLane SAVES =
+            new org.nmox.studio.core.util.SaveLane("Contract Studio workspace saves");
 
     /** Always first in the combo, never persisted — the devnet ANVIL provides. */
     static final Network LOCAL_ANVIL =
@@ -2402,6 +2403,16 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** EDT-confined: the reload seam; only {@link #reloadWorkspace} bumps it. */
     private long reloadSeq;
 
+    /**
+     * EDT-confined: true while the bound {@code .nmoxweb3.json} exists and
+     * could not be read, so the networks and the deployment address book
+     * on screen are a stand-in rather than this project's workspace. Every
+     * save refuses while it is set — the never-clobber law reaching the
+     * case where there is nothing to compare against, because we hold none
+     * of the file's bytes.
+     */
+    private boolean workspaceReadOnly;
+
     /** EDT: swaps the studio onto a freshly read workspace. */
     private void applyReloadedWorkspace(File dir, Web3WorkspaceIO.LoadOutcome outcome) {
         Network previous = selectedNetwork();
@@ -2426,7 +2437,15 @@ public final class Web3StudioTopComponent extends TopComponent {
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
         applyImported(workspace.imported());
-        selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
+        // A file we never read is never ours. Stamping it here unconditionally
+        // was half of the loss; the other half is that saveWorkspace() writes
+        // without consulting the stamp at all, so the studio needs an explicit
+        // read-only bind rather than a comparison it cannot make — we hold
+        // none of the file's bytes to compare.
+        workspaceReadOnly = outcome.unreadable();
+        if (!workspaceReadOnly) {
+            selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
+        }
         rebuildNetworksBranch();
         rebuildDeploymentsBranch();
         deploymentsModel.refresh();
@@ -2446,6 +2465,11 @@ public final class Web3StudioTopComponent extends TopComponent {
         refreshNetworkCombo(keep);
         rescan();
         restartPulseIfOpen();
+        if (workspaceReadOnly) {
+            // said last so the rescan's own status does not bury it
+            status(Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME),
+                    FAIL_RED);
+        }
     }
 
     /**
@@ -2592,6 +2616,15 @@ public final class Web3StudioTopComponent extends TopComponent {
      * and only the disk write rides the save lane (debt #16).
      */
     private void saveWorkspace() {
+        if (workspaceReadOnly) {
+            // the bound .nmoxweb3.json exists and could not be read, so the
+            // lists above are a stand-in: writing them would replace every
+            // network and the whole deployment address book with nothing.
+            // The refusal speaks rather than failing silently.
+            status(Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME),
+                    FAIL_RED);
+            return;
+        }
         File file = new File(workspaceDir(), Web3WorkspaceIO.FILENAME);
         String json = Web3WorkspaceIO.toJson(
                 new Web3WorkspaceIO.Workspace(networks, deployments, importedContracts));

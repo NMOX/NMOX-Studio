@@ -22,7 +22,7 @@ ships those, and our eleven Maven modules plug features into them.
 |---|---|
 | `core` | Shared plumbing every module uses: process spawning (`ProcessSupport`), tool discovery (`ToolLocator`), atomic file writes (`AtomicFiles`), capped HTTP reads (`HttpBodies`), and the **SPI seams** other modules discover at runtime (`core.spi.*`) |
 | `editor` | Everything about editing text: 88 TextMate grammars, lexers, completion, Emmet, the Navigator outline, LSP clients, the JS/TS debugger |
-| `tools` | Project recognition (60 manifest types) and the NPM explorer |
+| `tools` | Project recognition (63 manifest types) and the NPM explorer |
 | `rack` | The signature UI: a synth-style rack of "devices" that run real dev tools, wired with patch cables — including devices defined by plain JSON files in `~/.nmox/devices.d/` (v2.0.0) |
 | `apiclient` / `dbstudio` / `web3` / `infra` | The studios: Postman-style API client, database suite, smart-contract suite, cloud-infra designer |
 | `project` / `ui` | Project Explorer/Workbench windows; the Welcome launchpad, wizards ("Kits"), Options panels, update checking — plus the in-app Browser, the IRC client, and the Task Board (`ui.browser`, `ui.irc`, `ui.tasks`) |
@@ -257,6 +257,38 @@ Read those five files in that order and you have seen every persistence
 law in the product; the other five studios are the same shape, larger.
 
 ## 4. The house laws (why the code looks the way it does)
+
+### What the motto means in code
+
+NMOX is New Media On X, and the project's motto is **peace, love, and
+harmony**. That is not decoration on an engineering document — it is the
+shortest statement of why the laws below exist, and it is usable as a
+review question. Read it the way the Unix philosophy is read: as a claim
+about how parts should behave.
+
+- **Peace — nothing surprises the user.** The IDE does not act behind
+  your back, does not reach out without being asked, and does not fail
+  silently. A refusal explains itself. A destructive dialog defaults to
+  the safe button. An empty state says what is empty instead of showing
+  you somebody else's page. If you have to ask "would this startle
+  someone?", it is a peace question.
+- **Love — care for the next reader.** Comments say WHY, and name the
+  incident. A fix comes with the test that would have caught it. Nothing
+  is left half-built for someone else to discover: either finish it or
+  delete it, and if you cannot do either, write down which and why. An
+  error message is written for whoever is stuck at 2am, not for whoever
+  wrote the code.
+- **Harmony — the parts agree.** One fact, one home. One idea, one door.
+  One vocabulary across the whole product. Small things that compose,
+  rather than one thing that does everything. When two places state the
+  same rule, the defect is the second home, not today's disagreement.
+
+Every law below is one of those three made specific. When a new rule is
+proposed, the question is which of the three it serves; when two rules
+conflict, peace wins, because a surprising product cannot be fixed by
+being internally consistent about it.
+
+### The laws
 
 Recurring rules you will meet in comments; each earned its place from a
 real bug, and most are pinned by a test that fails the build if broken:

@@ -235,4 +235,56 @@ class LayerPositionCensusTest {
         }
         assertThat(dups).as("same position, same folder — the platform picks an order and warns").isEmpty();
     }
+
+    @Test
+    @DisplayName("no platform row sits between the Tools menu's NMOX rows — a family split by drift is the v2.118.0 class")
+    void toolsMenuRowsAreNotSplit() throws Exception {
+        // v2.184.0 closed a split the ledger described as "seven platform
+        // rows" between two NMOX groups. Read out of the assembled cluster
+        // there was exactly ONE — the platform's own Tools row at 100 — and
+        // our capture family had drifted past it to the next free positions.
+        // The claim that fix makes is checked here.
+        //
+        // Contiguity is NOT consecutive integers: 91 and 94 are simply
+        // unoccupied, and leaving room between families is deliberate. The
+        // property is that nothing FOREIGN sits inside our run.
+        Map<String, Integer> folder = census().getOrDefault("Menu/Tools/", Map.of());
+        java.util.List<Integer> ours = folder.entrySet().stream()
+                .filter(e -> e.getValue() != null && e.getKey().contains("(org-nmox-"))
+                .map(Map.Entry::getValue)
+                .filter(p -> p < 1000) // Language Servers sits at 1450, blessed below
+                .sorted().toList();
+        assertThat(ours).as("the Tools menu should carry NMOX rows").hasSizeGreaterThanOrEqualTo(8);
+
+        int first = ours.get(0);
+        int last = ours.get(ours.size() - 1);
+        java.util.List<String> intruders = new ArrayList<>();
+        folder.forEach((name, pos) -> {
+            if (pos != null && pos > first && pos < last && !name.contains("(org-nmox-")) {
+                intruders.add(name + " @" + pos);
+            }
+        });
+        assertThat(intruders)
+                .as("these sit inside the NMOX run %d..%d and split the family", first, last)
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("Language Servers is the one NMOX Tools row outside that run, and it is grouped by function on purpose")
+    void languageServersIsBlessedWhereItSits() throws Exception {
+        Map<String, Integer> folder = census().getOrDefault("Menu/Tools/", Map.of());
+        java.util.List<String> far = folder.entrySet().stream()
+                .filter(e -> e.getValue() != null && e.getKey().contains("(org-nmox-")
+                        && e.getValue() >= 1000)
+                .map(Map.Entry::getKey).sorted().toList();
+        // Grouping by AUTHOR would put a diagnostics row among screenshot
+        // actions; grouping by FUNCTION puts it beside the platform's Plugin
+        // Manager, where both answer "what is installed here". One exemption,
+        // named — a second one would be drift wearing this reason.
+        assertThat(far)
+                .as("only Language Servers may sit apart, and for that reason")
+                .hasSize(1)
+                .allMatch(n -> n.contains("LanguageServerStatusAction"));
+    }
+
 }

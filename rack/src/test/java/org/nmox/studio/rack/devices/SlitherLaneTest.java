@@ -44,7 +44,6 @@ class SlitherLaneTest {
     @TempDir
     Path dir;
 
-    private final Predicate<File> originalTrust = CommandDevice.trustCheck;
     private final Predicate<String> originalProbe = LintDevice.toolProbe;
     private Rack rack;
 
@@ -59,7 +58,7 @@ class SlitherLaneTest {
 
     @AfterEach
     void restore() {
-        CommandDevice.trustCheck = originalTrust;
+        CommandDevice.resetTrustCheck();
         LintDevice.toolProbe = originalProbe;
         rack.shutdown();
     }

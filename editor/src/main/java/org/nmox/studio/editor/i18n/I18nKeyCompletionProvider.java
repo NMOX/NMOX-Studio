@@ -16,7 +16,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.editor.design.CssClassCompletionItem;
-import org.nmox.studio.editor.fullstack.ProjectJumpHyperlink;
+import org.nmox.studio.editor.ProjectRoot;
 import org.nmox.studio.editor.i18n.I18nCatalogs.Catalog;
 import org.nmox.studio.editor.i18n.I18nCatalogs.Catalogs;
 import org.nmox.studio.editor.i18n.I18nCatalogs.Entry;
@@ -88,7 +88,7 @@ public class I18nKeyCompletionProvider implements CompletionProvider {
                 if (prefix == null) {
                     return;
                 }
-                File root = ProjectJumpHyperlink.projectDirOf(doc);
+                File root = ProjectRoot.of(doc);
                 if (root == null) {
                     return;
                 }

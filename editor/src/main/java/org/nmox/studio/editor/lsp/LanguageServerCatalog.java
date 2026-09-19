@@ -187,14 +187,16 @@ public final class LanguageServerCatalog {
     }
 
     /**
-     * One PATH entry's verdict. On Windows nothing is executable under the
-     * bare name — native servers ship {@code .exe}, npm shims ship
-     * {@code .cmd} — so probe the same two suffixes ToolLocator resolves;
-     * without them no language server was EVER detected on Windows.
+     * One PATH entry's verdict — {@link ToolLocator#foundIn}, which owns
+     * the suffix rule this file used to spell for itself. On Windows
+     * nothing is executable under the bare name (native servers ship
+     * {@code .exe}, npm shims ship {@code .cmd}), and without those arms
+     * no language server was EVER detected there (the v1.42.0 Windows
+     * lane). The PREDICATE is shared, not {@code ToolLocator.resolve} —
+     * that caches misses for the JVM lifetime, and this probe must see a
+     * server the user just installed.
      */
     static boolean foundIn(File dir, String binary) {
-        return new File(dir, binary).canExecute()
-                || new File(dir, binary + ".exe").isFile()
-                || new File(dir, binary + ".cmd").isFile();
+        return ToolLocator.foundIn(dir, binary) != null;
     }
 }

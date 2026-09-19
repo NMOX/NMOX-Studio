@@ -35,7 +35,14 @@ public class TasksSearchProvider implements SearchProvider {
         if (dir == null || !TasksIO.fileFor(dir).isFile()) {
             return;
         }
-        evaluate(q, TasksIO.load(dir),
+        TasksIO.LoadOutcome outcome = TasksIO.load(dir);
+        if (outcome.unreadable()) {
+            // a stand-in board has no cards of the user's to find, and
+            // offering the starter's empty columns as hits would be the
+            // search surface asserting a board we never read
+            return;
+        }
+        evaluate(q, outcome.board(),
                 (action, label) -> response.addResult(action, label));
     }
 

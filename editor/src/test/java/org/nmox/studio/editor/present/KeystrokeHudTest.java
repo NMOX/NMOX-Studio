@@ -36,6 +36,44 @@ class KeystrokeHudTest {
     }
 
     @Test
+    @DisplayName("the function-key rule is TWO intervals: VK_F13 jumps to 61440, so one F1..F24 range would show unmodified punctuation to the room (v2.184.0)")
+    void functionKeysAreNotContiguous() {
+        // the constants, not literals typed here — this is the fact the rule
+        // has to survive, and reading it from the JDK is what makes the test
+        // true of the JDK the product runs on
+        assertThat(KeyEvent.VK_F13)
+                .as("F13 is not F12 + 1 — the range F1..F24 spans %d..%d", KeyEvent.VK_F1, KeyEvent.VK_F24)
+                .isGreaterThan(KeyEvent.VK_F12 + 1);
+
+        assertThat(KeystrokeHud.shows(0, KeyEvent.VK_F1)).isTrue();
+        assertThat(KeystrokeHud.shows(0, KeyEvent.VK_F12)).isTrue();
+        assertThat(KeystrokeHud.shows(0, KeyEvent.VK_F13)).isTrue();
+        assertThat(KeystrokeHud.shows(0, KeyEvent.VK_F24)).isTrue();
+        assertThat(KeystrokeHud.shows(0, KeyEvent.VK_ESCAPE)).isTrue();
+
+        // every one of these sits inside 112..61451 and is typed without a
+        // modifier: a password holding a quote, a backtick, @ or : would have
+        // flashed that key onto the projector
+        int[] typedWithoutAModifier = {
+            KeyEvent.VK_DELETE, KeyEvent.VK_INSERT, KeyEvent.VK_BACK_QUOTE, KeyEvent.VK_QUOTE,
+            KeyEvent.VK_AT, KeyEvent.VK_COLON, KeyEvent.VK_DOLLAR, KeyEvent.VK_AMPERSAND,
+            KeyEvent.VK_NUMBER_SIGN, KeyEvent.VK_EXCLAMATION_MARK, KeyEvent.VK_EURO_SIGN,
+            KeyEvent.VK_DEAD_GRAVE};
+        for (int code : typedWithoutAModifier) {
+            assertThat(KeyEvent.getKeyText(code)).isNotNull();
+            assertThat(KeystrokeHud.shows(0, code))
+                    .as("key code %d (%s) is typing, not a chord", code, KeyEvent.getKeyText(code))
+                    .isFalse();
+            assertThat(KeystrokeHud.shows(KeyEvent.SHIFT_DOWN_MASK, code))
+                    .as("⇧ alone is still typing for key code %d", code)
+                    .isFalse();
+            assertThat(KeystrokeHud.shows(KeyEvent.META_DOWN_MASK, code))
+                    .as("with ⌘ it is a chord and does show")
+                    .isTrue();
+        }
+    }
+
+    @Test
     @DisplayName("the label is the product's one chord vocabulary, on both platforms")
     void labels() {
         assertThat(KeystrokeHud.label(KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK, KeyEvent.VK_G, true)).isEqualTo("⌥⌘G");

@@ -159,6 +159,22 @@ public class GeneralOptionsPanelController extends OptionsPanelController {
         return true;
     }
 
+    /**
+     * Tells the Options dialog a control moved, which is what enables Apply.
+     *
+     * <p>{@code isChanged()} below was written and is correct; nothing ever
+     * asked it, because nothing fired. The platform's dialog
+     * ({@code OptionsDisplayerImpl}, read from the shipped bytecode) listens
+     * for {@code PROP_CHANGED} on this controller and calls back to decide
+     * whether Apply is live. With no fire, Apply stayed grey however many
+     * settings you touched and the only way out was OK — so half of the
+     * dialog's own contract was implemented and the half that speaks to the
+     * host was missing, in all three of this product's Options panels.
+     */
+    private void changed() {
+        pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, null, isChanged());
+    }
+
     @Override
     public boolean isChanged() {
         boolean updateChanged = updateCheck.isSelected() != prefs().getBoolean("updateCheck", true);
@@ -183,6 +199,7 @@ public class GeneralOptionsPanelController extends OptionsPanelController {
         c.gridy = 0;
 
         updateCheck = new JCheckBox(Bundle.GeneralOptions_UpdateCheck());
+        updateCheck.addItemListener(e -> changed());
         c.gridwidth = 2;
         panel.add(updateCheck, c);
         c.gridwidth = 1;
@@ -193,6 +210,7 @@ public class GeneralOptionsPanelController extends OptionsPanelController {
         String[] names = UiLocale.SUPPORTED.stream().map(UiLocale.Choice::nativeName).toArray(String[]::new);
         language = new JComboBox<>(names);
         language.getAccessibleContext().setAccessibleName(Bundle.GeneralOptions_Language());
+        language.addActionListener(e -> changed());
         languageLabel.setLabelFor(language);
         c.gridx = 1;
         panel.add(language, c);

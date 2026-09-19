@@ -28,12 +28,20 @@ public abstract class CommandDevice extends RackDevice {
     /** True when {@code tool} resolves on the IDE's augmented PATH — the
      *  shared availability probe every console's grey-honestly path uses
      *  (moved here from StellarDevice in the v1.141.0 debt sprint: a
-     *  device borrowing another device's static was a reach-in). */
+     *  device borrowing another device's static was a reach-in).
+     *
+     *  <p>Both halves of the answer belong to {@link
+     *  org.nmox.studio.core.process.ToolLocator}: this asked it for the
+     *  augmented PATH and then re-implemented the suffix rule beside it,
+     *  WRONG — it knew {@code .exe} and not the {@code .cmd} npm ships
+     *  its shims as, the arm the v1.42.0 Windows lane added to the other
+     *  two homes. No console probes an npm shim today (stellar, slither
+     *  and anchor are real binaries), so it was a latent trap rather
+     *  than a live bug; sharing the predicate keeps it that way. */
     protected static boolean toolOnPath(String tool) {
         for (String dir : org.nmox.studio.core.process.ToolLocator.augmentedPath()
                 .split(java.io.File.pathSeparator)) {
-            if (new java.io.File(dir, tool).canExecute()
-                    || new java.io.File(dir, tool + ".exe").canExecute()) {
+            if (org.nmox.studio.core.process.ToolLocator.foundIn(new java.io.File(dir), tool) != null) {
                 return true;
             }
         }
@@ -285,6 +293,21 @@ public abstract class CommandDevice extends RackDevice {
     /** Test seam for the trust gate (production: the real prompt). */
     static java.util.function.Predicate<java.io.File> trustCheck =
             org.nmox.studio.rack.service.WorkspaceTrust::requestTrust;
+
+    /**
+     * Puts the trust gate back to production — the real prompt.
+     *
+     * <p>Six test classes each kept their own {@code originalTrust} field and
+     * their own restore. Each was correct; together they were six chances to
+     * forget, and what this seam disables is the gate that stands between a
+     * cloned repository and a spawned process. A forgotten restore leaks
+     * {@code trustCheck = f -> true} into every later test in the fork, and the
+     * build stays green while proving nothing about the law it is there to
+     * prove. One restore, stated once.
+     */
+    static void resetTrustCheck() {
+        trustCheck = org.nmox.studio.rack.service.WorkspaceTrust::requestTrust;
+    }
 
     /**
      * {@link #launch} with extra environment for this run only (e.g.

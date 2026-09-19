@@ -29,9 +29,10 @@ class AsyncExecTest {
 
     @AfterEach
     void restoreLane() {
-        // back to a real async lane so later tests in the same JVM behave
-        RackDevice.execLane = task ->
-                org.openide.util.RequestProcessor.getDefault().post(task);
+        // through the seam's own reset: this restore used to invent a lane
+        // (RequestProcessor.getDefault()), which is a real async lane but not
+        // the production one, and the fork is shared with every later test
+        RackDevice.resetExecLane();
     }
 
     private TestDevice device() {

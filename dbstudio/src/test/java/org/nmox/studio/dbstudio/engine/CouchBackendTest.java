@@ -61,7 +61,7 @@ class CouchBackendTest {
 
     @Test
     @DisplayName("parseFindDocs extracts the docs array of a _find reply")
-    void parseFindDocs() {
+    void parseFindDocs() throws Exception {
         List<JSONObject> docs = CouchBackend.parseFindDocs("""
                 {"docs": [
                     {"_id": "a1", "name": "ada"},
@@ -76,8 +76,11 @@ class CouchBackendTest {
 
     @Test
     @DisplayName("parseFindDocs surfaces a CouchDB error body as a throw with the server's reason")
-    void parseFindDocsError() {
-        assertThatIllegalStateException()
+    void parseFindDocsError() throws Exception {
+        // an IOException, not a runtime one: what the server said is a
+        // reachability answer, and only a CHECKED type keeps a real bug under
+        // this parser from being reported as the connection's verdict
+        assertThatExceptionOfType(java.io.IOException.class)
                 .isThrownBy(() -> CouchBackend.parseFindDocs(
                         "{\"error\":\"not_found\",\"reason\":\"Database does not exist.\"}"))
                 .withMessage("not_found: Database does not exist.");
@@ -85,7 +88,7 @@ class CouchBackendTest {
 
     @Test
     @DisplayName("parseFindDocs of a reply without docs yields an empty list")
-    void parseFindDocsNoDocs() {
+    void parseFindDocsNoDocs() throws Exception {
         assertThat(CouchBackend.parseFindDocs("{\"bookmark\": \"nil\"}")).isEmpty();
     }
 
@@ -227,7 +230,7 @@ class CouchBackendTest {
 
     @Test
     @DisplayName("shapeSample reports the first doc's fields with JSON type names, _id as the key")
-    void shapeSampleReportsJsonTypes() {
+    void shapeSampleReportsJsonTypes() throws Exception {
         List<JSONObject> docs = CouchBackend.parseFindDocs("""
                 {"docs": [{
                     "_id": "a1", "_rev": "1-abc", "name": "ada", "age": 36,
