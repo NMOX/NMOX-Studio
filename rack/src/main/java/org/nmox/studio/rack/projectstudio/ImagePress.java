@@ -43,9 +43,12 @@ public final class ImagePress {
     /** A workbench pass, not a bulk archiver. */
     public static final int MAX_FILES = 500;
 
-    private static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage", "target",
-            "out", ".next", ".nuxt", "vendor", ".svelte-kit");
+    /** One home since ledger 110, plus {@code vendor}: pressing an image
+     *  inside a checked-in dependency edits somebody else's release, and
+     *  the never-clobber law cannot help with a file the user did not
+     *  write. */
+    private static final Set<String> SKIP_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor");
 
     private ImagePress() {
     }

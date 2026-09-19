@@ -12,9 +12,14 @@ import java.util.Set;
  */
 public final class ChangedSince {
 
-    private static final Set<String> SKIP = Set.of(
-            "node_modules", ".git", "dist", "build", "target", "out",
-            "vendor", "coverage", "__pycache__", ".venv", ".nmox");
+    /** One home since ledger 110, plus two. {@code vendor} because a
+     *  checked-in dependency tree is not what changed since it last
+     *  worked; {@code .nmox} because the IDE's own state under the user's
+     *  home is written BY this failure — the patch autosave and the flight
+     *  recorder both touch it — and answering "your own journal changed"
+     *  would be the product blaming itself. */
+    private static final Set<String> SKIP =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor", ".nmox");
     public static final int CAP = 25;
 
     private ChangedSince() {

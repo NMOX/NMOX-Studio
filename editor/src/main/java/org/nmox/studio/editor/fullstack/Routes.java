@@ -44,9 +44,12 @@ public final class Routes {
             "fetch(", "axios(", "axios.get(", "axios.post(", "axios.put(",
             "axios.patch(", "axios.delete(", "axios.head(");
 
-    private static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "out", "coverage",
-            "target", ".next", ".nuxt", ".angular", ".svelte-kit");
+    /** Its neighbour's, not its own. Until ledger 110 this class carried a
+     *  private copy byte-identical to the {@code public} constant sitting
+     *  one file away in its own package, and never referenced it — the
+     *  purest instance in the whole finding, and a copy that could have
+     *  drifted on any edit without a single test noticing. */
+    private static final Set<String> SKIP_DIRS = BoundedWalk.SKIP_DIRS;
 
     static final int MAX_FILES = 80;
     private static final long MAX_FILE_BYTES = 256 * 1024;

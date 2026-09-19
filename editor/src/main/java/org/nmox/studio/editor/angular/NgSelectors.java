@@ -37,9 +37,9 @@ public final class NgSelectors {
 
     static final int SNIFF_BYTES = 16 * 1024;
     private static final int MAX_FILES = 400;
-    private static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage",
-            ".angular", "out", "target");
+    /** One home since ledger 110: a component declaration never sits in
+     *  build output, and this walk needs no extras of its own. */
+    private static final Set<String> SKIP_DIRS = org.nmox.studio.core.util.HeavyDirs.NAMES;
 
     /** {@code selector: 'app-hero'} — either quote, decorator files only. */
     private static final Pattern SELECTOR =

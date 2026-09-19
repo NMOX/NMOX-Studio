@@ -126,10 +126,15 @@ public final class ProjectInspector {
         }
     }
 
-    /** Directories never scanned for nested project manifests. */
-    private static final java.util.Set<String> SKIP_DIRS = java.util.Set.of(
-            "node_modules", ".git", "dist", "build", "target", "out",
-            "vendor", "coverage", "__pycache__", ".venv");
+    /** Directories never scanned for nested project manifests — one home
+     *  since ledger 110, plus {@code vendor} (a Go module's checked-in
+     *  dependencies each carry a {@code go.mod}, and none of them is a
+     *  project the user opened). The framework caches the merge added are
+     *  a real fix rather than a tidy: Next.js standalone output writes
+     *  {@code .next/standalone/package.json}, which this scan would have
+     *  reported as a nested NODE project that nobody wrote. */
+    private static final java.util.Set<String> SKIP_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor");
     private static final int MAX_CHILD_SCAN = 40;
 
     /**

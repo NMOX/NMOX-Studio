@@ -40,9 +40,12 @@ public final class SpaceExporter {
     static final int TOTAL_CAP = 512_000;
     static final int MAX_FILES = 40;
 
-    private static final Set<String> EXCLUDED_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage", "target",
-            ".nmox", "out");
+    /** One home since ledger 110, plus {@code .nmox}: a teacher exporting
+     *  a learning space from a project that lives UNDER {@code ~/.nmox}
+     *  would otherwise fold the IDE's own state into the drop-in they
+     *  hand a student. */
+    private static final Set<String> EXCLUDED_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus(".nmox");
 
     private SpaceExporter() {
     }
