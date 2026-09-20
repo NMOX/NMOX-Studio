@@ -163,6 +163,18 @@ ENTITLEMENTS="packaging/macos/entitlements.plist"
 # nested code is sealed explicitly and the bundle is sealed last.
 sign_bundle_with_identity() {
     [ -f "$ENTITLEMENTS" ] || { echo "ERROR: $ENTITLEMENTS missing - cannot sign for notarization"; exit 1; }
+    # codesign's entitlements parser is AMFI's, and AMFI is STRICTER than
+    # plutil: it rejects XML COMMENTS outright. entitlements.plist is full
+    # of them by house law - every entitlement carries the reason it is
+    # open - and `plutil -lint` calls the file OK, so nothing caught this
+    # until a real signature was attempted. MEASURED: v2.188.0's release
+    # died exactly here with
+    #     Failed to parse entitlements: AMFIUnserializeXML: syntax error near line 6
+    # line 6 being inside the header comment. plutil normalises the plist
+    # and drops the comments, so the reasons stay where they belong and
+    # codesign gets a file it can read. Never pass $ENTITLEMENTS itself.
+    local ent="${TMPDIR:-/tmp}/nmox-entitlements-signing.plist"
+    plutil -convert xml1 -o "$ent" "$ENTITLEMENTS"
     # ${arr[@]+"${arr[@]}"}, not "${arr[@]}", everywhere an array can be
     # EMPTY: macOS ships bash 3.2 (measured here and on the runner), where
     # expanding an empty array under `set -u` is an "unbound variable"
@@ -178,7 +190,7 @@ sign_bundle_with_identity() {
     while IFS= read -r f; do
         file -b "$f" | grep -q 'Mach-O' || continue
         codesign --force --options runtime --timestamp \
-                 --entitlements "$ENTITLEMENTS" \
+                 --entitlements "$ent" \
                  ${keychain_args[@]+"${keychain_args[@]}"} \
                  --sign "$MACOS_SIGN_IDENTITY" "$f"
         signed=$((signed + 1))
@@ -187,7 +199,7 @@ sign_bundle_with_identity() {
              | awk -F/ '{ print NF "\t" $0 }' | sort -rn | cut -f2-)
     echo "    sealed $signed nested binaries"
     codesign --force --options runtime --timestamp \
-             --entitlements "$ENTITLEMENTS" \
+             --entitlements "$ent" \
              ${keychain_args[@]+"${keychain_args[@]}"} \
              --sign "$MACOS_SIGN_IDENTITY" "$BUNDLE"
     codesign --verify --deep --strict --verbose=2 "$BUNDLE"

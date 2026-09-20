@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.1] - 2026-09-20
+
+**The first real signature failed, and the thing that broke it was the
+documentation.**
+
+v2.188.0 tagged, signed the certificate in, announced *"macOS Developer ID
+signing enabled"* — and then died in `Build DMG`:
+
+```
+Failed to parse entitlements: AMFIUnserializeXML: syntax error near line 6
+```
+
+**`codesign`'s entitlements parser is AMFI's, and AMFI rejects XML comments.**
+`packaging/macos/entitlements.plist` is full of them by house law — every key
+is a hole in the hardened runtime, so every key carries the reason it is open —
+and line 6 sits inside the header comment. **`plutil -lint` calls the file OK**,
+which is why nothing caught it: the file is valid XML and valid plist; it is
+only invalid to the one parser that matters, and that parser could not be
+consulted without a real certificate.
+
+The fix keeps both halves. `build-dmg.sh` normalises the plist with
+`plutil -convert xml1` before signing, so the documented file stays the source
+and `codesign` gets a copy with the comments gone. The three granted keys are
+byte-identical either way.
+
+**The gate had asserted the broken spelling.** `ReleaseSigningLanesGateTest`
+proved the entitlements were *applied* by matching
+`--entitlements "$ENTITLEMENTS"` — the exact string that could not work. It now
+requires the normalisation step, refuses the raw file reaching `codesign` ever
+again, and — because the comments are the whole reason the step exists —
+asserts the plist still HAS comments, so the next author cannot delete the hop
+as dead weight. Two mutants by name: restoring the old spelling kills
+`macosLaneSignsNotarizesAndStaples`; stripping the plist's comments kills
+`entitlementsCarryTheJvmKeys`.
+
+*A gate that pins a literal pins whatever the literal says, including a
+mistake.* Fifth instance of that class, and the first where the literal was
+load-bearing in a lane no test could execute.
+
+v2.188.0 remains a tag with no release — a published tag is never moved, and
+nothing was published.
+
 ## [2.188.0] - 2026-09-20
 
 **The macOS installers are signed with a Developer ID and notarized by Apple.**
@@ -23368,6 +23410,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.0...v2.188.1
 [2.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.1...v2.188.0
 [2.187.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.0...v2.187.1
 [2.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.186.0...v2.187.0

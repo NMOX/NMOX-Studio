@@ -110,7 +110,22 @@ class ReleaseSigningLanesGateTest {
                 .contains("--timestamp");
         assertThat(dmg)
                 .as("the JVM entitlements are the fiddly part ledger 86 names; they must be applied")
-                .contains("--entitlements \"$ENTITLEMENTS\"");
+                .contains("--entitlements \"$ent\"");
+        // v2.188.0 DIED HERE, and this gate had asserted the broken spelling.
+        // codesign's entitlements parser is AMFI's, and AMFI rejects XML
+        // COMMENTS — which entitlements.plist is full of by house law, every
+        // key carrying the reason it is open. `plutil -lint` calls the file
+        // OK, so nothing caught it until a real signature was attempted:
+        //   Failed to parse entitlements: AMFIUnserializeXML: syntax error near line 6
+        // (line 6 being inside the header comment). The documented file stays
+        // the source; codesign gets a normalised copy with the comments gone.
+        assertThat(dmg)
+                .as("the commented plist must be normalised before codesign sees it — AMFI "
+                        + "cannot parse XML comments and plutil -lint cannot see that")
+                .contains("plutil -convert xml1");
+        assertThat(dmg)
+                .as("and the RAW commented file must never reach codesign again")
+                .doesNotContain("--entitlements \"$ENTITLEMENTS\"");
         assertThat(dmg)
                 .as("--wait, so a rejection fails the release instead of publishing something "
                         + "Gatekeeper will refuse")
@@ -146,6 +161,13 @@ class ReleaseSigningLanesGateTest {
                     .as("%s must be followed by <true/> (a listed-but-false entitlement grants nothing)", name)
                     .contains("<true/>");
         }
+        // The comments are the REASON the normalisation step exists. If they
+        // ever go away, the plutil hop above becomes decorative and the next
+        // author will delete it — so the gate states the dependency.
+        assertThat(plist)
+                .as("every key carries its reason (house law), which is exactly what AMFI "
+                        + "cannot parse — build-dmg.sh normalises the file before signing")
+                .contains("<!--");
         assertThat(plist.split("<key>").length - 1)
                 .as("every granted entitlement weakens the hardened runtime; keep the set small "
                         + "and deliberate rather than copying a template")
