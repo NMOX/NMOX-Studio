@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.0] - 2026-09-20
+
+**The macOS installers are signed with a Developer ID and notarized by Apple.**
+
+Ledger 86's macOS half is bought and live. The engineering has been written,
+reviewed and gated since v2.186.0; what was missing was a $99/year membership
+and a legal identity, which no principle about code quality could settle. David
+enrolled, and this release is the lane's **first real execution** — no code
+change turned it on, only five repository secrets.
+
+**What changes for a user.** The app and every Mach-O inside it are signed
+under the hardened runtime, the app is notarized and stapled, and the DMG is
+signed, notarized and stapled in turn. Gatekeeper stops refusing the first
+launch. The signature reads **David Liedle (GVEU23Q6RB)** — an individual
+enrolment, so it carries a person's name rather than a brand.
+
+**What deliberately does NOT change yet.** The Homebrew cask still clears the
+quarantine attribute, and `INSTALL.md`, `README.md` and the user guide still
+say the app is ad-hoc signed. Removing the cask's quarantine handling in the
+same tag that attempts notarization for the first time would, if notarization
+failed, hand every `brew install` a DMG that is neither notarized nor
+de-quarantined. **Prove it, then clean up.** Those edits — both cask homes,
+held byte-identical by `CaskGeneratorParityTest`, plus the three documents and
+their fourteen translations — ride the next release once this one's DMG has
+been verified with `spctl` and `stapler` on a real download.
+
+**The lane fails rather than lies.** If Apple's notary service rejects the
+bundle or the queue outruns the 45-minute bound, the release fails instead of
+publishing an unnotarized DMG under a tag that claims otherwise. A published
+v2.188.0 carrying 21 assets is therefore itself evidence that signing,
+notarization and stapling all succeeded.
+
+Windows remains unsigned and unchanged: the two lanes are independent, and
+Azure's Artifact Signing — renamed from Trusted Signing, a fact this release
+also corrects in `release-signing.md` — has not been purchased. Linux needs
+nothing; its `.tar.gz` and `.deb` have ridden a GPG-signed `SHA256SUMS`
+manifest since v2.42.0.
+
+Also: the macOS checklist said "Set four repository secrets" above a five-row
+table. Caught by walking it rather than reading it.
+
 ## [2.187.1] - 2026-09-20
 
 **A verdict that acquitted a family on one member's measurement, and a comment
@@ -23327,6 +23368,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.1...v2.188.0
 [2.187.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.0...v2.187.1
 [2.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.186.0...v2.187.0
 [2.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.185.0...v2.186.0
