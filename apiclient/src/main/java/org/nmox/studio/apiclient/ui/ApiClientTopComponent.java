@@ -2610,8 +2610,16 @@ public final class ApiClientTopComponent extends TopComponent {
                     });
         } else {
             loadWorkspace();
-            balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
-                    Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
+            if (!workspaceReadOnly) {
+                balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
+                        Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
+            }
+            // The file really did change — but if it STILL cannot be read we
+            // have picked up nothing, and saying so would be the window
+            // claiming a workspace it does not hold. applyWorkspace has
+            // already put the read-only verdict back on the strip, and this
+            // path is how the workspace returns by itself the moment the
+            // file becomes readable again (the InfraDesigner shape).
         }
     }
 

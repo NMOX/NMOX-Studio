@@ -146,6 +146,59 @@ class ReadFailureNeverClobbersTest {
         }
     }
 
+    /**
+     * The read-only bind is a STATE, not a verdict for the session. A
+     * workspace that becomes readable again — permissions fixed, an
+     * over-cap file trimmed — comes back on the next load, and the studio
+     * stops refusing and takes ownership again. This is the path the file
+     * pulse drives when it sees the file change.
+     */
+    @Test
+    @DisplayName("a workspace that becomes readable again ends the read-only bind")
+    void readOnlyBindEndsWhenTheFileCanBeRead(@TempDir File dir) throws Exception {
+        File f = new File(dir, WorkspaceIO.FILENAME);
+        writeOverCap(f);
+
+        String home = System.getProperty("user.home");
+        System.setProperty("user.home", dir.getAbsolutePath());
+        Object window;
+        try {
+            final Object[] made = new Object[1];
+            SwingUtilities.invokeAndWait(() -> made[0] = new ApiClientTopComponent());
+            window = made[0];
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(made[0], "loadWorkspace");
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            assertThat((boolean) field(window, "workspaceReadOnly")).isTrue();
+
+            // the user trims the file — now it reads
+            WorkspaceIO.save(dir, org.nmox.studio.apiclient.model.ApiModel.Workspace
+                    .starter("Payments", "List charges", "Staging"));
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(made[0], "loadWorkspace");
+                    call(made[0], "save");
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            flushSaveLane();
+        } finally {
+            System.setProperty("user.home", home);
+        }
+
+        assertThat((boolean) field(window, "workspaceReadOnly"))
+                .as("the workspace is readable, so saves resume").isFalse();
+        SelfWriteTracker tracker = (SelfWriteTracker) field(window, "selfWrites");
+        assertThat(tracker.isForeign(f.lastModified(), f.length()))
+                .as("and NOW the file is ours — it was read")
+                .isFalse();
+    }
+
     @Test
     @DisplayName("a readable workspace still saves — the guard refuses nothing else")
     void readableWorkspaceStillSaves(@TempDir File dir) throws Exception {
