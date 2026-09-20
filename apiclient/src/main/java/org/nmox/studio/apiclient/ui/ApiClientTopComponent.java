@@ -2385,6 +2385,49 @@ public final class ApiClientTopComponent extends TopComponent {
         rackListenerAttached = true;
     }
 
+    /**
+     * The ambient aim selection (tech-debt ledger 72, closed v2.186.0).
+     * Until this window published one, pressing ^F6 or opening the Team
+     * menu while API Studio was focused greyed for every project kind:
+     * those actions read the global selection and this tab offered none.
+     * {@code core.util.AimFollower} owns the whole v1.45.0 discipline —
+     * publish only while SHOWING (so a hidden default-open tab resolves
+     * nothing at boot), attach and detach with the hooks, equality-
+     * guarded off-EDT resolution — and finds the rack through
+     * {@code core.spi.ProjectAim}, so this module gains no rack
+     * dependency (v1.46.0's law, pinned by RackSoftDependencyTest).
+     */
+    private org.nmox.studio.core.util.AimFollower aimFollower =
+            newAimFollower(org.nmox.studio.core.spi.ProjectAim::find);
+
+    /** One home for the sink, so the test seam cannot drift from production. */
+    private org.nmox.studio.core.util.AimFollower newAimFollower(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        return new org.nmox.studio.core.util.AimFollower(
+                n -> setActivatedNodes(new org.openide.nodes.Node[]{n}), aim);
+    }
+
+    /**
+     * Test seam: follow a stand-in provider. This module keeps no rack on
+     * its classpath by design, so its tests cannot register a real one —
+     * and registering a fake one in the default Lookup would contradict
+     * RackSoftDependencyTest, which pins that absence.
+     */
+    void followAimForTest(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        aimFollower = newAimFollower(aim);
+    }
+
+    @Override
+    protected void componentShowing() {
+        aimFollower.showing();
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     /** The initial load happened; re-opens rely on onProjectReaimed instead. */
     private boolean loadedOnce;
 
@@ -2423,6 +2466,9 @@ public final class ApiClientTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
+        // detaches too, and resets the equality guard so a reopen
+        // re-publishes even the same aim
+        aimFollower.closed();
         if (servingBridge != null) {
             servingBridge.detach();
         }
