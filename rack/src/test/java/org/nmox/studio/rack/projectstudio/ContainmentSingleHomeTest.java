@@ -44,6 +44,7 @@ class ContainmentSingleHomeTest {
         {"projectstudio", "CheckDisclosure.java"},
         {"docker", "DockerRecipes.java"},
         {"service", "DocsStaging.java"},
+        {"projectstudio", "UserTemplates.java"},
     };
 
     private static String source(String... parts) throws Exception {
@@ -77,6 +78,10 @@ class ContainmentSingleHomeTest {
         assertThat(flat("service", "DocsStaging.java"))
                 .as("the forge's staged sample files ride the ONE guard")
                 .contains("Containment.resolve(dir, f.path())");
+        assertThat(flat("projectstudio", "UserTemplates.java"))
+                .as("the New Project WRITER — a drop-in template's files — rides"
+                        + " the ONE guard (ledger 117)")
+                .contains("Containment.resolvePath(dir, rel)");
     }
 
     @Test
@@ -106,5 +111,8 @@ class ContainmentSingleHomeTest {
                 .as("a skipped sample file must SAY so — a silent skip reads"
                         + " like a catalog that never declared it")
                 .contains("resolves outside");
+        assertThat(source("projectstudio", "UserTemplates.java"))
+                .as("the template writer's own words, naming the entry it refused")
+                .contains("Refusing to write outside the project: ");
     }
 }

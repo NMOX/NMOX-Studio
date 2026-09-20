@@ -113,14 +113,6 @@ class ContainmentLedgerTest {
                 + "changing what an agent is told needs its own walk, which is the same "
                 + "reason ledger 111 held this family back for a release that could walk "
                 + "each refusal."),
-            Map.entry("UserTemplates.java",
-                "NOT YET SWEPT: generate() judges lexically (resolve + normalize, no "
-                + "canonicalization), so a symlinked segment passes it — stated plainly "
-                + "because the comment there calls it 'belt and braces' behind "
-                + "pathProblem(), which refuses absolutes, backslashes, drive letters and "
-                + "'..' at PARSE time. That syntactic filter is what makes the weaker "
-                + "second line survivable today; it is not a reason to leave it weaker, "
-                + "and the walk it needs is a drop-in template writing through a link."),
             Map.entry("SymbolIndexProvider.java",
                 "NOT YET SWEPT: the Agent Port's outline guard, realpath on both sides "
                 + "with an absolute-honoring branch of its own. Same shape as the one "
@@ -166,7 +158,7 @@ class ContainmentLedgerTest {
     }
 
     @Test
-    @DisplayName("the three surfaces this sweep routed really call the guard")
+    @DisplayName("every surface routed into the guard really calls it")
     void theSweptSitesCallTheGuard() throws IOException {
         // the other half of the two-proof law (v1.321.0): the census above
         // can only see that nothing decides containment on its own, which a
@@ -177,6 +169,11 @@ class ContainmentLedgerTest {
                 .as("the forge's staged sample files ride the ONE guard").isTrue();
         assertThat(guardCalls("ui/src/main/java/org/nmox/studio/ui/actions/NgSchematic.java"))
                 .as("the schematic's target folder — a spawn's cwd — rides the ONE guard").isTrue();
+        // ledger 117's first: the product's one templated WRITE path, and the
+        // only one of that entry's three that creates files
+        assertThat(guardCalls(
+                "rack/src/main/java/org/nmox/studio/rack/projectstudio/UserTemplates.java"))
+                .as("a drop-in template's files — a WRITE — ride the ONE guard").isTrue();
     }
 
     @Test

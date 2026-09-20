@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.Containment;
 
 /**
  * User-authored project templates: drop a JSON file into
@@ -144,6 +145,28 @@ public final class UserTemplates {
      * here is judged BEFORE {@code {{name}}} substitution — the project
      * name is sanitized by the wizard, so the declared path is where an
      * escape could hide.
+     *
+     * <p>This is a rule about what a template AUTHOR may write, and it
+     * deliberately survives {@link org.nmox.studio.core.util.Containment}
+     * arriving in {@link #generate} (ledger 117). The two answer different
+     * questions at different moments:
+     *
+     * <ul>
+     *   <li>This one runs at PARSE time, when no target directory exists
+     *       yet and so no containment guard can be asked. Its refusal
+     *       disqualifies the WHOLE template and is reported against the
+     *       drop-in's filename in the wizard's skipped list.</li>
+     *   <li>{@code Containment} runs at GENERATE time against a real
+     *       root, and refuses one write.</li>
+     * </ul>
+     *
+     * <p>They also disagree about {@code ~} on purpose: {@code "~/x"} is
+     * not a traversal at all — it would land harmlessly at
+     * {@code root/~/x} — so containment has nothing to say about it. An
+     * author who wrote it meant their home directory and should be told
+     * the file will not go there, which is author intent rather than
+     * containment. {@link org.nmox.studio.rack.docker.DockerRecipes}
+     * shares this rule for the same reason.
      */
     public static String pathProblem(String path) {
         if (path.isBlank()) {
@@ -171,6 +194,42 @@ public final class UserTemplates {
      * exactly as the built-ins do. No extra files are added — the
      * template IS the contract; whoever wrote it decided what a project
      * of theirs contains.
+     *
+     * <p>Every write is placed by {@link Containment} (ledger 117). This
+     * used to be spelled here as {@code root.resolve(rel).normalize()}
+     * followed by {@code startsWith(root)}, which is LEXICAL: it folds
+     * {@code ..} textually and never asks the filesystem, so it judged a
+     * path the write would not take. Two measured consequences, both on
+     * the shipped code:
+     *
+     * <ul>
+     *   <li>It refused writes it should have allowed. The wizard builds
+     *       its target as {@code new File(locationField, name)} and the
+     *       location is free text, so a location a user typed or pasted
+     *       with a {@code ..} segment left the BASE un-normalized while
+     *       the target was normalized — the two could then never share a
+     *       prefix, and EVERY file of a perfectly ordinary template was
+     *       refused with "Refusing to write outside the project".</li>
+     *   <li>It let a symlinked segment through. Nothing reachable today
+     *       exploits that — the never-clobber check two lines up proves
+     *       the target empty, and this loop creates only plain
+     *       directories and regular files, so no link can exist under the
+     *       root while it runs — but this is the product's one templated
+     *       WRITE path and it should not be the weakest spelling of the
+     *       rule it depends on.</li>
+     * </ul>
+     *
+     * <p>The refusal SENTENCE stays this surface's own, which is the
+     * division {@code Containment} states: it decides containment, each
+     * caller keeps its own voice. A path that resolves to the project
+     * root itself is refused here too, and that is a gain rather than a
+     * side effect — it used to reach {@link Files#writeString} and come
+     * back as the operating system's raw "Is a directory", a sentence
+     * that names no template and belongs to nobody.
+     *
+     * <p>Unchanged: a refusal mid-loop leaves earlier files on disk. The
+     * whole-template law lives at parse time ({@link #pathProblem}),
+     * where a bad path means no {@link Custom} is ever built.
      */
     public static void generate(Custom template, File dir, String projectName)
             throws IOException {
@@ -183,10 +242,10 @@ public final class UserTemplates {
         }
         for (Map.Entry<String, String> e : template.files().entrySet()) {
             String rel = e.getKey().replace("{{name}}", projectName);
-            Path target = root.resolve(rel).normalize();
-            if (!target.startsWith(root)) {
-                // belt and braces: pathProblem() already refused escapes at
-                // parse time; a substitution result must not reopen the hole
+            // belt and braces: pathProblem() already refused escapes at
+            // parse time; a substitution result must not reopen the hole
+            Path target = Containment.resolvePath(dir, rel);
+            if (target == null) {
                 throw new IOException("Refusing to write outside the project: " + rel);
             }
             Files.createDirectories(target.getParent());

@@ -6,9 +6,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.nmox.studio.core.util.Containment;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -146,6 +148,138 @@ class UserTemplatesTest {
         assertThatThrownBy(() -> UserTemplates.generate(t, dir, "p"))
                 .isInstanceOf(IOException.class)
                 .hasMessageContaining("not empty");
+    }
+
+    /**
+     * A platform that refuses symbolic links has nothing to prove in the
+     * link tests — but it must SAY so. A bare {@code return} here would
+     * make the whole test body vanish under a green tick (the v2.186.0
+     * {@code argvPinned} defect); an assumption skips it in the open.
+     */
+    private static void assumeLinked(Path from, Path to) {
+        try {
+            Files.createSymbolicLink(from, to);
+        } catch (UnsupportedOperationException | IOException noSymlinks) {
+            Assumptions.abort("this platform will not create symbolic links: " + noSymlinks);
+        }
+    }
+
+    private static UserTemplates.Custom oneFile(String key, String content) throws IOException {
+        return UserTemplates.parse("{ \"name\": \"T\", \"files\": { \""
+                + key + "\": \"" + content + "\" } }", new File("t.json"));
+    }
+
+    // ---- ledger 117: generate() places every write with core.util.Containment ----
+
+    @Test
+    @DisplayName("a location carrying a .. segment writes the template instead of refusing every file")
+    void aDottedLocationNoLongerRefusesEveryFile(@TempDir Path tmp) throws IOException {
+        Files.createDirectories(tmp.resolve("old"));
+        Files.createDirectories(tmp.resolve("projects"));
+        // exactly what the wizard builds — new File(locationField, name) —
+        // and that location field is free text a user can type or paste
+        File dir = new File(tmp.resolve("old/../projects").toString(), "proj");
+
+        UserTemplates.generate(oneFile("package.json", "{}"), dir, "p");
+
+        assertThat(tmp.resolve("projects").resolve("proj").resolve("package.json"))
+                .as("the lexical guard normalized the TARGET and left the BASE as"
+                        + " typed, so the two could never share a prefix and every"
+                        + " file of an ordinary template was refused as an escape")
+                .exists();
+    }
+
+    @Test
+    @DisplayName("a path resolving to the project root is refused in the template's own words")
+    void aPathResolvingToTheRootIsRefusedInOurOwnWords(@TempDir Path tmp) throws IOException {
+        UserTemplates.Custom t = UserTemplates.parse(
+                "{ \"name\": \"T\", \"files\": { \"{{name}}\": \"x\" } }", new File("t.json"));
+        File dir = tmp.resolve("proj").toFile();
+
+        assertThatThrownBy(() -> UserTemplates.generate(t, dir, "."))
+                .as("this used to reach writeString and come back as the operating"
+                        + " system's raw \"Is a directory\" — a refusal that names no"
+                        + " template and belongs to nobody")
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("Refusing to write outside the project");
+    }
+
+    @Test
+    @DisplayName("a symlinked segment under the project cannot be written through")
+    void aSymlinkedSegmentIsRefusedAndNothingLandsOutside(@TempDir Path tmp) throws IOException {
+        Path outside = Files.createDirectories(tmp.resolve("outside"));
+        Path root = Files.createDirectories(tmp.resolve("proj"));
+        assumeLinked(root.resolve("pub"), outside);
+        UserTemplates.Custom t = oneFile("pub/pwned.txt", "owned");
+
+        // The guard's own verdict, asserted rather than assumed: the
+        // never-clobber check below refuses first, so a guard that had
+        // quietly stopped refusing would hide behind it forever. The
+        // lexical spelling this replaced answered startsWith(root)=TRUE
+        // for exactly this path — measured before the change.
+        assertThat(Containment.resolvePath(root.toFile(), "pub/pwned.txt"))
+                .as("a link leaving the project is not a place inside it")
+                .isNull();
+
+        assertThatThrownBy(() -> UserTemplates.generate(t, root.toFile(), "p"))
+                .as("and the never-clobber law gets there first — which is why this"
+                        + " was never reachable, not why the guard may be weaker")
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("not empty");
+        assertThat(outside.resolve("pwned.txt")).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("a symlinked LOCATION is not an escape — that is the directory the user chose")
+    void aSymlinkedLocationStillWrites(@TempDir Path tmp) throws IOException {
+        Path real = Files.createDirectories(tmp.resolve("real"));
+        assumeLinked(tmp.resolve("link"), real);
+        File dir = new File(tmp.resolve("link").toFile(), "proj");
+
+        UserTemplates.generate(oneFile("package.json", "{}"), dir, "p");
+
+        assertThat(real.resolve("proj").resolve("package.json"))
+                .as("canonicalizing the TARGET without canonicalizing the ROOT would"
+                        + " refuse every project under a symlinked home or volume")
+                .exists();
+    }
+
+    @Test
+    @DisplayName("a traversal that only appears after {{name}} substitution is still refused")
+    void aSubstitutedTraversalIsStillRefused(@TempDir Path tmp) throws IOException {
+        // pathProblem() judges the DECLARED key, which is clean here — this
+        // is the hole the generate-time guard exists to keep shut
+        UserTemplates.Custom t = UserTemplates.parse(
+                "{ \"name\": \"T\", \"files\": { \"{{name}}/x.txt\": \"escape\" } }",
+                new File("t.json"));
+        File dir = tmp.resolve("proj").toFile();
+
+        assertThatThrownBy(() -> UserTemplates.generate(t, dir, "../evil"))
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("Refusing to write outside the project");
+        assertThat(tmp.resolve("evil")).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("an absolute path is JOINED inside the project, never followed out")
+    void anAbsolutePathIsJoinedNotFollowed(@TempDir Path tmp) throws IOException {
+        // The one place the guard is more permissive than the spelling it
+        // replaced, named so it is a decision rather than a drift: File's
+        // own join rule puts /etc/x at <project>/etc/x — contained, which
+        // is all containment promises — where the lexical Path.resolve let
+        // the absolute win and then refused it. Unreachable from the
+        // wizard either way: a DECLARED absolute is refused at parse time
+        // by pathProblem(), and sanitizedName() turns every '/' in a
+        // project name into '-' before it can reach a substitution.
+        UserTemplates.Custom t = UserTemplates.parse(
+                "{ \"name\": \"T\", \"files\": { \"{{name}}/x.txt\": \"joined\" } }",
+                new File("t.json"));
+        File dir = tmp.resolve("proj").toFile();
+
+        UserTemplates.generate(t, dir, "/etc");
+
+        assertThat(dir.toPath().resolve("etc").resolve("x.txt")).exists();
+        assertThat(Path.of("/etc/x.txt")).doesNotExist();
     }
 
     @Test
