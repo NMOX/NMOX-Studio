@@ -2,7 +2,11 @@ package org.nmox.studio.core.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 /**
  * The one containment guard: resolve a caller-supplied relative path
@@ -53,6 +57,42 @@ import java.nio.file.Path;
  * {@code PageSourceResolver} already refused it, each in its own
  * spelling.
  *
+ * <h2>How the answer is resolved, and why not by one canonicalize</h2>
+ *
+ * The obvious spelling — {@code new File(root, relative).getCanonicalFile()}
+ * — asks the PLATFORM to resolve a path whose last components usually do
+ * not exist yet (three of the four callers are about to CREATE the file),
+ * and the platforms disagree about that exactly. On POSIX,
+ * {@code canonicalize_md.c} falls back to the longest prefix
+ * {@code realpath()} accepts and appends the remainder, so an ancestor
+ * symlink is resolved even when the leaf is absent. On Windows the same
+ * call resolved the link when the whole path existed and did NOT when the
+ * final component was missing — measured, as a windows-latest CI failure
+ * on exactly the absent-leaf case while the present-leaf case beside it
+ * was refused correctly. That asymmetry is a containment HOLE, and the
+ * sharp end is a write: {@code DockerRecipes} names a file that does not
+ * exist yet, so a recipe naming a not-yet-existing file behind a
+ * symlinked directory would have been CREATED outside the project.
+ *
+ * <p>So the resolution is done here rather than asked for: walk up to the
+ * deepest ancestor that actually exists, canonicalize THAT (a path whose
+ * every component is real, which every platform resolves), then re-append
+ * the components that were popped and {@link Path#normalize()}. This is
+ * the POSIX fallback written in Java, so it behaves the same everywhere.
+ *
+ * <p>The normalize is only sound because of what it runs over: the prefix
+ * is canonical and therefore link-free, and every popped component failed
+ * an existence test and therefore is not a symlink either — so folding
+ * {@code ..} lexically cannot step over a link and mean a different file
+ * than an {@code open()} would. A {@code ..} that folds its way out of
+ * the root is then caught by the ordinary containment check below.
+ *
+ * <p>The honest ceiling, unchanged by this and true of every spelling: a
+ * BROKEN symlink cannot be resolved by any platform — canonicalization
+ * hands back the link's own path — so a path through one is judged on
+ * that spelling. It stays contained if the link's name is inside the
+ * root, which is what the callers already had.
+ *
  * <h2>What this guard does NOT decide</h2>
  *
  * The refusal message. Each surface speaks for itself — a 404 for the
@@ -86,11 +126,15 @@ public final class Containment {
         }
         try {
             Path base = root.getCanonicalFile().toPath();
-            Path target = new File(root, relative).getCanonicalFile().toPath();
+            // joined against the CANONICAL root, so the walk below always
+            // starts from an absolute path and terminates at a real
+            // filesystem root; the join itself is unchanged, including
+            // File's own rule that an absolute-looking child is appended
+            Path target = canonicalize(new File(base.toFile(), relative).toPath());
             // startsWith is segment-wise, so /a/bc never "starts with"
             // /a/b — the string-prefix spelling needed a trailing
             // separator to be correct, and one of the four forgot it
-            if (!target.startsWith(base) || target.equals(base)) {
+            if (target == null || !target.startsWith(base) || target.equals(base)) {
                 return null;
             }
             return target.toFile();
@@ -105,6 +149,42 @@ public final class Containment {
             // platform where this guard throws.
             return null;
         }
+    }
+
+    /**
+     * The canonical form of {@code raw} without asking the platform to
+     * canonicalize components that do not exist: the deepest existing
+     * ancestor is canonicalized, the popped names are re-appended, and
+     * the result is normalized. Null when nothing along the path exists
+     * at all, because a guard that cannot answer must refuse.
+     *
+     * <p>Existence is asked with {@link LinkOption#NOFOLLOW_LINKS}, so
+     * the question is "is there an entry here" rather than "does this
+     * lead somewhere". That stops the walk at a broken symlink instead
+     * of popping it into the tail; both readings produce the same answer
+     * for a broken link — canonicalizing one is a no-op either way — and
+     * this one stops at the deepest thing the filesystem knows about,
+     * which is what the next line wants to canonicalize.
+     */
+    private static Path canonicalize(Path raw) throws IOException {
+        Deque<Path> popped = new ArrayDeque<>();
+        Path probe = raw;
+        while (probe != null && !Files.exists(probe, LinkOption.NOFOLLOW_LINKS)) {
+            Path name = probe.getFileName();
+            if (name == null) {
+                return null;
+            }
+            popped.addFirst(name);
+            probe = probe.getParent();
+        }
+        if (probe == null) {
+            return null;
+        }
+        Path resolved = probe.toFile().getCanonicalFile().toPath();
+        for (Path name : popped) {
+            resolved = resolved.resolve(name);
+        }
+        return resolved.normalize();
     }
 
     /**
