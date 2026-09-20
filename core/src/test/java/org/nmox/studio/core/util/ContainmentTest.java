@@ -181,26 +181,88 @@ class ContainmentTest {
     }
 
     @Test
-    @DisplayName("a BROKEN link is judged on its spelling — the ceiling, written down")
-    void brokenLinksAreJudgedOnTheirSpelling(@TempDir Path tmp) throws Exception {
-        // No platform can resolve a link whose target does not exist —
-        // canonicalization hands back the link's own path — so a path
-        // through one is judged on where the link's NAME sits. This is
-        // what every spelling of this guard has always done; it is
-        // recorded here so the next reader knows it was looked at.
+    @DisplayName("THE BROKEN-LINK LAW: a dangling link is judged by its TARGET, not its spelling")
+    void brokenLinksAreJudgedByTheirTarget(@TempDir Path tmp) throws Exception {
+        // This test used to assert the opposite, and was written to
+        // RECORD the ceiling rather than to close it: a link whose
+        // target does not exist cannot be canonicalized by any platform,
+        // so the path was answered on where the link's NAME sat. The
+        // recorded hazard was a later one — "followed out if that target
+        // were created" — and the live one was the reverse, immediate,
+        // and on a write path (see writeThroughADanglingLeafEscaped).
         File root = Files.createDirectories(tmp.resolve("root")).toFile();
         assumeLinked(root.toPath().resolve("dangling"), tmp.resolve("nowhere"));
 
-        Path canonicalRoot = root.getCanonicalFile().toPath();
-        assertThat(Containment.resolve(root, "dangling").toPath())
-                .as("a dangling link as the FINAL component")
-                .isEqualTo(canonicalRoot.resolve("dangling"));
-        assertThat(Containment.resolve(root, "dangling/x.txt").toPath())
+        assertThat(Containment.resolve(root, "dangling"))
+                .as("a dangling link as the FINAL component — the write case")
+                .isNull();
+        assertThat(Containment.resolve(root, "dangling/x.txt"))
                 .as("a dangling link in the MIDDLE, with an absent tail behind it")
-                .isEqualTo(canonicalRoot.resolve(Path.of("dangling", "x.txt")));
+                .isNull();
 
         // a .. behind a broken link still folds, and still cannot escape
         assertThat(Containment.resolve(root, "dangling/../../SECRET")).isNull();
+    }
+
+    @Test
+    @DisplayName("THE BROKEN-LINK LAW: a dangling link pointing back INSIDE the root is kept")
+    void brokenLinksThatStayInsideAreNotRefused(@TempDir Path tmp) throws Exception {
+        // The rule ledger 117 proposed — refuse when the canonicalized
+        // ancestor is itself a symlink — would refuse this, and this is
+        // contained: the symlink policy promises a link pointing back
+        // inside is fine, and a link being BROKEN does not move it.
+        File root = Files.createDirectories(tmp.resolve("root")).toFile();
+        Path canonicalRoot = root.getCanonicalFile().toPath();
+        assumeLinked(root.toPath().resolve("later"), canonicalRoot.resolve("not-yet"));
+
+        assertThat(Containment.resolve(root, "later"))
+                .as("a dangling link is only an escape when its TARGET escapes")
+                .isNotNull();
+        assertThat(Containment.resolve(root, "later").toPath())
+                .as("and the answer is the target it records, never the link's name —"
+                        + " the check and the write must name the same file")
+                .isEqualTo(canonicalRoot.resolve("not-yet"));
+    }
+
+    @Test
+    @DisplayName("a CYCLE of dangling links is refused rather than followed forever")
+    void aCycleOfBrokenLinksIsRefused(@TempDir Path tmp) throws Exception {
+        File root = Files.createDirectories(tmp.resolve("root")).toFile();
+        Path a = root.toPath().resolve("a");
+        Path b = root.toPath().resolve("b");
+        assumeLinked(a, b);
+        assumeLinked(b, a);
+
+        // neither resolves, each records the other: a guard that cannot
+        // answer must refuse, and must do it without spinning
+        assertThat(Containment.resolve(root, "a")).isNull();
+        assertThat(Containment.resolve(root, "a/deeper.txt")).isNull();
+    }
+
+    @Test
+    @DisplayName("a write through a dangling LEAF cannot land outside the root")
+    void writeThroughADanglingLeafEscaped(@TempDir Path tmp) throws Exception {
+        // The defect this law exists for, in the shape that made it live
+        // rather than latent: Files.writeString opens with CREATE, which
+        // FOLLOWS a dangling link and creates its target. Measured on the
+        // shipped guard — it answered "contained" and the write created
+        // outside/pwned.txt holding these exact bytes.
+        File root = Files.createDirectories(tmp.resolve("root")).toFile();
+        Path outside = Files.createDirectories(tmp.resolve("outside"));
+        assumeLinked(root.toPath().resolve("Dockerfile"), outside.resolve("pwned.txt"));
+
+        File verdict = Containment.resolve(root, "Dockerfile");
+        assertThat(verdict)
+                .as("the guard must refuse BEFORE a caller can open it")
+                .isNull();
+
+        // and the escape it prevents, demonstrated against the unguarded
+        // spelling so the assertion above is known to be load-bearing
+        Files.writeString(root.toPath().resolve("Dockerfile"), "FROM scratch\n");
+        assertThat(outside.resolve("pwned.txt"))
+                .as("an unguarded write through the same link lands outside — which"
+                        + " is what the null verdict above is standing in front of")
+                .exists();
     }
 
     @Test

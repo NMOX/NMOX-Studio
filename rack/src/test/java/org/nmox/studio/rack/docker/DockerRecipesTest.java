@@ -102,6 +102,38 @@ class DockerRecipesTest {
     }
 
     @Test
+    @DisplayName("a recipe cannot write through a DANGLING link out of the project")
+    void resolveInsideRefusesADanglingLinkOutOfTheProject(@TempDir Path tmp) throws Exception {
+        // The one caller of this guard that writes into a directory it
+        // did NOT create: the repo the user aimed, which a git clone can
+        // hand you with a dangling symlink in it. The template writer is
+        // shielded by its never-clobber check (a link is an entry, so the
+        // target is not empty); this one has no such check, so the guard
+        // is the whole defence.
+        //
+        // Measured before the guard learned the rule: the verdict was
+        // "contained", and Files.writeString opens with CREATE, which
+        // FOLLOWS a dangling link and creates its target — so the write
+        // landed outside the project with no link ever resolving.
+        Path project = Files.createDirectories(tmp.resolve("proj"));
+        Path outside = Files.createDirectories(tmp.resolve("outside"));
+        try {
+            Files.createSymbolicLink(project.resolve("Dockerfile"),
+                    outside.resolve("pwned.txt"));
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            org.junit.jupiter.api.Assumptions.abort(
+                    "this platform will not create symbolic links: " + noSymlinks);
+        }
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> DockerRecipes.resolveInside(project.toFile(), "Dockerfile"))
+                .as("and it refuses in the Dockerize writer's own words")
+                .isInstanceOf(java.io.IOException.class)
+                .hasMessageContaining("Refusing to write outside the project");
+        assertThat(outside.resolve("pwned.txt")).doesNotExist();
+    }
+
+    @Test
     @DisplayName("THE WRITE WALK: a symlinked segment cannot carry the writer out of the project")
     void writerRefusesASymlinkOutOfTheProject(@TempDir Path tmp) throws Exception {
         // the guard here was normalize() ONLY until ledger 111 — no
