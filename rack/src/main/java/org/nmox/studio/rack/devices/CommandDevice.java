@@ -381,7 +381,15 @@ public abstract class CommandDevice extends RackDevice {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));
-        }, code -> {
+        }, (code, superseded) -> {
+            if (superseded) {
+                // A newer launch already replaced this run (ledger 18): the
+                // faceplate, the serving registry, the SERVING gate and the
+                // ok/fail/done jacks all belong to that run now. This one
+                // was killed to make room for it — it did not finish, and
+                // saying so would tell a live server it had stopped.
+                return;
+            }
             long elapsed = System.currentTimeMillis() - launchedAt;
             boolean ok = overallSuccess(code);
             boolean stopped = stoppedByUserOrSignal(stopRequested, code);
@@ -460,7 +468,14 @@ public abstract class CommandDevice extends RackDevice {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));
-        }, code -> {
+        }, (code, superseded) -> {
+            if (superseded) {
+                // ledger 18, and a sequence has a second way to be wrong
+                // about it: a replaced step must not march the rest of a
+                // train the user has already swapped out into the run that
+                // replaced it. The chain ends where it was replaced.
+                return;
+            }
             boolean stopped = stoppedByUserOrSignal(stopRequested, code);
             stopRequested = false;
             if (code == 0 && index + 1 < steps.size() && !stopped) {

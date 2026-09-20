@@ -104,4 +104,34 @@ class StaleRunGateTest {
             rack.shutdown();
         }
     }
+
+    @Test
+    @DisplayName("STOP is not a replacement: the run that really ended still drops its gate")
+    void anEndedRunStillSpeaks() throws Exception {
+        RackDevice.execLane = lane::add;
+        Rack rack = rackWithNodeProject();
+        try {
+            ViteDevice vite = new ViteDevice();
+            GateProbe probe = new GateProbe();
+            rack.addDevice(vite);
+            rack.addDevice(probe);
+            rack.connect(vite.getPort("serving"), probe.getPort("gate"));
+
+            vite.receive(vite.getPort("serve"), Signal.trigger());   // one run
+            vite.receive(vite.getPort("stop"), Signal.trigger());    // the user stops it
+            settle(rack);
+
+            // Stopping opens no new launch, so this run still owns the
+            // device: its exit is the truth about what is serving.
+            lane.get(0).run();
+            settle(rack);
+
+            assertThat(vite.isLive()).isFalse();
+            assertThat(probe.gates)
+                    .as("a run nothing replaced must still drop the gate it raised")
+                    .containsExactly(true, false);
+        } finally {
+            rack.shutdown();
+        }
+    }
 }

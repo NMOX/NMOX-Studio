@@ -396,6 +396,47 @@ public abstract class RackDevice extends JPanel {
             new java.util.concurrent.atomic.AtomicLong();
 
     /**
+     * This device's launch counter — the number a run takes when it begins.
+     * A run is <i>superseded</i> once this has moved past it, which is the
+     * rack's spelling of the law Contract Studio's Watch has kept since
+     * v1.100.0: <b>a result belongs to the run that produced it.</b>
+     *
+     * <p>Ledger 18, and it needed no exotic timing to bite. {@link #exec}
+     * ends the previous run with {@link CommandExecutor.Handle#kill()},
+     * which is asynchronous — it TERMs a tree and returns — so the replaced
+     * run's exit callback lands some time later, by which point the
+     * replacement has already raised its own gates on the caller's thread.
+     * Nothing downstream could tell the two apart: a stale exit reset the
+     * faceplate to OK, withdrew the serving, dropped the SERVING gate and
+     * fired {@code ok}/{@code done} at a pipeline whose server was still
+     * up. On a serve device the damage was permanent, because the gate is
+     * raised once at launch and nothing re-raises it.
+     */
+    private final java.util.concurrent.atomic.AtomicLong launchSeq =
+            new java.util.concurrent.atomic.AtomicLong();
+
+    /**
+     * A run's completion, told whether it still owns the device.
+     *
+     * <p>The plain {@link IntConsumer} form of {@link #exec} keeps the
+     * v1.57.0 contract exactly — <i>every</i> run reports, in every phase,
+     * so a chain awaiting a step and the frozen Device SPI both hear what
+     * they always heard. A caller that writes to state SHARED BETWEEN RUNS
+     * (the faceplate, the serving registry, the gate and verdict jacks)
+     * takes this form instead and says nothing when {@code superseded}.
+     */
+    @FunctionalInterface
+    protected interface RunExit {
+
+        /**
+         * @param code the exit code, or -1 when no process ever existed
+         * @param superseded true when a later launch on this device has
+         *        already replaced the run this callback belongs to
+         */
+        void finished(int code, boolean superseded);
+    }
+
+    /**
      * A stop that arrives from OUTSIDE the faceplate — the toolbar ■, the
      * Workbench's RUNNING row, ⌘I (v2.74.0). The engine's default is the
      * internal cancel; CommandDevice overrides it with its user-stop so
@@ -417,12 +458,28 @@ public abstract class RackDevice extends JPanel {
     /** Full control: extra env and an explicit working directory. */
     protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
             Consumer<String> onLine, IntConsumer onExit) {
+        exec(command, extraEnv, workingDir, onLine,
+                (code, superseded) -> onExit.accept(code));
+    }
+
+    /**
+     * Full control, and the run is told whether it still owns the device
+     * when it finishes — see {@link RunExit}.
+     */
+    protected void exec(List<String> command, Map<String, String> extraEnv, File workingDir,
+            Consumer<String> onLine, RunExit onExit) {
         if (disposed) {
             // a queued trigger must not launch into a deleted device — and
-            // a caller awaiting completion must still hear about it
-            onExit.accept(-1);
+            // a caller awaiting completion must still hear about it. No
+            // launch was opened, so nothing can have superseded it.
+            onExit.finished(-1, false);
             return;
         }
+        // Opened BEFORE the kill on the next line, not after: stopProcess()
+        // ends the previous run asynchronously, so by the time that run's
+        // exit lands it must already read as replaced. Numbering after the
+        // kill would leave exactly the window this counter exists to close.
+        final long mine = launchSeq.incrementAndGet();
         stopProcess();
         // Everything observable happens NOW, synchronously: the pending
         // handle is this run's identity, so isProcessRunning()/isLive()
@@ -444,7 +501,9 @@ public abstract class RackDevice extends JPanel {
             if (running == pending) {
                 running = null;
             }
-            onExit.accept(code);
+            // the run always reports; only a run that still owns the device
+            // may act on what it reports
+            onExit.finished(code, launchSeq.get() != mine);
         };
         running = pending;
         LiveRuns.add(new LiveRuns.Run(runId, runLabel, this::stopFromOutside));
