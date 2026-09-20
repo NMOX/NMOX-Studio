@@ -105,6 +105,57 @@ class StaleRunGateTest {
         }
     }
 
+    /**
+     * Fires the replaced run's exit from inside the kill that replaces it —
+     * the window a real pump thread lands in, made deterministic.
+     */
+    private static final class KillWindowDevice extends RackDevice {
+        final List<Boolean> superseded = new CopyOnWriteArrayList<>();
+        private Runnable duringKill = () -> { };
+
+        KillWindowDevice() {
+            super("test.killwindow", "KILLWINDOW", "", Color.GRAY, 1);
+        }
+
+        void run(List<String> command) {
+            exec(command, java.util.Map.of(), null, l -> { },
+                    (code, replaced) -> superseded.add(replaced));
+        }
+
+        void onNextKill(Runnable r) {
+            duringKill = r;
+        }
+
+        @Override
+        protected void stopProcess() {
+            super.stopProcess();
+            Runnable r = duringKill;
+            duringKill = () -> { };
+            r.run();
+        }
+    }
+
+    @Test
+    @DisplayName("the replacement is numbered BEFORE the kill — an exit landing inside that window is already stale")
+    void theKillWindowIsClosed() {
+        RackDevice.execLane = lane::add;
+        KillWindowDevice d = new KillWindowDevice();
+
+        d.run(List.of("sleep", "60"));                  // run A
+        assertThat(lane).hasSize(1);
+
+        // A's exit now lands DURING the kill that run B performs — the
+        // handful of instructions a real pump thread can arrive in.
+        d.onNextKill(() -> lane.get(0).run());
+        d.run(List.of("echo", "second"));               // run B replaces A
+
+        assertThat(d.superseded)
+                .as("a run whose exit lands inside its own replacement's kill "
+                        + "must already read as replaced — numbering after the "
+                        + "kill leaves exactly this window open")
+                .containsExactly(true);
+    }
+
     @Test
     @DisplayName("STOP is not a replacement: the run that really ended still drops its gate")
     void anEndedRunStillSpeaks() throws Exception {
