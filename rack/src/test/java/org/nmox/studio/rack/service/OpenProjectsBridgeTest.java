@@ -136,7 +136,11 @@ class OpenProjectsBridgeTest {
         service.openProject(plain.toFile());
         service.awaitBridgeIdle(); // the real hook has now touched ProjectManager
 
-        assertThat(AimNodePublisher.resolveNode(plain.toFile()))
+        // the exact call core's AimNodePublisher.resolveNode makes — spelled
+        // out here because that class moved to core in v2.186.0 (ledger 72)
+        // and its resolver seam is package-private there; what is under test
+        // is the PLATFORM's getNodeDelegate, not our one-line wrapper
+        assertThat(nodeDelegateOf(plain.toFile()))
                 .as("getNodeDelegate must survive a real bridge publication — "
                         + "if this is null, ProjectManager failed to initialize "
                         + "(projectapi-nb missing from the test classpath?)")
@@ -161,6 +165,20 @@ class OpenProjectsBridgeTest {
                             .isFalse();
                 }
             }
+        }
+    }
+
+    /** What core's AimNodePublisher resolves for a published selection. */
+    private static org.openide.nodes.Node nodeDelegateOf(File dir) {
+        org.openide.filesystems.FileObject fo = org.openide.filesystems.FileUtil
+                .toFileObject(org.openide.filesystems.FileUtil.normalizeFile(dir));
+        if (fo == null) {
+            return null;
+        }
+        try {
+            return org.openide.loaders.DataObject.find(fo).getNodeDelegate();
+        } catch (org.openide.loaders.DataObjectNotFoundException ex) {
+            return null;
         }
     }
 

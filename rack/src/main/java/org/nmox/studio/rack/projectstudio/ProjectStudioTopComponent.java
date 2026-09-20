@@ -93,8 +93,8 @@ public final class ProjectStudioTopComponent extends TopComponent {
      * a FILE) sees what the studio is showing whenever it is active.
      * The default TopComponent lookup proxies activated nodes.
      */
-    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
-            new org.nmox.studio.rack.service.AimNodePublisher(node ->
+    private final org.nmox.studio.core.util.AimNodePublisher aimPublisher =
+            new org.nmox.studio.core.util.AimNodePublisher(node ->
                     setActivatedNodes(new org.openide.nodes.Node[]{node}));
 
     /**

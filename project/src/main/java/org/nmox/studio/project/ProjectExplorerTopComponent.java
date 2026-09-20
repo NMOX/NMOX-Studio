@@ -193,7 +193,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * inside the rack-availability guard: the publisher is a rack class,
      * and this module treats rack as optional.
      */
-    private org.nmox.studio.rack.service.AimNodePublisher aimPublisher;
+    private org.nmox.studio.core.util.AimNodePublisher aimPublisher;
 
     /**
      * True between componentShowing and componentHidden/Closed: a hidden
@@ -268,7 +268,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     };
                 }
                 if (aimPublisher == null) {
-                    aimPublisher = new org.nmox.studio.rack.service.AimNodePublisher(node ->
+                    aimPublisher = new org.nmox.studio.core.util.AimNodePublisher(node ->
                             setActivatedNodes(new org.openide.nodes.Node[]{node}));
                 }
                 aim.addListener(rackListener);

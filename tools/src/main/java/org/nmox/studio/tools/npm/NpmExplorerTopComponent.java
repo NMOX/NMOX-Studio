@@ -97,8 +97,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
      * array, so the registry keeps the last real selection alive — the
      * hand-read fallback in {@link #findProjectDirectory()} depends on it.
      */
-    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
-            new org.nmox.studio.rack.service.AimNodePublisher(node -> {
+    private final org.nmox.studio.core.util.AimNodePublisher aimPublisher =
+            new org.nmox.studio.core.util.AimNodePublisher(node -> {
                 lastPublished = node;
                 setActivatedNodes(new Node[]{node});
             });
