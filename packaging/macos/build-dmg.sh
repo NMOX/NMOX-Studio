@@ -226,11 +226,34 @@ fi
 # Gatekeeper will refuse; `notarytool log` prints WHY, which is the only
 # way to debug a rejection (the verdict alone never says).
 notarize() {
-    local artifact="$1"
+    local artifact="$1" out status id
     echo "==> Notarizing $(basename "$artifact") (Apple's queue decides how long this takes)"
-    if ! xcrun notarytool submit "$artifact" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} --wait --timeout 45m; then
-        echo "ERROR: notarization was refused for $artifact"
-        echo "       run: xcrun notarytool log <submission-id> ${NOTARY_ARGS[*]}"
+    # `notarytool submit --wait` EXITS ZERO ON A REJECTED SUBMISSION. Its
+    # exit code reports whether the round trip worked, not what Apple
+    # decided - the VERDICT is in the output, exactly as `gofmt -l` puts
+    # its verdict in the output rather than its exit code (v1.352.0).
+    # MEASURED: v2.188.1 came back `status: Invalid`, this guard did not
+    # fire, and the run sailed into `stapler`, which failed two steps
+    # later with a CloudKit "Record not found" that named neither the
+    # bundle nor the reason. Read the status.
+    out=$(xcrun notarytool submit "$artifact" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} \
+              --wait --timeout 45m 2>&1) || true
+    echo "$out"
+    status=$(printf '%s\n' "$out" | awk '/^[[:space:]]*status:/ { print $2; exit }')
+    id=$(printf '%s\n' "$out" | awk '/^[[:space:]]*id:/ { print $2; exit }')
+    if [ "$status" != "Accepted" ]; then
+        echo "ERROR: notarization was refused for $artifact (status: ${status:-unknown})"
+        # A refusal that does not say why is not a refusal anyone can act
+        # on. The log names the offending file; fetch it here rather than
+        # telling a human to re-run a command with credentials they may
+        # not have locally.
+        if [ -n "$id" ]; then
+            echo "==> Apple's notary log for submission $id"
+            xcrun notarytool log "$id" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} || \
+                echo "       (could not fetch the log for $id)"
+        else
+            echo "       (no submission id in the output; nothing to look up)"
+        fi
         exit 1
     fi
 }

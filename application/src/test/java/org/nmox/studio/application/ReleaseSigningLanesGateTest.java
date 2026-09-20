@@ -130,6 +130,23 @@ class ReleaseSigningLanesGateTest {
                 .as("--wait, so a rejection fails the release instead of publishing something "
                         + "Gatekeeper will refuse")
                 .contains("notarytool submit").contains("--wait");
+        // v2.188.1 came back `status: Invalid` and the run CONTINUED:
+        // `notarytool submit --wait` exits ZERO on a rejected submission,
+        // because its exit code reports the round trip rather than Apple's
+        // verdict. The failure then surfaced two steps later as a CloudKit
+        // "Record not found" from `stapler`, naming neither the bundle nor
+        // the reason. Same shape as `gofmt -l` (v1.352.0): read the output.
+        assertThat(dmg)
+                .as("the verdict is in the OUTPUT — notarytool submit --wait exits 0 on a "
+                        + "rejection, so an exit-code check passes a refused bundle straight "
+                        + "through to stapling")
+                .contains("status:").contains("!= \"Accepted\"");
+        // refusals speak: a rejection that does not name the offending file
+        // cannot be acted on, and release-signing.md documented the lookup
+        // as a manual step for a human who may hold no credentials locally
+        assertThat(dmg)
+                .as("a refused notarization must fetch Apple's log itself, not tell a human to")
+                .contains("notarytool log");
         // The app's own ticket is what makes a FIRST launch work offline once
         // the user has dragged it out of the DMG; the DMG's ticket only covers
         // the download. Both, or the offline case silently regresses.

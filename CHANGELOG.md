@@ -4,6 +4,49 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.2] - 2026-09-20
+
+**A refusal that did not speak, in the lane written to fail loudly.**
+
+This release does **not** fix Apple's rejection. It makes the lane say what the
+rejection was — which v2.188.1 could not, and which is why we still do not know.
+
+v2.188.1 got further than v2.188.0: the entitlements parsed, every Mach-O was
+signed under the hardened runtime, and the bundle reached Apple. Apple answered
+`status: Invalid`. The run then **continued**, and died two steps later inside
+`stapler` with a CloudKit *"Record not found"* that named neither the bundle nor
+the reason.
+
+**`xcrun notarytool submit --wait` exits ZERO on a rejected submission.** Its
+exit code reports whether the round trip worked, not what Apple decided — so
+`if ! xcrun notarytool submit …` never fired and a refused bundle sailed
+straight into stapling. This is exactly the `gofmt -l` shape ledger v1.352.0
+recorded: *the verdict is in the output, not the exit code.* Third instance of
+that class in this codebase, and the first where the tool being misread was
+Apple's.
+
+The lane now parses `status:` and fails on anything but `Accepted`. And because
+a refusal nobody can act on is not a refusal, it **fetches Apple's notary log
+itself** instead of printing `run: xcrun notarytool log <submission-id>` at a
+human who may hold no credentials on the machine where it failed — which was
+precisely the position this release was written from. `release-signing.md` had
+documented that lookup as a manual step; a manual step inside an automated lane
+is a gap, not a procedure.
+
+Two mutants by name: replacing the status check with an exit-code check kills
+`macosLaneSignsNotarizesAndStaples`, and so does removing the log fetch.
+
+**Measured while waiting, and it contradicts the record.** v1.298.0 observed
+that a WRITABLE cluster installs new jars in place rather than shadowing them
+into the userdir, and parenthesised that as *"an app copy, not /Applications"*.
+That parenthetical was an inference and it is **wrong**: a real
+`/Applications/NMOX Studio.app` is owned by the user who dragged it there —
+measured here as `david:admin`, with its 11 NMOX module jars writable. So the
+in-app updater writes **inside the bundle**, which on a notarized build means
+every in-app update invalidates the signature it just shipped. Recorded now,
+before v3.0, because a notarized app whose first update unsigns it is worse
+than an honest ad-hoc one.
+
 ## [2.188.1] - 2026-09-20
 
 **The first real signature failed, and the thing that broke it was the
@@ -23410,6 +23453,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.1...v2.188.2
 [2.188.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.0...v2.188.1
 [2.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.1...v2.188.0
 [2.187.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.0...v2.187.1
