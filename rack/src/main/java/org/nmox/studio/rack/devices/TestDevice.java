@@ -27,10 +27,6 @@ public class TestDevice extends CommandDevice {
         // rescript rides along so its grey has a name a user can ask for
         "gradle", "rescript"};
 
-    /** The RUNNER knob's positions, in their on-disk index order. */
-    static java.util.List<String> runners() {
-        return List.of(FRAMEWORKS);
-    }
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     // node:test speaks TAP, whose summary counts read "# pass 3" / "# fail 1"
@@ -56,6 +52,11 @@ public class TestDevice extends CommandDevice {
         Pattern.compile("^TOTAL\\s+\\d+\\s+\\d+\\s+([\\d.]+)%"),
         Pattern.compile("coverage:\\s+([\\d.]+)% of statements"),
     };
+
+    /** The RUNNER knob's positions, in their on-disk index order. */
+    static List<String> runners() {
+        return List.of(FRAMEWORKS);
+    }
 
     private final Knob frameworkKnob;
     private final ToggleSwitch coverageSwitch;

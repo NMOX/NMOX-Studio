@@ -32,11 +32,6 @@ public class RunDevice extends CommandDevice {
         // greyed for a reason nobody could make it say
         "rescript", "webpack"};
 
-    /** The TARGET knob's positions, in their on-disk index order. */
-    static java.util.List<String> targets() {
-        return List.of(TARGETS);
-    }
-
     /** The static lane's preferred port; probed upward when busy (v1.320.0). */
     private static final String STATIC_PORT = "8000";
 
@@ -47,6 +42,11 @@ public class RunDevice extends CommandDevice {
     private static String phpAddress() {
         return "127.0.0.1:" + org.nmox.studio.core.util.FreePorts
                 .firstFreeFrom(PHP_PORT);
+    }
+
+    /** The TARGET knob's positions, in their on-disk index order. */
+    static List<String> targets() {
+        return List.of(TARGETS);
     }
 
     private final Knob targetKnob;
