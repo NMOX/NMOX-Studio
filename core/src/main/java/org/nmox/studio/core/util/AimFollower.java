@@ -23,7 +23,8 @@ import org.openide.nodes.Node;
  * listener attached on showing and detached on hidden (listener
  * symmetry), equality-guarded storm-safe resolution via
  * {@link AimNodePublisher}, and a guard reset on close so a reopened
- * window re-publishes even for the same aim.
+ * window re-publishes even for the same aim. Showing and following are
+ * the same fact, so they are the same field — see {@link #following}.
  *
  * <p><b>Why it lives in core (v2.186.0, tech-debt ledger 72).</b> It
  * was written as {@code rack.service.AimFollower}, and that address —
@@ -55,23 +56,31 @@ public final class AimFollower {
     private final ProjectAim.Listener listener = new ProjectAim.Listener() {
         @Override
         public void projectChanged() {
-            if (showing) {
-                publish();
+            ProjectAim aim = following;
+            if (aim != null) {
+                publish(aim);
             }
         }
     };
 
-    /** Volatile: project switches complete off the EDT. */
-    private volatile boolean showing;
-
     /**
-     * The provider this follower is subscribed to, or null when it is
-     * not subscribed. Held rather than re-looked-up so attach and detach
-     * always name the SAME instance — the adapter keys its listener
-     * wrappers by identity, and a provider swapped between showing and
-     * hidden would otherwise leak a subscription.
+     * The provider this follower is subscribed to and publishing for, or
+     * null while it is not following.
+     *
+     * <p>ONE field, and volatile, for two reasons. {@link ProjectAim}
+     * fires on the AIMER's thread, so the gate that keeps a hidden
+     * window from resolving anything has to be visible across threads —
+     * and a provider whose notification is already mid-iteration will
+     * still reach a listener removed during that pass, so the
+     * unsubscribe alone cannot be that gate. A separate boolean beside
+     * this reference would be a second gate for one law, which is how a
+     * mutant lives behind the other (the v2.37.0 lesson). The reference
+     * is held rather than re-looked-up so attach and detach always name
+     * the SAME instance: the rack's adapter keys its listener wrappers
+     * by identity, and a provider swapped between showing and hidden
+     * would otherwise leak a subscription.
      */
-    private ProjectAim attachedTo;
+    private volatile ProjectAim following;
 
     /**
      * @param sink receives the resolved aim node on the EDT — pass
@@ -103,24 +112,27 @@ public final class AimFollower {
 
     /** Call from {@code componentShowing()}. */
     public void showing() {
-        showing = true;
-        if (attachedTo == null) {
-            ProjectAim aim = aimSource.get();
+        ProjectAim aim = following;
+        if (aim == null) {
+            aim = aimSource.get();
             if (aim == null) {
                 return; // no rack: nothing to follow, and a later showing() retries
             }
             aim.addListener(listener);
-            attachedTo = aim;
+            following = aim; // subscribe first, then start publishing
         }
-        publish();
+        publish(aim);
     }
 
     /** Call from {@code componentHidden()}. */
     public void hidden() {
-        showing = false;
-        if (attachedTo != null) {
-            attachedTo.removeListener(listener);
-            attachedTo = null;
+        ProjectAim aim = following;
+        if (aim != null) {
+            // stop publishing BEFORE unsubscribing: an event already in
+            // flight finds a null reference and is refused, where the
+            // unsubscribe alone would arrive too late for it
+            following = null;
+            aim.removeListener(listener);
         }
     }
 
@@ -131,11 +143,7 @@ public final class AimFollower {
     }
 
     /** The aimed directory's node, resolved off the EDT and delivered on it. */
-    private void publish() {
-        ProjectAim aim = attachedTo;
-        if (aim == null) {
-            return;
-        }
+    private void publish(ProjectAim aim) {
         File dir = aim.projectDir();
         if (dir != null) {
             publisher.publish(dir);
