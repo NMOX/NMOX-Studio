@@ -97,6 +97,9 @@ public class ReplDevice extends RackDevice {
         runLed = place(new Led("LIVE", RackStyle.GO), left + 648, 46);
 
         screen = new JTextArea();
+        // a faceplate stays English by the v2.97.0 decision — this package
+        // ships no translated bundles, which is the decision written down
+        screen.getAccessibleContext().setAccessibleName("REPL session");
         screen.setEditable(false);
         screen.setLineWrap(true);
         screen.setBackground(SCREEN_BG);

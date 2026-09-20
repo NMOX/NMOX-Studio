@@ -150,6 +150,8 @@ public final class StructureNavigatorPanel implements NavigatorPanel {
             // (v1.311.0, verified clean) — escape-or-disable depends on
             // whether the renderer means its markup
             tree = new JTree(new DefaultTreeModel(new DefaultMutableTreeNode()));
+            tree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(
+                    StructureNavigatorPanel.class, "StructureNavigatorPanel_treeA11y"));
             tree.setRootVisible(false);
             tree.setShowsRootHandles(true);
             tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

@@ -138,6 +138,9 @@ import org.openide.windows.TopComponent;
     "IrcTopComponent_gapMarker=— view was closed; the full record is in ~/.nmox/irc-logs —",
     "IrcTopComponent_couldNotOpen=Could not open {0}",
     "IrcTopComponent_findLabel=Find:",
+    "IrcTopComponent_inputA11y=Message to send",
+    "IrcTopComponent_treeA11y=Networks and channels",
+    "IrcTopComponent_nickListA11y=People in this channel",
     "IrcTopComponent_findMatchesCapped={0}+ matches",
     "IrcTopComponent_findMatchOne=match",
     "IrcTopComponent_findMatchMany=matches",
@@ -410,6 +413,7 @@ public final class IrcTopComponent extends TopComponent {
         rootNode = new DefaultMutableTreeNode("irc");
         treeModel = new DefaultTreeModel(rootNode);
         tree = new JTree(treeModel);
+        tree.getAccessibleContext().setAccessibleName(Bundle.IrcTopComponent_treeA11y());
         // WeeChat's hotlist jump: Ctrl+J hops to the next mention, else
         // the next unread buffer, sweeping the tree top to bottom
         getInputMap(WHEN_IN_FOCUSED_WINDOW).put(
@@ -459,6 +463,7 @@ public final class IrcTopComponent extends TopComponent {
         });
 
         nickList = new JList<>(nickModel);
+        nickList.getAccessibleContext().setAccessibleName(Bundle.IrcTopComponent_nickListA11y());
         nickList.setPrototypeCellValue("@a-rather-long-nickname");
         nickList.setCellRenderer(new AwayAwareNickRenderer());
 
@@ -470,6 +475,7 @@ public final class IrcTopComponent extends TopComponent {
         topicLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
         input = new JTextField();
+        input.getAccessibleContext().setAccessibleName(Bundle.IrcTopComponent_inputA11y());
         input.addActionListener(e -> onInput());
         installInputKeys();
         connectButton = new JButton(Bundle.IrcTopComponent_connect());
@@ -1019,7 +1025,11 @@ public final class IrcTopComponent extends TopComponent {
         findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
         findField = new JTextField();
         findCount = new JLabel(" ");
-        findBar.add(new JLabel(Bundle.IrcTopComponent_findLabel()), BorderLayout.WEST);
+        // the bar's own label names the field: Swing hands a field with no
+        // explicit name the labelling label's text, already translated
+        JLabel findLabel = new JLabel(Bundle.IrcTopComponent_findLabel());
+        findLabel.setLabelFor(findField);
+        findBar.add(findLabel, BorderLayout.WEST);
         findBar.add(findField, BorderLayout.CENTER);
         findBar.add(findCount, BorderLayout.EAST);
         findBar.setVisible(false);

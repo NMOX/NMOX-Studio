@@ -823,6 +823,11 @@ public final class DbStudioTopComponent extends TopComponent {
             } else {
                 JTable table = org.nmox.studio.core.util.PlainTables
                         .disableHtml(new JTable(new ResultsTableModel(result)));
+                // its own name, not the editable grid's: two locals called
+                // `table` in one file rode one name until the census derived
+                // the population from the CONSTRUCTION instead of the line
+                table.getAccessibleContext().setAccessibleName(
+                        Bundle.DbStudioTopComponent_resultRowsA11y());
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
                 org.nmox.studio.core.util.TableColumns.fitToContent(table); // no "Noor H..." (v2.163.0)

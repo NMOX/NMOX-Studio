@@ -175,6 +175,8 @@ public final class NpmExplorerTopComponent extends TopComponent {
         rootNode = new DefaultMutableTreeNode(org.openide.util.NbBundle.getMessage(NpmExplorerTopComponent.class, "NpmExplorerTopComponent_npmProject"));
         treeModel = new DefaultTreeModel(rootNode);
         tree = new JTree(treeModel);
+        tree.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(
+                NpmExplorerTopComponent.class, "NpmExplorerTopComponent_treeA11y"));
         // Script and package names are package.json CONTENT — a cloned
         // repo's "<html><img src=…>" script must paint as characters, never
         // render and fetch (the v1.306.0 law's JTree half, v2.70.0)
