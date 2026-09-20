@@ -24,8 +24,8 @@ import java.util.stream.Stream;
  * <p>So the population is derived from the CONSTRUCTION and the variable is
  * found by reading backwards to it, which is the outcome the law is about — a
  * control exists, and something must name it — rather than the one spelling
- * the first cut happened to see. Widening it named twelve controls across six
- * modules in five files nobody had looked at: inputs 95 → 107, text areas
+ * the first cut happened to see. Widening it named twelve controls in seven
+ * files across five modules nobody had looked at: inputs 95 → 107, text areas
  * 20 → 28, tables/lists/trees 31 → 37.
  *
  * <p>Three shapes it now reads that the declaration pattern could not:

@@ -4,6 +4,54 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.187.1] - 2026-09-20
+
+**A verdict that acquitted a family on one member's measurement, and a comment
+that miscounted its own find.**
+
+Both corrections came out of background sessions started against the shipped
+tree; both are records work, and no product behaviour changes.
+
+**The verdict.** v2.186.0 closed its containment entry with *"Not believed
+exploitable today"*, and offered a real measurement in support: restoring the
+old `DebugEntries` code left the escape assertion PASSING, because that guard
+canonicalised before deciding. That fact is true and still stands — **about
+`DebugEntries`**. What did not stand is its scope. The sentence reads as a
+verdict over every site in the entry, and it was already contradicted by the
+paragraph directly above it in the same release, which calls the Windows half
+**a live hole**: what passed containment there was a not-yet-existing file
+behind a symlinked ancestor, which is precisely the shape `DockerRecipes`
+writes. The dangling-link write corrected in v2.187.0 is the second escape, on
+POSIX as well, reachable with no waiting and no link ever resolving. The honest
+verdict for that family is **two escapes, both measured, both now refused**.
+The old sentence is struck through rather than deleted, because a wrong claim
+is worth more corrected than removed — and it is its own best evidence for the
+lesson: *"not believed" is a belief, and a belief written where a measurement
+belongs will be read as a measurement.* A verdict must not outrun the scope of
+what was measured; where it cannot cover the family, name the member that was
+measured and stop there.
+
+**The per-guard outcomes** v2.187.0 delivered but never wrote into the ledger:
+`McpSubscriptions` routed with its existence test kept at the call site (the
+guard deliberately answers for a leaf that does not exist yet, because the
+write paths need that); `UserTemplates` routed, with the escape its own entry
+predicted **failing to reproduce** — never-clobber proves the target empty two
+lines earlier and a planted link IS an entry — while the same lexical spelling
+turned out to carry two real defects nobody had named; and
+`SymbolIndexProvider` deliberately **not** swept, permanently and with the
+reason inside the gate where a person can disagree with it.
+
+**The miscount.** `NamedControlCensus`'s javadoc said the widening named
+*"twelve controls across six modules in five files"*. Measured against the
+v2.186.0 commit: **twelve controls in SEVEN files across FIVE modules**
+(dbstudio, editor, rack, tools, ui). Twelve is right — 8 `setAccessibleName`
+plus 4 `setLabelFor`, the provider combo excluded because it already carried
+its own explicit name — but the two nouns were both swapped and wrong. A
+background session proposed *"six files across four modules"*, which corrects
+the word order and misses both numbers; the counts above are derived from the
+commit rather than from either reading. *A census that miscounts its own find
+is the shape it exists to catch.*
+
 ## [2.187.0] - 2026-09-20
 
 **The containment family is finished — and the thing v2.186.0 filed as a
@@ -23279,6 +23327,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.187.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.0...v2.187.1
 [2.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.186.0...v2.187.0
 [2.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.185.0...v2.186.0
 [2.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.184.0...v2.185.0
