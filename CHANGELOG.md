@@ -4,6 +4,128 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.186.0] - 2026-09-19
+
+**Every deferral closed — and "Decided, not done" turned out to be the most
+expensive phrase in the ledger.**
+
+Thirteen items were open. Seven of them carried that phrase: the decision
+taken, the work postponed for size. That shape looks thrifty and is not. The
+thinking is already paid for, none of the benefit is banked, and every future
+author re-reads the entry while the defect it describes goes on shipping.
+Closing all seven found **eleven live defects nobody was looking for** — and
+found that **seven of the entries were wrong about their own subject.**
+
+**The defects.** A four-month-old `NullPointerException` on IGNITE:
+`RunDevice.primaryAction()` ran `cmd.contains("webpack")` where `cmd` is null
+for Tact and ReScript, so the button threw *before* reaching the refusal three
+lines below — the honest grey those arms promised since v1.161.0 was
+unreachable. `gradle test` ran **in the Node lane's directory** instead of
+beside `build.gradle`. Two workspace files destroyed by a read failure,
+**measured on the shipped code**: 9,437,184 bytes to 550, and to 48 — infra's
+`recordOwn` in a `finally` ran on the catch path, so the never-clobber guard
+was disarmed by the very failure it exists for. `DockerRecipes`, a **write**
+path, followed a symlink out of the project. Apply was permanently grey for
+four Options controls, so picking a KVASIR provider or pasting a cloud token
+told the dialog nothing. Three cloud API tokens announced to a screen reader
+as "text field". WAYPOINT offered an Angular library's own build output as a
+workspace to dial. And `SassCompilerTest.argvPinned` asserted **nothing on all
+three CI lanes** — proven by modelling the CI condition, where the mutant
+lived and the build went green.
+
+**The largest was behind the words "queued behind a reproduction."** Ledger 18's
+stale-run race is real and not narrow: **press a serve device's DEV twice.**
+`exec` ends the previous run with a `kill()` that returns asynchronously, so the
+replaced run's exit lands after the replacement raised its gates — and
+`onExit.accept(code)` ran unconditionally. On a serve device the damage is
+permanent: `dev()` raises `serving` once and `onFinished` is the only thing that
+lowers it, so the gate reads LOW for the whole life of a dev server that is up,
+taking the ⇄ chip, ⌘I Live Servers and VITALS/BEACON targeting with it —
+v1.93.0's law failing from the other direction.
+
+**The entries that were wrong about themselves.** Ledger 110's census counted
+`Set.of(…)` literals, so it missed a thirteenth declaration written as an inline
+`equals()` — *the entry written to close a blind spot contained that blind
+spot*, so the gate's population is now files NAMING the directory. 112 said "the
+four currently AGREE"; `gradle` already disagreed, live. 115a said a typo "would
+silently kill a language's highlighting" — planting that exact typo makes
+**javac fail**, because the platform validates the resource and reads its
+`scopeName`, so widening by filename would have been decorative. 114's second
+sub-item had **already shipped in v2.184.0**, the release that wrote the entry.
+86 claimed the engineering half was "done and waiting" — notarization and
+Authenticode had never been written, and writing them surfaced a bash 3.2
+empty-array bug that would have broken the *signed* lane on its first run. 107
+named two entitlements; three are needed. 72 waited on a facade that did not
+need building: `ProjectAim` already carried it and `core` already declared both
+dependencies — the entire fix was an address change.
+
+**Three deferrals were overruled on their reasoning, not their difficulty.**
+107's Windows measurement wanted a new CI job; `build-and-test` has run the full
+verify on `windows-latest` since v1.42.0, so it became a test and a standing law
+on all three platforms instead of a one-off reading. 103 said its two surfaces
+"need a screen walk with full control, or a person" — but v2.145.0 and v2.58.1
+had both already answered that: *a popup is a rendering of an answer the provider
+already gave*, so both are proven at the provider through the platform's own
+query path. And 111's root-equals-root policy went the opposite way from the
+steer it was given, because reading every caller showed all four ask "which
+FILE?".
+
+**The recurring law showed up five more times.** *A check that answers an easier
+question passes.* `WatchFeed.addBlock` dedupes by hash, so a duplicate-fetch
+regression is invisible in the feed. An unresolvable font name silently becomes
+`Dialog`, the zero-advance family, so a probe that skips `getFamily()` measures
+the fallback and calls it chrome. `I18nKeyHyperlinkTest` stayed green under a
+wrong-line mutant because it tested the resolver, not the click.
+`OptionsControllersSpeakTest`'s third law survived all three mutants that kill
+its replacement. And a wall-clock flake was fixed the v2.99.1 way — by taking
+control of the clock rather than raising the bound — which exposed a law never
+held at all: nothing asserted that a well-behaved child stops at EOF *without* a
+signal.
+
+**One item is left, and it is not engineering.** Ledger 86 is a purchase and an
+identity: Apple Developer ID (~$99/yr, personal enrolment) and Windows
+Authenticode (~$120/yr), ≈$219/year, independent of each other. Both lanes are
+now written, gated, and completely inert without their secrets — absent them the
+release publishes the same 21 assets it does today, and a gate pins that. The
+one-sitting checklist is `docs/engineering/release-signing.md`, and its secret
+names are **derived from the workflow by a test**, so a lane that grows a secret
+the checklist does not name fails the build. Nothing further is owed until
+someone decides to spend the money.
+
+### Added
+- `core.util.Containment` — one containment guard with both policies decided
+  once: the answer is the CANONICAL path (the check and the read must name the
+  same file), and root-equals-root is refused.
+- `core.util.AimFollower`/`AimNodePublisher` — moved from rack, rebuilt on
+  `core.spi.ProjectAim`, so API Studio, Contract Studio and the Infra Designer
+  publish the aimed project without regaining a rack dependency (ledger 72).
+- `web3.engine.WatchRunner` — the Watch orchestration leaves the TopComponent
+  and gets its first CI coverage: socket-vs-poll, head-gap backfill, two-lane
+  dedup and the generation guard (ledger 113).
+- The macOS notarization and Windows Authenticode release lanes, secrets-gated
+  (ledger 86), plus `docs/engineering/release-signing.md`.
+- The Browser says so when a registered serving does not answer, instead of
+  painting nothing — a local page, fifteen languages, fetching nothing.
+- `TEMPLATE_EXPRESSION` is emitted, so `${user.name}` inside a template literal
+  lexes as JavaScript against the colour registered for it (ledger 114).
+
+### Fixed
+- The stale-run gate race (ledger 18), the IGNITE `NullPointerException`,
+  `gradle`'s command directory, both read-failure clobbers, the `DockerRecipes`
+  symlink write, Apply staying grey in the rack Options panel, twelve unnamed
+  controls including three cloud API tokens, and two wall-clock flakes.
+
+### Changed
+- `HeavyDirs` is the one home for which directories a walk skips, widened from 5
+  names to 13, with a gate derived from 911 files (ledger 110).
+- `runTarget()`/`testRunner()` live on `ProjectKind`; `default -> NODE` is gone,
+  so FOUNDRY, LEARN and NONE grey honestly (ledger 112).
+- The shaping width fit is keyed per `FontResource`, so one face at five sizes
+  fits once (ledger 100).
+- The accessible-name census reads the CONSTRUCTION rather than the declaration:
+  146 → 172 controls under gate.
+- Grammar registrations under gate: 76 → 131.
+
 ## [2.185.0] - 2026-09-19
 
 **The picture that proves the previous release's claim — and the retraction
@@ -23077,6 +23199,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.185.0...v2.186.0
 [2.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.184.0...v2.185.0
 [2.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.183.0...v2.184.0
 [2.183.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.182.0...v2.183.0
