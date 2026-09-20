@@ -1042,7 +1042,7 @@ box (font/JavaFX, not the Browser).
 
 ## Open — recorded by v2.186.0 (the deferral-closing release)
 
-### 117. Three more containment guards, named by the derivation that closed 111
+### 117. Three more containment guards, named by the derivation that unified the other four
 
 Closing ledger 111 put the four named guards in one home and then **derived** a
 census across all ten modules — comment-stripped source carrying the resolve
@@ -2997,7 +2997,7 @@ six audit lenses confirmed (see CHANGELOG). What follows is what the
 audit found and the sprint *deliberately did not fix*, each with the
 reason it can wait.
 
-### 18. CommandExecutor exit detection and stale-run guards — the stale-run half CLOSED v2.186.0; exit detection still unreproduced
+### 18. CommandExecutor exit detection — still unreproduced (the stale-run half was fixed in v2.186.0)
 Two hardening ideas from the lifecycle audit: drive exit from
 `process.onExit()` with a bounded drain (today a forcibly-killed
 process whose pipes linger can delay `onFinished`), and a per-launch
