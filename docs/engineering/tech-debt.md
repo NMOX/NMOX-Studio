@@ -1040,9 +1040,9 @@ Remainder: the per-word spread a context-free estimate cannot remove (4–8px);
 JavaFX's own Linux layout draws Tamil `பொ` with a dotted circle and ZWNJ as a
 box (font/JavaFX, not the Browser).
 
-## Open — recorded by v2.186.0 (the deferral-closing release)
+## Closed by v2.187.0 (the containment sweep finished)
 
-### 117. Three more containment guards, named by the derivation that unified the other four
+### 117. ~~Three more containment guards, named by the derivation that unified the other four~~ — CLOSED v2.187.0
 
 Closing ledger 111 put the four named guards in one home and then **derived** a
 census across all ten modules — comment-stripped source carrying the resolve
@@ -1068,7 +1068,43 @@ message on a different surface, and each needs its own refusal walk. Folding thr
 more into a release that already lands eighteen units would be the scope mistake
 111 was held back to avoid. `UserTemplates` is the one to do first — it writes.
 
-**A second containment ceiling, recorded rather than taken (v2.186.0).** A path
+**CORRECTION (v2.187.0): what v2.186.0 recorded here as a "ceiling" was a LIVE
+WRITE-ESCAPE, and the entry was wrong in both directions.** It is left in place
+below, struck through, because a wrong claim is worth more corrected than
+deleted.
+
+The hazard as recorded — a link followed out *"if that target were later
+created"* — is the case the guard **already handled**: once the target exists
+the link resolves, canonicalization walks it, and the verdict flips from
+contained to null. The real hazard was the reverse and **immediate**. A dangling
+link as the **final** component was answered *contained*, and `Files.writeString`
+opens with `CREATE`, **which follows a dangling link and creates its target**.
+Measured on the shipped guard: with `proj/Dockerfile -> OUTSIDE/pwned.txt`
+(absent), the guard said contained and the write created `OUTSIDE/pwned.txt`
+holding the caller's bytes. No waiting, and the link never resolved.
+
+So `DockerRecipes` — the one caller that writes into a directory it did not
+create, which a `git clone` fills — could escape, and v2.186.0 filed it as *"not
+believed exploitable today"*. That judgement was mine and it was wrong; the
+measurement is what corrected it.
+
+**The fix is not the rule v2.186.0 proposed, either.** "Refuse when the
+canonicalized ancestor is itself still a symlink" also refuses a dangling link
+pointing back **inside** the root — which is contained, and which `Containment`'s
+own symlink policy promises to accept. What shipped reads the link's RECORDED
+target (`readSymbolicLink`), resolves it against the link's own directory, and
+re-asks containment of that: chains are followed under a bound, and a cycle
+exhausts the bound and refuses.
+
+**One outcome class changed, and only one.** Every READ caller
+(`SiteServer`, `PageSourceResolver`, `DebugEntries`, `NgSchematic`,
+`Checkpoints`, `CheckDisclosure`) asks `isFile()`/`isDirectory()` within a line
+or two, and that FOLLOWS links — so an escaping dangling link was already
+refused there, one step later. `UserTemplates` is unchanged because
+never-clobber proves the target empty first and a link is an entry. The rule
+changes exactly one thing: **a write that would have escaped now refuses.**
+
+~~**A second containment ceiling, recorded rather than taken (v2.186.0).** A path
 through a **broken** symlink is judged on its spelling, because no platform can
 resolve one. So a link inside the root pointing at a target that does not exist
 YET would be followed out if that target were later created. This is
@@ -1078,7 +1114,7 @@ canonicalized ancestor is ITSELF still a symlink, which is arguably just the
 stated symlink policy made true; it is left undone because it is a NEW refusal
 rule, it cannot be tested on Windows from this bench, and adding one to a
 release that already lands twenty units is the scope mistake ledger 111 was held
-back to avoid.
+back to avoid.~~
 
 **The Windows half of this family was a live hole, found by CI (v2.186.0).**
 `Containment.resolve` canonicalized the WHOLE target path, and on Windows

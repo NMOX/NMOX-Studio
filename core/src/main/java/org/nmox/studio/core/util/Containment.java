@@ -87,11 +87,50 @@ import java.util.Deque;
  * than an {@code open()} would. A {@code ..} that folds its way out of
  * the root is then caught by the ordinary containment check below.
  *
- * <p>The honest ceiling, unchanged by this and true of every spelling: a
- * BROKEN symlink cannot be resolved by any platform — canonicalization
- * hands back the link's own path — so a path through one is judged on
- * that spelling. It stays contained if the link's name is inside the
- * root, which is what the callers already had.
+ * <h2>The broken-link rule: judge the link's own recorded target</h2>
+ *
+ * A BROKEN symlink — an entry that is there but leads nowhere — cannot
+ * be resolved by any platform: canonicalization hands back the link's
+ * own path. Every earlier spelling of this guard therefore judged such
+ * a path on that SPELLING, and ledger 117 recorded it as an honest
+ * ceiling.
+ *
+ * <p>It was not honest, because the recorded reading of it was wrong in
+ * both directions, and both were measured on the shipped code:
+ *
+ * <ul>
+ *   <li>The hazard was written down as a LATER one — a link whose target
+ *       "would be followed out if that target were later created". That
+ *       is the case the guard already handled: once the target exists
+ *       the link RESOLVES, the walk below canonicalizes it, and an
+ *       escape is refused. Measured: the verdict for {@code pub/x.txt}
+ *       behind a dangling {@code pub} goes from contained to null the
+ *       moment the target appears.</li>
+ *   <li>The live hazard was the opposite of that, and immediate. A
+ *       broken link as the FINAL component was answered as contained,
+ *       and {@link Files#writeString} opens with {@code CREATE} — which
+ *       follows a dangling link and creates its target. Measured: with
+ *       {@code proj/Dockerfile} a link to an absent
+ *       {@code OUTSIDE/pwned.txt}, this guard said contained and the
+ *       write created {@code OUTSIDE/pwned.txt} holding the caller's
+ *       bytes. No waiting, and no link ever resolving.</li>
+ * </ul>
+ *
+ * <p>So the answer for a broken link is read from the link itself:
+ * {@link Files#readSymbolicLink} gives the target it records, that is
+ * resolved against the link's own directory, and the whole question is
+ * asked again of THAT path. An escape is refused; a dangling link whose
+ * target is inside the root is still accepted, which keeps the symlink
+ * policy above true rather than carving an exception into it.
+ *
+ * <p>This is deliberately NOT the rule ledger 117 proposed — "refuse
+ * when the canonicalised ancestor is ITSELF still a symlink" — because
+ * that also refuses a dangling link pointing back INSIDE the root,
+ * which is contained and which the policy two sections up promises to
+ * accept.
+ *
+ * <p>A chain of broken links is followed, bounded; a cycle exhausts the
+ * bound and is refused, because a guard that cannot answer must refuse.
  *
  * <h2>What this guard does NOT decide</h2>
  *
@@ -107,6 +146,13 @@ import java.util.Deque;
  * and it is safe — so it is kept, and pinned by a test.
  */
 public final class Containment {
+
+    /**
+     * How many broken links the resolution will follow before refusing.
+     * Real filesystems nest a handful at most; the bound is here so a
+     * cycle of dangling links cannot spin, not to express a budget.
+     */
+    private static final int MAX_BROKEN_LINK_HOPS = 16;
 
     private Containment() {
     }
@@ -161,30 +207,55 @@ public final class Containment {
      * <p>Existence is asked with {@link LinkOption#NOFOLLOW_LINKS}, so
      * the question is "is there an entry here" rather than "does this
      * lead somewhere". That stops the walk at a broken symlink instead
-     * of popping it into the tail; both readings produce the same answer
-     * for a broken link — canonicalizing one is a no-op either way — and
-     * this one stops at the deepest thing the filesystem knows about,
-     * which is what the next line wants to canonicalize.
+     * of popping it into the tail, which is what lets the broken-link
+     * rule below see one at all: popped into the tail it would be
+     * indistinguishable from a name that does not exist.
+     *
+     * <p>When that deepest entry IS a broken link, no canonicalization
+     * can say where it points, so the link is asked directly and the
+     * question restarts against its recorded target. Bounded, because a
+     * cycle of dangling links would otherwise never terminate.
      */
     private static Path canonicalize(Path raw) throws IOException {
-        Deque<Path> popped = new ArrayDeque<>();
-        Path probe = raw;
-        while (probe != null && !Files.exists(probe, LinkOption.NOFOLLOW_LINKS)) {
-            Path name = probe.getFileName();
-            if (name == null) {
+        Path current = raw;
+        for (int hop = 0; hop <= MAX_BROKEN_LINK_HOPS; hop++) {
+            Deque<Path> popped = new ArrayDeque<>();
+            Path probe = current;
+            while (probe != null && !Files.exists(probe, LinkOption.NOFOLLOW_LINKS)) {
+                Path name = probe.getFileName();
+                if (name == null) {
+                    return null;
+                }
+                popped.addFirst(name);
+                probe = probe.getParent();
+            }
+            if (probe == null) {
                 return null;
             }
-            popped.addFirst(name);
-            probe = probe.getParent();
+            // "an entry is here" AND "it leads nowhere" is exactly a broken
+            // link — a link that resolves takes the canonicalize path below,
+            // where it already behaved correctly and is pinned by tests
+            if (Files.isSymbolicLink(probe) && !Files.exists(probe)) {
+                Path recorded = Files.readSymbolicLink(probe);
+                Path from = probe.getParent();
+                // a relative link target is relative to the link's OWN
+                // directory; resolve() returns an absolute target unchanged
+                Path rebased = from == null ? recorded : from.resolve(recorded);
+                for (Path name : popped) {
+                    rebased = rebased.resolve(name);
+                }
+                current = rebased;
+                continue;
+            }
+            Path resolved = probe.toFile().getCanonicalFile().toPath();
+            for (Path name : popped) {
+                resolved = resolved.resolve(name);
+            }
+            return resolved.normalize();
         }
-        if (probe == null) {
-            return null;
-        }
-        Path resolved = probe.toFile().getCanonicalFile().toPath();
-        for (Path name : popped) {
-            resolved = resolved.resolve(name);
-        }
-        return resolved.normalize();
+        // a chain this long is a cycle or an attack; either way the guard
+        // has no answer, and a guard that cannot answer must refuse
+        return null;
     }
 
     /**

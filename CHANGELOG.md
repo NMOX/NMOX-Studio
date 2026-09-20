@@ -4,6 +4,72 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.187.0] - 2026-09-20
+
+**The containment family is finished — and the thing v2.186.0 filed as a
+ceiling was a live write-escape.**
+
+Ledger 117 named three guards the derived census found while unifying the other
+four. Closing them produced one honest negative, one decision to leave a guard
+alone, and one correction that matters more than the sweep.
+
+**A dangling link as the final component was answered *contained*.**
+`Files.writeString` opens with `CREATE`, which **follows a dangling link and
+creates its target** — so with `proj/Dockerfile → OUTSIDE/pwned.txt` the guard
+said contained and the write landed outside, holding the caller's bytes. No
+waiting and no link ever resolving. `DockerRecipes` is the caller that writes
+into a directory it did not create — the one a `git clone` fills — and v2.186.0
+recorded this as *"not believed exploitable today."* **That judgement was wrong,
+and a measurement is what corrected it.** The hazard v2.186.0 actually described
+(followed out *"if the target were later created"*) is the case the guard
+already handled: once the target exists the link resolves and the verdict flips
+to null.
+
+**The fix is not the rule v2.186.0 proposed either.** "Refuse when the
+canonicalised ancestor is itself a symlink" also refuses a dangling link
+pointing back *inside* the root — contained, and something `Containment`'s own
+policy promises to accept. What ships reads the link's recorded target, resolves
+it against the link's own directory and re-asks containment: chains followed
+under a bound, a cycle refused. **Exactly one outcome class changes** — every
+read caller asks `isFile()`/`isDirectory()` a line or two later, and that
+follows links, so only a write that would have escaped now refuses.
+
+**`UserTemplates` did not escape, and the probe found two real defects anyway.**
+The lexical guard does accept a symlinked segment, but `generate` proves the
+target directory empty before writing and a planted link *is* an entry, so
+never-clobber refuses first — measured, not argued. What the lexical spelling
+*was* doing: a location containing `..` left the base un-normalised while the
+target was normalised, so the two could never share a prefix and **every file of
+a perfectly ordinary template was refused**; and a path resolving to the project
+root reached `writeString` and surfaced the OS's words, `FileSystemException:
+…/proj: Is a directory`.
+
+**One guard was left alone, deliberately.** `SymbolIndexProvider` accepts an
+absolute path naming a file inside the root, and it must: `EditorState` reports
+every open tab as `getAbsolutePath()`, so `ide_context.activeFile` is absolute
+and "outline what I am editing" is the next call an agent makes. `Containment`
+joins an absolute-looking name under the root, so routing it would answer **"no
+such file" about a path this same server had just handed out.** v2.186.0's
+`DebugEntries` went the other way because npm's spec makes `main` relative — a
+reason that does not reach a string the product itself emitted. Its ledger entry
+now says *permanent*, with that measurement.
+
+### Added
+- `NewProjectDialog` tells "nothing there" from "an entry that does not
+  resolve" (`NOFOLLOW_LINKS`) and says so in its own voice — *"{0} is a broken
+  link in that location — remove it or pick another name"* — in all fifteen
+  languages, instead of surfacing `FileAlreadyExistsException`.
+
+### Fixed
+- A dangling-link write-escape through `Containment`, reachable from
+  `DockerRecipes`.
+- `UserTemplates` refusing every file of a template whose location contains
+  `..`, and surfacing the OS's words for a path resolving to the project root.
+
+### Changed
+- `McpSubscriptions` routes through `Containment` with its existence check now
+  explicit at the call site rather than an accident of which helper throws.
+
 ## [2.186.0] - 2026-09-19
 
 **Every deferral closed — and "Decided, not done" turned out to be the most
@@ -23213,6 +23279,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.187.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.186.0...v2.187.0
 [2.186.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.185.0...v2.186.0
 [2.185.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.184.0...v2.185.0
 [2.184.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.183.0...v2.184.0

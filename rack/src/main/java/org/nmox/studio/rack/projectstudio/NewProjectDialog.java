@@ -54,6 +54,7 @@ import org.openide.NotifyDescriptor;
     "NewProjectDialog_willCreate=Will create: {0}",
     "NewProjectDialog_nameMissing=Give the project a name.",
     "NewProjectDialog_alreadyExists={0} already exists in that location.",
+    "NewProjectDialog_danglingLink={0} is a broken link in that location — remove it or pick another name.",
     "NewProjectDialog_createFailed=Could not create the project: {0}",
     "NewProjectDialog_installing=Installing dependencies with {0}…",
     "NewProjectDialog_installRunLabel={0} install — {1}",
@@ -275,6 +276,43 @@ public class NewProjectDialog extends JDialog {
         return new File(locationField.getText().trim(), sanitizedName());
     }
 
+    /** What is already sitting at the new project's path, if anything. */
+    enum Target {
+        /** Nothing is there; the wizard may create it. */
+        FREE,
+        /** Something is there and it resolves — the ordinary refusal. */
+        OCCUPIED,
+        /** An entry is there, but it leads nowhere. */
+        DANGLING_LINK
+    }
+
+    /**
+     * Package-private and pure so the decision can be tested without a
+     * dialog, the way {@link #defaultLocationFrom} already is.
+     *
+     * <p>This used to be a bare {@code dir.exists()}, which FOLLOWS a
+     * symbolic link: a target that is itself a link to something gone
+     * answers false, the wizard waved it through, and
+     * {@code Files.createDirectories} then threw
+     * {@code FileAlreadyExistsException} — because a broken link IS a
+     * directory entry — whose {@code getMessage()} is bare the path.
+     * The user was shown "Could not create the project: /…/my-app": the
+     * operating system's words, naming no cause and offering no way out,
+     * for a refusal this product should be making itself.
+     *
+     * <p>Only {@link LinkOption#NOFOLLOW_LINKS} separates the two cases,
+     * because it asks "is there an entry here" where {@code exists()}
+     * asks "does this lead somewhere". A link that still resolves keeps
+     * answering OCCUPIED, exactly as before — that one was never wrong.
+     */
+    static Target targetState(File dir) {
+        java.nio.file.Path path = dir.toPath();
+        if (!java.nio.file.Files.exists(path, java.nio.file.LinkOption.NOFOLLOW_LINKS)) {
+            return Target.FREE;
+        }
+        return java.nio.file.Files.exists(path) ? Target.OCCUPIED : Target.DANGLING_LINK;
+    }
+
     private String sanitizedName() {
         return nameField.getText().trim().toLowerCase(java.util.Locale.ROOT)
                 .replaceAll("[^a-z0-9-_.]+", "-")
@@ -293,8 +331,11 @@ public class NewProjectDialog extends JDialog {
         }
         Object template = templateList.getSelectedValue();
         File dir = targetDir();
-        if (dir.exists()) {
-            warn(Bundle.NewProjectDialog_alreadyExists(dir.getName()));
+        Target target = targetState(dir);
+        if (target != Target.FREE) {
+            warn(target == Target.DANGLING_LINK
+                    ? Bundle.NewProjectDialog_danglingLink(dir.getName())
+                    : Bundle.NewProjectDialog_alreadyExists(dir.getName()));
             return;
         }
         // generate + git init are file IO plus up to four git spawns — off the
