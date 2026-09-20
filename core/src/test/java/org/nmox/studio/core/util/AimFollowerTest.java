@@ -45,6 +45,17 @@ class AimFollowerTest {
             return listeners.size();
         }
 
+        /**
+         * Delivers to a listener that has since been removed — the shape
+         * a provider produces when its notification is already in flight
+         * (mid-iteration over a CopyOnWriteArrayList) as the window
+         * hides. ProjectAim fires on the aimer's thread, so this really
+         * can race {@code hidden()}.
+         */
+        void fireStale(Listener gone) {
+            gone.projectChanged();
+        }
+
         @Override
         public File projectDir() {
             return dir;
@@ -60,8 +71,12 @@ class AimFollowerTest {
             return List.of();
         }
 
+        /** The last listener subscribed — kept so a stale delivery can be staged. */
+        volatile Listener lastAdded;
+
         @Override
         public void addListener(Listener listener) {
+            lastAdded = listener;
             if (!listeners.contains(listener)) {
                 listeners.add(listener); // the adapter's never-double-deliver contract
             }
@@ -180,6 +195,38 @@ class AimFollowerTest {
         assertThat(aim.subscriptions()).as("re-showing re-subscribes once").isEqualTo(1);
         f.closed();
         assertThat(aim.subscriptions()).as("closed detaches too").isZero();
+    }
+
+    @Test
+    @DisplayName("an in-flight aim event landing after hidden() publishes nothing")
+    void staleEventAfterHiddenPublishesNothing(@TempDir File aimA, @TempDir File aimB)
+            throws Exception {
+        // The detach alone is not the whole guard. ProjectAim fires on
+        // the AIMER's thread, and a provider whose notification is
+        // already mid-iteration will still call a listener removed
+        // during that pass — so a window that has just gone hidden can
+        // be handed one last event. The volatile showing flag, cleared
+        // BEFORE the detach, is what refuses it; without that flag a
+        // hidden tab would resolve a filesystem node (the v1.38.0 law).
+        FakeAim aim = new FakeAim(aimA);
+        List<File> published = new CopyOnWriteArrayList<>();
+        AimFollower f = follower(aim, published);
+
+        f.showing();
+        await(() -> published.contains(aimA));
+        ProjectAim.Listener inFlight = aim.lastAdded;
+        assertThat(inFlight).as("the follower subscribed").isNotNull();
+
+        f.hidden();
+        published.clear();
+        aim.dir = aimB;        // the aim moved
+        aim.fireStale(inFlight); // …and the already-queued event lands
+
+        Thread.sleep(200);
+        assertThat(published)
+                .as("a hidden window refuses even an event delivered straight to "
+                        + "its listener — the flag, not only the unsubscribe")
+                .isEmpty();
     }
 
     @Test
