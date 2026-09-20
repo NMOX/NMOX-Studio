@@ -3,6 +3,8 @@ package org.nmox.studio.ui.actions;
 import java.io.File;
 import java.util.List;
 
+import org.nmox.studio.core.util.Containment;
+
 /**
  * The pure half of File ▸ New Angular Schematic… (v1.239.0, the
  * Angular bet): root detection, input validation, and the exact argv
@@ -43,25 +45,42 @@ final class NgSchematic {
     }
 
     /**
+     * The field's own ways of saying "here": left empty, or the current
+     * directory written out. This is a reading of the FIELD, not a
+     * containment decision — {@code "."} is the workspace by definition,
+     * with no path to resolve and nothing a link could redirect. It
+     * deliberately does not cover {@code "src/.."}, which only LOOKS like
+     * the root: if {@code src} is a symlink, it names somewhere else
+     * entirely, so that one is a real question and goes to the guard.
+     */
+    private static boolean namesTheWorkspaceItself(String relative) {
+        String r = relative.trim();
+        return r.isEmpty() || ".".equals(r) || "./".equals(r);
+    }
+
+    /**
      * Resolves the target folder against the root and refuses anything
      * that escapes it — "../../../etc" typed into the folder field must
-     * die here, not in a spawn.
+     * die here, not in a spawn. The containment decision is
+     * {@link Containment}'s (ledger 111); this adds the two questions that
+     * are the FIELD's own — whether it means the workspace itself, and
+     * whether the contained answer is a directory ng can run in.
+     *
+     * <p>The answer is the CANONICAL directory, because it becomes the
+     * cwd of a trust-gated spawn and {@code ng generate} writes relative
+     * to its cwd: handing the spawn the path as typed would let a
+     * symlinked segment put the generated files somewhere the guard never
+     * judged. The one behaviour this changes is that a non-blank spelling
+     * which merely resolves to the root — {@code "src/.."} — is now
+     * refused where it used to pass, and that is the guard's decided
+     * policy rather than a local preference.
      */
     static File targetFolder(File root, String relative) {
-        if (relative == null || relative.isBlank()) {
+        if (relative == null || namesTheWorkspaceItself(relative)) {
             return root;
         }
-        File resolved = new File(root, relative.trim());
-        try {
-            String canon = resolved.getCanonicalPath();
-            if (!canon.equals(root.getCanonicalPath())
-                    && !canon.startsWith(root.getCanonicalPath() + File.separator)) {
-                return null; // escaped the workspace
-            }
-        } catch (java.io.IOException ex) {
-            return null;
-        }
-        return resolved.isDirectory() ? resolved : null;
+        File resolved = Containment.resolve(root, relative.trim());
+        return resolved != null && resolved.isDirectory() ? resolved : null;
     }
 
     /**

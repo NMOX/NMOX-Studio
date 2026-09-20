@@ -18,6 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * again, and no behavioural test can see a copy that merely agrees
  * today, so the population is named here and checked against source.
  *
+ * <p>This population is HAND-KEPT and so cannot prove itself complete —
+ * it was not: {@code DocsStaging} sat outside it the day this gate
+ * shipped. Completeness is {@code ContainmentLedgerTest}'s job, which
+ * DERIVES the census from every module's sources; what stays here is the
+ * other half of the two-proof law (v1.321.0) — that each routed surface
+ * still calls the guard at the right site, and still speaks for itself.
+ *
  * <p>The shape the gate hunts is the RESOLVE shape specifically:
  * building a child out of a caller-supplied relative
  * ({@code new File(root, rel)}) and then judging it with
@@ -36,6 +43,7 @@ class ContainmentSingleHomeTest {
         {"projectstudio", "Checkpoints.java"},
         {"projectstudio", "CheckDisclosure.java"},
         {"docker", "DockerRecipes.java"},
+        {"service", "DocsStaging.java"},
     };
 
     private static String source(String... parts) throws Exception {
@@ -66,6 +74,9 @@ class ContainmentSingleHomeTest {
         assertThat(flat("docker", "DockerRecipes.java"))
                 .as("the Dockerize WRITER rides the ONE guard")
                 .contains("Containment.resolvePath(dir, name)");
+        assertThat(flat("service", "DocsStaging.java"))
+                .as("the forge's staged sample files ride the ONE guard")
+                .contains("Containment.resolve(dir, f.path())");
     }
 
     @Test

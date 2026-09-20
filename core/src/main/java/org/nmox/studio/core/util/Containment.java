@@ -94,7 +94,15 @@ public final class Containment {
                 return null;
             }
             return target.toFile();
-        } catch (IOException | SecurityException cannotProve) {
+        } catch (IOException | RuntimeException cannotProve) {
+            // RuntimeException is deliberate and is the javadoc above made
+            // true: InvalidPathException from toPath() is a guard that
+            // cannot answer, and a guard that cannot answer must refuse
+            // rather than throw into a caller that asked a yes/no question.
+            // Measured on macOS, getCanonicalFile() already refuses the
+            // characters that would reach it; a platform whose
+            // canonicalization is more permissive must not be the one
+            // platform where this guard throws.
             return null;
         }
     }

@@ -26,6 +26,62 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class DocsStagingTest {
 
+    /** A platform without symlinks has nothing to prove in the walk below. */
+    private static boolean linked(java.nio.file.Path from, java.nio.file.Path to) {
+        try {
+            Files.createSymbolicLink(from, to);
+            return true;
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return false;
+        }
+    }
+
+    @Test
+    @DisplayName("a sample file that resolves outside its space is not written, and SAYS so")
+    void stagingRefusalSpeaks(@TempDir File home) throws Exception {
+        // the rust space's sample lands at src/main.rs, so a src that is a
+        // link out of the space is the shape this guard exists for — and a
+        // silently skipped sample paints a shot of a space that merely
+        // looks incomplete (refusals speak)
+        File outside = new File(home, "outside");
+        assertThat(outside.mkdirs()).isTrue();
+        File spaceDir = new File(new File(new File(home, ".nmox"), "learn"), "rust");
+        assertThat(spaceDir.mkdirs()).isTrue();
+        if (!linked(spaceDir.toPath().resolve("src"), outside.toPath())) {
+            return;
+        }
+
+        java.util.List<java.util.logging.LogRecord> said = new java.util.ArrayList<>();
+        java.util.logging.Logger log =
+                java.util.logging.Logger.getLogger(DocsStaging.class.getName());
+        java.util.logging.Handler ear = new java.util.logging.Handler() {
+            @Override public void publish(java.util.logging.LogRecord r) {
+                said.add(r);
+            }
+            @Override public void flush() { }
+            @Override public void close() { }
+        };
+        log.addHandler(ear);
+        try {
+            DocsStaging.seedLearningSpaces(home, Map.of("rust", 0));
+        } finally {
+            log.removeHandler(ear);
+        }
+
+        assertThat(new File(outside, "main.rs"))
+                .as("never write outside the space, even for a built-in")
+                .doesNotExist();
+        assertThat(said)
+                .as("the skip must be audible — it used to be a bare continue")
+                .anySatisfy(r -> {
+                    assertThat(r.getLevel()).isEqualTo(java.util.logging.Level.WARNING);
+                    assertThat(java.text.MessageFormat.format(r.getMessage(), r.getParameters()))
+                            .contains("rust")
+                            .contains("src/main.rs")
+                            .contains("resolves outside");
+                });
+    }
+
     @Test
     @DisplayName("the classic site is a generated Classic Web project carrying the Classic Web Bench patch")
     void classicSite(@TempDir File home) throws Exception {

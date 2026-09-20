@@ -25,13 +25,26 @@ class NgSchematicTest {
         assertThat(NgSchematic.angularRoot(null)).isNull();
     }
 
+    /** A platform without symlinks has nothing to prove in the walk below. */
+    private static boolean linked(Path from, Path to) {
+        try {
+            Files.createSymbolicLink(from, to);
+            return true;
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return false;
+        }
+    }
+
     @Test
     @DisplayName("the folder field cannot escape the workspace")
     void traversalGuard(@TempDir Path root) throws Exception {
         Files.createDirectories(root.resolve("src/app"));
         File r = root.toFile();
+        // the CANONICAL directory (ledger 111): this becomes the cwd of a
+        // trust-gated spawn and ng writes relative to its cwd, so the
+        // answer is the directory the guard judged, not the one typed
         assertThat(NgSchematic.targetFolder(r, "src/app"))
-                .isEqualTo(new File(r, "src/app"));
+                .isEqualTo(new File(r, "src/app").getCanonicalFile());
         assertThat(NgSchematic.targetFolder(r, "")).isEqualTo(r);
         assertThat(NgSchematic.targetFolder(r, "../../etc"))
                 .as("a typed traversal must die before any spawn").isNull();
@@ -39,6 +52,51 @@ class NgSchematicTest {
                 .isNull();
         assertThat(NgSchematic.targetFolder(r, "does/not/exist"))
                 .as("ng cannot run in a folder that isn't there").isNull();
+    }
+
+    @Test
+    @DisplayName("the field's own ways of saying \"here\" mean the workspace; a spelling that only looks like it does not")
+    void theWorkspaceItself(@TempDir Path root) throws Exception {
+        Files.createDirectories(root.resolve("src"));
+        File r = root.toFile();
+        // an empty field is the common case — ng generate at the workspace
+        // root — and "." is the same wish typed out. Neither asks a
+        // containment question: the workspace is itself by definition.
+        assertThat(NgSchematic.targetFolder(r, "")).isEqualTo(r);
+        assertThat(NgSchematic.targetFolder(r, "   ")).isEqualTo(r);
+        assertThat(NgSchematic.targetFolder(r, ".")).isEqualTo(r);
+        assertThat(NgSchematic.targetFolder(r, "./")).isEqualTo(r);
+        assertThat(NgSchematic.targetFolder(r, null)).isEqualTo(r);
+        // "src/.." only LOOKS like the root: if src were a link it would
+        // name somewhere else, so it is a real question and the guard's
+        // decided policy answers it — the root is not a file inside itself
+        assertThat(NgSchematic.targetFolder(r, "src/.."))
+                .as("a traversal that lands on the root is the guard's question, not the field's")
+                .isNull();
+    }
+
+    @Test
+    @DisplayName("a symlinked folder: one leaving the workspace is refused, one staying inside answers the directory it judged")
+    void symlinkedFolder(@TempDir Path root, @TempDir Path elsewhere) throws Exception {
+        File r = root.toFile();
+        Files.createDirectories(elsewhere.resolve("victim"));
+        if (!linked(root.resolve("escape"), elsewhere.resolve("victim"))) {
+            return;
+        }
+        assertThat(NgSchematic.targetFolder(r, "escape"))
+                .as("ng must not be given a cwd outside the workspace to generate into")
+                .isNull();
+
+        Files.createDirectories(root.resolve("real"));
+        if (!linked(root.resolve("inside"), root.resolve("real"))) {
+            return;
+        }
+        File target = NgSchematic.targetFolder(r, "inside");
+        assertThat(target).isNotNull();
+        assertThat(target.getPath())
+                .as("the spawn's cwd must be the directory the check looked at")
+                .doesNotContain("inside")
+                .contains("real");
     }
 
     @Test
