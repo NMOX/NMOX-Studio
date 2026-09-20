@@ -109,6 +109,20 @@ someone decides to spend the money.
 - `TEMPLATE_EXPRESSION` is emitted, so `${user.name}` inside a template literal
   lexes as JavaScript against the colour registered for it (ledger 114).
 
+**One more defect, and CI found it.** The `windows-latest` leg — a blocking gate
+since v1.42.0 — failed the new `Containment` guard. Windows canonicalisation
+cannot resolve a symlinked ancestor when the FINAL component does not exist, so
+a not-yet-existing file behind a link inside the root came back spelled as-is
+and passed containment. On POSIX the same call resolves it, which is why every
+local run was green: **the platform was doing the work, not the code.** It
+mattered most on the WRITE paths, where an absent leaf is the normal case rather
+than an edge. The guard now canonicalises the deepest EXISTING ancestor and
+re-appends the tail, and the test states that as a platform-independent property
+— the answer must not change when the leaf appears. The helper creating those
+symlinks was also returning early instead of skipping, so the body vanished
+under a green tick wherever symlinks are refused: the same defect as 115b's
+`argvPinned`, inside the test written to catch this one.
+
 ### Fixed
 - The stale-run gate race (ledger 18), the IGNITE `NullPointerException`,
   `gradle`'s command directory, both read-failure clobbers, the `DockerRecipes`

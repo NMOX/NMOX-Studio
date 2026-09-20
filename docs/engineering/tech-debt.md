@@ -1068,6 +1068,34 @@ message on a different surface, and each needs its own refusal walk. Folding thr
 more into a release that already lands eighteen units would be the scope mistake
 111 was held back to avoid. `UserTemplates` is the one to do first — it writes.
 
+**A second containment ceiling, recorded rather than taken (v2.186.0).** A path
+through a **broken** symlink is judged on its spelling, because no platform can
+resolve one. So a link inside the root pointing at a target that does not exist
+YET would be followed out if that target were later created. This is
+pre-existing and byte-identical before and after this release's guard rewrite —
+verified by a 30-input differential probe. Closing it means refusing when the
+canonicalized ancestor is ITSELF still a symlink, which is arguably just the
+stated symlink policy made true; it is left undone because it is a NEW refusal
+rule, it cannot be tested on Windows from this bench, and adding one to a
+release that already lands twenty units is the scope mistake ledger 111 was held
+back to avoid.
+
+**The Windows half of this family was a live hole, found by CI (v2.186.0).**
+`Containment.resolve` canonicalized the WHOLE target path, and on Windows
+canonicalization cannot resolve a symlinked ancestor when the FINAL component
+does not exist — so a not-yet-existing file behind a link inside the root came
+back spelled as-is and passed containment. On POSIX the same call resolves it,
+which is why every local run was green: *the platform was doing the work, not
+the code.* That mattered most on the WRITE paths, where an absent leaf is the
+normal case rather than an edge — `DockerRecipes`, `LearningSpace` and
+`DocsStaging` all name files that do not exist yet. The guard now canonicalizes
+the deepest EXISTING ancestor and re-appends the tail, so the answer no longer
+depends on the leaf existing, and the test states exactly that as a
+platform-independent property. The helper that created the symlinks was also
+returning early instead of skipping, so the whole test body vanished under a
+green tick on any platform that refuses them — the same defect as 115b's
+`argvPinned`, in the test written to catch this one.
+
 **Not believed exploitable today**, and that is measured for the one that
 mattered most rather than assumed: restoring the old `DebugEntries` code, the
 escape assertion still PASSED, because that guard canonicalised before deciding.
