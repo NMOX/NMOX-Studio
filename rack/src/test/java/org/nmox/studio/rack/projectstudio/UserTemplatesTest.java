@@ -230,6 +230,32 @@ class UserTemplatesTest {
     }
 
     @Test
+    @DisplayName("a DANGLING link named by the template cannot be written through either")
+    void aDanglingLinkIsRefusedAndNothingLandsOutside(@TempDir Path tmp) throws IOException {
+        // The leaf case, which is the one that bit: a link whose target
+        // does not exist is still an entry, and Files.writeString opens
+        // with CREATE — which follows it and CREATES that target. The
+        // guard used to answer "contained" for exactly this, because no
+        // platform can canonicalize a link that leads nowhere.
+        Path outside = Files.createDirectories(tmp.resolve("outside"));
+        Path root = Files.createDirectories(tmp.resolve("proj"));
+        assumeLinked(root.resolve("package.json"), outside.resolve("pwned.txt"));
+        UserTemplates.Custom t = oneFile("package.json", "owned");
+
+        assertThat(Containment.resolvePath(root.toFile(), "package.json"))
+                .as("a dangling link is judged by the target it RECORDS, and this"
+                        + " one records a file outside the project")
+                .isNull();
+
+        assertThatThrownBy(() -> UserTemplates.generate(t, root.toFile(), "p"))
+                .as("never-clobber still gets there first — a link is an entry, so"
+                        + " the target is not empty; the guard is defence in depth")
+                .isInstanceOf(IOException.class)
+                .hasMessageContaining("not empty");
+        assertThat(outside.resolve("pwned.txt")).doesNotExist();
+    }
+
+    @Test
     @DisplayName("a symlinked LOCATION is not an escape — that is the directory the user chose")
     void aSymlinkedLocationStillWrites(@TempDir Path tmp) throws IOException {
         Path real = Files.createDirectories(tmp.resolve("real"));
