@@ -145,14 +145,13 @@ class ContainmentLedgerTest {
             if (routed || shaped) {
                 census.add(name);
             }
-            if (shaped && !routed) {
+            // Containment.java IS the decision; it is the home, not a site
+            if (shaped && !routed && !"Containment.java".equals(name)) {
                 deciding.add(name);
                 where.add(name + ":" + line(body, judged.start()));
             }
         }
-        // Containment.java IS the decision; it is the home, not a site
         census.remove("Containment.java");
-        deciding.remove("Containment.java");
 
         assertThat(census)
                 .as("the containment census went quiet — if the shapes it hunts were "
