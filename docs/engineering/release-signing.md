@@ -75,7 +75,7 @@ exactly as today, and the other way round.
    **+**, role *Developer*. Download the `.p8` **once** (it cannot be
    downloaded again) and note the **Key ID** and the **Issuer ID** shown
    above the table.
-5. **Set four repository secrets** (*Settings ▸ Secrets and variables ▸
+5. **Set five repository secrets** (*Settings ▸ Secrets and variables ▸
    Actions ▸ New repository secret*):
 
    | Secret | Value |
