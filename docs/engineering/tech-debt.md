@@ -1068,6 +1068,34 @@ message on a different surface, and each needs its own refusal walk. Folding thr
 more into a release that already lands eighteen units would be the scope mistake
 111 was held back to avoid. `UserTemplates` is the one to do first — it writes.
 
+**Closed one at a time (v2.187.0), which is what the deferral above asked for.**
+`McpSubscriptions` is routed: it was the closest of the three to the policy and
+loses nothing, because its refusals are one protocol sentence (the Agent Port's
+`-32002`, *not found*) that the guard's single null cannot blur. The existence
+test it needs stays at the CALL SITE rather than being inherited — `Containment`
+deliberately answers for a leaf that does not exist yet, since the write paths
+need that. `UserTemplates.generate` is routed too, and **the escape the bullet
+above names did not reproduce through it**: the lexical guard really does accept
+a symlinked segment, but never-clobber proves the target empty two lines earlier
+and a planted link IS an entry, so the write is refused before the guard is
+reached — defence in depth, not a demonstrated escape. The same lexical spelling
+had caused two REAL defects nobody had named, both reproduced: it left the BASE
+un-normalized while the target was normalized, so a location carrying a `..`
+segment (the wizard's location field is free text) refused EVERY file of a
+perfectly ordinary template as an escape; and a path resolving to the project
+root reached `writeString` and came back as the operating system's raw *"Is a
+directory"*, a refusal naming no template. `SymbolIndexProvider` is **not** swept
+and now says so permanently, measured: the Agent Port hands agents ABSOLUTE paths
+of its own — `EditorState` reports every open tab as `getAbsolutePath()`, so
+`ide_context.activeFile` is absolute and *"outline what I am editing"* is the
+next call an agent makes — and `Containment` JOINS an absolute-looking name under
+the root by its own deliberate, test-pinned policy, so routing would answer *"no
+such file"* about a path this same server had just emitted. `DebugEntries` went
+the joining way in v2.186.0 because npm's spec makes `main` relative; that reason
+does not reach a string the product itself wrote. So the census sentence above —
+*"the walk each still needs"* — is spent: two are counted by their CALL, and the
+third carries that reason inside the gate, where a person can disagree with it.
+
 **CORRECTION (v2.187.0): what v2.186.0 recorded here as a "ceiling" was a LIVE
 WRITE-ESCAPE, and the entry was wrong in both directions.** It is left in place
 below, struck through, because a wrong claim is worth more corrected than
@@ -1132,11 +1160,36 @@ returning early instead of skipping, so the whole test body vanished under a
 green tick on any platform that refuses them — the same defect as 115b's
 `argvPinned`, in the test written to catch this one.
 
-**Not believed exploitable today**, and that is measured for the one that
+**CORRECTION (v2.187.0): the verdict below acquitted a FAMILY on one MEMBER's
+measurement, and two escapes have since been found in the family it acquitted.**
+It is struck through rather than deleted, for the same reason as the ceiling
+above.
+
+The measurement inside it is sound and still stands, exactly as far as it goes:
+restoring the old `DebugEntries` code left the escape assertion PASSING, because
+that guard canonicalised before deciding. That is a fact about `DebugEntries`.
+What does not stand is the scope — *"what these leave … not an escape"* is a
+verdict over every site in this entry, resting on one site answering one
+question. It was already contradicted by the paragraph directly above it, in the
+same release: the Windows half is called **a live hole** there, and what passed
+containment through it was a not-yet-existing file behind a symlinked ancestor —
+which is precisely the shape `DockerRecipes` writes. A file created outside the
+project is an escape, not a TOCTOU-shaped residue. The dangling-link write
+corrected at the top of this entry is the second one, on POSIX as well, reachable
+with no waiting and no link ever resolving.
+
+The honest verdict for this family is therefore **two escapes, both measured,
+both now refused** — and the sentence below is its own best evidence for the
+lesson: *"not believed" is a belief, and a belief written where a measurement
+belongs will be read as a measurement.* A verdict must not outrun the scope of
+what was measured; where it cannot cover the family, name the member that was
+measured and stop there.
+
+~~**Not believed exploitable today**, and that is measured for the one that
 mattered most rather than assumed: restoring the old `DebugEntries` code, the
 escape assertion still PASSED, because that guard canonicalised before deciding.
 What these leave is the same TOCTOU-shaped residue — the check and the use naming
-different paths — not an escape.
+different paths — not an escape.~~
 
 ## Upstream — filed, not ours (added v2.156.0, the multi-session walk)
 
