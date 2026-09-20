@@ -89,8 +89,8 @@ public final class WebBrowserTopComponent extends TopComponent {
     }
 
     /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
-    private final org.nmox.studio.rack.service.AimFollower aimFollower =
-            new org.nmox.studio.rack.service.AimFollower(n ->
+    private final org.nmox.studio.core.util.AimFollower aimFollower =
+            new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
 
     @Override
@@ -116,6 +116,8 @@ public final class WebBrowserTopComponent extends TopComponent {
         org.openide.util.RequestProcessor.Task shaping =
                 SHAPING_RP.post(org.nmox.studio.ui.browser.fx.ComplexTextShaping::install);
         browser = new FxBrowserPanel(title -> setDisplayName(BrowserUrls.tabTitle(title)));
+        // a load that never answers paints nothing; say so (see showNoAnswer)
+        browser.setLoadFailedListener(this::showNoAnswer);
         add(browser, BorderLayout.CENTER);
         // save → see: local pages reload themselves on web-file saves
         // (v1.228.0); detached symmetrically in stopEngine when the tab
@@ -180,6 +182,31 @@ public final class WebBrowserTopComponent extends TopComponent {
 
     private static final org.openide.util.RequestProcessor FIRST_LOAD_RP =
             new org.openide.util.RequestProcessor("Browser First Load", 1);
+
+    /**
+     * EDT. A load that did not answer gets a page of ours saying so.
+     *
+     * <p>The other empty state, and the one that said nothing: a serving is
+     * registered — or a URL was typed — the load fails at the socket, and the
+     * WebView paints a blank rectangle. No reason, no way forward, in a
+     * product whose oldest law is that refusals speak.
+     *
+     * <p>This runs only AFTER the loopback rewrite has had its turn:
+     * {@code loadUrl} sends a {@code localhost} address through
+     * {@link org.nmox.studio.core.http.LoopbackUrls} before the engine ever
+     * dials, so a server bound only to {@code [::1]} is already handled
+     * (v1.259.0) and is never reported here as a failure the product could
+     * have fixed itself. What reaches this point is a load that really found
+     * nobody home.
+     */
+    private void showNoAnswer(String url) {
+        FxBrowserPanel current = browser;
+        if (current != null) {
+            // the address stays in the field: it is the truth about what
+            // failed, and pressing Enter there is the retry the page offers
+            current.loadContent(StartPage.noAnswerHtml(url), url);
+        }
+    }
 
     @Override
     protected void componentClosed() {

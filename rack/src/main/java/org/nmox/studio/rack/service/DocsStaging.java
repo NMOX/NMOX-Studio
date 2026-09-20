@@ -9,9 +9,12 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.json.JSONObject;
 import org.nmox.studio.core.spi.ProjectAim;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.engine.RackBus;
 import org.nmox.studio.rack.model.RackDevice;
@@ -54,6 +57,8 @@ import org.openide.windows.WindowManager;
  * pinned by {@code DocsStagingTest}.
  */
 public final class DocsStaging {
+
+    private static final Logger LOG = Logger.getLogger(DocsStaging.class.getName());
 
     /** The classic site's name — the rack and editor shots aim here. */
     public static final String CLASSIC_NAME = "classic-demo";
@@ -145,9 +150,19 @@ public final class DocsStaging {
                             + java.time.LocalDate.now().minusDays(Math.max(0, e.getValue())) + "\n",
                     StandardCharsets.UTF_8);
             for (LearningCatalog.SampleFile f : space.files()) {
-                File target = new File(dir, f.path());
-                if (!target.getCanonicalPath().startsWith(dir.getCanonicalPath() + File.separator)) {
-                    continue; // never write outside the space, even for a built-in
+                // the ONE containment guard (ledger 111) — and its canonical
+                // answer is what gets written, so the file judged and the
+                // file created are the same one even through a symlink
+                File target = Containment.resolve(dir, f.path());
+                if (target == null) {
+                    // never write outside the space, even for a built-in — and
+                    // SAY so, because a silently skipped sample paints a shot
+                    // of a space that looks simply incomplete (refusals speak)
+                    LOG.log(Level.WARNING,
+                            "Staged space {0}: sample file \"{1}\" resolves outside"
+                            + " the space directory — not written.",
+                            new Object[]{space.slug(), f.path()});
+                    continue;
                 }
                 Files.createDirectories(target.getParentFile().toPath());
                 Files.writeString(target.toPath(), f.content(), StandardCharsets.UTF_8);

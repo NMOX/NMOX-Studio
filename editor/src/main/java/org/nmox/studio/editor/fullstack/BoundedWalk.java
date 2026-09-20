@@ -24,10 +24,12 @@ public final class BoundedWalk {
     private BoundedWalk() {
     }
 
-    /** Directories a project scan must never descend into. */
-    public static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "out", "coverage",
-            "target", ".next", ".nuxt", ".angular", ".svelte-kit");
+    /** Directories a project scan must never descend into — one home
+     *  since ledger 110. The census readers ({@code CssTokens},
+     *  {@code CssClasses}, {@code I18nUsage}, {@code Routes}) all inherit
+     *  this set, which is why it is {@code public}: a second declaration
+     *  beside it is how ledger 110 grew in the first place. */
+    public static final Set<String> SKIP_DIRS = org.nmox.studio.core.util.HeavyDirs.NAMES;
 
     /** A file larger than this is skipped whole (never partially read). */
     public static final long MAX_FILE_BYTES = 256 * 1024;

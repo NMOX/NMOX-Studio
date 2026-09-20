@@ -264,8 +264,8 @@ public final class RackTopComponent extends TopComponent {
      * TopComponent lookup proxies activated nodes, so getLookup() carries
      * the DataObject/FileObject too.
      */
-    private final org.nmox.studio.rack.service.AimNodePublisher aimPublisher =
-            new org.nmox.studio.rack.service.AimNodePublisher(node ->
+    private final org.nmox.studio.core.util.AimNodePublisher aimPublisher =
+            new org.nmox.studio.core.util.AimNodePublisher(node ->
                     setActivatedNodes(new org.openide.nodes.Node[]{node}));
 
     /**

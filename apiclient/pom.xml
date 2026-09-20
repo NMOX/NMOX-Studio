@@ -60,6 +60,19 @@
             <artifactId>org-openide-windows</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- v2.186.0 (tech-debt ledger 72): this studio publishes the
+             aimed project's node as its ambient selection, so ^F6 and the
+             Team menu work while it is focused. setActivatedNodes has
+             always taken a Node[]; this window is simply the first place
+             in the module that names the type, and the nbm manifest check
+             insists a used class is a declared dependency. The PLATFORM,
+             never the rack — the follower finds the rack through
+             core.spi.ProjectAim (RackSoftDependencyTest still holds). -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-openide-nodes</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-openide-dialogs</artifactId>
@@ -127,6 +140,17 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- masterfs registers the disk URLMapper, so FileUtil.toFileObject
+             resolves real files in headless tests - the v2.186.0
+             aim-selection test resolves the aimed project's real node;
+             at runtime the platform cluster provides it, same rationale
+             as rack's and tools' test-scope entries -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

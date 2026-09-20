@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.rack.projectstudio.UserTemplates;
 
 /**
@@ -119,10 +120,19 @@ public final class DockerRecipes {
      * no matter which producer fed it, and a guard that lives in a
      * private UI method cannot be behaviorally tested (the v1.290.0
      * count-the-guards lesson, resolved structurally this time).
+     *
+     * <p>The DECISION is {@link Containment}'s, one home for all four
+     * of these guards (ledger 111); what stays here is this surface's
+     * own refusal sentence. Until then this one was {@code normalize()}
+     * only — no canonicalization at all, on a WRITE path — so a
+     * symlinked segment inside the project pointed anywhere on disk
+     * and the writer followed it. It now refuses that, and refuses
+     * the project root itself, which it used to accept and hand on to
+     * a bare "Is a directory" from the OS.
      */
     public static java.nio.file.Path resolveInside(File dir, String name) throws IOException {
-        java.nio.file.Path target = new File(dir, name).toPath().normalize();
-        if (!target.startsWith(dir.toPath())) {
+        java.nio.file.Path target = Containment.resolvePath(dir, name);
+        if (target == null) {
             throw new IOException("Refusing to write outside the project: " + name);
         }
         return target;

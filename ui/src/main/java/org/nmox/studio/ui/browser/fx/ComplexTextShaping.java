@@ -718,7 +718,10 @@ public final class ComplexTextShaping {
         private final Method charOffset;
         /** Per WebKit font and glyph: the width WebKit should measure. */
         private final Map<Object, Map<Integer, Double>> widths = new WeakHashMap<>();
-        /** Per font, the width parameters fitted for each script block (v2.173.0, {@link FontFit}). */
+        /**
+         * Per FACE, the width parameters fitted for each script block
+         * (v2.173.0, {@link FontFit}); see {@link #fitKey}.
+         */
         private final Map<Object, Map<Integer, FontFit.Fit>> fits = new WeakHashMap<>();
         /** Per WebKit font: the runs it has shaped, most recent last. */
         private final Map<Object, ShapeCache> shaped = new WeakHashMap<>();
@@ -882,7 +885,7 @@ public final class ComplexTextShaping {
         FontFit.Fit fitFor(Object font, Object pg, int block, boolean stacking) {
             Map<Integer, FontFit.Fit> known;
             synchronized (fits) {
-                known = fits.computeIfAbsent(font, f -> new java.util.HashMap<>());
+                known = fits.computeIfAbsent(fitKey(font, pg), f -> new java.util.HashMap<>());
             }
             synchronized (known) {
                 FontFit.Fit cached = known.get(block);
@@ -904,6 +907,62 @@ public final class ComplexTextShaping {
                 known.put(block, fit);
             }
             return fit;
+        }
+
+        /**
+         * What a fitted width parameter belongs to: the font's
+         * {@code FontResource} — the FACE — never the {@code WCFont}
+         * handed in.
+         *
+         * <p>WebKit makes one {@code WCFont} per family <em>and size and
+         * weight and style</em>, while the fitted parameter is a ratio of
+         * widths and so is dimensionless: identical at every size of one
+         * face. Keyed by the sized font, a page setting one family at
+         * {@code h1}, {@code h2}, {@code body}, {@code strong} and
+         * {@code em} paid the whole corpus fit five times — 21-29 laid-out
+         * words plus an advance per distinct letter each, ~60-90 fresh
+         * JavaFX layouts — on whichever thread holds WebKit's page lock
+         * (the FX application thread during layout, the render thread
+         * during paint), so the cost lands on a frame. Keyed by the face
+         * it is paid once (ledger 100, v2.186.0).
+         *
+         * <p>The face, not the FAMILY: a bold face is a different file
+         * with different metrics, so two faces of one family may honestly
+         * disagree about the fit, and sharing one between them would be
+         * faster and sometimes wrong.
+         *
+         * <p>Where this is paid at all: only where a fit runs, which since
+         * v2.174.0 is the repaired simple path — Linux and builds whose
+         * WebKit library this install does not recognise. macOS and
+         * Windows take WebKit's own complex path and never fit.
+         *
+         * <p>A font that will not give up its resource falls back to the
+         * sized font, which is what this cache did for three releases: a
+         * Browser that paints is worth more than a perfect cache.
+         */
+        Object fitKey(Object font, Object pg) {
+            try {
+                Object resource = pg == null ? null : fontResource.invoke(pg);
+                if (resource != null) {
+                    return resource;
+                }
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+                LOG.log(Level.FINE, "complex-script shaping: no font resource; fitting per sized font", ex);
+            }
+            return font;
+        }
+
+        /** Test seam: how many corpus fits this bridge has computed and kept. */
+        int fitsComputed() {
+            int computed = 0;
+            synchronized (fits) {
+                for (Map<Integer, FontFit.Fit> known : fits.values()) {
+                    synchronized (known) {
+                        computed += known.size();
+                    }
+                }
+            }
+            return computed;
         }
 
         private FontFit.Fit fit(Object pg, int block, double constant) {

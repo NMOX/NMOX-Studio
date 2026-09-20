@@ -194,23 +194,49 @@ class LearningSpaceTest {
         }
     }
 
+    /**
+     * The policy itself lives in {@code core.util.Containment} now
+     * (ledger 111) and is pinned by {@code ContainmentTest}. What a
+     * learning space owes is the WALK: the refusal reached through
+     * {@code create()}, the real caller, on the real filesystem.
+     */
     @Test
-    @DisplayName("resolveInside: a traversal or absolute sample path is refused (null)")
-    void resolveInsideRefusesEscapes(@org.junit.jupiter.api.io.TempDir java.nio.file.Path tmp)
-            throws Exception {
-        java.io.File dir = tmp.resolve("space").toFile();
-        java.nio.file.Files.createDirectories(dir.toPath());
-        // safe relative paths resolve inside
-        assertThat(LearningSpace.resolveInside(dir, "hello.lisp")).isNotNull();
-        assertThat(LearningSpace.resolveInside(dir, "src/Main.elm")).isNotNull();
-        // an absolute-looking path is JOINED under the space by new File(dir, x)
-        // (dir/etc/passwd), so it stays contained — non-null is correct
-        assertThat(LearningSpace.resolveInside(dir, "/etc/passwd")).isNotNull();
-        // ../ traversal genuinely escapes and must be refused — a community
-        // catalog can't write over the user's files elsewhere on disk
-        assertThat(LearningSpace.resolveInside(dir, "../../../.zshrc")).isNull();
-        assertThat(LearningSpace.resolveInside(dir, "a/../../b")).isNull();
-        assertThat(LearningSpace.resolveInside(dir, "")).isNull();
+    @DisplayName("create() refuses a sample file reached through a symlink out of the space")
+    void createRefusesSymlinkedSampleFile(
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path home) throws Exception {
+        String realHome = System.getProperty("user.home");
+        System.setProperty("user.home", home.toString());
+        try {
+            java.nio.file.Path outside =
+                    java.nio.file.Files.createDirectories(home.resolve("elsewhere"));
+            // create() REUSES an existing dir for the same slug, so a space
+            // already on disk can carry a planted link when the catalog runs
+            java.io.File space = new java.io.File(LearningSpace.root(), "linky");
+            java.nio.file.Files.createDirectories(space.toPath());
+            try {
+                java.nio.file.Files.createSymbolicLink(space.toPath().resolve("out"), outside);
+            } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+                return; // a platform without symlinks has nothing to prove here
+            }
+
+            LearningCatalog.Space hostile = new LearningCatalog.Space(
+                    "linky", "Linky", LearningCatalog.Category.LANGUAGE, "x", "x",
+                    new LearningCatalog.Driver(LearningCatalog.DriverKind.REPL,
+                            List.of("clisp"), "[1]>", List.of()),
+                    Map.of(),
+                    List.of(new LearningCatalog.SampleFile("ok.txt", "safe"),
+                            new LearningCatalog.SampleFile("out/PWNED.txt", "pwned")),
+                    "# Linky", List.of());
+            java.io.File dir = LearningSpace.create(hostile);
+
+            assertThat(new java.io.File(dir, "ok.txt")).exists();
+            assertThat(outside.resolve("PWNED.txt").toFile())
+                    .as("a symlinked segment must not carry a drop-in's write"
+                            + " out of the space")
+                    .doesNotExist();
+        } finally {
+            System.setProperty("user.home", realHome);
+        }
     }
 
     @Test

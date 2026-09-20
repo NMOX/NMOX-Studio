@@ -45,6 +45,15 @@ class SassCompilerTest {
         assertThat(spawns).isEmpty();
     }
 
+    /**
+     * The argv this test is named for is asserted on EVERY machine.
+     *
+     * <p>Until v2.186.0 the assertions sat inside an
+     * {@code if (outcome == COMPILED)} because the binary was resolved
+     * before the injected runner, so on any box without dart-sass —
+     * which is all three CI lanes — this test proved only that the
+     * compiler did nothing. The resolver is a seam now (ledger 115).
+     */
     @Test
     @DisplayName("the argv is pinned: sass --no-source-map <in> <out>, in the file's dir")
     void argvPinned() throws Exception {
@@ -55,21 +64,60 @@ class SassCompilerTest {
             spawns.add(cmd);
             workDirs.add(wd);
             return new SassCompiler.Exec(0, "");
-        });
+        }, startDir -> "/opt/sass/bin/sass");
         SassCompiler.Result result = compiler.compile(scss);
-        // a box without sass on PATH resolves no binary and honestly refuses;
-        // the argv pin only applies when a spawn happened
-        if (result.outcome() == SassCompiler.Outcome.COMPILED) {
-            assertThat(spawns).hasSize(1);
-            assertThat(spawns.get(0).get(1)).isEqualTo("--no-source-map");
-            assertThat(spawns.get(0).get(2)).isEqualTo(scss.getAbsolutePath());
-            assertThat(spawns.get(0).get(3)).isEqualTo(new File(dir, "style.css").getAbsolutePath());
-            assertThat(workDirs.get(0)).isEqualTo(dir);
-            assertThat(result.output()).isEqualTo(new File(dir, "style.css"));
-        } else {
-            assertThat(result.outcome()).isEqualTo(SassCompiler.Outcome.NO_SASS);
-            assertThat(spawns).isEmpty();
-        }
+        assertThat(result.outcome()).isEqualTo(SassCompiler.Outcome.COMPILED);
+        assertThat(spawns).hasSize(1);
+        assertThat(spawns.get(0)).containsExactly(
+                "/opt/sass/bin/sass",
+                "--no-source-map",
+                scss.getAbsolutePath(),
+                new File(dir, "style.css").getAbsolutePath());
+        assertThat(workDirs.get(0)).isEqualTo(dir);
+        assertThat(result.output()).isEqualTo(new File(dir, "style.css"));
+    }
+
+    @Test
+    @DisplayName("no sass anywhere refuses honestly, before any spawn")
+    void noSassRefusesBeforeSpawn() {
+        List<List<String>> spawns = new ArrayList<>();
+        SassCompiler compiler = new SassCompiler((cmd, wd) -> {
+            spawns.add(cmd);
+            return new SassCompiler.Exec(0, "");
+        }, startDir -> null);
+        SassCompiler.Result result = compiler.compile(new File(dir, "style.scss"));
+        assertThat(result.outcome()).isEqualTo(SassCompiler.Outcome.NO_SASS);
+        assertThat(result.output()).isNull();
+        assertThat(spawns).isEmpty();
+    }
+
+    /**
+     * The v1.102.0 law at this binary: a committed
+     * {@code node_modules/.bin/sass} is a cloned repo's code, so it is
+     * used only when the workspace is TRUSTED. An untrusted workspace
+     * falls through to the user's own global tool — and on a box with
+     * no global sass that is an honest null, never the project's.
+     */
+    @Test
+    @DisplayName("the project-local sass is used only when the workspace is trusted")
+    void localBinaryNeedsTrust() throws Exception {
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
+        File bin = new File(dir, "node_modules/.bin");
+        assertThat(bin.mkdirs()).isTrue();
+        // the .cmd form, as its sibling test above uses: an executable
+        // bit is a POSIX idea and the Windows lane is a blocking gate
+        File sass = new File(bin, "sass.cmd");
+        assertThat(sass.createNewFile()).isTrue();
+
+        assertThat(SassCompiler.resolveBinary(dir))
+                .as("an untrusted workspace never runs its own committed sass")
+                .isNotEqualTo(sass.getAbsolutePath());
+
+        org.nmox.studio.rack.service.WorkspaceTrust.trust(dir);
+        assertThat(SassCompiler.resolveBinary(dir))
+                .as("a trusted workspace prefers the project's own sass")
+                .isEqualTo(sass.getAbsolutePath());
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
     }
 
     @Test

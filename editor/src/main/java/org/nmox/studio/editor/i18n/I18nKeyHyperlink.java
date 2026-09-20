@@ -72,9 +72,18 @@ public final class I18nKeyHyperlink extends ProjectJumpHyperlink {
         if (found == null) {
             status(Bundle.I18nKeyHyperlink_notDeclared(key, catalogs.catalogHome()));
         } else {
-            openLine(found.catalog().file().toFile(), found.entry().line());
+            open.accept(found.catalog().file().toFile(), found.entry().line());
         }
     }
+
+    /**
+     * The jump sink: open {@code file} at its 1-based line. A seam only
+     * so a test can assert WHICH file and WHICH line a real ⌘-click
+     * resolves to — the platform's own open needs a live editor and a
+     * {@code LineCookie}, and "something was opened" is not the claim
+     * this jump makes.
+     */
+    java.util.function.ObjIntConsumer<File> open = ProjectJumpHyperlink::openLine;
 
     /**
      * The source catalog entry a key names — its namespace's file when

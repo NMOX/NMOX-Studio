@@ -105,7 +105,7 @@ class GraphIORoundTripTest {
 
         InfraGraph graph = new InfraGraph();
         graph.addNode(NodeKind.DROPLET, 0, 0); // pre-existing canvas state
-        File backup = GraphIO.loadGuarded(graph, file);
+        File backup = GraphIO.loadGuarded(graph, file).backup();
 
         assertThat(backup).isNotNull();
         assertThat(backup.getName()).isEqualTo(GraphIO.DEFAULT_FILENAME + ".bak");
@@ -122,7 +122,7 @@ class GraphIORoundTripTest {
         GraphIO.save(deployedDesign(), file);
 
         InfraGraph graph = new InfraGraph();
-        File backup = GraphIO.loadGuarded(graph, file);
+        File backup = GraphIO.loadGuarded(graph, file).backup();
 
         assertThat(backup).isNull();
         assertThat(graph.getNodes()).hasSize(2);

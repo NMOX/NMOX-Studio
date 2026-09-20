@@ -25,6 +25,16 @@ import org.nmox.studio.rack.ui.controls.VuMeter;
  */
 public abstract class CommandDevice extends RackDevice {
 
+    /**
+     * What every refusal says when the rack is aimed at a directory with
+     * no recognized manifest. One home: the sentence is read by the
+     * launch gate, the sequence gate AND {@link #noCommandReason()}, and
+     * three copies of a sentence are three chances for two of them to
+     * drift apart.
+     */
+    static final String NO_MANIFEST =
+            "NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK";
+
     /** True when {@code tool} resolves on the IDE's augmented PATH — the
      *  shared availability probe every console's grey-honestly path uses
      *  (moved here from StellarDevice in the v1.141.0 debt sprint: a
@@ -251,8 +261,15 @@ public abstract class CommandDevice extends RackDevice {
      */
     protected String noCommandReason() {
         ProjectInspector.ProjectKind k = effectiveKind();
-        String toolchain = k == null ? "THIS PROJECT" : k.name();
-        return "NO " + getTitle() + " VERB FOR " + toolchain
+        if (k == null || (k == ProjectInspector.ProjectKind.NONE && requiresProjectManifest())) {
+            // NONE is not a toolchain with a missing verb, it is a rack
+            // with nothing aimed at it, and the manifest sentence says what
+            // to DO about that. The command check runs before the manifest
+            // check, so without this the honest-grey path would answer a
+            // question the user never asked ("NO IGNITION VERB FOR NONE").
+            return NO_MANIFEST;
+        }
+        return "NO " + getTitle() + " VERB FOR " + k.name()
                 + " — THAT TOOLCHAIN HAS NO SUCH COMMAND";
     }
 
@@ -340,7 +357,7 @@ public abstract class CommandDevice extends RackDevice {
             return false;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
+            refuseLaunch(NO_MANIFEST);
             return false;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
@@ -364,7 +381,15 @@ public abstract class CommandDevice extends RackDevice {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));
-        }, code -> {
+        }, (code, superseded) -> {
+            if (superseded) {
+                // A newer launch already replaced this run (ledger 18): the
+                // faceplate, the serving registry, the SERVING gate and the
+                // ok/fail/done jacks all belong to that run now. This one
+                // was killed to make room for it — it did not finish, and
+                // saying so would tell a live server it had stopped.
+                return;
+            }
             long elapsed = System.currentTimeMillis() - launchedAt;
             boolean ok = overallSuccess(code);
             boolean stopped = stoppedByUserOrSignal(stopRequested, code);
@@ -415,7 +440,7 @@ public abstract class CommandDevice extends RackDevice {
             return;
         }
         if (requiresProjectManifest() && !ProjectInspector.hasProjectManifest(projectDir())) {
-            refuseLaunch("NO PROJECT MANIFEST — USE PROJECT… TO AIM THE RACK");
+            refuseLaunch(NO_MANIFEST);
             return;
         }
         if (requiresProjectManifest() && !trustCheck.test(projectDir())) {
@@ -443,7 +468,14 @@ public abstract class CommandDevice extends RackDevice {
             activity.pulse(0.35 + Math.min(0.6, line.length() / 160.0));
             onLine(line);
             emit("out", Signal.data(line));
-        }, code -> {
+        }, (code, superseded) -> {
+            if (superseded) {
+                // ledger 18, and a sequence has a second way to be wrong
+                // about it: a replaced step must not march the rest of a
+                // train the user has already swapped out into the run that
+                // replaced it. The chain ends where it was replaced.
+                return;
+            }
             boolean stopped = stoppedByUserOrSignal(stopRequested, code);
             stopRequested = false;
             if (code == 0 && index + 1 < steps.size() && !stopped) {

@@ -84,6 +84,31 @@ class PageSourceResolverTest {
     }
 
     @Test
+    @DisplayName("a symlink out of the project refuses — the page maps to no source")
+    void symlinkOutOfTheProjectRefuses() throws Exception {
+        // the guard moved to core.util.Containment (ledger 111); this
+        // walks the refusal through resolve(), the real caller path
+        Path project = Files.createDirectories(dir.resolve("project"));
+        Files.writeString(project.resolve("index.html"), "<html></html>");
+        Path outside = Files.createDirectories(dir.resolve("elsewhere"));
+        Files.writeString(outside.resolve("secret.txt"), "hands off");
+        try {
+            Files.createSymbolicLink(project.resolve("leak"), outside);
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return; // a platform without symlinks has nothing to prove here
+        }
+        List<Serving> s = List.of(new Serving("ignition", "IGNITION",
+                "http://localhost:8000/", Kind.WEB, project.toFile()));
+
+        assertThat(PageSourceResolver.resolve("http://localhost:8000/leak/secret.txt", s))
+                .as("a link out of the project is not a source this IDE can name")
+                .isNull();
+        // the control: the same resolver still finds what IS inside
+        assertThat(PageSourceResolver.resolve("http://localhost:8000/", s).file())
+                .isEqualTo(project.resolve("index.html").toFile().getCanonicalFile());
+    }
+
+    @Test
     @DisplayName("a file:// page IS its source")
     void fileUrl() throws Exception {
         Path f = dir.resolve("page.html");

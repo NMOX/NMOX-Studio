@@ -131,9 +131,19 @@ public final class Workspaces {
         return dirs;
     }
 
+    /**
+     * The {@code **} arm of a declared workspace glob. The skip set is the
+     * one home (ledger 110): this was the shortest of the thirteen answers
+     * — a single inline name, which is also the shape no set-literal gate
+     * would ever have caught — and the eleven it was missing matter here.
+     * An Angular library build writes {@code dist/my-lib/package.json}, so
+     * a project declaring {@code "workspaces": ["**"]} was offering its own
+     * build output to WAYPOINT as a package to dial, with every Node lane
+     * then rooted in a directory the next build deletes.
+     */
     private static void walk(File dir, int depth, List<File> out) {
         if (depth < 0 || dir == null || !dir.isDirectory()
-                || "node_modules".equals(dir.getName())) {
+                || org.nmox.studio.core.util.HeavyDirs.isHeavy(dir.getName())) {
             return;
         }
         if (new File(dir, "package.json").isFile()) {

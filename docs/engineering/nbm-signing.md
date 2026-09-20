@@ -18,6 +18,10 @@ is a KeyStoreProvider at TRUST level carrying the certificate, so
 post-2.43.0 installs show our updates TRUSTED. Official certificates
 (Apple Developer ID + notarization,
 Windows Authenticode) are a **v3.0 milestone by decision (2026-08-27)**.
+Those two are the *installers*, not the NBMs, and they have their own
+document: **[release-signing.md](./release-signing.md)** — the price, the
+accounts, the exact secret names, and the release lanes that are already
+written and waiting for them.
 
 The mechanism (kept for the v3.0 switch and for forks): no keystore → no
 signing; it turns on the moment three repository secrets exist, nothing

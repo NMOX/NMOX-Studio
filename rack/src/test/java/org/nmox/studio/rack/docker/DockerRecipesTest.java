@@ -76,9 +76,13 @@ class DockerRecipesTest {
     @DisplayName("resolveInside refuses escapes BEHAVIORALLY — not by prose")
     void resolveInsideRefusesEscapes(@TempDir Path tmp) throws Exception {
         java.io.File dir = tmp.toFile();
-        // the happy path resolves under the project
+        // the happy path resolves under the project. The answer is the
+        // CANONICAL path now (ledger 111's symlink law), so the root it
+        // must sit under is the canonical one — on macOS @TempDir hands
+        // out /var/... while the canonical form is /private/var/...
+        Path canonicalRoot = dir.getCanonicalFile().toPath();
         assertThat(DockerRecipes.resolveInside(dir, "docker/nginx.conf"))
-                .satisfies(p -> assertThat(p.startsWith(tmp)).isTrue());
+                .satisfies(p -> assertThat(p.startsWith(canonicalRoot)).isTrue());
         // the divergent inputs: a mutant that skips the check RETURNS a
         // path outside tmp instead of throwing — behavior, not a string
         org.assertj.core.api.Assertions.assertThatThrownBy(
@@ -87,6 +91,57 @@ class DockerRecipesTest {
         org.assertj.core.api.Assertions.assertThatThrownBy(
                 () -> DockerRecipes.resolveInside(dir, "a/../../b"))
                 .isInstanceOf(java.io.IOException.class);
+        // the project ROOT is not a file inside the project: this used
+        // to be accepted and handed on to a bare "Is a directory"
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> DockerRecipes.resolveInside(dir, ""))
+                .isInstanceOf(java.io.IOException.class);
+        org.assertj.core.api.Assertions.assertThatThrownBy(
+                () -> DockerRecipes.resolveInside(dir, "sub/.."))
+                .isInstanceOf(java.io.IOException.class);
+    }
+
+    @Test
+    @DisplayName("THE WRITE WALK: a symlinked segment cannot carry the writer out of the project")
+    void writerRefusesASymlinkOutOfTheProject(@TempDir Path tmp) throws Exception {
+        // the guard here was normalize() ONLY until ledger 111 — no
+        // canonicalization at all, on a WRITE path — so a link inside
+        // the project pointed anywhere on disk and the writer followed
+        // it. This walks the writer's own loop, not a string.
+        java.io.File dir = Files.createDirectories(tmp.resolve("project")).toFile();
+        Path outside = Files.createDirectories(tmp.resolve("elsewhere"));
+        Files.writeString(outside.resolve("nginx.conf"), "the user's own file");
+        try {
+            Files.createSymbolicLink(dir.toPath().resolve("docker"), outside);
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return; // a platform without symlinks has nothing to prove here
+        }
+
+        java.util.Map<String, String> files = new java.util.LinkedHashMap<>();
+        files.put("Dockerfile", "FROM scratch");
+        files.put("docker/nginx.conf", "server { }");
+
+        java.util.List<String> written = new java.util.ArrayList<>();
+        String refusal = null;
+        try {
+            // exactly what DockerPanelTopComponent.writeDockerizeFiles does
+            for (var e : files.entrySet()) {
+                Path target = DockerRecipes.resolveInside(dir, e.getKey());
+                Files.createDirectories(target.getParent());
+                Files.writeString(target, e.getValue(), StandardCharsets.UTF_8);
+                written.add(e.getKey());
+            }
+        } catch (java.io.IOException refused) {
+            refusal = refused.getMessage();
+        }
+
+        assertThat(refusal)
+                .as("the writer must refuse, in its own words")
+                .isEqualTo("Refusing to write outside the project: docker/nginx.conf");
+        assertThat(written).containsExactly("Dockerfile");
+        assertThat(Files.readString(outside.resolve("nginx.conf")))
+                .as("the user's file outside the project must be untouched")
+                .isEqualTo("the user's own file");
     }
 
     @Test

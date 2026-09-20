@@ -847,8 +847,8 @@ public final class DockerPanelTopComponent extends TopComponent {
     private boolean dockerizePending;
 
     /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
-    private final org.nmox.studio.rack.service.AimFollower aimFollower =
-            new org.nmox.studio.rack.service.AimFollower(n ->
+    private final org.nmox.studio.core.util.AimFollower aimFollower =
+            new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
 
     @Override

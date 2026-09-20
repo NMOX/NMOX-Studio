@@ -17,8 +17,16 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  */
 public class TestDevice extends CommandDevice {
 
-    // append-only: persisted patches store the knob index, not the label
-    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "node"};
+    // append-only: persisted patches store the knob index, not the label,
+    // so a REORDERED array reads a saved patch as a different runner. New
+    // positions go at the END; KindVocabularyGateTest pins this exact order.
+    private static final String[] FRAMEWORKS = {"auto", "jest", "vitest", "mocha", "playwright", "cypress", "pytest", "cargo", "go", "mvn", "rspec", "phpunit", "mix", "rebar3", "clojure", "swift", "dotnet", "dart", "sbt", "stack", "zig", "dune", "crystal", "bun", "deno", "forge", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "node",
+        // appended v2.186.0: AUTO has resolved a Gradle project to `gradle
+        // test` since the lane shipped and the knob never offered it, so
+        // the one runner you could not dial was the one AUTO would pick;
+        // rescript rides along so its grey has a name a user can ask for
+        "gradle", "rescript"};
+
     private static final Pattern PASSED = Pattern.compile("(\\d+)\\s+(?:passed|passing)");
     private static final Pattern FAILED = Pattern.compile("(\\d+)\\s+(?:failed|failing)");
     // node:test speaks TAP, whose summary counts read "# pass 3" / "# fail 1"
@@ -44,6 +52,11 @@ public class TestDevice extends CommandDevice {
         Pattern.compile("^TOTAL\\s+\\d+\\s+\\d+\\s+([\\d.]+)%"),
         Pattern.compile("coverage:\\s+([\\d.]+)% of statements"),
     };
+
+    /** The RUNNER knob's positions, in their on-disk index order. */
+    static List<String> runners() {
+        return List.of(FRAMEWORKS);
+    }
 
     private final Knob frameworkKnob;
     private final ToggleSwitch coverageSwitch;
@@ -273,53 +286,21 @@ public class TestDevice extends CommandDevice {
         dialog.setVisible(true);
     }
 
-    /** AUTO resolves to the project's "test" script, else its test framework dependency. */
+    /**
+     * AUTO resolves to the detected toolchain's own runner; when the kind
+     * names none — Node itself, and the npm-carried Clarity and Tact kits,
+     * whose suites ARE a package.json harness (vitest/simnet,
+     * jest/@ton/sandbox) — it reads the project's own "test" script, then
+     * its declared framework dependency.
+     */
     private String effectiveFramework() {
         String fw = frameworkKnob.getSelectedOption();
         if (!"auto".equals(fw)) {
             return fw;
         }
-        ProjectInspector.ProjectKind kind = effectiveKind();
-        switch (kind) {
-            case BUN: return "bun";
-            case DENO: return "deno";
-            case RUST: return "cargo";
-            case FOUNDRY: return "forge";
-            case ELIXIR: return "mix";
-            case ERLANG: return "rebar3";
-            case GLEAM: return "gleam";
-            case JULIA: return "julia";
-            case NIM: return "nim";
-            case DLANG: return "dlang";
-            case RACKET: return "racket";
-            case ELM: return "elm";
-            case PURESCRIPT: return "purescript";
-            case VLANG: return "vlang";
-            case CAIRO: return "cairo";
-            case MOVE: return "move";
-            case AIKEN: return "aiken";
-            // CLARITY and TACT tests ride the npm harness beside the
-            // manifest (vitest/simnet, jest/@ton/sandbox) — fall through
-            // to the script/dependency detection below
-            case FORTRAN: return "fortran";
-            case ADA: return "ada"; // no universal Ada test verb: greys
-            case RESCRIPT: return "rescript"; // build-only: no test runner
-            case CLOJURE: return "clojure";
-            case SWIFT: return "swift";
-            case DOTNET: return "dotnet";
-            case DART: return "dart";
-            case SCALA: return "sbt";
-            case HASKELL: return "stack";
-            case ZIG: return "zig";
-            case OCAML: return "dune";
-            case CRYSTAL: return "crystal";
-            case GO: return "go";
-            case MAVEN: return "mvn";
-            case GRADLE: return "gradle";
-            case PYTHON: return "pytest";
-            case RUBY: return "rspec";
-            case PHP: return "phpunit";
-            default: break;
+        String declared = effectiveKind().testRunner();
+        if (declared != null) {
+            return declared;
         }
         if (ProjectInspector.hasScript(projectDir(), "test")) {
             return "npm-script";
@@ -332,48 +313,19 @@ public class TestDevice extends CommandDevice {
         return dep != null ? dep : "npm-script";
     }
 
-    /** Tests run where the selected runner's manifest lives. */
+    /**
+     * Tests run where the selected runner's manifest lives. A runner no
+     * kind names is an npm-resolved JavaScript one — jest, vitest, mocha,
+     * playwright, cypress, node:test and the {@code npm-script} sentinel —
+     * and the Node lane is its home; the gate holds that set closed, so
+     * this fallback can never quietly adopt a new toolchain's runner.
+     */
     @Override
     protected java.io.File commandDir() {
-        ProjectInspector.ProjectKind kind = switch (effectiveFramework()) {
-            case "bun" -> ProjectInspector.ProjectKind.BUN;
-            case "deno" -> ProjectInspector.ProjectKind.DENO;
-            case "cargo" -> ProjectInspector.ProjectKind.RUST;
-            case "forge" -> ProjectInspector.ProjectKind.FOUNDRY;
-            case "mix" -> ProjectInspector.ProjectKind.ELIXIR;
-            case "rebar3" -> ProjectInspector.ProjectKind.ERLANG;
-            case "gleam" -> ProjectInspector.ProjectKind.GLEAM;
-            case "julia" -> ProjectInspector.ProjectKind.JULIA;
-            case "nim" -> ProjectInspector.ProjectKind.NIM;
-            case "dlang" -> ProjectInspector.ProjectKind.DLANG;
-            case "racket" -> ProjectInspector.ProjectKind.RACKET;
-            case "elm" -> ProjectInspector.ProjectKind.ELM;
-            case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
-            case "vlang" -> ProjectInspector.ProjectKind.VLANG;
-            case "cairo" -> ProjectInspector.ProjectKind.CAIRO;
-            case "move" -> ProjectInspector.ProjectKind.MOVE;
-            case "aiken" -> ProjectInspector.ProjectKind.AIKEN;
-            case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
-            case "ada" -> ProjectInspector.ProjectKind.ADA;
-            case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
-            case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
-            case "swift" -> ProjectInspector.ProjectKind.SWIFT;
-            case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
-            case "dart" -> ProjectInspector.ProjectKind.DART;
-            case "sbt" -> ProjectInspector.ProjectKind.SCALA;
-            case "stack" -> ProjectInspector.ProjectKind.HASKELL;
-            case "zig" -> ProjectInspector.ProjectKind.ZIG;
-            case "dune" -> ProjectInspector.ProjectKind.OCAML;
-            case "crystal" -> ProjectInspector.ProjectKind.CRYSTAL;
-            case "go" -> ProjectInspector.ProjectKind.GO;
-            case "mvn" -> ProjectInspector.ProjectKind.MAVEN;
-            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
-            case "pytest" -> ProjectInspector.ProjectKind.PYTHON;
-            case "rspec" -> ProjectInspector.ProjectKind.RUBY;
-            case "phpunit" -> ProjectInspector.ProjectKind.PHP;
-            default -> ProjectInspector.ProjectKind.NODE;
-        };
-        return ProjectInspector.kindDir(projectDir(), kind);
+        ProjectInspector.ProjectKind kind =
+                ProjectInspector.ProjectKind.forTestRunner(effectiveFramework());
+        return ProjectInspector.kindDir(projectDir(),
+                kind == null ? ProjectInspector.ProjectKind.NODE : kind);
     }
 
     @Override
@@ -425,7 +377,11 @@ public class TestDevice extends CommandDevice {
             case "phpunit" -> cmd.addAll(new java.io.File(commandDir(), "vendor/bin/phpunit").isFile()
                     ? List.of("./vendor/bin/phpunit")
                     : List.of("phpunit"));
-            default -> cmd.addAll(List.of("npm", "test"));
+            // the npm family is a CASE now, not the default: a runner with
+            // no arm is one this device cannot run, and an empty command
+            // greys honestly instead of running somebody else's suite
+            case "npm-script", "node" -> cmd.addAll(List.of("npm", "test"));
+            default -> { }
         }
         if (coverageSwitch.isOn()) {
             // resolve AUTO first: keyed on the raw "auto" knob the flag never

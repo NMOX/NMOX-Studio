@@ -17,6 +17,9 @@ public final class GraphIO {
 
     public static final String DEFAULT_FILENAME = ".nmoxinfra.json";
 
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(GraphIO.class.getName());
+
     private GraphIO() {
     }
 
@@ -115,24 +118,74 @@ public final class GraphIO {
     }
 
     /**
+     * What a guarded load found.
+     *
+     * <p>{@code backup} is non-null when the file EXISTED but failed to
+     * parse and was copied aside first; {@code unreadable} is true when
+     * the file EXISTS and its bytes could not be read at all.
+     *
+     * <p>Those are different failures and were treated as one. A PARSE
+     * failure hands back bytes we have seen and kept as {@code .bak}, so
+     * the empty graph may replace them. A READ failure — a permission
+     * error, a transient fault, or
+     * {@link org.nmox.studio.core.util.BoundedReads.TooLarge}, which is
+     * an {@link IOException} like any other — hands back nothing at all,
+     * and it used to THROW: {@code InfraDesignerTopComponent.load}
+     * caught it, cleared the graph, and stamped the file as its own in a
+     * {@code finally} that ran on the catch path too, so even the
+     * never-clobber guard was disarmed. The next debounced save wrote an
+     * empty design over it. Measured through the real designer on an
+     * over-cap file: 9,437,184 bytes became 48.
+     */
+    public record LoadOutcome(File backup, boolean unreadable) {
+    }
+
+    /**
      * Loads, guarding the user's file against the corrupt-load →
      * empty-model → autosave-clobbers-original sequence: when the file
      * exists but fails to parse, the unreadable original is copied to
      * {@code <name>.bak} FIRST, the graph is cleared to the empty
-     * fallback, and the backup file is returned so the UI can say so.
-     * A clean load returns null. I/O failures still throw — there is
-     * nothing readable to back up.
+     * fallback, and the backup is named so the UI can say so. A file
+     * that cannot be READ leaves the graph empty and comes back marked
+     * {@link LoadOutcome#unreadable()} instead, because the caller must
+     * not treat a stand-in design as this project's. Never throws.
      */
-    public static File loadGuarded(InfraGraph graph, File file) throws IOException {
-        String text = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
+    public static LoadOutcome loadGuarded(InfraGraph graph, File file) {
+        String text;
+        try {
+            text = org.nmox.studio.core.util.BoundedReads.read(file.toPath());
+        } catch (IOException unreadable) {
+            // No .bak here, and that is deliberate: the parse failure copies
+            // the bytes aside because they are about to be replaced, while a
+            // file we could not read must not be written over at all — so
+            // there is nothing to rescue it from.
+            LOG.log(java.util.logging.Level.WARNING,
+                    "Unreadable {0}; the design is read-only until it can be read ({1})",
+                    new Object[]{file, unreadable.getMessage()});
+            graph.clear();
+            return new LoadOutcome(null, true);
+        }
         try {
             fromJson(graph, new JSONObject(text));
-            return null;
+            return new LoadOutcome(null, false);
         } catch (RuntimeException malformed) {
-            File backup = new File(file.getParentFile(), file.getName() + ".bak");
-            Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            LOG.log(java.util.logging.Level.WARNING,
+                    "Malformed {0}; keeping a .bak and starting empty ({1})",
+                    new Object[]{DEFAULT_FILENAME, malformed.getMessage()});
             graph.clear(); // fromJson may have half-populated before throwing
+            return new LoadOutcome(backupCorrupt(file), false);
+        }
+    }
+
+    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    private static File backupCorrupt(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".bak");
+        try {
+            Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
             return backup;
+        } catch (IOException e) {
+            LOG.log(java.util.logging.Level.SEVERE, "Could not back up corrupt " + file, e);
+            return null;
         }
     }
 }

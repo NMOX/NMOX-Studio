@@ -145,6 +145,7 @@ import org.openide.windows.TopComponent;
     // the design file
     "InfraDesigner_readFailedTitle=Couldn''t read {0} — starting empty",
     "InfraDesigner_readFailedDetail=The unreadable original was kept at {0}.",
+    "InfraDesigner_designReadOnly={0} could not be read — the design is read-only so nothing overwrites it",
     "InfraDesigner_reloadedTitle=Reloaded {0}",
     "InfraDesigner_reloadedDetail=The file changed outside the designer — the canvas follows it.",
     "InfraDesigner_conflictTitle={0} changed on disk — Reload?",
@@ -192,6 +193,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
     /** Discriminates our own .nmoxinfra.json writes from foreign edits. */
     private final org.nmox.studio.infra.model.DesignSync designSync =
             new org.nmox.studio.infra.model.DesignSync();
+    /**
+     * The bound {@code .nmoxinfra.json} exists and could not be read, so
+     * the canvas is a stand-in and every save would replace a design
+     * nobody has seen. Unlike a foreign edit there is nothing to reload
+     * TO, so writes are refused out loud until the file can be read.
+     */
+    private boolean designReadOnly;
+    /** One refusal balloon per read-only bind, not one per debounce tick. */
+    private boolean readOnlyNotified;
     /** Polls the design file's stamp while the tab is open; never runs closed. */
     private final Timer externalCheck;
     /** True while a stat is on its way to the EDT — checks never overlap. */
@@ -828,31 +838,72 @@ public final class InfraDesignerTopComponent extends TopComponent {
         loading = true;
         try {
             File file = designFile();
+            // a new file is a new episode; re-reading the SAME unreadable one
+            // must not repeat a balloon the user has already seen
+            if (!file.equals(boundDesignFile)) {
+                readOnlyNotified = false;
+            }
             boundDesignFile = file; // edits from here on belong to THIS file
+            designReadOnly = false;
             if (file.isFile()) {
                 // corrupt file: GraphIO copies it to .bak BEFORE handing back
                 // the empty fallback, so the next autosave can't destroy the
                 // user's only copy
-                File backup = GraphIO.loadGuarded(graph, file);
-                if (backup != null) {
+                GraphIO.LoadOutcome outcome = GraphIO.loadGuarded(graph, file);
+                designReadOnly = outcome.unreadable();
+                if (outcome.backup() != null) {
                     balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
-                            Bundle.InfraDesigner_readFailedDetail(backup.getName()),
+                            Bundle.InfraDesigner_readFailedDetail(outcome.backup().getName()),
                             null);
+                } else if (designReadOnly) {
+                    // a different failure and a different promise: nothing was
+                    // read, so nothing is copied aside and nothing is written
+                    sayReadOnly();
+                } else {
+                    readOnlyNotified = false; // the episode is over
                 }
             } else {
                 graph.clear();
+                readOnlyNotified = false;
             }
             canvas.fit();
-        } catch (Exception ex) {
-            // unreadable design: start clean rather than block the window
+        } catch (RuntimeException unexpected) {
+            // GraphIO.loadGuarded no longer throws, so this is the net for
+            // something else entirely — start clean rather than block the
+            // window, but never write over a file whose fate we do not know.
+            // A design that is simply ABSENT has nothing to lose, so a new
+            // project is not frozen by an unrelated failure.
+            java.util.logging.Logger.getLogger(InfraDesignerTopComponent.class.getName())
+                    .log(java.util.logging.Level.WARNING, "Infra design load failed", unexpected);
             graph.clear();
+            designReadOnly = designFile().isFile();
         } finally {
             loading = false;
             refreshCost();
-            // the loaded version is now "ours": only later foreign writes
-            // should trigger the external-reload flow
-            designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
+            // A file we never read is never ours. This stamp used to sit in
+            // the finally with no guard at all, so the catch path — the one
+            // taken by an unreadable design — recorded the user's bytes as
+            // OURS and disarmed the never-clobber guard that would have
+            // saved them. It belongs to a read that HAPPENED.
+            if (!designReadOnly) {
+                designSync.recordOwn(
+                        org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
+            }
         }
+    }
+
+    /**
+     * Says the design is read-only — once per episode, not once per
+     * debounce tick. The episode ends when the file is read again (or a
+     * different project is bound), and only then may it speak again.
+     */
+    private void sayReadOnly() {
+        if (readOnlyNotified) {
+            return;
+        }
+        readOnlyNotified = true;
+        balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
+                Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME), null);
     }
 
     /**
@@ -862,6 +913,21 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * the write must not retarget the edits.
      */
     private void save() {
+        if (designReadOnly) {
+            // the bound .nmoxinfra.json exists and could not be read, so the
+            // canvas is a stand-in: writing it would replace every node,
+            // every wire and every doId linking a live billed resource with
+            // an empty design. Measured through this exact path on an
+            // over-cap file: 9,437,184 bytes became 48. The refusal speaks
+            // once per bind rather than failing silently — the load balloon
+            // said it first, and a per-debounce balloon would be a drumbeat.
+            java.util.logging.Logger.getLogger(InfraDesignerTopComponent.class.getName())
+                    .log(java.util.logging.Level.WARNING,
+                            "Refusing to save over an unreadable {0}",
+                            GraphIO.DEFAULT_FILENAME);
+            sayReadOnly();
+            return;
+        }
         // the bound file, not the live aim: after a re-aim the debounce may
         // still hold the OLD project's edits (ledger 53c)
         File file = boundDesignFile != null ? boundDesignFile : designFile();
@@ -942,9 +1008,19 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the graphChanged it fires never schedules a spurious save
                 // (the v1.33.2 guard stays intact).
                 load();
-                balloon(Bundle.InfraDesigner_reloadedTitle(GraphIO.DEFAULT_FILENAME),
-                        Bundle.InfraDesigner_reloadedDetail(),
-                        null);
+                if (!designReadOnly) {
+                    balloon(Bundle.InfraDesigner_reloadedTitle(GraphIO.DEFAULT_FILENAME),
+                            Bundle.InfraDesigner_reloadedDetail(),
+                            null);
+                }
+                // A read-only bind records no stamp, so the FIRST check after
+                // one always reads as a foreign version and lands here with
+                // nothing having changed. Re-reading is right — it is how an
+                // unreadable design comes back by itself once the permissions
+                // are fixed or the file is trimmed — but claiming "reloaded,
+                // the file changed outside the designer" when it did not, and
+                // could not be read anyway, would be the window telling the
+                // user something untrue. load() has already spoken.
             }
             case CONFLICT -> {
                 // Foreign edit vs unsaved canvas edits: NEVER clobber silently.
@@ -1024,6 +1100,49 @@ public final class InfraDesignerTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
     }
 
+    /**
+     * The ambient aim selection (tech-debt ledger 72, closed v2.186.0).
+     * Until this window published one, pressing ^F6 or opening the Team
+     * menu while the Infra Designer was focused greyed for every project
+     * kind: those actions read the global selection and this tab offered
+     * none. {@code core.util.AimFollower} owns the whole v1.45.0
+     * discipline — publish only while SHOWING (so a hidden default-open
+     * tab resolves nothing at boot), attach and detach with the hooks,
+     * equality-guarded off-EDT resolution — and finds the rack through
+     * {@code core.spi.ProjectAim}, so this module gains no rack
+     * dependency (v1.46.0's law, pinned by RackSoftDependencyTest).
+     */
+    private org.nmox.studio.core.util.AimFollower aimFollower =
+            newAimFollower(org.nmox.studio.core.spi.ProjectAim::find);
+
+    /** One home for the sink, so the test seam cannot drift from production. */
+    private org.nmox.studio.core.util.AimFollower newAimFollower(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        return new org.nmox.studio.core.util.AimFollower(
+                n -> setActivatedNodes(new org.openide.nodes.Node[]{n}), aim);
+    }
+
+    /**
+     * Test seam: follow a stand-in provider. This module keeps no rack on
+     * its classpath by design, so its tests cannot register a real one —
+     * and registering a fake one in the default Lookup would contradict
+     * RackSoftDependencyTest, which pins that absence.
+     */
+    void followAimForTest(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        aimFollower = newAimFollower(aim);
+    }
+
+    @Override
+    protected void componentShowing() {
+        aimFollower.showing();
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     @Override
     protected void componentOpened() {
         // attach BEFORE load(): listeners must not stack (CopyOnWriteArrayList
@@ -1041,6 +1160,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
         // stop the timers, flush any edits still sitting in the debounce (the
         // last ~1s of canvas work must not die with the tab), and drop our
         // listeners so a close/reopen cycle doesn't accumulate zombies
+        // (the aim follower detaches here too, and resets its equality
+        // guard so a reopen re-publishes even the same aim)
+        aimFollower.closed();
         externalCheck.stop();
         if (saveDebounce.isRunning()) {
             saveDebounce.stop();

@@ -1,6 +1,47 @@
 # The Plan
 
-*Currency addendum 2026-09-19 (the senior-developer pass), at v2.184.0.*
+*Currency addendum 2026-09-19 (closing every deferral), at v2.186.0.*
+
+*David: "You keep deferring things. Finish them all. Make the decisions I would
+make for me."* Thirteen ledger items were open; **seven carried the phrase
+"Decided, not done"** — the decision taken, the work postponed for size.
+
+**The lesson of the release is that this phrase is the most expensive shape a
+ledger entry can have.** It reads as thrift and is the opposite: the thinking is
+already paid for, none of the benefit is banked, and every future author
+re-reads the entry while the defect it describes goes on shipping. Closing all
+seven found **eleven live defects nobody was hunting** and proved **seven of the
+entries wrong about their own subject** — including ledger 110's census, which
+missed a declaration for exactly the reason the entry existed to fix, and ledger
+114's second sub-item, which had already shipped in the release that wrote it.
+
+**Three deferrals were overruled on their REASONING rather than their
+difficulty**, and that distinction is the reusable part. 107 wanted a new CI job
+for a Windows measurement that a plain JUnit test gets for free, because
+`build-and-test` has run the full verify on `windows-latest` since v1.42.0 — so
+a one-off reading became a standing law on three platforms. 103 said its two
+surfaces needed "a screen walk with full control, or a person", when v2.145.0
+and v2.58.1 had both already shown that *a popup is a rendering of an answer the
+provider already gave*. And 72 waited for a facade to "earn a second consumer"
+when there was no facade to build: `ProjectAim` already carried it and `core`
+already declared both dependencies. **Before accepting a deferral's reason, check
+whether the thing it is waiting for already exists.**
+
+**The largest find sat behind "queued behind a reproduction"** (ledger 18). The
+reproduction took one attempt: press a serve device's DEV twice, and a stale
+run's exit drops the live run's gate — permanently, on a serve device, because
+`dev()` raises `serving` once and `onFinished` alone lowers it. *A deferral whose
+condition is "get a reproduction" is a deferral nobody has spent an hour on.*
+
+**And the arc's recurring law, five more times** — *a check that answers an
+easier question passes*: a feed that dedupes by hash hides a duplicate-fetch
+regression; an unresolvable font name silently becomes the zero-advance logical
+family; a hyperlink test that exercises the resolver says nothing about the
+click; a gate that checks a listener EXISTS survives every mutant that kills a
+gate checking the listener FIRES; and a wall-clock bound measures the machine,
+not the product.
+
+*Previous addendum 2026-09-19 (the senior-developer pass), at v2.184.0.*
 
 *David asked for a senior Java developer's review: refactor what warrants it,
 finish what is unfinished, and decide what had been deferred to him, on NMOX's

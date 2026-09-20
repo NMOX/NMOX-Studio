@@ -42,7 +42,7 @@ import org.json.JSONObject;
  * EXECUTE — so the device-file law applies (v2.0.0): argv only, the
  * tool name bare (no path separators), and a checkpoint that breaks
  * any rule is skipped WHOLE with its reason, never partially
- * honored. File paths ride the same resolveInside containment as
+ * honored. File paths ride the same {@code Containment} check as
  * sample files. Pure so every rule is a unit test; the process spawn
  * hides behind {@link Runner} so runs are testable without spawning.
  */
@@ -214,7 +214,8 @@ public final class Checkpoints {
     public static Result run(File spaceDir, Checkpoint c, Runner runner) {
         try {
             if (c.isFileKind()) {
-                File target = LearningSpace.resolveInside(spaceDir, c.filePath());
+                File target = org.nmox.studio.core.util.Containment
+                        .resolve(spaceDir, c.filePath());
                 if (target == null || !target.isFile()) {
                     return new Result(c.shown().label(), false,
                             c.filePath() + " not found. " + c.shown().hint());

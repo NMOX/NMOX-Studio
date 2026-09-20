@@ -52,4 +52,38 @@ class CheckDisclosureTest {
         assertThat(body).contains("✗ tests").contains("exit 101");
         assertThat(body).doesNotContain("  my ");
     }
+
+    @Test
+    @DisplayName("a path out of the space is (missing) — an outward flow never carries it")
+    void escapedPathIsNeverDisclosed(@TempDir Path work) throws Exception {
+        // this body is SENT to an AI provider, so a checkpoint path that
+        // escapes must not turn the disclosure into a read primitive
+        File dir = new File(work.toFile(), "space");
+        Files.createDirectories(dir.toPath());
+        Files.writeString(work.resolve("SECRET.txt"), "sk-not-yours");
+
+        String body = CheckDisclosure.body(dir, List.of(fileCk("sneaky", "../SECRET.txt")),
+                List.of(new Checkpoints.Result("sneaky", false, "the hint")));
+        assertThat(body).contains("(missing)");
+        assertThat(body).doesNotContain("sk-not-yours");
+    }
+
+    @Test
+    @DisplayName("a symlinked path out of the space is (missing) too")
+    void escapedSymlinkIsNeverDisclosed(@TempDir Path work) throws Exception {
+        File dir = new File(work.toFile(), "space");
+        Files.createDirectories(dir.toPath());
+        Path outside = Files.createDirectories(work.resolve("elsewhere"));
+        Files.writeString(outside.resolve("SECRET.txt"), "sk-not-yours");
+        try {
+            Files.createSymbolicLink(dir.toPath().resolve("out"), outside);
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return; // a platform without symlinks has nothing to prove here
+        }
+
+        String body = CheckDisclosure.body(dir, List.of(fileCk("sneaky", "out/SECRET.txt")),
+                List.of(new Checkpoints.Result("sneaky", false, "the hint")));
+        assertThat(body).contains("(missing)");
+        assertThat(body).doesNotContain("sk-not-yours");
+    }
 }

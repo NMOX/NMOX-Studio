@@ -111,7 +111,34 @@ class CheckpointsTest {
         Checkpoints.Checkpoint sneaky = parse("""
             [ {"label":"sneaky","file":{"path":"../SECRET.txt","contains":"outside"}} ]
             """, notes).get(0);
-        assertThat(Checkpoints.run(dir, sneaky, null).passed()).isFalse();
+        Checkpoints.Result refused = Checkpoints.run(dir, sneaky, null);
+        assertThat(refused.passed()).isFalse();
+        // the refusal SPEAKS, in this surface's own words — the guard
+        // decides, the checkpoint says what the learner sees
+        assertThat(refused.detail()).contains("../SECRET.txt not found");
+    }
+
+    @Test
+    @DisplayName("a checkpoint cannot read through a symlink out of the space")
+    void containmentThroughASymlink(@TempDir Path work) throws IOException {
+        File dir = new File(work.toFile(), "space");
+        assertThat(dir.mkdirs()).isTrue();
+        Path outside = Files.createDirectories(work.resolve("elsewhere"));
+        Files.writeString(outside.resolve("SECRET.txt"), "outside");
+        try {
+            Files.createSymbolicLink(dir.toPath().resolve("out"), outside);
+        } catch (UnsupportedOperationException | IOException noSymlinks) {
+            return; // a platform without symlinks has nothing to prove here
+        }
+        List<String> notes = new ArrayList<>();
+        Checkpoints.Checkpoint sneaky = parse("""
+            [ {"label":"sneaky","file":{"path":"out/SECRET.txt","contains":"outside"}} ]
+            """, notes).get(0);
+        Checkpoints.Result refused = Checkpoints.run(dir, sneaky, null);
+        assertThat(refused.passed())
+                .as("a check must not pass by reading a file outside the space")
+                .isFalse();
+        assertThat(refused.detail()).contains("out/SECRET.txt not found");
     }
 
     @Test

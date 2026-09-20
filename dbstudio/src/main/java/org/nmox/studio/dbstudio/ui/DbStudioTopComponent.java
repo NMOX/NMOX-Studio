@@ -823,6 +823,11 @@ public final class DbStudioTopComponent extends TopComponent {
             } else {
                 JTable table = org.nmox.studio.core.util.PlainTables
                         .disableHtml(new JTable(new ResultsTableModel(result)));
+                // its own name, not the editable grid's: two locals called
+                // `table` in one file rode one name until the census derived
+                // the population from the CONSTRUCTION instead of the line
+                table.getAccessibleContext().setAccessibleName(
+                        Bundle.DbStudioTopComponent_resultRowsA11y());
                 table.setFont(MONO);
                 table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); // wide results scroll, not squash
                 org.nmox.studio.core.util.TableColumns.fitToContent(table); // no "Noor H..." (v2.163.0)
@@ -2488,8 +2493,8 @@ public final class DbStudioTopComponent extends TopComponent {
     }
 
     /** v1.235.0: the aim is this window's ambient selection (ledger 29). */
-    private final org.nmox.studio.rack.service.AimFollower aimFollower =
-            new org.nmox.studio.rack.service.AimFollower(n ->
+    private final org.nmox.studio.core.util.AimFollower aimFollower =
+            new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
 
     @Override

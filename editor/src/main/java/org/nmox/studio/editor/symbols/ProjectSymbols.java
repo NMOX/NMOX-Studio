@@ -47,10 +47,12 @@ public final class ProjectSymbols {
      *  — a silent partial index reads as complete (v2.49.1 review). */
     static final int MAX_DEPTH = 32;
 
-    /** The heavy dirs the file tree already refuses to expand. */
-    static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage", "target",
-            "out", "vendor", ".next", ".nuxt", ".svelte-kit", "__pycache__");
+    /** The heavy dirs the file tree already refuses to expand (ledger 110
+     *  made that sentence true), plus {@code vendor}: Go to Symbol answers
+     *  with the symbols a person can jump into and edit, and a vendored
+     *  dependency's are neither. */
+    static final Set<String> SKIP_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor");
 
     private record CacheKey(Path file, long mtime, long size) {
     }

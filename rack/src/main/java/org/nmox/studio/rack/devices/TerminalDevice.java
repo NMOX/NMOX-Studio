@@ -32,6 +32,9 @@ public class TerminalDevice extends RackDevice {
         super("terminal", "PHOSPHOR", "SCROLLBACK TERMINAL", new Color(57, 255, 20), 5);
 
         screen = new JTextArea();
+        // the scroll pane below was named and the text area inside it was not,
+        // so the thing a screen reader actually lands in announced its role
+        screen.getAccessibleContext().setAccessibleName("terminal scrollback");
         screen.setEditable(false);
         screen.setLineWrap(false);
         screen.setBackground(new Color(7, 14, 7));

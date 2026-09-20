@@ -22,8 +22,15 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
  */
 public class RunDevice extends CommandDevice {
 
-    // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34)
-    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "clarity", "tact"};
+    // APPEND-ONLY: patches persist the knob by index (static=23 since v1.34),
+    // so a saved patch reads a REORDERED array as a different target. New
+    // positions go at the END; KindVocabularyGateTest pins this exact order.
+    private static final String[] TARGETS = {"auto", "node", "python", "go", "rust", "elixir", "erlang", "clojure", "swift", "dotnet", "dart", "scala", "haskell", "zig", "ocaml", "crystal", "maven", "gradle", "ruby", "php", "make", "bun", "deno", "static", "gleam", "julia", "nim", "dlang", "racket", "elm", "purescript", "vlang", "fortran", "ada", "cairo", "move", "aiken", "clarity", "tact",
+        // appended v2.186.0: both were already PRODUCIBLE by AUTO with a
+        // buildCommand arm of their own, and neither could be dialled by
+        // hand — webpack served a dev server nobody could ask for, rescript
+        // greyed for a reason nobody could make it say
+        "rescript", "webpack"};
 
     /** The static lane's preferred port; probed upward when busy (v1.320.0). */
     private static final String STATIC_PORT = "8000";
@@ -35,6 +42,11 @@ public class RunDevice extends CommandDevice {
     private static String phpAddress() {
         return "127.0.0.1:" + org.nmox.studio.core.util.FreePorts
                 .firstFreeFrom(PHP_PORT);
+    }
+
+    /** The TARGET knob's positions, in their on-disk index order. */
+    static List<String> targets() {
+        return List.of(TARGETS);
     }
 
     private final Knob targetKnob;
@@ -75,8 +87,15 @@ public class RunDevice extends CommandDevice {
     @Override
     protected void primaryAction() {
         List<String> cmd = buildCommand();
-        webpackLane = cmd.contains("webpack");
-        phpLane = cmd.contains("php");
+        // a null command is this device's own grey contract, and these two
+        // lane flags dereferenced it: pressing IGNITE on a Tact or ReScript
+        // project threw a NullPointerException here instead of reaching the
+        // honest refusal three lines down — the grey the comments beside
+        // those two arms have promised since v1.161.0 was unreachable.
+        // Only the AUTO path could produce it before v2.186.0, so no test
+        // ever pressed the button on a null.
+        webpackLane = cmd != null && cmd.contains("webpack");
+        phpLane = cmd != null && cmd.contains("php");
         if (launch(cmd)) {
             emit("running", Signal.gate(true));
             onEdt(() -> liveLed.setOn(true));
@@ -145,110 +164,32 @@ public class RunDevice extends CommandDevice {
         }
     }
 
+    /**
+     * The target this run speaks: the dialled knob position, or — on AUTO
+     * — the detected toolchain's own token. Null when that toolchain names
+     * no run verb at all, which {@link #buildCommand()} turns into the
+     * honest grey every console shares. It used to answer "node" for any
+     * kind the switch had not listed, so a Foundry repo, a learning space
+     * and an unaimed rack all quietly ran a node command.
+     */
     private String effectiveTarget() {
         String target = targetKnob.getSelectedOption();
         if (!"auto".equals(target)) {
             return target;
         }
-        return switch (effectiveKind()) {
-            case NODE -> "node";
-            case BUN -> "bun";
-            case DENO -> "deno";
-            case RUST -> "rust";
-            case ELIXIR -> "elixir";
-            case ERLANG -> "erlang";
-            case GLEAM -> "gleam";
-            case JULIA -> "julia";
-            case NIM -> "nim";
-            case DLANG -> "dlang";
-            case RACKET -> "racket";
-            case ELM -> "elm";
-            case PURESCRIPT -> "purescript";
-            case VLANG -> "vlang";
-            case CAIRO -> "cairo";
-            case MOVE -> "move";
-            case AIKEN -> "aiken";
-            case CLARITY -> "clarity";
-            case TACT -> "tact";
-            case FORTRAN -> "fortran";
-            case ADA -> "ada";
-            case RESCRIPT -> "rescript"; // build-only: greyed in buildCommand
-            case CLOJURE -> "clojure";
-            case SWIFT -> "swift";
-            case DOTNET -> "dotnet";
-            case DART -> "dart";
-            case SCALA -> "scala";
-            case HASKELL -> "haskell";
-            case ZIG -> "zig";
-            case OCAML -> "ocaml";
-            case CRYSTAL -> "crystal";
-            case GO -> "go";
-            case MAVEN -> "maven";
-            case GRADLE -> "gradle";
-            case PYTHON -> "python";
-            case RUBY -> "ruby";
-            case PHP -> "php";
-            case MAKE, CMAKE -> "make";
-            // the classic web kinds RUN by serving the site dir: a
-            // grunt/bower-era project's runnable artifact IS its folder.
-            // webpack runs its dev server — the same command the IDE's
-            // Run action maps to, so F6 and IGNITION agree.
-            case GRUNT, GULP, BOWER, STATIC -> "static";
-            case WEBPACK -> "webpack"; // internal: resolved by AUTO, not on the knob
-            default -> "node";
-        };
-    }
-
-
-    private static ProjectInspector.ProjectKind kindForTarget(String target) {
-        return switch (target) {
-            case "static" -> ProjectInspector.ProjectKind.STATIC;
-            case "webpack" -> ProjectInspector.ProjectKind.WEBPACK;
-            case "rust" -> ProjectInspector.ProjectKind.RUST;
-            case "elixir" -> ProjectInspector.ProjectKind.ELIXIR;
-            case "erlang" -> ProjectInspector.ProjectKind.ERLANG;
-            case "gleam" -> ProjectInspector.ProjectKind.GLEAM;
-            case "julia" -> ProjectInspector.ProjectKind.JULIA;
-            case "nim" -> ProjectInspector.ProjectKind.NIM;
-            case "dlang" -> ProjectInspector.ProjectKind.DLANG;
-            case "racket" -> ProjectInspector.ProjectKind.RACKET;
-            case "elm" -> ProjectInspector.ProjectKind.ELM;
-            case "purescript" -> ProjectInspector.ProjectKind.PURESCRIPT;
-            case "vlang" -> ProjectInspector.ProjectKind.VLANG;
-            case "cairo" -> ProjectInspector.ProjectKind.CAIRO;
-            case "move" -> ProjectInspector.ProjectKind.MOVE;
-            case "aiken" -> ProjectInspector.ProjectKind.AIKEN;
-            case "clarity" -> ProjectInspector.ProjectKind.CLARITY;
-            case "tact" -> ProjectInspector.ProjectKind.TACT;
-            case "fortran" -> ProjectInspector.ProjectKind.FORTRAN;
-            case "ada" -> ProjectInspector.ProjectKind.ADA;
-            case "rescript" -> ProjectInspector.ProjectKind.RESCRIPT;
-            case "clojure" -> ProjectInspector.ProjectKind.CLOJURE;
-            case "swift" -> ProjectInspector.ProjectKind.SWIFT;
-            case "dotnet" -> ProjectInspector.ProjectKind.DOTNET;
-            case "dart" -> ProjectInspector.ProjectKind.DART;
-            case "scala" -> ProjectInspector.ProjectKind.SCALA;
-            case "haskell" -> ProjectInspector.ProjectKind.HASKELL;
-            case "zig" -> ProjectInspector.ProjectKind.ZIG;
-            case "ocaml" -> ProjectInspector.ProjectKind.OCAML;
-            case "crystal" -> ProjectInspector.ProjectKind.CRYSTAL;
-            case "bun" -> ProjectInspector.ProjectKind.BUN;
-            case "deno" -> ProjectInspector.ProjectKind.DENO;
-            case "go" -> ProjectInspector.ProjectKind.GO;
-            case "maven" -> ProjectInspector.ProjectKind.MAVEN;
-            case "gradle" -> ProjectInspector.ProjectKind.GRADLE;
-            case "python" -> ProjectInspector.ProjectKind.PYTHON;
-            case "ruby" -> ProjectInspector.ProjectKind.RUBY;
-            case "php" -> ProjectInspector.ProjectKind.PHP;
-            case "make" -> ProjectInspector.ProjectKind.MAKE;
-            default -> ProjectInspector.ProjectKind.NODE;
-        };
+        return effectiveKind().runTarget();
     }
 
     /** Commands run where the selected target's manifest lives. */
     @Override
     protected java.io.File commandDir() {
-        return ProjectInspector.kindDir(projectDir(), kindForTarget(effectiveTarget()));
+        ProjectInspector.ProjectKind kind =
+                ProjectInspector.ProjectKind.forRunTarget(effectiveTarget());
+        // no kind names this target (or there is no target): kindDir falls
+        // back to the project root, which is where a rack with nothing
+        // detected would run anyway
+        return ProjectInspector.kindDir(projectDir(),
+                kind == null ? ProjectInspector.ProjectKind.NONE : kind);
     }
 
     /** First existing candidate file, else the first candidate. */
@@ -263,7 +204,12 @@ public class RunDevice extends CommandDevice {
 
     @Override
     protected List<String> buildCommand() {
-        List<String> base = switch (effectiveTarget()) {
+        String target = effectiveTarget();
+        if (target == null) {
+            // the toolchain names no run verb — IGNITION greys and says so
+            return null;
+        }
+        List<String> base = switch (target) {
             case "python" -> List.of("python3", entryPoint("main.py", "app.py", "src/main.py"));
             case "bun" -> List.of("bun", "run", "start");
             case "deno" -> List.of("deno", "task", "start");
@@ -331,10 +277,14 @@ public class RunDevice extends CommandDevice {
             // a TypeScript entry runs without a build (futures F7, v2.69.0):
             // JavaScript entries keep precedence, then index.ts / main.ts /
             // src/index.ts run through NodeTypeStripping's one argv
-            default -> ProjectInspector.hasScript(projectDir(), "start")
+            case "node" -> ProjectInspector.hasScript(projectDir(), "start")
                     ? List.of("npm", "start")
                     : org.nmox.studio.core.util.NodeTypeStripping.argv(entryPoint(
                             "index.js", "main.js", "src/index.js", "index.ts", "main.ts", "src/index.ts"));
+            // the node lane is a CASE now, not the default: a target with no
+            // arm is a target this device cannot run, and saying so beats
+            // running somebody else's toolchain under its name
+            default -> null;
         };
         if (base == null) {
             return null; // the toolchain has no run verb — IGNITION greys

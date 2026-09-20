@@ -27,6 +27,9 @@ public final class WorkspaceIO {
 
     public static final String FILENAME = ".nmoxapi.json";
 
+    private static final java.util.logging.Logger LOG =
+            java.util.logging.Logger.getLogger(WorkspaceIO.class.getName());
+
     private WorkspaceIO() {
     }
 
@@ -268,9 +271,23 @@ public final class WorkspaceIO {
      * A guarded load: {@code workspace} is null when the file is
      * missing or unreadable (callers substitute the starter);
      * {@code backup} is non-null when the file EXISTED but failed to
-     * parse and was copied aside first.
+     * parse and was copied aside first; {@code unreadable} is true when
+     * the file EXISTS and its bytes could not be read at all.
+     *
+     * <p>Those last two are different failures and were treated as one.
+     * A PARSE failure hands back bytes we have seen and kept as
+     * {@code .bak}, so the starter workspace may replace them. A READ
+     * failure — a permission error, a transient fault, or
+     * {@link org.nmox.studio.core.util.BoundedReads.TooLarge}, which is
+     * an {@link IOException} like any other — hands back nothing at all,
+     * and the null workspace it used to come with was indistinguishable
+     * from a fresh project: {@code ApiClientTopComponent.readWorkspace}
+     * caught the throw, substituted the starter, stamped the file as its
+     * own, and the next edit wrote a three-request starter over every
+     * collection, environment and history row. Measured through the real
+     * window on an over-cap file: 9,437,184 bytes became 550.
      */
-    public record LoadOutcome(Workspace workspace, File backup) {
+    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
     }
 
     /**
@@ -279,26 +296,51 @@ public final class WorkspaceIO {
      * when the file exists and fails to parse, the unreadable original
      * is copied to {@code .nmoxapi.json.bak} BEFORE the empty outcome
      * is returned, so the studio's next autosave can never destroy the
-     * only copy. A missing file makes no backup; I/O failures still
-     * throw — there is nothing readable to back up.
+     * only copy. A file that cannot be READ comes back marked
+     * {@link LoadOutcome#unreadable()} instead, because the caller must
+     * not treat a stand-in workspace as this project's. Missing and
+     * unreadable files make no backup. Never throws.
      */
-    public static LoadOutcome loadGuarded(File dir) throws IOException {
+    public static LoadOutcome loadGuarded(File dir) {
         File f = new File(dir, FILENAME);
         if (!f.isFile()) {
-            return new LoadOutcome(null, null);
+            return new LoadOutcome(null, null, false);
         }
-        String text = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
+        String text;
         try {
-            return new LoadOutcome(fromJson(text), null);
+            text = org.nmox.studio.core.util.BoundedReads.read(f.toPath());
+        } catch (IOException unreadable) {
+            // No .bak here, and that is deliberate: the parse failure copies
+            // the bytes aside because they are about to be replaced, while a
+            // file we could not read must not be written over at all — so
+            // there is nothing to rescue it from. (Copying would also
+            // duplicate the very file the cap refused, and would fail
+            // outright on the permission errors that land here beside it.)
+            LOG.log(java.util.logging.Level.WARNING,
+                    "Unreadable {0}; the workspace is read-only until it can be read ({1})",
+                    new Object[]{f, unreadable.getMessage()});
+            return new LoadOutcome(null, null, true);
+        }
+        try {
+            return new LoadOutcome(fromJson(text), null, false);
         } catch (RuntimeException malformed) {
-            java.util.logging.Logger.getLogger(WorkspaceIO.class.getName()).log(
-                    java.util.logging.Level.WARNING,
+            LOG.log(java.util.logging.Level.WARNING,
                     "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
-            File backup = new File(dir, FILENAME + ".bak");
-            Files.copy(f.toPath(), backup.toPath(),
+            return new LoadOutcome(null, backupCorrupt(f), false);
+        }
+    }
+
+    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    private static File backupCorrupt(File file) {
+        File backup = new File(file.getParentFile(), file.getName() + ".bak");
+        try {
+            Files.copy(file.toPath(), backup.toPath(),
                     java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return new LoadOutcome(null, backup);
+            return backup;
+        } catch (IOException e) {
+            LOG.log(java.util.logging.Level.SEVERE, "Could not back up corrupt " + file, e);
+            return null;
         }
     }
 

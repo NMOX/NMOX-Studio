@@ -186,40 +186,86 @@ public class RackOptionsPanelController extends OptionsPanelController {
         }
         kvasirProvider = new javax.swing.JComboBox<>(providerLabels);
         kvasirProvider.getAccessibleContext().setAccessibleName(Bundle.RackOptionsPanelController_providerCombo());
+        kvasirProvider.addActionListener(e -> changed());
         doToken = new JPasswordField(28);
         hetznerToken = new JPasswordField(28);
         cloudflareToken = new JPasswordField(28);
+        // Every control tells the dialog, not just the two that happened to
+        // be wired: picking a KVASIR provider or pasting a cloud token moved
+        // a setting, and a user who did only that and found Apply still grey
+        // met the v2.184.0 defect in four more controls. A token field speaks
+        // through its document — there is no "action" until Enter, and Enter
+        // is not how a pasted secret arrives.
+        for (JPasswordField token : new JPasswordField[]{doToken, hetznerToken, cloudflareToken}) {
+            token.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+                @Override
+                public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+
+                @Override
+                public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+
+                @Override
+                public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                    changed();
+                }
+            });
+        }
 
         c.gridwidth = 2;
         panel.add(openServedPage, c);
         c.gridwidth = 1;
         c.gridy++;
 
-        panel.add(new JLabel(Bundle.RackOptionsPanelController_reflexLabel()), c);
+        // Every field below is tied to the label beside it. All six controls
+        // came back from the accessibility tree with NO name — "text field"
+        // was the whole announcement for a DigitalOcean API token — because
+        // they are DECLARED at the top of the class and ASSIGNED here, a
+        // shape the input census could not see. `setLabelFor` rather than a
+        // written name: the label is already the right words and is already
+        // translated in fourteen languages, and Swing hands a field with no
+        // explicit name the labelling label's text (measured), while an
+        // explicit name still wins where one is set — the provider combo
+        // keeps its own. A secret field is named for WHICH token it holds;
+        // the value never reaches the name.
+        JLabel reflexLabel = new JLabel(Bundle.RackOptionsPanelController_reflexLabel());
+        reflexLabel.setLabelFor(reflexInterval);
+        panel.add(reflexLabel, c);
         c.gridx = 1;
         panel.add(reflexInterval, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel(Bundle.RackOptionsPanelController_providerLabel()), c);
+        JLabel providerLabel = new JLabel(Bundle.RackOptionsPanelController_providerLabel());
+        providerLabel.setLabelFor(kvasirProvider);
+        panel.add(providerLabel, c);
         c.gridx = 1;
         panel.add(kvasirProvider, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel(Bundle.RackOptionsPanelController_doTokenLabel()), c);
+        JLabel doTokenLabel = new JLabel(Bundle.RackOptionsPanelController_doTokenLabel());
+        doTokenLabel.setLabelFor(doToken);
+        panel.add(doTokenLabel, c);
         c.gridx = 1;
         panel.add(doToken, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel(Bundle.RackOptionsPanelController_hetznerTokenLabel()), c);
+        JLabel hetznerTokenLabel = new JLabel(Bundle.RackOptionsPanelController_hetznerTokenLabel());
+        hetznerTokenLabel.setLabelFor(hetznerToken);
+        panel.add(hetznerTokenLabel, c);
         c.gridx = 1;
         panel.add(hetznerToken, c);
 
         c.gridx = 0;
         c.gridy++;
-        panel.add(new JLabel(Bundle.RackOptionsPanelController_cloudflareTokenLabel()), c);
+        JLabel cloudflareTokenLabel = new JLabel(Bundle.RackOptionsPanelController_cloudflareTokenLabel());
+        cloudflareTokenLabel.setLabelFor(cloudflareToken);
+        panel.add(cloudflareTokenLabel, c);
         c.gridx = 1;
         panel.add(cloudflareToken, c);
 

@@ -8,7 +8,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.rack.devices.DeviceType;
 import org.nmox.studio.rack.model.Rack;
 import org.nmox.studio.rack.model.RackDevice;
@@ -32,6 +35,8 @@ import org.nmox.studio.rack.service.WorkspaceTrust;
     "LearningSpace_shelfMany={0} spaces · {1} on disk — discard what you''ve finished, promote what grew up."
 })
 public final class LearningSpace {
+
+    private static final Logger LOG = Logger.getLogger(LearningSpace.class.getName());
 
     public static final String MARKER = ".nmox-learn";
 
@@ -78,9 +83,16 @@ public final class LearningSpace {
             // path escapes the space dir (../../.zshrc, an absolute path)
             // must not let it write outside the space. Built-in spaces use
             // plain relative paths and are unaffected.
-            File target = resolveInside(dir, f.path());
+            File target = Containment.resolve(dir, f.path());
             if (target == null) {
-                continue; // path escapes the space — refuse, never write outside
+                // path escapes the space — refuse, never write outside, and
+                // SAY so: a silently skipped file looks like a catalog that
+                // simply did not declare it (refusals speak)
+                LOG.log(Level.WARNING,
+                        "Learning space {0}: sample file \"{1}\" resolves outside"
+                        + " the space directory — not written.",
+                        new Object[]{space.slug(), f.path()});
+                continue;
             }
             Files.createDirectories(target.getParentFile().toPath());
             if (!target.exists()) {
@@ -91,23 +103,6 @@ public final class LearningSpace {
                 tutorialWithInstall(space), StandardCharsets.UTF_8);
         writeRack(dir, space);
         return dir;
-    }
-
-    /**
-     * Resolves a sample-file path against the space directory and returns
-     * the target only if it stays INSIDE that directory; otherwise null.
-     * Canonicalizes both sides so {@code ../} traversal, an absolute path,
-     * or a symlinked segment can't escape — the strongest guard against a
-     * malicious drop-in catalog writing over files elsewhere on disk.
-     * Package-private so the traversal refusal is behaviorally testable.
-     */
-    static File resolveInside(File dir, String path) throws IOException {
-        File base = dir.getCanonicalFile();
-        File target = new File(dir, path).getCanonicalFile();
-        java.nio.file.Path basePath = base.toPath();
-        java.nio.file.Path targetPath = target.toPath();
-        return targetPath.startsWith(basePath) && !targetPath.equals(basePath)
-                ? new File(dir, path) : null;
     }
 
     /** What the marker recorded at creation, for listings ("?" when unreadable). */

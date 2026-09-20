@@ -243,6 +243,86 @@ class PrismBridgeTest {
      * the bridge, so the two tests that touch real JavaFX classes skip there and
      * say why. Any other failure to load still fails.
      */
+    /**
+     * Ledger 100: a page setting one family at {@code h1}, {@code h2},
+     * {@code body}, {@code strong} and {@code em} gives WebKit five
+     * {@code WCFont}s of ONE face, and the width fit — a dimensionless
+     * ratio, identical at every size — used to be computed for each of
+     * them on the thread holding WebKit's page lock.
+     *
+     * <p>The block is a synthetic one with no corpus words, so the fit
+     * itself does no layout: what is under test is the KEY, and the
+     * count is read through the bridge's own cache rather than a clock
+     * (a timing assertion on a shared runner is a flake, v2.99.1).
+     */
+    @Test
+    @DisplayName("one face at five sizes is fitted once, not once per sized font")
+    void fitIsPerFaceNotPerSizedFont() throws Exception {
+        assumeJavaFxLoads();
+        ComplexTextShaping.PrismBridge bridge =
+                new ComplexTextShaping.PrismBridge(getClass().getClassLoader());
+        Object face = fontResource("Noto Sans Devanagari");
+        int block = 0x0500; // no corpus words: the fit falls straight to the constant
+
+        assertThat(bridge.fitsComputed()).isZero();
+        java.util.List<Object> sized = new java.util.ArrayList<>();
+        for (float size : new float[]{32f, 24f, 16f, 14f, 12f}) {
+            Object pg = pgFont(face, size);
+            sized.add(pg);                       // held: the cache keys weakly
+            bridge.fitFor(new Object(), pg, block, false);
+        }
+        assertThat(bridge.fitsComputed())
+                .as("five sized fonts of one face pay the corpus fit once")
+                .isEqualTo(1);
+        assertThat(bridge.fitKey(new Object(), sized.get(0)))
+                .as("the key is the face, whatever sized font asked")
+                .isSameAs(face)
+                .isSameAs(bridge.fitKey(new Object(), sized.get(4)));
+
+        // a SECOND face of the same family is a different file with its own
+        // metrics, so it is fitted on its own — never shared with the first
+        Object bold = fontResource("Noto Sans Devanagari Bold");
+        bridge.fitFor(new Object(), pgFont(bold, 16f), block, false);
+        assertThat(bridge.fitsComputed())
+                .as("a second face is its own fit")
+                .isEqualTo(2);
+
+        // a font that will not give up its resource keys on itself, as before
+        Object font = new Object();
+        assertThat(bridge.fitKey(font, null)).isSameAs(font);
+        assertThat(bridge.fitKey(font, "not a PGFont")).isSameAs(font);
+    }
+
+    /** A stand-in {@code FontResource}: identity is all the cache reads. */
+    private static Object fontResource(String name) throws Exception {
+        return stub("com.sun.javafx.font.FontResource", name, java.util.Map.of());
+    }
+
+    /** A stand-in sized {@code PGFont} over {@code face}. */
+    private static Object pgFont(Object face, float size) throws Exception {
+        return stub("com.sun.javafx.font.PGFont", "PGFont@" + size,
+                java.util.Map.of("getFontResource", face, "getSize", size));
+    }
+
+    /**
+     * A proxy over one JavaFX interface answering {@code answers} and
+     * nothing else. {@code hashCode}/{@code equals} are answered by
+     * IDENTITY rather than left to the handler, because the fit cache is
+     * a {@code WeakHashMap} and hashes its key: a handler returning null
+     * for {@code int hashCode()} would blow up the thing under test.
+     */
+    private static Object stub(String iface, String name, java.util.Map<String, Object> answers)
+            throws Exception {
+        Class<?> type = Class.forName(iface, false, PrismBridgeTest.class.getClassLoader());
+        return java.lang.reflect.Proxy.newProxyInstance(type.getClassLoader(),
+                new Class<?>[]{type}, (p, m, a) -> switch (m.getName()) {
+                    case "hashCode" -> System.identityHashCode(p);
+                    case "equals" -> p == a[0];
+                    case "toString" -> name;
+                    default -> answers.get(m.getName());
+                });
+    }
+
     private static void assumeJavaFxLoads() {
         try {
             Class.forName("com.sun.webkit.graphics.WCFont", false, PrismBridgeTest.class.getClassLoader());

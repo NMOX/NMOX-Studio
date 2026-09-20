@@ -54,12 +54,61 @@ class SiteServerTest {
                     .POST(HttpRequest.BodyPublishers.noBody()).build(),
                     HttpResponse.BodyHandlers.ofString()).statusCode()).isEqualTo(405);
 
-            // the containment rule, straight at the resolver: an escaped
-            // path resolves to null whatever the client encoding did
-            assertThat(SiteServer.resolveInside(root, "../SECRET.txt")).isNull();
-            assertThat(SiteServer.resolveInside(root, "index.html")).isNotNull();
+            // the containment rule, walked over the WIRE rather than at
+            // the resolver (which lives in core.util.Containment since
+            // ledger 111): a raw socket sends the traversal the HTTP
+            // client would have normalized away before it left
+            assertThat(rawGet(server, "/../SECRET.txt")).startsWith("HTTP/1.1 404");
+            assertThat(rawGet(server, "/index.html")).startsWith("HTTP/1.1 200");
+            // the root itself is not a page — this used to resolve to the
+            // site directory and be caught one step later by isFile()
+            assertThat(rawGet(server, "/.")).startsWith("HTTP/1.1 404");
         } finally {
             server.stop();
+        }
+    }
+
+    @Test
+    @DisplayName("a symlink out of the site root answers 404, never the file it points at")
+    void symlinkOutOfTheRootIs404(@TempDir Path work) throws Exception {
+        File root = new File(work.toFile(), "site");
+        Files.createDirectories(root.toPath());
+        Files.writeString(new File(root, "index.html").toPath(), "<h1>site</h1>");
+        Path outside = Files.createDirectories(work.resolve("elsewhere"));
+        Files.writeString(outside.resolve("SECRET.txt"), "sk-not-yours");
+        try {
+            Files.createSymbolicLink(root.toPath().resolve("leak"), outside);
+        } catch (UnsupportedOperationException | java.io.IOException noSymlinks) {
+            return; // a platform without symlinks has nothing to prove here
+        }
+
+        SiteServer server = new SiteServer(root);
+        server.start();
+        try {
+            String answer = rawGet(server, "/leak/SECRET.txt");
+            assertThat(answer).startsWith("HTTP/1.1 404");
+            assertThat(answer).doesNotContain("sk-not-yours");
+        } finally {
+            server.stop();
+        }
+    }
+
+    /**
+     * One raw HTTP/1.1 request, sent exactly as written — the JDK's
+     * HttpClient normalizes {@code ..} out of a URI before the request
+     * leaves, so a client-side walk cannot witness this server's own
+     * containment refusal at all.
+     */
+    private static String rawGet(SiteServer server, String path) throws Exception {
+        int port = Integer.parseInt(server.url().replaceAll(".*:(\\d+)/?$", "$1"));
+        try (java.net.Socket s = new java.net.Socket("127.0.0.1", port)) {
+            s.getOutputStream().write(("GET " + path + " HTTP/1.1\r\nHost: 127.0.0.1\r\n"
+                    + "Connection: close\r\n\r\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            s.getOutputStream().flush();
+            // bounded: this server's answers are small and the socket
+            // closes, but a read is a read (the standing law)
+            byte[] all = s.getInputStream().readNBytes(64 * 1024);
+            return new String(all, java.nio.charset.StandardCharsets.UTF_8);
         }
     }
 

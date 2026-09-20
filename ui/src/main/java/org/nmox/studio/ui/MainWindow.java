@@ -476,8 +476,8 @@ public final class MainWindow extends TopComponent {
         }
     };
 
-    private final org.nmox.studio.rack.service.AimFollower aimFollower =
-            new org.nmox.studio.rack.service.AimFollower(n ->
+    private final org.nmox.studio.core.util.AimFollower aimFollower =
+            new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
 
     @Override

@@ -20,7 +20,23 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
-## Open — recorded by v2.184.0 (the senior-developer pass)
+## Closed by v2.186.0 — every "Decided, not done" item, done
+
+Recorded by v2.184.0's senior-developer pass; all seven closed in v2.186.0.
+
+**Seven of these carried the phrase "Decided, not done" — the decision taken,
+the work postponed for size.** That is the most expensive shape a ledger entry
+can have: the thinking is already paid for and none of the benefit is banked,
+so the entry has to be re-read by every future author while the defect it
+describes goes on shipping. Closing them found **nine live defects** nobody was
+looking for, including a four-month-old `NullPointerException` on the IGNITE
+button, two files destroyed by a read failure (measured at 9,437,184 bytes
+going to 550 and to 48), a write that followed a symlink out of the project,
+and four Options controls that left Apply permanently grey.
+
+**It also found that six of these entries were wrong about their own subject**,
+and those corrections are recorded in place below, because a corrected claim is
+worth more than a fix applied to nothing.
 
 A read-only survey of the 910 product files across three dimensions — one
 fact with two homes, work that was never finished, and shape that makes the
@@ -38,7 +54,7 @@ And `LearningSpace.resolveInside` was reported as returning an
 un-canonicalised path; it does, and that is worth fixing, but no caller
 today reaches it with a symlinked segment.
 
-### 110. Nine different answers to "which directories does a walk skip" — ~~OPEN~~
+### 110. ~~Nine different answers to "which directories does a walk skip"~~ — CLOSED v2.186.0
 
 Twelve declarations across four modules, nine distinct sets. Only
 `node_modules`, `.git`, `dist`, `build` and `coverage` appear in all twelve.
@@ -58,7 +74,31 @@ and that wants its own release with its own walk. What is not deferred is
 the reason it grew: nothing derives or gates this population, so a
 thirteenth copy can land tomorrow. The gate comes with the fix.
 
-### 111. Four canonical-containment guards, three of which call themselves the canonical one
+**Closed v2.186.0, and the entry was wrong about its own census four ways.**
+`HeavyDirs` is the one home, widened from 5 names to 13, with `plus(String...)`
+so a caller differs by ADDING. The merge was verified MONOTONE — every one of
+the declarations now skips a strict superset of what it skipped before, nothing
+narrowed. `HeavyDirsLedgerTest` derives its population from **911 files** and
+fails on a new declaration.
+
+The corrections: there are **thirteen** declarations and **ten** distinct
+answers, not twelve and nine — the thirteenth is `Workspaces.walk`'s inline
+`"node_modules".equals(dir.getName())`, which the entry's own set-literal census
+could not see. *The entry written to close a blind spot contained that blind
+spot*, so the gate's population is now FILES NAMING the directory, not set
+literals. Across all thirteen the universal intersection is `node_modules`
+ALONE, not five names. And the list of legitimate extras missed `vendor` (six
+callers) — the one union name that could not be promoted, because the Classic
+Kit WRITES `vendor/jquery-3.7.1.min.js` into the project and wires a script tag
+at it, so a file tree refusing to expand it would hide files the IDE itself just
+put there. `.cache` was missed beside `.idea` too.
+
+Two live bugs fell out: `Workspaces` offered `dist/my-lib/package.json` (an
+Angular library build's own output) to WAYPOINT as a package to dial, and
+`ProjectInspector` read Next.js standalone output's `package.json` as a nested
+Node project nobody wrote.
+
+### 111. ~~Four canonical-containment guards, three of which call themselves the canonical one~~ — CLOSED v2.186.0
 
 `LearningSpace.resolveInside` canonicalises both sides then returns the
 UNRESOLVED path, so a caller that passes the check still reads through the
@@ -76,7 +116,27 @@ guards writes and a served docroot. It belongs in a release that can walk
 each refusal, not folded into twenty other changes. No instance is
 exploitable today — checked — so this is a hardening, not an incident.
 
-### 112. Four hand-maintained mirrors of one kind-to-token vocabulary
+**Closed v2.186.0.** One home, `core.util.Containment`, with both policies
+decided once and written in its javadoc. **Symlink policy: the guard returns the
+CANONICAL resolved path** — the check and the read must name the same file, which
+is the `LearningSpace` defect exactly. **Root-equals-root: REFUSED** — every
+caller asks "which FILE?" (three call `isFile()`, the fourth writes bytes) and
+`SiteServer` appends `index.html` before calling, so accepting the root only
+defers the refusal into a silent `isFile()` false or a raw "Is a directory" from
+the OS, a refusal that no longer names containment.
+
+**The write path was the live one**: `DockerRecipes.resolveInside` was
+`normalize()` only, so a symlinked segment leaving the project was FOLLOWED and
+written through. It refuses now. Each surface keeps its own refusal sentence, and
+each is walked with a real symlink through the real caller path (`SiteServer`'s
+over a raw socket, because the JDK's `HttpClient` normalises `..` away before the
+request leaves).
+
+Three more instances outside the named four — `DebugEntries` (Path-based,
+returning the unresolved file, on a debug-launch path), `DocsStaging` and
+`NgSchematic` — were found in the same pass and swept in the same release.
+
+### 112. ~~Four hand-maintained mirrors of one kind-to-token vocabulary~~ — CLOSED v2.186.0
 
 `RunDevice` carries the target tokens three times (an append-only knob
 array, `ProjectKind -> String`, and its inverse) plus a third switch in
@@ -94,7 +154,26 @@ grey path takes over. Adding a language is the most repeated change in this
 repository and today it costs six switch edits with no compiler help. Left
 out of v2.184.0 only for size; it is the next one worth doing.
 
-### 113. Contract Studio's Watch engine lives in a TopComponent and no CI run tests it
+**Closed v2.186.0, and the entry's central claim was false.** It said *"The four
+currently AGREE — that is the finding."* They did not: `gradle` had no
+`commandDir` arm, so it fell to `default -> NODE` and ran `gradle test` **in the
+Node lane's directory instead of beside `build.gradle`**. The disagreement the
+entry described as hypothetical was already shipping.
+
+`runTarget()`/`testRunner()` now live on `ProjectKind`, the inverse is derived,
+and `default -> NODE` is gone, so FOUNDRY, LEARN and NONE grey honestly instead
+of inventing a node command. The two missing tokens were `webpack` (IGNITION) and
+`gradle` (VERITAS), both appended so the knob's on-disk index contract holds.
+`VeritasRunnerMatrixTest`'s own mirror had drifted too — it stopped at `aiken`
+and never learned the `node` position v1.252.0 appended.
+
+**And a four-month-old NullPointerException**: `RunDevice.primaryAction()` ran
+`cmd.contains("webpack")` where `cmd` is null for Tact and ReScript, so pressing
+IGNITE threw before reaching the refusal three lines below. The honest grey those
+arms promised since v1.161.0 was **unreachable from the button**, because no test
+had ever pressed it on a null.
+
+### 113. ~~Contract Studio's Watch engine lives in a TopComponent and no CI run tests it~~ — CLOSED v2.186.0
 
 About 400 lines of non-UI orchestration inside `Web3StudioTopComponent`:
 subscribe-or-poll selection, scheduled polling, head-gap backfill, two-lane
@@ -112,7 +191,24 @@ supplier, the feed, and a three-method UI callback; the tab and its
 callbacks stay where they are. The existing fake WebSocket server in the
 test tree can drive it headlessly. Deferred for size, not for doubt.
 
-### 114. Half-built, and each half is visible
+**Closed v2.186.0.** `engine/WatchRunner` takes a client supplier, the feed and a
+UI callback; the TopComponent lost 410 lines and holds only Swing. The callback
+has **four** methods, not the sketched three — the original had two distinct row
+signals (`watchAdvanced` for table-plus-chip, and a coalesced table-only refresh
+for streamed logs), and folding them would have either dropped the coalescing or
+marched the chip backwards on a late log.
+
+All four unverified behaviours are now tested headlessly against the existing
+fake WebSocket server: socket-vs-poll selection, a cut socket resuming with no
+duplicate and no gap, head-gap backfill, and the generation guard.
+
+**The finding is about testability, and it is this arc's recurring law**:
+`WatchFeed.addBlock` dedupes by hash itself, so a duplicate block fetch is
+INVISIBLE in the feed. An assertion written against the feed alone — the obvious
+thing to write — passes while a real duplicate-fetch regression ships. The test
+asserts on the transport's recorded fetches as well.
+
+### 114. ~~Half-built, and each half is visible~~ — CLOSED (three in v2.186.0; the LSP providers had already shipped in v2.184.0)
 
 Four places where the plumbing for a feature was written and the feature
 was not. Each is small; together they are a pattern worth naming, because
@@ -140,7 +236,22 @@ every one of them reads as complete from the outside.
   never added; `arm()` already calls `dismiss("")` first, so re-arming is
   correct without it. **Decision: delete it.**
 
-### 116. The read-failure clobber has two more homes
+**Closed.** `TEMPLATE_EXPRESSION` is emitted — `` `a${b.c}d` `` now lexes as
+TEMPLATE_STRING / TEMPLATE_EXPRESSION / IDENTIFIER / DELIMITER / IDENTIFIER /
+TEMPLATE_EXPRESSION / TEMPLATE_STRING, with the brace-depth and backslash-escape
+arms each killed by their own named mutant. Emmet's `count` and
+`GhostText.armed()` are deleted.
+
+**The entry was stale about its own second sub-item.** `CairoServer` and
+`MoveServer` were added in **v2.184.0 itself** — the release that wrote this
+entry — as nested classes in `LanguageServers`, each single-mime, each with the
+honest limit in its javadoc (*"has NOT been verified against a real scarb
+install"*). The decision was recorded as pending for work that had already
+shipped. That is a staleness the ledger's own honesty gate cannot catch: it
+checks whether a SECTION headed Open holds open work, not whether an item's
+sub-decision was quietly delivered.
+
+### 116. ~~The read-failure clobber has two more homes~~ — CLOSED v2.186.0
 
 v2.184.0 fixed the class in the three files it was briefed for — the task
 board, the database workspace and the contract workspace — and the agent
@@ -161,7 +272,26 @@ probed and measured — the three that shipped were each proven destroying a
 9.4 MB file before a line was changed, and the same proof is owed here. It
 is the next thing to do in this family.
 
-### 115. Two gates whose population or path is smaller than their claim
+**Closed v2.186.0, with the destroy measured on the shipped code first, as owed.**
+Driven through the real windows' own load and save, not a replayed sequence:
+apiclient's `.nmoxapi.json` went **9,437,184 bytes to 550**, infra's
+`.nmoxinfra.json` **9,437,184 to 48**. Both survive intact now.
+
+Infra was the worse of the two exactly as recorded: `DesignSync` answered NONE
+for the file's real stamp, because `recordOwn` in the `finally` ran on the catch
+path — **the never-clobber guard was disarmed by the very failure it exists
+for**. Three cases are kept distinct: ABSENT takes the starter, UNPARSEABLE keeps
+the v1.36.0 `.bak` law, UNREADABLE binds read-only, writes nothing, stamps
+nothing and says so in fifteen languages.
+
+The mutation that matters most removed the save guard while still withholding the
+stamp: the file is still lost, which proves the two halves are independently
+load-bearing rather than one masking the other. A find from reading the fix back:
+a read-only bind records no stamp, so infra's next check saw an unknown version
+and announced *"Reloaded — the file changed outside the designer"* when nothing
+had changed and nothing had been read.
+
+### 115. ~~Two gates whose population or path is smaller than their claim~~ — CLOSED v2.186.0
 
 - **`GrammarBundleTest`** filters by filename `*Grammar.java`, so
   `EmbeddedScopeGrammars.java` (49 registrations) and `NgTemplateGrammars.java`
@@ -177,9 +307,30 @@ is the next thing to do in this family.
   The argv it is named for is never checked. **Decision: inject the binary
   resolution too**, so the fake runner is always reached.
 
-## Open — recorded by the v2.174.0 arc review of the shaping arc
+**Closed v2.186.0 — and 115a's stated failure mode does not exist.** The entry
+said *"a typo would silently kill a language's highlighting"*. Planting that exact
+typo (`yaml.tmLanguage.json` -> `yaml.tmLanguag.json`) makes **javac fail**: the
+platform's `CreateRegistrationProcessor` calls `LayerBuilder.validateResource` and
+then READS the grammar to extract its `scopeName`. So widening the gate by
+filename would have been decorative — it could never have caught the named defect,
+in the old population or the new.
 
-### 100. A width fit is computed per SIZED font, not per font
+The widening happened anyway, from the generated layer (**76 -> 131**
+registrations across 88 files, with a floor), and it now holds three laws the
+compiler does NOT prove — including `EmbeddedScopeGrammars`' own prose rule that
+an embed-only mime is a scope for TM4E's registry and not an editor, which was
+load-bearing and enforced by nothing.
+
+**115b's mutant genuinely lived before**, and that was proven rather than
+asserted: modelling the CI condition (no dart-sass, so the resolver answers
+`null`) against the shipped test body with `--no-source-map` deleted gave
+`Tests run: 1, Failures: 0` and BUILD SUCCESS. The test named for an argv
+asserted nothing on all three lanes. The binary resolution is a seam now, so the
+fake runner is always reached.
+
+## Closed by v2.184.0 and v2.186.0 — the shaping arc's review items
+
+### 100. ~~A width fit is computed per SIZED font, not per font~~ — CLOSED v2.186.0
 
 **What it is.** `ComplexTextShaping.fits` keys on the `WCFont` instance,
 which WebKit creates one of per family *and size and weight and style*.
@@ -211,6 +362,19 @@ Linux run, where the fit matters and the fonts vary.
 path, which since v2.174.0 means Linux and unknown builds. macOS and
 Windows take WebKit's own path and never fit.
 
+**Closed v2.186.0.** Re-keyed to the `FontResource` via the already-open
+reflective `PGFont.getFontResource()`, falling back to the `WCFont` when the
+resource cannot be obtained (both paths tested). Five sized fonts of one face now
+pay the corpus fit ONCE; a second face pays a second. Asserted through a
+`fitsComputed()` seam, never a clock — a timing assertion on a shared runner is
+the v2.99.1 flake.
+
+Both halves of "what remains deferred" turned out moot: the key was already
+decided in v2.184.0, and the measurement question ("is the win worth it") is
+answered by the argument — re-keying is a strict coarsening WITHIN one face, so
+it cannot increase the fit count and cannot change an answer. Only the key's
+identity could be wrong, and that is what the test pins.
+
 ### 101. ~~The Browser's first-load waits are per-open and serialized~~ — CLOSED v2.184.0
 
 **What it is.** `WebBrowserTopComponent.loadWhenShaped` posts each first
@@ -240,9 +404,9 @@ page. Zero means DO NOT WAIT, the caller honours that literally, and a live
 deadline never answers zero. The clock is an argument, so every rule is a
 test rather than a sleep.
 
-## Open — recorded by v2.179.0 (the rack ecosystem release)
+## Closed by v2.180.0 and v2.186.0 (the rack ecosystem release's walk debts)
 
-### 103. The v2.176–v2.179 edges never walked in the app
+### 103. ~~The v2.176–v2.179 edges never walked in the app~~ — CLOSED v2.186.0
 
 **The three RACK edges are now walked** (v2.180.0, in the shipped 2.179.1 with
 a throwaway userdir *and* a throwaway home):
@@ -271,10 +435,39 @@ it after the modal), and v2.177.0's ⌃Space translation-key completion and
 modifier-click: a screen walk with full control, or a person.
 
 
-## Open — recorded by v2.180.0 (the rack debt night)
+**Closed v2.186.0, without the screen walk it was waiting for.** The entry said
+these two "need a real completion popup and a real modifier-click: a screen walk
+with full control, or a person." That framing was wrong, and this repo had
+already answered it twice — v2.145.0 asked the platform's own
+`BuildPopupMenuAction` to BUILD a context menu and read every row with no gesture
+at all, and v2.58.1 found a real completion defect through a probe cluster rather
+than by driving a popup. **A popup is a rendering of an answer the provider
+already gave; the answer is the thing under test.**
+
+So both are proven at the provider, through the platform's own query path:
+`I18nCompletionQuery` constructs the real `CompletionResultSetImpl` and reads
+back the items the popup would render, across all six call shapes with their
+`en/common.json · "Home"` provenance; the jump drives the real
+`HyperlinkProviderExt` to a resolved **file and line**.
+
+**The open question came back negative, which is the good answer**: the i18n
+provider does NOT mask out `COMPLETION_ALL` — it was written after v2.58.1 and
+inherited the fix — and a census of all twelve `CompletionProvider` files
+confirms `CompletionAllQueryGateTest`'s derived population has no blind spot. The
+gap that WAS closed: under a wrong-line mutant the pre-existing
+`I18nKeyHyperlinkTest` stayed green, because it tested the pure resolver rather
+than what the click does with it.
+
+**The ceiling is written into both test classes**: this proves the provider
+ANSWERS — which items, what each says, which file and line — not that the popup
+PAINTS or that a held modifier draws a link. No instrument here can deliver
+either gesture (v1.291.0 measured three `MOUSE_MOVED` events for an entire
+session). A stated ceiling is a decision; an unstated one is a gap.
+
+## Closed by v2.186.0 (the rack debt night's last open measurement)
 
 
-### 107. A house typography decision the JDK bypasses, under French — Linux measured clean, Windows open
+### 107. ~~A house typography decision the JDK bypasses, under French~~ — CLOSED v2.186.0 (all three platforms)
 
 `docs/i18n/conventions.md` states it plainly: *"French typography uses a narrow
 no-break space (U+202F)… We use U+00A0 everywhere because not every Swing font
@@ -414,6 +607,36 @@ then for each font print the glyph code, the advance, and the dark-pixel count
 at 64pt beside a U+E000 control — and render the real
 `NumberFormat.getIntegerInstance(Locale.FRANCE).format(1234567)` to a PNG and
 look at it.
+
+**Closed v2.186.0, and not the way the entry expected.** It assumed the Windows
+measurement needed a new job on `windows-installer-check`. It does not:
+`build-and-test.yml` has run the full `mvn verify` on a `windows-latest` matrix
+leg as a BLOCKING gate since v1.42.0. So the measurement is two plain JUnit tests
+in `core`, which turns a one-off reading into a standing law checked on every PR,
+on all three platforms.
+
+`GroupSeparatorLedgerTest` derives its population from `UiLocale.SUPPORTED` and
+pins every shipped locale's separator with both controls (`fr-CA` is U+00A0;
+`ar`'s zero digit is U+0030, so `readableDigits` is a correct no-op on this JDK).
+`NarrowNoBreakSpaceInkTest` asks the glyph, the ADVANCE and the INK — never
+`canDisplay` — asserts that the chrome font reserves width and paints nothing,
+and RECORDS the logical families rather than asserting them, because macOS's
+0.00px `Dialog`/`SansSerif` is a known accepted state. It prints its whole report
+on pass, fail and stand-down, so a green Windows leg still answers all three
+questions.
+
+**A measurement trap worth keeping**: an unresolvable font name silently becomes
+`Dialog` — the zero-advance family — so a probe that does not check
+`getFamily()` matches what it asked for measures the logical fallback and calls
+it chrome.
+
+The latent macOS hazard the entry left standing is now gated:
+`PaintedNumberSeparatorGateTest` derives the 22 sites in 8 files that build their
+own zero-advance logical family and refuses a grouped number painted on one.
+`Numbers.display` is not banned — it formats `"%.Nf"`, which takes no grouping
+separator — and **the gate READS that fact from `Numbers.java` instead of
+restating it**, so the day `display` grows a grouping flag its callers on those
+surfaces fail by name.
 
 ## Closed by v2.181.0
 
@@ -817,9 +1040,77 @@ Remainder: the per-word spread a context-free estimate cannot remove (4–8px);
 JavaFX's own Linux layout draws Tamil `பொ` with a dotted circle and ZWNJ as a
 box (font/JavaFX, not the Browser).
 
-## Open — deferred deliberately, with reasons (added v2.156.0, the multi-session walk)
+## Open — recorded by v2.186.0 (the deferral-closing release)
 
-### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped
+### 117. Three more containment guards, named by the derivation that unified the other four
+
+Closing ledger 111 put the four named guards in one home and then **derived** a
+census across all ten modules — comment-stripped source carrying the resolve
+shape, plus every caller of the guard. The derivation immediately found three
+copies nobody had named, which is the point of deriving rather than listing:
+
+- **`McpSubscriptions`** — the Agent Port's subscribe path.
+- **`UserTemplates.generate`** — **lexical only**: the v1.293.0 path law refuses
+  absolute, `..`, backslash and drive-letter spellings by disqualifying the whole
+  template, but a **symlinked segment passes it**, and this is a WRITE path.
+- **`SymbolIndexProvider`** — editor.
+
+`ContainmentLedgerTest` classifies all three by name with the walk each still
+needs, so none can hide and a new one fails the build (census 13: 9 routed, 4
+classified, floored at 8 so an empty derivation cannot pass; the classified half
+is an exact-set match, so a stale entry fails too). `GitFacts` is classified as a
+genuine distinction rather than a miss — ledger 43 asks "inside *a* `.git` dir",
+which for a worktree is deliberately outside the repo root.
+
+**Deferred deliberately, and for ledger 111's own stated reason**: tightening a
+containment guard changes what is refused, each of these refusals is a spoken
+message on a different surface, and each needs its own refusal walk. Folding three
+more into a release that already lands eighteen units would be the scope mistake
+111 was held back to avoid. `UserTemplates` is the one to do first — it writes.
+
+**A second containment ceiling, recorded rather than taken (v2.186.0).** A path
+through a **broken** symlink is judged on its spelling, because no platform can
+resolve one. So a link inside the root pointing at a target that does not exist
+YET would be followed out if that target were later created. This is
+pre-existing and byte-identical before and after this release's guard rewrite —
+verified by a 30-input differential probe. Closing it means refusing when the
+canonicalized ancestor is ITSELF still a symlink, which is arguably just the
+stated symlink policy made true; it is left undone because it is a NEW refusal
+rule, it cannot be tested on Windows from this bench, and adding one to a
+release that already lands twenty units is the scope mistake ledger 111 was held
+back to avoid.
+
+**The Windows half of this family was a live hole, found by CI (v2.186.0).**
+`Containment.resolve` canonicalized the WHOLE target path, and on Windows
+canonicalization cannot resolve a symlinked ancestor when the FINAL component
+does not exist — so a not-yet-existing file behind a link inside the root came
+back spelled as-is and passed containment. On POSIX the same call resolves it,
+which is why every local run was green: *the platform was doing the work, not
+the code.* That mattered most on the WRITE paths, where an absent leaf is the
+normal case rather than an edge — `DockerRecipes`, `LearningSpace` and
+`DocsStaging` all name files that do not exist yet. The guard now canonicalizes
+the deepest EXISTING ancestor and re-appends the tail, so the answer no longer
+depends on the leaf existing, and the test states exactly that as a
+platform-independent property. The helper that created the symlinks was also
+returning early instead of skipping, so the whole test body vanished under a
+green tick on any platform that refuses them — the same defect as 115b's
+`argvPinned`, in the test written to catch this one.
+
+**Not believed exploitable today**, and that is measured for the one that
+mattered most rather than assumed: restoring the old `DebugEntries` code, the
+escape assertion still PASSED, because that guard canonicalised before deciding.
+What these leave is the same TOCTOU-shaped residue — the check and the use naming
+different paths — not an escape.
+
+## Upstream — filed, not ours (added v2.156.0, the multi-session walk)
+
+Carried here so a walk that meets it knows what it is looking at, not because
+it is work this project owes. **Decided v2.186.0**: a patched copy of a
+platform module would be a second home for platform code, which this repo
+refuses on principle, so the only lever is the issue — and it is filed. The
+entry stays until the fix lands upstream and the platform bump picks it up.
+
+### 98. The platform's Breakpoints window throws on every repaint while a DAP session is stopped — UPSTREAM, filed
 Found by the v2.156.0 walk, read from bytecode, not ours: in the RELEASE310
 lsp-client, `breakpoints/BreakpointModel.getIconBase` (line 90) calls
 `DAPStackTraceAnnotationHolder.contains(debugger.getCurrentLine(), bp.getLine())`
@@ -905,7 +1196,7 @@ put a translation is unfinished; a surface with the slot open and the size
 written down is a decision.** The slot is `tutorial.<lang>`, it is read by
 the same parser, and a drop-in author can fill it today.
 
-### 96. The first-launch surface: (a) DECIDED and shipped, (b)+(c) left to the owner (2026-09-10, v2.118.0)
+### 96. ~~The first-launch surface~~ — CLOSED: (a) v2.118.0, (b)+(c) v2.184.0
 
 Three things the first-time walk measured but did not change on its own,
 because each reverses a decision the owner made by name. Numbers first, so
@@ -1062,7 +1353,7 @@ user-visible weight:
   SIGNATURE_UNVERIFIED. `scripts/nbm-trust-probe.sh <tag>` repeats it for any
   release.
 
-### 94. macOS cannot set the app's language, and saying it could would be a lie
+### 94. macOS cannot set the app's language, and saying it could would be a lie — DECIDED: won't do (v2.186.0)
 
 Measured 2026-09-10 while looking for the last monolingual surfaces. The
 bundle's `Info.plist` carries no `CFBundleLocalizations`, so macOS treats
@@ -1100,10 +1391,30 @@ shell-quoting-sensitive in a launcher that already sources a conf, and the
 product already offers the same control in Options with a live switch — so
 the value is convenience, not capability.
 
-Deferred, not forgotten: the measurement is recorded so the next author does
-not add the plist key on the reasonable-sounding assumption that it works.
-A comment sits at the `Info.plist` heredoc in `packaging/macos/build-dmg.sh`
-pointing here.
+**Decided v2.186.0: won't do, and the reason is a house law rather than
+effort.** Closing it means the launcher reading an AMBIENT preference for a
+fact that already has one explicit home with a live switch — Options ▸
+General ▸ Language, which since v2.103.0 applies without a restart. A second
+home for one fact is the exact defect v2.131.0 and v2.136.0 each spent a
+release removing, and this one would be the worse kind: the two homes could
+disagree, so the rule "an explicit choice outranks an ambient one" would have
+to be written, tested and kept true forever. The gain on the other side of
+that is a language menu in System Settings for a control the product already
+offers, on one operating system.
+
+The cost is also badly placed. The change lands in the launcher's conf
+sourcing, which is the highest blast radius in the product: the Windows `.exe`
+GREPS that file instead of sourcing it, so two assignments have no defined
+winner (v1.256.0), and the same release watched a `sed` rewrite the
+explanatory comment beside the line it was editing and ship prose that
+contradicted its own code. A convenience feature does not buy a change there.
+
+The measurement is kept, because it is the part with lasting value: it stops
+the next author adding the plist key on the reasonable-sounding assumption
+that it works. A comment sits at the `Info.plist` heredoc in
+`packaging/macos/build-dmg.sh` pointing here. Revisit only if macOS gains a
+way to pass the choice to a JVM child process, which is the thing that is
+actually missing.
 
 ### 90. ~~The platform toolbar is English in every translated build~~ — CLOSED v2.102.0
 
@@ -1663,9 +1974,9 @@ four-file switcher was already suffix-agnostic and is now pinned by
 `SuffixlessAngularGateTest`; index.html has no `.ts` twin and stays
 plain. Our own generators keep pinning the suffix regardless.
 
-## Open — deferred deliberately, with reasons (added v1.235.0, the ambient-selection release)
+## Closed by v2.186.0 (the ambient-selection release)
 
-### 72. API Studio, Contract Studio and the Infra Designer stay selection-less — an aim-node facade would need to join core.spi
+### 72. ~~API Studio, Contract Studio and the Infra Designer stay selection-less~~ — CLOSED v2.186.0
 v1.235.0 gave six suite windows (Welcome, Browser, IRC, Docker Panel,
 Block Studio, DB Studio) the aimed project as their ambient selection
 via `rack.service.AimFollower`, so Test Project (^F6), the Team menu
@@ -1682,6 +1993,31 @@ already, and their users' project-sensitive gestures (Team menu from
 INSIDE API Studio) are rare enough that no journey has hit the gap
 yet. Wire it when one does, or when core.spi grows the facade for
 another reason.
+
+**Closed v2.186.0, and the deferral's premise was wrong.** It waited for "a small
+aim-node facade in core.spi" to earn a second consumer, assuming the facade was
+the cost. There was no facade to build: `core.spi.ProjectAim` has carried
+`projectDir()` and aim-change listeners since v1.46.0, and `core/pom.xml` already
+declared `org-openide-nodes` AND `org-openide-loaders`. **The entire fix was an
+address change.**
+
+`AimFollower` and `AimNodePublisher` MOVED to `core.util` — not copied, no
+delegate left in rack, one implementation for all nine windows — rebuilt on
+`ProjectAim` instead of `Rack.Listener`. The three studios consume it with the
+lookup-and-null-branch living INSIDE the follower, so the idiom has one home
+instead of three. None regained a rack dependency: `RackSoftDependencyTest` is
+green in all three, `dependency:tree` shows no rack artifact, and the generated
+NBM manifests read `rack: False | nodes: True`.
+
+**A concurrency fix came out of a surviving mutant.** The moved class carried
+three gates for one law — a volatile `showing` flag, a plain `attachedTo`
+reference, and a null check — so the publish-while-hidden mutant hid behind the
+other two. The plain reference was the wrong kind of gate anyway, since
+`ProjectAim` fires on the AIMER's thread where a non-volatile field has no
+visibility guarantee. Collapsed to one volatile reference; `hidden()` clears it
+BEFORE unsubscribing, so an event already in flight finds null and is refused —
+the case an unsubscribe alone cannot cover. *A surviving mutant is a finding
+about the code, not about the test.*
 
 ## Open — deferred deliberately, with reasons (added v1.216.0, the v1.209–v1.215 arc review)
 
@@ -1766,7 +2102,7 @@ grants untouched. Production never calls it. Regression test seeds a
 sentinel in the real node and proves it survives clearForTest AND
 test-mode writes. (Original entry kept below for the record.)
 
-### 69-original. `mvn verify` wipes the developer's real Workspace Trust prefs — LOW
+### 69-original. ~~`mvn verify` wipes the developer's real Workspace Trust prefs~~ — superseded by 69, CLOSED v1.225.0 (kept for the original wording)
 `WorkspaceTrust` stores grants in `java.util.prefs` userRoot
 (`org/nmox/studio/rack/service/trusted`, one entry per path — the
 v1.27.0 8KB-cap fix), and its tests call `clearForTest` against the
@@ -1819,7 +2155,7 @@ Honest future fixes: upstream a css.lib grammar refresh to Apache
 NetBeans, or ship stylelint as an LSP so a modern linter carries CSS
 correctness and users can Alt-Enter the legacy check off per file.
 
-### 70-original. The Angular CLI's esbuild dev server hangs the JavaFX WebView — MEDIUM
+### 70-original. ~~The Angular CLI's esbuild dev server hangs the JavaFX WebView~~ — superseded by 70, CLOSED v1.226.0 (kept for the original wording)
 Measured live (2026-08-01, v1.222.0 gauntlet): navigating the in-app
 Browser to a running `ng serve` (Angular 18, the esbuild-based
 `@angular/build` dev server) starts a load that never commits — the
@@ -2241,7 +2577,7 @@ with kind + face summary, level, position, and live SELECTED state; the
 accessible description names every key. BlockCanvasKeyboardTest drives
 the handler with synthesized events (4 tests).
 
-### 49. Preview server: no deregister on app exit (blessed residue)
+### 49. Preview server: no deregister on app exit — BLESSED (residue; cannot outlive the JVM)
 On app exit with the tab open, componentClosed never runs (window-system
 persistence keeps it "open"), so the serving-registry entry and the server
 die with the JVM instead of deregistering. The server's threads are daemon
@@ -2287,7 +2623,7 @@ small sibling EDT touches went with it: the learning-space picker's
 drop-in scan, the rack's Save Patch write (the last workspace writer off
 the SaveLane), and ORACLE's keychain peek.
 
-### 42. Third-party `descriptor()`/`build()` can run at session restore
+### 42. Third-party `descriptor()`/`build()` can run at session restore — DECIDED: accepted, with a revisit condition
 The security lens noted the zero-boot-cost law is not enforced *by
 construction* for the SPI: if the rack window was open last session and the
 aimed project's patch references an installed extension, that plugin's
@@ -2689,7 +3025,7 @@ six audit lenses confirmed (see CHANGELOG). What follows is what the
 audit found and the sprint *deliberately did not fix*, each with the
 reason it can wait.
 
-### 18. CommandExecutor exit detection and stale-run guards
+### 18. CommandExecutor exit detection — still unreproduced (the stale-run half was fixed in v2.186.0)
 Two hardening ideas from the lifecycle audit: drive exit from
 `process.onExit()` with a bounded drain (today a forcibly-killed
 process whose pipes linger can delay `onFinished`), and a per-launch
@@ -2697,6 +3033,41 @@ generation counter so a stale run's `onFinished` can't drop the gate of
 the run that replaced it. Both are engine-core changes under the
 device-contract tests; neither has a reproduced failure in the wild.
 Queued behind a reproduction or the next engine sprint.
+
+**The second half was real, and it was not narrow.** The entry queued both ideas
+behind "a reproduction or the next engine sprint", and the reproduction came back
+positive on the first try: **press a serve device's DEV twice.**
+
+`RackDevice.exec` guarded only the half it owned (`if (running == pending)
+running = null;`) and then called `onExit.accept(code)` UNCONDITIONALLY. Because
+`exec` ends the previous run with `Handle.kill()` — which TERMs a tree and returns
+ASYNCHRONOUSLY — the replaced run's exit lands after `exec` has returned and after
+the replacement has raised its gates. The `PendingHandle`'s second-exec-cancels-
+first contract (v1.57.0) is honoured, but "cancelled" only stops the SPAWN: the
+cancelled run still reports, and the device acts on the report.
+
+**On a serve device the damage is permanent.** `ViteDevice.dev()` raises `serving`
+once, right after `launch()` returns, and `onFinished` is the only thing that
+lowers it — so a stale exit leaves the gate LOW for the entire life of a dev
+server that is up, and with it the `ServingRegistry` entry: the ⇄ chip, ⌘I Live
+Servers, VITALS and BEACON targeting. That is v1.93.0's law ("the serving gate
+never lies") failing from the other direction, which is the shape the entry
+itself predicted.
+
+**The fix is not at the choke point, deliberately.** Swallowing a replaced run's
+exit inside `exec` would reverse a shipped decision — `AsyncExecTest.secondExec
+CancelsFirstPending` pins that a replaced run still reports, and the frozen Device
+SPI relies on it — and would strand chains. So `exec` gained a `RunExit` form that
+tells a completing run whether a later launch replaced it; the plain `IntConsumer`
+form is untouched. The generation (`RackDevice.launchSeq`) is opened BEFORE the
+kill, not after, and that ordering is pinned by a device that fires the replaced
+run's exit from INSIDE the kill that replaces it — deterministic, rather than
+documented as an equivalent mutant.
+
+**The first half stays open and stays unreproduced**, and the reproduction never
+led into it: driving exit from `process.onExit()` with a bounded drain would
+SHORTEN this window but could not close it, because the window is created by
+`kill()` returning before the process dies.
 
 ### 19. Rack polish cluster: undo across presets, trigger bookkeeping — CLOSED (v1.50.0)
 See "Closed by v1.50.0" below.

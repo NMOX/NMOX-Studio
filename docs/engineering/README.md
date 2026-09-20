@@ -22,6 +22,10 @@ NMOX Studio actually works.
   items with their deferral reasons, closed items by version.
 - **[nbm-signing.md](./nbm-signing.md)** — how the secret-gated NBM
   signing pipeline is wired, and how to turn it on.
+- **[release-signing.md](./release-signing.md)** — ledger 86 as a yes/no:
+  what Apple Developer ID and Windows Authenticode cost, the accounts and
+  secrets to create in one sitting, and what the written-but-never-run
+  lanes do the moment those secrets exist.
 - **[futures-2031.md](./futures-2031.md)** and
   **[competitive-lens.md](./competitive-lens.md)** — the two living
   backlogs: the bets argued from trajectories, and the rival's relief

@@ -38,9 +38,11 @@ public final class TestIndex {
     public static final int MAX_FILE_BYTES = 256 * 1024;
     static final int MAX_DEPTH = 32;
 
-    static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage", "target",
-            "out", "vendor", ".next", ".nuxt", ".svelte-kit", "__pycache__");
+    /** One home since ledger 110, plus {@code vendor}: a Go or Composer
+     *  project's checked-in dependencies carry their OWN test suites, and
+     *  a test the user cannot fix is not a test this index should offer. */
+    static final Set<String> SKIP_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor");
 
     private record CacheKey(long mtime, long size) {
     }

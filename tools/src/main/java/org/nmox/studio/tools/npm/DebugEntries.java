@@ -4,12 +4,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.json.JSONObject;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.rack.devices.ProjectInspector;
 import org.nmox.studio.rack.devices.ProjectInspector.ProjectKind;
 
@@ -141,18 +141,24 @@ final class DebugEntries {
 
     /**
      * {@code rel} resolved under {@code dir} as a plain file that really
-     * lies inside it (canonical containment — a {@code ../} in a script
-     * can point anywhere), or null.
+     * lies inside it, or null — the containment decision itself belongs to
+     * {@link Containment} (ledger 111); what this adds is DebugEntries' own
+     * further question, whether the contained answer is a plain file.
+     *
+     * <p>Two things changed when this stopped spelling the rule itself, and
+     * both are the shared policy rather than a local preference. The answer
+     * is now the CANONICAL file: this used to canonicalize to decide and
+     * then return {@code file} as spelled, so a symlinked segment left the
+     * debugger launching a path the check had never named — on a path that
+     * ends in a spawn, the check and the launch must name the same file.
+     * And an absolute {@code rel} is now JOINED under the project rather
+     * than honored: {@code main} is relative to the package root by npm's
+     * own spec and an absolute start-script target is machine-specific, so
+     * nothing portable is lost, while an absolute path can no longer name
+     * a file by a route the guard never considered.
      */
     static File inside(File dir, String rel) {
-        Path normalized = Path.of(rel).normalize();
-        File file = normalized.isAbsolute() ? normalized.toFile() : new File(dir, normalized.toString());
-        try {
-            Path root = dir.getCanonicalFile().toPath();
-            Path real = file.getCanonicalFile().toPath();
-            return real.startsWith(root) && file.isFile() ? file : null;
-        } catch (IOException | RuntimeException unresolvable) {
-            return null;
-        }
+        File file = Containment.resolve(dir, rel);
+        return file != null && file.isFile() ? file : null;
     }
 }

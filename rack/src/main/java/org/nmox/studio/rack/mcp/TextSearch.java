@@ -30,9 +30,11 @@ final class TextSearch {
     static final int MAX_HITS = 50;
     static final int MAX_LINE = 200;
     static final int MAX_DEPTH = 32;
-    static final Set<String> SKIP_DIRS = Set.of(
-            "node_modules", ".git", "dist", "build", "coverage", "target",
-            "out", "vendor", ".next", ".nuxt", ".svelte-kit", "__pycache__");
+    /** One home since ledger 110, plus {@code vendor}: an agent asking
+     *  the Agent Port where a string lives wants the project's own code,
+     *  and a vendored dependency would bury it under the 50-hit cap. */
+    static final Set<String> SKIP_DIRS =
+            org.nmox.studio.core.util.HeavyDirs.plus("vendor");
 
     /** Files that exist to hold secrets: never searched, never listed (v2.84.0). */
     static final Set<String> SECRET_NAMES = Set.of(

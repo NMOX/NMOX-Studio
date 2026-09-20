@@ -1,4 +1,4 @@
-package org.nmox.studio.rack.service;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -19,11 +19,12 @@ import org.openide.nodes.Node;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * The selection publisher (ledger 29, v1.45.0): resolves the aimed
- * directory's node off the EDT, delivers it on the EDT, and holds the
- * two laws every listener in this codebase holds — equality-guarded
- * (a storm of same-dir events costs one resolution) and bounded (one
- * shared lane, superseded requests deliver nothing).
+ * The selection publisher (ledger 29, v1.45.0; moved from rack to core
+ * in v2.186.0 for ledger 72): resolves the aimed directory's node off
+ * the EDT, delivers it on the EDT, and holds the two laws every
+ * listener in this codebase holds — equality-guarded (a storm of
+ * same-dir events costs one resolution) and bounded (one shared lane,
+ * superseded requests deliver nothing).
  */
 class AimNodePublisherTest {
 

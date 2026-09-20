@@ -228,6 +228,7 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_variablesTitle=Variables for \"{0}\"  (KEY=value per line)",
     "ApiClientTopComponent_couldNotRead=Couldn''t read {0} — starting empty",
     "ApiClientTopComponent_backupKept=The unreadable original was kept at {0}.",
+    "ApiClientTopComponent_workspaceReadOnly={0} could not be read — the workspace is read-only so nothing overwrites it",
     "ApiClientTopComponent_cannotSave=API Studio can't save its workspace",
     "ApiClientTopComponent_notPersisted=Changes are not being persisted: {0}",
     "ApiClientTopComponent_offerCreateEnvironment=Click to create environment \"{0}\" with '{{'{1}'}}' set",
@@ -305,6 +306,13 @@ public final class ApiClientTopComponent extends TopComponent {
     /** Distinguishes our own saves from foreign edits. */
     private final org.nmox.studio.core.util.SelfWriteTracker selfWrites =
             new org.nmox.studio.core.util.SelfWriteTracker();
+    /**
+     * The bound {@code .nmoxapi.json} exists and could not be read, so the
+     * workspace on screen is a stand-in and every save would replace work
+     * nobody has seen. Unlike a foreign edit there is nothing to reload TO,
+     * so writes are refused out loud until the file can be read again.
+     */
+    private boolean workspaceReadOnly;
     /** Follows the rack's mid-session re-aims; see onProjectReaimed. */
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
@@ -2136,23 +2144,36 @@ public final class ApiClientTopComponent extends TopComponent {
         return rebind.boundDir();
     }
 
-    /** Disk half of a load — safe off the EDT. */
-    private Workspace readWorkspace(File dir) {
-        try {
-            WorkspaceIO.LoadOutcome outcome = WorkspaceIO.loadGuarded(dir);
-            if (outcome.backup() != null) {
-                // corrupt file: the IO layer copied it aside BEFORE handing us
-                // the empty fallback (the next autosave can't clobber it) — say so
-                File backup = outcome.backup();
-                SwingUtilities.invokeLater(() -> balloon(
-                        Bundle.ApiClientTopComponent_couldNotRead(WorkspaceIO.FILENAME),
-                        Bundle.ApiClientTopComponent_backupKept(backup.getName()),
-                        false, null));
-            }
-            return outcome.workspace() != null ? outcome.workspace() : starterWorkspace();
-        } catch (Exception ex) {
-            return starterWorkspace();
+    /**
+     * Disk half of a load — safe off the EDT.
+     *
+     * <p>The outcome travels to {@link #applyWorkspace} whole, because the
+     * one fact the EDT half cannot work out for itself is whether the file
+     * was READ. This used to return a bare workspace and swallow every
+     * failure into {@link #starterWorkspace()}: an unreadable
+     * {@code .nmoxapi.json} arrived looking exactly like a fresh project,
+     * the studio stamped it as its own, and the next edit wrote the starter
+     * over it.
+     */
+    private WorkspaceIO.LoadOutcome readWorkspace(File dir) {
+        WorkspaceIO.LoadOutcome outcome = WorkspaceIO.loadGuarded(dir);
+        if (outcome.backup() != null) {
+            // corrupt file: the IO layer copied it aside BEFORE handing us
+            // the empty fallback (the next autosave can't clobber it) — say so
+            File backup = outcome.backup();
+            SwingUtilities.invokeLater(() -> balloon(
+                    Bundle.ApiClientTopComponent_couldNotRead(WorkspaceIO.FILENAME),
+                    Bundle.ApiClientTopComponent_backupKept(backup.getName()),
+                    false, null));
+        } else if (outcome.unreadable()) {
+            // a different failure and a different promise: nothing was read,
+            // so nothing is copied aside and nothing will be written over
+            SwingUtilities.invokeLater(() -> balloon(
+                    Bundle.ApiClientTopComponent_couldNotRead(WorkspaceIO.FILENAME),
+                    Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
+                    false, null));
         }
+        return outcome;
     }
 
     /**
@@ -2182,9 +2203,19 @@ public final class ApiClientTopComponent extends TopComponent {
         applyWorkspace(readWorkspace(boundDir()), boundDir());
     }
 
-    /** EDT half of a load: binds a read workspace to the UI. */
-    private void applyWorkspace(Workspace loaded, File dir) {
-        workspace = loaded;
+    /**
+     * EDT half of a load: binds a read workspace to the UI.
+     *
+     * <p>A file we never read is never ours. The stamp below belongs to a
+     * read that HAPPENED: taking it unconditionally was half of the loss
+     * (the never-clobber guard then saw nothing foreign), and the other
+     * half is that {@link #save} writes without consulting the stamp at
+     * all — so the studio binds READ-ONLY rather than trusting a
+     * comparison against bytes it does not hold.
+     */
+    private void applyWorkspace(WorkspaceIO.LoadOutcome outcome, File dir) {
+        workspaceReadOnly = outcome.unreadable();
+        workspace = outcome.workspace() != null ? outcome.workspace() : starterWorkspace();
         current = null;
         loading = true;
         try {
@@ -2196,7 +2227,9 @@ public final class ApiClientTopComponent extends TopComponent {
             clearResponse();
             // hydration state belongs to the workspace whose ids it names
             hydratedAuth.clear();
-            selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
+            if (!workspaceReadOnly) {
+                selfWrites.noteSync(new File(dir, WorkspaceIO.FILENAME));
+            }
             refreshHistory();
             DefaultComboBoxModel<String> envs = new DefaultComboBoxModel<>();
             workspace.environments.forEach(e -> envs.addElement(e.name));
@@ -2207,6 +2240,12 @@ public final class ApiClientTopComponent extends TopComponent {
             rebuildTree();
         } finally {
             loading = false;
+        }
+        if (workspaceReadOnly) {
+            // the strip keeps it: this is the state the window is IN, not a
+            // passing notice, and every refused save says it again
+            verdict(Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
+                    Color.GRAY);
         }
         // select the first request so the editor isn't blank
         if (!workspace.collections.isEmpty() && !workspace.collections.get(0).requests.isEmpty()) {
@@ -2273,6 +2312,17 @@ public final class ApiClientTopComponent extends TopComponent {
      * still belong to the project they were made in.
      */
     private void save() {
+        if (workspaceReadOnly) {
+            // the bound .nmoxapi.json exists and could not be read, so the
+            // workspace above is a stand-in: writing it would replace every
+            // collection, environment and history row with a starter.
+            // Measured through this exact path on an over-cap file:
+            // 9,437,184 bytes became 550. The refusal speaks rather than
+            // failing silently.
+            verdict(Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
+                    Color.GRAY);
+            return;
+        }
         File target = new File(boundDir(), WorkspaceIO.FILENAME);
         String json = WorkspaceIO.toJson(workspace);
         // Snapshot id->token on the EDT (the model is EDT-confined), push
@@ -2335,6 +2385,49 @@ public final class ApiClientTopComponent extends TopComponent {
         rackListenerAttached = true;
     }
 
+    /**
+     * The ambient aim selection (tech-debt ledger 72, closed v2.186.0).
+     * Until this window published one, pressing ^F6 or opening the Team
+     * menu while API Studio was focused greyed for every project kind:
+     * those actions read the global selection and this tab offered none.
+     * {@code core.util.AimFollower} owns the whole v1.45.0 discipline —
+     * publish only while SHOWING (so a hidden default-open tab resolves
+     * nothing at boot), attach and detach with the hooks, equality-
+     * guarded off-EDT resolution — and finds the rack through
+     * {@code core.spi.ProjectAim}, so this module gains no rack
+     * dependency (v1.46.0's law, pinned by RackSoftDependencyTest).
+     */
+    private org.nmox.studio.core.util.AimFollower aimFollower =
+            newAimFollower(org.nmox.studio.core.spi.ProjectAim::find);
+
+    /** One home for the sink, so the test seam cannot drift from production. */
+    private org.nmox.studio.core.util.AimFollower newAimFollower(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        return new org.nmox.studio.core.util.AimFollower(
+                n -> setActivatedNodes(new org.openide.nodes.Node[]{n}), aim);
+    }
+
+    /**
+     * Test seam: follow a stand-in provider. This module keeps no rack on
+     * its classpath by design, so its tests cannot register a real one —
+     * and registering a fake one in the default Lookup would contradict
+     * RackSoftDependencyTest, which pins that absence.
+     */
+    void followAimForTest(
+            java.util.function.Supplier<org.nmox.studio.core.spi.ProjectAim> aim) {
+        aimFollower = newAimFollower(aim);
+    }
+
+    @Override
+    protected void componentShowing() {
+        aimFollower.showing();
+    }
+
+    @Override
+    protected void componentHidden() {
+        aimFollower.hidden();
+    }
+
     /** The initial load happened; re-opens rely on onProjectReaimed instead. */
     private boolean loadedOnce;
 
@@ -2373,6 +2466,9 @@ public final class ApiClientTopComponent extends TopComponent {
 
     @Override
     public void componentClosed() {
+        // detaches too, and resets the equality guard so a reopen
+        // re-publishes even the same aim
+        aimFollower.closed();
         if (servingBridge != null) {
             servingBridge.detach();
         }
@@ -2435,7 +2531,7 @@ public final class ApiClientTopComponent extends TopComponent {
             SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         }
         RP.post(() -> {
-            Workspace loaded = readWorkspace(aimed);
+            WorkspaceIO.LoadOutcome loaded = readWorkspace(aimed);
             SwingUtilities.invokeLater(() -> {
                 if (!rebind.shouldApply(aimed, projectDir())) {
                     return; // re-aimed again while reading — the newer aim wins
@@ -2560,8 +2656,16 @@ public final class ApiClientTopComponent extends TopComponent {
                     });
         } else {
             loadWorkspace();
-            balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
-                    Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
+            if (!workspaceReadOnly) {
+                balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
+                        Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
+            }
+            // The file really did change — but if it STILL cannot be read we
+            // have picked up nothing, and saying so would be the window
+            // claiming a workspace it does not hold. applyWorkspace has
+            // already put the read-only verdict back on the strip, and this
+            // path is how the workspace returns by itself the moment the
+            // file becomes readable again (the InfraDesigner shape).
         }
     }
 

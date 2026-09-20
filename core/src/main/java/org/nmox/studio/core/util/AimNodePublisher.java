@@ -1,4 +1,4 @@
-package org.nmox.studio.rack.service;
+package org.nmox.studio.core.util;
 
 import java.io.File;
 import java.util.function.Consumer;
@@ -32,6 +32,17 @@ import org.openide.util.RequestProcessor;
  * on their own visibility flag — a hidden tab publishes nothing, keeping
  * the v1.38.0 boot law (zero filesystem resolution behind hidden
  * default-open tabs) intact.
+ *
+ * <p>Lives in core since v2.186.0 (tech-debt ledger 72). It was written
+ * in the rack, which is exactly why API Studio, Contract Studio and the
+ * Infra Designer went five hundred releases without an ambient
+ * selection: those three dropped their rack dependency on purpose in
+ * the v1.46.0 soft-dependency surgery, so the helper they needed was
+ * behind the wall they had deliberately built. Nothing here touches the
+ * rack — it is platform node resolution and a lane — so core is where
+ * it always belonged; {@code org-openide-nodes} and
+ * {@code org-openide-loaders} were already core dependencies, which is
+ * why the move cost no new module edge.
  */
 public final class AimNodePublisher {
 

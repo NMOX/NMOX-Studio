@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    Hardened-runtime entitlements for the Developer ID signing lane.
+
+    Notarization REQUIRES the hardened runtime (`codesign --options
+    runtime`), and the hardened runtime breaks a JVM unless these
+    exceptions are granted — ledger 86 calls this "the one fiddly part"
+    and this file is it. Each key is a hole in the hardened runtime, so
+    each one carries the reason it is open; do not add a key without one.
+
+    Every key below is granted to EVERY Mach-O in the bundle, including
+    the bundled runtime's `jre/bin/java`. That matters: the bundle's main
+    executable is a /bin/sh launcher, so the process that actually JITs is
+    a separate exec'd binary with its own entitlement evaluation. An
+    entitlement on the bundle alone would not reach it.
+
+    NOT GRANTED, deliberately: com.apple.security.cs.allow-dyld-environment-variables
+    (the launcher sets no DYLD_* variable — see the heredoc in build-dmg.sh)
+    and com.apple.security.cs.debugger (a shipped build is not a debug host;
+    the IDE debugs other processes over DAP, which needs nothing here).
+-->
+<plist version="1.0">
+<dict>
+    <!--
+        The JVM compiles bytecode to machine code at runtime and executes
+        the result. Without this, HotSpot's code cache is not executable
+        and the JVM aborts during startup.
+    -->
+    <key>com.apple.security.cs.allow-jit</key>
+    <true/>
+
+    <!--
+        HotSpot also writes and runs code outside the MAP_JIT regions the
+        key above covers (the interpreter's generated stubs, and every
+        agent that rewrites a class at load time — which this product
+        does on purpose: ui.browser.fx.ComplexTextShaping attaches an
+        agent to the running JVM and redefines JavaFX methods in memory,
+        v2.165.0). Without this, that path faults.
+    -->
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+
+    <!--
+        The platform loads native libraries this build did not sign:
+        JNA extracts its own .dylib from a jar into a temp directory at
+        runtime and dlopen()s it, and a cluster module may carry others.
+        Library validation refuses any dylib not signed by the same Team
+        ID, so leaving this off turns every such load into a crash.
+        jpackage grants the same exception to Java applications for the
+        same reason.
+    -->
+    <key>com.apple.security.cs.disable-library-validation</key>
+    <true/>
+</dict>
+</plist>
