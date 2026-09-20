@@ -15,6 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.json.JSONObject;
+import org.nmox.studio.core.util.Containment;
 import org.nmox.studio.core.util.Threads;
 
 /**
@@ -165,23 +166,34 @@ final class McpSubscriptions {
      * at most {@link #MAX_FILE_WATCHES}. Returns null on success, else
      * the refusal — "not found" shapes for the protocol's -32002, the
      * cap for its -32602.
+     *
+     * <p>The containment half is {@link Containment}'s (ledger 111, swept
+     * here by 117). This site spelled the rule correctly for itself —
+     * real paths on both sides, so a symlink inside the project pointing
+     * out was already refused — but correctly is not the same as once,
+     * and one home is what keeps the next reader from having to check.
+     * The guard's answer is the CANONICAL path, which is the one watched
+     * below: the check and the stat name the same file.
+     *
+     * <p>Two policies arrive with it. An ABSOLUTE {@code file} used to be
+     * honored by {@code Path.resolve} and then refused for lying outside;
+     * it is joined under the root now, so it is refused a step later by
+     * the existence test unless the project really holds that path — the
+     * platform's own {@code File(File, String)} rule, and the same answer
+     * either way. And the guard refuses the root itself, which this
+     * surface refused one line later anyway: a directory is not a file.
      */
     String subscribeFile(String uri, java.io.File root, String file) {
         if (root == null || file == null || file.isBlank()) {
             return "not found: no aimed project";
         }
-        java.nio.file.Path base;
-        java.nio.file.Path target;
-        try {
-            // REAL paths on both sides (the review): a symlink inside the
-            // project pointing outside would pass a lexical check and be
-            // watched — its mtime is not a secret, but the law is total
-            base = root.toPath().toRealPath();
-            target = base.resolve(file).toRealPath();
-        } catch (IOException | RuntimeException missing) {
-            return "not found: " + file;
-        }
-        if (!target.startsWith(base) || !java.nio.file.Files.isRegularFile(target)) {
+        java.nio.file.Path target = Containment.resolvePath(root, file);
+        // EXISTENCE is asked HERE, not inherited: the guard deliberately
+        // answers for a leaf that does not exist yet, because the write
+        // paths need that. A subscription is the opposite question — there
+        // must be something to watch — so this surface keeps its own test
+        // rather than leaning on which helper happens to throw.
+        if (target == null || !java.nio.file.Files.isRegularFile(target)) {
             return "not found: " + file;
         }
         if (!watched.containsKey(uri) && watched.size() >= MAX_FILE_WATCHES) {

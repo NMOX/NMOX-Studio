@@ -105,14 +105,6 @@ class ContainmentLedgerTest {
                 + "refuse exactly the layouts that pointer exists to support."),
 
             // --- real copies of the rule, named rather than hidden ---
-            Map.entry("McpSubscriptions.java",
-                "NOT YET SWEPT: subscribeFile() is a real second copy — and the closest "
-                + "of them to the policy, since it already realpaths both sides and keeps "
-                + "the resolved target. Held back because its refusal is a PROTOCOL "
-                + "answer ('not found: <file>' carrying the Agent Port's -32002) and "
-                + "changing what an agent is told needs its own walk, which is the same "
-                + "reason ledger 111 held this family back for a release that could walk "
-                + "each refusal."),
             Map.entry("UserTemplates.java",
                 "NOT YET SWEPT: generate() judges lexically (resolve + normalize, no "
                 + "canonicalization), so a symlinked segment passes it — stated plainly "
@@ -122,10 +114,21 @@ class ContainmentLedgerTest {
                 + "second line survivable today; it is not a reason to leave it weaker, "
                 + "and the walk it needs is a drop-in template writing through a link."),
             Map.entry("SymbolIndexProvider.java",
-                "NOT YET SWEPT: the Agent Port's outline guard, realpath on both sides "
-                + "with an absolute-honoring branch of its own. Same shape as the one "
-                + "DebugEntries just lost, same reason for holding: its refusal is the "
-                + "outline's spoken message and belongs in a walk of that surface.")
+                "A DIFFERENT QUESTION, measured (ledger 117, which swept its sibling "
+                + "McpSubscriptions and left this one): outline() must accept an "
+                + "ABSOLUTE path that names a file inside the root, because the Agent "
+                + "Port itself hands agents absolute paths — EditorState reports every "
+                + "open tab as getAbsolutePath(), so editor_state.activeFile and "
+                + "ide_context.activeFile are absolute, and 'outline what I am editing' "
+                + "is the next call an agent makes (pinned by SymbolIndexProviderTest). "
+                + "Containment JOINS an absolute-looking name under the root — its own "
+                + "deliberate, test-pinned policy — which would answer 'no such file' "
+                + "about a file this server had just named. DebugEntries chose the "
+                + "joining side in v2.186.0 because npm's spec says `main` is relative; "
+                + "that reason does not reach a string the product itself emitted. "
+                + "Second, this surface speaks FOUR refusals where the guard answers one "
+                + "null for two of them, so routing would make the root itself read "
+                + "'outside the aimed project', which is false.")
     );
 
     @Test
@@ -166,11 +169,13 @@ class ContainmentLedgerTest {
     }
 
     @Test
-    @DisplayName("the three surfaces this sweep routed really call the guard")
+    @DisplayName("the surfaces these sweeps routed really call the guard")
     void theSweptSitesCallTheGuard() throws IOException {
         // the other half of the two-proof law (v1.321.0): the census above
         // can only see that nothing decides containment on its own, which a
         // site that decides NOTHING AT ALL would also satisfy
+        assertThat(guardCalls("rack/src/main/java/org/nmox/studio/rack/mcp/McpSubscriptions.java"))
+                .as("the Agent Port's file subscription — ledger 117 — rides the ONE guard").isTrue();
         assertThat(guardCalls("tools/src/main/java/org/nmox/studio/tools/npm/DebugEntries.java"))
                 .as("the debug entry — a spawn path — rides the ONE guard").isTrue();
         assertThat(guardCalls("rack/src/main/java/org/nmox/studio/rack/service/DocsStaging.java"))

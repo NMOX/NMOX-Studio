@@ -405,6 +405,61 @@ class McpSubscriptionsTest {
     }
 
     @Test
+    @DisplayName("the subscription's containment refusals, walked through real symlinks (ledger 117)")
+    void fileSubscriptionRefusalsWalkTheGuard(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root,
+            @org.junit.jupiter.api.io.TempDir java.nio.file.Path elsewhere) throws Exception {
+        java.nio.file.Path secret = java.nio.file.Files.writeString(elsewhere.resolve("secret.js"), "KEY=1");
+        java.nio.file.Files.createDirectories(root.resolve("src"));
+        java.nio.file.Path app = java.nio.file.Files.writeString(root.resolve("src/app.js"), "const a = 1;\n");
+        try {
+            java.nio.file.Files.createSymbolicLink(root.resolve("out.js"), secret);
+            java.nio.file.Files.createSymbolicLink(root.resolve("in.js"), app);
+        } catch (UnsupportedOperationException | IOException noSymlinks) {
+            // never a bare return: a skipped body under a green tick is the
+            // v2.186.0 find, so this says out loud that it did not run
+            org.junit.jupiter.api.Assumptions.abort("this filesystem has no symlinks: " + noSymlinks);
+        }
+        McpSubscriptions subs = new McpSubscriptions(60_000, 60_000);
+        try {
+            assertThat(subs.subscribeFile("nmox://outline/out.js", root.toFile(), "out.js"))
+                    .as("a link INSIDE the project pointing OUT is refused on the resolved path")
+                    .startsWith("not found");
+            assertThat(subs.subscribeFile("nmox://outline/e", root.toFile(),
+                    root.relativize(secret).toString().replace(java.io.File.separatorChar, '/')))
+                    .as("an existing file reached by ../ is refused").startsWith("not found");
+            assertThat(subs.subscribeFile("nmox://outline/abs", root.toFile(), secret.toString()))
+                    .as("an absolute path outside the project is refused").startsWith("not found");
+            assertThat(subs.subscribeFile("nmox://outline/.", root.toFile(), "."))
+                    .as("the root itself names no file to watch").startsWith("not found");
+            assertThat(subs.subscribeFile("nmox://outline/src", root.toFile(), "src"))
+                    .as("a directory inside the project is not a file").startsWith("not found");
+            assertThat(subs.subscribeFile("nmox://outline/gone.js", root.toFile(), "gone.js"))
+                    .as("a leaf that does not exist is refused HERE — the guard answers for absent leaves")
+                    .startsWith("not found");
+            assertThat(subs.watchedFiles()).as("not one of those was watched").isZero();
+
+            // a link inside pointing INSIDE is accepted, and what is watched
+            // is the CANONICAL file rather than the spelling: deleting the
+            // link leaves the subscription polling the real file, which is
+            // the whole point of the guard handing back what it judged
+            assertThat(subs.subscribeFile("nmox://outline/in.js", root.toFile(), "in.js")).isNull();
+            java.nio.file.Files.delete(root.resolve("in.js"));
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            subs.attach(out, () -> { });
+            java.nio.file.Files.writeString(app, "const a = 2;\n");
+            java.nio.file.Files.setLastModifiedTime(app,
+                    java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis() + 2_000));
+            subs.pollFiles();
+            subs.awaitIdle();
+            assertThat(announcements(out, "nmox://outline/in.js"))
+                    .as("the link is gone and the watch still follows the file it resolved to").isEqualTo(1);
+            assertThat(subs.watchedFiles()).as("the file is alive, so nothing was dropped").isEqualTo(1);
+        } finally {
+            subs.close();
+        }
+    }
+
+    @Test
     @DisplayName("file subscriptions are capped at 32; unsubscribe frees a slot")
     void fileSubscriptionsCapped(@org.junit.jupiter.api.io.TempDir java.nio.file.Path root) throws Exception {
         McpSubscriptions subs = new McpSubscriptions(60_000, 60_000);
