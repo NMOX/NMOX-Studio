@@ -156,12 +156,78 @@ PLIST
 # ---------------------------------------------------------------------------
 ENTITLEMENTS="packaging/macos/entitlements.plist"
 
+# Mach-O binaries INSIDE jars are invisible to `codesign`: it signs FILES,
+# and a jar is a zip. The notary service unpacks archives and judges what it
+# finds, so these are the one class the bundle scan cannot reach.
+#
+# MEASURED, and it is the reason v2.188.3 was refused - Apple's log named
+# ten binaries across five jars (jna, flatlaf, truffle-runtime,
+# junixsocket-native-common, sqlite-jdbc) with three complaints between
+# them: "not signed", "not signed with a valid Developer ID certificate"
+# (vendor-signed, but not by US), and "does not include a secure timestamp".
+#
+# The population is DERIVED, never listed: a platform bump can add a jar
+# carrying a native, and a hand-kept list would ship the next one unsigned.
+# Every jar in the bundle is asked what it contains; only entries that are
+# really Mach-O are signed, so the Linux .so and Windows .dll siblings these
+# same jars carry are left alone.
+#
+# The jar is UPDATED ENTRY BY ENTRY (`zip <jar> <entry>`) rather than
+# unpacked and rebuilt: every other byte of the archive stays as it was.
+# Checked first - none of the affected jars is jarsigner-signed, so there is
+# no manifest digest to invalidate.
+sign_natives_inside_jars() {
+    local keychain_args=()
+    if [ -n "${MACOS_KEYCHAIN:-}" ]; then
+        keychain_args=(--keychain "$MACOS_KEYCHAIN")
+    fi
+    # DEDICATED FILE DESCRIPTORS, not stdin. `codesign` READS STDIN, so in a
+    # `while read` loop fed by process substitution it swallows the lines the
+    # loop has not consumed yet. MEASURED: signing ad-hoc against a real
+    # bundle produced 8 of Apple's 10 binaries signed - exactly ONE per jar,
+    # the first, with every later entry eaten. Both jars carrying two
+    # architectures lost their second one, which is the arch a user on Intel
+    # would run. Silent, and it would have failed notarization again.
+    local signed=0 jar abs entry tmp entries
+    while IFS= read -r -d '' -u 3 jar; do
+        case "$jar" in /*) abs="$jar" ;; *) abs="$PWD/$jar" ;; esac
+        # MATERIALIZE the listing before touching the archive. `zip` rewrites
+        # the jar in place, and a streaming `unzip -Z1` on that same file
+        # loses its tail when the rewrite lands mid-read. MEASURED: the very
+        # first jar processed signed one of its two entries and silently
+        # dropped the other, every later jar being fine only because its
+        # listing had already drained into the pipe - a race whose victim is
+        # whichever jar is slowest, which is not a thing to ship.
+        entries=$(unzip -Z1 "$abs" 2>/dev/null | grep -E '\.(dylib|jnilib)$' || true)
+        [ -n "$entries" ] || continue
+        while IFS= read -r entry; do
+            [ -n "$entry" ] || continue
+            tmp=$(mktemp -d)
+            # </dev/null on both: `codesign` READS STDIN and would otherwise
+            # swallow the rest of this loop's input (measured - it ate every
+            # entry after the first).
+            if unzip -q -o "$abs" "$entry" -d "$tmp" 2>/dev/null \
+               && file -b "$tmp/$entry" | grep -q 'Mach-O'; then
+                codesign --force --options runtime --timestamp \
+                         ${keychain_args[@]+"${keychain_args[@]}"} \
+                         --sign "$MACOS_SIGN_IDENTITY" "$tmp/$entry" </dev/null
+                ( cd "$tmp" && zip -q "$abs" "$entry" </dev/null )
+                signed=$((signed + 1))
+            fi
+            rm -rf "$tmp"
+        done <<< "$entries"
+    done 3< <(find "$BUNDLE" -name '*.jar' -print0)
+    echo "    signed $signed native libraries inside jars"
+}
+
 # Every Mach-O in the bundle, deepest first. `codesign --deep` is
 # Apple-deprecated FOR SIGNING (it re-uses the top-level entitlements for
 # nested code and skips shapes it does not recognise), and the notary
 # service rejects a bundle holding one unsigned nested binary - so the
 # nested code is sealed explicitly and the bundle is sealed last.
 sign_bundle_with_identity() {
+    # before ANY sealing: rewriting a jar changes bytes the bundle seal covers
+    sign_natives_inside_jars
     [ -f "$ENTITLEMENTS" ] || { echo "ERROR: $ENTITLEMENTS missing - cannot sign for notarization"; exit 1; }
     # codesign's entitlements parser is AMFI's, and AMFI is STRICTER than
     # plutil: it rejects XML COMMENTS outright. entitlements.plist is full
