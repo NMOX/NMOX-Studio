@@ -1,5 +1,18 @@
 # NetBeans RCP Java Setup Guide
 
+> **Historical document.** This records the Java/NetBeans compatibility
+> problems hit while standing the project up, when it ran on NetBeans
+> **RELEASE270** and the question was Java 17 vs 23. Neither is current:
+> the platform moved to **RELEASE310** in v2.35.0, and the build now uses
+> **JDK 25** while the compiler still targets 21 bytecode (a deliberate
+> law — see `maven.compiler.target` in the root pom).
+>
+> For the current setup read [CLAUDE.md](./CLAUDE.md) ("Build and Run
+> Commands") and [CONTRIBUTING.md](./CONTRIBUTING.md). This file is kept
+> because the failure modes it describes are still real and still
+> confusing when you meet them — the version numbers are not.
+
+
 This guide documents the lessons learned from setting up a NetBeans Rich Client Platform (RCP) application with Java 23, specifically addressing compatibility issues and configuration requirements.
 
 ## Overview
