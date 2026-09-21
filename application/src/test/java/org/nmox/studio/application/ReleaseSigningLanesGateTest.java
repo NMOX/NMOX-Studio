@@ -130,6 +130,23 @@ class ReleaseSigningLanesGateTest {
                 .as("--wait, so a rejection fails the release instead of publishing something "
                         + "Gatekeeper will refuse")
                 .contains("notarytool submit").contains("--wait");
+        // v2.188.1 came back `status: Invalid` and the run CONTINUED:
+        // `notarytool submit --wait` exits ZERO on a rejected submission,
+        // because its exit code reports the round trip rather than Apple's
+        // verdict. The failure then surfaced two steps later as a CloudKit
+        // "Record not found" from `stapler`, naming neither the bundle nor
+        // the reason. Same shape as `gofmt -l` (v1.352.0): read the output.
+        assertThat(dmg)
+                .as("the verdict is in the OUTPUT — notarytool submit --wait exits 0 on a "
+                        + "rejection, so an exit-code check passes a refused bundle straight "
+                        + "through to stapling")
+                .contains("status:").contains("!= \"Accepted\"");
+        // refusals speak: a rejection that does not name the offending file
+        // cannot be acted on, and release-signing.md documented the lookup
+        // as a manual step for a human who may hold no credentials locally
+        assertThat(dmg)
+                .as("a refused notarization must fetch Apple's log itself, not tell a human to")
+                .contains("notarytool log");
         // The app's own ticket is what makes a FIRST launch work offline once
         // the user has dragged it out of the DMG; the DMG's ticket only covers
         // the download. Both, or the offline case silently regresses.
@@ -139,6 +156,40 @@ class ReleaseSigningLanesGateTest {
                 .as("the nested binaries are sealed explicitly: `codesign --deep` is Apple-deprecated "
                         + "for signing and the notary service rejects one unsigned nested binary")
                 .contains("sign_bundle_with_identity");
+    }
+
+    @Test
+    @DisplayName("a signed bundle's clusters are read-only, so an update cannot break its own seal")
+    void signedBundleClustersAreReadOnly() throws IOException {
+        String dmg = read(BUILD_DMG);
+        // A signed bundle and an IN-PLACE updater cannot both be right.
+        // MEASURED, 2.187.0 -> 2.187.1 on a real bundle: a writable cluster
+        // took 1068 files INSIDE Contents/ and left
+        // `codesign --verify --deep --strict` exiting 1 with "a sealed
+        // resource is missing or invalid"; read-only took 0 files inside,
+        // 955 jars into the USERDIR, booted RC=0 with zero SEVERE running
+        // 2.187.1 while the bundle's own jars stayed 2.187.0, and codesign
+        // exited 0. The platform needed no change: canWriteInCluster gates
+        // on File.canWrite() and checkTargetCluster falls through to the
+        // userdir rather than throwing.
+        assertThat(dmg)
+                .as("the signed path must drop write permission on the clusters, or the first "
+                        + "in-app update invalidates the notarization this release just bought")
+                .contains("chmod -R a-w");
+        // -w only. `a-x` would strip the execute bit from bin/nmoxstudio and
+        // every jre/bin binary, which is a bundle that cannot start at all —
+        // a far worse failure than the one being fixed, and one that only
+        // appears on the SIGNED path where no local build would catch it.
+        assertThat(dmg)
+                .as("execute bits must survive: a-w, never a-wx")
+                .doesNotContain("chmod -R a-wx").doesNotContain("chmod -R a-x");
+        // Only the signed path. An unsigned local build and the portable zip
+        // keep their writable clusters and their in-place updates.
+        int signedAt = dmg.indexOf("Signing bundle with Developer ID");
+        assertThat(dmg.indexOf("chmod -R a-w"))
+                .as("the read-only step belongs INSIDE the signed branch — an unsigned build "
+                        + "and the portable zip must keep updating in place")
+                .isGreaterThan(0).isLessThan(signedAt);
     }
 
     @Test
