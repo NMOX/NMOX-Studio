@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.0] - 2026-09-21
+
+**The trust chain is no longer self-signed. NMOX Studio for macOS is signed
+with an Apple Developer ID and notarized by Apple.**
+
+v3.0 was defined on 2026-08-27 as the release where that becomes true, and
+ledger 86 held it open for one honest reason: *a purchase and an identity are
+not engineering debt.* The engineering had been written, reviewed and gated
+since v2.186.0 and had never once executed. David enrolled, set five repository
+secrets, and **no code change turned the lane on**.
+
+**Verified on the published artifact, not inferred from the lane's design.**
+`spctl --assess` answers **accepted, source=Notarized Developer ID** for the DMG
+and for the app; `stapler validate` passes on both, so a first launch works
+offline; the app carries `flags=0x10000(runtime)` and the JVM binary — the
+process that actually JITs — carries all three entitlements; and the installed
+app boots `RC=0` with zero SEVERE.
+
+**What users get.** Gatekeeper stops refusing the first launch. The Homebrew
+cask no longer clears the quarantine attribute, because there is nothing left to
+clear: it copies the app and does nothing else to it. `INSTALL.md`, `README.md`
+and the user guide **in all fifteen languages** stop saying "ad-hoc signed" and
+stop telling people to right-click or run `xattr`.
+
+**And an update no longer unsigns the app it updates.** v1.298.0 had recorded in
+a parenthetical that a writable cluster was *"an app copy, not /Applications"* —
+an inference, and a wrong one: `/Applications/NMOX Studio.app` is owned by
+whoever dragged it there, so the in-app updater was writing inside the bundle.
+Measured A/B on a real 2.187.0 → 2.187.1 update: a writable cluster took **1,068
+files inside the bundle** and left `codesign --verify` failing with *a sealed
+resource is missing or invalid*; a read-only cluster took **0**, put 955 jars in
+the userdir, booted at 2.187.1 while the bundle stayed 2.187.0, and kept the
+signature valid. Recon from the shipped bytecode had already shown the shadow
+path was always there — `canWriteInCluster` gates on `File.canWrite()` and
+`checkTargetCluster` falls through to the userdir rather than throwing. The
+signed path now drops write permission after sealing.
+
+**Windows is unchanged and unsigned, deliberately.** The lanes are independent,
+Azure renamed *Trusted Signing* to **Artifact Signing**, and its Public Trust
+path for individuals is US/Canada-only with a billing account that must match a
+government-issued ID. Ledger 86 is split: **86a closed**, 86b open with the
+eligibility facts recorded so the next person does not re-derive them. **Linux
+needed nothing** — its `.tar.gz` and `.deb` have ridden a GPG-signed
+`SHA256SUMS` manifest since v2.42.0.
+
+**It took five tags, and every failure was a real defect in a lane that had
+never run.** They are worth more than the feature: AMFI rejects the XML comments
+the entitlements plist carries *by house law*, while `plutil -lint` calls the
+file fine; `notarytool submit --wait` **exits 0 on a rejection**, so a refused
+bundle sailed into `stapler` and died two steps later naming neither the bundle
+nor the reason; read-only clusters cannot be signed at all, because `codesign`
+writes *into* the binaries; and Apple's log finally named **ten Mach-O libraries
+inside five jars** that `codesign` can never reach — a population an earlier scan
+of ours had reported as ZERO, because `for j in $(find …)` word-splits on the
+space in `NMOX Studio.app`. Two of the five were introduced while fixing the
+others. That is the honest cost of a lane that cannot be exercised locally, and
+*a prediction in a document is not a test.*
+
 ## [2.188.4] - 2026-09-21
 
 **Apple said why, and the answer was ten binaries `codesign` can never reach.**
@@ -23582,6 +23640,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.4...v3.0.0
 [2.188.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.3...v2.188.4
 [2.188.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.2...v2.188.3
 [2.188.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.1...v2.188.2

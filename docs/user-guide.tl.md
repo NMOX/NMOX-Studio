@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-Ang linyang `brew trust` ang minsanang kumpirmasyon ng Homebrew para sa anumang third-party na tap — hindi ka na tatanungin muli sa mga update. Ang app ay ad-hoc na nilagdaan ngunit hindi notarized, kaya tatanggihan ng Gatekeeper ang kopyang naka-quarantine sa unang pagbukas: inaalis mismo ng cask ang quarantine attribute sa isang hakbang na `postflight` at sinasabi iyon sa output ng pag-install. Walang tahimik na nangyayari.
+Ang linyang `brew trust` ang minsanang kumpirmasyon ng Homebrew para sa anumang third-party na tap — hindi ka na tatanungin muli sa mga update. Ang app ay nilagdaan gamit ang Apple Developer ID at notarized ng Apple, kaya tinatanggap ito ng Gatekeeper gaya ng dumating — kinokopya lang ito ng cask at wala nang iba. Ganoon din kung mano-manong i-install mula sa DMG.
 
 **Lahat ng iba pa:** kumuha ng file mula sa [pinakabagong bersyon](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` para sa macOS, `-setup.exe` para sa Windows, `.deb` para sa Debian/Ubuntu, karaniwang `.tar.gz` para sa Linux. Lahat ng apat ay may sariling Java runtime; walang kailangang i-install nang maaga. Ang `-portable.zip` lamang ang artefact na gumagamit ng sarili mong Java (kailangan ng Java 21+ sa PATH, o patakbuhin gamit ang `--jdkhome <landas-ng-jdk>`).
 
-> **macOS, unang pagbukas:** ang app ay ad-hoc na nilagdaan ngunit hindi notarized, kaya nagtatanong ang Gatekeeper bago ito patakbuhin. Sa unang pagkakataon, **i-right-click ang app → Buksan** at kumpirmahin, o patakbuhin ang
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Alinman sa dalawa ay panghabambuhay na ang bisa.
+> **macOS, unang pagbukas:** i-double-click lang. Ang app ay nilagdaan gamit ang Apple Developer ID at notarized, at nakakabit ang tiket sa app at sa DMG, kaya gumagana ang pagsusuri kahit offline — walang right-click at walang `xattr`. Ang panloob na updater ay nag-i-install sa iyong user directory imbes na sa app bundle, kaya hindi kailanman nasisira ng pag-update ang lagdang iyon.
 
 ### Pag-update
 
@@ -363,7 +362,7 @@ Tingnan ang tabing nito: nagpapaliwanag ang mga kagamitan sa pamamagitan ng sali
 
 ### Bumubukas ang aplikasyon sa wala (macOS)
 
-Walang bintana at walang mali, sa unang pagbukas matapos mag-instala: kuwarentenas iyon ng Gatekeeper — tingnan ang paalala sa kabanata 1. Kanang pindot at Buksan, minsan lamang, at ayos na habambuhay. Nakatira ang mga talaan sa ilalim ng `~/Library/Application Support/nmoxstudio/…/var/log/` sakaling kailanganin ninyong magbukas ng isyu.
+Walang bintana at walang mali, sa unang pagbukas matapos mag-instala: sa isang nilagdaang build ay hindi ito dapat mangyari. Kung nangyari, sira ang kopya o binago ito pagkatapos i-download — suriin gamit ang `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` at i-download muli kung pumalya. Nakatira ang mga talaan sa ilalim ng `~/Library/Application Support/nmoxstudio/…/var/log/` sakaling kailanganin ninyong magbukas ng isyu.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## Dagdag: ang mga talaksang isinusulat ng NMOX Studio (at kung alin ang isasama sa imbakan)

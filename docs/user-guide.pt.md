@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-A linha `brew trust` é a confirmação única do Homebrew para qualquer tap de terceiros: nas atualizações ninguém pergunta de novo. O aplicativo é assinado ad-hoc mas não notarizado, então uma cópia em quarentena seria recusada pelo Gatekeeper na primeira execução: o cask remove o atributo de quarentena sozinho em uma etapa `postflight` e diz isso na saída da instalação. Nada silencioso.
+A linha `brew trust` é a confirmação única do Homebrew para qualquer tap de terceiros: nas atualizações ninguém pergunta de novo. O aplicativo é assinado com um Apple Developer ID e notarizado pela Apple, então o Gatekeeper o aceita como está — o cask apenas o copia e não faz mais nada com ele. Instalar à mão pelo DMG funciona do mesmo jeito.
 
 **Todo o resto:** baixe um arquivo da [última versão](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` para macOS, `-setup.exe` para Windows, `.deb` para Debian/Ubuntu, `.tar.gz` genérico para Linux. Os quatro trazem o próprio ambiente de execução do Java; não é preciso instalar nada antes. O `-portable.zip` é o único artefato que usa o seu Java (precisa de Java 21+ no PATH, ou inicie com `--jdkhome <caminho-do-jdk>`).
 
-> **macOS, primeira execução:** o aplicativo é assinado ad-hoc mas não notarizado, então o Gatekeeper pergunta antes de executá-lo. Na primeira vez, **clique com o botão direito no app → Abrir** e confirme, ou execute
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Qualquer um dos dois resolve para sempre.
+> **macOS, primeira execução:** é só dar um duplo clique. O aplicativo é assinado com um Apple Developer ID e notarizado, e o tíquete fica grampeado no app e no DMG, então a verificação funciona offline — sem botão direito e sem `xattr`. O atualizador interno instala no seu diretório de usuário, e não no pacote do app, de modo que atualizar nunca quebra essa assinatura.
 
 ### Atualizar
 
@@ -363,7 +362,7 @@ Olhe o visor dele: os dispositivos se explicam com palavras, e a dica do botão 
 
 ### O aplicativo abre no nada (macOS)
 
-Sem janela e sem erro, no primeiro início depois de instalar: é a quarentena do Gatekeeper — veja a nota do capítulo 1. Clique com o botão direito e Abrir, uma única vez, e fica resolvido para sempre. Os registros ficam em `~/Library/Application Support/nmoxstudio/…/var/log/` se você precisar abrir uma questão.
+Sem janela e sem erro, no primeiro início depois de instalar: num build assinado isso não deveria acontecer. Se acontecer, a cópia está danificada ou foi alterada após o download — verifique com `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` e baixe de novo se falhar. Os registros ficam em `~/Library/Application Support/nmoxstudio/…/var/log/` se você precisar abrir uma questão.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## Apêndice: os arquivos que o NMOX Studio escreve (e quais versionar)

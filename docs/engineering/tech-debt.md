@@ -1398,7 +1398,51 @@ the platform's, and a run that belongs on both is registered on both
 run: a test runner's tab is a place you return to, a dev server's tab
 is the run's own.
 
-### 86. Official release signing — a v3.0 milestone (David's decision, 2026-08-27)
+### 86a. ~~Apple Developer ID + notarization~~ — CLOSED v2.188.4, shipped in v3.0.0
+
+**Bought and proven 2026-09-20.** David enrolled (Individual, Team
+`GVEU23Q6RB`) and set five repository secrets; **no code change turned the lane
+on**. Verified on the published artifact rather than inferred from the lane's
+design: `spctl --assess` answers **accepted, source=Notarized Developer ID** for
+both the DMG and the app, `stapler validate` passes on both, the app carries
+`flags=0x10000(runtime)`, the JVM binary carries all three entitlements, and the
+app boots `RC=0` with zero SEVERE.
+
+**It took five tags to get there, and every failure was a real defect in a lane
+that had never executed** — recorded because the pattern matters more than the
+fixes: AMFI rejects the XML comments the entitlements plist carries by house law
+(and `plutil -lint` calls the file fine); `notarytool submit --wait` **exits 0 on
+a rejection**, so the guard never fired and the run died two steps later in
+`stapler`; making the clusters read-only before signing blocked `codesign`, which
+writes *into* the binaries; and Apple's own log finally named ten Mach-O
+libraries inside five jars that `codesign` can never reach. A scan of mine had
+reported ZERO of those, because `for j in $(find …)` word-splits on the space in
+`NMOX Studio.app`.
+
+**The in-place updater would have unsigned it.** v1.298.0 guessed in a
+parenthetical that `/Applications` would not be writable; measured, it is (owned
+by whoever dragged the app there), so the updater wrote inside the bundle. A/B on
+a real 2.187.0 → 2.187.1 update: writable cluster → 1,068 files inside the bundle
+and `codesign --verify` **exit 1**; read-only → 0 inside, 955 jars in the
+USERDIR, boot RC=0 at 2.187.1 while the bundle stayed 2.187.0, `codesign`
+**exit 0**. The signed path now drops write permission after sealing.
+
+### 86b. Windows Authenticode — still a purchase, still open (David's decision)
+
+Microsoft **renamed Trusted Signing to Artifact Signing**
+(<https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart>). Before
+paying, note what the current docs require for the individual path: Public Trust
+for **individuals is US/Canada only**, the Azure **billing account must be
+Account Type = Individual** with legal name and address matching the
+government-issued ID, the *Artifact Signing Identity Verifier* role is needed,
+and `Microsoft.CodeSigning` must be registered on the subscription. Our earlier
+worry about a three-year-history requirement does **not** appear there for
+individuals. The lane is written and gated; `packaging/windows/authenticode-sign.ps1`
+pins the NuGet client at 1.0.60 against a current 1.0.95 and should be bumped
+with the first real run. Authenticode buys less than notarization did —
+SmartScreen softens as reputation accrues rather than flipping a refusal.
+
+### 86. ~~Official release signing — a v3.0 milestone~~ — macOS CLOSED; see 86a/86b (David's decision, 2026-08-27)
 
 **Re-read v2.184.0 during the senior pass and deliberately NOT decided.**
 This is not engineering debt with a deferred answer; it is a purchase and an

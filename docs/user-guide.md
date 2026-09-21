@@ -44,12 +44,9 @@ brew install nmox/nmox-studio/nmox-studio
 
 The `brew trust` line is Homebrew's one-time acknowledgment for any
 third-party tap — you won't be asked again for updates. The app is
-ad-hoc signed but not notarized (no Apple Developer ID yet), so a
-quarantined copy would be refused by Gatekeeper on first launch: the
-cask clears the quarantine attribute itself in a `postflight` step and
-prints that it did, right in the install output. Nothing silent. If you
-install from the DMG by hand instead, see the note below — one command
-(or right-click → Open) clears it.
+signed with an Apple Developer ID and notarized by Apple, so Gatekeeper
+accepts it as it stands — the cask copies it and does nothing else to
+it. Installing from the DMG by hand works the same way.
 
 **Everything else:** grab an asset from the
 [latest release](https://github.com/NMOX/NMOX-Studio/releases/latest) —
@@ -58,11 +55,11 @@ macOS `.dmg`, Windows `-setup.exe`, Debian/Ubuntu `.deb`, generic Linux
 first. The `-portable.zip` is the one bring-your-own-Java artifact
 (needs Java 21+ on PATH, or launch with `--jdkhome <path-to-jdk>`).
 
-> **macOS, first launch:** the app is ad-hoc signed but not notarized,
-> so Gatekeeper asks before it will run. **Right-click the app → Open**
-> the first time and confirm, or run
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Either
-> clears it for good.
+> **macOS, first launch:** just double-click it. The app is signed with
+> an Apple Developer ID and notarized, and the ticket is stapled to both
+> the app and the DMG, so the check works offline — no right-click, no
+> `xattr`. The in-app updater installs into your user directory rather
+> than the app bundle, so updating never breaks that signature.
 
 ### Updating
 
@@ -1880,8 +1877,10 @@ six are done, or when you press **Hide this list**.
   themselves in words, and the GO tooltip shows the exact command it
   would run, so you can try it in a terminal.
 - **The app opens to nothing on macOS** (no window, no error, first
-  launch after install): that's Gatekeeper quarantine — see the note in
-  §1. Right-click → Open once and it's fixed forever.
+  launch after install): on a signed build this should not happen. If it
+  does, the copy is damaged or was rewritten after download — check with
+  `codesign --verify --deep --strict "/Applications/NMOX Studio.app"`
+  and re-download if it fails.
 - Logs live under `~/Library/Application Support/nmoxstudio/…/var/log/`
   (macOS) if you need to file an issue.
 

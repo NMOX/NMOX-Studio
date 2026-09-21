@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-`brew trust` 这一行是 Homebrew 对任何第三方 tap 的一次性确认：以后更新不会再问。应用做了 ad-hoc 签名但未做公证，因此被隔离的副本会在首次启动时被 Gatekeeper 拒绝：cask 会在 `postflight` 步骤中自行移除隔离属性，并在安装输出里说明这一点。没有任何动作是悄悄发生的。
+`brew trust` 这一行是 Homebrew 对任何第三方 tap 的一次性确认：以后更新不会再问。应用已使用 Apple Developer ID 签名并经 Apple 公证，因此 Gatekeeper 原样接受它 —— cask 只是复制它，不再做任何处理。手动从 DMG 安装也是一样。
 
 **其他平台：**从[最新版本](https://github.com/NMOX/NMOX-Studio/releases/latest)下载文件 — macOS 用 `.dmg`，Windows 用 `-setup.exe`，Debian/Ubuntu 用 `.deb`，Linux 通用则用 `.tar.gz`。这四种都自带 Java 运行时，无需事先安装任何东西。`-portable.zip` 是唯一使用你自己的 Java 的构件（需要 PATH 中有 Java 21+，或用 `--jdkhome <jdk-路径>` 启动）。
 
-> **macOS 首次启动：**应用做了 ad-hoc 签名但未做公证，所以 Gatekeeper 会在运行前询问。第一次请**右键点击应用 → 打开**并确认，或执行
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`。两种做法都一劳永逸。
+> **macOS 首次启动：**双击即可。应用已使用 Apple Developer ID 签名并已公证，票据同时装订在应用和 DMG 上，因此校验可离线完成 —— 无需右键，也无需 `xattr`。内置更新安装到你的用户目录而非应用包内，所以更新永远不会破坏该签名。
 
 ### 更新
 
@@ -363,7 +362,7 @@ NMOX Studio 会讲十五种语言：English、Español、Français、Deutsch、�
 
 ### 打开应用什么也没出现（macOS）
 
-没有窗口也没有报错，装完第一次启动时：那是 Gatekeeper 的隔离 — 见第 1 章的说明。右键点一下选打开，一次就好，从此不再复发。日志在 `~/Library/Application Support/nmoxstudio/…/var/log/` 下面，需要提议题时用得上。
+没有窗口也没有报错，装完第一次启动时：在已签名的构建上不该发生这种情况。如果发生了，说明这份副本损坏了，或者在下载后被改动过 —— 用 `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` 检查，若失败就重新下载。 志在 `~/Library/Application Support/nmoxstudio/…/var/log/` 下面，需要提议题时用得上。
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## 附录：NMOX Studio 写下的文件（以及哪些该提交）

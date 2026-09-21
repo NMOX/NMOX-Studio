@@ -497,33 +497,19 @@ jobs:
           VERSION: ${{ needs.version.outputs.version }}
           SHA256: ${{ steps.sha.outputs.sha256 }}
         run: |
-          # WHEN THE BUILD IS NOTARIZED, THIS CASK LOSES THREE THINGS.
+          # DONE in v3.0.0: the build is notarized, so this cask copies the
+          # app and does nothing else to it. The quarantine-clear, its four
+          # comment lines and the two caveat paragraphs that explained it are
+          # gone from BOTH homes - here and Casks/nmox-studio.rb - because
+          # CaskGeneratorParityTest holds them byte-identical (v2.149.0).
           #
-          # Notarization removes the reason the quarantine-clear exists, so on
-          # the day MACOS_SIGNING_CERTIFICATE_BASE64 and the notary secrets are
-          # set (see docs/engineering/release-signing.md), delete from the
-          # heredoc below:
-          #
-          #   1. the `postflight_steps do ... end` block and the four comment
-          #      lines above it ("The app is ad-hoc signed, not notarized...");
-          #   2. the first caveats paragraph ("Heads up: ... pinned by the
-          #      sha256 above.") and the second one ("Installing from the DMG
-          #      by hand instead? ... xattr -dr ...") - a notarized DMG needs
-          #      neither; keep the in-app updater paragraph;
-          #   3. nothing else. `depends_on`, `app` and `zap` are unaffected.
-          #
-          # Then run the same deletions on the checked-in Casks/nmox-studio.rb,
-          # because CaskGeneratorParityTest holds the two byte-identical and
-          # will fail the build if only one home changes (v2.149.0).
-          #
-          # The same day, these documents stop being true and need re-wording
-          # (plus a translators' pass on the guides): INSTALL.md, README.md's
-          # macOS note, and the "ad-hoc signed but not notarized" sentences in
-          # docs/user-guide.md and all fourteen of its translations.
-          #
-          # NOT DONE NOW, deliberately: no notarized build exists yet, and a
-          # cask that stops clearing quarantine before one does would break
-          # every install (Homebrew 6 removed --no-quarantine).
+          # Do not reintroduce them. Rewriting a notarized app after copying
+          # is exactly what breaks its seal: measured, an in-place rewrite
+          # leaves `codesign --verify` failing with "a sealed resource is
+          # missing or invalid". ReleaseSigningLanesGateTest refuses
+          # every one of those spellings in either home - and it cannot name
+          # them here, because a gate that names a forbidden spelling matches
+          # its own explanation (v2.184.0). The test has the list.
           mkdir -p Casks
           cat > Casks/nmox-studio.rb <<EOF
           cask "nmox-studio" do
@@ -539,17 +525,6 @@ jobs:
 
             app "NMOX Studio.app"
 
-            # The app is ad-hoc signed, not notarized (no Apple Developer ID yet),
-            # and Homebrew 6 removed --no-quarantine — so this cask clears the
-            # quarantine attribute itself. Never silently: the caveats below say
-            # so at every install, and the trust decision was yours at brew trust.
-            postflight_steps do
-              run "/usr/bin/xattr",
-                  args:           ["-dr", "com.apple.quarantine", "{{appdir}}/NMOX Studio.app"],
-                  writable_paths: ["NMOX Studio.app"],
-                  writable_base:  :appdir
-            end
-
             zap trash: [
               "~/Library/Application Support/NMOXStudio",
               "~/Library/Caches/org.nmox.studio",
@@ -557,18 +532,6 @@ jobs:
             ]
 
             caveats <<~EOS
-              Heads up: this app is ad-hoc signed, not notarized (no Apple
-              Developer ID yet). Because Homebrew 6 removed --no-quarantine,
-              this cask clears macOS's quarantine attribute on the installed
-              app itself (postflight_steps above) so first launch works without a
-              Gatekeeper refusal. You consented to this third-party tap with
-              brew trust; the DMG comes over HTTPS from the project's GitHub
-              releases and is pinned by the sha256 above.
-
-              Installing from the DMG by hand instead? First launch needs
-              right-click > Open once, or:
-                xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"
-
               After first launch, the in-app updater (Tools > Plugins) keeps
               you current with no Gatekeeper involvement at all.
             EOS

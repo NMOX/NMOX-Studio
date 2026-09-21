@@ -6,6 +6,14 @@ quality settles whether to spend someone else's money or enrol under their
 name. This document exists so the decision can be made as a yes or a no,
 with the price and the work both visible.
 
+> **macOS is DONE as of v2.188.4 (2026-09-20)** and shipped in v3.0.0. The
+> Developer ID is bought, the five secrets are set, and the published DMG and
+> app both assess as *Notarized Developer ID* with a stapled ticket. What
+> follows is kept because the Windows half is still a purchase, and because
+> the macOS section is now a record of what the lane actually needed rather
+> than what it was predicted to need — see "What it really took" at the
+> bottom, and ledger 86a/86b.
+
 **The work is done.** The release lane signs and notarizes on macOS and
 Authenticode-signs on Windows the moment the secrets exist — no code
 change, no PR, no edit to this repository beyond adding secrets and (for
@@ -219,3 +227,32 @@ translators' pass on the guides:
 | Windows signing | `packaging/windows/authenticode-sign.ps1` |
 | Windows credentials | `.github/workflows/release.yml` — the `windows` job's `env:` block |
 | The gate | `application/src/test/java/org/nmox/studio/application/ReleaseSigningLanesGateTest.java` |
+
+
+---
+
+## What it really took (macOS, 2026-09-20)
+
+Five tags, five real defects, none of them findable without a certificate.
+
+1. **AMFI rejects XML comments.** `codesign`'s entitlements parser is stricter
+   than `plutil`, which called the file OK. The plist carries a reason beside
+   every key by house law, and that is what broke it. Fix: `plutil -convert
+   xml1` before signing, so the documented file stays the source.
+2. **`notarytool submit --wait` exits 0 on a rejection.** The exit code reports
+   the round trip, not Apple's verdict. Read `status:` and fail on anything but
+   `Accepted` — and fetch the log automatically, because the human who needs it
+   may hold no credentials on the machine where it failed.
+3. **Read-only clusters cannot be signed.** `codesign` writes the signature
+   *into* each Mach-O. The chmod belongs after sealing, not before.
+4. **Ten natives live inside jars** (`jna`, `flatlaf`, `junixsocket`,
+   `truffle-runtime`, `sqlite-jdbc`). `codesign` signs files; a jar is a zip.
+   This document predicted exactly this and named the fix — the prediction was
+   right and the check for it was not.
+5. **In-place updates unsign the bundle.** `/Applications` is owned by whoever
+   dragged the app there, so its clusters are writable. Read-only clusters push
+   the updater into the userdir, which keeps both the updates and the signature.
+
+Two of those were introduced while fixing the others, which is the honest cost
+of a lane that cannot be exercised locally. *A prediction in a document is not
+a test; only a certificate could run this.*
