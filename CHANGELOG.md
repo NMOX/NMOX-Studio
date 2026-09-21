@@ -4,6 +4,78 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.2] - 2026-09-20
+
+**A refusal that did not speak, in the lane written to fail loudly.**
+
+This release does **not** fix Apple's rejection. It makes the lane say what the
+rejection was — which v2.188.1 could not, and which is why we still do not know.
+
+v2.188.1 got further than v2.188.0: the entitlements parsed, every Mach-O was
+signed under the hardened runtime, and the bundle reached Apple. Apple answered
+`status: Invalid`. The run then **continued**, and died two steps later inside
+`stapler` with a CloudKit *"Record not found"* that named neither the bundle nor
+the reason.
+
+**`xcrun notarytool submit --wait` exits ZERO on a rejected submission.** Its
+exit code reports whether the round trip worked, not what Apple decided — so
+`if ! xcrun notarytool submit …` never fired and a refused bundle sailed
+straight into stapling. This is exactly the `gofmt -l` shape ledger v1.352.0
+recorded: *the verdict is in the output, not the exit code.* Third instance of
+that class in this codebase, and the first where the tool being misread was
+Apple's.
+
+The lane now parses `status:` and fails on anything but `Accepted`. And because
+a refusal nobody can act on is not a refusal, it **fetches Apple's notary log
+itself** instead of printing `run: xcrun notarytool log <submission-id>` at a
+human who may hold no credentials on the machine where it failed — which was
+precisely the position this release was written from. `release-signing.md` had
+documented that lookup as a manual step; a manual step inside an automated lane
+is a gap, not a procedure.
+
+Two mutants by name: replacing the status check with an exit-code check kills
+`macosLaneSignsNotarizesAndStaples`, and so does removing the log fetch.
+
+**And the v3.0 blocker is closed by measurement, not by argument.**
+
+A signed bundle and an in-place updater cannot both be right: the updater
+rewrites module jars inside `Contents/`, which breaks the seal the
+notarization ticket vouches for. v1.298.0 had recorded that a **writable**
+cluster installs in place and parenthesised it *"an app copy, not
+/Applications"* — an inference, and a wrong one. A real
+`/Applications/NMOX Studio.app` is owned by whoever dragged it there
+(`david:admin` here), so its clusters are writable and the updater writes
+inside the bundle.
+
+Recon first, from the shipped bytecode: `Utilities.canWriteInCluster` gates on
+plain `File.canWrite()`, and `InstallManager.checkTargetCluster` **warns and
+falls through to the userdir** rather than throwing — it only raises
+`WRITE_PERMISSION` when a caller forces a global install. The shadow path was
+always there; nothing stopped the writable path from winning.
+
+Then A/B on a real 2.187.0 bundle updating to 2.187.1:
+
+| | files written inside the bundle | `codesign --verify --deep --strict` |
+|---|---|---|
+| writable cluster | **1,068** | **exit 1** — *a sealed resource is missing or invalid* |
+| read-only cluster | **0** | **exit 0** |
+
+The read-only run put 955 jars in the **userdir** and booted `RC=0` with zero
+SEVERE running **2.187.1**, while the bundle's own jars stayed at **2.187.0**.
+Updates keep working; the signature survives.
+
+So the signed path now drops write permission on every cluster before sealing
+the bundle. `-w` only — `a-wx` would strip the execute bit from
+`bin/nmoxstudio` and every `jre/bin` binary and ship a bundle that cannot
+start, a worse failure than the one being fixed and one that appears only on
+the signed path. An unsigned local build and the portable zip keep their
+writable clusters and their in-place updates, untouched.
+
+Three mutants by name: dropping the `chmod` and widening it to `a-wx` both kill
+`signedBundleClustersAreReadOnly`, which also pins the step **inside** the
+signed branch.
+
+
 ## [2.188.1] - 2026-09-20
 
 **The first real signature failed, and the thing that broke it was the
@@ -23410,6 +23482,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.1...v2.188.2
 [2.188.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.0...v2.188.1
 [2.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.1...v2.188.0
 [2.187.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.0...v2.187.1

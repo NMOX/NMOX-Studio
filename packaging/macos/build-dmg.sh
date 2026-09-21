@@ -226,16 +226,73 @@ fi
 # Gatekeeper will refuse; `notarytool log` prints WHY, which is the only
 # way to debug a rejection (the verdict alone never says).
 notarize() {
-    local artifact="$1"
+    local artifact="$1" out status id
     echo "==> Notarizing $(basename "$artifact") (Apple's queue decides how long this takes)"
-    if ! xcrun notarytool submit "$artifact" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} --wait --timeout 45m; then
-        echo "ERROR: notarization was refused for $artifact"
-        echo "       run: xcrun notarytool log <submission-id> ${NOTARY_ARGS[*]}"
+    # `notarytool submit --wait` EXITS ZERO ON A REJECTED SUBMISSION. Its
+    # exit code reports whether the round trip worked, not what Apple
+    # decided - the VERDICT is in the output, exactly as `gofmt -l` puts
+    # its verdict in the output rather than its exit code (v1.352.0).
+    # MEASURED: v2.188.1 came back `status: Invalid`, this guard did not
+    # fire, and the run sailed into `stapler`, which failed two steps
+    # later with a CloudKit "Record not found" that named neither the
+    # bundle nor the reason. Read the status.
+    out=$(xcrun notarytool submit "$artifact" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} \
+              --wait --timeout 45m 2>&1) || true
+    echo "$out"
+    status=$(printf '%s\n' "$out" | awk '/^[[:space:]]*status:/ { print $2; exit }')
+    id=$(printf '%s\n' "$out" | awk '/^[[:space:]]*id:/ { print $2; exit }')
+    if [ "$status" != "Accepted" ]; then
+        echo "ERROR: notarization was refused for $artifact (status: ${status:-unknown})"
+        # A refusal that does not say why is not a refusal anyone can act
+        # on. The log names the offending file; fetch it here rather than
+        # telling a human to re-run a command with credentials they may
+        # not have locally.
+        if [ -n "$id" ]; then
+            echo "==> Apple's notary log for submission $id"
+            xcrun notarytool log "$id" ${NOTARY_ARGS[@]+"${NOTARY_ARGS[@]}"} || \
+                echo "       (could not fetch the log for $id)"
+        else
+            echo "       (no submission id in the output; nothing to look up)"
+        fi
         exit 1
     fi
 }
 
 if [ -n "${MACOS_SIGN_IDENTITY:-}" ]; then
+    # ----------------------------------------------------------------------
+    # Make every cluster READ-ONLY before sealing the bundle.
+    #
+    # A signed bundle and an in-place updater cannot both be right: the
+    # updater rewrites module jars inside Contents/, which breaks the seal
+    # the notarization ticket vouches for. MEASURED on a real 2.187.0 app
+    # updating to 2.187.1:
+    #   writable cluster  -> 1068 files written INSIDE the bundle, and
+    #                        `codesign --verify --deep --strict` exits 1
+    #                        with "a sealed resource is missing or invalid"
+    #   read-only cluster -> 0 files inside the bundle, 955 jars in the
+    #                        USERDIR, boot RC=0 with zero SEVERE running
+    #                        2.187.1 while the bundle's own jars stay
+    #                        2.187.0, and codesign exits 0
+    #
+    # No platform change was needed: `Utilities.canWriteInCluster` gates on
+    # plain `File.canWrite()` (read from the shipped bytecode), and
+    # `InstallManager.checkTargetCluster` WARNS and falls through to the
+    # userdir rather than throwing - it only throws WRITE_PERMISSION when a
+    # caller forces a global install. The shadow path was always there;
+    # this just stops the writable path from winning.
+    #
+    # Only the SIGNED path does this. An unsigned local build keeps its
+    # writable cluster, so nothing about the portable zip or a dev build
+    # changes. -w only: execute bits stay, so bin/nmoxstudio and jre/bin/*
+    # still run.
+    echo "==> Making clusters read-only (a signed bundle must not be updated in place)"
+    for cluster in "$BUNDLE/Contents/Resources/nmoxstudio"/*/; do
+        case "$(basename "$cluster")" in
+            bin|etc|jre) continue ;;   # not clusters; jre must stay as linked
+        esac
+        [ -d "$cluster/modules" ] || continue
+        chmod -R a-w "$cluster"
+    done
     echo "==> Signing bundle with Developer ID: $MACOS_SIGN_IDENTITY"
     sign_bundle_with_identity
     if [ ${#NOTARY_ARGS[@]} -gt 0 ]; then
