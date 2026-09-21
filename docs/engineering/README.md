@@ -20,12 +20,17 @@ NMOX Studio actually works.
   record that closed the i18n/l10n arc at v2.147.0.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
+- **[signing.md](./signing.md)** — **start here for signing.** The four
+  independent systems, what question each one answers, and why none
+  substitutes for another: GPG checksums (every asset, every platform),
+  NBM signing (self-signed by decision), Apple Developer ID (official
+  since v3.0.0) and Windows Authenticode (unpurchased).
 - **[nbm-signing.md](./nbm-signing.md)** — how the secret-gated NBM
   signing pipeline is wired, and how to turn it on.
-- **[release-signing.md](./release-signing.md)** — ledger 86 as a yes/no:
+- **[release-signing.md](./release-signing.md)** — the installer lanes:
   what Apple Developer ID and Windows Authenticode cost, the accounts and
-  secrets to create in one sitting, and what the written-but-never-run
-  lanes do the moment those secrets exist.
+  secrets to create in one sitting, and — now that macOS has run for real
+  — what the first signing run actually took, five releases of it.
 - **[futures-2031.md](./futures-2031.md)** and
   **[competitive-lens.md](./competitive-lens.md)** — the two living
   backlogs: the bets argued from trajectories, and the rival's relief

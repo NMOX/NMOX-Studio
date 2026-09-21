@@ -1,7 +1,7 @@
 {
   "site.tagline": "Studio webowe ze stojakiem — połącz swoje narzędzia jak syntezator.",
-  "site.hero.note": "Jedna linia. Środowisko uruchomieniowe jest w zestawie. Tę stronę serwuje ci sama aplikacja — szukaj wskaźnika ⇄ na jej pasku stanu.",
-  "site.hero.note.web": "Jedna linia. Środowisko uruchomieniowe jest w zestawie. Otwórz tę samą stronę z wnętrza aplikacji, a poda ci ją jej własny stojak.",
+  "site.hero.note": "Dwie linie: jedna ufa tapowi, druga instaluje. Środowisko uruchomieniowe jest w zestawie. Tę stronę serwuje ci sama aplikacja — szukaj wskaźnika ⇄ na jej pasku stanu.",
+  "site.hero.note.web": "Dwie linie: jedna ufa tapowi, druga instaluje. Środowisko uruchomieniowe jest w zestawie. Otwórz tę samą stronę z wnętrza aplikacji, a poda ci ją jej własny stojak.",
   "site.loop.h": "Pętla, która uczy, to pętla, która się domyka",
   "site.loop.p": "Zmieniaj, zapisuj, patrz — a gdy strona się psuje, błąd ląduje w twoim edytorze, w odpowiedniej linii, a nie w konsoli, którą trzeba było pomyśleć, żeby otworzyć.",
   "site.rack.h": "Stojak, a nie przycisk „uruchom”",
