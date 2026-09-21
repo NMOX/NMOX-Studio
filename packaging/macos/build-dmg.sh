@@ -285,6 +285,18 @@ if [ -n "${MACOS_SIGN_IDENTITY:-}" ]; then
     # writable cluster, so nothing about the portable zip or a dev build
     # changes. -w only: execute bits stay, so bin/nmoxstudio and jre/bin/*
     # still run.
+    echo "==> Signing bundle with Developer ID: $MACOS_SIGN_IDENTITY"
+    sign_bundle_with_identity
+    # AFTER signing, never before: `codesign` WRITES the signature into each
+    # Mach-O, so a read-only binary cannot be signed. v2.188.2 did this
+    # first and died on the first nested library with
+    #   libjnidispatch-nb.jnilib: internal error in Code Signing subsystem
+    # - a permission error wearing a scary name.
+    #
+    # Safe in this order because POSIX modes are NOT part of what the
+    # signature seals. MEASURED on a real bundle: `codesign --verify --deep
+    # --strict` exits 0 before the chmod and 0 after it. The verify below
+    # re-proves that on every release rather than trusting the measurement.
     echo "==> Making clusters read-only (a signed bundle must not be updated in place)"
     for cluster in "$BUNDLE/Contents/Resources/nmoxstudio"/*/; do
         case "$(basename "$cluster")" in
@@ -293,8 +305,7 @@ if [ -n "${MACOS_SIGN_IDENTITY:-}" ]; then
         [ -d "$cluster/modules" ] || continue
         chmod -R a-w "$cluster"
     done
-    echo "==> Signing bundle with Developer ID: $MACOS_SIGN_IDENTITY"
-    sign_bundle_with_identity
+    codesign --verify --deep --strict --verbose=2 "$BUNDLE"
     if [ ${#NOTARY_ARGS[@]} -gt 0 ]; then
         # notarytool takes an archive, never a bundle. ditto's zip is the
         # one Apple documents for this (it preserves the symlinks and the

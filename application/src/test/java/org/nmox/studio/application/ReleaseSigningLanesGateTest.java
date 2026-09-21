@@ -186,10 +186,28 @@ class ReleaseSigningLanesGateTest {
         // Only the signed path. An unsigned local build and the portable zip
         // keep their writable clusters and their in-place updates.
         int signedAt = dmg.indexOf("Signing bundle with Developer ID");
-        assertThat(dmg.indexOf("chmod -R a-w"))
+        int chmodAt = dmg.indexOf("chmod -R a-w");
+        assertThat(chmodAt)
                 .as("the read-only step belongs INSIDE the signed branch — an unsigned build "
                         + "and the portable zip must keep updating in place")
-                .isGreaterThan(0).isLessThan(signedAt);
+                .isGreaterThan(signedAt);
+        // ORDER, and v2.188.2 got it wrong: `codesign` WRITES the signature
+        // into each Mach-O, so a read-only binary cannot be signed. Doing
+        // the chmod first died on the first nested library with
+        //   libjnidispatch-nb.jnilib: internal error in Code Signing subsystem
+        // — a permission error wearing a scary name. It is safe afterwards
+        // because POSIX modes are not part of what the signature seals
+        // (measured: codesign --verify exits 0 before AND after the chmod).
+        assertThat(chmodAt)
+                .as("the chmod must come AFTER sign_bundle_with_identity — codesign writes into "
+                        + "the binaries, so read-only ones cannot be signed at all")
+                .isGreaterThan(dmg.indexOf("    sign_bundle_with_identity\n"));
+        // and the lane re-proves the modes did not break the seal, rather
+        // than carrying my measurement as a comment nobody re-runs
+        assertThat(dmg.indexOf("codesign --verify --deep --strict --verbose=2 \"$BUNDLE\"", chmodAt))
+                .as("verify the signature AFTER the chmod, so a future macOS that does seal the "
+                        + "mode bits fails the release instead of shipping a broken signature")
+                .isGreaterThan(chmodAt);
     }
 
     @Test
