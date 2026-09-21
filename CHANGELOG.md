@@ -4,6 +4,48 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.3] - 2026-09-21
+
+**`codesign` writes into the binaries it signs, so a read-only one cannot be
+signed at all.**
+
+v2.188.2 made every cluster read-only *before* sealing the bundle. The signing
+step died on the first nested library:
+
+```
+.../platform/modules/lib/x86_64/libjnidispatch-nb.jnilib:
+    internal error in Code Signing subsystem
+```
+
+A permission error wearing a frightening name. `codesign` embeds the signature
+**into** each Mach-O, so it needs write access to every file it seals — and the
+step that exists to protect the signature was the step preventing it.
+
+The chmod moves to **after** `sign_bundle_with_identity`. That is safe because
+POSIX modes are not part of what the signature seals, and this is measured
+rather than assumed: on a real bundle `codesign --verify --deep --strict` exits
+**0 before** the chmod and **0 after** it. The lane now re-runs that verify
+immediately after the chmod, so a future macOS that *does* seal the mode bits
+fails the release instead of shipping a broken signature — the measurement
+lives in the lane, not in a comment nobody re-runs.
+
+**The gate said the mutant survived, and the gate was right — my mutation was
+broken.** Moving the chmod back before signing appeared to leave
+`signedBundleClustersAreReadOnly` green. The mutation script had sliced the file
+between two occurrences of the same verify line — one inside
+`sign_bundle_with_identity`, one after the chmod — and duplicated an entire
+signing block instead of relocating anything. Applied properly, by line, the
+mutant dies by name.
+
+*A surviving mutant is a claim about the gate, and the claim has a premise:
+that the mutation applied.* Prove the mutation before believing what it says —
+the same discipline as v1.126.0's "enumerate the matches before you mutate",
+one step earlier in the process.
+
+Still unknown: **why Apple called the bundle Invalid.** v2.188.2 shipped the
+notary-log fetch precisely to find out, and this release is the first that can
+reach the submission at all.
+
 ## [2.188.2] - 2026-09-20
 
 **A refusal that did not speak, in the lane written to fail loudly.**
@@ -23482,6 +23524,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.2...v2.188.3
 [2.188.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.1...v2.188.2
 [2.188.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.0...v2.188.1
 [2.188.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.187.1...v2.188.0
