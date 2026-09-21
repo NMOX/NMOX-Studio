@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [2.188.4] - 2026-09-21
+
+**Apple said why, and the answer was ten binaries `codesign` can never reach.**
+
+v2.188.2's notary-log fetch paid for itself on its first real use. The verdict:
+
+```
+"status": "Invalid",
+"statusSummary": "Archive contains critical validation errors"
+```
+
+Ten Mach-O binaries across five jars — `jna`, `flatlaf`,
+`junixsocket-native-common`, `truffle-runtime`, `sqlite-jdbc` — with three
+complaints between them: *"The binary is not signed"*, *"not signed with a
+valid Developer ID certificate"* (vendor-signed, just not by us) and *"does not
+include a secure timestamp"*. **`codesign` signs FILES, and a jar is a zip**, so
+the bundle scan could never have reached them. `release-signing.md` predicted
+this exact failure and named the fix; the prediction was right and the check
+for it was not.
+
+**The check for it was wrong, and the bug was mine.** An earlier scan reported
+ZERO natives inside jars. It used `for j in $(find …)`, which word-splits on the
+space in `NMOX Studio.app`, so every path was mangled, every `unzip` failed
+silently, and the loop found nothing. *A measurement that answered an easier
+question and passed.* Re-run with correct quoting, the local count matches
+Apple's exactly: ten, in five jars.
+
+Every jar in the bundle is now asked what it contains, and every entry that is
+really Mach-O is signed with the Developer ID, the hardened runtime and a
+secure timestamp before anything is sealed — rewriting a jar changes bytes the
+bundle seal covers. **The population is DERIVED**, because a platform bump can
+add a jar carrying a native and a hand-kept list would ship the next one
+unsigned. Entries are updated one at a time (`zip <jar> <entry>`) rather than
+unpacked and rebuilt, so every other byte of the archive survives; none of the
+five is jarsigner-signed, so there is no manifest digest to invalidate.
+
+**Two more defects surfaced by running it rather than shipping it**, each of
+which would have produced another rejection:
+
+- **`codesign` reads stdin.** Inside a `while read` loop it swallowed the
+  entries not yet consumed, so exactly ONE binary per jar was signed and the
+  rest vanished silently.
+- **`zip` rewrites the jar while `unzip -Z1` is still streaming that same
+  jar's listing.** The first jar lost its second entry because the first
+  `codesign` call is slow enough for the rewrite to land mid-read — a race
+  whose victim is whichever jar is slowest.
+
+Both are fixed and gated. Verified by byte comparison against the pristine
+jars: **10 re-signed, 0 unchanged.** The weaker check that came first could not
+see it — `codesign -v` passes on a *vendor's* signature, and junixsocket's
+arm64 library ships ad-hoc signed already, so it looked signed while being
+skipped.
+
+Four mutants by name, and one of them only after the assertion was tightened:
+the first spelling matched `codesign` within 400 characters of `</dev/null` and
+the neighbouring `zip` call satisfied it. *A gate that matches loosely matches
+the wrong thing.*
+
 ## [2.188.3] - 2026-09-21
 
 **`codesign` writes into the binaries it signs, so a read-only one cannot be
@@ -23524,6 +23582,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[2.188.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.3...v2.188.4
 [2.188.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.2...v2.188.3
 [2.188.2]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.1...v2.188.2
 [2.188.1]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.0...v2.188.1

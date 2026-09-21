@@ -159,6 +159,51 @@ class ReleaseSigningLanesGateTest {
     }
 
     @Test
+    @DisplayName("native libraries INSIDE jars are signed too — codesign cannot reach them")
+    void nativesInsideJarsAreSigned() throws IOException {
+        String dmg = read(BUILD_DMG);
+        // WHY THIS EXISTS: Apple refused v2.188.3 naming TEN binaries across
+        // five jars (jna, flatlaf, junixsocket, truffle-runtime, sqlite-jdbc)
+        // — "The binary is not signed", "not signed with a valid Developer ID
+        // certificate" (vendor-signed, not by us) and "does not include a
+        // secure timestamp". codesign signs FILES and a jar is a zip, so the
+        // bundle scan can never reach them.
+        assertThat(dmg)
+                .as("the jar-embedded natives must be signed, or the notary service refuses the "
+                        + "whole archive — measured, ten of them across five jars")
+                .contains("sign_natives_inside_jars");
+        // DERIVED, never listed: a platform bump can add a jar carrying a
+        // native, and a hand-kept list ships the next one unsigned.
+        assertThat(dmg)
+                .as("the population is every jar in the bundle, not a list someone maintains")
+                .contains("find \"$BUNDLE\" -name '*.jar' -print0");
+        // `codesign` READS STDIN. Inside a `while read` loop it swallows the
+        // entries not yet consumed — measured: exactly ONE binary per jar got
+        // signed and the rest vanished silently.
+        // The FIRST cut of this assertion was a loose regex ("codesign" within
+        // 400 chars of "</dev/null") and the mutant SURVIVED it, because the
+        // `zip` call two lines below carries its own </dev/null. A gate that
+        // matches loosely matches the wrong thing — pin the invocation.
+        assertThat(dmg)
+                .as("codesign reads stdin and eats the loop's input — THIS call must take "
+                        + "/dev/null, not merely some call nearby")
+                .contains("--sign \"$MACOS_SIGN_IDENTITY\" \"$tmp/$entry\" </dev/null");
+        // `zip` rewrites the jar IN PLACE while a streaming `unzip -Z1` is
+        // still reading that same file, so the listing loses its tail. The
+        // entry list is materialised before anything is written.
+        assertThat(dmg)
+                .as("the entry listing must be materialised before the jar is rewritten — a "
+                        + "streaming listing loses its tail to the rewrite, silently")
+                .contains("entries=$(unzip -Z1");
+        // and it must run BEFORE the bundle is sealed: rewriting a jar
+        // changes bytes the seal covers
+        assertThat(dmg.indexOf("    sign_natives_inside_jars\n"))
+                .as("rewriting a jar changes bytes the bundle seal covers, so it happens first")
+                .isLessThan(dmg.indexOf("codesign --force --options runtime --timestamp \\\n"
+                        + "                 --entitlements"));
+    }
+
+    @Test
     @DisplayName("a signed bundle's clusters are read-only, so an update cannot break its own seal")
     void signedBundleClustersAreReadOnly() throws IOException {
         String dmg = read(BUILD_DMG);
