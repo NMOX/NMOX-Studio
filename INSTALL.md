@@ -14,10 +14,10 @@ Download artifacts from the
 
 1. Open `NMOX-Studio-<version>-macos.dmg` and drag **NMOX Studio** to
    Applications.
-2. The build is ad-hoc signed but not notarized, so the **first** launch
-   needs one of:
-   - right-click the app → **Open** → Open, or
-   - `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`
+2. Double-click it. The app is signed with an Apple Developer ID and
+   notarized by Apple, with the ticket stapled to both the app and the
+   DMG, so it opens normally — no right-click, no `xattr`, and no
+   network needed for the check.
 
 ## Windows
 

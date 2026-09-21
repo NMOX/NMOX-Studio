@@ -118,12 +118,13 @@ The DMG, installer, tar.gz and deb ship with their own Java runtime —
 nothing to install. (The portable zip alone expects a Java 21+ on the
 machine.)
 
-> **macOS note:** the app is ad-hoc signed but not notarized (no Apple
-> Developer ID yet), so a quarantined copy is refused on first launch.
-> Right-click the app and choose *Open* once, or run
-> `xattr -dr com.apple.quarantine "/Applications/NMOX Studio.app"`.
-> After first launch, the in-app updater keeps you current with no
-> Gatekeeper involvement at all.
+> **macOS note:** the app is signed with an Apple Developer ID and
+> notarized by Apple — Gatekeeper accepts it as *Notarized Developer ID*
+> — with the ticket stapled to both the app and the DMG, so the first
+> launch works offline and needs no right-click and no `xattr`. The
+> in-app updater then keeps you current: it installs into your user
+> directory rather than the app bundle, so an update never breaks the
+> signature it shipped with.
 
 ### Homebrew (macOS)
 
@@ -136,10 +137,9 @@ The `brew trust` step is a one-time acknowledgment Homebrew requires for
 any third-party tap; you won't be asked again for future updates. The
 cask wraps the release DMG (bundled Java runtime, no separate install),
 downloaded over HTTPS from this repo's releases and pinned by sha256.
-The cask handles Gatekeeper itself — it clears the quarantine attribute
-on the installed app in a `postflight` step and **prints exactly that at
-install time**, so nothing happens behind your back (you already
-consented to this third-party tap with `brew trust`). Update later with
+Nothing is done to the app after it is copied: the DMG is notarized, so
+Gatekeeper accepts it as it stands and the cask no longer needs to touch
+the quarantine attribute. Update later with
 `brew update && brew upgrade --cask nmox-studio`; remove cleanly with
 `brew uninstall --cask --zap nmox-studio`.
 

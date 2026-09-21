@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-Baris `brew trust` adalah konfirmasi sekali jalan dari Homebrew untuk tap pihak ketiga mana pun — Anda tidak akan ditanya lagi saat pembaruan. Aplikasi ini ditandatangani secara ad-hoc tetapi tidak dinotarisasi, jadi salinan yang dikarantina akan ditolak Gatekeeper pada peluncuran pertama: cask menghapus sendiri atribut karantina pada langkah `postflight` dan menyebutkannya di keluaran pemasangan. Tidak ada yang diam-diam.
+Baris `brew trust` adalah konfirmasi sekali jalan dari Homebrew untuk tap pihak ketiga mana pun — Anda tidak akan ditanya lagi saat pembaruan. Aplikasi ini ditandatangani dengan Apple Developer ID dan dinotarisasi oleh Apple, jadi Gatekeeper menerimanya apa adanya — cask hanya menyalinnya dan tidak melakukan apa pun lagi padanya. Memasang secara manual dari DMG bekerja dengan cara yang sama.
 
 **Selebihnya:** unduh berkas dari [rilis terbaru](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` untuk macOS, `-setup.exe` untuk Windows, `.deb` untuk Debian/Ubuntu, `.tar.gz` umum untuk Linux. Keempatnya membawa lingkungan Java sendiri; tidak ada yang perlu dipasang lebih dulu. `-portable.zip` adalah satu-satunya artefak yang memakai Java Anda sendiri (perlu Java 21+ di PATH, atau jalankan dengan `--jdkhome <jalur-ke-jdk>`).
 
-> **macOS, peluncuran pertama:** aplikasi ditandatangani secara ad-hoc tetapi tidak dinotarisasi, jadi Gatekeeper bertanya sebelum menjalankannya. Untuk pertama kali, **klik kanan aplikasi → Buka** lalu konfirmasi, atau jalankan
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Keduanya menyelesaikannya untuk seterusnya.
+> **macOS, peluncuran pertama:** cukup klik dua kali. Aplikasi ditandatangani dengan Apple Developer ID dan dinotarisasi, dan tiketnya dilekatkan pada aplikasi maupun DMG, sehingga pemeriksaannya bekerja luring — tanpa klik kanan dan tanpa `xattr`. Pembaru bawaan memasang ke direktori pengguna Anda, bukan ke bundel aplikasi, sehingga pembaruan tidak pernah merusak tanda tangan itu.
 
 ### Pembaruan
 
@@ -363,7 +362,7 @@ Lihat layarnya: perangkat menjelaskan dirinya dengan kata-kata, dan tip pada tom
 
 ### Aplikasi terbuka tanpa apa pun (macOS)
 
-Tanpa jendela, tanpa galat, pada mula pertama setelah pemasangan: itu karantina Gatekeeper — lihat catatan di bab 1. Klik kanan lalu Buka, cukup sekali, dan beres selamanya. Log berada di bawah `~/Library/Application Support/nmoxstudio/…/var/log/` bila Anda perlu membuka isu.
+Tanpa jendela, tanpa galat, pada mula pertama setelah pemasangan: pada build yang ditandatangani ini seharusnya tidak terjadi. Jika terjadi, salinannya rusak atau diubah setelah diunduh — periksa dengan `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` dan unduh ulang bila gagal. Log berada di bawah `~/Library/Application Support/nmoxstudio/…/var/log/` bila Anda perlu membuka isu.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## Lampiran: berkas yang ditulis NMOX Studio (dan mana yang layak dikomit)

@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-השורה `brew trust` היא האישור החד־פעמי של Homebrew לכל tap של צד שלישי — בעדכונים לא תישאלו שוב. האפליקציה חתומה ad-hoc אבל לא עברה notarization, ולכן Gatekeeper היה דוחה עותק שנמצא בהסגר בהפעלה הראשונה: ה‑cask מסיר בעצמו את מאפיין ההסגר בשלב `postflight` וכותב זאת בפלט ההתקנה. שום דבר לא קורה בשקט.
+השורה `brew trust` היא האישור החד־פעמי של Homebrew לכל tap של צד שלישי — בעדכונים לא תישאלו שוב. האפליקציה חתומה ב־Apple Developer ID ועברה notarization אצל Apple, ולכן Gatekeeper מקבל אותה כמות שהיא — ה־cask רק מעתיק אותה ולא עושה בה דבר נוסף. התקנה ידנית מה־DMG עובדת באותו אופן.
 
 **כל השאר:** הורידו קובץ מ[הגרסה האחרונה](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` ל‑macOS, `-setup.exe` ל‑Windows, `.deb` ל‑Debian/Ubuntu, `.tar.gz` כללי ל‑Linux. כל הארבעה מביאים סביבת ריצה של Java משלהם; אין מה להתקין מראש. `-portable.zip` הוא הארטיפקט היחיד שנשען על Java משלכם (דורש Java 21+ ב‑PATH או הפעלה עם `--jdkhome <נתיב-ל-JDK>`).
 
-> **macOS, הפעלה ראשונה:** האפליקציה חתומה ad-hoc אבל לא עברה notarization, ולכן Gatekeeper שואל לפני ההרצה. בפעם הראשונה: **לחיצה ימנית על האפליקציה ← פתיחה** ואישור, או
-> הריצו `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. כל אחת מהדרכים פותרת זאת לצמיתות.
+> **macOS, הפעלה ראשונה:** פשוט לחצו פעמיים. האפליקציה חתומה ב־Apple Developer ID ועברה notarization, והכרטיס מוצמד גם לאפליקציה וגם ל־DMG, כך שהבדיקה עובדת גם ללא רשת — בלי לחיצה ימנית ובלי `xattr`. המעדכן הפנימי מתקין לתיקיית המשתמש שלכם ולא לחבילת האפליקציה, ולכן עדכון לעולם אינו שובר את החתימה הזו.
 
 ### עדכון
 
@@ -363,7 +362,7 @@ NMOX Studio מדבר חמש־עשרה שפות: English, Español, Français, De
 
 ### האפליקציה נפתחת לריק (macOS)
 
-אין חלון, אין שגיאה, בהפעלה הראשונה אחרי ההתקנה: זה ההסגר של Gatekeeper — ראו את ההערה בפרק 1. לחיצה ימנית ופתיחה פעם אחת, וזה מסודר לתמיד. קובצי היומן נמצאים ב‑`~/Library/Application Support/nmoxstudio/…/var/log/`, אם תצטרכו לפתוח issue.
+אין חלון, אין שגיאה, בהפעלה הראשונה אחרי ההתקנה: בגרסה חתומה זה לא אמור לקרות. אם זה קרה, העותק פגום או שונה אחרי ההורדה — בדקו עם `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` והורידו מחדש אם הבדיקה נכשלת. קובצי היומן נמצאים ב‑`~/Library/Application Support/nmoxstudio/…/var/log/`, אם תצטרכו לפתוח issue.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## נספח: הקבצים ש‑NMOX Studio כותב (ומה מהם שייך למאגר)

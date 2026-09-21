@@ -358,20 +358,30 @@ class ReleaseSigningLanesGateTest {
     }
 
     @Test
-    @DisplayName("the cask keeps its quarantine-clear until a notarized build exists, and says what comes out on the day")
-    void theCaskRecordsWhatComesOutOnTheDay() throws IOException {
+    @DisplayName("a notarized build's cask touches nothing after copying the app")
+    void theCaskTouchesNothingAfterCopying() throws IOException {
         String wf = read(WORKFLOW);
         String cask = read(Path.of("..", "Casks", "nmox-studio.rb"));
-        // NOT removed now: no notarized build exists, and a cask that stops
-        // clearing quarantine before one does breaks every install.
-        assertThat(cask).as("the consented quarantine-clear still ships").contains("postflight_steps do");
-        String write = step(wf, "Write cask");
-        assertThat(write)
-                .as("the removal must be written where the next reader is already standing — "
-                        + "the generator, not a document they would have to know to open")
-                .contains("WHEN THE BUILD IS NOTARIZED, THIS CASK LOSES THREE THINGS.")
-                .contains("postflight_steps")
-                .contains("CaskGeneratorParityTest");
+        // INVERTED in v3.0.0. Until v2.188.4 this gate asserted the
+        // quarantine-clear STILL SHIPPED, because removing it before a
+        // notarized build existed would have handed every `brew install` a DMG
+        // that was neither notarized nor de-quarantined. The build is notarized
+        // now — `spctl --assess` answers "accepted, source=Notarized Developer
+        // ID" on the published DMG and app — so the opposite is the law: the
+        // cask copies the app and does nothing else to it.
+        for (String gone : List.of("postflight_steps", "com.apple.quarantine", "xattr", "ad-hoc")) {
+            assertThat(cask)
+                    .as("a notarized build needs no %s in its cask — rewriting a notarized app "
+                            + "after copying is exactly what breaks its seal", gone)
+                    .doesNotContain(gone);
+            assertThat(step(wf, "Write cask"))
+                    .as("and the generator is the other home of that same fact (%s)", gone)
+                    .doesNotContain(gone);
+        }
+        // the one caveat that is still true stays, so the cask keeps saying
+        // something useful rather than nothing at all
+        assertThat(cask).as("the in-app updater note is still true and still shipped")
+                .contains("in-app updater");
     }
 
     @Test

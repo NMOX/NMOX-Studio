@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-سطر `brew trust` هو الموافقة اللي Homebrew بيطلبها مرة واحدة بس لأي tap من طرف تالت — مش هتتسألوا تاني في التحديثات. التطبيق موقّع ad-hoc بس مش متوثّق (notarization)، عشان كده Gatekeeper كان هيرفض نسخة عليها علامة الحجر (quarantine) في أول تشغيل: الـ cask بيشيل خاصية الحجر بنفسه في خطوة `postflight` وبيكتب إنه عمل كده في مخرجات التثبيت. مفيش حاجة بتحصل في السكوت.
+سطر `brew trust` هو الموافقة اللي Homebrew بيطلبها مرة واحدة بس لأي tap من طرف تالت — مش هتتسألوا تاني في التحديثات. التطبيق موقّع بـ Apple Developer ID ومتوثّق (notarization) من Apple، عشان كده Gatekeeper بيقبله زي ما هو — الـ cask بينسخه وبس ومش بيعمل له أي حاجة تانية. التثبيت اليدوي من الـ DMG بيشتغل بنفس الطريقة.
 
 **كل الباقي:** نزّلوا ملف من [آخر إصدار](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` لـ macOS، `-setup.exe` لـ Windows، `.deb` لـ Debian/Ubuntu، `.tar.gz` عام لـ Linux. الأربعة جايين ومعاهم بيئة تشغيل Java بتاعتهم؛ مفيش حاجة تتثبت الأول. `-portable.zip` هو الملف الوحيد اللي بيعتمد على Java بتاعتكم (محتاج Java 21+ على الـ PATH، أو شغّلوه بـ `--jdkhome <path-to-jdk>`).
 
-> **macOS، أول تشغيل:** التطبيق موقّع ad-hoc بس مش متوثّق (notarization)، عشان كده Gatekeeper بيسأل قبل ما يشغّله. أول مرة: **كليك يمين على التطبيق ← فتح** وأكّدوا، أو
-> شغّلوا `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. أي طريقة فيهم بتحل المشكلة للأبد.
+> **macOS، أول تشغيل:** دوسوا دوبل كليك وبس. التطبيق موقّع بـ Apple Developer ID ومتوثّق، والتذكرة مثبّتة على التطبيق وعلى الـ DMG، فالفحص بيشتغل من غير إنترنت — من غير كليك يمين ومن غير `xattr`. المُحدِّث الداخلي بيثبّت في مجلد المستخدم بتاعكم مش جوّه حزمة التطبيق، عشان كده التحديث عمره ما بيكسر التوقيع ده.
 
 ### التحديث
 
@@ -363,7 +362,7 @@ NMOX Studio بيتكلم 15 لغة: English، Español، Français، Deutsch، �
 
 ### التطبيق بيفتح على مفيش (macOS)
 
-مفيش نافذة، مفيش غلط، في أول تشغيل بعد التثبيت: ده الحجر بتاع Gatekeeper — شوفوا الملاحظة في الفصل 1. ضغطة يمين وفتح مرة واحدة، وتتظبط للأبد. ملفات الـ log موجودة في `~/Library/Application Support/nmoxstudio/…/var/log/`، لو احتجتوا تفتحوا issue.
+مفيش نافذة، مفيش غلط، في أول تشغيل بعد التثبيت: في نسخة موقّعة المفروض ده ما يحصلش. لو حصل، تبقى النسخة تالفة أو اتغيّرت بعد التنزيل — اتأكدوا بـ `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` وحمّلوا تاني لو الفحص فشل. ملفات الـ log موجودة في `~/Library/Application Support/nmoxstudio/…/var/log/`، لو احتجتوا تفتحوا issue.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## ملحق: الملفات اللي NMOX Studio بيكتبها (وإيه منها مكانه في المستودع)

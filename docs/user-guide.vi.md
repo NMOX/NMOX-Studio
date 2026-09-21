@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap của bên thứ ba — các lần cập nhật sau sẽ không hỏi lại. Ứng dụng được ký ad-hoc nhưng không được công chứng, nên một bản sao bị cách ly sẽ bị Gatekeeper từ chối ở lần chạy đầu: cask tự gỡ thuộc tính cách ly trong một bước `postflight` và nói rõ điều đó trong kết quả cài đặt. Không có gì diễn ra lặng lẽ.
+Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap của bên thứ ba — các lần cập nhật sau sẽ không hỏi lại. Ứng dụng được ký bằng Apple Developer ID và được Apple công chứng, nên Gatekeeper chấp nhận nó nguyên trạng — cask chỉ sao chép nó và không làm gì thêm. Cài thủ công từ DMG cũng vậy.
 
 **Mọi thứ khác:** tải một tệp từ [bản phát hành mới nhất](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` cho macOS, `-setup.exe` cho Windows, `.deb` cho Debian/Ubuntu, `.tar.gz` thông thường cho Linux. Cả bốn đều mang sẵn môi trường chạy Java; không cần cài gì trước. `-portable.zip` là tạo phẩm duy nhất dùng Java của chính bạn (cần Java 21+ trong PATH, hoặc chạy với `--jdkhome <đường-dẫn-jdk>`).
 
-> **macOS, lần chạy đầu tiên:** ứng dụng được ký ad-hoc nhưng không được công chứng, nên Gatekeeper hỏi trước khi chạy. Lần đầu, **nhấp chuột phải vào ứng dụng → Mở** rồi xác nhận, hoặc chạy
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Cách nào cũng giải quyết vĩnh viễn.
+> **macOS, lần chạy đầu tiên:** chỉ cần nhấp đúp. Ứng dụng được ký bằng Apple Developer ID và được công chứng, vé công chứng được ghim vào cả ứng dụng lẫn DMG, nên việc kiểm tra hoạt động ngoại tuyến — không cần nhấp chuột phải, không cần `xattr`. Trình cập nhật tích hợp cài vào thư mục người dùng chứ không vào gói ứng dụng, nên cập nhật không bao giờ phá chữ ký đó.
 
 ### Cập nhật
 
@@ -363,7 +362,7 @@ Hãy nhìn màn hình của nó: các thiết bị tự giải thích bằng l�
 
 ### Ứng dụng mở ra chẳng có gì (macOS)
 
-Không cửa sổ, không lỗi, ở lần chạy đầu sau khi cài: đó là kiểm dịch của Gatekeeper — xem ghi chú ở chương 1. Bấm chuột phải rồi Mở, một lần thôi, là xong vĩnh viễn. Nhật ký nằm dưới `~/Library/Application Support/nmoxstudio/…/var/log/` nếu bạn cần mở một phiếu báo.
+Không cửa sổ, không lỗi, ở lần chạy đầu sau khi cài: trên một bản dựng đã ký thì điều này không nên xảy ra. Nếu có, bản sao đã hỏng hoặc bị sửa sau khi tải — kiểm tra bằng `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` và tải lại nếu thất bại. Nhật ký nằm dưới `~/Library/Application Support/nmoxstudio/…/var/log/` nếu bạn cần mở một phiếu báo.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## Phụ lục: những tệp NMOX Studio ghi ra (và tệp nào nên đưa vào kho)

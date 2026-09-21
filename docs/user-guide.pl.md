@@ -17,12 +17,11 @@ brew trust --cask nmox/nmox-studio/nmox-studio
 brew install nmox/nmox-studio/nmox-studio
 ```
 
-Wiersz `brew trust` to jednorazowe potwierdzenie Homebrew dla dowolnego zewnętrznego tapa — przy aktualizacjach nikt nie zapyta ponownie. Aplikacja jest podpisana ad-hoc, ale nienotaryzowana, więc kopię w kwarantannie Gatekeeper odrzuciłby przy pierwszym uruchomieniu: cask sam usuwa atrybut kwarantanny w kroku `postflight` i pisze o tym w wyniku instalacji. Nic po cichu.
+Wiersz `brew trust` to jednorazowe potwierdzenie Homebrew dla dowolnego zewnętrznego tapa — przy aktualizacjach nikt nie zapyta ponownie. Aplikacja jest podpisana identyfikatorem Apple Developer ID i notaryzowana przez Apple, więc Gatekeeper przyjmuje ją taką, jaka jest — cask ją kopiuje i nic więcej z nią nie robi. Ręczna instalacja z DMG działa tak samo.
 
 **Wszystko inne:** pobierz plik z [najnowszego wydania](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` dla macOS, `-setup.exe` dla Windows, `.deb` dla Debiana/Ubuntu, zwykły `.tar.gz` dla Linuksa. Wszystkie cztery niosą własne środowisko uruchomieniowe Javy; niczego nie trzeba instalować wcześniej. `-portable.zip` to jedyny artefakt korzystający z twojej Javy (wymaga Javy 21+ w PATH albo uruchomienia z `--jdkhome <ścieżka-do-jdk>`).
 
-> **macOS, pierwsze uruchomienie:** aplikacja jest podpisana ad-hoc, ale nienotaryzowana, więc Gatekeeper pyta przed uruchomieniem. Za pierwszym razem **kliknij aplikację prawym przyciskiem → Otwórz** i potwierdź albo wykonaj
-> `xattr -d com.apple.quarantine "/Applications/NMOX Studio.app"`. Każdy ze sposobów załatwia to na zawsze.
+> **macOS, pierwsze uruchomienie:** wystarczy dwukrotnie kliknąć. Aplikacja jest podpisana identyfikatorem Apple Developer ID i notaryzowana, a bilet jest przypięty zarówno do aplikacji, jak i do DMG, więc sprawdzenie działa offline — bez prawego przycisku i bez `xattr`. Wbudowana aktualizacja instaluje w katalogu użytkownika, a nie w pakiecie aplikacji, więc aktualizacja nigdy nie psuje tego podpisu.
 
 ### Aktualizacja
 
@@ -363,7 +362,7 @@ Spójrz na jego wyświetlacz: urządzenia tłumaczą się słowami, a podpowied�
 
 ### Aplikacja otwiera się w pustkę (macOS)
 
-Ani okna, ani błędu, przy pierwszym starcie po instalacji: to kwarantanna Gatekeepera — zobacz notkę w rozdziale 1. Prawy klik i Otwórz, jeden raz, i sprawa załatwiona na dobre. Dzienniki leżą pod `~/Library/Application Support/nmoxstudio/…/var/log/`, gdybyś musiał założyć zgłoszenie.
+Ani okna, ani błędu, przy pierwszym starcie po instalacji: w podpisanej kompilacji nie powinno się to zdarzyć. Jeśli się zdarzy, kopia jest uszkodzona albo została zmieniona po pobraniu — sprawdź poleceniem `codesign --verify --deep --strict "/Applications/NMOX Studio.app"` i pobierz ponownie, jeśli kontrola się nie powiedzie. Dzienniki leżą pod `~/Library/Application Support/nmoxstudio/…/var/log/`, gdybyś musiał założyć zgłoszenie.
 
 <a id="appendix-the-files-nmox-studio-writes-and-what-to-commit"></a>
 ## Dodatek: pliki, które pisze NMOX Studio (i co z nich wrzucać do repozytorium)
