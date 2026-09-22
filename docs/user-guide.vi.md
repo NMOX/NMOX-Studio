@@ -23,6 +23,26 @@ Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap củ
 
 > **macOS, lần chạy đầu tiên:** chỉ cần nhấp đúp. Ứng dụng được ký bằng Apple Developer ID và được công chứng, vé công chứng được ghim vào cả ứng dụng lẫn DMG, nên việc kiểm tra hoạt động ngoại tuyến — không cần nhấp chuột phải, không cần `xattr`. Trình cập nhật tích hợp cài vào thư mục người dùng chứ không vào gói ứng dụng, nên cập nhật không bao giờ phá chữ ký đó.
 
+### Kiểm chứng bản tải về
+
+Tùy chọn, hai mươi giây, và hai phép kiểm vì chúng trả lời hai câu hỏi khác nhau.
+
+**Đây có đúng là những byte chúng tôi đã phát hành không?** Chạy được trên mọi nền tảng và bao phủ mọi tệp — `SHA256SUMS` và `SHA256SUMS.asc` đi kèm bản phát hành:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**macOS có bảo chứng cho nó không?** Một câu hỏi khác, do Apple trả lời:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Bạn cần thấy `source=Notarized Developer ID`. Bộ cài Windows chưa được ký: với bản tải Windows, phép kiểm ở trên là cách.
+
 ### Cập nhật
 
 IDE tự cập nhật: **Công cụ ▸ Plugin ▸ Cập nhật** đưa ra các mô-đun của mọi bản phát hành mới hơn. Cài, khởi động lại khi được nhắc, xong — không phải tải lại toàn bộ ứng dụng. Một lưu ý thẳng thắn: môi trường chạy Java đi kèm và trình khởi chạy chỉ đổi cùng một bộ cài đầy đủ, nên với những bước nhảy lớn của nền tảng, cài lại từ một tệp phát hành vẫn là cách đúng.

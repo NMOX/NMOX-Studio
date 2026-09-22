@@ -23,6 +23,26 @@ brew install nmox/nmox-studio/nmox-studio
 
 > **macOS 首次启动：**双击即可。应用已使用 Apple Developer ID 签名并已公证，票据同时装订在应用和 DMG 上，因此校验可离线完成 —— 无需右键，也无需 `xattr`。内置更新安装到你的用户目录而非应用包内，所以更新永远不会破坏该签名。
 
+### 校验你下载的文件
+
+可选，二十秒，两项检查 —— 因为它们回答的是不同的问题。
+
+**这些是我们发布的字节吗？**在任何平台都可用，覆盖每一个文件 —— `SHA256SUMS` 和 `SHA256SUMS.asc` 随版本一起发布：
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**macOS 会为它背书吗？**这是另一个问题，由 Apple 回答：
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+你需要看到 `source=Notarized Developer ID`。Windows 安装包尚未签名：对于 Windows 下载，上面这项检查就是办法。
+
 ### 更新
 
 IDE 会自我更新：**工具 ▸ 插件 ▸ 更新**会提供任何更新版本的模块。安装、按提示重启即可，无需重新下载整个应用。一点实话：自带的 Java 运行时和启动器只随完整安装程序更换，所以遇到较大的平台跨越，从版本文件重新安装仍然是正确做法。

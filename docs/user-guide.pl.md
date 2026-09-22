@@ -23,6 +23,26 @@ Wiersz `brew trust` to jednorazowe potwierdzenie Homebrew dla dowolnego zewnętr
 
 > **macOS, pierwsze uruchomienie:** wystarczy dwukrotnie kliknąć. Aplikacja jest podpisana identyfikatorem Apple Developer ID i notaryzowana, a bilet jest przypięty zarówno do aplikacji, jak i do DMG, więc sprawdzenie działa offline — bez prawego przycisku i bez `xattr`. Wbudowana aktualizacja instaluje w katalogu użytkownika, a nie w pakiecie aplikacji, więc aktualizacja nigdy nie psuje tego podpisu.
 
+### Weryfikacja pobranego pliku
+
+Opcjonalnie, dwadzieścia sekund i dwie kontrole, bo odpowiadają na różne pytania.
+
+**Czy to te bajty, które opublikowaliśmy?** Działa na każdej platformie i obejmuje każdy plik — `SHA256SUMS` i `SHA256SUMS.asc` są dołączone do wydania:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Czy macOS za to ręczy?** Inne pytanie, na które odpowiada Apple:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Oczekujesz `source=Notarized Developer ID`. Instalatory Windows nie są jeszcze podpisane: dla pobrania pod Windows powyższa kontrola jest właściwą drogą.
+
 ### Aktualizacja
 
 IDE aktualizuje się samo: **Narzędzia ▸ Wtyczki ▸ Aktualizacje** proponuje moduły każdego nowszego wydania. Zainstaluj, uruchom ponownie na żądanie i gotowe — bez pobierania całej aplikacji od nowa. Uczciwe zastrzeżenie: dołączone środowisko Javy i program uruchamiający zmieniają się tylko z pełnym instalatorem, więc przy dużych skokach platformy nadal właściwa jest instalacja od nowa z pliku wydania.

@@ -23,6 +23,26 @@ Baris `brew trust` adalah konfirmasi sekali jalan dari Homebrew untuk tap pihak 
 
 > **macOS, peluncuran pertama:** cukup klik dua kali. Aplikasi ditandatangani dengan Apple Developer ID dan dinotarisasi, dan tiketnya dilekatkan pada aplikasi maupun DMG, sehingga pemeriksaannya bekerja luring — tanpa klik kanan dan tanpa `xattr`. Pembaru bawaan memasang ke direktori pengguna Anda, bukan ke bundel aplikasi, sehingga pembaruan tidak pernah merusak tanda tangan itu.
 
+### Memverifikasi unduhan Anda
+
+Opsional, dua puluh detik, dan dua pemeriksaan karena keduanya menjawab pertanyaan yang berbeda.
+
+**Apakah ini byte yang kami terbitkan?** Bekerja di semua platform dan mencakup setiap berkas — `SHA256SUMS` dan `SHA256SUMS.asc` disertakan dalam rilis:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Apakah macOS menjaminnya?** Pertanyaan lain, dijawab oleh Apple:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Anda ingin melihat `source=Notarized Developer ID`. Pemasang Windows belum ditandatangani: untuk unduhan Windows, pemeriksaan di atas adalah caranya.
+
 ### Pembaruan
 
 IDE memperbarui dirinya sendiri: **Alat ▸ Plugin ▸ Pembaruan** menawarkan modul dari rilis mana pun yang lebih baru. Pasang, mulai ulang saat diminta, selesai — tanpa mengunduh ulang seluruh aplikasi. Satu catatan jujur: lingkungan Java bawaan dan peluncurnya hanya berubah lewat pemasang lengkap, jadi untuk lompatan platform yang besar memasang ulang dari berkas rilis tetap langkah yang benar.

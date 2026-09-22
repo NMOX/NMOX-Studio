@@ -23,6 +23,26 @@ Ang linyang `brew trust` ang minsanang kumpirmasyon ng Homebrew para sa anumang 
 
 > **macOS, unang pagbukas:** i-double-click lang. Ang app ay nilagdaan gamit ang Apple Developer ID at notarized, at nakakabit ang tiket sa app at sa DMG, kaya gumagana ang pagsusuri kahit offline — walang right-click at walang `xattr`. Ang panloob na updater ay nag-i-install sa iyong user directory imbes na sa app bundle, kaya hindi kailanman nasisira ng pag-update ang lagdang iyon.
 
+### Pagbe-verify ng iyong download
+
+Opsyonal, dalawampung segundo, at dalawang pagsusuri dahil magkaiba ang tinatanong nila.
+
+**Ito ba ang mga byte na inilabas namin?** Gumagana sa lahat ng plataporma at sakop ang bawat file — kasama sa release ang `SHA256SUMS` at `SHA256SUMS.asc`:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Mananagot ba ang macOS para dito?** Ibang tanong, sinasagot ng Apple:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Dapat mong makita ang `source=Notarized Developer ID`. Hindi pa nilalagdaan ang mga Windows installer: para sa download sa Windows, ang pagsusuri sa itaas ang paraan.
+
 ### Pag-update
 
 Ini-update ng IDE ang sarili nito: nag-aalok ang **Mga Kasangkapan ▸ Mga Plugin ▸ Mga Update** ng mga modyul mula sa anumang mas bagong bersyon. I-install, i-restart kapag hiniling, tapos na — walang muling pag-download ng buong app. Isang tapat na paalala: ang kasamang Java runtime at ang launcher ay nagbabago lamang sa isang buong installer, kaya para sa malalaking paglipat ng plataporma, tama pa ring mag-install muli mula sa isang file ng bersyon.
