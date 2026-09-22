@@ -189,6 +189,10 @@ Sa bahaging `scripts` ng isang `package.json`, pinapatakbo ng **Patakbuhin ang s
 
 Ang pag-type ng `process.env.` o `import.meta.env.` ay nag-aalok ng mga susing talagang tinutukoy ng iyong pamilya ng mga file na `.env`, at ang **⌘-pindot** ay tumatalon sa hanay na nagdedeklara ng susi. Pinuputol ang mga halagang ipinapakita: naroon ang paalala, wala ang lihim.
 
+### Mga pagsasalin sa iyong proyekto
+
+Ang mga katalogo ng pagsasalin ng isang web project ay datos na binabasa ng editor, gaya ng iyong mga stylesheet at ng iyong `.env`. **Mga Kasangkapan ▸ Suriin ang mga Salin…** ang humahanap ng mga katalogo (i18next, vue-i18n, svelte-i18n, XLIFF ng Angular, Lingui, Paraglide, react-intl, o ang sa I18n Kit), pumipili ng pinagmulang lengguwahe, at nag-uulat ng tatlong bagay bilang kulot na guhit at hanay sa Mga Gawain: **nawawala** (ang mga anyong pangmarami at pangkonteksto ay inihahambing sa batayang susi), **kapareho ng pinagmulan** (kinopya, hindi isinalin), at **hindi tugmang placeholder** — ito ang mali, dahil sirang pagsasalin ang may ibang hanay ng `{{name}}` o `%s`. Ang ikaapat, **hindi ginagamit**, lumilitaw lamang sa buong senso.
+
 ### Mga template ng Angular, first-class
 
 Bumubukas ang mga file na `.component.html` na may sariling pangkukulay ng template, may mga blokeng `@if`/`@for` at mga direktibang pang-istruktura sa pagkumpleto. I-install ang Angular Language Service at talagang dumarating ang pagsusuri ng uri sa template: mali ang pangalan ng isang katangian at ang mismong compiler ng Angular ang magmumungkahi ng tama. Ang **⌘B** sa loob ng isang template ay tumatalon sa deklarasyon, at ang menu ng konteksto ay lumilipat sa pagitan ng komponente, ng template nito, ng mga estilo nito, at ng pagsusulit nito.
@@ -200,6 +204,10 @@ Bumubukas ang mga file na `.vue` at `.svelte` na may sariling pangkukulay, saril
 ### Pag-debug gamit ang tunay na breakpoint
 
 Pindutin ang kaliwang gilid, piliin ang **I-debug ang file (mga breakpoint)**, at hihinto roon ang programa — kasama ang salansan, ang mga variable, at ang pagtaya ng mga ekspresyon. Gumagana ang JavaScript at TypeScript mula sa pabrika dahil sa kasamang adapter; gumagamit ang Python ng debugpy at ang Go ng delve, na ikaw ang mag-i-install. Ganoon din ang ginagawa ng **I-debug sa Chrome** para sa isang pahina: humihinto sa loob ng IDE ang mga breakpoint sa iyong pinagmulan habang tumatakbo ang browser sa isang pansamantalang profile. Dumadaan muna ang lahat sa pagtatanong ng tiwala sa workspace.
+
+### Pag-debug sa browser
+
+Ganoon din ang pag-debug ng JavaScript sa browser: i-right-click ang `.html`, `.js`, o `.ts` → **I-debug sa Chrome (breakpoints)**. Ang mga breakpoint sa editor ay humihinto sa kodigong tumatakbo *sa browser*, may kaparehong stack at mga variable. Sinusundan ng browser ang pinakabuhay na pinagmulan: kung may kagamitang nag-aanunsyo na ng URL ng proyekto, iyon ang pahinang bubukas; kung wala, mula sa disk bubukas ang `.html`. Ang nag-iisang script na walang server ay walang pahina — sinasabi iyon ng linya ng katayuan kaysa manghula. Nagsisimula ang Chrome sa itatapong profile; buo ang sarili mong profile. Nade-debug din ang **Web Workers**: bawat `new Worker(…)` ay sariling sesyon.
 
 ### Pagpapakita at pagbabahagi
 

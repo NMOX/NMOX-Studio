@@ -67,6 +67,30 @@ portable zip needs Java 21+. Wrong version and wrong claim, in the one home
 nobody was maintaining — the v2.131.0 law, that the defect is the second home
 rather than the disagreement.
 
+## The translated guides are CONDENSED, and that is now measured
+
+Every guide carries all twelve chapters and — since 3.0.1 — every topic of
+every chapter. None carries the English guide's full prose: measured at
+**19–31% of its non-space characters** (Chinese reads lower at 11.8% purely
+because its script is denser per character; a whitespace word count reads it at
+8%, which is the metric failing rather than the translation). The shortfall
+concentrates in the three reference chapters — the rack, the editor, the
+studios, at 13–31% by word.
+
+**That is a shape, not a defect: a condensed guide covering every topic is
+worth more than a full one covering two thirds.** What was a defect is that
+nothing said so, and that the completeness check could not see it.
+
+`completeGuidesDropTheNotice` counted CHAPTERS, and every translation had all
+twelve — so each read as complete while **all fourteen were missing the same
+two subsections of chapter 5**: "Translations in your project" and "Debugging
+in the browser". The i18n checker was the one topic absent from every
+translation of the guide. A global `###` count could not see it either, because
+translations carry more level-3 headings than English overall (50 vs 27) —
+English marks chapters 8–12's sections in bold where they use headings. Only a
+per-chapter comparison shows a hole, which is what `translationsCoverEveryTopic`
+now does; removing one subsection from one language kills it by name.
+
 ## The ceilings, each measured
 
 These are not gaps. Each was investigated, measured, and decided; the decision

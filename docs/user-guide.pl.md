@@ -189,6 +189,10 @@ W sekcji `scripts` pliku `package.json` polecenie **Uruchom skrypt** wykonuje wi
 
 Wpisanie `process.env.` albo `import.meta.env.` podpowiada klucze, które twoja rodzina plików `.env` naprawdę definiuje, a **⌘-kliknięcie** przenosi do wiersza z deklaracją. Wartości pokazywane są przycięte: przypomnienie jest, sekretu nie ma.
 
+### Tłumaczenia w Twoim projekcie
+
+Katalogi tłumaczeń projektu webowego to dane, które edytor czyta tak jak Twoje arkusze stylów i Twój `.env`. **Narzędzia ▸ Sprawdź tłumaczenia…** znajduje katalogi (i18next, vue-i18n, svelte-i18n, XLIFF Angulara, Lingui, Paraglide, react-intl albo ten z I18n Kit), wybiera język źródłowy i zgłasza trzy rzeczy — falkami i wierszami w zadaniach: **brak** (formy liczby mnogiej i kontekstu porównywane są po kluczu bazowym), **identyczne ze źródłem** (skopiowane, a nie przetłumaczone) oraz **niezgodność symboli zastępczych** — to jest błąd, bo tłumaczenie o innym zestawie `{{name}}` czy `%s` jest zepsute. Czwarte ustalenie, **nieużywane**, pojawia się tylko przy pełnym spisie.
+
 ### Szablony Angulara, pełnoprawne
 
 Pliki `.component.html` otwierają się z własnym kolorowaniem szablonu, z blokami `@if`/`@for` i dyrektywami strukturalnymi w uzupełnianiu. Zainstaluj Angular Language Service, a sprawdzanie typów w szablonie naprawdę dociera: pomyl nazwę właściwości, a własny kompilator Angulara podpowie właściwą. **⌘B** w szablonie przenosi do deklaracji, a menu kontekstowe przechodzi między komponentem, jego szablonem, stylami i testem.
@@ -200,6 +204,10 @@ Pliki `.vue` i `.svelte` otwierają się z własnym kolorowaniem, własnym uzupe
 ### Debugowanie z prawdziwymi pułapkami
 
 Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrzyma się w tym miejscu — ze stosem, zmiennymi i obliczaniem wyrażeń. JavaScript i TypeScript działają od razu dzięki dołączonemu adapterowi; Python używa debugpy, a Go delve, które instalujesz sam. **Debuguj w Chrome** robi to samo dla strony: pułapki w twoim źródle zatrzymują się w IDE, podczas gdy przeglądarka chodzi na jednorazowym profilu. Wszystko najpierw przechodzi przez pytanie o zaufanie do przestrzeni roboczej.
+
+### Debugowanie w przeglądarce
+
+JavaScript przeglądarki debuguje się tak samo: prawy przycisk na pliku `.html`, `.js` lub `.ts` → **Debuguj w Chrome (punkty przerwania)**. Pułapki postawione w edytorze zatrzymują kod działający *w przeglądarce*, z tym samym stosem i tymi samymi zmiennymi. Przeglądarka idzie do najżywszego źródła: jeśli urządzenie już ogłasza URL projektu, otworzy się właśnie ta strona; w przeciwnym razie `.html` otworzy się z dysku. Samotny skrypt bez serwera nie ma strony — wiersz stanu to powie, zamiast zgadywać. Chrome startuje z jednorazowym profilem, Twój pozostaje nietknięty. **Web Workery** też się debuguje: każdy `new Worker(…)` staje się własną sesją.
 
 ### Pokazywanie i dzielenie się
 

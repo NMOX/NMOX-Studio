@@ -189,6 +189,10 @@ En la sección `scripts` de un `package.json`, **Ejecutar script** ejecuta la l�
 
 Al escribir `process.env.` o `import.meta.env.` se ofrecen las claves que tu familia de archivos `.env` define de verdad, y **⌘-clic** salta a la línea que declara la clave. Los valores se muestran truncados: el recordatorio está ahí, el secreto no.
 
+### Las traducciones de tu proyecto
+
+Los catálogos de traducción de un proyecto web son datos que el editor lee, igual que tus hojas de estilo y tu `.env`. **Herramientas ▸ Comprobar traducciones…** encuentra los catálogos (i18next, vue-i18n, svelte-i18n, el XLIFF de Angular, Lingui, Paraglide, react-intl o el del I18n Kit), elige la lengua de origen e informa de tres cosas, como subrayados y filas en Tareas: **falta** (las formas de plural y de contexto se comparan por su clave base), **idéntico al origen** (copiado en vez de traducido) y **marcador distinto** — ese es el error, porque una traducción cuyo conjunto de `{{name}}` o `%s` difiere del origen está rota. Un cuarto hallazgo, **sin usar**, solo aparece con un censo completo.
+
 ### Plantillas de Angular, de primera clase
 
 Los archivos `.component.html` se abren con resaltado propio de plantilla, con las llaves de bloque `@if`/`@for` y las directivas estructurales al completar. Instala el Angular Language Service y la comprobación de tipos de plantilla llega de verdad: escribe mal el nombre de una propiedad y el propio compilador de Angular te sugiere la correcta. **⌘B** en una plantilla salta a la definición, y el menú contextual pasa entre el componente, su plantilla, sus estilos y su prueba.
@@ -200,6 +204,10 @@ Los archivos `.vue` y `.svelte` se abren con su propio resaltado, su propio auto
 ### Depuración con puntos de interrupción reales
 
 Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupción)** y el programa se detiene ahí — con la pila, las variables y la evaluación de expresiones. JavaScript y TypeScript funcionan de fábrica gracias al adaptador incluido; Python usa debugpy y Go usa delve, que instalas tú. **Depurar en Chrome** hace lo mismo con una página: los puntos de interrupción de tu código fuente se detienen dentro del IDE mientras el navegador corre en un perfil desechable. Todo pasa antes por la confirmación de confianza del espacio de trabajo.
+
+### Depuración en el navegador
+
+El JavaScript del navegador se depura igual: clic derecho en un archivo `.html`, `.js` o `.ts` → **Depurar en Chrome (puntos de interrupción)**. Los puntos puestos en el editor detienen el código que corre *en el navegador*, con la misma pila y las mismas variables. El navegador sigue a la fuente más viva: si ya hay un dispositivo sirviendo una URL del proyecto, esa página es la que abre; si no, un `.html` se abre desde el disco. Un script suelto sin servidor no tiene página — la línea de estado lo dice en vez de adivinar. Chrome arranca con un perfil desechable y el tuyo queda intacto. Los **Web Workers** también se depuran: cada `new Worker(…)` es su propia sesión.
 
 ### Presentar y compartir
 

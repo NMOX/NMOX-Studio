@@ -4,6 +4,75 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.1] - 2026-09-21
+
+**The docs pass, from a DevRel's chair — and the find is that the feature which
+checks your translations was the one topic missing from every one of ours.**
+
+**Fourteen languages, two missing topics, the same two each time.** Every
+translated guide carried all twelve chapters, so `completeGuidesDropTheNotice`
+called each one complete. It counts CHAPTERS. Chapter 5 was missing
+*"Translations in your project"* — the i18n checker — and *"Debugging in the
+browser"*, in **all fourteen**. A reader in German could not discover either
+feature, and had no way to know whether it was absent from the product or from
+their language.
+
+A global `###` count could not have found it: translations carry **more**
+level-3 headings than English overall (50 vs 27), because English marks
+chapters 8–12's sections in bold where they use headings. Only a per-chapter
+comparison shows the hole, which `translationsCoverEveryTopic` now makes a
+build law — removing one subsection from one language kills it by name.
+
+Both topics are now written in all fourteen languages, and **every topic of
+every chapter is present in every language.**
+
+**What the translations are, measured and finally written down.** They are
+condensed, not full: **19–31% of the English guide's non-space prose**,
+concentrated in the three reference chapters (the rack, the editor, the
+studios, at 13–31% by word). That is a defensible shape — a condensed guide
+covering every topic beats a full one covering two thirds — and it was never
+stated anywhere. It is in `l10n-completion.md` now, with the numbers.
+
+**Nine of fourteen menu labels I wrote were wrong.** Writing those two topics
+meant naming two doors, and I authored the names instead of reading them.
+German's is *"In Chrome debuggen"*, not *"Debug in Chrome"*; Tagalog's is
+*"Suriin ang mga Salin…"*, not the words I invented. `DocsMenuDoorsTest` caught
+two of the nine — the ones in a `▸` path — and the other seven were context-menu
+items it does not police. Every label is now substituted from the shipped
+bundle rather than translated. *A door's name is not something to translate; it
+is something to look up* (v2.138.0, one surface over).
+
+**Git is the archaeology.** 36 historical documents deleted rather than
+banner-labelled: `docs/hack/` (8), `docs/product/` (11), 16 v0.x engineering
+papers, and `NETBEANS_JAVA_SETUP.md` — which carried **no banner at all** at
+the repo root while describing RELEASE270 and Java 23. Every document under
+`docs/` is now live by construction.
+
+**`docs/engineering/signing.md`** is new: the four signing systems, what
+question each answers, and why none substitutes for another. `release-signing.md`
+covered the installers and `nbm-signing.md` the modules; nothing covered all
+four, so *"how do we sign things"* had no answer in the repo.
+
+**Three claims that were simply false.** The bundled website offered
+`brew install …` as one line — Homebrew will not LOAD a cask from an untrusted
+third-party tap, so **the published install command could not work** for anyone
+new; it works for everyone who already ran `brew trust`, which is why nobody
+noticed. `INSTALL.md` opened with *"Every platform needs a JDK 17 or newer"*:
+wrong version, and wrong claim, since the installers bundle a runtime and only
+the portable zip needs Java 21+. And `KEYS` and `NmoxTrustedCerts` both framed
+self-signing as lasting *"until v3.0"* — macOS went official, NBM signing stays
+self-signed **by decision**, Windows is still open.
+
+**Verification reaches every language.** "Verifying your download" is a section
+of the guide's chapter 1 in all fifteen, covering both checks and why there are
+two. `INSTALL.md` links to it instead of restating it, because the two had
+already drifted — and the drift was in the one home nobody maintained.
+
+Also: `plan.md` was eight releases stale at v2.186.0; its addendum records the
+signing arc's shape rather than its feature. `README` and `INSTALL` are English
+by decision, recorded, defensible only because nothing a user needs lives only
+there.
+
 ## [3.0.0] - 2026-09-21
 
 **The trust chain is no longer self-signed. NMOX Studio for macOS is signed
@@ -23640,6 +23709,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.4...v3.0.0
 [2.188.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.3...v2.188.4
 [2.188.3]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.2...v2.188.3

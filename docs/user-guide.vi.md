@@ -189,6 +189,10 @@ Trong phần `scripts` của một `package.json`, lệnh **Chạy kịch bản*
 
 Gõ `process.env.` hay `import.meta.env.` sẽ đưa ra những khóa mà họ tệp `.env` của bạn thực sự định nghĩa, và **⌘-nhấp** nhảy tới dòng khai báo khóa ấy. Giá trị hiển thị bị cắt bớt: lời nhắc thì có, bí mật thì không.
 
+### Bản dịch trong dự án của bạn
+
+Các danh mục bản dịch của một dự án web là dữ liệu mà trình chỉnh sửa đọc, giống như biểu định kiểu và `.env` của bạn. **Công cụ ▸ Kiểm tra bản dịch…** tìm các danh mục (i18next, vue-i18n, svelte-i18n, XLIFF của Angular, Lingui, Paraglide, react-intl, hoặc của I18n Kit), chọn ngôn ngữ nguồn và báo ba điều, dưới dạng gạch lượn sóng và dòng trong Việc cần làm: **thiếu** (các dạng số nhiều và ngữ cảnh được so trên khóa gốc), **giống nguồn** (sao chép chứ không dịch), và **sai chỗ giữ** — đây mới là lỗi, vì một bản dịch có tập `{{name}}` hay `%s` khác nguồn là đã hỏng. Phát hiện thứ tư, **không dùng**, chỉ xuất hiện khi kiểm kê đầy đủ.
+
 ### Khuôn mẫu Angular, hạng nhất
 
 Tệp `.component.html` mở ra với cách tô màu khuôn mẫu riêng, với các khối `@if`/`@for` và các chỉ thị cấu trúc trong gợi ý. Hãy cài Angular Language Service và việc kiểm kiểu cho khuôn mẫu thực sự tới nơi: gõ sai tên một thuộc tính, chính trình biên dịch của Angular sẽ gợi tên đúng. **⌘B** trong khuôn mẫu nhảy tới khai báo, còn trình đơn ngữ cảnh chuyển qua lại giữa thành phần, khuôn mẫu, tệp kiểu và bài kiểm thử của nó.
@@ -200,6 +204,10 @@ Tệp `.vue` và `.svelte` mở ra với cách tô màu riêng, gợi ý riêng 
 ### Gỡ lỗi với điểm dừng thật
 
 Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chương trình sẽ dừng ngay đó — kèm ngăn xếp, các biến và việc tính biểu thức. JavaScript và TypeScript chạy được ngay nhờ bộ chuyển đi kèm; Python dùng debugpy còn Go dùng delve, do bạn tự cài. **Gỡ lỗi trong Chrome** làm y như vậy với một trang: các điểm dừng trong mã nguồn của bạn dừng lại ngay trong IDE trong khi trình duyệt chạy trên một hồ sơ dùng một lần. Mọi thứ đều đi qua lời hỏi tin cậy không gian làm việc trước.
+
+### Gỡ lỗi trong trình duyệt
+
+JavaScript trong trình duyệt cũng gỡ lỗi như vậy: nhấp chuột phải vào tệp `.html`, `.js` hay `.ts` → **Gỡ lỗi trong Chrome (điểm dừng)**. Điểm dừng đặt trong trình chỉnh sửa dừng đúng đoạn mã đang chạy *trong trình duyệt*, với cùng ngăn xếp và cùng biến. Trình duyệt đi theo nguồn còn sống nhất: nếu một thiết bị đã công bố URL của dự án, chính trang đó sẽ mở; nếu không, một tệp `.html` mở từ đĩa. Một tệp script lẻ không có máy phục vụ thì không có trang nào — dòng trạng thái nói vậy thay vì đoán. Chrome chạy với một hồ sơ dùng một lần, hồ sơ của bạn không bị chạm tới. **Web Worker** cũng gỡ lỗi được: mỗi `new Worker(…)` thành một phiên riêng.
 
 ### Trình bày và chia sẻ
 

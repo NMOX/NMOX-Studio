@@ -189,6 +189,10 @@ Di bagian `scripts` sebuah `package.json`, **Jalankan skrip** menjalankan baris 
 
 Mengetik `process.env.` atau `import.meta.env.` menawarkan kunci yang benar-benar didefinisikan keluarga berkas `.env` Anda, dan **⌘-klik** melompat ke baris yang mendeklarasikan kunci itu. Nilainya ditampilkan terpotong: pengingatnya ada, rahasianya tidak.
 
+### Terjemahan dalam proyek Anda
+
+Katalog terjemahan sebuah proyek web adalah data yang dibaca editor, sama seperti stylesheet dan `.env` Anda. **Alat ▸ Periksa Terjemahan…** menemukan katalognya (i18next, vue-i18n, svelte-i18n, XLIFF Angular, Lingui, Paraglide, react-intl, atau milik I18n Kit), memilih bahasa sumber, dan melaporkan tiga hal sebagai garis berlekuk dan baris di Tugas: **hilang** (bentuk jamak dan konteks dibandingkan pada kunci dasarnya), **identik dengan sumber** (disalin, bukan diterjemahkan), dan **placeholder tidak cocok** — yang ini galat, sebab terjemahan dengan himpunan `{{name}}` atau `%s` berbeda dari sumber sudah rusak. Temuan keempat, **tak terpakai**, hanya muncul pada sensus lengkap.
+
 ### Templat Angular, kelas satu
 
 Berkas `.component.html` terbuka dengan penyorotan templatnya sendiri, dengan blok `@if`/`@for` dan direktif struktural dalam pelengkapan. Pasang Angular Language Service dan pemeriksaan tipe templat benar-benar sampai: salah mengetik nama properti, dan kompiler Angular sendiri menyarankan yang benar. **⌘B** di dalam templat melompat ke deklarasinya, dan menu konteks berpindah antara komponen, templatnya, gayanya, dan ujinya.
@@ -200,6 +204,10 @@ Berkas `.vue` dan `.svelte` terbuka dengan penyorotannya sendiri, pelengkapannya
 ### Awakutu dengan titik henti yang sungguhan
 
 Klik di margin kiri, pilih **Awakutu berkas (titik henti)**, dan programnya berhenti di sana — lengkap dengan tumpukan, variabel, dan penilaian ungkapan. JavaScript dan TypeScript jalan sejak awal berkat adaptor bawaan; Python memakai debugpy dan Go memakai delve, yang Anda pasang sendiri. **Awakutu di Chrome** melakukan hal yang sama untuk sebuah halaman: titik henti di sumber Anda berhenti di dalam IDE sementara peramban berjalan pada profil sekali pakai. Semuanya lebih dulu melewati konfirmasi kepercayaan ruang kerja.
+
+### Awakutu di peramban
+
+JavaScript peramban diawakutu dengan cara sama: klik kanan berkas `.html`, `.js`, atau `.ts` → **Debug di Chrome (titik henti)**. Titik henti di editor menghentikan kode yang berjalan *di peramban*, dengan tumpukan dan variabel yang sama. Peramban mengikuti sumber yang paling hidup: bila sebuah perangkat sudah mengumumkan URL proyek, halaman itulah yang terbuka; kalau tidak, `.html` dibuka dari diska. Skrip tunggal tanpa peladen tidak punya halaman — baris status mengatakannya alih-alih menebak. Chrome berjalan dengan profil sekali pakai; milik Anda tetap utuh. **Web Worker** juga diawakutu: setiap `new Worker(…)` menjadi sesinya sendiri.
 
 ### Mempertunjukkan dan berbagi
 

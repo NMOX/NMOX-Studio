@@ -189,6 +189,10 @@ Na seção `scripts` de um `package.json`, **Rodar script** executa a linha onde
 
 Digitar `process.env.` ou `import.meta.env.` sugere as chaves que a sua família de arquivos `.env` realmente define, e **⌘-clique** salta para a linha que declara a chave. Os valores aparecem truncados: o lembrete está lá, o segredo não.
 
+### As traduções do seu projeto
+
+Os catálogos de tradução de um projeto web são dados que o editor lê, como suas folhas de estilo e seu `.env`. **Ferramentas ▸ Verificar traduções…** encontra os catálogos (i18next, vue-i18n, svelte-i18n, o XLIFF do Angular, Lingui, Paraglide, react-intl ou o do I18n Kit), escolhe o idioma de origem e relata três coisas, como sublinhados e linhas em Tarefas: **faltando** (formas de plural e de contexto são comparadas pela chave base), **idêntico à origem** (copiado em vez de traduzido) e **marcador divergente** — esse é o erro, porque uma tradução cujo conjunto de `{{name}}` ou `%s` difere da origem está quebrada. Um quarto achado, **não usado**, só aparece num censo completo.
+
 ### Modelos do Angular, de primeira classe
 
 Arquivos `.component.html` abrem com realce próprio de modelo, com os blocos `@if`/`@for` e as diretivas estruturais no autocompletar. Instale o Angular Language Service e a checagem de tipos do modelo chega de verdade: erre o nome de uma propriedade e o próprio compilador do Angular sugere o certo. **⌘B** num modelo salta para a definição, e o menu de contexto alterna entre o componente, seu modelo, seus estilos e seu teste.
@@ -200,6 +204,10 @@ Arquivos `.vue` e `.svelte` abrem com realce próprio, autocompletar próprio (a
 ### Depuração com pontos de parada de verdade
 
 Clique na margem esquerda, escolha **Depurar arquivo (pontos de parada)** e o programa para ali — com a pilha, as variáveis e a avaliação de expressões. JavaScript e TypeScript funcionam de fábrica pelo adaptador embutido; Python usa debugpy e Go usa delve, que você instala. **Depurar no Chrome** faz o mesmo com uma página: os pontos de parada do seu código param dentro da IDE enquanto o navegador roda num perfil descartável. Tudo passa antes pela confirmação de confiança do espaço de trabalho.
+
+### Depuração no navegador
+
+O JavaScript do navegador é depurado do mesmo jeito: clique com o botão direito num arquivo `.html`, `.js` ou `.ts` → **Depurar no Chrome (pontos de interrupção)**. Os pontos postos no editor param o código que roda *no navegador*, com a mesma pilha e as mesmas variáveis. O navegador segue a fonte mais viva: se um dispositivo já anuncia uma URL do projeto, é essa página que abre; senão, um `.html` abre do disco. Um script solto sem servidor não tem página — a linha de status diz isso em vez de adivinhar. O Chrome sobe com um perfil descartável e o seu fica intocado. Os **Web Workers** também são depurados: cada `new Worker(…)` vira a própria sessão.
 
 ### Apresentar e compartilhar
 
