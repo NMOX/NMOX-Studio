@@ -1,5 +1,66 @@
 # The Plan
 
+*Currency addendum 2026-09-21 (the trust chain stops being self-signed), at
+v3.0.0 — the macOS installers are signed with an Apple Developer ID and
+notarized by Apple. What the release is worth recording for is not the feature
+but the shape of getting there.*
+
+***A lane that cannot run without its secret cannot be tested without its
+secret.*** *The macOS signing lane had been written, reviewed and gated since
+v2.186.0 and had never executed once. It was wrong in five places. Four
+consecutive tags published nothing — v2.188.0 through v2.188.3 are tags with no
+release — and **two of those failures were introduced while fixing the others**.
+That is the honest price of "written and gated" standing in for "runs", and the
+gates were not idle: every one of the five is now pinned with a named mutant.*
+
+*The five, because each is a class rather than a bug:*
+
+*1. **AMFI rejects XML comments**, and `plutil -lint` calls the file fine. The
+house law that every entitlement carries the reason it is open is what broke the
+first signature. The documented file stays the source; `plutil -convert xml1`
+hands `codesign` a copy it can parse.*
+
+*2. **`notarytool submit --wait` exits 0 on a rejection.** Its exit code reports
+the round trip, not Apple's verdict, so a refused bundle sailed into `stapler`
+and died two steps later naming neither the bundle nor the reason. Third
+instance of the `gofmt -l` law (v1.352.0), first with an Apple tool. A refusal
+that cannot say why is not a refusal anyone can act on, so the lane fetches the
+notary log itself rather than printing a command at a human who may hold no
+credentials on the machine where it failed.*
+
+*3. **`codesign` writes INTO the binaries it signs**, so the read-only step
+protecting the signature was the step preventing it. Order, not logic.*
+
+*4. **Ten Mach-O libraries live inside jars**, which `codesign` can never reach
+because it signs files and a jar is a zip. `release-signing.md` predicted this
+exact failure and named the fix — and a scan of ours reported **zero**, because
+`for j in $(find …)` word-splits on the space in `NMOX Studio.app`. ***A
+prediction in a document is not a test***, and a measurement that answers an
+easier question passes.*
+
+*5. **The in-app updater would have unsigned the app it updates.** v1.298.0 had
+recorded in a parenthetical that a writable cluster meant "an app copy, not
+/Applications" — an inference wearing a measurement's clothes. `/Applications`
+is owned by whoever dragged the app there, so the updater wrote inside the
+bundle. Measured both directions on a real 2.187.0 → 2.187.1 update: writable
+took 1,068 files inside and left `codesign --verify` failing; read-only took
+zero, put 955 jars in the userdir, and booted at the new version with the
+signature intact. Recon from the shipped bytecode had already shown the shadow
+path was always there — `canWriteInCluster` gates on plain `File.canWrite()`.*
+
+***The cadence changed because of this release.*** *David: "accumulate progress
+in development before running a release." A tag per fix turned a debugging loop
+into public version numbers. Work accumulates on a branch; the ship pipeline
+runs when there is a release to make.*
+
+*What is still open is a purchase, not engineering: ledger 86b, Windows
+Authenticode, where Azure's renamed **Artifact Signing** restricts the
+individual path to US/Canada with a billing account matching a government ID.
+Linux needed nothing — GPG-signed `SHA256SUMS` since v2.42.0. The four signing
+systems and why none substitutes for another are now mapped in
+[signing.md](./signing.md).*
+
+
 *Currency addendum 2026-09-19 (closing every deferral), at v2.186.0.*
 
 *David: "You keep deferring things. Finish them all. Make the decisions I would

@@ -61,6 +61,29 @@ first. The `-portable.zip` is the one bring-your-own-Java artifact
 > `xattr`. The in-app updater installs into your user directory rather
 > than the app bundle, so updating never breaks that signature.
 
+### Verifying your download
+
+Optional, twenty seconds, and two checks because they answer different
+questions.
+
+**Are these the bytes we published?** Works on every platform and covers every
+asset — `SHA256SUMS` and `SHA256SUMS.asc` are release files:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Will macOS vouch for it?** A different question, answered by Apple:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+You want `source=Notarized Developer ID`. Windows installers are not signed
+yet, so the check above is the way to verify a Windows download.
+
 ### Updating
 
 Since v1.51.0 the IDE updates itself: **Tools ▸ Plugins ▸ Updates**

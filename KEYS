@@ -1,9 +1,18 @@
 # NMOX Studio release signing keys
 
-Self-signed by decision (2026-08-27): official certificates —
-Apple Developer ID + notarization, Windows Authenticode — are a
-v3.0 milestone. Until then, releases are verifiable against the
-keys below.
+The keys below are ours and stay ours. They are NOT the Apple
+Developer ID — that is a separate, official certificate, live since
+v3.0.0, which signs the macOS app and DMG (see
+docs/engineering/signing.md for how the four systems differ).
+
+These two remain self-signed BY DECISION, not by default:
+the GPG key signs the SHA256SUMS manifest that covers every
+published asset on every platform, and the certificate below signs
+the update-center NBMs. Both are our own channel, pinned to these
+exact keys rather than delegated to a CA — a commercial
+certificate would cost money and change nothing a user can observe.
+
+Windows Authenticode is still unpurchased (ledger 86b).
 
 ## Verifying a release
 

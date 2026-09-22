@@ -1,9 +1,14 @@
 # Installing NMOX Studio
 
-NMOX Studio runs on macOS, Windows and Linux. Every platform needs a
-**JDK 17 or newer** on the machine (set `JAVA_HOME`, have `java` on the
-PATH, or pass `--jdkhome /path/to/jdk` at launch). For the rack devices
-you will also want **Node.js + npm** and **git** — NMOX Studio finds
+NMOX Studio runs on macOS, Windows and Linux. **The installers bundle
+their own Java runtime — you do not need a JDK installed.** That covers
+the `.dmg`, the `-setup.exe`, the `.deb` and the `.tar.gz`.
+
+The one exception is `-portable.zip`, which is deliberately
+bring-your-own-Java and needs **Java 21 or newer** (set `JAVA_HOME`, have
+`java` on the PATH, or pass `--jdkhome /path/to/jdk` at launch).
+
+For the rack devices you will also want **Node.js + npm** and **git** — NMOX Studio finds
 them in the standard install locations (Homebrew, nvm, volta, fnm,
 asdf) even when launched from a desktop icon.
 
@@ -50,6 +55,16 @@ tar -xzf NMOX-Studio-<version>-linux.tar.gz
 extract anywhere and run `bin/nmoxstudio` (macOS/Linux) or
 `bin\nmoxstudio64.exe` (Windows).
 
+This is the **one artifact that does not bundle a Java runtime** — it
+needs Java 21+ on the machine. Every other download brings its own.
+
+## Verifying what you downloaded
+
+Two checks, because they answer different questions: GPG for *are these the
+bytes we published* (every platform, every asset) and `spctl` for *will macOS
+vouch for it*. Both are written out, **in fifteen languages**, in the user
+guide's [Verifying your download](./docs/user-guide.md#verifying-your-download).
+
 ## Building installers from source
 
 ```bash
@@ -65,8 +80,13 @@ release.
 
 ## Troubleshooting
 
-- **"Cannot find java"** — install a JDK 17+ (e.g. Temurin) and set
-  `JAVA_HOME`, or launch with `--jdkhome /path/to/jdk`.
+- **"Cannot find java"** — you are on the portable zip, which ships no
+  runtime. Install **Java 21+** (e.g. Temurin) and set `JAVA_HOME`, or
+  launch with `--jdkhome /path/to/jdk`. The installers bundle a runtime
+  and never hit this.
+- **"Cannot run on older versions of Java than Java 21"** — same cause,
+  but a JDK older than 21 is on the PATH. Point `--jdkhome` at a newer
+  one rather than changing your system default.
 - **Devices say "launch failed: Cannot run program npm"** — install
   Node.js; NMOX Studio searches Homebrew, nvm, volta, fnm and asdf
   locations automatically.

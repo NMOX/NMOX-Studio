@@ -25,10 +25,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * is a claim with no test behind it; this is that test.
  *
  * <p>Scope is deliberately the LIVE documents — the ones a user is
- * told to read. The historical logs (CHANGELOG.md, the plan's dated
- * addenda, docs/hack, docs/product) quote the counts that were true
- * on the day they were written and must NOT be dragged forward: a
- * record that silently updates itself is not a record.
+ * told to read. The dated records (CHANGELOG.md and the plan's
+ * addenda) quote the counts that were true on the day they were
+ * written and must NOT be dragged forward: a record that silently
+ * updates itself is not a record. Since 3.0.1 there is no third
+ * category — the v0.x archaeology under docs/hack and docs/product
+ * was deleted rather than banner-labelled, so every other document
+ * in docs/ is live by construction.
  */
 class DocsCountGateTest {
 

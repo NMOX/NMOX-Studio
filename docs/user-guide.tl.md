@@ -23,6 +23,26 @@ Ang linyang `brew trust` ang minsanang kumpirmasyon ng Homebrew para sa anumang 
 
 > **macOS, unang pagbukas:** i-double-click lang. Ang app ay nilagdaan gamit ang Apple Developer ID at notarized, at nakakabit ang tiket sa app at sa DMG, kaya gumagana ang pagsusuri kahit offline — walang right-click at walang `xattr`. Ang panloob na updater ay nag-i-install sa iyong user directory imbes na sa app bundle, kaya hindi kailanman nasisira ng pag-update ang lagdang iyon.
 
+### Pagbe-verify ng iyong download
+
+Opsyonal, dalawampung segundo, at dalawang pagsusuri dahil magkaiba ang tinatanong nila.
+
+**Ito ba ang mga byte na inilabas namin?** Gumagana sa lahat ng plataporma at sakop ang bawat file — kasama sa release ang `SHA256SUMS` at `SHA256SUMS.asc`:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Mananagot ba ang macOS para dito?** Ibang tanong, sinasagot ng Apple:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Dapat mong makita ang `source=Notarized Developer ID`. Hindi pa nilalagdaan ang mga Windows installer: para sa download sa Windows, ang pagsusuri sa itaas ang paraan.
+
 ### Pag-update
 
 Ini-update ng IDE ang sarili nito: nag-aalok ang **Mga Kasangkapan ▸ Mga Plugin ▸ Mga Update** ng mga modyul mula sa anumang mas bagong bersyon. I-install, i-restart kapag hiniling, tapos na — walang muling pag-download ng buong app. Isang tapat na paalala: ang kasamang Java runtime at ang launcher ay nagbabago lamang sa isang buong installer, kaya para sa malalaking paglipat ng plataporma, tama pa ring mag-install muli mula sa isang file ng bersyon.
@@ -169,6 +189,10 @@ Sa bahaging `scripts` ng isang `package.json`, pinapatakbo ng **Patakbuhin ang s
 
 Ang pag-type ng `process.env.` o `import.meta.env.` ay nag-aalok ng mga susing talagang tinutukoy ng iyong pamilya ng mga file na `.env`, at ang **⌘-pindot** ay tumatalon sa hanay na nagdedeklara ng susi. Pinuputol ang mga halagang ipinapakita: naroon ang paalala, wala ang lihim.
 
+### Mga pagsasalin sa iyong proyekto
+
+Ang mga katalogo ng pagsasalin ng isang web project ay datos na binabasa ng editor, gaya ng iyong mga stylesheet at ng iyong `.env`. **Mga Kasangkapan ▸ Suriin ang mga Salin…** ang humahanap ng mga katalogo (i18next, vue-i18n, svelte-i18n, XLIFF ng Angular, Lingui, Paraglide, react-intl, o ang sa I18n Kit), pumipili ng pinagmulang lengguwahe, at nag-uulat ng tatlong bagay bilang kulot na guhit at hanay sa Mga Gawain: **nawawala** (ang mga anyong pangmarami at pangkonteksto ay inihahambing sa batayang susi), **kapareho ng pinagmulan** (kinopya, hindi isinalin), at **hindi tugmang placeholder** — ito ang mali, dahil sirang pagsasalin ang may ibang hanay ng `{{name}}` o `%s`. Ang ikaapat, **hindi ginagamit**, lumilitaw lamang sa buong senso.
+
 ### Mga template ng Angular, first-class
 
 Bumubukas ang mga file na `.component.html` na may sariling pangkukulay ng template, may mga blokeng `@if`/`@for` at mga direktibang pang-istruktura sa pagkumpleto. I-install ang Angular Language Service at talagang dumarating ang pagsusuri ng uri sa template: mali ang pangalan ng isang katangian at ang mismong compiler ng Angular ang magmumungkahi ng tama. Ang **⌘B** sa loob ng isang template ay tumatalon sa deklarasyon, at ang menu ng konteksto ay lumilipat sa pagitan ng komponente, ng template nito, ng mga estilo nito, at ng pagsusulit nito.
@@ -180,6 +204,10 @@ Bumubukas ang mga file na `.vue` at `.svelte` na may sariling pangkukulay, saril
 ### Pag-debug gamit ang tunay na breakpoint
 
 Pindutin ang kaliwang gilid, piliin ang **I-debug ang file (mga breakpoint)**, at hihinto roon ang programa — kasama ang salansan, ang mga variable, at ang pagtaya ng mga ekspresyon. Gumagana ang JavaScript at TypeScript mula sa pabrika dahil sa kasamang adapter; gumagamit ang Python ng debugpy at ang Go ng delve, na ikaw ang mag-i-install. Ganoon din ang ginagawa ng **I-debug sa Chrome** para sa isang pahina: humihinto sa loob ng IDE ang mga breakpoint sa iyong pinagmulan habang tumatakbo ang browser sa isang pansamantalang profile. Dumadaan muna ang lahat sa pagtatanong ng tiwala sa workspace.
+
+### Pag-debug sa browser
+
+Ganoon din ang pag-debug ng JavaScript sa browser: i-right-click ang `.html`, `.js`, o `.ts` → **I-debug sa Chrome (breakpoints)**. Ang mga breakpoint sa editor ay humihinto sa kodigong tumatakbo *sa browser*, may kaparehong stack at mga variable. Sinusundan ng browser ang pinakabuhay na pinagmulan: kung may kagamitang nag-aanunsyo na ng URL ng proyekto, iyon ang pahinang bubukas; kung wala, mula sa disk bubukas ang `.html`. Ang nag-iisang script na walang server ay walang pahina — sinasabi iyon ng linya ng katayuan kaysa manghula. Nagsisimula ang Chrome sa itatapong profile; buo ang sarili mong profile. Nade-debug din ang **Web Workers**: bawat `new Worker(…)` ay sariling sesyon.
 
 ### Pagpapakita at pagbabahagi
 

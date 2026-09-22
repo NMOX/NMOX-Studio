@@ -159,6 +159,66 @@ class TranslatedGuideGateTest {
     }
 
     @Test
+    @DisplayName("every TOPIC of every chapter survives translation, not just the chapter headings")
+    void translationsCoverEveryTopic() throws IOException {
+        // WHY: `completeGuidesDropTheNotice` below counts CHAPTERS, and every
+        // translation had all twelve — so every guide read as complete while
+        // all fourteen were missing the SAME two subsections of chapter 5,
+        // "Translations in your project" and "Debugging in the browser". A
+        // chapter heading with a paragraph under it satisfies a chapter count.
+        // The i18n checker was the one topic absent from every translation.
+        //
+        // A global `###` count could not see it either: translations carry MORE
+        // level-3 headings than English overall (50 vs 27), because English
+        // marks chapters 8-12's sections in bold where translations use
+        // headings. Only a PER-CHAPTER comparison shows the hole.
+        Map<Integer, Integer> english = subsectionsPerChapter(docs().resolve("user-guide.md"));
+        assertThat(english).as("the English guide's own chapters").isNotEmpty();
+        List<String> thin = new ArrayList<>();
+        for (String lang : translatedLanguages()) {
+            Map<Integer, Integer> mine = subsectionsPerChapter(
+                    docs().resolve("user-guide." + lang + ".md"));
+            for (Map.Entry<Integer, Integer> e : english.entrySet()) {
+                int have = mine.getOrDefault(e.getKey(), 0);
+                if (have < e.getValue()) {
+                    thin.add(lang + " ch." + e.getKey() + ": " + have + " of " + e.getValue());
+                }
+            }
+        }
+        assertThat(thin)
+                .as("a translation may be SHORTER than the English guide — they are condensed by "
+                        + "design, at roughly a quarter to a third of its prose — but it may not "
+                        + "drop a TOPIC. A reader who cannot find a feature does not know whether "
+                        + "it is missing from the product or from their language")
+                .isEmpty();
+    }
+
+    /** Level-3 headings under each numbered chapter — per chapter, never totalled. */
+    private static Map<Integer, Integer> subsectionsPerChapter(Path guide) throws IOException {
+        Map<Integer, Integer> out = new LinkedHashMap<>();
+        Integer chapter = null;
+        boolean fence = false;
+        for (String line : read(guide).split("\n", -1)) {
+            if (line.stripLeading().startsWith("```")) {
+                fence = !fence;
+                continue;
+            }
+            if (fence) {
+                continue;
+            }
+            Matcher m = Pattern.compile("^## (\\d+)\\.").matcher(line);
+            if (m.find()) {
+                chapter = Integer.valueOf(m.group(1));
+                out.putIfAbsent(chapter, 0);
+            } else if (line.startsWith("### ") && chapter != null) {
+                out.merge(chapter, 1, Integer::sum);
+            }
+        }
+        out.values().removeIf(v -> v == 0);
+        return out;
+    }
+
+    @Test
     @DisplayName("a complete guide says nothing about being partial — and really is complete")
     void completeGuidesDropTheNotice() throws IOException {
         // v2.110.0 made every guide complete, which fires the "owes no

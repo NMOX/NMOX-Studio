@@ -23,6 +23,26 @@ brew install nmox/nmox-studio/nmox-studio
 
 > **macOS 首次启动：**双击即可。应用已使用 Apple Developer ID 签名并已公证，票据同时装订在应用和 DMG 上，因此校验可离线完成 —— 无需右键，也无需 `xattr`。内置更新安装到你的用户目录而非应用包内，所以更新永远不会破坏该签名。
 
+### 校验你下载的文件
+
+可选，二十秒，两项检查 —— 因为它们回答的是不同的问题。
+
+**这些是我们发布的字节吗？**在任何平台都可用，覆盖每一个文件 —— `SHA256SUMS` 和 `SHA256SUMS.asc` 随版本一起发布：
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**macOS 会为它背书吗？**这是另一个问题，由 Apple 回答：
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+你需要看到 `source=Notarized Developer ID`。Windows 安装包尚未签名：对于 Windows 下载，上面这项检查就是办法。
+
 ### 更新
 
 IDE 会自我更新：**工具 ▸ 插件 ▸ 更新**会提供任何更新版本的模块。安装、按提示重启即可，无需重新下载整个应用。一点实话：自带的 Java 运行时和启动器只随完整安装程序更换，所以遇到较大的平台跨越，从版本文件重新安装仍然是正确做法。
@@ -169,6 +189,10 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
 
 输入 `process.env.` 或 `import.meta.env.` 会列出你的 `.env` 文件族真正定义的键，**⌘-点击**则跳到声明该键的那一行。显示的值是截断的：提示在，秘密不在。
 
+### 你项目里的翻译
+
+一个 Web 项目自己的翻译目录，就是编辑器会去读的数据 —— 和你的样式表、你的 `.env` 一样。**工具 ▸ 检查翻译…** 会找到这些目录（i18next、vue-i18n、svelte-i18n、Angular 的 XLIFF、Lingui、Paraglide、react-intl，或者 I18n Kit 自己的），挑出源语言，然后报告三件事，以波浪线和任务列表中的条目呈现：**缺失**（复数与上下文形式按基础键比较）、**与源相同**（是复制而非翻译），以及**占位符不匹配** —— 这一项才是错误，因为 `{{name}}` 或 `%s` 集合与源不同的翻译就是坏的。第四项**未使用**只在完整普查时出现。
+
 ### Angular 模板，一等公民
 
 `.component.html` 文件会以模板专用的高亮打开，补全中含 `@if`/`@for` 块与结构型指令。安装 Angular Language Service，模板的类型检查就真的能到位：属性名写错时，Angular 自己的编译器会给出正确的建议。模板中的 **⌘B** 跳到声明处，右键菜单则在组件、它的模板、它的样式和它的测试之间切换。
@@ -180,6 +204,10 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
 ### 用真正的断点调试
 
 在左侧边栏点击，选择**调试文件（断点）**，程序就会停在那里 — 带调用栈、变量和表达式求值。JavaScript 与 TypeScript 依靠内置适配器开箱即用；Python 使用 debugpy，Go 使用 delve，这两个需要你自己安装。**在 Chrome 中调试**对网页做同样的事：你源码里的断点会在 IDE 内停下，而浏览器跑在一个用完即弃的配置文件上。所有这些都要先经过工作区信任确认。
+
+### 在浏览器里调试
+
+浏览器里的 JavaScript 也一样调试：右键点击 `.html`、`.js` 或 `.ts` 文件 → **在 Chrome 中调试（断点）**。在编辑器里下的断点会停住*运行在浏览器里*的代码，栈和变量都一致。浏览器去哪里，取决于最鲜活的来源：如果已有服务设备在为该项目播报 URL，打开的就是那个页面；否则 `.html` 直接从磁盘打开。没有服务器的单独脚本没有页面可加载 —— 状态栏会这么说，而不是去猜。Chrome 以一次性配置启动，你自己的配置不受影响。**Web Worker** 也能调试：每个 `new Worker(…)` 都成为独立会话。
 
 ### 演示与分享
 

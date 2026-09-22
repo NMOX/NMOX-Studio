@@ -23,6 +23,26 @@ Die Zeile `brew trust` ist Homebrews einmalige Bestätigung für jeden Tap von D
 
 > **macOS, erster Start:** Einfach doppelklicken. Die Anwendung ist mit einer Apple Developer ID signiert und notarisiert, und das Ticket ist an App und DMG geheftet, sodass die Prüfung offline funktioniert — kein Rechtsklick, kein `xattr`. Die integrierte Aktualisierung installiert in Ihr Benutzerverzeichnis statt in das App-Bundle, sodass ein Update diese Signatur nie beschädigt.
 
+### Ihren Download überprüfen
+
+Optional, zwanzig Sekunden, und zwei Prüfungen, weil sie verschiedene Fragen beantworten.
+
+**Sind das die Bytes, die wir veröffentlicht haben?** Funktioniert auf jeder Plattform und deckt jede Datei ab — `SHA256SUMS` und `SHA256SUMS.asc` liegen der Veröffentlichung bei:
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**Bürgt macOS dafür?** Eine andere Frage, von Apple beantwortet:
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Erwartet wird `source=Notarized Developer ID`. Windows-Installer sind noch nicht signiert; für einen Windows-Download ist die obige Prüfung der Weg.
+
 ### Aktualisieren
 
 Die IDE aktualisiert sich selbst: **Werkzeuge ▸ Plugins ▸ Aktualisierungen** bietet die Module jeder neueren Version an. Installieren, bei Aufforderung neu starten, fertig — ohne die ganze Anwendung erneut zu laden. Eine ehrliche Einschränkung: Die mitgelieferte Java-Laufzeit und der Starter ändern sich nur mit einem vollständigen Installationsprogramm, daher ist bei größeren Plattformsprüngen eine Neuinstallation aus einer Release-Datei weiterhin richtig.
@@ -169,6 +189,10 @@ Im `scripts`-Abschnitt einer `package.json` führt **Skript ausführen** die Zei
 
 `process.env.` oder `import.meta.env.` zu tippen bietet die Schlüssel an, die Ihre `.env`-Familie tatsächlich erklärt, und **⌘-Klick** springt zu der Zeile, die den Schlüssel erklärt. Werte werden gekürzt angezeigt: Die Erinnerung ist da, das Geheimnis nicht.
 
+### Übersetzungen in Ihrem Projekt
+
+Die Übersetzungskataloge eines Webprojekts sind Daten, die der Editor liest — wie Ihre Stilvorlagen und Ihre `.env`. **Extras ▸ Übersetzungen prüfen…** findet die Kataloge (i18next, vue-i18n, svelte-i18n, Angulars XLIFF, Lingui, Paraglide, react-intl oder die des I18n-Kits), wählt die Quellsprache und meldet drei Dinge als Wellenlinien und Einträge in den Aufgaben: **fehlend** (Plural- und Kontextformen werden auf ihrem Basisschlüssel verglichen), **identisch zur Quelle** (kopiert statt übersetzt) und **Platzhalter weicht ab** — das ist der Fehler, denn eine Übersetzung mit anderem `{{name}}`- oder `%s`-Satz als die Quelle ist defekt. Ein vierter Befund, **unbenutzt**, erscheint nur bei vollständiger Erhebung.
+
 ### Angular-Vorlagen, vollwertig
 
 `.component.html`-Dateien öffnen mit eigener Vorlagen-Einfärbung, mit `@if`/`@for`-Blöcken und Strukturdirektiven in der Vervollständigung. Installieren Sie den Angular Language Service, und die Typprüfung der Vorlagen kommt wirklich an: Schreiben Sie einen Eigenschaftsnamen falsch, schlägt Angulars eigener Compiler den richtigen vor. **⌘B** in einer Vorlage springt zur Deklaration, und das Kontextmenü wechselt zwischen der Komponente, ihrer Vorlage, ihren Stilen und ihrem Test.
@@ -180,6 +204,10 @@ Im `scripts`-Abschnitt einer `package.json` führt **Skript ausführen** die Zei
 ### Fehlersuche mit echten Haltepunkten
 
 Klicken Sie in den Rand, wählen Sie **Datei debuggen (Haltepunkte)**, und das Programm hält dort an — mit Aufrufliste, Variablen und Ausdrucksauswertung. JavaScript und TypeScript laufen ab Werk über den mitgelieferten Adapter; Python nutzt debugpy und Go delve, die Sie selbst installieren. **In Chrome debuggen** tut dasselbe für eine Seite: Die Haltepunkte in Ihrem Quelltext halten in der IDE, während der Browser mit einem Wegwerfprofil läuft. Alles geht zuerst durch die Arbeitsbereichs-Vertrauensabfrage.
+
+### Fehlersuche im Browser
+
+Browser-JavaScript wird genauso untersucht: Rechtsklick auf eine `.html`-, `.js`- oder `.ts`-Datei → **In Chrome debuggen (Haltepunkte)**. Haltepunkte im Editor halten den Code an, der *im Browser* läuft, mit demselben Stapel und denselben Variablen. Wohin der Browser geht, richtet sich nach der lebendigsten Quelle: läuft schon ein Serve-Gerät für das Projekt, öffnet sich genau diese Seite; sonst eine `.html` direkt von der Platte. Ein reines Skript ohne Server hat keine Seite — die Statuszeile sagt das, statt zu raten. Chrome startet mit einem Wegwerfprofil, Ihr eigenes bleibt unberührt. Auch **Web Worker** werden untersucht: jeder `new Worker(…)` wird eine eigene Sitzung.
 
 ### Vorführen und Weitergeben
 

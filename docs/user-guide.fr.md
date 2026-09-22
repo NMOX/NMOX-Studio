@@ -23,6 +23,26 @@ La ligne `brew trust` est la confirmation unique de Homebrew pour tout tap tiers
 
 > **macOS, premier lancement :** double-cliquez simplement. L’application est signée avec un Apple Developer ID et notariée, et le ticket est agrafé à l’application comme au DMG : la vérification fonctionne hors ligne — pas de clic droit, pas de `xattr`. La mise à jour intégrée installe dans votre répertoire utilisateur plutôt que dans le bundle, donc une mise à jour ne casse jamais cette signature.
 
+### Vérifier votre téléchargement
+
+Facultatif, vingt secondes, et deux vérifications parce qu’elles répondent à des questions différentes.
+
+**Est-ce bien les octets que nous avons publiés ?** Fonctionne sur toutes les plateformes et couvre chaque fichier — `SHA256SUMS` et `SHA256SUMS.asc` accompagnent la version :
+
+```bash
+curl -sL https://raw.githubusercontent.com/NMOX/NMOX-Studio/main/KEYS | gpg --import
+gpg --verify SHA256SUMS.asc SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+```
+
+**macOS se porte-t-il garant ?** Autre question, à laquelle répond Apple :
+
+```bash
+spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
+```
+
+Vous attendez `source=Notarized Developer ID`. Les installateurs Windows ne sont pas encore signés : la vérification ci-dessus est la bonne pour un téléchargement Windows.
+
 ### Mise à jour
 
 L’IDE se met à jour lui-même : **Outils ▸ Plugins ▸ Mises à jour** propose les modules de toute version plus récente. Installez, redémarrez quand on vous le demande, c’est fait — sans retélécharger l’application entière. Une réserve honnête : l’environnement Java embarqué et le lanceur ne changent qu’avec un installateur complet, donc pour les sauts de plateforme importants, une installation neuve depuis un fichier de version reste la bonne solution.
@@ -169,6 +189,10 @@ Dans la section `scripts` d’un `package.json`, **Lancer le script** exécute l
 
 Taper `process.env.` ou `import.meta.env.` propose les clés que votre famille de fichiers `.env` définit vraiment, et **⌘-clic** saute à la ligne qui déclare la clé. Les valeurs sont affichées tronquées : le rappel est là, le secret non.
 
+### Les traductions de votre projet
+
+Les catalogues de traduction d’un projet web sont des données que l’éditeur lit, comme vos feuilles de style et votre `.env`. **Outils ▸ Vérifier les traductions…** trouve les catalogues (i18next, vue-i18n, svelte-i18n, le XLIFF d’Angular, Lingui, Paraglide, react-intl ou celui de l’I18n Kit), choisit la langue source et signale trois choses, en soulignements et en tâches : **manquant** (les formes plurielles et contextuelles sont comparées sur leur clé de base), **identique à la source** (copié plutôt que traduit) et **espace réservé divergent** — celui-là est une erreur, car une traduction dont l’ensemble `{{name}}` ou `%s` diffère de la source est cassée. Un quatrième constat, **inutilisé**, n’apparaît que sur un recensement complet.
+
 ### Les gabarits Angular, de plein droit
 
 Les fichiers `.component.html` s’ouvrent avec leur propre coloration de gabarit, les blocs `@if`/`@for` et les directives structurelles à la complétion. Installez l’Angular Language Service et le typage des gabarits arrive vraiment : écrivez mal un nom de propriété et le compilateur d’Angular lui-même vous propose le bon. **⌘B** dans un gabarit saute à la définition, et le menu contextuel passe entre le composant, son gabarit, ses styles et son test.
@@ -180,6 +204,10 @@ Les fichiers `.vue` et `.svelte` s’ouvrent avec leur propre coloration, leur p
 ### Le débogage avec de vrais points d’arrêt
 
 Cliquez dans la marge, choisissez **Déboguer le fichier (points d’arrêt)** et le programme s’arrête là — avec la pile, les variables et l’évaluation d’expressions. JavaScript et TypeScript marchent d’origine grâce à l’adaptateur embarqué ; Python passe par debugpy et Go par delve, que vous installez vous-même. **Déboguer dans Chrome** fait de même pour une page : les points d’arrêt de votre source s’arrêtent dans l’IDE pendant que le navigateur tourne sur un profil jetable. Tout passe d’abord par la confirmation de confiance de l’espace de travail.
+
+### Le débogage dans le navigateur
+
+Le JavaScript du navigateur se débogue pareillement : clic droit sur un fichier `.html`, `.js` ou `.ts` → **Déboguer dans Chrome**. Les points d’arrêt posés dans l’éditeur arrêtent le code qui tourne *dans le navigateur*, avec la même pile et les mêmes variables. Le navigateur suit la source la plus vivante : si un périphérique de service annonce déjà une URL pour le projet, c’est cette page qui s’ouvre ; sinon un `.html` s’ouvre depuis le disque. Un script seul sans serveur n’a pas de page — la ligne d’état le dit au lieu de devenir. Chrome démarre sur un profil jetable, le vôtre reste intact. Les **Web Workers** se déboguent aussi : chaque `new Worker(…)` devient sa propre session.
 
 ### Présenter et partager
 

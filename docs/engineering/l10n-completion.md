@@ -48,6 +48,49 @@ digits kept Latin; every gate below derives its population from
 | The tutorials' live scenes in every translation (v2.164.0) — the Docker Panel on a real container, Contract Studio compiled and connected to anvil, the DevTools pick on a served page, a Node run paused on its breakpoint | `TranslatedShotsGateTest` (widened to eighteen staged shots per language); `DocsDockerViewGateTest` — the forge's Docker view shows only containers labelled `org.nmox.docs=1` and forwards no write, run against a fake daemon; `DocsBrowserTest` holds the served directory to the one the scene writes; `ForgeFixturesGateTest` over the new `inventory` and `page` sections. Ceiling as v2.164.0 recorded it: the Browser painted Arabic unjoined (ledger 99) — closed by v2.165.0, next row |
 | Complex scripts in the in-app Browser (v2.165.0) — Arabic, Persian and the Indic scripts paint shaped, where OpenJFX's WebKit paints each character's plain glyph on every release | `ComplexScriptsTest` (reordering, alignment, refusals), `ComplexTextShapingTest` (the rewritten draw run against a stand-in), `ShapingInstallReferenceTest`, `PackagedConfGateTest` (the attach flags); proven in the assembled app by the forge's Arabic and Hindi DevTools pictures. Ceiling as v2.165.0 recorded it: a shaped phrase in a line of the other direction sat apart — v2.166.0 measures these scripts near their shaped width (marks zero, Arabic a quarter of the way from medial to final, Indic at 0.72, calibrated on running text) and keeps each shaped run on its reading edge, leaving a few pixels per word; v2.167.0 checked Persian and Urdu: digits no longer reversed, vowel marks and Nastaliq drawn from x/y positions (Nastaliq widths within 9-10px a word); v2.168.0 checked Kurdish, Pashto, Sindhi and Uyghur (correct) and spreads a line's width miss across its spaces; v2.169.0 checked the other eight Indic scripts (correct) and measures each at its own width, calibrated in the Browser; v2.170.0 composes decomposed accents (Vietnamese NFD and the like) onto their letters; v2.171.0 shapes Sinhala, Thai, Tibetan, Myanmar, Khmer, Syriac, Thaana and N'Ko (Lao excluded: JavaFX's own text drifts it), attaches from a helper process when the conf lacks the flags, and caches laid-out words; v2.172.0 switches WebKit's own complex-text path on for the bundled macOS arm64 and Windows x64 libraries (hash-identified) and strips the length suffix OpenJFX's glue appends, so fields, bold/italic, justified text and NFD measure exactly there (Linux keeps the repair, and since v2.173.0 fits its width estimates to the installed fonts); Hebrew, Armenian, Georgian and Ethiopic checked and correct unshaped |
 
+## The repo-level documents, and why they are English
+
+`README.md` and `INSTALL.md` are English and stay English. They are the
+GitHub landing page and a build/verify reference — read by someone already
+at a terminal, quoting command output that is itself English.
+
+That is a decision, not an omission, and it is only defensible because
+**nothing a user needs lives only there.** The install story, the macOS
+first-launch note and (since 3.0.1) how to verify a download are all in the
+user guide's chapter 1, which ships in fifteen languages. `INSTALL.md` points
+at it rather than restating it.
+
+The reason that rule exists: the two documents *had* drifted. `INSTALL.md`
+opened with "Every platform needs a JDK 17 or newer" while the guide and the
+README both correctly said the installers bundle a runtime and only the
+portable zip needs Java 21+. Wrong version and wrong claim, in the one home
+nobody was maintaining — the v2.131.0 law, that the defect is the second home
+rather than the disagreement.
+
+## The translated guides are CONDENSED, and that is now measured
+
+Every guide carries all twelve chapters and — since 3.0.1 — every topic of
+every chapter. None carries the English guide's full prose: measured at
+**19–31% of its non-space characters** (Chinese reads lower at 11.8% purely
+because its script is denser per character; a whitespace word count reads it at
+8%, which is the metric failing rather than the translation). The shortfall
+concentrates in the three reference chapters — the rack, the editor, the
+studios, at 13–31% by word.
+
+**That is a shape, not a defect: a condensed guide covering every topic is
+worth more than a full one covering two thirds.** What was a defect is that
+nothing said so, and that the completeness check could not see it.
+
+`completeGuidesDropTheNotice` counted CHAPTERS, and every translation had all
+twelve — so each read as complete while **all fourteen were missing the same
+two subsections of chapter 5**: "Translations in your project" and "Debugging
+in the browser". The i18n checker was the one topic absent from every
+translation of the guide. A global `###` count could not see it either, because
+translations carry more level-3 headings than English overall (50 vs 27) —
+English marks chapters 8–12's sections in bold where they use headings. Only a
+per-chapter comparison shows a hole, which is what `translationsCoverEveryTopic`
+now does; removing one subsection from one language kills it by name.
+
 ## The ceilings, each measured
 
 These are not gaps. Each was investigated, measured, and decided; the decision

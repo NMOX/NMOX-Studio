@@ -24,9 +24,13 @@ import org.openide.util.lookup.ServiceProvider;
  * this class and parity-gated against the repo-root {@code KEYS} file
  * (the two must never drift — {@code NmoxTrustedCertsTest}). Trust is
  * for this EXACT certificate ({@code TRUST}), never a CA delegation.
- * Self-signed by decision until v3.0 (official certificates are a
- * recorded milestone); when the v3.0 certificate lands, this resource
- * is the one place to swap.
+ * Self-signed by decision, and it STAYS that way. v3.0.0 bought an
+ * Apple Developer ID, but that signs the macOS app and DMG — a
+ * different question, answered by a different authority. This
+ * certificate answers "did this update come from us?" on a channel
+ * that is ours end to end, so trust is pinned to this exact
+ * certificate rather than delegated to a CA. If it is ever rotated,
+ * this resource and the repo-root KEYS file move together.
  */
 @ServiceProvider(service = KeyStoreProvider.class)
 public final class NmoxTrustedCerts implements KeyStoreProvider {

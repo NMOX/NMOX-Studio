@@ -89,7 +89,7 @@ mvn clean package -DskipTests
 ./run.sh
 ```
 
-> **Note:** the `product/`, `hack/`, and most of `engineering/`
-> subdirectories are early-era design documents, kept only for
-> archaeology — each carries a "Historical document" banner, and none
-> describes the shipping product. For current reality, use the docs above.
+> **Everything in this directory is current.** The early-era `product/`
+> and `hack/` directories, and the v0.x papers under `engineering/`,
+> were removed in 3.0.1 — **git is the archaeology.** If you want them,
+> `git log -- docs/` has every one.

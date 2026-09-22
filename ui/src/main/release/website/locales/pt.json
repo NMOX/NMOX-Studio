@@ -1,7 +1,7 @@
 {
   "site.tagline": "O estúdio web com um rack — ligue suas ferramentas como um sintetizador.",
-  "site.hero.note": "Uma linha. O ambiente de execução vem junto. Esta página está sendo servida a você pelo próprio aplicativo — procure o indicador ⇄ na barra de status.",
-  "site.hero.note.web": "Uma linha. O ambiente de execução vem junto. Abra esta mesma página de dentro do aplicativo e o rack dele a servirá para você.",
+  "site.hero.note": "Duas linhas: uma confia no tap, outra instala. O ambiente de execução vem junto. Esta página está sendo servida a você pelo próprio aplicativo — procure o indicador ⇄ na barra de status.",
+  "site.hero.note.web": "Duas linhas: uma confia no tap, outra instala. O ambiente de execução vem junto. Abra esta mesma página de dentro do aplicativo e o rack dele a servirá para você.",
   "site.loop.h": "O ciclo que ensina é o ciclo que se fecha",
   "site.loop.p": "Edite, salve, olhe — e quando a página quebra, o erro cai no seu editor, na linha certa, não num console que você teria de lembrar de abrir.",
   "site.rack.h": "Um rack, não um botão de executar",
