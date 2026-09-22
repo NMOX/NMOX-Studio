@@ -1,5 +1,14 @@
 # The Plan
 
+*Currency addendum 2026-09-22 (v3.0.2, a dependency release). Dependabot
+opened the MongoDB driver's 5.11.0 → 5.11.1 bump as routine; the driver's
+release notes carried two CVEs that no GitHub label or alert mentioned. Neither
+was reachable, both measured — and it shipped anyway, because a release's SBOM
+is read by scanners that cannot see reachability. The rule it leaves: **read the
+upstream notes of every dependency bump, patch versions included**, and for a
+signed build ask one more question — does the new jar carry a native library the
+signing lane must now sign?*
+
 *Currency addendum 2026-09-21 (the trust chain stops being self-signed), at
 v3.0.0 — the macOS installers are signed with an Apple Developer ID and
 notarized by Apple. What the release is worth recording for is not the feature

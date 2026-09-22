@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.0.2] - 2026-09-22
+
+**The MongoDB driver moves to 5.11.1, which fixes two CVEs. Neither was
+reachable from NMOX Studio — and 3.0.1's published SBOM named the vulnerable
+version anyway.**
+
+Dependabot opened this as a routine patch bump, labelled `dependencies,java`,
+and GitHub raised no security alert. The driver's own release notes are the
+only place the two CVEs appear, so the only signal was reading them. **A bump
+title is not a changelog.**
+
+**CVE-2026-88033** (GridFS delete helpers, improper neutralization) is not
+reachable: the product calls no GridFS API. DB Studio's whole driver surface is
+`MongoClients.create`, `getDatabase`, `runCommand`, `getCollection().find()` and
+`listCollectionNames`. A `delete` typed into the console is the user's own
+command against their own database, not the vulnerable helper.
+
+**CVE-2026-88032** (use-after-free when an encrypted operation is cancelled
+while fetching cloud KMS credentials) is not reachable: it needs `mongodb-crypt`,
+and the assembled cluster ships exactly four org.mongodb jars — `bson`,
+`bson-record-codec`, `mongodb-driver-core`, `mongodb-driver-sync` — with no
+encryption support. No source names `AutoEncryptionSettings`,
+`ClientEncryption` or a KMS provider.
+
+**Shipped anyway**, because unreachable is not invisible: a scanner reading
+3.0.1's SBOM reports both CVEs against the product whatever the code can reach.
+The SBOM of this release names 5.11.1.
+
+**Signing is untouched, measured rather than assumed.** A dependency bump can
+reach the macOS signing lane only by bringing a native library inside a jar,
+the population the lane derives and signs before sealing (v2.188.4). All four
+mongodb jars carry zero native entries in both versions, and the cluster's
+jars-with-Mach-O census is the same five Apple named in v2.188.4.
+
+Absorbed from Dependabot #795 through our own gate; the version has one home,
+`dbstudio/pom.xml`.
+
 ## [3.0.1] - 2026-09-21
 
 **The docs pass, from a DevRel's chair — and the find is that the feature which
@@ -23709,6 +23746,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.4...v3.0.0
 [2.188.4]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.3...v2.188.4
