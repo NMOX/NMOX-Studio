@@ -9,7 +9,7 @@ proved), and again by the v1.56.0 third senior review (2026-07-12:
 five lenses over the v1.40–v1.55 surface; fixes for the proven, items
 41–44 added with reasons). Every entry is either open with a reason it was deferred, or
 closed with the version that closed it. The v0.x-era debt documents in
-`docs/hack/` are archaeology; this file is the truth.
+this file is the truth.
 
 The v1.26.0 sprint took a rule to the whole ledger: **build every
 feature-shaped item; re-examine every refactor-shaped item with fresh

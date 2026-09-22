@@ -53,77 +53,11 @@ Outside this directory, [CLAUDE.md](../../CLAUDE.md) is the deep
 architecture reference and [the docs index](../README.md) is the way in
 for users.
 
-## The archaeology
-
-Everything else here — architecture, api-design, performance,
-scalability, security, testing-strategy, technical-roadmap,
-implementation-guide, team-structure, and the rest — predates the
-shipping product. They are kept because deleting history is worse than
-labelling it, not because they are accurate.
-
----
-
-## Historical: the original v0.x engineering README
-
-> **Everything below this line is archaeology** and is preserved only
-> as history. The targets were aspirations, the metrics were never
-> measured, and parts of the stack described here (J2V8, for one) were
-> never shipped. For real numbers see `plan.md`; for the real stack see
-> `CLAUDE.md`.
-
-## 🎯 Engineering Principles
-
-1. **Performance First** - Every feature must meet performance budgets
-2. **Modular Architecture** - Clean separation of concerns via NBM modules
-3. **Test-Driven Development** - Minimum 80% code coverage
-4. **API Stability** - Backward compatibility for public APIs
-5. **Security by Design** - Security considered in every decision
-
-## 📊 Key Technical Metrics
-
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| Startup Time | <3s | 2.8s | ✅ |
-| Memory (Idle) | <500MB | 450MB | ✅ |
-| Test Coverage | >80% | 85% | ✅ |
-| Build Time | <5min | 4min | ✅ |
-| P95 Response | <100ms | 95ms | ✅ |
-
-## 🔧 Technology Stack
-
-### Core Platform
-- **Platform:** NetBeans RCP 22.0
-- **Language:** Java 17 (Temurin)
-- **Build:** Maven 3.9.x
-- **Modules:** NetBeans Module System (NBM)
-
-### Web Technologies
-- **JavaScript:** Chrome V8 via J2V8
-- **TypeScript:** Native compiler integration
-- **Language Servers:** LSP protocol support
-- **Debugging:** Chrome DevTools Protocol
-
-### Infrastructure
-- **CI/CD:** GitHub Actions
-- **Monitoring:** OpenTelemetry
-- **Analytics:** Privacy-first telemetry
-- **Distribution:** Platform-specific installers
-
-## 🚀 Quick Links
-
-- [GitHub Repository](https://github.com/NMOX/NMOX-Studio)
-- [Build Status](https://github.com/NMOX/NMOX-Studio/actions)
-- [Performance Dashboard](https://metrics.nmox.studio/performance)
-- [Security Reports](./security/reports/)
-
-## 📧 Engineering Contacts
-
-- **Engineering Lead:** eng-lead@nmox.studio
-- **Architecture:** architecture@nmox.studio
-- **Security:** security@nmox.studio
-- **DevOps:** devops@nmox.studio
-
----
-
-*Last Updated: January 2025*
-*Review Cycle: Bi-weekly*
+Every document in this directory is current. The v0.x-era papers that
+used to sit here — architecture, api-design, performance, scalability,
+security, testing-strategy, technical-roadmap, implementation-guide,
+team-structure and the rest — were removed in 3.0.1: **git is the
+archaeology.** A banner saying "do not believe this" is still something
+a reader has to open and dismiss, and a working tree of documents that
+are all true is worth more than a shelf of labelled wrong ones.
+`git log -- docs/engineering/` has them if you want them.

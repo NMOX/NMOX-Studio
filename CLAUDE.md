@@ -338,8 +338,7 @@ All 15 project templates (React/Vue/Svelte/Solid via Vite, Angular, vanilla, PHP
 
 ## Known Issues and Technical Debt
 
-See `docs/engineering/tech-debt.md` for the CURRENT ledger (the
-`docs/hack/` copy is v0.x archaeology). Key items:
+See `docs/engineering/tech-debt.md` for the CURRENT ledger. Key items:
 
 1. **Built-in templates live in code** (ProjectTemplates.java) - deliberate since v1.293.0: their pins carry gate-enforced version ceilings. User templates ARE data-driven now: ~/.nmox/templates.d drop-ins join the wizard (see docs/project-templates.md)
 2. **Startup** - window in 1.4-2.7s with ZERO processes spawned at boot (measured v1.38.0, JFR-verified; the module system scanning ~519 cluster jars is ~90% of it - the deliberate feature-set price)
@@ -962,7 +961,10 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger (the
 - `docs/engineering/codebase-guide.md` - A beginner's guide to the codebase: the five RCP ideas everything rides on, four traced flows (boot / open-a-file / press-GO / send-a-request) with real file links, and the house laws with their origins — start here before reading code
 - `docs/engineering/plan.md` - The CURRENT plan: where the project stands, honest gaps, ranked opportunities, the working method + house laws + failure patterns — read this first when deciding what to do next
 - `CONTRIBUTING.md` - Contribution guidelines
-- `docs/hack/` and `docs/product/` and most of `docs/engineering/` - v0.x-era documents kept for archaeology; every one carries a "Historical document" banner and none describes the shipping product
+- **Every document under `docs/` is current.** The v0.x-era `hack/`
+  and `product/` directories and the early `engineering/` papers were
+  removed in 3.0.1 — git is the archaeology, and a banner saying "do
+  not believe this" is still a document a reader must open to dismiss.
 
 ## Troubleshooting
 
