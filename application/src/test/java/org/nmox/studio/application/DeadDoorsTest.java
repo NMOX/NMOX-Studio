@@ -78,6 +78,42 @@ class DeadDoorsTest {
         assertThat(open).as("bug-tracking doors a user can see and never use").isEmpty();
     }
 
+    /**
+     * The "Set Project Configuration" combo and its Run-menu row fill from
+     * a project type's {@code ProjectConfigurationProvider}, and none ships:
+     * NMOX's WebProject offers no configurations and no Maven, Gradle or
+     * Ant project module is in the cluster. Both are masked; this names the
+     * provider or module that would make them useful again.
+     */
+    @Test
+    @DisplayName("the empty project-configuration combo stays hidden while no project type has configurations")
+    void noConfigurationsNoCombo() throws Exception {
+        List<String> providers = new ArrayList<>();
+        try (Stream<Path> walk = Files.walk(Path.of(".."))) {
+            walk.filter(p -> p.toString().endsWith(".java") && p.toString().contains("/src/main/java/"))
+                    .filter(p -> !p.toString().contains("/.claude/"))
+                    .forEach(p -> {
+                        try {
+                            if (Files.readString(p).contains("ProjectConfigurationProvider")) {
+                                providers.add(p.toString());
+                            }
+                        } catch (java.io.IOException e) {
+                            throw new java.io.UncheckedIOException(e);
+                        }
+                    });
+        }
+        try (Stream<Path> walk = Files.walk(CLUSTER)) {
+            walk.filter(p -> p.getFileName().toString()
+                    .matches("org-netbeans-modules-(maven|gradle|java-j2seproject|ant-freeform)\\.jar"))
+                    .forEach(p -> providers.add(p.getFileName().toString()));
+        }
+        assertThat(providers).as("a project type with configurations ships: unmask the combo and its menu row")
+                .isEmpty();
+        String ui = Files.readString(Path.of("..", "ui", "src", "main", "resources", "org", "nmox", "studio", "ui", "layer.xml"));
+        assertThat(ui.split("org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden", -1))
+                .as("both the toolbar combo and the menu row are masked").hasSize(3);
+    }
+
     private static void collect(Element el, String path, boolean owner, Set<String> doors, Set<String> masks) {
         for (Node n = el.getFirstChild(); n != null; n = n.getNextSibling()) {
             if (n instanceof Element c) {

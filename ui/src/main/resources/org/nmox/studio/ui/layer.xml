@@ -52,6 +52,10 @@
                  line). The Welcome is this product's dashboard. -->
             <file name="org-netbeans-modules-dashboard-ShowDashboardAction.shadow_hidden"/>
         </folder>
+        <folder name="BuildProject">
+            <!-- the empty configuration combo's menu row (see Toolbars/Build) -->
+            <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
+        </folder>
         <folder name="Versioning">
             <!-- 3.1.0: the same bug-tracking module also put "Find Tasks..."
                  and "Report Task..." on the Team menu, where with no
@@ -99,6 +103,17 @@
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
             </file>
+        </folder>
+        <!-- 3.1.0: the "Set Project Configuration" combo is filled by a
+             project type's ProjectConfigurationProvider, and the only
+             project type in this cluster (NMOX's own WebProject) has none:
+             no Maven, Gradle or Ant project support ships. So the combo
+             sat empty on every toolbar, the widest control on it, and
+             ledger 90 found its label the one toolbar string no overlay
+             reaches. Its Run-menu twin is masked beside it. DeadDoorsTest
+             names a configuration provider if one ever ships. -->
+        <folder name="Build">
+            <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
         </folder>
     </folder>
     <!-- The update center (ledger 21): the platform's autoupdate stack
