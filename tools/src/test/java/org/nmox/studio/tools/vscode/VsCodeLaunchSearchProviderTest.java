@@ -42,7 +42,9 @@ class VsCodeLaunchSearchProviderTest {
                 { "type": "node", "request": "launch", "name": "Launch Program",
                   "skipFiles": ["<node_internals>/**"], "program": "${workspaceFolder}/server.js" },
                 { "type": "node", "request": "launch", "name": "Launch with args",
-                  "program": "server.js", "args": ["--port", "3000"] },
+                  "program": "server.js", "args": ["--port", "3000"], "env": { "ROOT": "${workspaceFolder}" } },
+                { "type": "node", "request": "launch", "name": "Launch with a runtime",
+                  "program": "server.js", "runtimeExecutable": "nodemon" },
                 { "type": "chrome", "request": "launch", "name": "Launch Chrome",
                   "url": "http://localhost:8080", "webRoot": "${workspaceFolder}/web" },
                 { "type": "node", "request": "attach", "name": "Attach", "port": 9229 },
@@ -77,6 +79,15 @@ class VsCodeLaunchSearchProviderTest {
         @Override
         public boolean debug(File file, File workingDir) {
             handed.add(new Object[] {"file", file, workingDir});
+            return true;
+        }
+
+        @Override
+        public boolean debug(File file, File workingDir, List<String> args, java.util.Map<String, String> env) {
+            if (args.isEmpty() && env.isEmpty()) {
+                return debug(file, workingDir);
+            }
+            handed.add(new Object[] {"file+", file, workingDir, args, env});
             return true;
         }
 
@@ -131,7 +142,8 @@ class VsCodeLaunchSearchProviderTest {
         assertThat(items.get(0).label()).isEqualTo("Debug: Launch Program — ${workspaceFolder}/server.js");
         assertThat(names(VsCodeLaunchSearchProvider.itemsFor("debug", project.toFile())))
                 .as("the vocabulary lists every configuration and compound, name order")
-                .containsExactly("Attach", "Full stack", "Launch Chrome", "Launch Program", "Launch with args");
+                .containsExactly("Attach", "Full stack", "Launch Chrome", "Launch Program", "Launch with a runtime",
+                        "Launch with args");
         assertThat(names(VsCodeLaunchSearchProvider.itemsFor("chrome", project.toFile()))).containsExactly("Launch Chrome");
         assertThat(VsCodeLaunchSearchProvider.itemsFor("postgres", project.toFile())).isEmpty();
         assertThat(VsCodeLaunchSearchProvider.itemsFor("debug", null)).isEmpty();
@@ -188,15 +200,29 @@ class VsCodeLaunchSearchProviderTest {
     }
 
     @Test
+    @DisplayName("args and env reach the debugger, variables substituted (3.1.0)")
+    void argsAndEnvReachTheDebugger() throws Exception {
+        enter("Launch with args");
+        assertThat(handed).hasSize(1);
+        Object[] h = handed.get(0);
+        assertThat(h[0]).isEqualTo("file+");
+        assertThat(h[3]).isEqualTo(List.of("--port", "3000"));
+        @SuppressWarnings("unchecked")
+        java.util.Map<String, String> env = (java.util.Map<String, String>) h[4];
+        assertThat(new File(env.get("ROOT")).getCanonicalFile()).isEqualTo(project.toFile().getCanonicalFile());
+        assertThat(asked).as("trust asked before the hand-off").hasSize(1);
+    }
+
+    @Test
     @DisplayName("refusals speak on the status line, hand over nothing and ask nothing")
     void refusalsSpeak() {
-        enter("Launch with args");
+        enter("Launch with a runtime");
         enter("Attach");
         enter("Full stack");
         assertThat(handed).isEmpty();
         assertThat(asked).as("a refusal asks no trust question").isEmpty();
         assertThat(said).containsExactly(
-                "Configuration \"Launch with args\" sets args, which the NMOX Studio debugger cannot pass on; "
+                "Configuration \"Launch with a runtime\" sets runtimeExecutable, which the NMOX Studio debugger cannot pass on; "
                         + "it would debug something other than what the file says.",
                 "Configuration \"Attach\" uses request attach; the NMOX Studio debugger only launches.",
                 "Compound \"Full stack\" starts several sessions at once; the NMOX Studio debugger starts one at a time.");

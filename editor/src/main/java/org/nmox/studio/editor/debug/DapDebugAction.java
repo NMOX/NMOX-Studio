@@ -91,6 +91,16 @@ public class DapDebugAction extends BaseAction {
      * {@link #supportsWorkingDir} says which MIME types honour it.
      */
     static void launch(File file, String mime, File workingDir) {
+        launch(file, mime, workingDir, List.of(), Map.of());
+    }
+
+    /**
+     * {@link #launch(File, String, File)} with the program's arguments and
+     * added environment (3.1.0: a {@code .vscode/launch.json}
+     * configuration's {@code args} and {@code env}); both adapters that
+     * honour a working directory take them in their launch request.
+     */
+    static void launch(File file, String mime, File workingDir, List<String> args, Map<String, String> env) {
         if (file == null || !supportsMime(mime)) {
             return;
         }
@@ -113,9 +123,9 @@ public class DapDebugAction extends BaseAction {
                     return;
                 }
                 switch (mime) {
-                    case "text/x-python" -> debugPython(file, workingDir);
+                    case "text/x-python" -> debugPython(file, workingDir, args, env);
                     case "text/x-go" -> debugGo(file);
-                    case "text/javascript", "text/typescript" -> debugNode(file, workingDir);
+                    case "text/javascript", "text/typescript" -> debugNode(file, workingDir, args, env);
                     default -> {
                         return;
                     }
@@ -137,7 +147,8 @@ public class DapDebugAction extends BaseAction {
     }
 
     /** debugpy's adapter speaks DAP on stdio: the clean case. */
-    private static void debugPython(File file, File workingDir) throws IOException {
+    private static void debugPython(File file, File workingDir, List<String> args, Map<String, String> env)
+            throws IOException {
         File cwd = workingDir != null ? workingDir : file.getParentFile();
         ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(
                 List.of("python3", "-m", "debugpy.adapter")));
@@ -150,13 +161,13 @@ public class DapDebugAction extends BaseAction {
         // not leave the spawned adapter running for the IDE's lifetime
         try {
             DAPConfiguration.create(adapter.getInputStream(), adapter.getOutputStream())
-                    .addConfiguration(Map.of(
+                    .addConfiguration(withArgsAndEnv(Map.of(
                             "type", "python",
                             "request", "launch",
                             "program", file.getAbsolutePath(),
                             "cwd", cwd.getAbsolutePath(),
                             "console", "internalConsole",
-                            "justMyCode", true))
+                            "justMyCode", true), args, env))
                     .setSessionName("Python: " + file.getName())
                     .launch();
         } catch (RuntimeException ex) {
@@ -213,7 +224,8 @@ public class DapDebugAction extends BaseAction {
      * hands every further target (forked children, worker threads) to the
      * platform as a session of its own.
      */
-    private static void debugNode(File file, File workingDir) throws IOException, InterruptedException {
+    private static void debugNode(File file, File workingDir, List<String> args, Map<String, String> env)
+            throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
                 "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
         if (serverJs == null) {
@@ -224,13 +236,7 @@ public class DapDebugAction extends BaseAction {
         try {
             DapProxy proxy = DapProxy.start(server.port(), server::stop);
             DAPConfiguration.create(proxy.clientInput(), proxy.clientOutput())
-                    .addConfiguration(Map.of(
-                            "type", "pwa-node",
-                            "request", "launch",
-                            "name", file.getName(),
-                            "program", file.getAbsolutePath(),
-                            "cwd", root.getAbsolutePath(),
-                            "console", "internalConsole"))
+                    .addConfiguration(nodeLaunchRequest(file, root, args, env))
                             // auto-attach stays ON (js-debug's default): every
                             // child process and worker the program starts
                             // becomes a debug session of its own through the
@@ -241,6 +247,49 @@ public class DapDebugAction extends BaseAction {
             server.stop();
             throw ex;
         }
+    }
+
+    /**
+     * The js-debug launch request for {@code program}. {@code outputCapture:
+     * std} reads the program's stdout and stderr from the process itself:
+     * js-debug's default ({@code console}) takes console output from the
+     * child session instead, and a program that prints and exits before
+     * that session is spliced in printed NOTHING to the Output window -
+     * walked in 3.1.0, a newcomer's Debug on hello.js showed only the
+     * command line. The Output window shows text either way, so nothing
+     * richer is lost.
+     */
+    public static Map<String, Object> nodeLaunchRequest(File program, File cwd, List<String> args,
+            Map<String, String> env) {
+        return withArgsAndEnv(Map.of(
+                "type", "pwa-node",
+                "request", "launch",
+                "name", program.getName(),
+                "program", program.getAbsolutePath(),
+                "cwd", cwd.getAbsolutePath(),
+                "console", "internalConsole",
+                "outputCapture", "std"), args, env);
+    }
+
+    /**
+     * A launch request with {@code args} and {@code env} added when there
+     * are any: both js-debug and debugpy read {@code args} as the
+     * program's argument list and {@code env} as variables added to the
+     * inherited environment. Empty ones add nothing, so a plain launch is
+     * the request it always was.
+     */
+    public static Map<String, Object> withArgsAndEnv(Map<String, ?> base, List<String> args, Map<String, String> env) {
+        Map<String, Object> out = new java.util.LinkedHashMap<>(base);
+        if (args.isEmpty() && env.isEmpty()) {
+            return out;
+        }
+        if (!args.isEmpty()) {
+            out.put("args", List.copyOf(args));
+        }
+        if (!env.isEmpty()) {
+            out.put("env", Map.copyOf(env));
+        }
+        return out;
     }
 
     /**

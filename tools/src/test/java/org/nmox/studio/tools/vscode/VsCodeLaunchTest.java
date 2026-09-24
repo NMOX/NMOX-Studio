@@ -124,6 +124,39 @@ class VsCodeLaunchTest {
     }
 
     @Test
+    @DisplayName("args and env pass on in the shapes the adapters take; any other shape is refused by name")
+    void argsAndEnv() throws Exception {
+        Resolved ok = resolve("""
+                {"type":"python","request":"launch","name":"p","program":"main.py",
+                 "args":["--root","${workspaceFolder}"],"env":{"MODE":"dev","HOME_DIR":"${workspaceFolder}/x"}}
+                """);
+        assertThat(ok).isInstanceOf(VsCodeLaunch.DebugFile.class);
+        VsCodeLaunch.DebugFile f = (VsCodeLaunch.DebugFile) ok;
+        assertThat(f.args()).hasSize(2).startsWith("--root");
+        assertThat(f.args().get(1)).doesNotContain("${");
+        assertThat(f.env()).containsEntry("MODE", "dev").containsKey("HOME_DIR");
+        assertThat(f.env().get("HOME_DIR")).doesNotContain("${").endsWith("x");
+
+        assertThat(refused(resolve("""
+                {"type":"node","request":"launch","name":"n","program":"server.js","args":"--port 3000"}
+                """)).detail()).as("VS Code's one-string args is split by a shell this debugger does not run")
+                .isEqualTo("args");
+        assertThat(refused(resolve("""
+                {"type":"node","request":"launch","name":"n","program":"server.js","args":["--port",3000]}
+                """)).detail()).isEqualTo("args");
+        assertThat(refused(resolve("""
+                {"type":"node","request":"launch","name":"n","program":"server.js","env":{"DEBUG":null}}
+                """)).detail()).as("a null unsets a variable, which cannot be passed on").isEqualTo("env");
+        Refused v = refused(resolve("""
+                {"type":"node","request":"launch","name":"n","program":"server.js","args":["${input:port}"]}
+                """));
+        assertThat(v.reason()).isEqualTo(Reason.VARIABLE);
+        assertThat(refused(resolve("""
+                {"type":"chrome","request":"launch","name":"c","url":"http://localhost:1","args":["--x"]}
+                """)).detail()).as("a page takes no program arguments").isEqualTo("args");
+    }
+
+    @Test
     @DisplayName("every field the debugger cannot pass on is refused BY NAME — never silently dropped")
     void unsupportedFieldsRefused() {
         Refused r = refused(resolve("""
@@ -132,7 +165,8 @@ class VsCodeLaunchTest {
                  "runtimeExecutable":"nodemon","runtimeArgs":["--inspect"],"preLaunchTask":"build"}
                 """));
         assertThat(r.reason()).isEqualTo(Reason.FIELDS);
-        assertThat(r.detail()).isEqualTo("args, env, envFile, preLaunchTask, runtimeArgs, runtimeExecutable");
+        assertThat(r.detail()).as("args and env pass since 3.1.0; the rest still cannot")
+                .isEqualTo("envFile, preLaunchTask, runtimeArgs, runtimeExecutable");
 
         assertThat(refused(resolve("""
                 {"type":"node","request":"launch","name":"n","program":"server.js","port":9229}

@@ -36,7 +36,7 @@ class DebugTrustGateTest {
                 .isGreaterThan(0);
 
         // and it must gate BEFORE any adapter or debuggee is spawned
-        for (String launcher : new String[] {"debugPython(file, workingDir)", "debugGo(file)", "debugNode(file, workingDir)"}) {
+        for (String launcher : new String[] {"debugPython(file, workingDir, args, env)", "debugGo(file)", "debugNode(file, workingDir, args, env)"}) {
             assertThat(source.indexOf(launcher))
                     .as(launcher + " must come after the trust gate")
                     .isGreaterThan(trustCheck);

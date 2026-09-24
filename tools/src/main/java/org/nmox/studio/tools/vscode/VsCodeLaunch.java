@@ -36,17 +36,23 @@ import org.nmox.studio.tools.vscode.VsCodeTasks.Os;
  * a Node program ({@code pwa-node} launch of one file, with a working
  * directory), a Python program ({@code debugpy} launch of one file, with a
  * working directory), and a page in a Chromium-family browser ({@code
- * pwa-chrome} launch of a URL, with a web root). Nothing else crosses: no
- * arguments, no environment, no runtime, no pre-launch task. So a
- * configuration maps only when every field it sets is one of those, or one
- * that shapes the debugger's VIEW and never what runs ({@link #VIEW_ONLY}).
+ * pwa-chrome} launch of a URL, with a web root). A Node or Python program
+ * also takes its {@code args} (a list of strings) and its {@code env} (an
+ * object of strings, added to the inherited environment), since 3.1.0
+ * passes both to the adapter. Nothing else crosses: no runtime, no
+ * pre-launch task, no env file. So a configuration maps only when every
+ * field it sets is one of those, or one that shapes the debugger's VIEW
+ * and never what runs ({@link #VIEW_ONLY}).
  *
- * <p><b>What is refused, out loud.</b> Every other field — {@code args},
- * {@code env}, {@code envFile}, {@code runtimeExecutable}, {@code
- * runtimeArgs}, {@code preLaunchTask}, {@code port}, anything this class
- * has not been taught — is refused naming the field, because a program
- * started without its arguments or its environment is a different program
- * from the one the file describes. {@code "request": "attach"} is refused
+ * <p><b>What is refused, out loud.</b> Every other field — {@code
+ * envFile}, {@code runtimeExecutable}, {@code runtimeArgs}, {@code
+ * preLaunchTask}, {@code port}, anything this class has not been taught —
+ * is refused naming the field, because a program started without them is
+ * a different program from the one the file describes; so are an {@code
+ * args} that is not a list of strings (VS Code's one-string form is split
+ * by a shell this debugger does not run) and an {@code env} with a value
+ * that is not a string (a {@code null} there unsets a variable, which
+ * cannot be passed on). {@code "request": "attach"} is refused
  * (the debugger only launches), as is a {@code type} it has no adapter for
  * ({@code go}, {@code cppdbg}, {@code msedge}: Edge is not whichever
  * Chromium browser is installed), a compound (it starts several sessions at
@@ -89,21 +95,32 @@ public final class VsCodeLaunch {
 
     /** The fields each kind passes on to its session. */
     private static final Map<Kind, Set<String>> HONOURED = Map.of(
-            Kind.NODE, Set.of("program", "cwd"),
-            Kind.PYTHON, Set.of("program", "cwd"),
+            Kind.NODE, Set.of("program", "cwd", "args", "env"),
+            Kind.PYTHON, Set.of("program", "cwd", "args", "env"),
             Kind.CHROME, Set.of("url", "file", "webRoot"));
 
     /** One configuration (or compound) as the file declares it, after the running OS's override. */
     record Config(String name, String type, String request, boolean compound,
-            Map<String, String> strings, List<String> keys) {
+            Map<String, String> strings, List<String> keys, List<String> args, Map<String, String> env) {
+
+        /** A configuration with no {@code args} or {@code env}. */
+        Config(String name, String type, String request, boolean compound,
+                Map<String, String> strings, List<String> keys) {
+            this(name, type, request, compound, strings, keys, List.of(), Map.of());
+        }
     }
 
     /** What pressing Enter on a configuration would do. */
     sealed interface Resolved permits DebugFile, DebugPage, Refused {
     }
 
-    /** Debug {@code program} with {@code cwd} as its working directory. */
-    record DebugFile(Kind kind, File program, File cwd) implements Resolved {
+    /** Debug {@code program} with {@code cwd} as its working directory, {@code args} and {@code env} added. */
+    record DebugFile(Kind kind, File program, File cwd, List<String> args, Map<String, String> env)
+            implements Resolved {
+
+        DebugFile(Kind kind, File program, File cwd) {
+            this(kind, program, cwd, List.of(), Map.of());
+        }
     }
 
     /** Open {@code url} in a browser under the debugger, sources mapped from {@code webRoot}. */
@@ -210,7 +227,8 @@ public final class VsCodeLaunch {
                 out.add(new Config(name, config.optString("type", "").strip().toLowerCase(Locale.ROOT),
                         config.optString("request", "").strip().toLowerCase(Locale.ROOT), false,
                         java.util.Collections.unmodifiableMap(strings),
-                        List.copyOf(new TreeSet<>(config.keySet()))));
+                        List.copyOf(new TreeSet<>(config.keySet())),
+                        argsOf(config.opt("args")), envOf(config.opt("env"))));
             }
         }
         JSONArray compounds = root.optJSONArray("compounds");
@@ -224,6 +242,50 @@ public final class VsCodeLaunch {
             }
         }
         return List.copyOf(out);
+    }
+
+    /**
+     * {@code args} as a list of strings: empty when absent, null when it
+     * is anything else (VS Code's one-string form among them), so the
+     * resolver can refuse it by name.
+     */
+    static List<String> argsOf(Object raw) {
+        if (raw == null) {
+            return List.of();
+        }
+        if (!(raw instanceof JSONArray array)) {
+            return null;
+        }
+        List<String> out = new ArrayList<>();
+        for (int i = 0; i < array.length(); i++) {
+            if (!(array.opt(i) instanceof String s)) {
+                return null;
+            }
+            out.add(s);
+        }
+        return List.copyOf(out);
+    }
+
+    /**
+     * {@code env} as names and string values: empty when absent, null when
+     * it is not an object of strings (a {@code null} value unsets a
+     * variable in VS Code, which cannot be passed on).
+     */
+    static Map<String, String> envOf(Object raw) {
+        if (raw == null) {
+            return Map.of();
+        }
+        if (!(raw instanceof JSONObject object)) {
+            return null;
+        }
+        Map<String, String> out = new TreeMap<>();
+        for (String k : object.keySet()) {
+            if (!(object.opt(k) instanceof String s) || k.isBlank()) {
+                return null;
+            }
+            out.put(k, s);
+        }
+        return java.util.Collections.unmodifiableMap(out);
     }
 
     /* ---------------------------------------------------------------- resolving */
@@ -268,8 +330,14 @@ public final class VsCodeLaunch {
         }
         for (String key : honoured) {
             // an honoured field that is not a string (a number, an array)
-            // cannot be passed on as written either
-            if (config.keys().contains(key) && !config.strings().containsKey(key) && !dropped.contains(key)) {
+            // cannot be passed on as written either; args and env have
+            // their own shapes, read at parse time
+            boolean malformed = switch (key) {
+                case "args" -> config.args() == null;
+                case "env" -> config.env() == null;
+                default -> config.keys().contains(key) && !config.strings().containsKey(key);
+            };
+            if (malformed && !dropped.contains(key)) {
                 dropped.add(key);
             }
         }
@@ -282,13 +350,21 @@ public final class VsCodeLaunch {
             dropped.sort(null);
             return new Refused(Reason.FIELDS, String.join(", ", dropped));
         }
+        List<String> written = new ArrayList<>();
         for (String key : new TreeSet<>(honoured)) {
             String value = config.strings().get(key);
             if (value != null) {
-                String unknown = VsCodeTasks.unsupportedVariable(value);
-                if (unknown != null) {
-                    return new Refused(Reason.VARIABLE, unknown);
-                }
+                written.add(value);
+            }
+        }
+        if (kind != Kind.CHROME) {
+            written.addAll(config.args());
+            written.addAll(config.env().values());
+        }
+        for (String value : written) {
+            String unknown = VsCodeTasks.unsupportedVariable(value);
+            if (unknown != null) {
+                return new Refused(Reason.VARIABLE, unknown);
             }
         }
         UnaryOperator<String> sub = s -> VsCodeTasks.substitute(s, project, env);
@@ -315,7 +391,10 @@ public final class VsCodeLaunch {
         if (cwd instanceof Refused r) {
             return r;
         }
-        return new DebugFile(kind, program, (File) cwd);
+        List<String> args = config.args().stream().map(sub).toList();
+        Map<String, String> env = new TreeMap<>();
+        config.env().forEach((k, v) -> env.put(k, sub.apply(v)));
+        return new DebugFile(kind, program, (File) cwd, args, java.util.Collections.unmodifiableMap(env));
     }
 
     private static Resolved page(Config config, File project, UnaryOperator<String> sub) {

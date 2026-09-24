@@ -41,6 +41,21 @@ public interface DebugLauncher {
     }
 
     /**
+     * {@link #debug(File, File)} with the program's command-line arguments
+     * and environment variables added to the ones it inherits (3.1.0: a
+     * {@code .vscode/launch.json} configuration's {@code args} and
+     * {@code env}). Additive: a launcher that has not been taught them
+     * answers false for any non-empty one, having started nothing.
+     *
+     * @return false, having started nothing, when this launcher cannot
+     *         pass them on for that file
+     */
+    default boolean debug(File file, File workingDir, java.util.List<String> args,
+            java.util.Map<String, String> env) {
+        return args.isEmpty() && env.isEmpty() && debug(file, workingDir);
+    }
+
+    /**
      * Opens {@code url} in a browser under the debugger, mapping the page's
      * scripts to sources under {@code webRoot} (v3.1.0: a {@code
      * .vscode/launch.json} Chrome configuration); returns at once, with the

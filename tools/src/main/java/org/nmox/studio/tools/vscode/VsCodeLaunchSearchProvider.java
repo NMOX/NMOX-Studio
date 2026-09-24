@@ -151,7 +151,7 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
             return;
         }
         boolean started = resolved instanceof DebugFile file
-                ? debugger.debug(file.program(), file.cwd())
+                ? debugger.debug(file.program(), file.cwd(), file.args(), file.env())
                 : debugger.debugPage(((DebugPage) resolved).url(), ((DebugPage) resolved).webRoot());
         statusSink.accept(started
                 ? message("VsCodeLaunchSearchProvider_starting", config.name())

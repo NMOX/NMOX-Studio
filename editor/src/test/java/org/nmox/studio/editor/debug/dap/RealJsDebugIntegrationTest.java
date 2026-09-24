@@ -54,6 +54,41 @@ class RealJsDebugIntegrationTest {
     }
 
     @Test
+    @DisplayName("a quick program's output, args and env reach the client through the real adapter (3.1.0)")
+    void argsAndEnvReachTheProgram(@TempDir Path dir) throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        Path probe = dir.resolve("probe.js");
+        Files.writeString(probe, """
+                console.log('ARGS=' + process.argv.slice(2).join('|') + ' ENV=' + process.env.NMOX_PROBE);
+                """, StandardCharsets.UTF_8);
+
+        server = JsDebugServer.start(SERVER_JS);
+        proxy = DapProxy.start(server.port(), () -> { });
+        Client nb = new Client(proxy.clientInput(), proxy.clientOutput());
+        nb.request("initialize", new JSONObject()
+                .put("clientID", "test").put("adapterID", "test")
+                .put("pathFormat", "path")
+                .put("linesStartAt1", true).put("columnsStartAt1", true));
+        nb.awaitResponse("initialize");
+
+        // the exact request DapDebugAction sends. The program prints and exits
+        // at once: with js-debug's default output capture its line never
+        // reached the client (walked in 3.1.0 - Debug on hello.js showed
+        // only the command line), so this also holds outputCapture: std.
+        // cwd is not dir, for the Windows @TempDir reason given below.
+        java.util.Map<String, Object> launch = org.nmox.studio.editor.debug.DapDebugAction.nodeLaunchRequest(
+                probe.toFile(), SERVER_JS.getParentFile(),
+                java.util.List.of("--port", "3000", "two words"), java.util.Map.of("NMOX_PROBE", "yes"));
+        nb.request("launch", new JSONObject(launch));
+        nb.awaitEvent("initialized");
+        nb.request("configurationDone", new JSONObject());
+
+        JSONObject out = nb.awaitOutput("ARGS=");
+        assertThat(out.getJSONObject("body").getString("output"))
+                .contains("ARGS=--port|3000|two words ENV=yes");
+    }
+
+    @Test
     @DisplayName("breakpoint in a node script: verified, hit, stack visible, continues to exit")
     void shouldHitBreakpointEndToEnd(@TempDir Path dir) throws Exception {
         assumeTrue(nodePresent(), "node not installed");
@@ -281,6 +316,8 @@ class RealJsDebugIntegrationTest {
         private final OutputStream out;
         private final BlockingQueue<JSONObject> frames = new LinkedBlockingQueue<>();
         private final AtomicInteger seq = new AtomicInteger();
+        /** What await() passed over, for a failure message worth reading. */
+        private final List<String> skipped = java.util.Collections.synchronizedList(new java.util.ArrayList<>());
 
         Client(InputStream in, OutputStream out) {
             this.out = out;
@@ -331,6 +368,13 @@ class RealJsDebugIntegrationTest {
                     && command.equals(f.optString("command")));
         }
 
+        /** An output event whose text contains {@code fragment}. */
+        JSONObject awaitOutput(String fragment) throws InterruptedException {
+            return await(f -> "event".equals(f.optString("type")) && "output".equals(f.optString("event"))
+                    && f.optJSONObject("body") != null
+                    && f.getJSONObject("body").optString("output").contains(fragment));
+        }
+
         JSONObject awaitEvent(String event) throws InterruptedException {
             return await(f -> "event".equals(f.optString("type"))
                     && event.equals(f.optString("event")));
@@ -344,8 +388,12 @@ class RealJsDebugIntegrationTest {
                 if (f != null && match.test(f)) {
                     return f;
                 }
+                if (f != null && skipped.size() < 200) {
+                    String t = f.toString();
+                    skipped.add(t.length() > 300 ? t.substring(0, 300) : t);
+                }
             }
-            throw new AssertionError("expected frame never arrived");
+            throw new AssertionError("expected frame never arrived; passed over: " + skipped);
         }
     }
 }
