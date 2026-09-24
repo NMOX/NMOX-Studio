@@ -40,7 +40,7 @@ stojakiem, więc każde urządzenie działa w katalogu tego projektu.
 4. **Odpal.** Obróć stojak przodem i naciśnij przycisk **IGNITE** urządzenia
    IGNITION. Uruchamia proces; wyjście spływa do MONITOR, a diody stanu
    się zapalają. Jeśli projekt nie jest jeszcze zaufany, najpierw dostaniesz
-   jednorazowe pytanie o zaufanie do przestrzeni roboczej — to straż, która
+   jednorazowe pytanie o zaufanie do obszaru roboczego — to straż, która
    nie pozwala sklonowanemu repozytorium uruchamiać skryptów bez twojej
    zgody.
 

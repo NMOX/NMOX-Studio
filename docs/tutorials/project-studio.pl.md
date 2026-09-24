@@ -51,7 +51,7 @@ Karta **Studio projektu**, zadokowana obok Stanowiska pracy, albo
   projekt STATIC.
 - Uruchom/Zbuduj/Testuj/Wyczyść i stojak to **jeden mechanizm**; gdy
   pierwszy raz uruchomią kod projektu, dostaniesz pytanie o zaufanie do
-  przestrzeni roboczej.
+  obszaru roboczego.
 
 ## Dalej
 
