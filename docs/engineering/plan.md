@@ -1,5 +1,50 @@
 # The Plan
 
+*Currency addendum 2026-09-24 (v3.1.0, the developer-experience release). David
+handed the product to a product manager for one night: walk the first hour, the
+switch from VS Code and the contributor's clone, fix what the walks find, and
+ship once in the morning. The plan and every row it grew are in
+[dx-plan-3.1.md](dx-plan-3.1.md). Five lessons are worth more than the rows.*
+
+***A probe proves the build it ran on.*** *Folders from Finder and the Dock
+were built, gated and documented on the evidence of a probe bundle, and the
+first notarized dry run showed the variable the fix depends on is ignored
+under the hardened runtime every release runs in. Anything on macOS that
+depends on process identity, environment variables or entitlements is proven
+on a dispatched, notarized dry run or not claimed at all — the release
+workflow's `workflow_dispatch` exists for exactly this, and it found two
+defects of its own the night it was built.*
+
+***The installers were never opened the way users open them.*** *3.0.0–3.0.2
+passed every check and still could not start from Homebrew or a browser,
+because every check downloaded with a tool that sets no quarantine. The proof
+now quarantines every file of a copied app and reads the dialog macOS
+actually raises.*
+
+***Translators remain the best readers of the English.*** *Four groups found a
+menu path that does not exist on macOS, a history sentence on a newcomer page,
+a vague sentence two languages could not render, and the product's own About
+row and Action Items tab untranslated in fourteen languages — while the menu
+gate passed, because it walks only paths whose first word is a real menu
+(ledger 119).*
+
+***Proving a feature through the real thing finds the defect under it.***
+*The run that proved launch.json's `args` reach the program through the
+real js-debug is how the night found that a script which prints and exits
+showed NOTHING in Output under the debugger - a first-hour defect no test
+of the new feature would have looked for. The alternative fix (answer
+js-debug's startDebugging only once the child session is configured) was
+tried against the real adapter, failed, and is written where the next
+reader of `nodeLaunchRequest` will look.*
+
+***A gate's reach can shrink when the code it reads grows.***
+*`unixLaunchersShareOneRule` compared the two Unix launchers from a helper
+to "the first `fi` after a `done`"; a helper added the same night brought
+its own `for … done`, and from then on the comparison stopped before the
+option case it existed to compare. A mutant in that case lived through it
+until the next unit's mutation run noticed. After adding code a gate
+reads, mutate inside the region the gate is supposed to cover.*
+
 *Currency addendum 2026-09-22 (v3.0.2, a dependency release). Dependabot
 opened the MongoDB driver's 5.11.0 → 5.11.1 bump as routine; the driver's
 release notes carried two CVEs that no GitHub label or alert mentioned. Neither
