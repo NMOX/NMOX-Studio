@@ -4,8 +4,8 @@ You don't need to own any cryptocurrency, run a server, or hold a
 single key to understand — or even write and test — smart contracts.
 Everything in this guide runs locally, costs nothing, and every code
 sample is real: it's the same code NMOX Studio's
-[Contract Kit](user-guide.md#8-wizards--kits) scaffolds and its
-[learning spaces](user-guide.md#7-learning-spaces) teach, and each one
+[Contract Kit](user-guide.md#8-wizards-and-kits) scaffolds and its
+[learning spaces](user-guide.md#11-learning-spaces) teach, and each one
 ran green against its real toolchain before it shipped.
 
 Already comfortable with the ideas? Skip to
