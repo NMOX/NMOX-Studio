@@ -37,7 +37,7 @@ public final class EditorConfigOnSave implements OnSaveTask {
         if (file == null || file.getName().equals(".editorconfig")) {
             return; // in-memory docs, and never rewrite the config itself
         }
-        Map<String, String> props = EditorConfig.propertiesFor(file);
+        Map<String, String> props = ProjectFormatting.propertiesFor(file);
         if (props.isEmpty()) {
             return;
         }

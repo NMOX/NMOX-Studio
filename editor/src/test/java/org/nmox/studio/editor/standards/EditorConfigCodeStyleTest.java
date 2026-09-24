@@ -113,6 +113,25 @@ class EditorConfigCodeStyleTest {
     }
 
     @Test
+    @DisplayName("A project with only .vscode/settings.json: two spaces, through the same platform calls (3.1.0)")
+    void vscodeSettingsThroughThePlatform(@TempDir Path tmp) throws Exception {
+        Files.createDirectories(tmp.resolve(".git"));
+        Files.createDirectories(tmp.resolve(".vscode"));
+        Files.writeString(tmp.resolve(".vscode/settings.json"), """
+                {
+                  // the house style
+                  "editor.tabSize": 2,
+                  "editor.insertSpaces": true,
+                }
+                """);
+        BaseDocument doc = documentFor(tmp.resolve("app.py"));
+
+        assertThat(IndentUtils.isExpandTabs(doc)).isTrue();
+        assertThat(IndentUtils.indentLevelSize(doc)).isEqualTo(2);
+        assertThat(IndentUtils.createIndentString(doc, 4)).isEqualTo("    ");
+    }
+
+    @Test
     @DisplayName("A four-space project: spaces, four wide, through the same platform calls")
     void spaceProjectThroughThePlatform(@TempDir Path tmp) throws Exception {
         Files.writeString(tmp.resolve(".editorconfig"), """

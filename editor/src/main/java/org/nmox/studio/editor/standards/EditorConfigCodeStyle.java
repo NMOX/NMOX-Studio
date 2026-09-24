@@ -146,10 +146,10 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
     private static Map<String, String> resolve(File file, String key) {
         Map<String, String> props;
         try {
-            props = Map.copyOf(EditorConfig.propertiesFor(file));
+            props = Map.copyOf(ProjectFormatting.propertiesFor(file));
         } catch (RuntimeException ex) {
             // a hostile or broken .editorconfig must not take the editor down with it
-            LOG.log(Level.INFO, "Could not read .editorconfig for " + file, ex);
+            LOG.log(Level.INFO, "Could not read the formatting settings for " + file, ex);
             props = Map.of();
         }
         if (CACHE.size() >= CACHE_CAP) {
