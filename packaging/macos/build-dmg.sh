@@ -165,7 +165,24 @@ fi
 # /bin/sh is a platform binary and the script is its input - exactly how
 # bin/nmoxstudio itself runs platform/lib/nbexec (`exec sh "$nbexec"`).
 # nohup also hands the script to /bin/sh: the same rule, one process later.
+#
+# CFProcessPath names this bundle's executable to the JVM, and it is what
+# lets Finder hand the IDE a folder. The JVM is a CHILD of the platform's
+# nbexec script, so CoreFoundation took the runtime's own embedded
+# Info.plist as the process's main bundle (lsappinfo named the running IDE
+# com.azul.zulu.java), and AWT answers open-documents events only when
+# the main bundle declares CFBundleDocumentTypes: a folder dropped on the
+# Dock icon reached no Java code at all. Named here, the main bundle is
+# NMOX Studio.app and its Info.plist below (measured 2026-09-23 with a
+# probe bundle of this launcher's exact shape: no event without it, every
+# event with it). A process that INHERITS the variable takes the same
+# identity, so the IDE removes it from its environment as it starts
+# (FinderOpen.early, LauncherEnvironment) - before anything it spawns can
+# inherit it. Only the bundled runtime gets it: that removal needs Java 22+,
+# and the fallback JDK below may be 21.
 if [ "$PROBE_OK" = "0" ]; then
+    CFProcessPath="$DIR/$(basename "$PRG")"
+    export CFProcessPath
     if [ "$FROM_TERMINAL" = yes ]; then
         nohup /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@" </dev/null >/dev/null 2>&1 &
         exit 0
@@ -199,6 +216,14 @@ chmod +x "$BUNDLE/Contents/MacOS/nmox-studio"
 # — the per-app AppleLanguages preference never reaches the JVM, whose
 # default stayed en_US. Options > General > Language is the control that
 # works. See ledger 94 in docs/engineering/tech-debt.md.
+#
+# CFBundleDocumentTypes declares FOLDERS (public.folder), and only folders:
+# it is what puts NMOX Studio in Finder's Open With menu for a folder and
+# lets the Dock icon accept a dropped one. Role Viewer, rank Alternate: the
+# app offers to open a folder and never asks to be the Mac's default for
+# one (Finder stays that). The folder is aimed, as File > Open Folder...
+# aims it - FinderOpen in the ui module, reached through CFProcessPath in
+# the launcher above. OpenFolderFromOsGateTest lints this plist.
 echo "==> Writing Info.plist"
 cat > "$BUNDLE/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -216,6 +241,18 @@ cat > "$BUNDLE/Contents/Info.plist" <<PLIST
     <key>NSHighResolutionCapable</key>    <true/>
     <key>LSMinimumSystemVersion</key>     <string>11.0</string>
     <key>NSHumanReadableCopyright</key>   <string>© NMOX. Apache License 2.0.</string>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>   <string>Folder</string>
+            <key>CFBundleTypeRole</key>   <string>Viewer</string>
+            <key>LSHandlerRank</key>      <string>Alternate</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>public.folder</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
 PLIST

@@ -77,6 +77,17 @@ class AimOptionTest {
     }
 
     @Test
+    @DisplayName("a trailing separator-dot folds away: Explorer's verb passes %V\\. so a drive root never ends in \\\"")
+    void trailingDotFolds() throws Exception {
+        Path c = Files.createDirectories(tmp.resolve("c"));
+        run(new File("/"), "--aim", c.toAbsolutePath() + File.separator + ".");
+        assertThat(aimed).containsExactly(c.toFile());
+        File root = c.toAbsolutePath().getRoot().toFile();
+        assertThat(AimOption.resolve(null, root.getPath() + File.separator + "."))
+                .as("a root plus separator-dot is still the root").isEqualTo(root);
+    }
+
+    @Test
     @DisplayName("an absolute path ignores the caller's directory")
     void absoluteWins() throws Exception {
         Path c = Files.createDirectories(tmp.resolve("c"));

@@ -286,8 +286,10 @@ class TerminalCommandGateTest {
     void windowsPathTask() throws IOException {
         String iss = read(ISS);
         assertThat(iss).contains("Name: \"addtopath\"; Description: \"{cm:AddToPath}\"\n");
-        assertThat(section(iss, "Tasks")).as("ticked by default, as VS Code's installer ticks it")
-                .doesNotContain("unchecked");
+        assertThat(section(iss, "Tasks").lines().filter(l -> l.startsWith("Name: \"addtopath\""))
+                .toList()).as("ticked by default, as VS Code's installer ticks it (the folder task,"
+                        + " OpenFolderFromOsGateTest's, is the one left unticked)")
+                .singleElement().asString().doesNotContain("unchecked");
         String messages = section(iss, "CustomMessages");
         assertThat(messages).as("the fallback every language without its own line gets").contains("\nAddToPath=");
         Matcher lang = Pattern.compile("(?m)^Name: \"([a-z]{2})\"; MessagesFile:").matcher(iss);

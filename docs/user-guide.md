@@ -131,6 +131,23 @@ Getting `nmox` onto your PATH:
 - **Linux:** the `.deb` installs `/usr/bin/nmox`. From the tarball, link
   it yourself: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
+You can hand NMOX Studio a folder without a terminal too, and it is aimed
+the same way:
+
+- **macOS:** right-click a folder in Finder and choose NMOX Studio under
+  **Open With**, or drop the folder on NMOX Studio's Dock icon. Several folders
+  at once aim the first and say so on the status line: the IDE works in one
+  folder at a time. A file dropped on the icon opens in the editor.
+- **Linux (the `.deb`):** your file manager lists NMOX Studio under *Open
+  With* for a folder. It does not become your default for folders; the file
+  manager stays that.
+- **Windows:** tick the installer's *Add "Open with NMOX Studio" to the
+  right-click menu of folders in Explorer* box (it starts unticked, as VS
+  Code's does).
+  Explorer then offers **Open with NMOX Studio** on a folder and on the empty
+  space inside one; on Windows 11 it sits under *Show more options*.
+  Uninstalling removes it.
+
 The IDE opens with three tabs along the editor area: **Welcome → Task
 Rack → Browser** — the launchpad, the rack, and where a run's page
 lands. Every other window is one ⌥⌘ chord away and listed in the

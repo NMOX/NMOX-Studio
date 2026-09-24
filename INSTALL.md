@@ -63,6 +63,21 @@ hands later folders to the IDE that is already running.
 - **Linux:** the `.deb` installs `/usr/bin/nmox`. From the tarball:
   `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`
 
+## From the file manager
+
+A folder handed over by the operating system is aimed exactly as `nmox .`
+aims it.
+
+- **macOS:** right-click a folder in Finder and choose NMOX Studio under
+  **Open With**, or drop the folder on the Dock icon. A file dropped
+  there opens in the editor.
+- **Linux (`.deb`):** NMOX Studio appears under *Open With* for folders in
+  your file manager. It is offered, never made the default.
+- **Windows:** tick *Add "Open with NMOX Studio" to the right-click menu of
+  folders in Explorer* when installing (unticked by default). Explorer then
+  offers **Open with NMOX Studio** on a folder and inside one (Windows 11:
+  under *Show more options*). Uninstalling removes it.
+
 ## Portable (all platforms)
 
 `NMOX-Studio-<version>-portable.zip` contains the full application:

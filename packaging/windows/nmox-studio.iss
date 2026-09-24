@@ -47,9 +47,10 @@ ChangesEnvironment=yes
 ; translations rather than any written here: an installer is the first text
 ; a user ever sees, and it is the one surface where a wrong word cannot be
 ; corrected by a later release. Inno picks the entry matching the machine's
-; language and falls back to English (v2.105.0). One sentence is ours, the
-; "Add nmox to PATH" task (3.1.0): Inno ships no message for it, so it lives
-; in [CustomMessages] below, written to docs/i18n/conventions.md.
+; language and falls back to English (v2.105.0). Three sentences are ours,
+; the "Add nmox to PATH" task and the "Open with NMOX Studio" folder task
+; with its Explorer label (3.1.0): Inno ships no message for them, so they
+; live in [CustomMessages] below, written to docs/i18n/conventions.md.
 ;
 ; Five of the IDE's fifteen are absent ON PURPOSE — Bahasa Indonesia,
 ; Filipino, Tiếng Việt, 简体中文 and हिन्दी ship no official .isl with Inno
@@ -93,6 +94,13 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 ; this one sentence is ours, in [CustomMessages] for every language above
 ; (InstallerLanguagesTest holds the coverage).
 Name: "addtopath"; Description: "{cm:AddToPath}"
+; "Open with NMOX Studio" on a folder's right-click menu in Explorer, and on
+; the empty space inside an open folder (3.1.0). Unticked by default, as VS
+; Code's installer leaves its "Open with Code" folder task unticked: it adds
+; a line to a menu every folder on the machine shares, and that is the
+; user's call to make. The verb is --aim, File > Open Folder...'s own, so a
+; folder with or without a manifest is aimed rather than shown as a raw tab.
+Name: "contextmenu"; Description: "{cm:AddFolderContextMenu}"; Flags: unchecked
 
 [CustomMessages]
 AddToPath=Add "nmox" to PATH (open a folder from a terminal with "nmox .")
@@ -106,6 +114,27 @@ pt.AddToPath=Adicionar “nmox” ao PATH (abra uma pasta pelo terminal com “n
 he.AddToPath=הוספת "nmox" ל-PATH (פתחו תיקייה מהמסוף עם "nmox .‎")
 ar.AddToPath=إضافة «nmox» لـ PATH (افتحوا مجلد من الترمينال بـ «nmox .‎»)
 
+AddFolderContextMenu=Add "Open with NMOX Studio" to the right-click menu of folders in Explorer
+es.AddFolderContextMenu=Añadir «Abrir con NMOX Studio» al menú contextual de las carpetas en el Explorador
+fr.AddFolderContextMenu=Ajouter « Ouvrir avec NMOX Studio » au menu contextuel des dossiers dans l’Explorateur
+de.AddFolderContextMenu=„Mit NMOX Studio öffnen“ zum Kontextmenü von Ordnern im Explorer hinzufügen
+ru.AddFolderContextMenu=Добавить «Открыть в NMOX Studio» в контекстное меню папок в Проводнике
+uk.AddFolderContextMenu=Додати «Відкрити в NMOX Studio» до контекстного меню тек у Провіднику
+pl.AddFolderContextMenu=Dodaj „Otwórz w NMOX Studio” do menu kontekstowego katalogów w Eksploratorze
+pt.AddFolderContextMenu=Adicionar “Abrir com o NMOX Studio” ao menu de contexto das pastas no Explorador
+he.AddFolderContextMenu=הוספת "פתיחה באמצעות NMOX Studio" לתפריט ההקשר של תיקיות בסייר הקבצים
+ar.AddFolderContextMenu=إضافة «فتح بـ NMOX Studio» لقايمة كليك يمين بتاعة المجلدات في مستكشف الملفات
+OpenWithNmox=Open with NMOX Studio
+es.OpenWithNmox=Abrir con NMOX Studio
+fr.OpenWithNmox=Ouvrir avec NMOX Studio
+de.OpenWithNmox=Mit NMOX Studio öffnen
+ru.OpenWithNmox=Открыть в NMOX Studio
+uk.OpenWithNmox=Відкрити в NMOX Studio
+pl.OpenWithNmox=Otwórz w NMOX Studio
+pt.OpenWithNmox=Abrir com o NMOX Studio
+he.OpenWithNmox=פתיחה באמצעות NMOX Studio
+ar.OpenWithNmox=فتح بـ NMOX Studio
+
 [Registry]
 ; Append {app}\cli to the Path of whoever the install is for: the user's own
 ; environment for a per-user install, the machine's for an all-users one.
@@ -116,6 +145,28 @@ Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; \
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
     ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\cli"; \
     Tasks: addtopath; Check: NeedsSystemPathEntry
+; The folder task: Explorer's right-click menu on a folder (Directory) and
+; on the empty space inside an open one (Directory\Background), for whoever
+; the install is for - HKA is HKCU for a per-user install and HKLM for an
+; all-users one. The label comes from the chosen language ({cm:OpenWithNmox})
+; and uninsdeletekey takes each key, command and all, out on uninstall.
+; %V is the folder; "\." after it keeps a drive root ("C:\") from ending in
+; \" - an argument parser reads \" as an escaped quote, and C:\. is still
+; C:\ once --aim normalizes it. Windows 11 lists these under "Show more
+; options". The windows-installer-check workflow installs, reads the keys
+; and uninstalls for real.
+Root: HKA; Subkey: "Software\Classes\Directory\shell\NMOXStudio"; ValueType: string; ValueName: ""; \
+    ValueData: "{cm:OpenWithNmox}"; Tasks: contextmenu; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\shell\NMOXStudio"; ValueType: string; ValueName: "Icon"; \
+    ValueData: "{app}\nmox-studio.ico"; Tasks: contextmenu
+Root: HKA; Subkey: "Software\Classes\Directory\shell\NMOXStudio\command"; ValueType: string; ValueName: ""; \
+    ValueData: """{app}\bin\nmoxstudio64.exe"" --aim ""%V\."""; Tasks: contextmenu
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\NMOXStudio"; ValueType: string; ValueName: ""; \
+    ValueData: "{cm:OpenWithNmox}"; Tasks: contextmenu; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\NMOXStudio"; ValueType: string; ValueName: "Icon"; \
+    ValueData: "{app}\nmox-studio.ico"; Tasks: contextmenu
+Root: HKA; Subkey: "Software\Classes\Directory\Background\shell\NMOXStudio\command"; ValueType: string; ValueName: ""; \
+    ValueData: """{app}\bin\nmoxstudio64.exe"" --aim ""%V\."""; Tasks: contextmenu
 
 [Run]
 Filename: "{app}\bin\nmoxstudio64.exe"; Description: "{cm:LaunchProgram,NMOX Studio}"; \

@@ -126,6 +126,55 @@ jobs:
           if ((Entries).Count -ne 0) { throw "the uninstaller left $cli on the user Path" }
           Write-Host "nmox: on Path once after install and reinstall, gone after uninstall"
 
+      # "Open with NMOX Studio" on a folder and inside one (3.1.0): the
+      # contextmenu task is unticked by default, so a default install writes
+      # no key; ticked, both keys carry the English label (this runner's
+      # language), the shipped icon and `--aim "%V\."`; the uninstaller
+      # takes them out. Then what Explorer would run, for real: the command
+      # with %V filled in - a folder with spaces and a drive root, whose
+      # trailing backslash is why the command says %V\. - handed to a
+      # stand-in launcher that records the argv it received.
+      - name: Verify "Open with NMOX Studio" on folders in Explorer
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem application\target\dist\NMOX-Studio-*-windows-setup.exe
+          $app = "$env:LOCALAPPDATA\Programs\NMOX Studio"
+          $keys = @('HKCU:\Software\Classes\Directory\shell\NMOXStudio',
+                    'HKCU:\Software\Classes\Directory\Background\shell\NMOXStudio')
+          Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/NORESTART'
+          foreach ($k in $keys) { if (Test-Path $k) { throw "a default install wrote $k - the task must be unticked" } }
+          Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=addtopath,contextmenu','/NORESTART'
+          $want = '"' + "$app\bin\nmoxstudio64.exe" + '" --aim "%V\."'
+          foreach ($k in $keys) {
+            if (-not (Test-Path "$k\command")) { throw "missing $k\command" }
+            $label = (Get-Item $k).GetValue('')
+            $icon = (Get-Item $k).GetValue('Icon')
+            $cmd = (Get-Item "$k\command").GetValue('')
+            Write-Host "$k -> [$label] icon=$icon command=$cmd"
+            if ($label -ne 'Open with NMOX Studio') { throw "wrong label: $label" }
+            if ($icon -ne "$app\nmox-studio.ico" -or -not (Test-Path $icon)) { throw "wrong or missing icon: $icon" }
+            if ($cmd -ne $want) { throw "wrong command: $cmd (want $want)" }
+          }
+          if (-not (Test-Path "$app\bin\nmoxstudio64.exe")) { throw "the command names a launcher that is not installed" }
+          $root = Join-Path $env:RUNNER_TEMP 'nmox-verb'
+          New-Item -ItemType Directory -Force "$root\a folder" | Out-Null
+          $record = Join-Path $root 'argv.txt'
+          $src = 'using System.IO; public static class Stub { public static void Main(string[] a) { File.WriteAllLines(@"' + $record + '", a); } }'
+          Add-Type -TypeDefinition $src -OutputAssembly "$root\stub.exe" -OutputType ConsoleApplication
+          $tail = $want.Substring($want.IndexOf(' --aim ') + 1)
+          foreach ($folder in @("$root\a folder", [System.IO.Path]::GetPathRoot($root))) {
+            Remove-Item $record -ErrorAction SilentlyContinue
+            Start-Process -FilePath "$root\stub.exe" -ArgumentList $tail.Replace('%V', $folder) -Wait -NoNewWindow
+            $got = @(Get-Content $record)
+            Write-Host "Explorer on [$folder] -> launcher saw:"; $got | ForEach-Object { Write-Host "  [$_]" }
+            if ($got.Count -ne 2 -or $got[0] -ne '--aim' -or $got[1] -ne "$folder\.") { throw "the verb handed the launcher the wrong argv for $folder" }
+          }
+          Start-Process -FilePath "$app\unins000.exe" -Wait -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+          foreach ($k in $keys) { if (Test-Path $k) { throw "the uninstaller left $k" } }
+          Write-Host "Open with NMOX Studio: absent by default, present when ticked, gone after uninstall"
+
       # What nmox.cmd hands the launcher, for real: a stand-in
       # bin\nmoxstudio64.exe (compiled here) records its working directory
       # and argv. A folder must arrive as --aim <absolute>, a file as
