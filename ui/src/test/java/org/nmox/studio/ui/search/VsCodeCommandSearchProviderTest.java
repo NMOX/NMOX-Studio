@@ -50,6 +50,8 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("install extensions", ALL)).containsExactly("Extensions: Install Extensions");
         assertThat(titles("screencast", ALL)).containsExactly("Developer: Toggle Screencast Mode");
         assertThat(titles("terminal", ALL)).contains("View: Toggle Terminal", "Terminal: Create New Terminal");
+        assertThat(titles(">toggle terminal", ALL)).as("VS Code's > command prefix, typed from habit")
+                .containsExactly("View: Toggle Terminal");
     }
 
     @Test
