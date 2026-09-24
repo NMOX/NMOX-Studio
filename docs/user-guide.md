@@ -145,8 +145,8 @@ terminal too, and it is aimed the same way:
   Uninstalling removes it.
 
 On macOS, use `nmox .` or **File ▸ Open Folder…**. Finder's *Open With*
-and the Dock icon cannot hand a folder to a signed Java app launched the
-way NMOX Studio is, so the app does not offer itself there.
+and the Dock icon cannot hand NMOX Studio a folder yet, so the app does
+not offer itself there.
 
 The IDE opens with three tabs along the editor area: **Welcome → Task
 Rack → Browser** — the launchpad, the rack, and where a run's page
