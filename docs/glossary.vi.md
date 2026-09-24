@@ -151,8 +151,9 @@ của các mô-đun NMOX Studio. Nó đọc một danh mục được công bố
 hành trên GitHub.
 
 **userdir** — Thư mục nơi NMOX Studio giữ cài đặt, bố cục cửa sổ, nhật ký và
-các bản cập nhật đã cài. Để tìm nó, mở mục **About** trong trình đơn **Trợ
-giúp** (trên macOS, mục này nằm trong trình đơn NMOX Studio). Nhật ký nằm ở
+các bản cập nhật đã cài. Hộp thoại Giới thiệu cho biết nó nằm ở đâu (trong
+trình đơn Trợ giúp trên Windows và Linux, trong trình đơn NMOX Studio trên
+macOS). Nhật ký nằm ở
 `var/log/messages.log`. Để khởi động với cài đặt mới tinh, chạy kèm
 `--userdir <một thư mục trống>`.
 
@@ -160,5 +161,6 @@ giúp** (trên macOS, mục này nằm trong trình đơn NMOX Studio). Nhật k
 chọn** trên Windows và Linux, và **NMOX Studio ▸ Settings…** trên macOS.
 
 **Action Items** (Mục cần xử lý) — Cửa sổ liệt kê các vấn đề tìm thấy trong dự
-án, kể cả kết quả soi lỗi và kiểm kiểu của giá. Trong trình đơn Cửa sổ, nó có
+án: lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng kết quả soi lỗi và kiểm kiểu
+của giá. Trong trình đơn Cửa sổ, nó có
 tên Mục cần xử lý. Bấm một vấn đề để tới đúng dòng đó.

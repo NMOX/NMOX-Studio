@@ -96,8 +96,8 @@ bằng một dòng lệnh.
 | **`tasks.json`** | Các kịch bản của chính dự án, chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
 | **`launch.json`** | **Gỡ lỗi tệp** (⇧⌘F5) và nút gỡ lỗi trên thanh công cụ tự tìm ra thứ cần khởi chạy từ chính dự án — mục vào của kịch bản `start`, `main`, `index.js` — còn thiết bị **INSPECTOR** trên giá khởi chạy trình gỡ lỗi như một bước trong dây chuyền. |
 | **Integrated terminal** | Cửa sổ **Terminal** (⌃\`): lần bấm đầu tiên khởi động một shell trong thư mục dự án, những lần sau đưa nó trở lại. |
-| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.editorconfig` của dự án được tôn trọng khi lưu. |
-| **Problems panel** | **Action Items** (⌘6): các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá, bên cạnh các gạch lượn sóng trong trình soạn thảo. |
+| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.editorconfig` của dự án được áp dụng khi bạn gõ và khi lưu. |
+| **Problems panel** | **Mục cần xử lý** (⌘6): lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá. Như trong VS Code, có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. |
 | **Outline** | **Bộ điều hướng** (⌘7). |
 | **Source Control** | Dấu git trên thanh trạng thái (nhánh và các thay đổi, một cú nhấp tới lịch sử) và trình đơn **Nhóm**. |
 | **Workspace Trust** | Cùng một ý tưởng, được áp dụng trước khi bất cứ thứ gì một kho mã chọn được chạy: mở một dự án vừa clone về thì không có gì chạy cho tới khi bạn tin cậy nó. |
@@ -121,9 +121,9 @@ bằng một dòng lệnh.
   **Eclipse**, ⇧⌘E vẫn là *Switch to Editor* của chính Eclipse, và bên trong
   trình soạn thảo ⇧⌘P và ⇧⌘X giữ nghĩa của Eclipse (ngoặc tương ứng, chữ in
   hoa) — người đã chọn Eclipse mong đợi Eclipse.
-- **Trên Linux, Ctrl+\` từng mở trình chuyển cửa sổ** — phương án dự phòng
-  của nền tảng cho các môi trường desktop (KDE) chiếm mất Ctrl+Tab. Giờ nó mở
-  Terminal; trình chuyển cửa sổ vẫn ở Ctrl+Tab.
+- **Trên Linux, Ctrl+\` mở Terminal, không phải trình chuyển cửa sổ.** Nền
+  tảng từng đặt một trình chuyển thứ hai ở đó cho các môi trường desktop (KDE)
+  chiếm mất Ctrl+Tab; trình chuyển cửa sổ nằm ở Ctrl+Tab.
 - **Các tổ hợp Ctrl+Alt có thể va với AltGr.** Trên Windows, các bố cục bàn
   phím gõ ký tự bằng AltGr (tiếng Ba Lan chẳng hạn) gửi Ctrl+Alt cho phím đó.
   Nếu Ctrl+Alt+P hoặc Ctrl+Alt+K gõ ra một ký tự, hãy dời *Chuyển dự án* hoặc

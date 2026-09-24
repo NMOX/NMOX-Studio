@@ -63,11 +63,12 @@ Dari terminal, `nmox .` membuka folder tempat Anda berada, seperti `code .`: `cd
 - **Windows:** kotak *Add "nmox" to PATH* di pemasang, tercentang secara bawaan. Buka terminal baru setelahnya; terminal yang sudah terbuka tetap memakai PATH lamanya.
 - **Linux:** `.deb` memasang `/usr/bin/nmox`. Dari tarball, tautkan sendiri: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
-Anda juga bisa menyerahkan sebuah folder kepada NMOX Studio tanpa terminal, dan folder itu diarahkan dengan cara yang sama:
+Di Linux dan Windows Anda juga bisa menyerahkan sebuah folder kepada NMOX Studio tanpa terminal, dan folder itu diarahkan dengan cara yang sama:
 
-- **macOS:** klik kanan sebuah folder di Finder dan pilih NMOX Studio di bawah **Buka Dengan** (*Open With*), atau jatuhkan folder itu ke ikon NMOX Studio di Dock. Beberapa folder sekaligus mengarahkan yang pertama dan mengatakannya di baris status: IDE bekerja di satu folder pada satu waktu. Berkas yang dijatuhkan ke ikon itu terbuka di penyunting.
 - **Linux (`.deb`):** pengelola berkas Anda mencantumkan NMOX Studio di bawah *Buka Dengan* (*Open With*) untuk sebuah folder. NMOX Studio tidak menjadi bawaan Anda untuk folder; pengelola berkas tetap menjadi bawaannya.
 - **Windows:** centang kotak *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* di pemasang (awalnya tidak tercentang, seperti milik VS Code). Explorer lalu menawarkan **Open with NMOX Studio** pada sebuah folder dan pada ruang kosong di dalamnya; di Windows 11 ia berada di bawah *Show more options* (*Tampilkan opsi lainnya*). Mencopot pemasangan menghapusnya.
+
+Di macOS, gunakan `nmox .` atau **Berkas ▸ Buka Folder…**. *Buka Dengan* (*Open With*) di Finder dan ikon Dock tidak dapat menyerahkan sebuah folder kepada aplikasi Java bertanda tangan yang dijalankan dengan cara NMOX Studio dijalankan, sehingga aplikasi ini tidak menawarkan dirinya di sana.
 
 IDE terbuka dengan tiga tab di samping area editor: **Selamat Datang → Rak Tugas → Peramban**. Setiap jendela lain berjarak satu pintasan ⌥⌘ dan tercantum di kolom PERKAKAS halaman Selamat Datang. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
 
@@ -192,6 +193,7 @@ Lebih dari 70 bahasa disorot sebagaimana mestinya — tumpukan modern, tumpukan 
 - **Gulir lengket** — deklarasi yang melingkupi bagian atas tampilan (kelasnya, lalu metode yang Anda masuki) tetap tersemat di atas teks, sampai tiga baris dari kode itu sendiri; klik salah satunya untuk melompat ke sana. Bilahnya lenyap ketika tak ada yang melingkupi baris teratas.
 - **Ke simbol (⌥⇧⌘O)** melompat ke fungsi, kelas, aturan, atau judul mana pun di seluruh proyek dengan mengetik namanya — cocok menurut awalan, huruf besar di tengah kata, atau kartu bebas. Indeksnya terbatas dan jujur: `node_modules` dilewati, dan pada proyek yang sangat besar dialognya berkata bahwa ia mengindeks 2.000 berkas pertama, bukannya berpura-pura membaca semuanya.
 - **Jendela uji (⌥⌘2)** menampilkan setiap uji dalam proyek *sebelum apa pun dijalankan*, dan menjalankan satu uji, satu berkas, atau semuanya.
+- **LSP**: buka berkas yang server bahasanya terpasang (typescript, gopls, rust-analyzer, pyright, …) dan Anda mendapat diagnostik, keterangan saat melayang, dan lompat ke definisi. Galat dan peringatan server itu juga menjadi baris di **Item tindakan** (⌘6), dinamai menurut servernya (`[lsp:gopls]`), untuk setiap berkas yang sudah dilaporkan server itu. Sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. Servernya tidak ada? IDE menawarkan perintah pemasangannya alih-alih gagal diam-diam.
 - **`.editorconfig` dihormati** — saat Anda mengetik dan saat Anda menyimpan. `indent_style`, `indent_size`, dan `tab_width` menentukan apa yang ditulis Tab, Enter, dan indentasi ulang, sehingga proyek bertab mendapat tab dan proyek empat spasi mendapat empat spasi, per berkas dan per bagian glob; setiap penyimpanan menerapkan `trim_trailing_whitespace` dan `insert_final_newline`. Suntingan pada `.editorconfig` sampai ke penyunting yang terbuka dalam beberapa detik. Karakter tab harfiah yang sudah ada di dalam berkas tetap digambar dengan lebar tab yang diatur di Opsi, dan `charset` serta `end_of_line` tidak diterapkan. Perangkat pemformat Anda (GLOSS dan kawan-kawan) mengurus sisanya.
 
 ### Bentangkan singkatan (⌥⌘E)

@@ -147,12 +147,14 @@ terlihat.
 Studio. Ia membaca katalog yang diterbitkan bersama setiap rilis GitHub.
 
 **userdir** — Folder tempat NMOX Studio menyimpan pengaturan, tata letak jendela, log, dan
-pembaruan yang terpasang. Untuk menemukannya, buka **Bantuan ▸ About**. Lognya ada di
+pembaruan yang terpasang. Dialog Tentang menunjukkan letaknya (di menu Bantuan pada
+Windows dan Linux, di menu NMOX Studio pada macOS). Lognya ada di
 `var/log/messages.log`. Untuk mulai dengan pengaturan yang bersih, jalankan dengan
 `--userdir <an empty folder>`.
 
 **Opsi** / **Settings…** — Dialog preferensi. Letaknya di **Alat ▸ Opsi** di Windows dan Linux,
 dan di **NMOX Studio ▸ Settings…** di macOS.
 
-**Item tindakan** — Jendela yang mendaftar masalah yang ditemukan di proyek, termasuk hasil lint
-dan pemeriksaan tipe dari rak. Klik sebuah masalah untuk menuju baris itu.
+**Item tindakan** — Jendela yang mendaftar masalah yang ditemukan di proyek: galat dan
+peringatan dari server bahasa, serta hasil lint dan pemeriksaan tipe dari rak. Klik sebuah
+masalah untuk menuju baris itu.

@@ -99,8 +99,8 @@ baris itu.
 | **`tasks.json`** | Skrip proyek Anda sendiri, dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
 | **`launch.json`** | **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
 | **Terminal terpadu** | Jendela **Terminal** (⌃\`): tekanan pertama memulai shell di folder proyek, tekanan berikutnya memunculkannya kembali. |
-| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.editorconfig` proyek Anda dihormati saat menyimpan. |
-| **Panel Problems** | **Item tindakan** (⌘6): temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak, di samping garis berlekuk di penyunting. |
+| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.editorconfig` proyek Anda berlaku saat Anda mengetik dan saat menyimpan. |
+| **Panel Problems** | **Item tindakan** (⌘6): galat dan peringatan dari server bahasa, serta temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak. Seperti di VS Code, sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. |
 | **Outline** | **Navigator** (⌘7). |
 | **Source Control** | Tanda git di baris status (cabang dan perubahan, sekali klik ke riwayat) dan menu **Tim**. |
 | **Workspace Trust** | Gagasan yang sama, **Kepercayaan Ruang Kerja**, ditegakkan sebelum apa pun yang dipilih sebuah repositori dijalankan: membuka proyek hasil klon tidak menjalankan apa pun sampai Anda memercayainya. |
@@ -125,9 +125,9 @@ baris itu.
   profil **Eclipse**, ⇧⌘E tetap *Switch to Editor* milik Eclipse sendiri, dan di
   dalam penyunting ⇧⌘P dan ⇧⌘X mempertahankan arti Eclipse-nya (kurung yang
   berpasangan, huruf besar) — orang yang memilih Eclipse mengharapkan Eclipse.
-- **Di Linux, Ctrl+\` dulu membuka pengalih jendela** — cadangan platform untuk
-  desktop (KDE) yang merebut Ctrl+Tab. Sekarang ia membuka Terminal; pengalihnya
-  tetap di Ctrl+Tab.
+- **Di Linux, Ctrl+\` membuka Terminal, bukan pengalih jendela.** Platform
+  menaruh pengalih kedua di sana untuk desktop (KDE) yang merebut Ctrl+Tab;
+  pengalihnya ada di Ctrl+Tab.
 - **Pintasan Ctrl+Alt bisa bertabrakan dengan AltGr.** Di Windows, tata letak
   papan ketik yang mengetik karakter dengan AltGr (misalnya Polandia)
   mengirimkan Ctrl+Alt untuknya. Jika Ctrl+Alt+P atau Ctrl+Alt+K mengetik sebuah

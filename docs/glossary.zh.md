@@ -82,8 +82,8 @@ NMOX Studio 建立在 NetBeans 平台之上，它的一些词会透出来。
 
 **更新中心**（update center）— **工具 ▸ 插件 ▸ 更新**获取 NMOX Studio 模块新版本的地方。它读取随每个 GitHub 版本发布的目录。
 
-**userdir** — NMOX Studio 存放设置、窗口布局、日志和已安装更新的文件夹。要找到它，打开“关于”对话框（Windows 和 Linux 上在**帮助**菜单里，macOS 上在 **NMOX Studio** 应用菜单里）。它的日志在 `var/log/messages.log`。想用全新的设置启动，就用 `--userdir <an empty folder>`（尖括号里换成一个空文件夹） 启动。
+**userdir** — NMOX Studio 存放设置、窗口布局、日志和已安装更新的文件夹。“关于”对话框会显示它在哪里（Windows 和 Linux 上在**帮助**菜单里，macOS 上在 **NMOX Studio** 应用菜单里）。它的日志在 `var/log/messages.log`。想用全新的设置启动，就用 `--userdir <an empty folder>`（尖括号里换成一个空文件夹） 启动。
 
 **选项** / **Settings…**（Options / Settings…）— 偏好设置对话框。在 Windows 和 Linux 上是**工具 ▸ 选项**，在 macOS 上是 **NMOX Studio ▸ Settings…**。
 
-**操作项**（Action Items）— 列出项目中发现的问题的窗口，包括机架的代码检查和类型检查结果。点击一个问题就会跳到那一行。
+**操作项**（Action Items）— 列出项目中发现的问题的窗口：语言服务器报告的错误和警告，以及机架的代码检查和类型检查结果。点击一个问题就会跳到那一行。

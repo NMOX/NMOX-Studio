@@ -63,11 +63,12 @@ Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `c
 - **Windows:** ô *Add "nmox" to PATH* trong trình cài đặt, được đánh dấu sẵn. Hãy mở một cửa sổ dòng lệnh mới sau đó; cửa sổ đang mở vẫn giữ PATH cũ.
 - **Linux:** gói `.deb` cài `/usr/bin/nmox`. Nếu dùng tệp tarball, hãy tự tạo liên kết: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
-Bạn cũng có thể trao một thư mục cho NMOX Studio mà không cần dòng lệnh, và nó được nhắm theo cùng một cách:
+Trên Linux và Windows, bạn cũng có thể trao một thư mục cho NMOX Studio mà không cần dòng lệnh, và nó được nhắm theo cùng một cách:
 
-- **macOS:** nhấp chuột phải vào một thư mục trong Finder rồi chọn NMOX Studio trong **Mở bằng** (Open With), hoặc thả thư mục lên biểu tượng NMOX Studio trên Dock. Thả nhiều thư mục cùng lúc thì thư mục đầu tiên được nhắm và thanh trạng thái nói rõ điều đó: IDE làm việc với từng thư mục một. Một tệp thả lên biểu tượng sẽ mở trong trình soạn thảo.
 - **Linux (gói `.deb`):** trình quản lý tệp của bạn liệt kê NMOX Studio trong *Mở bằng* (Open With) cho một thư mục. Nó không trở thành ứng dụng mặc định cho thư mục; trình quản lý tệp vẫn giữ vai trò đó.
 - **Windows:** đánh dấu ô *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* trong trình cài đặt (mặc định không được đánh dấu, giống như của VS Code). Khi đó Explorer có mục **Open with NMOX Studio** trên một thư mục và trên khoảng trống bên trong nó; trên Windows 11 mục này nằm dưới *Show more options*. Gỡ cài đặt sẽ gỡ luôn mục này.
+
+Trên macOS, hãy dùng `nmox .` hoặc **Tệp ▸ Mở thư mục…**. Mục *Mở bằng* (Open With) của Finder và biểu tượng trên Dock không thể trao một thư mục cho một ứng dụng Java đã ký được khởi chạy theo cách NMOX Studio được khởi chạy, nên ứng dụng không tự đề xuất mình ở đó.
 
 IDE mở ra với ba thẻ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Trình duyệt**. Mọi cửa sổ khác chỉ cách một phím tắt ⌥⌘ và đều có trong cột TOOLING của trang chào mừng. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
 
@@ -192,6 +193,7 @@ Hơn 70 ngôn ngữ được tô màu đúng cách — bộ hiện đại, bộ 
 - **Cuộn dính** — những khai báo bao lấy phần trên của khung nhìn (lớp, rồi tới phương thức bạn vừa cuộn vào) được ghim lại phía trên phần chữ, tối đa ba dòng của chính mã nguồn; nhấp một dòng để nhảy tới đó. Thanh này biến mất khi không có gì bao lấy dòng trên cùng.
 - **Tới ký hiệu (⌥⇧⌘O)** nhảy tới bất kỳ hàm, lớp, quy tắc hay tiêu đề nào trong cả dự án bằng cách gõ tên nó — khớp theo tiền tố, theo chữ hoa giữa từ, hoặc theo ký tự đại diện. Chỉ mục có giới hạn và trung thực: `node_modules` bị bỏ qua, và với một dự án rất lớn hộp thoại nói rằng nó đã lập chỉ mục 2.000 tệp đầu tiên thay vì giả vờ đã đọc hết.
 - **Cửa sổ kiểm thử (⌥⌘2)** cho thấy mọi bài kiểm thử trong dự án *trước khi bất cứ gì chạy*, và chạy một bài, một tệp, hoặc tất cả.
+- **LSP**: mở một tệp có máy chủ ngôn ngữ đã được cài (typescript, gopls, rust-analyzer, pyright, …) là bạn có chẩn đoán, chú thích khi rê chuột và đi tới định nghĩa. Lỗi và cảnh báo của máy chủ cũng thành các dòng trong **Mục cần xử lý** (⌘6), mang tên máy chủ (`[lsp:gopls]`), cho mọi tệp mà máy chủ đã báo cáo. Có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. Thiếu máy chủ? IDE đưa ra lệnh cài đặt thay vì lặng lẽ thất bại.
 - **`.editorconfig` được tôn trọng** — cả khi bạn gõ lẫn khi bạn lưu. `indent_style`, `indent_size` và `tab_width` quyết định Tab, Enter và việc thụt lề lại sẽ viết ra gì, nên một dự án dùng tab nhận tab còn một dự án thụt bốn dấu cách nhận bốn dấu cách, theo từng tệp và từng phần glob; mỗi lần lưu áp dụng `trim_trailing_whitespace` và `insert_final_newline`. Một thay đổi trong `.editorconfig` tới được các trình soạn thảo đang mở trong vòng vài giây. Một ký tự tab có sẵn trong tệp vẫn được vẽ theo độ rộng tab đặt trong Tùy chọn, còn `charset` và `end_of_line` không được áp dụng. Các thiết bị định dạng của bạn (GLOSS và các thiết bị cùng loại) lo phần còn lại.
 
 ### Bung tắt tự (⌥⌘E)

@@ -82,8 +82,8 @@ Binuo ang NMOX Studio sa NetBeans Platform, at lumilitaw pa rin ang ilan sa mga 
 
 **Update center** — Kung saan kinukuha ng **Kasangkapan ▸ Mga Plugin ▸ Mga Update** ang mga bagong bersyon ng mga modyul ng NMOX Studio. Binabasa nito ang isang katalogong inilalathala kasama ng bawat release sa GitHub.
 
-**userdir** — Ang folder kung saan itinatago ng NMOX Studio ang mga setting nito, ang ayos ng mga bintana, ang mga log at ang mga naka-install na update. Para mahanap ito, buksan ang **Tulong ▸ About** (sa macOS, nasa menu na NMOX Studio ito). Nasa `var/log/messages.log` ang log nito. Para magsimula sa bagong mga setting, ilunsad gamit ang `--userdir <an empty folder>`.
+**userdir** — Ang folder kung saan itinatago ng NMOX Studio ang mga setting nito, ang ayos ng mga bintana, ang mga log at ang mga naka-install na update. Ipinapakita ng dialog na Tungkol kung nasaan ito (nasa menu na Tulong sa Windows at Linux, nasa menu na NMOX Studio sa macOS). Nasa `var/log/messages.log` ang log nito. Para magsimula sa bagong mga setting, ilunsad gamit ang `--userdir <an empty folder>`.
 
 **Mga Opsyon** / **Settings…** (Options) — Ang dialog ng mga kagustuhan. **Kasangkapan ▸ Mga Opsyon** ito sa Windows at Linux, at **NMOX Studio ▸ Settings…** sa macOS.
 
-**Action Items** — Ang bintanang naglilista ng mga problemang natagpuan sa proyekto, kasama ang mga resulta ng lint at type-check ng rack. I-click ang isang problema para pumunta sa linyang iyon.
+**Mga aksyon** (Action Items) — Ang bintanang naglilista ng mga problemang natagpuan sa proyekto: ang mga error at babala ng mga language server, at ang mga resulta ng lint at type-check ng rack. I-click ang isang problema para pumunta sa linyang iyon.
