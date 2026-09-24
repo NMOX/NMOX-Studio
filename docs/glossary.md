@@ -137,8 +137,8 @@ in. **Tools ▸ Plugins** installs updates module by module.
 modules. It reads a catalog published with each GitHub release.
 
 **userdir** — The folder where NMOX Studio keeps its settings, window layout, logs and
-installed updates. The About dialog shows where it is: **Help ▸ About** on
-Windows and Linux, **NMOX Studio ▸ About NMOX Studio** on macOS. Its log is at
+installed updates. The About dialog shows where it is (in the Help menu on
+Windows and Linux, in the NMOX Studio menu on macOS). Its log is at
 `var/log/messages.log`. To start with fresh settings, launch with
 `--userdir <an empty folder>`.
 

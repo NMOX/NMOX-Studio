@@ -72,8 +72,10 @@ public final class LanguageServers {
             // client sends the RAW MIME as didOpen's languageId and
             // id-keyed servers (ngserver above all) silently ignore the
             // document — see LspLanguageIds
+            // the server's problems also reach Action Items (3.1.0): every
+            // byte passes through unchanged — see DiagnosticsTap
             return LanguageServerProvider.LanguageServerDescription.create(
-                    process.getInputStream(), serverIn, process,
+                    new DiagnosticsTap(process.getInputStream(), command.get(0)), serverIn, process,
                     org.openide.util.lookup.Lookups.fixed(new LspLanguageIds()));
         } catch (IOException ex) {
             // no popup: a missing language server is a normal condition, but
