@@ -168,6 +168,7 @@ A number, a link or a picture in the docs is a claim, so it has a test.
 
 What ships is what was built, and every version has one home.
 
+- [`ContributorFloorGateTest`](../../application/src/test/java/org/nmox/studio/application/ContributorFloorGateTest.java): The root pom enforces the build JDK at `validate`, every CI `setup-java` installs at least that JDK under a name that says so, and `build.sh` refuses below the same floor (v3.1.0: four places held four different answers).
 - [`SpecVersionGateTest`](../../application/src/test/java/org/nmox/studio/application/SpecVersionGateTest.java): Every module's OpenIDE spec version is the release train's, never the frozen 1.0 (v1.47.0).
 - [`OrgJsonVersionGateTest`](../../application/src/test/java/org/nmox/studio/application/OrgJsonVersionGateTest.java): org.json's version lives in one root property across every module copy (v1.50.0).
 - [`CaskGeneratorParityTest`](../../application/src/test/java/org/nmox/studio/application/CaskGeneratorParityTest.java): The checked-in Homebrew cask is byte-identical to what the release workflow regenerates, with no deprecated stanza (v2.149.0).
