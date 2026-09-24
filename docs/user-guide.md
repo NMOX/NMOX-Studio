@@ -1742,7 +1742,9 @@ shows.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to
-it: the aimed project and toolchain.
+it: the aimed project and toolchain. While anything the IDE checks has a
+problem, a **✕ 2 ⚠ 1** count shows errors and warnings from every
+language server and tool; click it to open Action Items.
 
 **The Workbench tab** is home base: current project, open and recent
 files, recent projects, and launchers for every tool surface. While

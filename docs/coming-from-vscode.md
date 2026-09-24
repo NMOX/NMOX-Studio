@@ -95,7 +95,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 | **`launch.json`** | **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` applies as you type and when you save. |
-| **Problems panel** | **Action Items** (⌘6): the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
+| **Problems panel** | **Action Items** (⌘6), or click the **✕ ⚠** count on the status line: the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
 | **Outline** | The **Navigator** (⌘7). |
 | **Source Control** | The git chip on the status line (branch and changes, one click to history) and the **Team** menu. |
 | **Workspace Trust** | The same idea, enforced before anything a repository chose is run: opening a cloned project runs nothing until you trust it. |
