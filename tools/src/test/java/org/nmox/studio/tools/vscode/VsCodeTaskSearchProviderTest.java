@@ -240,7 +240,9 @@ class VsCodeTaskSearchProviderTest {
     void shellTaskUsesTheHostShell() throws Exception {
         VsCodeTaskSearchProvider.host = new VsCodeTasks.Host(VsCodeTasks.Os.LINUX,
                 name -> "SHELL".equals(name) ? "/usr/bin/zsh" : null,
-                f -> f.getPath().equals("/usr/bin/zsh"), name -> null);
+                // compared through File so the stand-in answers on a Windows runner too, where
+                // new File("/usr/bin/zsh").getPath() is "\\usr\\bin\\zsh" (VsCodeTaskShellTest's idiom)
+                f -> f.getPath().equals(new File("/usr/bin/zsh").getPath()), name -> null);
         enter("build");
         assertThat(spawned).hasSize(1);
         assertThat(((Launch) spawned.get(0)[1]).argv()).containsExactly("/usr/bin/zsh", "-c", "make all");

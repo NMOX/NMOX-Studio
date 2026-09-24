@@ -165,9 +165,12 @@ jobs:
       # takes them out. Then what Explorer would run, for real: the command
       # with %V filled in - a folder with spaces and a drive root, whose
       # trailing backslash is why the command says %V\. - handed to a
-      # stand-in launcher that records the argv it received.
+      # stand-in launcher that records the argv it received. Windows
+      # PowerShell, not pwsh: only 5.1's Add-Type can compile a console
+      # exe (-OutputType ConsoleApplication), as the nmox.cmd step below
+      # needs too.
       - name: Verify "Open with NMOX Studio" on folders in Explorer
-        shell: pwsh
+        shell: powershell
         run: |
           $setup = Get-ChildItem application\target\dist\NMOX-Studio-*-windows-setup.exe
           $app = "$env:LOCALAPPDATA\Programs\NMOX Studio"
