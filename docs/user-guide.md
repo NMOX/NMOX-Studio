@@ -1710,7 +1710,14 @@ The **⇄ serving** chip on the status line lists every live server (the IDE's R
 and known), every rack device (jump straight to a device's controls),
 **live servers** (anything currently serving — hit Enter to open it in
 the browser), API Studio requests, DB connections and tables, contracts,
-infra nodes, and Task Board cards (the hit names the card's column).
+infra nodes, Task Board cards (the hit names the card's column), and
+the aimed project's **npm scripts**: type `dev` or `test` and the hit
+reads *Run script: dev — vite*; Enter runs it with the project's own
+package manager (npm, yarn or pnpm), exactly as NPM Explorer's
+double-click would — Workspace Trust asks first on a project you have
+not trusted, the run joins the toolbar ■, and a dev server it prints
+lights the ⇄ chip. In a monorepo the scripts are the ones NPM Explorer
+shows.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to

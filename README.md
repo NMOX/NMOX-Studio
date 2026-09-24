@@ -362,8 +362,9 @@ Rack faceplates keep their panel vocabulary on purpose.
   names running work before stopping it — no more silently killed dev
   servers. **Quick Search (⌘I)** finds actions, files, recent projects
   (Enter switches), rack devices (Enter racks them), **API Studio
-  requests** (jumps to the request), and **infra nodes** (selects them
-  on the canvas). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
+  requests** (jumps to the request), **infra nodes** (selects them
+  on the canvas), and the aimed project's **npm scripts** (type `dev`,
+  Enter runs it, trust-gated, with your own package manager). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
   shows what's running.
 - **The rack has undo (⌘Z / ⇧⌘Z)**: add, remove, move a device or
   patch a cable and take it back — including a removed device, which
