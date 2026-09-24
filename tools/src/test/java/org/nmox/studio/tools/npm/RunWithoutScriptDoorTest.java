@@ -44,10 +44,15 @@ class RunWithoutScriptDoorTest {
     @DisplayName("pressing it spawns nothing and says why")
     void pressSpeaksAndSpawnsNothing(@TempDir Path tmp) throws Exception {
         Files.writeString(tmp.resolve("package.json"), "{\"name\":\"x\",\"scripts\":{\"build\":\"tsc\"}}");
-        String before = org.openide.awt.StatusDisplayer.getDefault().getStatusText();
-        providerFor(tmp).invokeAction(ActionProvider.COMMAND_RUN, Lookup.EMPTY);
-        assertThat(org.openide.awt.StatusDisplayer.getDefault().getStatusText())
-                .isNotEqualTo(before)
+        java.util.List<String> said = new java.util.ArrayList<>();
+        java.util.function.Consumer<String> prior = WebProjectActionProvider.noRunScriptStatus;
+        WebProjectActionProvider.noRunScriptStatus = said::add;
+        try {
+            providerFor(tmp).invokeAction(ActionProvider.COMMAND_RUN, Lookup.EMPTY);
+        } finally {
+            WebProjectActionProvider.noRunScriptStatus = prior;
+        }
+        assertThat(said).singleElement().asString()
                 .contains("dev").contains("start").contains("serve");
     }
 

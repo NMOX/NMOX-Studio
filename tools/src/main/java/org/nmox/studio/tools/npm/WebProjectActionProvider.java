@@ -149,6 +149,15 @@ final class WebProjectActionProvider implements ActionProvider {
      * without a word. It stays pressable, and the press says why and shows
      * the scripts the project does have (the NPM Explorer).
      */
+    /**
+     * Where the no-script refusal is said. A seam because the status strip
+     * is one per JVM: a message set with an importance (a balloon, the
+     * rack's patch refusal) outranks plain text until it clears, so a test
+     * reading the strip reads whichever came first.
+     */
+    static volatile java.util.function.Consumer<String> noRunScriptStatus = text ->
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
+
     private boolean runsNothingYet(String command) {
         if (!COMMAND_RUN.equals(command)) {
             return false;
@@ -181,9 +190,8 @@ final class WebProjectActionProvider implements ActionProvider {
         }
         List<String> cmd = resolve(command);
         if (dir != null && cmd == null && runsNothingYet(command)) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                    org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class,
-                            "WebProjectActionProvider_noRunScript")));
+            noRunScriptStatus.accept(org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class,
+                    "WebProjectActionProvider_noRunScript"));
             org.openide.windows.TopComponent explorer = org.openide.windows.WindowManager.getDefault()
                     .findTopComponent("NpmExplorerTopComponent");
             if (explorer != null) {

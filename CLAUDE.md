@@ -78,7 +78,7 @@ pattern is an OR of its lines — every enforced literal is ONE line.
 
 ### Prerequisites
 - **Java 25+** (the bundled runtime and CI are JDK 25 LTS since v1.253.0; the compiler still TARGETS 21 bytecode on purpose — see the law at maven.compiler.target)
-- **Maven 3.6+**
+- **Maven 3.6.3+** (both floors are enforced at `validate`)
 
 **IMPORTANT**: BUILD with JDK 25. JavaFX 26's jars are class-file 68 (JDK 24+),
 so the `ui` module cannot be compiled by an older javac — and the failure does not
@@ -149,12 +149,14 @@ mvn test jacoco:report
 
 ### Convenience Scripts
 
-The project includes several shell scripts:
-- `./build.sh` - Clean build
-- `./run.sh` - Build and run the IDE
-- `./gui-test.sh` - GUI-specific tests (macOS)
-- `./setup-and-run.sh` - Interactive setup menu
+- `./build.sh` - `mvn clean install -DskipTests` after checking the JDK Maven will use (25+); `--verify` runs the full gate
+- `./run.sh` - Boots the assembled app with `./userdir`, its own cachedir, update check off
 - `scripts/boot-smoke-test.sh` - Headless boot of the assembled app (the CI gate)
+
+CONTRIBUTING.md's **The inner loop** is the day-to-day command list
+(`-o install`, one-module rebuilds, `-Dtest='A,B'` with commas, never `-q`,
+rebuild from the root before booting). The v0.x `gui-test.sh`,
+`setup-and-run.sh` and lexer-demo fossils were removed in 3.1.0.
 
 The comprehensive suite is `mvn verify` — tests plus the SpotBugs,
 find-sec-bugs, and JaCoCo gates. (The v0.x-era test-everything.sh /
@@ -960,7 +962,10 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger. Key items:
 - `docs/engineering/tech-debt.md` - The CURRENT debt ledger: open items with deferral reasons, closed items by version
 - `docs/engineering/codebase-guide.md` - A beginner's guide to the codebase: the five RCP ideas everything rides on, four traced flows (boot / open-a-file / press-GO / send-a-request) with real file links, and the house laws with their origins — start here before reading code
 - `docs/engineering/plan.md` - The CURRENT plan: where the project stands, honest gaps, ranked opportunities, the working method + house laws + failure patterns — read this first when deciding what to do next
-- `CONTRIBUTING.md` - Contribution guidelines
+- `CONTRIBUTING.md` - Contribution guidelines, and **The inner loop**: the build/test/boot commands and their traps
+- `docs/quickstart.md`, `docs/glossary.md`, `docs/coming-from-vscode.md` - The newcomer's three pages (3.1.0), in all fifteen languages
+- `docs/engineering/gates.md` - Every build-failing law test with its law and origin (held complete by GatesIndexGateTest)
+- `docs/engineering/dx-plan-3.1.md` - The 3.1 developer-experience plan: what the first-hour, switcher and contributor walks found
 - **Every document under `docs/` is current.** The v0.x-era `hack/`
   and `product/` directories and the early `engineering/` papers were
   removed in 3.0.1 — git is the archaeology, and a banner saying "do
@@ -968,10 +973,9 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger. Key items:
 
 ## Troubleshooting
 
-**Build fails with "invalid target release: 21"**:
-- Ensure Java 21+ is active: `java -version`
+**Build fails at `validate` naming the JDK, or with "invalid target release"**:
+- The build needs JDK 25 (the enforcer says so at `validate`): `java -version`
 - Set JAVA_HOME to a JDK 25: `export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home`
-- Or specify Java explicitly: `JAVA_HOME=/path/to/jdk21 mvn clean package`
 
 **"Cannot run on older versions of Java" error**:
 - Use `--jdkhome` flag when launching: `./bin/nmoxstudio --jdkhome /path/to/jdk21`
@@ -990,8 +994,8 @@ See `docs/engineering/tech-debt.md` for the CURRENT ledger. Key items:
 - Configuration is in `application/src/main/resources/nmoxstudio.conf`
 
 **Tests fail**:
-- Ensure Java 21+ is used for testing
-- Some tests may require GUI environment (use `./gui-test.sh`)
+- Build and test with JDK 25 (the root pom's enforcer refuses anything older at `validate`)
+- Read the full verdict line; a gate's name says which law it holds - see `docs/engineering/gates.md`
 
 **Module not found errors**:
 - Rebuild from root: `mvn clean install`
