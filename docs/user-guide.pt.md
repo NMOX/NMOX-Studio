@@ -329,17 +329,17 @@ Escolha uma cadeia — Solidity com Foundry, Soroban, Solana, CosmWasm, ink!, Ca
 Acrescente a qualquer código jQuery, MooTools, Prototype, Backbone com Underscore ou Knockout, seja versionado no repositório (versões fixadas, sha256 registrado) ou como dependências do npm; mais andaimes de webpack, grunt, gulp ou bower.
 
 <a id="9-quick-search-status-line-and-staying-oriented"></a>
-## 9. Busca rápida, barra de estado e não perder o rumo
+## 9. Busca rápida, barra de status e não perder o rumo
 
 ### O selo ⇄ servindo
 
-Na barra de estado aparece um selo **⇄ servindo** sempre que há servidores no ar: a execução do próprio IDE, os dispositivos que servem e qualquer comando que tenha impresso um endereço local. Clique e escolha um: ele abre no navegador embutido, ou no do sistema quando aquela aba não dá conta dele.
+Na barra de status aparece um selo **⇄ servindo** sempre que há servidores no ar: a execução do próprio IDE, os dispositivos que servem e qualquer comando que tenha impresso um endereço local. Clique e escolha um: ele abre no navegador embutido, ou no do sistema quando aquela aba não dá conta dele.
 
 ### ⌘I, o localizador universal
 
 Uma única caixa alcança seus projetos (os recentes e os conhecidos), cada dispositivo do rack — pulando direto para os seus controles —, os **servidores no ar** (Enter abre no navegador), as requisições do Estúdio de API, as conexões e tabelas do Estúdio de banco de dados, os contratos, os nós de infraestrutura, os cartões do Quadro de tarefas (o resultado nomeia a coluna em que o cartão está) e os **scripts npm** do projeto apontado: digite `dev` ou `test` e o resultado diz *Executar script: dev — vite*; Enter o roda com o gerenciador de pacotes do próprio projeto (npm, yarn ou pnpm), exatamente como o duplo clique do Explorador NPM rodaria — a confiança do espaço de trabalho pergunta antes num projeto em que você ainda não confiou, a execução entra no ■ da barra de ferramentas, e um servidor de desenvolvimento que ela imprimir acende o selo ⇄. Num monorepo, os scripts são os que o Explorador NPM mostra. Um repositório que traz `.vscode/tasks.json` lista as tarefas dele do mesmo jeito — *Executar tarefa: build — make all* — e Enter executa a tarefa depois da mesma pergunta de confiança, na janela Output e sob o ■ da barra de ferramentas; uma tarefa de shell roda no shell que o VS Code usaria (o seu `$SHELL`, como shell de login no macOS; o PowerShell no Windows) ou naquele que o `options.shell` dela nomear; uma tarefa que precisa de um valor que só o VS Code pode fornecer, ou que depende de outra tarefa, diz isso na barra de status em vez de rodar. O `.vscode/launch.json` dele aparece ao lado — *Depurar: Launch Program — ${workspaceFolder}/server.js* — e Enter inicia o depurador de pontos de parada nessa configuração depois da mesma pergunta de confiança.
 
-### A barra de estado diz o que está vivo
+### A barra de status diz o que está vivo
 
 Ao lado do selo dos servidores estão o projeto mirado com sua cadeia de ferramentas e o ramo do Git com quantos arquivos você mudou. Tudo isso é lido do disco ou de registros que o produto já mantém: olhar não custa processo nenhum. Enquanto algo que a IDE verifica tiver um problema, uma contagem **✕ 2 ⚠ 1** mostra os erros e avisos de todos os servidores de linguagem e ferramentas; clique nela para abrir Itens de ação.
 
@@ -376,7 +376,7 @@ Um projeto cuja entrada seja `index.ts`, `main.ts` ou `src/index.ts` roda a part
 
 ### O seu idioma
 
-O NMOX Studio fala quinze idiomas: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית e العربية. Escolha o seu em **Opções ▸ Geral ▸ Idioma** — cada um escrito no próprio nome, para você sempre achar o seu. A escolha vai para os seus ajustes de inicialização (`etc/nmoxstudio.conf`, como um argumento `--locale`) e também vale na hora. Mudam: menus, diálogos, dicas, barras de estado, a tela de boas-vindas e as opções. Fica: o vocabulário dos painéis do rack (GO, STOP, EXPLAIN — são etiquetas de aparelho, como num sintetizador), e os diálogos mais fundos da plataforma, que ainda não têm tradução. Talvez você nunca precise escolher: uma instalação nova já fala o idioma do seu sistema, e também a partir de um país que nunca nomeamos — Taiwan, Singapura, Portugal e Quebec aterrissam no próprio idioma, e não em inglês, porque os catálogos levam o nome de um idioma e jamais o de um país.
+O NMOX Studio fala quinze idiomas: English, Español, Français, Deutsch, Русский, Українська, Polski, Português (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית e العربية. Escolha o seu em **Opções ▸ Geral ▸ Idioma** — cada um escrito no próprio nome, para você sempre achar o seu. A escolha vai para os seus ajustes de inicialização (`etc/nmoxstudio.conf`, como um argumento `--locale`) e também vale na hora. Mudam: menus, diálogos, dicas, barras de status, a tela de boas-vindas e as opções. Fica: o vocabulário dos painéis do rack (GO, STOP, EXPLAIN — são etiquetas de aparelho, como num sintetizador), e os diálogos mais fundos da plataforma, que ainda não têm tradução. Talvez você nunca precise escolher: uma instalação nova já fala o idioma do seu sistema, e também a partir de um país que nunca nomeamos — Taiwan, Singapura, Portugal e Quebec aterrissam no próprio idioma, e não em inglês, porque os catálogos levam o nome de um idioma e jamais o de um país.
 
 ### A checagem diária de atualizações
 
