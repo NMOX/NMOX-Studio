@@ -278,6 +278,7 @@
                                 <exclude>**/OpenedProjectsGroupTest.java</exclude>
                                 <exclude>**/DeadDoorsTest.java</exclude>
                                 <exclude>**/ActionIdsResolveTest.java</exclude>
+                                <exclude>**/CloneRepositoryReflectionTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
@@ -329,6 +330,7 @@
                                 <include>**/OpenedProjectsGroupTest.java</include>
                                 <include>**/DeadDoorsTest.java</include>
                                 <include>**/ActionIdsResolveTest.java</include>
+                                <include>**/CloneRepositoryReflectionTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>

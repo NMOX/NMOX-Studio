@@ -44,6 +44,8 @@ class ActionIdsResolveTest {
 
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
     private static final Pattern CALL = Pattern.compile("Actions\\.forID\\(\\s*([^,()]+?)\\s*,\\s*([^,()]+?)\\s*\\)");
+    /** The Welcome's door helper, {@code actionLink(label, category, id)}, which looks the id up for you. */
+    private static final Pattern LINK = Pattern.compile("actionLink\\([^;]*?,\\s*(\"[^\"]+\")\\s*,\\s*(\"[^\"]+\")\\s*\\)");
     private static final Pattern CONSTANT = Pattern.compile("static\\s+final\\s+String\\s+(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
     @Test
@@ -65,10 +67,16 @@ class ActionIdsResolveTest {
                 while (c.find()) {
                     constants.put(c.group(1), c.group(2));
                 }
-                Matcher m = CALL.matcher(src);
-                while (m.find()) {
-                    String category = value(m.group(1), constants);
-                    String id = value(m.group(2), constants);
+                List<String[]> pairs = new ArrayList<>();
+                for (Pattern shape : new Pattern[] {CALL, LINK}) {
+                    Matcher m = shape.matcher(src);
+                    while (m.find()) {
+                        pairs.add(new String[] {m.group(1), m.group(2)});
+                    }
+                }
+                for (String[] pair : pairs) {
+                    String category = value(pair[0], constants);
+                    String id = value(pair[1], constants);
                     if (category == null || id == null) {
                         continue; // computed at run time: out of a static census's reach
                     }
@@ -80,7 +88,7 @@ class ActionIdsResolveTest {
                 }
             }
         }
-        assertThat(calls).as("the census found the product's lookups").isGreaterThanOrEqualTo(6);
+        assertThat(calls).as("the census found the product's lookups").isGreaterThanOrEqualTo(11);
         assertThat(missing).as("action ids that answer null, so a fallback runs in silence").isEmpty();
     }
 

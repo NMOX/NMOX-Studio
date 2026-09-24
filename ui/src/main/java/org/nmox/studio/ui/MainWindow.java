@@ -57,6 +57,7 @@ import org.openide.windows.WindowManager;
     "MainWindow_newProject=New Project…  ⇧⌘N",
     "MainWindow_newLearningSpace=New Learning Space…  ⇧⌘L",
     "MainWindow_openFolder=Open Folder…  ⌥⌘O",
+    "MainWindow_cloneRepository=Clone Git Repository…",
     "MainWindow_taskRack=Task Rack  ⌘9",
     "MainWindow_workbench=Workbench  ⌥⌘0",
     "MainWindow_projectStudio=Project Studio",
@@ -163,6 +164,12 @@ public final class MainWindow extends TopComponent {
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
             start.add(actionLink(Bundle.MainWindow_openFolder(), "File",
                     "org.nmox.studio.ui.actions.OpenFolderAction"));
+            // 3.1.0: a first hour that starts from a repository URL had no
+            // door here - the platform's Team > Git > Clone... is the one;
+            // cloning into a folder with a manifest opens and aims it
+            JButton clone = textButton(Bundle.MainWindow_cloneRepository(), LINK);
+            clone.addActionListener(org.nmox.studio.ui.actions.CloneRepository::open);
+            start.add(clone);
 
             // Every chord here is live-verified: the platform's Keymaps
             // profile already owns ⌘0, ⇧⌘6, ⇧⌘7 and ⇧⌘8 (Editor, Tasks,
