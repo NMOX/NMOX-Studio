@@ -54,7 +54,7 @@ spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
 <a id="2-first-launch"></a>
 ## 2. 首次启动
 
-在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
+在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。VS Code 的 `-r` 可以使用，`-n` 会在那唯一的窗口里打开；`--wait`、`--diff` 以及其他仅属于 VS Code 的选项会被按名字拒绝。命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
 
 - **macOS，Homebrew：**cask 会替你建好链接。
 - **macOS，从 DMG 安装：**为应用的启动器建一个链接（不是复制）——
@@ -108,6 +108,8 @@ IDE 启动时会在编辑区旁打开三个标签页：**欢迎 → 任务机架
 **打开：**任何带有 60 种可识别清单之一的文件夹都会作为真正的项目打开 — `package.json`、`Cargo.toml`、`go.mod`、`pom.xml`、`composer.json`、`foundry.toml`、`bower.json`、`Gruntfile.js` 等等 — 也包括各合约链自己的清单：一个 Aiken（`aiken.toml`）或 Clarinet（`Clarinet.toml`）仓库打开时，它真正的流程通道已经接好。一个只有 HTML 和 `<script>` 标签、**没有**任何清单的普通文件夹同样能打开，作为 STATIC 项目：经典网页在这里是一等公民，而不是一个错误。
 
 **创建：***新建项目…* 提供真正可用的脚手架 — Angular、Vue、Svelte、原生 JavaScript、Elixir/Phoenix、PHP Web（LEMP）以及经典网页（jQuery）。每一个都自带接好的检查、格式化与测试配置，并已初始化 git 仓库：一次脚手架提交；当向导替你执行安装时，这次提交也包含锁文件，因此你的第一次 `git status` 是干净的。
+
+**文件树**就是项目工作室（⇧⌘E）。在文件或文件夹上右键，可以新建、剪切、复制、粘贴、删除和重命名；还有和 VS Code 资源管理器里一样的**复制路径**、**复制相对路径**（相对于项目）和**在访达中显示**（在 Windows 上是**在文件资源管理器中显示**，在 Linux 上是**打开所在文件夹**）。
 
 **切换项目是安全的：**如果有设备正在运行（开发服务器、监视器），IDE 会在切换前询问并干净地把它们停掉。绝不会有任何东西在你背后继续运行。即使强制退出 IDE，也不会留下孤儿进程。
 

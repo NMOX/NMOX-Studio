@@ -63,14 +63,14 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-它会立即返回，第二个 `nmox` 会把它的文件夹交给已经在运行的 IDE。也接受列号（`src/app.ts:42:7`），编辑器会打开到那一行的行首；不存在的名字会在终端里被拒绝，而不会启动任何东西。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
+它会立即返回，第二个 `nmox` 会把它的文件夹交给已经在运行的 IDE。也接受列号（`src/app.ts:42:7`），编辑器会打开到那一行的行首；不存在的名字会在终端里被拒绝，而不会启动任何东西。`-r` 可以使用，`-n` 在那唯一的窗口里打开，`--wait`、`--diff` 以及其他仅属于 VS Code 的选项会被按名字拒绝。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## VS Code 的每个概念住在哪儿
 
 | 在 VS Code 里 | 在 NMOX Studio 里 |
 |---|---|
-| **资源管理器** | **项目工作室**（⇧⌘E）— 文件树、模板，以及项目的 `package.json` 编辑器。**工作台**（⌥⌘0）是母港：打开的文件、最近的文件、最近的项目，以及正在运行的一切。 |
+| **资源管理器** | **项目工作室**（⇧⌘E）— 文件树（在文件上右键，可以“复制路径”“复制相对路径”和“在访达中显示”）、模板，以及项目的 `package.json` 编辑器。**工作台**（⌥⌘0）是母港：打开的文件、最近的文件、最近的项目，以及正在运行的一切。 |
 | **命令面板** | **快速搜索**（⇧⌘P 或 ⌘I）— 操作、文件、最近的项目、机架设备、活动服务器、API 工作室的请求、符号。VS Code 自己的命令名也能用：输入 *Format Document*、*Toggle Terminal*、*Git: Commit* 或 *Open Settings*，会在 **VS Code 命令** 下面列出在这里做同一件事的操作，带着它自己的名字和组合键。 |
 | **扩展** | **工具 ▸ 插件**安装和更新模块，NMOX 自己的更新也包括在内。VS Code 里很多靠扩展添加的东西，在这里是一台**机架设备** —— 你可以在 `~/.nmox/devices.d` 里用一个 JSON 文件写一台（[设备文件](device-files.md)）。 |
 | **`tasks.json`** | 你仓库里的 `.vscode/tasks.json` 会被读取：在快速搜索（⇧⌘P 或 ⌘I）里输入某个任务的名字，在 *运行任务：build — make all* 上回车就会运行它；对你还没信任的项目，工作区信任会先问你，输出在 Output 窗口，用工具栏的 ■ 停止。在它旁边，项目自己的脚本照写好的样子运行：工具栏的运行 / 构建 / 测试（F6、F11、⌃F6），`package.json` 脚本行上的**运行脚本**，**NPM 浏览器**，以及**任务机架**（⌘9），在那里任务就是你连起来的设备。 |
