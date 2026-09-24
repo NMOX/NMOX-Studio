@@ -1,5 +1,7 @@
 # The Plan
 
+*Currency addendum 2026-09-24 (v3.1.1, a dependency release). Dependabot moved the MongoDB driver from 5.11.1 to 5.12.0, and the new rule it leaves is about the direction of an upgrade: **a newer version number is not a superset of an older patch until the patch's content is in it.** 5.12.0 was cut from a branch that diverged from 5.11.1, so neither CVE fix commit is its ancestor; the fixes arrived as separate commits, proven by comparing the files each fix touched (identical in 5.11.1 and 5.12.0, different from 5.11.0). After a security patch, the next minor gets that check before it is taken.*
+
 *Currency addendum 2026-09-24 (v3.1.0, the developer-experience release). David
 handed the product to a product manager for one night: walk the first hour, the
 switch from VS Code and the contributor's clone, fix what the walks find, and
