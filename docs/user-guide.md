@@ -247,9 +247,12 @@ empty shelf offers the 93-space catalog instead of a dead end.
 ![A fresh Express experiment: the walkthrough open, dependencies installed, the API already serving](images/experiment-walkthrough.png)
 
 **Run, Build, Test — and Stop:** the toolbar's ▶ (F6) runs the aimed
-project the way its toolchain runs: a `start` script if package.json
-has one, `cargo run`, `go run`, `dotnet run`, and for a plain folder of
-HTML a small static server on the first free port from 8080. Build,
+project the way its toolchain runs: the `dev`, `start` or `serve`
+script from package.json (the first it has), `cargo run`, `go run`,
+`dotnet run`, and for a plain folder of HTML a small static server on the
+first free port from 8080. A Node project with none of those three
+scripts says so when you press ▶ and shows its scripts in the NPM
+Explorer, where a double-click runs one. Build,
 Test and Clean sit beside it and in the Run menu. A dev server that
 announces its address lights the ⇄ chip on the status line and opens
 the page in the in-app Browser. Everything runs behind the Workspace
