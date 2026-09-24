@@ -929,7 +929,7 @@ find-sec-bugs, and JaCoCo gates that every commit clears.
 
 ```
 NMOX-Studio/
-├── core/                   # Startup hooks (e.g. NMOX phosphor terminal styling)
+├── core/                   # Shared SPI facades, the Device SPI, process/IO utilities
 ├── ui/                     # Main windows, Workbench home base, actions
 ├── editor/                 # Polyglot editor: TextMate grammars, LSP,
 │   │                       #   completion, outline, spellcheck
@@ -958,7 +958,7 @@ NMOX-Studio/
 ├── tools/                 # Development tools and utilities
 ├── branding/              # Splash, icons, NMOX Phosphor theme
 ├── application/           # Main application assembly (the cluster)
-├── NMOX-Studio-sample/    # Sample project module
+├── NMOX-Studio-sample/    # Module template (built, never shipped)
 ├── packaging/             # macOS DMG, Linux tar.gz/deb, Windows installer
 ├── build.sh               # Build script
 ├── run.sh                 # Development run script
@@ -969,7 +969,7 @@ NMOX-Studio/
 
 | Module | Description | Key Components |
 |--------|-------------|----------------|
-| **core** | Startup hooks and platform-wide styling | `TerminalPhosphor` (@OnStart terminal theming) |
+| **core** | Shared SPI facades, the public Device SPI, process/IO utilities | `spi` (ProjectAim, LiveServings, TrustGate…), `spi.device`, `ProcessSupport`, `AtomicFiles`, `BoundedReads` |
 | **ui** | Main windows, Workbench home base, actions | `MainWindow`, Workbench, actions |
 | **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
 | **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
@@ -1032,7 +1032,8 @@ It builds on the Apache NetBeans Platform and shares its license.
 
 - **Issues**: [GitHub Issues](https://github.com/NMOX/NMOX-Studio/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/NMOX/NMOX-Studio/discussions)
-- **Documentation**: [Wiki](https://github.com/NMOX/NMOX-Studio/wiki)
+- **Documentation**: [the docs index](docs/README.md) — start with [the quickstart](docs/quickstart.md)
+- **Bugs**: **Help ▸ Report a Problem…** in the app prepares a report with the log tail and your environment, for you to read before you send it
 
 ---
 
