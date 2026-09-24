@@ -63,11 +63,12 @@ Z terminala `nmox .` otwiera katalog, w którym stoisz, tak jak robi to `code .`
 - **Windows:** pole *Add "nmox" to PATH* w instalatorze („Dodaj nmox do PATH”), domyślnie zaznaczone. Potem otwórz nowy terminal; już otwarty zachowuje stary PATH.
 - **Linux:** pakiet `.deb` instaluje `/usr/bin/nmox`. Z archiwum tar podlinkuj je sam: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
-Katalog możesz podać NMOX Studio także bez terminala, a zostanie wycelowany tak samo:
+W Linuksie i Windows katalog możesz podać NMOX Studio także bez terminala, a zostanie wycelowany tak samo:
 
-- **macOS:** kliknij katalog prawym przyciskiem w Finderze i wybierz NMOX Studio pod **Otwórz za pomocą**, albo upuść katalog na ikonę NMOX Studio w Docku. Kilka katalogów naraz celuje w pierwszy, a pasek stanu to mówi: IDE pracuje w jednym katalogu naraz. Plik upuszczony na ikonę otwiera się w edytorze.
 - **Linux (pakiet `.deb`):** menedżer plików wymienia NMOX Studio pod *Otwórz za pomocą* dla katalogu. Nie staje się domyślnym programem dla katalogów; tym pozostaje menedżer plików.
 - **Windows:** zaznacz w instalatorze pole *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* („Dodaj Open with NMOX Studio do menu kontekstowego katalogów w Eksploratorze”; domyślnie niezaznaczone, jak w VS Code). Eksplorator oferuje wtedy **Open with NMOX Studio** na katalogu i na pustym miejscu wewnątrz niego; w Windows 11 znajdziesz to pod *Pokaż więcej opcji*. Odinstalowanie to usuwa.
+
+W macOS użyj `nmox .` albo **Plik ▸ Otwórz katalog…**. *Otwórz za pomocą* w Finderze i ikona w Docku nie mogą przekazać katalogu podpisanej aplikacji Java uruchamianej tak jak NMOX Studio, więc aplikacja się tam nie proponuje.
 
 IDE otwiera się z trzema kartami przy obszarze edytora: **Witamy → Stojak zadań → Przeglądarka**. Każde inne okno jest o jeden skrót ⌥⌘ i figuruje w kolumnie NARZĘDZIA strony powitalnej. W lewym doku: **Studio projektu** (drzewo plików i szablony), baza **Stanowisko pracy** oraz **Eksplorator NPM**. Powstaje katalog `~/NMOX` jako domyślna przestrzeń robocza; stojak wskazuje tam, dopóki nie otworzysz projektu.
 
@@ -192,6 +193,7 @@ Ponad 70 języków jest kolorowanych jak należy — nowoczesny zestaw, klasyczn
 - **Lepkie przewijanie** — deklaracje obejmujące górę widoku (klasa, a potem metoda, do której zjechałeś) zostają przypięte nad tekstem, do trzech wierszy samego kodu; kliknięcie przenosi do wiersza. Pasek znika, gdy nic nie obejmuje pierwszego widocznego wiersza.
 - **Idź do symbolu (⌥⇧⌘O)** przenosi do dowolnej funkcji, klasy, reguły albo nagłówka w całym projekcie po wpisaniu nazwy — z dopasowaniem po przedrostku, po wielkich literach wewnątrz słowa albo po masce. Indeks jest ograniczony i uczciwy: `node_modules` jest pomijany, a przy bardzo dużym projekcie okno mówi, że zindeksowało pierwsze 2000 plików, zamiast udawać, że przeczytało wszystko.
 - **Okno testów (⌥⌘2)** pokazuje wszystkie testy projektu *zanim cokolwiek się uruchomi*, i uruchamia jeden test, plik albo całość.
+- **Serwery języka (LSP):** otwórz plik, dla którego języka jest zainstalowany serwer (typescript, gopls, rust-analyzer, pyright, …), a dostaniesz diagnostykę, podpowiedzi po najechaniu i przejście do definicji. Błędy i ostrzeżenia serwera są też wierszami w oknie **Elementy do zrobienia** (⌘6), nazwanymi od serwera (`[lsp:gopls]`), dla każdego pliku, o którym serwer coś zgłosił. Niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. Brak serwera? IDE proponuje polecenie instalacji, zamiast po cichu zawieść.
 - **`.editorconfig` jest respektowany** — podczas pisania i przy zapisie. `indent_style`, `indent_size` i `tab_width` decydują, co wpisują Tab, Enter i ponowne wcięcie, osobno dla każdego pliku i każdej sekcji wzorca; każdy zapis stosuje `trim_trailing_whitespace` i `insert_final_newline`. Zmiana w `.editorconfig` dociera do otwartych edytorów w ciągu paru sekund. Znak tabulacji, który już jest w pliku, nadal rysuje się z szerokością tabulacji ustawioną w Opcjach, a `charset` i `end_of_line` nie są stosowane.
 
 ### Rozwiń skrót (⌥⌘E)

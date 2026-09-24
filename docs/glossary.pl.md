@@ -145,13 +145,13 @@ przebija spod spodu.
 NMOX Studio. Czyta katalog publikowany z każdym wydaniem na GitHubie.
 
 **userdir** — Katalog, w którym NMOX Studio trzyma ustawienia, układ okien, dzienniki i
-zainstalowane aktualizacje. Aby go znaleźć, otwórz **Pomoc ▸ About** (w macOS: menu
-aplikacji NMOX Studio). Jego dziennik jest w
+zainstalowane aktualizacje. Gdzie jest, pokazuje okno „O programie” (w menu Pomoc
+w Windows i Linuksie, w menu NMOX Studio w macOS). Jego dziennik jest w
 `var/log/messages.log`. Aby zacząć od czystych ustawień, uruchom z
 `--userdir <pusty katalog>`.
 
 **Opcje** / **Settings…** (Options) — Okno preferencji. W Windows i Linuksie to **Narzędzia ▸ Opcje**,
 a w macOS **NMOX Studio ▸ Settings…**.
 
-**Elementy do zrobienia** (Action Items) — Okno z listą problemów znalezionych w projekcie, łącznie z wynikami
-lintowania i sprawdzania typów ze stojaka. Kliknij problem, aby przejść do tego wiersza.
+**Elementy do zrobienia** (Action Items) — Okno z listą problemów znalezionych w projekcie: błędy i ostrzeżenia
+serwerów języka oraz wyniki lintowania i sprawdzania typów ze stojaka. Kliknij problem, aby przejść do tego wiersza.

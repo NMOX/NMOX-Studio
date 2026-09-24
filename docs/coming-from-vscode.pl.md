@@ -97,8 +97,8 @@ dowiązanie.
 | **`tasks.json`** | Własne skrypty projektu, uruchamiane tak, jak są napisane: Uruchom / Zbuduj / Testuj na pasku narzędzi (F6, F11, ⌃F6), **Uruchom skrypt** na wierszu `scripts` w `package.json`, **Eksplorator NPM** i **Stojak zadań** (⌘9), gdzie zadania są urządzeniami, które łączysz kablami. |
 | **`launch.json`** | **Debuguj plik** (⇧⌘F5) i przycisk debugowania na pasku narzędzi same ustalają, co uruchomić, z samego projektu — wejście skryptu `start`, `main`, `index.js` — a urządzenie stojaka **INSPECTOR** uruchamia debuger jako krok potoku. |
 | **Integrated terminal** | Okno **Terminal** (⌃\`): pierwsze naciśnięcie uruchamia powłokę w katalogu projektu, kolejne przywracają ją na wierzch. |
-| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). `.editorconfig` twojego projektu jest respektowany przy zapisie. |
-| **Problems panel** | **Elementy do zrobienia** (⌘6): wyniki lintowania i typów z urządzeń PURITY i TYPEGUARD na stojaku, obok falek w edytorze. |
+| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). `.editorconfig` twojego projektu działa podczas pisania i przy zapisie. |
+| **Problems panel** | **Elementy do zrobienia** (⌘6): błędy i ostrzeżenia serwerów języka oraz wyniki lintowania i typów z urządzeń PURITY i TYPEGUARD na stojaku. Tak jak w VS Code, niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. |
 | **Outline** | **Nawigator** (⌘7). |
 | **Source Control** | Wskaźnik gałęzi git na pasku stanu (gałąź i zmiany, jedno kliknięcie do historii) oraz menu **Zespół**. |
 | **Workspace Trust** | Ten sam pomysł, egzekwowany przed uruchomieniem czegokolwiek, co wybrało repozytorium: otwarcie sklonowanego projektu nie uruchamia niczego, dopóki mu nie zaufasz. |
@@ -122,9 +122,9 @@ dowiązanie.
   **Eclipse** ⇧⌘E pozostaje własnym *Switch to Editor* Eclipse’a, a
   w edytorze ⇧⌘P i ⇧⌘X zachowują znaczenia z Eclipse’a (pasujący
   nawias, wielkie litery) — kto wybrał Eclipse, spodziewa się Eclipse’a.
-- **Na Linuksie Ctrl+\` otwierało przełącznik okien** — zapasowy skrót
-  platformy dla pulpitów (KDE), które przechwytują Ctrl+Tab. Teraz otwiera
-  Terminal; przełącznik nadal jest pod Ctrl+Tab.
+- **Na Linuksie Ctrl+\` otwiera Terminal, a nie przełącznik okien.**
+  Platforma trzymała tam drugi przełącznik dla pulpitów (KDE), które
+  przechwytują Ctrl+Tab; przełącznik jest pod Ctrl+Tab.
 - **Skróty z Ctrl+Alt mogą kolidować z AltGr.** W Windows układy
   klawiatury, które wpisują znaki przez AltGr (na przykład polski), wysyłają
   dla niego Ctrl+Alt. Jeśli Ctrl+Alt+P albo Ctrl+Alt+K wpisuje ci znak,
