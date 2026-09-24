@@ -97,6 +97,10 @@ class CatalogueProseLedgerTest {
                 + "provider names beside them are company names.");
         LEDGER.put("ErcStandards.java#Standard",
                 "MACHINE — ERC-20 is a standard's name, the same in every language.");
+        LEDGER.put("VsCodeTasks.java#Os",
+                "MACHINE — the keys VS Code's tasks.json schema uses for its per-OS "
+                + "override objects (osx, linux, windows), matched literally in a file "
+                + "VS Code wrote; never shown to anyone.");
     }
 
     @Test

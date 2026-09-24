@@ -33,7 +33,10 @@ class QuickSearchLabelsEscapedTest {
 
     private static final Map<String, String> BLESSED = Map.of(
             "NpmScriptSearchProvider.java",
-            "label() escapes the script's name and command separately before they fill the bundle template");
+            "label() escapes the script's name and command separately before they fill the bundle template",
+            "VsCodeTaskSearchProvider.java",
+            "label() escapes the task's label and command separately (through NpmScriptSearchProvider.escape) "
+            + "before they fill the bundle template; the escape is pinned by VsCodeTaskSearchProviderTest.labels");
 
     @Test
     @DisplayName("every Quick Search result label is escaped where it reaches the HTML renderer")
