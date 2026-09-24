@@ -4,6 +4,316 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.0] - 2026-09-24
+
+**The developer-experience release. Three walks set the list — the first hour
+(download, install, open, run), the switcher from VS Code, and the
+contributor (clone, build, test, PR) — and the first thing they found was that
+every 3.0.x install from Homebrew or a browser would not open.**
+
+The plan behind this release, what each walk found and what was built about
+it: [docs/engineering/dx-plan-3.1.md](docs/engineering/dx-plan-3.1.md).
+
+### It opens
+
+- **3.0.0–3.0.2 were refused by Gatekeeper when installed the way people
+  install them.** Homebrew and browsers mark every file quarantined, and
+  Gatekeeper judges every quarantined file a process *executes*. The bundle's
+  launcher exec'd the platform's `bin/nmoxstudio`, a shell script, which
+  carries no signature of its own: *"NMOX Studio.app" Not Opened — Apple could
+  not verify it is free of malware*, on a bundle `spctl` calls notarized.
+  `gh release download` sets no quarantine, which is how every verification
+  since 3.0.0 missed it. The launcher now hands the script to `/bin/sh` as
+  input — exactly how the platform launcher runs its own `nbexec`.
+  **Proven on a notarized build, the way a user gets it:** a dry-run DMG
+  (below), every file of the copied app quarantined, launched through
+  LaunchServices: macOS answers *"is an app downloaded from the Internet …
+  Apple checked it for malicious software and none was detected"* with
+  **Open**, and 3.1.0 boots with all eleven modules and zero SEVERE.
+  `ReleaseSigningLanesGateTest` refuses a launcher that execs a nested script.
+- **A dry run that notarizes without publishing.** The Release workflow takes
+  a `workflow_dispatch`: `version` and `macos` run, the DMG lands as a run
+  artifact, and linux, windows, release and homebrew cannot run. The first dry
+  run found its own defect: dispatched as `3.1.0-dryrun1`, it built an app
+  whose eleven modules all refused to load — the version is every module's
+  OpenIDE spec version, which is dotted numbers only. The version job now
+  refuses anything but `N.N.N`, from a dispatch or a tag (a `-rc1` tag would
+  have shipped the same empty window); the gate runs the job's own script.
+- **An app opened from Finder runs from your home folder**, so its Terminal no
+  longer opens in `/`.
+
+### From a terminal: `nmox .`
+
+- `cd my-app && nmox .` does what `code .` does: a folder is aimed (manifest
+  or not), a file opens, the command returns at once, and a second `nmox`
+  hands its folder to the IDE that is running. Homebrew links it, the Linux
+  packages install `/usr/bin/nmox`, and the Windows installer has an
+  *Add "nmox" to PATH* task, ticked by default, in every installer language.
+  **Proven on the notarized dry run**: through a symlink, on a quarantined
+  copy, `nmox .` raised no Gatekeeper dialog and aimed the folder; a second
+  `nmox .` from a folder with a space and no manifest was handed to the
+  running IDE.
+- **`nmox src/app.js:42` opens the file at line 42**, `code -g`'s form (`-g`
+  and `--goto` are accepted; a column is accepted and the editor opens at
+  the start of the line, since the platform's `--open` has none). On a first
+  launch the Welcome, which takes the front exactly once, now steps aside
+  for the file you named — walked on a fresh userdir, where it had sat over
+  `app.js` with the caret on line 57.
+- **`nmox --help` answers.** It went to the platform, whose output the
+  detached launch discards, so it printed nothing and exited 0; each
+  launcher now prints a short usage itself.
+- **`nmoxstudio --aim <folder>`**, the door `nmox` walks through. The
+  platform's `--open` hands a folder without a manifest to a friend-only
+  handler that opens a raw explorer tab in the left dock — one more duplicate
+  per call — and never aims the IDE (measured). `--aim` aims any folder, and a
+  file or a missing path is refused on the caller's terminal with exit 2.
+- **Open a folder from the file manager, on Linux and Windows.** Linux: the
+  menu entry offers itself for folders. Windows: an optional installer task
+  adds *Open with NMOX Studio* to Explorer, on a folder and inside one.
+  **Not on macOS, and said so:** Finder and the Dock cannot hand a folder to
+  a signed Java app launched this way. The fix that works under an ad-hoc
+  runtime (`CFProcessPath`) is ignored under the hardened runtime a
+  notarized release runs in — measured on the dry run, then taken out
+  rather than shipped as a door that does not open. Ledger 118 says what
+  would open it.
+
+### The first hour
+
+- **[The five-minute quickstart](docs/quickstart.md)**: install, open, run,
+  find, test.
+- **[The glossary](docs/glossary.md)**: rack, device, patch, jack, lane, aim,
+  the ⇄ chip, KVASIR, and the NetBeans words that show through.
+- **The README** says what the product is and how to install it before
+  anything else. The website says the same, and links a download for every
+  OS.
+- **▶ Run says why when there is nothing to run.** A Node project without a
+  `dev`, `start` or `serve` script had its Run button greyed with no word; the
+  press now says so and shows the NPM Explorer, where the scripts are.
+- **Opening a project no longer opens four duplicate file trees.** The
+  platform's *OpenedProjects* window group opened Projects, Files, Favorites
+  and Services beside Project Studio every time, until the dock's own tabs
+  read "W…". The Navigator still opens.
+- **The Welcome keeps up**: RECENT and First Steps follow a project aimed while
+  the Welcome is on screen, and **Clone Git Repository…** joins START — the
+  platform's clone wizard, which now starts in `~/NMOX` instead of a
+  `~/NetBeansProjects` the product never uses.
+- **A long path never widens a window.** The Workbench header and Project
+  Studio's footer asked for the width of the whole path; a deep one pushed the
+  dock across half the window. `PathLabel` keeps both ends and puts the whole
+  path on the tooltip.
+- **Doors that could never open are gone**: Team ▸ *Find Tasks…* and *Report
+  Task…* (the bug-tracking module ships no connector), Window ▸ *Show
+  Dashboard* (a frame for widgets nobody registers — it opened nothing), and
+  the always-empty *Set Project Configuration* combo, the widest control on the
+  toolbar. `DeadDoorsTest` derives each from the assembled cluster and names
+  the connector or project type that would bring one back.
+
+### Coming from VS Code
+
+- **The first chords do what a switcher expects**, in all five keymap
+  profiles: ⇧⌘P the command palette (Quick Search), ⇧⌘E the file tree, ⇧⌘X
+  the plugins, and ⌃\` a terminal **in the project folder** — the first press
+  starts a shell there, later ones bring it back — and ⌘D adds the next
+  occurrence to the selection (in the default, Emacs and IDEA profiles;
+  Eclipse and NetBeans 5.5 keep ⌘D as their own *Delete Line* and *Shift
+  Line Left*, measured in the shipped keymaps). Switch Project moved to ⌥⌘P,
+  New Experiment to ⌥⌘K, Experiments to ⌥⇧⌘K. `VsCodeKeymapResolutionTest`
+  replays the keymap over the shipped layers so a rival binding fails by name
+  (it refused ⇧⌘M for Action Items: that is Toggle Bookmark here, and a chord
+  people use is not taken).
+- **[Coming from VS Code](docs/coming-from-vscode.md)**: the chords on macOS
+  and on Windows/Linux, where each VS Code idea lives, and what is honestly
+  different.
+- **Quick Search answers in VS Code's words.** The platform's actions
+  provider matches a query as one substring of an action's name, so
+  *toggle terminal*, *git commit* or *open settings* found nothing. A
+  *VS Code commands* category maps 53 of VS Code's palette titles — ten
+  of them the focused editor's own, *Format Document* among them — to the
+  action that does the same thing here and shows both names and the
+  chord — *View: Toggle Terminal — Terminal in Project* — so the next time
+  the NMOX name is the one typed. Only actions that are there and enabled
+  are offered, and `ActionIdsResolveTest` reads every row.
+- **A repository's `.vscode/settings.json` sets its files' indentation.**
+  `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` reach
+  Tab, Enter and re-indent, and `files.trimTrailingWhitespace` and
+  `files.insertFinalNewline` apply on save, language blocks included; the
+  project's `.editorconfig` wins wherever both speak. Only `true` is read
+  for the save rules: VS Code's `false` means "leave it alone", while
+  EditorConfig's `false` would strip the final newline.
+- **A repository's VS Code files announce themselves, once.** The first
+  time a project with `.vscode/tasks.json`, `launch.json` or
+  `settings.json` is aimed, a notice says what was found and where (its
+  tasks and configurations in Quick Search, under the chord for the
+  reader's OS); a click opens Quick Search. Read off the EDT after the aim
+  settles, silent if the project was aimed away meanwhile, and recorded so
+  it is never said twice.
+- **The terminal really starts in the project.** Project Studio's Terminal
+  button has promised that since 1.212.0 and looked the platform's action up
+  by an id that does not exist, so every press opened a shell in the IDE's own
+  directory — and, walked for this release, two tabs for one press. `ActionIdsResolveTest`
+  checks every action id the product looks up against the assembled cluster.
+- **A repository's `.vscode/tasks.json` runs from Quick Search.** Type a
+  task's name into ⇧⌘P or ⌘I and Enter on *Run task: build — make all*:
+  Workspace Trust asks first, the output streams to the Output window, the
+  toolbar ■ stops it, and a local address it prints lights the ⇄ chip.
+  `npm` tasks go to the NPM Service lane. The file is read bounded, JSONC
+  comments and trailing commas are tolerated, and the running OS's
+  override is merged. A task only VS Code could run is listed and refused
+  out loud, naming what is missing — an `${input:…}`, `${file}`,
+  `${config:…}` or `${command:…}` variable, a `dependsOn`, an extension's
+  task type, or a working folder outside the project — because running it
+  anyway would run something other than what the file says.
+- **A repository's `.vscode/launch.json` debugs.** Enter on *Debug: Launch
+  Program — ${workspaceFolder}/server.js* in Quick Search asks Workspace
+  Trust, then hands the program, its `cwd`, its `args` and its `env` (Node,
+  Python) or the page and its `webRoot` (Chrome) to the breakpoint debugger
+  through additive `DebugLauncher` doors — no new spawn site; the real
+  js-debug was run to prove the arguments and variables arrive. Every
+  field it cannot honour (`envFile`, `runtimeExecutable`, `runtimeArgs`,
+  `preLaunchTask`, anything untaught, `args` written as one shell string,
+  an `env` value of `null`) is refused by name rather than dropped: a
+  program started without them is not the program the file describes.
+  `attach`, compounds, adapter-less types (Edge included — the Chromium on
+  the machine is not necessarily Edge), VS Code-only variables and paths
+  outside the project refuse the same way. The tasks.json half's JSONC,
+  per-OS merge, variable rules and containment are shared, not copied.
+- **`.editorconfig` indentation is honoured**: `indent_style`, `indent_size`
+  and `tab_width` decide what Tab, Enter and re-indent write. (A tab already in
+  the file is still drawn at the Options width; `charset` and `end_of_line`
+  are not applied.)
+- **A language server's problems are rows in Action Items (⌘6)** — the
+  Problems panel a switcher reaches for. The platform's LSP client kept
+  them as squiggles in the file that had them; a TypeScript error in
+  another open file was invisible from where you stood. Each server's
+  stream is watched at the one launch seam, every byte passed through
+  unchanged, and its errors and warnings are withdrawn when it stops.
+- **The status line counts problems: ✕ errors ⚠ warnings**, from every
+  language server and tool, hidden when there is nothing to fix; a click
+  opens Action Items. Its scanner there is named for what it carries
+  ("Language servers and IDE tools"), not "Rack tool findings".
+- **Quick Search runs your `package.json` scripts**: type `dev`, press Enter,
+  through the same trust-gated path as the NPM Explorer.
+
+### Fixed along the way
+
+- **Every Quick Search result label is escaped.** Results render as HTML;
+  Block Studio's own label, `Block Studio — <my-card> (3 pieces)`, lost its
+  tag name on every row, and the others carry a project's own words.
+- **Help ▸ About and the Action Items tab speak every language.** Both read
+  English in all fourteen translated builds; the translators found them,
+  because they could not name either in their language. The About row
+  joins the code-named menu ledger, so its mnemonic is gated with the rest
+  of the Help menu (the gate caught a Ukrainian collision on its first run).
+- **Options ▸ General ▸ Language tells the truth in every language.** Twelve
+  translations still said a switch takes effect after a restart; it has
+  taken effect at once since the live switch shipped.
+- **The toolbar stops reading its mnemonic ampersand to a screen reader.**
+  VoiceOver read "ampersand New File" on the first toolbar button, in every
+  language.
+
+### The night's own review
+
+A hostile read of the night's code, the house's standing lens for anything
+fresh, found 21 problems; every proven one and every MED is fixed here.
+
+- **A cloned repository's `.editorconfig` can no longer hang the editor.**
+  Section globs were translated to `java.util.regex`, so a header like
+  `[**a**a…**b]` against a file named `aaaa…a.js` made the backtracker try
+  every way of placing the groups — 2.3 s per match at twelve groups over a
+  28-character name, C(40,20) ≈ 1.4×10¹¹ at twenty over forty. It predates
+  3.1, but 3.1's indentation re-resolves every open file while you type.
+  `EditorConfigGlob` walks the path once over a small state machine, so the
+  work is bounded whatever the glob says; it follows the spec, never
+  throws, and refuses a glob past its bounds once in the log rather than as
+  a stack trace on every resolve.
+- **Language-server diagnostics never name a secret file to the Agent
+  Port.** A JSON server reports on a malformed `secrets.json` like any other
+  file; the v2.84.0 law — never searched, never counted — now holds on the
+  new feed too.
+- **The diagnostics tap keeps its place**: a frame with an unreadable body no
+  longer loses the frames after it, headers ending LF LF (which lsp4j
+  accepts) are read, an escaped `textDocument\/publishDiagnostics` is read,
+  and a frame arriving while a server is withdrawn cannot bring its problems
+  back.
+- **`nmox` refuses a mistyped path out loud.** The launchers detached the
+  IDE with its output sent to `/dev/null` and always exited 0, so
+  `nmox typo.js` printed nothing and reported success. They now check every
+  path first, in the shell, and print `nmox: <path>: no such file or
+  folder` on stderr with exit 2; a good path still launches detached. On
+  Windows `nmox.cmd` no longer expands `%` and `^` in a file name twice,
+  and the installer writes no leading `;` into a user Path that did not
+  exist, and keeps the empty entries it did not add.
+- **A VS Code shell task runs in the shell VS Code would use.** `"type":
+  "shell"` tasks ran in `/bin/sh` (dash on Debian and Ubuntu) or `cmd.exe`
+  whatever the file said, so `source .venv/bin/activate && pytest` failed
+  on Ubuntu, and `options.shell` was neither honoured nor refused. Read from
+  VS Code's own source: with no `options.shell` the line runs in your
+  `$SHELL` with `-c` (a login shell on macOS for zsh, bash and fish) or, on
+  Windows, in PowerShell (`pwsh` first); a named `executable` runs with
+  exactly its `args`. PowerShell receives the line as `-EncodedCommand`, so
+  no Windows argument quoting is involved; `cmd.exe` gets `/s /c "…"` with
+  backslashes doubled before every quote, so `out\` no longer swallows the
+  rest of the line. Any other shell on Windows, and a named shell that
+  cannot be found, is refused by name.
+- **"Running …" only after Workspace Trust says yes.** Quick Search's npm
+  runs and **Run Script** spoke before asking; Keep Safe left the sentence
+  over a run that never happened.
+- **A script that prints and exits shows its output under the debugger.**
+  Debug on a one-line `hello.js` showed only the command line: js-debug's
+  default output capture reads the program's console through the child
+  session, which a quick program outlives. It reads the process's own
+  stdout and stderr now (`outputCapture: std`); walked, and held by a test
+  against the real adapter.
+- **A second review, of the night's second half, found three more.** A
+  `.vscode/settings.json` tab width survived under an `.editorconfig` that
+  named only `indent_size`, and a tab-indented project got two tabs per
+  level (probed): indentation now comes from one file or the other, never
+  a mix. VS Code command rows asked `isEnabled()` off the EDT; they are
+  resolved on it now, as the platform's own provider does, and one action
+  that throws no longer takes the category with it. And debug output from
+  forked children and workers now arrives in the first session's console,
+  the price of the quick-script fix, measured and written into the guide.
+  The smaller ones: the notice claims indentation only when `settings.json`
+  sets it, `settings.json` is read only inside a repository, `nmox
+  app.js:99999999999` is refused rather than failing silently, and two
+  launcher mutants that survived are pinned.
+- **The Welcome's recents are read off the EDT**, so one recent project on a
+  dead mount no longer freezes every aim.
+- The smaller ones: a path label re-cuts on a font change, the clone link
+  reports a missing Git module and nothing else, and ledger 120 keeps the
+  LOW remainder, each suspected rather than proven.
+
+### For contributors
+
+- **The build refuses a JDK older than 25, by name.** On 21 it failed as
+  hundreds of misleading `cannot find symbol: Bundle` lines.
+- **CONTRIBUTING's *The inner loop***: one-module rebuilds, `-Dtest='A,B'`
+  (commas), never `-q`, rebuild from the root before booting.
+- **[docs/engineering/gates.md](docs/engineering/gates.md)** gives every
+  build-failing law test its law and origin in one line, held complete by
+  `GatesIndexGateTest`. PR and issue templates. Seven v0.x fossils removed;
+  `build.sh` and `run.sh` work; a quiet build log.
+
+### The docs are current and translated
+
+- **The user guide describes the product, not its history**: forty release
+  tags came out, among them a Browser paragraph that was eleven changelog
+  entries strung together. `TimelessGuideTest` keeps them out.
+- **Every relative link and `#anchor` in the docs lands**
+  (`DocsLinksResolveTest`; the first census found two dead anchors).
+- **Fifteen languages**: the quickstart, the glossary and Coming from VS Code
+  in every language the product speaks (42 pages, held to the English
+  shape by `TranslatedNewcomerDocsTest`: the language bar, the sections
+  under the English anchors, every command byte for byte), each guide level
+  with this release's English, and the website's new lines in all fifteen.
+- **The translators were the best readers of the English.** They caught a
+  Help ▸ About path that does not exist on macOS, `.editorconfig` described
+  as save-only, a history sentence on a newcomer page, and a dialog button
+  written as a menu path — and fixed wrong doors already in their own
+  guides that the menu gate could not see, because it checks only paths
+  whose first word is a real menu name (`Werkzeuge ▸` for `Extras ▸`,
+  `Ver ▸` for `Exibir ▸`, `Знаряддя ▸` for `Інструменти ▸`, and more).
+
 ## [3.0.2] - 2026-09-22
 
 **The MongoDB driver moves to 5.11.1, which fixes two CVEs. Neither was
@@ -23746,6 +24056,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.2...v3.1.0
 [3.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.0...v3.0.1
 [3.0.0]: https://github.com/NMOX/NMOX-Studio/compare/v2.188.4...v3.0.0
