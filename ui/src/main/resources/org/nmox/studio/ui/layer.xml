@@ -46,6 +46,17 @@
                  v2.64.0 Help-menu hides are the same call. -->
             <file name="org-netbeans-modules-tasks-ui-DashboardTopComponent.shadow_hidden"/>
         </folder>
+        <folder name="Versioning">
+            <!-- 3.1.0: the same bug-tracking module also put "Find Tasks..."
+                 and "Report Task..." on the Team menu, where with no
+                 connector they are disabled forever - two dead rows in the
+                 first menu a user opens for git (measured in the assembled
+                 3.1.0 app). DeadDoorsTest holds every bug-tracking menu row
+                 and shortcut masked while no connector ships. -->
+            <file name="org-netbeans-modules-bugtracking-ui-query-IssueAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-bugtracking-ui-query-IssueAction-separatorAfter.instance_hidden"/>
+            <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.shadow_hidden"/>
+        </folder>
         <!-- The Refactor menu is a Java-IDE organ: our languages ride
              TextMate + LSP, where rename lives on the editor context menu.
              An always-empty top-level menu reads as broken. -->
@@ -55,6 +66,9 @@
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
+        <!-- the bug-tracking Find Tasks chord: disabled forever with no
+             connector (see Menu/Versioning above) -->
+        <file name="DS-6.shadow_hidden"/>
         <!-- Cmd+P (Go to File) is NOT here: Shortcuts/ entries lose to
              Keymaps-profile claims and to focused-editor keybindings —
              the v1.38.1 lesson. The binding lives as a Keymaps shadow
