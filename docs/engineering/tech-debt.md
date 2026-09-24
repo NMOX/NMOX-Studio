@@ -51,6 +51,22 @@ environment variable at all. That replaces the shell launcher and its
 Gatekeeper-proven `exec /bin/sh` path, so it needs its own notarized dry
 run. `OpenFolderFromOsGateTest` holds the absence until then.
 
+### 119. The menu-doors gate checks only paths that start at a real menu
+
+**Open, deliberately.** `DocsMenuDoorsTest` walks a `▸` path only when its
+first segment is a top-level menu of the document's language. A translated
+guide that writes a menu that does not exist (`Werkzeuge ▸` where German
+reads `Extras ▸`, `Ver ▸` where Portuguese reads `Exibir ▸`) is therefore
+never checked. The 3.1.0 translators found and fixed every instance they met
+by reading the bundles, which is how the class was found. A census of the
+translated docs' path roots shows a small set, but the legitimate non-menu
+roots (the Options dialog and its tabs, the Plugin Manager's tabs, the macOS
+app menu) are not derivable from the layers, so a strict rule would need a
+hand-kept allow-list per language — the shape `PlatformDialogLedgerTest`
+keeps for dialogs. Worth building when a translation next changes many
+paths; until then, a translation brief names the bundles as the only source
+of a door's name.
+
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 
 Recorded by v2.184.0's senior-developer pass; all seven closed in v2.186.0.
