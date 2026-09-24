@@ -51,6 +51,11 @@ class WelcomeFollowsAimTest {
         String body = src.substring(at, src.indexOf("});", at));
         assertThat(body).contains("invokeLater").contains("refreshRecents()").contains("refreshGettingStarted()");
 
+        // the recents list checks each folder on disk: read off the EDT, painted on it
+        String refresh = method(src, "void refreshRecents()");
+        assertThat(refresh).contains("SIGNALS.post(").contains("recentProjects()").contains("invokeLater");
+        assertThat(method(src, "void paintRecents(List<File> recents)")).doesNotContain("recentProjects()");
+
         MainWindow[] w = new MainWindow[1];
         SwingUtilities.invokeAndWait(() -> w[0] = new MainWindow());
         // delivered off the EDT, as an aim from the CLI is: must not throw

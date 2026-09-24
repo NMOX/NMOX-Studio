@@ -244,11 +244,21 @@ public final class MainWindow extends TopComponent {
             add(footer, gc);
         }
 
-        /** Rebuilds the recent-projects column from the live service. */
+        /**
+         * Rebuilds the recent-projects column from the live service. The list
+         * is read off the EDT (the service checks each recent folder on disk,
+         * and one on a dead mount must not freeze an aim), then painted on it.
+         */
         void refreshRecents() {
+            SIGNALS.post(() -> {
+                List<File> recents = recentProjects();
+                javax.swing.SwingUtilities.invokeLater(() -> paintRecents(recents));
+            });
+        }
+
+        void paintRecents(List<File> recents) {
             recentColumn.removeAll();
             recentColumn.add(columnHeading(Bundle.MainWindow_columnRecent()));
-            List<File> recents = recentProjects();
             if (recents.isEmpty()) {
                 JLabel none = new JLabel(Bundle.MainWindow_noRecents());
                 none.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
