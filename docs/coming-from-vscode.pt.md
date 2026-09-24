@@ -85,7 +85,9 @@ nmox            # just start the IDE
 Ele volta na hora, e um segundo `nmox` entrega a pasta dele à IDE que já
 está rodando. Uma coluna (`src/app.ts:42:7`) é aceita e o editor abre no
 começo da linha; um nome que não existe é recusado no terminal em vez de
-iniciar qualquer coisa. O Homebrew, o instalador do Windows (*Adicionar
+iniciar qualquer coisa. `-r` é aceito, `-n` abre na única janela, e
+`--wait`, `--diff` e as demais opções exclusivas do VS Code são recusadas
+pelo nome. O Homebrew, o instalador do Windows (*Adicionar
 “nmox” ao PATH*) e os pacotes do Linux o põem no seu PATH; para uma
 instalação pelo DMG, o [guia do usuário](user-guide.pt.md#2-first-launch) mostra o link de
 uma linha.
@@ -95,7 +97,7 @@ uma linha.
 
 | No VS Code | No NMOX Studio |
 |---|---|
-| **Explorer** (Explorador) | **Estúdio de projeto** (⇧⌘E) — a árvore de arquivos, os modelos e o editor do `package.json` do projeto. A **Bancada** (⌥⌘0) é a base: arquivos abertos, arquivos recentes, projetos recentes e tudo que está rodando. |
+| **Explorer** (Explorador) | **Estúdio de projeto** (⇧⌘E) — a árvore de arquivos (clique com o botão direito num arquivo para Copiar caminho, Copiar caminho relativo e Mostrar no Finder), os modelos e o editor do `package.json` do projeto. A **Bancada** (⌥⌘0) é a base: arquivos abertos, arquivos recentes, projetos recentes e tudo que está rodando. |
 | **Command Palette** (Paleta de Comandos) | **Pesquisa rápida** (⇧⌘P ou ⌘I) — ações, arquivos, projetos recentes, dispositivos do rack, servidores ativos, requisições do Estúdio de API, símbolos. Os nomes dos comandos do próprio VS Code também funcionam: *Format Document*, *Toggle Terminal*, *Git: Commit* ou *Open Settings* listam a ação que faz a mesma coisa aqui, em **Comandos do VS Code**, com o próprio nome e o próprio atalho. |
 | **Extensions** (Extensões) | **Ferramentas ▸ Plugins** instala e atualiza módulos, incluindo as atualizações do próprio NMOX. Muito do que uma extensão acrescenta no VS Code é um **dispositivo do rack** aqui — e você pode escrever um como um arquivo JSON em `~/.nmox/devices.d` ([arquivos de dispositivo](device-files.md)). |
 | **`tasks.json`** | O `.vscode/tasks.json` do seu repositório é lido: digite o nome de uma tarefa na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Executar tarefa: build — make all* a executa, com a Confiança no espaço de trabalho perguntando antes num projeto em que você ainda não confiou, a saída dela na janela Output e o ■ da barra de ferramentas para pará-la. Ao lado, os scripts do próprio projeto rodam como estão escritos: o Executar / Construir / Testar da barra de ferramentas (F6, F11, ⌃F6), **Executar script** numa linha de scripts do `package.json`, o **Explorador NPM** e o **Rack de tarefas** (⌘9), onde as tarefas são dispositivos que você liga uns aos outros. |
