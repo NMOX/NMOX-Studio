@@ -1743,8 +1743,11 @@ The **⇄ serving** chip on the status line lists every live server (the IDE's R
 and known), every rack device (jump straight to a device's controls),
 **live servers** (anything currently serving — hit Enter to open it in
 the browser), API Studio requests, DB connections and tables, contracts,
-infra nodes, Task Board cards (the hit names the card's column), and
-the aimed project's **npm scripts**: type `dev` or `test` and the hit
+infra nodes, Task Board cards (the hit names the card's column),
+**VS Code's command names** (*Toggle Terminal*, *Git: Commit*, *Open
+Settings* — each listed under *VS Code commands* beside the action that
+does the same thing here, so its name here is the one you type next
+time), and the aimed project's **npm scripts**: type `dev` or `test` and the hit
 reads *Run script: dev — vite*; Enter runs it with the project's own
 package manager (npm, yarn or pnpm), exactly as NPM Explorer's
 double-click would — Workspace Trust asks first on a project you have
