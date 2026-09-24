@@ -698,8 +698,9 @@ official client.
 - **LSP**: open a file whose language server is installed (typescript,
   gopls, rust-analyzer, pyright, …) and you get diagnostics, hover, and
   go-to-definition. The server's errors and warnings are also rows in
-  **Action Items** (⌘6), named after the server (`[lsp:typescript]`), for
-  every file the server has reported on — usually the files you have open.
+  **Action Items** (⌘6), named after the server (`[lsp:gopls]`), for every
+  file the server has reported on. Some servers report only on the files
+  you have open; gopls reports on the whole package.
   Missing a server? The IDE offers the install command instead of failing
   silently.
 - **Run Focused Test**: with your caret in a test method, one action runs
