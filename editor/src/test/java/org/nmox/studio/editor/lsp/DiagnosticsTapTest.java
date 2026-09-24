@@ -203,6 +203,73 @@ class DiagnosticsTapTest {
     }
 
     @Test
+    @DisplayName("a frame whose body is unreadable is skipped, and the frames after it in the same read are read")
+    void badBodyThenGoodFramesInOneRead(@TempDir Path tmp) throws IOException {
+        File f = tmp.resolve("r.ts").toFile();
+        byte[] stream = concat(
+                frame("{\"method\":\"textDocument/publishDiagnostics\", not json"),
+                frame(publish(f, new JSONArray().put(diagnostic(0, 1, "first", null)))),
+                frame(publish(f, new JSONArray().put(diagnostic(1, 1, "second", null)))));
+        DiagnosticsTap tap = new DiagnosticsTap(new ByteArrayInputStream(stream), "resync");
+        assertThat(readN(tap, stream.length, stream.length)).isEqualTo(stream);
+        DiagnosticsTap.awaitIdle();
+        assertThat(seen.get("lsp:resync")).extracting(DiagnosticsBus.Problem::message).containsExactly("second");
+        tap.close();
+    }
+
+    @Test
+    @DisplayName("headers ending in a bare LF LF are read, as lsp4j itself reads them")
+    void bareLfHeaders(@TempDir Path tmp) throws IOException {
+        File f = tmp.resolve("lf.ts").toFile();
+        byte[] body = publish(f, new JSONArray().put(diagnostic(2, 2, "lf", null))).getBytes(StandardCharsets.UTF_8);
+        byte[] stream = concat(("Content-Length: " + body.length + "\n\n").getBytes(StandardCharsets.US_ASCII), body);
+        DiagnosticsTap tap = new DiagnosticsTap(new ByteArrayInputStream(stream), "lf");
+        assertThat(readN(tap, stream.length, 5)).isEqualTo(stream);
+        DiagnosticsTap.awaitIdle();
+        assertThat(seen.get("lsp:lf")).extracting(DiagnosticsBus.Problem::line).containsExactly(3);
+        tap.close();
+    }
+
+    @Test
+    @DisplayName("a method name with an escaped slash is still read")
+    void escapedSlash(@TempDir Path tmp) throws IOException {
+        File f = tmp.resolve("e.php").toFile();
+        String json = publish(f, new JSONArray().put(diagnostic(0, 1, "php", null)))
+                .replace("textDocument/publishDiagnostics", "textDocument\\/publishDiagnostics");
+        assertThat(json).contains("\\/publish");
+        byte[] stream = frame(json);
+        DiagnosticsTap tap = new DiagnosticsTap(new ByteArrayInputStream(stream), "intelephense");
+        readN(tap, stream.length, 64);
+        DiagnosticsTap.awaitIdle();
+        assertThat(seen.get("lsp:intelephense")).extracting(DiagnosticsBus.Problem::message).containsExactly("php");
+        tap.close();
+    }
+
+    @Test
+    @DisplayName("a frame recorded after the server ended cannot bring its problems back")
+    void endedTapRecordsNothing(@TempDir Path tmp) throws IOException {
+        File f = tmp.resolve("late.ts").toFile();
+        DiagnosticsTap tap = new DiagnosticsTap(new ByteArrayInputStream(new byte[0]), "late");
+        tap.close();
+        DiagnosticsTap.record(tap, "lsp:late", f.toURI().toString(),
+                List.of(new DiagnosticsBus.Problem(f, 1, "ghost", true)));
+        DiagnosticsTap.awaitIdle();
+        assertThat(seen.getOrDefault("lsp:late", List.of())).isEmpty();
+    }
+
+    @Test
+    @DisplayName("skipped bytes go through the parser too")
+    void skipIsWatched(@TempDir Path tmp) throws IOException {
+        File f = tmp.resolve("s.ts").toFile();
+        byte[] stream = frame(publish(f, new JSONArray().put(diagnostic(0, 1, "skipped", null))));
+        DiagnosticsTap tap = new DiagnosticsTap(new ByteArrayInputStream(stream), "skipper");
+        assertThat(tap.skip(stream.length)).isEqualTo(stream.length);
+        DiagnosticsTap.awaitIdle();
+        assertThat(seen.get("lsp:skipper")).extracting(DiagnosticsBus.Problem::message).containsExactly("skipped");
+        tap.close();
+    }
+
+    @Test
     @DisplayName("a server's name in Action Items drops the path, the extension and the -language-server tail")
     void toolNames() {
         assertThat(DiagnosticsTap.toolFor("/x/node_modules/.bin/typescript-language-server")).isEqualTo("lsp:typescript");

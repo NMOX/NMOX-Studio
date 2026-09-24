@@ -33,10 +33,15 @@ import org.openide.util.RequestProcessor;
  * Action Items and the Agent Port already read. The squiggle layer
  * skips these tools ({@link #isLspTool}) — the client painted them.
  *
- * <p>Bounds: a header longer than 8 KiB or a body over 8 MiB is passed
- * through unparsed; at most 500 problems per file and 5,000 per server
- * name are kept. The parse never throws into the read: a malformed frame
- * is logged once and the stream carries on. Publishing runs on its own
+ * <p>Bounds: a body over 8 MiB is passed through unparsed; at most 500
+ * problems per file and 2,000 files per server are kept, and at most 5,000
+ * problems per server name are published. The parse never throws into the
+ * read: a frame whose body is not a readable message is skipped and the
+ * frames after it are read as usual; a HEADER that cannot be read (no
+ * Content-Length, or over 8 KiB) loses the framing, so the tap stops
+ * watching that server and says so once in the log — every byte still
+ * passes through. Headers may end in CRLF CRLF or, as lsp4j itself
+ * accepts, a bare LF LF. Publishing runs on its own
  * single lane, coalesced, so a chatty server never waits on the task
  * list. When the server's stream ends, its problems are withdrawn.
  */
@@ -49,6 +54,7 @@ public final class DiagnosticsTap extends FilterInputStream {
     static final int MAX_BODY = 8 * 1024 * 1024;
     static final int MAX_PER_FILE = 500;
     static final int MAX_PER_TOOL = 5_000;
+    static final int MAX_FILES_PER_TAP = 2_000;
 
     private static final Logger LOG = Logger.getLogger(DiagnosticsTap.class.getName());
     private static final RequestProcessor LANE = new RequestProcessor("nmox-lsp-diagnostics", 1, false, false);
@@ -87,10 +93,15 @@ public final class DiagnosticsTap extends FilterInputStream {
 
     private final String tool;
     private final ByteArrayOutputStream header = new ByteArrayOutputStream();
+    /** The last four header bytes, newest lowest, to find the blank line without copying. */
+    private int tail;
     private ByteArrayOutputStream body;
     private int remaining = -1;   // body bytes still to come; -1 = reading a header
     private boolean skipping;     // header or body over its bound: pass through only
     private boolean warned;
+    /** A header could not be read: the framing is lost, so stop watching (bytes still pass). */
+    private boolean lost;
+    /** Guarded by STATE, so a frame read on the reader thread cannot re-add a withdrawn tap. */
     private boolean ended;
 
     public DiagnosticsTap(InputStream serverOut, String command) {
@@ -120,6 +131,24 @@ public final class DiagnosticsTap extends FilterInputStream {
         return n;
     }
 
+    /** Skipped bytes are read through the tap, so none escape the parser. */
+    @Override
+    public long skip(long n) throws IOException {
+        if (n <= 0) {
+            return 0;
+        }
+        byte[] scratch = new byte[(int) Math.min(n, 8192)];
+        long done = 0;
+        while (done < n) {
+            int got = read(scratch, 0, (int) Math.min(scratch.length, n - done));
+            if (got < 0) {
+                break;
+            }
+            done += got;
+        }
+        return done;
+    }
+
     @Override
     public void close() throws IOException {
         try {
@@ -130,6 +159,9 @@ public final class DiagnosticsTap extends FilterInputStream {
     }
 
     private void watch(byte[] b, int off, int len) {
+        if (lost) {
+            return;
+        }
         try {
             int i = off;
             int stop = off + len;
@@ -145,7 +177,14 @@ public final class DiagnosticsTap extends FilterInputStream {
                     i += take;
                     if (remaining == 0) {
                         if (!skipping) {
-                            frame(body.toByteArray());
+                            byte[] whole = body.toByteArray();
+                            try {
+                                frame(whole);
+                            } catch (RuntimeException badBody) {
+                                // the frame's length was right, so the next
+                                // frame starts where this one ends: skip it
+                                warnOnce("a message it could not read", badBody);
+                            }
                         }
                         body = null;
                         skipping = false;
@@ -154,44 +193,47 @@ public final class DiagnosticsTap extends FilterInputStream {
                 }
             }
         } catch (RuntimeException ex) {
-            // the parse must never break the stream it watches
+            // only a header can land here: without its length the next
+            // frame's start is unknown, so watching stops rather than guesses
+            lost = true;
             header.reset();
             body = null;
-            remaining = -1;
-            skipping = false;
-            if (!warned) {
-                warned = true;
-                LOG.log(Level.INFO, "language server diagnostics not readable for Action Items ({0}): {1}",
-                        new Object[]{tool, ex.toString()});
-            }
+            warnOnce("a header it could not read, so it stops watching this server", ex);
+        }
+    }
+
+    private void warnOnce(String what, RuntimeException ex) {
+        if (!warned) {
+            warned = true;
+            LOG.log(Level.INFO, "language server diagnostics for Action Items ({0}): {1}: {2}",
+                    new Object[]{tool, what, ex.toString()});
         }
     }
 
     /** Consumes header bytes; returns the index after the last one taken. */
     private int readHeader(byte[] b, int i, int stop) {
         while (i < stop) {
-            header.write(b[i++]);
-            int size = header.size();
-            if (size >= 4) {
-                byte[] h = header.toByteArray();
-                if (h[size - 4] == '\r' && h[size - 3] == '\n' && h[size - 2] == '\r' && h[size - 1] == '\n') {
-                    int length = contentLength(new String(h, StandardCharsets.US_ASCII));
-                    header.reset();
-                    if (length < 0) {
-                        throw new IllegalStateException("frame without Content-Length");
-                    }
-                    remaining = length;
-                    skipping = length > MAX_BODY;
-                    body = skipping ? null : new ByteArrayOutputStream(Math.max(16, length));
-                    if (length == 0) {
-                        remaining = -1;
-                        body = null;
-                        skipping = false;
-                    }
-                    return i;
+            byte c = b[i++];
+            header.write(c);
+            tail = (tail << 8) | (c & 0xFF);
+            if (tail == 0x0D0A0D0A || (tail & 0xFFFF) == 0x0A0A) {
+                tail = 0;
+                int length = contentLength(header.toString(StandardCharsets.US_ASCII));
+                header.reset();
+                if (length < 0) {
+                    throw new IllegalStateException("frame without Content-Length");
                 }
+                remaining = length;
+                skipping = length > MAX_BODY;
+                body = skipping ? null : new ByteArrayOutputStream(Math.max(16, length));
+                if (length == 0) {
+                    remaining = -1;
+                    body = null;
+                    skipping = false;
+                }
+                return i;
             }
-            if (size > MAX_HEADER) {
+            if (header.size() > MAX_HEADER) {
                 throw new IllegalStateException("header over " + MAX_HEADER + " bytes");
             }
         }
@@ -199,7 +241,7 @@ public final class DiagnosticsTap extends FilterInputStream {
     }
 
     static int contentLength(String headers) {
-        for (String line : headers.split("\r\n")) {
+        for (String line : headers.split("\r?\n")) {
             int colon = line.indexOf(':');
             if (colon > 0 && line.substring(0, colon).trim().equalsIgnoreCase("Content-Length")) {
                 try {
@@ -214,7 +256,9 @@ public final class DiagnosticsTap extends FilterInputStream {
 
     private void frame(byte[] bytes) {
         String text = new String(bytes, StandardCharsets.UTF_8);
-        if (!text.contains("textDocument/publishDiagnostics")) {
+        // the raw text may spell the slash escaped ("textDocument\\/…"), so
+        // the cheap filter looks for the method's last word; the parse decides
+        if (!text.contains("publishDiagnostics")) {
             return;
         }
         JSONObject message = new JSONObject(text);
@@ -286,11 +330,11 @@ public final class DiagnosticsTap extends FilterInputStream {
     }
 
     private void end() {
-        if (ended) {
-            return;
-        }
-        ended = true;
         synchronized (STATE) {
+            if (ended) {
+                return;
+            }
+            ended = true;
             Map<DiagnosticsTap, Map<String, List<DiagnosticsBus.Problem>>> taps = STATE.get(tool);
             if (taps != null && taps.remove(this) != null) {
                 DIRTY.add(tool);
@@ -301,6 +345,11 @@ public final class DiagnosticsTap extends FilterInputStream {
 
     static void record(DiagnosticsTap tap, String tool, String uri, List<DiagnosticsBus.Problem> problems) {
         synchronized (STATE) {
+            if (tap != null && tap.ended) {
+                // a frame read while the server was being withdrawn: its
+                // problems must not outlive the server that reported them
+                return;
+            }
             Map<String, List<DiagnosticsBus.Problem>> files = STATE
                     .computeIfAbsent(tool, t -> new LinkedHashMap<>())
                     .computeIfAbsent(tap, t -> new LinkedHashMap<>());
@@ -309,6 +358,9 @@ public final class DiagnosticsTap extends FilterInputStream {
                     return;
                 }
             } else {
+                if (!files.containsKey(uri) && files.size() >= MAX_FILES_PER_TAP) {
+                    return;
+                }
                 files.put(uri, List.copyOf(problems));
             }
             DIRTY.add(tool);
