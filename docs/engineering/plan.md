@@ -4,7 +4,7 @@
 handed the product to a product manager for one night: walk the first hour, the
 switch from VS Code and the contributor's clone, fix what the walks find, and
 ship once in the morning. The plan and every row it grew are in
-[dx-plan-3.1.md](dx-plan-3.1.md). Five lessons are worth more than the rows.*
+[dx-plan-3.1.md](dx-plan-3.1.md). Six lessons are worth more than the rows.*
 
 ***A probe proves the build it ran on.*** *Folders from Finder and the Dock
 were built, gated and documented on the evidence of a probe bundle, and the
@@ -44,6 +44,16 @@ its own `for … done`, and from then on the comparison stopped before the
 option case it existed to compare. A mutant in that case lived through it
 until the next unit's mutation run noticed. After adding code a gate
 reads, mutate inside the region the gate is supposed to cover.*
+
+***A census reads the population it was built for, and nothing next to it.***
+*v2.145.0's popup census reads every EDITOR popup; Project Studio's file
+tree is a node popup, so none of its rows was ever read. A translator
+writing "New, Rename" asked which words the tree paints, and building the
+tree's real nodes answered: Rename, Open and Properties in English in all
+fourteen languages, and a New row that read "Add" and was grey on every
+folder since v1.64.0 - beside the rows this same release had just
+translated. When a surface is added, ask which census reads it; when none
+does, derive one (`FileTreeRowsSpeakTest` reads the panel's own source).*
 
 *Currency addendum 2026-09-22 (v3.0.2, a dependency release). Dependabot
 opened the MongoDB driver's 5.11.0 → 5.11.1 bump as routine; the driver's
