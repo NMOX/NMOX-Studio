@@ -94,7 +94,8 @@ class DocsMenuDoorsTest {
                 Path.of("..", "docs", "user-guide.md"),
                 Path.of("..", "docs", "kitchen-sink.md"),
                 Path.of("..", "docs", "demo-script.md"),
-                Path.of("..", "docs", "a-day-at-meridian.md")));
+                Path.of("..", "docs", "a-day-at-meridian.md"),
+                Path.of("..", "docs", "coming-from-vscode.md")));
         try (Stream<Path> s = Files.list(Path.of("..", "docs", "tutorials"))) {
             // English only: a translated sibling (name.de.md) carries its own language's names
             s.filter(p -> p.getFileName().toString().matches("[A-Za-z0-9-]+\\.md")).sorted().forEach(docs::add);

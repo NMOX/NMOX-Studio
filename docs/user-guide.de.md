@@ -75,7 +75,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 | **⌘8** | Docker-Panel |
 | **⌘7** | Gliederung der aktuellen Datei |
 | **⇧⌘N / ⌥⌘O** | Neues Projekt… / Ordner öffnen… |
-| **⇧⌘E / ⇧⌘L** | Neues Experiment… / Neuer Lernraum… |
+| **⌥⌘K / ⇧⌘L** | Neues Experiment… / Neuer Lernraum… |
 
 <a id="3-projects"></a>
 ## 3. Projekte
@@ -86,7 +86,7 @@ Tastenkürzel, die sich am ersten Tag lohnen (sie stehen auch alle auf dem Willk
 
 **Der Projektwechsel ist sicher:** Laufen Geräte (ein Entwicklungsserver, ein Watcher), fragt die IDE vor dem Wechsel und fährt sie sauber herunter. Nichts läuft hinter Ihrem Rücken weiter, nie. Selbst ein erzwungenes Beenden der IDE kann keinen Prozess verwaisen lassen.
 
-**Experimente** sind der schnellste Weg, einen Stack auszuprobieren. **Datei ▸ Neues Experiment…** (⇧⌘E) wählt eine Vorlage und erzeugt ein Wegwerfprojekt unter `~/.nmox/experiments`: kein Git, keine zuletzt geöffneten Einträge, bereits vertraut, Abhängigkeiten installiert — damit der **erste Start einfach funktioniert**. Es öffnet sich mit seinem eigenen `EXPERIMENT.md`-Rundgang, der sagt, was zu drücken ist, welche Datei zu ändern ist und wo die IDE-Intelligenz für diesen Stack wohnt. Behalten Sie, woraus etwas wird: **Datei ▸ Experimente…** ▸ **Übernehmen** holt es heraus und legt ein Git-Repository an, **Duplizieren** legt eine Kopie für einen zweiten Ansatz daneben, **Verwerfen** räumt den Rest weg. Das Regal zeigt das Alter jedes Eintrags und seine gemessenen Speicherkosten. Lieber der geführte Weg? Der Dialog stellt die 93 Lernräume voran.
+**Experimente** sind der schnellste Weg, einen Stack auszuprobieren. **Datei ▸ Neues Experiment…** (⌥⌘K) wählt eine Vorlage und erzeugt ein Wegwerfprojekt unter `~/.nmox/experiments`: kein Git, keine zuletzt geöffneten Einträge, bereits vertraut, Abhängigkeiten installiert — damit der **erste Start einfach funktioniert**. Es öffnet sich mit seinem eigenen `EXPERIMENT.md`-Rundgang, der sagt, was zu drücken ist, welche Datei zu ändern ist und wo die IDE-Intelligenz für diesen Stack wohnt. Behalten Sie, woraus etwas wird: **Datei ▸ Experimente…** ▸ **Übernehmen** holt es heraus und legt ein Git-Repository an, **Duplizieren** legt eine Kopie für einen zweiten Ansatz daneben, **Verwerfen** räumt den Rest weg. Das Regal zeigt das Alter jedes Eintrags und seine gemessenen Speicherkosten. Lieber der geführte Weg? Der Dialog stellt die 93 Lernräume voran.
 
 ![Das Regal der Lernräume — Anzahl, Speicherkosten, Alter und der gesamte Lebenszyklus](images/de/spaces-shelf.png)
 

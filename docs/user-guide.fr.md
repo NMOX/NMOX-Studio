@@ -75,7 +75,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 | **⌘8** | Panneau Docker |
 | **⌘7** | Plan du fichier courant |
 | **⇧⌘N / ⌥⌘O** | Nouveau projet… / Ouvrir un dossier… |
-| **⇧⌘E / ⇧⌘L** | Nouvelle expérience… / Nouvel espace d’apprentissage… |
+| **⌥⌘K / ⇧⌘L** | Nouvelle expérience… / Nouvel espace d’apprentissage… |
 
 <a id="3-projects"></a>
 ## 3. Projets
@@ -86,7 +86,7 @@ Raccourcis à apprendre dès le premier jour (ils sont aussi tous listés sur l�
 
 **Changer de projet est sûr :** si des appareils tournent (un serveur de développement, un observateur), l’IDE demande avant de changer et les arrête proprement. Rien ne continue à tourner dans votre dos, jamais. Même forcer la fermeture de l’IDE ne peut pas laisser un processus orphelin.
 
-**Les expériences** sont le moyen le plus rapide d’essayer une technologie. **Fichier ▸ Nouvelle expérience…** (⇧⌘E) choisit un gabarit et génère un projet jetable sous `~/.nmox/experiments` : pas de git, pas de récents, déjà approuvé, dépendances installées, pour que la **première exécution marche**. Il s’ouvre sur son propre parcours `EXPERIMENT.md`, qui dit quoi presser, quel fichier modifier et où vit l’intelligence de l’IDE pour cette technologie. Gardez ce qui prend forme : **Fichier ▸ Expériences…** ▸ **Promouvoir** l’en sort et initialise git, **Dupliquer** en crée une copie pour tenter une autre approche, **Écarter** supprime le reste. L’étagère montre l’âge de chacune et son coût disque mesuré. Vous préférez le chemin guidé ? La boîte de dialogue met en avant les 93 espaces d’apprentissage.
+**Les expériences** sont le moyen le plus rapide d’essayer une technologie. **Fichier ▸ Nouvelle expérience…** (⌥⌘K) choisit un gabarit et génère un projet jetable sous `~/.nmox/experiments` : pas de git, pas de récents, déjà approuvé, dépendances installées, pour que la **première exécution marche**. Il s’ouvre sur son propre parcours `EXPERIMENT.md`, qui dit quoi presser, quel fichier modifier et où vit l’intelligence de l’IDE pour cette technologie. Gardez ce qui prend forme : **Fichier ▸ Expériences…** ▸ **Promouvoir** l’en sort et initialise git, **Dupliquer** en crée une copie pour tenter une autre approche, **Écarter** supprime le reste. L’étagère montre l’âge de chacune et son coût disque mesuré. Vous préférez le chemin guidé ? La boîte de dialogue met en avant les 93 espaces d’apprentissage.
 
 ![L’étagère des espaces d’apprentissage — nombre, coût disque, âge et tout le cycle de vie](images/fr/spaces-shelf.png)
 

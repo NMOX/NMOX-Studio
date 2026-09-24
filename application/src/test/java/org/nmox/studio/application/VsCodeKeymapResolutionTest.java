@@ -368,4 +368,26 @@ class VsCodeKeymapResolutionTest {
         assertThat(keystroke("O-R", Os.MAC)).isEqualTo(keystroke("C-R", Os.MAC));
         assertThat(keystroke("O-R", Os.LINUX)).isEqualTo("alt|R");
     }
+
+    /**
+     * The one part of {@code stringToKey} this replay does not model:
+     * {@code usableKeyOnMac} turns ⌘ into ⌃ for a chord macOS keeps for
+     * itself — ⌘ alone with H, Space or Tab, any ⌘ with Q, ⌘⌥ with D (read
+     * from the bytecode). None of our chords may be one of those, or the
+     * macOS column of this gate would be checking a keystroke that never
+     * fires.
+     */
+    @Test
+    @DisplayName("no chord is one macOS takes for itself, so the replay's macOS keystrokes are the real ones")
+    void noChordIsRemappedOnMac() {
+        for (String chord : CHORDS.keySet()) {
+            int dash = chord.lastIndexOf('-');
+            String mods = chord.substring(0, dash);
+            String key = chord.substring(dash + 1);
+            boolean meta = mods.contains("D");
+            assertThat(meta && key.equals("Q")).as(chord).isFalse();
+            assertThat(meta && mods.equals("D") && List.of("H", "SPACE", "TAB").contains(key)).as(chord).isFalse();
+            assertThat(meta && mods.contains("A") && key.equals("D")).as(chord).isFalse();
+        }
+    }
 }

@@ -153,6 +153,7 @@ the Welcome tab):
 | Shortcut | Opens |
 |---|---|
 | **⌘I** | Quick Search — reaches everything (see §9) |
+| **⇧⌘P** | Quick Search too — the chord VS Code calls the Command Palette |
 | **⌘9** | Task Rack |
 | **⌥⌘0** | Workbench |
 | **⌥⌘1** | Task Board |
@@ -167,7 +168,15 @@ the Welcome tab):
 | **⌘8** | Docker Panel |
 | **⌘7** | Navigator outline for the current file |
 | **⇧⌘N / ⌥⌘O** | New Project… / Open Folder… |
-| **⇧⌘E / ⇧⌘L** | New Experiment… / New Learning Space… |
+| **⌥⌘K / ⇧⌘L** | New Experiment… / New Learning Space… |
+| **⇧⌘E** | Project Studio, with focus on the file tree |
+| **⇧⌘X** | Tools ▸ Plugins |
+| **⌃\`** | The Terminal window (Ctrl+\` on Windows and Linux) |
+| **⌥⌘P / ⌥⇧⌘K** | Switch Project… / Experiments… |
+
+Arriving from VS Code? [Coming from VS Code](coming-from-vscode.md) maps
+the chords and the ideas, with the Windows and Linux spellings beside
+the macOS ones.
 
 ## 3. Projects
 
@@ -195,7 +204,7 @@ Nothing keeps running behind your back — ever. Even force-quitting the
 IDE can't orphan a process (§10).
 
 **Experiments** are the fastest way to try a stack — the first tool to
-reach for when something is new. **File ▸ New Experiment…** (⇧⌘E, and
+reach for when something is new. **File ▸ New Experiment…** (⌥⌘K, and
 the first entry on the Welcome tab) picks a template and generates a
 throwaway project under `~/.nmox/experiments`: no git, no recents,
 already trusted, dependencies installed so the **first Run just
@@ -1759,8 +1768,10 @@ failure.
 Keymap (on macOS, NMOX Studio ▸ Settings… ▸ Keymap) switches the whole keymap profile — Emacs movement and kill/yank
 chords in every editor, or the Eclipse/IDEA sets if those are your
 muscle memory. Every NMOX shortcut (the ⌥⌘ window family, ⌘P Go to
-File, Emmet's ⌥⌘E) is registered in all five profiles, so switching
-keymaps never costs you the studio chords.
+File, Emmet's ⌥⌘E, the VS Code chords) is registered in all five
+profiles, so switching keymaps never costs you the studio chords. One
+exception is deliberate: in the Eclipse profile ⇧⌘E stays Eclipse's
+own Switch to Editor, because a user who picked Eclipse expects it.
 
 ## 10. The safety nets (things you don't have to do anything for)
 
@@ -1907,7 +1918,7 @@ six are done, or when you press **Hide this list**.
   it, then **Open on GitHub** pre-fills a new issue that you submit, or
   **Copy** it. The product never sends anything itself.
 - **Keyboard Shortcuts…** — every NMOX chord in your active keymap
-  profile plus the global ones (the Welcome's ⇧⌘E / ⇧⌘N / ⇧⌘L doors),
+  profile plus the global ones (the Welcome's ⌥⌘K / ⇧⌘N / ⇧⌘L doors),
   read from the running keymap through the platform, so it cannot drift
   from what the menus do. Editor-kit chords (Emmet ⌥⌘E, template Go to
   Declaration ⌘B) are documented in chapter 5.

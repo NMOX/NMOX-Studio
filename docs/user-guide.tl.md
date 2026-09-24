@@ -75,7 +75,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 | **⌘8** | Docker Panel |
 | **⌘7** | Balangkas ng kasalukuyang file |
 | **⇧⌘N / ⌥⌘O** | Bagong proyekto… / Buksan ang folder… |
-| **⇧⌘E / ⇧⌘L** | Bagong eksperimento… / Bagong espasyo ng pagkatuto… |
+| **⌥⌘K / ⇧⌘L** | Bagong eksperimento… / Bagong espasyo ng pagkatuto… |
 
 <a id="3-projects"></a>
 ## 3. Mga Proyekto
@@ -86,7 +86,7 @@ Mga shortcut na sulit matutunan sa unang araw (nakalista rin silang lahat sa wel
 
 **Ligtas ang paglipat:** kung may tumatakbong mga kagamitan (isang development server, isang tagamasid), nagtatanong ang IDE bago lumipat at malinis itong pinapatay. Walang patuloy na tumatakbo sa likod mo — kailanman. Kahit ang sapilitang pagsasara ng IDE ay hindi makakaiwan ng ulilang proseso.
 
-**Ang mga eksperimento** ang pinakamabilis na paraan para subukan ang isang stack. Ang **File ▸ Bagong eksperimento…** (⇧⌘E) ay pumipili ng template at gumagawa ng pansamantalang proyekto sa `~/.nmox/experiments`: walang git, walang kamakailan, pinagkakatiwalaan na, nakainstall na ang mga dependency — para **gumana agad ang unang Patakbuhin**. Bumubukas ito sa sarili nitong gabay na `EXPERIMENT.md`, na nagsasabi kung ano ang pipindutin, aling file ang babaguhin, at kung saan naroon ang talino ng IDE para sa stack na iyon. Itago ang nagiging kapaki-pakinabang: **File ▸ Mga eksperimento…** ▸ **Itaas** ang naglalabas nito at nag-uumpisa ng git, **Doblehin** ang gumagawa ng kopya sa tabi para sa pangalawang paraan, at **Itapon** ang nag-aalis ng iba. Ipinapakita ng istante ang edad ng bawat isa at ang nasukat nitong laki sa disk. Mas gusto mo ang gabay na landas? Inuuna ng dialog ang 93 espasyo ng pagkatuto.
+**Ang mga eksperimento** ang pinakamabilis na paraan para subukan ang isang stack. Ang **File ▸ Bagong eksperimento…** (⌥⌘K) ay pumipili ng template at gumagawa ng pansamantalang proyekto sa `~/.nmox/experiments`: walang git, walang kamakailan, pinagkakatiwalaan na, nakainstall na ang mga dependency — para **gumana agad ang unang Patakbuhin**. Bumubukas ito sa sarili nitong gabay na `EXPERIMENT.md`, na nagsasabi kung ano ang pipindutin, aling file ang babaguhin, at kung saan naroon ang talino ng IDE para sa stack na iyon. Itago ang nagiging kapaki-pakinabang: **File ▸ Mga eksperimento…** ▸ **Itaas** ang naglalabas nito at nag-uumpisa ng git, **Doblehin** ang gumagawa ng kopya sa tabi para sa pangalawang paraan, at **Itapon** ang nag-aalis ng iba. Ipinapakita ng istante ang edad ng bawat isa at ang nasukat nitong laki sa disk. Mas gusto mo ang gabay na landas? Inuuna ng dialog ang 93 espasyo ng pagkatuto.
 
 ![Ang istante ng mga espasyo ng pagkatuto — bilang, laki sa disk, edad, at ang buong siklo](images/tl/spaces-shelf.png)
 

@@ -32,6 +32,10 @@ so switching is one click from wherever you are.
 
 ## The rest of the docs
 
+- **[⌨️ Coming from VS Code](coming-from-vscode.md)** — the chord cheat
+  sheet for macOS, Windows and Linux (⇧⌘P, ⇧⌘E, ⇧⌘X and ⌃\` do what your
+  hands expect), where each VS Code idea lives here, and what is honestly
+  different.
 - **[🧭 Tutorials](tutorials/README.md)** — short, do-it-yourself
   walkthroughs, one per unique system: the Task Rack, the four studios,
   Block Studio, Infra Designer, polyglot debugging, Docker, KVASIR,

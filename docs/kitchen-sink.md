@@ -114,7 +114,7 @@ Workspace Trust prompt first — the product never runs a stranger's
 code without asking. That law covers Run/Build/Test, npm scripts, LSP
 servers, formatters, and debuggers alike.
 
-**Do:** Now the faster door: **File ▸ New Experiment…** (⇧⌘E — the
+**Do:** Now the faster door: **File ▸ New Experiment…** (⌥⌘K — the
 first entry on the Welcome tab). Pick **Express API**, leave the
 install box checked.
 

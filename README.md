@@ -203,6 +203,9 @@ not yet Authenticode-signed.
   screenshot captured live.
 - **[The device reference](docs/devices.md)** — all 53 devices, generated
   from the catalog itself; CI fails if it drifts.
+- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords your
+  hands already know (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`), and where each VS Code idea
+  lives here.
 - **[CHANGELOG](CHANGELOG.md)** — the full release history.
 
 The product carries its own docs, too: **Help ▸ NMOX Studio Website
@@ -358,9 +361,9 @@ Rack faceplates keep their panel vocabulary on purpose.
   open a project, run something, see a server live, ask KVASIR, try a
   learning space, point an agent at the IDE — from records the product
   already keeps; no survey, no telemetry, and it disappears when done.
-- **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
+- **Switch Project (⌥⌘P)** re-aims the whole IDE through a guard that
   names running work before stopping it — no more silently killed dev
-  servers. **Quick Search (⌘I)** finds actions, files, recent projects
+  servers. **Quick Search (⌘I, or ⇧⌘P — the command palette)** finds actions, files, recent projects
   (Enter switches), rack devices (Enter racks them), **API Studio
   requests** (jumps to the request), **infra nodes** (selects them
   on the canvas), and the aimed project's **npm scripts** (type `dev`,
@@ -370,7 +373,7 @@ Rack faceplates keep their panel vocabulary on purpose.
   patch a cable and take it back — including a removed device, which
   comes back with its cables re-wired. A 100-deep history that starts
   clean on whatever patch you loaded.
-- **Experiments (⌘⇧E)**: throwaway workspaces in `~/.nmox/experiments` —
+- **Experiments (⌥⌘K new, ⌥⇧⌘K the shelf)**: throwaway workspaces in `~/.nmox/experiments` —
   no git, no recents pollution, pre-trusted. Promote the keepers
   (move + git init), discard the rest.
 - **`.env` respected everywhere**: every command the rack launches reads

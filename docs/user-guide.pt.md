@@ -75,7 +75,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 | **⌘8** | Painel do Docker |
 | **⌘7** | Estrutura do arquivo atual |
 | **⇧⌘N / ⌥⌘O** | Novo projeto… / Abrir pasta… |
-| **⇧⌘E / ⇧⌘L** | Novo experimento… / Novo espaço de aprendizado… |
+| **⌥⌘K / ⇧⌘L** | Novo experimento… / Novo espaço de aprendizado… |
 
 <a id="3-projects"></a>
 ## 3. Projetos
@@ -86,7 +86,7 @@ Atalhos que valem o primeiro dia (todos também aparecem na aba de boas-vindas):
 
 **Trocar de projeto é seguro:** se há dispositivos rodando (um servidor de desenvolvimento, um observador), a IDE pergunta antes de trocar e os desliga com limpeza. Nada continua rodando pelas suas costas, nunca. Nem forçar o encerramento da IDE deixa um processo órfão.
 
-**Experimentos** são o jeito mais rápido de experimentar uma pilha. **Arquivo ▸ Novo experimento…** (⇧⌘E) escolhe um modelo e gera um projeto descartável em `~/.nmox/experiments`: sem git, sem recentes, já confiado, dependências instaladas — para que a **primeira execução simplesmente funcione**. Ele abre no próprio roteiro `EXPERIMENT.md`, que diz o que apertar, qual arquivo mudar e onde mora a inteligência da IDE para aquela pilha. Guarde o que virar alguma coisa: **Arquivo ▸ Experimentos…** ▸ **Promover** o tira de lá e inicia o git, **Duplicar** cria uma cópia ao lado para uma segunda abordagem, **Descartar** limpa o resto. A prateleira mostra a idade de cada um e seu custo medido em disco. Prefere o caminho guiado? A caixa de diálogo põe à frente os 93 espaços de aprendizado.
+**Experimentos** são o jeito mais rápido de experimentar uma pilha. **Arquivo ▸ Novo experimento…** (⌥⌘K) escolhe um modelo e gera um projeto descartável em `~/.nmox/experiments`: sem git, sem recentes, já confiado, dependências instaladas — para que a **primeira execução simplesmente funcione**. Ele abre no próprio roteiro `EXPERIMENT.md`, que diz o que apertar, qual arquivo mudar e onde mora a inteligência da IDE para aquela pilha. Guarde o que virar alguma coisa: **Arquivo ▸ Experimentos…** ▸ **Promover** o tira de lá e inicia o git, **Duplicar** cria uma cópia ao lado para uma segunda abordagem, **Descartar** limpa o resto. A prateleira mostra a idade de cada um e seu custo medido em disco. Prefere o caminho guiado? A caixa de diálogo põe à frente os 93 espaços de aprendizado.
 
 ![A prateleira de espaços de aprendizado — quantidade, custo em disco, idade e todo o ciclo de vida](images/pt/spaces-shelf.png)
 
