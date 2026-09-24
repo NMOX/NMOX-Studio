@@ -607,7 +607,11 @@ public final class McpTools {
         JSONArray tools = new JSONArray();
         int total = 0;
         for (Map.Entry<String, List<DiagnosticsBus.Problem>> e : byTool.entrySet()) {
+            // a secret-bearing file is never searched, counted or named to an
+            // agent (v2.84.0); since 3.1.0 every language server feeds this
+            // bus, and a JSON server reports on a malformed secrets.json
             List<DiagnosticsBus.Problem> matches = e.getValue().stream()
+                    .filter(p -> !TextSearch.isSecretBearing(p.file().getName()))
                     .filter(p -> fileFilter == null || fileFilter.isBlank()
                             || p.file().getPath().contains(fileFilter))
                     .toList();
