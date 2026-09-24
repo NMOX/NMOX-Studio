@@ -25,7 +25,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * "Report Task..."), a chord and a Window-menu dashboard - and no connector
  * ships with it (no Bugzilla, no JIRA, no issue provider), so every one of
  * them is disabled or empty forever. 2.118.0 hid the dashboard; 3.1.0
- * found the Team rows in the same state.
+ * found the Team rows in the same state, and the platform's own start-page
+ * "Show Dashboard", which has no widgets to show and opened nothing.
  *
  * <p>Derived from the assembled cluster: every {@code Menu/}, {@code Shortcuts/}
  * and {@code Toolbars/} file the bug-tracking and tasks modules contribute
@@ -37,7 +38,10 @@ class DeadDoorsTest {
 
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
     private static final Set<String> OWNERS = Set.of(
-            "org-netbeans-modules-bugtracking.jar", "org-netbeans-modules-tasks.jar");
+            "org-netbeans-modules-bugtracking.jar", "org-netbeans-modules-tasks.jar",
+            // the platform's start-page dashboard: a frame for widgets, and
+            // no module in this cluster registers one - it opened nothing
+            "org-netbeans-api-dashboard.jar");
 
     @Test
     @DisplayName("every bug-tracking door is hidden while no connector ships")

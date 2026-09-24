@@ -45,6 +45,12 @@
                  our own unfindable. The v1.11 VCS-museum eviction and the
                  v2.64.0 Help-menu hides are the same call. -->
             <file name="org-netbeans-modules-tasks-ui-DashboardTopComponent.shadow_hidden"/>
+            <!-- 3.1.0: "Show Dashboard" is the platform's start-page
+                 dashboard, a frame for widgets other modules register; none
+                 are registered in this cluster, so the row opened nothing
+                 at all (pressed in the assembled app: no window, no log
+                 line). The Welcome is this product's dashboard. -->
+            <file name="org-netbeans-modules-dashboard-ShowDashboardAction.shadow_hidden"/>
         </folder>
         <folder name="Versioning">
             <!-- 3.1.0: the same bug-tracking module also put "Find Tasks..."
@@ -69,6 +75,8 @@
         <!-- the bug-tracking Find Tasks chord: disabled forever with no
              connector (see Menu/Versioning above) -->
         <file name="DS-6.shadow_hidden"/>
+        <!-- the empty platform dashboard's chord (see Menu/Window above) -->
+        <file name="SO-W.shadow_hidden"/>
         <!-- Cmd+P (Go to File) is NOT here: Shortcuts/ entries lose to
              Keymaps-profile claims and to focused-editor keybindings —
              the v1.38.1 lesson. The binding lives as a Keymaps shadow
