@@ -13,9 +13,13 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version stamped into the dry-run bundle"
+        # Three dotted numbers, like a tag's: the version becomes every
+        # module's OpenIDE spec version, which the module system parses as
+        # numbers - "3.1.0-dryrun1" built a bundle whose eleven NMOX modules
+        # all refused to load (NumberFormatException, measured 2026-09-23).
+        description: "Version stamped into the dry-run bundle (digits and dots only, e.g. 3.1.0)"
         required: false
-        default: "0.0.0-dryrun"
+        default: "0.0.1"
 
 permissions:
   contents: write
@@ -31,10 +35,20 @@ jobs:
           DISPATCH_VERSION: ${{ inputs.version }}
         run: |
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
-            echo "version=${DISPATCH_VERSION:-0.0.0-dryrun}" >> "$GITHUB_OUTPUT"
+            version="${DISPATCH_VERSION:-0.0.1}"
           else
-            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+            version="${GITHUB_REF_NAME#v}"
           fi
+          # The version is every module's OpenIDE-Module-Specification-Version,
+          # and the module system reads that as dotted numbers only: anything
+          # else (a -rc1 tag, a -dryrun dispatch) builds an app whose NMOX
+          # modules all refuse to load and whose window opens empty. Refuse
+          # it here, before four platforms spend an hour building it.
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$version' is not three dotted numbers; the module system cannot load a build stamped with it."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
   linux:
     needs: version

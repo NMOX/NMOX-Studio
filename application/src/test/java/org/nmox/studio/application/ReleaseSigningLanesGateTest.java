@@ -471,6 +471,58 @@ class ReleaseSigningLanesGateTest {
                 .contains("github.event.workflow_run.event == 'push'");
     }
 
+    /**
+     * The release version is every module's OpenIDE spec version, and the
+     * module system parses that as dotted numbers only. The first dry run
+     * was dispatched as {@code 3.1.0-dryrun1}: notarized, accepted by
+     * Gatekeeper, and every NMOX module refused to load
+     * ({@code NumberFormatException: "0-dryrun1"}), so the window opened
+     * empty. The version job's own script is RUN here, not matched.
+     */
+    @Test
+    @DisplayName("the version job refuses anything but three dotted numbers, from a tag or a dispatch")
+    @DisabledOnOs(OS.WINDOWS)
+    void versionIsThreeDottedNumbers() throws Exception {
+        String wf = read(WORKFLOW);
+        Matcher m = Pattern.compile("\\n      - id: v\\n(?:        [^\\n]*\\n)*?        run: \\|\\n((?:          [^\\n]*\\n|\\n)+)")
+                .matcher(wf);
+        assertThat(m.find()).as("the version job's run script").isTrue();
+        StringBuilder script = new StringBuilder();
+        for (String line : m.group(1).split("\\n")) {
+            script.append(line.length() >= 10 ? line.substring(10) : line.strip()).append('\n');
+        }
+        Path sh = Files.createTempFile("version-job", ".sh");
+        Files.writeString(sh, script);
+        record Case(String event, String ref, String input, String expect) { }
+        List<Case> cases = List.of(
+                new Case("push", "v3.1.0", "", "3.1.0"),
+                new Case("push", "v12.0.40", "", "12.0.40"),
+                new Case("push", "v3.1.0-rc1", "", null),
+                new Case("workflow_dispatch", "claude/dx-3.1", "", "0.0.1"),
+                new Case("workflow_dispatch", "claude/dx-3.1", "3.1.0", "3.1.0"),
+                new Case("workflow_dispatch", "claude/dx-3.1", "3.1.0-dryrun1", null),
+                new Case("workflow_dispatch", "claude/dx-3.1", "3.1", null));
+        for (Case c : cases) {
+            Path out = Files.createTempFile("github-output", ".txt");
+            ProcessBuilder pb = new ProcessBuilder("bash", sh.toString()).redirectErrorStream(true)
+                    .redirectOutput(new File(System.getProperty("java.io.tmpdir"), "version-job.out"));
+            pb.environment().put("GITHUB_EVENT_NAME", c.event());
+            pb.environment().put("GITHUB_REF_NAME", c.ref());
+            pb.environment().put("DISPATCH_VERSION", c.input());
+            pb.environment().put("GITHUB_OUTPUT", out.toString());
+            Process p = pb.start();
+            assertThat(p.waitFor(30, TimeUnit.SECONDS)).isTrue();
+            String written = Files.readString(out);
+            if (c.expect() == null) {
+                assertThat(p.exitValue()).as("%s %s/%s must be refused", c.event(), c.ref(), c.input()).isNotZero();
+                assertThat(written).as("a refused version reaches no job").doesNotContain("version=");
+            } else {
+                assertThat(p.exitValue()).as("%s %s/%s is a real version", c.event(), c.ref(), c.input()).isZero();
+                assertThat(written.strip()).isEqualTo("version=" + c.expect());
+            }
+        }
+    }
+
     @Test
     @DisplayName("every packaging shell script parses (bash -n) — the ship-scripts law, one directory over")
     @DisabledOnOs(OS.WINDOWS)
