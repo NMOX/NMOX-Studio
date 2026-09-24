@@ -59,9 +59,13 @@ it: [docs/engineering/dx-plan-3.1.md](docs/engineering/dx-plan-3.1.md).
   launch the Welcome, which takes the front exactly once, now steps aside
   for the file you named — walked on a fresh userdir, where it had sat over
   `app.js` with the caret on line 57.
-- **`nmox --help` answers.** It went to the platform, whose output the
-  detached launch discards, so it printed nothing and exited 0; each
-  launcher now prints a short usage itself.
+- **`nmox --help` answers, and so do VS Code's own flags.** Both went to
+  the platform, whose output the detached launch discards: `--help`
+  printed nothing, and `nmox -r .` answered "Unknown option" to nobody and
+  never started. Each launcher now prints a short usage itself, accepts
+  `-r` (there is one window), opens `-n` in that window and says so, and
+  refuses `-w`, `-d`, `-a` and `-v` by name, since none has a counterpart
+  here.
 - **`nmoxstudio --aim <folder>`**, the door `nmox` walks through. The
   platform's `--open` hands a folder without a manifest to a friend-only
   handler that opens a raw explorer tab in the left dock — one more duplicate
