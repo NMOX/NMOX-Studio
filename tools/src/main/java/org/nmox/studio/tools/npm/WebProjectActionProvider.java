@@ -140,7 +140,21 @@ final class WebProjectActionProvider implements ActionProvider {
         if (COMMAND_DEBUG.equals(command)) {
             return debugMainEntry(debugLauncher.get()) != null;
         }
-        return resolve(command) != null;
+        return resolve(command) != null || runsNothingYet(command);
+    }
+
+    /**
+     * A Node project's Run with no dev, start or serve script (3.1.0). It
+     * was simply greyed - the one thing a newcomer presses first, disabled
+     * without a word. It stays pressable, and the press says why and shows
+     * the scripts the project does have (the NPM Explorer).
+     */
+    private boolean runsNothingYet(String command) {
+        if (!COMMAND_RUN.equals(command)) {
+            return false;
+        }
+        File dir = FileUtil.toFile(project.getProjectDirectory());
+        return dir != null && kindCache.get(dir, System.currentTimeMillis()) == ProjectKind.NODE;
     }
 
     @Override
@@ -166,6 +180,18 @@ final class WebProjectActionProvider implements ActionProvider {
             return;
         }
         List<String> cmd = resolve(command);
+        if (dir != null && cmd == null && runsNothingYet(command)) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
+                    org.openide.util.NbBundle.getMessage(WebProjectActionProvider.class,
+                            "WebProjectActionProvider_noRunScript")));
+            org.openide.windows.TopComponent explorer = org.openide.windows.WindowManager.getDefault()
+                    .findTopComponent("NpmExplorerTopComponent");
+            if (explorer != null) {
+                explorer.open();
+                explorer.requestActive();
+            }
+            return;
+        }
         if (dir == null || cmd == null) {
             return;
         }
