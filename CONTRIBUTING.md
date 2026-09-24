@@ -87,9 +87,12 @@ mvn -o -pl application verify -Dtest='LocaleBundleParityTest' \
 ```
 
 **Boot the app you just built** with a throwaway user directory, so
-your installed copy's settings, trust grants and caches never meet a dev
+your installed copy's settings, window layout and caches never meet a dev
 build, and with the update check off, since a dev build's module
-versions would be offered the latest release as an "update":
+versions would be offered the latest release as an "update". (Workspace
+Trust grants are the exception: they live in Java's user preferences on
+purpose, so they survive a userdir reset, and a dev build shares them with
+your installed copy.)
 
 ```bash
 application/target/nmoxstudio/bin/nmoxstudio --userdir /tmp/nmox-ud --cachedir /tmp/nmox-cd \
