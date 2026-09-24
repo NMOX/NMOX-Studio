@@ -89,12 +89,15 @@ macOS `.dmg`, Windows installer, Debian/Ubuntu `.deb`, or generic Linux
 
 The repository [README](../README.md) covers building, the module layout,
 and how to add a module; **[CLAUDE.md](../CLAUDE.md)** is the deep
-architecture reference. Prerequisites are Java 21+ and Maven 3.6+:
+architecture reference, and [CONTRIBUTING.md](../CONTRIBUTING.md#the-inner-loop)
+has the inner loop: one-module rebuilds, single tests, throwaway
+userdirs. Building needs JDK 25 and Maven 3.6.3+ (the build refuses an
+older JDK by name):
 
 ```bash
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
-mvn clean package -DskipTests
+./build.sh
 ./run.sh
 ```
 

@@ -2,9 +2,9 @@
 
 NMOX Studio is a NetBeans-Platform IDE for doing, learning, and
 experimenting with web development: the Task Rack (53 hardware-styled
-devices wired with patch cables), a polyglot editor (86 TextMate
-grammars + LSP), seven per-project studios (Task Board, Block, API,
-DB, Contract/Web3, Infra, Project), 92 Learning Spaces, experiments
+devices wired with patch cables), a polyglot editor (LSP plus
+88 TextMate grammars), seven per-project studios (Task Board, Block, API,
+DB, Contract/Web3, Infra, Project), 93 Learning Spaces, experiments
 that teach, and installers for all three OSes with an in-app update
 center. Apache-2.0. The product even ships its own website — press
 **Help ▸ NMOX Studio Website (local)** in a running build, or visit
@@ -17,20 +17,109 @@ for the five platform ideas everything rides on.
 
 ## Build and run
 
-- **JDK 25** to build (bytecode targets 21 — see the law at
-  `maven.compiler.target` in the root pom before you touch it),
-  Maven 3.6+.
+- **JDK 25** to build, and **Maven 3.6.3+**. The root pom refuses an
+  older JDK at `validate` with the reason and where to get one, because
+  on JDK 21 the failure is otherwise hundreds of misleading
+  `cannot find symbol: Bundle` errors in the ui module (OpenJFX 26's
+  jars are class-file 68). On macOS: `brew install openjdk@25`, then
+  `export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home`;
+  anywhere, Temurin 25 or Zulu 25. Building on 25 is not targeting 25:
+  the bytecode stays 21 (see the law at `maven.compiler.target` in the
+  root pom before you touch it).
 
 ```bash
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
-mvn clean package -DskipTests       # fast build
-./run.sh                            # or: application/target/nmoxstudio/bin/nmoxstudio
-mvn clean verify                    # the whole gate: tests + SpotBugs + find-sec-bugs + JaCoCo floors
+./build.sh             # mvn clean install -DskipTests, after checking the JDK Maven will use
+./run.sh               # the assembled app, with its own userdir/ beside the checkout
+./build.sh --verify    # the whole gate: tests + SpotBugs + find-sec-bugs + JaCoCo floors
 ```
 
 A fresh clone builds and boots in well under a minute of your
 attention; if it doesn't, that's a bug — file it.
+
+## The inner loop
+
+The commands you will type a hundred times, and the traps each one has
+already sprung on somebody.
+
+**Build once, from the root.** The first build needs the network for
+dependencies; after that, `-o` keeps Maven offline and fast.
+
+```bash
+mvn install -DskipTests          # first time
+mvn -o install -DskipTests       # every time after
+```
+
+**Rebuild one module** after changing it. Add `-am` when you also
+changed a module it depends on (almost everything depends on `core`).
+
+```bash
+mvn -o install -DskipTests -pl editor
+```
+
+**Run one test, or a few.**
+
+```bash
+mvn -o -pl editor test -Dtest='EmmetTest,EmmetWiringGateTest' \
+    -Dsurefire.failIfNoSpecifiedTests=false -Djacoco.skip=true
+```
+
+- Separate classes with **commas**, never `+`.
+- `-Dsurefire.failIfNoSpecifiedTests=false` lets a filter that matches
+  nothing in some module of the reactor pass that module instead of
+  failing it (needed with `-am`). It also means a misspelt class name
+  runs nothing and says BUILD SUCCESS, which is why the next rule exists.
+- **Never `-q`, and read the verdict line**:
+  `Tests run: N, Failures: N, Errors: N, Skipped: N`. A missing verdict
+  is a failed run, and a quiet run has hidden a failing test here more
+  than once.
+- `-Djacoco.skip=true` skips coverage instrumentation, which a run of a
+  few classes does not need.
+
+**Gates that read the assembled app** (anything in the application
+module's `packaged-app-gates` execution: locale parity, typography, the
+menu census) need a cluster to read. Build from the root first, then:
+
+```bash
+mvn -o -pl application verify -Dtest='LocaleBundleParityTest' \
+    -Dsurefire.failIfNoSpecifiedTests=false -Djacoco.skip=true -Dspotbugs.skip=true
+```
+
+**Boot the app you just built** with a throwaway user directory, so
+your installed copy's settings, trust grants and caches never meet a dev
+build, and with the update check off, since a dev build's module
+versions would be offered the latest release as an "update":
+
+```bash
+application/target/nmoxstudio/bin/nmoxstudio --userdir /tmp/nmox-ud --cachedir /tmp/nmox-cd \
+    -J-Dplugin.manager.check.updates=false
+```
+
+**Always rebuild from the root before booting.** Resuming the reactor
+at the application module (`-rf :NMOX-Studio-app`, or `-pl application`
+alone) assembles whatever module jars are in `~/.m2`, which are not the
+ones you just changed: the app boots, and it is running yesterday's
+code. If a fix "does nothing" in the running app, check this first.
+
+**Before you open a PR**, run the whole gate:
+
+```bash
+mvn clean verify
+```
+
+That is every test, plus SpotBugs, find-sec-bugs and the per-module
+JaCoCo floors. A new SpotBugs or find-sec-bugs finding is usually a real
+bug: fix it rather than excluding it. CI runs the same verify on
+ubuntu, macOS and Windows, all three blocking.
+
+**When a gate fails.** A test whose name ends in `GateTest`,
+`LedgerTest`, `ParityTest` or `CensusTest` holds a house law rather than
+a feature. [The gates index](docs/engineering/gates.md) says, in one
+line each, what law it holds and where it came from; the test's own
+javadoc tells the rest. A ledger failing on your change usually wants a
+decision written down (classify the new site, with its reason), not a
+workaround.
 
 ## How this house works
 
@@ -109,7 +198,9 @@ you a round trip.
   windows, all blocking. The windows lane is a real product surface,
   not a formality — it has found product bugs.
 - PRs are squash-merged. Write the summary for a teammate who wasn't
-  watching: what changed, what proved it.
+  watching: what changed, what proved it. The pull-request template asks
+  exactly that, plus whether you walked it in the assembled app and
+  which docs you updated.
 - The [deferred-debt ledger](docs/engineering/tech-debt.md) is the
   honest backlog — well-scoped items with written context, and the
   reasons things were deliberately NOT done. Great first

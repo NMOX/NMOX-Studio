@@ -20,6 +20,11 @@ Every document here is current; the v0.x-era papers were removed in
   walks found, and what was built about each.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
+- **[gates.md](./gates.md)** — every build-failing law test, grouped by
+  theme, with the law it holds and where it came from. **Read this when
+  your build fails on a test whose name ends in `GateTest` or
+  `LedgerTest`.** A test derives the list from the source tree, so it
+  cannot fall behind.
 - **[signing.md](./signing.md)** — **start here for signing.** The four
   independent systems, what question each one answers, and why none
   substitutes for another: GPG checksums (every asset, every platform),

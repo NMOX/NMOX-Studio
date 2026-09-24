@@ -1,0 +1,8 @@
+# Blank issues stay enabled on purpose: Help ▸ Report a Problem… opens
+# /issues/new with the title and body already filled in, and that
+# pre-filled form must stay reachable.
+blank_issues_enabled: true
+contact_links:
+  - name: Contributing guide
+    url: https://github.com/NMOX/NMOX-Studio/blob/main/CONTRIBUTING.md
+    about: How to build, test and propose a change, and what each build gate means.

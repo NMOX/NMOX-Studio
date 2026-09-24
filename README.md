@@ -878,55 +878,39 @@ it runs. See [the tutorial](docs/tutorials/agent-port.md).
 ## Build from source
 
 ### Prerequisites
-- **Java 21+** (JDK required for development)
-- **Maven 3.6+**
-- **Git** (for source code management)
 
-### Building
+- **JDK 25** to build. The build refuses an older JDK by name at its
+  first step; on macOS, `brew install openjdk@25` and point `JAVA_HOME`
+  at it (the full line is in [CONTRIBUTING.md](CONTRIBUTING.md#build-and-run)).
+  The bytecode still targets Java 21 and the installers bundle their own
+  runtime, so JDK 25 is needed only to build. The portable zip runs on
+  any Java 21 or newer.
+- **Maven 3.6.3+**
+- **Git**
+
+### Build and run
 
 ```bash
-# Clone the repository
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
 
-# Build the application
-./build.sh
-
-# Run the application
-./run.sh
+./build.sh             # mvn clean install -DskipTests, after checking the JDK
+./run.sh               # boots the assembled app with its own userdir/
+./build.sh --verify    # the whole gate: tests, SpotBugs, find-sec-bugs, JaCoCo floors
 ```
 
-### Development build
+The assembled app is `application/target/nmoxstudio/`. The installers
+(DMG, `.deb`, `.tar.gz`, Windows setup, portable zip) are built from it
+by the release workflow, `.github/workflows/release.yml`, with the
+scripts in `packaging/`.
 
-```bash
-# Clean build with tests
-mvn clean test package
+### Working on it
 
-# Create distribution packages
-mvn package -Pdeployment
-
-# Run in development mode
-mvn nbm:run-platform
-```
-
-### Building and testing
-
-```bash
-# Run all tests
-mvn test
-
-# Run tests for specific module
-mvn test -pl core
-
-# Build without tests
-mvn package -DskipTests
-
-# Generate test reports
-mvn surefire-report:report
-```
-
-The comprehensive suite is `mvn verify` — tests plus the SpotBugs,
-find-sec-bugs, and JaCoCo gates that every commit clears.
+Rebuilding one module, running a single test the reliable way, booting
+with a throwaway userdir, and what to do when a gate fails are all in
+[CONTRIBUTING.md's inner loop](CONTRIBUTING.md#the-inner-loop). Every
+change rides `mvn clean verify` (tests plus the SpotBugs, find-sec-bugs
+and JaCoCo gates) before it becomes a pull request.
 
 ## Project structure
 
