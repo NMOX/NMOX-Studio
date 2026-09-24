@@ -72,7 +72,12 @@ public final class OpenFolderAction implements ActionListener {
                 ? workspace : new File(System.getProperty("user.home"));
     }
 
-    private void openFolder(File folder) {
+    /**
+     * Aim the IDE at {@code folder} and bring the Workbench forward - the
+     * one home for "open this directory", shared by the menu item and the
+     * {@code --aim} command-line option ({@link AimOption}). EDT only.
+     */
+    static void openFolder(File folder) {
         // aim the whole IDE - rack, studio, workbench - at the folder.
         // Soft aim lookup (ledger 30): no provider (plain tests, stripped
         // platform) — still surface the workbench below.

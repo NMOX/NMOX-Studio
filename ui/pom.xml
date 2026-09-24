@@ -147,6 +147,15 @@
             <artifactId>org-netbeans-api-progress</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- 3.1.0: the aim command-line option (AimOption) rides the
+             platform's public command-line SPI; the open option hands a
+             manifest-less folder to a friend-only handler that opens a raw
+             explorer tab instead -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-sendopts</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <!-- The IRC client's NickServ passwords live in the OS keychain
              (irc.engine.IrcSecrets — the Keyring-only law, the ApiSecrets
              idiom; v1.204.0) -->
