@@ -90,8 +90,16 @@ else
     wait "$PROBE"
     PROBE_OK=$?
 fi
+# The platform launcher is a SCRIPT and it is handed to /bin/sh, never
+# exec'd through its shebang. Gatekeeper judges every quarantined file a
+# process EXECUTES, and a shell script has no embedded signature, so a
+# direct exec of bin/nmoxstudio from a brew or browser install answered
+# "NMOX Studio.app Not Opened: Apple could not verify it is free of malware"
+# on a bundle spctl calls notarized (3.0.0-3.0.2, measured 2026-09-23).
+# /bin/sh is a platform binary and the script is its input - exactly how
+# bin/nmoxstudio itself runs platform/lib/nbexec (`exec sh "$nbexec"`).
 if [ "$PROBE_OK" = "0" ]; then
-    exec "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
+    exec /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
 fi
 # A quarantined bundle is the common cause of a hung/blocked probe -
 # name the actual fix instead of blaming a missing JDK.
@@ -102,7 +110,7 @@ if xattr -p com.apple.quarantine "$APP" >/dev/null 2>&1; then
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
-    exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
+    exec /bin/sh "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
 fi
 osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 21+ installation was found.\n\nInstall a JDK 21 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
 exit 1

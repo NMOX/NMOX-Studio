@@ -411,6 +411,66 @@ class ReleaseSigningLanesGateTest {
                 .contains("None of it has ever run");
     }
 
+    /**
+     * 3.0.0-3.0.2: a brew or browser install answered "NMOX Studio.app Not
+     * Opened: Apple could not verify it is free of malware" on a bundle
+     * {@code spctl} calls notarized. Gatekeeper judges every quarantined file a
+     * process EXECUTES; the bundle launcher exec'd {@code bin/nmoxstudio}
+     * through its shebang, and a shell script carries no embedded signature
+     * ({@code spctl -t open}: "no usable signature"). Every check before then
+     * used a download WITHOUT quarantine, so none could see it. The rule: the
+     * launcher hands every nested script to {@code /bin/sh} as input, which is
+     * how the platform's own launcher runs {@code nbexec}. The population is
+     * every exec line in the launcher, derived, so a new one is judged too.
+     */
+    @Test
+    @DisplayName("the bundle launcher never execs a script inside the bundle — a quarantined script has no signature")
+    void theLauncherNeverExecsANestedScript() throws IOException {
+        String dmg = read(BUILD_DMG);
+        String open = "cat > \"$BUNDLE/Contents/MacOS/nmox-studio\" <<'LAUNCHER'\n";
+        int from = dmg.indexOf(open);
+        assertThat(from).as("build-dmg.sh still writes the bundle launcher as a heredoc").isNotEqualTo(-1);
+        int to = dmg.indexOf("\nLAUNCHER\n", from);
+        assertThat(to).as("the launcher heredoc is closed").isGreaterThan(from);
+        List<String> execs = new ArrayList<>();
+        for (String line : dmg.substring(from + open.length(), to).split("\n")) {
+            String t = line.strip();
+            if (t.startsWith("exec ")) {
+                execs.add(t);
+            }
+        }
+        assertThat(execs).as("the launcher starts the platform through at least its two exec lines").hasSizeGreaterThanOrEqualTo(2);
+        for (String e : execs) {
+            assertThat(e).as("an exec in the bundle launcher must hand a script to /bin/sh, never run it by "
+                    + "its shebang - a quarantined script is refused by Gatekeeper: %s", e)
+                    .startsWith("exec /bin/sh ");
+        }
+    }
+
+    /**
+     * The lane that cannot run without its secrets gets a way to run WITHOUT a
+     * release: a dispatch builds, signs and notarizes the DMG alone. What makes
+     * it safe is structural - linux and windows are push-only, so the release
+     * and homebrew jobs, which need them, cannot run - and the Update gauntlet
+     * must not treat a dispatched run as a release to update to.
+     */
+    @Test
+    @DisplayName("a dispatched Release run notarizes a DMG and publishes nothing")
+    void aDispatchedRunPublishesNothing() throws IOException {
+        String wf = read(WORKFLOW);
+        assertThat(wf).as("the dry-run door exists").contains("\n  workflow_dispatch:\n");
+        for (String job : List.of("linux", "windows")) {
+            assertThat(wf).as("%s must be push-only, so release/homebrew (which need it) cannot run on a dispatch", job)
+                    .contains("\n  " + job + ":\n    needs: version\n    if: github.event_name == 'push'\n");
+        }
+        assertThat(wf).as("the release job needs a push-only lane").contains("needs: [version, linux, macos, windows]");
+        assertThat(wf).as("macOS runs on a dispatch too - that is the point")
+                .doesNotContain("\n  macos:\n    needs: version\n    if:");
+        String gauntlet = read(Path.of("..", ".github", "workflows", "update-gauntlet.yml"));
+        assertThat(gauntlet).as("the Update gauntlet ignores a dispatched Release run")
+                .contains("github.event.workflow_run.event == 'push'");
+    }
+
     @Test
     @DisplayName("every packaging shell script parses (bash -n) — the ship-scripts law, one directory over")
     @DisabledOnOs(OS.WINDOWS)
