@@ -43,7 +43,7 @@ public class TasksSearchProvider implements SearchProvider {
             return;
         }
         evaluate(q, outcome.board(),
-                (action, label) -> response.addResult(action, label));
+                (action, label) -> response.addResult(action, org.nmox.studio.core.util.PlainText.escape(label)));
     }
 
     /**

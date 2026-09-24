@@ -28,7 +28,7 @@ public class LiveServerSearchProvider implements SearchProvider {
                 String label = org.openide.util.NbBundle.getMessage(LiveServerSearchProvider.class,
                         "LiveServerSearchProvider_serving", serving.url(),
                         serving.deviceTitle(), serving.projectDir().getName());
-                boolean more = response.addResult(actionFor(serving), label);
+                boolean more = response.addResult(actionFor(serving), org.nmox.studio.core.util.PlainText.escape(label));
                 if (!more) {
                     return;
                 }

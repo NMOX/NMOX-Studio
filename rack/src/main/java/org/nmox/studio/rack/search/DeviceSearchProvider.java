@@ -67,8 +67,8 @@ public class DeviceSearchProvider implements SearchProvider {
                         rack.open();
                         rack.requestActive();
                     }
-                }), org.openide.util.NbBundle.getMessage(DeviceSearchProvider.class,
-                        "DeviceSearchProvider_result", type.title(), type.description()));
+                }), org.nmox.studio.core.util.PlainText.escape(org.openide.util.NbBundle.getMessage(DeviceSearchProvider.class,
+                        "DeviceSearchProvider_result", type.title(), type.description())));
                 if (!more) {
                     return;
                 }

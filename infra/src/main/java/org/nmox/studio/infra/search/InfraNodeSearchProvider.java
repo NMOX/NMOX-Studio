@@ -28,7 +28,7 @@ public class InfraNodeSearchProvider implements SearchProvider {
         }
         evaluate(request.getText(), designer.getGraph(),
                 (action, display) -> response.addResult(
-                        () -> SwingUtilities.invokeLater(action), display));
+                        () -> SwingUtilities.invokeLater(action), org.nmox.studio.core.util.PlainText.escape(display)));
     }
 
     /**

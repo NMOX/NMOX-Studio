@@ -105,7 +105,7 @@ public class BlockSearchProvider implements SearchProvider {
                 tc.open();
                 tc.requestActive();
             }
-        }), label(snap))) {
+        }), org.nmox.studio.core.util.PlainText.escape(label(snap)))) {
             return;
         }
     }

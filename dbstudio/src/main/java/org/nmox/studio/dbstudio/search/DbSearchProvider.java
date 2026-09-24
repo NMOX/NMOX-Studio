@@ -52,7 +52,7 @@ public class DbSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        evaluate(request.getText(), (action, label) -> response.addResult(action, label));
+        evaluate(request.getText(), (action, label) -> response.addResult(action, org.nmox.studio.core.util.PlainText.escape(label)));
     }
 
     /**
