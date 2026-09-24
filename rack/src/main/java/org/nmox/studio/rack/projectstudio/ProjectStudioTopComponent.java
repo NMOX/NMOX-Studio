@@ -72,7 +72,12 @@ public final class ProjectStudioTopComponent extends TopComponent {
 
     private final Rack rack = RackService.getDefault().getRack();
     private final FileTreePanel treePanel = new FileTreePanel();
-    private final JLabel statusLabel = new JLabel(" ");
+    /**
+     * The aimed path. A PathLabel, because a plain label asked for the width
+     * of the whole path and a deep one pushed the dock across two thirds of
+     * the window (walked in 3.1.0).
+     */
+    private final org.nmox.studio.core.util.PathLabel statusLabel = new org.nmox.studio.core.util.PathLabel();
     private final Rack.Listener rackListener = new Rack.Listener() {
         @Override
         public void projectChanged() {
@@ -233,7 +238,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
     private void syncToRack() {
         File dir = rack.getProjectDir();
         treePanel.setRootDirectory(dir);
-        statusLabel.setText(PlainText.plain(dir.getAbsolutePath()));
+        statusLabel.setPath(dir.getAbsolutePath());
         // the kind walk stats the root and one level of children — off the
         // EDT (v1.33.1 law), newest aim wins; the suffix lands a beat later
         KIND_RP.post(() -> {
@@ -241,7 +246,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                     org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
             SwingUtilities.invokeLater(() -> {
                 if (dir.equals(rack.getProjectDir())) {
-                    statusLabel.setText(PlainText.plain(dir.getAbsolutePath() + aimSuffix(kind)));
+                    statusLabel.setPath(dir.getAbsolutePath() + aimSuffix(kind));
                 }
             });
         });
