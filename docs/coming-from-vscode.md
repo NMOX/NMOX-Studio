@@ -83,9 +83,10 @@ nmox            # just start the IDE
 It returns at once, and a second `nmox` hands its folder to the IDE that
 is already running. A column (`src/app.ts:42:7`) is accepted and the
 editor opens at the start of the line; a name that is not there is
-refused on the terminal instead of starting anything. Homebrew, the Windows installer (*Add "nmox" to
-PATH*) and the Linux packages put it on your PATH; for a DMG install, the
-[user guide](user-guide.md#2-first-launch) shows the one-line link.
+refused on the terminal instead of starting anything. Homebrew, the
+Windows installer (*Add "nmox" to PATH*) and the Linux packages put it on
+your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)
+shows the one-line link.
 
 ## Where each VS Code idea lives
 

@@ -1756,10 +1756,11 @@ the same trust question, in the Output window and under the toolbar ■; a
 shell task runs in the shell VS Code would use (your `$SHELL`, a login
 shell on macOS; PowerShell on Windows) or the one its `options.shell`
 names; a task that needs a value only VS Code can supply, or depends on
-another task, says so on the status line instead of running. Its
-`.vscode/launch.json` lists beside them — *Debug: Launch Program —
-${workspaceFolder}/server.js* — and Enter starts the breakpoint
-debugger on that configuration after the same trust question.
+another task, says so on the status line instead of running. The
+repository's `.vscode/launch.json` lists its configurations beside them —
+*Debug: Launch Program — ${workspaceFolder}/server.js* — and Enter
+starts the breakpoint debugger on that configuration after the same
+trust question.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to
