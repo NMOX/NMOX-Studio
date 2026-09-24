@@ -54,7 +54,7 @@ Trình cập nhật thay các mô-đun, chứ không thay ứng dụng bao quanh
 <a id="2-first-launch"></a>
 ## 2. Lần chạy đầu tiên
 
-Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `code .`: `cd myproject && nmox .`. Một thư mục được nhắm đúng như cách “Mở thư mục…” trên trang Chào mừng nhắm nó, dù có tệp kê khai hay không; một tệp thì mở trong trình soạn thảo (`nmox src/app.js`), tại một dòng nếu bạn chỉ ra dòng đó theo cách của `code -g` (`nmox src/app.js:42` — cột cũng được chấp nhận và trình soạn thảo mở ở đầu dòng). Một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh (`nmox: typo.js: no such file or folder`) thay vì khởi động bất cứ thứ gì. Lệnh trả về ngay — lần `nmox` đầu tiên khởi động IDE ở chế độ nền, và mỗi lần sau đó trao thư mục của nó cho IDE đang chạy. Gõ `nmox` không kèm gì thì chỉ khởi động IDE. Đưa `nmox` vào PATH của bạn:
+Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `code .`: `cd myproject && nmox .`. Một thư mục được nhắm đúng như cách “Mở thư mục…” trên trang Chào mừng nhắm nó, dù có tệp kê khai hay không; một tệp thì mở trong trình soạn thảo (`nmox src/app.js`), tại một dòng nếu bạn chỉ ra dòng đó theo cách của `code -g` (`nmox src/app.js:42` — cột cũng được chấp nhận và trình soạn thảo mở ở đầu dòng). Một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh (`nmox: typo.js: no such file or folder`) thay vì khởi động bất cứ thứ gì. `-r` của VS Code được chấp nhận và `-n` mở trong cửa sổ duy nhất; `--wait`, `--diff` và các cờ khác chỉ VS Code mới có sẽ bị từ chối kèm tên. Lệnh trả về ngay — lần `nmox` đầu tiên khởi động IDE ở chế độ nền, và mỗi lần sau đó trao thư mục của nó cho IDE đang chạy. Gõ `nmox` không kèm gì thì chỉ khởi động IDE. Đưa `nmox` vào PATH của bạn:
 
 - **macOS, Homebrew:** cask tự tạo liên kết giúp bạn.
 - **macOS, từ DMG:** tạo liên kết (đừng sao chép) tới trình khởi chạy của ứng dụng —
@@ -108,6 +108,8 @@ Bạn chuyển sang từ VS Code? [Chuyển từ VS Code sang](coming-from-vscod
 **Mở:** bất kỳ thư mục nào mang một trong 60 tệp kê khai được nhận biết đều mở ra như một dự án thật — `package.json`, `Cargo.toml`, `go.mod`, `pom.xml`, `composer.json`, `foundry.toml`, `bower.json`, `Gruntfile.js` và những họ hàng của chúng — kể cả các tệp kê khai của những chuỗi hợp đồng: một kho Aiken (`aiken.toml`) hay Clarinet (`Clarinet.toml`) mở ra với đúng các làn của nó đã được nối sẵn. Một thư mục HTML thuần với thẻ `<script>` và **không** có tệp kê khai cũng mở được, dưới dạng dự án STATIC: web cổ điển ở đây là công dân hạng nhất, không phải một lỗi.
 
 **Tạo:** *Dự án mới…* đưa ra những bộ khung thật — Angular, Vue, Svelte, JavaScript thuần, Elixir/Phoenix, PHP Web (LEMP) và Web cổ điển (jQuery). Mỗi bộ đến với cấu hình lint, định dạng và kiểm thử đã nối sẵn cùng một kho git đã khởi tạo: một commit khung duy nhất mà, khi trình hướng dẫn chạy phần cài đặt giúp bạn, cũng mang theo tệp khóa — nên lần `git status` đầu tiên của bạn sạch sẽ.
+
+**Cây tệp** là Studio dự án (⇧⌘E). Nhấp chuột phải vào một tệp hoặc thư mục để có Mới, Cắt, Sao chép, Dán, Xóa và Đổi tên, và — như Explorer của VS Code — **Sao chép đường dẫn**, **Sao chép đường dẫn tương đối** (tương đối so với dự án) và **Hiện trong Finder** (**Hiện trong File Explorer** trên Windows, **Mở thư mục chứa** trên Linux).
 
 **Chuyển dự án là an toàn:** nếu có thiết bị đang chạy (một máy chủ phát triển, một trình theo dõi), IDE hỏi trước khi chuyển và tắt chúng gọn ghẽ. Không có gì chạy tiếp sau lưng bạn, không bao giờ. Ngay cả việc buộc thoát IDE cũng không thể bỏ lại một tiến trình mồ côi.
 

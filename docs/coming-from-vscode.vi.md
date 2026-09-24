@@ -83,7 +83,9 @@ nmox            # just start the IDE
 Lệnh trả về ngay, và một lệnh `nmox` thứ hai trao thư mục của nó cho IDE đang
 chạy. Cột cũng được chấp nhận (`src/app.ts:42:7`) và trình soạn thảo mở ở đầu
 dòng; một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh thay vì khởi
-động bất cứ thứ gì. Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và
+động bất cứ thứ gì. `-r` được chấp nhận, `-n` mở trong cửa sổ duy nhất, còn
+`--wait`, `--diff` và các cờ khác chỉ VS Code mới có sẽ bị từ chối kèm tên.
+Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và
 các gói Linux đưa nó vào PATH của bạn; với bản cài từ DMG,
 [hướng dẫn sử dụng](user-guide.vi.md#2-first-launch) chỉ cách tạo liên kết
 bằng một dòng lệnh.
@@ -93,7 +95,7 @@ bằng một dòng lệnh.
 
 | Trong VS Code | Trong NMOX Studio |
 |---|---|
-| **Explorer** | **Studio dự án** (⇧⌘E) — cây tệp, các mẫu, và trình soạn `package.json` của dự án. **Bàn làm việc** (⌥⌘0) là cơ sở của bạn: tệp đang mở, tệp gần đây, dự án gần đây, và mọi thứ đang chạy. |
+| **Explorer** | **Studio dự án** (⇧⌘E) — cây tệp (nhấp chuột phải vào một tệp để có Sao chép đường dẫn, Sao chép đường dẫn tương đối và Hiện trong Finder), các mẫu, và trình soạn `package.json` của dự án. **Bàn làm việc** (⌥⌘0) là cơ sở của bạn: tệp đang mở, tệp gần đây, dự án gần đây, và mọi thứ đang chạy. |
 | **Command Palette** | **Tìm kiếm nhanh** (⇧⌘P hoặc ⌘I) — hành động, tệp, dự án gần đây, thiết bị trên giá, máy chủ đang chạy, yêu cầu của Studio API, ký hiệu. Tên lệnh riêng của VS Code cũng dùng được: *Format Document*, *Toggle Terminal*, *Git: Commit* hoặc *Open Settings* liệt kê hành động làm cùng việc đó ở đây, dưới **Lệnh VS Code**, kèm tên và tổ hợp phím riêng của nó. |
 | **Extensions** | **Công cụ ▸ Plugin** cài và cập nhật các mô-đun, kể cả các bản cập nhật của chính NMOX. Phần lớn những gì một tiện ích mở rộng thêm vào VS Code thì ở đây là một **thiết bị trên giá** — và bạn có thể tự viết một thiết bị bằng một tệp JSON trong `~/.nmox/devices.d` ([tệp thiết bị](device-files.md)). |
 | **`tasks.json`** | Tệp `.vscode/tasks.json` của kho mã được đọc: gõ tên một tác vụ vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Chạy tác vụ: build — make all* sẽ chạy nó, với lời hỏi Tin cậy không gian làm việc đến trước ở một dự án bạn chưa tin cậy, đầu ra nằm trong cửa sổ Output và nút ■ trên thanh công cụ để dừng nó. Bên cạnh đó, các kịch bản của chính dự án chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
