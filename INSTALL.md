@@ -38,7 +38,7 @@ run `bin\nmoxstudio64.exe`.
 **Debian/Ubuntu**
 
 ```bash
-sudo apt install ./nmox-studio_<version>_all.deb
+sudo apt install ./nmox-studio_<version>_amd64.deb
 nmox-studio        # or launch "NMOX Studio" from your app menu
 ```
 

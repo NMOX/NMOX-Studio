@@ -42,15 +42,17 @@ Launch **NMOX Studio**. It opens three tabs: **Welcome**, **Task Rack** and
 
 To open your project, choose **File ▸ Open Folder…** (⌥⌘O on macOS,
 Ctrl+Alt+O on Windows and Linux) and pick its folder. You can also do this
-from a terminal:
+from a terminal, the way you would with `code .`:
 
 ```bash
 cd ~/code/my-app
-nmoxstudio --open .
+nmox .
 ```
 
-If NMOX Studio is already running, that command hands it the folder and
-exits.
+The command returns at once. If NMOX Studio is already running, it gets the
+folder; if not, it starts. Homebrew, the Windows installer and the Linux
+packages put `nmox` on your PATH. For a DMG install, see
+[getting `nmox` onto your PATH](user-guide.md#2-first-launch).
 
 A folder counts as a project if it has a `package.json`, `Cargo.toml`,
 `go.mod`, `pom.xml`, `composer.json`, `pyproject.toml` or one of 57 other
