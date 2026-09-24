@@ -35,7 +35,7 @@ keyboard.
 | Go to line | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
 | Toggle line comment | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Show suggestions | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
-| Add the next occurrence to the selection | ⌘D | **⌘J** | Ctrl+D | **Ctrl+J** |
+| Add the next occurrence to the selection | ⌘D | **⌘D** or ⌘J | Ctrl+D | **Ctrl+D** or Ctrl+J |
 | Select every occurrence | ⇧⌘L | **⌃⇧⌘J** | Ctrl+Shift+L | **Ctrl+Alt+Shift+J** |
 | Add a cursor above / below | ⌥⌘↑ / ⌥⌘↓ | **⌥⌘↑ / ⌥⌘↓** | Ctrl+Alt+↑ / ↓ | **Alt+Shift+[ / ]** |
 | Move the line up / down | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
@@ -103,8 +103,10 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 
 ## What is honestly different
 
-- **⌘D is not multi-cursor here.** The same gesture is **⌘J** (Ctrl+J);
-  ⌘D itself is unbound. Rebind it under Keymap if your fingers insist.
+- **⌘D adds the next occurrence in the default keymap, not in every
+  profile.** The Eclipse profile keeps ⌘D as Eclipse's *Delete Line* and
+  the NetBeans 5.5 profile as *Shift Line Left*; there, ⌘J (Ctrl+J) is the
+  same gesture.
 - **⌃\` opens and focuses the Terminal; it does not hide it.** And while
   the Terminal has focus, the keys belong to your shell, so the second
   press reaches the shell rather than taking you back to the editor.

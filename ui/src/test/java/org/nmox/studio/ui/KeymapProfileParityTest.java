@@ -71,6 +71,17 @@ class KeymapProfileParityTest {
             "D-BACK_QUOTE.shadow_hidden|", Set.of("NetBeans", "Emacs", "NetBeans55"),
             "DS-E.shadow|", Set.of("NetBeans", "Emacs", "Idea", "NetBeans55"));
 
+    /**
+     * The editor Keybindings files that deliberately ride only SOME
+     * profiles, by the same rule as {@link #PROFILE_SCOPED}: a chord is
+     * scoped out of a profile only where that profile binds it itself.
+     * {@code vscode-keybindings.xml} (3.1.0) puts Cmd+D on add-next-occurrence;
+     * the defaults module binds D-D in Eclipse (remove-line) and NetBeans55
+     * (shift-line-left), measured in the assembled cluster.
+     */
+    private static final Map<String, Set<String>> EDITOR_PROFILE_SCOPED = Map.of(
+            "vscode-keybindings.xml|", Set.of("NetBeans", "Emacs", "Idea"));
+
     /** module dir -> its layer path, relative to the ui module's cwd. */
     private static final Map<String, String> KEYMAP_LAYERS = Map.of(
             "ui", "src/main/resources/org/nmox/studio/ui/layer.xml",
@@ -175,6 +186,7 @@ class KeymapProfileParityTest {
         Document doc = parse("../editor/src/main/resources/org/nmox/studio/editor/layer.xml");
         NodeList folders = doc.getElementsByTagName("folder");
         int keybindingsBlocks = 0;
+        Set<String> scopedSeen = new TreeSet<>();
         for (int i = 0; i < folders.getLength(); i++) {
             Element e = (Element) folders.item(i);
             if (!"Keybindings".equals(e.getAttribute("name"))) {
@@ -189,7 +201,14 @@ class KeymapProfileParityTest {
                                 + ": profile " + prof + " missing — the Emmet chords "
                                 + "and the Cmd+P unbind must survive a profile switch")
                         .isNotNull();
-                perProfile.put(prof, fileSet(pf));
+                Set<String> files = fileSet(pf);
+                for (Map.Entry<String, Set<String>> scoped : EDITOR_PROFILE_SCOPED.entrySet()) {
+                    if (files.stream().anyMatch(s -> s.startsWith(scoped.getKey()))) {
+                        scopedSeen.add(scoped.getKey() + prof);
+                    }
+                    files.removeIf(s -> s.startsWith(scoped.getKey()));
+                }
+                perProfile.put(prof, files);
             }
             Set<String> reference = perProfile.get("NetBeans");
             for (String prof : PROFILES) {
@@ -199,6 +218,11 @@ class KeymapProfileParityTest {
                         .isEqualTo(reference);
             }
         }
+        Set<String> expectedScoped = new TreeSet<>();
+        EDITOR_PROFILE_SCOPED.forEach((file, profs) -> profs.forEach(p -> expectedScoped.add(file + p)));
+        assertThat(scopedSeen)
+                .as("each profile-scoped editor keybinding file sits in exactly its profiles")
+                .isEqualTo(expectedScoped);
         assertThat(keybindingsBlocks)
                 .as("the editor layer's Keybindings blocks were all visited")
                 .isGreaterThanOrEqualTo(9);
