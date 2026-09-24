@@ -703,6 +703,9 @@ official client.
   you have open; gopls reports on the whole package.
   Missing a server? The IDE offers the install command instead of failing
   silently.
+
+  ![Action Items listing two gopls errors, one in a file that was never opened, with the ✕ 2 ⚠ 0 count on the status line](images/lsp-action-items.png)
+
 - **Run Focused Test**: with your caret in a test method, one action runs
   exactly that test — JS/TS, Go, Rust, Python, PHPUnit, and more.
 - **`.editorconfig` is honored** — while you type and when you save.
