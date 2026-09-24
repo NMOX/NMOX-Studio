@@ -86,7 +86,9 @@ nmox            # just start the IDE
 Perintah itu langsung kembali, dan `nmox` yang kedua menyerahkan foldernya
 kepada IDE yang sudah berjalan. Kolom (`src/app.ts:42:7`) juga diterima, dan
 penyunting terbuka di awal baris; nama yang tidak ada ditolak di terminal
-alih-alih menjalankan apa pun. Homebrew, pemasang Windows (*Add "nmox" to
+alih-alih menjalankan apa pun. Opsi `-r` diterima, `-n` membuka di
+satu-satunya jendela, dan `--wait`, `--diff`, serta opsi lain yang hanya
+dikenal VS Code ditolak dengan menyebut namanya. Homebrew, pemasang Windows (*Add "nmox" to
 PATH*), dan paket Linux memasukkannya ke PATH Anda; untuk pemasangan dari DMG,
 [panduan pengguna](user-guide.id.md#2-first-launch) menunjukkan tautan satu
 baris itu.
@@ -96,7 +98,7 @@ baris itu.
 
 | Di VS Code | Di NMOX Studio |
 |---|---|
-| **Explorer** | **Studio Proyek** (⇧⌘E) — pohon berkas, templat, dan penyunting `package.json` proyek. **Meja Kerja** (⌥⌘0) adalah pangkalan: berkas yang terbuka, berkas terkini, proyek terkini, dan semua yang sedang berjalan. |
+| **Explorer** | **Studio Proyek** (⇧⌘E) — pohon berkas (klik kanan sebuah berkas untuk Salin Jalur, Salin Jalur Relatif, dan Tampilkan di Finder), templat, dan penyunting `package.json` proyek. **Meja Kerja** (⌥⌘0) adalah pangkalan: berkas yang terbuka, berkas terkini, proyek terkini, dan semua yang sedang berjalan. |
 | **Command Palette** | **Pencarian Cepat** (⇧⌘P atau ⌘I) — tindakan, berkas, proyek terkini, perangkat rak, server aktif, permintaan Studio API, simbol. Nama perintah VS Code sendiri juga berfungsi: *Format Document*, *Toggle Terminal*, *Git: Commit*, atau *Open Settings* menampilkan tindakan yang melakukan hal yang sama di sini, di bawah **Perintah VS Code**, dengan nama dan pintasannya sendiri. |
 | **Extensions** | **Alat ▸ Plugin** memasang dan memperbarui modul, termasuk pembaruan NMOX sendiri. Banyak hal yang ditambahkan sebuah ekstensi di VS Code adalah sebuah **perangkat rak** di sini — dan Anda bisa menulisnya sebagai berkas JSON di `~/.nmox/devices.d` ([berkas perangkat](device-files.md)). |
 | **`tasks.json`** | `.vscode/tasks.json` di repositori Anda dibaca: ketik nama sebuah tugas di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Jalankan tugas: build — make all* menjalankannya, dengan Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, keluarannya di jendela Output, dan ■ di bilah alat untuk menghentikannya. Di sampingnya, skrip proyek Anda sendiri dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |

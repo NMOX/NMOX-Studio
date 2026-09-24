@@ -84,7 +84,9 @@ nmox            # just start the IDE
 Polecenie wraca od razu, a drugie `nmox` przekazuje swój katalog IDE, które
 już działa. Kolumna (`src/app.ts:42:7`) jest przyjmowana, a edytor
 otwiera się na początku wiersza; nazwa, której nie ma, zostaje odrzucona
-w terminalu, zamiast cokolwiek uruchamiać. Homebrew, instalator Windows
+w terminalu, zamiast cokolwiek uruchamiać. Przełącznik `-r` jest
+przyjmowany, `-n` otwiera w tym jednym oknie, a `--wait`, `--diff` i inne
+flagi, które zna tylko VS Code, zostają odrzucone z nazwy. Homebrew, instalator Windows
 (*Add "nmox" to PATH*) i pakiety dla Linuksa dodają je do PATH; przy instalacji z DMG
 [podręcznik](user-guide.pl.md#2-first-launch) pokazuje jednowierszowe
 dowiązanie.
@@ -94,7 +96,7 @@ dowiązanie.
 
 | W VS Code | W NMOX Studio |
 |---|---|
-| **Explorer** | **Studio projektu** (⇧⌘E) — drzewo plików, szablony i edytor `package.json` projektu. **Stanowisko pracy** (⌥⌘0) to baza: otwarte pliki, ostatnie pliki, ostatnie projekty i wszystko, co działa. |
+| **Explorer** | **Studio projektu** (⇧⌘E) — drzewo plików (prawy przycisk na pliku daje Kopiuj ścieżkę, Kopiuj ścieżkę względną i Pokaż w Finderze), szablony i edytor `package.json` projektu. **Stanowisko pracy** (⌥⌘0) to baza: otwarte pliki, ostatnie pliki, ostatnie projekty i wszystko, co działa. |
 | **Command Palette** | **Szybkie wyszukiwanie** (⇧⌘P albo ⌘I) — akcje, pliki, ostatnie projekty, urządzenia stojaka, aktywne serwery, żądania Studia API, symbole. Działają też nazwy poleceń z samego VS Code: *Format Document*, *Toggle Terminal*, *Git: Commit* albo *Open Settings* pokazuje akcję, która robi tu to samo, pod **Polecenia VS Code**, z jej własną nazwą i skrótem. |
 | **Extensions** | **Narzędzia ▸ Wtyczki** instaluje i aktualizuje moduły, łącznie z aktualizacjami samego NMOX. Wiele z tego, co w VS Code dodaje rozszerzenie, jest tu **urządzeniem stojaka** — a jedno możesz napisać jako plik JSON w `~/.nmox/devices.d` ([pliki urządzeń](device-files.md)). |
 | **`tasks.json`** | Plik `.vscode/tasks.json` twojego repozytorium jest czytany: wpisz nazwę zadania w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Uruchom zadanie: build — make all* je uruchamia; w projekcie, któremu jeszcze nie ufasz, najpierw pojawia się pytanie o zaufanie do obszaru roboczego, wynik trafia do okna Output, a ■ na pasku narzędzi je zatrzymuje. Obok tego własne skrypty projektu, uruchamiane tak, jak są napisane: Uruchom / Zbuduj / Testuj na pasku narzędzi (F6, F11, ⌃F6), **Uruchom skrypt** na wierszu `scripts` w `package.json`, **Eksplorator NPM** i **Stojak zadań** (⌘9), gdzie zadania są urządzeniami, które łączysz kablami. |
