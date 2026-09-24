@@ -304,11 +304,20 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
          * Properties — driven by the underlying DataNode's cookies. The
          * old hand-rolled tree offered only New/Rename/Delete/Open/Reveal;
          * this is a superset (Cut/Copy/Paste are new).
+         *
+         * <p>New is {@code NewTemplateAction}, the templates submenu (recent
+         * templates, then All Templates…). It was {@code NewAction} until
+         * 3.1.0, which offers a node's NewTypes, and a DataFolder's node has
+         * none ({@code FolderNode.getNewTypes()} returns an empty array), so
+         * the row read "Add" and was grey on every folder since v1.64.0.
+         * Find is bound by the search module at activation (its
+         * ActionManager puts Find in Projects into any non-editor window's
+         * ActionMap), not here.
          */
         @Override
         public javax.swing.Action[] getActions(boolean context) {
             return withPathRows(this, new javax.swing.Action[]{
-                org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class),
+                org.openide.util.actions.SystemAction.get(org.openide.actions.NewTemplateAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
                 null,
                 org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
@@ -372,7 +381,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
          * A file: the full platform file menu — Open, Cut/Copy, Delete,
          * Rename, Tools, Properties — driven by the DataObject's cookies.
          */
-        private static final class FileLeafNode extends FilterNode {
+        static final class FileLeafNode extends FilterNode {
 
             FileLeafNode(Node original) {
                 super(original, Children.LEAF);
