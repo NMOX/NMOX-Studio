@@ -99,6 +99,29 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("an editor row runs the kit's action against the editor's own pane, under the kit's own name")
+    void editorRowsRunAgainstThePane() throws Exception {
+        java.util.concurrent.atomic.AtomicReference<Object> source = new java.util.concurrent.atomic.AtomicReference<>();
+        Action kit = new AbstractAction("format") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                source.set(e.getSource());
+            }
+        };
+        kit.putValue(Action.SHORT_DESCRIPTION, "Format");
+        javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+        Action bound = VsCodeCommandSearchProvider.bound(kit, pane);
+        assertThat(bound.getValue(Action.NAME)).isEqualTo("Format");
+        assertThat(bound.isEnabled()).as("a pane that is not on screen is no target").isFalse();
+        bound.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ""));
+        assertThat(source.get()).as("the pane is the event's source, as for a keystroke").isSameAs(pane);
+
+        assertThat(titles("format document", (c, id) -> VsCodeCommandSearchProvider.EDITOR_KIT.equals(c)
+                && "format".equals(id) ? named("Format", true) : null)).containsExactly("Format Document");
+        assertThat(titles("format document", (c, id) -> null)).as("no editor, no row").isEmpty();
+    }
+
+    @Test
     @DisplayName("every title finds its own row, and no title appears twice")
     void everyRowIsReachable() {
         Set<String> seen = new HashSet<>();

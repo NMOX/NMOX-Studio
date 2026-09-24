@@ -45,6 +45,18 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
         return new Cmd(title, category, id);
     }
 
+    /**
+     * The category of a row that runs an action of the focused editor's own
+     * kit, named as the kit names it ({@code BaseKit}/{@code ExtKit}
+     * constants, read from RELEASE310's editor-lib) - not an id in the
+     * Actions folder, so {@code ActionIdsResolveTest} has nothing to check.
+     */
+    static final String EDITOR_KIT = "editor-kit";
+
+    private static Cmd inEditor(String title, String kitAction) {
+        return new Cmd(title, EDITOR_KIT, kitAction);
+    }
+
     /** VS Code's titles, category prefix included, as its palette shows them. */
     static final List<Cmd> COMMANDS = List.of(
             cmd("File: New File", "Project", "org.netbeans.modules.project.ui.NewFile"),
@@ -89,7 +101,17 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Git: Create Branch...", "Git", "org.netbeans.modules.git.ui.branch.CreateBranchAction"),
             cmd("Help: Welcome", "Window", "org.nmox.studio.ui.MainWindow"),
             cmd("Help: Show Release Notes", "Help", "org.nmox.studio.ui.whatsnew.WhatsNewAction"),
-            cmd("Help: Report Issue...", "Help", "org.nmox.studio.ui.report.ReportProblemAction"));
+            cmd("Help: Report Issue...", "Help", "org.nmox.studio.ui.report.ReportProblemAction"),
+            inEditor("Format Document", "format"),
+            inEditor("Toggle Line Comment", "toggle-comment"),
+            inEditor("Go to Line/Column...", "goto"),
+            inEditor("Go to Definition", "goto-declaration"),
+            inEditor("Delete Line", "remove-line"),
+            inEditor("Move Line Up", "move-selection-else-line-up"),
+            inEditor("Move Line Down", "move-selection-else-line-down"),
+            inEditor("Copy Line Up", "copy-selection-else-line-up"),
+            inEditor("Copy Line Down", "copy-selection-else-line-down"),
+            inEditor("Trim Trailing Whitespace", "remove-trailing-spaces"));
 
     /** Resolves an action by id; a seam so the matching is testable off the platform. */
     interface Resolver {
@@ -102,7 +124,7 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        for (Hit h : hits(request.getText(), Actions::forID)) {
+        for (Hit h : hits(request.getText(), VsCodeCommandSearchProvider::resolve)) {
             if (!response.addResult(runner(h), PlainText.escape(h.label), null, h.shortcut)) {
                 return;
             }
@@ -136,6 +158,59 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             out.add(new Hit(c, a, label, shortcut));
         }
         return out;
+    }
+
+    /** An Actions-folder id, or for {@link #EDITOR_KIT} the focused editor's own action. */
+    static Action resolve(String category, String id) {
+        return EDITOR_KIT.equals(category) ? editorAction(id) : Actions.forID(category, id);
+    }
+
+    /**
+     * The activated editor's kit action {@code name}, bound to its pane, or
+     * null when no editor is activated or its kit has no such action. The
+     * panes are asked on the EDT, as {@code EditorCookie} requires; the
+     * search itself runs on a background lane.
+     */
+    static Action editorAction(String name) {
+        return org.openide.util.Mutex.EVENT.readAccess(() -> {
+            org.openide.windows.TopComponent tc = org.openide.windows.TopComponent.getRegistry().getActivated();
+            org.openide.cookies.EditorCookie ec = tc == null ? null
+                    : tc.getLookup().lookup(org.openide.cookies.EditorCookie.class);
+            javax.swing.JEditorPane[] panes = ec == null ? null : ec.getOpenedPanes();
+            if (panes == null || panes.length == 0) {
+                return null;
+            }
+            javax.swing.JEditorPane pane = panes[0];
+            for (Action a : pane.getEditorKit().getActions()) {
+                if (name.equals(a.getValue(Action.NAME))) {
+                    return bound(a, pane);
+                }
+            }
+            return null;
+        });
+    }
+
+    /**
+     * {@code kitAction} run against {@code pane}: the event's source is the
+     * pane, which is how an editor action finds its text, and the name
+     * shown is the kit's own description of it.
+     */
+    static Action bound(Action kitAction, javax.swing.JEditorPane pane) {
+        Object described = kitAction.getValue(Action.SHORT_DESCRIPTION);
+        String name = described instanceof String s && !s.isBlank() ? s : String.valueOf(kitAction.getValue(Action.NAME));
+        return new javax.swing.AbstractAction(name) {
+            @Override
+            public boolean isEnabled() {
+                return kitAction.isEnabled() && pane.isShowing();
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                pane.requestFocusInWindow();
+                kitAction.actionPerformed(new ActionEvent(pane, ActionEvent.ACTION_PERFORMED,
+                        String.valueOf(kitAction.getValue(Action.NAME))));
+            }
+        };
     }
 
     /** The action's display name without its mnemonic marker or trailing ellipsis. */
