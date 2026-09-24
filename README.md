@@ -82,6 +82,13 @@ tutorial and a rack pre-wired with a live REPL; **Check My Work** verifies
 the exercises for real and offers a tutor when they fail. An 11-chain
 **Contract Kit** scaffolds starters proven against their real toolchains.
 
+**Your VS Code habits come along.** ⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\` and ⌘D do what
+your hands expect; `nmox .` and `nmox src/app.js:42` work from a terminal;
+Quick Search answers to VS Code's command names; and your repository's
+`.vscode/tasks.json`, `launch.json` and `settings.json` are read as they
+are, with whatever cannot run as written refused by name
+([coming from VS Code](docs/coming-from-vscode.md)).
+
 Built on the NetBeans Rich Client Platform, shipped through a gated
 pipeline: tests, SpotBugs, find-sec-bugs and per-module coverage floors
 on every commit, three-OS CI, and an update center that has upgraded
@@ -183,8 +190,10 @@ not yet Authenticode-signed.
 
 - **[The quickstart](docs/quickstart.md)** — five minutes from download to
   your own project running.
-- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords and
-  concepts, mapped.
+- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords your
+  hands already know (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`), where each VS Code idea lives
+  here, and how your repository's `.vscode` tasks, launch configurations
+  and settings are read.
 - **[The glossary](docs/glossary.md)** — rack, patch, jack, lane, aim,
   KVASIR and the rest of the product's own words.
 - **[The User Guide](docs/user-guide.md)** — the complete manual: the rack,
@@ -203,9 +212,6 @@ not yet Authenticode-signed.
   screenshot captured live.
 - **[The device reference](docs/devices.md)** — all 53 devices, generated
   from the catalog itself; CI fails if it drifts.
-- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords your
-  hands already know (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`), and where each VS Code idea
-  lives here.
 - **[CHANGELOG](CHANGELOG.md)** — the full release history.
 
 The product carries its own docs, too: **Help ▸ NMOX Studio Website
