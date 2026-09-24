@@ -66,11 +66,9 @@ hands later folders to the IDE that is already running.
 ## From the file manager
 
 A folder handed over by the operating system is aimed exactly as `nmox .`
-aims it.
+aims it. On macOS the door is `nmox .` (or File ▸ Open Folder…): Finder
+and the Dock cannot hand a folder to the app.
 
-- **macOS:** right-click a folder in Finder and choose NMOX Studio under
-  **Open With**, or drop the folder on the Dock icon. A file dropped
-  there opens in the editor.
 - **Linux (`.deb`):** NMOX Studio appears under *Open With* for folders in
   your file manager. It is offered, never made the default.
 - **Windows:** tick *Add "Open with NMOX Studio" to the right-click menu of

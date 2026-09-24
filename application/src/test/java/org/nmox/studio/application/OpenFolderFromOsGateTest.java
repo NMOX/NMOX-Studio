@@ -1,12 +1,10 @@
 package org.nmox.studio.application;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,7 +15,6 @@ import java.util.regex.Pattern;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,17 +32,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * platform's raw folder tab.
  *
  * <ul>
- *   <li><b>macOS</b> — Finder's Open With, a drop on the Dock icon and
- *       {@code open -a}. The bundle declares folders ({@code public.folder},
- *       Viewer, Alternate) so Finder offers the app; the launcher exports
- *       {@code CFProcessPath} naming the bundle's own executable, without
- *       which the JVM's main bundle is the runtime's embedded Info.plist and
- *       AWT drops every open-documents event before Java sees it (measured on
- *       a probe bundle of the launcher's shape and on the assembled app: no
- *       event reached any handler without it, both launch-time and running
- *       events did with it). The ui module's {@code FinderOpen} aims what
- *       arrives. The plist is linted here with {@code plutil} on a Mac and
- *       parsed as XML everywhere.
+ *   <li><b>macOS</b> — deliberately NOT through Finder or the Dock. That
+ *       needs the JVM's main bundle to be NMOX Studio.app, which the
+ *       launcher could arrange by exporting {@code CFProcessPath}; but the
+ *       released runtime runs under the hardened runtime, and CoreFoundation
+ *       ignores the variable there (measured on the notarized 3.1.0 dry
+ *       run: one program reads {@code org.nmox.studio} under an ad-hoc java
+ *       and {@code com.azul.zulu.java} under ours). A declared folder type
+ *       would put the app in Finder's Open With and then do nothing, so the
+ *       bundle declares none; {@code nmox .} is the macOS door.
  *   <li><b>Linux</b> — the .desktop entry claims {@code inode/directory}
  *       (Open With, never the default: see build-packages.sh) and runs
  *       {@code /usr/bin/nmox %F}, which turns a folder into {@code --aim}.
@@ -65,8 +60,6 @@ class OpenFolderFromOsGateTest {
     private static final Path ISS = Path.of("..", "packaging", "windows", "nmox-studio.iss");
     private static final Path WIN_CHECK = Path.of("..", ".github", "workflows", "windows-installer-check.yml");
     private static final Path UI_MANIFEST = Path.of("..", "ui", "src", "main", "nbm", "manifest.mf");
-    private static final Path FINDER_INSTALL = Path.of("..", "ui", "src", "main", "java", "org", "nmox",
-            "studio", "ui", "actions", "FinderOpenInstall.java");
 
     private static final String PLIST_OPEN = "cat > \"$BUNDLE/Contents/Info.plist\" <<PLIST\n";
     private static final String LAUNCHER_OPEN = "cat > \"$BUNDLE/Contents/MacOS/nmox-studio\" <<'LAUNCHER'\n";
@@ -133,23 +126,14 @@ class OpenFolderFromOsGateTest {
     }
 
     @Test
-    @DisplayName("macOS: the bundle declares folders - Viewer, Alternate, public.folder - and nothing else")
-    void infoPlistDeclaresFolders() throws Exception {
+    @DisplayName("macOS: the bundle declares no document types - Finder would offer a door that does not open")
+    void infoPlistDeclaresNoDocumentTypes() throws Exception {
         Map<String, Element> top = dict((Element) parse(plist()).getDocumentElement()
                 .getElementsByTagName("dict").item(0));
         assertThat(top).as("the plist's top-level keys").containsKey("CFBundleExecutable");
-        Element types = top.get("CFBundleDocumentTypes");
-        assertThat(types).as("Finder offers an app for a folder only when the bundle declares one").isNotNull();
-        assertThat(types.getTagName()).isEqualTo("array");
-        List<Element> entries = children(types);
-        assertThat(entries).as("one document type: folders").hasSize(1);
-        Map<String, Element> folder = dict(entries.get(0));
-        assertThat(folder.get("CFBundleTypeRole").getTextContent())
-                .as("the IDE opens a folder; it never claims to edit Finder's folders").isEqualTo("Viewer");
-        assertThat(folder.get("LSHandlerRank").getTextContent())
-                .as("Alternate: offered in Open With, never the Mac's default for a folder").isEqualTo("Alternate");
-        List<String> uti = children(folder.get("LSItemContentTypes")).stream().map(Element::getTextContent).toList();
-        assertThat(uti).containsExactly("public.folder");
+        assertThat(top).as("the hardened runtime ignores CFProcessPath, so AWT never receives what"
+                + " Finder would hand over; declaring folders would list the app under Open With"
+                + " and then drop the folder").doesNotContainKey("CFBundleDocumentTypes");
     }
 
     @Test
@@ -165,61 +149,15 @@ class OpenFolderFromOsGateTest {
     }
 
     @Test
-    @DisplayName("macOS: the launcher names the bundle's own executable as CFProcessPath, for the bundled runtime only")
-    void launcherExportsCfProcessPathInTheBundledBranch() throws IOException {
+    @DisplayName("macOS: the launcher sets no CFProcessPath, and the ui module installs no open-files handler")
+    void noCfProcessPath() throws IOException {
         String launcher = heredoc(read(BUILD_DMG), LAUNCHER_OPEN, "LAUNCHER");
-        int bundled = launcher.indexOf("if [ \"$PROBE_OK\" = \"0\" ]; then\n");
-        int fallback = launcher.indexOf("JDK=$(/usr/libexec/java_home");
-        assertThat(bundled).as("the bundled-runtime branch").isNotEqualTo(-1);
-        assertThat(fallback).as("the fallback-JDK branch").isGreaterThan(bundled);
-        String branch = launcher.substring(bundled, fallback);
-        int set = branch.indexOf("    CFProcessPath=\"$DIR/$(basename \"$PRG\")\"\n");
-        int export = branch.indexOf("    export CFProcessPath\n");
-        int exec = branch.indexOf("exec /bin/sh \"$RES/bin/nmoxstudio\"");
-        assertThat(set).as("set to this bundle's executable, found through any link").isNotEqualTo(-1);
-        assertThat(export).as("exported, so the JVM two processes down inherits it").isGreaterThan(set);
-        assertThat(exec).as("before the platform launcher is started").isGreaterThan(export);
-        assertThat(launcher.split("CFProcessPath=", -1)).as("set in exactly one place").hasSize(2);
-        assertThat(launcher.substring(fallback)).as("a fallback JDK may be 21, where the IDE cannot take the"
-                + " variable back out of its environment, so it never gets it").doesNotContain("CFProcessPath");
-    }
-
-    @Test
-    @DisplayName("macOS: run by its real path, the launcher hands the platform launcher CFProcessPath = itself")
-    @DisabledOnOs(OS.WINDOWS)
-    void launcherReallyExportsItself() throws Exception {
-        Path contents = tmp.resolve("Apps/NMOX Studio.app/Contents");
-        Path macos = Files.createDirectories(contents.resolve("MacOS"));
-        Path res = contents.resolve("Resources/nmoxstudio");
-        Path launcher = macos.resolve("nmox-studio");
-        Files.writeString(launcher, heredoc(read(BUILD_DMG), LAUNCHER_OPEN, "LAUNCHER"));
-        executable(launcher);
-        Path java = Files.createDirectories(res.resolve("jre/bin")).resolve("java");
-        Files.writeString(java, "#!/bin/sh\nexit 0\n");
-        executable(java);
-        Path record = tmp.resolve("record.txt");
-        Files.writeString(Files.createDirectories(res.resolve("bin")).resolve("nmoxstudio"),
-                "#!/bin/sh\nprintf '%s\\n' \"${CFProcessPath-<unset>}\" > '" + record + "'\n");
-        Process p = new ProcessBuilder(launcher.toString()).directory(tmp.toFile()).redirectErrorStream(true)
-                .redirectOutput(tmp.resolve("launcher.out").toFile()).start();
-        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("launcher finished").isTrue();
-        assertThat(record).as("the stand-in platform launcher ran").exists();
-        String seen = Files.readAllLines(record).get(0);
-        assertThat(Path.of(seen).toRealPath()).as("CFProcessPath names the bundle's executable")
-                .isEqualTo(launcher.toRealPath());
-    }
-
-    @Test
-    @DisplayName("macOS: the ui module installs its handler at validate(), the one moment before the platform's")
-    void handlerInstallsFirst() throws IOException {
-        String manifest = read(UI_MANIFEST);
-        assertThat(manifest).as("the ui module names its ModuleInstall")
-                .contains("\nOpenIDE-Module-Install: org/nmox/studio/ui/actions/FinderOpenInstall.class\n");
-        String src = GateSources.stripComments(read(FINDER_INSTALL));
-        assertThat(src).as("NbInstaller.prepare calls validate() only when the class DECLARES it,"
-                + " for every module before any restored()")
-                .contains("public void validate()").contains("FinderOpen.early();")
-                .doesNotContain("void restored()");
+        String code = launcher.lines().filter(l -> !l.strip().startsWith("#"))
+                .reduce("", (x, y) -> x + y + "\n");
+        assertThat(code).as("ignored under the hardened runtime, and a child that inherits it takes"
+                + " NMOX Studio's identity").doesNotContain("CFProcessPath");
+        assertThat(read(UI_MANIFEST)).as("no ModuleInstall waits for an event that cannot arrive")
+                .doesNotContain("OpenIDE-Module-Install");
     }
 
     // ---------------------------------------------------------------- Linux
@@ -344,13 +282,5 @@ class OpenFolderFromOsGateTest {
                 .as("the argv Explorer would hand over, drive root included").contains("GetPathRoot")
                 .as("uninstall takes them out").contains("the uninstaller left $k");
         assertThat(wf).as("the workflow runs when the installer changes").contains("- 'packaging/windows/**'\n");
-    }
-
-    // ---------------------------------------------------------------- helpers
-
-    private static void executable(Path p) throws IOException {
-        if (!File.separator.equals("\\")) {
-            Files.setPosixFilePermissions(p, PosixFilePermissions.fromString("rwxr-xr-x"));
-        }
     }
 }
