@@ -93,12 +93,12 @@ shows the one-line link.
 | In VS Code | In NMOX Studio |
 |---|---|
 | **Explorer** | **Project Studio** (⇧⌘E) — the file tree, templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
-| **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its name here and its chord. |
+| **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its own name and chord. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
 | **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program, with Workspace Trust asking first. Node (`node`, `pwa-node`) and Python (`python`, `debugpy`) configurations debug their `program` in their `cwd`, with their `args` and `env`; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
-| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` sets its files' indentation (`editor.tabSize`, `editor.insertSpaces`) and the save-time `files.trimTrailingWhitespace` and `files.insertFinalNewline`; its `.editorconfig` wins wherever both speak, as you type and when you save. |
+| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` is read too: `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` set its indentation as you type, `files.trimTrailingWhitespace` and `files.insertFinalNewline` (when `true`) apply when you save, and a language block such as `"[typescript]"` overrides them for its language. Where the repository also has an `.editorconfig`, the `.editorconfig` wins wherever both speak. |
 | **Problems panel** | **Action Items** (⌘6), or click the **✕ ⚠** count on the status line: the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
 | **Outline** | The **Navigator** (⌘7). |
 | **Source Control** | The git chip on the status line (branch and changes, one click to history) and the **Team** menu. |
@@ -125,18 +125,19 @@ it lives; click it for Quick Search. It says so once per project.
   `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` or any other field
   it has not been taught is listed but not started: Enter names the
   fields on the status line. Starting the program without them would
-  debug something other than what the file says. So would `args` written
-  as one string (VS Code hands that to a shell) and an `env` value of
-  `null` (which unsets a variable). The same goes for `"request": "attach"`, a `compounds` entry, a
-  type with no adapter here (`go`, `msedge`, `cppdbg` and the rest), a
-  value only VS Code can supply (`${file}`, `${input:…}`), and a path
-  outside the project. Fields that only shape what the debugger shows —
+  debug something other than what the file says. `args` written as one
+  string (VS Code hands that to a shell) and an `env` value of `null`
+  (which unsets a variable) are refused the same way, and so are
+  `"request": "attach"`, a `compounds` entry, a type with no adapter
+  here (`go`, `msedge`, `cppdbg` and the rest), a value only VS Code can
+  supply (`${file}`, `${input:…}`), and a path outside the project. Fields that only shape what the debugger shows —
   `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
   `presentation` — are accepted and not applied; the program's output
   goes to the Output window.
 - **`tasks.json` is read, and what cannot run as written is refused.**
-  A task that uses a value only VS Code can supply (`${input:…}`, `${file}`, `${config:…}`,
-  `${command:…}`) or that `dependsOn` another task is listed but not run:
+  A task that uses a value only VS Code can supply (`${input:…}`,
+  `${file}`, `${config:…}`, `${command:…}`) or that `dependsOn` another
+  task is listed but not run:
   Enter says which variable or which task on the status line. Running it
   with the value left blank, or without the task it depends on, would run
   something other than what the file says. So would a task type an
