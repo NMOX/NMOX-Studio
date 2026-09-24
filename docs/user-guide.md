@@ -120,8 +120,9 @@ editor (`nmox src/app.js`), at a line if you name one the way `code -g`
 does (`nmox src/app.js:42` — a column is accepted and the editor opens at
 the start of the line). A name that is not there is refused on the
 terminal (`nmox: typo.js: no such file or folder`) instead of starting
-anything. VS Code's `-r` is accepted and `-n` opens in the one window;
-`--wait`, `--diff` and the other VS Code-only flags are refused by name.
+anything. VS Code's `-r` is accepted and `-n` opens in NMOX Studio's
+single window, since there is no second one; `--wait`, `--diff` and the
+other VS Code-only flags are refused by name.
 The command returns at once — the first `nmox` starts the IDE in the
 background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.

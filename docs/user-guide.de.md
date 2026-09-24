@@ -109,7 +109,7 @@ Sie kommen von VS Code? [Von VS Code kommend](coming-from-vscode.de.md) ordnet d
 
 **Anlegen:** *Neues Projekt…* bietet echte Gerüste — Angular, Vue, Svelte, reines JavaScript, Elixir/Phoenix, PHP Web (LEMP) und Klassisches Web (jQuery). Jedes kommt mit fertig verdrahteten Lint-, Format- und Testkonfigurationen und einem initialisierten Git-Repository: ein einziger Gerüst-Commit, der die Lock-Datei mit enthält, wenn der Assistent die Installation für Sie ausführt — Ihr erstes `git status` ist damit sauber.
 
-**Der Dateibaum** ist das Projekt-Studio (⇧⌘E). Ein Rechtsklick auf eine Datei oder einen Ordner bietet Neu, Ausschneiden, Kopieren, Einfügen, Löschen und Umbenennen und — wie im Explorer von VS Code — **Pfad kopieren**, **Relativen Pfad kopieren** (relativ zum Projekt) und **Im Finder zeigen** (**Im Datei-Explorer anzeigen** unter Windows, **Übergeordneten Ordner öffnen** unter Linux).
+**Der Dateibaum** ist das Projekt-Studio (⇧⌘E). Ein Rechtsklick auf eine Datei oder einen Ordner bietet Neu, Ausschneiden, Kopieren, Einfügen, Löschen und Umbenennen und — wie im Explorer von VS Code — **Pfad kopieren**, **Relativen Pfad kopieren** (relativ zum Projekt) und **Im Finder anzeigen** (**Im Datei-Explorer anzeigen** unter Windows, **Übergeordneten Ordner öffnen** unter Linux).
 
 **Der Projektwechsel ist sicher:** Laufen Geräte (ein Entwicklungsserver, ein Watcher), fragt die IDE vor dem Wechsel und fährt sie sauber herunter. Nichts läuft hinter Ihrem Rücken weiter, nie. Selbst ein erzwungenes Beenden der IDE kann keinen Prozess verwaisen lassen.
 

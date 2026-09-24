@@ -155,6 +155,16 @@ it: [docs/engineering/dx-plan-3.1.md](docs/engineering/dx-plan-3.1.md).
   folder in Project Studio's tree, as in VS Code's Explorer (Reveal in File
   Explorer on Windows, Open Containing Folder on Linux). The relative path
   is relative to the aimed project, and stays absolute outside it.
+- **The tree's New row works, and its other rows speak your language.** A
+  folder's first row read *Add* and was grey on every folder since the
+  tree became a platform tree (v1.64.0): it was the action that lists a
+  node's NewTypes, and a folder's node has none. It is the platform's
+  templates submenu now, recent templates first, then *All Templates...*.
+  Measured on the tree's real nodes, Rename, Open, Properties and New also
+  painted English in all fourteen translated builds, beside the rows this
+  release added in the reader's language; they are overlaid, and
+  `FileTreeRowsSpeakTest` derives the tree's rows from its source, so a row
+  added later without a translation fails the build.
 - **The terminal really starts in the project.** Project Studio's Terminal
   button has promised that since 1.212.0 and looked the platform's action up
   by an id that does not exist, so every press opened a shell in the IDE's own

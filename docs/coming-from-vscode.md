@@ -84,10 +84,10 @@ It returns at once, and a second `nmox` hands its folder to the IDE that
 is already running. A column (`src/app.ts:42:7`) is accepted and the
 editor opens at the start of the line; a name that is not there is
 refused on the terminal instead of starting anything. `-r` is accepted,
-`-n` opens in the one window, and `--wait`, `--diff` and the other
-VS Code-only flags are refused by name. Homebrew, the
-Windows installer (*Add "nmox" to PATH*) and the Linux packages put it on
-your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)
+`-n` opens in NMOX Studio's single window (there is no second one), and
+`--wait`, `--diff` and the other VS Code-only flags are refused by name.
+Homebrew, the Windows installer (*Add "nmox" to PATH*) and the Linux
+packages put it on your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)
 shows the one-line link.
 
 ## Where each VS Code idea lives
