@@ -722,6 +722,15 @@ official client.
   in the file is still drawn at the tab width set in Options, and
   `charset` and `end_of_line` are not applied. Your formatter devices
   (GLOSS et al.) handle the rest.
+- **A repository's `.vscode/settings.json` is honored the same way**:
+  `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` decide
+  the indentation, `files.trimTrailingWhitespace` and
+  `files.insertFinalNewline` (when `true`) apply on save, and a language
+  block such as `"[typescript]": {…}` overrides them for its language.
+  Where the project also has an `.editorconfig`, the `.editorconfig`
+  wins wherever both say something. VS Code's
+  `editor.detectIndentation`, which lets a file's own indentation win,
+  has no counterpart here.
 - **Color literals show their color** in CSS, SCSS, and Less: every
   `#hex`, `rgb()`, `hsl()`, `hwb()`, `oklch()`, `oklab()`, `lab()`,
   `lch()`, and named color is painted as the color it names, right
