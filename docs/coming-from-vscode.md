@@ -23,7 +23,7 @@ keyboard.
 | Open a file by name | ⌘P | **⌘P** — Go to File | Ctrl+P | **Ctrl+P** |
 | The file tree | ⇧⌘E | **⇧⌘E** — Project Studio | Ctrl+Shift+E | **Ctrl+Shift+E** |
 | Extensions | ⇧⌘X | **⇧⌘X** — Tools ▸ Plugins | Ctrl+Shift+X | **Ctrl+Shift+X** |
-| The terminal | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
+| The terminal, in the project folder | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Open a recent project | ⌃R | **⌥⌘P** — Switch Project… | Ctrl+R | **Ctrl+Alt+P** |
 | Go to a symbol in the project | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
 | Go to definition | F12 | **⌘B** | F12 | **Ctrl+B** |
@@ -88,7 +88,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
 | **`tasks.json`** | Your project's own scripts, run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
-| **Integrated terminal** | The **Terminal** window (⌃\`). |
+| **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` is honoured on save. |
 | **Problems panel** | **Action Items** (⌘6): lint and type findings from the rack's PURITY and TYPEGUARD devices, next to the squiggles in the editor. |
 | **Outline** | The **Navigator** (⌘7). |

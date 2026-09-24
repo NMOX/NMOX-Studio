@@ -36,7 +36,7 @@ class VsCodeChordsTest {
     static final String QUICK_SEARCH = "Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance";
     static final String PROJECT_STUDIO = "Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance";
     static final String PLUGINS = "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance";
-    static final String TERMINAL = "Actions/Window/ShowTerminalTCAction.instance";
+    static final String TERMINAL = "Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance";
     static final String SWITCH_PROJECT = "Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance";
     static final String NEW_EXPERIMENT = "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance";
     static final String EXPERIMENTS = "Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance";

@@ -165,7 +165,7 @@ the Welcome tab):
 | **⌥⌘K / ⇧⌘L** | New Experiment… / New Learning Space… |
 | **⇧⌘E** | Project Studio, with focus on the file tree |
 | **⇧⌘X** | Tools ▸ Plugins |
-| **⌃\`** | The Terminal window (Ctrl+\` on Windows and Linux) |
+| **⌃\`** | A terminal in the project folder, or the one already open (Ctrl+\` on Windows and Linux) |
 | **⌥⌘P / ⌥⇧⌘K** | Switch Project… / Experiments… |
 
 Arriving from VS Code? [Coming from VS Code](coming-from-vscode.md) maps

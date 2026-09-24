@@ -235,7 +235,7 @@
                        layers defining one file leave the winner to merge
                        order - a user who picked Eclipse keeps Eclipse.
                  DS-X  Tools > Plugins (VS Code's Extensions)
-                 C-BACK_QUOTE  the Terminal window (VS Code's Ctrl+`)
+                 C-BACK_QUOTE  a terminal in the aimed project, or the open one (VS Code's Ctrl+`; ProjectTerminal)
                  The three NMOX actions those chords used to open moved to
                  unclaimed chords: DA-P Switch Project, DA-K New
                  Experiment, DAS-K Experiments. The nmoxShortcut attribute
@@ -255,7 +255,7 @@
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="C-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <!-- On Linux (never macOS or Windows: the originalFile is a
@@ -325,7 +325,7 @@
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="C-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="DA-P.shadow">
@@ -390,7 +390,7 @@
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="C-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="D-BACK_QUOTE.shadow_hidden"/>
@@ -456,7 +456,7 @@
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="C-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="DA-P.shadow">
@@ -521,7 +521,7 @@
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="C-BACK_QUOTE.shadow">
-                <attr name="originalFile" stringvalue="Actions/Window/ShowTerminalTCAction.instance"/>
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="D-BACK_QUOTE.shadow_hidden"/>

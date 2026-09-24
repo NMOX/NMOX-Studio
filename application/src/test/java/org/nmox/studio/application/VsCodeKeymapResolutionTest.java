@@ -64,7 +64,7 @@ class VsCodeKeymapResolutionTest {
         CHORDS.put("DS-P", "Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance");
         CHORDS.put("DS-E", "Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance");
         CHORDS.put("DS-X", "Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance");
-        CHORDS.put("C-BACK_QUOTE", "Actions/Window/ShowTerminalTCAction.instance");
+        CHORDS.put("C-BACK_QUOTE", "Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance");
         CHORDS.put("DA-P", "Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance");
         CHORDS.put("DA-K", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
         CHORDS.put("DAS-K", "Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance");
