@@ -446,6 +446,15 @@ public final class MainWindow extends TopComponent {
         if (live != null) {
             live.addListener(servingsListener);
         }
+        // an aim while the Welcome is ON SCREEN (nmoxstudio --aim, ⌘I, a
+        // Workbench row) left RECENT reading "projects you open gather
+        // here" and First Steps' "Open a project" unticked until the tab
+        // was hidden and shown again (walked in 3.1.0) - the column is
+        // live, so it follows the aim for the tab's whole open life
+        org.nmox.studio.core.spi.ProjectAim aim = org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.addListener(aimListener);
+        }
         // welcome steals focus exactly once: on the first launch ever.
         // Every later start restores the user's own window arrangement.
         java.util.prefs.Preferences prefs =
@@ -476,6 +485,13 @@ public final class MainWindow extends TopComponent {
         }
     };
 
+    /** Rebuilds RECENT and First Steps after an aim; the aimer's thread, so hop to the EDT. */
+    final org.nmox.studio.core.spi.ProjectAim.Listener aimListener = () ->
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                welcomePanel.refreshRecents();
+                welcomePanel.refreshGettingStarted();
+            });
+
     private final org.nmox.studio.core.util.AimFollower aimFollower =
             new org.nmox.studio.core.util.AimFollower(n ->
                     setActivatedNodes(new org.openide.nodes.Node[]{n}));
@@ -503,6 +519,10 @@ public final class MainWindow extends TopComponent {
         org.nmox.studio.core.spi.LiveServings liveClosed = org.nmox.studio.core.spi.LiveServings.find();
         if (liveClosed != null) {
             liveClosed.removeListener(servingsListener);
+        }
+        org.nmox.studio.core.spi.ProjectAim aimClosed = org.nmox.studio.core.spi.ProjectAim.find();
+        if (aimClosed != null) {
+            aimClosed.removeListener(aimListener);
         }
         aimFollower.closed();
     }
