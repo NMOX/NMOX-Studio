@@ -104,15 +104,46 @@ Units 1, 3–6 and 10 are mine; 2, 7, 8 and 11 run as worktree agents on a
 pinned commit, and every diff is read before it is folded. When the table is
 done the walks run again, and whatever they find becomes the next row.
 
+## What the walks added, in the order they found it
+
+The table above was the plan at the start of the night. Walking each row in
+the assembled app turned up the rows below; each shipped in 3.1.0 with its
+test, and the ones that could not be made true were taken out and written
+down.
+
+| # | Found by | What was wrong | What 3.1.0 does | Proof |
+|---|----------|----------------|-----------------|-------|
+| 12 | the first-hour walk | every 3.0.x install from Homebrew or a browser was refused by Gatekeeper: the launcher exec'd an unsigned shell script | the launcher hands it to `/bin/sh`; a dispatched release run notarizes a DMG without publishing | a quarantined copy of the notarized dry run, launched through LaunchServices, the dialog read |
+| 13 | the switcher walk | Project Studio's Terminal button looked the platform's action up by an id that does not exist (since 1.212.0) | the real ids, and ⌃\` opens a terminal in the project | `ActionIdsResolveTest` checks every id the product looks up |
+| 14 | the first-hour walk | opening a project opened four duplicate file trees (the platform's OpenedProjects group) | the group opens the Navigator only | `OpenedProjectsGroupTest` |
+| 15 | the first-hour walk | Team ▸ Find Tasks / Report Task, Window ▸ Show Dashboard and the configuration combo could never do anything | hidden, each with the connector or project type that would bring it back | `DeadDoorsTest` |
+| 16 | the first-hour walk | the Welcome did not follow an aim made while it showed; no way in for a repository URL | RECENT and First Steps follow the aim; Clone Git Repository… in START, starting in `~/NMOX` | `WelcomeFollowsAimTest`, `CloneRepositoryReflectionTest` |
+| 17 | the first-hour walk | a deep path widened the Workbench header and Project Studio's footer across half the window | `PathLabel` keeps both ends, the whole path on the tooltip | `PathLabelTest`, `WorkbenchHeaderPathTest` |
+| 18 | the first-hour walk | ▶ Run greyed with no word on a Node project without dev/start/serve | the press says so and shows the NPM Explorer | `RunWithoutScriptDoorTest` |
+| 19 | the switcher walk | a language server's problems never reached Action Items, while the docs called ⌘6 the Problems panel | `DiagnosticsTap` on every server's stdout; a ✕/⚠ count on the status line | `DiagnosticsTapTest`, `ProblemsStatusLineTest`; walked with gopls, including a file never opened |
+| 20 | the switcher walk | a folder could not be handed over from the file manager | Linux and Windows offer it; macOS measured and withdrawn (the hardened runtime ignores `CFProcessPath`) | `OpenFolderFromOsGateTest` holds both; ledger 118 |
+| 21 | the translators | Help ▸ About and the Action Items tab read English in fourteen languages; the Language note promised a restart in twelve | overlaid and corrected | `CodeNamedMenuRowsTest`, `MenuRowsSpeakTest` |
+| 22 | the translators | the newcomer pages existed in English only | 42 translated pages, each held to the English shape | `TranslatedNewcomerDocsTest` |
+| 23 | the switcher page's honest gaps | `.vscode/tasks.json` and `launch.json` were not read | tasks run from Quick Search behind Workspace Trust; launch configurations reach the breakpoint debugger through two additive `DebugLauncher` doors; every field neither can honour is refused by name | `VsCodeTasksTest`, `VsCodeLaunchTest` and their providers' tests, six mutants by name |
+| 24 | the switcher page's honest gaps | ⌘D was unbound while its gesture lived on ⌘J | ⌘D adds the next occurrence in the default, Emacs and IDEA profiles; Eclipse and NetBeans 5.5 keep their own ⌘D | `KeymapProfileParityTest` gains the editor-side scope |
+| 25 | a hostile review of the night's code | a cloned repository's `.editorconfig` glob could hang the editor (it predates 3.1, but 3.1 re-resolves it while you type); language-server diagnostics named secret files to the Agent Port; the tap lost framing on a bad body; recents read the disk on the EDT; `nmox` swallowed its own refusals; tasks ran under `/bin/sh` instead of the user's shell | each fixed with its test; the LOW remainder is ledger 120 | the review report's proofs, re-run against the fixes |
+
+**The lesson of row 20.** The probe that motivated the Finder door ran on an
+unsigned bundle. A release runs under the hardened runtime, where the same
+environment variable is ignored; the notarized dry run is the only place the
+difference shows. *A probe proves the build it ran on.*
+
 ## What is deliberately not in 3.1
 
 - **A sixth keymap profile named "VS Code".** Five profiles already carry
   every chord by gate; a sixth doubles that surface for a handful of chords
   the default profile can simply answer. Revisit if the targeted chords are
   not enough.
-- **Reading `.vscode/tasks.json` and `launch.json`.** Worth doing and
-  trust-sensitive (a task is a command a repository chose); it deserves its
-  own design, not a night.
-- **LSP diagnostics in Action Items.** The platform LSP client keeps its
-  diagnostics to itself (`LanguageServers.java`); bridging it is recon
-  first.
+- ~~**Reading `.vscode/tasks.json` and `launch.json`.**~~ Deferred at the
+  start of the night as needing its own design around Workspace Trust; the
+  design turned out to be the one the product already had — trust before
+  the spawn, refuse by name what cannot be honoured — and both shipped
+  (row 23).
+- ~~**LSP diagnostics in Action Items.**~~ Deferred as recon-first; the
+  recon found the one launch seam every server passes through, and it
+  shipped (row 19).
