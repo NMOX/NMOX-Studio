@@ -130,10 +130,11 @@ it lives; click it for Quick Search. It says so once per project.
   (which unsets a variable) are refused the same way, and so are
   `"request": "attach"`, a `compounds` entry, a type with no adapter
   here (`go`, `msedge`, `cppdbg` and the rest), a value only VS Code can
-  supply (`${file}`, `${input:…}`), and a path outside the project. Fields that only shape what the debugger shows —
-  `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
-  `presentation` — are accepted and not applied; the program's output
-  goes to the Output window.
+  supply (`${file}`, `${input:…}`), and a path outside the project.
+  Fields that only shape what the debugger shows — `skipFiles`,
+  `outFiles`, `sourceMaps`, `console`, `justMyCode`, `presentation` — are
+  accepted and not applied; the program's output goes to the Output
+  window.
 - **`tasks.json` is read, and what cannot run as written is refused.**
   A task that uses a value only VS Code can supply (`${input:…}`,
   `${file}`, `${config:…}`, `${command:…}`) or that `dependsOn` another
