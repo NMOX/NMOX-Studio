@@ -166,8 +166,8 @@ public final class EditorConfig {
      * A section header's glob, compiled for {@link EditorConfigGlob}'s
      * polynomial-time match. It never throws: a glob past the matcher's
      * bounds comes back refused and matches no file. (Until 3.1 this was a
-     * translation to {@code java.util.regex}, which backtracks
-     * exponentially on a hostile header such as {@code [**a**a…**b]} —
+     * translation to {@code java.util.regex}, whose backtracking grows
+     * combinatorially on a hostile header such as {@code [**a**a…**b]} —
      * and a cloned repository writes both the header and the file name.)
      */
     static EditorConfigGlob glob(String glob) {
