@@ -665,8 +665,16 @@ official client.
   instead of failing silently.
 - **Run Focused Test**: with your caret in a test method, one action runs
   exactly that test — JS/TS, Go, Rust, Python, PHPUnit, and more.
-- **`.editorconfig` is honored on save** — indent, charset, final
-  newline. Your formatter devices (GLOSS et al.) handle the rest.
+- **`.editorconfig` is honored** — while you type and when you save.
+  `indent_style`, `indent_size` and `tab_width` decide what Tab,
+  Enter and re-indent write, so a tabs project gets tabs and a
+  four-space project gets four spaces, per file and per glob section;
+  each save applies `trim_trailing_whitespace` and
+  `insert_final_newline`. An edit to `.editorconfig` reaches open
+  editors within a couple of seconds. A literal tab character already
+  in the file is still drawn at the tab width set in Options, and
+  `charset` and `end_of_line` are not applied. Your formatter devices
+  (GLOSS et al.) handle the rest.
 - **Color literals show their color** in CSS, SCSS, and Less: every
   `#hex`, `rgb()`, `hsl()`, `hwb()`, `oklch()`, `oklab()`, `lab()`,
   `lch()`, and named color is painted as the color it names, right

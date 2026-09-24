@@ -38,7 +38,7 @@ public final class EditorConfig {
             File cfg = new File(dir, ".editorconfig");
             if (cfg.isFile()) {
                 try {
-                    ConfigFile parsed = parse(cfg);
+                    ConfigFile parsed = parseCached(cfg);
                     chain.add(parsed);
                     if (parsed.root()) {
                         break;
@@ -75,6 +75,42 @@ public final class EditorConfig {
         String rel = path.substring(base.length());
         rel = rel.replace(File.separatorChar, '/');
         return rel.startsWith("/") ? rel.substring(1) : rel;
+    }
+
+    /** Parsed files by absolute path; an entry is good while mtime and size hold. */
+    private static final int PARSE_CACHE_CAP = 256;
+    private static final Map<String, CachedParse> PARSE_CACHE = new LinkedHashMap<>(64, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, CachedParse> eldest) {
+            return size() > PARSE_CACHE_CAP;
+        }
+    };
+
+    private record CachedParse(long modified, long length, ConfigFile parsed) {
+    }
+
+    /**
+     * {@link #parse} behind a path + mtime + size cache: the indentation
+     * provider asks for a file's properties far more often than the
+     * {@code .editorconfig} files change, and every read of a file the
+     * clone brought is bounded anyway. An edit changes the mtime or the
+     * size, so the next ask re-reads.
+     */
+    static ConfigFile parseCached(File cfg) throws IOException {
+        String key = cfg.getAbsolutePath();
+        long modified = cfg.lastModified();
+        long length = cfg.length();
+        synchronized (PARSE_CACHE) {
+            CachedParse hit = PARSE_CACHE.get(key);
+            if (hit != null && hit.modified() == modified && hit.length() == length) {
+                return hit.parsed();
+            }
+        }
+        ConfigFile parsed = parse(cfg);
+        synchronized (PARSE_CACHE) {
+            PARSE_CACHE.put(key, new CachedParse(modified, length, parsed));
+        }
+        return parsed;
     }
 
     static ConfigFile parse(File cfg) throws IOException {

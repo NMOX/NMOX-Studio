@@ -803,10 +803,12 @@ anvil); remote networks are read-only in the Studio, and RPC URLs
 that embed API keys live only in the OS keychain, never on disk.
 
 ### 🌐 Standards & PWA, supported with gusto
-`.editorconfig` is **honored, not just highlighted** — every save
-applies the spec for real (trim_trailing_whitespace,
-insert_final_newline, glob sections, root stopping, closer-file
-precedence) with a minimal edit so the caret stays put. The
+`.editorconfig` is **honored, not just highlighted** — indentation
+follows it while you type (indent_style, indent_size, tab_width: Tab,
+Enter and re-indent write tabs in a tabs project and four spaces in a
+four-space one), and every save applies trim_trailing_whitespace and
+insert_final_newline with a minimal edit so the caret stays put —
+glob sections, root stopping and closer-file precedence per the spec. The
 **Standards Kit wizard** (File → Add to Project → Standards Kit…) generates the web's
 well-known files, each correct to its spec: robots.txt (RFC 9309),
 sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
