@@ -95,11 +95,12 @@ them and never untick.
 
 ## The windows
 
-**Studio** — A tool with its own window for one kind of work: **API Studio** (⌥⌘8),
-**DB Studio** (⌥⌘7), **Contract Studio** (⌥⌘6, smart contracts),
-**Block Studio** (⌥⌘5, web components built from blocks) and **Project
-Studio** (the file tree and templates). Each studio saves its work beside
-the project in a `.nmox*.json` file.
+**Studio** — A window with its own tool for one kind of work. There are
+five: **API Studio** (⌥⌘8), **DB Studio** (⌥⌘7), **Contract Studio** (⌥⌘6,
+smart contracts), **Block Studio** (⌥⌘5, web components built from blocks)
+and the **Infra Designer** (⌥⌘9, cloud infrastructure). Each saves its work
+beside the project in a `.nmox*.json` file. **Project Studio** shares the
+name but is the file tree and project templates.
 
 **Workbench** (⌥⌘0) — The home base: what's running, what's open, and your recent projects and
 files.
