@@ -8,7 +8,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * The EditorConfig standard (editorconfig.org), implemented for real:
@@ -27,8 +28,11 @@ public final class EditorConfig {
     record ConfigFile(File dir, boolean root, List<Section> sections) {
     }
 
-    record Section(Pattern pattern, Map<String, String> properties) {
+    /** A section; a refused glob (see {@link EditorConfigGlob#refusal()}) matches no file. */
+    record Section(EditorConfigGlob glob, Map<String, String> properties) {
     }
+
+    private static final Logger LOG = Logger.getLogger(EditorConfig.class.getName());
 
     /** The merged properties that apply to one file, lowercased keys. */
     public static Map<String, String> propertiesFor(File file) {
@@ -58,7 +62,7 @@ public final class EditorConfig {
                 continue;
             }
             for (Section s : cfg.sections()) {
-                if (s.pattern().matcher(rel).matches()) {
+                if (s.glob().matches(rel)) {
                     merged.putAll(s.properties());
                 }
             }
@@ -113,6 +117,11 @@ public final class EditorConfig {
         return parsed;
     }
 
+    private static String clip(String header) {
+        return header.codePointCount(0, header.length()) <= 80 ? header
+                : header.substring(0, header.offsetByCodePoints(0, 80)) + "…";
+    }
+
     static ConfigFile parse(File cfg) throws IOException {
         boolean root = false;
         List<Section> sections = new ArrayList<>();
@@ -125,8 +134,15 @@ public final class EditorConfig {
             }
             if (line.startsWith("[") && line.endsWith("]")) {
                 current = new LinkedHashMap<>();
-                sections.add(new Section(
-                        globToRegex(line.substring(1, line.length() - 1)), current));
+                String header = line.substring(1, line.length() - 1);
+                EditorConfigGlob compiled = glob(header);
+                if (compiled.refusal() != null) {
+                    // parse runs once per file + mtime + size (parseCached), so a
+                    // hostile header speaks once, never once per resolve
+                    LOG.log(Level.INFO, "{0}: section [{1}] is refused and applies to no file: {2}",
+                            new Object[]{cfg, clip(header), compiled.refusal()});
+                }
+                sections.add(new Section(compiled, current));
                 continue;
             }
             int eq = line.indexOf('=');
@@ -147,89 +163,15 @@ public final class EditorConfig {
     }
 
     /**
-     * EditorConfig glob → regex: {@code *} (not across /), {@code **},
-     * {@code ?}, {@code [seq]}, {@code {a,b}} alternation and
-     * {@code {n..m}} numeric ranges. A pattern without a slash matches
-     * the file name in any directory, per the spec.
+     * A section header's glob, compiled for {@link EditorConfigGlob}'s
+     * polynomial-time match. It never throws: a glob past the matcher's
+     * bounds comes back refused and matches no file. (Until 3.1 this was a
+     * translation to {@code java.util.regex}, which backtracks
+     * exponentially on a hostile header such as {@code [**a**a…**b]} —
+     * and a cloned repository writes both the header and the file name.)
      */
-    static Pattern globToRegex(String glob) {
-        String g = glob;
-        boolean anchored = g.startsWith("/");
-        if (anchored) {
-            g = g.substring(1);
-        }
-        StringBuilder rx = new StringBuilder();
-        if (!anchored && !g.contains("/")) {
-            rx.append("(?:.*/)?");
-        }
-        int i = 0;
-        while (i < g.length()) {
-            char c = g.charAt(i);
-            switch (c) {
-                case '*' -> {
-                    if (i + 1 < g.length() && g.charAt(i + 1) == '*') {
-                        rx.append(".*");
-                        i++;
-                    } else {
-                        rx.append("[^/]*");
-                    }
-                }
-                case '?' -> rx.append("[^/]");
-                case '[' -> {
-                    int close = g.indexOf(']', i + 1);
-                    if (close < 0) {
-                        rx.append("\\[");
-                    } else {
-                        String seq = g.substring(i + 1, close);
-                        rx.append('[').append(seq.startsWith("!")
-                                ? "^" + escapeClass(seq.substring(1)) : escapeClass(seq)).append(']');
-                        i = close;
-                    }
-                }
-                case '{' -> {
-                    int close = g.indexOf('}', i + 1);
-                    if (close < 0) {
-                        rx.append("\\{");
-                    } else {
-                        rx.append(braceGroup(g.substring(i + 1, close)));
-                        i = close;
-                    }
-                }
-                default -> rx.append(Pattern.quote(String.valueOf(c)));
-            }
-            i++;
-        }
-        return Pattern.compile(rx.toString());
-    }
-
-    private static String braceGroup(String inner) {
-        // {3..7} numeric range
-        int dots = inner.indexOf("..");
-        if (dots > 0 && inner.chars().allMatch(ch -> Character.isDigit(ch) || ch == '.')) {
-            try {
-                int from = Integer.parseInt(inner.substring(0, dots));
-                int to = Integer.parseInt(inner.substring(dots + 2));
-                if (to >= from && to - from <= 500) {
-                    StringBuilder alt = new StringBuilder("(?:");
-                    for (int n = from; n <= to; n++) {
-                        alt.append(n == from ? "" : "|").append(n);
-                    }
-                    return alt.append(')').toString();
-                }
-            } catch (NumberFormatException ignored) {
-                // fall through to alternation
-            }
-        }
-        StringBuilder alt = new StringBuilder("(?:");
-        String[] parts = inner.split(",", -1);
-        for (int p = 0; p < parts.length; p++) {
-            alt.append(p == 0 ? "" : "|").append(Pattern.quote(parts[p]));
-        }
-        return alt.append(')').toString();
-    }
-
-    private static String escapeClass(String seq) {
-        return seq.replace("\\", "\\\\").replace("^", "\\^");
+    static EditorConfigGlob glob(String glob) {
+        return EditorConfigGlob.compile(glob);
     }
 
     /**
