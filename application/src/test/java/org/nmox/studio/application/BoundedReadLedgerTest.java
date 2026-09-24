@@ -253,6 +253,8 @@ class BoundedReadLedgerTest {
                     "the dependencies check before a Run"),
             Map.entry("tools/src/main/java/org/nmox/studio/tools/vscode/VsCodeTasks.java",
                     ".vscode/tasks.json, on a Quick Search keystroke"),
+            Map.entry("tools/src/main/java/org/nmox/studio/tools/vscode/VsCodeLaunch.java",
+                    ".vscode/launch.json, on a Quick Search keystroke"),
             Map.entry("editor/src/main/java/org/nmox/studio/editor/lsp/LanguageServers.java",
                     "package.json probes, on every file open"),
             Map.entry("editor/src/main/java/org/nmox/studio/editor/format/PrettierFormatter.java",

@@ -79,7 +79,22 @@ public class DapDebugAction extends BaseAction {
      * first, then the language's adapter, all off the EDT. Returns at once.
      */
     static void launch(File file, String mime) {
+        launch(file, mime, null);
+    }
+
+    /**
+     * {@link #launch(File, String)} with the program's working directory
+     * chosen by the caller (v3.1.0: a {@code .vscode/launch.json}
+     * configuration's {@code cwd}); null keeps each adapter's own default.
+     * Delve takes the package DIRECTORY as its program and has no separate
+     * working directory, so a Go launch with one is not offered here —
+     * {@link #supportsWorkingDir} says which MIME types honour it.
+     */
+    static void launch(File file, String mime, File workingDir) {
         if (file == null || !supportsMime(mime)) {
+            return;
+        }
+        if (workingDir != null && !supportsWorkingDir(mime)) {
             return;
         }
         // a run that grows a second session shows the Sessions window by
@@ -98,9 +113,9 @@ public class DapDebugAction extends BaseAction {
                     return;
                 }
                 switch (mime) {
-                    case "text/x-python" -> debugPython(file);
+                    case "text/x-python" -> debugPython(file, workingDir);
                     case "text/x-go" -> debugGo(file);
-                    case "text/javascript", "text/typescript" -> debugNode(file);
+                    case "text/javascript", "text/typescript" -> debugNode(file, workingDir);
                     default -> {
                         return;
                     }
@@ -113,8 +128,17 @@ public class DapDebugAction extends BaseAction {
         });
     }
 
+    /** The MIME types whose launch honours a caller-chosen working directory. */
+    static boolean supportsWorkingDir(String mime) {
+        return mime != null && switch (mime) {
+            case "text/x-python", "text/javascript", "text/typescript" -> true;
+            default -> false;
+        };
+    }
+
     /** debugpy's adapter speaks DAP on stdio: the clean case. */
-    private static void debugPython(File file) throws IOException {
+    private static void debugPython(File file, File workingDir) throws IOException {
+        File cwd = workingDir != null ? workingDir : file.getParentFile();
         ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(
                 List.of("python3", "-m", "debugpy.adapter")));
         pb.directory(file.getParentFile());
@@ -130,7 +154,7 @@ public class DapDebugAction extends BaseAction {
                             "type", "python",
                             "request", "launch",
                             "program", file.getAbsolutePath(),
-                            "cwd", file.getParentFile().getAbsolutePath(),
+                            "cwd", cwd.getAbsolutePath(),
                             "console", "internalConsole",
                             "justMyCode", true))
                     .setSessionName("Python: " + file.getName())
@@ -189,13 +213,13 @@ public class DapDebugAction extends BaseAction {
      * hands every further target (forked children, worker threads) to the
      * platform as a session of its own.
      */
-    private static void debugNode(File file) throws IOException, InterruptedException {
+    private static void debugNode(File file, File workingDir) throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
                 "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
         if (serverJs == null) {
             throw new IOException("bundled js-debug adapter missing from this installation");
         }
-        File root = projectRoot(file);
+        File root = workingDir != null ? workingDir : projectRoot(file);
         JsDebugServer server = JsDebugServer.start(serverJs);
         try {
             DapProxy proxy = DapProxy.start(server.port(), server::stop);

@@ -36,7 +36,11 @@ class QuickSearchLabelsEscapedTest {
             "label() escapes the script's name and command separately before they fill the bundle template",
             "VsCodeTaskSearchProvider.java",
             "label() escapes the task's label and command separately (through NpmScriptSearchProvider.escape) "
-            + "before they fill the bundle template; the escape is pinned by VsCodeTaskSearchProviderTest.labels");
+            + "before they fill the bundle template; the escape is pinned by VsCodeTaskSearchProviderTest.labels",
+            "VsCodeLaunchSearchProvider.java",
+            "label() escapes the configuration's name and its program or page separately (through "
+            + "NpmScriptSearchProvider.escape) before they fill the bundle template; the escape is pinned by "
+            + "VsCodeLaunchSearchProviderTest.labels");
 
     @Test
     @DisplayName("every Quick Search result label is escaped where it reaches the HTML renderer")

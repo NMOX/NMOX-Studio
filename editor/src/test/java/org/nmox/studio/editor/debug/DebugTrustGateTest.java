@@ -36,7 +36,7 @@ class DebugTrustGateTest {
                 .isGreaterThan(0);
 
         // and it must gate BEFORE any adapter or debuggee is spawned
-        for (String launcher : new String[] {"debugPython(file)", "debugGo(file)", "debugNode(file)"}) {
+        for (String launcher : new String[] {"debugPython(file, workingDir)", "debugGo(file)", "debugNode(file, workingDir)"}) {
             assertThat(source.indexOf(launcher))
                     .as(launcher + " must come after the trust gate")
                     .isGreaterThan(trustCheck);
@@ -57,7 +57,7 @@ class DebugTrustGateTest {
 
         // the gate comes before the browser probe AND before the launch;
         // even BrowserLocator.find() must not run for an untrusted folder
-        for (String later : new String[] {"BrowserLocator.find()", "debugChrome(file"}) {
+        for (String later : new String[] {"BrowserLocator.find()", "debugChrome(label"}) {
             assertThat(source.indexOf(later))
                     .as(later + " must come after the trust gate")
                     .isGreaterThan(trustCheck);

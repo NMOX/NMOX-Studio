@@ -234,7 +234,7 @@ public final class VsCodeTasks {
     }
 
     /** {@code task} with the running OS's override object laid over it (options merged one level deep). */
-    private static JSONObject mergeOs(JSONObject task, Os os) {
+    static JSONObject mergeOs(JSONObject task, Os os) {
         JSONObject override = osBlock(task, os);
         if (override == null) {
             return task;
@@ -561,12 +561,33 @@ public final class VsCodeTasks {
         if (folder == null || folder.isBlank()) {
             return project;
         }
-        String relative = folder;
+        File dir = inside(project, folder);
+        if (dir == null) {
+            return new Refused(Reason.CWD_OUTSIDE, folder);
+        }
+        if (!dir.isDirectory()) {
+            return new Refused(Reason.CWD_MISSING, folder);
+        }
+        return dir;
+    }
+
+    /**
+     * The file or folder {@code path} (already substituted, not blank) names
+     * inside {@code project}, or null when it names somewhere else. A
+     * relative path is judged by {@link Containment}, the one home of that
+     * decision; an absolute one — what {@code ${workspaceFolder}/…} becomes
+     * — is first made relative to the project, and one outside the project
+     * is outside whatever it would resolve to. Shared with {@code
+     * VsCodeLaunch}, whose {@code program}, {@code cwd} and {@code webRoot}
+     * are the same question.
+     */
+    static File inside(File project, String path) {
+        String relative = path;
         Path asPath;
         try {
-            asPath = Path.of(folder);
+            asPath = Path.of(path);
         } catch (java.nio.file.InvalidPathException bad) {
-            return new Refused(Reason.CWD_OUTSIDE, folder);
+            return null;
         }
         if (asPath.isAbsolute()) {
             Path base = project.getAbsoluteFile().toPath().normalize();
@@ -575,21 +596,14 @@ public final class VsCodeTasks {
                 return project;
             }
             if (!target.startsWith(base)) {
-                return new Refused(Reason.CWD_OUTSIDE, folder);
+                return null;
             }
             relative = base.relativize(target).toString();
         }
         if (Path.of(relative).normalize().toString().isEmpty()) {
             return project;
         }
-        File dir = Containment.resolve(project, relative);
-        if (dir == null) {
-            return new Refused(Reason.CWD_OUTSIDE, folder);
-        }
-        if (!dir.isDirectory()) {
-            return new Refused(Reason.CWD_MISSING, folder);
-        }
-        return dir;
+        return Containment.resolve(project, relative);
     }
 
     /** {@code process}: the program and its arguments, as they are. ToolLocator resolves the program at the spawn. */

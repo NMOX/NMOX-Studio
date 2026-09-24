@@ -25,5 +25,15 @@
             <attr name="position" intvalue="278"/>
             <file name="org-nmox-studio-tools-vscode-VsCodeTaskSearchProvider.instance"/>
         </folder>
+        <!-- the project's .vscode/launch.json (v3.1.0): the sibling of the
+             tasks category — a configuration's name finds it and Enter hands
+             its program or page to the breakpoint debugger through the
+             DebugLauncher facade, trust-gated. 279, right after the tasks.
+             Same package and bundle as the tasks category. -->
+        <folder name="VsCodeLaunches">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.tools.vscode.Bundle"/>
+            <attr name="position" intvalue="279"/>
+            <file name="org-nmox-studio-tools-vscode-VsCodeLaunchSearchProvider.instance"/>
+        </folder>
     </folder>
 </filesystem>

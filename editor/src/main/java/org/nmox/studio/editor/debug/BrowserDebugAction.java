@@ -85,9 +85,32 @@ public class BrowserDebugAction extends BaseAction {
             return;
         }
         File file = org.openide.filesystems.FileUtil.toFile(fo);
+        // the root walk stats the disk, so it rides the lane with the rest
+        launchInBrowser(() -> DapDebugAction.projectRoot(file), file.getName(),
+                root -> pickUrl(root, file, ServingRegistry.getDefault().snapshot()));
+    }
+
+    /**
+     * The page door (v3.1.0): a {@code .vscode/launch.json} Chrome
+     * configuration's {@code url} (or {@code file}, already a file URL) with
+     * its {@code webRoot}, through exactly the launch the right-click runs —
+     * trust on {@code webRoot} first, then the browser, off the EDT.
+     */
+    static void launchUrl(String url, File webRoot) {
+        launchInBrowser(() -> webRoot, url, root -> url);
+    }
+
+    /**
+     * The one launch both doors share: Workspace Trust on the root
+     * BEFORE anything is spawned, then a Chromium-family browser, then the
+     * URL — asked for only after trust, because picking it reads the live
+     * servings — all on this action's lane.
+     */
+    private static void launchInBrowser(java.util.function.Supplier<File> rootOf, String label,
+            java.util.function.Function<File, String> urlOf) {
         RP.post(() -> {
             try {
-                File root = DapDebugAction.projectRoot(file);
+                File root = rootOf.get();
                 // Browser debugging runs the project's code in a browser we
                 // control — the same act the rack gates. Ask BEFORE anything
                 // is spawned; "Keep Safe" stops the launch cold.
@@ -102,14 +125,13 @@ public class BrowserDebugAction extends BaseAction {
                             org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_noBrowser"));
                     return;
                 }
-                String url = pickUrl(root, file,
-                        ServingRegistry.getDefault().snapshot());
+                String url = urlOf.apply(root);
                 if (url == null) {
                     StatusDisplayer.getDefault().setStatusText(
                             org.openide.util.NbBundle.getMessage(BrowserDebugAction.class, "BrowserDebugAction_noServer"));
                     return;
                 }
-                debugChrome(file, root, browser, url);
+                debugChrome(label, root, browser, url);
                 DapDebugAction.showOutput();
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
@@ -158,7 +180,7 @@ public class BrowserDebugAction extends BaseAction {
      * own), and the user's logged-in sessions don't belong in a browser
      * the debugger will force-kill.
      */
-    private static void debugChrome(File file, File root, File browser, String url)
+    private static void debugChrome(String label, File root, File browser, String url)
             throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
                 "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
@@ -183,12 +205,12 @@ public class BrowserDebugAction extends BaseAction {
                     .addConfiguration(Map.of(
                             "type", "pwa-chrome",
                             "request", "launch",
-                            "name", file.getName(),
+                            "name", label,
                             "url", url,
                             "webRoot", root.getAbsolutePath(),
                             "runtimeExecutable", browser.getAbsolutePath(),
                             "userDataDir", profile.toString()))
-                    .setSessionName("Chrome: " + file.getName())
+                    .setSessionName("Chrome: " + label)
                     .launch();
         } catch (IOException | RuntimeException ex) {
             cleanup.run();
