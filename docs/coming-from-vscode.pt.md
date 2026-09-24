@@ -96,17 +96,22 @@ uma linha.
 | No VS Code | No NMOX Studio |
 |---|---|
 | **Explorer** (Explorador) | **Estúdio de projeto** (⇧⌘E) — a árvore de arquivos, os modelos e o editor do `package.json` do projeto. A **Bancada** (⌥⌘0) é a base: arquivos abertos, arquivos recentes, projetos recentes e tudo que está rodando. |
-| **Command Palette** (Paleta de Comandos) | **Pesquisa rápida** (⇧⌘P ou ⌘I) — ações, arquivos, projetos recentes, dispositivos do rack, servidores ativos, requisições do Estúdio de API, símbolos. |
+| **Command Palette** (Paleta de Comandos) | **Pesquisa rápida** (⇧⌘P ou ⌘I) — ações, arquivos, projetos recentes, dispositivos do rack, servidores ativos, requisições do Estúdio de API, símbolos. Os nomes dos comandos do próprio VS Code também funcionam: *Format Document*, *Toggle Terminal*, *Git: Commit* ou *Open Settings* listam a ação que faz a mesma coisa aqui, em **Comandos do VS Code**, com o nome dela aqui e o atalho dela. |
 | **Extensions** (Extensões) | **Ferramentas ▸ Plugins** instala e atualiza módulos, incluindo as atualizações do próprio NMOX. Muito do que uma extensão acrescenta no VS Code é um **dispositivo do rack** aqui — e você pode escrever um como um arquivo JSON em `~/.nmox/devices.d` ([arquivos de dispositivo](device-files.md)). |
 | **`tasks.json`** | O `.vscode/tasks.json` do seu repositório é lido: digite o nome de uma tarefa na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Executar tarefa: build — make all* a executa, com a Confiança no espaço de trabalho perguntando antes num projeto em que você ainda não confiou, a saída dela na janela Output e o ■ da barra de ferramentas para pará-la. Ao lado, os scripts do próprio projeto rodam como estão escritos: o Executar / Construir / Testar da barra de ferramentas (F6, F11, ⌃F6), **Executar script** numa linha de scripts do `package.json`, o **Explorador NPM** e o **Rack de tarefas** (⌘9), onde as tarefas são dispositivos que você liga uns aos outros. |
-| **`launch.json`** | O `.vscode/launch.json` do seu repositório é lido: digite o nome de uma configuração na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Depurar: Launch Program — ${workspaceFolder}/server.js* inicia o depurador de pontos de interrupção nesse programa, com a Confiança no espaço de trabalho perguntando antes. As configurações de Node (`node`, `pwa-node`) e de Python (`python`, `debugpy`) depuram o `program` delas no `cwd` delas; as de Chrome (`chrome`, `pwa-chrome`) abrem a `url` (ou o `file`) delas com o `webRoot` delas. Sem um `launch.json`, **Depurar o arquivo** (⇧⌘F5) e o botão de depurar da barra de ferramentas descobrem o que iniciar a partir do próprio projeto — a entrada do script `start`, o `main`, o `index.js` — e o dispositivo **INSPECTOR** do rack inicia um depurador como uma etapa de um pipeline. |
+| **`launch.json`** | O `.vscode/launch.json` do seu repositório é lido: digite o nome de uma configuração na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Depurar: Launch Program — ${workspaceFolder}/server.js* inicia o depurador de pontos de interrupção nesse programa, com a Confiança no espaço de trabalho perguntando antes. As configurações de Node (`node`, `pwa-node`) e de Python (`python`, `debugpy`) depuram o `program` delas no `cwd` delas, com os `args` e o `env` delas; as de Chrome (`chrome`, `pwa-chrome`) abrem a `url` (ou o `file`) delas com o `webRoot` delas. Sem um `launch.json`, **Depurar o arquivo** (⇧⌘F5) e o botão de depurar da barra de ferramentas descobrem o que iniciar a partir do próprio projeto — a entrada do script `start`, o `main`, o `index.js` — e o dispositivo **INSPECTOR** do rack inicia um depurador como uma etapa de um pipeline. |
 | **Integrated terminal** (Terminal integrado) | A janela **Terminal** (⌃\`): a primeira vez que você aperta, ela inicia um shell na pasta do projeto; as seguintes a trazem de volta. |
-| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.editorconfig` do seu projeto vale enquanto você digita e quando você salva. |
+| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.vscode/settings.json` de um repositório define a indentação dos arquivos dele (`editor.tabSize`, `editor.insertSpaces`) e, ao salvar, `files.trimTrailingWhitespace` e `files.insertFinalNewline`; o `.editorconfig` dele vence onde quer que os dois digam algo, enquanto você digita e quando você salva. |
 | **Problems panel** (Problemas) | **Itens de ação** (⌘6), ou clique na contagem **✕ ⚠** da barra de status: os erros e avisos dos servidores de linguagem e os achados de lint e de tipos dos dispositivos PURITY e TYPEGUARD do rack. Como no VS Code, alguns servidores informam só sobre os arquivos que você tem abertos; o gopls informa sobre o pacote inteiro. |
 | **Outline** (Estrutura de tópicos) | O **Navegador** (⌘7). |
 | **Source Control** (Controle do código-fonte) | O selo do git na barra de status (ramo e mudanças, um clique até o histórico) e o menu **Equipe**. |
 | **Workspace Trust** (Confiança do workspace) | A mesma ideia, aplicada antes de qualquer coisa que um repositório escolheu ser executada: abrir um projeto clonado não roda nada até você confiar nele. |
 | **Keyboard Shortcuts editor** (Editor de atalhos de teclado) | Ferramentas ▸ Opções ▸ Atalhos de teclado (no macOS, Settings… ▸ Atalhos de teclado) — edite qualquer atalho, ou troque o perfil inteiro para Eclipse, Emacs ou IntelliJ. |
+
+Na primeira vez que você abre um repositório que traz `.vscode/tasks.json`,
+`launch.json` ou `settings.json`, um aviso diz o que foi encontrado e onde
+fica; clique nele para abrir a Pesquisa rápida. Ele diz isso uma vez por
+projeto.
 
 <a id="what-is-honestly-different"></a>
 ## O que é, sinceramente, diferente
@@ -119,20 +124,24 @@ uma linha.
   Terminal tem o foco, as teclas pertencem ao seu shell, então o segundo
   toque chega ao shell em vez de levar você de volta ao editor.
 - **O `launch.json` é lido, e o que o depurador não consegue respeitar é
-  recusado.** O depurador aqui passa um programa, a pasta de trabalho dele
-  e mais nada, então uma configuração que define `args`, `env`, `envFile`,
-  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` ou qualquer outro
-  campo que ele não aprendeu aparece na lista mas não é iniciada: Enter
-  nomeia os campos na barra de status. Iniciar o programa sem os
-  argumentos ou sem o ambiente dele depuraria outra coisa que não o que o
-  arquivo diz. O mesmo vale para `"request": "attach"`, uma entrada de
+  recusado.** O depurador aqui passa um programa, a pasta de trabalho
+  dele, os `args` dele (uma lista de strings) e o `env` dele (strings
+  acrescentadas ao ambiente herdado), então uma configuração que define
+  `envFile`, `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` ou
+  qualquer outro campo que ele não aprendeu aparece na lista mas não é
+  iniciada: Enter nomeia os campos na barra de status. Iniciar o programa
+  sem eles depuraria outra coisa que não o que o arquivo diz. Também
+  seria assim com `args` escritos como uma só string (o VS Code a entrega
+  a um shell) e com um valor de `env` igual a `null` (que remove uma
+  variável). O mesmo vale para `"request": "attach"`, uma entrada de
   `compounds`, um tipo sem adaptador aqui (`go`, `msedge`, `cppdbg` e os
   demais), um valor que só o VS Code pode fornecer (`${file}`,
   `${input:…}`) e um caminho fora do projeto. Os campos que só moldam o
   que o depurador mostra — `skipFiles`, `outFiles`, `sourceMaps`,
   `console`, `justMyCode`, `presentation` — são aceitos e não aplicados; a
   saída do programa vai para a janela Output.
-- **O `tasks.json` é lido, com duas recusas.** Uma tarefa que usa um valor
+- **O `tasks.json` é lido, e o que não pode rodar como está escrito é
+  recusado.** Uma tarefa que usa um valor
   que só o VS Code pode fornecer (`${input:…}`, `${file}`, `${config:…}`,
   `${command:…}`) ou que tem um `dependsOn` para outra tarefa aparece na
   lista mas não é executada: Enter diz qual variável ou qual tarefa na
