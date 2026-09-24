@@ -117,7 +117,7 @@ column that lists every window, and First Steps.
 Draft Commit Message. It works with Claude, ChatGPT or Gemini using your
 own API key, which is stored in the OS keychain. Every feature asks for
 your consent once and names exactly what it will send. Nothing is sent
-until you use a feature. It was called ORACLE before 2.95.0.
+until you use a feature. Earlier releases called it ORACLE.
 
 **Agent Port** — **Tools ▸ Agent Port (MCP)…** gives an AI agent running on your
 machine, such as a coding assistant, read-only access to the IDE's state

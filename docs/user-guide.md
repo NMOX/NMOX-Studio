@@ -55,11 +55,18 @@ macOS `.dmg`, Windows `-setup.exe`, Debian/Ubuntu `.deb`, generic Linux
 first. The `-portable.zip` is the one bring-your-own-Java artifact
 (needs Java 21+ on PATH, or launch with `--jdkhome <path-to-jdk>`).
 
-> **macOS, first launch:** just double-click it. The app is signed with
-> an Apple Developer ID and notarized, and the ticket is stapled to both
-> the app and the DMG, so the check works offline — no right-click, no
-> `xattr`. The in-app updater installs into your user directory rather
-> than the app bundle, so updating never breaks that signature.
+> **macOS, first launch:** double-click it. macOS asks once whether to
+> open an app downloaded from the internet, and says Apple checked it:
+> click **Open**. The app is signed with an Apple Developer ID and
+> notarized, and the ticket is stapled to both the app and the DMG, so
+> the check works offline — no right-click, no `xattr`. The in-app
+> updater installs into your user directory rather than the app bundle,
+> so updating never breaks that signature.
+>
+> If an install of 3.0.0, 3.0.1 or 3.0.2 answered *"NMOX Studio.app" Not
+> Opened*, that was a defect in how the app started its launcher script,
+> fixed in 3.1.0: install 3.1.0 or later (`brew upgrade --cask
+> nmox-studio`, or a new download).
 
 ### Verifying your download
 
@@ -86,35 +93,23 @@ yet, so the check above is the way to verify a Windows download.
 
 ### Updating
 
-Since v1.51.0 the IDE updates itself: **Tools ▸ Plugins ▸ Updates**
-(or **Help ▸ Check for Updates**) offers the product modules of any
-newer release, fed from the "NMOX Studio Updates" center that points at
-the latest GitHub release. Install, restart when prompted, done — no
-re-download of the full app. The platform also checks quietly on its
-own (weekly by default; change or disable it under **Tools ▸ Plugins ▸
-Settings**), separate from the daily one-line version check in
-Options ▸ General (NMOX Studio ▸ Settings… on macOS, Tools ▸ Options
-elsewhere). Since v2.42.0 every module is signed and since
-v2.43.0 the signing certificate ships inside the product, so the
-installer runs with no certificate prompts at all (self-signed until
-v3.0 — verify any download against the GPG-signed `SHA256SUMS` on the
-release page; the key lives in the repo-root `KEYS` file). One honest
-caveat: the bundled Java runtime
-and launcher only change with a full installer, so a fresh install from
-a release asset is still right for major platform jumps.
+**Tools ▸ Plugins ▸ Updates** (or **Help ▸ Check for Updates**) offers
+the product modules of any newer release, from the "NMOX Studio Updates"
+center, which points at the latest GitHub release. Install, restart when
+prompted, done. The platform also checks on its own, weekly by default
+(change it under **Tools ▸ Plugins ▸ Settings**), and separately the IDE
+mentions a newer release once a day; turn that off in Options ▸ General
+(NMOX Studio ▸ Settings… on macOS, Tools ▸ Options elsewhere). Every
+module is signed and the certificate ships inside the product, so
+updates install without certificate prompts.
 
-> **Crossing 2.35.0**: version 2.35.0 moved the underlying platform
-> (NetBeans RELEASE310), and the platform cluster ships only in
-> installers — so an install at 2.34.5 or older will not see 2.35.0+
-> in the in-app updater: the Plugin Installer names the missing
-> platform versions and refuses to proceed — measured live on a stock
-> 2.34.5 against the real 2.35.0 catalog, install left byte-identical.
-> Install fresh or `brew upgrade` once; in-app updates resume from
-> there within the 2.35.x line. (One caveat for scripted setups: the
-> headless `--modules --update-all` CLI does NOT check platform
-> floors and will install-then-fail across this boundary — originals
-> land in `update/backup`; don't script updates across a platform
-> jump.)
+The updater replaces modules, not the application around them. The
+bundled Java runtime, the launcher and the NetBeans Platform itself
+change only when you install a release (`brew upgrade --cask
+nmox-studio`, or a new download), and a release that changes one of them
+says so in its notes — 3.1.0's `nmox` command and macOS launcher fixes
+are examples. An install older than 2.35.0 cannot update in-app at all,
+because 2.35.0 moved the platform: install a current release instead.
 
 ## 2. First launch
 
@@ -139,8 +134,7 @@ Getting `nmox` onto your PATH:
 The IDE opens with three tabs along the editor area: **Welcome → Task
 Rack → Browser** — the launchpad, the rack, and where a run's page
 lands. Every other window is one ⌥⌘ chord away and listed in the
-Welcome's TOOLING column. (Before v2.118.0 all ten opened at once, and
-the file you came to read arrived eleventh in the strip.) On the left dock: **Project Studio** (file tree + templates),
+Welcome's TOOLING column. On the left dock: **Project Studio** (file tree + templates),
 the **Workbench** home base, and the **NPM Explorer**. A `~/NMOX` folder
 is created as your default workspace; the rack aims there until you open
 a project.
@@ -259,11 +253,10 @@ on the status line), and **Run ▸ Stop Build/Run** — the platform's own
 item — stops one and offers **Repeat** afterwards. The ■ sees every
 command the product starts for you: the ▶'s runs, a script
 double-clicked in the **NPM Explorer** or run from a package.json line
-(Run Script), a Focused Test or a Tests-window run, and — since
-v2.74.0 — every rack device's run too (a device stopped this way reads
-STOPPED on its faceplate, as if you had pressed its own STOP, and so
-does the rack's own **Stop All** since v2.75.0 — and since v2.84.0 the
-RECORD agrees: the Output tab's last line reads `[exit N] stopped`,
+(Run Script), a Focused Test or a Tests-window run, and every rack
+device's run too (a device stopped this way reads STOPPED on its
+faceplate, as if you had pressed its own STOP, and so does the rack's own
+**Stop All** — and the record agrees: the Output tab's last line reads `[exit N] stopped`,
 the flight recorder files a STOPPED, `run_history` says `stopped`,
 and neither BLACKBOX nor KVASIR mistakes your own stop for a
 failure); the Workbench's
@@ -323,7 +316,7 @@ an LCD tells you what happened in words.
   JSON, or it is over the 8 MiB limit — the rack comes up empty and the
   status line says which, naming the file. A file that is not valid JSON
   is kept as `.nmoxrack.json.bak`, so nothing you wrote is lost.
-- **A project starts wired for what it is** (since v2.176.0). Open a
+- **A project starts wired for what it is.** Open a
   checkout that has no saved patch and the rack mounts the same starter
   the New Project wizard would have written beside it: a Rust or Go or
   Python project gets IGNITION, INSPECTOR and VERITAS on a REFLEX save
@@ -333,7 +326,7 @@ an LCD tells you what happened in words.
   Node package gets CRATE and NPM-9000 with its scripts. It is a starter,
   not a save — nothing is written until you press **Save Patch** — and a
   directory with no manifest keeps the one MONITOR a first launch shows.
-- **The Rack Gallery** (since v2.179.0). **Tools ▸ Rack Gallery…** — or
+- **The Rack Gallery.** **Tools ▸ Rack Gallery…** — or
   **Rack Gallery…** at the top of the rack's **Presets ▾** menu — puts every
   rack this install can mount on one shelf: the community racks that ship
   with the product, the built-in presets, the starters, and your own. Racks
@@ -342,7 +335,7 @@ an LCD tells you what happened in words.
   machine lacks**, the devices it mounts and how they are wired, one line per
   cable, before anything mounts. Type in **Find** to search by job, tool,
   device or project kind. The racks are listed in [racks.md](racks.md).
-- **Share a rack** (since v2.176.0; one dialog since v2.179.0). **Share…**
+- **Share a rack.** **Share…**
   asks what the rack is called and what it does, and shows **what leaves with
   it** before it goes: every command, path and address in its settings. If
   something looks like a credential it is flagged at the top, masked; so is
@@ -355,7 +348,7 @@ an LCD tells you what happened in words.
   and the gallery on every project. A kept rack of the same name is never
   overwritten — you are told which file is in the way. **Remove from My
   Racks…** in the gallery is the way back out.
-- **Import a rack** (since v2.176.0). **Import…** opens a rack someone sent
+- **Import a rack.** **Import…** opens a rack someone sent
   you — from a file, or **Import Rack from Clipboard** in the Presets menu and
   the gallery for one pasted into a chat (a Markdown code fence around it is
   fine) — and shows a page *before* anything mounts: what the rack says it is
@@ -751,8 +744,7 @@ refusals where real Emmet silently clamps: climbing past the root, and
 climbing out of a `(...)` group (put the sibling after the group). The
 grammar's deliberately-out list is now empty.
 
-The same chord speaks **CSS** in stylesheets (v1.336.0 closed the
-grammar's recorded "CSS abbreviations" out): in any CSS/SCSS/Less pane,
+The same chord speaks **CSS** in stylesheets: in any CSS/SCSS/Less pane,
 `m10-20` → `margin: 10px 20px;`, `df` → `display: flex;`, `c#f00` →
 `color: #f00;`, `w100p!` → `width: 100% !important;`. The grammar is an
 exact-match subset — a keyword table of the declarations designers type
@@ -912,8 +904,8 @@ directives, and interpolations all highlight, and `@`-block /
 
 ### Vue and Svelte components, first-class
 
-`.vue` and `.svelte` files get the whole keyboard (since v2.14.0 —
-they carry real editor kits, so ⌘/ toggles comments and **⌥⌘E expands
+`.vue` and `.svelte` files get the whole keyboard (they carry real
+editor kits, so ⌘/ toggles comments and **⌥⌘E expands
 Emmet abbreviations** right in your component markup, in every keymap
 profile). Auto-pairs type and delete symmetrically, and **⌃Space
 completion speaks the framework**: Vue directives with their
@@ -938,11 +930,10 @@ Click the gutter (or **⌘F8**) to set a breakpoint, then **⇧⌘F5** — or
 **Debug ▸ Debug File**, or right-click → **Debug File (breakpoints)** —
 and the program stops there — with the call stack, the variables in
 scope, stepping, and watch expressions you can evaluate against the
-paused program. The menu row and its chord are the platform's own
-(v2.157.0); they enable for one JavaScript, TypeScript, Python or Go
+paused program. The menu row and its chord are the platform's own; they enable for one JavaScript, TypeScript, Python or Go
 file inside the open project, and run the same launch as the
 right-click, Workspace Trust prompt included. **Debug ▸ Debug Main
-Project** and the toolbar's bug button (v2.158.0) debug the project's
+Project** and the toolbar's bug button debug the project's
 own entry instead of the selection: for a Node project the file its
 `start` script runs under `node`, else its `main`, else `index.js`; for
 a Go project `main.go`. A project whose scripts start a dev server
@@ -987,7 +978,7 @@ starts your program with a debug port open (`node --inspect`, `dlv`,
 like chrome://inspect. Use the editor action for breakpoints in NMOX
 Studio; use INSPECTOR when something else does the debugging.
 
-A debug session follows your program's children too (v2.156.0). A
+A debug session follows your program's children too. A
 `child_process.fork`, a `worker_threads` Worker, or a worker's own
 children each appear in the Debugging window as a session of their own,
 named for the file they run, and stop at the breakpoints you set in
@@ -995,7 +986,7 @@ their files — set a breakpoint in `child.js`, debug `parent.js`, and the
 child pauses in its own session the moment it reaches the line. Each
 session closes with the run, and each keeps its own console in the
 Output window. The **Sessions** window opens by itself the moment a run
-has a second session (v2.159.0), so a child that stops is never a
+has a second session, so a child that stops is never a
 secret; for a single-session run it stays out of the way, as the
 platform intends.
 
@@ -1020,14 +1011,12 @@ server has no page to load it, and the status line says so instead of
 guessing. The browser runs with a fresh throwaway profile — your real
 Chrome stays untouched — and stopping the session closes it completely.
 
-A page's **Web Workers** debug too (v2.156.0): each `new Worker(…)` the
+A page's **Web Workers** debug too: each `new Worker(…)` the
 page starts becomes a session of its own in the Debugging window, and a
-breakpoint set in the worker's file stops the worker there. Before this
-release a worker sat paused under the debugger, so a page whose logic
-lived in a worker looked stuck; now it runs, and pauses only where you
-asked.
+breakpoint set in the worker's file stops the worker there. A worker
+runs, and pauses only where you asked.
 
-### Presenting and sharing (v2.87.0)
+### Presenting and sharing
 
 Three gestures for the person who shows NMOX Studio to a room, a
 reader, or a feed — the developer-evangelist grant:
@@ -1087,10 +1076,10 @@ reader, or a feed — the developer-evangelist grant:
 - **Tools ▸ Copy Editor Screenshot.** The same editor shot straight onto
   the clipboard, ready to paste into Slack, an issue or a slide — no
   chooser, no file.
-- **Help ▸ What's New… ▸ Copy as Markdown** (v2.88.0). The release notes
+- **Help ▸ What's New… ▸ Copy as Markdown.** The release notes
   on screen, as Markdown under their changelog headings — a release post
   starts here.
-- **Tools ▸ Copy Project Tree as Markdown** (v2.88.0). The aimed
+- **Tools ▸ Copy Project Tree as Markdown.** The aimed
   project's layout as the box-drawing tree a README shows, fenced and
   ready to paste — directories first, `node_modules/ …` named but not
   expanded, deep or huge trees capped with the remainder counted.
@@ -1109,8 +1098,8 @@ native controls. (With a control focused, Tab traverses; use the
 toolbar's Rear toggle to flip the rack.) The same name law covers every
 window the product opens — the Workbench, the studios, the explorers,
 the Welcome, IRC, the Tests window: every button they paint carries an
-accessible name, and a window added without one fails the build. Since
-v2.85.0 the law reaches the rest of the input family too — every text
+accessible name, and a window added without one fails the build. The
+law reaches the rest of the input family too — every text
 area, text field, combo, spinner, table, list and tree in the product
 speaks its own name (taken from the label beside it), three build gates
 holding it.
@@ -1205,7 +1194,7 @@ report only says what actually happened.
 
 ![One click turns the board into the daily report](images/standup.png)
 
-**Sprints** (v2.37.0) give the ceremonies a home: **Sprint… ▸ Start
+**Sprints** give the ceremonies a home: **Sprint… ▸ Start
 Sprint…** names a window (start/end dates — backwards windows and
 non-dates are refused out loud), the Board Overview grows a burndown
 reconstructed from your cards' own done stamps (the dim line is the
@@ -1516,45 +1505,31 @@ The same site is deployed publicly at
 The in-app browser is a real WebKit engine (JavaFX WebView, shipped in
 the bundled runtime) with the chrome you expect — URL bar (a bare
 `example.com` gets `https://`), back/forward, reload/stop, load
-progress, zoom buttons — and, since v1.206.0, **developer tools**: the
+progress, zoom buttons — and **developer tools**: the
 **DevTools** button in the toolbar opens a bottom pane with seven tabs.
 ![The Browser with nothing serving: "Nothing is serving yet", the door that starts one, and an empty address bar](images/tabs/browser-to-source.png)
 
 A bare open lands on your project's live dev server when one is
 running. When nothing is serving it shows a page of the product's own,
 built in-process and fetching nothing from the network — it names what
-is empty and the door that starts a server, in your own language. (Until
-v2.184.0 that empty state was a third-party news site, which meant
-opening a pane to look at your own app made an outbound request you
-never asked for.) The rack's SCOPE device and every Open-in-Browser
+is empty and the door that starts a server, in your own language. The rack's SCOPE device and every Open-in-Browser
 action route here too.
 
-Pages in Arabic, Persian, Hindi and the other Indic scripts paint shaped —
-letters joined, vowel signs and conjuncts in place — since v2.165.0.
-JavaFX's WebKit never did that by itself; the Browser teaches its paint
-call to on first open, and since v2.166.0 it measures them close to their
-shaped width too, so an Arabic or Hindi phrase inside an English sentence sits
-in ordinary word spacing (within a few pixels). Since v2.167.0 numbers inside
-Arabic or Persian text read in their own order, vowel marks sit on their
-letters, and Urdu set in a Nastaliq font renders as Nastaliq (its widths are
-looser, so a Nastaliq line can sit a few pixels off). Kurdish (Sorani), Pashto,
-Sindhi and Uyghur render the same way, and since v2.168.0 a long right-to-left
-line spreads the few pixels its words miss across its spaces instead of letting
-them pile up against the next word. Bengali, Gurmukhi, Gujarati, Oriya, Tamil,
-Telugu, Kannada and Malayalam are shaped too, each measured at its own width
-since v2.169.0; a phrase full of conjuncts can still sit a few pixels apart
-from the text after it. Since v2.170.0 accents written as separate characters
-(Vietnamese, French or German in decomposed form, as macOS file names are) sit
-on their letters. Since v2.171.0 Sinhala, Thai, Tibetan, Myanmar, Khmer,
-Syriac, Thaana and N'Ko are shaped too, and so is a Browser installed through an
-in-app update. Lao is not: JavaFX's own text drifts its vowels as well. Since
-v2.172.0 on macOS — and since v2.174.0 on Windows, which v2.172.0 named but
-where it looked for WebKit's library in the wrong place and quietly kept the
-repair — WebKit shapes all of these itself, so text in form fields, bold and
-italic phrases, justified paragraphs and selections is measured exactly; Linux
-keeps the repair described above, and since v2.173.0 fits its width estimates
-to the fonts your distribution installed. Hebrew,
-Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
+Pages in complex scripts paint shaped: Arabic, Persian, Urdu (Nastaliq
+included), Kurdish, Pashto, Sindhi, Uyghur, Syriac, Thaana and N'Ko join
+their letters and read in their own order, with numbers in theirs; Hindi and
+the other Indic scripts (Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu,
+Kannada, Malayalam, Sinhala), Thai, Tibetan, Myanmar and Khmer set their
+vowel signs and conjuncts in place; and accents written as separate
+characters (as macOS writes file names) sit on their letters. JavaFX's
+WebKit does none of this by itself. On macOS and Windows the Browser
+switches on WebKit's own complex-text engine, so form fields, bold and
+italic phrases, justified paragraphs and selections measure exactly. On
+Linux, where that switch does not exist, the Browser shapes the text itself
+and fits its width estimates to the fonts your distribution installed, so a
+phrase full of conjuncts or set in Nastaliq can sit a few pixels off. Lao
+is not shaped: JavaFX's own text drifts its vowels too. Hebrew, Armenian,
+Georgian and Ethiopic render correctly on their own, niqqud included.
 
 - **Console** — the page's `console.log/info/warn/error/debug` output
   (the originals still fire), plus `window.onerror` and unhandled
@@ -1564,14 +1539,14 @@ Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
   chars each; when older rows are evicted an honest "N older entries
   dropped" line says so.
 
-  Since v2.39.0, a runtime error on a page served from **your**
+  A runtime error on a page served from **your**
   project also lands in the editor itself: a squiggle at the failing
   line and an Action Items row with click-to-navigate, cleared on the
   next reload — the console shows every error, the editor only ever
   carries your files. And **Explain error…** beside Clear asks KVASIR
   about the page's last located error, sending the message plus a few
   capped source lines around the failing line under its own consent
-  that states literally what leaves (v2.39.2).
+  that states literally what leaves.
 
   ![A page error landing in Action Items with the file and line](images/runtime-error-action-items.png)
 
@@ -1581,8 +1556,8 @@ Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
 - **DOM** — press Refresh for a tree of the live document (bounded:
   depth 30, 5000 nodes, an honest "…N more" row past a cap). Selecting
   a node outlines it in the page and shows its attributes plus a
-  curated 15-property computed-style summary. Since v1.357.0 the tab
-  is **source-aware**:
+  curated 15-property computed-style summary. The tab is
+  **source-aware**:
   - **Pick element** arms a crosshair in the page — click any element
     and the tree selects it, outlined and detailed, with the click
     swallowed so the page doesn't navigate.
@@ -1604,7 +1579,7 @@ Armenian, Georgian and Ethiopic render correctly on their own, niqqud included.
     decline with the reason on the status bar while the preview stays
     visible. The walkthrough:
     [Browser to Source](tutorials/browser-to-source.md).
-- **Motion** — DHTML, reborn as a keyframe timeline (v2.12.0). Select
+- **Motion** — DHTML, reborn as a keyframe timeline. Select
   an element in the DOM tab, then author a real CSS animation on a
   timeline strip: one row per property, a diamond per keyframe — drag
   a diamond to move its stop (it can never pass a neighbor),
@@ -1678,8 +1653,7 @@ offers you a ready-made connection.
 All under **File ▸ Add to Project**, all acting on the **aimed** project,
 all **idempotent and never-clobbering** — re-running one updates what it
 owns and leaves your edits alone; anything it won't overwrite lands as a
-`.suggested` sibling. (Before v2.118.0 they sat as seven flat rows in the
-File menu; the submenu names what they have in common.)
+`.suggested` sibling.
 
 - **Standards Kit** — `robots.txt`, `sitemap.xml`, web manifest, RFC 9116
   `security.txt`, `humans.txt`, generated from your answers.
@@ -1891,7 +1865,7 @@ interpreters; if one isn't installed, the INSTALL button installs it
 right there, streaming progress onto the REPL screen. Spaces live in
 `~/.nmox/learn`, apart from your real work.
 
-### First Steps, on the Welcome page (v2.66.0; named First Steps since v2.69.11)
+### First Steps, on the Welcome page
 
 A fourth Welcome column lists the six first gestures — open a project,
 run something in the rack, see a server go live, ask KVASIR about code,
@@ -1903,7 +1877,7 @@ door: click it and the gesture's window or action opens. Hover a step
 for its gesture. A tick never un-ticks; the column disappears when all
 six are done, or when you press **Hide this list**.
 
-### The Help menu's three answers (v2.64.0)
+### The Help menu's three answers
 
 - **What's New…** — the release notes for the version you run, bundled
   in the build. On the first boot after an update the dialog opens once
