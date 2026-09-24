@@ -95,17 +95,22 @@ dowiązanie.
 | W VS Code | W NMOX Studio |
 |---|---|
 | **Explorer** | **Studio projektu** (⇧⌘E) — drzewo plików, szablony i edytor `package.json` projektu. **Stanowisko pracy** (⌥⌘0) to baza: otwarte pliki, ostatnie pliki, ostatnie projekty i wszystko, co działa. |
-| **Command Palette** | **Szybkie wyszukiwanie** (⇧⌘P albo ⌘I) — akcje, pliki, ostatnie projekty, urządzenia stojaka, aktywne serwery, żądania Studia API, symbole. |
+| **Command Palette** | **Szybkie wyszukiwanie** (⇧⌘P albo ⌘I) — akcje, pliki, ostatnie projekty, urządzenia stojaka, aktywne serwery, żądania Studia API, symbole. Działają też nazwy poleceń z samego VS Code: *Format Document*, *Toggle Terminal*, *Git: Commit* albo *Open Settings* pokazuje akcję, która robi tu to samo, pod **Polecenia VS Code**, z jej tutejszą nazwą i skrótem. |
 | **Extensions** | **Narzędzia ▸ Wtyczki** instaluje i aktualizuje moduły, łącznie z aktualizacjami samego NMOX. Wiele z tego, co w VS Code dodaje rozszerzenie, jest tu **urządzeniem stojaka** — a jedno możesz napisać jako plik JSON w `~/.nmox/devices.d` ([pliki urządzeń](device-files.md)). |
 | **`tasks.json`** | Plik `.vscode/tasks.json` twojego repozytorium jest czytany: wpisz nazwę zadania w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Uruchom zadanie: build — make all* je uruchamia; w projekcie, któremu jeszcze nie ufasz, najpierw pojawia się pytanie o zaufanie do obszaru roboczego, wynik trafia do okna Output, a ■ na pasku narzędzi je zatrzymuje. Obok tego własne skrypty projektu, uruchamiane tak, jak są napisane: Uruchom / Zbuduj / Testuj na pasku narzędzi (F6, F11, ⌃F6), **Uruchom skrypt** na wierszu `scripts` w `package.json`, **Eksplorator NPM** i **Stojak zadań** (⌘9), gdzie zadania są urządzeniami, które łączysz kablami. |
-| **`launch.json`** | Plik `.vscode/launch.json` twojego repozytorium jest czytany: wpisz nazwę konfiguracji w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Debuguj: Launch Program — ${workspaceFolder}/server.js* uruchamia debuger z pułapkami na tym programie, po pytaniu o zaufanie do obszaru roboczego. Konfiguracje Node (`node`, `pwa-node`) i Pythona (`python`, `debugpy`) debugują swój `program` w swoim `cwd`; konfiguracje Chrome (`chrome`, `pwa-chrome`) otwierają swój `url` (albo `file`) ze swoim `webRoot`. Bez `launch.json` **Debuguj plik** (⇧⌘F5) i przycisk debugowania na pasku narzędzi same ustalają, co uruchomić, z samego projektu — wejście skryptu `start`, `main`, `index.js` — a urządzenie stojaka **INSPECTOR** uruchamia debuger jako krok potoku. |
+| **`launch.json`** | Plik `.vscode/launch.json` twojego repozytorium jest czytany: wpisz nazwę konfiguracji w Szybkim wyszukiwaniu (⇧⌘P albo ⌘I), a Enter na *Debuguj: Launch Program — ${workspaceFolder}/server.js* uruchamia debuger z pułapkami na tym programie, po pytaniu o zaufanie do obszaru roboczego. Konfiguracje Node (`node`, `pwa-node`) i Pythona (`python`, `debugpy`) debugują swój `program` w swoim `cwd`, ze swoimi `args` i `env`; konfiguracje Chrome (`chrome`, `pwa-chrome`) otwierają swój `url` (albo `file`) ze swoim `webRoot`. Bez `launch.json` **Debuguj plik** (⇧⌘F5) i przycisk debugowania na pasku narzędzi same ustalają, co uruchomić, z samego projektu — wejście skryptu `start`, `main`, `index.js` — a urządzenie stojaka **INSPECTOR** uruchamia debuger jako krok potoku. |
 | **Integrated terminal** | Okno **Terminal** (⌃\`): pierwsze naciśnięcie uruchamia powłokę w katalogu projektu, kolejne przywracają ją na wierzch. |
-| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). `.editorconfig` twojego projektu działa podczas pisania i przy zapisie. |
+| **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). Plik `.vscode/settings.json` repozytorium ustala wcięcia jego plików (`editor.tabSize`, `editor.insertSpaces`) oraz stosowane przy zapisie `files.trimTrailingWhitespace` i `files.insertFinalNewline`; tam, gdzie oba coś mówią, wygrywa jego `.editorconfig`, podczas pisania i przy zapisie. |
 | **Problems panel** | **Elementy do zrobienia** (⌘6) albo kliknięcie licznika **✕ ⚠** na pasku stanu: błędy i ostrzeżenia serwerów języka oraz wyniki lintowania i typów z urządzeń PURITY i TYPEGUARD na stojaku. Tak jak w VS Code, niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. |
 | **Outline** | **Nawigator** (⌘7). |
 | **Source Control** | Wskaźnik gałęzi git na pasku stanu (gałąź i zmiany, jedno kliknięcie do historii) oraz menu **Zespół**. |
 | **Workspace Trust** | Ten sam pomysł, egzekwowany przed uruchomieniem czegokolwiek, co wybrało repozytorium: otwarcie sklonowanego projektu nie uruchamia niczego, dopóki mu nie zaufasz. |
 | **Keyboard Shortcuts editor** | Narzędzia ▸ Opcje ▸ Skróty klawiszowe (w macOS: NMOX Studio ▸ Settings… ▸ Skróty klawiszowe) — zmień dowolny skrót albo przełącz cały profil na Eclipse, Emacs lub IntelliJ. |
+
+Gdy po raz pierwszy otworzysz repozytorium z `.vscode/tasks.json`,
+`launch.json` albo `settings.json`, powiadomienie mówi, co znaleziono
+i gdzie to jest; kliknij je, aby otworzyć Szybkie wyszukiwanie. Mówi to
+raz na projekt.
 
 <a id="what-is-honestly-different"></a>
 ## Co uczciwie działa inaczej
@@ -118,20 +123,23 @@ dowiązanie.
   Terminal ma fokus, klawisze należą do twojej powłoki, więc drugie
   naciśnięcie trafia do powłoki, zamiast przenosić cię z powrotem do edytora.
 - **`launch.json` jest czytany, a to, czego debuger nie potrafi uszanować,
-  zostaje odrzucone.** Debuger przekazuje tu program, jego katalog roboczy
-  i nic więcej, więc konfiguracja, która ustawia `args`, `env`, `envFile`,
+  zostaje odrzucone.** Debuger przekazuje tu program, jego katalog roboczy,
+  jego `args` (listę napisów) i jego `env` (napisy dodawane do
+  odziedziczonego środowiska), więc konfiguracja, która ustawia `envFile`,
   `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` albo dowolne inne pole,
   którego go nie nauczono, jest na liście, ale się nie uruchamia: Enter
-  wymienia te pola na pasku stanu. Uruchomienie programu bez jego argumentów
-  albo bez jego środowiska debugowałoby coś innego, niż mówi plik. To samo
-  dotyczy `"request": "attach"`, wpisu `compounds`, typu, dla którego nie ma
+  wymienia te pola na pasku stanu. Uruchomienie programu bez nich
+  debugowałoby coś innego, niż mówi plik. Tak samo byłoby z `args`
+  zapisanymi jako jeden napis (VS Code przekazuje go powłoce) i z wartością
+  `null` w `env` (która usuwa zmienną). To samo dotyczy `"request": "attach"`, wpisu `compounds`, typu, dla którego nie ma
   tu adaptera (`go`, `msedge`, `cppdbg` i reszta), wartości, którą może
   dostarczyć tylko VS Code (`${file}`, `${input:…}`), oraz ścieżki poza
   projektem. Pola, które tylko kształtują to, co pokazuje debuger —
   `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
   `presentation` — są przyjmowane, ale nie są stosowane; wyjście programu
   trafia do okna Output.
-- **`tasks.json` jest czytany, z dwiema odmowami.** Zadanie, które używa
+- **`tasks.json` jest czytany, a to, czego nie da się uruchomić tak, jak
+  napisano, zostaje odrzucone.** Zadanie, które używa
   wartości dostępnej tylko w VS Code (`${input:…}`, `${file}`, `${config:…}`,
   `${command:…}`) albo przez `dependsOn` zależy od innego zadania, jest na
   liście, ale się nie uruchamia: Enter mówi na pasku stanu, o którą zmienną

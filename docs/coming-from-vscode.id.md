@@ -97,17 +97,22 @@ baris itu.
 | Di VS Code | Di NMOX Studio |
 |---|---|
 | **Explorer** | **Studio Proyek** (⇧⌘E) — pohon berkas, templat, dan penyunting `package.json` proyek. **Meja Kerja** (⌥⌘0) adalah pangkalan: berkas yang terbuka, berkas terkini, proyek terkini, dan semua yang sedang berjalan. |
-| **Command Palette** | **Pencarian Cepat** (⇧⌘P atau ⌘I) — tindakan, berkas, proyek terkini, perangkat rak, server aktif, permintaan Studio API, simbol. |
+| **Command Palette** | **Pencarian Cepat** (⇧⌘P atau ⌘I) — tindakan, berkas, proyek terkini, perangkat rak, server aktif, permintaan Studio API, simbol. Nama perintah VS Code sendiri juga berfungsi: *Format Document*, *Toggle Terminal*, *Git: Commit*, atau *Open Settings* menampilkan tindakan yang melakukan hal yang sama di sini, di bawah **Perintah VS Code**, dengan namanya di sini dan pintasannya. |
 | **Extensions** | **Alat ▸ Plugin** memasang dan memperbarui modul, termasuk pembaruan NMOX sendiri. Banyak hal yang ditambahkan sebuah ekstensi di VS Code adalah sebuah **perangkat rak** di sini — dan Anda bisa menulisnya sebagai berkas JSON di `~/.nmox/devices.d` ([berkas perangkat](device-files.md)). |
 | **`tasks.json`** | `.vscode/tasks.json` di repositori Anda dibaca: ketik nama sebuah tugas di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Jalankan tugas: build — make all* menjalankannya, dengan Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, keluarannya di jendela Output, dan ■ di bilah alat untuk menghentikannya. Di sampingnya, skrip proyek Anda sendiri dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
-| **`launch.json`** | `.vscode/launch.json` di repositori Anda dibaca: ketik nama sebuah konfigurasi di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Debug: Launch Program — ${workspaceFolder}/server.js* memulai pengawakutu titik henti pada program itu, dengan Kepercayaan Ruang Kerja bertanya lebih dulu. Konfigurasi Node (`node`, `pwa-node`) dan Python (`python`, `debugpy`) mengawakutu `program`-nya di dalam `cwd`-nya; konfigurasi Chrome (`chrome`, `pwa-chrome`) membuka `url` (atau `file`) miliknya dengan `webRoot`-nya. Tanpa `launch.json`, **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
+| **`launch.json`** | `.vscode/launch.json` di repositori Anda dibaca: ketik nama sebuah konfigurasi di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Debug: Launch Program — ${workspaceFolder}/server.js* memulai pengawakutu titik henti pada program itu, dengan Kepercayaan Ruang Kerja bertanya lebih dulu. Konfigurasi Node (`node`, `pwa-node`) dan Python (`python`, `debugpy`) mengawakutu `program`-nya di dalam `cwd`-nya, dengan `args` dan `env`-nya; konfigurasi Chrome (`chrome`, `pwa-chrome`) membuka `url` (atau `file`) miliknya dengan `webRoot`-nya. Tanpa `launch.json`, **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
 | **Terminal terpadu** | Jendela **Terminal** (⌃\`): tekanan pertama memulai shell di folder proyek, tekanan berikutnya memunculkannya kembali. |
-| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.editorconfig` proyek Anda berlaku saat Anda mengetik dan saat menyimpan. |
+| **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.vscode/settings.json` sebuah repositori mengatur indentasi berkas-berkasnya (`editor.tabSize`, `editor.insertSpaces`) serta `files.trimTrailingWhitespace` dan `files.insertFinalNewline` saat menyimpan; `.editorconfig`-nya menang di mana pun keduanya mengatur hal yang sama, saat Anda mengetik dan saat menyimpan. |
 | **Panel Problems** | **Item tindakan** (⌘6), atau klik hitungan **✕ ⚠** di baris status: galat dan peringatan dari server bahasa, serta temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak. Seperti di VS Code, sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. |
 | **Outline** | **Navigator** (⌘7). |
 | **Source Control** | Tanda git di baris status (cabang dan perubahan, sekali klik ke riwayat) dan menu **Tim**. |
 | **Workspace Trust** | Gagasan yang sama, **Kepercayaan Ruang Kerja**, ditegakkan sebelum apa pun yang dipilih sebuah repositori dijalankan: membuka proyek hasil klon tidak menjalankan apa pun sampai Anda memercayainya. |
 | **Keyboard Shortcuts editor** | Alat ▸ Opsi ▸ Pintasan keyboard (di macOS, Settings… ▸ Pintasan keyboard) — sunting pintasan apa pun, atau ganti seluruh profil ke Eclipse, Emacs, atau IntelliJ. |
+
+Pertama kali Anda membuka repositori yang membawa `.vscode/tasks.json`,
+`launch.json`, atau `settings.json`, sebuah pemberitahuan menyebutkan apa
+yang ditemukan dan di mana letaknya; klik untuk membuka Pencarian Cepat.
+Pemberitahuan itu muncul sekali per proyek.
 
 <a id="what-is-honestly-different"></a>
 ## Apa yang memang berbeda
@@ -121,19 +126,23 @@ baris itu.
   tekanan kedua sampai ke shell alih-alih membawa Anda kembali ke penyunting.
 - **`launch.json` dibaca, dan apa yang tidak bisa dipenuhi pengawakutu
   ditolak.** Pengawakutu di sini meneruskan sebuah program, folder kerjanya,
-  dan tidak lebih, jadi konfigurasi yang mengatur `args`, `env`, `envFile`,
+  `args`-nya (daftar string), dan `env`-nya (string yang ditambahkan ke
+  lingkungan warisan), jadi konfigurasi yang mengatur `envFile`,
   `runtimeExecutable`, `runtimeArgs`, `preLaunchTask`, atau bidang lain yang
   belum diajarkan kepadanya tetap terdaftar tetapi tidak dimulai: Enter
   menyebutkan bidang-bidang itu di baris status. Memulai program tanpa
-  argumen atau lingkungannya berarti mengawakutu sesuatu yang lain daripada
-  yang dikatakan berkas itu. Hal yang sama berlaku untuk `"request": "attach"`,
+  semua itu berarti mengawakutu sesuatu yang lain daripada yang dikatakan
+  berkas itu. Begitu pula `args` yang ditulis sebagai satu string (VS Code
+  menyerahkannya ke shell) dan nilai `env` berupa `null` (yang menghapus
+  sebuah variabel). Hal yang sama berlaku untuk `"request": "attach"`,
   sebuah entri `compounds`, tipe yang tidak punya adaptor di sini (`go`,
   `msedge`, `cppdbg`, dan lainnya), nilai yang hanya bisa diberikan VS Code
   (`${file}`, `${input:…}`), dan jalur di luar proyek. Bidang yang hanya
   membentuk apa yang ditampilkan pengawakutu — `skipFiles`, `outFiles`,
   `sourceMaps`, `console`, `justMyCode`, `presentation` — diterima tetapi
   tidak diterapkan; keluaran program masuk ke jendela Output.
-- **`tasks.json` dibaca, dengan dua penolakan.** Tugas yang memakai nilai yang
+- **`tasks.json` dibaca, dan apa yang tidak bisa dijalankan sebagaimana
+  ditulis ditolak.** Tugas yang memakai nilai yang
   hanya bisa diberikan VS Code (`${input:…}`, `${file}`, `${config:…}`,
   `${command:…}`) atau yang `dependsOn` tugas lain tetap terdaftar tetapi
   tidak dijalankan: Enter menyebutkan variabel atau tugas yang mana di baris
