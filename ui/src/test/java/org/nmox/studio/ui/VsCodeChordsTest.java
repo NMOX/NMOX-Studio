@@ -144,11 +144,13 @@ class VsCodeChordsTest {
     @Test
     @DisplayName("the Welcome advertises New Experiment on its new chord")
     void welcomeAdvertisesTheMovedChord() throws Exception {
-        java.util.Properties p = new java.util.Properties();
-        try (var in = Files.newInputStream(Path.of("target/classes/org/nmox/studio/ui/Bundle.properties"))) {
-            p.load(new java.io.InputStreamReader(in, StandardCharsets.UTF_8));
-        }
-        assertThat(p.getProperty("MainWindow_newExperiment")).endsWith("⌥⌘K").doesNotContain("⇧⌘E");
+        // the English lives in MainWindow's @Messages; read the source, not
+        // target/classes, whose merged bundle a resources-only rebuild
+        // overwrites with the hand-written file (the v2.102.1 trap)
+        Matcher english = Pattern.compile("\"MainWindow_newExperiment=([^\"]*)\"").matcher(Files.readString(
+                Path.of("src/main/java/org/nmox/studio/ui/MainWindow.java"), StandardCharsets.UTF_8));
+        assertThat(english.find()).as("MainWindow declares the New Experiment label").isTrue();
+        assertThat(english.group(1)).endsWith("⌥⌘K").doesNotContain("⇧⌘E");
         List<String> langs = org.nmox.studio.core.util.UiLocale.SUPPORTED.stream()
                 .map(org.nmox.studio.core.util.UiLocale.Choice::code)
                 .filter(c -> !c.isEmpty() && !"en".equals(c)).toList();
