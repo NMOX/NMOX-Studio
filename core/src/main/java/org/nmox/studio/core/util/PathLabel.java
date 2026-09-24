@@ -56,7 +56,7 @@ public class PathLabel extends JLabel {
         Dimension d = super.getPreferredSize();
         FontMetrics fm = getFontMetrics(getFont());
         Insets in = getInsets();
-        int want = fm == null ? d.width : fm.stringWidth(full) + in.left + in.right;
+        int want = fm.stringWidth(full) + in.left + in.right;
         d.width = Math.min(want, PREFERRED_CAP);
         return d;
     }
@@ -72,7 +72,7 @@ public class PathLabel extends JLabel {
         FontMetrics fm = getFontMetrics(getFont());
         Insets in = getInsets();
         int room = getWidth() - in.left - in.right;
-        String shown = fm == null || room <= 0 ? full : fitMiddle(full, fm::stringWidth, room);
+        String shown = room <= 0 ? full : fitMiddle(full, fm::stringWidth, room);
         super.setText(PlainText.plain(shown));
     }
 
