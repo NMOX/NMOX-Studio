@@ -89,6 +89,28 @@ than proven:
 - **`ToolbarAccessibleNames`** adds a container listener per toolbar-pool
   change to any non-`JComponent` container inside a toolbar; none exist
   in the shipped toolbars.
+- **The save-time settings lookup** (the second review): each save now
+  also walks up for a `.vscode/settings.json` (bounded, stat-only until a
+  file is found) on the thread the platform saves on, beside the
+  `.editorconfig` walk that already ran there. Accepted as recorded; if a
+  profile ever shows it, the answer is the code-style provider's cache.
+
+### 121. Two translation questions the 3.1.0 translators raised
+
+**Open, for a language owner.** Neither is a defect a gate can decide.
+
+- **Ukrainian "debug".** The shipped Ukrainian bundles say *налагодження /
+  налагоджувач / Налагодити*; the Ukrainian documents mostly say
+  *зневадження / зневаджувач*, so a section titled with one leads into a
+  menu label with the other. The menu labels quoted in the docs match the
+  bundles; the running prose is the question. `glossary.json` has no entry
+  for "debug" either way.
+- **Home paths in right-to-left prose.** conventions.md asks for an LRM
+  before a dotfile's leading dot after a right-to-left word (done across
+  the newcomer documents in 3.1.0). A path starting `~/` begins with a
+  neutral too, and about thirty such paths in the Hebrew and Arabic docs
+  carry no LRM. Whether the rule should say "a path beginning with a
+  neutral character" is the decision; the sweep after it is mechanical.
 
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 
