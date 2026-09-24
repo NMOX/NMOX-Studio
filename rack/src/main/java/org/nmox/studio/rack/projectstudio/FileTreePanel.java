@@ -307,7 +307,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
          */
         @Override
         public javax.swing.Action[] getActions(boolean context) {
-            return new javax.swing.Action[]{
+            return withPathRows(this, new javax.swing.Action[]{
                 org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
                 null,
@@ -317,10 +317,27 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                 null,
                 org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
-                null,
+            }, new javax.swing.Action[]{
                 org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
-            };
+            });
+        }
+
+        /**
+         * {@code head}, then Copy Path / Copy Relative Path / Reveal (3.1.0,
+         * {@link PathActions}), then {@code tail}, each group behind a
+         * separator.
+         */
+        static javax.swing.Action[] withPathRows(Node node, javax.swing.Action[] head, javax.swing.Action[] tail) {
+            java.util.List<javax.swing.Action> out = new java.util.ArrayList<>(java.util.Arrays.asList(head));
+            javax.swing.Action[] path = PathActions.forNode(node);
+            if (path.length > 0) {
+                out.add(null);
+                out.addAll(java.util.Arrays.asList(path));
+            }
+            out.add(null);
+            out.addAll(java.util.Arrays.asList(tail));
+            return out.toArray(new javax.swing.Action[0]);
         }
 
         private static final class HeavyChildren extends FilterNode.Children {
@@ -363,7 +380,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
             @Override
             public javax.swing.Action[] getActions(boolean context) {
-                return new javax.swing.Action[]{
+                return withPathRows(this, new javax.swing.Action[]{
                     org.openide.util.actions.SystemAction.get(org.openide.actions.OpenAction.class),
                     null,
                     org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
@@ -371,10 +388,10 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                     null,
                     org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
                     org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
-                    null,
+                }, new javax.swing.Action[]{
                     org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
                     org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
-                };
+                });
             }
         }
 
