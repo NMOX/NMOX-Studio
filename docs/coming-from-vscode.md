@@ -105,6 +105,10 @@ shows the one-line link.
 | **Workspace Trust** | The same idea, enforced before anything a repository chose is run: opening a cloned project runs nothing until you trust it. |
 | **Keyboard Shortcuts editor** | Tools ▸ Options ▸ Keymap (on macOS, Settings… ▸ Keymap) — edit any chord, or switch the whole profile to Eclipse, Emacs or IntelliJ. |
 
+The first time you open a repository that carries `.vscode/tasks.json`,
+`launch.json` or `settings.json`, a notice says what was found and where
+it lives; click it for Quick Search. It says so once per project.
+
 ## What is honestly different
 
 - **⌘D adds the next occurrence in the default keymap, not in every

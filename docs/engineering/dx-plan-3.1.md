@@ -133,6 +133,7 @@ down.
 | 29 | the switcher page's own table | a repository's `.vscode/settings.json` indentation was ignored; the `settings.json` row pointed at Options and `.editorconfig` only | the four settings that mean something to the editor, under the project's `.editorconfig`; `false` never translated, because VS Code's "leave it" is EditorConfig's "strip it" | `VsCodeSettingsTest`, `EditorConfigCodeStyleTest` through the platform's own `IndentUtils`; walked, bytes read back |
 | 30 | the switcher page's honest gaps | the most common `launch.json` refusal was `args` or `env`, which most Node and Python configurations set | both reach the program; `envFile` and runtimes stay refused by name | `VsCodeLaunchTest`, `RealJsDebugIntegrationTest` through the real adapter |
 | 31 | the proof of row 30 | a program that printed and exited at once printed nothing to Output under the debugger: js-debug's default output capture reads the child session, which such a program outlives | `outputCapture: std` | walked on a one-line `hello.js`; `RealJsDebugIntegrationTest` fails by name without it |
+| 32 | reading rows 23, 29 and 30 as a newcomer | tasks, launch configurations and settings all worked, and nothing on screen said so | the first aim of a project with `.vscode` files says what was found and opens Quick Search on a click, once per project, and only while that project is still aimed | `VsCodeFilesNoticeTest` |
 
 **The lesson of row 20.** The probe that motivated the Finder door ran on an
 unsigned bundle. A release runs under the hardened runtime, where the same
