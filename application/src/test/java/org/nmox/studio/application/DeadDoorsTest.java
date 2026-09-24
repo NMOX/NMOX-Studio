@@ -90,8 +90,8 @@ class DeadDoorsTest {
     void noConfigurationsNoCombo() throws Exception {
         List<String> providers = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(Path.of(".."))) {
-            walk.filter(p -> p.toString().endsWith(".java") && p.toString().contains("/src/main/java/"))
-                    .filter(p -> !p.toString().contains("/.claude/"))
+            walk.filter(p -> p.toString().endsWith(".java") && p.toString().replace('\\', '/').contains("/src/main/java/"))
+                    .filter(p -> !p.toString().replace('\\', '/').contains("/.claude/"))
                     .forEach(p -> {
                         try {
                             if (Files.readString(p).contains("ProjectConfigurationProvider")) {

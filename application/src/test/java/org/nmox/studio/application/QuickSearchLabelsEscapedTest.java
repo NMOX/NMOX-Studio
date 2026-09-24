@@ -42,7 +42,7 @@ class QuickSearchLabelsEscapedTest {
         List<Path> providers = new ArrayList<>();
         try (Stream<Path> walk = Files.walk(root)) {
             walk.filter(p -> p.toString().endsWith(".java"))
-                    .filter(p -> p.toString().contains("/src/main/java/"))
+                    .filter(p -> p.toString().replace('\\', '/').contains("/src/main/java/"))
                     .filter(p -> !root.relativize(p).toString().startsWith("."))
                     .forEach(p -> {
                         try {

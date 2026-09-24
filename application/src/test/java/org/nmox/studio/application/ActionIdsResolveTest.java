@@ -54,8 +54,8 @@ class ActionIdsResolveTest {
         List<String> missing = new ArrayList<>();
         int calls = 0;
         try (Stream<Path> walk = Files.walk(Path.of(".."))) {
-            for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().contains("/src/main/java/")
-                    && !x.toString().contains("/.claude/")).toList()) {
+            for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
+                    && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
                 String src = Files.readString(p);
                 if (!src.contains("Actions.forID(")) {
                     continue;

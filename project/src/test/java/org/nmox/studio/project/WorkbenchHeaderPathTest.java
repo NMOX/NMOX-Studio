@@ -21,17 +21,19 @@ class WorkbenchHeaderPathTest {
     void deepPathKeepsItsEndsAndItsWidth() {
         String deep = "/private/tmp/claude-501/-Users-david-vcs-git-github-nmox-NMOX-Studio/"
                 + "791bf260-044d-4624-a2fc-7dcbfe17cd1f/scratchpad/cli/notes";
+        // absolute as THIS platform spells it (a drive letter on Windows)
+        String full = new File(deep).getAbsolutePath();
         JLabel label = ProjectExplorerTopComponent.headerPath(new File(deep));
         assertThat(label.getPreferredSize().width)
                 .isLessThanOrEqualTo(org.nmox.studio.core.util.PathLabel.PREFERRED_CAP);
-        assertThat(label.getToolTipText().strip()).isEqualTo(deep);
-        assertThat(label.getAccessibleContext().getAccessibleDescription()).isEqualTo(deep);
+        assertThat(label.getToolTipText().strip()).isEqualTo(full);
+        assertThat(label.getAccessibleContext().getAccessibleDescription()).isEqualTo(full);
     }
 
     @Test
     @DisplayName("a short path is shown whole")
     void shortPathWhole() {
         JLabel label = ProjectExplorerTopComponent.headerPath(new File("/Users/david/NMOX"));
-        assertThat(label.getText().strip()).isEqualTo("/Users/david/NMOX");
+        assertThat(label.getText().strip()).isEqualTo(new File("/Users/david/NMOX").getAbsolutePath());
     }
 }
