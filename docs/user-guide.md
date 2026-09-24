@@ -1096,7 +1096,7 @@ reader, or a feed — the developer-evangelist grant:
 - **Tools ▸ Copy Editor Screenshot.** The same editor shot straight onto
   the clipboard, ready to paste into Slack, an issue or a slide — no
   chooser, no file.
-- **Help ▸ What's New… ▸ Copy as Markdown.** The release notes
+- **Copy as Markdown in Help ▸ What's New….** The release notes
   on screen, as Markdown under their changelog headings — a release post
   starts here.
 - **Tools ▸ Copy Project Tree as Markdown.** The aimed

@@ -90,7 +90,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 | **`tasks.json`** | Your project's own scripts, run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
-| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` is honoured on save. |
+| **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` applies as you type and when you save. |
 | **Problems panel** | **Action Items** (⌘6): lint and type findings from the rack's PURITY and TYPEGUARD devices, next to the squiggles in the editor. |
 | **Outline** | The **Navigator** (⌘7). |
 | **Source Control** | The git chip on the status line (branch and changes, one click to history) and the **Team** menu. |
@@ -113,9 +113,9 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and
   inside the editor ⇧⌘P and ⇧⌘X keep Eclipse's meanings (matching
   brace, upper case) — someone who picked Eclipse expects Eclipse.
-- **On Linux, Ctrl+\` used to open the window switcher** — the platform's
-  fallback for desktops (KDE) that grab Ctrl+Tab. It opens the Terminal
-  now; the switcher is still on Ctrl+Tab.
+- **On Linux, Ctrl+\` opens the Terminal, not a window switcher.** The
+  platform kept a second switcher there for desktops (KDE) that grab
+  Ctrl+Tab; the switcher is on Ctrl+Tab.
 - **The Ctrl+Alt chords can collide with AltGr.** On Windows, keyboard
   layouts that type characters with AltGr (Polish, for one) send
   Ctrl+Alt for it. If Ctrl+Alt+P or Ctrl+Alt+K types a character for you,
