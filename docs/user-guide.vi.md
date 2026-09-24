@@ -21,7 +21,9 @@ Dòng `brew trust` là xác nhận một lần của Homebrew cho mọi tap củ
 
 **Mọi thứ khác:** tải một tệp từ [bản phát hành mới nhất](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` cho macOS, `-setup.exe` cho Windows, `.deb` cho Debian/Ubuntu, `.tar.gz` thông thường cho Linux. Cả bốn đều mang sẵn môi trường chạy Java; không cần cài gì trước. `-portable.zip` là tạo phẩm duy nhất dùng Java của chính bạn (cần Java 21+ trong PATH, hoặc chạy với `--jdkhome <đường-dẫn-jdk>`).
 
-> **macOS, lần chạy đầu tiên:** chỉ cần nhấp đúp. Ứng dụng được ký bằng Apple Developer ID và được công chứng, vé công chứng được ghim vào cả ứng dụng lẫn DMG, nên việc kiểm tra hoạt động ngoại tuyến — không cần nhấp chuột phải, không cần `xattr`. Trình cập nhật tích hợp cài vào thư mục người dùng chứ không vào gói ứng dụng, nên cập nhật không bao giờ phá chữ ký đó.
+> **macOS, lần chạy đầu tiên:** nhấp đúp vào ứng dụng. macOS hỏi một lần xem có mở một ứng dụng tải về từ internet không, và cho biết Apple đã kiểm tra nó: bấm **Mở** (Open). Ứng dụng được ký bằng Apple Developer ID và được công chứng, vé công chứng được ghim vào cả ứng dụng lẫn DMG, nên việc kiểm tra hoạt động ngoại tuyến — không cần nhấp chuột phải, không cần `xattr`. Trình cập nhật tích hợp cài vào thư mục người dùng chứ không vào gói ứng dụng, nên cập nhật không bao giờ phá chữ ký đó.
+>
+> Nếu một bản cài 3.0.0, 3.0.1 hoặc 3.0.2 đáp lại bằng *"NMOX Studio.app" Not Opened* (nghĩa là “chưa mở được NMOX Studio.app”; macOS hiện hộp thoại này bằng ngôn ngữ của hệ thống), đó là một lỗi trong cách ứng dụng khởi động tập lệnh khởi chạy của nó, đã được sửa trong 3.1.0: hãy cài 3.1.0 trở lên (`brew upgrade --cask nmox-studio`, hoặc tải bản mới).
 
 ### Kiểm chứng bản tải về
 
@@ -45,12 +47,27 @@ Bạn cần thấy `source=Notarized Developer ID`. Bộ cài Windows chưa đư
 
 ### Cập nhật
 
-IDE tự cập nhật: **Công cụ ▸ Plugin ▸ Cập nhật** đưa ra các mô-đun của mọi bản phát hành mới hơn. Cài, khởi động lại khi được nhắc, xong — không phải tải lại toàn bộ ứng dụng. Một lưu ý thẳng thắn: môi trường chạy Java đi kèm và trình khởi chạy chỉ đổi cùng một bộ cài đầy đủ, nên với những bước nhảy lớn của nền tảng, cài lại từ một tệp phát hành vẫn là cách đúng.
+**Công cụ ▸ Plugin ▸ Cập nhật** (hoặc **Trợ giúp ▸ Kiểm tra cập nhật**) đưa ra các mô-đun sản phẩm của mọi bản phát hành mới hơn, lấy từ trung tâm cập nhật “NMOX Studio Updates”, vốn trỏ tới bản phát hành mới nhất trên GitHub. Cài, khởi động lại khi được nhắc, là xong. Nền tảng cũng tự kiểm tra, mặc định mỗi tuần một lần (đổi ở **Công cụ ▸ Plugin ▸ Cài đặt chung**), và riêng IDE thì mỗi ngày một lần báo cho bạn khi có bản mới hơn; tắt việc đó ở Tùy chọn ▸ Chung (trên macOS là NMOX Studio ▸ Settings…, ở nơi khác là Công cụ ▸ Tùy chọn). Mọi mô-đun đều được ký và chứng chỉ đi kèm ngay trong sản phẩm, nên các bản cập nhật được cài mà không hỏi gì về chứng chỉ.
+
+Trình cập nhật thay các mô-đun, chứ không thay ứng dụng bao quanh chúng. Môi trường chạy Java đi kèm, trình khởi chạy và chính NetBeans Platform chỉ thay đổi khi bạn cài một bản phát hành (`brew upgrade --cask nmox-studio`, hoặc tải bản mới), và bản phát hành nào thay đổi một trong số đó sẽ nói rõ trong ghi chú phát hành — lệnh `nmox` và các bản sửa trình khởi chạy trên macOS của 3.1.0 là ví dụ. Một bản cài cũ hơn 2.35.0 hoàn toàn không thể cập nhật trong ứng dụng, vì 2.35.0 đã chuyển sang nền tảng mới: hãy cài một bản phát hành hiện hành.
 
 <a id="2-first-launch"></a>
 ## 2. Lần chạy đầu tiên
 
-Từ dòng lệnh, `nmoxstudio --open <thư-mục>` khởi động ứng dụng với thư mục đó mở ra như một dự án và giá hướng vào nó — cùng một cánh cửa mà “Mở thư mục…” trên trang chào mừng mở ra.
+Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `code .`: `cd myproject && nmox .`. Một thư mục được nhắm đúng như cách “Mở thư mục…” trên trang Chào mừng nhắm nó, dù có tệp kê khai hay không; một tệp thì mở trong trình soạn thảo (`nmox src/app.js`). Lệnh trả về ngay — lần `nmox` đầu tiên khởi động IDE ở chế độ nền, và mỗi lần sau đó trao thư mục của nó cho IDE đang chạy. Gõ `nmox` không kèm gì thì chỉ khởi động IDE. Đưa `nmox` vào PATH của bạn:
+
+- **macOS, Homebrew:** cask tự tạo liên kết giúp bạn.
+- **macOS, từ DMG:** tạo liên kết (đừng sao chép) tới trình khởi chạy của ứng dụng —
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`.
+  Được khởi động qua một liên kết, nó biết mình được gọi từ dòng lệnh; khởi động từ Finder hay Dock, nó vẫn chạy như trước giờ.
+- **Windows:** ô *Add "nmox" to PATH* trong trình cài đặt, được đánh dấu sẵn. Hãy mở một cửa sổ dòng lệnh mới sau đó; cửa sổ đang mở vẫn giữ PATH cũ.
+- **Linux:** gói `.deb` cài `/usr/bin/nmox`. Nếu dùng tệp tarball, hãy tự tạo liên kết: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
+
+Bạn cũng có thể trao một thư mục cho NMOX Studio mà không cần dòng lệnh, và nó được nhắm theo cùng một cách:
+
+- **macOS:** nhấp chuột phải vào một thư mục trong Finder rồi chọn NMOX Studio trong **Mở bằng** (Open With), hoặc thả thư mục lên biểu tượng NMOX Studio trên Dock. Thả nhiều thư mục cùng lúc thì thư mục đầu tiên được nhắm và thanh trạng thái nói rõ điều đó: IDE làm việc với từng thư mục một. Một tệp thả lên biểu tượng sẽ mở trong trình soạn thảo.
+- **Linux (gói `.deb`):** trình quản lý tệp của bạn liệt kê NMOX Studio trong *Mở bằng* (Open With) cho một thư mục. Nó không trở thành ứng dụng mặc định cho thư mục; trình quản lý tệp vẫn giữ vai trò đó.
+- **Windows:** đánh dấu ô *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* trong trình cài đặt (mặc định không được đánh dấu, giống như của VS Code). Khi đó Explorer có mục **Open with NMOX Studio** trên một thư mục và trên khoảng trống bên trong nó; trên Windows 11 mục này nằm dưới *Show more options*. Gỡ cài đặt sẽ gỡ luôn mục này.
 
 IDE mở ra với ba thẻ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Trình duyệt**. Mọi cửa sổ khác chỉ cách một phím tắt ⌥⌘ và đều có trong cột TOOLING của trang chào mừng. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
 
@@ -61,6 +78,7 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 | Phím tắt | Mở |
 |---|---|
 | **⌘I** | Tìm nhanh — với tới mọi thứ |
+| **⇧⌘P** | Cũng là Tìm nhanh — tổ hợp mà VS Code gọi là Command Palette |
 | **⌘9** | Giá tác vụ |
 | **⌥⌘0** | Bàn làm việc |
 | **⌥⌘1** | Bảng công việc |
@@ -75,7 +93,13 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 | **⌘8** | Bảng Docker |
 | **⌘7** | Cấu trúc tệp hiện tại |
 | **⇧⌘N / ⌥⌘O** | Dự án mới… / Mở thư mục… |
-| **⌥⌘K / ⇧⌘L** | Thử nghiệm mới… / Không gian học mới… |
+| **⌥⌘K / ⇧⌘L** | Thử nghiệm mới… / Không gian học tập mới… |
+| **⇧⌘E** | Studio dự án, với tiêu điểm ở cây tệp |
+| **⇧⌘X** | Công cụ ▸ Plugin |
+| **⌃\`** | Một Terminal trong thư mục dự án, hoặc Terminal đã mở sẵn (Ctrl+\` trên Windows và Linux) |
+| **⌥⌘P / ⌥⇧⌘K** | Chuyển dự án… / Thử nghiệm… |
+
+Bạn chuyển sang từ VS Code? [Chuyển từ VS Code sang](coming-from-vscode.vi.md) đối chiếu các tổ hợp phím và các ý tưởng, kèm cách bấm trên Windows và Linux bên cạnh cách bấm trên macOS.
 
 <a id="3-projects"></a>
 ## 3. Dự án
@@ -86,13 +110,13 @@ Những phím tắt đáng học trong ngày đầu (tất cả cũng có trên 
 
 **Chuyển dự án là an toàn:** nếu có thiết bị đang chạy (một máy chủ phát triển, một trình theo dõi), IDE hỏi trước khi chuyển và tắt chúng gọn ghẽ. Không có gì chạy tiếp sau lưng bạn, không bao giờ. Ngay cả việc buộc thoát IDE cũng không thể bỏ lại một tiến trình mồ côi.
 
-**Thử nghiệm** là cách nhanh nhất để thử một bộ công nghệ. **Tệp ▸ Thử nghiệm mới…** (⌥⌘K) chọn một mẫu và tạo một dự án dùng một lần trong `~/.nmox/experiments`: không git, không danh sách gần đây, đã được tin cậy, các phụ thuộc đã cài — để **lần Chạy đầu tiên chạy được ngay**. Nó mở ra ở chính bản hướng dẫn `EXPERIMENT.md` của mình, nói cho bạn biết nhấn gì, sửa tệp nào, và trí thông minh của IDE dành cho bộ công nghệ ấy nằm ở đâu. Giữ lại thứ thành hình: **Tệp ▸ Thử nghiệm…** ▸ **Nâng lên** đưa nó ra ngoài và khởi tạo git, **Nhân bản** tạo một bản sao bên cạnh để thử cách thứ hai, **Bỏ đi** dọn phần còn lại. Kệ hiển thị tuổi của từng cái và chi phí đĩa đo được. Bạn thích con đường có hướng dẫn hơn? Hộp thoại đưa 93 không gian học lên trước.
+**Thử nghiệm** là cách nhanh nhất để thử một bộ công nghệ. **Tệp ▸ Thử nghiệm mới…** (⌥⌘K) chọn một mẫu và tạo một dự án dùng một lần trong `~/.nmox/experiments`: không git, không danh sách gần đây, đã được tin cậy, các phụ thuộc đã cài — để **lần Chạy đầu tiên chạy được ngay**. Nó mở ra ở chính bản hướng dẫn `EXPERIMENT.md` của mình, nói cho bạn biết nhấn gì, sửa tệp nào, và trí thông minh của IDE dành cho bộ công nghệ ấy nằm ở đâu. Giữ lại thứ thành hình: **Tệp ▸ Thử nghiệm…** ▸ **Nâng cấp…** đưa nó ra ngoài và khởi tạo git, **Nhân bản** tạo một bản sao bên cạnh để thử cách thứ hai, **Loại bỏ…** dọn phần còn lại. Kệ hiển thị tuổi của từng cái và chi phí đĩa đo được. Bạn thích con đường có hướng dẫn hơn? Hộp thoại đưa 93 không gian học lên trước.
 
 ![Kệ không gian học — số lượng, chi phí đĩa, tuổi và trọn vòng đời](images/vi/spaces-shelf.png)
 
 ![Một thử nghiệm Express mới tinh: bản hướng dẫn đang mở, các phụ thuộc đã cài, API đã phục vụ](images/vi/experiment-walkthrough.png)
 
-**Chạy, dựng, kiểm thử — và dừng:** nút ▶ trên thanh công cụ (F6) chạy dự án theo đúng cách bộ công cụ của nó chạy: một kịch bản `start` nếu package.json có, `cargo run`, `go run`, `dotnet run`, và với một thư mục HTML thì một máy chủ tĩnh nhỏ trên cổng trống đầu tiên kể từ 8080. Dựng, Kiểm thử và Dọn nằm ngay cạnh và trong trình đơn Chạy. Một máy chủ phát triển thông báo địa chỉ của mình sẽ thắp dấu ⇄ trên thanh trạng thái và mở trang trong trình duyệt tích hợp. Mọi thứ lần đầu đều đi qua lời hỏi tin cậy không gian làm việc. Một lần chạy không khởi động được sẽ nói thẳng và mời mở Bác sĩ môi trường. Để dừng: nút ■ bên phải Gỡ lỗi (⌥⌘.) dừng mọi lệnh đang chạy cùng lúc và nói nó đã dừng những gì; **Chạy ▸ Dừng build/chạy** dừng một lệnh rồi mời **Lặp lại**. Nút ■ thấy mọi thứ sản phẩm khởi chạy giúp bạn, kể cả các lần cài đặt; khi rê chuột, chú giải nêu đúng thứ một cú nhấn sẽ dừng, và mỗi thứ đã chạy từ bao giờ.
+**Chạy, dựng, kiểm thử — và dừng:** nút ▶ trên thanh công cụ (F6) chạy dự án đang nhắm theo đúng cách bộ công cụ của nó chạy: kịch bản `dev`, `start` hoặc `serve` trong package.json (kịch bản đầu tiên mà nó có), `cargo run`, `go run`, `dotnet run`, và với một thư mục HTML thuần thì một máy chủ tĩnh nhỏ trên cổng trống đầu tiên kể từ 8080. Một dự án Node không có kịch bản nào trong ba kịch bản đó sẽ nói rõ khi bạn nhấn ▶ và hiện các kịch bản của nó trong Trình duyệt NPM, nơi một cú nhấp đúp sẽ chạy một kịch bản. Dựng, Kiểm thử và Dọn nằm ngay cạnh và trong trình đơn Chạy. Một máy chủ phát triển thông báo địa chỉ của mình sẽ thắp dấu ⇄ trên thanh trạng thái và mở trang trong trình duyệt tích hợp. Mọi thứ lần đầu đều đi qua lời hỏi tin cậy không gian làm việc. Một lần chạy không khởi động được sẽ nói thẳng và mời mở Trình chẩn đoán môi trường. Để dừng: nút ■ bên phải Gỡ lỗi (⌥⌘.) dừng mọi lệnh đang chạy cùng lúc và nói nó đã dừng những gì; **Chạy ▸ Dừng build/chạy** dừng một lệnh rồi mời **Lặp lại**. Nút ■ thấy mọi thứ sản phẩm khởi chạy giúp bạn, kể cả các lần cài đặt; khi rê chuột, chú giải nêu đúng thứ một cú nhấn sẽ dừng, và mỗi thứ đã chạy từ bao giờ.
 
 **`.env` ở khắp nơi:** nếu dự án của bạn có `.env`, các thiết bị khởi chạy từ giá sẽ nhận những biến đó. Sửa nó và thanh trạng thái ghi nhận rằng những lần khởi động lại sẽ nhận — các tiến trình đang chạy trung thực giữ nguyên môi trường cũ của chúng.
 
@@ -149,7 +173,7 @@ KVASIR trả lời bằng ngôn ngữ mà NMOX Studio đang dùng.
 
 **KVASIR gửi đi những gì, và chỉ có vậy.** Lần đầu bạn nhấn EXPLAIN, một hộp thoại liệt kê đúng những gì sẽ rời khỏi máy bạn và những gì thì không; không có gì được gửi mà thiếu sự đồng ý ấy, và sự đồng ý được tính riêng cho từng nhà cung cấp. Sau một lần EXPLAIN thành công, nút **VIEW** mở câu trả lời như một cuộc trò chuyện — bạn có thể hỏi tiếp về đúng lần hỏng đó.
 
-**Hỏi KVASIR về mã của bạn.** Cũng chính trợ lý ấy với tới trình soạn thảo: chọn một đoạn mã rồi chọn **Hỏi KVASIR về phần đã chọn…**, hoặc **Sửa bằng KVASIR…** để nói cần đổi gì và xem một bản trước và một bản sau trước khi bất cứ gì được áp dụng. **⌥⌘G** gợi ý ngay tại con trỏ bằng chữ mờ, chỉ chèn vào nếu bạn nhấn Tab, và dấu nhánh git có thể soạn giúp bạn lời nhắn commit.
+**Hỏi KVASIR về mã của bạn.** Cũng chính trợ lý ấy với tới trình soạn thảo: chọn một đoạn mã rồi chọn **Hỏi KVASIR về vùng chọn…**, hoặc **Sửa bằng KVASIR…** để nói cần đổi gì và xem một bản trước và một bản sau trước khi bất cứ gì được áp dụng. **⌥⌘G** gợi ý ngay tại con trỏ bằng chữ mờ, chỉ chèn vào nếu bạn nhấn Tab, và dấu nhánh git có thể soạn giúp bạn lời nhắn commit.
 
 **Hướng một tác nhân vào IDE của bạn.** Công cụ ▸ Agent Port (MCP)… mở một điểm cuối MCP mà một trợ lý bên ngoài có thể hỏi: nó **chỉ đọc theo thiết kế**, tắt cho tới khi bạn bật, chỉ lắng nghe trên giao diện cục bộ, và đòi đúng thẻ được sinh ra lúc khởi động.
 
@@ -168,6 +192,7 @@ Hơn 70 ngôn ngữ được tô màu đúng cách — bộ hiện đại, bộ 
 - **Cuộn dính** — những khai báo bao lấy phần trên của khung nhìn (lớp, rồi tới phương thức bạn vừa cuộn vào) được ghim lại phía trên phần chữ, tối đa ba dòng của chính mã nguồn; nhấp một dòng để nhảy tới đó. Thanh này biến mất khi không có gì bao lấy dòng trên cùng.
 - **Tới ký hiệu (⌥⇧⌘O)** nhảy tới bất kỳ hàm, lớp, quy tắc hay tiêu đề nào trong cả dự án bằng cách gõ tên nó — khớp theo tiền tố, theo chữ hoa giữa từ, hoặc theo ký tự đại diện. Chỉ mục có giới hạn và trung thực: `node_modules` bị bỏ qua, và với một dự án rất lớn hộp thoại nói rằng nó đã lập chỉ mục 2.000 tệp đầu tiên thay vì giả vờ đã đọc hết.
 - **Cửa sổ kiểm thử (⌥⌘2)** cho thấy mọi bài kiểm thử trong dự án *trước khi bất cứ gì chạy*, và chạy một bài, một tệp, hoặc tất cả.
+- **`.editorconfig` được tôn trọng** — cả khi bạn gõ lẫn khi bạn lưu. `indent_style`, `indent_size` và `tab_width` quyết định Tab, Enter và việc thụt lề lại sẽ viết ra gì, nên một dự án dùng tab nhận tab còn một dự án thụt bốn dấu cách nhận bốn dấu cách, theo từng tệp và từng phần glob; mỗi lần lưu áp dụng `trim_trailing_whitespace` và `insert_final_newline`. Một thay đổi trong `.editorconfig` tới được các trình soạn thảo đang mở trong vòng vài giây. Một ký tự tab có sẵn trong tệp vẫn được vẽ theo độ rộng tab đặt trong Tùy chọn, còn `charset` và `end_of_line` không được áp dụng. Các thiết bị định dạng của bạn (GLOSS và các thiết bị cùng loại) lo phần còn lại.
 
 ### Bung tắt tự (⌥⌘E)
 
@@ -191,7 +216,7 @@ Gõ `process.env.` hay `import.meta.env.` sẽ đưa ra những khóa mà họ t
 
 ### Bản dịch trong dự án của bạn
 
-Các danh mục bản dịch của một dự án web là dữ liệu mà trình chỉnh sửa đọc, giống như biểu định kiểu và `.env` của bạn. **Công cụ ▸ Kiểm tra bản dịch…** tìm các danh mục (i18next, vue-i18n, svelte-i18n, XLIFF của Angular, Lingui, Paraglide, react-intl, hoặc của I18n Kit), chọn ngôn ngữ nguồn và báo ba điều, dưới dạng gạch lượn sóng và dòng trong Việc cần làm: **thiếu** (các dạng số nhiều và ngữ cảnh được so trên khóa gốc), **giống nguồn** (sao chép chứ không dịch), và **sai chỗ giữ** — đây mới là lỗi, vì một bản dịch có tập `{{name}}` hay `%s` khác nguồn là đã hỏng. Phát hiện thứ tư, **không dùng**, chỉ xuất hiện khi kiểm kê đầy đủ.
+Các danh mục bản dịch của một dự án web là dữ liệu mà trình chỉnh sửa đọc, giống như biểu định kiểu và `.env` của bạn. **Công cụ ▸ Kiểm tra bản dịch…** tìm các danh mục (i18next, vue-i18n, svelte-i18n, XLIFF của Angular, Lingui, Paraglide, react-intl, hoặc của I18n Kit), chọn ngôn ngữ nguồn và báo ba điều, dưới dạng gạch lượn sóng và dòng trong cửa sổ Action Items: **thiếu** (các dạng số nhiều và ngữ cảnh được so trên khóa gốc), **giống nguồn** (sao chép chứ không dịch), và **sai chỗ giữ** — đây mới là lỗi, vì một bản dịch có tập `{{name}}` hay `%s` khác nguồn là đã hỏng. Phát hiện thứ tư, **không dùng**, chỉ xuất hiện khi kiểm kê đầy đủ.
 
 ### Khuôn mẫu Angular, hạng nhất
 
@@ -222,11 +247,11 @@ Mọi nút điều khiển trên giá đều có một tên đọc được, và
 
 ### Git, trên thanh trạng thái
 
-Dấu **⎇ nhánh** cho biết bạn đang ở nhánh nào và bao nhiêu tệp đã đổi; nó được đọc từ đĩa nên không tốn một tiến trình nào. Một cú nhấp mở ra toàn bộ lịch sử, còn trình đơn mang theo **So sánh dự án**, **Chú giải**, các yêu cầu kéo qua chính `gh` của bạn, và **Soạn lời nhắn commit bằng KVASIR**.
+Dấu **⎇ nhánh** cho biết bạn đang ở nhánh nào và bao nhiêu tệp đã đổi; nó được đọc từ đĩa nên không tốn một tiến trình nào. Một cú nhấp mở ra toàn bộ lịch sử, còn trình đơn mang theo **Diff dự án**, **Chú giải**, các yêu cầu kéo qua chính `gh` của bạn, và **Soạn thông điệp commit bằng KVASIR…**.
 
-### Bảng tác vụ (⌥⌘1)
+### Bảng công việc (⌥⌘1)
 
-Một bảng kanban cho mỗi dự án, lưu trong `.nmoxtasks.json` — nằm cạnh mã của bạn và được quản lý phiên bản cùng nó. Kéo các thẻ hoặc dời chúng bằng bàn phím: **⌘↑/⌘↓** sắp xếp lại, và thẻ vừa dời vẫn giữ tiêu điểm. Giới hạn việc đang làm là lời khuyên chứ không phải rào chắn: phần đầu cột đỏ lên, nhưng không có gì ngăn bạn. Nút **Tổng quan** đổi các cột lấy một bảng theo dõi — việc đang làm, xong hôm nay và trong tuần, dòng chảy theo ngày, những thẻ đang cũ dần — còn đồng hồ bấm giờ (**Chấm công**) đo thời gian thật theo từng thẻ, và cả bảng chỉ có duy nhất một đồng hồ chạy. **Họp nhanh** biến tất cả những thứ đó thành một bản báo cáo dán được ngay.
+Một bảng kanban cho mỗi dự án, lưu trong `.nmoxtasks.json` — nằm cạnh mã của bạn và được quản lý phiên bản cùng nó. Kéo các thẻ hoặc dời chúng bằng bàn phím: **⌘↑/⌘↓** sắp xếp lại, và thẻ vừa dời vẫn giữ tiêu điểm. Giới hạn việc đang làm là lời khuyên chứ không phải rào chắn: phần đầu cột đỏ lên, nhưng không có gì ngăn bạn. Nút **Tổng quan** đổi các cột lấy một bảng theo dõi — việc đang làm, xong hôm nay và trong tuần, dòng chảy theo ngày, những thẻ đang cũ dần — còn đồng hồ bấm giờ (**Bắt đầu bấm giờ**) đo thời gian thật theo từng thẻ, và cả bảng chỉ có duy nhất một đồng hồ chạy. **Standup…** biến tất cả những thứ đó thành một bản báo cáo dán được ngay.
 
 ### Studio khối (⌥⌘5)
 
@@ -260,10 +285,12 @@ Một ứng dụng đầy đủ ngay trong IDE: TLS có kiểm tra tên thật s
 
 Một trình duyệt thật ngay trong IDE, với bộ công cụ nhà phát triển của riêng nó — bảng điều khiển, DOM, mạng, kho lưu, và các khung cho Vue, Svelte và Angular — bởi bộ máy không mang theo trình kiểm tra nào, và cái này là của chúng tôi. Nó biết mã nguồn của bạn: chọn một phần tử, mở đúng dòng đã sinh ra nó, đổi kiểu ngay tại chỗ, và khai báo ấy sẽ nằm vào đúng tệp kiểu gốc. Lưu một tệp là trang tự tải lại, và có sẵn những kích thước thiết bị thật để thử bố cục co giãn của bạn.
 
+Các trang viết bằng hệ chữ phức tạp được vẽ đúng hình: tiếng Ả Rập, Ba Tư, Urdu (kể cả kiểu Nastaliq), Kurd, Pashto, Sindh, Duy Ngô Nhĩ, Syriac, Thaana và N’Ko nối các chữ và đọc theo đúng chiều của chúng, các con số cũng theo chiều riêng của mình; tiếng Hindi và các hệ chữ Ấn khác (Bengal, Gurmukhi, Gujarat, Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala), chữ Thái, Tạng, Myanmar và Khmer đặt dấu nguyên âm và chữ ghép vào đúng chỗ; còn dấu thanh được viết thành ký tự riêng (như cách macOS ghi tên tệp) thì nằm đúng trên chữ của nó. WebKit của JavaFX tự nó không làm được những điều này. Trên macOS và Windows, Trình duyệt bật bộ máy văn bản phức tạp của chính WebKit, nên ô nhập liệu, cụm chữ đậm và nghiêng, đoạn văn căn đều và vùng chọn đều được đo chính xác. Trên Linux, nơi không có công tắc ấy, Trình duyệt tự tạo hình chữ và khớp các ước lượng độ rộng với những phông mà bản phân phối của bạn đã cài, nên một cụm đầy chữ ghép hoặc viết bằng Nastaliq có thể lệch vài điểm ảnh. Chữ Lào không được tạo hình: chính văn bản của JavaFX cũng làm lệch nguyên âm của nó. Chữ Do Thái, Armenia, Gruzia và Ethiopia tự hiển thị đúng, kể cả dấu niqqud.
+
 <a id="7-docker"></a>
 ## 7. Docker
 
-Thẻ Docker là một bảng điều khiển: trạng thái của máy, các thùng chứa, ảnh, ổ đĩa và mạng, cùng với khởi động, dừng, nhật ký và dọn dẹp. Thiết bị HARBOR trên giá cho bạn ngần ấy chỉ trong một cái nhìn. Và như đã nói: chạy một thùng chứa Postgres, MySQL hay Mongo, và Xưởng cơ sở dữ liệu sẽ mời bạn một kết nối đã sẵn sàng.
+Thẻ Docker là một bảng điều khiển: trạng thái của máy, các thùng chứa, ảnh, ổ đĩa và mạng, cùng với khởi động, dừng, nhật ký và dọn dẹp. Thiết bị HARBOR trên giá cho bạn ngần ấy chỉ trong một cái nhìn. Và như đã nói: chạy một thùng chứa Postgres, MySQL hay Mongo, và Studio cơ sở dữ liệu sẽ mời bạn một kết nối đã sẵn sàng.
 
 Thẻ **Dockerize** sinh ra một `Dockerfile` đạt chuẩn sản xuất, một `.dockerignore` và một tệp soạn thảo hợp với bộ công cụ của dự án bạn — Node, PHP-FPM cùng nginx, và nhiều thứ khác.
 
@@ -305,7 +332,7 @@ Trên thanh trạng thái hiện dấu **⇄ đang phục vụ** mỗi khi có m
 
 ### ⌘I, cái tìm cho mọi thứ
 
-Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Xưởng API, tới các kết nối và bảng của Xưởng cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, và tới các thẻ của Bảng công việc, mà kết quả còn gọi tên cột thẻ đang đứng.
+Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Studio API, tới các kết nối và bảng của Studio cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, tới các thẻ của Bảng công việc (kết quả gọi tên cột thẻ đang đứng), và tới các **npm script** của dự án đang nhắm: gõ `dev` hay `test` và kết quả đọc là *Chạy script: dev — vite*; Enter chạy nó bằng chính trình quản lý gói của dự án (npm, yarn hoặc pnpm), đúng như cú nhấp đúp trong Trình duyệt NPM — với một dự án bạn chưa tin cậy, lời hỏi tin cậy không gian làm việc đến trước, lượt chạy nhập vào nút ■ trên thanh công cụ, và một máy chủ phát triển mà nó in ra sẽ thắp dấu ⇄. Trong một monorepo, đó là các script mà Trình duyệt NPM hiển thị.
 
 ### Thanh trạng thái cho biết cái gì còn sống
 
@@ -317,7 +344,7 @@ Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ c�
 
 ### Phím tắt của Emacs (và của Eclipse, và của IntelliJ)
 
-Công cụ ▸ Tùy chọn ▸ Sơ đồ phím (trên macOS: NMOX Studio ▸ Settings… ▸ Sơ đồ phím) đổi cả hồ sơ: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của những xưởng.
+Công cụ ▸ Tùy chọn ▸ Phím tắt (trên macOS: NMOX Studio ▸ Settings… ▸ Phím tắt) đổi cả hồ sơ phím: các phím di chuyển và cắt dán của Emacs trong mọi trình soạn thảo, hoặc bộ của Eclipse và IDEA nếu trí nhớ ngón tay bạn nằm ở đó. Mọi phím tắt của NMOX (họ phím ⌥⌘ mở cửa sổ, ⌘P Đi tới tệp, ⌥⌘E của Emmet, các tổ hợp phím của VS Code) đều có mặt trong cả năm hồ sơ, nên đổi hồ sơ không bao giờ khiến bạn mất các phím tắt của các studio. Có một ngoại lệ có chủ ý: trong hồ sơ Eclipse, ⇧⌘E vẫn là *Switch to Editor* của chính Eclipse, vì người đã chọn Eclipse mong đợi như vậy.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Những tấm lưới an toàn (thứ bạn chẳng phải làm gì để có)
@@ -336,7 +363,7 @@ Thoát khỏi IDE là giết mọi tiến trình mà nó đã khởi động —
 
 ### Những tệp không bao giờ bị đè
 
-Bốn tệp làm việc của các xưởng (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) sẽ nạp lại khi bạn sửa chúng bên ngoài IDE — nhưng nếu bạn còn thay đổi chưa lưu thì bạn được hỏi, chứ không bị đè. Một tệp hỏng được để riêng thành `.bak` và báo cho bạn biết, không bao giờ bị thay lặng lẽ.
+Bốn tệp làm việc của các studio (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`) sẽ nạp lại khi bạn sửa chúng bên ngoài IDE — nhưng nếu bạn còn thay đổi chưa lưu thì bạn được hỏi, chứ không bị đè. Một tệp hỏng được để riêng thành `.bak` và báo cho bạn biết, không bao giờ bị thay lặng lẽ.
 
 ### TypeScript không cần dựng
 
@@ -355,7 +382,7 @@ Lặng lẽ, mỗi ngày một lần: nếu có bản mới hơn, một thông b
 
 ### Kiểm bài của bạn
 
-Một số không gian có điểm kiểm: chọn lấy một, rồi **Tệp ▸ Kiểm tra bài làm** sẽ kiểm các bài tập thật sự — điều các tệp khẳng định được kiểm bằng Java thuần, kể cả các phép kiểm *vắng mặt*, thứ duy nhất chứng thực được «bạn đã đổi tiêu đề»: chữ gốc trong mẫu phải biến mất. Điều các lệnh khẳng định thì đi qua chính bộ công cụ của không gian ấy. Mỗi dấu ✗ đáp lại bằng gợi ý của chính không gian đó, và khi có chỗ hỏng, bản báo mời **Nhờ KVASIR giải thích…**: những điểm hỏng và, với phép kiểm tệp, chính tệp của bạn, có giới hạn và dưới một lời đồng ý nói rõ cái gì rời đi. Câu trả lời đọc như của một gia sư: đổi gì, rồi kiểm lại.
+Một số không gian có điểm kiểm: chọn lấy một, rồi **Tệp ▸ Kiểm tra bài làm** sẽ kiểm các bài tập thật sự — điều các tệp khẳng định được kiểm bằng Java thuần, kể cả các phép kiểm *vắng mặt*, thứ duy nhất chứng thực được «bạn đã đổi tiêu đề»: chữ gốc trong mẫu phải biến mất. Điều các lệnh khẳng định thì đi qua chính bộ công cụ của không gian ấy. Mỗi dấu ✗ đáp lại bằng gợi ý của chính không gian đó, và khi có chỗ hỏng, bản báo mời **Giải thích bằng KVASIR…**: những điểm hỏng và, với phép kiểm tệp, chính tệp của bạn, có giới hạn và dưới một lời đồng ý nói rõ cái gì rời đi. Câu trả lời đọc như của một gia sư: đổi gì, rồi kiểm lại.
 
 ### Bài học của riêng bạn
 
@@ -371,12 +398,12 @@ Một cột thứ tư liệt kê sáu động tác đầu tiên — mở một d
 
 ### Ba câu trả lời của trình đơn Trợ giúp
 
-**Có gì mới…** đưa ra ghi chú của bản bạn đang chạy, gói ngay trong bản dựng; lần khởi động đầu sau một lần cập nhật, nó tự mở với những bản mà máy bạn chưa từng thấy. **Báo lỗi…** soạn một bản báo gồm môi trường của bạn và bốn mươi dòng nhật ký cuối, đã che bớt — thư mục nhà của bạn thành `~`, tên đăng nhập thành `<user>`, thứ gì trông như một bí mật thành `[redacted]` —; bạn sửa lại, rồi **Mở trên GitHub** điền sẵn một phiếu mà chính bạn gửi đi, hoặc bạn sao chép nó. Sản phẩm không bao giờ tự mình gửi gì cả. **Phím tắt…** liệt kê mọi phím tắt của NMOX trong hồ sơ đang dùng, đọc từ sơ đồ phím đang chạy, nên nó không thể lệch khỏi những gì trình đơn làm.
+**Có gì mới…** đưa ra ghi chú của bản bạn đang chạy, gói ngay trong bản dựng; lần khởi động đầu sau một lần cập nhật, nó tự mở với những bản mà máy bạn chưa từng thấy. **Báo cáo sự cố…** soạn một bản báo gồm môi trường của bạn và bốn mươi dòng nhật ký cuối, đã che bớt — thư mục nhà của bạn thành `~`, tên đăng nhập thành `<user>`, thứ gì trông như một bí mật thành `[redacted]` —; bạn sửa lại, rồi **Mở trên GitHub** điền sẵn một phiếu mà chính bạn gửi đi, hoặc bạn sao chép nó. Sản phẩm không bao giờ tự mình gửi gì cả. **Phím tắt bàn phím…** liệt kê mọi phím tắt của NMOX trong hồ sơ đang dùng, cùng các phím toàn cục (các cửa ⌥⌘K / ⇧⌘N / ⇧⌘L của trang Chào mừng), đọc từ sơ đồ phím đang chạy, nên nó không thể lệch khỏi những gì trình đơn làm.
 
 <a id="12-when-somethings-wrong"></a>
 ## 12. Khi có gì đó không ổn
 
-### Bác sĩ môi trường
+### Trình chẩn đoán môi trường
 
 Trong trình đơn Công cụ, nó dò trực tiếp 66 công cụ bên ngoài — node, npm, docker, forge, composer, gopls… — và cho thấy bản đã tìm ra cùng câu lệnh cài đặt cho những thứ còn thiếu.
 
@@ -399,15 +426,15 @@ Tất cả những gì IDE giữ lại về một dự án đều là tệp JSON
 
 | Tệp | Bên trong có gì | Đưa vào kho? |
 |---|---|---|
-| `.nmoxapi.json` | Bộ sưu tập, yêu cầu, môi trường và bài kiểm của Xưởng API | **Có** — đồng đội nhận được trọn bàn làm việc của bạn |
+| `.nmoxapi.json` | Bộ sưu tập, yêu cầu, môi trường và bài kiểm của Studio API | **Có** — đồng đội nhận được trọn bàn làm việc của bạn |
 | `.nmoxdb.json` | Kết nối, truy vấn đã lưu và lịch sử | **Có** — mật khẩu *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
-| `.nmoxweb3.json` | Mạng lưới và sổ địa chỉ của Xưởng hợp đồng | **Có** — địa chỉ bí mật *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
+| `.nmoxweb3.json` | Mạng lưới và sổ địa chỉ của Studio hợp đồng | **Có** — địa chỉ bí mật *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
 | `.nmoxinfra.json` | Khung vẽ hạ tầng: nút, dây nối, thuộc tính | **Có** — mã thông hành *không bao giờ* nằm trong đó (chỉ ở chùm khoá) |
 | `.nmoxtasks.json` | Bảng công việc: cột, thẻ, hạn mức | **Có** — cả đội dùng chung một bảng; bỏ ra nếu muốn giữ riêng |
 | `.gas-snapshot` | Mốc gas theo từng bài kiểm của Foundry (GOVERNOR canh nó) | **Có** — đó là cách bắt được gas đi lùi lúc duyệt mã |
 | `.env` | Các biến môi trường của bạn | **Không** — đó chính là lý do `.env` tồn tại |
 | `*.bak` | Một tệp làm việc không đọc nổi, được giữ lại cho bạn | Không — lấy ra thứ cần rồi xoá |
 
-Sửa bất kỳ tệp nào trong bốn tệp `.nmox*.json` ở ngoài IDE, hoặc kéo về thay đổi của đồng đội, và xưởng tương ứng sẽ tự nạp lại — trừ khi bạn còn thay đổi chưa lưu ở đó, khi ấy nó hỏi trước.
+Sửa bất kỳ tệp nào trong bốn tệp `.nmox*.json` ở ngoài IDE, hoặc kéo về thay đổi của đồng đội, và studio tương ứng sẽ tự nạp lại — trừ khi bạn còn thay đổi chưa lưu ở đó, khi ấy nó hỏi trước.
 
 Ngoài dự án: `~/NMOX` là bàn làm việc mặc định, các thí nghiệm ở trong `~/.nmox/experiments`, các không gian học ở `~/.nmox/learn`, còn trạng thái của chính IDE — cách bày cửa sổ, các bản vá của giá, các tuỳ chọn — nằm trong thư mục người dùng của nền tảng.
