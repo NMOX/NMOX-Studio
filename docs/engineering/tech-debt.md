@@ -20,6 +20,37 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.1.0 (the developer-experience release)
+
+### 118. macOS: Finder's Open With and the Dock cannot hand the IDE a folder
+
+**Open, deliberately.** A folder reaches NMOX Studio on macOS through
+`nmox .` and File ▸ Open Folder…; on Linux and Windows the file manager
+offers it too (3.1.0).
+
+AWT answers open-documents events only when the process's main bundle
+declares `CFBundleDocumentTypes`. The JVM is a child of the platform's
+`nbexec` script, so CoreFoundation takes the runtime's own embedded
+Info.plist as the main bundle (`com.azul.zulu.java`), and the event never
+reaches Java. Exporting `CFProcessPath` naming the bundle's executable
+fixes that **under an ad-hoc signed runtime and not under ours**: measured
+on the notarized 3.1.0 dry run, one small AWT program reads
+`org.nmox.studio` under Homebrew's ad-hoc `java` and `com.azul.zulu.java`
+under the release's hardened one. CoreFoundation ignores the variable in a
+restricted process, and the only entitlement that lifts the restriction,
+`com.apple.security.cs.allow-dyld-environment-variables`, also re-opens
+DYLD injection into a notarized app. That trade is not worth a folder drop.
+3.1.0 shipped the change and took it out the same night, before release,
+because a declared folder type would list the app under Open With and then
+do nothing.
+
+**What would close it:** a native Mach-O launcher that starts the JVM
+in-process through JLI (the shape `jpackage` builds), so the bundle's own
+executable is the process and its Info.plist the main bundle, with no
+environment variable at all. That replaces the shell launcher and its
+Gatekeeper-proven `exec /bin/sh` path, so it needs its own notarized dry
+run. `OpenFolderFromOsGateTest` holds the absence until then.
+
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 
 Recorded by v2.184.0's senior-developer pass; all seven closed in v2.186.0.
