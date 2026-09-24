@@ -136,6 +136,23 @@ class TerminalCommandGateTest {
     }
 
     @Test
+    @DisplayName("macOS: started by LaunchServices in /, the IDE runs from home, so its Terminal does not open in /")
+    @DisabledOnOs(OS.WINDOWS)
+    void macLauncherLeavesTheRootDirectory() throws Exception {
+        Bundle b = bundle();
+        Files.writeString(b.release, "go");
+        Path home = Files.createDirectories(tmp.resolve("home"));
+        List<String> argv = List.of(b.launcher.toString());
+        ProcessBuilder pb = new ProcessBuilder(argv).directory(new java.io.File("/")).redirectErrorStream(true)
+                .redirectOutput(tmp.resolve("launcher-root.out").toFile());
+        pb.environment().put("HOME", home.toString());
+        Process p = pb.start();
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("launcher finished").isTrue();
+        assertThat(Path.of(Files.readAllLines(b.record).get(0)).toRealPath())
+                .as("the IDE's working directory").isEqualTo(home.toRealPath());
+    }
+
+    @Test
     @DisplayName("macOS: every way the launcher starts the platform hands the script to /bin/sh")
     void everyLaunchHandsTheScriptToSh() throws IOException {
         List<String> starts = new ArrayList<>();

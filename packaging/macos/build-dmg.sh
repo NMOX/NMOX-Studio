@@ -122,6 +122,14 @@ if [ -h "$0" ]; then
         esac
     done
 fi
+# LaunchServices (Finder, the Dock, `open`) starts an app with / as its
+# working directory, and the IDE's Terminal opens its shell in the IDE's
+# own directory: the first terminal a user opened landed in "/" (walked in
+# 3.1.0). Home is where a terminal belongs. A terminal launch keeps the
+# caller's directory - the platform resolves relative names against it.
+if [ "$FROM_TERMINAL" = no ] && [ "$(pwd)" = / ] && [ -d "$HOME" ]; then
+    cd "$HOME" || true
+fi
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
 # user), else fall back to an installed JDK 21+, else say so plainly.
