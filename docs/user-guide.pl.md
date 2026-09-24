@@ -54,7 +54,7 @@ Aktualizator wymienia moduły, a nie aplikację wokół nich. Dołączone środo
 <a id="2-first-launch"></a>
 ## 2. Pierwsze uruchomienie
 
-Z terminala `nmox .` otwiera katalog, w którym stoisz, tak jak robi to `code .`: `cd myproject && nmox .`. Katalog jest celowany dokładnie tak, jak celuje go „Otwórz katalog…” na stronie powitalnej, z manifestem czy bez; plik otwiera się w edytorze (`nmox src/app.js`). Polecenie wraca od razu — pierwsze `nmox` uruchamia IDE w tle, a każde kolejne przekazuje swój katalog już działającemu IDE. Samo `nmox` po prostu uruchamia IDE. Jak dodać `nmox` do PATH:
+Z terminala `nmox .` otwiera katalog, w którym stoisz, tak jak robi to `code .`: `cd myproject && nmox .`. Katalog jest celowany dokładnie tak, jak celuje go „Otwórz katalog…” na stronie powitalnej, z manifestem czy bez; plik otwiera się w edytorze (`nmox src/app.js`), a na konkretnym wierszu, jeśli podasz go tak jak w `code -g` (`nmox src/app.js:42` — kolumna jest przyjmowana, a edytor otwiera się na początku wiersza). Nazwa, której nie ma, zostaje odrzucona w terminalu (`nmox: typo.js: no such file or folder`), zamiast cokolwiek uruchamiać. Polecenie wraca od razu — pierwsze `nmox` uruchamia IDE w tle, a każde kolejne przekazuje swój katalog już działającemu IDE. Samo `nmox` po prostu uruchamia IDE. Jak dodać `nmox` do PATH:
 
 - **macOS, Homebrew:** cask podlinkuje je za ciebie.
 - **macOS, z DMG:** podlinkuj (nie kopiuj) program uruchamiający aplikacji —
@@ -68,7 +68,7 @@ W Linuksie i Windows katalog możesz podać NMOX Studio także bez terminala, a 
 - **Linux (pakiet `.deb`):** menedżer plików wymienia NMOX Studio pod *Otwórz za pomocą* dla katalogu. Nie staje się domyślnym programem dla katalogów; tym pozostaje menedżer plików.
 - **Windows:** zaznacz w instalatorze pole *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* („Dodaj Open with NMOX Studio do menu kontekstowego katalogów w Eksploratorze”; domyślnie niezaznaczone, jak w VS Code). Eksplorator oferuje wtedy **Open with NMOX Studio** na katalogu i na pustym miejscu wewnątrz niego; w Windows 11 znajdziesz to pod *Pokaż więcej opcji*. Odinstalowanie to usuwa.
 
-W macOS użyj `nmox .` albo **Plik ▸ Otwórz katalog…**. *Otwórz za pomocą* w Finderze i ikona w Docku nie mogą przekazać katalogu podpisanej aplikacji Java uruchamianej tak jak NMOX Studio, więc aplikacja się tam nie proponuje.
+W macOS użyj `nmox .` albo **Plik ▸ Otwórz katalog…**. *Otwórz za pomocą* w Finderze i ikona w Docku nie potrafią jeszcze przekazać katalogu do NMOX Studio, więc aplikacja się tam nie proponuje.
 
 IDE otwiera się z trzema kartami przy obszarze edytora: **Witamy → Stojak zadań → Przeglądarka**. Każde inne okno jest o jeden skrót ⌥⌘ i figuruje w kolumnie NARZĘDZIA strony powitalnej. W lewym doku: **Studio projektu** (drzewo plików i szablony), baza **Stanowisko pracy** oraz **Eksplorator NPM**. Powstaje katalog `~/NMOX` jako domyślna przestrzeń robocza; stojak wskazuje tam, dopóki nie otworzysz projektu.
 
@@ -194,6 +194,9 @@ Ponad 70 języków jest kolorowanych jak należy — nowoczesny zestaw, klasyczn
 - **Idź do symbolu (⌥⇧⌘O)** przenosi do dowolnej funkcji, klasy, reguły albo nagłówka w całym projekcie po wpisaniu nazwy — z dopasowaniem po przedrostku, po wielkich literach wewnątrz słowa albo po masce. Indeks jest ograniczony i uczciwy: `node_modules` jest pomijany, a przy bardzo dużym projekcie okno mówi, że zindeksowało pierwsze 2000 plików, zamiast udawać, że przeczytało wszystko.
 - **Okno testów (⌥⌘2)** pokazuje wszystkie testy projektu *zanim cokolwiek się uruchomi*, i uruchamia jeden test, plik albo całość.
 - **Serwery języka (LSP):** otwórz plik, dla którego języka jest zainstalowany serwer (typescript, gopls, rust-analyzer, pyright, …), a dostaniesz diagnostykę, podpowiedzi po najechaniu i przejście do definicji. Błędy i ostrzeżenia serwera są też wierszami w oknie **Elementy do zrobienia** (⌘6), nazwanymi od serwera (`[lsp:gopls]`), dla każdego pliku, o którym serwer coś zgłosił. Niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. Brak serwera? IDE proponuje polecenie instalacji, zamiast po cichu zawieść.
+
+  ![Elementy do zrobienia z dwoma błędami gopls, jednym w pliku, którego nigdy nie otwarto, i licznikiem ✕ 2 ⚠ 0 na pasku stanu](images/lsp-action-items.png)
+
 - **`.editorconfig` jest respektowany** — podczas pisania i przy zapisie. `indent_style`, `indent_size` i `tab_width` decydują, co wpisują Tab, Enter i ponowne wcięcie, osobno dla każdego pliku i każdej sekcji wzorca; każdy zapis stosuje `trim_trailing_whitespace` i `insert_final_newline`. Zmiana w `.editorconfig` dociera do otwartych edytorów w ciągu paru sekund. Znak tabulacji, który już jest w pliku, nadal rysuje się z szerokością tabulacji ustawioną w Opcjach, a `charset` i `end_of_line` nie są stosowane.
 
 ### Rozwiń skrót (⌥⌘E)
@@ -230,7 +233,7 @@ Pliki `.vue` i `.svelte` otwierają się z własnym kolorowaniem, własnym uzupe
 
 ### Debugowanie z prawdziwymi pułapkami
 
-Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrzyma się w tym miejscu — ze stosem, zmiennymi i obliczaniem wyrażeń. JavaScript i TypeScript działają od razu dzięki dołączonemu adapterowi; Python używa debugpy, a Go delve, które instalujesz sam. **Debuguj w Chrome** robi to samo dla strony: pułapki w twoim źródle zatrzymują się w IDE, podczas gdy przeglądarka chodzi na jednorazowym profilu. Wszystko najpierw przechodzi przez pytanie o zaufanie do przestrzeni roboczej.
+Kliknij na lewym marginesie, wybierz **Debuguj plik (pułapki)** i program zatrzyma się w tym miejscu — ze stosem, zmiennymi i obliczaniem wyrażeń. JavaScript i TypeScript działają od razu dzięki dołączonemu adapterowi; Python używa debugpy, a Go delve, które instalujesz sam. **Debuguj w Chrome** robi to samo dla strony: pułapki w twoim źródle zatrzymują się w IDE, podczas gdy przeglądarka chodzi na jednorazowym profilu. Repozytorium, które ma `.vscode/launch.json`, daje jeszcze jedno wejście: wpisz nazwę konfiguracji w Szybkim wyszukiwaniu, a Enter uruchamia `program` Node albo Pythona z tej konfiguracji w jej `cwd` albo otwiera `url` konfiguracji Chrome z jej `webRoot`; konfiguracja, która ustawia `args`, `env` albo cokolwiek innego, czego debuger nie potrafi przekazać, zostaje odrzucona z nazwy na pasku stanu, zamiast wystartować bez tego. Wszystko najpierw przechodzi przez pytanie o zaufanie do przestrzeni roboczej.
 
 ### Debugowanie w przeglądarce
 
@@ -328,11 +331,11 @@ Dodaj do dowolnego kodu jQuery, MooTools, Prototype, Backbone z Underscore albo 
 
 ### Znacznik ⇄ obsługuje
 
-Na pasku stanu pojawia się znacznik **⇄ obsługuje**, gdy tylko działają serwery: uruchomienie samego środowiska, urządzenia obsługujące oraz każde polecenie, które wypisało lokalny adres. Kliknij i wybierz jeden — otworzy się we wbudowanej przeglądarce albo w przeglądarce systemu, gdy tamta karta go nie przyjmie.
+Na pasku stanu pojawia się znacznik **⇄ obsługuje**, gdy tylko działają serwery: uruchomienie samego środowiska, urządzenia obsługujące oraz każde polecenie, które wypisało lokalny adres. Kliknij i wybierz jeden — otworzy się we wbudowanej przeglądarce albo w przeglądarce systemu, gdy tamta karta go nie przyjmie. Dopóki cokolwiek, co sprawdza IDE, ma problem, licznik **✕ 2 ⚠ 1** pokazuje błędy i ostrzeżenia ze wszystkich serwerów języka i narzędzi; kliknij go, aby otworzyć Elementy do zrobienia.
 
 ### ⌘I, wyszukiwarka do wszystkiego
 
-Jedno pole sięga twoich projektów (ostatnich i znanych), każdego urządzenia na stojaku — prosto do jego pokręteł —, **działających serwerów** (Enter otwiera je w przeglądarce), żądań Studia API, połączeń i tabel Studia baz danych, kontraktów, węzłów infrastruktury, kart Tablicy zadań (trafienie nazywa kolumnę, w której karta stoi) oraz **skryptów npm** wycelowanego projektu: wpisz `dev` albo `test`, a trafienie brzmi *Uruchom skrypt: dev — vite*; Enter uruchamia go własnym menedżerem pakietów projektu (npm, yarn albo pnpm), dokładnie tak jak podwójne kliknięcie w Eksploratorze NPM. W projekcie, któremu jeszcze nie ufasz, najpierw pojawi się pytanie o zaufanie do obszaru roboczego, uruchomienie dołącza do ■ na pasku narzędzi, a serwer deweloperski, który wypisze adres, zapala znacznik ⇄. W monorepozytorium są to te skrypty, które pokazuje Eksplorator NPM.
+Jedno pole sięga twoich projektów (ostatnich i znanych), każdego urządzenia na stojaku — prosto do jego pokręteł —, **działających serwerów** (Enter otwiera je w przeglądarce), żądań Studia API, połączeń i tabel Studia baz danych, kontraktów, węzłów infrastruktury, kart Tablicy zadań (trafienie nazywa kolumnę, w której karta stoi) oraz **skryptów npm** wycelowanego projektu: wpisz `dev` albo `test`, a trafienie brzmi *Uruchom skrypt: dev — vite*; Enter uruchamia go własnym menedżerem pakietów projektu (npm, yarn albo pnpm), dokładnie tak jak podwójne kliknięcie w Eksploratorze NPM. W projekcie, któremu jeszcze nie ufasz, najpierw pojawi się pytanie o zaufanie do obszaru roboczego, uruchomienie dołącza do ■ na pasku narzędzi, a serwer deweloperski, który wypisze adres, zapala znacznik ⇄. W monorepozytorium są to te skrypty, które pokazuje Eksplorator NPM. Repozytorium, które ma `.vscode/tasks.json`, wymienia swoje zadania w ten sam sposób — *Uruchom zadanie: build — make all* — a Enter uruchamia zadanie po tym samym pytaniu o zaufanie, w oknie Output i pod ■ na pasku narzędzi; zadanie powłoki działa w powłoce, której użyłby VS Code (twój `$SHELL`, w macOS jako powłoka logowania; w Windows PowerShell), albo w tej, którą wskazuje jego `options.shell`; zadanie, które potrzebuje wartości dostępnej tylko w VS Code albo zależy od innego zadania, mówi o tym na pasku stanu, zamiast się uruchomić. Obok nich jest jego `.vscode/launch.json` — *Debuguj: Launch Program — ${workspaceFolder}/server.js* — a Enter uruchamia debuger z pułapkami na tej konfiguracji po tym samym pytaniu o zaufanie.
 
 ### Pasek stanu mówi, co żyje
 

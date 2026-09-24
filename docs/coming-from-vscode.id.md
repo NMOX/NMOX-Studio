@@ -36,7 +36,7 @@ PC.
 | Ke baris | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
 | Komentar baris | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Menampilkan saran | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
-| Menambahkan kemunculan berikutnya ke seleksi | ⌘D | **⌘J** | Ctrl+D | **Ctrl+J** |
+| Menambahkan kemunculan berikutnya ke seleksi | ⌘D | **⌘D** atau ⌘J | Ctrl+D | **Ctrl+D** atau Ctrl+J |
 | Memilih setiap kemunculan | ⇧⌘L | **⌃⇧⌘J** | Ctrl+Shift+L | **Ctrl+Alt+Shift+J** |
 | Menambahkan kursor di atas / di bawah | ⌥⌘↑ / ⌥⌘↓ | **⌥⌘↑ / ⌥⌘↓** | Ctrl+Alt+↑ / ↓ | **Alt+Shift+[ / ]** |
 | Memindahkan baris ke atas / ke bawah | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
@@ -84,7 +84,9 @@ nmox            # just start the IDE
 ```
 
 Perintah itu langsung kembali, dan `nmox` yang kedua menyerahkan foldernya
-kepada IDE yang sudah berjalan. Homebrew, pemasang Windows (*Add "nmox" to
+kepada IDE yang sudah berjalan. Kolom (`src/app.ts:42:7`) juga diterima, dan
+penyunting terbuka di awal baris; nama yang tidak ada ditolak di terminal
+alih-alih menjalankan apa pun. Homebrew, pemasang Windows (*Add "nmox" to
 PATH*), dan paket Linux memasukkannya ke PATH Anda; untuk pemasangan dari DMG,
 [panduan pengguna](user-guide.id.md#2-first-launch) menunjukkan tautan satu
 baris itu.
@@ -97,11 +99,11 @@ baris itu.
 | **Explorer** | **Studio Proyek** (⇧⌘E) — pohon berkas, templat, dan penyunting `package.json` proyek. **Meja Kerja** (⌥⌘0) adalah pangkalan: berkas yang terbuka, berkas terkini, proyek terkini, dan semua yang sedang berjalan. |
 | **Command Palette** | **Pencarian Cepat** (⇧⌘P atau ⌘I) — tindakan, berkas, proyek terkini, perangkat rak, server aktif, permintaan Studio API, simbol. |
 | **Extensions** | **Alat ▸ Plugin** memasang dan memperbarui modul, termasuk pembaruan NMOX sendiri. Banyak hal yang ditambahkan sebuah ekstensi di VS Code adalah sebuah **perangkat rak** di sini — dan Anda bisa menulisnya sebagai berkas JSON di `~/.nmox/devices.d` ([berkas perangkat](device-files.md)). |
-| **`tasks.json`** | Skrip proyek Anda sendiri, dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
-| **`launch.json`** | **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
+| **`tasks.json`** | `.vscode/tasks.json` di repositori Anda dibaca: ketik nama sebuah tugas di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Jalankan tugas: build — make all* menjalankannya, dengan Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, keluarannya di jendela Output, dan ■ di bilah alat untuk menghentikannya. Di sampingnya, skrip proyek Anda sendiri dijalankan sebagaimana ditulis: Jalankan / Bangun / Uji di bilah alat (F6, F11, ⌃F6), **Jalankan Skrip** pada baris `scripts` di `package.json`, **Penjelajah NPM**, dan **Rak Tugas** (⌘9), tempat tugas adalah perangkat yang Anda rangkai bersama. |
+| **`launch.json`** | `.vscode/launch.json` di repositori Anda dibaca: ketik nama sebuah konfigurasi di Pencarian Cepat (⇧⌘P atau ⌘I), dan Enter pada *Debug: Launch Program — ${workspaceFolder}/server.js* memulai pengawakutu titik henti pada program itu, dengan Kepercayaan Ruang Kerja bertanya lebih dulu. Konfigurasi Node (`node`, `pwa-node`) dan Python (`python`, `debugpy`) mengawakutu `program`-nya di dalam `cwd`-nya; konfigurasi Chrome (`chrome`, `pwa-chrome`) membuka `url` (atau `file`) miliknya dengan `webRoot`-nya. Tanpa `launch.json`, **Awakutu berkas** (⇧⌘F5) dan tombol awakutu di bilah alat menentukan apa yang diluncurkan dari proyek itu sendiri — titik masuk skrip `start`, `main`, `index.js` — dan perangkat rak **INSPECTOR** meluncurkan pengawakutu sebagai satu langkah di sebuah alur. |
 | **Terminal terpadu** | Jendela **Terminal** (⌃\`): tekanan pertama memulai shell di folder proyek, tekanan berikutnya memunculkannya kembali. |
 | **`settings.json`** | Alat ▸ Opsi (di macOS, NMOX Studio ▸ Settings…). `.editorconfig` proyek Anda berlaku saat Anda mengetik dan saat menyimpan. |
-| **Panel Problems** | **Item tindakan** (⌘6): galat dan peringatan dari server bahasa, serta temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak. Seperti di VS Code, sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. |
+| **Panel Problems** | **Item tindakan** (⌘6), atau klik hitungan **✕ ⚠** di baris status: galat dan peringatan dari server bahasa, serta temuan lint dan tipe dari perangkat PURITY dan TYPEGUARD di rak. Seperti di VS Code, sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. |
 | **Outline** | **Navigator** (⌘7). |
 | **Source Control** | Tanda git di baris status (cabang dan perubahan, sekali klik ke riwayat) dan menu **Tim**. |
 | **Workspace Trust** | Gagasan yang sama, **Kepercayaan Ruang Kerja**, ditegakkan sebelum apa pun yang dipilih sebuah repositori dijalankan: membuka proyek hasil klon tidak menjalankan apa pun sampai Anda memercayainya. |
@@ -110,25 +112,54 @@ baris itu.
 <a id="what-is-honestly-different"></a>
 ## Apa yang memang berbeda
 
-- **⌘D bukan multikursor di sini.** Gerakan yang sama adalah **⌘J** (Ctrl+J);
-  ⌘D sendiri tidak terikat ke apa pun. Ikat ulang di Pintasan keyboard jika jari
-  Anda bersikeras.
+- **⌘D menambahkan kemunculan berikutnya di peta tombol bawaan, tetapi tidak
+  di setiap profil.** Profil Eclipse mempertahankan ⌘D sebagai *Delete Line*
+  milik Eclipse, dan profil NetBeans 5.5 sebagai *Shift Line Left*; di sana,
+  ⌘J (Ctrl+J) adalah gerakan yang sama.
 - **⌃\` membuka dan memfokuskan Terminal; ia tidak menyembunyikannya.** Dan
   selama Terminal punya fokus, tombol-tombolnya milik shell Anda, sehingga
   tekanan kedua sampai ke shell alih-alih membawa Anda kembali ke penyunting.
-- **`.vscode/tasks.json` dan `launch.json` tidak dibaca.** Sebuah tugas adalah
-  perintah yang dipilih sebuah repositori, dan membacanya layak mendapat
-  rancangannya sendiri di seputar Kepercayaan Ruang Kerja; sampai saat itu,
-  skrip proyek sendiri dan aturan titik masuk awakutu di atas yang
-  mengerjakannya.
+- **`launch.json` dibaca, dan apa yang tidak bisa dipenuhi pengawakutu
+  ditolak.** Pengawakutu di sini meneruskan sebuah program, folder kerjanya,
+  dan tidak lebih, jadi konfigurasi yang mengatur `args`, `env`, `envFile`,
+  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask`, atau bidang lain yang
+  belum diajarkan kepadanya tetap terdaftar tetapi tidak dimulai: Enter
+  menyebutkan bidang-bidang itu di baris status. Memulai program tanpa
+  argumen atau lingkungannya berarti mengawakutu sesuatu yang lain daripada
+  yang dikatakan berkas itu. Hal yang sama berlaku untuk `"request": "attach"`,
+  sebuah entri `compounds`, tipe yang tidak punya adaptor di sini (`go`,
+  `msedge`, `cppdbg`, dan lainnya), nilai yang hanya bisa diberikan VS Code
+  (`${file}`, `${input:…}`), dan jalur di luar proyek. Bidang yang hanya
+  membentuk apa yang ditampilkan pengawakutu — `skipFiles`, `outFiles`,
+  `sourceMaps`, `console`, `justMyCode`, `presentation` — diterima tetapi
+  tidak diterapkan; keluaran program masuk ke jendela Output.
+- **`tasks.json` dibaca, dengan dua penolakan.** Tugas yang memakai nilai yang
+  hanya bisa diberikan VS Code (`${input:…}`, `${file}`, `${config:…}`,
+  `${command:…}`) atau yang `dependsOn` tugas lain tetap terdaftar tetapi
+  tidak dijalankan: Enter menyebutkan variabel atau tugas yang mana di baris
+  status. Menjalankannya dengan nilai yang dibiarkan kosong, atau tanpa tugas
+  yang menjadi sandarannya, berarti menjalankan sesuatu yang lain daripada
+  yang dikatakan berkas itu. Begitu pula tipe tugas yang disediakan sebuah
+  ekstensi (`gulp`, `typescript`), dan folder kerja di luar proyek.
+- **Tugas `"type": "shell"` berjalan di shell yang akan dipakai VS Code.** Di
+  macOS dan Linux itu adalah `$SHELL` Anda dengan `-c` (zsh, bash, atau fish
+  di macOS dimulai sebagai shell login, `-l`, seperti profil bawaan VS Code);
+  di Windows itu PowerShell, `pwsh` bila terpasang. `options.shell` dihormati
+  dengan cara VS Code: sebutkan sebuah `executable` dan tugas berjalan dengan
+  persis `args` yang Anda berikan, jadi bash memerlukan `"args": ["-c"]`. Di
+  Windows hanya PowerShell (argumen yang diakhiri `-Command`) dan `cmd.exe`
+  (argumen yang diakhiri `/c`) yang dijalankan; shell lain apa pun di sana
+  ditolak dengan menyebut namanya alih-alih diberi baris perintah yang
+  dikutip secara tebak-tebakan.
 - **Tidak ada profil peta tombol “VS Code”.** Pintasan di atas menumpang pada
   profil bawaan dan keempat profil lainnya. Satu pengecualian disengaja: di
   profil **Eclipse**, ⇧⌘E tetap *Switch to Editor* milik Eclipse sendiri, dan di
   dalam penyunting ⇧⌘P dan ⇧⌘X mempertahankan arti Eclipse-nya (kurung yang
   berpasangan, huruf besar) — orang yang memilih Eclipse mengharapkan Eclipse.
-- **Di Linux, Ctrl+\` membuka Terminal, bukan pengalih jendela.** Platform
-  menaruh pengalih kedua di sana untuk desktop (KDE) yang merebut Ctrl+Tab;
-  pengalihnya ada di Ctrl+Tab.
+- **Di Linux, Ctrl+\` membuka Terminal, bukan pengalih jendela.**
+  Pengalihnya ada di Ctrl+Tab. Di desktop yang mengambil Ctrl+Tab untuk
+  dirinya sendiri (KDE, misalnya), **Jendela ▸ Dokumen…** mendaftar berkas
+  yang terbuka sebagai gantinya.
 - **Pintasan Ctrl+Alt bisa bertabrakan dengan AltGr.** Di Windows, tata letak
   papan ketik yang mengetik karakter dengan AltGr (misalnya Polandia)
   mengirimkan Ctrl+Alt untuknya. Jika Ctrl+Alt+P atau Ctrl+Alt+K mengetik sebuah
