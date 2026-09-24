@@ -248,11 +248,10 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
     }
 
     private static void status(String message) {
-        String plain = PlainStatus.text(message);
         if (EventQueue.isDispatchThread()) {
-            StatusDisplayer.getDefault().setStatusText(plain);
+            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(message));
         } else {
-            EventQueue.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(plain));
+            EventQueue.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(message)));
         }
     }
 }
