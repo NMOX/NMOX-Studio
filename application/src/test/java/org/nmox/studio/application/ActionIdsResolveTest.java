@@ -46,6 +46,11 @@ class ActionIdsResolveTest {
     private static final Pattern CALL = Pattern.compile("Actions\\.forID\\(\\s*([^,()]+?)\\s*,\\s*([^,()]+?)\\s*\\)");
     /** The Welcome's door helper, {@code actionLink(label, category, id)}, which looks the id up for you. */
     private static final Pattern LINK = Pattern.compile("actionLink\\([^;]*?,\\s*(\"[^\"]+\")\\s*,\\s*(\"[^\"]+\")\\s*\\)");
+    /**
+     * Quick Search's VS Code table, {@code cmd("VS Code title", category, id)},
+     * each row resolved through {@code Actions::forID} (3.1.0).
+     */
+    private static final Pattern CMD = Pattern.compile("\\bcmd\\(\\s*\"[^\"]*\"\\s*,\\s*(\"[^\"]+\")\\s*,\\s*(\"[^\"]+\")\\s*\\)");
     private static final Pattern CONSTANT = Pattern.compile("static\\s+final\\s+String\\s+(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
     @Test
@@ -59,7 +64,7 @@ class ActionIdsResolveTest {
             for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
                     && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
                 String src = Files.readString(p);
-                if (!src.contains("Actions.forID(")) {
+                if (!src.contains("Actions.forID(") && !src.contains("Actions::forID")) {
                     continue;
                 }
                 Map<String, String> constants = new HashMap<>();
@@ -68,7 +73,7 @@ class ActionIdsResolveTest {
                     constants.put(c.group(1), c.group(2));
                 }
                 List<String[]> pairs = new ArrayList<>();
-                for (Pattern shape : new Pattern[] {CALL, LINK}) {
+                for (Pattern shape : new Pattern[] {CALL, LINK, CMD}) {
                     Matcher m = shape.matcher(src);
                     while (m.find()) {
                         pairs.add(new String[] {m.group(1), m.group(2)});

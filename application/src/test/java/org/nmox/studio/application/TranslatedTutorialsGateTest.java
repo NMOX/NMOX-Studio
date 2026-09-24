@@ -192,7 +192,9 @@ class TranslatedTutorialsGateTest {
                 docs.add(p);
             }
         }
-        Pattern notProse = Pattern.compile("`[^`]*`|\\]\\([^)]*\\)|<[^>]+>|https?://\\S+");
+        // `![` opens an image: its ! is Markdown, not the French exclamation
+        // mark (3.1.0 - the guide's first indented image under a bullet)
+        Pattern notProse = Pattern.compile("`[^`]*`|!\\[|\\]\\([^)]*\\)|<[^>]+>|https?://\\S+");
         List<String> wrong = new ArrayList<>();
         for (Path p : docs) {
             boolean fence = false;

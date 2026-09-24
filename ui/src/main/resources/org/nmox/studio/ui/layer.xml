@@ -545,6 +545,15 @@
          QuickSearch/ folder only, so the nested copy was invisible
          (the v1.324.0 walk's unverifiable Cmd+I reach, explained). -->
     <folder name="QuickSearch">
+        <!-- 3.1.0: VS Code's command-palette titles, right under the
+             platform's Actions (200), whose matcher needs the action's own
+             name as one substring: "toggle terminal" and "git commit" find
+             nothing there. VsCodeCommandSearchProvider maps the titles. -->
+        <folder name="VsCodeCommands">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.search.category.Bundle"/>
+            <attr name="position" intvalue="210"/>
+            <file name="org-nmox-studio-ui-search-VsCodeCommandSearchProvider.instance"/>
+        </folder>
         <folder name="Tasks">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.tasks.search.Bundle"/>
             <attr name="position" intvalue="360"/>
