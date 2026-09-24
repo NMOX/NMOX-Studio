@@ -89,10 +89,13 @@ RES="$DIR/../Resources/nmoxstudio"
 # a folder is AIMED (--aim, what File > Open Folder... does, with or
 # without a manifest - the platform's own --open shows a manifest-less
 # folder as a raw explorer tab), a file is OPENED (--open). Options and
-# the value an option takes pass through untouched; a name that is not
-# there passes through as typed, so the IDE's own refusal names it.
-# packaging/linux/nmox spells the same rule; TerminalCommandGateTest holds
-# the two to the same argv.
+# the value an option takes pass through untouched. A name that is not
+# there is refused HERE, before anything starts: `nmox: <name>: no such
+# file or folder` on stderr and exit status 2 - for a bare name and for
+# the value of an explicit --aim or --open (--aim also refuses a file).
+# The backgrounded IDE's output is discarded, so a refusal it made would
+# reach nobody. packaging/linux/nmox spells the same rule;
+# TerminalCommandGateTest holds the two to the same argv and runs both.
 FROM_TERMINAL=no
 if [ -h "$0" ]; then
     FROM_TERMINAL=yes
@@ -102,7 +105,16 @@ if [ -h "$0" ]; then
         a=$1
         shift
         n=$((n - 1))
-        if [ "$value" = yes ]; then
+        if [ "$value" != no ]; then
+            if [ "$value" = --aim ] || [ "$value" = --open ]; then
+                if [ ! -e "$a" ]; then
+                    printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                    exit 2
+                elif [ "$value" = --aim ] && [ ! -d "$a" ]; then
+                    printf 'nmox: %s: not a folder (--aim takes a folder)\n' "$a" >&2
+                    exit 2
+                fi
+            fi
             set -- "$@" "$a"
             value=no
             continue
@@ -110,17 +122,22 @@ if [ -h "$0" ]; then
         case "$a" in
             --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
                 set -- "$@" "$a"
-                value=yes ;;
+                value=$a ;;
             -*) set -- "$@" "$a" ;;
             *)  if [ -d "$a" ]; then
                     set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
                 elif [ -e "$a" ]; then
                     set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
                 else
-                    set -- "$@" "$a"
+                    printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                    exit 2
                 fi ;;
         esac
     done
+    if [ "$value" != no ]; then
+        printf 'nmox: %s needs a value\n' "$value" >&2
+        exit 2
+    fi
 fi
 # LaunchServices (Finder, the Dock, `open`) starts an app with / as its
 # working directory, and the IDE's Terminal opens its shell in the IDE's

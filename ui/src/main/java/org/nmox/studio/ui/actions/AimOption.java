@@ -28,8 +28,27 @@ import org.openide.windows.WindowManager;
  * ({@link Env#getCurrentDirectory()}), which is the running instance's
  * view of the terminal the command was typed in when it is forwarded, so
  * {@code cd app && nmoxstudio --aim .} aims {@code app}. Anything that is
- * not an existing directory is refused on the caller's terminal with a
- * non-zero exit - the refusal speaks where the command was typed.
+ * not an existing directory is refused with a {@link CommandException} of
+ * exit code 2 ({@link #EXIT_NOT_A_DIRECTORY}) and a sentence naming it; the
+ * platform's CLI writes that sentence to the CALLING process's error stream
+ * and returns the code as its exit status (read from the RELEASE310
+ * bytecode: {@code CLICoreBridge} hands {@code Args.getErrorStream()} to
+ * sendopts, whose {@code HandlerImpl} catches the exception, prints its
+ * localized message there and returns {@code getExitCode()}).
+ *
+ * <p>Which door speaks where: {@code bin/nmoxstudio --aim}, the Windows
+ * launcher exe and Explorer's folder verb reach THIS refusal, and whether
+ * anyone sees it is that door's business - a terminal running
+ * {@code bin/nmoxstudio} in the foreground shows it, Explorer's verb has no
+ * terminal to show it on. The {@code nmox} command does not reach it: it
+ * starts the IDE detached with its output discarded, so it checks every path
+ * it would hand over as {@code --aim}/{@code --open} ITSELF before starting
+ * anything, and refuses a missing one on the terminal it was typed in -
+ * {@code nmox: <path>: no such file or folder}, exit 2, the same code as
+ * here (packaging/linux/nmox, the macOS bundle launcher in build-dmg.sh,
+ * packaging/windows/nmox.cmd). What still reaches this class through
+ * {@code nmox} is only a folder that vanished between the check and the
+ * handshake, and that refusal is not seen.
  */
 @ServiceProvider(service = OptionProcessor.class)
 @Messages({

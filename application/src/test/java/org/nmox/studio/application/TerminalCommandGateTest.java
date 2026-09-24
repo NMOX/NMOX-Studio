@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,8 +34,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * no manifest as a raw explorer tab rather than aiming it, so every door
  * rewrites its arguments the same way: a folder becomes {@code --aim
  * <absolute>} (File ▸ Open Folder…'s own verb), a file {@code --open
- * <absolute>}, an option and its value pass through, a missing name stays
- * as typed so the IDE's refusal can name it.
+ * <absolute>}, an option and its value pass through. A name that is not
+ * there is refused BY THE LAUNCHER, before anything starts: {@code nmox:
+ * <name>: no such file or folder} on stderr and exit 2. It used to pass
+ * through "so the IDE's refusal names it", but every door starts the IDE
+ * detached with its output discarded, so that refusal reached nobody and
+ * {@code nmox missing} printed nothing and returned 0 (the 3.1 review,
+ * finding 5). Both Unix launchers are RUN here against a missing path and
+ * a stand-in IDE that records whether it ever started.
  *
  * <p>Four homes, one command, and this gate holds each one:
  *
@@ -68,6 +77,7 @@ class TerminalCommandGateTest {
     private static final Path NMOX_CMD = Path.of("..", "packaging", "windows", "nmox.cmd");
     private static final Path CASK = Path.of("..", "Casks", "nmox-studio.rb");
     private static final Path WORKFLOW = Path.of("..", ".github", "workflows", "release.yml");
+    private static final Path WIN_CHECK = Path.of("..", ".github", "workflows", "windows-installer-check.yml");
 
     private static final String LAUNCHER_OPEN = "cat > \"$BUNDLE/Contents/MacOS/nmox-studio\" <<'LAUNCHER'\n";
 
@@ -215,6 +225,90 @@ class TerminalCommandGateTest {
         assertThat(slurp(tmp.resolve("nmox.out"))).contains("cannot find nmoxstudio");
     }
 
+    // ---------------------------------------------------------------- refusals
+
+    /**
+     * What a mistyped command looks like, and what the launcher must say
+     * about it. Every row is refused in the shell, before the IDE starts:
+     * a bare name that is not there, the value of an explicit --aim or
+     * --open that is not there, a FILE given to --aim (which takes a
+     * folder), and an option left without its value. The existing folder
+     * and file in the same argv prove the refusal is not waiting for the
+     * first argument - it is the whole argv or nothing.
+     */
+    static java.util.stream.Stream<Arguments> refusals() {
+        return java.util.stream.Stream.of(
+                Arguments.of(List.of(".", "nope.txt"), "nmox: nope.txt: no such file or folder"),
+                Arguments.of(List.of("src/app.js", "gone/deeper"), "nmox: gone/deeper: no such file or folder"),
+                Arguments.of(List.of("--aim", "missing"), "nmox: missing: no such file or folder"),
+                Arguments.of(List.of("--open", "missing.js"), "nmox: missing.js: no such file or folder"),
+                Arguments.of(List.of("--aim", "src/app.js"), "nmox: src/app.js: not a folder (--aim takes a folder)"),
+                Arguments.of(List.of(".", "--aim"), "nmox: --aim needs a value"));
+    }
+
+    @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
+    @MethodSource("refusals")
+    @DisabledOnOs(OS.WINDOWS)
+    void linuxCommandRefusesAMissingPath(List<String> typed, String said) throws Exception {
+        Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+        Path nmox = appBin.resolve("nmox");
+        Files.copy(LINUX_NMOX, nmox);
+        executable(nmox);
+        Path started = tmp.resolve("started");
+        writeTripwireIde(appBin.resolve("nmoxstudio"), started);
+        assertRefused(start(project(), nmox.toString(), typed), said, started);
+    }
+
+    @ParameterizedTest(name = "macOS: nmox {0} is refused before anything starts")
+    @MethodSource("refusals")
+    @DisabledOnOs(OS.WINDOWS)
+    void macLauncherRefusesAMissingPath(List<String> typed, String said) throws Exception {
+        Bundle b = bundle();
+        Path started = tmp.resolve("started");
+        writeTripwireIde(b.launcher.resolveSibling("../Resources/nmoxstudio/bin/nmoxstudio").normalize(), started);
+        Path bin = Files.createDirectories(tmp.resolve("brew/bin"));
+        Path nmox = bin.resolve("nmox");
+        Files.createSymbolicLink(nmox, b.launcher);
+        assertRefused(start(project(), nmox.toString(), typed), said, started);
+    }
+
+    @Test
+    @DisplayName("Linux: an explicit --aim naming a real folder is checked, accepted and handed over as typed")
+    @DisabledOnOs(OS.WINDOWS)
+    void linuxCommandAcceptsAnExplicitAim() throws Exception {
+        Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+        Path nmox = appBin.resolve("nmox");
+        Files.copy(LINUX_NMOX, nmox);
+        executable(nmox);
+        Path record = tmp.resolve("record.txt");
+        Path release = tmp.resolve("release");
+        Files.writeString(release, "go");
+        writeIde(appBin.resolve("nmoxstudio"), record, release, 0);
+        Process p = start(project(), nmox.toString(), List.of("--aim", "src", "--open", "src/app.js"));
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("nmox returns").isTrue();
+        assertThat(p.exitValue()).as("nmox said: %s", slurp(tmp.resolve("launcher.out"))).isZero();
+        assertThat(awaitRecord(record).subList(1, 5)).as("the platform resolves an option's value itself")
+                .containsExactly("--aim", "src", "--open", "src/app.js");
+    }
+
+    @Test
+    @DisplayName("the refusal is spelled the same by all three launchers")
+    void everyLauncherSpeaksTheSameRefusal() throws IOException {
+        for (String unix : List.of(read(LINUX_NMOX), launcher())) {
+            assertThat(unix).contains("printf 'nmox: %s: no such file or folder\\n' \"$a\" >&2\n")
+                    .contains("printf 'nmox: %s: not a folder (--aim takes a folder)\\n' \"$a\" >&2\n")
+                    .contains("printf 'nmox: %s needs a value\\n' \"$value\" >&2\n");
+            assertThat(unix.split("\n\\s*exit 2\n", -1)).as("each of the four refusal sites exits 2").hasSize(5);
+        }
+        String cmd = read(NMOX_CMD);
+        assertThat(cmd).contains(">&2 echo(nmox: !NMOX_A!: no such file or folder\n")
+                .contains(">&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)\n")
+                .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n");
+        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the three refusal sites exits 2").hasSize(4);
+        assertThat(cmd).as("a bare name that is neither folder nor file is refused, not passed on")
+                .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ngoto missing\n");
+    }
+
     @Test
     @DisplayName("Linux: the tarball carries bin/nmox and the .deb puts /usr/bin/nmox on PATH")
     void linuxPackagesShipTheCommand() throws IOException {
@@ -265,9 +359,51 @@ class TerminalCommandGateTest {
         assertThat(cmd).as("START returns at once, handing over the rewritten arguments")
                 .contains("start \"\" \"%NMOX_EXE%\" %NMOX_ARGS%\n");
         assertThat(cmd).as("a folder is aimed and a file opened, by absolute path")
-                .contains("--aim \"%%NMOX_DIR%%\"").contains("--open \"%~f1\"");
+                .contains("for %%D in (\"%~f1\\.\") do set \"NMOX_A=%%~fD\"\nset \"NMOX_VERB=--aim\"\n")
+                .contains("set \"NMOX_A=%~f1\"\nset \"NMOX_VERB=--open\"\n");
         assertThat(iss).as("nmox.cmd lands in a folder of its own, beside bin")
                 .contains("Source: \"nmox.cmd\"; DestDir: \"{app}\\cli\"\n");
+    }
+
+    @Test
+    @DisplayName("Windows: nmox.cmd never expands an argument twice, so % ^ & ! in a file name survive")
+    void windowsShimExpandsEachArgumentOnce() throws IOException {
+        String cmd = read(NMOX_CMD);
+        List<String> code = cmd.lines().filter(l -> !l.startsWith("rem")).toList();
+        assertThat(code).as("CALL re-expands %% and doubles ^ in its arguments: no `call set`, no `call` with"
+                + " arguments at all (a bare `call :label` passes nothing through the second parse)")
+                .noneMatch(l -> l.matches("(?i)\\s*call\\s+(?!:append$).*"));
+        assertThat(code.get(1)).as("the argument is read with delayed expansion OFF, so a ! stays a character")
+                .isEqualTo("setlocal DisableDelayedExpansion");
+        for (int i = 0; i < code.size(); i++) {
+            if (code.get(i).equalsIgnoreCase("setlocal EnableDelayedExpansion")) {
+                assertThat(code.get(i - 1)).as("delayed expansion is switched on only inside the routines that"
+                        + " read a value back, never where %~1 is read").isIn(":append", ":missing", ":notfolder");
+            }
+        }
+        assertThat(cmd).as("the value is appended with delayed expansion on and carried out of the inner"
+                + " SETLOCAL by FOR /F, into a context where it is off again")
+                .contains("for /f \"delims=\" %%L in (\"\"!NMOX_L!\"\") do endlocal & set \"NMOX_ARGS=%%~L\"\n");
+        assertThat(cmd.split("\ncall :append\n", -1)).as("one path into NMOX_ARGS").hasSize(2);
+    }
+
+    @Test
+    @DisplayName("Windows: the installer check runs nmox.cmd on the name call-set mangled, and on every refusal")
+    void workflowRunsTheShim() throws IOException {
+        String wf = read(WIN_CHECK);
+        int step = wf.indexOf("- name: Verify nmox.cmd turns folders and files into --aim and --open\n");
+        assertThat(step).as("the workflow step").isNotEqualTo(-1);
+        int end = wf.indexOf("\n  # ", step);
+        String body = wf.substring(step, end == -1 ? wf.length() : end);
+        assertThat(body).as("a file name carrying %, ^, & and ! reaches the launcher intact")
+                .contains("$odd = 'p%NMOXNOPE%q ^r &s !t.js'")
+                .contains("'--open', \"$root\\proj dir\\src\\$odd\")");
+        assertThat(body).as("each refusal: exit 2, its sentence, and no launcher")
+                .contains("@('missing.txt', 'nmox: missing.txt: no such file or folder')")
+                .contains("@('--aim src\\app.js', 'nmox: src\\app.js: not a folder')")
+                .contains("if ($p.ExitCode -ne 2)")
+                .contains("started the launcher it refused");
+        assertThat(body).as("a missing name no longer passes through").doesNotContain("'missing.txt', '-J-Xmx1g'");
     }
 
     @Test
@@ -310,10 +446,37 @@ class TerminalCommandGateTest {
             assertThat(registry).as("the per-user and all-users installs each get their own Path").contains(root);
         }
         assertThat(registry.split("Tasks: addtopath", -1)).as("both entries ride the task").hasSize(3);
-        assertThat(registry.split("\\{olddata\\};\\{app\\}\\\\cli", -1)).as("both append, never replace").hasSize(3);
+        assertThat(registry.lines().filter(l -> !l.startsWith(";")))
+                .as("{olddata};{app}\\cli wrote \";<folder>\" when there was no Path yet")
+                .noneMatch(l -> l.contains("{olddata}"));
+        assertThat(registry).as("both append, through the one function that adds a separator only between"
+                + " two entries").contains("ValueData: \"{code:PathWithCli|user}\"")
+                .contains("ValueData: \"{code:PathWithCli|system}\"");
         assertThat(registry).contains("Check: NeedsUserPathEntry").contains("Check: NeedsSystemPathEntry");
         assertThat(iss).as("Explorer is told, so a new terminal sees the change").contains("ChangesEnvironment=yes\n");
         String code = section(iss, "Code");
+        assertThat(code).as("an empty Path gains the folder alone; one ending in ; gains no second separator")
+                .contains("function AppendPathEntry(Paths, Dir: String): String;\nbegin\n  if Paths = '' then\n"
+                        + "    Result := Dir\n  else if Paths[Length(Paths)] = ';' then\n    Result := Paths + Dir\n"
+                        + "  else\n    Result := Paths + ';' + Dir;\nend;\n")
+                .contains("Result := AppendPathEntry(Paths, CliDir());");
+        String remove = code.substring(code.indexOf("procedure RemovePathEntry("),
+                code.indexOf("procedure CurUninstallStepChanged("));
+        assertThat(remove).as("only the exact entry goes: an empty entry is the user's and is kept")
+                .contains("if (Part <> '') and\n")
+                .doesNotContain("else if Part <> '' then");
+        assertThat(remove).as("kept entries are joined by position, so an empty one keeps its separators")
+                .contains("if not First then\n        Kept := Kept + ';';");
+        String wf = read(WIN_CHECK);
+        int step = wf.indexOf("- name: Verify the nmox command on PATH\n");
+        String body = wf.substring(step, wf.indexOf("\n      - name:", step + 1));
+        assertThat(body).as("the installer check reads the Path raw, installs onto no Path and onto one with"
+                + " an empty entry, and uninstalls back to exactly what it found")
+                .contains("'DoNotExpandEnvironmentNames'")
+                .contains("with no user Path the installer wrote")
+                .contains("the uninstaller left a user Path")
+                .contains("$mine = 'C:\\keep one;;%USERPROFILE%\\keep two'")
+                .contains("the uninstaller left [$now], not the [$mine] it found");
         assertThat(code).as("the uninstaller takes the folder off the Path it went on")
                 .contains("procedure CurUninstallStepChanged(")
                 .contains("RemovePathEntry(HKEY_LOCAL_MACHINE, SystemEnvKey, CliDir())")
@@ -325,9 +488,10 @@ class TerminalCommandGateTest {
     /**
      * What a developer types: the folder they stand in, a file in it, an
      * option whose VALUE is an existing folder (must stay a value, not become
-     * --aim), a name that is not there, and a JVM flag.
+     * --aim), and a JVM flag. A name that is not there is refused before the
+     * IDE starts (see {@link #refusals()}), so it has no place in a launch.
      */
-    private static final List<String> TYPED = List.of(".", "src/app.js", "--cachedir", "src", "missing.txt", "-J-Xmx1g");
+    private static final List<String> TYPED = List.of(".", "src/app.js", "--cachedir", "src", "-J-Xmx1g");
 
     private Path project() throws IOException {
         Path project = Files.createDirectories(tmp.resolve("my project/src"));
@@ -348,25 +512,31 @@ class TerminalCommandGateTest {
         Path real = project.toRealPath();
         assertThat(Path.of(rec.get(0)).toRealPath()).as("the IDE runs in the caller's folder").isEqualTo(real);
         List<String> argv = rec.subList(from, rec.size());
-        assertThat(argv).as("the argv the platform launcher received").hasSize(8);
+        assertThat(argv).as("the argv the platform launcher received").hasSize(7);
         assertThat(argv.get(0)).as("a folder is aimed").isEqualTo("--aim");
         assertThat(Path.of(argv.get(1))).as("by its absolute path").isAbsolute();
         assertThat(Path.of(argv.get(1)).toRealPath()).as("'.' is the caller's folder").isEqualTo(real);
         assertThat(argv.get(2)).as("a file is opened").isEqualTo("--open");
         assertThat(Path.of(argv.get(3))).as("by its absolute path").isAbsolute();
         assertThat(Path.of(argv.get(3)).toRealPath()).isEqualTo(real.resolve("src/app.js"));
-        assertThat(argv.subList(4, 8)).as("options, an option's value and a missing name pass through as typed")
-                .containsExactly("--cachedir", "src", "missing.txt", "-J-Xmx1g");
+        assertThat(argv.subList(4, 7)).as("options and an option's value pass through as typed")
+                .containsExactly("--cachedir", "src", "-J-Xmx1g");
     }
 
-    /** The argument-rewriting loop, from {@code n=$#} to its {@code done}, whitespace aside. */
+    /**
+     * The argument-rewriting loop, from {@code n=$#} through its {@code done}
+     * and the dangling-option refusal after it (the first {@code fi} past the
+     * loop), whitespace aside.
+     */
     private static List<String> rule(String script) {
         int from = script.indexOf("n=$#\n");
         assertThat(from).as("the launcher rewrites its arguments").isNotEqualTo(-1);
         List<String> lines = new ArrayList<>();
+        boolean looped = false;
         for (String line : script.substring(from).split("\n")) {
             lines.add(line.strip());
-            if (line.strip().equals("done")) {
+            looped |= line.strip().equals("done");
+            if (looped && line.strip().equals("fi")) {
                 return lines;
             }
         }
@@ -416,6 +586,25 @@ class TerminalCommandGateTest {
                 + "for a in \"$@\"; do printf '%s\\n' \"$a\" >> \"$out.tmp\"; done\n"
                 + "mv \"$out.tmp\" \"$out\"\n"
                 + "exit " + exit + "\n");
+    }
+
+    /**
+     * A platform launcher that records, as its FIRST act, that it was ever
+     * started - no waiting, no release file. A refusal test that finds no
+     * tripwire after the launcher returned (and a grace period for a
+     * detached start) has proved nothing started.
+     */
+    private static void writeTripwireIde(Path at, Path started) throws IOException {
+        Files.writeString(at, "#!/bin/sh\n: > '" + started + "'\nexit 0\n");
+    }
+
+    private void assertRefused(Process p, String said, Path started) throws Exception {
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("the refusal returns").isTrue();
+        String out = slurp(tmp.resolve("launcher.out"));
+        assertThat(p.exitValue()).as("a refusal exits 2 (AimOption's code); the launcher said: %s", out).isEqualTo(2);
+        assertThat(out).as("the refusal names what was not there").contains(said);
+        Thread.sleep(1500); // a detached start, had there been one, would have tripped by now
+        assertThat(started).as("nothing was started for an argv the launcher refused").doesNotExist();
     }
 
     private static void executable(Path p) throws IOException {

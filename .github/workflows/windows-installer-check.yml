@@ -109,6 +109,11 @@ jobs:
       # `nmox .` from a terminal: the addtopath task (ticked above) installs
       # cli\nmox.cmd and puts that folder on the USER's Path exactly once -
       # a reinstall must not add it again - and the uninstaller takes it out.
+      # Then the Path's own shape, read raw (unexpanded) from the registry:
+      # a user with NO Path gets exactly the folder (never ";<folder>", what
+      # {olddata};{app}\cli wrote) and has no Path again after uninstall; a
+      # Path holding an empty entry (";;") gets the folder appended and is
+      # given back byte for byte, the empty entry included.
       - name: Verify the nmox command on PATH
         shell: pwsh
         run: |
@@ -125,6 +130,33 @@ jobs:
           Start-Process -FilePath "$app\unins000.exe" -Wait -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
           if ((Entries).Count -ne 0) { throw "the uninstaller left $cli on the user Path" }
           Write-Host "nmox: on Path once after install and reinstall, gone after uninstall"
+          function RawPath { (Get-Item 'HKCU:\Environment').GetValue('Path', $null, 'DoNotExpandEnvironmentNames') }
+          $saved = RawPath
+          try {
+            Remove-ItemProperty -Path 'HKCU:\Environment' -Name Path -ErrorAction SilentlyContinue
+            Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+              '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=addtopath','/NORESTART'
+            $now = RawPath
+            Write-Host "no Path before install -> [$now]"
+            if ($now -ne $cli) { throw "with no user Path the installer wrote [$now], not [$cli]" }
+            Start-Process -FilePath "$app\unins000.exe" -Wait -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+            $now = RawPath
+            if ($null -ne $now) { throw "the uninstaller left a user Path [$now] where there was none" }
+            $mine = 'C:\keep one;;%USERPROFILE%\keep two'
+            New-ItemProperty -Path 'HKCU:\Environment' -Name Path -PropertyType ExpandString -Value $mine -Force | Out-Null
+            Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+              '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=addtopath','/NORESTART'
+            $now = RawPath
+            Write-Host "[$mine] -> [$now]"
+            if ($now -ne "$mine;$cli") { throw "the installer wrote [$now], not [$mine;$cli]" }
+            Start-Process -FilePath "$app\unins000.exe" -Wait -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+            $now = RawPath
+            if ($now -ne $mine) { throw "the uninstaller left [$now], not the [$mine] it found" }
+            Write-Host "nmox: no leading separator on an empty Path; a Path with an empty entry given back intact"
+          } finally {
+            if ($null -eq $saved) { Remove-ItemProperty -Path 'HKCU:\Environment' -Name Path -ErrorAction SilentlyContinue }
+            else { New-ItemProperty -Path 'HKCU:\Environment' -Name Path -PropertyType ExpandString -Value $saved -Force | Out-Null }
+          }
 
       # "Open with NMOX Studio" on a folder and inside one (3.1.0): the
       # contextmenu task is unticked by default, so a default install writes
@@ -178,8 +210,14 @@ jobs:
       # What nmox.cmd hands the launcher, for real: a stand-in
       # bin\nmoxstudio64.exe (compiled here) records its working directory
       # and argv. A folder must arrive as --aim <absolute>, a file as
-      # --open <absolute>, an option's value untouched, a missing name as
-      # typed - the rule the Unix launchers follow (TerminalCommandGateTest).
+      # --open <absolute>, an option's value untouched - the rule the Unix
+      # launchers follow (TerminalCommandGateTest). The file named with
+      # % ^ & ! is the one `call set` mangled (CALL expands % again and
+      # doubles ^); %NMOXNOPE% is left alone by cmd /c's own parse because
+      # the variable is undefined, so only a second expansion inside the
+      # shim could eat it. Then the refusals: a missing name, a missing
+      # --aim value and a FILE given to --aim each exit 2 with the sentence
+      # on stderr, and the launcher never starts.
       - name: Verify nmox.cmd turns folders and files into --aim and --open
         shell: powershell
         run: |
@@ -187,20 +225,36 @@ jobs:
           New-Item -ItemType Directory -Force "$root\cli", "$root\bin", "$root\proj dir\src" | Out-Null
           Copy-Item packaging\windows\nmox.cmd "$root\cli\nmox.cmd"
           Set-Content "$root\proj dir\src\app.js" 'x'
+          $odd = 'p%NMOXNOPE%q ^r &s !t.js'
+          Set-Content -LiteralPath "$root\proj dir\src\$odd" 'x'
           $record = Join-Path $root 'record.txt'
           $src = 'using System; using System.IO; public static class Stub { public static void Main(string[] a) { ' +
                  'string[] head = { Environment.CurrentDirectory }; File.WriteAllLines(@"' + $record + '.tmp", head); ' +
                  'File.AppendAllLines(@"' + $record + '.tmp", a); File.Move(@"' + $record + '.tmp", @"' + $record + '"); } }'
           Add-Type -TypeDefinition $src -OutputAssembly "$root\bin\nmoxstudio64.exe" -OutputType ConsoleApplication
-          $line = '/c ""' + "$root\cli\nmox.cmd" + '" . src\app.js --userdir "' + "$root\u d" + '" missing.txt -J-Xmx1g"'
+          $line = '/c ""' + "$root\cli\nmox.cmd" + '" . src\app.js --userdir "' + "$root\u d" + '" -J-Xmx1g "src\' + $odd + '""'
           Start-Process -FilePath cmd.exe -ArgumentList $line -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow
           for ($i = 0; $i -lt 100 -and -not (Test-Path $record); $i++) { Start-Sleep -Milliseconds 200 }
           if (-not (Test-Path $record)) { throw "nmox.cmd never started the launcher" }
-          $got = @(Get-Content $record)
+          $got = @(Get-Content -LiteralPath $record)
           $want = @("$root\proj dir", '--aim', "$root\proj dir", '--open', "$root\proj dir\src\app.js",
-                    '--userdir', "$root\u d", 'missing.txt', '-J-Xmx1g')
+                    '--userdir', "$root\u d", '-J-Xmx1g', '--open', "$root\proj dir\src\$odd")
           Write-Host "launcher saw:"; $got | ForEach-Object { Write-Host "  [$_]" }
           if (($got -join "`n") -ne ($want -join "`n")) { throw "nmox.cmd handed the launcher the wrong argv" }
+          $err = Join-Path $root 'err.txt'
+          foreach ($case in @(@('missing.txt', 'nmox: missing.txt: no such file or folder'),
+                              @('--aim gone', 'nmox: gone: no such file or folder'),
+                              @('--aim src\app.js', 'nmox: src\app.js: not a folder'))) {
+            Remove-Item $record -ErrorAction SilentlyContinue
+            $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" ' + $case[0] + '"') `
+                   -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err
+            $said = [string](Get-Content -Raw $err)
+            Write-Host "nmox $($case[0]) -> exit $($p.ExitCode): $said"
+            if ($p.ExitCode -ne 2) { throw "nmox $($case[0]) exited $($p.ExitCode), not 2" }
+            if (-not $said.Contains($case[1])) { throw "nmox $($case[0]) said [$said], not [$($case[1])]" }
+            Start-Sleep -Seconds 2
+            if (Test-Path $record) { throw "nmox $($case[0]) started the launcher it refused" }
+          }
 
   # The one place the Windows half of WebKitTextPath is exercised for real:
   # the library path inside a linked runtime, the exported setter, the

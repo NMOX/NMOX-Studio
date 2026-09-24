@@ -11,8 +11,14 @@
 # what File > Open Folder... does, with or without a manifest - the
 # platform's own --open shows a manifest-less folder as a raw explorer tab),
 # a file is OPENED (--open). Options, and the value an option takes, pass
-# through untouched; a name that is not there passes through as typed, so
-# the IDE's own refusal names it. Bare `nmox` just starts the IDE.
+# through untouched. Bare `nmox` just starts the IDE.
+#
+# A name that is not there is refused HERE, before anything starts:
+# `nmox: <name>: no such file or folder` on stderr and exit status 2 - for a
+# bare name, and for the value of an explicit --aim or --open (--aim also
+# refuses a file: it takes a folder). The IDE below is started with its
+# output discarded, so a refusal it made would reach nobody; the platform's
+# own --aim refusal still speaks to whoever runs bin/nmoxstudio directly.
 #
 # The IDE starts in the BACKGROUND and the command returns at once, as
 # `code .` does: it must neither hold the shell until the IDE quits nor die
@@ -42,7 +48,16 @@ while [ "$n" -gt 0 ]; do
     a=$1
     shift
     n=$((n - 1))
-    if [ "$value" = yes ]; then
+    if [ "$value" != no ]; then
+        if [ "$value" = --aim ] || [ "$value" = --open ]; then
+            if [ ! -e "$a" ]; then
+                printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                exit 2
+            elif [ "$value" = --aim ] && [ ! -d "$a" ]; then
+                printf 'nmox: %s: not a folder (--aim takes a folder)\n' "$a" >&2
+                exit 2
+            fi
+        fi
         set -- "$@" "$a"
         value=no
         continue
@@ -50,16 +65,21 @@ while [ "$n" -gt 0 ]; do
     case "$a" in
         --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
             set -- "$@" "$a"
-            value=yes ;;
+            value=$a ;;
         -*) set -- "$@" "$a" ;;
         *)  if [ -d "$a" ]; then
                 set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
             elif [ -e "$a" ]; then
                 set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
             else
-                set -- "$@" "$a"
+                printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                exit 2
             fi ;;
     esac
 done
+if [ "$value" != no ]; then
+    printf 'nmox: %s needs a value\n' "$value" >&2
+    exit 2
+fi
 nohup /bin/sh "$BIN/nmoxstudio" "$@" </dev/null >/dev/null 2>&1 &
 exit 0

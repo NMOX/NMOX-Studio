@@ -140,10 +140,13 @@ ar.OpenWithNmox=فتح بـ NMOX Studio
 ; environment for a per-user install, the machine's for an all-users one.
 ; Each Check skips its entry when the folder is already there, so a
 ; reinstall never grows the Path. [Code] takes it out again on uninstall.
+; The value is built by [Code] rather than as "{olddata};{app}\cli": a user
+; with no Path of their own yet has an empty {olddata}, and that spelling
+; wrote ";C:\...\cli" - an empty first entry nobody put there.
 Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; \
-    ValueData: "{olddata};{app}\cli"; Tasks: addtopath; Check: NeedsUserPathEntry
+    ValueData: "{code:PathWithCli|user}"; Tasks: addtopath; Check: NeedsUserPathEntry
 Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
-    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\cli"; \
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{code:PathWithCli|system}"; \
     Tasks: addtopath; Check: NeedsSystemPathEntry
 ; The folder task: Explorer's right-click menu on a folder (Directory) and
 ; on the empty space inside an open one (Directory\Background), for whoever
@@ -198,6 +201,35 @@ begin
       or (Pos(';' + Uppercase(Dir) + '\;', ';' + Uppercase(Paths) + ';') > 0);
 end;
 
+{ Paths with Dir appended as one more ;-separated entry, adding a separator
+  only between two entries: an empty Paths gives Dir alone, and a Paths that
+  already ends in ; is not given a second one. }
+function AppendPathEntry(Paths, Dir: String): String;
+begin
+  if Paths = '' then
+    Result := Dir
+  else if Paths[Length(Paths)] = ';' then
+    Result := Paths + Dir
+  else
+    Result := Paths + ';' + Dir;
+end;
+
+{ The [Registry] Path value: the Path as it stands (none yet reads as empty)
+  with the cli folder appended. Param names whose Path: 'system' or 'user'. }
+function PathWithCli(Param: String): String;
+var
+  Paths: String;
+begin
+  if Param = 'system' then
+  begin
+    if not RegQueryStringValue(HKEY_LOCAL_MACHINE, SystemEnvKey, 'Path', Paths) then
+      Paths := '';
+  end
+  else if not RegQueryStringValue(HKEY_CURRENT_USER, UserEnvKey, 'Path', Paths) then
+    Paths := '';
+  Result := AppendPathEntry(Paths, CliDir());
+end;
+
 function NeedsUserPathEntry(): Boolean;
 begin
   Result := (not IsAdminInstallMode) and (not PathHasEntry(HKEY_CURRENT_USER, UserEnvKey, CliDir()));
@@ -208,34 +240,46 @@ begin
   Result := IsAdminInstallMode and (not PathHasEntry(HKEY_LOCAL_MACHINE, SystemEnvKey, CliDir()));
 end;
 
-{ Rewrites the Path without Dir, and only when Dir was in it: every other
-  entry, and the value itself when Dir is absent, is left as it was found. }
+{ Rewrites the Path without Dir, and only when Dir was in it. Every other
+  entry keeps its place and its spelling - an empty one (";;") included,
+  since a Path is the user's and not ours to tidy - and only the separator
+  that joined Dir to its neighbour goes with it. A per-user Path left with
+  nothing in it is removed rather than written back empty (the case where
+  the install created it; an empty Path and no Path read the same), and
+  the machine's Path is never deleted. }
 procedure RemovePathEntry(Root: Integer; SubKey, Dir: String);
 var
   Paths, Rest, Part, Kept: String;
   P: Integer;
-  Found: Boolean;
+  Found, First: Boolean;
 begin
   if not RegQueryStringValue(Root, SubKey, 'Path', Paths) then
     exit;
   Rest := Paths + ';';
   Kept := '';
+  First := True;
   Found := False;
   while Rest <> '' do
   begin
     P := Pos(';', Rest);
     Part := Copy(Rest, 1, P - 1);
     Delete(Rest, 1, P);
-    if CompareText(RemoveBackslashUnlessRoot(Part), RemoveBackslashUnlessRoot(Dir)) = 0 then
+    if (Part <> '') and
+       (CompareText(RemoveBackslashUnlessRoot(Part), RemoveBackslashUnlessRoot(Dir)) = 0) then
       Found := True
-    else if Part <> '' then
+    else
     begin
-      if Kept <> '' then
+      if not First then
         Kept := Kept + ';';
       Kept := Kept + Part;
+      First := False;
     end;
   end;
-  if Found then
+  if not Found then
+    exit;
+  if (Kept = '') and (Root = HKEY_CURRENT_USER) then
+    RegDeleteValue(Root, SubKey, 'Path')
+  else
     RegWriteExpandStringValue(Root, SubKey, 'Path', Kept);
 end;
 
