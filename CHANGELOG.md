@@ -123,7 +123,7 @@ it: [docs/engineering/dx-plan-3.1.md](docs/engineering/dx-plan-3.1.md).
   people use is not taken).
 - **[Coming from VS Code](docs/coming-from-vscode.md)**: the chords on macOS
   and on Windows/Linux, where each VS Code idea lives, and what is honestly
-  different.
+  different — linked from the Welcome's footer, in the IDE's own language.
 - **Quick Search answers in VS Code's words.** The platform's actions
   provider matches a query as one substring of an action's name, so
   *toggle terminal*, *git commit* or *open settings* found nothing. A

@@ -134,6 +134,7 @@ down.
 | 30 | the switcher page's honest gaps | the most common `launch.json` refusal was `args` or `env`, which most Node and Python configurations set | both reach the program; `envFile` and runtimes stay refused by name | `VsCodeLaunchTest`, `RealJsDebugIntegrationTest` through the real adapter |
 | 31 | the proof of row 30 | a program that printed and exited at once printed nothing to Output under the debugger: js-debug's default output capture reads the child session, which such a program outlives | `outputCapture: std`; children's and workers' output now arrives in the first session's console, a cost the review measured and the guide states | walked on a one-line `hello.js`; `RealJsDebugIntegrationTest` fails by name without it |
 | 32 | reading rows 23, 29 and 30 as a newcomer | tasks, launch configurations and settings all worked, and nothing on screen said so | the first aim of a project with `.vscode` files says what was found and opens Quick Search on a click, once per project, and only while that project is still aimed | `VsCodeFilesNoticeTest` |
+| 33 | the switcher walk, from the Welcome | the page a switcher needs most had no door in the product | the Welcome's footer links *Coming from VS Code* in the IDE's own language, beside the User Guide | `UiLocaleGuideTest`; walked in Hebrew |
 
 **The lesson of row 20.** The probe that motivated the Finder door ran on an
 unsigned bundle. A release runs under the hardened runtime, where the same

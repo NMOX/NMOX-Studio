@@ -76,6 +76,8 @@ import org.openide.windows.WindowManager;
     "MainWindow_whatsNewTip=The release notes for this version, in the product (v2.64.0)",
     "MainWindow_userGuide=User Guide ↗",
     "MainWindow_userGuideTip=Open the user guide — install, first launch, and every window",
+    "MainWindow_comingFromVsCode=Coming from VS Code ↗",
+    "MainWindow_comingFromVsCodeTip=Your VS Code chords, where each VS Code idea lives here, and how a .vscode folder is read",
     "MainWindow_website=Website ⇄",
     "MainWindow_websiteTip=The bundled NMOX Studio site, served to you on localhost by the app itself",
     "MainWindow_websiteName=Open the bundled website on localhost",
@@ -214,6 +216,10 @@ public final class MainWindow extends TopComponent {
             JButton userGuide = textButton(Bundle.MainWindow_userGuide(), DIM);
             userGuide.setToolTipText(Bundle.MainWindow_userGuideTip());
             userGuide.addActionListener(e -> browse(userGuideUrl()));
+            // 3.1.0: the page a switcher needs most had no door in the product
+            JButton comingFromVsCode = textButton(Bundle.MainWindow_comingFromVsCode(), DIM);
+            comingFromVsCode.setToolTipText(Bundle.MainWindow_comingFromVsCodeTip());
+            comingFromVsCode.addActionListener(e -> browse(comingFromVsCodeUrl()));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
             // the product's own site, served by the product (v2.40.0)
@@ -230,6 +236,7 @@ public final class MainWindow extends TopComponent {
             footer.add(version);
             footer.add(website);
             footer.add(userGuide);
+            footer.add(comingFromVsCode);
             footer.add(whatsNew);
 
             gc.gridy = 0;
@@ -344,6 +351,12 @@ public final class MainWindow extends TopComponent {
         static String userGuideUrl() {
             return "https://github.com/NMOX/NMOX-Studio/blob/main/"
                     + org.nmox.studio.core.util.UiLocale.guideDoc();
+        }
+
+        /** Coming from VS Code, in the language the IDE is speaking, as the guide is. */
+        static String comingFromVsCodeUrl() {
+            return "https://github.com/NMOX/NMOX-Studio/blob/main/"
+                    + org.nmox.studio.core.util.UiLocale.localizedDoc("coming-from-vscode", java.util.Locale.getDefault());
         }
 
         private static JButton textButton(String text, Color color) {

@@ -54,4 +54,19 @@ class UiLocaleGuideTest {
             Locale.setDefault(was);
         }
     }
+
+    @Test
+    @DisplayName("any translated document rides the same rule: Coming from VS Code in the reader's language (3.1.0)")
+    void otherDocumentsRideTheSameRule() throws Exception {
+        assertThat(UiLocale.localizedDoc("coming-from-vscode", Locale.forLanguageTag("he")))
+                .isEqualTo("docs/coming-from-vscode.he.md");
+        assertThat(UiLocale.localizedDoc("coming-from-vscode", Locale.JAPAN)).isEqualTo("docs/coming-from-vscode.md");
+        // every language the product speaks has the page the Welcome's door opens
+        for (UiLocale.Choice c : UiLocale.SUPPORTED) {
+            if (!c.isSystem()) {
+                String doc = UiLocale.localizedDoc("coming-from-vscode", Locale.forLanguageTag(c.code()));
+                assertThat(java.nio.file.Path.of("..", doc)).as(c.code()).exists();
+            }
+        }
+    }
 }
