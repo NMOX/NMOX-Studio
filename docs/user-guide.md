@@ -116,7 +116,11 @@ because 2.35.0 moved the platform: install a current release instead.
 From a terminal, `nmox .` opens the folder you are standing in, the way
 `code .` does: `cd myproject && nmox .`. A folder is aimed exactly as the
 Welcome page's Open Folder… aims it, manifest or not; a file opens in the
-editor (`nmox src/app.js`). The command returns at once — the first
+editor (`nmox src/app.js`), at a line if you name one the way `code -g`
+does (`nmox src/app.js:42` — a column is accepted and the editor opens at
+the start of the line). A name that is not there is refused on the
+terminal (`nmox: typo.js: no such file or folder`) instead of starting
+anything. The command returns at once — the first
 `nmox` starts the IDE in the background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
 Getting `nmox` onto your PATH:

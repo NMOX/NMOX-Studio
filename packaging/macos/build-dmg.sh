@@ -99,6 +99,23 @@ RES="$DIR/../Resources/nmoxstudio"
 FROM_TERMINAL=no
 if [ -h "$0" ]; then
     FROM_TERMINAL=yes
+    # NAME:LINE or NAME:LINE:COL naming an existing file is `code -g`'s habit:
+    # goto_line leaves the file in gf and the line in gl. The platform's --open
+    # takes FILE:LINE and has no column, so a column is dropped. A file whose
+    # own name ends in :digits is opened as named - the exact name is tried first.
+    goto_line() {
+        gf=$1
+        gl=
+        for pass in 1 2; do
+            case "$gf" in *:*) ;; *) break ;; esac
+            gp=${gf##*:}
+            case "$gp" in ''|*[!0-9]*) break ;; esac
+            gf=${gf%:*}
+            gl=$gp
+            [ -f "$gf" ] && break
+        done
+        [ -n "$gl" ] && [ -f "$gf" ]
+    }
     n=$#
     value=no
     while [ "$n" -gt 0 ]; do
@@ -107,7 +124,9 @@ if [ -h "$0" ]; then
         n=$((n - 1))
         if [ "$value" != no ]; then
             if [ "$value" = --aim ] || [ "$value" = --open ]; then
-                if [ ! -e "$a" ]; then
+                if [ "$value" = --open ] && [ ! -e "$a" ] && goto_line "$a"; then
+                    a=$gf:$gl
+                elif [ ! -e "$a" ]; then
                     printf 'nmox: %s: no such file or folder\n' "$a" >&2
                     exit 2
                 elif [ "$value" = --aim ] && [ ! -d "$a" ]; then
@@ -123,11 +142,14 @@ if [ -h "$0" ]; then
             --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
                 set -- "$@" "$a"
                 value=$a ;;
+            -g|--goto) ;;
             -*) set -- "$@" "$a" ;;
             *)  if [ -d "$a" ]; then
                     set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
                 elif [ -e "$a" ]; then
                     set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+                elif goto_line "$a"; then
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$gf")" && pwd)/$(basename -- "$gf"):$gl"
                 else
                     printf 'nmox: %s: no such file or folder\n' "$a" >&2
                     exit 2

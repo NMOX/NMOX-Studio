@@ -59,6 +59,7 @@ Sous macOS, ⌘, est l’accord du menu de l’application lui-même ; chaque a
 cd ~/code/my-app
 nmox .          # open this folder (manifest or not) and aim the IDE at it
 nmox src/app.ts # open one file
+nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 

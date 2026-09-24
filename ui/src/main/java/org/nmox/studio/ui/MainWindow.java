@@ -480,7 +480,35 @@ public final class MainWindow extends TopComponent {
             return;
         }
         prefs.putBoolean("welcomeShown", true);
-        requestActive();
+        // ...unless that first launch was `nmox app.js:42`: the file handed
+        // over is what the person asked for, and the platform opens it
+        // before this tab would have stolen the front (walked in 3.1.0 -
+        // the Welcome sat over app.js with its caret on line 42). Wait for
+        // the window system, then step aside for an open document; a file
+        // that opens later activates itself.
+        WindowManager.getDefault().invokeWhenUIReady(() -> java.awt.EventQueue.invokeLater(() -> {
+            if (isOpened() && !documentOpen(WindowManager.getDefault().getRegistry().getOpened(),
+                    tc -> WindowManager.getDefault().isEditorTopComponent(tc))) {
+                requestActive();
+            }
+        }));
+    }
+
+    /**
+     * Whether one of {@code opened} is a FILE's editor in the editor area.
+     * A folder does not count: {@code AimFollower} gives this tab and its
+     * neighbours the aimed project's folder node as their selection, so a
+     * DataObject alone would find the Welcome itself.
+     */
+    static boolean documentOpen(java.util.Collection<? extends TopComponent> opened,
+            java.util.function.Predicate<TopComponent> inEditorArea) {
+        for (TopComponent tc : opened) {
+            org.openide.loaders.DataObject d = tc.getLookup().lookup(org.openide.loaders.DataObject.class);
+            if (d != null && d.getPrimaryFile().isData() && inEditorArea.test(tc)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

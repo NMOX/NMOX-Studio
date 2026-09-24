@@ -52,7 +52,8 @@ tar -xzf NMOX-Studio-<version>-linux.tar.gz
 ## From a terminal: `nmox .`
 
 `cd myproject && nmox .` opens the folder you are in, the way `code .`
-does; `nmox src/app.js` opens a file. The command returns at once and
+does; `nmox src/app.js` opens a file and `nmox src/app.js:42` opens it at
+line 42. The command returns at once and
 hands later folders to the IDE that is already running.
 
 - **macOS, Homebrew:** the cask puts `nmox` on your PATH.

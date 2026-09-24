@@ -243,7 +243,11 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("--aim", "missing"), "nmox: missing: no such file or folder"),
                 Arguments.of(List.of("--open", "missing.js"), "nmox: missing.js: no such file or folder"),
                 Arguments.of(List.of("--aim", "src/app.js"), "nmox: src/app.js: not a folder (--aim takes a folder)"),
-                Arguments.of(List.of(".", "--aim"), "nmox: --aim needs a value"));
+                Arguments.of(List.of(".", "--aim"), "nmox: --aim needs a value"),
+                Arguments.of(List.of("gone.js:42"), "nmox: gone.js:42: no such file or folder"),
+                Arguments.of(List.of("src/app.js:x"), "nmox: src/app.js:x: no such file or folder"),
+                Arguments.of(List.of("src:4"), "nmox: src:4: no such file or folder"),
+                Arguments.of(List.of("--open", "gone.js:3"), "nmox: gone.js:3: no such file or folder"));
     }
 
     @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
@@ -291,6 +295,81 @@ class TerminalCommandGateTest {
                 .containsExactly("--aim", "src", "--open", "src/app.js");
     }
 
+    // ------------------------------------------------------ code -g's habit
+
+    /**
+     * {@code code -g file:line[:col]}: a name that is not there but reads
+     * NAME:LINE or NAME:LINE:COL with NAME an existing file opens that file
+     * at that line. The platform's own {@code --open} takes FILE:LINE (its
+     * Handler splits at the last colon when the whole name is not a file)
+     * and has no column, so the launcher drops one. {@code -g} and
+     * {@code --goto} are VS Code's spelling and are accepted and dropped;
+     * an explicit {@code --open NAME:LINE} passes as typed, the platform
+     * resolving it.
+     */
+    static java.util.stream.Stream<Arguments> gotos() {
+        return java.util.stream.Stream.of(
+                Arguments.of(List.of("src/app.js:42"), List.of("--open", "@/src/app.js:42")),
+                Arguments.of(List.of("src/app.js:42:7"), List.of("--open", "@/src/app.js:42")),
+                Arguments.of(List.of("-g", "src/app.js:3:1"), List.of("--open", "@/src/app.js:3")),
+                Arguments.of(List.of("--goto", "src/app.js:5"), List.of("--open", "@/src/app.js:5")),
+                Arguments.of(List.of("--open", "src/app.js:9:2"), List.of("--open", "src/app.js:9")));
+    }
+
+    @ParameterizedTest(name = "Linux: nmox {0} opens the file at the line")
+    @MethodSource("gotos")
+    @DisabledOnOs(OS.WINDOWS)
+    void linuxCommandGoesToALine(List<String> typed, List<String> want) throws Exception {
+        Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+        Path nmox = appBin.resolve("nmox");
+        Files.copy(LINUX_NMOX, nmox);
+        executable(nmox);
+        Path record = tmp.resolve("record.txt");
+        Path release = tmp.resolve("release");
+        Files.writeString(release, "go");
+        writeIde(appBin.resolve("nmoxstudio"), record, release, 0);
+        Path project = project();
+        Process p = start(project, nmox.toString(), typed);
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("nmox returns").isTrue();
+        assertThat(p.exitValue()).as("nmox said: %s", slurp(tmp.resolve("launcher.out"))).isZero();
+        assertGoto(awaitRecord(record).subList(1, 3), want, project);
+    }
+
+    @ParameterizedTest(name = "macOS: nmox {0} opens the file at the line")
+    @MethodSource("gotos")
+    @DisabledOnOs(OS.WINDOWS)
+    void macLauncherGoesToALine(List<String> typed, List<String> want) throws Exception {
+        Bundle b = bundle();
+        Files.writeString(b.release, "go");
+        Path bin = Files.createDirectories(tmp.resolve("brew/bin"));
+        Path nmox = bin.resolve("nmox");
+        Files.createSymbolicLink(nmox, b.launcher);
+        Path project = project();
+        Process p = start(project, nmox.toString(), typed);
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("nmox returns").isTrue();
+        assertThat(p.exitValue()).as("nmox said: %s", slurp(tmp.resolve("launcher.out"))).isZero();
+        List<String> rec = awaitRecord(b.record);
+        int at = rec.indexOf("--open");
+        assertThat(at).as("the launcher handed over an --open: %s", rec).isNotEqualTo(-1);
+        assertGoto(rec.subList(at, at + 2), want, project);
+    }
+
+    /** {@code @} in {@code want} stands for the project's real absolute path. */
+    private static void assertGoto(List<String> got, List<String> want, Path project) throws IOException {
+        assertThat(got.get(0)).isEqualTo(want.get(0));
+        String w = want.get(1);
+        if (w.startsWith("@/")) {
+            String g = got.get(1);
+            int colon = g.lastIndexOf(':');
+            assertThat(Path.of(g.substring(0, colon))).as("by its absolute path").isAbsolute();
+            assertThat(Path.of(g.substring(0, colon)).toRealPath())
+                    .isEqualTo(project.toRealPath().resolve(w.substring(2, w.lastIndexOf(':'))));
+            assertThat(g.substring(colon)).as("the line, and no column").isEqualTo(w.substring(w.lastIndexOf(':')));
+        } else {
+            assertThat(got.get(1)).isEqualTo(w);
+        }
+    }
+
     @Test
     @DisplayName("the refusal is spelled the same by all three launchers")
     void everyLauncherSpeaksTheSameRefusal() throws IOException {
@@ -305,8 +384,11 @@ class TerminalCommandGateTest {
                 .contains(">&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)\n")
                 .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n");
         assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the three refusal sites exits 2").hasSize(4);
-        assertThat(cmd).as("a bare name that is neither folder nor file is refused, not passed on")
-                .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ngoto missing\n");
+        assertThat(cmd).as("a bare name that is neither folder nor file nor NAME:LINE is refused, not passed on")
+                .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ncall :goto\n"
+                        + "if errorlevel 1 goto missing\n");
+        assertThat(cmd).as("an explicit --open's missing value gets the same NAME:LINE chance, then the refusal")
+                .contains(":openline\n").contains("call :goto\nif errorlevel 1 goto missing\nset \"NMOX_A=%NMOX_GF%:%NMOX_GL%\"\n");
     }
 
     @Test
@@ -372,13 +454,13 @@ class TerminalCommandGateTest {
         List<String> code = cmd.lines().filter(l -> !l.startsWith("rem")).toList();
         assertThat(code).as("CALL re-expands %% and doubles ^ in its arguments: no `call set`, no `call` with"
                 + " arguments at all (a bare `call :label` passes nothing through the second parse)")
-                .noneMatch(l -> l.matches("(?i)\\s*call\\s+(?!:append$).*"));
+                .noneMatch(l -> l.matches("(?i)\\s*call\\s+(?!:(append|goto)$).*"));
         assertThat(code.get(1)).as("the argument is read with delayed expansion OFF, so a ! stays a character")
                 .isEqualTo("setlocal DisableDelayedExpansion");
         for (int i = 0; i < code.size(); i++) {
             if (code.get(i).equalsIgnoreCase("setlocal EnableDelayedExpansion")) {
                 assertThat(code.get(i - 1)).as("delayed expansion is switched on only inside the routines that"
-                        + " read a value back, never where %~1 is read").isIn(":append", ":missing", ":notfolder");
+                        + " read a value back, never where %~1 is read").isIn(":append", ":goto", ":missing", ":notfolder");
             }
         }
         assertThat(cmd).as("the value is appended with delayed expansion on and carried out of the inner"
@@ -524,12 +606,12 @@ class TerminalCommandGateTest {
     }
 
     /**
-     * The argument-rewriting loop, from {@code n=$#} through its {@code done}
-     * and the dangling-option refusal after it (the first {@code fi} past the
-     * loop), whitespace aside.
+     * The argument-rewriting loop, from the {@code goto_line} helper it
+     * calls through its {@code done} and the dangling-option refusal after
+     * it (the first {@code fi} past the loop), whitespace aside.
      */
     private static List<String> rule(String script) {
-        int from = script.indexOf("n=$#\n");
+        int from = script.indexOf("goto_line() {\n");
         assertThat(from).as("the launcher rewrites its arguments").isNotEqualTo(-1);
         List<String> lines = new ArrayList<>();
         boolean looped = false;

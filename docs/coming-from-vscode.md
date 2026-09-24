@@ -76,11 +76,14 @@ drift from what the keys do.
 cd ~/code/my-app
 nmox .          # open this folder (manifest or not) and aim the IDE at it
 nmox src/app.ts # open one file
+nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
 It returns at once, and a second `nmox` hands its folder to the IDE that
-is already running. Homebrew, the Windows installer (*Add "nmox" to
+is already running. A column (`src/app.ts:42:7`) is accepted and the
+editor opens at the start of the line; a name that is not there is
+refused on the terminal instead of starting anything. Homebrew, the Windows installer (*Add "nmox" to
 PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 [user guide](user-guide.md#2-first-launch) shows the one-line link.
 

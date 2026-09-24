@@ -217,7 +217,8 @@ jobs:
       # the variable is undefined, so only a second expansion inside the
       # shim could eat it. Then the refusals: a missing name, a missing
       # --aim value and a FILE given to --aim each exit 2 with the sentence
-      # on stderr, and the launcher never starts.
+      # on stderr, and the launcher never starts; so does NAME:LINE when
+      # NAME is missing or a folder.
       - name: Verify nmox.cmd turns folders and files into --aim and --open
         shell: powershell
         run: |
@@ -241,10 +242,25 @@ jobs:
                     '--userdir', "$root\u d", '-J-Xmx1g', '--open', "$root\proj dir\src\$odd")
           Write-Host "launcher saw:"; $got | ForEach-Object { Write-Host "  [$_]" }
           if (($got -join "`n") -ne ($want -join "`n")) { throw "nmox.cmd handed the launcher the wrong argv" }
+          # code -g's habit: NAME:LINE[:COL] naming an existing file opens it
+          # at the line (the column dropped, the platform's --open has none),
+          # -g itself dropped, an explicit --open's value kept as typed
+          Remove-Item $record
+          $line = '/c ""' + "$root\cli\nmox.cmd" + '" -g src\app.js:42:7 --open "src\' + $odd + ':9:1" "src\' + $odd + ':3""'
+          Start-Process -FilePath cmd.exe -ArgumentList $line -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow
+          for ($i = 0; $i -lt 100 -and -not (Test-Path $record); $i++) { Start-Sleep -Milliseconds 200 }
+          if (-not (Test-Path $record)) { throw "nmox.cmd never started the launcher for NAME:LINE" }
+          $got = @(Get-Content -LiteralPath $record)
+          $want = @("$root\proj dir", '--open', "$root\proj dir\src\app.js:42", '--open', "src\$($odd):9",
+                    '--open', "$root\proj dir\src\$($odd):3")
+          Write-Host "launcher saw:"; $got | ForEach-Object { Write-Host "  [$_]" }
+          if (($got -join "`n") -ne ($want -join "`n")) { throw "nmox.cmd handed the launcher the wrong argv for NAME:LINE" }
           $err = Join-Path $root 'err.txt'
           foreach ($case in @(@('missing.txt', 'nmox: missing.txt: no such file or folder'),
                               @('--aim gone', 'nmox: gone: no such file or folder'),
-                              @('--aim src\app.js', 'nmox: src\app.js: not a folder'))) {
+                              @('--aim src\app.js', 'nmox: src\app.js: not a folder'),
+                              @('gone.js:4', 'nmox: gone.js:4: no such file or folder'),
+                              @('src:4', 'nmox: src:4: no such file or folder'))) {
             Remove-Item $record -ErrorAction SilentlyContinue
             $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" ' + $case[0] + '"') `
                    -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err
