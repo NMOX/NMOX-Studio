@@ -68,7 +68,10 @@ class EditorConfigCodeStyleTest {
         assertThat(lines.get(at + 1))
                 .as("a position, so it is asked before the unpositioned project-aware provider")
                 .isEqualTo("#position=100");
+        // the platform's project-aware provider is an unpositioned services line;
+        // a stand-in registered the same way proves the lookup puts ours first
         assertThat(Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class))
+                .hasAtLeastOneElementOfType(UnpositionedCodeStyleProvider.class)
                 .first().isInstanceOf(EditorConfigCodeStyle.class);
     }
 
