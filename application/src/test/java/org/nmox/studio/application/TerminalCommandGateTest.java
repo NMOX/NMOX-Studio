@@ -250,7 +250,11 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("--open", "gone.js:3"), "nmox: gone.js:3: no such file or folder"),
                 // past nine digits the platform's int parse fails and it says
                 // nothing, so the launcher refuses where someone can hear it
-                Arguments.of(List.of("src/app.js:12345678901"), "nmox: src/app.js:12345678901: no such file or folder"));
+                Arguments.of(List.of("src/app.js:12345678901"), "nmox: src/app.js:12345678901: no such file or folder"),
+                // VS Code's own flags with no counterpart: the platform answered
+                // "Unknown option" to /dev/null and never started (measured)
+                Arguments.of(List.of("--wait", "src/app.js"), "nmox: --wait is VS Code's and has no counterpart here"),
+                Arguments.of(List.of("-d", "a", "b"), "nmox: -d is VS Code's and has no counterpart here"));
     }
 
     @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
@@ -316,6 +320,8 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("src/app.js:42:7"), List.of("--open", "@/src/app.js:42")),
                 Arguments.of(List.of("-g", "src/app.js:3:1"), List.of("--open", "@/src/app.js:3")),
                 Arguments.of(List.of("--goto", "src/app.js:5"), List.of("--open", "@/src/app.js:5")),
+                Arguments.of(List.of("-r", "src/app.js:6"), List.of("--open", "@/src/app.js:6")),
+                Arguments.of(List.of("-n", "src/app.js:7"), List.of("--open", "@/src/app.js:7")),
                 Arguments.of(List.of("--open", "src/app.js:9:2"), List.of("--open", "src/app.js:9")));
     }
 
@@ -461,7 +467,9 @@ class TerminalCommandGateTest {
             "",
             "It returns at once; a second nmox hands its folder or files to the IDE",
             "already running. A name that is not there is refused here, before anything",
-            "starts. Any other option goes to the IDE unchanged.");
+            "starts. VS Code's -r is accepted and -n opens in the one window;",
+            "-w, -d, -a and -v have no counterpart and are refused. Any other",
+            "option goes to the IDE unchanged.");
 
     @Test
     @DisplayName("all three launchers print the same usage")
@@ -497,13 +505,13 @@ class TerminalCommandGateTest {
             assertThat(unix).contains("printf 'nmox: %s: no such file or folder\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s: not a folder (--aim takes a folder)\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s needs a value\\n' \"$value\" >&2\n");
-            assertThat(unix.split("\n\\s*exit 2\n", -1)).as("each of the four refusal sites exits 2").hasSize(5);
+            assertThat(unix.split("\n\\s*exit 2( ;;)?\n", -1)).as("each of the five refusal sites exits 2").hasSize(6);
         }
         String cmd = read(NMOX_CMD);
         assertThat(cmd).contains(">&2 echo(nmox: !NMOX_A!: no such file or folder\n")
                 .contains(">&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)\n")
                 .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n");
-        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the three refusal sites exits 2").hasSize(4);
+        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the four refusal sites exits 2").hasSize(5);
         assertThat(cmd).as("a bare name that is neither folder nor file nor NAME:LINE is refused, not passed on")
                 .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ncall :goto\n"
                         + "if errorlevel 1 goto missing\n");
@@ -580,7 +588,7 @@ class TerminalCommandGateTest {
         for (int i = 0; i < code.size(); i++) {
             if (code.get(i).equalsIgnoreCase("setlocal EnableDelayedExpansion")) {
                 assertThat(code.get(i - 1)).as("delayed expansion is switched on only inside the routines that"
-                        + " read a value back, never where %~1 is read").isIn(":append", ":goto", ":missing", ":notfolder");
+                        + " read a value back, never where %~1 is read").isIn(":append", ":goto", ":missing", ":notfolder", ":vscodeonly");
             }
         }
         assertThat(cmd).as("the value is appended with delayed expansion on and carried out of the inner"

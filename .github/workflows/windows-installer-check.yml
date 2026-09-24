@@ -275,7 +275,8 @@ jobs:
                               @('--aim src\app.js', 'nmox: src\app.js: not a folder'),
                               @('gone.js:4', 'nmox: gone.js:4: no such file or folder'),
                               @('src:4', 'nmox: src:4: no such file or folder'),
-                              @('src\app.js:12345678901', 'nmox: src\app.js:12345678901: no such file or folder'))) {
+                              @('src\app.js:12345678901', 'nmox: src\app.js:12345678901: no such file or folder'),
+                              @('--wait src\app.js', 'nmox: --wait is VS Code''s and has no counterpart here'))) {
             Remove-Item $record -ErrorAction SilentlyContinue
             $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" ' + $case[0] + '"') `
                    -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err

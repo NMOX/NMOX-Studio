@@ -45,6 +45,11 @@ for %%V in (--userdir --cachedir --jdkhome --open --aim --locale --laf --fontsiz
 if /i "%~1"=="-h" goto usage
 if /i "%~1"=="--help" goto usage
 if "%~1"=="/?" goto usage
+if /i "%~1"=="-r" goto skip
+if /i "%~1"=="--reuse-window" goto skip
+if /i "%~1"=="-n" goto newwindow
+if /i "%~1"=="--new-window" goto newwindow
+for %%V in (-w --wait -d --diff -a --add -v --version) do if /i "%~1"=="%%V" goto vscodeonly
 if /i "%~1"=="-g" goto skip
 if /i "%~1"=="--goto" goto skip
 if "%NMOX_A:~0,1%"=="-" goto keep
@@ -137,8 +142,17 @@ echo(  nmox                start NMOX Studio
 echo(
 echo(It returns at once; a second nmox hands its folder or files to the IDE
 echo(already running. A name that is not there is refused here, before anything
-echo(starts. Any other option goes to the IDE unchanged.
+echo(starts. VS Code's -r is accepted and -n opens in the one window;
+echo(-w, -d, -a and -v have no counterpart and are refused. Any other
+echo(option goes to the IDE unchanged.
 exit /b 0
+:newwindow
+>&2 echo(nmox: NMOX Studio has one window; opening there
+goto skip
+:vscodeonly
+setlocal EnableDelayedExpansion
+>&2 echo(nmox: !NMOX_A! is VS Code's and has no counterpart here
+exit /b 2
 :missing
 setlocal EnableDelayedExpansion
 >&2 echo(nmox: !NMOX_A!: no such file or folder

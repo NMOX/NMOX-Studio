@@ -71,7 +71,9 @@ Usage: nmox [options] [folder | file[:line[:column]]]...
 
 It returns at once; a second nmox hands its folder or files to the IDE
 already running. A name that is not there is refused here, before anything
-starts. Any other option goes to the IDE unchanged.
+starts. VS Code's -r is accepted and -n opens in the one window;
+-w, -d, -a and -v have no counterpart and are refused. Any other
+option goes to the IDE unchanged.
 USAGE
 }
 n=$#
@@ -102,6 +104,11 @@ while [ "$n" -gt 0 ]; do
             value=$a ;;
         -h|--help) nmox_usage; exit 0 ;;
         -g|--goto) ;;
+        -r|--reuse-window) ;;
+        -n|--new-window) printf 'nmox: NMOX Studio has one window; opening there\n' >&2 ;;
+        -w|--wait|-d|--diff|-a|--add|-v|--version)
+            printf 'nmox: %s is VS Code'"'"'s and has no counterpart here\n' "$a" >&2
+            exit 2 ;;
         -*) set -- "$@" "$a" ;;
         *)  if [ -d "$a" ]; then
                 set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
