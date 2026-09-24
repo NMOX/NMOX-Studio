@@ -2,14 +2,17 @@ package org.nmox.studio.tools.vscode;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,6 +22,7 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.nmox.studio.core.process.ToolLocator;
 import org.nmox.studio.core.util.BoundedReads;
 import org.nmox.studio.core.util.Containment;
 
@@ -37,6 +41,20 @@ import org.nmox.studio.core.util.Containment;
  * linux} / {@code windows} override objects merged over the base — only
  * the running OS's. {@code group} and {@code isBackground} are read for
  * ranking and labelling only.
+ *
+ * <p><b>Which shell a {@code shell} task runs in</b> is VS Code's own
+ * answer (read from its {@code terminalTaskSystem.ts} and terminal-profile
+ * code, v3.1.0), because running the line in a different shell is running
+ * a different command. With no {@code options.shell}: on macOS and Linux
+ * the user's {@code $SHELL} (when it names an absolute, executable file —
+ * else {@code /bin/sh}) with {@code -c}; on macOS a zsh, bash or fish also
+ * gets {@code -l}, the login shell VS Code's default macOS profiles start.
+ * On Windows, PowerShell ({@code pwsh} when installed, else Windows
+ * PowerShell) with {@code -Command}, the profile loaded as VS Code loads
+ * it. With {@code options.shell.executable}: that shell with exactly its
+ * {@code args} — VS Code adds nothing then, so neither do we. With only
+ * {@code options.shell.args}: the default shell with those arguments and
+ * the default flag added if absent. See {@link #shellArgv}.
  *
  * <p><b>What is refused, out loud.</b> VS Code can supply values this IDE
  * cannot: {@code ${input:…}} asks the user through a VS Code prompt,
@@ -97,10 +115,49 @@ public final class VsCodeTasks {
     record Value(String text, String quoting) {
     }
 
+    /**
+     * {@code options.shell} as the file declares it: either half may be
+     * null (absent), {@code args} is null when the file gives none.
+     */
+    record ShellOpt(String executable, List<String> args) {
+    }
+
     /** One task as the file declares it, after the running OS's override was merged. */
     record TaskDef(String label, String type, Value command, List<Value> args,
             String cwd, Map<String, String> env, String script, String path,
-            List<String> dependsOn, String group, boolean background) {
+            List<String> dependsOn, String group, boolean background, ShellOpt shell) {
+
+        /** A task with no {@code options.shell}. */
+        TaskDef(String label, String type, Value command, List<Value> args,
+                String cwd, Map<String, String> env, String script, String path,
+                List<String> dependsOn, String group, boolean background) {
+            this(label, type, command, args, cwd, env, script, path, dependsOn, group, background, null);
+        }
+    }
+
+    /**
+     * What resolving a task asks of the machine, as a seam so a test on any
+     * OS can play any OS: which OS, the environment ({@code $SHELL},
+     * {@code ${env:NAME}}), whether a file is an executable program, and
+     * where a bare program name lives on the search path (null when it is
+     * nowhere).
+     */
+    record Host(Os os, UnaryOperator<String> env, Predicate<File> executable,
+            UnaryOperator<String> onPath) {
+
+        /** This machine. */
+        static Host system() {
+            return of(Os.current(), System::getenv);
+        }
+
+        /** {@code os} and {@code env} as given, the filesystem and search path as they are. */
+        static Host of(Os os, UnaryOperator<String> env) {
+            return new Host(os, env, f -> f.isFile() && f.canExecute(), name -> {
+                String found = ToolLocator.resolve(name);
+                // resolve() hands the bare name back when it found nothing
+                return found.equals(name) ? null : found;
+            });
+        }
     }
 
     /** What pressing Enter on a task would do. */
@@ -132,7 +189,15 @@ public final class VsCodeTasks {
         /** An extension-contributed task type; detail = the type. */
         TYPE,
         /** No command (or no npm script) to run; detail = blank. */
-        NO_COMMAND
+        NO_COMMAND,
+        /** {@code options.shell.executable} names no program found; detail = the shell as written. */
+        SHELL_MISSING,
+        /**
+         * On Windows, a shell this IDE cannot hand a command line to
+         * faithfully (anything but PowerShell with {@code -Command} or
+         * cmd.exe with {@code /c}); detail = the shell as written.
+         */
+        SHELL_UNSUPPORTED
     }
 
     /* ------------------------------------------------------------------ reading */
@@ -224,7 +289,8 @@ public final class VsCodeTasks {
                     stringOrNull(task.opt("path")),
                     dependsOn(task.opt("dependsOn")),
                     group(task.opt("group")),
-                    task.optBoolean("isBackground", false)));
+                    task.optBoolean("isBackground", false),
+                    shellOf(options)));
         }
         return List.copyOf(out);
     }
@@ -282,6 +348,28 @@ public final class VsCodeTasks {
             merged.put("env", env);
         }
         return merged;
+    }
+
+    /** {@code options.shell}, or null when the options carry none. */
+    private static ShellOpt shellOf(JSONObject options) {
+        JSONObject shell = options == null ? null : options.optJSONObject("shell");
+        if (shell == null) {
+            return null;
+        }
+        String executable = stringOrNull(shell.opt("executable"));
+        List<String> args = null;
+        JSONArray raw = shell.optJSONArray("args");
+        if (raw != null) {
+            args = new ArrayList<>();
+            for (int i = 0; i < raw.length(); i++) {
+                Object a = raw.opt(i);
+                if (a != null && a != JSONObject.NULL) {
+                    args.add(String.valueOf(a));
+                }
+            }
+            args = List.copyOf(args);
+        }
+        return executable == null && args == null ? null : new ShellOpt(executable, args);
     }
 
     private static Map<String, String> envOf(JSONObject options) {
@@ -435,6 +523,12 @@ public final class VsCodeTasks {
      * @param env the process environment for {@code ${env:NAME}} (a seam for tests)
      */
     static Resolved resolve(TaskDef task, File project, Os os, UnaryOperator<String> env) {
+        return resolve(task, project, Host.of(os, env));
+    }
+
+    /** {@link #resolve(TaskDef, File, Os, UnaryOperator)} against a whole {@link Host}. */
+    static Resolved resolve(TaskDef task, File project, Host host) {
+        UnaryOperator<String> env = host.env();
         if (!task.dependsOn().isEmpty()) {
             return new Refused(Reason.DEPENDS_ON, String.join(", ", task.dependsOn()));
         }
@@ -453,6 +547,14 @@ public final class VsCodeTasks {
         }
         if (task.path() != null) {
             used.add(task.path());
+        }
+        if (task.shell() != null) {
+            if (task.shell().executable() != null) {
+                used.add(task.shell().executable());
+            }
+            if (task.shell().args() != null) {
+                used.addAll(task.shell().args());
+            }
         }
         for (String s : used) {
             String unknown = unsupportedVariable(s);
@@ -488,9 +590,22 @@ public final class VsCodeTasks {
                 for (Value a : task.args()) {
                     args.add(sub.apply(a.text()));
                 }
-                List<String> argv = "shell".equals(task.type())
-                        ? shellArgv(os, command, args, task.args())
-                        : processArgv(command, args);
+                List<String> argv;
+                if ("shell".equals(task.type())) {
+                    ShellOpt declared = task.shell() == null ? null : new ShellOpt(
+                            task.shell().executable() == null ? null : sub.apply(task.shell().executable()),
+                            task.shell().args() == null ? null
+                                    : task.shell().args().stream().map(sub).toList());
+                    Object shell = shellArgv(host, declared, project, command, args, task.args());
+                    if (shell instanceof Refused r) {
+                        return r;
+                    }
+                    @SuppressWarnings("unchecked")
+                    List<String> built = (List<String>) shell;
+                    argv = built;
+                } else {
+                    argv = processArgv(command, args);
+                }
                 return new Launch(List.copyOf(argv), (File) dir, Collections.unmodifiableMap(vars));
             }
             default -> {
@@ -614,24 +729,216 @@ public final class VsCodeTasks {
         return argv;
     }
 
+    /** Where Windows PowerShell lives under {@code %SystemRoot%} when nothing else is found. */
+    static final String WINDOWS_POWERSHELL = "System32\\WindowsPowerShell\\v1.0\\powershell.exe";
+
     /**
-     * {@code shell}: the command line VS Code would hand the default shell.
-     * The command is the user's shell text and is passed as written (it may
-     * be {@code npm run build && echo done}); each argument is quoted for
-     * the shell unless it is plainly safe, honouring a declared {@code
-     * quoting} of {@code strong}, {@code weak} or {@code escape}.
+     * {@code shell}: the argv that runs the command line in the shell VS
+     * Code would use, or a {@link Refused} (SHELL_MISSING, SHELL_UNSUPPORTED).
+     *
+     * <p>The command is the user's shell text and is passed as written (it
+     * may be {@code npm run build && echo done}); each argument is quoted
+     * for THAT shell unless it is plainly safe, honouring a declared
+     * {@code quoting} of {@code strong}, {@code weak} or {@code escape}.
+     *
+     * <p>The shell and its arguments follow VS Code's
+     * {@code terminalTaskSystem.ts} (read, v3.1.0):
+     * <ul>
+     * <li>no {@code options.shell}: the default shell ({@link #defaultShell})
+     *     with its profile's arguments ({@code -l} for a macOS zsh, bash or
+     *     fish) and the flag that runs a command ({@code -c}, or
+     *     {@code -Command} for PowerShell);</li>
+     * <li>{@code options.shell.executable}: that program, with exactly
+     *     {@code options.shell.args} (none when absent) — VS Code adds no
+     *     flag once the user names the shell;</li>
+     * <li>{@code options.shell.args} alone: the default shell with those
+     *     arguments, the flag appended when they lack it.</li>
+     * </ul>
+     *
+     * <p>Windows gets two faithful transports and refuses the rest. Java
+     * cannot hand a Windows program a raw command line — it re-quotes each
+     * argument by heuristics — so PowerShell receives the line as
+     * {@code -EncodedCommand} (UTF-16LE base64: the exact script text
+     * {@code -Command} would have read, no quoting layer at all), and
+     * cmd.exe as {@code /s /c "line"}, whose outer quotes cmd strips. Any
+     * other shell on Windows is refused by name rather than run through a
+     * quoting guess.
      */
-    static List<String> shellArgv(Os os, String command, List<String> args, List<Value> declared) {
+    static Object shellArgv(Host host, ShellOpt declared, File project, String command,
+            List<String> args, List<Value> quoting) {
+        String exe;
+        List<String> shellArgs;
+        String asWritten;
+        if (declared != null && declared.executable() != null) {
+            asWritten = declared.executable();
+            exe = locate(host, project, asWritten);
+            if (exe == null) {
+                return new Refused(Reason.SHELL_MISSING, asWritten);
+            }
+            shellArgs = declared.args() == null ? List.of() : declared.args();
+        } else {
+            exe = defaultShell(host);
+            asWritten = exe;
+            String name = shellName(exe);
+            List<String> flag = commandFlag(host.os(), name);
+            List<String> combined = new ArrayList<>();
+            if (declared != null && declared.args() != null) {
+                combined.addAll(declared.args());
+                for (String f : flag) {
+                    if (combined.stream().noneMatch(a -> a.equalsIgnoreCase(f))) {
+                        combined.add(f);
+                    }
+                }
+            } else {
+                combined.addAll(profileArgs(host.os(), name));
+                combined.addAll(flag);
+            }
+            shellArgs = combined;
+        }
+        String name = shellName(exe);
+        if (host.os() != Os.WINDOWS) {
+            List<String> argv = new ArrayList<>();
+            argv.add(exe);
+            argv.addAll(shellArgs);
+            argv.add(line(command, args, quoting, VsCodeTasks::shQuote));
+            return argv;
+        }
+        String last = shellArgs.isEmpty() ? "" : shellArgs.get(shellArgs.size() - 1);
+        List<String> before = shellArgs.isEmpty() ? List.of() : shellArgs.subList(0, shellArgs.size() - 1);
+        if (("pwsh".equals(name) || "powershell".equals(name))
+                && (last.equalsIgnoreCase("-Command") || last.equalsIgnoreCase("-c"))) {
+            String line = line(command, args, quoting, VsCodeTasks::psQuote);
+            List<String> argv = new ArrayList<>();
+            argv.add(exe);
+            argv.addAll(before);
+            argv.add("-EncodedCommand");
+            argv.add(Base64.getEncoder().encodeToString(line.getBytes(StandardCharsets.UTF_16LE)));
+            return argv;
+        }
+        if ("cmd".equals(name) && (last.equalsIgnoreCase("/c") || last.equalsIgnoreCase("/k"))) {
+            String line = line(command, args, quoting, VsCodeTasks::cmdQuote);
+            List<String> argv = new ArrayList<>();
+            argv.add(exe);
+            argv.addAll(before);
+            if (before.stream().noneMatch(a -> a.equalsIgnoreCase("/s"))) {
+                argv.add("/s");
+            }
+            argv.add(last);
+            // a closing quote after a backslash reads as \" to Java's own
+            // Windows quoting heuristic, which would then re-quote the whole
+            // argument; a trailing space is nothing to cmd and ends that
+            argv.add("\"" + (line.endsWith("\\") ? line + " " : line) + "\"");
+            return argv;
+        }
+        return new Refused(Reason.SHELL_UNSUPPORTED, asWritten);
+    }
+
+    /** The command then each argument quoted by {@code quote}, space-separated. */
+    private static String line(String command, List<String> args, List<Value> declared,
+            java.util.function.BinaryOperator<String> quote) {
         StringBuilder line = new StringBuilder(command);
         for (int i = 0; i < args.size(); i++) {
-            String quoting = declared.get(i).quoting();
-            line.append(' ').append(os == Os.WINDOWS
-                    ? cmdQuote(args.get(i), quoting)
-                    : shQuote(args.get(i), quoting));
+            line.append(' ').append(quote.apply(args.get(i), declared.get(i).quoting()));
         }
-        return os == Os.WINDOWS
-                ? List.of("cmd.exe", "/d", "/s", "/c", "\"" + line + "\"")
-                : List.of("/bin/sh", "-c", line.toString());
+        return line.toString();
+    }
+
+    /**
+     * The shell VS Code would pick with no {@code options.shell}. POSIX: the
+     * user's {@code $SHELL} when it names an absolute, executable file that
+     * is not a refusing placeholder ({@code /bin/false}, a {@code nologin}),
+     * else {@code /bin/sh}. Windows: PowerShell — {@code pwsh} (PowerShell
+     * 7) when it is on the search path, as VS Code prefers it, else Windows
+     * PowerShell under {@code %SystemRoot%}, else {@code powershell.exe} by
+     * name for the spawn to find or report.
+     */
+    static String defaultShell(Host host) {
+        if (host.os() == Os.WINDOWS) {
+            String pwsh = host.onPath().apply("pwsh");
+            if (pwsh != null) {
+                return pwsh;
+            }
+            String root = host.env().apply("SystemRoot");
+            if (root != null && !root.isBlank()) {
+                File ps = new File(root, WINDOWS_POWERSHELL);
+                if (host.executable().test(ps)) {
+                    return ps.getPath();
+                }
+            }
+            String ps = host.onPath().apply("powershell");
+            return ps != null ? ps : "powershell.exe";
+        }
+        String shell = host.env().apply("SHELL");
+        if (shell != null && shell.startsWith("/")) {
+            String base = shellName(shell);
+            if (!"false".equals(base) && !base.contains("nologin") && host.executable().test(new File(shell))) {
+                return shell;
+            }
+        }
+        return "/bin/sh";
+    }
+
+    /**
+     * {@code options.shell.executable} (substituted) as a program to run, or
+     * null when it names nothing: an absolute path must be an executable
+     * file, a bare name is looked up on the search path, and a relative path
+     * is read inside the project.
+     */
+    static String locate(Host host, File project, String executable) {
+        if (executable == null || executable.isBlank()) {
+            return null;
+        }
+        if (isAbsolute(host.os(), executable)) {
+            return host.executable().test(new File(executable)) ? executable : null;
+        }
+        if (executable.indexOf('/') < 0 && executable.indexOf('\\') < 0) {
+            return host.onPath().apply(executable);
+        }
+        File inProject = inside(project, executable);
+        return inProject != null && host.executable().test(inProject) ? inProject.getPath() : null;
+    }
+
+    /**
+     * Absolute on {@code os}, whatever OS this JVM runs on: a Windows path
+     * starts with a drive or a UNC prefix, a POSIX one with a slash.
+     */
+    static boolean isAbsolute(Os os, String path) {
+        if (os == Os.WINDOWS) {
+            return path.matches("(?s)([A-Za-z]:[\\\\/]|[\\\\/]{2}).*") || new File(path).isAbsolute();
+        }
+        return path.startsWith("/");
+    }
+
+    /** {@code /usr/bin/zsh} → {@code zsh}, {@code C:\…\pwsh.exe} → {@code pwsh}: lower case, no {@code .exe}. */
+    static String shellName(String exe) {
+        String base = exe;
+        int cut = Math.max(base.lastIndexOf('/'), base.lastIndexOf('\\'));
+        if (cut >= 0) {
+            base = base.substring(cut + 1);
+        }
+        base = base.toLowerCase(Locale.ROOT);
+        return base.endsWith(".exe") ? base.substring(0, base.length() - 4) : base;
+    }
+
+    /** VS Code's default-profile arguments: macOS starts a zsh, bash or fish as a login shell. */
+    static List<String> profileArgs(Os os, String shellName) {
+        return os == Os.MAC && ("zsh".equals(shellName) || "bash".equals(shellName) || "fish".equals(shellName))
+                ? List.of("-l")
+                : List.of();
+    }
+
+    /** The flag VS Code adds so the shell runs one command line: {@code -c}, {@code -Command}, {@code /d /c}. */
+    static List<String> commandFlag(Os os, String shellName) {
+        if (os != Os.WINDOWS) {
+            return List.of("-c");
+        }
+        if ("pwsh".equals(shellName) || "powershell".equals(shellName)) {
+            return List.of("-Command");
+        }
+        if ("cmd".equals(shellName)) {
+            return List.of("/d", "/c");
+        }
+        return List.of();
     }
 
     private static final Pattern SAFE = Pattern.compile("[A-Za-z0-9_@%+=:,./-]+");
@@ -656,11 +963,91 @@ public final class VsCodeTasks {
         return "'" + arg.replace("'", "'\\''") + "'";
     }
 
+    /**
+     * Plainly safe for PowerShell unquoted. Narrower than {@link #SAFE}:
+     * {@code @} splats and {@code ,} builds an array there; a backslash is
+     * an ordinary path character, so {@code out\} needs no quotes at all.
+     */
+    private static final Pattern PS_SAFE = Pattern.compile("[A-Za-z0-9_%+=:./\\\\-]+");
+
+    /** PowerShell's single-quote delimiters: the ASCII one and the four typographic ones it also accepts. */
+    private static final String PS_SINGLE = "'\u2018\u2019\u201A\u201B";
+
+    /** PowerShell's double-quote delimiters. */
+    private static final String PS_DOUBLE = "\"\u201C\u201D\u201E";
+
+    /**
+     * An argument for a PowerShell line: strong is single-quoted with every
+     * single-quote delimiter doubled (nothing expands), weak is
+     * double-quoted with the backtick and every double-quote delimiter
+     * backtick-escaped ({@code $var} still expands — that is what weak
+     * means), escape backticks each character that is not plainly safe.
+     */
+    static String psQuote(String arg, String quoting) {
+        if ("escape".equals(quoting) && arg.chars().noneMatch(Character::isISOControl)) {
+            StringBuilder out = new StringBuilder();
+            for (char c : arg.toCharArray()) {
+                if (!PS_SAFE.matcher(String.valueOf(c)).matches()) {
+                    out.append('`');
+                }
+                out.append(c);
+            }
+            return out.toString();
+        }
+        if ("weak".equals(quoting)) {
+            StringBuilder out = new StringBuilder("\"");
+            for (char c : arg.toCharArray()) {
+                if (c == '`' || PS_DOUBLE.indexOf(c) >= 0) {
+                    out.append('`');
+                }
+                out.append(c);
+            }
+            return out.append('"').toString();
+        }
+        if (!"strong".equals(quoting) && !"escape".equals(quoting) && PS_SAFE.matcher(arg).matches()) {
+            return arg;
+        }
+        StringBuilder out = new StringBuilder("'");
+        for (char c : arg.toCharArray()) {
+            if (PS_SINGLE.indexOf(c) >= 0) {
+                out.append(c);
+            }
+            out.append(c);
+        }
+        return out.append('\'').toString();
+    }
+
+    /**
+     * An argument for the {@code cmd.exe /s /c "…"} line. cmd itself does
+     * not read backslashes; the program it starts parses its command line
+     * by the standard Windows rule, where backslashes are literal EXCEPT
+     * before a quote: {@code 2n} backslashes then a quote are {@code n}
+     * backslashes and a delimiter. So every run of backslashes that ends at
+     * a quote this method writes — an embedded {@code ""} or the closing
+     * one — is doubled, and {@code out\} arrives as {@code out\}, not as
+     * {@code out"} swallowing the rest of the line. An embedded quote is
+     * written {@code ""}, which keeps cmd's own quote state in step (a
+     * {@code \"} would flip it and expose {@code &} and {@code |}).
+     */
     static String cmdQuote(String arg, String quoting) {
         if (quoting == null && SAFE.matcher(arg).matches()) {
             return arg;
         }
-        return "\"" + arg.replace("\"", "\"\"") + "\"";
+        StringBuilder out = new StringBuilder("\"");
+        int backslashes = 0;
+        for (char c : arg.toCharArray()) {
+            if (c == '\\') {
+                backslashes++;
+                continue;
+            }
+            if (c == '"') {
+                out.append("\\".repeat(backslashes * 2)).append("\"\"");
+            } else {
+                out.append("\\".repeat(backslashes)).append(c);
+            }
+            backslashes = 0;
+        }
+        return out.append("\\".repeat(backslashes * 2)).append('"').toString();
     }
 
     /** The command as the file wrote it, one line: what the search row shows. */

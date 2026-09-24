@@ -1749,8 +1749,10 @@ lights the ⇄ chip. In a monorepo the scripts are the ones NPM Explorer
 shows. A repository that carries `.vscode/tasks.json` lists its tasks the
 same way — *Run task: build — make all* — and Enter runs the task behind
 the same trust question, in the Output window and under the toolbar ■; a
-task that needs a value only VS Code can supply, or depends on another
-task, says so on the status line instead of running. Its
+shell task runs in the shell VS Code would use (your `$SHELL`, a login
+shell on macOS; PowerShell on Windows) or the one its `options.shell`
+names; a task that needs a value only VS Code can supply, or depends on
+another task, says so on the status line instead of running. Its
 `.vscode/launch.json` lists beside them — *Debug: Launch Program —
 ${workspaceFolder}/server.js* — and Enter starts the breakpoint
 debugger on that configuration after the same trust question.

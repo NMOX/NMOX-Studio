@@ -132,6 +132,15 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
   something other than what the file says. So would a task type an
   extension provides (`gulp`, `typescript`), and a working folder outside
   the project.
+- **A `"type": "shell"` task runs in the shell VS Code would use.** On
+  macOS and Linux that is your `$SHELL` with `-c` (a macOS zsh, bash or
+  fish starts as a login shell, `-l`, as VS Code's default profiles do);
+  on Windows it is PowerShell, `pwsh` when installed. `options.shell`
+  is honoured the VS Code way: name an `executable` and it runs with
+  exactly the `args` you give, so a bash needs `"args": ["-c"]`. On
+  Windows only PowerShell (args ending in `-Command`) and `cmd.exe`
+  (args ending in `/c`) are run; any other shell there is refused by
+  name rather than handed a command line quoted by guesswork.
 - **There is no "VS Code" keymap profile.** The chords above ride the
   default profile and the other four. One deliberate exception: in the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and

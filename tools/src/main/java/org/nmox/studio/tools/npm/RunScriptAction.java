@@ -80,8 +80,14 @@ public final class RunScriptAction implements ActionListener {
             status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_notLocal"));
             return;
         }
-        status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_running", script));
+        // "Running …" only after the trust question is answered yes: the
+        // lane asks it too, and on the same folder that second ask is
+        // silent; Keep Safe says nothing more
         RP.post(() -> {
+            if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir)) {
+                return;
+            }
+            status(org.openide.util.NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_running", script));
             NpmService npm = NpmService.getDefault();
             npm.runScript(dir, script, npm.detectPackageManager(dir));
         });

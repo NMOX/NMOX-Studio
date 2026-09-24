@@ -45,10 +45,24 @@ class NpmScriptSearchProviderTest {
     Path project;
 
     private final BiConsumer<File, String> realRunner = NpmScriptSearchProvider.runner;
+    private final java.util.function.Predicate<File> realTrust = NpmScriptSearchProvider.trustCheck;
+    private final java.util.function.Consumer<String> realStatus = NpmScriptSearchProvider.statusSink;
+    private final List<String> events = java.util.Collections.synchronizedList(new ArrayList<>());
+
+    @org.junit.jupiter.api.BeforeEach
+    void quietSeams() {
+        NpmScriptSearchProvider.statusSink = s -> events.add("said: " + s);
+        NpmScriptSearchProvider.trustCheck = d -> {
+            events.add("asked: " + d.getName());
+            return true;
+        };
+    }
 
     @AfterEach
     void restoreRunner() {
         NpmScriptSearchProvider.runner = realRunner;
+        NpmScriptSearchProvider.trustCheck = realTrust;
+        NpmScriptSearchProvider.statusSink = realStatus;
     }
 
     private void writePackageJson(String json) throws Exception {
@@ -169,6 +183,27 @@ class NpmScriptSearchProviderTest {
         assertThat(thread.get()).as("never the caller's (EDT) thread")
                 .isNotEqualTo(Thread.currentThread().getName())
                 .contains("npm-script");
+    }
+
+    @Test
+    @DisplayName("\"Running …\" is said only after the trust question is answered yes; Keep Safe says nothing")
+    void runningIsSaidOnlyAfterTrust() {
+        NpmScriptSearchProvider.runner = (d, s) -> events.add("ran: " + s);
+        NpmScriptSearchProvider.trustCheck = d -> {
+            events.add("asked");
+            return false;
+        };
+        NpmScriptSearchProvider.run(project.toFile(), "dev").waitFinished();
+        assertThat(events).as("the review's finding (v3.1.0): the status claimed a run Keep Safe had refused")
+                .containsExactly("asked");
+
+        events.clear();
+        NpmScriptSearchProvider.trustCheck = d -> {
+            events.add("asked");
+            return true;
+        };
+        NpmScriptSearchProvider.run(project.toFile(), "dev").waitFinished();
+        assertThat(events).containsExactly("asked", "said: Running \"dev\"…", "ran: dev");
     }
 
     @Test

@@ -177,13 +177,16 @@ class VsCodeTasksTest {
     }
 
     @Test
-    @DisplayName("shell: sh -c on POSIX, cmd.exe /d /s /c on Windows; process: the argv as it is")
+    @DisplayName("shell: sh -c on POSIX with no $SHELL, PowerShell on Windows; process: the argv as it is")
     void argvShapes() {
         String shell = "{\"tasks\":[{\"label\":\"b\",\"type\":\"shell\",\"command\":\"npm run build && echo done\",\"args\":[\"--x y\"]}]}";
         assertThat(((Launch) resolve(shell, Os.LINUX)).argv())
                 .containsExactly("/bin/sh", "-c", "npm run build && echo done '--x y'");
-        assertThat(((Launch) resolve(shell, Os.WINDOWS)).argv())
-                .containsExactly("cmd.exe", "/d", "/s", "/c", "\"npm run build && echo done \"--x y\"\"");
+        VsCodeTasks.Host windows = new VsCodeTasks.Host(Os.WINDOWS, NO_ENV, f -> false,
+                name -> "pwsh".equals(name) ? "C:\\PS\\pwsh.exe" : null);
+        assertThat(((Launch) VsCodeTasks.resolve(only(shell, Os.WINDOWS), project.toFile(), windows)).argv())
+                .containsExactly("C:\\PS\\pwsh.exe", "-EncodedCommand", VsCodeTaskShellTest.encoded(
+                        "npm run build && echo done '--x y'"));
 
         String process = "{\"tasks\":[{\"label\":\"p\",\"type\":\"process\",\"command\":\"cargo\",\"args\":[\"build\",\"--release\"]}]}";
         Launch launch = (Launch) resolve(process, Os.LINUX);

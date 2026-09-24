@@ -79,6 +79,18 @@ public class NpmScriptSearchProvider implements SearchProvider {
      */
     static volatile BiConsumer<File, String> runner = NpmScriptSearchProvider::runOnLane;
 
+    /**
+     * The trust question, as a seam. The lane asks it too; asking the same
+     * folder here first puts "Running …" on the status line only after a
+     * yes (Keep Safe used to leave it over a script that never ran), and
+     * the lane's own ask is then silent.
+     */
+    static volatile java.util.function.Predicate<File> trustCheck =
+            dir -> org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(dir);
+
+    /** Where "Running …" is said, as a seam. */
+    static volatile java.util.function.Consumer<String> statusSink = NpmScriptSearchProvider::status;
+
     /** One listed script: what it is, where it runs, and the label shown. */
     record Item(String name, String command, File dir, String label) {
     }
@@ -204,13 +216,20 @@ public class NpmScriptSearchProvider implements SearchProvider {
     }
 
     /**
-     * Enter: say so on the status line and hand the script to the lane
-     * off the EDT. The platform runs a result's action on the EDT, and
-     * the lane's trust prompt marshals its own dialog, so the hop is safe.
+     * Enter: off the EDT, ask Workspace Trust, and only on a yes say so on
+     * the status line and hand the script to the lane. The platform runs a
+     * result's action on the EDT, and the trust prompt marshals its own
+     * dialog, so the hop is safe. Keep Safe says nothing more — the user
+     * just answered the question themselves.
      */
     static RequestProcessor.Task run(File dir, String script) {
-        status(NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_running", script));
-        return RP.post(() -> runner.accept(dir, script));
+        return RP.post(() -> {
+            if (!trustCheck.test(dir)) {
+                return;
+            }
+            statusSink.accept(NbBundle.getMessage(RunScriptAction.class, "RunScriptAction_running", script));
+            runner.accept(dir, script);
+        });
     }
 
     private static void runOnLane(File dir, String script) {

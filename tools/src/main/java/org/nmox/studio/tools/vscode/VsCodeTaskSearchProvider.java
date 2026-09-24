@@ -26,9 +26,9 @@ import org.nmox.studio.rack.service.ServingRegistry;
 import org.nmox.studio.rack.service.WorkspaceTrust;
 import org.nmox.studio.tools.npm.NpmService;
 import org.nmox.studio.tools.npm.search.NpmScriptSearchProvider;
+import org.nmox.studio.tools.vscode.VsCodeTasks.Host;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Launch;
 import org.nmox.studio.tools.vscode.VsCodeTasks.NpmLaunch;
-import org.nmox.studio.tools.vscode.VsCodeTasks.Os;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Refused;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Resolved;
 import org.nmox.studio.tools.vscode.VsCodeTasks.TaskDef;
@@ -55,7 +55,11 @@ import org.openide.util.RequestProcessor;
  * the EDT, because the platform runs a result's action on the EDT.
  * An {@code npm}-type task spawns nothing here: it goes to the NPM Service
  * lane, which carries its own trust gate, exactly as the npm scripts
- * category does.
+ * category does — but the same question is asked HERE first, on the
+ * folder that lane will ask about, so "Running task …" is said only once
+ * the user has said yes (Keep Safe used to leave that sentence on the
+ * status line over a task that never ran); the lane's own ask is then
+ * silent, because the folder is trusted.
  *
  * <p><b>Refusals speak.</b> A task that uses a variable only VS Code can
  * fill, depends on another task, names a working folder outside the
@@ -87,6 +91,9 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
 
     /** Where refusals and progress are said, as a seam. */
     static volatile Consumer<String> statusSink = VsCodeTaskSearchProvider::status;
+
+    /** The machine a task resolves against (OS, environment, shells), as a seam. */
+    static volatile Host host = Host.system();
 
     /** Starts one resolved task; completes with its exit code. */
     @FunctionalInterface
@@ -159,13 +166,18 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
 
     /** The body of Enter, on the lane: resolve, refuse out loud, or trust-gate then spawn. */
     static void execute(File project, TaskDef task) {
-        Resolved resolved = VsCodeTasks.resolve(task, project, Os.current(), System::getenv);
+        Resolved resolved = VsCodeTasks.resolve(task, project, host);
         if (resolved instanceof Refused refused) {
             statusSink.accept(refusal(task.label(), refused));
             return;
         }
         if (resolved instanceof NpmLaunch npm) {
-            // the NPM Service lane asks Workspace Trust itself (v1.103.0)
+            // the NPM Service lane asks Workspace Trust itself (v1.103.0);
+            // asking the SAME folder here first means "Running …" is said
+            // only after a yes, and the lane's own ask is then silent
+            if (!trustCheck.test(npm.dir())) {
+                return;
+            }
             statusSink.accept(message("VsCodeTaskSearchProvider_running", task.label()));
             npmRunner.accept(npm.dir(), npm.script());
             return;
@@ -190,6 +202,9 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             case CWD_MISSING -> message("VsCodeTaskSearchProvider_refuseCwdMissing", taskLabel, refused.detail());
             case TYPE -> message("VsCodeTaskSearchProvider_refuseType", taskLabel, refused.detail());
             case NO_COMMAND -> message("VsCodeTaskSearchProvider_refuseNoCommand", taskLabel);
+            case SHELL_MISSING -> message("VsCodeTaskSearchProvider_refuseShellMissing", taskLabel, refused.detail());
+            case SHELL_UNSUPPORTED -> message("VsCodeTaskSearchProvider_refuseShellUnsupported",
+                    taskLabel, refused.detail());
         };
     }
 

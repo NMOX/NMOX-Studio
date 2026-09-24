@@ -63,6 +63,7 @@ class VsCodeTaskSearchProviderTest {
     private final VsCodeTaskSearchProvider.Spawner realSpawner = VsCodeTaskSearchProvider.spawner;
     private final BiConsumer<File, String> realNpm = VsCodeTaskSearchProvider.npmRunner;
     private final Consumer<String> realStatus = VsCodeTaskSearchProvider.statusSink;
+    private final VsCodeTasks.Host realHost = VsCodeTaskSearchProvider.host;
 
     private final List<String> said = Collections.synchronizedList(new ArrayList<>());
     private final List<Object[]> spawned = Collections.synchronizedList(new ArrayList<>());
@@ -91,6 +92,7 @@ class VsCodeTaskSearchProviderTest {
         VsCodeTaskSearchProvider.spawner = realSpawner;
         VsCodeTaskSearchProvider.npmRunner = realNpm;
         VsCodeTaskSearchProvider.statusSink = realStatus;
+        VsCodeTaskSearchProvider.host = realHost;
         LiveRuns.stopAll();
     }
 
@@ -204,7 +206,44 @@ class VsCodeTaskSearchProviderTest {
         assertThat(dir.get()).isEqualTo(project.toFile());
         assertThat(script.get()).isEqualTo("lint");
         assertThat(spawned).isEmpty();
-        assertThat(asked).as("the npm lane owns its own trust question").isEmpty();
+        assertThat(asked).as("the question the npm lane will ask, asked first on the same folder, so its own ask is silent")
+                .containsExactly(project.toFile().getPath());
+        assertThat(said).containsExactly("Running task \"npm: lint\"…");
+    }
+
+    @Test
+    @DisplayName("an npm-type task under Keep Safe says nothing is running and hands nothing to the lane")
+    void npmTaskKeepSafeSaysNothing() {
+        List<String> events = Collections.synchronizedList(new ArrayList<>());
+        VsCodeTaskSearchProvider.statusSink = s -> events.add("said: " + s);
+        VsCodeTaskSearchProvider.npmRunner = (d, s) -> events.add("ran: " + s);
+        VsCodeTaskSearchProvider.trustCheck = dir -> {
+            events.add("asked");
+            return false;
+        };
+        enter("npm: lint");
+        assertThat(events).as("the review's finding (v3.1.0): \"Running …\" stood over a task that never ran")
+                .containsExactly("asked");
+
+        events.clear();
+        VsCodeTaskSearchProvider.trustCheck = dir -> {
+            events.add("asked");
+            return true;
+        };
+        enter("npm: lint");
+        assertThat(events).as("a yes: asked, then said, then handed over — in that order")
+                .containsExactly("asked", "said: Running task \"npm: lint\"…", "ran: lint");
+    }
+
+    @Test
+    @DisplayName("a shell task's argv is resolved against the provider's host seam: the user's shell, not /bin/sh")
+    void shellTaskUsesTheHostShell() throws Exception {
+        VsCodeTaskSearchProvider.host = new VsCodeTasks.Host(VsCodeTasks.Os.LINUX,
+                name -> "SHELL".equals(name) ? "/usr/bin/zsh" : null,
+                f -> f.getPath().equals("/usr/bin/zsh"), name -> null);
+        enter("build");
+        assertThat(spawned).hasSize(1);
+        assertThat(((Launch) spawned.get(0)[1]).argv()).containsExactly("/usr/bin/zsh", "-c", "make all");
     }
 
     @Test
