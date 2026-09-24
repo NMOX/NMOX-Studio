@@ -360,11 +360,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // fill the chips when it returns.
         fillChipsAsync(chips, dir);
 
-        JLabel path = new JLabel(PlainText.plain(dir.getAbsolutePath()));
-        path.setFont(TINY);
-        path.setForeground(TEXT_DIM);
-        path.setAlignmentX(LEFT_ALIGNMENT);
-        header.add(path);
+        header.add(headerPath(dir));
         header.add(Box.createVerticalStrut(8));
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
@@ -891,6 +887,29 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         PATH,
         /** A sentence: the BEGINNING tells you what it is. */
         PROSE
+    }
+
+    /** How many characters of the aimed project's path the header shows. */
+    static final int HEADER_PATH_MAX = 56;
+
+    /**
+     * The header's path line, shortened with its ends kept and the whole
+     * path on the tooltip and accessible description. Unshortened (before
+     * 3.1.0) a deep path set the label's preferred width, and on a fresh
+     * layout the left dock grows to its content's preferred width: aiming
+     * a folder under a long temp path pushed the Workbench to half the
+     * window and cut the Welcome tab in two (measured in the walk of
+     * {@code --aim}).
+     */
+    static JLabel headerPath(File dir) {
+        String full = dir.getAbsolutePath();
+        JLabel path = new JLabel(PlainText.plain(shortenPath(full, HEADER_PATH_MAX)));
+        path.setFont(TINY);
+        path.setForeground(TEXT_DIM);
+        path.setAlignmentX(LEFT_ALIGNMENT);
+        path.setToolTipText(PlainText.plain(full));
+        path.getAccessibleContext().setAccessibleDescription(full);
+        return path;
     }
 
     /** Middle-ellipsis so deep paths keep their telling ends. */
