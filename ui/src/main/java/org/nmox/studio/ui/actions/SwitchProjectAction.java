@@ -29,7 +29,7 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
- * The daily-driver project switcher: Cmd+Shift+P pops the recent
+ * The daily-driver project switcher: ⌥⌘P (Ctrl+Alt+P) pops the recent
  * projects, type to narrow, Enter re-aims the whole IDE. The switch
  * goes through {@link RackService#openProject}, which guards work in
  * flight - a running dev server is named and confirmed, never silently
@@ -39,7 +39,7 @@ import org.openide.windows.WindowManager;
 @ActionRegistration(displayName = "#CTL_SwitchProjectAction")
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 65),
-    @ActionReference(path = "Shortcuts", name = "DS-P")
+    @ActionReference(path = "Shortcuts", name = "DA-P")
 })
 @Messages({
     "CTL_SwitchProjectAction=Switch Project…",

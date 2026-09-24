@@ -31,8 +31,8 @@ import org.openide.filesystems.FileUtil;
  * no EDT work anywhere on this path.
  */
 @org.openide.util.NbBundle.Messages({
-    "RackFindingsTaskScanner_name=Rack tool findings",
-    "RackFindingsTaskScanner_description=Problems reported by rack quality tools (eslint, tsc, phpstan)"
+    "RackFindingsTaskScanner_name=Language servers and IDE tools",
+    "RackFindingsTaskScanner_description=Problems reported by language servers and by the IDE’s own tools (the rack’s eslint, tsc and phpstan, among others)"
 })
 public final class RackFindingsTaskScanner extends PushTaskScanner {
 

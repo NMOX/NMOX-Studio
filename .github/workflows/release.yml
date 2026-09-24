@@ -3,6 +3,23 @@ name: Release
 on:
   push:
     tags: [ "v*" ]
+  # A signed-and-notarized macOS DMG WITHOUT a release: the signing lane
+  # cannot run without its secrets, so before 3.1.0 the only way to test it
+  # was to publish (v2.188.0-v2.188.3 are tags with no release). A dispatch
+  # runs `version` + `macos` alone - linux and windows are push-only, so the
+  # release and homebrew jobs, which need them, never run - and the DMG
+  # lands as a run artifact to be downloaded, quarantined and launched the
+  # way a user's copy is. The Update gauntlet ignores dispatched runs.
+  workflow_dispatch:
+    inputs:
+      version:
+        # Three dotted numbers, like a tag's: the version becomes every
+        # module's OpenIDE spec version, which the module system parses as
+        # numbers - "3.1.0-dryrun1" built a bundle whose eleven NMOX modules
+        # all refused to load (NumberFormatException, measured 2026-09-23).
+        description: "Version stamped into the dry-run bundle (digits and dots only, e.g. 3.1.0)"
+        required: false
+        default: "0.0.1"
 
 permissions:
   contents: write
@@ -14,10 +31,28 @@ jobs:
       version: ${{ steps.v.outputs.version }}
     steps:
       - id: v
-        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        env:
+          DISPATCH_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            version="${DISPATCH_VERSION:-0.0.1}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          # The version is every module's OpenIDE-Module-Specification-Version,
+          # and the module system reads that as dotted numbers only: anything
+          # else (a -rc1 tag, a -dryrun dispatch) builds an app whose NMOX
+          # modules all refuse to load and whose window opens empty. Refuse
+          # it here, before four platforms spend an hour building it.
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::Version '$version' is not three dotted numbers; the module system cannot load a build stamped with it."
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
   linux:
     needs: version
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -174,9 +209,8 @@ jobs:
         # release publishes the same 21 assets. Same law as the NBM keystore
         # above. See docs/engineering/release-signing.md for the secrets.
         #
-        # NOT TESTED AGAINST A REAL ACCOUNT: there is no Apple Developer
-        # enrolment yet (ledger 86). Written from Apple's documentation,
-        # reviewed, and gated so it cannot affect a release without secrets.
+        # LIVE since v2.188.4 (ledger 86a): a Developer ID and notary key are
+        # set. Exercise it without a release through workflow_dispatch.
         env:
           MACOS_CERT_B64: ${{ secrets.MACOS_SIGNING_CERTIFICATE_BASE64 }}
           MACOS_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERTIFICATE_PASSWORD }}
@@ -247,6 +281,7 @@ jobs:
 
   windows:
     needs: version
+    if: github.event_name == 'push'
     runs-on: windows-latest
     # ONE home for the Authenticode credentials, read by
     # packaging/windows/authenticode-sign.ps1 at both signing steps below.
@@ -521,9 +556,10 @@ jobs:
             desc "NetBeans RCP-based IDE for web development"
             homepage "https://github.com/NMOX/NMOX-Studio"
 
-            depends_on macos: :big_sur
+            depends_on :macos
 
             app "NMOX Studio.app"
+            binary "#{appdir}/NMOX Studio.app/Contents/MacOS/nmox-studio", target: "nmox"
 
             zap trash: [
               "~/Library/Application Support/NMOXStudio",

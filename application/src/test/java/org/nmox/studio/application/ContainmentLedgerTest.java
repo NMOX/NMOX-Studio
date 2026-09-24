@@ -174,6 +174,8 @@ class ContainmentLedgerTest {
                 .as("the forge's staged sample files ride the ONE guard").isTrue();
         assertThat(guardCalls("ui/src/main/java/org/nmox/studio/ui/actions/NgSchematic.java"))
                 .as("the schematic's target folder — a spawn's cwd — rides the ONE guard").isTrue();
+        assertThat(guardCalls("tools/src/main/java/org/nmox/studio/tools/vscode/VsCodeTasks.java"))
+                .as("a VS Code task's options.cwd — a spawn's cwd — rides the ONE guard").isTrue();
         // ledger 117's first: the product's one templated WRITE path, and the
         // only one of that entry's three that creates files
         assertThat(guardCalls(

@@ -63,9 +63,6 @@ class SearchSurfaceLedgerTest {
             Map.entry("DevServerDevice.java",
                     "reading a dev server's own output for \"address already in use\" — "
             + "matching what a program printed, not what a person typed"),
-            Map.entry("ProjectStudioTopComponent.java",
-                    "finding the platform's Terminal action by its layer file name; a "
-            + "registration id is a machine identifier and means itself exactly"),
             Map.entry("HeaderGrader.java",
                     "an HTTP header value checked for a policy token; the wire says "
             + "\"unsafe-url\" or it does not, and a near miss is not a match")

@@ -29,7 +29,7 @@ public class LiveRunSearchProvider implements SearchProvider {
                                 "LiveRunSearchProvider_stop", run.label())
                         : org.openide.util.NbBundle.getMessage(LiveRunSearchProvider.class,
                                 "LiveRunSearchProvider_stopSince", run.label(), at);
-                if (!response.addResult(() -> stop(run.id(), run.label()), label.trim())) {
+                if (!response.addResult(() -> stop(run.id(), run.label()), org.nmox.studio.core.util.PlainText.escape(label.trim()))) {
                     return;
                 }
             }

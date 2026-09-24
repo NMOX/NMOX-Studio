@@ -79,7 +79,32 @@ public class DapDebugAction extends BaseAction {
      * first, then the language's adapter, all off the EDT. Returns at once.
      */
     static void launch(File file, String mime) {
+        launch(file, mime, null);
+    }
+
+    /**
+     * {@link #launch(File, String)} with the program's working directory
+     * chosen by the caller (v3.1.0: a {@code .vscode/launch.json}
+     * configuration's {@code cwd}); null keeps each adapter's own default.
+     * Delve takes the package DIRECTORY as its program and has no separate
+     * working directory, so a Go launch with one is not offered here —
+     * {@link #supportsWorkingDir} says which MIME types honour it.
+     */
+    static void launch(File file, String mime, File workingDir) {
+        launch(file, mime, workingDir, List.of(), Map.of());
+    }
+
+    /**
+     * {@link #launch(File, String, File)} with the program's arguments and
+     * added environment (3.1.0: a {@code .vscode/launch.json}
+     * configuration's {@code args} and {@code env}); both adapters that
+     * honour a working directory take them in their launch request.
+     */
+    static void launch(File file, String mime, File workingDir, List<String> args, Map<String, String> env) {
         if (file == null || !supportsMime(mime)) {
+            return;
+        }
+        if (workingDir != null && !supportsWorkingDir(mime)) {
             return;
         }
         // a run that grows a second session shows the Sessions window by
@@ -98,9 +123,9 @@ public class DapDebugAction extends BaseAction {
                     return;
                 }
                 switch (mime) {
-                    case "text/x-python" -> debugPython(file);
+                    case "text/x-python" -> debugPython(file, workingDir, args, env);
                     case "text/x-go" -> debugGo(file);
-                    case "text/javascript", "text/typescript" -> debugNode(file);
+                    case "text/javascript", "text/typescript" -> debugNode(file, workingDir, args, env);
                     default -> {
                         return;
                     }
@@ -113,8 +138,18 @@ public class DapDebugAction extends BaseAction {
         });
     }
 
+    /** The MIME types whose launch honours a caller-chosen working directory. */
+    static boolean supportsWorkingDir(String mime) {
+        return mime != null && switch (mime) {
+            case "text/x-python", "text/javascript", "text/typescript" -> true;
+            default -> false;
+        };
+    }
+
     /** debugpy's adapter speaks DAP on stdio: the clean case. */
-    private static void debugPython(File file) throws IOException {
+    private static void debugPython(File file, File workingDir, List<String> args, Map<String, String> env)
+            throws IOException {
+        File cwd = workingDir != null ? workingDir : file.getParentFile();
         ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(
                 List.of("python3", "-m", "debugpy.adapter")));
         pb.directory(file.getParentFile());
@@ -126,13 +161,13 @@ public class DapDebugAction extends BaseAction {
         // not leave the spawned adapter running for the IDE's lifetime
         try {
             DAPConfiguration.create(adapter.getInputStream(), adapter.getOutputStream())
-                    .addConfiguration(Map.of(
+                    .addConfiguration(withArgsAndEnv(Map.of(
                             "type", "python",
                             "request", "launch",
                             "program", file.getAbsolutePath(),
-                            "cwd", file.getParentFile().getAbsolutePath(),
+                            "cwd", cwd.getAbsolutePath(),
                             "console", "internalConsole",
-                            "justMyCode", true))
+                            "justMyCode", true), args, env))
                     .setSessionName("Python: " + file.getName())
                     .launch();
         } catch (RuntimeException ex) {
@@ -189,24 +224,19 @@ public class DapDebugAction extends BaseAction {
      * hands every further target (forked children, worker threads) to the
      * platform as a session of its own.
      */
-    private static void debugNode(File file) throws IOException, InterruptedException {
+    private static void debugNode(File file, File workingDir, List<String> args, Map<String, String> env)
+            throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
                 "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
         if (serverJs == null) {
             throw new IOException("bundled js-debug adapter missing from this installation");
         }
-        File root = projectRoot(file);
+        File root = workingDir != null ? workingDir : projectRoot(file);
         JsDebugServer server = JsDebugServer.start(serverJs);
         try {
             DapProxy proxy = DapProxy.start(server.port(), server::stop);
             DAPConfiguration.create(proxy.clientInput(), proxy.clientOutput())
-                    .addConfiguration(Map.of(
-                            "type", "pwa-node",
-                            "request", "launch",
-                            "name", file.getName(),
-                            "program", file.getAbsolutePath(),
-                            "cwd", root.getAbsolutePath(),
-                            "console", "internalConsole"))
+                    .addConfiguration(nodeLaunchRequest(file, root, args, env))
                             // auto-attach stays ON (js-debug's default): every
                             // child process and worker the program starts
                             // becomes a debug session of its own through the
@@ -217,6 +247,53 @@ public class DapDebugAction extends BaseAction {
             server.stop();
             throw ex;
         }
+    }
+
+    /**
+     * The js-debug launch request for {@code program}. {@code outputCapture:
+     * std} reads the program's stdout and stderr from the process itself:
+     * js-debug's default ({@code console}) takes console output from the
+     * child session instead, and a program that prints and exits before
+     * that session is spliced in printed NOTHING to the Output window -
+     * walked in 3.1.0, a newcomer's Debug on hello.js showed only the
+     * command line. The cost, measured by the 3.1.0 review on the real
+     * adapter: output from forked children and workers arrives in the first
+     * session's console rather than each session's own (nothing is lost or
+     * doubled; breakpoints and sessions per child are unchanged). Answering
+     * js-debug's startDebugging only after the child session was configured
+     * was tried first and did not bring the quick program's line back.
+     */
+    public static Map<String, Object> nodeLaunchRequest(File program, File cwd, List<String> args,
+            Map<String, String> env) {
+        return withArgsAndEnv(Map.of(
+                "type", "pwa-node",
+                "request", "launch",
+                "name", program.getName(),
+                "program", program.getAbsolutePath(),
+                "cwd", cwd.getAbsolutePath(),
+                "console", "internalConsole",
+                "outputCapture", "std"), args, env);
+    }
+
+    /**
+     * A launch request with {@code args} and {@code env} added when there
+     * are any: both js-debug and debugpy read {@code args} as the
+     * program's argument list and {@code env} as variables added to the
+     * inherited environment. Empty ones add nothing, so a plain launch is
+     * the request it always was.
+     */
+    public static Map<String, Object> withArgsAndEnv(Map<String, ?> base, List<String> args, Map<String, String> env) {
+        Map<String, Object> out = new java.util.LinkedHashMap<>(base);
+        if (args.isEmpty() && env.isEmpty()) {
+            return out;
+        }
+        if (!args.isEmpty()) {
+            out.put("args", List.copyOf(args));
+        }
+        if (!env.isEmpty()) {
+            out.put("env", Map.copyOf(env));
+        }
+        return out;
     }
 
     /**

@@ -36,7 +36,7 @@ obejmuje każde oblicze KVASIR i jest też w Opcje ▸ Stojak i chmura.
    otrzymującą dane i wylicza dokładnie, co opuszcza twoją maszynę:
    nieudane polecenie, jego kod wyjścia, ≤5 wierszy błędu, nazwę
    urządzenia i nazwę projektu — i nic więcej (bez kodu źródłowego, bez
-   środowiska, bez sekretów). Zaufanie do przestrzeni roboczej pilnuje
+   środowiska, bez sekretów). Zaufanie do obszaru roboczego pilnuje
    *uruchamiania* kodu; ten wychodzący przepływ danych ma własną bramkę.
 
 4. **Przeczytaj werdykt.** Krótka diagnoza pojawia się na wielowierszowym

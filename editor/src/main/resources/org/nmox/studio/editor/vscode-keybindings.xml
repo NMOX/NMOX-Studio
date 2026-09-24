@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    3.1.0: Cmd+D adds the next occurrence to the selection, as it does in
+    VS Code. The platform already has the gesture (addCaretSelectNext, on
+    D-J in NetBeans-keybindings.xml); this puts the switcher's chord on it
+    too, and D-J keeps working.
+
+    Registered in the NetBeans, Emacs and Idea profiles only. Measured in
+    the assembled cluster: D-D is bound by no shipped keybinding file or
+    layer in those three, while the defaults module binds it in Eclipse
+    (remove-line, Eclipse's own Ctrl+D) and NetBeans55 (shift-line-left).
+    A profile's own meaning of a chord wins there - the same rule the
+    Keymaps side keeps for DS-E. KeymapProfileParityTest holds the scope.
+-->
+<bindings>
+    <bind actionName="addCaretSelectNext" key="D-D"/>
+</bindings>

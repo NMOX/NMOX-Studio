@@ -1,11 +1,29 @@
 # NMOX Studio
 
-**The web studio with a rack — wire your tools like a synth.**
+**A desktop IDE for web developers.** Editor, debugger, browser, database
+client, API client and a task runner you wire together like studio hardware,
+all in one window. Free and open source (Apache-2.0), on macOS, Windows and
+Linux.
 
 [![Build and Test](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
-[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
+[![Latest release](https://img.shields.io/github/v/release/NMOX/NMOX-Studio)](https://github.com/NMOX/NMOX-Studio/releases/latest)
+[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-31-green.svg)](https://netbeans.apache.org/)
+
+**Install:**
+
+```bash
+brew trust --cask nmox/nmox-studio/nmox-studio
+brew install nmox/nmox-studio/nmox-studio
+```
+
+Not using Homebrew? [Download the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)
+for macOS, Windows or Linux. Every installer includes its own Java runtime,
+so there's nothing else to install ([details](#download)).
+
+**Then:** [the five-minute quickstart](docs/quickstart.md) ·
+[coming from VS Code](docs/coming-from-vscode.md) ·
+[the user guide](docs/user-guide.md) · [glossary](docs/glossary.md)
 
 `53 RACK DEVICES` · `88 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
@@ -63,6 +81,13 @@ deliberately excellent at.
 tutorial and a rack pre-wired with a live REPL; **Check My Work** verifies
 the exercises for real and offers a tutor when they fail. An 11-chain
 **Contract Kit** scaffolds starters proven against their real toolchains.
+
+**Your VS Code habits come along.** ⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\` and ⌘D do what
+your hands expect; `nmox .` and `nmox src/app.js:42` work from a terminal;
+Quick Search answers to VS Code's command names; and your repository's
+`.vscode/tasks.json`, `launch.json` and `settings.json` are read as they
+are, with whatever cannot run as written refused by name
+([coming from VS Code](docs/coming-from-vscode.md)).
 
 Built on the NetBeans Rich Client Platform, shipped through a gated
 pipeline: tests, SpotBugs, find-sec-bugs and per-module coverage floors
@@ -156,12 +181,21 @@ an update, exactly the releases you have not seen.
 
 ### Signed checksums
 
-Releases are self-signed until v3.0: verify any download against the
-GPG-signed `SHA256SUMS` on the release page — the key lives in
-[KEYS](KEYS).
+Every release carries a GPG-signed `SHA256SUMS`: verify any download
+against it with the key in [KEYS](KEYS). The macOS app and DMG are also
+signed with an Apple Developer ID and notarized; the Windows installer is
+not yet Authenticode-signed.
 
 ## The docs
 
+- **[The quickstart](docs/quickstart.md)** — five minutes from download to
+  your own project running.
+- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords your
+  hands already know (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`), where each VS Code idea lives
+  here, and how your repository's `.vscode` tasks, launch configurations
+  and settings are read.
+- **[The glossary](docs/glossary.md)** — rack, patch, jack, lane, aim,
+  KVASIR and the rest of the product's own words.
 - **[The User Guide](docs/user-guide.md)** — the complete manual: the rack,
   the studios, the wizards, and the safety nets.
 - **[The docs index](docs/README.md)** — every document, and
@@ -333,18 +367,19 @@ Rack faceplates keep their panel vocabulary on purpose.
   open a project, run something, see a server live, ask KVASIR, try a
   learning space, point an agent at the IDE — from records the product
   already keeps; no survey, no telemetry, and it disappears when done.
-- **Switch Project (⌘⇧P)** re-aims the whole IDE through a guard that
+- **Switch Project (⌥⌘P)** re-aims the whole IDE through a guard that
   names running work before stopping it — no more silently killed dev
-  servers. **Quick Search (⌘I)** finds actions, files, recent projects
+  servers. **Quick Search (⌘I, or ⇧⌘P — the command palette)** finds actions, files, recent projects
   (Enter switches), rack devices (Enter racks them), **API Studio
-  requests** (jumps to the request), and **infra nodes** (selects them
-  on the canvas). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
+  requests** (jumps to the request), **infra nodes** (selects them
+  on the canvas), and the aimed project's **npm scripts** (type `dev`,
+  Enter runs it, trust-gated, with your own package manager). ⌘9 rack, ⌘8 Docker, ⌥⌘0 workbench; the status line
   shows what's running.
 - **The rack has undo (⌘Z / ⇧⌘Z)**: add, remove, move a device or
   patch a cable and take it back — including a removed device, which
   comes back with its cables re-wired. A 100-deep history that starts
   clean on whatever patch you loaded.
-- **Experiments (⌘⇧E)**: throwaway workspaces in `~/.nmox/experiments` —
+- **Experiments (⌥⌘K new, ⌥⇧⌘K the shelf)**: throwaway workspaces in `~/.nmox/experiments` —
   no git, no recents pollution, pre-trusted. Promote the keepers
   (move + git init), discard the rest.
 - **`.env` respected everywhere**: every command the rack launches reads
@@ -778,10 +813,12 @@ anvil); remote networks are read-only in the Studio, and RPC URLs
 that embed API keys live only in the OS keychain, never on disk.
 
 ### 🌐 Standards & PWA, supported with gusto
-`.editorconfig` is **honored, not just highlighted** — every save
-applies the spec for real (trim_trailing_whitespace,
-insert_final_newline, glob sections, root stopping, closer-file
-precedence) with a minimal edit so the caret stays put. The
+`.editorconfig` is **honored, not just highlighted** — indentation
+follows it while you type (indent_style, indent_size, tab_width: Tab,
+Enter and re-indent write tabs in a tabs project and four spaces in a
+four-space one), and every save applies trim_trailing_whitespace and
+insert_final_newline with a minimal edit so the caret stays put —
+glob sections, root stopping and closer-file precedence per the spec. The
 **Standards Kit wizard** (File → Add to Project → Standards Kit…) generates the web's
 well-known files, each correct to its spec: robots.txt (RFC 9309),
 sitemap.xml, site.webmanifest, RFC 9116 security.txt with a true
@@ -850,61 +887,45 @@ it runs. See [the tutorial](docs/tutorials/agent-port.md).
 ## Build from source
 
 ### Prerequisites
-- **Java 21+** (JDK required for development)
-- **Maven 3.6+**
-- **Git** (for source code management)
 
-### Building
+- **JDK 25** to build. The build refuses an older JDK by name at its
+  first step; on macOS, `brew install openjdk@25` and point `JAVA_HOME`
+  at it (the full line is in [CONTRIBUTING.md](CONTRIBUTING.md#build-and-run)).
+  The bytecode still targets Java 21 and the installers bundle their own
+  runtime, so JDK 25 is needed only to build. The portable zip runs on
+  any Java 21 or newer.
+- **Maven 3.6.3+**
+- **Git**
+
+### Build and run
 
 ```bash
-# Clone the repository
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
 
-# Build the application
-./build.sh
-
-# Run the application
-./run.sh
+./build.sh             # mvn clean install -DskipTests, after checking the JDK
+./run.sh               # boots the assembled app with its own userdir/
+./build.sh --verify    # the whole gate: tests, SpotBugs, find-sec-bugs, JaCoCo floors
 ```
 
-### Development build
+The assembled app is `application/target/nmoxstudio/`. The installers
+(DMG, `.deb`, `.tar.gz`, Windows setup, portable zip) are built from it
+by the release workflow, `.github/workflows/release.yml`, with the
+scripts in `packaging/`.
 
-```bash
-# Clean build with tests
-mvn clean test package
+### Working on it
 
-# Create distribution packages
-mvn package -Pdeployment
-
-# Run in development mode
-mvn nbm:run-platform
-```
-
-### Building and testing
-
-```bash
-# Run all tests
-mvn test
-
-# Run tests for specific module
-mvn test -pl core
-
-# Build without tests
-mvn package -DskipTests
-
-# Generate test reports
-mvn surefire-report:report
-```
-
-The comprehensive suite is `mvn verify` — tests plus the SpotBugs,
-find-sec-bugs, and JaCoCo gates that every commit clears.
+Rebuilding one module, running a single test the reliable way, booting
+with a throwaway userdir, and what to do when a gate fails are all in
+[CONTRIBUTING.md's inner loop](CONTRIBUTING.md#the-inner-loop). Every
+change rides `mvn clean verify` (tests plus the SpotBugs, find-sec-bugs
+and JaCoCo gates) before it becomes a pull request.
 
 ## Project structure
 
 ```
 NMOX-Studio/
-├── core/                   # Startup hooks (e.g. NMOX phosphor terminal styling)
+├── core/                   # Shared SPI facades, the Device SPI, process/IO utilities
 ├── ui/                     # Main windows, Workbench home base, actions
 ├── editor/                 # Polyglot editor: TextMate grammars, LSP,
 │   │                       #   completion, outline, spellcheck
@@ -933,7 +954,7 @@ NMOX-Studio/
 ├── tools/                 # Development tools and utilities
 ├── branding/              # Splash, icons, NMOX Phosphor theme
 ├── application/           # Main application assembly (the cluster)
-├── NMOX-Studio-sample/    # Sample project module
+├── NMOX-Studio-sample/    # Module template (built, never shipped)
 ├── packaging/             # macOS DMG, Linux tar.gz/deb, Windows installer
 ├── build.sh               # Build script
 ├── run.sh                 # Development run script
@@ -944,7 +965,7 @@ NMOX-Studio/
 
 | Module | Description | Key Components |
 |--------|-------------|----------------|
-| **core** | Startup hooks and platform-wide styling | `TerminalPhosphor` (@OnStart terminal theming) |
+| **core** | Shared SPI facades, the public Device SPI, process/IO utilities | `spi` (ProjectAim, LiveServings, TrustGate…), `spi.device`, `ProcessSupport`, `AtomicFiles`, `BoundedReads` |
 | **ui** | Main windows, Workbench home base, actions | `MainWindow`, Workbench, actions |
 | **editor** | Polyglot editor — grammars, LSP, completion, outline | `WebFileSupport`, polyglot/grammars/lsp/outline |
 | **rack** | The Task Rack — hardware-styled task devices and patch engine | `RackTopComponent`, devices, engine, docker (HARBOR) |
@@ -1007,7 +1028,8 @@ It builds on the Apache NetBeans Platform and shares its license.
 
 - **Issues**: [GitHub Issues](https://github.com/NMOX/NMOX-Studio/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/NMOX/NMOX-Studio/discussions)
-- **Documentation**: [Wiki](https://github.com/NMOX/NMOX-Studio/wiki)
+- **Documentation**: [the docs index](docs/README.md) — start with [the quickstart](docs/quickstart.md)
+- **Bugs**: **Help ▸ Report a Problem…** in the app prepares a report with the log tail and your environment, for you to read before you send it
 
 ---
 

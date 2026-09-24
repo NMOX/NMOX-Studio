@@ -35,7 +35,7 @@ public class ApiRequestSearchProvider implements SearchProvider {
         } catch (Exception ex) {
             return;
         }
-        evaluate(text, ws, (action, label) -> response.addResult(action, label));
+        evaluate(text, ws, (action, label) -> response.addResult(action, org.nmox.studio.core.util.PlainText.escape(label)));
     }
 
     /**

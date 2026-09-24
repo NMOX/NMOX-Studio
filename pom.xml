@@ -90,6 +90,38 @@
                 </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.6.3</version>
+            </plugin>
+            <!-- Pinned at the version every module already resolved
+                 (measured in a clean verify: all 57 resources executions
+                 ran 3.5.0) — unpinned, Maven printed a "version is
+                 missing" warning per module on every run and resolved
+                 the newest release it could load, which the 4.0.0 betas
+                 in the metadata show is not a stable answer. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+            <!-- The nbm packaging's lifecycle binds install and deploy with
+                 no version, so Maven resolved the newest it could load and
+                 printed three "Ignoring incompatible plugin version
+                 4.0.0-beta-N" warnings for each on every run. Pinned at the
+                 3.2.0 every nbm module already used (the pom-packaged root
+                 took the super-POM's 3.1.4 and now agrees with them). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.5.1</version>
             </plugin>
@@ -126,6 +158,41 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <!-- The build JDK is 25, and the build says so before anything
+                 else runs. OpenJFX 26's jars are class-file 68 (JDK 24+), so on
+                 an older JDK the ui module does not fail with "wrong JDK" — javac
+                 reports "bad class file ... wrong version 68.0" ONCE, abandons
+                 annotation processing, and every @Messages-generated Bundle
+                 reference in the module then fails: hundreds of "cannot find
+                 symbol: variable Bundle" lines pointing at the wrong files. This
+                 rule turns that into one sentence at validate. Building on 25 is
+                 not the same as TARGETING 25: the bytecode stays 21 (see the law
+                 at maven.compiler.target). Held by ContributorFloorGateTest. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-build-jdk</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[25,)</version>
+                                    <message>NMOX Studio builds with JDK 25 or newer (this JVM is ${java.version}). OpenJFX 26's jars are class-file 68, so an older javac fails the ui module as hundreds of misleading "cannot find symbol: variable Bundle" errors instead of saying this. Point JAVA_HOME at a JDK 25 - macOS: brew install openjdk@25, then export JAVA_HOME=/opt/homebrew/opt/openjdk@25/libexec/openjdk.jdk/Contents/Home ; anywhere: Temurin 25 (https://adoptium.net) or Zulu 25 (https://www.azul.com/downloads/). The bytecode still targets 21 - only the build JDK moved.</message>
+                                </requireJavaVersion>
+                                <requireMavenVersion>
+                                    <version>[3.6.3,)</version>
+                                    <message>NMOX Studio builds with Maven 3.6.3 or newer (this is ${maven.version}). Get a current one from https://maven.apache.org/download.cgi or your package manager (brew install maven).</message>
+                                </requireMavenVersion>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>

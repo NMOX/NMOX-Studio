@@ -72,7 +72,12 @@ public final class ProjectStudioTopComponent extends TopComponent {
 
     private final Rack rack = RackService.getDefault().getRack();
     private final FileTreePanel treePanel = new FileTreePanel();
-    private final JLabel statusLabel = new JLabel(" ");
+    /**
+     * The aimed path. A PathLabel, because a plain label asked for the width
+     * of the whole path and a deep one pushed the dock across two thirds of
+     * the window (walked in 3.1.0).
+     */
+    private final org.nmox.studio.core.util.PathLabel statusLabel = new org.nmox.studio.core.util.PathLabel();
     private final Rack.Listener rackListener = new Rack.Listener() {
         @Override
         public void projectChanged() {
@@ -233,7 +238,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
     private void syncToRack() {
         File dir = rack.getProjectDir();
         treePanel.setRootDirectory(dir);
-        statusLabel.setText(PlainText.plain(dir.getAbsolutePath()));
+        statusLabel.setPath(dir.getAbsolutePath());
         // the kind walk stats the root and one level of children — off the
         // EDT (v1.33.1 law), newest aim wins; the suffix lands a beat later
         KIND_RP.post(() -> {
@@ -241,7 +246,7 @@ public final class ProjectStudioTopComponent extends TopComponent {
                     org.nmox.studio.rack.devices.ProjectInspector.detectKind(dir);
             SwingUtilities.invokeLater(() -> {
                 if (dir.equals(rack.getProjectDir())) {
-                    statusLabel.setText(PlainText.plain(dir.getAbsolutePath() + aimSuffix(kind)));
+                    statusLabel.setPath(dir.getAbsolutePath() + aimSuffix(kind));
                 }
             });
         });
@@ -279,6 +284,29 @@ public final class ProjectStudioTopComponent extends TopComponent {
     public void componentOpened() {
         rack.addListener(rackListener);
         syncToRack();
+    }
+
+    /**
+     * Activation focuses the FILE TREE, not the window frame: ⇧⌘E (3.1.0,
+     * VS Code's "focus the Explorer") opens this studio through its open
+     * action, which activates it, and the platform then asks the component
+     * for focus — the NetBeans explorer windows answer the same way.
+     */
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return focusTarget().requestFocusInWindow();
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        focusTarget().requestFocus();
+    }
+
+    /** The component a focus request on this studio ends at. */
+    java.awt.Component focusTarget() {
+        return treePanel.focusTarget();
     }
 
     @Override
@@ -335,93 +363,11 @@ public final class ProjectStudioTopComponent extends TopComponent {
     }
 
     /**
-     * Context-aware attempt: hand the terminal action the aimed project's
-     * folder node so it opens THERE. Returns false when the action is
-     * absent or declines, so the caller can fall back.
-     */
-    private boolean openTerminalInProject() {
-        java.io.File dir = org.nmox.studio.rack.service.RackService.getDefault()
-                .getRack().getProjectDir();
-        if (dir == null || !dir.isDirectory()) {
-            return false;
-        }
-        org.openide.filesystems.FileObject fo =
-                org.openide.filesystems.FileUtil.toFileObject(
-                        org.openide.filesystems.FileUtil.normalizeFile(dir));
-        if (fo == null) {
-            return false;
-        }
-        try {
-            org.openide.nodes.Node node =
-                    org.openide.loaders.DataObject.find(fo).getNodeDelegate();
-            javax.swing.Action action = org.openide.awt.Actions.forID(
-                    "Tools", "org.netbeans.modules.terminal.nodes.OpenInTerminalAction");
-            if (action == null) {
-                return false;
-            }
-            if (action instanceof org.openide.util.ContextAwareAction ctx) {
-                action = ctx.createContextAwareInstance(
-                        org.openide.util.lookup.Lookups.singleton(node));
-            }
-            if (!action.isEnabled()) {
-                return false;
-            }
-            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
-            return true;
-        } catch (org.openide.loaders.DataObjectNotFoundException | RuntimeException notUsable) {
-            return false;
-        }
-    }
-
-    /**
-     * Opens a terminal, in the project directory when the platform lets
-     * us say where.
-     *
-     * <p>The button's tooltip used to promise "in the project directory"
-     * and not deliver: {@code LocalTerminalAction} passes a null working
-     * directory, so you landed in {@code $HOME} and had to cd yourself
-     * (v1.212.0 finding). The terminal module also ships
-     * {@code OpenInTerminalAction}, a context-aware action that reads a
-     * directory out of the supplied Lookup — so try that first with the
-     * aimed project's node, and fall back to the plain action (and the
-     * old behaviour) when the module isn't present or refuses the
-     * context. The tooltip now describes what actually happens either
-     * way rather than the best case.
+     * Opens a new terminal, in the project directory when the platform
+     * lets us say where - the same code as the ⌃` chord
+     * ({@link ProjectTerminal}), so the two can never disagree.
      */
     private void openTerminal() {
-        if (openTerminalInProject()) {
-            return;
-        }
-        for (String id : new String[]{
-                "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
-                "LocalTerminalAction"}) {
-            javax.swing.Action action = org.openide.awt.Actions.forID("Window", id);
-            if (action != null) {
-                action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
-                return;
-            }
-        }
-        // fallback: hunt the actions folder for anything terminal-flavored
-        org.openide.filesystems.FileObject actions = org.openide.filesystems.FileUtil
-                .getConfigFile("Actions/Window");
-        if (actions != null) {
-            for (org.openide.filesystems.FileObject child : actions.getChildren()) {
-                if (child.getName().toLowerCase(java.util.Locale.ROOT).contains("terminal")) {
-                    try {
-                        Object instance = org.openide.loaders.DataObject.find(child)
-                                .getLookup().lookup(org.openide.cookies.InstanceCookie.class)
-                                .instanceCreate();
-                        if (instance instanceof javax.swing.Action action) {
-                            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
-                            return;
-                        }
-                    } catch (Exception ignored) {
-                        // try the next candidate
-                    }
-                }
-            }
-        }
-        org.openide.awt.StatusDisplayer.getDefault()
-                .setStatusText(Bundle.ProjectStudioTopComponent_terminalFallbackStatus());
+        ProjectTerminal.openNew(this);
     }
 }

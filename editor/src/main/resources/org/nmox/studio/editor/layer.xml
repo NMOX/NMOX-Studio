@@ -611,6 +611,12 @@
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
                     </file>
+                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
+                         NetBeans55, which bind D-D themselves -->
+                    <file name="vscode-keybindings.xml"
+                          url="vscode-keybindings.xml">
+                        <attr name="position" intvalue="9998"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="Eclipse">
@@ -627,6 +633,12 @@
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
                     </file>
+                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
+                         NetBeans55, which bind D-D themselves -->
+                    <file name="vscode-keybindings.xml"
+                          url="vscode-keybindings.xml">
+                        <attr name="position" intvalue="9998"/>
+                    </file>
                 </folder>
             </folder>
             <folder name="Idea">
@@ -634,6 +646,12 @@
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
+                    </file>
+                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
+                         NetBeans55, which bind D-D themselves -->
+                    <file name="vscode-keybindings.xml"
+                          url="vscode-keybindings.xml">
+                        <attr name="position" intvalue="9998"/>
                     </file>
                 </folder>
             </folder>

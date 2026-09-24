@@ -274,6 +274,11 @@
                                 <exclude>**/BundleEncodingGateTest.java</exclude>
                                 <exclude>**/ModuleDescriptorsSpeakTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
+                                <exclude>**/VsCodeKeymapResolutionTest.java</exclude>
+                                <exclude>**/OpenedProjectsGroupTest.java</exclude>
+                                <exclude>**/DeadDoorsTest.java</exclude>
+                                <exclude>**/ActionIdsResolveTest.java</exclude>
+                                <exclude>**/CloneRepositoryReflectionTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
@@ -287,6 +292,7 @@
                                 <exclude>**/MenuRowsSpeakTest.java</exclude>
                                 <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/PopupRowsSpeakTest.java</exclude>
+                                <exclude>**/FileTreeRowsSpeakTest.java</exclude>
                                 <exclude>**/PaintedSurfaceLedgerTest.java</exclude>
                                 <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
@@ -318,9 +324,15 @@
                                 <include>**/MenuRowsSpeakTest.java</include>
                                 <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/PopupRowsSpeakTest.java</include>
+                                <include>**/FileTreeRowsSpeakTest.java</include>
                                 <include>**/PaintedSurfaceLedgerTest.java</include>
                                 <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
+                                <include>**/VsCodeKeymapResolutionTest.java</include>
+                                <include>**/OpenedProjectsGroupTest.java</include>
+                                <include>**/DeadDoorsTest.java</include>
+                                <include>**/ActionIdsResolveTest.java</include>
+                                <include>**/CloneRepositoryReflectionTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>

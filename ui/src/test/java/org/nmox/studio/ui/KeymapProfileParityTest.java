@@ -30,11 +30,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * profiles, and this gate keeps the five sets in lockstep — a new
  * chord added to one profile fails the build until it rides them all.
  *
- * <p>Deliberate exception: {@code D-O.shadow_hidden} (the v1.11-era
- * jumpto mask) stays NetBeans-only — upstream's Keymaps claim is
- * commented out in the shipped jumpto, and a shadow_hidden of a
- * nonexistent file masks nothing (the v1.216.0 lesson), so replicating
- * the mask would be cargo cult.
+ * <p>Deliberate exceptions live in {@link #PROFILE_SCOPED}, each pinned to
+ * exactly the profiles it belongs in. A mask belongs only where the file
+ * it masks exists (a shadow_hidden of a nonexistent file masks nothing —
+ * the v1.216.0 lesson). The 3.1.0 census corrected this javadoc's older
+ * claim that the D-O mask masks nothing: the defaults module DOES bind
+ * Keymaps/NetBeans/D-O (and Keymaps/Emacs/D-O) to Go to Type.
  *
  * <p>Also pinned here: the ui layer's {@code QuickSearch} folder is a
  * ROOT folder — it sat NESTED inside {@code Keymaps/NetBeans} from
@@ -45,6 +46,41 @@ class KeymapProfileParityTest {
 
     private static final List<String> PROFILES =
             List.of("NetBeans", "Eclipse", "Emacs", "Idea", "NetBeans55");
+
+    /**
+     * The entries that deliberately live in only SOME profiles, each with
+     * the profiles it belongs to. A mask is scoped to the profiles where
+     * the defaults module ships the file it masks (measured from the
+     * assembled cluster); a chord is scoped out of a profile only where
+     * that profile's own identity claims it under the same file name.
+     * <ul>
+     * <li>{@code D-O.shadow_hidden}: the jumpto-era mask. The defaults
+     *     module binds Keymaps/NetBeans/D-O to Go to Type, so ⌘O would not
+     *     open files without it.</li>
+     * <li>{@code D-BACK_QUOTE.shadow_hidden} (3.1.0): the defaults module's
+     *     Linux-only Ctrl+` Recent View List, shipped in NetBeans, Emacs and
+     *     NetBeans55 — masked so ⌃` reaches the Terminal. Eclipse and Idea
+     *     ship no such file, so a mask there would mask nothing.</li>
+     * <li>{@code DS-E.shadow} (3.1.0): VS Code's Explorer chord, everywhere
+     *     but Eclipse, where Ctrl+Shift+E is Eclipse's own Switch to Editor
+     *     under the same file name.</li>
+     * </ul>
+     */
+    private static final Map<String, Set<String>> PROFILE_SCOPED = Map.of(
+            "D-O.shadow_hidden|", Set.of("NetBeans"),
+            "D-BACK_QUOTE.shadow_hidden|", Set.of("NetBeans", "Emacs", "NetBeans55"),
+            "DS-E.shadow|", Set.of("NetBeans", "Emacs", "Idea", "NetBeans55"));
+
+    /**
+     * The editor Keybindings files that deliberately ride only SOME
+     * profiles, by the same rule as {@link #PROFILE_SCOPED}: a chord is
+     * scoped out of a profile only where that profile binds it itself.
+     * {@code vscode-keybindings.xml} (3.1.0) puts Cmd+D on add-next-occurrence;
+     * the defaults module binds D-D in Eclipse (remove-line) and NetBeans55
+     * (shift-line-left), measured in the assembled cluster.
+     */
+    private static final Map<String, Set<String>> EDITOR_PROFILE_SCOPED = Map.of(
+            "vscode-keybindings.xml|", Set.of("NetBeans", "Emacs", "Idea"));
 
     /** module dir -> its layer path, relative to the ui module's cwd. */
     private static final Map<String, String> KEYMAP_LAYERS = Map.of(
@@ -119,8 +155,18 @@ class KeymapProfileParityTest {
                                 + "user picks another keymap in Options")
                         .isNotNull();
                 Set<String> files = fileSet(pf);
-                // the jumpto mask is the one blessed NetBeans-only entry
-                files.removeIf(s -> s.startsWith("D-O.shadow_hidden|"));
+                // the blessed profile-scoped entries: each must sit in exactly
+                // its profiles, and is then set aside for the parity compare
+                for (Map.Entry<String, Set<String>> scoped : PROFILE_SCOPED.entrySet()) {
+                    boolean present = files.stream().anyMatch(s -> s.startsWith(scoped.getKey()));
+                    if ("ui".equals(entry.getKey())) {
+                        assertThat(present)
+                                .as("ui: " + scoped.getKey() + " belongs in exactly "
+                                        + scoped.getValue() + " — checked in " + prof)
+                                .isEqualTo(scoped.getValue().contains(prof));
+                    }
+                    files.removeIf(s -> s.startsWith(scoped.getKey()));
+                }
                 perProfile.put(prof, files);
             }
             Set<String> reference = perProfile.get("NetBeans");
@@ -140,6 +186,7 @@ class KeymapProfileParityTest {
         Document doc = parse("../editor/src/main/resources/org/nmox/studio/editor/layer.xml");
         NodeList folders = doc.getElementsByTagName("folder");
         int keybindingsBlocks = 0;
+        Set<String> scopedSeen = new TreeSet<>();
         for (int i = 0; i < folders.getLength(); i++) {
             Element e = (Element) folders.item(i);
             if (!"Keybindings".equals(e.getAttribute("name"))) {
@@ -154,7 +201,14 @@ class KeymapProfileParityTest {
                                 + ": profile " + prof + " missing — the Emmet chords "
                                 + "and the Cmd+P unbind must survive a profile switch")
                         .isNotNull();
-                perProfile.put(prof, fileSet(pf));
+                Set<String> files = fileSet(pf);
+                for (Map.Entry<String, Set<String>> scoped : EDITOR_PROFILE_SCOPED.entrySet()) {
+                    if (files.stream().anyMatch(s -> s.startsWith(scoped.getKey()))) {
+                        scopedSeen.add(scoped.getKey() + prof);
+                    }
+                    files.removeIf(s -> s.startsWith(scoped.getKey()));
+                }
+                perProfile.put(prof, files);
             }
             Set<String> reference = perProfile.get("NetBeans");
             for (String prof : PROFILES) {
@@ -164,6 +218,11 @@ class KeymapProfileParityTest {
                         .isEqualTo(reference);
             }
         }
+        Set<String> expectedScoped = new TreeSet<>();
+        EDITOR_PROFILE_SCOPED.forEach((file, profs) -> profs.forEach(p -> expectedScoped.add(file + p)));
+        assertThat(scopedSeen)
+                .as("each profile-scoped editor keybinding file sits in exactly its profiles")
+                .isEqualTo(expectedScoped);
         assertThat(keybindingsBlocks)
                 .as("the editor layer's Keybindings blocks were all visited")
                 .isGreaterThanOrEqualTo(9);

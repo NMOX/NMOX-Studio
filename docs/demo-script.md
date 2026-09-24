@@ -76,7 +76,7 @@ click is the whole install (project-local, TypeScript 5 pinned, no
 terminal). Beat 3 needs it: the squiggle you will show is the Angular
 compiler's own, and it only speaks once the language service is there.
 
-The faster door is **New Experiment…** (⇧⌘E — the first entry on the
+The faster door is **New Experiment…** (⌥⌘K — the first entry on the
 Welcome tab): a throwaway under `~/.nmox/experiments`, no git, no
 recents, pre-trusted, opening on its own `EXPERIMENT.md` walkthrough
 with the install already done so the first Run works. Pick the Angular
@@ -109,7 +109,7 @@ The rest of this document is the same seven beats, spelled out.
 
 **Click:** nothing yet. The Welcome tab is already frontmost.
 
-**See:** three columns. **START** leads with *New Experiment… ⇧⌘E*,
+**See:** three columns. **START** leads with *New Experiment… ⌥⌘K*,
 then *New Project…*, *New Learning Space…*, *Open Folder…*. **FIRST
 STEPS** is a checklist that ticks itself from records the product keeps
 — a recent project, a run, a server going live, an KVASIR consent, a

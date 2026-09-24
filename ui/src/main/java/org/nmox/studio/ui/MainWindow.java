@@ -53,10 +53,11 @@ import org.openide.windows.WindowManager;
     "MainWindow_columnTooling=TOOLING",
     "MainWindow_columnFirstSteps=FIRST STEPS",
     "MainWindow_columnFirstStepsProgress=FIRST STEPS · {0}",
-    "MainWindow_newExperiment=New Experiment…  ⇧⌘E",
+    "MainWindow_newExperiment=New Experiment…  ⌥⌘K",
     "MainWindow_newProject=New Project…  ⇧⌘N",
     "MainWindow_newLearningSpace=New Learning Space…  ⇧⌘L",
     "MainWindow_openFolder=Open Folder…  ⌥⌘O",
+    "MainWindow_cloneRepository=Clone Git Repository…",
     "MainWindow_taskRack=Task Rack  ⌘9",
     "MainWindow_workbench=Workbench  ⌥⌘0",
     "MainWindow_projectStudio=Project Studio",
@@ -75,6 +76,8 @@ import org.openide.windows.WindowManager;
     "MainWindow_whatsNewTip=The release notes for this version, in the product (v2.64.0)",
     "MainWindow_userGuide=User Guide ↗",
     "MainWindow_userGuideTip=Open the user guide — install, first launch, and every window",
+    "MainWindow_comingFromVsCode=Coming from VS Code ↗",
+    "MainWindow_comingFromVsCodeTip=Your VS Code chords, where each VS Code idea lives here, and how a .vscode folder is read",
     "MainWindow_website=Website ⇄",
     "MainWindow_websiteTip=The bundled NMOX Studio site, served to you on localhost by the app itself",
     "MainWindow_websiteName=Open the bundled website on localhost",
@@ -163,6 +166,12 @@ public final class MainWindow extends TopComponent {
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
             start.add(actionLink(Bundle.MainWindow_openFolder(), "File",
                     "org.nmox.studio.ui.actions.OpenFolderAction"));
+            // 3.1.0: a first hour that starts from a repository URL had no
+            // door here - the platform's Team > Git > Clone... is the one;
+            // cloning into a folder with a manifest opens and aims it
+            JButton clone = textButton(Bundle.MainWindow_cloneRepository(), LINK);
+            clone.addActionListener(org.nmox.studio.ui.actions.CloneRepository::open);
+            start.add(clone);
 
             // Every chord here is live-verified: the platform's Keymaps
             // profile already owns ⌘0, ⇧⌘6, ⇧⌘7 and ⇧⌘8 (Editor, Tasks,
@@ -207,6 +216,10 @@ public final class MainWindow extends TopComponent {
             JButton userGuide = textButton(Bundle.MainWindow_userGuide(), DIM);
             userGuide.setToolTipText(Bundle.MainWindow_userGuideTip());
             userGuide.addActionListener(e -> browse(userGuideUrl()));
+            // 3.1.0: the page a switcher needs most had no door in the product
+            JButton comingFromVsCode = textButton(Bundle.MainWindow_comingFromVsCode(), DIM);
+            comingFromVsCode.setToolTipText(Bundle.MainWindow_comingFromVsCodeTip());
+            comingFromVsCode.addActionListener(e -> browse(comingFromVsCodeUrl()));
             JPanel footer = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 10, 0));
             footer.setOpaque(false);
             // the product's own site, served by the product (v2.40.0)
@@ -223,6 +236,7 @@ public final class MainWindow extends TopComponent {
             footer.add(version);
             footer.add(website);
             footer.add(userGuide);
+            footer.add(comingFromVsCode);
             footer.add(whatsNew);
 
             gc.gridy = 0;
@@ -237,11 +251,21 @@ public final class MainWindow extends TopComponent {
             add(footer, gc);
         }
 
-        /** Rebuilds the recent-projects column from the live service. */
+        /**
+         * Rebuilds the recent-projects column from the live service. The list
+         * is read off the EDT (the service checks each recent folder on disk,
+         * and one on a dead mount must not freeze an aim), then painted on it.
+         */
         void refreshRecents() {
+            SIGNALS.post(() -> {
+                List<File> recents = recentProjects();
+                javax.swing.SwingUtilities.invokeLater(() -> paintRecents(recents));
+            });
+        }
+
+        void paintRecents(List<File> recents) {
             recentColumn.removeAll();
             recentColumn.add(columnHeading(Bundle.MainWindow_columnRecent()));
-            List<File> recents = recentProjects();
             if (recents.isEmpty()) {
                 JLabel none = new JLabel(Bundle.MainWindow_noRecents());
                 none.setFont(new Font(Font.SANS_SERIF, Font.ITALIC, 12));
@@ -327,6 +351,12 @@ public final class MainWindow extends TopComponent {
         static String userGuideUrl() {
             return "https://github.com/NMOX/NMOX-Studio/blob/main/"
                     + org.nmox.studio.core.util.UiLocale.guideDoc();
+        }
+
+        /** Coming from VS Code, in the language the IDE is speaking, as the guide is. */
+        static String comingFromVsCodeUrl() {
+            return "https://github.com/NMOX/NMOX-Studio/blob/main/"
+                    + org.nmox.studio.core.util.UiLocale.localizedDoc("coming-from-vscode", java.util.Locale.getDefault());
         }
 
         private static JButton textButton(String text, Color color) {
@@ -446,6 +476,15 @@ public final class MainWindow extends TopComponent {
         if (live != null) {
             live.addListener(servingsListener);
         }
+        // an aim while the Welcome is ON SCREEN (nmoxstudio --aim, ⌘I, a
+        // Workbench row) left RECENT reading "projects you open gather
+        // here" and First Steps' "Open a project" unticked until the tab
+        // was hidden and shown again (walked in 3.1.0) - the column is
+        // live, so it follows the aim for the tab's whole open life
+        org.nmox.studio.core.spi.ProjectAim aim = org.nmox.studio.core.spi.ProjectAim.find();
+        if (aim != null) {
+            aim.addListener(aimListener);
+        }
         // welcome steals focus exactly once: on the first launch ever.
         // Every later start restores the user's own window arrangement.
         java.util.prefs.Preferences prefs =
@@ -454,7 +493,35 @@ public final class MainWindow extends TopComponent {
             return;
         }
         prefs.putBoolean("welcomeShown", true);
-        requestActive();
+        // ...unless that first launch was `nmox app.js:42`: the file handed
+        // over is what the person asked for, and the platform opens it
+        // before this tab would have stolen the front (walked in 3.1.0 -
+        // the Welcome sat over app.js with its caret on line 42). Wait for
+        // the window system, then step aside for an open document; a file
+        // that opens later activates itself.
+        WindowManager.getDefault().invokeWhenUIReady(() -> java.awt.EventQueue.invokeLater(() -> {
+            if (isOpened() && !documentOpen(WindowManager.getDefault().getRegistry().getOpened(),
+                    tc -> WindowManager.getDefault().isEditorTopComponent(tc))) {
+                requestActive();
+            }
+        }));
+    }
+
+    /**
+     * Whether one of {@code opened} is a FILE's editor in the editor area.
+     * A folder does not count: {@code AimFollower} gives this tab and its
+     * neighbours the aimed project's folder node as their selection, so a
+     * DataObject alone would find the Welcome itself.
+     */
+    static boolean documentOpen(java.util.Collection<? extends TopComponent> opened,
+            java.util.function.Predicate<TopComponent> inEditorArea) {
+        for (TopComponent tc : opened) {
+            org.openide.loaders.DataObject d = tc.getLookup().lookup(org.openide.loaders.DataObject.class);
+            if (d != null && d.getPrimaryFile().isData() && inEditorArea.test(tc)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -475,6 +542,13 @@ public final class MainWindow extends TopComponent {
             javax.swing.SwingUtilities.invokeLater(welcomePanel::refreshGettingStarted);
         }
     };
+
+    /** Rebuilds RECENT and First Steps after an aim; the aimer's thread, so hop to the EDT. */
+    final org.nmox.studio.core.spi.ProjectAim.Listener aimListener = () ->
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                welcomePanel.refreshRecents();
+                welcomePanel.refreshGettingStarted();
+            });
 
     private final org.nmox.studio.core.util.AimFollower aimFollower =
             new org.nmox.studio.core.util.AimFollower(n ->
@@ -503,6 +577,10 @@ public final class MainWindow extends TopComponent {
         org.nmox.studio.core.spi.LiveServings liveClosed = org.nmox.studio.core.spi.LiveServings.find();
         if (liveClosed != null) {
             liveClosed.removeListener(servingsListener);
+        }
+        org.nmox.studio.core.spi.ProjectAim aimClosed = org.nmox.studio.core.spi.ProjectAim.find();
+        if (aimClosed != null) {
+            aimClosed.removeListener(aimListener);
         }
         aimFollower.closed();
     }

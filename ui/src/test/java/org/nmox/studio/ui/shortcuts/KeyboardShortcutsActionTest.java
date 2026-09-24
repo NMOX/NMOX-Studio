@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * The sheet lists what the keymap honors — the profile's Keymaps folder
  * AND the global Shortcuts folder where the Welcome's doors live
- * (v2.85.0: ⇧⌘E / ⇧⌘N / ⇧⌘L were missing from a sheet that said
+ * (v2.85.0: the experiment / ⇧⌘N / ⇧⌘L doors were missing from a sheet that said
  * "every NMOX shortcut"); a chord bound in both lists once, the
  * Keymaps way, because that is what the keypress does.
  */
@@ -32,7 +32,7 @@ class KeyboardShortcutsActionTest {
         FileObject shortcuts = FileUtil.createFolder(fs.getRoot(), "Shortcuts");
         shadow(keymaps, "DA-4", "Actions/Window/org-nmox-studio-ui-actions-OpenBrowserAction.instance");
         shadow(keymaps, "DS-X", "Actions/File/org-nmox-studio-ui-actions-KeymapsWins.instance");
-        shadow(shortcuts, "DS-E", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
+        shadow(shortcuts, "DA-K", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
         shadow(shortcuts, "DS-X", "Actions/File/org-nmox-studio-ui-actions-ShortcutsLoses.instance");
         shadow(shortcuts, "D-Q", "Actions/System/org-netbeans-core-actions-Platform.instance");
 
@@ -40,12 +40,33 @@ class KeyboardShortcutsActionTest {
 
         assertThat(rows).extracting(ShortcutSheet.Row::chord)
                 .as("the door from Shortcuts/ is listed; the platform's own row is not")
-                .contains("⇧⌘E", "⌥⌘4").doesNotContain("⌘Q");
+                .contains("⌥⌘K", "⌥⌘4").doesNotContain("⌘Q");
         assertThat(rows).filteredOn(r -> r.chord().equals("⇧⌘X"))
                 .as("a chord bound in both folders lists once")
                 .hasSize(1)
                 .allMatch(r -> r.action().contains("KeymapsWins"), "the Keymaps binding is what the keypress does");
         assertThat(KeyboardShortcutsAction.rows(keymaps, null, true))
                 .as("no Shortcuts folder at all still lists the profile").hasSize(2);
+    }
+
+    @Test
+    @DisplayName("a chord NMOX binds to a platform action lists when its shadow says so (3.1.0 VS Code chords)")
+    void flaggedPlatformChordsJoinTheSheet() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject keymaps = FileUtil.createFolder(fs.getRoot(), "Keymaps/NetBeans");
+        shadow(keymaps, "DS-P", "Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance")
+                .setAttribute("nmoxShortcut", Boolean.TRUE);
+        shadow(keymaps, "C-BACK_QUOTE", "Actions/Window/ShowTerminalTCAction.instance")
+                .setAttribute("nmoxShortcut", Boolean.TRUE);
+        // the platform's own binding, unflagged, stays off NMOX's sheet
+        shadow(keymaps, "D-F", "Actions/Edit/org-openide-actions-FindAction.instance");
+
+        List<ShortcutSheet.Row> rows = KeyboardShortcutsAction.rows(keymaps, null, true);
+
+        assertThat(rows).extracting(ShortcutSheet.Row::chord)
+                .as("the flagged palette and terminal chords list; the platform's Find does not")
+                .contains("⇧⌘P", ShortcutSheet.humanChord("C-BACK_QUOTE", true))
+                .doesNotContain("⌘F")
+                .hasSize(2);
     }
 }

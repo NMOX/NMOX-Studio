@@ -9,20 +9,34 @@ contracts, and cloud infrastructure. Licensed under Apache 2.0.
 
 ## Start here
 
+**[⏱️ The quickstart](quickstart.md)** — five minutes from download to your
+own project running: install, open, run, find, test.
+
+**[↔️ Coming from VS Code](coming-from-vscode.md)** — the chords your hands
+already know, the concepts mapped, and the honest gaps.
+
 **[📖 The User Guide](user-guide.md)** — the complete manual. Install,
-first launch, projects, the rack, all four studios, the wizards, Docker,
+first launch, projects, the rack, the studios, the wizards, Docker,
 Learning Spaces, and the safety nets. Illustrated, and written to be read
 front to back or dipped into by section.
 
-**In your language** — the guide's opening chapters, install and first
-launch, are translated into every language the IDE itself speaks. Each one
-carries a language bar at the top, so switching is one click from wherever
-you are, and says plainly where the untranslated rest of the manual lives.
+**[🔤 The glossary](glossary.md)** — the product's own words: rack, device,
+patch, jack, lane, aim, the ⇄ chip, KVASIR, and the NetBeans terms that
+show through.
+
+**In your language** — the guide, the quickstart, the glossary and Coming
+from VS Code are translated into every language the IDE itself speaks.
+Each translation carries a language bar at the top, so switching is one
+click from wherever you are.
 
 [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md) · [العربية](user-guide.ar.md)
 
 ## The rest of the docs
 
+- **[⌨️ Coming from VS Code](coming-from-vscode.md)** — the chord cheat
+  sheet for macOS, Windows and Linux (⇧⌘P, ⇧⌘E, ⇧⌘X and ⌃\` do what your
+  hands expect), where each VS Code idea lives here, and what is honestly
+  different.
 - **[🧭 Tutorials](tutorials/README.md)** — short, do-it-yourself
   walkthroughs, one per unique system: the Task Rack, the four studios,
   Block Studio, Infra Designer, polyglot debugging, Docker, KVASIR,
@@ -80,12 +94,15 @@ macOS `.dmg`, Windows installer, Debian/Ubuntu `.deb`, or generic Linux
 
 The repository [README](../README.md) covers building, the module layout,
 and how to add a module; **[CLAUDE.md](../CLAUDE.md)** is the deep
-architecture reference. Prerequisites are Java 21+ and Maven 3.6+:
+architecture reference, and [CONTRIBUTING.md](../CONTRIBUTING.md#the-inner-loop)
+has the inner loop: one-module rebuilds, single tests, throwaway
+userdirs. Building needs JDK 25 and Maven 3.6.3+ (the build refuses an
+older JDK by name):
 
 ```bash
 git clone https://github.com/NMOX/NMOX-Studio.git
 cd NMOX-Studio
-mvn clean package -DskipTests
+./build.sh
 ./run.sh
 ```
 

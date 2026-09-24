@@ -38,7 +38,7 @@ run `bin\nmoxstudio64.exe`.
 **Debian/Ubuntu**
 
 ```bash
-sudo apt install ./nmox-studio_<version>_all.deb
+sudo apt install ./nmox-studio_<version>_amd64.deb
 nmox-studio        # or launch "NMOX Studio" from your app menu
 ```
 
@@ -48,6 +48,34 @@ nmox-studio        # or launch "NMOX Studio" from your app menu
 tar -xzf NMOX-Studio-<version>-linux.tar.gz
 ./nmox-studio-<version>/bin/nmoxstudio
 ```
+
+## From a terminal: `nmox .`
+
+`cd myproject && nmox .` opens the folder you are in, the way `code .`
+does; `nmox src/app.js` opens a file and `nmox src/app.js:42` opens it at
+line 42. The command returns at once and
+hands later folders to the IDE that is already running.
+
+- **macOS, Homebrew:** the cask puts `nmox` on your PATH.
+- **macOS, DMG:** link the app's launcher yourself (a link, not a copy):
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`
+- **Windows:** leave the installer's *Add "nmox" to PATH* box ticked (it
+  is by default), then open a new terminal. Uninstalling removes it.
+- **Linux:** the `.deb` installs `/usr/bin/nmox`. From the tarball:
+  `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`
+
+## From the file manager
+
+A folder handed over by the operating system is aimed exactly as `nmox .`
+aims it. On macOS the door is `nmox .` (or File ▸ Open Folder…): Finder
+and the Dock cannot hand a folder to the app.
+
+- **Linux (`.deb`):** NMOX Studio appears under *Open With* for folders in
+  your file manager. It is offered, never made the default.
+- **Windows:** tick *Add "Open with NMOX Studio" to the right-click menu of
+  folders in Explorer* when installing (unticked by default). Explorer then
+  offers **Open with NMOX Studio** on a folder and inside one (Windows 11:
+  under *Show more options*). Uninstalling removes it.
 
 ## Portable (all platforms)
 
@@ -71,7 +99,7 @@ guide's [Verifying your download](./docs/user-guide.md#verifying-your-download).
 mvn clean package -DskipTests
 ./packaging/macos/build-dmg.sh 1.2.3        # macOS only
 ./packaging/linux/build-packages.sh 1.2.3   # tar.gz anywhere, .deb on Debian
-iscc /DAppVersion=1.2.3 packaging\windows\nmox-studio.iss   # Windows + Inno Setup 6
+iscc /DAppVersion=1.2.3 packaging\windows\nmox-studio.iss   # Windows + Inno Setup 6.3+
 ```
 
 Releases are produced automatically by `.github/workflows/release.yml`

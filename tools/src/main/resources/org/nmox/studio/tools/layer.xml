@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "https://netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <!-- Quick Search (Cmd+I) reaches the aimed project's package.json
+         scripts (v3.1.0): type "dev" and Enter runs `npm run dev` through
+         the same trust-gated NPM Service lane as NPM Explorer and Run
+         Script. Position 277 sits right after what is serving (275) and
+         what is running (276): a script to start is the next answer to
+         "dev" after the one already up. The bundle lives in a search
+         subpackage so it cannot clobber an @Messages-generated bundle
+         (the v1.79.0 lesson). -->
+    <folder name="QuickSearch">
+        <folder name="NpmScripts">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.tools.npm.search.Bundle"/>
+            <attr name="position" intvalue="277"/>
+            <file name="org-nmox-studio-tools-npm-search-NpmScriptSearchProvider.instance"/>
+        </folder>
+        <!-- the project's .vscode/tasks.json (v3.1.0): a developer arriving
+             from VS Code types "build" and Enter runs the task the repository
+             declares, trust-gated. 278, right after the npm scripts: the next
+             "things this project knows how to run". Its own package and
+             bundle, for the same v1.79.0 reason. -->
+        <folder name="VsCodeTasks">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.tools.vscode.Bundle"/>
+            <attr name="position" intvalue="278"/>
+            <file name="org-nmox-studio-tools-vscode-VsCodeTaskSearchProvider.instance"/>
+        </folder>
+        <!-- the project's .vscode/launch.json (v3.1.0): the sibling of the
+             tasks category — a configuration's name finds it and Enter hands
+             its program or page to the breakpoint debugger through the
+             DebugLauncher facade, trust-gated. 279, right after the tasks.
+             Same package and bundle as the tasks category. -->
+        <folder name="VsCodeLaunches">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.tools.vscode.Bundle"/>
+            <attr name="position" intvalue="279"/>
+            <file name="org-nmox-studio-tools-vscode-VsCodeLaunchSearchProvider.instance"/>
+        </folder>
+    </folder>
+</filesystem>

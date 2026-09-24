@@ -199,13 +199,25 @@ public final class UiLocale {
      * @return a repository-relative path, always an existing document
      */
     public static String guideDoc(Locale locale) {
+        return localizedDoc("user-guide", locale);
+    }
+
+    /**
+     * {@code docs/<stem>.<lang>.md} for a language the product speaks, else
+     * the English {@code docs/<stem>.md} (3.1.0: the Welcome's Coming from
+     * VS Code door rides the same rule as its User Guide door). Only for
+     * documents translated into every supported language, which
+     * {@code TranslatedGuideGateTest} and {@code TranslatedNewcomerDocsTest}
+     * hold.
+     */
+    public static String localizedDoc(String stem, Locale locale) {
         String lang = locale == null ? "" : locale.getLanguage();
         for (Choice c : SUPPORTED) {
             if (!c.isSystem() && !"en".equals(c.code()) && c.code().equals(lang)) {
-                return "docs/user-guide." + c.code() + ".md";
+                return "docs/" + stem + "." + c.code() + ".md";
             }
         }
-        return "docs/user-guide.md";
+        return "docs/" + stem + ".md";
     }
 
     /** {@link #guideDoc(Locale)} for the language the IDE is speaking right now. */

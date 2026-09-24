@@ -31,9 +31,9 @@ public class LearningShelfSearchProvider implements SearchProvider {
                 boolean more = response.addResult(
                         () -> javax.swing.SwingUtilities.invokeLater(
                                 () -> RackService.getDefault().openProjectQuietly(dir)),
-                        org.openide.util.NbBundle.getMessage(LearningShelfSearchProvider.class,
+                        org.nmox.studio.core.util.PlainText.escape(org.openide.util.NbBundle.getMessage(LearningShelfSearchProvider.class,
                                 "LearningShelfSearchProvider_experiment",
-                                dir.getName(), Experiments.info(dir).created()));
+                                dir.getName(), Experiments.info(dir).created())));
                 if (!more) {
                     return;
                 }
@@ -45,12 +45,12 @@ public class LearningShelfSearchProvider implements SearchProvider {
                 boolean more = response.addResult(
                         () -> javax.swing.SwingUtilities.invokeLater(
                                 () -> RackService.getDefault().openProject(dir)),
-                        org.openide.util.NbBundle.getMessage(LearningShelfSearchProvider.class,
+                        org.nmox.studio.core.util.PlainText.escape(org.openide.util.NbBundle.getMessage(LearningShelfSearchProvider.class,
                                 "LearningShelfSearchProvider_space", dir.getName(),
                                 "?".equals(info.name())
                                         ? org.openide.util.NbBundle.getMessage(LearningShelfSearchProvider.class,
                                                 "LearningShelfSearchProvider_tutorial")
-                                        : info.name()));
+                                        : info.name())));
                 if (!more) {
                     return;
                 }

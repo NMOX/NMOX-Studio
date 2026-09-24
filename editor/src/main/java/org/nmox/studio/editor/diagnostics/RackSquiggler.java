@@ -29,6 +29,11 @@ public class RackSquiggler implements Runnable {
     @Override
     public void run() {
         DiagnosticsBus.addListener((tool, problems) -> {
+            if (org.nmox.studio.editor.lsp.DiagnosticsTap.isLspTool(tool)) {
+                // a language server's problems are already painted by the
+                // platform's LSP client; the bus carries them to Action Items
+                return;
+            }
             String layer = "nmox-rack-" + tool;
             Set<File> files = new HashSet<>();
             for (DiagnosticsBus.Problem p : problems) {

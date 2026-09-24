@@ -48,6 +48,11 @@ class DocsCountGateTest {
         // for two releases because this census missed it (v2.34.2)
         docs.add(Path.of("..", "docs", "kitchen-sink.md"));
         docs.add(Path.of("..", "docs", "engineering", "codebase-guide.md"));
+        // CONTRIBUTING.md opens by counting the product for a new
+        // contributor, and v3.1.0 found two of its three counts stale
+        // (86 grammars against 88, 92 spaces against 93) with no census
+        // reading it
+        docs.add(Path.of("..", "CONTRIBUTING.md"));
         // CLAUDE.md's reference body quotes counts too, and a 2026-09-18
         // review found six of them stale by up to forty releases (72
         // grammars against 88, 16 manifests against 60) — the file most

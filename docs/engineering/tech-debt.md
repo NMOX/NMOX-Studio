@@ -20,6 +20,98 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.1.0 (the developer-experience release)
+
+### 118. macOS: Finder's Open With and the Dock cannot hand the IDE a folder
+
+**Open, deliberately.** A folder reaches NMOX Studio on macOS through
+`nmox .` and File ▸ Open Folder…; on Linux and Windows the file manager
+offers it too (3.1.0).
+
+AWT answers open-documents events only when the process's main bundle
+declares `CFBundleDocumentTypes`. The JVM is a child of the platform's
+`nbexec` script, so CoreFoundation takes the runtime's own embedded
+Info.plist as the main bundle (`com.azul.zulu.java`), and the event never
+reaches Java. Exporting `CFProcessPath` naming the bundle's executable
+fixes that **under an ad-hoc signed runtime and not under ours**: measured
+on the notarized 3.1.0 dry run, one small AWT program reads
+`org.nmox.studio` under Homebrew's ad-hoc `java` and `com.azul.zulu.java`
+under the release's hardened one. CoreFoundation ignores the variable in a
+restricted process, and the only entitlement that lifts the restriction,
+`com.apple.security.cs.allow-dyld-environment-variables`, also re-opens
+DYLD injection into a notarized app. That trade is not worth a folder drop.
+3.1.0 shipped the change and took it out the same night, before release,
+because a declared folder type would list the app under Open With and then
+do nothing.
+
+**What would close it:** a native Mach-O launcher that starts the JVM
+in-process through JLI (the shape `jpackage` builds), so the bundle's own
+executable is the process and its Info.plist the main bundle, with no
+environment variable at all. That replaces the shell launcher and its
+Gatekeeper-proven `exec /bin/sh` path, so it needs its own notarized dry
+run. `OpenFolderFromOsGateTest` holds the absence until then.
+
+### 119. The menu-doors gate checks only paths that start at a real menu
+
+**Open, deliberately.** `DocsMenuDoorsTest` walks a `▸` path only when its
+first segment is a top-level menu of the document's language. A translated
+guide that writes a menu that does not exist (`Werkzeuge ▸` where German
+reads `Extras ▸`, `Ver ▸` where Portuguese reads `Exibir ▸`) is therefore
+never checked. The 3.1.0 translators found and fixed every instance they met
+by reading the bundles, which is how the class was found. A census of the
+translated docs' path roots shows a small set, but the legitimate non-menu
+roots (the Options dialog and its tabs, the Plugin Manager's tabs, the macOS
+app menu) are not derivable from the layers, so a strict rule would need a
+hand-kept allow-list per language — the shape `PlatformDialogLedgerTest`
+keeps for dialogs. Worth building when a translation next changes many
+paths; until then, a translation brief names the bundles as the only source
+of a door's name.
+
+### 120. The 3.1.0 review's LOW remainder
+
+**Open, deliberately small.** A hostile review of the night's code found 21
+problems; the proven ones and every MED were fixed before 3.1.0 shipped (the
+`.editorconfig` glob backtracking, the Agent Port's secret files, the
+diagnostics tap's framing and its end/record race, recents on the EDT, the
+`nmox` refusals, the tasks.json shell). What is left, each suspected rather
+than proven:
+
+- **The terminal after a re-aim.** ⌃\` brings an open terminal forward even
+  when it was started in the previous project's folder. VS Code keeps one
+  terminal per window too; the question is whether ⌃\` should start a new
+  shell when the aim has moved. Project Studio's Terminal button always
+  starts a new one in the current project.
+- **A terminal that could not start in the project** falls back to the
+  platform's plain terminal without a status line saying so — only when
+  the terminal module declines the folder, which no walk has produced.
+- **The problem count's click** does nothing if the platform's Action Items
+  action is missing, which only a trimmed cluster could cause.
+- **`ToolbarAccessibleNames`** adds a container listener per toolbar-pool
+  change to any non-`JComponent` container inside a toolbar; none exist
+  in the shipped toolbars.
+- **The save-time settings lookup** (the second review): each save now
+  also walks up for a `.vscode/settings.json` (bounded, stat-only until a
+  file is found) on the thread the platform saves on, beside the
+  `.editorconfig` walk that already ran there. Accepted as recorded; if a
+  profile ever shows it, the answer is the code-style provider's cache.
+
+### 121. Two translation questions the 3.1.0 translators raised
+
+**Open, for a language owner.** Neither is a defect a gate can decide.
+
+- **Ukrainian "debug".** The shipped Ukrainian bundles say *налагодження /
+  налагоджувач / Налагодити*; the Ukrainian documents mostly say
+  *зневадження / зневаджувач*, so a section titled with one leads into a
+  menu label with the other. The menu labels quoted in the docs match the
+  bundles; the running prose is the question. `glossary.json` has no entry
+  for "debug" either way.
+- **Home paths in right-to-left prose.** conventions.md asks for an LRM
+  before a dotfile's leading dot after a right-to-left word (done across
+  the newcomer documents in 3.1.0). A path starting `~/` begins with a
+  neutral too, and about thirty such paths in the Hebrew and Arabic docs
+  carry no LRM. Whether the rule should say "a path beginning with a
+  neutral character" is the decision; the sweep after it is mechanical.
+
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 
 Recorded by v2.184.0's senior-developer pass; all seven closed in v2.186.0.

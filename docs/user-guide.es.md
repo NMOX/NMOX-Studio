@@ -21,7 +21,9 @@ La línea `brew trust` es la confirmación única de Homebrew para cualquier tap
 
 **Todo lo demás:** descarga un archivo de la [última versión](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` para macOS, `-setup.exe` para Windows, `.deb` para Debian/Ubuntu, `.tar.gz` genérico para Linux. Los cuatro incluyen su propio entorno de ejecución de Java; no hace falta instalar nada antes. El `-portable.zip` es el único artefacto que usa tu propio Java (necesita Java 21+ en el PATH, o arráncalo con `--jdkhome <ruta-al-jdk>`).
 
-> **macOS, primer arranque:** basta con hacer doble clic. La aplicación está firmada con un Apple Developer ID y notarizada, y el tique va grapado tanto a la app como al DMG, así que la comprobación funciona sin conexión: ni clic derecho ni `xattr`. El actualizador integrado instala en tu directorio de usuario y no en el paquete de la app, de modo que actualizar nunca rompe esa firma.
+> **macOS, primer arranque:** haz doble clic. macOS pregunta una vez si quieres abrir una aplicación descargada de internet, y dice que Apple la ha comprobado: pulsa **Abrir**. La aplicación está firmada con un Apple Developer ID y notarizada, y el tique va grapado tanto a la app como al DMG, así que la comprobación funciona sin conexión: ni clic derecho ni `xattr`. El actualizador integrado instala en tu directorio de usuario y no en el paquete de la app, de modo que actualizar nunca rompe esa firma.
+>
+> Si una instalación de la 3.0.0, la 3.0.1 o la 3.0.2 respondía *"NMOX Studio.app" Not Opened* (en un macOS en español, que la app no se había abierto), era un defecto en la forma en que la aplicación arrancaba su script lanzador, corregido en la 3.1.0: instala la 3.1.0 o una posterior (`brew upgrade --cask nmox-studio`, o una descarga nueva).
 
 ### Verificar tu descarga
 
@@ -45,12 +47,28 @@ Quieres ver `source=Notarized Developer ID`. Los instaladores de Windows aún no
 
 ### Actualizar
 
-El IDE se actualiza solo: **Herramientas ▸ Complementos ▸ Actualizaciones** ofrece los módulos de cualquier versión más reciente. Instala, reinicia cuando se te pida y listo — sin volver a descargar la aplicación completa. Una advertencia honesta: el entorno de ejecución de Java incluido y el lanzador solo cambian con un instalador completo, así que para saltos importantes de plataforma sigue siendo correcto instalar de nuevo desde un archivo de la versión.
+**Herramientas ▸ Complementos ▸ Actualizaciones** (o **Ayuda ▸ Buscar actualizaciones**) ofrece los módulos del producto de cualquier versión más reciente, desde el centro «Actualizaciones de NMOX Studio», que apunta a la última versión publicada en GitHub. Instala, reinicia cuando se te pida y listo. La plataforma también comprueba por su cuenta, una vez por semana por omisión (se cambia en **Herramientas ▸ Complementos ▸ Configuración**), y aparte el IDE avisa una vez al día de que hay una versión más nueva; eso se apaga en Opciones ▸ General (NMOX Studio ▸ Settings… en macOS, Herramientas ▸ Opciones en los demás sistemas). Cada módulo va firmado y el certificado viaja dentro del producto, así que las actualizaciones se instalan sin preguntas sobre certificados.
+
+El actualizador reemplaza módulos, no la aplicación que los rodea. El entorno de ejecución de Java incluido, el lanzador y la propia plataforma NetBeans solo cambian cuando instalas una versión (`brew upgrade --cask nmox-studio`, o una descarga nueva), y una versión que cambia alguno de ellos lo dice en sus notas — el comando `nmox` de la 3.1.0 y sus correcciones del lanzador de macOS son ejemplos. Una instalación anterior a la 2.35.0 no puede actualizarse desde dentro, porque la 2.35.0 cambió la plataforma: instala una versión actual.
 
 <a id="2-first-launch"></a>
 ## 2. Primer arranque
 
-Desde una terminal, `nmoxstudio --open <carpeta>` arranca la aplicación con esa carpeta abierta como proyecto y el rack apuntando a ella — la misma puerta que abre «Abrir carpeta…» en la página de bienvenida.
+Desde una terminal, `nmox .` abre la carpeta en la que estás, como hace `code .`: `cd myproject && nmox .`. Una carpeta queda apuntada exactamente como la apunta «Abrir carpeta…» en la página de bienvenida, tenga manifiesto o no; un archivo se abre en el editor (`nmox src/app.js`), en una línea si la nombras como lo hace `code -g` (`nmox src/app.js:42`: se admite una columna y el editor se abre al principio de la línea). Un nombre que no existe se rechaza en la terminal (`nmox: typo.js: no such file or folder`) en lugar de arrancar nada. Se admite el `-r` de VS Code y `-n` abre en la única ventana; `--wait`, `--diff` y las demás opciones exclusivas de VS Code se rechazan nombrándolas. El comando vuelve al instante: el primer `nmox` arranca el IDE en segundo plano, y cada uno de los siguientes le pasa su carpeta al IDE que ya está en marcha. `nmox` a secas solo arranca el IDE. Para tener `nmox` en tu PATH:
+
+- **macOS, con Homebrew:** el cask lo enlaza por ti.
+- **macOS, desde el DMG:** enlaza (no copies) el lanzador de la app —
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`.
+  Arrancado a través de un enlace, sabe que viene de una terminal; arrancado desde el Finder o el Dock, se comporta como siempre.
+- **Windows:** la casilla del instalador *Añadir «nmox» al PATH*, marcada por omisión. Abre después una terminal nueva: una que ya estaba abierta conserva su PATH anterior.
+- **Linux:** el `.deb` instala `/usr/bin/nmox`. Desde el tarball, enlázalo tú: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
+
+En Linux y Windows también puedes pasarle una carpeta a NMOX Studio sin terminal, y queda apuntada de la misma manera:
+
+- **Linux (el `.deb`):** tu gestor de archivos muestra NMOX Studio en *Abrir con* para una carpeta. No se convierte en tu aplicación predeterminada para carpetas: esa sigue siendo el gestor de archivos.
+- **Windows:** marca en el instalador la casilla *Añadir «Abrir con NMOX Studio» al menú contextual de las carpetas en el Explorador* (empieza desmarcada, como la de VS Code). El Explorador ofrece entonces **Abrir con NMOX Studio** sobre una carpeta y sobre el espacio vacío dentro de ella; en Windows 11 está bajo *Mostrar más opciones*. Al desinstalar, desaparece.
+
+En macOS, usa `nmox .` o **Archivo ▸ Abrir carpeta…**. El *Abrir con* del Finder y el icono del Dock todavía no pueden pasarle una carpeta a NMOX Studio, así que la app no se ofrece ahí.
 
 El IDE se abre con tres pestañas junto al área del editor: **Bienvenida → Rack de tareas → Navegador web**. Cada una de las demás ventanas está a un atajo ⌥⌘ y aparece en la columna TOOLING de la pestaña de bienvenida. En el panel izquierdo: **Estudio de proyecto** (árbol de archivos y plantillas), la base **Banco de trabajo** y el **Explorador de NPM**. Se crea una carpeta `~/NMOX` como espacio de trabajo predeterminado; el rack apunta ahí hasta que abras un proyecto.
 
@@ -60,7 +78,8 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 
 | Atajo | Abre |
 |---|---|
-| **⌘I** | Búsqueda rápida — llega a todo |
+| **⌘I** | Búsqueda rápida — llega a todo (ver §9) |
+| **⇧⌘P** | También la Búsqueda rápida — el atajo que VS Code llama paleta de comandos |
 | **⌘9** | Rack de tareas |
 | **⌥⌘0** | Banco de trabajo |
 | **⌥⌘1** | Tablero de tareas |
@@ -75,7 +94,13 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 | **⌘8** | Panel de Docker |
 | **⌘7** | Esquema del archivo actual |
 | **⇧⌘N / ⌥⌘O** | Nuevo proyecto… / Abrir carpeta… |
-| **⇧⌘E / ⇧⌘L** | Nuevo experimento… / Nuevo espacio de aprendizaje… |
+| **⌥⌘K / ⇧⌘L** | Nuevo experimento… / Nuevo espacio de aprendizaje… |
+| **⇧⌘E** | Estudio de proyecto, con el foco en el árbol de archivos |
+| **⇧⌘X** | Herramientas ▸ Complementos |
+| **⌃\`** | Una terminal en la carpeta del proyecto, o la que ya está abierta (Ctrl+\` en Windows y Linux) |
+| **⌥⌘P / ⌥⇧⌘K** | Cambiar de proyecto… / Experimentos… |
+
+¿Vienes de VS Code? [Si vienes de VS Code](coming-from-vscode.es.md) traduce los atajos y las ideas, con la forma de Windows y Linux junto a la de macOS.
 
 <a id="3-projects"></a>
 ## 3. Proyectos
@@ -84,15 +109,17 @@ Atajos que conviene aprender el primer día (también aparecen todos en la pesta
 
 **Crear:** *Nuevo proyecto…* ofrece plantillas reales — Angular, Vue, Svelte, JavaScript sin framework, Elixir/Phoenix, PHP Web (LEMP) y Web clásica (jQuery). Cada una llega con las configuraciones de lint, formato y pruebas ya conectadas y un repositorio git iniciado: un único commit de andamiaje que, cuando el asistente ejecuta la instalación por ti, incluye también el archivo de bloqueo, de modo que tu primer `git status` está limpio.
 
+**El árbol de archivos** es el Estudio de proyecto (⇧⌘E). Haz clic derecho en un archivo o una carpeta para Nuevo, Cortar, Copiar, Pegar, Eliminar y Renombrar y, como en el Explorer de VS Code, **Copiar ruta**, **Copiar ruta relativa** (relativa al proyecto) y **Mostrar en Finder** (**Mostrar en el Explorador de archivos** en Windows, **Abrir la carpeta contenedora** en Linux).
+
 **Cambiar de proyecto es seguro:** si hay dispositivos en marcha (un servidor de desarrollo, un observador), el IDE pregunta antes de cambiar y los detiene con limpieza. Nada sigue ejecutándose a tus espaldas, nunca. Ni siquiera forzar el cierre del IDE puede dejar un proceso huérfano.
 
-**Los experimentos** son la forma más rápida de probar una tecnología. **Archivo ▸ Nuevo experimento…** (⇧⌘E) elige una plantilla y genera un proyecto desechable en `~/.nmox/experiments`: sin git, sin recientes, ya confiado y con las dependencias instaladas, para que la **primera ejecución funcione**. Se abre con su propio recorrido `EXPERIMENT.md`, que te dice qué pulsar, qué archivo cambiar y dónde vive la inteligencia del IDE para esa tecnología. Conserva lo que prospere: **Archivo ▸ Experimentos…** ▸ **Promover** lo saca e inicia git, **Duplicar** crea una copia para probar otro enfoque y **Descartar** elimina el resto. El estante muestra la edad de cada uno y su coste real en disco. ¿Prefieres el camino guiado? El diálogo presenta los 93 espacios de aprendizaje.
+**Los experimentos** son la forma más rápida de probar una tecnología. **Archivo ▸ Nuevo experimento…** (⌥⌘K) elige una plantilla y genera un proyecto desechable en `~/.nmox/experiments`: sin git, sin recientes, ya confiado y con las dependencias instaladas, para que la **primera ejecución funcione**. Se abre con su propio recorrido `EXPERIMENT.md`, que te dice qué pulsar, qué archivo cambiar y dónde vive la inteligencia del IDE para esa tecnología. Conserva lo que prospere: **Archivo ▸ Experimentos…** ▸ **Promocionar…** lo saca e inicia git, **Duplicar** crea una copia para probar otro enfoque y **Descartar** elimina el resto. El estante muestra la edad de cada uno y su coste real en disco. ¿Prefieres el camino guiado? El diálogo presenta los 93 espacios de aprendizaje.
 
 ![El estante de espacios de aprendizaje — cantidad, coste en disco, edad y todo el ciclo de vida](images/es/spaces-shelf.png)
 
 ![Un experimento Express recién creado: el recorrido abierto, las dependencias instaladas y la API ya sirviendo](images/es/experiment-walkthrough.png)
 
-**Ejecutar, construir, probar — y detener:** el ▶ de la barra (F6) ejecuta el proyecto como lo hace su cadena de herramientas: un script `start` si package.json lo tiene, `cargo run`, `go run`, `dotnet run`, y para una carpeta de HTML un pequeño servidor estático en el primer puerto libre a partir de 8080. Construir, Probar y Limpiar están al lado y en el menú Ejecutar. Un servidor de desarrollo que anuncia su dirección enciende el indicador ⇄ de la barra de estado y abre la página en el navegador integrado. Todo se ejecuta tras la confirmación de confianza del espacio de trabajo la primera vez. Una ejecución que no pudo arrancar lo dice y ofrece abrir el Doctor del entorno. Para detener: el ■ a la derecha de Depurar (⌥⌘.) detiene todos los comandos en marcha a la vez y dice qué detuvo; **Ejecutar ▸ Detener compilación/ejecución** detiene uno y luego ofrece **Repetir**. El ■ ve todo lo que el producto ejecuta por ti, incluidas las instalaciones; al pasar el cursor, el mensaje nombra exactamente qué se detendría y desde cuándo lleva cada cosa en marcha.
+**Ejecutar, construir, probar — y detener:** el ▶ de la barra (F6) ejecuta el proyecto como lo hace su cadena de herramientas: el script `dev`, `start` o `serve` de package.json (el primero que tenga), `cargo run`, `go run`, `dotnet run`, y para una carpeta de HTML un pequeño servidor estático en el primer puerto libre a partir de 8080. Un proyecto Node que no tiene ninguno de esos tres scripts lo dice cuando pulsas ▶ y muestra sus scripts en el **Explorador de NPM**, donde un doble clic ejecuta uno. Construir, Probar y Limpiar están al lado y en el menú Ejecutar. Un servidor de desarrollo que anuncia su dirección enciende el indicador ⇄ de la barra de estado y abre la página en el navegador integrado. Todo se ejecuta tras la confirmación de confianza del espacio de trabajo la primera vez. Una ejecución que no pudo arrancar lo dice y ofrece abrir el Doctor del entorno. Para detener: el ■ a la derecha de Depurar (⌥⌘.) detiene todos los comandos en marcha a la vez y dice qué detuvo; **Ejecutar ▸ Detener compilación/ejecución** detiene uno y luego ofrece **Repetir**. El ■ ve todo lo que el producto ejecuta por ti, incluidas las instalaciones; al pasar el cursor, el mensaje nombra exactamente qué se detendría y desde cuándo lleva cada cosa en marcha.
 
 **`.env` en todas partes:** si tu proyecto tiene un `.env`, los dispositivos lanzados desde el rack reciben esas variables. Edítalo y la barra de estado avisa de que los reinicios lo recogerán — los procesos en marcha conservan honestamente su entorno anterior.
 
@@ -167,7 +194,13 @@ Más de 70 lenguajes se resaltan como es debido — la pila moderna, la clásica
 - **El minimapa** — una silueta del archivo entero junto a la barra de desplazamiento de cada editor; pulsa o arrastra para desplazarte. El documento completo siempre cabe en la tira: las filas se encogen a medida que el archivo crece. Ver ▸ Minimapa lo enciende y apaga en todos los editores abiertos a la vez.
 - **El desplazamiento adherente** — las declaraciones que encierran la parte alta de la vista (la clase, y luego el método al que has bajado) quedan fijadas sobre el texto, hasta tres líneas del propio código; pulsa una para saltar allí. La barra desaparece cuando nada encierra la primera línea visible.
 - **Ir al símbolo (⌥⇧⌘O)** salta a cualquier función, clase, regla o encabezado de todo el proyecto escribiendo su nombre, con coincidencia por prefijo, por mayúsculas internas o por comodín. El índice es acotado y honesto: se omite `node_modules` y, en un proyecto muy grande, el diálogo dice que indexó los primeros 2.000 archivos en vez de fingir que lo leyó todo.
+- **LSP** — abre un archivo cuyo servidor de lenguaje esté instalado (typescript, gopls, rust-analyzer, pyright, …) y tendrás diagnósticos, información al pasar el ratón e ir a la definición. Los errores y avisos del servidor también son filas en **Elementos de acción** (⌘6), con el nombre del servidor (`[lsp:gopls]`), para cada archivo del que el servidor haya informado. Algunos servidores solo informan de los archivos que tienes abiertos; gopls informa de todo el paquete. ¿Falta un servidor? El IDE te ofrece la orden de instalación en vez de fallar en silencio.
+
+  ![Elementos de acción con dos errores de gopls, uno en un archivo que nunca se abrió, y el recuento ✕ 2 ⚠ 0 en la barra de estado](images/lsp-action-items.png)
+
 - **La ventana de pruebas (⌥⌘2)** muestra todas las pruebas del proyecto *antes de ejecutar nada*, y ejecuta una, un archivo o todas.
+- **Se respeta `.editorconfig`** — mientras escribes y al guardar. `indent_style`, `indent_size` y `tab_width` deciden lo que escriben Tab, Entrar y la reindentación, de modo que un proyecto con tabuladores recibe tabuladores y uno de cuatro espacios recibe cuatro espacios, por archivo y por sección de patrón; cada guardado aplica `trim_trailing_whitespace` e `insert_final_newline`. Un cambio en `.editorconfig` llega a los editores abiertos en un par de segundos. Un carácter de tabulación que ya está en el archivo se sigue dibujando con el ancho de tabulación fijado en Opciones, y `charset` y `end_of_line` no se aplican. Tus dispositivos de formato (GLOSS y compañía) se ocupan del resto.
+- **El `.vscode/settings.json` de un repositorio se respeta del mismo modo**: `editor.tabSize`, `editor.insertSpaces` y `editor.indentSize` deciden la sangría, `files.trimTrailingWhitespace` y `files.insertFinalNewline` (cuando valen `true`) se aplican al guardar, y un bloque de lenguaje como `"[typescript]": {…}` los sustituye para su lenguaje. Cuando el proyecto tiene además un `.editorconfig`, el `.editorconfig` gana dondequiera que ambos digan algo. El `editor.detectIndentation` de VS Code, que deja ganar a la sangría propia del archivo, no tiene equivalente aquí.
 
 ### Expandir abreviatura (⌥⌘E)
 
@@ -203,7 +236,7 @@ Los archivos `.vue` y `.svelte` se abren con su propio resaltado, su propio auto
 
 ### Depuración con puntos de interrupción reales
 
-Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupción)** y el programa se detiene ahí — con la pila, las variables y la evaluación de expresiones. JavaScript y TypeScript funcionan de fábrica gracias al adaptador incluido; Python usa debugpy y Go usa delve, que instalas tú. **Depurar en Chrome** hace lo mismo con una página: los puntos de interrupción de tu código fuente se detienen dentro del IDE mientras el navegador corre en un perfil desechable. Todo pasa antes por la confirmación de confianza del espacio de trabajo.
+Haz clic en el margen izquierdo, elige **Depurar archivo (puntos de interrupción)** y el programa se detiene ahí — con la pila, las variables y la evaluación de expresiones. JavaScript y TypeScript funcionan de fábrica gracias al adaptador incluido; Python usa debugpy y Go usa delve, que instalas tú. **Depurar en Chrome** hace lo mismo con una página: los puntos de interrupción de tu código fuente se detienen dentro del IDE mientras el navegador corre en un perfil desechable. Todo pasa antes por la confirmación de confianza del espacio de trabajo. Un repositorio que trae `.vscode/launch.json` tiene una tercera puerta: escribe el nombre de una configuración en la Búsqueda rápida y Entrar arranca el `program` de Node o Python de esa configuración en su `cwd`, con sus `args` y su `env`, o abre la `url` de una configuración de Chrome con su `webRoot`; una configuración que fija `envFile`, `runtimeExecutable` o cualquier otra cosa que el depurador no puede transmitir se rechaza por su nombre en la barra de estado en lugar de arrancarse sin ello.
 
 ### Depuración en el navegador
 
@@ -260,6 +293,8 @@ Un cliente completo dentro del IDE: TLS con verificación real del nombre, SASL,
 
 Un navegador de verdad dentro del IDE, con sus propias herramientas de desarrollo — consola, DOM, red, almacenamiento y paneles para Vue, Svelte y Angular — porque el motor no trae inspector y aquí lo ponemos nosotros. Es consciente del código fuente: elige un elemento, abre la línea que lo produjo y cambia su estilo ahí mismo, y el cambio aterriza en la hoja de estilo de origen. Guardar un archivo recarga la página, y hay tamaños de dispositivo reales para probar tu diseño adaptable.
 
+Las páginas en escrituras complejas se pintan con sus formas: el árabe, el persa, el urdu (nastaliq incluido), el kurdo, el pastún, el sindi, el uigur, el siríaco, el thaana y el n’ko unen sus letras y se leen en su propio orden, con los números en el suyo; el hindi y las demás escrituras índicas (bengalí, gurmukhi, guyaratí, oriya, tamil, telugu, canarés, malayalam, cingalés), el tailandés, el tibetano, el birmano y el jemer colocan en su sitio sus signos vocálicos y sus conjuntos; y los acentos escritos como caracteres aparte (como escribe macOS los nombres de archivo) se asientan sobre sus letras. El WebKit de JavaFX no hace nada de esto por sí solo. En macOS y en Windows, el Navegador web enciende el motor de texto complejo del propio WebKit, así que los campos de formulario, las frases en negrita y cursiva, los párrafos justificados y las selecciones miden exactamente. En Linux, donde ese interruptor no existe, el Navegador web da forma al texto por su cuenta y ajusta sus estimaciones de ancho a las fuentes que instaló tu distribución, de modo que una frase llena de conjuntos o escrita en nastaliq puede quedar desplazada unos píxeles. El lao no recibe forma: el propio texto de JavaFX también desplaza sus vocales. El hebreo, el armenio, el georgiano y el etíope se muestran bien por sí solos, niqqud incluido.
+
 <a id="7-docker"></a>
 ## 7. Docker
 
@@ -305,11 +340,11 @@ En la barra de estado aparece un indicador **⇄ sirviendo** siempre que hay ser
 
 ### ⌘I, el buscador universal
 
-Una sola caja alcanza tus proyectos (los recientes y los conocidos), todos los dispositivos del rack — saltando directamente a sus controles —, los **servidores en marcha** (Entrar lo abre en el navegador), las peticiones del Estudio de API, las conexiones y tablas del Estudio de bases de datos, los contratos, los nodos de infraestructura y las tarjetas del Tablero de tareas, cuyo resultado nombra la columna en que están.
+Una sola caja alcanza tus proyectos (los recientes y los conocidos), todos los dispositivos del rack — saltando directamente a sus controles —, los **servidores en marcha** (Entrar lo abre en el navegador), las peticiones del Estudio de API, las conexiones y tablas del Estudio de bases de datos, los contratos, los nodos de infraestructura, las tarjetas del Tablero de tareas (el resultado nombra la columna en que están), **los nombres de los comandos de VS Code** (*Format Document*, *Toggle Terminal*, *Git: Commit*, *Open Settings* — cada uno aparece bajo *Comandos de VS Code* junto a la acción que hace lo mismo aquí, así que su nombre aquí es el que escribirás la próxima vez) y los **scripts de npm** del proyecto apuntado: escribe `dev` o `test` y el resultado dice *Ejecutar script: dev — vite*; Entrar lo ejecuta con el propio gestor de paquetes del proyecto (npm, yarn o pnpm), exactamente como lo haría un doble clic en el Explorador de NPM — la confianza del espacio de trabajo pregunta antes en un proyecto en el que aún no confías, la ejecución se suma al ■ de la barra de herramientas, y un servidor de desarrollo que imprima su dirección enciende el indicador ⇄. En un monorepo, los scripts son los que muestra el Explorador de NPM. Un repositorio que trae `.vscode/tasks.json` enumera sus tareas del mismo modo — *Ejecutar tarea: build — make all* — y Entrar ejecuta la tarea tras la misma pregunta de confianza, en la ventana Output y bajo el ■ de la barra de herramientas; una tarea de consola se ejecuta en la consola que usaría VS Code (tu `$SHELL`, como consola de inicio de sesión en macOS; PowerShell en Windows) o en la que nombre su `options.shell`; una tarea que necesita un valor que solo VS Code puede proporcionar, o que depende de otra tarea, lo dice en la barra de estado en lugar de ejecutarse. El `.vscode/launch.json` del repositorio enumera sus configuraciones al lado — *Depurar: Launch Program — ${workspaceFolder}/server.js* — y Entrar arranca el depurador de puntos de interrupción sobre esa configuración tras la misma pregunta de confianza.
 
 ### La barra de estado dice qué está vivo
 
-Junto al indicador de servidores están el proyecto apuntado y su cadena de herramientas, y la rama de Git con cuántos archivos has cambiado. Todo se lee del disco o de registros que el producto ya lleva: mirar no cuesta procesos.
+Junto al indicador de servidores están el proyecto apuntado y su cadena de herramientas, y la rama de Git con cuántos archivos has cambiado. Todo se lee del disco o de registros que el producto ya lleva: mirar no cuesta procesos. Mientras algo de lo que el IDE comprueba tenga un problema, un recuento **✕ 2 ⚠ 1** muestra los errores y avisos de todos los servidores de lenguaje y herramientas; pulsa en él para abrir Elementos de acción.
 
 ### El Banco de trabajo
 
@@ -317,7 +352,7 @@ Es la base: el proyecto actual, los archivos abiertos y recientes, los proyectos
 
 ### Atajos de Emacs (y de Eclipse, y de IntelliJ)
 
-Herramientas ▸ Opciones ▸ Combinaciones de teclas (en macOS, NMOX Studio ▸ Settings… ▸ Combinaciones de teclas) cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios.
+Herramientas ▸ Opciones ▸ Atajos de teclado (en macOS, NMOX Studio ▸ Settings… ▸ Atajos de teclado) cambia el perfil entero: los movimientos y el cortar y pegar de Emacs en cada editor, o los juegos de Eclipse o IDEA si es esa tu memoria muscular. Cada atajo de NMOX (la familia ⌥⌘ de las ventanas, ⌘P Ir al archivo, el ⌥⌘E de Emmet, los atajos de VS Code) está registrado en los cinco perfiles, así que cambiar de perfil nunca te cuesta los atajos de los estudios. Hay una excepción deliberada: en el perfil de Eclipse, ⇧⌘E sigue siendo el *Switch to Editor* del propio Eclipse, porque quien eligió Eclipse lo espera.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Las redes de seguridad (lo que no tienes que hacer)

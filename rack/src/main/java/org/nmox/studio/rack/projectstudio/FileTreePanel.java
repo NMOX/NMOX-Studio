@@ -110,6 +110,17 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
+     * Where keyboard focus lands when the studio is activated — the tree
+     * itself, so ⇧⌘E (VS Code's Explorer chord, 3.1.0) leaves the arrow
+     * keys walking files rather than the window frame.
+     * {@link org.openide.explorer.view.TreeView} forwards a focus
+     * request to its inner {@code JTree}.
+     */
+    java.awt.Component focusTarget() {
+        return view;
+    }
+
+    /**
      * Bind the explorer's Cut/Copy/Paste/Delete into {@code map} — the
      * owning TopComponent's ActionMap, which its default lookup already
      * exposes to the platform's global actions.
@@ -293,11 +304,20 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
          * Properties — driven by the underlying DataNode's cookies. The
          * old hand-rolled tree offered only New/Rename/Delete/Open/Reveal;
          * this is a superset (Cut/Copy/Paste are new).
+         *
+         * <p>New is {@code NewTemplateAction}, the templates submenu (recent
+         * templates, then All Templates…). It was {@code NewAction} until
+         * 3.1.0, which offers a node's NewTypes, and a DataFolder's node has
+         * none ({@code FolderNode.getNewTypes()} returns an empty array), so
+         * the row read "Add" and was grey on every folder since v1.64.0.
+         * Find is bound by the search module at activation (its
+         * ActionManager puts Find in Projects into any non-editor window's
+         * ActionMap), not here.
          */
         @Override
         public javax.swing.Action[] getActions(boolean context) {
-            return new javax.swing.Action[]{
-                org.openide.util.actions.SystemAction.get(org.openide.actions.NewAction.class),
+            return withPathRows(this, new javax.swing.Action[]{
+                org.openide.util.actions.SystemAction.get(org.openide.actions.NewTemplateAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.FindAction.class),
                 null,
                 org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
@@ -306,10 +326,27 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                 null,
                 org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
-                null,
+            }, new javax.swing.Action[]{
                 org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
                 org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
-            };
+            });
+        }
+
+        /**
+         * {@code head}, then Copy Path / Copy Relative Path / Reveal (3.1.0,
+         * {@link PathActions}), then {@code tail}, each group behind a
+         * separator.
+         */
+        static javax.swing.Action[] withPathRows(Node node, javax.swing.Action[] head, javax.swing.Action[] tail) {
+            java.util.List<javax.swing.Action> out = new java.util.ArrayList<>(java.util.Arrays.asList(head));
+            javax.swing.Action[] path = PathActions.forNode(node);
+            if (path.length > 0) {
+                out.add(null);
+                out.addAll(java.util.Arrays.asList(path));
+            }
+            out.add(null);
+            out.addAll(java.util.Arrays.asList(tail));
+            return out.toArray(new javax.swing.Action[0]);
         }
 
         private static final class HeavyChildren extends FilterNode.Children {
@@ -344,7 +381,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
          * A file: the full platform file menu — Open, Cut/Copy, Delete,
          * Rename, Tools, Properties — driven by the DataObject's cookies.
          */
-        private static final class FileLeafNode extends FilterNode {
+        static final class FileLeafNode extends FilterNode {
 
             FileLeafNode(Node original) {
                 super(original, Children.LEAF);
@@ -352,7 +389,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
             @Override
             public javax.swing.Action[] getActions(boolean context) {
-                return new javax.swing.Action[]{
+                return withPathRows(this, new javax.swing.Action[]{
                     org.openide.util.actions.SystemAction.get(org.openide.actions.OpenAction.class),
                     null,
                     org.openide.util.actions.SystemAction.get(org.openide.actions.CutAction.class),
@@ -360,10 +397,10 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                     null,
                     org.openide.util.actions.SystemAction.get(org.openide.actions.DeleteAction.class),
                     org.openide.util.actions.SystemAction.get(org.openide.actions.RenameAction.class),
-                    null,
+                }, new javax.swing.Action[]{
                     org.openide.util.actions.SystemAction.get(org.openide.actions.ToolsAction.class),
                     org.openide.util.actions.SystemAction.get(org.openide.actions.PropertiesAction.class),
-                };
+                });
             }
         }
 

@@ -81,7 +81,7 @@ echo "==> OpenJFX jmods: $FX_DIR"
 
 if [ -x "$CLUSTER/jre/bin/java" ]; then
     echo "==> bundled jre already present"
-elif [ -n "$NMOX_JRE_IMAGE_CACHE" ] && [ -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
+elif [ -n "${NMOX_JRE_IMAGE_CACHE:-}" ] && [ -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
     # v2.38.9 (David: "these waits slow us down"): the jlinked image is
     # a pure function of the JDK build and the FX jmods pinned in this
     # script — identical across releases until a pin moves. CI caches
@@ -117,7 +117,7 @@ else
         --output "$CLUSTER/jre"
     "$CLUSTER/jre/bin/java" --list-modules | grep -q "javafx.web" || {
         echo "ERROR: bundled runtime is missing javafx.web"; exit 1; }
-    if [ -n "$NMOX_JRE_IMAGE_CACHE" ] && [ ! -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
+    if [ -n "${NMOX_JRE_IMAGE_CACHE:-}" ] && [ ! -x "$NMOX_JRE_IMAGE_CACHE/bin/java" ]; then
         echo "==> populating jre image cache"
         rm -rf "$NMOX_JRE_IMAGE_CACHE"
         mkdir -p "$(dirname "$NMOX_JRE_IMAGE_CACHE")"

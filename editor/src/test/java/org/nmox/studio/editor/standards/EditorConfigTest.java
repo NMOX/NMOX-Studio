@@ -20,34 +20,34 @@ class EditorConfigTest {
     @Test
     @DisplayName("Globs: *, **, ?, [seq], {alt}, {n..m}, and no-slash means any directory")
     void globSemantics() {
-        assertThat(EditorConfig.globToRegex("*.js").matcher("src/deep/app.js").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("*.js").matcher("app.jsx").matches()).isFalse();
-        assertThat(EditorConfig.globToRegex("src/*.js").matcher("src/app.js").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("src/*.js").matcher("src/deep/app.js").matches()).isFalse();
-        assertThat(EditorConfig.globToRegex("src/**.js").matcher("src/deep/app.js").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("?.md").matcher("a.md").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("?.md").matcher("ab.md").matches()).isFalse();
-        assertThat(EditorConfig.globToRegex("*.{js,ts}").matcher("x/a.ts").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("*.{js,ts}").matcher("x/a.rs").matches()).isFalse();
-        assertThat(EditorConfig.globToRegex("[ch]").matcher("c").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("v{1..3}.txt").matcher("v2.txt").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("v{1..3}.txt").matcher("v4.txt").matches()).isFalse();
+        assertThat(EditorConfig.glob("*.js").matches("src/deep/app.js")).isTrue();
+        assertThat(EditorConfig.glob("*.js").matches("app.jsx")).isFalse();
+        assertThat(EditorConfig.glob("src/*.js").matches("src/app.js")).isTrue();
+        assertThat(EditorConfig.glob("src/*.js").matches("src/deep/app.js")).isFalse();
+        assertThat(EditorConfig.glob("src/**.js").matches("src/deep/app.js")).isTrue();
+        assertThat(EditorConfig.glob("?.md").matches("a.md")).isTrue();
+        assertThat(EditorConfig.glob("?.md").matches("ab.md")).isFalse();
+        assertThat(EditorConfig.glob("*.{js,ts}").matches("x/a.ts")).isTrue();
+        assertThat(EditorConfig.glob("*.{js,ts}").matches("x/a.rs")).isFalse();
+        assertThat(EditorConfig.glob("[ch]").matches("c")).isTrue();
+        assertThat(EditorConfig.glob("v{1..3}.txt").matches("v2.txt")).isTrue();
+        assertThat(EditorConfig.glob("v{1..3}.txt").matches("v4.txt")).isFalse();
     }
 
     @Test
     @DisplayName("Glob edges: negated classes, anchored slash, and unclosed brackets stay literal")
     void globEdges() {
         // [!seq] negates the class
-        assertThat(EditorConfig.globToRegex("[!c]").matcher("h").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("[!c]").matcher("c").matches()).isFalse();
+        assertThat(EditorConfig.glob("[!c]").matches("h")).isTrue();
+        assertThat(EditorConfig.glob("[!c]").matches("c")).isFalse();
         // a leading slash anchors to the .editorconfig's own directory
-        assertThat(EditorConfig.globToRegex("/root.js").matcher("root.js").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("/root.js").matcher("sub/root.js").matches()).isFalse();
+        assertThat(EditorConfig.glob("/root.js").matches("root.js")).isTrue();
+        assertThat(EditorConfig.glob("/root.js").matches("sub/root.js")).isFalse();
         // unclosed [ and { are literal characters, not malformed regex
-        assertThat(EditorConfig.globToRegex("a[b").matcher("a[b").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("a{b").matcher("a{b").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("a{b").matcher("x/a{b").matches()).isTrue();
-        assertThat(EditorConfig.globToRegex("a{b").matcher("a-b").matches()).isFalse();
+        assertThat(EditorConfig.glob("a[b").matches("a[b")).isTrue();
+        assertThat(EditorConfig.glob("a{b").matches("a{b")).isTrue();
+        assertThat(EditorConfig.glob("a{b").matches("x/a{b")).isTrue();
+        assertThat(EditorConfig.glob("a{b").matches("a-b")).isFalse();
     }
 
     @Test

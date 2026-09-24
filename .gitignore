@@ -24,3 +24,8 @@ jdk17/
 
 # session walk fixtures, throwaway userdirs and cache dirs — never part of a release
 scratchpad/
+
+# ./run.sh keeps the development instance's settings and caches beside the
+# checkout, never in an installed copy's userdir
+/userdir/
+/userdir-cache/

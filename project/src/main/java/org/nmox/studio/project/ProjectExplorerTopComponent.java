@@ -360,11 +360,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // fill the chips when it returns.
         fillChipsAsync(chips, dir);
 
-        JLabel path = new JLabel(PlainText.plain(dir.getAbsolutePath()));
-        path.setFont(TINY);
-        path.setForeground(TEXT_DIM);
-        path.setAlignmentX(LEFT_ALIGNMENT);
-        header.add(path);
+        header.add(headerPath(dir));
         header.add(Box.createVerticalStrut(8));
 
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
@@ -891,6 +887,24 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         PATH,
         /** A sentence: the BEGINNING tells you what it is. */
         PROSE
+    }
+
+    /**
+     * The header's path line: a {@link org.nmox.studio.core.util.PathLabel},
+     * which shows as much of the path as fits with its ends kept and never
+     * asks the dock for more than its cap. A plain label asked for the width
+     * of the whole path, and on a fresh layout the left dock grows to its
+     * content's preferred width: aiming a folder under a long temp path
+     * pushed the Workbench to half the window (measured in the walk of
+     * {@code --aim}).
+     */
+    static JLabel headerPath(File dir) {
+        org.nmox.studio.core.util.PathLabel path = new org.nmox.studio.core.util.PathLabel();
+        path.setFont(TINY);
+        path.setForeground(TEXT_DIM);
+        path.setAlignmentX(LEFT_ALIGNMENT);
+        path.setPath(dir.getAbsolutePath());
+        return path;
     }
 
     /** Middle-ellipsis so deep paths keep their telling ends. */

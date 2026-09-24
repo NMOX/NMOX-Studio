@@ -7,9 +7,10 @@ cask "nmox-studio" do
   desc "NetBeans RCP-based IDE for web development"
   homepage "https://github.com/NMOX/NMOX-Studio"
 
-  depends_on macos: :big_sur
+  depends_on :macos
 
   app "NMOX Studio.app"
+  binary "#{appdir}/NMOX Studio.app/Contents/MacOS/nmox-studio", target: "nmox"
 
   zap trash: [
     "~/Library/Application Support/NMOXStudio",

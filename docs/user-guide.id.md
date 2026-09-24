@@ -21,7 +21,9 @@ Baris `brew trust` adalah konfirmasi sekali jalan dari Homebrew untuk tap pihak 
 
 **Selebihnya:** unduh berkas dari [rilis terbaru](https://github.com/NMOX/NMOX-Studio/releases/latest) — `.dmg` untuk macOS, `-setup.exe` untuk Windows, `.deb` untuk Debian/Ubuntu, `.tar.gz` umum untuk Linux. Keempatnya membawa lingkungan Java sendiri; tidak ada yang perlu dipasang lebih dulu. `-portable.zip` adalah satu-satunya artefak yang memakai Java Anda sendiri (perlu Java 21+ di PATH, atau jalankan dengan `--jdkhome <jalur-ke-jdk>`).
 
-> **macOS, peluncuran pertama:** cukup klik dua kali. Aplikasi ditandatangani dengan Apple Developer ID dan dinotarisasi, dan tiketnya dilekatkan pada aplikasi maupun DMG, sehingga pemeriksaannya bekerja luring — tanpa klik kanan dan tanpa `xattr`. Pembaru bawaan memasang ke direktori pengguna Anda, bukan ke bundel aplikasi, sehingga pembaruan tidak pernah merusak tanda tangan itu.
+> **macOS, peluncuran pertama:** klik dua kali. macOS bertanya sekali apakah akan membuka aplikasi yang diunduh dari internet, dan menyebutkan bahwa Apple sudah memeriksanya: klik **Buka** (*Open*). Aplikasi ditandatangani dengan Apple Developer ID dan dinotarisasi, dan tiketnya dilekatkan pada aplikasi maupun DMG, sehingga pemeriksaannya bekerja luring — tanpa klik kanan dan tanpa `xattr`. Pembaru bawaan memasang ke direktori pengguna Anda, bukan ke bundel aplikasi, sehingga pembaruan tidak pernah merusak tanda tangan itu.
+>
+> Jika pemasangan 3.0.0, 3.0.1, atau 3.0.2 menjawab *"NMOX Studio.app" Not Opened* (“NMOX Studio.app” tidak dibuka), itu adalah cacat dalam cara aplikasi menjalankan skrip peluncurnya, yang diperbaiki di 3.1.0: pasang 3.1.0 atau yang lebih baru (`brew upgrade --cask nmox-studio`, atau unduhan baru).
 
 ### Memverifikasi unduhan Anda
 
@@ -45,14 +47,30 @@ Anda ingin melihat `source=Notarized Developer ID`. Pemasang Windows belum ditan
 
 ### Pembaruan
 
-IDE memperbarui dirinya sendiri: **Alat ▸ Plugin ▸ Pembaruan** menawarkan modul dari rilis mana pun yang lebih baru. Pasang, mulai ulang saat diminta, selesai — tanpa mengunduh ulang seluruh aplikasi. Satu catatan jujur: lingkungan Java bawaan dan peluncurnya hanya berubah lewat pemasang lengkap, jadi untuk lompatan platform yang besar memasang ulang dari berkas rilis tetap langkah yang benar.
+**Alat ▸ Plugin ▸ Pembaruan** (atau **Bantuan ▸ Periksa pembaruan**) menawarkan modul produk dari rilis mana pun yang lebih baru, dari pusat “Pembaruan NMOX Studio”, yang mengarah ke rilis GitHub terbaru. Pasang, mulai ulang saat diminta, selesai. Platform juga memeriksa sendiri, seminggu sekali secara bawaan (ubah di **Alat ▸ Plugin ▸ Pengaturan**), dan secara terpisah IDE memberi tahu tentang rilis yang lebih baru sekali sehari; matikan itu di Opsi ▸ Umum (NMOX Studio ▸ Settings… di macOS, Alat ▸ Opsi di tempat lain). Setiap modul ditandatangani dan sertifikatnya disertakan di dalam produk, sehingga pembaruan terpasang tanpa pertanyaan tentang sertifikat.
+
+Pembaru mengganti modul, bukan aplikasi di sekelilingnya. Lingkungan Java bawaan, peluncur, dan NetBeans Platform itu sendiri hanya berubah ketika Anda memasang sebuah rilis (`brew upgrade --cask nmox-studio`, atau unduhan baru), dan rilis yang mengubah salah satunya mengatakannya di catatan rilisnya — perintah `nmox` dan perbaikan peluncur macOS di 3.1.0 adalah contohnya. Pemasangan yang lebih tua dari 2.35.0 sama sekali tidak bisa diperbarui dari dalam aplikasi, karena 2.35.0 memindahkan platformnya: pasanglah rilis terbaru.
 
 <a id="2-first-launch"></a>
 ## 2. Peluncuran pertama
 
-Dari terminal, `nmoxstudio --open <folder>` menjalankan aplikasi dengan folder itu terbuka sebagai proyek dan rak yang mengarah ke sana — pintu yang sama dengan “Buka folder…” di halaman selamat datang.
+Dari terminal, `nmox .` membuka folder tempat Anda berada, seperti `code .`: `cd myproject && nmox .`. Sebuah folder diarahkan persis seperti Buka Folder… di halaman Selamat Datang mengarahkannya, dengan atau tanpa manifes; sebuah berkas terbuka di penyunting (`nmox src/app.js`), pada sebuah baris bila Anda menyebutkannya seperti pada `code -g` (`nmox src/app.js:42` — kolom juga diterima, dan penyunting terbuka di awal baris). Nama yang tidak ada ditolak di terminal (`nmox: typo.js: no such file or folder`) alih-alih menjalankan apa pun. Opsi `-r` milik VS Code diterima dan `-n` membuka di satu-satunya jendela; `--wait`, `--diff`, dan opsi lain yang hanya dikenal VS Code ditolak dengan menyebut namanya. Perintah itu langsung kembali — `nmox` yang pertama menjalankan IDE di latar belakang, dan setiap `nmox` berikutnya menyerahkan foldernya kepada IDE yang sudah berjalan. `nmox` saja hanya menjalankan IDE. Cara memasukkan `nmox` ke PATH Anda:
 
-IDE terbuka dengan tiga tab di samping area editor: **Selamat Datang → Rak Tugas → Peramban**. Setiap jendela lain berjarak satu pintasan ⌥⌘ dan tercantum di kolom TOOLING halaman selamat datang. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
+- **macOS, Homebrew:** cask menautkannya untuk Anda.
+- **macOS, dari DMG:** tautkan (jangan salin) peluncur aplikasi —
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`.
+  Bila dijalankan lewat tautan, ia tahu bahwa ia dipanggil dari terminal; bila dijalankan dari Finder atau Dock, ia berperilaku seperti biasa.
+- **Windows:** kotak *Add "nmox" to PATH* di pemasang, tercentang secara bawaan. Buka terminal baru setelahnya; terminal yang sudah terbuka tetap memakai PATH lamanya.
+- **Linux:** `.deb` memasang `/usr/bin/nmox`. Dari tarball, tautkan sendiri: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
+
+Di Linux dan Windows Anda juga bisa menyerahkan sebuah folder kepada NMOX Studio tanpa terminal, dan folder itu diarahkan dengan cara yang sama:
+
+- **Linux (`.deb`):** pengelola berkas Anda mencantumkan NMOX Studio di bawah *Buka Dengan* (*Open With*) untuk sebuah folder. NMOX Studio tidak menjadi bawaan Anda untuk folder; pengelola berkas tetap menjadi bawaannya.
+- **Windows:** centang kotak *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* di pemasang (awalnya tidak tercentang, seperti milik VS Code). Explorer lalu menawarkan **Open with NMOX Studio** pada sebuah folder dan pada ruang kosong di dalamnya; di Windows 11 ia berada di bawah *Show more options* (*Tampilkan opsi lainnya*). Mencopot pemasangan menghapusnya.
+
+Di macOS, gunakan `nmox .` atau **Berkas ▸ Buka Folder…**. *Buka Dengan* (*Open With*) di Finder dan ikon Dock belum dapat menyerahkan sebuah folder kepada NMOX Studio, sehingga aplikasi ini tidak menawarkan dirinya di sana.
+
+IDE terbuka dengan tiga tab di samping area editor: **Selamat Datang → Rak Tugas → Peramban**. Setiap jendela lain berjarak satu pintasan ⌥⌘ dan tercantum di kolom PERKAKAS halaman Selamat Datang. Di panel kiri: **Studio Proyek** (pohon berkas dan templat), basis **Meja Kerja**, dan **Penjelajah NPM**. Folder `~/NMOX` dibuat sebagai ruang kerja bawaan; rak mengarah ke sana sampai Anda membuka sebuah proyek.
 
 ![Peluncuran pertama — halaman selamat datang dengan tiga tab](images/id/tabs/workbench.png)
 
@@ -61,6 +79,7 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 | Pintasan | Membuka |
 |---|---|
 | **⌘I** | Pencarian cepat — menjangkau segalanya |
+| **⇧⌘P** | Pencarian cepat juga — pintasan yang oleh VS Code disebut Command Palette |
 | **⌘9** | Rak Tugas |
 | **⌥⌘0** | Meja Kerja |
 | **⌥⌘1** | Papan Tugas |
@@ -74,8 +93,14 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 | **⌥⌘9** | Perancang Infrastruktur |
 | **⌘8** | Panel Docker |
 | **⌘7** | Struktur berkas saat ini |
-| **⇧⌘N / ⌥⌘O** | Proyek baru… / Buka folder… |
-| **⇧⌘E / ⇧⌘L** | Eksperimen baru… / Ruang belajar baru… |
+| **⇧⌘N / ⌥⌘O** | Proyek Baru… / Buka Folder… |
+| **⌥⌘K / ⇧⌘L** | Eksperimen Baru… / Ruang Belajar Baru… |
+| **⇧⌘E** | Studio Proyek, dengan fokus pada pohon berkas |
+| **⇧⌘X** | Alat ▸ Plugin |
+| **⌃\`** | Terminal di folder proyek, atau yang sudah terbuka (Ctrl+\` di Windows dan Linux) |
+| **⌥⌘P / ⌥⇧⌘K** | Ganti Proyek… / Eksperimen… |
+
+Datang dari VS Code? [Beralih dari VS Code](coming-from-vscode.id.md) memetakan pintasan dan gagasannya, dengan ejaan Windows dan Linux di samping ejaan macOS.
 
 <a id="3-projects"></a>
 ## 3. Proyek
@@ -84,15 +109,17 @@ Pintasan yang layak dipelajari di hari pertama (semuanya juga tercantum di tab s
 
 **Membuat:** *Proyek baru…* menawarkan kerangka sungguhan — Angular, Vue, Svelte, JavaScript polos, Elixir/Phoenix, PHP Web (LEMP), dan Web klasik (jQuery). Masing-masing datang dengan konfigurasi lint, format, dan uji yang sudah terpasang serta repositori git yang telah disiapkan: satu komit kerangka yang, ketika wisaya menjalankan pemasangan untuk Anda, turut memuat berkas kunci — sehingga `git status` pertama Anda bersih.
 
+**Pohon berkas** adalah Studio Proyek (⇧⌘E). Klik kanan sebuah berkas atau folder untuk Baru, Potong, Salin, Tempel, Hapus, dan Ganti Nama, dan — seperti di Explorer VS Code — **Salin Jalur**, **Salin Jalur Relatif** (relatif terhadap proyek), dan **Tampilkan di Finder** (**Tampilkan di File Explorer** di Windows, **Buka Folder Induk** di Linux).
+
 **Berpindah proyek itu aman:** jika ada perangkat yang berjalan (server pengembangan, pengamat), IDE bertanya sebelum berpindah dan mematikannya dengan rapi. Tidak ada yang terus berjalan di belakang Anda, tidak pernah. Bahkan menutup paksa IDE pun tidak bisa meninggalkan proses telantar.
 
-**Eksperimen** adalah cara tercepat mencoba sebuah tumpukan teknologi. **Berkas ▸ Eksperimen baru…** (⇧⌘E) memilih templat dan membuat proyek sekali pakai di `~/.nmox/experiments`: tanpa git, tanpa daftar terkini, sudah dipercaya, dependensi terpasang — agar **Jalankan yang pertama langsung berhasil**. Ia terbuka pada panduan `EXPERIMENT.md` miliknya sendiri, yang memberi tahu apa yang harus ditekan, berkas mana yang diubah, dan di mana kecerdasan IDE untuk tumpukan itu berada. Simpan yang berkembang: **Berkas ▸ Eksperimen…** ▸ **Naikkan** memindahkannya keluar dan menyiapkan git, **Gandakan** membuat salinan di sampingnya untuk pendekatan kedua, **Buang** membereskan sisanya. Raknya menampilkan usia tiap eksperimen dan biaya diskanya yang terukur. Lebih suka jalur terpandu? Dialognya menampilkan 93 ruang belajar di depan.
+**Eksperimen** adalah cara tercepat mencoba sebuah tumpukan teknologi. **Berkas ▸ Eksperimen Baru…** (⌥⌘K) memilih templat dan membuat proyek sekali pakai di `~/.nmox/experiments`: tanpa git, tanpa daftar terkini, sudah dipercaya, dependensi terpasang — agar **Jalankan yang pertama langsung berhasil**. Ia terbuka pada panduan `EXPERIMENT.md` miliknya sendiri, yang memberi tahu apa yang harus ditekan, berkas mana yang diubah, dan di mana kecerdasan IDE untuk tumpukan itu berada. Simpan yang berkembang: **Berkas ▸ Eksperimen…** ▸ **Promosikan…** memindahkannya keluar dan menyiapkan git, **Gandakan** membuat salinan di sampingnya untuk pendekatan kedua, **Buang** membereskan sisanya. Raknya menampilkan usia tiap eksperimen dan biaya diskanya yang terukur. Lebih suka jalur terpandu? Dialognya menampilkan 93 ruang belajar di depan.
 
 ![Rak ruang belajar — jumlah, biaya disk, usia, dan seluruh siklus hidupnya](images/id/spaces-shelf.png)
 
 ![Eksperimen Express yang baru dibuat: panduannya terbuka, dependensi terpasang, API sudah melayani](images/id/experiment-walkthrough.png)
 
-**Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `start` bila package.json memilikinya, `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan build/jalankan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
+**Jalankan, bangun, uji — dan hentikan:** tombol ▶ pada bilah (F6) menjalankan proyek sebagaimana perkakasnya menjalankannya: skrip `dev`, `start`, atau `serve` dari package.json (yang pertama dimilikinya), `cargo run`, `go run`, `dotnet run`, dan untuk folder berisi HTML sebuah server statis kecil pada porta bebas pertama mulai 8080. Proyek Node yang tidak punya satu pun dari ketiga skrip itu mengatakannya saat Anda menekan ▶ dan menampilkan skripnya di **Penjelajah NPM**, tempat klik ganda menjalankan salah satunya. Bangun, Uji, dan Bersihkan ada di sebelahnya dan di menu Jalankan. Server pengembangan yang mengumumkan alamatnya menyalakan tanda ⇄ di bilah status dan membuka halamannya di peramban bawaan. Semuanya melewati konfirmasi kepercayaan ruang kerja pada kali pertama. Sebuah jalannya yang gagal dimulai mengatakannya terus terang dan menawarkan membuka Dokter lingkungan. Untuk menghentikan: ■ di kanan Awakutu (⌥⌘.) menghentikan semua perintah yang berjalan sekaligus dan menyebutkan apa yang dihentikannya; **Jalankan ▸ Hentikan build/jalankan** menghentikan satu lalu menawarkan **Ulangi**. Si ■ melihat semua yang produk jalankan untuk Anda, termasuk pemasangan; saat disorot, keterangannya menyebut persis apa yang akan dihentikan sebuah tekanan, dan sejak kapan masing-masing berjalan.
 
 **`.env` di mana-mana:** jika proyek Anda punya `.env`, perangkat yang diluncurkan dari rak menerima variabel itu. Suntinglah, dan bilah status mencatat bahwa mulai-ulang akan mengambilnya — proses yang sedang berjalan dengan jujur mempertahankan lingkungan lamanya.
 
@@ -168,6 +195,12 @@ Lebih dari 70 bahasa disorot sebagaimana mestinya — tumpukan modern, tumpukan 
 - **Gulir lengket** — deklarasi yang melingkupi bagian atas tampilan (kelasnya, lalu metode yang Anda masuki) tetap tersemat di atas teks, sampai tiga baris dari kode itu sendiri; klik salah satunya untuk melompat ke sana. Bilahnya lenyap ketika tak ada yang melingkupi baris teratas.
 - **Ke simbol (⌥⇧⌘O)** melompat ke fungsi, kelas, aturan, atau judul mana pun di seluruh proyek dengan mengetik namanya — cocok menurut awalan, huruf besar di tengah kata, atau kartu bebas. Indeksnya terbatas dan jujur: `node_modules` dilewati, dan pada proyek yang sangat besar dialognya berkata bahwa ia mengindeks 2.000 berkas pertama, bukannya berpura-pura membaca semuanya.
 - **Jendela uji (⌥⌘2)** menampilkan setiap uji dalam proyek *sebelum apa pun dijalankan*, dan menjalankan satu uji, satu berkas, atau semuanya.
+- **LSP**: buka berkas yang server bahasanya terpasang (typescript, gopls, rust-analyzer, pyright, …) dan Anda mendapat diagnostik, keterangan saat melayang, dan lompat ke definisi. Galat dan peringatan server itu juga menjadi baris di **Item tindakan** (⌘6), dinamai menurut servernya (`[lsp:gopls]`), untuk setiap berkas yang sudah dilaporkan server itu. Sebagian server hanya melaporkan berkas yang sedang Anda buka; gopls melaporkan seluruh paket. Servernya tidak ada? IDE menawarkan perintah pemasangannya alih-alih gagal diam-diam.
+
+  ![Item tindakan menampilkan dua galat gopls, salah satunya di berkas yang tidak pernah dibuka, dengan hitungan ✕ 2 ⚠ 0 di baris status](images/lsp-action-items.png)
+
+- **`.editorconfig` dihormati** — saat Anda mengetik dan saat Anda menyimpan. `indent_style`, `indent_size`, dan `tab_width` menentukan apa yang ditulis Tab, Enter, dan indentasi ulang, sehingga proyek bertab mendapat tab dan proyek empat spasi mendapat empat spasi, per berkas dan per bagian glob; setiap penyimpanan menerapkan `trim_trailing_whitespace` dan `insert_final_newline`. Suntingan pada `.editorconfig` sampai ke penyunting yang terbuka dalam beberapa detik. Karakter tab harfiah yang sudah ada di dalam berkas tetap digambar dengan lebar tab yang diatur di Opsi, dan `charset` serta `end_of_line` tidak diterapkan. Perangkat pemformat Anda (GLOSS dan kawan-kawan) mengurus sisanya.
+- **`.vscode/settings.json` sebuah repositori dihormati dengan cara yang sama:** `editor.tabSize`, `editor.insertSpaces`, dan `editor.indentSize` menentukan indentasi, `files.trimTrailingWhitespace` dan `files.insertFinalNewline` (bila `true`) diterapkan saat menyimpan, dan blok bahasa seperti `"[typescript]": {…}` menimpanya untuk bahasa itu. Bila proyek juga punya `.editorconfig`, `.editorconfig` yang menang di mana pun keduanya mengatur sesuatu. `editor.detectIndentation` milik VS Code, yang membiarkan indentasi berkas itu sendiri menang, tidak punya padanan di sini.
 
 ### Bentangkan singkatan (⌥⌘E)
 
@@ -203,7 +236,7 @@ Berkas `.vue` dan `.svelte` terbuka dengan penyorotannya sendiri, pelengkapannya
 
 ### Awakutu dengan titik henti yang sungguhan
 
-Klik di margin kiri, pilih **Awakutu berkas (titik henti)**, dan programnya berhenti di sana — lengkap dengan tumpukan, variabel, dan penilaian ungkapan. JavaScript dan TypeScript jalan sejak awal berkat adaptor bawaan; Python memakai debugpy dan Go memakai delve, yang Anda pasang sendiri. **Awakutu di Chrome** melakukan hal yang sama untuk sebuah halaman: titik henti di sumber Anda berhenti di dalam IDE sementara peramban berjalan pada profil sekali pakai. Semuanya lebih dulu melewati konfirmasi kepercayaan ruang kerja.
+Klik di margin kiri, pilih **Debug berkas (titik henti)**, dan programnya berhenti di sana — lengkap dengan tumpukan, variabel, dan penilaian ungkapan. JavaScript dan TypeScript jalan sejak awal berkat adaptor bawaan; Python memakai debugpy dan Go memakai delve, yang Anda pasang sendiri. **Debug di Chrome (titik henti)** melakukan hal yang sama untuk sebuah halaman: titik henti di sumber Anda berhenti di dalam IDE sementara peramban berjalan pada profil sekali pakai. Repositori yang membawa `.vscode/launch.json` punya satu pintu lagi: ketik nama sebuah konfigurasi di Pencarian Cepat, dan Enter memulai `program` Node atau Python milik konfigurasi itu di dalam `cwd`-nya, dengan `args` dan `env`-nya, atau membuka `url` konfigurasi Chrome dengan `webRoot`-nya; konfigurasi yang mengatur `envFile`, `runtimeExecutable`, atau apa pun yang tidak bisa diteruskan pengawakutu ditolak dengan menyebut namanya di baris status alih-alih dimulai tanpanya. Semuanya lebih dulu melewati konfirmasi kepercayaan ruang kerja.
 
 ### Awakutu di peramban
 
@@ -260,6 +293,8 @@ Sebuah klien penuh di dalam IDE: TLS dengan pemeriksaan nama yang sungguhan, SAS
 
 Sebuah peramban sungguhan di dalam IDE, dengan perkakas pengembangnya sendiri — konsol, DOM, jaringan, penyimpanan, dan panel untuk Vue, Svelte, dan Angular — sebab mesinnya tak membawa pemeriksa apa pun, dan yang ini milik kita. Ia sadar akan sumbernya: pilih sebuah elemen, buka baris yang melahirkannya, ubah gayanya di tempat, dan deklarasinya mendarat di lembar gaya asalnya. Menyimpan sebuah berkas memuat ulang halamannya, dan ada ukuran perangkat yang sungguhan untuk menguji tata letak Anda yang lentur.
 
+Halaman dalam aksara kompleks dilukis terbentuk: Arab, Persia, Urdu (termasuk Nastaliq), Kurdi, Pashto, Sindhi, Uighur, Suryani, Thaana, dan N’Ko menyambung hurufnya dan terbaca dalam urutannya sendiri, dengan angka dalam urutan angkanya; Hindi dan aksara India lainnya (Bengali, Gurmukhi, Gujarati, Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala), Thai, Tibet, Myanmar, dan Khmer menempatkan tanda vokal dan konjungnya di tempatnya; dan aksen yang ditulis sebagai karakter terpisah (seperti cara macOS menulis nama berkas) duduk di atas hurufnya. WebKit milik JavaFX tidak melakukan semua ini sendiri. Di macOS dan Windows, Peramban menyalakan mesin teks kompleks milik WebKit sendiri, sehingga kolom formulir, frasa tebal dan miring, paragraf rata kiri-kanan, dan seleksi terukur dengan tepat. Di Linux, tempat saklar itu tidak ada, Peramban membentuk teksnya sendiri dan menyesuaikan perkiraan lebarnya dengan fon yang dipasang distribusi Anda, sehingga frasa yang penuh konjung atau yang diset dalam Nastaliq bisa bergeser beberapa piksel. Lao tidak dibentuk: teks milik JavaFX sendiri juga menggeser vokalnya. Ibrani, Armenia, Georgia, dan Etiopia tampil dengan benar dengan sendirinya, termasuk niqqud.
+
 <a id="7-docker"></a>
 ## 7. Docker
 
@@ -299,13 +334,13 @@ Tambahkan ke kode mana pun jQuery, MooTools, Prototype, Backbone dengan Undersco
 <a id="9-quick-search-status-line-and-staying-oriented"></a>
 ## 9. Pencarian cepat, baris status, dan tetap tahu arah
 
-### Tanda ⇄ melayani
+### Tanda ⇄ menyajikan
 
-Di baris status muncul tanda **⇄ melayani** setiap kali ada peladen yang hidup: jalannya IDE sendiri, perangkat yang melayani, dan perintah apa pun yang telah mencetak alamat lokal. Klik dan pilih satu: ia terbuka di peramban bawaan, atau di peramban sistem bila tab itu tidak sanggup menerimanya.
+Di baris status muncul tanda **⇄ menyajikan** setiap kali ada peladen yang hidup: jalannya IDE sendiri, perangkat yang melayani, dan perintah apa pun yang telah mencetak alamat lokal. Klik dan pilih satu: ia terbuka di peramban bawaan, atau di peramban sistem bila tab itu tidak sanggup menerimanya. Selama ada sesuatu yang diperiksa IDE yang bermasalah, hitungan **✕ 2 ⚠ 1** menampilkan galat dan peringatan dari setiap server bahasa dan alat; klik untuk membuka Item tindakan.
 
 ### ⌘I, pencari untuk segalanya
 
-Satu kotak menjangkau proyek Anda (yang terkini dan yang dikenal), setiap perangkat rak — langsung ke kendalinya —, **peladen yang sedang hidup** (Enter membukanya di peramban), permintaan Studio API, sambungan dan tabel Studio Basis Data, kontrak, simpul infrastruktur, serta kartu Papan Tugas, dan hasilnya menyebut kolom tempat kartu itu berada.
+Satu kotak menjangkau proyek Anda (yang terkini dan yang dikenal), setiap perangkat rak — langsung ke kendalinya —, **peladen yang sedang hidup** (Enter membukanya di peramban), permintaan Studio API, sambungan dan tabel Studio Basis Data, kontrak, simpul infrastruktur, kartu Papan Tugas (hasilnya menyebut kolom tempat kartu itu berada), **nama perintah VS Code** (*Format Document*, *Toggle Terminal*, *Git: Commit*, *Open Settings* — masing-masing terdaftar di bawah *Perintah VS Code* di samping tindakan yang melakukan hal yang sama di sini, jadi namanya di sini yang Anda ketik lain kali), serta **skrip npm** proyek yang diarahkan: ketik `dev` atau `test` dan hasilnya terbaca *Jalankan skrip: dev — vite*; Enter menjalankannya dengan pengelola paket proyek itu sendiri (npm, yarn, atau pnpm), persis seperti klik ganda di Penjelajah NPM — Kepercayaan Ruang Kerja bertanya lebih dulu pada proyek yang belum Anda percayai, jalannya bergabung dengan ■ di bilah alat, dan server pengembangan yang dicetaknya menyalakan tanda ⇄. Di sebuah monorepo, skripnya adalah yang ditampilkan Penjelajah NPM. Repositori yang membawa `.vscode/tasks.json` mendaftar tugas-tugasnya dengan cara yang sama — *Jalankan tugas: build — make all* — dan Enter menjalankan tugas itu setelah pertanyaan kepercayaan yang sama, di jendela Output dan di bawah ■ di bilah alat; tugas shell berjalan di shell yang akan dipakai VS Code (`$SHELL` Anda, sebagai shell login di macOS; PowerShell di Windows) atau di shell yang disebut `options.shell`-nya; tugas yang memerlukan nilai yang hanya bisa diberikan VS Code, atau bergantung pada tugas lain, mengatakannya di baris status alih-alih berjalan. `.vscode/launch.json` repositori itu mendaftar konfigurasi-konfigurasinya di sampingnya — *Debug: Launch Program — ${workspaceFolder}/server.js* — dan Enter memulai pengawakutu titik henti pada konfigurasi itu setelah pertanyaan kepercayaan yang sama.
 
 ### Baris status memberi tahu apa yang hidup
 
@@ -317,7 +352,7 @@ Inilah pangkalan: proyek berjalan, berkas yang terbuka dan yang terkini, proyek 
 
 ### Pintasan Emacs (juga Eclipse dan IntelliJ)
 
-Alat ▸ Opsi ▸ Peta Tombol (di macOS: NMOX Studio ▸ Settings… ▸ Peta Tombol) mengganti seluruh profil: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda.
+Alat ▸ Opsi ▸ Pintasan keyboard (di macOS: NMOX Studio ▸ Settings… ▸ Pintasan keyboard) mengganti seluruh profil peta tombol: gerakan serta potong dan tempel ala Emacs di setiap penyunting, atau kumpulan Eclipse dan IDEA bila di sanalah ingatan jari Anda. Setiap pintasan NMOX (keluarga jendela ⌥⌘, ⌘P untuk membuka berkas, ⌥⌘E milik Emmet, pintasan VS Code) terdaftar di kelima profil, jadi berganti profil tidak pernah merenggut pintasan studio dari Anda. Satu pengecualian disengaja: di profil Eclipse, ⇧⌘E tetap *Switch to Editor* milik Eclipse sendiri, karena pengguna yang memilih Eclipse mengharapkannya.
 
 <a id="10-the-safety-nets-things-you-dont-have-to-do-anything-for"></a>
 ## 10. Jaring pengaman (yang tidak perlu Anda lakukan apa-apa untuk mendapatkannya)
@@ -371,7 +406,7 @@ Kolom keempat mendaftar enam gerakan pertama — membuka proyek, menjalankan ses
 
 ### Tiga jawaban menu Bantuan
 
-**Apa yang Baru…** memuat catatan rilis yang sedang Anda jalankan, disertakan dalam bangunannya sendiri; pada mula pertama setelah pembaruan, catatan itu terbuka sendiri berisi rilis yang belum pernah dilihat pemasangan Anda. **Laporkan Masalah…** menyusun laporan berisi lingkungan Anda dan empat puluh baris terakhir log, sudah disunting — folder rumah Anda menjadi `~`, nama masuk Anda `<user>`, dan apa pun yang menyerupai kredensial menjadi `[redacted]` —; Anda menyuntingnya, lalu **Buka di GitHub** mengisikan sebuah isu yang Anda kirim sendiri, atau Anda salin. Produk ini tidak pernah mengirim apa pun atas kemauannya sendiri. **Pintasan Papan Ketik…** mendaftar setiap pintasan NMOX di profil Anda yang aktif, dibaca dari peta tombol yang sedang berjalan, sehingga ia tidak mungkin menyimpang dari apa yang dilakukan menu.
+**Apa yang Baru…** memuat catatan rilis yang sedang Anda jalankan, disertakan dalam bangunannya sendiri; pada mula pertama setelah pembaruan, catatan itu terbuka sendiri berisi rilis yang belum pernah dilihat pemasangan Anda. **Laporkan Masalah…** menyusun laporan berisi lingkungan Anda dan empat puluh baris terakhir log, sudah disunting — folder rumah Anda menjadi `~`, nama masuk Anda `<user>`, dan apa pun yang menyerupai kredensial menjadi `[redacted]` —; Anda menyuntingnya, lalu **Buka di GitHub** mengisikan sebuah isu yang Anda kirim sendiri, atau Anda salin. Produk ini tidak pernah mengirim apa pun atas kemauannya sendiri. **Pintasan Papan Ketik…** mendaftar setiap pintasan NMOX di profil Anda yang aktif, ditambah yang global (pintu ⌥⌘K / ⇧⌘N / ⇧⌘L di halaman Selamat Datang), dibaca dari peta tombol yang sedang berjalan, sehingga ia tidak mungkin menyimpang dari apa yang dilakukan menu.
 
 <a id="12-when-somethings-wrong"></a>
 ## 12. Ketika ada yang tidak beres

@@ -48,7 +48,7 @@ jobs:
             echo "docs_only=true" >> "$GITHUB_OUTPUT"
             echo "docs-only change — gates lane"
           fi
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v6
         with:
           distribution: 'temurin'

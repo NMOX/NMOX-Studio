@@ -55,4 +55,43 @@ class DapDebugLauncherTest {
         assertThat(launcher.supports(tmp.resolve("missing.js").toFile()))
                 .as("a file that does not exist still answers by extension; the launch refuses later").isTrue();
     }
+
+    @Test
+    @DisplayName("a working directory is honoured for Node and Python only; Go's delve takes the directory as its program")
+    void shouldHonourAWorkingDirectoryOnlyWhereTheAdapterTakesOne(@TempDir Path tmp) throws Exception {
+        assertThat(DapDebugAction.supportsWorkingDir("text/javascript")).isTrue();
+        assertThat(DapDebugAction.supportsWorkingDir("text/typescript")).isTrue();
+        assertThat(DapDebugAction.supportsWorkingDir("text/x-python")).isTrue();
+        assertThat(DapDebugAction.supportsWorkingDir("text/x-go")).isFalse();
+        assertThat(DapDebugAction.supportsWorkingDir(null)).isFalse();
+
+        // the refusals return false having started nothing — no launch is
+        // posted for these, so nothing here needs a debugger to exist
+        DapDebugLauncher launcher = new DapDebugLauncher();
+        File dir = tmp.toFile();
+        assertThat(launcher.debug(Files.writeString(tmp.resolve("m.go"), "1").toFile(), dir))
+                .as("Go with a working directory is not offered").isFalse();
+        assertThat(launcher.debug(Files.writeString(tmp.resolve("p.html"), "1").toFile(), dir)).isFalse();
+        assertThat(launcher.debug(tmp.resolve("a.js").toFile(), null)).isFalse();
+        assertThat(launcher.debugPage(" ", dir)).isFalse();
+        assertThat(launcher.debugPage("http://localhost:1", null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("the facade's additive doors default to 'not offered', so an older launcher refuses rather than guesses")
+    void facadeDefaultsRefuse() {
+        DebugLauncher bare = new DebugLauncher() {
+            @Override
+            public boolean supports(File file) {
+                return true;
+            }
+
+            @Override
+            public void debug(File file) {
+                throw new AssertionError("the working-directory door must not fall back to the plain one");
+            }
+        };
+        assertThat(bare.debug(new File("a.js"), new File("."))).isFalse();
+        assertThat(bare.debugPage("http://localhost:1", new File("."))).isFalse();
+    }
 }

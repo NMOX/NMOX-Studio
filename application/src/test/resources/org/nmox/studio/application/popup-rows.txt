@@ -70,3 +70,21 @@ org-openide-awt.jar|org/openide/awt|View|View
 org-netbeans-modules-gsf-testrunner-ui.jar|org/netbeans/modules/gsf/testrunner/ui|LBL_Action_RunTestMethod|Run Focused Test Method
 org-netbeans-modules-gsf-testrunner-ui.jar|org/netbeans/modules/gsf/testrunner/ui|LBL_Action_DebugTestMethod|Debug Focused Test Method
 org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_DTD|Check &DTD
+# Project Studio's file tree (3.1.0). Not an editor popup, so the census
+# never saw it: its rows are the SystemActions FileTreePanel lists, read on
+# the tree's real nodes. Rename, Open, Properties and New painted English in
+# every translated build beside the Copy Path and Reveal rows 3.1.0 added in
+# the reader's language; the rest were overlaid for the menu bar already and
+# are written here so this surface is held too. New is the loaders' own
+# templates submenu, whose last item is All Templates... . CTL_Tools, the
+# Tools row, is above. FileTreeRowsSpeakTest keeps this list complete.
+org-openide-loaders.jar|org/openide/loaders|NewTemplate|&New
+org-openide-loaders.jar|org/openide/loaders|NewTemplateAction|All Templates...
+org-openide-actions.jar|org/openide/actions|Find|&Find...
+org-openide-actions.jar|org/openide/actions|Cut|Cu&t
+org-openide-actions.jar|org/openide/actions|Copy|Cop&y
+org-openide-actions.jar|org/openide/actions|Paste|&Paste
+org-openide-actions.jar|org/openide/actions|Delete|&Delete
+org-openide-actions.jar|org/openide/actions|Rename|Rename...
+org-openide-actions.jar|org/openide/actions|Open|Open
+org-openide-actions.jar|org/openide/actions|Properties|&Properties

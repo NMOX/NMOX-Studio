@@ -30,7 +30,7 @@ uruchomić, np. trasą Express albo zwykłym `node server.js`.
 
 3. **Debuguj plik.** Uruchom **Debuguj plik (punkty przerwania)** (albo
    **Debuguj w Chrome (punkty przerwania)** dla strony HTML/JS).
-   Jednorazowe pytanie o zaufanie do przestrzeni roboczej pilnuje
+   Jednorazowe pytanie o zaufanie do obszaru roboczego pilnuje
    uruchomienia; potem dołączony adapter `js-debug` startuje twój program.
 
 4. **Zatrzymaj się na pułapce.** Wywołaj tę ścieżkę kodu (wyślij żądanie

@@ -21,6 +21,9 @@ mkdir -p "$TAR_STAGE/nmox-studio-$VERSION"
 cp -R "$APP_INPUT"/. "$TAR_STAGE/nmox-studio-$VERSION/"
 chmod +x "$TAR_STAGE/nmox-studio-$VERSION/bin/nmoxstudio" \
          "$TAR_STAGE/nmox-studio-$VERSION/platform/lib/nbexec" 2>/dev/null || true
+# `nmox .` from a terminal, like `code .` - see packaging/linux/nmox. In the
+# tarball it is bin/nmox; link it into your PATH (~/.local/bin) to use it.
+install -m 755 packaging/linux/nmox "$TAR_STAGE/nmox-studio-$VERSION/bin/nmox"
 ./packaging/tools/bundle-jre.sh "$TAR_STAGE/nmox-studio-$VERSION"
 tar -czf "$DIST/NMOX-Studio-${VERSION}-linux.tar.gz" -C "$TAR_STAGE" "nmox-studio-$VERSION"
 echo "    $DIST/NMOX-Studio-${VERSION}-linux.tar.gz"
@@ -56,10 +59,39 @@ exec /opt/nmox-studio/bin/nmoxstudio "$@"
 WRAPPER
 chmod 755 "$DEB_STAGE/usr/bin/nmox-studio"
 
+# The terminal command: /usr/bin/nmox -> /opt/nmox-studio/bin/nmox, which
+# backgrounds the IDE and returns (nmox-studio above stays in the
+# foreground - the menu entry runs it). The script resolves the link.
+install -m 755 packaging/linux/nmox "$DEB_STAGE/opt/nmox-studio/bin/nmox"
+ln -s /opt/nmox-studio/bin/nmox "$DEB_STAGE/usr/bin/nmox"
+
 # The menu entry speaks every language the IDE speaks: freedesktop reads
 # Comment[xx]/GenericName[xx] for the session locale and falls back to the
 # bare key. The heredoc is unquoted, so no value here may carry $ or a
 # backtick — DesktopEntryLanguagesTest holds that along with the coverage.
+#
+# Opening a folder from the file manager (3.1.0). Exec runs /usr/bin/nmox,
+# not nmox-studio: nmox turns a folder into --aim (File > Open Folder...'s
+# verb) and a file into --open, where nmox-studio would hand the platform a
+# bare path and a manifest-less folder would open as a raw explorer tab. It
+# returns at once and the IDE carries on (with no arguments it just starts
+# the IDE, which is what the menu entry wants). %F: local paths, any number.
+#
+# MimeType=inode/directory puts NMOX Studio in the file manager's "Open With"
+# for a folder, and is NOT meant to make it the default folder handler. Per
+# the freedesktop MIME-apps spec, the default for a type comes from the
+# [Default Applications] of the mimeapps.list files (the user's, then
+# $XDG_CURRENT_DESKTOP-mimeapps.list and the system's); a desktop entry's
+# MimeType only ADDS an association. The major desktops ship a default for
+# inode/directory in those files (GNOME's names Nautilus, KDE's Dolphin), so
+# the file manager stays the default there. Only where no mimeapps.list
+# names one - a bare window manager - does the spec fall back to the
+# associations, in an order it leaves open, and there any app claiming
+# folders can come first (VS Code's code.desktop claims inode/directory the
+# same way); `xdg-mime default <file-manager>.desktop inode/directory`
+# settles it. The spec has no key meaning "never the default" (KDE's old
+# InitialPreference ranking was never part of it), so there is no line to
+# add that would promise more. OpenFolderFromOsGateTest holds these lines.
 cat > "$DEB_STAGE/usr/share/applications/nmox-studio.desktop" <<DESKTOP
 [Desktop Entry]
 Type=Application
@@ -94,10 +126,11 @@ Comment[zh]=面向 Web 开发的任务机架
 Comment[hi]=वेब विकास के लिए टास्क रैक
 Comment[he]=ראק המשימות לפיתוח ווב
 Comment[ar]=راك المهام لتطوير الويب
-Exec=/usr/bin/nmox-studio %F
+Exec=/usr/bin/nmox %F
 Icon=nmox-studio
 Terminal=false
 Categories=Development;IDE;WebDevelopment;
+MimeType=inode/directory;
 StartupWMClass=NMOX Studio
 DESKTOP
 

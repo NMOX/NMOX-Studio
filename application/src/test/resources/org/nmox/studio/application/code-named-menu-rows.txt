@@ -65,6 +65,7 @@ GoTo|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|ju
 GoTo|org-netbeans-core.jar|org/netbeans/core/actions|JumpNextAction|Ne&xt Error
 GoTo|org-netbeans-core.jar|org/netbeans/core/actions|JumpPrevAction|&Previous Error
 GoTo|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/lib/editor/bookmarks/actions|bookmark-toggle|Toggle Bookmar&k
+Help|org-netbeans-core.jar|org/netbeans/core/actions|About|&About
 Help|org-netbeans-modules-utilities.jar|org/netbeans/modules/url|Menu/Help/netbeans-kb.url|Online &Docs and Support
 RunProject|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|LBL_DebugMainProjectAction_Name|&Debug {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
 RunProject|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|LBL_DebugSingleAction_Name|Debu&g {0,choice,0#File|1#File|1<Files}

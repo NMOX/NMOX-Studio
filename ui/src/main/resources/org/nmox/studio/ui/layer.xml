@@ -45,6 +45,27 @@
                  our own unfindable. The v1.11 VCS-museum eviction and the
                  v2.64.0 Help-menu hides are the same call. -->
             <file name="org-netbeans-modules-tasks-ui-DashboardTopComponent.shadow_hidden"/>
+            <!-- 3.1.0: "Show Dashboard" is the platform's start-page
+                 dashboard, a frame for widgets other modules register; none
+                 are registered in this cluster, so the row opened nothing
+                 at all (pressed in the assembled app: no window, no log
+                 line). The Welcome is this product's dashboard. -->
+            <file name="org-netbeans-modules-dashboard-ShowDashboardAction.shadow_hidden"/>
+        </folder>
+        <folder name="BuildProject">
+            <!-- the empty configuration combo's menu row (see Toolbars/Build) -->
+            <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
+        </folder>
+        <folder name="Versioning">
+            <!-- 3.1.0: the same bug-tracking module also put "Find Tasks..."
+                 and "Report Task..." on the Team menu, where with no
+                 connector they are disabled forever - two dead rows in the
+                 first menu a user opens for git (measured in the assembled
+                 3.1.0 app). DeadDoorsTest holds every bug-tracking menu row
+                 and shortcut masked while no connector ships. -->
+            <file name="org-netbeans-modules-bugtracking-ui-query-IssueAction.shadow_hidden"/>
+            <file name="org-netbeans-modules-bugtracking-ui-query-IssueAction-separatorAfter.instance_hidden"/>
+            <file name="org-netbeans-modules-bugtracking-ui-query-QueryAction.shadow_hidden"/>
         </folder>
         <!-- The Refactor menu is a Java-IDE organ: our languages ride
              TextMate + LSP, where rename lives on the editor context menu.
@@ -55,6 +76,11 @@
         <!-- free Cmd+Shift+N from the hidden platform wizard so it
              reaches our New Project action instead -->
         <file name="DS-N.shadow_hidden"/>
+        <!-- the bug-tracking Find Tasks chord: disabled forever with no
+             connector (see Menu/Versioning above) -->
+        <file name="DS-6.shadow_hidden"/>
+        <!-- the empty platform dashboard's chord (see Menu/Window above) -->
+        <file name="SO-W.shadow_hidden"/>
         <!-- Cmd+P (Go to File) is NOT here: Shortcuts/ entries lose to
              Keymaps-profile claims and to focused-editor keybindings —
              the v1.38.1 lesson. The binding lives as a Keymaps shadow
@@ -77,6 +103,17 @@
             <file name="org-netbeans-modules-quicksearch-QuickSearchAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
             </file>
+        </folder>
+        <!-- 3.1.0: the "Set Project Configuration" combo is filled by a
+             project type's ProjectConfigurationProvider, and the only
+             project type in this cluster (NMOX's own WebProject) has none:
+             no Maven, Gradle or Ant project support ships. So the combo
+             sat empty on every toolbar, the widest control on it, and
+             ledger 90 found its label the one toolbar string no overlay
+             reaches. Its Run-menu twin is masked beside it. DeadDoorsTest
+             names a configuration provider if one ever ships. -->
+        <folder name="Build">
+            <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow_hidden"/>
         </folder>
     </folder>
     <!-- The update center (ledger 21): the platform's autoupdate stack
@@ -185,6 +222,59 @@
                 <attr name="originalFile"
                       stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
+            <!-- The chords a VS Code user presses first (3.1.0, dx-plan
+                 row 7). Measured against every shipped cluster layer and
+                 editor keybinding, in all five profiles, on both OS
+                 families (D = Cmd on macOS / Ctrl elsewhere; C = Ctrl on
+                 every OS; O = Ctrl on macOS / Alt elsewhere):
+                 DS-P  Quick Search, the command palette (Cmd+I stays too)
+                 DS-E  Project Studio, the file tree (VS Code's Explorer).
+                       NOT in the Eclipse profile: there Ctrl+Shift+E is
+                       Eclipse's own Switch to Editor, registered by the
+                       defaults module under the SAME file name, and two
+                       layers defining one file leave the winner to merge
+                       order - a user who picked Eclipse keeps Eclipse.
+                 DS-X  Tools > Plugins (VS Code's Extensions)
+                 C-BACK_QUOTE  a terminal in the aimed project, or the open one (VS Code's Ctrl+`; ProjectTerminal)
+                 The three NMOX actions those chords used to open moved to
+                 unclaimed chords: DA-P Switch Project, DA-K New
+                 Experiment, DAS-K Experiments. The nmoxShortcut attribute
+                 puts a platform action on Help > Keyboard Shortcuts,
+                 which otherwise lists only org-nmox actions.
+                 VsCodeChordsTest resolves every one of these through the
+                 assembled cluster the way NbKeymap does. -->
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DS-E.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance"/>
+            </file>
+            <file name="DS-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="C-BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <!-- On Linux (never macOS or Windows: the originalFile is a
+                 methodvalue that answers null there) the defaults module
+                 binds Ctrl+` to the Recent View List, a fallback for KDE,
+                 which grabs Ctrl+Tab. Ctrl+Tab still opens that list; the
+                 chord goes to the Terminal, deliberately. A different file
+                 name resolving to the same keystroke would leave the
+                 winner to folder order, so the old binding is masked. -->
+            <file name="D-BACK_QUOTE.shadow_hidden"/>
+            <file name="DA-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
+            </file>
+            <file name="DA-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance"/>
+            </file>
+            <file name="DAS-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
+            </file>
         </folder>
         <folder name="Eclipse">
             <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
@@ -224,6 +314,28 @@
             </file>
             <file name="D-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <!-- VS Code chords + moved NMOX chords: see the NetBeans profile. -->
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DS-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="C-BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DA-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
+            </file>
+            <file name="DA-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance"/>
+            </file>
+            <file name="DAS-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
             </file>
         </folder>
         <folder name="Emacs">
@@ -265,6 +377,32 @@
             <file name="D-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
+            <!-- VS Code chords + moved NMOX chords: see the NetBeans profile. -->
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DS-E.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance"/>
+            </file>
+            <file name="DS-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="C-BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="D-BACK_QUOTE.shadow_hidden"/>
+            <file name="DA-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
+            </file>
+            <file name="DA-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance"/>
+            </file>
+            <file name="DAS-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
+            </file>
         </folder>
         <folder name="Idea">
             <!-- ⌥⌘. stops every running command (v2.72.0): the toolbar ■
@@ -304,6 +442,31 @@
             </file>
             <file name="D-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
+            </file>
+            <!-- VS Code chords + moved NMOX chords: see the NetBeans profile. -->
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DS-E.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance"/>
+            </file>
+            <file name="DS-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="C-BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DA-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
+            </file>
+            <file name="DA-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance"/>
+            </file>
+            <file name="DAS-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
             </file>
         </folder>
         <folder name="NetBeans55">
@@ -345,6 +508,32 @@
             <file name="D-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance"/>
             </file>
+            <!-- VS Code chords + moved NMOX chords: see the NetBeans profile. -->
+            <file name="DS-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="DS-E.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance"/>
+            </file>
+            <file name="DS-X.shadow">
+                <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="C-BACK_QUOTE.shadow">
+                <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="D-BACK_QUOTE.shadow_hidden"/>
+            <file name="DA-P.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
+            </file>
+            <file name="DA-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance"/>
+            </file>
+            <file name="DAS-K.shadow">
+                <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance"/>
+            </file>
         </folder>
     </folder>
     <!-- Cmd+I reach into the Task Board (v1.323.0): card titles of the
@@ -356,10 +545,41 @@
          QuickSearch/ folder only, so the nested copy was invisible
          (the v1.324.0 walk's unverifiable Cmd+I reach, explained). -->
     <folder name="QuickSearch">
+        <!-- 3.1.0: VS Code's command-palette titles, right under the
+             platform's Actions (200), whose matcher needs the action's own
+             name as one substring: "toggle terminal" and "git commit" find
+             nothing there. VsCodeCommandSearchProvider maps the titles. -->
+        <folder name="VsCodeCommands">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.search.category.Bundle"/>
+            <attr name="position" intvalue="210"/>
+            <file name="org-nmox-studio-ui-search-VsCodeCommandSearchProvider.instance"/>
+        </folder>
         <folder name="Tasks">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.tasks.search.Bundle"/>
             <attr name="position" intvalue="360"/>
             <file name="org-nmox-studio-ui-tasks-TasksSearchProvider.instance"/>
+        </folder>
+    </folder>
+    <!-- 3.1.0: aiming a project opens it as a platform project (the
+         OpenProjects bridge), and the platform's OpenedProjects window
+         group then opened five windows into the left dock: Projects,
+         Files, Favorites and Services beside Project Studio, the
+         Workbench and NPM Explorer, which truncated the product's own
+         tabs to "W..." - four explorers of the same folder that Project
+         Studio already shows (walked in 3.1.0; David's own 3.0.2 carried
+         them too). The Navigator stays in the group: it is the outline
+         (Cmd+7), not another file tree. Each window is still one row away
+         in the Window menu. OpenedProjectsGroupTest holds the membership
+         against the assembled cluster, so a platform upgrade that adds a
+         member fails by name. -->
+    <folder name="Windows2">
+        <folder name="Groups">
+            <folder name="OpenedProjects">
+                <file name="projectTabLogical_tc.wstcgrp_hidden"/>
+                <file name="projectTab_tc.wstcgrp_hidden"/>
+                <file name="favorites.wstcgrp_hidden"/>
+                <file name="services.wstcgrp_hidden"/>
+            </folder>
         </folder>
     </folder>
 </filesystem>

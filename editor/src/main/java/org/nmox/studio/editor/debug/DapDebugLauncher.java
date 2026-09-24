@@ -40,6 +40,41 @@ public final class DapDebugLauncher implements DebugLauncher {
         }
     }
 
+    @Override
+    public boolean debug(File file, File workingDir) {
+        if (file == null || workingDir == null) {
+            return false;
+        }
+        String mime = mimeOf(file);
+        if (!DapDebugAction.supportsMime(mime) || !DapDebugAction.supportsWorkingDir(mime)) {
+            return false;
+        }
+        DapDebugAction.launch(file, mime, workingDir);
+        return true;
+    }
+
+    @Override
+    public boolean debug(File file, File workingDir, java.util.List<String> args, java.util.Map<String, String> env) {
+        if (file == null || workingDir == null || args == null || env == null) {
+            return false;
+        }
+        String mime = mimeOf(file);
+        if (!DapDebugAction.supportsMime(mime) || !DapDebugAction.supportsWorkingDir(mime)) {
+            return false;
+        }
+        DapDebugAction.launch(file, mime, workingDir, args, env);
+        return true;
+    }
+
+    @Override
+    public boolean debugPage(String url, File webRoot) {
+        if (url == null || url.isBlank() || webRoot == null) {
+            return false;
+        }
+        BrowserDebugAction.launchUrl(url, webRoot);
+        return true;
+    }
+
     /** The platform's verdict when it has one, else the extension table's. */
     static String mimeOf(File file) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));

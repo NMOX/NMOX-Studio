@@ -62,8 +62,136 @@ cp "$BUNDLE/Contents/Resources/nmox-studio.icns" \
 echo "==> Writing launcher"
 cat > "$BUNDLE/Contents/MacOS/nmox-studio" <<'LAUNCHER'
 #!/bin/sh
-DIR=$(cd "$(dirname "$0")" && pwd)
+# Find the bundle through any symlink. The Homebrew cask links this file
+# into the PATH as `nmox` (/opt/homebrew/bin/nmox -> .../MacOS/nmox-studio),
+# and dirname "$0" of a link is the link's directory - bin/, where there is
+# no Resources/. BSD readlink has no -f, so follow one hop at a time, the
+# way the platform's own bin/nmoxstudio does.
+PRG=$0
+while [ -h "$PRG" ]; do
+    link=$(readlink "$PRG")
+    case "$link" in
+        /*) PRG=$link ;;
+        *)  PRG=$(dirname "$PRG")/$link ;;
+    esac
+done
+DIR=$(CDPATH= cd -- "$(dirname "$PRG")" && pwd)
 RES="$DIR/../Resources/nmoxstudio"
+# Started through a link means started from a terminal (`nmox .`); Finder,
+# the Dock and `open` always run the real path. From a terminal the launch
+# is BACKGROUNDED and the command returns at once, as `code .` does: the
+# IDE must neither hold the shell until it quits nor die with the terminal
+# window. A second `nmox` while the IDE runs is a short-lived client that
+# hands its arguments to the running instance and exits (the platform's
+# CLI handshake). Run the real path to keep the IDE in the foreground.
+#
+# From a terminal the paths are also made absolute and given their verb:
+# a folder is AIMED (--aim, what File > Open Folder... does, with or
+# without a manifest - the platform's own --open shows a manifest-less
+# folder as a raw explorer tab), a file is OPENED (--open). Options and
+# the value an option takes pass through untouched. A name that is not
+# there is refused HERE, before anything starts: `nmox: <name>: no such
+# file or folder` on stderr and exit status 2 - for a bare name and for
+# the value of an explicit --aim or --open (--aim also refuses a file).
+# The backgrounded IDE's output is discarded, so a refusal it made would
+# reach nobody. packaging/linux/nmox spells the same rule;
+# TerminalCommandGateTest holds the two to the same argv and runs both.
+FROM_TERMINAL=no
+if [ -h "$0" ]; then
+    FROM_TERMINAL=yes
+    # NAME:LINE or NAME:LINE:COL naming an existing file is `code -g`'s habit:
+    # goto_line leaves the file in gf and the line in gl. The platform's --open
+    # takes FILE:LINE and has no column, so a column is dropped. A file whose
+    # own name ends in :digits is opened as named - the exact name is tried first.
+    goto_line() {
+        gf=$1
+        gl=
+        for pass in 1 2; do
+            case "$gf" in *:*) ;; *) break ;; esac
+            gp=${gf##*:}
+            case "$gp" in ''|*[!0-9]*) break ;; esac
+            [ ${#gp} -le 9 ] || break # past nine digits the platform's int parse fails, in silence
+            gf=${gf%:*}
+            gl=$gp
+            [ -f "$gf" ] && break
+        done
+        [ -n "$gl" ] && [ -f "$gf" ]
+    }
+    nmox_usage() {
+        cat <<'USAGE'
+Usage: nmox [options] [folder | file[:line[:column]]]...
+
+  nmox .              aim NMOX Studio at this folder, as File > Open Folder... does
+  nmox src/app.js     open a file
+  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)
+  nmox                start NMOX Studio
+
+It returns at once; a second nmox hands its folder or files to the IDE
+already running. A name that is not there is refused here, before anything
+starts. VS Code's -r is accepted and -n opens in the one window;
+-w, -d, -a and -v have no counterpart and are refused. Any other
+option goes to the IDE unchanged.
+USAGE
+    }
+    n=$#
+    value=no
+    while [ "$n" -gt 0 ]; do
+        a=$1
+        shift
+        n=$((n - 1))
+        if [ "$value" != no ]; then
+            if [ "$value" = --aim ] || [ "$value" = --open ]; then
+                if [ "$value" = --open ] && [ ! -e "$a" ] && goto_line "$a"; then
+                    a=$gf:$gl
+                elif [ ! -e "$a" ]; then
+                    printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                    exit 2
+                elif [ "$value" = --aim ] && [ ! -d "$a" ]; then
+                    printf 'nmox: %s: not a folder (--aim takes a folder)\n' "$a" >&2
+                    exit 2
+                fi
+            fi
+            set -- "$@" "$a"
+            value=no
+            continue
+        fi
+        case "$a" in
+            --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
+                set -- "$@" "$a"
+                value=$a ;;
+            -h|--help) nmox_usage; exit 0 ;;
+            -g|--goto) ;;
+            -r|--reuse-window) ;;
+            -n|--new-window) printf 'nmox: NMOX Studio has one window; opening there\n' >&2 ;;
+            -w|--wait|-d|--diff|-a|--add|-v|--version)
+                printf 'nmox: %s is VS Code'"'"'s and has no counterpart here\n' "$a" >&2
+                exit 2 ;;
+            -*) set -- "$@" "$a" ;;
+            *)  if [ -d "$a" ]; then
+                    set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
+                elif [ -e "$a" ]; then
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+                elif goto_line "$a"; then
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$gf")" && pwd)/$(basename -- "$gf"):$gl"
+                else
+                    printf 'nmox: %s: no such file or folder\n' "$a" >&2
+                    exit 2
+                fi ;;
+        esac
+    done
+    if [ "$value" != no ]; then
+        printf 'nmox: %s needs a value\n' "$value" >&2
+        exit 2
+    fi
+fi
+# LaunchServices (Finder, the Dock, `open`) starts an app with / as its
+# working directory, and the IDE's Terminal opens its shell in the IDE's
+# own directory: the first terminal a user opened landed in "/" (walked in
+# 3.1.0). Home is where a terminal belongs. A terminal launch keeps the
+# caller's directory - the platform resolves relative names against it.
+if [ "$FROM_TERMINAL" = no ] && [ "$(pwd)" = / ] && [ -d "$HOME" ]; then
+    cd "$HOME" || true
+fi
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
 # user), else fall back to an installed JDK 21+, else say so plainly.
@@ -90,8 +218,30 @@ else
     wait "$PROBE"
     PROBE_OK=$?
 fi
+# The platform launcher is a SCRIPT and it is handed to /bin/sh, never
+# exec'd through its shebang. Gatekeeper judges every quarantined file a
+# process EXECUTES, and a shell script has no embedded signature, so a
+# direct exec of bin/nmoxstudio from a brew or browser install answered
+# "NMOX Studio.app Not Opened: Apple could not verify it is free of malware"
+# on a bundle spctl calls notarized (3.0.0-3.0.2, measured 2026-09-23).
+# /bin/sh is a platform binary and the script is its input - exactly how
+# bin/nmoxstudio itself runs platform/lib/nbexec (`exec sh "$nbexec"`).
+# nohup also hands the script to /bin/sh: the same rule, one process later.
+#
+# No CFProcessPath. It would name this bundle as the JVM's main bundle, so
+# AWT would accept a folder from Finder's Open With or the Dock - and it
+# does, under an ad-hoc signed runtime. The released runtime runs under the
+# hardened runtime, where CoreFoundation ignores the variable (measured on
+# the notarized 3.1.0 dry run: the same program reads org.nmox.studio under
+# Homebrew's ad-hoc java and com.azul.zulu.java under ours). The only
+# entitlement that lifts it also re-opens DYLD injection. A folder reaches
+# the IDE through nmox and File > Open Folder... instead.
 if [ "$PROBE_OK" = "0" ]; then
-    exec "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
+    if [ "$FROM_TERMINAL" = yes ]; then
+        nohup /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@" </dev/null >/dev/null 2>&1 &
+        exit 0
+    fi
+    exec /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
 fi
 # A quarantined bundle is the common cause of a hung/blocked probe -
 # name the actual fix instead of blaming a missing JDK.
@@ -102,7 +252,11 @@ if xattr -p com.apple.quarantine "$APP" >/dev/null 2>&1; then
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
-    exec "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
+    if [ "$FROM_TERMINAL" = yes ]; then
+        nohup /bin/sh "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@" </dev/null >/dev/null 2>&1 &
+        exit 0
+    fi
+    exec /bin/sh "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
 fi
 osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 21+ installation was found.\n\nInstall a JDK 21 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true
 exit 1

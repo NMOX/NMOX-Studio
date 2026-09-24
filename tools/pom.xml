@@ -114,6 +114,12 @@
             <artifactId>org-openide-util-ui</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- Quick Search (Cmd+I): the aimed project's npm scripts (v3.1.0) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-spi-quicksearch</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         
         <!-- JSON processing -->
         <dependency>
@@ -169,6 +175,12 @@
                 <configuration>
                     <archive>
                         <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestEntries>
+                            <!-- the hand layer carries what an annotation cannot:
+                                 a Quick Search category folder's position and
+                                 localizing bundle (v3.1.0, npm scripts in Cmd+I) -->
+                            <OpenIDE-Module-Layer>org/nmox/studio/tools/layer.xml</OpenIDE-Module-Layer>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
