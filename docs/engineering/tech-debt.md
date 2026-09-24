@@ -67,6 +67,29 @@ keeps for dialogs. Worth building when a translation next changes many
 paths; until then, a translation brief names the bundles as the only source
 of a door's name.
 
+### 120. The 3.1.0 review's LOW remainder
+
+**Open, deliberately small.** A hostile review of the night's code found 21
+problems; the proven ones and every MED were fixed before 3.1.0 shipped (the
+`.editorconfig` glob backtracking, the Agent Port's secret files, the
+diagnostics tap's framing and its end/record race, recents on the EDT, the
+`nmox` refusals, the tasks.json shell). What is left, each suspected rather
+than proven:
+
+- **The terminal after a re-aim.** ⌃\` brings an open terminal forward even
+  when it was started in the previous project's folder. VS Code keeps one
+  terminal per window too; the question is whether ⌃\` should start a new
+  shell when the aim has moved. Project Studio's Terminal button always
+  starts a new one in the current project.
+- **A terminal that could not start in the project** falls back to the
+  platform's plain terminal without a status line saying so — only when
+  the terminal module declines the folder, which no walk has produced.
+- **The problem count's click** does nothing if the platform's Action Items
+  action is missing, which only a trimmed cluster could cause.
+- **`ToolbarAccessibleNames`** adds a container listener per toolbar-pool
+  change to any non-`JComponent` container inside a toolbar; none exist
+  in the shipped toolbars.
+
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 
 Recorded by v2.184.0's senior-developer pass; all seven closed in v2.186.0.
