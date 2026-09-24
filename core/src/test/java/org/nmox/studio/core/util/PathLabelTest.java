@@ -66,6 +66,21 @@ class PathLabelTest {
     }
 
     @Test
+    @DisplayName("a bigger font re-cuts the path without waiting for a resize (Presentation Mode)")
+    void refitsOnFontChange() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            PathLabel label = new PathLabel();
+            label.setFont(label.getFont().deriveFont(12f));
+            label.setPath(DEEP);
+            label.setBounds(0, 0, 400, 20);
+            label.dispatchEvent(new java.awt.event.ComponentEvent(label, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            String small = label.getText();
+            label.setFont(label.getFont().deriveFont(28f));
+            assertThat(label.getText()).as("re-cut for the new font").isNotEqualTo(small).contains("…");
+        });
+    }
+
+    @Test
     @DisplayName("a path is text, never markup")
     void plain() throws Exception {
         SwingUtilities.invokeAndWait(() -> {

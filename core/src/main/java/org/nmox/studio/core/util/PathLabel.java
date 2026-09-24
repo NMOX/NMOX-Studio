@@ -46,6 +46,15 @@ public class PathLabel extends JLabel {
         refit();
     }
 
+    /** A new font (Presentation Mode, a look-and-feel change) re-measures the cut. */
+    @Override
+    public void setFont(java.awt.Font font) {
+        super.setFont(font);
+        if (full != null) {
+            refit();
+        }
+    }
+
     /** The whole path, however much of it is on screen. */
     public String getPath() {
         return full;

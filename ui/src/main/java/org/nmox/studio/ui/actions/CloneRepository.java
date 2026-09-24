@@ -22,7 +22,9 @@ import org.openide.util.lookup.Lookups;
  * context (the holder falls back to the current one), by reflection
  * because the git module does not export the class; the same arrangement
  * the git chip's History has used since 1.40.0. If any of that is missing
- * the status line names the menu door instead of failing in silence.
+ * the status line says so instead of failing in silence. Only the lookup
+ * is caught: a failure inside the wizard itself is the platform's to
+ * report, not "Git support is not available".
  */
 @Messages("CloneRepository_fallback=Git support is not available in this installation, so the clone wizard cannot open.")
 public final class CloneRepository {
@@ -47,6 +49,7 @@ public final class CloneRepository {
         if (!(action instanceof ContextAwareAction aware)) {
             return false;
         }
+        Action bound;
         try {
             ClassLoader system = Lookup.getDefault().lookup(ClassLoader.class);
             if (system == null) {
@@ -55,14 +58,14 @@ public final class CloneRepository {
             Class<?> holderType = Class.forName(HOLDER, true, system);
             Class<?> contextType = Class.forName(VCS_CONTEXT, true, system);
             Object holder = holderType.getConstructor(contextType).newInstance((Object) null);
-            Action bound = aware.createContextAwareInstance(Lookups.singleton(holder));
+            bound = aware.createContextAwareInstance(Lookups.singleton(holder));
             if (!bound.isEnabled()) {
                 return false;
             }
-            bound.actionPerformed(e);
-            return true;
         } catch (ReflectiveOperationException | LinkageError | RuntimeException unavailable) {
             return false;
         }
+        bound.actionPerformed(e);
+        return true;
     }
 }
