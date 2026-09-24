@@ -34,7 +34,7 @@ Các cột macOS dùng ký hiệu của thanh trình đơn (⌃ Control, ⌥ Opt
 | Tới dòng | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
 | Bật/tắt chú thích dòng | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Hiện gợi ý | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
-| Thêm lần xuất hiện kế tiếp vào vùng chọn | ⌘D | **⌘J** | Ctrl+D | **Ctrl+J** |
+| Thêm lần xuất hiện kế tiếp vào vùng chọn | ⌘D | **⌘D** hoặc ⌘J | Ctrl+D | **Ctrl+D** hoặc Ctrl+J |
 | Chọn mọi lần xuất hiện | ⇧⌘L | **⌃⇧⌘J** | Ctrl+Shift+L | **Ctrl+Alt+Shift+J** |
 | Thêm con trỏ ở dòng trên / dưới | ⌥⌘↑ / ⌥⌘↓ | **⌥⌘↑ / ⌥⌘↓** | Ctrl+Alt+↑ / ↓ | **Alt+Shift+[ / ]** |
 | Dời dòng lên / xuống | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
@@ -81,8 +81,10 @@ nmox            # just start the IDE
 ```
 
 Lệnh trả về ngay, và một lệnh `nmox` thứ hai trao thư mục của nó cho IDE đang
-chạy. Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và các gói Linux
-đưa nó vào PATH của bạn; với bản cài từ DMG,
+chạy. Cột cũng được chấp nhận (`src/app.ts:42:7`) và trình soạn thảo mở ở đầu
+dòng; một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh thay vì khởi
+động bất cứ thứ gì. Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và
+các gói Linux đưa nó vào PATH của bạn; với bản cài từ DMG,
 [hướng dẫn sử dụng](user-guide.vi.md#2-first-launch) chỉ cách tạo liên kết
 bằng một dòng lệnh.
 
@@ -94,11 +96,11 @@ bằng một dòng lệnh.
 | **Explorer** | **Studio dự án** (⇧⌘E) — cây tệp, các mẫu, và trình soạn `package.json` của dự án. **Bàn làm việc** (⌥⌘0) là cơ sở của bạn: tệp đang mở, tệp gần đây, dự án gần đây, và mọi thứ đang chạy. |
 | **Command Palette** | **Tìm kiếm nhanh** (⇧⌘P hoặc ⌘I) — hành động, tệp, dự án gần đây, thiết bị trên giá, máy chủ đang chạy, yêu cầu của Studio API, ký hiệu. |
 | **Extensions** | **Công cụ ▸ Plugin** cài và cập nhật các mô-đun, kể cả các bản cập nhật của chính NMOX. Phần lớn những gì một tiện ích mở rộng thêm vào VS Code thì ở đây là một **thiết bị trên giá** — và bạn có thể tự viết một thiết bị bằng một tệp JSON trong `~/.nmox/devices.d` ([tệp thiết bị](device-files.md)). |
-| **`tasks.json`** | Các kịch bản của chính dự án, chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
-| **`launch.json`** | **Gỡ lỗi tệp** (⇧⌘F5) và nút gỡ lỗi trên thanh công cụ tự tìm ra thứ cần khởi chạy từ chính dự án — mục vào của kịch bản `start`, `main`, `index.js` — còn thiết bị **INSPECTOR** trên giá khởi chạy trình gỡ lỗi như một bước trong dây chuyền. |
+| **`tasks.json`** | Tệp `.vscode/tasks.json` của kho mã được đọc: gõ tên một tác vụ vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Chạy tác vụ: build — make all* sẽ chạy nó, với lời hỏi Tin cậy không gian làm việc đến trước ở một dự án bạn chưa tin cậy, đầu ra nằm trong cửa sổ Output và nút ■ trên thanh công cụ để dừng nó. Bên cạnh đó, các kịch bản của chính dự án chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
+| **`launch.json`** | Tệp `.vscode/launch.json` của kho mã được đọc: gõ tên một cấu hình vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Gỡ lỗi: Launch Program — ${workspaceFolder}/server.js* sẽ khởi động trình gỡ lỗi với điểm dừng trên chương trình đó, với lời hỏi Tin cậy không gian làm việc đến trước. Các cấu hình Node (`node`, `pwa-node`) và Python (`python`, `debugpy`) gỡ lỗi `program` của chúng trong `cwd` của chúng; các cấu hình Chrome (`chrome`, `pwa-chrome`) mở `url` (hoặc `file`) của chúng với `webRoot` của chúng. Khi không có `launch.json`, **Gỡ lỗi tệp** (⇧⌘F5) và nút gỡ lỗi trên thanh công cụ tự tìm ra thứ cần khởi chạy từ chính dự án — mục vào của kịch bản `start`, `main`, `index.js` — còn thiết bị **INSPECTOR** trên giá khởi chạy trình gỡ lỗi như một bước trong dây chuyền. |
 | **Integrated terminal** | Cửa sổ **Terminal** (⌃\`): lần bấm đầu tiên khởi động một shell trong thư mục dự án, những lần sau đưa nó trở lại. |
 | **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.editorconfig` của dự án được áp dụng khi bạn gõ và khi lưu. |
-| **Problems panel** | **Mục cần xử lý** (⌘6): lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá. Như trong VS Code, có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. |
+| **Problems panel** | **Mục cần xử lý** (⌘6), hoặc nhấp vào con số **✕ ⚠** trên thanh trạng thái: lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá. Như trong VS Code, có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. |
 | **Outline** | **Bộ điều hướng** (⌘7). |
 | **Source Control** | Dấu git trên thanh trạng thái (nhánh và các thay đổi, một cú nhấp tới lịch sử) và trình đơn **Nhóm**. |
 | **Workspace Trust** | Cùng một ý tưởng, được áp dụng trước khi bất cứ thứ gì một kho mã chọn được chạy: mở một dự án vừa clone về thì không có gì chạy cho tới khi bạn tin cậy nó. |
@@ -107,24 +109,54 @@ bằng một dòng lệnh.
 <a id="what-is-honestly-different"></a>
 ## Những gì thật sự khác
 
-- **⌘D không phải đa con trỏ ở đây.** Cùng thao tác đó là **⌘J** (Ctrl+J);
-  bản thân ⌘D không được gán. Hãy gán lại nó trong Phím tắt nếu ngón tay bạn
-  cứ đòi.
+- **⌘D thêm lần xuất hiện kế tiếp trong sơ đồ phím mặc định, chứ không phải
+  trong mọi hồ sơ.** Hồ sơ Eclipse giữ ⌘D là *Delete Line* của Eclipse, và hồ
+  sơ NetBeans 5.5 giữ nó là *Shift Line Left*; ở đó, ⌘J (Ctrl+J) là cùng thao
+  tác ấy.
 - **⌃\` mở và đặt tiêu điểm vào Terminal; nó không ẩn Terminal.** Và khi
   Terminal đang có tiêu điểm, các phím thuộc về shell của bạn, nên lần bấm thứ
   hai tới shell chứ không đưa bạn về trình soạn thảo.
-- **`.vscode/tasks.json` và `launch.json` không được đọc.** Một tác vụ là một
-  lệnh do kho mã chọn, và việc đọc nó xứng đáng có một thiết kế riêng quanh
-  Tin cậy không gian làm việc; cho tới lúc đó, các kịch bản của chính dự án và
-  các quy tắc chọn mục vào gỡ lỗi ở trên làm việc đó.
+- **`launch.json` được đọc, và những gì trình gỡ lỗi không đáp ứng được thì bị
+  từ chối.** Trình gỡ lỗi ở đây truyền một chương trình, thư mục làm việc của
+  nó và không gì khác, nên một cấu hình đặt `args`, `env`, `envFile`,
+  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` hay bất kỳ trường nào
+  khác mà nó chưa được dạy thì được liệt kê nhưng không được khởi chạy: Enter
+  nêu tên các trường đó trên thanh trạng thái. Khởi chạy chương trình mà thiếu
+  đối số hay môi trường của nó sẽ là gỡ lỗi một thứ khác với những gì tệp nói.
+  Cũng vậy với `"request": "attach"`, một mục `compounds`, một kiểu không có
+  bộ chuyển ở đây (`go`, `msedge`, `cppdbg` và các kiểu khác), một giá trị mà
+  chỉ VS Code mới cung cấp được (`${file}`, `${input:…}`), và một đường dẫn
+  nằm ngoài dự án. Các trường chỉ định hình những gì trình gỡ lỗi hiển thị —
+  `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
+  `presentation` — được chấp nhận nhưng không được áp dụng; đầu ra của chương
+  trình đi tới cửa sổ Output.
+- **`tasks.json` được đọc, với hai trường hợp từ chối.** Một tác vụ dùng giá
+  trị mà chỉ VS Code mới cung cấp được (`${input:…}`, `${file}`,
+  `${config:…}`, `${command:…}`) hoặc có `dependsOn` tới một tác vụ khác thì
+  được liệt kê nhưng không chạy: Enter cho biết biến nào hoặc tác vụ nào trên
+  thanh trạng thái. Chạy nó với giá trị để trống, hoặc thiếu tác vụ mà nó phụ
+  thuộc, sẽ là chạy một thứ khác với những gì tệp nói. Một kiểu tác vụ do tiện
+  ích mở rộng cung cấp (`gulp`, `typescript`) và một thư mục làm việc nằm
+  ngoài dự án cũng vậy.
+- **Một tác vụ `"type": "shell"` chạy trong shell mà VS Code sẽ dùng.** Trên
+  macOS và Linux, đó là `$SHELL` của bạn với `-c` (zsh, bash hoặc fish trên
+  macOS khởi động như một login shell, `-l`, như các hồ sơ mặc định của VS
+  Code vẫn làm); trên Windows, đó là PowerShell, `pwsh` nếu đã cài.
+  `options.shell` được tôn trọng theo cách của VS Code: chỉ định một
+  `executable` thì nó chạy với đúng những `args` bạn đưa, nên bash cần
+  `"args": ["-c"]`. Trên Windows, chỉ PowerShell (args kết thúc bằng
+  `-Command`) và `cmd.exe` (args kết thúc bằng `/c`) được chạy; mọi shell khác
+  ở đó bị từ chối kèm tên thay vì được trao một dòng lệnh được trích dẫn theo
+  kiểu đoán mò.
 - **Không có hồ sơ phím “VS Code”.** Các tổ hợp phím ở trên nằm trong hồ sơ
   mặc định và bốn hồ sơ còn lại. Có một ngoại lệ có chủ ý: trong hồ sơ
   **Eclipse**, ⇧⌘E vẫn là *Switch to Editor* của chính Eclipse, và bên trong
   trình soạn thảo ⇧⌘P và ⇧⌘X giữ nghĩa của Eclipse (ngoặc tương ứng, chữ in
   hoa) — người đã chọn Eclipse mong đợi Eclipse.
-- **Trên Linux, Ctrl+\` mở Terminal, không phải trình chuyển cửa sổ.** Nền
-  tảng từng đặt một trình chuyển thứ hai ở đó cho các môi trường desktop (KDE)
-  chiếm mất Ctrl+Tab; trình chuyển cửa sổ nằm ở Ctrl+Tab.
+- **Trên Linux, Ctrl+\` mở Terminal, không phải trình chuyển cửa sổ.** Trình
+  chuyển cửa sổ nằm ở Ctrl+Tab. Trên một môi trường desktop chiếm Ctrl+Tab cho
+  riêng nó (KDE chẳng hạn), **Cửa sổ ▸ Tài liệu…** liệt kê các tệp đang mở
+  thay vào đó.
 - **Các tổ hợp Ctrl+Alt có thể va với AltGr.** Trên Windows, các bố cục bàn
   phím gõ ký tự bằng AltGr (tiếng Ba Lan chẳng hạn) gửi Ctrl+Alt cho phím đó.
   Nếu Ctrl+Alt+P hoặc Ctrl+Alt+K gõ ra một ký tự, hãy dời *Chuyển dự án* hoặc

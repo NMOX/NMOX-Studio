@@ -54,7 +54,7 @@ Trình cập nhật thay các mô-đun, chứ không thay ứng dụng bao quanh
 <a id="2-first-launch"></a>
 ## 2. Lần chạy đầu tiên
 
-Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `code .`: `cd myproject && nmox .`. Một thư mục được nhắm đúng như cách “Mở thư mục…” trên trang Chào mừng nhắm nó, dù có tệp kê khai hay không; một tệp thì mở trong trình soạn thảo (`nmox src/app.js`). Lệnh trả về ngay — lần `nmox` đầu tiên khởi động IDE ở chế độ nền, và mỗi lần sau đó trao thư mục của nó cho IDE đang chạy. Gõ `nmox` không kèm gì thì chỉ khởi động IDE. Đưa `nmox` vào PATH của bạn:
+Từ dòng lệnh, `nmox .` mở thư mục bạn đang đứng, giống như `code .`: `cd myproject && nmox .`. Một thư mục được nhắm đúng như cách “Mở thư mục…” trên trang Chào mừng nhắm nó, dù có tệp kê khai hay không; một tệp thì mở trong trình soạn thảo (`nmox src/app.js`), tại một dòng nếu bạn chỉ ra dòng đó theo cách của `code -g` (`nmox src/app.js:42` — cột cũng được chấp nhận và trình soạn thảo mở ở đầu dòng). Một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh (`nmox: typo.js: no such file or folder`) thay vì khởi động bất cứ thứ gì. Lệnh trả về ngay — lần `nmox` đầu tiên khởi động IDE ở chế độ nền, và mỗi lần sau đó trao thư mục của nó cho IDE đang chạy. Gõ `nmox` không kèm gì thì chỉ khởi động IDE. Đưa `nmox` vào PATH của bạn:
 
 - **macOS, Homebrew:** cask tự tạo liên kết giúp bạn.
 - **macOS, từ DMG:** tạo liên kết (đừng sao chép) tới trình khởi chạy của ứng dụng —
@@ -68,7 +68,7 @@ Trên Linux và Windows, bạn cũng có thể trao một thư mục cho NMOX St
 - **Linux (gói `.deb`):** trình quản lý tệp của bạn liệt kê NMOX Studio trong *Mở bằng* (Open With) cho một thư mục. Nó không trở thành ứng dụng mặc định cho thư mục; trình quản lý tệp vẫn giữ vai trò đó.
 - **Windows:** đánh dấu ô *Add "Open with NMOX Studio" to the right-click menu of folders in Explorer* trong trình cài đặt (mặc định không được đánh dấu, giống như của VS Code). Khi đó Explorer có mục **Open with NMOX Studio** trên một thư mục và trên khoảng trống bên trong nó; trên Windows 11 mục này nằm dưới *Show more options*. Gỡ cài đặt sẽ gỡ luôn mục này.
 
-Trên macOS, hãy dùng `nmox .` hoặc **Tệp ▸ Mở thư mục…**. Mục *Mở bằng* (Open With) của Finder và biểu tượng trên Dock không thể trao một thư mục cho một ứng dụng Java đã ký được khởi chạy theo cách NMOX Studio được khởi chạy, nên ứng dụng không tự đề xuất mình ở đó.
+Trên macOS, hãy dùng `nmox .` hoặc **Tệp ▸ Mở thư mục…**. Mục *Mở bằng* (Open With) của Finder và biểu tượng trên Dock hiện chưa thể trao một thư mục cho NMOX Studio, nên ứng dụng không tự đề xuất mình ở đó.
 
 IDE mở ra với ba thẻ nằm cạnh vùng soạn thảo: **Chào mừng → Giá tác vụ → Trình duyệt**. Mọi cửa sổ khác chỉ cách một phím tắt ⌥⌘ và đều có trong cột TOOLING của trang chào mừng. Ở khung bên trái: **Studio dự án** (cây tệp và mẫu), nền **Bàn làm việc** và **Trình duyệt NPM**. Một thư mục `~/NMOX` được tạo làm không gian làm việc mặc định; giá hướng vào đó cho tới khi bạn mở một dự án.
 
@@ -194,6 +194,9 @@ Hơn 70 ngôn ngữ được tô màu đúng cách — bộ hiện đại, bộ 
 - **Tới ký hiệu (⌥⇧⌘O)** nhảy tới bất kỳ hàm, lớp, quy tắc hay tiêu đề nào trong cả dự án bằng cách gõ tên nó — khớp theo tiền tố, theo chữ hoa giữa từ, hoặc theo ký tự đại diện. Chỉ mục có giới hạn và trung thực: `node_modules` bị bỏ qua, và với một dự án rất lớn hộp thoại nói rằng nó đã lập chỉ mục 2.000 tệp đầu tiên thay vì giả vờ đã đọc hết.
 - **Cửa sổ kiểm thử (⌥⌘2)** cho thấy mọi bài kiểm thử trong dự án *trước khi bất cứ gì chạy*, và chạy một bài, một tệp, hoặc tất cả.
 - **LSP**: mở một tệp có máy chủ ngôn ngữ đã được cài (typescript, gopls, rust-analyzer, pyright, …) là bạn có chẩn đoán, chú thích khi rê chuột và đi tới định nghĩa. Lỗi và cảnh báo của máy chủ cũng thành các dòng trong **Mục cần xử lý** (⌘6), mang tên máy chủ (`[lsp:gopls]`), cho mọi tệp mà máy chủ đã báo cáo. Có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. Thiếu máy chủ? IDE đưa ra lệnh cài đặt thay vì lặng lẽ thất bại.
+
+  ![Mục cần xử lý liệt kê hai lỗi của gopls, một lỗi nằm trong tệp chưa từng được mở, cùng con số ✕ 2 ⚠ 0 trên thanh trạng thái](images/lsp-action-items.png)
+
 - **`.editorconfig` được tôn trọng** — cả khi bạn gõ lẫn khi bạn lưu. `indent_style`, `indent_size` và `tab_width` quyết định Tab, Enter và việc thụt lề lại sẽ viết ra gì, nên một dự án dùng tab nhận tab còn một dự án thụt bốn dấu cách nhận bốn dấu cách, theo từng tệp và từng phần glob; mỗi lần lưu áp dụng `trim_trailing_whitespace` và `insert_final_newline`. Một thay đổi trong `.editorconfig` tới được các trình soạn thảo đang mở trong vòng vài giây. Một ký tự tab có sẵn trong tệp vẫn được vẽ theo độ rộng tab đặt trong Tùy chọn, còn `charset` và `end_of_line` không được áp dụng. Các thiết bị định dạng của bạn (GLOSS và các thiết bị cùng loại) lo phần còn lại.
 
 ### Bung tắt tự (⌥⌘E)
@@ -230,7 +233,7 @@ Tệp `.vue` và `.svelte` mở ra với cách tô màu riêng, gợi ý riêng 
 
 ### Gỡ lỗi với điểm dừng thật
 
-Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chương trình sẽ dừng ngay đó — kèm ngăn xếp, các biến và việc tính biểu thức. JavaScript và TypeScript chạy được ngay nhờ bộ chuyển đi kèm; Python dùng debugpy còn Go dùng delve, do bạn tự cài. **Gỡ lỗi trong Chrome** làm y như vậy với một trang: các điểm dừng trong mã nguồn của bạn dừng lại ngay trong IDE trong khi trình duyệt chạy trên một hồ sơ dùng một lần. Mọi thứ đều đi qua lời hỏi tin cậy không gian làm việc trước.
+Nhấp vào lề trái, chọn **Gỡ lỗi tệp (điểm dừng)** và chương trình sẽ dừng ngay đó — kèm ngăn xếp, các biến và việc tính biểu thức. JavaScript và TypeScript chạy được ngay nhờ bộ chuyển đi kèm; Python dùng debugpy còn Go dùng delve, do bạn tự cài. **Gỡ lỗi trong Chrome** làm y như vậy với một trang: các điểm dừng trong mã nguồn của bạn dừng lại ngay trong IDE trong khi trình duyệt chạy trên một hồ sơ dùng một lần. Một kho mã có `.vscode/launch.json` còn có thêm một lối vào: gõ tên một cấu hình vào Tìm kiếm nhanh và Enter sẽ khởi chạy `program` Node hoặc Python của cấu hình đó trong `cwd` của nó, hoặc mở `url` của một cấu hình Chrome với `webRoot` của nó; một cấu hình đặt `args`, `env` hay bất cứ thứ gì khác mà trình gỡ lỗi không truyền tiếp được sẽ bị từ chối kèm tên trên thanh trạng thái thay vì được khởi chạy khi thiếu chúng. Mọi thứ đều đi qua lời hỏi tin cậy không gian làm việc trước.
 
 ### Gỡ lỗi trong trình duyệt
 
@@ -334,11 +337,11 @@ Trên thanh trạng thái hiện dấu **⇄ đang phục vụ** mỗi khi có m
 
 ### ⌘I, cái tìm cho mọi thứ
 
-Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Studio API, tới các kết nối và bảng của Studio cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, tới các thẻ của Bảng công việc (kết quả gọi tên cột thẻ đang đứng), và tới các **npm script** của dự án đang nhắm: gõ `dev` hay `test` và kết quả đọc là *Chạy script: dev — vite*; Enter chạy nó bằng chính trình quản lý gói của dự án (npm, yarn hoặc pnpm), đúng như cú nhấp đúp trong Trình duyệt NPM — với một dự án bạn chưa tin cậy, lời hỏi tin cậy không gian làm việc đến trước, lượt chạy nhập vào nút ■ trên thanh công cụ, và một máy chủ phát triển mà nó in ra sẽ thắp dấu ⇄. Trong một monorepo, đó là các script mà Trình duyệt NPM hiển thị.
+Một ô duy nhất với tới các dự án của bạn (gần đây và đã biết), tới từng thiết bị trên giá — nhảy thẳng đến bộ điều khiển của nó —, tới các **máy chủ đang chạy** (Enter mở nó trong trình duyệt), tới các yêu cầu của Studio API, tới các kết nối và bảng của Studio cơ sở dữ liệu, tới các hợp đồng, tới các nút hạ tầng, tới các thẻ của Bảng công việc (kết quả gọi tên cột thẻ đang đứng), và tới các **npm script** của dự án đang nhắm: gõ `dev` hay `test` và kết quả đọc là *Chạy script: dev — vite*; Enter chạy nó bằng chính trình quản lý gói của dự án (npm, yarn hoặc pnpm), đúng như cú nhấp đúp trong Trình duyệt NPM — với một dự án bạn chưa tin cậy, lời hỏi tin cậy không gian làm việc đến trước, lượt chạy nhập vào nút ■ trên thanh công cụ, và một máy chủ phát triển mà nó in ra sẽ thắp dấu ⇄. Trong một monorepo, đó là các script mà Trình duyệt NPM hiển thị. Các tác vụ trong `.vscode/tasks.json` của một kho mã cũng được liệt kê theo cùng cách — *Chạy tác vụ: build — make all* — và Enter chạy tác vụ sau cùng lời hỏi tin cậy, trong cửa sổ Output và dưới nút ■ trên thanh công cụ; một tác vụ shell chạy trong shell mà VS Code sẽ dùng (`$SHELL` của bạn, một login shell trên macOS; PowerShell trên Windows) hoặc shell mà `options.shell` của nó chỉ định; một tác vụ cần một giá trị mà chỉ VS Code mới cung cấp được, hoặc phụ thuộc vào một tác vụ khác, sẽ nói điều đó trên thanh trạng thái thay vì chạy. Các cấu hình trong `.vscode/launch.json` của nó được liệt kê bên cạnh — *Gỡ lỗi: Launch Program — ${workspaceFolder}/server.js* — và Enter khởi động trình gỡ lỗi với điểm dừng cho cấu hình đó sau cùng lời hỏi tin cậy.
 
 ### Thanh trạng thái cho biết cái gì còn sống
 
-Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ của nó, và nhánh Git kèm số tệp bạn đã đổi. Tất cả đọc từ đĩa hoặc từ những ghi chép mà sản phẩm vốn đã giữ: nhìn một cái không tốn tiến trình nào.
+Bên cạnh dấu máy chủ là dự án đang nhắm cùng bộ công cụ của nó, và nhánh Git kèm số tệp bạn đã đổi. Khi bất cứ thứ gì IDE kiểm tra có vấn đề, con số **✕ 2 ⚠ 1** cho thấy số lỗi và cảnh báo từ mọi máy chủ ngôn ngữ và công cụ; nhấp vào nó để mở **Mục cần xử lý**. Tất cả đọc từ đĩa hoặc từ những ghi chép mà sản phẩm vốn đã giữ: nhìn một cái không tốn tiến trình nào.
 
 ### Bàn làm việc
 
