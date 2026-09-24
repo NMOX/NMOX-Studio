@@ -4,6 +4,37 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.1.1] - 2026-09-24
+
+**The MongoDB driver moves to 5.12.0, and the question worth answering first
+was whether a newer minor version still carries the older patch's security
+fixes. It does, and it had to be checked, because the two releases are on
+different branches.**
+
+5.11.1 fixed two CVEs (v3.0.2). 5.12.0's own changelog compares against
+5.11.0, not 5.11.1, and the history agrees: 5.12.0 is *diverged* from 5.11.1,
+five commits behind it, and neither fix commit is an ancestor of the 5.12.0
+tag. Both fixes arrived in 5.12.0 as separate commits, which is why ancestry
+alone could not settle it. The content does: the files each fix introduced
+(`GridFSFilters.java`, `MongoCryptContextLifetime.java`) and the sync
+driver's `GridFSBucketImpl` and `GridFSDownloadStreamImpl` are byte-identical
+in 5.11.1 and 5.12.0, and differ from 5.11.0. **A newer version number is not
+a superset of an older patch until the patch's content is in it.**
+
+The release adds the driver's client backpressure (retry with backoff when a
+server labels an error as overload) and no security fixes. The two
+dependency lists (driver-sync and driver-core) are identical to 5.11.1's
+apart from the version, so nothing new enters the cluster, and the signing
+lane is untouched: all four mongodb jars carry no native library in either
+version.
+
+Proven against the real thing: DB Studio's 462 tests on the 5.12.0 jars,
+including the live cursor-paging and server-side Cancel tests run against
+MongoDB 7.0.43 in a throwaway container.
+
+Absorbed from Dependabot #826 through our own gate; the version has one
+home, `dbstudio/pom.xml`.
+
 ## [3.1.0] - 2026-09-24
 
 **The developer-experience release. Three walks set the list — the first hour
@@ -24074,6 +24105,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.1.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.2...v3.1.0
 [3.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.1...v3.0.2
 [3.0.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.0...v3.0.1
