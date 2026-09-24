@@ -94,12 +94,12 @@ bằng một dòng lệnh.
 | Trong VS Code | Trong NMOX Studio |
 |---|---|
 | **Explorer** | **Studio dự án** (⇧⌘E) — cây tệp, các mẫu, và trình soạn `package.json` của dự án. **Bàn làm việc** (⌥⌘0) là cơ sở của bạn: tệp đang mở, tệp gần đây, dự án gần đây, và mọi thứ đang chạy. |
-| **Command Palette** | **Tìm kiếm nhanh** (⇧⌘P hoặc ⌘I) — hành động, tệp, dự án gần đây, thiết bị trên giá, máy chủ đang chạy, yêu cầu của Studio API, ký hiệu. Tên lệnh riêng của VS Code cũng dùng được: *Format Document*, *Toggle Terminal*, *Git: Commit* hoặc *Open Settings* liệt kê hành động làm cùng việc đó ở đây, dưới **Lệnh VS Code**, kèm tên của nó ở đây và tổ hợp phím của nó. |
+| **Command Palette** | **Tìm kiếm nhanh** (⇧⌘P hoặc ⌘I) — hành động, tệp, dự án gần đây, thiết bị trên giá, máy chủ đang chạy, yêu cầu của Studio API, ký hiệu. Tên lệnh riêng của VS Code cũng dùng được: *Format Document*, *Toggle Terminal*, *Git: Commit* hoặc *Open Settings* liệt kê hành động làm cùng việc đó ở đây, dưới **Lệnh VS Code**, kèm tên và tổ hợp phím riêng của nó. |
 | **Extensions** | **Công cụ ▸ Plugin** cài và cập nhật các mô-đun, kể cả các bản cập nhật của chính NMOX. Phần lớn những gì một tiện ích mở rộng thêm vào VS Code thì ở đây là một **thiết bị trên giá** — và bạn có thể tự viết một thiết bị bằng một tệp JSON trong `~/.nmox/devices.d` ([tệp thiết bị](device-files.md)). |
 | **`tasks.json`** | Tệp `.vscode/tasks.json` của kho mã được đọc: gõ tên một tác vụ vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Chạy tác vụ: build — make all* sẽ chạy nó, với lời hỏi Tin cậy không gian làm việc đến trước ở một dự án bạn chưa tin cậy, đầu ra nằm trong cửa sổ Output và nút ■ trên thanh công cụ để dừng nó. Bên cạnh đó, các kịch bản của chính dự án chạy đúng như chúng được viết: Chạy / Dựng / Kiểm thử trên thanh công cụ (F6, F11, ⌃F6), **Chạy script** trên một dòng scripts của `package.json`, **Trình duyệt NPM**, và **Giá tác vụ** (⌘9), nơi tác vụ là các thiết bị mà bạn nối dây với nhau. |
 | **`launch.json`** | Tệp `.vscode/launch.json` của kho mã được đọc: gõ tên một cấu hình vào Tìm kiếm nhanh (⇧⌘P hoặc ⌘I) và Enter trên *Gỡ lỗi: Launch Program — ${workspaceFolder}/server.js* sẽ khởi động trình gỡ lỗi với điểm dừng trên chương trình đó, với lời hỏi Tin cậy không gian làm việc đến trước. Các cấu hình Node (`node`, `pwa-node`) và Python (`python`, `debugpy`) gỡ lỗi `program` của chúng trong `cwd` của chúng, kèm `args` và `env` của chúng; các cấu hình Chrome (`chrome`, `pwa-chrome`) mở `url` (hoặc `file`) của chúng với `webRoot` của chúng. Khi không có `launch.json`, **Gỡ lỗi tệp** (⇧⌘F5) và nút gỡ lỗi trên thanh công cụ tự tìm ra thứ cần khởi chạy từ chính dự án — mục vào của kịch bản `start`, `main`, `index.js` — còn thiết bị **INSPECTOR** trên giá khởi chạy trình gỡ lỗi như một bước trong dây chuyền. |
 | **Integrated terminal** | Cửa sổ **Terminal** (⌃\`): lần bấm đầu tiên khởi động một shell trong thư mục dự án, những lần sau đưa nó trở lại. |
-| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.vscode/settings.json` của một kho mã đặt cách thụt lề cho các tệp của nó (`editor.tabSize`, `editor.insertSpaces`) cùng các quy tắc lúc lưu `files.trimTrailingWhitespace` và `files.insertFinalNewline`; tệp `.editorconfig` của nó thắng ở bất cứ chỗ nào cả hai cùng nói, khi bạn gõ và khi lưu. |
+| **`settings.json`** | Công cụ ▸ Tùy chọn (trên macOS là NMOX Studio ▸ Settings…). Tệp `.vscode/settings.json` của một kho mã cũng được đọc: `editor.tabSize`, `editor.insertSpaces` và `editor.indentSize` đặt cách thụt lề của nó khi bạn gõ, `files.trimTrailingWhitespace` và `files.insertFinalNewline` (khi là `true`) được áp dụng khi bạn lưu, và một khối ngôn ngữ như `"[typescript]"` ghi đè chúng cho ngôn ngữ của khối đó. Khi kho mã cũng có tệp `.editorconfig`, tệp `.editorconfig` thắng ở bất cứ chỗ nào cả hai cùng nói. |
 | **Problems panel** | **Mục cần xử lý** (⌘6), hoặc nhấp vào con số **✕ ⚠** trên thanh trạng thái: lỗi và cảnh báo của các máy chủ ngôn ngữ, cùng các phát hiện về lint và kiểu từ các thiết bị PURITY và TYPEGUARD của giá. Như trong VS Code, có máy chủ chỉ báo cáo các tệp bạn đang mở; gopls báo cáo cả gói. |
 | **Outline** | **Bộ điều hướng** (⌘7). |
 | **Source Control** | Dấu git trên thanh trạng thái (nhánh và các thay đổi, một cú nhấp tới lịch sử) và trình đơn **Nhóm**. |
@@ -129,11 +129,11 @@ nhấp vào đó để mở Tìm kiếm nhanh. Thông báo chỉ hiện một l�
   nêu tên các trường đó trên thanh trạng thái. Khởi chạy chương trình mà thiếu
   chúng sẽ là gỡ lỗi một thứ khác với những gì tệp nói. `args` viết thành một
   chuỗi duy nhất (VS Code trao chuỗi đó cho một shell) và một giá trị `null`
-  trong `env` (vốn xóa một biến) cũng sẽ như vậy.
-  Cũng vậy với `"request": "attach"`, một mục `compounds`, một kiểu không có
+  trong `env` (vốn xóa một biến) bị từ chối theo cùng cách đó, và
+  `"request": "attach"`, một mục `compounds`, một kiểu không có
   bộ chuyển ở đây (`go`, `msedge`, `cppdbg` và các kiểu khác), một giá trị mà
   chỉ VS Code mới cung cấp được (`${file}`, `${input:…}`), và một đường dẫn
-  nằm ngoài dự án. Các trường chỉ định hình những gì trình gỡ lỗi hiển thị —
+  nằm ngoài dự án cũng vậy. Các trường chỉ định hình những gì trình gỡ lỗi hiển thị —
   `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
   `presentation` — được chấp nhận nhưng không được áp dụng; đầu ra của chương
   trình đi tới cửa sổ Output.
