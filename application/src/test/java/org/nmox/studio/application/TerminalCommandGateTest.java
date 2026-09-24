@@ -735,17 +735,23 @@ class TerminalCommandGateTest {
 
     /**
      * The argument-rewriting loop, from the {@code goto_line} helper it
-     * calls through its {@code done} and the dangling-option refusal after
-     * it (the first {@code fi} past the loop), whitespace aside.
+     * calls through the main loop's {@code done} and the dangling-option
+     * refusal after it (the first {@code fi} past the loop), whitespace
+     * aside.
      */
     private static List<String> rule(String script) {
         int from = script.indexOf("goto_line() {\n");
         assertThat(from).as("the launcher rewrites its arguments").isNotEqualTo(-1);
         List<String> lines = new ArrayList<>();
+        boolean inLoop = false;
         boolean looped = false;
         for (String line : script.substring(from).split("\n")) {
             lines.add(line.strip());
-            looped |= line.strip().equals("done");
+            // the MAIN loop's done: goto_line has a for ... done of its own,
+            // and stopping there compared nothing past it (3.1.0 - a mutant
+            // in the option case lived through this test until it did)
+            inLoop |= line.strip().startsWith("while ");
+            looped |= inLoop && line.strip().equals("done");
             if (looped && line.strip().equals("fi")) {
                 return lines;
             }
