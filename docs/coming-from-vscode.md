@@ -83,7 +83,9 @@ nmox            # just start the IDE
 It returns at once, and a second `nmox` hands its folder to the IDE that
 is already running. A column (`src/app.ts:42:7`) is accepted and the
 editor opens at the start of the line; a name that is not there is
-refused on the terminal instead of starting anything. Homebrew, the
+refused on the terminal instead of starting anything. `-r` is accepted,
+`-n` opens in the one window, and `--wait`, `--diff` and the other
+VS Code-only flags are refused by name. Homebrew, the
 Windows installer (*Add "nmox" to PATH*) and the Linux packages put it on
 your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)
 shows the one-line link.
@@ -92,7 +94,7 @@ shows the one-line link.
 
 | In VS Code | In NMOX Studio |
 |---|---|
-| **Explorer** | **Project Studio** (⇧⌘E) — the file tree, templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
+| **Explorer** | **Project Studio** (⇧⌘E) — the file tree (right-click a file for Copy Path, Copy Relative Path and Reveal in Finder), templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its own name and chord. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
 | **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |

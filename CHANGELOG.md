@@ -151,6 +151,10 @@ it: [docs/engineering/dx-plan-3.1.md](docs/engineering/dx-plan-3.1.md).
   reader's OS); a click opens Quick Search. Read off the EDT after the aim
   settles, silent if the project was aimed away meanwhile, and recorded so
   it is never said twice.
+- **Copy Path, Copy Relative Path and Reveal in Finder** on every file and
+  folder in Project Studio's tree, as in VS Code's Explorer (Reveal in File
+  Explorer on Windows, Open Containing Folder on Linux). The relative path
+  is relative to the aimed project, and stays absolute outside it.
 - **The terminal really starts in the project.** Project Studio's Terminal
   button has promised that since 1.212.0 and looked the platform's action up
   by an id that does not exist, so every press opened a shell in the IDE's own

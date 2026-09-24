@@ -120,8 +120,10 @@ editor (`nmox src/app.js`), at a line if you name one the way `code -g`
 does (`nmox src/app.js:42` — a column is accepted and the editor opens at
 the start of the line). A name that is not there is refused on the
 terminal (`nmox: typo.js: no such file or folder`) instead of starting
-anything. The command returns at once — the first
-`nmox` starts the IDE in the background, and each later one hands its
+anything. VS Code's `-r` is accepted and `-n` opens in the one window;
+`--wait`, `--diff` and the other VS Code-only flags are refused by name.
+The command returns at once — the first `nmox` starts the IDE in the
+background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
 Getting `nmox` onto your PATH:
 
@@ -212,6 +214,12 @@ PHP Web (LEMP, with compose file and front controller), and Classic Web
 a git repo initialized — one scaffold commit that, when the wizard runs
 the install for you, also holds the lockfile, so your first `git status`
 is clean.
+
+**The file tree** is Project Studio (⇧⌘E). Right-click a file or folder
+for New, Cut, Copy, Paste, Delete and Rename, and — as in VS Code's
+Explorer — **Copy Path**, **Copy Relative Path** (relative to the
+project) and **Reveal in Finder** (**Reveal in File Explorer** on
+Windows, **Open Containing Folder** on Linux).
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.
