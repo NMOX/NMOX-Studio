@@ -84,20 +84,28 @@ public final class VsCodeSettings {
         return json == null ? Map.of() : translate(json, languageId(file));
     }
 
-    /** The nearest {@code .vscode/settings.json} above {@code file}, or null. */
+    /**
+     * The nearest {@code .vscode/settings.json} above {@code file} inside
+     * its repository, or null. Only a file under a repository's root (the
+     * folder holding {@code .git}) is read: walking on towards the
+     * filesystem root would apply a {@code /tmp/.vscode} anyone on the
+     * machine can write (the 3.1.0 review). The nearest wins, as opening
+     * that folder in VS Code would.
+     */
     static File settingsFor(File file) {
         String home = System.getProperty("user.home");
+        File found = null;
         File dir = file.getParentFile();
         for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
             if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
-                return null;
+                return null; // reached home with no repository around the file
             }
             File candidate = new File(new File(dir, ".vscode"), "settings.json");
-            if (candidate.isFile()) {
-                return candidate;
+            if (found == null && candidate.isFile()) {
+                found = candidate;
             }
             if (new File(dir, ".git").exists()) {
-                return null; // the repository's root: settings above it are somebody else's
+                return found; // the repository's root: settings above it are somebody else's
             }
         }
         return null;

@@ -91,6 +91,16 @@ class VsCodeSettingsTest {
     }
 
     @Test
+    @DisplayName("outside any repository nothing is read: a folder above the file is not the project's")
+    void outsideARepositoryNothingIsRead() throws Exception {
+        Files.createDirectories(tmp.resolve(".vscode"));
+        Files.writeString(tmp.resolve(".vscode/settings.json"), "{\"editor.tabSize\": 8}");
+        Path file = Files.createDirectories(tmp.resolve("loose/dir")).resolve("a.js");
+        Files.writeString(file, "x");
+        assertThat(VsCodeSettings.propertiesFor(file.toFile())).isEmpty();
+    }
+
+    @Test
     @DisplayName("a settings.json that does not parse says nothing")
     void unparsableSaysNothing() throws Exception {
         Files.createDirectories(tmp.resolve(".git"));
@@ -101,7 +111,7 @@ class VsCodeSettingsTest {
     }
 
     @Test
-    @DisplayName(".editorconfig wins wherever both speak; settings.json fills what it leaves")
+    @DisplayName(".editorconfig wins wherever both speak; settings.json fills what it leaves outside indentation")
     void editorconfigWins() throws Exception {
         Files.createDirectories(tmp.resolve(".git"));
         Files.createDirectories(tmp.resolve(".vscode"));
@@ -110,8 +120,28 @@ class VsCodeSettingsTest {
         Files.writeString(tmp.resolve(".editorconfig"), "root = true\n[*]\nindent_size = 2\n");
         File file = Files.writeString(tmp.resolve("a.js"), "x").toFile();
         Map<String, String> props = ProjectFormatting.propertiesFor(file);
-        assertThat(props).containsEntry("indent_size", "2").containsEntry("indent_style", "tab")
-                .containsEntry("insert_final_newline", "true");
+        assertThat(props).containsEntry("indent_size", "2")
+                .as("the .editorconfig names the indentation, so it decides all of it")
+                .doesNotContainKey("indent_style").doesNotContainKey("tab_width")
+                .as("what it does not name still comes through").containsEntry("insert_final_newline", "true");
+    }
+
+    @Test
+    @DisplayName("an .editorconfig that speaks about indentation takes all of it: no settings.json tab width under it")
+    void indentationIsOneSourceNotAMix() throws Exception {
+        Files.createDirectories(tmp.resolve(".git"));
+        Files.createDirectories(tmp.resolve(".vscode"));
+        Files.writeString(tmp.resolve(".vscode/settings.json"),
+                "{\"editor.tabSize\": 2, \"files.trimTrailingWhitespace\": true}");
+        Files.writeString(tmp.resolve(".editorconfig"), "root = true\n[*]\nindent_style = tab\nindent_size = 4\n");
+        File file = Files.writeString(tmp.resolve("a.go"), "x").toFile();
+        Map<String, String> props = ProjectFormatting.propertiesFor(file);
+        assertThat(props).as("a tab width of 2 under an indent of 4 writes two tabs per level")
+                .doesNotContainKey("tab_width").containsEntry("indent_size", "4");
+        assertThat(props).as("what the .editorconfig does not speak to still comes through")
+                .containsEntry("trim_trailing_whitespace", "true");
+        assertThat(EditorConfigIndentation.overrides(props, () -> 8))
+                .containsEntry(EditorConfigIndentation.TAB_SIZE, "4");
     }
 
     @Test

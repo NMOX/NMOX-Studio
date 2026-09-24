@@ -274,7 +274,8 @@ jobs:
                               @('--aim gone', 'nmox: gone: no such file or folder'),
                               @('--aim src\app.js', 'nmox: src\app.js: not a folder'),
                               @('gone.js:4', 'nmox: gone.js:4: no such file or folder'),
-                              @('src:4', 'nmox: src:4: no such file or folder'))) {
+                              @('src:4', 'nmox: src:4: no such file or folder'),
+                              @('src\app.js:12345678901', 'nmox: src\app.js:12345678901: no such file or folder'))) {
             Remove-Item $record -ErrorAction SilentlyContinue
             $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" ' + $case[0] + '"') `
                    -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err

@@ -256,8 +256,12 @@ public class DapDebugAction extends BaseAction {
      * child session instead, and a program that prints and exits before
      * that session is spliced in printed NOTHING to the Output window -
      * walked in 3.1.0, a newcomer's Debug on hello.js showed only the
-     * command line. The Output window shows text either way, so nothing
-     * richer is lost.
+     * command line. The cost, measured by the 3.1.0 review on the real
+     * adapter: output from forked children and workers arrives in the first
+     * session's console rather than each session's own (nothing is lost or
+     * doubled; breakpoints and sessions per child are unchanged). Answering
+     * js-debug's startDebugging only after the child session was configured
+     * was tried first and did not bring the quick program's line back.
      */
     public static Map<String, Object> nodeLaunchRequest(File program, File cwd, List<String> args,
             Map<String, String> env) {

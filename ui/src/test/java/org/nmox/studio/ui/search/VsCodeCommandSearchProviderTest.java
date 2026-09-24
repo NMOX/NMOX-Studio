@@ -70,6 +70,23 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("an action that throws from isEnabled is skipped, and the other rows stand")
+    void aThrowingActionIsSkipped() {
+        Action broken = new AbstractAction("Broken") {
+            @Override
+            public boolean isEnabled() {
+                throw new IllegalStateException("window system not ready");
+            }
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+            }
+        };
+        assertThat(titles("toggle", (c, id) -> id.endsWith("ProjectTerminalAction") ? broken : named("x", true)))
+                .contains("View: Toggle Problems").doesNotContain("View: Toggle Terminal");
+    }
+
+    @Test
     @DisplayName("a blank or one-letter query offers nothing")
     void shortQueriesOfferNothing() {
         assertThat(titles("", ALL)).isEmpty();

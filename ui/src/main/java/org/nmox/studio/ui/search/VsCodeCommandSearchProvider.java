@@ -124,7 +124,12 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        for (Hit h : hits(request.getText(), VsCodeCommandSearchProvider::resolve)) {
+        // resolved and asked on the EDT, as the platform's own actions
+        // provider does (ActionsSearchProvider, invokeAndWait): several of
+        // these actions read window-system state that belongs to it
+        List<Hit> found = org.openide.util.Mutex.EVENT.readAccess(
+                () -> hits(request.getText(), VsCodeCommandSearchProvider::resolve));
+        for (Hit h : found) {
             if (!response.addResult(runner(h), PlainText.escape(h.label), null, h.shortcut)) {
                 return;
             }
@@ -148,8 +153,20 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             if (!SearchTerms.matches(query, c.title())) {
                 continue;
             }
-            Action a = resolver.find(c.category(), c.id());
-            if (a == null || !a.isEnabled() || !seen.add(c.title())) {
+            Action a;
+            try {
+                a = resolver.find(c.category(), c.id());
+                if (a == null || !a.isEnabled()) {
+                    continue;
+                }
+            } catch (RuntimeException | LinkageError broken) {
+                // one action that throws from isEnabled must not take the
+                // other rows with it (the platform's provider guards the same)
+                java.util.logging.Logger.getLogger(VsCodeCommandSearchProvider.class.getName())
+                        .log(java.util.logging.Level.FINE, "skipped " + c.id(), broken);
+                continue;
+            }
+            if (!seen.add(c.title())) {
                 continue;
             }
             String label = Bundle.VsCodeCommand_row(c.title(), nameOf(a));

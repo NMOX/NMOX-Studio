@@ -101,8 +101,29 @@ public final class VsCodeFilesNotice implements Runnable {
     static Found found(File dir) {
         int tasks = VsCodeTasks.read(dir).size();
         int configurations = VsCodeLaunch.read(dir).size();
-        boolean settings = new File(new File(dir, ".vscode"), "settings.json").isFile();
-        return new Found(tasks, configurations, settings);
+        return new Found(tasks, configurations, setsIndentation(new File(new File(dir, ".vscode"), "settings.json")));
+    }
+
+    /** The settings the editor reads for indentation (editor.standards.VsCodeSettings). */
+    static final java.util.List<String> INDENTATION_KEYS =
+            java.util.List.of("\"editor.tabSize\"", "\"editor.insertSpaces\"", "\"editor.indentSize\"");
+
+    /**
+     * Whether {@code settings} names an indentation setting: the notice
+     * says the file "sets the indentation" only then, not for the common
+     * settings.json that only excludes folders from search (the 3.1.0
+     * review). Read bounded; a file that cannot be read says nothing.
+     */
+    static boolean setsIndentation(File settings) {
+        if (!settings.isFile()) {
+            return false;
+        }
+        try {
+            String text = org.nmox.studio.core.util.BoundedReads.read(settings, VsCodeTasks.MAX_BYTES);
+            return INDENTATION_KEYS.stream().anyMatch(text::contains);
+        } catch (java.io.IOException unreadable) {
+            return false;
+        }
     }
 
     /** The balloon's sentences: where the tasks and configurations are, and that the settings apply. */

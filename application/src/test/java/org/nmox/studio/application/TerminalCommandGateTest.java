@@ -247,7 +247,10 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("gone.js:42"), "nmox: gone.js:42: no such file or folder"),
                 Arguments.of(List.of("src/app.js:x"), "nmox: src/app.js:x: no such file or folder"),
                 Arguments.of(List.of("src:4"), "nmox: src:4: no such file or folder"),
-                Arguments.of(List.of("--open", "gone.js:3"), "nmox: gone.js:3: no such file or folder"));
+                Arguments.of(List.of("--open", "gone.js:3"), "nmox: gone.js:3: no such file or folder"),
+                // past nine digits the platform's int parse fails and it says
+                // nothing, so the launcher refuses where someone can hear it
+                Arguments.of(List.of("src/app.js:12345678901"), "nmox: src/app.js:12345678901: no such file or folder"));
     }
 
     @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
@@ -352,6 +355,50 @@ class TerminalCommandGateTest {
         int at = rec.indexOf("--open");
         assertThat(at).as("the launcher handed over an --open: %s", rec).isNotEqualTo(-1);
         assertGoto(rec.subList(at, at + 2), want, project);
+    }
+
+    /**
+     * A file whose own name ends in {@code :digits} is a name first: with
+     * {@code src/x:12} on disk, {@code src/x:12:3} is that file at line 3,
+     * which only the first pass stopping on an existing file gets right (the
+     * 3.1.0 review's surviving mutant). Trying NAME:LINE before the exact
+     * name would hand the platform the same string for {@code src/x:12}, and
+     * the platform opens an existing name as named - equivalent, so it is
+     * pinned here by the case that does differ.
+     */
+    @ParameterizedTest(name = "Unix: a name ending in :12 is a name first ({0})")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"linux", "mac"})
+    @DisabledOnOs(OS.WINDOWS)
+    void aNameEndingInDigitsIsANameFirst(String which) throws Exception {
+        Path project = project();
+        Files.writeString(project.resolve("src/x:12"), "x");
+        Path record;
+        String command;
+        if (which.equals("linux")) {
+            Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+            Path nmox = appBin.resolve("nmox");
+            Files.copy(LINUX_NMOX, nmox);
+            executable(nmox);
+            record = tmp.resolve("record.txt");
+            Files.writeString(tmp.resolve("release"), "go");
+            writeIde(appBin.resolve("nmoxstudio"), record, tmp.resolve("release"), 0);
+            command = nmox.toString();
+        } else {
+            Bundle b = bundle();
+            Files.writeString(b.release, "go");
+            Path link = Files.createDirectories(tmp.resolve("brew/bin")).resolve("nmox");
+            Files.createSymbolicLink(link, b.launcher);
+            record = b.record;
+            command = link.toString();
+        }
+        Process p = start(project, command, List.of("src/x:12:3"));
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        assertThat(p.exitValue()).as("nmox said: %s", slurp(tmp.resolve("launcher.out"))).isZero();
+        List<String> rec = awaitRecord(record);
+        String opened = rec.get(rec.indexOf("--open") + 1);
+        assertThat(opened).endsWith("/src/x:12:3");
+        assertThat(Path.of(opened.substring(0, opened.lastIndexOf(':'))).toRealPath())
+                .isEqualTo(project.toRealPath().resolve("src/x:12"));
     }
 
     /** {@code @} in {@code want} stands for the project's real absolute path. */

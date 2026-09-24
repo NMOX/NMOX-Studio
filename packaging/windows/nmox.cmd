@@ -112,6 +112,8 @@ set "G_F=!G_F:~0,-1!"
 goto gotodigit
 :gotocolon
 if not defined G_P goto gotonone
+rem past nine digits the platform's int parse fails, in silence
+if not "!G_P:~9,1!"=="" goto gotonone
 if not "!G_C!"==":" goto gotonone
 set "G_F=!G_F:~0,-1!"
 set "G_L=!G_P!"

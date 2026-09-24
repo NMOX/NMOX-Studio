@@ -105,6 +105,15 @@ class VsCodeFilesNoticeTest {
     }
 
     @Test
+    @DisplayName("a settings.json that says nothing about indentation is not announced as setting it")
+    void settingsWithoutIndentationSayNothing() throws Exception {
+        vscode("settings.json", "{\"search.exclude\": {\"dist\": true}}");
+        File dir = project.toFile();
+        VsCodeFilesNotice.check(dir, () -> dir);
+        assertThat(told).isEmpty();
+    }
+
+    @Test
     @DisplayName("the sentence names the chord the reader's OS uses")
     void chordPerOs() {
         VsCodeFilesNotice.Found both = new VsCodeFilesNotice.Found(1, 2, true);

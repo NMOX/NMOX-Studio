@@ -110,6 +110,7 @@ if [ -h "$0" ]; then
             case "$gf" in *:*) ;; *) break ;; esac
             gp=${gf##*:}
             case "$gp" in ''|*[!0-9]*) break ;; esac
+            [ ${#gp} -le 9 ] || break # past nine digits the platform's int parse fails, in silence
             gf=${gf%:*}
             gl=$gp
             [ -f "$gf" ] && break
