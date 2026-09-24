@@ -39,6 +39,7 @@ keyboard.
 | Delete the line | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
 | Format the document | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
 | Close the editor tab | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| The Problems panel | ⇧⌘M | **⌘6** — Action Items (⇧⌘M toggles a bookmark here) | Ctrl+Shift+M | **Ctrl+6** |
 | Toggle a breakpoint | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Start debugging | F5 | **⇧⌘F5** — Debug File | F5 | **Ctrl+Shift+F5** |
 | Run without debugging | ⌃F5 | **F6** — Run Project | Ctrl+F5 | **F6** |
