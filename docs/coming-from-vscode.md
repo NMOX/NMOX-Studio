@@ -92,7 +92,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
 | **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
-| **`launch.json`** | **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
+| **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program, with Workspace Trust asking first. Node (`node`, `pwa-node`) and Python (`python`, `debugpy`) configurations debug their `program` in their `cwd`; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` applies as you type and when you save. |
 | **Problems panel** | **Action Items** (⌘6), or click the **✕ ⚠** count on the status line: the language servers' errors and warnings, and the lint and type findings from the rack's PURITY and TYPEGUARD devices. As in VS Code, some servers report only on the files you have open; gopls reports on the whole package. |
@@ -110,7 +110,20 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 - **⌃\` opens and focuses the Terminal; it does not hide it.** And while
   the Terminal has focus, the keys belong to your shell, so the second
   press reaches the shell rather than taking you back to the editor.
-- **`launch.json` is not read**; the debug entry rules above do that job.
+- **`launch.json` is read, and what the debugger cannot honour is
+  refused.** The debugger here passes a program, its working folder and
+  nothing else, so a configuration that sets `args`, `env`, `envFile`,
+  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` or any other field
+  it has not been taught is listed but not started: Enter names the
+  fields on the status line. Starting the program without its arguments
+  or its environment would debug something other than what the file
+  says. The same goes for `"request": "attach"`, a `compounds` entry, a
+  type with no adapter here (`go`, `msedge`, `cppdbg` and the rest), a
+  value only VS Code can supply (`${file}`, `${input:…}`), and a path
+  outside the project. Fields that only shape what the debugger shows —
+  `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
+  `presentation` — are accepted and not applied; the program's output
+  goes to the Output window.
   **`tasks.json` is read, with two refusals.** A task that uses a value
   only VS Code can supply (`${input:…}`, `${file}`, `${config:…}`,
   `${command:…}`) or that `dependsOn` another task is listed but not run:

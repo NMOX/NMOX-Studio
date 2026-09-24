@@ -965,7 +965,12 @@ own entry instead of the selection: for a Node project the file its
 `start` script runs under `node`, else its `main`, else `index.js`; for
 a Go project `main.go`. A project whose scripts start a dev server
 rather than a program keeps the button disabled — use Debug File on
-the file you mean.
+the file you mean. A repository that carries `.vscode/launch.json` has
+a third door: type a configuration's name into Quick Search and Enter
+starts that configuration's Node or Python `program` in its `cwd`, or
+opens a Chrome configuration's `url` with its `webRoot`; a configuration
+that sets `args`, `env` or anything else the debugger cannot pass on is
+refused by name on the status line instead of started without it.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 
@@ -1745,7 +1750,10 @@ shows. A repository that carries `.vscode/tasks.json` lists its tasks the
 same way — *Run task: build — make all* — and Enter runs the task behind
 the same trust question, in the Output window and under the toolbar ■; a
 task that needs a value only VS Code can supply, or depends on another
-task, says so on the status line instead of running.
+task, says so on the status line instead of running. Its
+`.vscode/launch.json` lists beside them — *Debug: Launch Program —
+${workspaceFolder}/server.js* — and Enter starts the breakpoint
+debugger on that configuration after the same trust question.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to
