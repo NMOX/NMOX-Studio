@@ -1,7 +1,11 @@
 {
   "site.tagline": "Xưởng web có giá thiết bị — đấu nối công cụ của bạn như một cây synth.",
+  "site.what": "IDE trên máy tính dành cho lập trình viên web: trình soạn thảo, trình gỡ lỗi, trình duyệt, trình khách cơ sở dữ liệu và API, cùng một giá tác vụ bạn đấu nối như thiết bị phòng thu. Miễn phí và mã nguồn mở, trên macOS, Windows và Linux.",
   "site.hero.note": "Hai dòng: một dòng tin cậy tap, một dòng cài đặt. Môi trường chạy Java đã đi kèm. Trang này đang được chính ứng dụng phục vụ cho bạn — hãy tìm dấu ⇄ trên thanh trạng thái của nó.",
   "site.hero.note.web": "Hai dòng: một dòng tin cậy tap, một dòng cài đặt. Môi trường chạy Java đã đi kèm. Mở đúng trang này từ bên trong ứng dụng và chính giá thiết bị của nó sẽ phục vụ bạn.",
+  "site.other": "Không dùng Mac, hoặc không có Homebrew?",
+  "site.download": "Tải về cho macOS, Windows hoặc Linux",
+  "site.quickstart": "Làm theo hướng dẫn nhanh năm phút",
   "site.loop.h": "Vòng lặp dạy được là vòng lặp khép kín",
   "site.loop.p": "Sửa, lưu, nhìn — và khi trang hỏng, lỗi rơi thẳng vào trình soạn thảo của bạn, đúng dòng, chứ không phải vào một bảng điều khiển mà bạn phải nhớ mở ra.",
   "site.rack.h": "Một giá thiết bị, không phải một nút chạy",

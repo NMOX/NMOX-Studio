@@ -1,7 +1,11 @@
 {
   "site.tagline": "Das Web-Studio mit einem Rack — verkabeln Sie Ihre Werkzeuge wie einen Synthesizer.",
+  "site.what": "Eine Desktop-IDE für Webentwickler: Editor, Debugger, Browser, Datenbank- und API-Clients und ein Task-Rack, das Sie wie Studio-Hardware verkabeln. Frei und quelloffen, für macOS, Windows und Linux.",
   "site.hero.note": "Zwei Zeilen: eine vertraut dem Tap, eine installiert. Die Java-Laufzeit ist enthalten. Diese Seite wird Ihnen von der Anwendung selbst ausgeliefert — achten Sie auf das ⇄-Zeichen in ihrer Statusleiste.",
   "site.hero.note.web": "Zwei Zeilen: eine vertraut dem Tap, eine installiert. Die Java-Laufzeit ist enthalten. Öffnen Sie dieselbe Seite aus der Anwendung heraus, und ihr eigenes Rack liefert sie Ihnen aus.",
+  "site.other": "Kein Mac oder kein Homebrew?",
+  "site.download": "Für macOS, Windows oder Linux herunterladen",
+  "site.quickstart": "Zum Schnellstart in fünf Minuten",
   "site.loop.h": "Die Schleife, die lehrt, ist die Schleife, die sich schließt",
   "site.loop.p": "Ändern, speichern, hinsehen — und wenn die Seite bricht, landet der Fehler in Ihrem Editor, in der richtigen Zeile, nicht in einer Konsole, an die Sie hätten denken müssen.",
   "site.rack.h": "Ein Rack, kein Startknopf",

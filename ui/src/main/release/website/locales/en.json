@@ -1,7 +1,11 @@
 {
   "site.tagline": "The web studio with a rack — wire your tools like a synth.",
+  "site.what": "A desktop IDE for web developers: an editor, debugger, browser, database and API clients, and a task rack you wire like studio hardware. Free and open source, on macOS, Windows and Linux.",
   "site.hero.note": "Two lines: one trusts the tap, one installs. The runtime is bundled. This page is being served to you by the app itself — look for the ⇄ chip on its status line.",
   "site.hero.note.web": "Two lines: one trusts the tap, one installs. The runtime is bundled. Open this same page from inside the app — Help ▸ NMOX Studio Website (local) — and it is served to you by the product itself, with the ⇄ chip to prove it.",
+  "site.other": "Not on a Mac, or no Homebrew?",
+  "site.download": "Download for macOS, Windows or Linux",
+  "site.quickstart": "Take the five-minute quickstart",
   "site.loop.h": "The loop that teaches is the loop that closes",
   "site.loop.p": "Edit, save, look — and when the page breaks, the error lands in your editor at the failing line, KVASIR explains it with your own source in front of it, and the tutorial checks your work. Doing, learning, and experimenting are the same motion here.",
   "site.rack.h": "A rack, not a run button",

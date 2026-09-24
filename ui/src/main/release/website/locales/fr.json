@@ -1,7 +1,11 @@
 {
   "site.tagline": "Le studio web avec un rack — câblez vos outils comme un synthé.",
+  "site.what": "Un IDE de bureau pour les développeurs web : un éditeur, un débogueur, un navigateur, des clients de bases de données et d’API, et un rack de tâches que vous câblez comme du matériel de studio. Libre et open source, sur macOS, Windows et Linux.",
   "site.hero.note": "Deux lignes : l’une fait confiance au tap, l’autre installe. L’environnement d’exécution est inclus. Cette page vous est servie par l’application elle-même — cherchez le témoin ⇄ sur sa barre d’état.",
   "site.hero.note.web": "Deux lignes : l’une fait confiance au tap, l’autre installe. L’environnement d’exécution est inclus. Ouvrez cette même page depuis l’application et elle vous sera servie par son propre rack.",
+  "site.other": "Pas de Mac, ou pas de Homebrew ?",
+  "site.download": "Télécharger pour macOS, Windows ou Linux",
+  "site.quickstart": "Suivre le démarrage rapide en cinq minutes",
   "site.loop.h": "La boucle qui enseigne est la boucle qui se referme",
   "site.loop.p": "Modifiez, enregistrez, regardez — et quand la page casse, l’erreur atterrit dans votre éditeur, sur la bonne ligne, pas dans une console que vous auriez dû penser à ouvrir.",
   "site.rack.h": "Un rack, pas un bouton « exécuter »",

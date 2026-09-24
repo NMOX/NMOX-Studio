@@ -1,7 +1,11 @@
 {
   "site.tagline": "Ang web studio na may rack — ikabit ang iyong mga kasangkapan gaya ng isang synthesizer.",
+  "site.what": "Isang desktop IDE para sa mga web developer: editor, debugger, browser, mga client para sa database at API, at isang Rack ng Gawain na ikinakabit mo gaya ng hardware sa studio. Libre at open source, sa macOS, Windows at Linux.",
   "site.hero.note": "Dalawang linya: isa ang nagtitiwala sa tap, isa ang nag-i-install. Kasama na ang Java runtime. Ang pahinang ito ay inihahain sa iyo ng mismong app — hanapin ang ⇄ sa status bar nito.",
   "site.hero.note.web": "Dalawang linya: isa ang nagtitiwala sa tap, isa ang nag-i-install. Kasama na ang Java runtime. Buksan ang pahinang ito mula sa loob ng app at ang sarili nitong rack ang maghahain nito sa iyo.",
+  "site.other": "Wala sa Mac, o walang Homebrew?",
+  "site.download": "I-download para sa macOS, Windows o Linux",
+  "site.quickstart": "Subukan ang limang-minutong quickstart",
   "site.loop.h": "Ang umiikot na nagtuturo ay ang umiikot na nagsasara",
   "site.loop.p": "Baguhin, i-save, tingnan — at kapag nasira ang pahina, ang mali ay dumadapo sa iyong editor, sa tamang linya, hindi sa isang console na kailangan mo pang maalalang buksan.",
   "site.rack.h": "Isang rack, hindi isang pindutang patakbuhin",
