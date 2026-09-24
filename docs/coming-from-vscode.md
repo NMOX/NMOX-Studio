@@ -118,8 +118,8 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
   inside the editor ⇧⌘P and ⇧⌘X keep Eclipse's meanings (matching
   brace, upper case) — someone who picked Eclipse expects Eclipse.
 - **On Linux, Ctrl+\` opens the Terminal, not a window switcher.** The
-  platform kept a second switcher there for desktops (KDE) that grab
-  Ctrl+Tab; the switcher is on Ctrl+Tab.
+  switcher is on Ctrl+Tab. On a desktop that takes Ctrl+Tab for itself
+  (KDE, for one), **Window ▸ Documents…** lists the open files instead.
 - **The Ctrl+Alt chords can collide with AltGr.** On Windows, keyboard
   layouts that type characters with AltGr (Polish, for one) send
   Ctrl+Alt for it. If Ctrl+Alt+P or Ctrl+Alt+K types a character for you,
