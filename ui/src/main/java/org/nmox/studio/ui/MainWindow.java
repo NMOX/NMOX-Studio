@@ -53,7 +53,7 @@ import org.openide.windows.WindowManager;
     "MainWindow_columnTooling=TOOLING",
     "MainWindow_columnFirstSteps=FIRST STEPS",
     "MainWindow_columnFirstStepsProgress=FIRST STEPS · {0}",
-    "MainWindow_newExperiment=New Experiment…  ⇧⌘E",
+    "MainWindow_newExperiment=New Experiment…  ⌥⌘K",
     "MainWindow_newProject=New Project…  ⇧⌘N",
     "MainWindow_newLearningSpace=New Learning Space…  ⇧⌘L",
     "MainWindow_openFolder=Open Folder…  ⌥⌘O",

@@ -40,7 +40,7 @@ import org.openide.util.NbBundle.Messages;
 @ActionRegistration(displayName = "#CTL_ManageExperimentsAction")
 @ActionReferences({
     @ActionReference(path = "Menu/File", position = 121),
-    @ActionReference(path = "Shortcuts", name = "DS-X")
+    @ActionReference(path = "Shortcuts", name = "DAS-K")
 })
 @Messages({
     "CTL_ManageExperimentsAction=Experiments…",

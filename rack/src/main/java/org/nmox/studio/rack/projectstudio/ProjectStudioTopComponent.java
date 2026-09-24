@@ -281,6 +281,29 @@ public final class ProjectStudioTopComponent extends TopComponent {
         syncToRack();
     }
 
+    /**
+     * Activation focuses the FILE TREE, not the window frame: ⇧⌘E (3.1.0,
+     * VS Code's "focus the Explorer") opens this studio through its open
+     * action, which activates it, and the platform then asks the component
+     * for focus — the NetBeans explorer windows answer the same way.
+     */
+    @Override
+    public boolean requestFocusInWindow() {
+        super.requestFocusInWindow();
+        return focusTarget().requestFocusInWindow();
+    }
+
+    @Override
+    public void requestFocus() {
+        super.requestFocus();
+        focusTarget().requestFocus();
+    }
+
+    /** The component a focus request on this studio ends at. */
+    java.awt.Component focusTarget() {
+        return treePanel.focusTarget();
+    }
+
     @Override
     protected void componentActivated() {
         treePanel.activateExplorerActions(true);

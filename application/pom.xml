@@ -274,6 +274,7 @@
                                 <exclude>**/BundleEncodingGateTest.java</exclude>
                                 <exclude>**/ModuleDescriptorsSpeakTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
+                                <exclude>**/VsCodeKeymapResolutionTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
@@ -321,6 +322,7 @@
                                 <include>**/PaintedSurfaceLedgerTest.java</include>
                                 <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
+                                <include>**/VsCodeKeymapResolutionTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>

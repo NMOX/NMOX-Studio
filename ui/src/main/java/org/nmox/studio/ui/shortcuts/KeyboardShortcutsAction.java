@@ -68,7 +68,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
     /**
      * Every NMOX-owned shadow the running keymap honors: the profile's
      * {@code Keymaps/} folder AND the global {@code Shortcuts/} folder
-     * (v2.85.0 — the Welcome's own doors, ⇧⌘E / ⇧⌘N / ⇧⌘L, live there
+     * (v2.85.0 — the Welcome's own doors, ⌥⌘K / ⇧⌘N / ⇧⌘L, live there
      * and the sheet never listed them). A chord bound in both folders
      * lists once, with the Keymaps action: that is the platform's own
      * precedence (the v1.38.1 law — a Keymaps shadow beats a Shortcuts
@@ -95,7 +95,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
                 continue;
             }
             Object original = shadow.getAttribute("originalFile");
-            if (!(original instanceof String path) || !path.contains("org-nmox-")) {
+            if (!(original instanceof String path) || !(path.contains("org-nmox-") || nmoxOwned(shadow))) {
                 continue;
             }
             String chord = ShortcutSheet.humanChord(shadow.getName(), mac);
@@ -107,6 +107,17 @@ public final class KeyboardShortcutsAction implements ActionListener {
             String label = name == null ? path.substring(path.lastIndexOf('/') + 1) : name.toString().replace("&", "");
             byChord.put(chord, new ShortcutSheet.Row(chord, label));
         }
+    }
+
+    /**
+     * A chord NMOX binds to a PLATFORM action (3.1.0: ⇧⌘P Quick Search,
+     * ⇧⌘X Plugins, ⌃` Terminal — the VS Code chords) carries
+     * {@code nmoxShortcut=true} on its shadow, because its target path
+     * says nothing about who bound it. Without the flag the sheet would
+     * hide exactly the chords a switcher looks for.
+     */
+    static boolean nmoxOwned(FileObject shadow) {
+        return Boolean.TRUE.equals(shadow.getAttribute("nmoxShortcut"));
     }
 
     private static void dialog(String profile, List<ShortcutSheet.Row> rows) {

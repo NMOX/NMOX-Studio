@@ -110,6 +110,17 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
+     * Where keyboard focus lands when the studio is activated — the tree
+     * itself, so ⇧⌘E (VS Code's Explorer chord, 3.1.0) leaves the arrow
+     * keys walking files rather than the window frame.
+     * {@link org.openide.explorer.view.TreeView} forwards a focus
+     * request to its inner {@code JTree}.
+     */
+    java.awt.Component focusTarget() {
+        return view;
+    }
+
+    /**
      * Bind the explorer's Cut/Copy/Paste/Delete into {@code map} — the
      * owning TopComponent's ActionMap, which its default lookup already
      * exposes to the platform's global actions.
