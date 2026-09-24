@@ -213,11 +213,11 @@ public class NpmScriptSearchProvider implements SearchProvider {
     }
 
     private static void status(String message) {
-        String text = org.nmox.studio.core.util.PlainStatus.text(message);
         if (EventQueue.isDispatchThread()) {
-            StatusDisplayer.getDefault().setStatusText(text);
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(message));
         } else {
-            EventQueue.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(text));
+            EventQueue.invokeLater(() -> StatusDisplayer.getDefault()
+                    .setStatusText(org.nmox.studio.core.util.PlainStatus.text(message)));
         }
     }
 }
