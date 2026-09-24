@@ -168,7 +168,8 @@ Lee un catálogo que se publica con cada versión en GitHub.
 
 **userdir** — La carpeta donde NMOX Studio guarda sus ajustes, la
 disposición de las ventanas, los registros y las actualizaciones
-instaladas. Para encontrarla, abre **Ayuda ▸ About**. Su registro está en
+instaladas. El diálogo «Acerca de» muestra dónde está (en el menú Ayuda en
+Windows y Linux, en el menú NMOX Studio en macOS). Su registro está en
 `var/log/messages.log`. Para empezar con ajustes limpios, arranca con
 `--userdir <una carpeta vacía>`.
 
@@ -177,5 +178,6 @@ instaladas. Para encontrarla, abre **Ayuda ▸ About**. Su registro está en
 **NMOX Studio ▸ Settings…** en macOS.
 
 **Elementos de acción** — La ventana que enumera los problemas encontrados
-en el proyecto, incluidos los resultados de lint y de comprobación de tipos
-del rack. Pulsa un problema para ir a esa línea.
+en el proyecto: los errores y avisos de los servidores de lenguaje, y los
+resultados de lint y de comprobación de tipos del rack. Pulsa un problema
+para ir a esa línea.

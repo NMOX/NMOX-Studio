@@ -82,8 +82,8 @@ NMOX Studio ist auf der NetBeans-Plattform gebaut, und einige ihrer Wörter sche
 
 **Aktualisierungszentrum** — Woher **Extras ▸ Plugins ▸ Aktualisierungen** neue Versionen der Module von NMOX Studio bezieht. Es liest einen Katalog, der mit jeder GitHub-Version veröffentlicht wird.
 
-**userdir** — Der Ordner, in dem NMOX Studio seine Einstellungen, die Fensteranordnung, Protokolle und installierte Aktualisierungen aufbewahrt. Um ihn zu finden, öffnen Sie **Hilfe ▸ About**. Sein Protokoll liegt unter `var/log/messages.log`. Um mit frischen Einstellungen zu beginnen, starten Sie mit `--userdir <ein leerer Ordner>`.
+**userdir** — Der Ordner, in dem NMOX Studio seine Einstellungen, die Fensteranordnung, Protokolle und installierte Aktualisierungen aufbewahrt. Der Dialog „Über“ zeigt, wo er liegt (unter Windows und Linux im Menü Hilfe, unter macOS im Menü NMOX Studio). Sein Protokoll liegt unter `var/log/messages.log`. Um mit frischen Einstellungen zu beginnen, starten Sie mit `--userdir <ein leerer Ordner>`.
 
 **Optionen** / **Einstellungen…** — Der Einstellungsdialog. Unter Windows und Linux ist es **Extras ▸ Optionen**, unter macOS **NMOX Studio ▸ Einstellungen…**.
 
-**Aufgabenliste** — Das Fenster, das die im Projekt gefundenen Probleme auflistet, einschließlich der Lint- und Typprüfungsergebnisse des Racks. Klicken Sie auf ein Problem, um zu dieser Zeile zu springen.
+**Aufgabenliste** — Das Fenster, das die im Projekt gefundenen Probleme auflistet: die Fehler und Warnungen der Sprachserver und die Lint- und Typprüfungsergebnisse des Racks. Klicken Sie auf ein Problem, um zu dieser Zeile zu springen.

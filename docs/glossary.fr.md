@@ -82,8 +82,8 @@ NMOX Studio est construit sur la plateforme NetBeans, et quelques-uns de ses mot
 
 **Centre de mise à jour** — L’endroit où **Outils ▸ Plugins ▸ Mises à jour** trouve les nouvelles versions des modules de NMOX Studio (il s’appelle *Mises à jour de NMOX Studio*). Il lit un catalogue publié avec chaque version sur GitHub.
 
-**userdir** — Le dossier où NMOX Studio garde ses réglages, la disposition des fenêtres, les journaux et les mises à jour installées. Pour le trouver, ouvrez la boîte *About* : sous Windows et Linux elle est dans le menu Aide, sous macOS dans le menu NMOX Studio. Son journal est `var/log/messages.log`. Pour repartir de réglages neufs, lancez avec `--userdir <an empty folder>`.
+**userdir** — Le dossier où NMOX Studio garde ses réglages, la disposition des fenêtres, les journaux et les mises à jour installées. La boîte « À propos » montre où il se trouve (dans le menu Aide sous Windows et Linux, dans le menu NMOX Studio sous macOS). Son journal est `var/log/messages.log`. Pour repartir de réglages neufs, lancez avec `--userdir <an empty folder>`.
 
 **Options** / **Settings…** — La boîte des préférences. C’est **Outils ▸ Options** sous Windows et Linux, et **NMOX Studio ▸ Settings…** sous macOS.
 
-**Éléments à traiter** (*Action Items*) — La fenêtre qui liste les problèmes trouvés dans le projet, y compris les résultats de lint et de vérification des types du rack. Cliquez sur un problème pour aller à cette ligne.
+**Éléments à traiter** (*Action Items*) — La fenêtre qui liste les problèmes trouvés dans le projet : les erreurs et avertissements des serveurs de langage, et les résultats de lint et de vérification des types du rack. Cliquez sur un problème pour aller à cette ligne.

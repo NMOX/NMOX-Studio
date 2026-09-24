@@ -98,8 +98,8 @@ uma linha.
 | **`tasks.json`** | Os scripts do seu próprio projeto, rodados como estão escritos: o Executar / Construir / Testar da barra de ferramentas (F6, F11, ⌃F6), **Executar script** numa linha de scripts do `package.json`, o **Explorador NPM** e o **Rack de tarefas** (⌘9), onde as tarefas são dispositivos que você liga uns aos outros. |
 | **`launch.json`** | **Depurar o arquivo** (⇧⌘F5) e o botão de depurar da barra de ferramentas descobrem o que iniciar a partir do próprio projeto — a entrada do script `start`, o `main`, o `index.js` — e o dispositivo **INSPECTOR** do rack inicia um depurador como uma etapa de um pipeline. |
 | **Integrated terminal** (Terminal integrado) | A janela **Terminal** (⌃\`): a primeira vez que você aperta, ela inicia um shell na pasta do projeto; as seguintes a trazem de volta. |
-| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.editorconfig` do seu projeto é respeitado ao salvar. |
-| **Problems panel** (Problemas) | **Itens de ação** (⌘6): os achados de lint e de tipos dos dispositivos PURITY e TYPEGUARD do rack, junto com os sublinhados no editor. |
+| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.editorconfig` do seu projeto vale enquanto você digita e quando você salva. |
+| **Problems panel** (Problemas) | **Itens de ação** (⌘6): os erros e avisos dos servidores de linguagem e os achados de lint e de tipos dos dispositivos PURITY e TYPEGUARD do rack. Como no VS Code, alguns servidores informam só sobre os arquivos que você tem abertos; o gopls informa sobre o pacote inteiro. |
 | **Outline** (Estrutura de tópicos) | O **Navegador** (⌘7). |
 | **Source Control** (Controle do código-fonte) | O selo do git na barra de status (ramo e mudanças, um clique até o histórico) e o menu **Equipe**. |
 | **Workspace Trust** (Confiança do workspace) | A mesma ideia, aplicada antes de qualquer coisa que um repositório escolheu ser executada: abrir um projeto clonado não roda nada até você confiar nele. |
@@ -124,9 +124,9 @@ uma linha.
   **Eclipse**, ⇧⌘E continua sendo o *Switch to Editor* do próprio Eclipse,
   e dentro do editor ⇧⌘P e ⇧⌘X mantêm os significados do Eclipse (a chave
   correspondente, maiúsculas) — quem escolheu o Eclipse espera o Eclipse.
-- **No Linux, Ctrl+\` abria o seletor de janelas** — o recurso de reserva
-  da plataforma para ambientes (KDE) que capturam Ctrl+Tab. Agora ele abre
-  o Terminal; o seletor continua em Ctrl+Tab.
+- **No Linux, Ctrl+\` abre o Terminal, não um seletor de janelas.** A
+  plataforma mantinha ali um segundo seletor para ambientes (KDE) que
+  capturam Ctrl+Tab; o seletor fica em Ctrl+Tab.
 - **Os atalhos com Ctrl+Alt podem colidir com o AltGr.** No Windows, os
   layouts de teclado que digitam caracteres com AltGr (o polonês, por
   exemplo) enviam Ctrl+Alt para ele. Se Ctrl+Alt+P ou Ctrl+Alt+K digita um

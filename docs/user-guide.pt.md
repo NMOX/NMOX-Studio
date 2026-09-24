@@ -63,11 +63,12 @@ No terminal, `nmox .` abre a pasta em que você está, do jeito que `code .` faz
 - **Windows:** a caixa *Adicionar “nmox” ao PATH* do instalador, marcada por padrão. Abra um terminal novo depois; um que já estava aberto mantém o PATH antigo.
 - **Linux:** o `.deb` instala `/usr/bin/nmox`. A partir do tarball, crie o link você mesmo: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
-Também dá para entregar uma pasta ao NMOX Studio sem terminal, e ela é apontada do mesmo jeito:
+No Linux e no Windows também dá para entregar uma pasta ao NMOX Studio sem terminal, e ela é apontada do mesmo jeito:
 
-- **macOS:** clique com o botão direito numa pasta no Finder e escolha NMOX Studio em **Abrir com**, ou solte a pasta no ícone do NMOX Studio no Dock. Várias pastas de uma vez apontam a primeira e dizem isso na barra de status: a IDE trabalha numa pasta por vez. Um arquivo solto no ícone abre no editor.
 - **Linux (o `.deb`):** o seu gerenciador de arquivos lista o NMOX Studio em *Abrir com* para uma pasta. Ele não vira o aplicativo padrão para pastas; o gerenciador de arquivos continua sendo.
 - **Windows:** marque no instalador a caixa *Adicionar “Abrir com o NMOX Studio” ao menu de contexto das pastas no Explorador* (ela vem desmarcada, como a do VS Code). O Explorador passa a oferecer **Abrir com o NMOX Studio** numa pasta e no espaço vazio dentro dela; no Windows 11 a opção fica em *Mostrar mais opções*. Desinstalar a remove.
+
+No macOS, use `nmox .` ou **Arquivo ▸ Abrir pasta…**. O *Abrir com* do Finder e o ícone do Dock não conseguem entregar uma pasta a um aplicativo Java assinado iniciado do jeito que o NMOX Studio é, então o aplicativo não se oferece ali.
 
 A IDE abre com três abas ao lado da área do editor: **Bem-vindo → Rack de tarefas → Navegador web**. Cada uma das outras janelas está a um atalho ⌥⌘ e aparece na coluna FERRAMENTAS da página de boas-vindas. No painel esquerdo: **Estúdio de projeto** (árvore de arquivos e modelos), a base **Bancada** e o **Explorador NPM**. Uma pasta `~/NMOX` é criada como espaço de trabalho padrão; o rack aponta para lá até você abrir um projeto.
 
@@ -191,6 +192,7 @@ Mais de 70 linguagens são realçadas como devem — a pilha moderna, a clássic
 - **O minimapa** — uma silhueta do arquivo inteiro ao lado da barra de rolagem de cada editor; clique ou arraste para rolar. O documento sempre cabe inteiro na faixa: as linhas encolhem à medida que o arquivo cresce. Exibir ▸ Minimapa liga e desliga em todos os editores abertos de uma vez.
 - **A rolagem fixa** — as declarações que envolvem o topo da vista (a classe e depois o método em que você desceu) ficam presas acima do texto, até três linhas do próprio código; clique numa para saltar. A barra some quando nada envolve a primeira linha visível.
 - **Ir para símbolo (⌥⇧⌘O)** salta para qualquer função, classe, regra ou título de todo o projeto digitando o nome, com correspondência por prefixo, por maiúsculas internas ou por curinga. O índice é limitado e honesto: `node_modules` é pulado e, num projeto muito grande, a caixa diz que indexou os primeiros 2.000 arquivos em vez de fingir que leu tudo.
+- **LSP** — abra um arquivo cujo servidor de linguagem esteja instalado (typescript, gopls, rust-analyzer, pyright, …) e você ganha diagnósticos, informações ao passar o mouse e ir para a definição. Os erros e avisos do servidor também viram linhas em **Itens de ação** (⌘6), com o nome do servidor (`[lsp:gopls]`), para cada arquivo sobre o qual o servidor já informou. Alguns servidores informam só sobre os arquivos que você tem abertos; o gopls informa sobre o pacote inteiro. Falta um servidor? A IDE oferece o comando de instalação em vez de falhar em silêncio.
 - **A janela de testes (⌥⌘2)** mostra todos os testes do projeto *antes de qualquer coisa rodar*, e roda um teste, um arquivo ou todos.
 - **O `.editorconfig` é respeitado** — enquanto você digita e quando você salva. `indent_style`, `indent_size` e `tab_width` decidem o que Tab, Enter e a reindentação escrevem, então um projeto com tabulações recebe tabulações e um projeto de quatro espaços recebe quatro espaços, por arquivo e por seção de glob; cada gravação aplica `trim_trailing_whitespace` e `insert_final_newline`. Uma edição no `.editorconfig` chega aos editores abertos em poucos segundos. Um caractere de tabulação que já está no arquivo continua sendo desenhado com a largura de tabulação definida nas Opções, e `charset` e `end_of_line` não são aplicados. Os seus dispositivos de formatação (GLOSS e companhia) cuidam do resto.
 
