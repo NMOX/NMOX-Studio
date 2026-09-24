@@ -697,8 +697,11 @@ official client.
   than pretending it read everything.
 - **LSP**: open a file whose language server is installed (typescript,
   gopls, rust-analyzer, pyright, …) and you get diagnostics, hover, and
-  go-to-definition. Missing a server? The IDE offers the install command
-  instead of failing silently.
+  go-to-definition. The server's errors and warnings are also rows in
+  **Action Items** (⌘6), named after the server (`[lsp:typescript]`), for
+  every file the server has reported on — usually the files you have open.
+  Missing a server? The IDE offers the install command instead of failing
+  silently.
 - **Run Focused Test**: with your caret in a test method, one action runs
   exactly that test — JS/TS, Go, Rust, Python, PHPUnit, and more.
 - **`.editorconfig` is honored** — while you type and when you save.

@@ -145,5 +145,6 @@ Windows and Linux, in the NMOX Studio menu on macOS). Its log is at
 **Options** / **Settings…** — The preferences dialog. It's **Tools ▸ Options** on Windows and Linux,
 and **NMOX Studio ▸ Settings…** on macOS.
 
-**Action Items** — The window listing problems found in the project, including the rack's
-lint and type-check results. Click a problem to go to that line.
+**Action Items** — The window listing problems found in the project: the language servers'
+errors and warnings, and the rack's lint and type-check results. Click a problem to go to
+that line.
