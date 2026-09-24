@@ -514,4 +514,26 @@
             <file name="org-nmox-studio-ui-tasks-TasksSearchProvider.instance"/>
         </folder>
     </folder>
+    <!-- 3.1.0: aiming a project opens it as a platform project (the
+         OpenProjects bridge), and the platform's OpenedProjects window
+         group then opened five windows into the left dock: Projects,
+         Files, Favorites and Services beside Project Studio, the
+         Workbench and NPM Explorer, which truncated the product's own
+         tabs to "W..." - four explorers of the same folder that Project
+         Studio already shows (walked in 3.1.0; David's own 3.0.2 carried
+         them too). The Navigator stays in the group: it is the outline
+         (Cmd+7), not another file tree. Each window is still one row away
+         in the Window menu. OpenedProjectsGroupTest holds the membership
+         against the assembled cluster, so a platform upgrade that adds a
+         member fails by name. -->
+    <folder name="Windows2">
+        <folder name="Groups">
+            <folder name="OpenedProjects">
+                <file name="projectTabLogical_tc.wstcgrp_hidden"/>
+                <file name="projectTab_tc.wstcgrp_hidden"/>
+                <file name="favorites.wstcgrp_hidden"/>
+                <file name="services.wstcgrp_hidden"/>
+            </folder>
+        </folder>
+    </folder>
 </filesystem>

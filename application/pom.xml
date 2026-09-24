@@ -275,6 +275,7 @@
                                 <exclude>**/ModuleDescriptorsSpeakTest.java</exclude>
                                 <exclude>**/LayerPositionCensusTest.java</exclude>
                                 <exclude>**/VsCodeKeymapResolutionTest.java</exclude>
+                                <exclude>**/OpenedProjectsGroupTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
@@ -323,6 +324,7 @@
                                 <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
                                 <include>**/VsCodeKeymapResolutionTest.java</include>
+                                <include>**/OpenedProjectsGroupTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
