@@ -91,7 +91,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 | **Explorer** | **Project Studio** (⇧⌘E) — the file tree, templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
-| **`tasks.json`** | Your project's own scripts, run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
+| **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). Your project's `.editorconfig` applies as you type and when you save. |
@@ -108,10 +108,15 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
 - **⌃\` opens and focuses the Terminal; it does not hide it.** And while
   the Terminal has focus, the keys belong to your shell, so the second
   press reaches the shell rather than taking you back to the editor.
-- **`.vscode/tasks.json` and `launch.json` are not read.** A task is a
-  command a repository chose, and reading one deserves its own design
-  around Workspace Trust; until then, the project's own scripts and the
-  debug entry rules above do that job.
+- **`launch.json` is not read**; the debug entry rules above do that job.
+  **`tasks.json` is read, with two refusals.** A task that uses a value
+  only VS Code can supply (`${input:…}`, `${file}`, `${config:…}`,
+  `${command:…}`) or that `dependsOn` another task is listed but not run:
+  Enter says which variable or which task on the status line. Running it
+  with the value left blank, or without the task it depends on, would run
+  something other than what the file says. So would a task type an
+  extension provides (`gulp`, `typescript`), and a working folder outside
+  the project.
 - **There is no "VS Code" keymap profile.** The chords above ride the
   default profile and the other four. One deliberate exception: in the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and

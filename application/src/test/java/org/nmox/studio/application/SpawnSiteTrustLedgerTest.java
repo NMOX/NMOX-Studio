@@ -59,7 +59,11 @@ class SpawnSiteTrustLedgerTest {
             + "inside a container, not on the host"),
             Map.entry("NgSchematicAction.java",
                 "GATED: requestTrust before ng generate — the CLI and the project's "
-            + "schematics execute the repo's own code (v1.239.0)")
+            + "schematics execute the repo's own code (v1.239.0)"),
+            Map.entry("VsCodeTaskSearchProvider.java",
+                "GATED: requestTrust on the project before a .vscode/tasks.json task spawns — the "
+            + "task's command is the repository's own text; npm-type tasks go to NpmService's "
+            + "own gate (v3.1.0)")
     );;
 
     @Test
@@ -101,7 +105,8 @@ class SpawnSiteTrustLedgerTest {
                 "NpmService.java", "../tools/src/main/java/org/nmox/studio/tools/npm/NpmService.java",
                 "RunFocusedTestAction.java", "../editor/src/main/java/org/nmox/studio/editor/testing/RunFocusedTestAction.java",
                 "ProjectConfigDialog.java", "../rack/src/main/java/org/nmox/studio/rack/projectstudio/ProjectConfigDialog.java",
-                "LanguageServerInstaller.java", "../editor/src/main/java/org/nmox/studio/editor/lsp/LanguageServerInstaller.java");
+                "LanguageServerInstaller.java", "../editor/src/main/java/org/nmox/studio/editor/lsp/LanguageServerInstaller.java",
+                "VsCodeTaskSearchProvider.java", "../tools/src/main/java/org/nmox/studio/tools/vscode/VsCodeTaskSearchProvider.java");
         for (Map.Entry<String, String> e : paths.entrySet()) {
             assertThat(Files.readString(Path.of(e.getValue())))
                     .as(e.getKey() + " is classified GATED — the gate must exist in its source")

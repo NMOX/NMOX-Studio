@@ -50,11 +50,17 @@ import org.openide.util.RequestProcessor;
  * {@code HtmlRenderer} label with {@code setHtml(true)}, so a script
  * command such as {@code echo <b>} would render as markup. Names and
  * commands are the project's text, not ours, so both are escaped.
+ *
+ * <p><b>The row helpers are shared.</b> {@code oneLine}, {@code clip},
+ * {@code escape} and {@code nameRank} are public because the VS Code
+ * tasks category ({@code tools.vscode.VsCodeTaskSearchProvider}) lists
+ * rows of the same shape; one home means the two categories clip, escape
+ * and rank alike.
  */
 public class NpmScriptSearchProvider implements SearchProvider {
 
     /** Commands longer than this (in code points) are clipped with an ellipsis. */
-    static final int MAX_COMMAND = 48;
+    public static final int MAX_COMMAND = 48;
 
     /**
      * The words a user reaches for besides the script's own: the verb,
@@ -139,7 +145,7 @@ public class NpmScriptSearchProvider implements SearchProvider {
     }
 
     /** How strongly the query's terms, one by one, name the script itself. */
-    static int nameRank(List<String> terms, String name) {
+    public static int nameRank(List<String> terms, String name) {
         int rank = 0;
         for (String term : terms) {
             rank += SearchTerms.score(term, name);
@@ -158,7 +164,7 @@ public class NpmScriptSearchProvider implements SearchProvider {
     }
 
     /** Folds every run of whitespace or control characters to one space. */
-    static String oneLine(String s) {
+    public static String oneLine(String s) {
         if (s == null) {
             return "";
         }
@@ -185,7 +191,7 @@ public class NpmScriptSearchProvider implements SearchProvider {
      * when anything was cut. Counting code points, never UTF-16 units, so
      * a cut can never strand half of a surrogate pair (the v1.149.0 class).
      */
-    static String clip(String s, int max) {
+    public static String clip(String s, int max) {
         if (s.codePointCount(0, s.length()) <= max) {
             return s;
         }
@@ -193,7 +199,7 @@ public class NpmScriptSearchProvider implements SearchProvider {
     }
 
     /** The three characters the platform's HtmlRenderer would read as markup. */
-    static String escape(String s) {
+    public static String escape(String s) {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 

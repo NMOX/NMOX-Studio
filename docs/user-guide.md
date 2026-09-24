@@ -1738,7 +1738,11 @@ package manager (npm, yarn or pnpm), exactly as NPM Explorer's
 double-click would — Workspace Trust asks first on a project you have
 not trusted, the run joins the toolbar ■, and a dev server it prints
 lights the ⇄ chip. In a monorepo the scripts are the ones NPM Explorer
-shows.
+shows. A repository that carries `.vscode/tasks.json` lists its tasks the
+same way — *Run task: build — make all* — and Enter runs the task behind
+the same trust question, in the Output window and under the toolbar ■; a
+task that needs a value only VS Code can supply, or depends on another
+task, says so on the status line instead of running.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to

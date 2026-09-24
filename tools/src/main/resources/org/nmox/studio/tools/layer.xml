@@ -15,5 +15,15 @@
             <attr name="position" intvalue="277"/>
             <file name="org-nmox-studio-tools-npm-search-NpmScriptSearchProvider.instance"/>
         </folder>
+        <!-- the project's .vscode/tasks.json (v3.1.0): a developer arriving
+             from VS Code types "build" and Enter runs the task the repository
+             declares, trust-gated. 278, right after the npm scripts: the next
+             "things this project knows how to run". Its own package and
+             bundle, for the same v1.79.0 reason. -->
+        <folder name="VsCodeTasks">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.tools.vscode.Bundle"/>
+            <attr name="position" intvalue="278"/>
+            <file name="org-nmox-studio-tools-vscode-VsCodeTaskSearchProvider.instance"/>
+        </folder>
     </folder>
 </filesystem>
