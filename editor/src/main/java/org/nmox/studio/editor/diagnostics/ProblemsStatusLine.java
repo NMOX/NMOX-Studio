@@ -126,8 +126,10 @@ public final class ProblemsStatusLine implements StatusLineElementProvider {
             String t = text(counts);
             setVisible(t != null);
             setText(t == null ? "" : t);
-            setToolTipText(t == null ? null : Bundle.ProblemsStatusLine_tooltip(
-                    String.valueOf(counts[0]), String.valueOf(counts[1])));
+            // the tooltip is our own sentence around two numbers; plain() keeps
+            // the gate's law that no tooltip can start as markup
+            setToolTipText(org.nmox.studio.core.util.PlainText.plain(t == null ? null
+                    : Bundle.ProblemsStatusLine_tooltip(String.valueOf(counts[0]), String.valueOf(counts[1]))));
             getAccessibleContext().setAccessibleDescription(getToolTipText());
         }
 

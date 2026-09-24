@@ -3,7 +3,6 @@ package org.nmox.studio.rack.projectstudio;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Locale;
 import javax.swing.Action;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
@@ -136,33 +135,16 @@ public final class ProjectTerminal implements ActionListener {
         }
     }
 
-    /** The platform's own terminal, wherever it starts; the status line names the menu door otherwise. */
+    /**
+     * The platform's own terminal, wherever it starts; the status line names
+     * the menu door otherwise. The id is the one ActionIdsResolveTest checks
+     * against the assembled cluster, so there is no guessing by name here.
+     */
     private static void openPlain(Object source) {
-        for (String id : new String[]{LOCAL_ID}) {
-            Action action = Actions.forID(LOCAL_CATEGORY, id);
-            if (action != null) {
-                action.actionPerformed(new ActionEvent(source, 0, "open"));
-                return;
-            }
-        }
-        FileObject actions = FileUtil.getConfigFile("Actions/Window");
-        if (actions != null) {
-            for (FileObject child : actions.getChildren()) {
-                if (child.getName().toLowerCase(Locale.ROOT).contains("terminal")
-                        && !child.getName().contains("ProjectTerminalAction")) {
-                    try {
-                        Object instance = DataObject.find(child)
-                                .getLookup().lookup(org.openide.cookies.InstanceCookie.class)
-                                .instanceCreate();
-                        if (instance instanceof Action action) {
-                            action.actionPerformed(new ActionEvent(source, 0, "open"));
-                            return;
-                        }
-                    } catch (Exception ignored) {
-                        // try the next candidate
-                    }
-                }
-            }
+        Action action = Actions.forID(LOCAL_CATEGORY, LOCAL_ID);
+        if (action != null) {
+            action.actionPerformed(new ActionEvent(source, 0, "open"));
+            return;
         }
         StatusDisplayer.getDefault().setStatusText(Bundle.ProjectStudioTopComponent_terminalFallbackStatus());
     }

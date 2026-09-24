@@ -41,7 +41,7 @@ public class PathLabel extends JLabel {
     /** Shows {@code path} (rendered as text, never markup) and puts all of it on the tooltip. */
     public void setPath(String path) {
         full = path == null ? "" : path;
-        setToolTipText(full.isEmpty() ? null : PlainText.plain(full));
+        setToolTipText(PlainText.plain(full.isEmpty() ? null : full));
         getAccessibleContext().setAccessibleDescription(full);
         refit();
     }
