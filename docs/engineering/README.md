@@ -1,10 +1,7 @@
 # Engineering Documentation
 
-This directory holds **four live documents and a pile of archaeology.**
-Read the live ones; the rest are v0.x-era plans kept for history and
-describe a product that was never built. Each carries its own
-"Historical document" banner, and none of them is a safe guide to how
-NMOX Studio actually works.
+Every document here is current; the v0.x-era papers were removed in
+3.0.1 (see the end of this page).
 
 ## The live documents
 
@@ -18,6 +15,9 @@ NMOX Studio actually works.
 - **[l10n-completion.md](./l10n-completion.md)** — what fifteen-language
   support covers, and every ceiling with the measurement behind it. The
   record that closed the i18n/l10n arc at v2.147.0.
+- **[dx-plan-3.1.md](./dx-plan-3.1.md)** — the developer-experience
+  plan behind 3.1: what the first-hour, VS Code switcher and contributor
+  walks found, and what was built about each.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
 - **[signing.md](./signing.md)** — **start here for signing.** The four
