@@ -62,6 +62,23 @@ cannot say in a cell:
 keymap, the four VS Code chords included, read from the running keymap so it cannot
 drift from what the keys do.
 
+
+## From the terminal
+
+`code .` is `nmox .`:
+
+```bash
+cd ~/code/my-app
+nmox .          # open this folder (manifest or not) and aim the IDE at it
+nmox src/app.ts # open one file
+nmox            # just start the IDE
+```
+
+It returns at once, and a second `nmox` hands its folder to the IDE that
+is already running. Homebrew, the Windows installer (*Add "nmox" to
+PATH*) and the Linux packages put it on your PATH; for a DMG install, the
+[user guide](user-guide.md#2-first-launch) shows the one-line link.
+
 ## Where each VS Code idea lives
 
 | In VS Code | In NMOX Studio |
