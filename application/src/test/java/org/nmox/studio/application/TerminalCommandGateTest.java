@@ -27,7 +27,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@code Env.getCurrentDirectory()}, which {@code CLIHandler} fills from the
  * client's {@code user.dir}). What was missing was the door: nothing put a
  * command on PATH on macOS or Windows, and the Linux package called it
- * {@code nmox-studio}.
+ * {@code nmox-studio}. And the platform's {@code --open} shows a folder with
+ * no manifest as a raw explorer tab rather than aiming it, so every door
+ * rewrites its arguments the same way: a folder becomes {@code --aim
+ * <absolute>} (File ▸ Open Folder…'s own verb), a file {@code --open
+ * <absolute>}, an option and its value pass through, a missing name stays
+ * as typed so the IDE's refusal can name it.
  *
  * <p>Four homes, one command, and this gate holds each one:
  *
@@ -87,7 +92,7 @@ class TerminalCommandGateTest {
     // ---------------------------------------------------------------- macOS
 
     @Test
-    @DisplayName("macOS: through a chain of links the launcher finds its bundle, keeps the caller's folder, and returns at once")
+    @DisplayName("macOS: through a chain of links the launcher finds its bundle, aims folders, opens files, and returns at once")
     @DisabledOnOs(OS.WINDOWS)
     void macLauncherFollowsLinksAndBackgrounds() throws Exception {
         Bundle b = bundle();
@@ -97,10 +102,9 @@ class TerminalCommandGateTest {
         Path bin = Files.createDirectories(tmp.resolve("brew/bin"));
         Path nmox = bin.resolve("nmox");
         Files.createSymbolicLink(nmox, Path.of("../../hop/nmox-studio"));
-        Path project = Files.createDirectories(tmp.resolve("my project"));
+        Path project = project();
 
-        Process p = new ProcessBuilder(nmox.toString(), ".").directory(project.toFile())
-                .redirectErrorStream(true).redirectOutput(tmp.resolve("launcher.out").toFile()).start();
+        Process p = start(project, nmox.toString(), TYPED);
         assertThat(p.waitFor(20, TimeUnit.SECONDS))
                 .as("started from a terminal (through a link) the launcher returns while the IDE is still running;"
                         + " launcher said: %s", slurp(tmp.resolve("launcher.out")))
@@ -110,26 +114,25 @@ class TerminalCommandGateTest {
 
         Files.writeString(b.release, "go");
         List<String> rec = awaitRecord(b.record);
-        assertThat(rec.get(0)).as("the IDE runs in the caller's folder, so '.' is that folder")
-                .isEqualTo(project.toRealPath().toString());
-        assertThat(rec).as("found the bundle's bin/nmoxstudio through the links and passed the argument")
-                .contains(".", "-J-Xdock:name=NMOX Studio");
+        assertThat(rec.get(1)).as("found the bundle's bin/nmoxstudio through the links").isEqualTo("-J-Xdock:name=NMOX Studio");
+        assertTranslated(rec, 2, project);
     }
 
     @Test
-    @DisplayName("macOS: run by its real path (Finder, the Dock, open) the launcher stays in the foreground")
+    @DisplayName("macOS: run by its real path (Finder, the Dock, open) the launcher stays in the foreground and passes arguments as given")
     @DisabledOnOs(OS.WINDOWS)
     void macLauncherRunDirectlyStaysInForeground() throws Exception {
         Bundle b = bundle();
         Files.writeString(b.release, "go"); // the stand-in exits at once
-        Process p = new ProcessBuilder(b.launcher.toString(), "x.js").directory(tmp.toFile())
-                .redirectErrorStream(true).redirectOutput(tmp.resolve("launcher.out").toFile()).start();
+        Files.writeString(tmp.resolve("x.js"), "x");
+        Process p = start(tmp, b.launcher.toString(), List.of("x.js"));
         assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("launcher finished").isTrue();
         assertThat(p.exitValue())
                 .as("exec: the launcher IS the IDE process, so its exit is the IDE's (LaunchServices tracks it)")
                 .isEqualTo(7);
         assertThat(b.record).as("the IDE ran before the launcher returned").exists();
-        assertThat(Files.readAllLines(b.record)).contains("x.js");
+        assertThat(Files.readAllLines(b.record)).as("LaunchServices' own arguments are not rewritten")
+                .containsExactly(tmp.toRealPath().toString(), "-J-Xdock:name=NMOX Studio", "x.js");
     }
 
     @Test
@@ -152,7 +155,7 @@ class TerminalCommandGateTest {
     // ---------------------------------------------------------------- Linux
 
     @Test
-    @DisplayName("Linux: nmox, through a link, finds bin/nmoxstudio beside itself, keeps the caller's folder and returns")
+    @DisplayName("Linux: nmox, through a link, finds bin/nmoxstudio beside itself, aims folders, opens files, and returns")
     @DisabledOnOs(OS.WINDOWS)
     void linuxCommandFollowsLinkAndBackgrounds() throws Exception {
         Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
@@ -164,17 +167,21 @@ class TerminalCommandGateTest {
         writeIde(appBin.resolve("nmoxstudio"), record, release, 0);
         Path usrBin = Files.createDirectories(tmp.resolve("usr/bin"));
         Files.createSymbolicLink(usrBin.resolve("nmox"), nmox); // what the .deb ships
-        Path project = Files.createDirectories(tmp.resolve("proj"));
+        Path project = project();
 
-        Process p = new ProcessBuilder(usrBin.resolve("nmox").toString(), ".").directory(project.toFile())
-                .redirectErrorStream(true).redirectOutput(tmp.resolve("nmox.out").toFile()).start();
+        Process p = start(project, usrBin.resolve("nmox").toString(), TYPED);
         assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("nmox returns while the IDE runs").isTrue();
         assertThat(p.exitValue()).isZero();
         assertThat(record).as("the IDE stand-in is still waiting").doesNotExist();
         Files.writeString(release, "go");
-        List<String> rec = awaitRecord(record);
-        assertThat(rec.get(0)).isEqualTo(project.toRealPath().toString());
-        assertThat(rec).contains(".");
+        assertTranslated(awaitRecord(record), 1, project);
+    }
+
+    @Test
+    @DisplayName("the two Unix launchers spell the argument rule identically")
+    void unixLaunchersShareOneRule() throws IOException {
+        assertThat(rule(read(LINUX_NMOX))).as("packaging/linux/nmox and the macOS bundle launcher")
+                .isEqualTo(rule(launcher()));
     }
 
     @Test
@@ -236,10 +243,25 @@ class TerminalCommandGateTest {
                 .matcher(iss);
         assertThat(icon.find()).as("the Start-menu shortcut names the launcher exe").isTrue();
         String cmd = read(NMOX_CMD);
-        assertThat(cmd).as("START returns at once and keeps the console's folder; %* passes '.' through")
-                .contains("start \"\" \"%~dp0..\\bin\\" + icon.group(1) + "\" %*\n");
+        assertThat(cmd).as("the shim finds that launcher beside its own folder")
+                .contains("set \"NMOX_EXE=%~dp0..\\bin\\" + icon.group(1) + "\"\n");
+        assertThat(cmd).as("START returns at once, handing over the rewritten arguments")
+                .contains("start \"\" \"%NMOX_EXE%\" %NMOX_ARGS%\n");
+        assertThat(cmd).as("a folder is aimed and a file opened, by absolute path")
+                .contains("--aim \"%%NMOX_DIR%%\"").contains("--open \"%~f1\"");
         assertThat(iss).as("nmox.cmd lands in a folder of its own, beside bin")
                 .contains("Source: \"nmox.cmd\"; DestDir: \"{app}\\cli\"\n");
+    }
+
+    @Test
+    @DisplayName("Windows: nmox.cmd knows the same value-taking options as the Unix launchers")
+    void windowsShimSharesTheOptionList() throws IOException {
+        Matcher unix = Pattern.compile("(?m)^\\s*(--userdir\\|[^)]+)\\)$").matcher(read(LINUX_NMOX));
+        assertThat(unix.find()).as("the Unix launcher lists its value-taking options").isTrue();
+        Matcher win = Pattern.compile("(?m)^for %%V in \\(([^)]+)\\) do").matcher(read(NMOX_CMD));
+        assertThat(win.find()).as("nmox.cmd lists its value-taking options").isTrue();
+        assertThat(List.of(win.group(1).split(" "))).as("an option value is never taken for a path, on any OS")
+                .containsExactly(unix.group(1).split("\\|"));
     }
 
     @Test
@@ -280,6 +302,57 @@ class TerminalCommandGateTest {
     }
 
     // ---------------------------------------------------------------- helpers
+
+    /**
+     * What a developer types: the folder they stand in, a file in it, an
+     * option whose VALUE is an existing folder (must stay a value, not become
+     * --aim), a name that is not there, and a JVM flag.
+     */
+    private static final List<String> TYPED = List.of(".", "src/app.js", "--cachedir", "src", "missing.txt", "-J-Xmx1g");
+
+    private Path project() throws IOException {
+        Path project = Files.createDirectories(tmp.resolve("my project/src"));
+        Files.writeString(project.resolve("app.js"), "x");
+        return project.getParent();
+    }
+
+    private Process start(Path cwd, String command, List<String> args) throws IOException {
+        List<String> argv = new ArrayList<>();
+        argv.add(command);
+        argv.addAll(args);
+        return new ProcessBuilder(argv).directory(cwd.toFile()).redirectErrorStream(true)
+                .redirectOutput(tmp.resolve("launcher.out").toFile()).start();
+    }
+
+    /** The record of an IDE started with {@link #TYPED} from {@code project}, argv beginning at {@code from}. */
+    private static void assertTranslated(List<String> rec, int from, Path project) throws IOException {
+        Path real = project.toRealPath();
+        assertThat(Path.of(rec.get(0)).toRealPath()).as("the IDE runs in the caller's folder").isEqualTo(real);
+        List<String> argv = rec.subList(from, rec.size());
+        assertThat(argv).as("the argv the platform launcher received").hasSize(8);
+        assertThat(argv.get(0)).as("a folder is aimed").isEqualTo("--aim");
+        assertThat(Path.of(argv.get(1))).as("by its absolute path").isAbsolute();
+        assertThat(Path.of(argv.get(1)).toRealPath()).as("'.' is the caller's folder").isEqualTo(real);
+        assertThat(argv.get(2)).as("a file is opened").isEqualTo("--open");
+        assertThat(Path.of(argv.get(3))).as("by its absolute path").isAbsolute();
+        assertThat(Path.of(argv.get(3)).toRealPath()).isEqualTo(real.resolve("src/app.js"));
+        assertThat(argv.subList(4, 8)).as("options, an option's value and a missing name pass through as typed")
+                .containsExactly("--cachedir", "src", "missing.txt", "-J-Xmx1g");
+    }
+
+    /** The argument-rewriting loop, from {@code n=$#} to its {@code done}, whitespace aside. */
+    private static List<String> rule(String script) {
+        int from = script.indexOf("n=$#\n");
+        assertThat(from).as("the launcher rewrites its arguments").isNotEqualTo(-1);
+        List<String> lines = new ArrayList<>();
+        for (String line : script.substring(from).split("\n")) {
+            lines.add(line.strip());
+            if (line.strip().equals("done")) {
+                return lines;
+            }
+        }
+        throw new AssertionError("the argument loop is never closed");
+    }
 
     /** An .iss section's body, from its header to the next header. */
     private static String section(String iss, String name) {

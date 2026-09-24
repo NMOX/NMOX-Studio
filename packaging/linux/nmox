@@ -7,13 +7,22 @@
 # It finds bin/nmoxstudio beside itself through any symlink, so a link from
 # ~/.local/bin works as well as the package's own.
 #
+# Paths are made absolute and given their verb: a folder is AIMED (--aim,
+# what File > Open Folder... does, with or without a manifest - the
+# platform's own --open shows a manifest-less folder as a raw explorer tab),
+# a file is OPENED (--open). Options, and the value an option takes, pass
+# through untouched; a name that is not there passes through as typed, so
+# the IDE's own refusal names it. Bare `nmox` just starts the IDE.
+#
 # The IDE starts in the BACKGROUND and the command returns at once, as
 # `code .` does: it must neither hold the shell until the IDE quits nor die
 # when the terminal closes. When the IDE is already running, the launcher
-# is a short-lived client that hands its arguments and its working
-# directory to the running instance (the platform's CLI handshake), so `.`
-# is the caller's folder either way. For the IDE in the foreground, with
-# its console output, run bin/nmoxstudio (or nmox-studio) instead.
+# is a short-lived client that hands its arguments to the running instance
+# (the platform's CLI handshake). For the IDE in the foreground, with its
+# console output, run bin/nmoxstudio (or nmox-studio) instead.
+#
+# The macOS bundle launcher (packaging/macos/build-dmg.sh) spells the same
+# rule; TerminalCommandGateTest holds the two to the same argv.
 PRG=$0
 while [ -h "$PRG" ]; do
     link=$(readlink "$PRG")
@@ -22,10 +31,35 @@ while [ -h "$PRG" ]; do
         *)  PRG=$(dirname "$PRG")/$link ;;
     esac
 done
-BIN=$(cd "$(dirname "$PRG")" && pwd)
+BIN=$(CDPATH= cd -- "$(dirname "$PRG")" && pwd)
 if [ ! -f "$BIN/nmoxstudio" ]; then
     echo "nmox: cannot find nmoxstudio beside $PRG" >&2
     exit 1
 fi
+n=$#
+value=no
+while [ "$n" -gt 0 ]; do
+    a=$1
+    shift
+    n=$((n - 1))
+    if [ "$value" = yes ]; then
+        set -- "$@" "$a"
+        value=no
+        continue
+    fi
+    case "$a" in
+        --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
+            set -- "$@" "$a"
+            value=yes ;;
+        -*) set -- "$@" "$a" ;;
+        *)  if [ -d "$a" ]; then
+                set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
+            elif [ -e "$a" ]; then
+                set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+            else
+                set -- "$@" "$a"
+            fi ;;
+    esac
+done
 nohup /bin/sh "$BIN/nmoxstudio" "$@" </dev/null >/dev/null 2>&1 &
 exit 0

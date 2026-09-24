@@ -75,19 +75,52 @@ while [ -h "$PRG" ]; do
         *)  PRG=$(dirname "$PRG")/$link ;;
     esac
 done
-DIR=$(cd "$(dirname "$PRG")" && pwd)
+DIR=$(CDPATH= cd -- "$(dirname "$PRG")" && pwd)
 RES="$DIR/../Resources/nmoxstudio"
 # Started through a link means started from a terminal (`nmox .`); Finder,
 # the Dock and `open` always run the real path. From a terminal the launch
 # is BACKGROUNDED and the command returns at once, as `code .` does: the
 # IDE must neither hold the shell until it quits nor die with the terminal
 # window. A second `nmox` while the IDE runs is a short-lived client that
-# hands its arguments - and its working directory, so `.` means the
-# caller's folder - to the running instance and exits (the platform's CLI
-# handshake). Run the real path to keep the IDE in the foreground.
+# hands its arguments to the running instance and exits (the platform's
+# CLI handshake). Run the real path to keep the IDE in the foreground.
+#
+# From a terminal the paths are also made absolute and given their verb:
+# a folder is AIMED (--aim, what File > Open Folder... does, with or
+# without a manifest - the platform's own --open shows a manifest-less
+# folder as a raw explorer tab), a file is OPENED (--open). Options and
+# the value an option takes pass through untouched; a name that is not
+# there passes through as typed, so the IDE's own refusal names it.
+# packaging/linux/nmox spells the same rule; TerminalCommandGateTest holds
+# the two to the same argv.
 FROM_TERMINAL=no
 if [ -h "$0" ]; then
     FROM_TERMINAL=yes
+    n=$#
+    value=no
+    while [ "$n" -gt 0 ]; do
+        a=$1
+        shift
+        n=$((n - 1))
+        if [ "$value" = yes ]; then
+            set -- "$@" "$a"
+            value=no
+            continue
+        fi
+        case "$a" in
+            --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
+                set -- "$@" "$a"
+                value=yes ;;
+            -*) set -- "$@" "$a" ;;
+            *)  if [ -d "$a" ]; then
+                    set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
+                elif [ -e "$a" ]; then
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+                else
+                    set -- "$@" "$a"
+                fi ;;
+        esac
+    done
 fi
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
