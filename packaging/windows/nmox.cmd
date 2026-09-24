@@ -42,6 +42,9 @@ set "NMOX_A=%~1"
 set "NMOX_VERB="
 if defined NMOX_VALUE goto value
 for %%V in (--userdir --cachedir --jdkhome --open --aim --locale --laf --fontsize --branding --clusters) do if /i "%~1"=="%%V" set "NMOX_VALUE=%%V"
+if /i "%~1"=="-h" goto usage
+if /i "%~1"=="--help" goto usage
+if "%~1"=="/?" goto usage
 if /i "%~1"=="-g" goto skip
 if /i "%~1"=="--goto" goto skip
 if "%NMOX_A:~0,1%"=="-" goto keep
@@ -122,6 +125,18 @@ exit /b 0
 :gotonone
 endlocal
 exit /b 1
+:usage
+echo(Usage: nmox [options] [folder ^| file[:line[:column]]]...
+echo(
+echo(  nmox .              aim NMOX Studio at this folder, as File ^> Open Folder... does
+echo(  nmox src/app.js     open a file
+echo(  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)
+echo(  nmox                start NMOX Studio
+echo(
+echo(It returns at once; a second nmox hands its folder or files to the IDE
+echo(already running. A name that is not there is refused here, before anything
+echo(starts. Any other option goes to the IDE unchanged.
+exit /b 0
 :missing
 setlocal EnableDelayedExpansion
 >&2 echo(nmox: !NMOX_A!: no such file or folder

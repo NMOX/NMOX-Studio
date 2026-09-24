@@ -59,6 +59,20 @@ goto_line() {
     done
     [ -n "$gl" ] && [ -f "$gf" ]
 }
+nmox_usage() {
+    cat <<'USAGE'
+Usage: nmox [options] [folder | file[:line[:column]]]...
+
+  nmox .              aim NMOX Studio at this folder, as File > Open Folder... does
+  nmox src/app.js     open a file
+  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)
+  nmox                start NMOX Studio
+
+It returns at once; a second nmox hands its folder or files to the IDE
+already running. A name that is not there is refused here, before anything
+starts. Any other option goes to the IDE unchanged.
+USAGE
+}
 n=$#
 value=no
 while [ "$n" -gt 0 ]; do
@@ -85,6 +99,7 @@ while [ "$n" -gt 0 ]; do
         --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
             set -- "$@" "$a"
             value=$a ;;
+        -h|--help) nmox_usage; exit 0 ;;
         -g|--goto) ;;
         -*) set -- "$@" "$a" ;;
         *)  if [ -d "$a" ]; then

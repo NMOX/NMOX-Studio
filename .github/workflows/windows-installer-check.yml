@@ -255,6 +255,20 @@ jobs:
                     '--open', "$root\proj dir\src\$($odd):3")
           Write-Host "launcher saw:"; $got | ForEach-Object { Write-Host "  [$_]" }
           if (($got -join "`n") -ne ($want -join "`n")) { throw "nmox.cmd handed the launcher the wrong argv for NAME:LINE" }
+          # --help, -h and /? print the usage on stdout, exit 0, start nothing
+          $out = Join-Path $root 'out.txt'
+          foreach ($flag in @('--help', '-h', '/?')) {
+            Remove-Item $record -ErrorAction SilentlyContinue
+            $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" . ' + $flag + '"') `
+                   -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardOutput $out
+            $said = [string](Get-Content -Raw $out)
+            Write-Host "nmox $flag -> exit $($p.ExitCode)"; Write-Host $said
+            if ($p.ExitCode -ne 0) { throw "nmox $flag exited $($p.ExitCode), not 0" }
+            if (-not $said.StartsWith('Usage: nmox [options] [folder | file[:line[:column]]]...')) { throw "nmox $flag printed no usage" }
+            if (-not $said.Contains('as File > Open Folder... does')) { throw "nmox $flag mangled the usage: $said" }
+            Start-Sleep -Seconds 2
+            if (Test-Path $record) { throw "nmox $flag started the launcher" }
+          }
           $err = Join-Path $root 'err.txt'
           foreach ($case in @(@('missing.txt', 'nmox: missing.txt: no such file or folder'),
                               @('--aim gone', 'nmox: gone: no such file or folder'),

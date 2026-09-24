@@ -370,6 +370,79 @@ class TerminalCommandGateTest {
         }
     }
 
+    // ------------------------------------------------------------- --help
+
+    /**
+     * {@code nmox --help} went to the platform, whose own usage the detached
+     * launch sent to /dev/null: the command printed nothing and exited 0
+     * (measured). Each launcher now answers {@code -h}/{@code --help} itself,
+     * on stdout, and starts nothing.
+     */
+    @ParameterizedTest(name = "Unix: nmox {0} prints the usage and starts nothing")
+    @org.junit.jupiter.params.provider.ValueSource(strings = {"--help", "-h"})
+    @DisabledOnOs(OS.WINDOWS)
+    void unixHelpSpeaks(String flag) throws Exception {
+        Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+        Path nmox = appBin.resolve("nmox");
+        Files.copy(LINUX_NMOX, nmox);
+        executable(nmox);
+        Path started = tmp.resolve("started");
+        writeTripwireIde(appBin.resolve("nmoxstudio"), started);
+        Bundle b = bundle();
+        writeTripwireIde(b.launcher.resolveSibling("../Resources/nmoxstudio/bin/nmoxstudio").normalize(), started);
+        Path link = Files.createDirectories(tmp.resolve("brew/bin")).resolve("nmox");
+        Files.createSymbolicLink(link, b.launcher);
+        for (Path command : List.of(nmox, link)) {
+            Process p = start(project(), command.toString(), List.of(".", flag));
+            assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+            String out = slurp(tmp.resolve("launcher.out"));
+            assertThat(p.exitValue()).as("%s %s said: %s", command, flag, out).isZero();
+            assertThat(out).startsWith(USAGE.get(0)).contains(USAGE.get(4));
+        }
+        Thread.sleep(1500);
+        assertThat(started).as("--help starts nothing").doesNotExist();
+    }
+
+    /** The usage, as the Unix launchers print it. */
+    private static final List<String> USAGE = List.of(
+            "Usage: nmox [options] [folder | file[:line[:column]]]...",
+            "",
+            "  nmox .              aim NMOX Studio at this folder, as File > Open Folder... does",
+            "  nmox src/app.js     open a file",
+            "  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)",
+            "  nmox                start NMOX Studio",
+            "",
+            "It returns at once; a second nmox hands its folder or files to the IDE",
+            "already running. A name that is not there is refused here, before anything",
+            "starts. Any other option goes to the IDE unchanged.");
+
+    @Test
+    @DisplayName("all three launchers print the same usage")
+    void everyLauncherPrintsTheSameUsage() throws IOException {
+        for (String unix : List.of(read(LINUX_NMOX), launcher())) {
+            int from = unix.indexOf("cat <<'USAGE'\n");
+            assertThat(from).as("the usage is a quoted heredoc").isNotEqualTo(-1);
+            String body = unix.substring(from + "cat <<'USAGE'\n".length(), unix.indexOf("\nUSAGE\n", from));
+            assertThat(List.of(body.split("\n", -1))).isEqualTo(USAGE);
+            assertThat(unix).contains("-h|--help) nmox_usage; exit 0 ;;\n");
+        }
+        String cmd = read(NMOX_CMD);
+        int from = cmd.indexOf("\n:usage\n");
+        assertThat(from).as("nmox.cmd has a :usage routine").isNotEqualTo(-1);
+        List<String> shown = new ArrayList<>();
+        for (String line : cmd.substring(from + 8).split("\n")) {
+            if (!line.startsWith("echo(")) {
+                assertThat(line).isEqualTo("exit /b 0");
+                break;
+            }
+            // cmd's escapes: ^ before each of | & < > ^, and %% for %
+            shown.add(line.substring(5).replaceAll("\\^(.)", "$1").replace("%%", "%"));
+        }
+        assertThat(shown).as("nmox.cmd's :usage, cmd's escapes undone").isEqualTo(USAGE);
+        assertThat(cmd).contains("if /i \"%~1\"==\"--help\" goto usage\n").contains("if /i \"%~1\"==\"-h\" goto usage\n")
+                .contains("if \"%~1\"==\"/?\" goto usage\n");
+    }
+
     @Test
     @DisplayName("the refusal is spelled the same by all three launchers")
     void everyLauncherSpeaksTheSameRefusal() throws IOException {
