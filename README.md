@@ -1,11 +1,29 @@
 # NMOX Studio
 
-**The web studio with a rack — wire your tools like a synth.**
+**A desktop IDE for web developers.** Editor, debugger, browser, database
+client, API client and a task runner you wire together like studio hardware,
+all in one window. Free and open source (Apache-2.0), on macOS, Windows and
+Linux.
 
 [![Build and Test](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/NMOX/NMOX-Studio/actions/workflows/build-and-test.yml)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
-[![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://adoptium.net/)
-[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-30.0-green.svg)](https://netbeans.apache.org/)
+[![Latest release](https://img.shields.io/github/v/release/NMOX/NMOX-Studio)](https://github.com/NMOX/NMOX-Studio/releases/latest)
+[![NetBeans Platform](https://img.shields.io/badge/NetBeans%20Platform-31-green.svg)](https://netbeans.apache.org/)
+
+**Install:**
+
+```bash
+brew trust --cask nmox/nmox-studio/nmox-studio
+brew install nmox/nmox-studio/nmox-studio
+```
+
+Not using Homebrew? [Download the latest release](https://github.com/NMOX/NMOX-Studio/releases/latest)
+for macOS, Windows or Linux. Every installer includes its own Java runtime,
+so there's nothing else to install ([details](#download)).
+
+**Then:** [the five-minute quickstart](docs/quickstart.md) ·
+[coming from VS Code](docs/coming-from-vscode.md) ·
+[the user guide](docs/user-guide.md) · [glossary](docs/glossary.md)
 
 `53 RACK DEVICES` · `88 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
@@ -156,12 +174,19 @@ an update, exactly the releases you have not seen.
 
 ### Signed checksums
 
-Releases are self-signed until v3.0: verify any download against the
-GPG-signed `SHA256SUMS` on the release page — the key lives in
-[KEYS](KEYS).
+Every release carries a GPG-signed `SHA256SUMS`: verify any download
+against it with the key in [KEYS](KEYS). The macOS app and DMG are also
+signed with an Apple Developer ID and notarized; the Windows installer is
+not yet Authenticode-signed.
 
 ## The docs
 
+- **[The quickstart](docs/quickstart.md)** — five minutes from download to
+  your own project running.
+- **[Coming from VS Code](docs/coming-from-vscode.md)** — the chords and
+  concepts, mapped.
+- **[The glossary](docs/glossary.md)** — rack, patch, jack, lane, aim,
+  KVASIR and the rest of the product's own words.
 - **[The User Guide](docs/user-guide.md)** — the complete manual: the rack,
   the studios, the wizards, and the safety nets.
 - **[The docs index](docs/README.md)** — every document, and
