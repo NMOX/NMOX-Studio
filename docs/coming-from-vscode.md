@@ -124,7 +124,7 @@ PATH*) and the Linux packages put it on your PATH; for a DMG install, the
   `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`,
   `presentation` — are accepted and not applied; the program's output
   goes to the Output window.
-  **`tasks.json` is read, with two refusals.** A task that uses a value
+- **`tasks.json` is read, with two refusals.** A task that uses a value
   only VS Code can supply (`${input:…}`, `${file}`, `${config:…}`,
   `${command:…}`) or that `dependsOn` another task is listed but not run:
   Enter says which variable or which task on the status line. Running it
