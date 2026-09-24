@@ -36,7 +36,7 @@ atajo en un teclado de PC.
 | Ir a una línea | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
 | Comentar o descomentar la línea | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Mostrar sugerencias | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
-| Añadir la siguiente aparición a la selección | ⌘D | **⌘J** | Ctrl+D | **Ctrl+J** |
+| Añadir la siguiente aparición a la selección | ⌘D | **⌘D** o ⌘J | Ctrl+D | **Ctrl+D** o Ctrl+J |
 | Seleccionar todas las apariciones | ⇧⌘L | **⌃⇧⌘J** | Ctrl+Shift+L | **Ctrl+Alt+Shift+J** |
 | Añadir un cursor arriba / abajo | ⌥⌘↑ / ⌥⌘↓ | **⌥⌘↑ / ⌥⌘↓** | Ctrl+Alt+↑ / ↓ | **Alt+Shift+[ / ]** |
 | Subir / bajar la línea | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
@@ -83,9 +83,11 @@ nmox            # just start the IDE
 ```
 
 Vuelve al instante, y un segundo `nmox` le pasa su carpeta al IDE que ya
-está en marcha. Homebrew, el instalador de Windows (*Añadir «nmox» al
-PATH*) y los paquetes de Linux lo ponen en tu PATH; para una instalación
-desde el DMG, la [guía del usuario](user-guide.es.md#2-first-launch)
+está en marcha. Se admite una columna (`src/app.ts:42:7`) y el editor se
+abre al principio de la línea; un nombre que no existe se rechaza en la
+terminal en lugar de arrancar nada. Homebrew, el instalador de Windows
+(*Añadir «nmox» al PATH*) y los paquetes de Linux lo ponen en tu PATH; para
+una instalación desde el DMG, la [guía del usuario](user-guide.es.md#2-first-launch)
 muestra el enlace de una línea.
 
 <a id="where-each-vs-code-idea-lives"></a>
@@ -96,11 +98,11 @@ muestra el enlace de una línea.
 | **Explorer** | El **Estudio de proyecto** (⇧⌘E): el árbol de archivos, las plantillas y el editor del `package.json` del proyecto. El **Banco de trabajo** (⌥⌘0) es la base: archivos abiertos, archivos recientes, proyectos recientes y todo lo que está en marcha. |
 | **Command Palette** | La **Búsqueda rápida** (⇧⌘P o ⌘I): acciones, archivos, proyectos recientes, dispositivos del rack, servidores activos, peticiones del Estudio de API, símbolos. |
 | **Extensions** | **Herramientas ▸ Complementos** instala y actualiza módulos, incluidas las propias actualizaciones de NMOX. Mucho de lo que una extensión añade en VS Code es aquí un **dispositivo del rack**, y puedes escribir uno como un archivo JSON en `~/.nmox/devices.d` ([archivos de dispositivo](device-files.md)). |
-| **`tasks.json`** | Los propios scripts de tu proyecto, ejecutados tal como están escritos: Ejecutar / Compilar / Probar de la barra de herramientas (F6, F11, ⌃F6), **Ejecutar script** en una línea de `scripts` del `package.json`, el **Explorador de NPM** y el **Rack de tareas** (⌘9), donde las tareas son dispositivos que cableas entre sí. |
-| **`launch.json`** | **Depurar el archivo** (⇧⌘F5) y el botón de depurar de la barra de herramientas deducen qué lanzar a partir del propio proyecto —la entrada del script `start`, `main`, `index.js`—, y el dispositivo del rack **INSPECTOR** lanza un depurador como un paso de una tubería. |
+| **`tasks.json`** | Se lee el `.vscode/tasks.json` de tu repositorio: escribe el nombre de una tarea en la Búsqueda rápida (⇧⌘P o ⌘I) y Entrar sobre *Ejecutar tarea: build — make all* la ejecuta, con la confianza del espacio de trabajo preguntando antes en un proyecto en el que no has confiado, su salida en la ventana Output y el ■ de la barra de herramientas para detenerla. A su lado, los propios scripts del proyecto se ejecutan tal como están escritos: Ejecutar / Compilar / Probar de la barra de herramientas (F6, F11, ⌃F6), **Ejecutar script** en una línea de `scripts` del `package.json`, el **Explorador de NPM** y el **Rack de tareas** (⌘9), donde las tareas son dispositivos que cableas entre sí. |
+| **`launch.json`** | Se lee el `.vscode/launch.json` de tu repositorio: escribe el nombre de una configuración en la Búsqueda rápida (⇧⌘P o ⌘I) y Entrar sobre *Depurar: Launch Program — ${workspaceFolder}/server.js* arranca el depurador de puntos de interrupción sobre ese programa, con la confianza del espacio de trabajo preguntando antes. Las configuraciones de Node (`node`, `pwa-node`) y de Python (`python`, `debugpy`) depuran su `program` en su `cwd`; las de Chrome (`chrome`, `pwa-chrome`) abren su `url` (o su `file`) con su `webRoot`. Sin un `launch.json`, **Depurar el archivo** (⇧⌘F5) y el botón de depurar de la barra de herramientas deducen qué lanzar a partir del propio proyecto —la entrada del script `start`, `main`, `index.js`—, y el dispositivo del rack **INSPECTOR** lanza un depurador como un paso de una tubería. |
 | **Integrated terminal** | La ventana **Terminal** (⌃\`): la primera pulsación arranca una consola en la carpeta del proyecto y las siguientes la traen de vuelta. |
 | **`settings.json`** | Herramientas ▸ Opciones (en macOS, NMOX Studio ▸ Settings…). El `.editorconfig` de tu proyecto se aplica mientras escribes y al guardar. |
-| **Problems panel** | **Elementos de acción** (⌘6): los errores y avisos de los servidores de lenguaje, y lo que encuentran los dispositivos PURITY y TYPEGUARD del rack en lint y tipos. Como en VS Code, algunos servidores solo informan de los archivos que tienes abiertos; gopls informa de todo el paquete. |
+| **Problems panel** | **Elementos de acción** (⌘6), o haz clic en el recuento **✕ ⚠** de la barra de estado: los errores y avisos de los servidores de lenguaje, y lo que encuentran los dispositivos PURITY y TYPEGUARD del rack en lint y tipos. Como en VS Code, algunos servidores solo informan de los archivos que tienes abiertos; gopls informa de todo el paquete. |
 | **Outline** | El **Navegador** (⌘7). |
 | **Source Control** | El indicador de git de la barra de estado (rama y cambios, un clic hasta el historial) y el menú **Equipo**. |
 | **Workspace Trust** | La misma idea, aplicada antes de ejecutar nada que haya elegido un repositorio: abrir un proyecto clonado no ejecuta nada hasta que confías en él (**Confianza del espacio de trabajo**). |
@@ -109,26 +111,55 @@ muestra el enlace de una línea.
 <a id="what-is-honestly-different"></a>
 ## Lo que, honestamente, es distinto
 
-- **⌘D no es multicursor aquí.** El mismo gesto es **⌘J** (Ctrl+J); ⌘D en
-  sí no tiene nada asignado. Reasígnalo en Atajos de teclado si tus dedos
-  insisten.
+- **⌘D añade la siguiente aparición en el perfil de teclado por omisión,
+  no en todos los perfiles.** El perfil Eclipse conserva ⌘D como el
+  *Delete Line* de Eclipse, y el perfil NetBeans 5.5 como *Shift Line
+  Left*; allí, ⌘J (Ctrl+J) es el mismo gesto.
 - **⌃\` abre la Terminal y le da el foco; no la oculta.** Y mientras la
   Terminal tiene el foco, las teclas son de tu consola, así que la segunda
   pulsación llega a la consola en vez de devolverte al editor.
-- **No se leen `.vscode/tasks.json` ni `launch.json`.** Una tarea es una
-  orden que eligió un repositorio, y leerla merece su propio diseño en torno
-  a la confianza del espacio de trabajo; hasta entonces, los propios scripts
-  del proyecto y las reglas de entrada de depuración de arriba hacen ese
-  trabajo.
+- **`launch.json` se lee, y lo que el depurador no puede respetar se
+  rechaza.** Aquí el depurador pasa un programa, su carpeta de trabajo y
+  nada más, así que una configuración que fija `args`, `env`, `envFile`,
+  `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` o cualquier otro
+  campo que no se le ha enseñado aparece en la lista pero no arranca:
+  Entrar nombra los campos en la barra de estado. Arrancar el programa sin
+  sus argumentos o sin su entorno depuraría algo distinto de lo que dice el
+  archivo. Lo mismo vale para `"request": "attach"`, una entrada de
+  `compounds`, un tipo sin adaptador aquí (`go`, `msedge`, `cppdbg` y los
+  demás), un valor que solo VS Code puede proporcionar (`${file}`,
+  `${input:…}`) y una ruta fuera del proyecto. Los campos que solo dan
+  forma a lo que muestra el depurador —`skipFiles`, `outFiles`,
+  `sourceMaps`, `console`, `justMyCode`, `presentation`— se aceptan y no
+  se aplican; la salida del programa va a la ventana Output.
+- **`tasks.json` se lee, con dos rechazos.** Una tarea que usa un valor
+  que solo VS Code puede proporcionar (`${input:…}`, `${file}`,
+  `${config:…}`, `${command:…}`) o que tiene un `dependsOn` hacia otra
+  tarea aparece en la lista pero no se ejecuta: Entrar dice qué variable o
+  qué tarea en la barra de estado. Ejecutarla con el valor en blanco, o
+  sin la tarea de la que depende, ejecutaría algo distinto de lo que dice
+  el archivo. Lo mismo haría un tipo de tarea que aporta una extensión
+  (`gulp`, `typescript`) y una carpeta de trabajo fuera del proyecto.
+- **Una tarea `"type": "shell"` se ejecuta en la consola que usaría VS
+  Code.** En macOS y Linux es tu `$SHELL` con `-c` (un zsh, bash o fish
+  de macOS arranca como consola de inicio de sesión, `-l`, igual que los
+  perfiles por omisión de VS Code); en Windows es PowerShell, `pwsh` si
+  está instalado. `options.shell` se respeta a la manera de VS Code: nombra
+  un `executable` y se ejecuta exactamente con los `args` que des, así que
+  un bash necesita `"args": ["-c"]`. En Windows solo se ejecutan
+  PowerShell (con args que terminan en `-Command`) y `cmd.exe` (con args
+  que terminan en `/c`); cualquier otra consola allí se rechaza por su
+  nombre en lugar de recibir una línea de órdenes entrecomillada a ojo.
 - **No hay un perfil de teclado «VS Code».** Los atajos de arriba viajan en
   el perfil por omisión y en los otros cuatro. Una excepción deliberada: en
   el perfil **Eclipse**, ⇧⌘E sigue siendo el *Switch to Editor* del propio
   Eclipse, y dentro del editor ⇧⌘P y ⇧⌘X conservan los significados de
   Eclipse (llave correspondiente, mayúsculas): quien eligió Eclipse espera
   Eclipse.
-- **En Linux, Ctrl+\` abre la Terminal, no un selector de ventanas.** La
-  plataforma tenía ahí un segundo selector para los escritorios (KDE) que se
-  quedan con Ctrl+Tab; el selector está en Ctrl+Tab.
+- **En Linux, Ctrl+\` abre la Terminal, no un selector de ventanas.** El
+  selector está en Ctrl+Tab. En un escritorio que se queda Ctrl+Tab para
+  sí (KDE, por ejemplo), **Ventana ▸ Documentos…** enumera en su lugar los
+  archivos abiertos.
 - **Los atajos con Ctrl+Alt pueden chocar con AltGr.** En Windows, las
   distribuciones de teclado que escriben caracteres con AltGr (la polaca,
   por ejemplo) envían Ctrl+Alt para ello. Si Ctrl+Alt+P o Ctrl+Alt+K te
