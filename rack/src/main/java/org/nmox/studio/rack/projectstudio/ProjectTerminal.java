@@ -39,6 +39,20 @@ import org.openide.windows.WindowManager;
 @Messages("CTL_ProjectTerminalAction=Terminal in Project")
 public final class ProjectTerminal implements ActionListener {
 
+    /**
+     * The platform's "open a terminal in this folder" action, by the id it is
+     * registered under in the assembled cluster. Until 3.1.0 this code asked
+     * for {@code Tools/org.netbeans.modules.terminal.nodes.OpenInTerminalAction},
+     * an id that does not exist, so every "terminal in the project" since
+     * 1.212.0 silently fell back to a shell in the IDE's own directory.
+     * {@code TerminalActionIdsTest} holds these ids against the cluster.
+     */
+    static final String OPEN_IN_CATEGORY = "Window";
+    static final String OPEN_IN_ID = "org.netbeans.modules.dlight.terminal.action.OpenInTerminalAction";
+    /** The plain local terminal, the fallback. */
+    static final String LOCAL_CATEGORY = "Window";
+    static final String LOCAL_ID = "LocalTerminalAction";
+
     /** The platform terminal container's window id (dlight.terminal, RELEASE310). */
     static final String CONTAINER_ID = "TerminalContainerTopComponent";
 
@@ -105,7 +119,7 @@ public final class ProjectTerminal implements ActionListener {
         }
         try {
             Node node = DataObject.find(fo).getNodeDelegate();
-            Action action = Actions.forID("Tools", "org.netbeans.modules.terminal.nodes.OpenInTerminalAction");
+            Action action = Actions.forID(OPEN_IN_CATEGORY, OPEN_IN_ID);
             if (action == null) {
                 return false;
             }
@@ -124,10 +138,8 @@ public final class ProjectTerminal implements ActionListener {
 
     /** The platform's own terminal, wherever it starts; the status line names the menu door otherwise. */
     private static void openPlain(Object source) {
-        for (String id : new String[]{
-                "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
-                "LocalTerminalAction"}) {
-            Action action = Actions.forID("Window", id);
+        for (String id : new String[]{LOCAL_ID}) {
+            Action action = Actions.forID(LOCAL_CATEGORY, id);
             if (action != null) {
                 action.actionPerformed(new ActionEvent(source, 0, "open"));
                 return;

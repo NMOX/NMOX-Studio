@@ -277,6 +277,7 @@
                                 <exclude>**/VsCodeKeymapResolutionTest.java</exclude>
                                 <exclude>**/OpenedProjectsGroupTest.java</exclude>
                                 <exclude>**/DeadDoorsTest.java</exclude>
+                                <exclude>**/ActionIdsResolveTest.java</exclude>
                                 <exclude>**/SystemLocaleReachTest.java</exclude>
                                 <exclude>**/WayfindingVocabularyTest.java</exclude>
                                 <exclude>**/WindowMenuIsUnambiguousTest.java</exclude>
@@ -327,6 +328,7 @@
                                 <include>**/VsCodeKeymapResolutionTest.java</include>
                                 <include>**/OpenedProjectsGroupTest.java</include>
                                 <include>**/DeadDoorsTest.java</include>
+                                <include>**/ActionIdsResolveTest.java</include>
                                 <include>**/SystemLocaleReachTest.java</include>
                                 <include>**/WayfindingVocabularyTest.java</include>
                                 <include>**/WindowMenuIsUnambiguousTest.java</include>
