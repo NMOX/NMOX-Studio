@@ -98,8 +98,13 @@ class VsCodeKeymapResolutionTest {
         assertThat(APP.resolve("nmoxstudio/modules")).as("the assembled cluster — run after package").isDirectory();
         List<Path> jars;
         try (Stream<Path> s = Files.walk(APP)) {
-            jars = s.filter(p -> p.toString().endsWith(".jar") && p.toString().contains("/modules/")
-                    && !p.toString().contains("/ext/") && !p.toString().contains("/locale/")).sorted().toList();
+            // matched with forward slashes whatever the OS writes: on the Windows lane
+            // Path.toString() says \modules\, and a "/modules/" test read no jar at all
+            jars = s.filter(p -> {
+                String n = p.toString().replace('\\', '/');
+                return n.endsWith(".jar") && n.contains("/modules/") && !n.contains("/ext/")
+                        && !n.contains("/locale/");
+            }).sorted().toList();
         }
         for (Path jar : jars) {
             try (JarFile jf = new JarFile(jar.toFile())) {
