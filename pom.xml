@@ -93,6 +93,33 @@
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.6.3</version>
             </plugin>
+            <!-- Pinned at the version every module already resolved
+                 (measured in a clean verify: all 57 resources executions
+                 ran 3.5.0) — unpinned, Maven printed a "version is
+                 missing" warning per module on every run and resolved
+                 the newest release it could load, which the 4.0.0 betas
+                 in the metadata show is not a stable answer. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+            <!-- The nbm packaging's lifecycle binds install and deploy with
+                 no version, so Maven resolved the newest it could load and
+                 printed three "Ignoring incompatible plugin version
+                 4.0.0-beta-N" warnings for each on every run. Pinned at the
+                 3.2.0 every nbm module already used (the pom-packaged root
+                 took the super-POM's 3.1.4 and now agrees with them). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.2.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
