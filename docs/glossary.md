@@ -1,5 +1,9 @@
 # Glossary
 
+<!-- languages -->
+**English** · [Español](glossary.es.md) · [Français](glossary.fr.md) · [Deutsch](glossary.de.md) · [Русский](glossary.ru.md) · [Українська](glossary.uk.md) · [Polski](glossary.pl.md) · [Português (Brasil)](glossary.pt.md) · [Bahasa Indonesia](glossary.id.md) · [Filipino](glossary.tl.md) · [Tiếng Việt](glossary.vi.md) · [简体中文](glossary.zh.md) · [हिन्दी](glossary.hi.md) · [עברית](glossary.he.md) · [العربية](glossary.ar.md)
+<!-- /languages -->
+
 The words NMOX Studio uses that another IDE doesn't, plus the NetBeans
 terms that show through. Each entry says what the word means here and where
 to read more.

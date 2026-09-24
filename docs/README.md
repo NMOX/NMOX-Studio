@@ -24,9 +24,10 @@ front to back or dipped into by section.
 patch, jack, lane, aim, the ⇄ chip, KVASIR, and the NetBeans terms that
 show through.
 
-**In your language** — the whole guide is translated into every language
-the IDE itself speaks. Each translation carries a language bar at the top,
-so switching is one click from wherever you are.
+**In your language** — the guide, the quickstart, the glossary and Coming
+from VS Code are translated into every language the IDE itself speaks.
+Each translation carries a language bar at the top, so switching is one
+click from wherever you are.
 
 [Español](user-guide.es.md) · [Français](user-guide.fr.md) · [Deutsch](user-guide.de.md) · [Русский](user-guide.ru.md) · [Українська](user-guide.uk.md) · [Polski](user-guide.pl.md) · [Português (Brasil)](user-guide.pt.md) · [Bahasa Indonesia](user-guide.id.md) · [Filipino](user-guide.tl.md) · [Tiếng Việt](user-guide.vi.md) · [简体中文](user-guide.zh.md) · [हिन्दी](user-guide.hi.md) · [עברית](user-guide.he.md) · [العربية](user-guide.ar.md)
 

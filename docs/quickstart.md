@@ -1,5 +1,9 @@
 # Quickstart: five minutes to your project running
 
+<!-- languages -->
+**English** · [Español](quickstart.es.md) · [Français](quickstart.fr.md) · [Deutsch](quickstart.de.md) · [Русский](quickstart.ru.md) · [Українська](quickstart.uk.md) · [Polski](quickstart.pl.md) · [Português (Brasil)](quickstart.pt.md) · [Bahasa Indonesia](quickstart.id.md) · [Filipino](quickstart.tl.md) · [Tiếng Việt](quickstart.vi.md) · [简体中文](quickstart.zh.md) · [हिन्दी](quickstart.hi.md) · [עברית](quickstart.he.md) · [العربية](quickstart.ar.md)
+<!-- /languages -->
+
 This page gets one of your own projects running inside NMOX Studio. It
 covers only what you need for that. [The user guide](user-guide.md) is the
 full manual. If you use VS Code, read
