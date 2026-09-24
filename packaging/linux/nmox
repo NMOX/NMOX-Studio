@@ -1,0 +1,31 @@
+#!/bin/sh
+# nmox - open a folder or files in NMOX Studio from a terminal:
+#
+#     cd myproject && nmox .
+#
+# Shipped as bin/nmox in the tar.gz and linked as /usr/bin/nmox by the .deb.
+# It finds bin/nmoxstudio beside itself through any symlink, so a link from
+# ~/.local/bin works as well as the package's own.
+#
+# The IDE starts in the BACKGROUND and the command returns at once, as
+# `code .` does: it must neither hold the shell until the IDE quits nor die
+# when the terminal closes. When the IDE is already running, the launcher
+# is a short-lived client that hands its arguments and its working
+# directory to the running instance (the platform's CLI handshake), so `.`
+# is the caller's folder either way. For the IDE in the foreground, with
+# its console output, run bin/nmoxstudio (or nmox-studio) instead.
+PRG=$0
+while [ -h "$PRG" ]; do
+    link=$(readlink "$PRG")
+    case "$link" in
+        /*) PRG=$link ;;
+        *)  PRG=$(dirname "$PRG")/$link ;;
+    esac
+done
+BIN=$(cd "$(dirname "$PRG")" && pwd)
+if [ ! -f "$BIN/nmoxstudio" ]; then
+    echo "nmox: cannot find nmoxstudio beside $PRG" >&2
+    exit 1
+fi
+nohup /bin/sh "$BIN/nmoxstudio" "$@" </dev/null >/dev/null 2>&1 &
+exit 0

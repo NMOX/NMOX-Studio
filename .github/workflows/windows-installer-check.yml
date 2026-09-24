@@ -91,7 +91,7 @@ jobs:
         run: |
           $setup = Get-ChildItem application\target\dist\NMOX-Studio-*-windows-setup.exe
           Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
-            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=desktopicon','/NORESTART'
+            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=desktopicon,addtopath','/NORESTART'
           $app = "$env:LOCALAPPDATA\Programs\NMOX Studio"
           if (-not (Test-Path "$app\nmox-studio.ico")) { throw "nmox-studio.ico not installed into $app" }
           $shell = New-Object -ComObject WScript.Shell
@@ -105,6 +105,27 @@ jobs:
             Write-Host "$path -> icon $icon"
             if ($icon -notmatch 'nmox-studio\.ico') { throw "unbranded shortcut icon: $icon" }
           }
+
+      # `nmox .` from a terminal: the addtopath task (ticked above) installs
+      # cli\nmox.cmd and puts that folder on the USER's Path exactly once -
+      # a reinstall must not add it again - and the uninstaller takes it out.
+      - name: Verify the nmox command on PATH
+        shell: pwsh
+        run: |
+          $app = "$env:LOCALAPPDATA\Programs\NMOX Studio"
+          $cli = "$app\cli"
+          function Entries { @(([Environment]::GetEnvironmentVariable('Path', 'User')) -split ';' | Where-Object { $_.TrimEnd('\') -ieq $cli }) }
+          if (-not (Test-Path "$cli\nmox.cmd")) { throw "nmox.cmd not installed into $cli" }
+          if (-not (Get-Content "$cli\nmox.cmd" -Raw).Contains('start "" "%~dp0..\bin\nmoxstudio64.exe" %*')) { throw "nmox.cmd does not start the launcher" }
+          if (-not (Test-Path "$app\bin\nmoxstudio64.exe")) { throw "the launcher nmox.cmd starts is not where it points" }
+          if ((Entries).Count -ne 1) { throw "expected $cli on the user Path once, found $((Entries).Count)" }
+          $setup = Get-ChildItem application\target\dist\NMOX-Studio-*-windows-setup.exe
+          Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/TASKS=desktopicon,addtopath','/NORESTART'
+          if ((Entries).Count -ne 1) { throw "a reinstall left $cli on the user Path $((Entries).Count) times" }
+          Start-Process -FilePath "$app\unins000.exe" -Wait -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART'
+          if ((Entries).Count -ne 0) { throw "the uninstaller left $cli on the user Path" }
+          Write-Host "nmox: on Path once after install and reinstall, gone after uninstall"
 
   # The one place the Windows half of WebKitTextPath is exercised for real:
   # the library path inside a linked runtime, the exported setter, the

@@ -11,6 +11,13 @@
   #define AppVersion "0.0.0"
 #endif
 
+; [CustomMessages] below carries Cyrillic, Hebrew and Arabic in a UTF-8 file
+; with no BOM, which Inno Setup reads as UTF-8 only from 6.3 on. An older
+; compiler would read it as ANSI and ship mojibake, so it refuses instead.
+#if Ver < EncodeVer(6,3,0)
+  #error Inno Setup 6.3 or newer is required (UTF-8 .iss without a BOM)
+#endif
+
 [Setup]
 AppId={{8B1B5E1E-9C5A-4E0B-9A43-NMOXSTUDIO01}
 AppName=NMOX Studio
@@ -31,6 +38,9 @@ UninstallDisplayName=NMOX Studio
 ; Brand the setup exe itself (and Add/Remove Programs) with the NMOX icon.
 SetupIconFile=..\icons\nmox-studio.ico
 UninstallDisplayIcon={app}\nmox-studio.ico
+; The "nmox" PATH task edits the environment; tell Explorer so a NEW
+; terminal sees it without a sign-out (terminals already open keep theirs).
+ChangesEnvironment=yes
 
 [Languages]
 ; The wizard speaks the languages the IDE speaks, using Inno Setup's OWN
@@ -61,6 +71,10 @@ Source: "..\..\application\target\nmoxstudio\*"; DestDir: "{app}"; \
 ; Shipped so shortcuts stay branded even where the exe's embedded icon
 ; is the stock launcher one (e.g. installers built outside CI's rcedit step).
 Source: "..\icons\nmox-studio.ico"; DestDir: "{app}"
+; `nmox .` from a terminal, like `code .`. A folder of its own, so PATH gains
+; exactly one command and not the launcher exes beside it in bin\. Shipped
+; whether or not the PATH task is ticked, so it can be added by hand later.
+Source: "nmox.cmd"; DestDir: "{app}\cli"
 
 [Icons]
 Name: "{group}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; \
@@ -72,6 +86,34 @@ Name: "{autodesktop}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; \
 ; {cm:...} resolves from the chosen language's own message file, so these
 ; three lines are translated everywhere without a word being written here
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"
+; Ticked by default, as VS Code's installer ticks "Add to PATH": a developer
+; installing an IDE expects its command. Inno ships no message for this, so
+; this one sentence is ours, in [CustomMessages] for every language above
+; (InstallerLanguagesTest holds the coverage).
+Name: "addtopath"; Description: "{cm:AddToPath}"
+
+[CustomMessages]
+AddToPath=Add "nmox" to PATH (open a folder from a terminal with "nmox .")
+es.AddToPath=Añadir «nmox» al PATH (abre una carpeta desde una terminal con «nmox .»)
+fr.AddToPath=Ajouter « nmox » au PATH (ouvrez un dossier depuis un terminal avec « nmox . »)
+de.AddToPath=„nmox“ zum PATH hinzufügen (öffnen Sie einen Ordner im Terminal mit „nmox .“)
+ru.AddToPath=Добавить «nmox» в PATH (открывайте папку из терминала командой «nmox .»)
+uk.AddToPath=Додати «nmox» до PATH (відкривайте теку з термінала командою «nmox .»)
+pl.AddToPath=Dodaj „nmox” do PATH (otwieraj katalog z terminala poleceniem „nmox .”)
+pt.AddToPath=Adicionar “nmox” ao PATH (abra uma pasta pelo terminal com “nmox .”)
+he.AddToPath=הוספת "nmox" ל-PATH (פתחו תיקייה מהמסוף עם "nmox .‎")
+ar.AddToPath=إضافة «nmox» لـ PATH (افتحوا مجلد من الترمينال بـ «nmox .‎»)
+
+[Registry]
+; Append {app}\cli to the Path of whoever the install is for: the user's own
+; environment for a per-user install, the machine's for an all-users one.
+; Each Check skips its entry when the folder is already there, so a
+; reinstall never grows the Path. [Code] takes it out again on uninstall.
+Root: HKCU; Subkey: "Environment"; ValueType: expandsz; ValueName: "Path"; \
+    ValueData: "{olddata};{app}\cli"; Tasks: addtopath; Check: NeedsUserPathEntry
+Root: HKLM; Subkey: "SYSTEM\CurrentControlSet\Control\Session Manager\Environment"; \
+    ValueType: expandsz; ValueName: "Path"; ValueData: "{olddata};{app}\cli"; \
+    Tasks: addtopath; Check: NeedsSystemPathEntry
 
 [Run]
 Filename: "{app}\bin\nmoxstudio64.exe"; Description: "{cm:LaunchProgram,NMOX Studio}"; \
@@ -80,3 +122,77 @@ Filename: "{app}\bin\nmoxstudio64.exe"; Description: "{cm:LaunchProgram,NMOX Stu
 [UninstallDelete]
 ; user/cache dirs live under %LOCALAPPDATA% and are left alone on purpose
 Type: filesandordirs; Name: "{app}"
+
+[Code]
+const
+  UserEnvKey = 'Environment';
+  SystemEnvKey = 'SYSTEM\CurrentControlSet\Control\Session Manager\Environment';
+
+function CliDir(): String;
+begin
+  Result := ExpandConstant('{app}\cli');
+end;
+
+{ True when Dir is one of the ;-separated entries of the Path under
+  Root\SubKey, case-insensitively, with or without a trailing backslash. }
+function PathHasEntry(Root: Integer; SubKey, Dir: String): Boolean;
+var
+  Paths: String;
+begin
+  Result := False;
+  if RegQueryStringValue(Root, SubKey, 'Path', Paths) then
+    Result := (Pos(';' + Uppercase(Dir) + ';', ';' + Uppercase(Paths) + ';') > 0)
+      or (Pos(';' + Uppercase(Dir) + '\;', ';' + Uppercase(Paths) + ';') > 0);
+end;
+
+function NeedsUserPathEntry(): Boolean;
+begin
+  Result := (not IsAdminInstallMode) and (not PathHasEntry(HKEY_CURRENT_USER, UserEnvKey, CliDir()));
+end;
+
+function NeedsSystemPathEntry(): Boolean;
+begin
+  Result := IsAdminInstallMode and (not PathHasEntry(HKEY_LOCAL_MACHINE, SystemEnvKey, CliDir()));
+end;
+
+{ Rewrites the Path without Dir, and only when Dir was in it: every other
+  entry, and the value itself when Dir is absent, is left as it was found. }
+procedure RemovePathEntry(Root: Integer; SubKey, Dir: String);
+var
+  Paths, Rest, Part, Kept: String;
+  P: Integer;
+  Found: Boolean;
+begin
+  if not RegQueryStringValue(Root, SubKey, 'Path', Paths) then
+    exit;
+  Rest := Paths + ';';
+  Kept := '';
+  Found := False;
+  while Rest <> '' do
+  begin
+    P := Pos(';', Rest);
+    Part := Copy(Rest, 1, P - 1);
+    Delete(Rest, 1, P);
+    if CompareText(RemoveBackslashUnlessRoot(Part), RemoveBackslashUnlessRoot(Dir)) = 0 then
+      Found := True
+    else if Part <> '' then
+    begin
+      if Kept <> '' then
+        Kept := Kept + ';';
+      Kept := Kept + Part;
+    end;
+  end;
+  if Found then
+    RegWriteExpandStringValue(Root, SubKey, 'Path', Kept);
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+begin
+  if CurUninstallStep = usUninstall then
+  begin
+    if IsAdminInstallMode then
+      RemovePathEntry(HKEY_LOCAL_MACHINE, SystemEnvKey, CliDir())
+    else
+      RemovePathEntry(HKEY_CURRENT_USER, UserEnvKey, CliDir());
+  end;
+end;

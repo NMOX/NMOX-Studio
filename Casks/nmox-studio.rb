@@ -10,6 +10,7 @@ cask "nmox-studio" do
   depends_on macos: :big_sur
 
   app "NMOX Studio.app"
+  binary "#{appdir}/NMOX Studio.app/Contents/MacOS/nmox-studio", target: "nmox"
 
   zap trash: [
     "~/Library/Application Support/NMOXStudio",

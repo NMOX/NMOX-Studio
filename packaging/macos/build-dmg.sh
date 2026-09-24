@@ -62,8 +62,33 @@ cp "$BUNDLE/Contents/Resources/nmox-studio.icns" \
 echo "==> Writing launcher"
 cat > "$BUNDLE/Contents/MacOS/nmox-studio" <<'LAUNCHER'
 #!/bin/sh
-DIR=$(cd "$(dirname "$0")" && pwd)
+# Find the bundle through any symlink. The Homebrew cask links this file
+# into the PATH as `nmox` (/opt/homebrew/bin/nmox -> .../MacOS/nmox-studio),
+# and dirname "$0" of a link is the link's directory - bin/, where there is
+# no Resources/. BSD readlink has no -f, so follow one hop at a time, the
+# way the platform's own bin/nmoxstudio does.
+PRG=$0
+while [ -h "$PRG" ]; do
+    link=$(readlink "$PRG")
+    case "$link" in
+        /*) PRG=$link ;;
+        *)  PRG=$(dirname "$PRG")/$link ;;
+    esac
+done
+DIR=$(cd "$(dirname "$PRG")" && pwd)
 RES="$DIR/../Resources/nmoxstudio"
+# Started through a link means started from a terminal (`nmox .`); Finder,
+# the Dock and `open` always run the real path. From a terminal the launch
+# is BACKGROUNDED and the command returns at once, as `code .` does: the
+# IDE must neither hold the shell until it quits nor die with the terminal
+# window. A second `nmox` while the IDE runs is a short-lived client that
+# hands its arguments - and its working directory, so `.` means the
+# caller's folder - to the running instance and exits (the platform's CLI
+# handshake). Run the real path to keep the IDE in the foreground.
+FROM_TERMINAL=no
+if [ -h "$0" ]; then
+    FROM_TERMINAL=yes
+fi
 # The app ships its own Java runtime (jre/, jdkhome in the conf). Probe
 # it actually runs on this machine (an arch mismatch must not strand the
 # user), else fall back to an installed JDK 21+, else say so plainly.
@@ -98,7 +123,12 @@ fi
 # on a bundle spctl calls notarized (3.0.0-3.0.2, measured 2026-09-23).
 # /bin/sh is a platform binary and the script is its input - exactly how
 # bin/nmoxstudio itself runs platform/lib/nbexec (`exec sh "$nbexec"`).
+# nohup also hands the script to /bin/sh: the same rule, one process later.
 if [ "$PROBE_OK" = "0" ]; then
+    if [ "$FROM_TERMINAL" = yes ]; then
+        nohup /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@" </dev/null >/dev/null 2>&1 &
+        exit 0
+    fi
     exec /bin/sh "$RES/bin/nmoxstudio" -J-Xdock:name="NMOX Studio" "$@"
 fi
 # A quarantined bundle is the common cause of a hung/blocked probe -
@@ -110,6 +140,10 @@ if xattr -p com.apple.quarantine "$APP" >/dev/null 2>&1; then
 fi
 JDK=$(/usr/libexec/java_home -v 21+ 2>/dev/null || true)
 if [ -n "$JDK" ]; then
+    if [ "$FROM_TERMINAL" = yes ]; then
+        nohup /bin/sh "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@" </dev/null >/dev/null 2>&1 &
+        exit 0
+    fi
     exec /bin/sh "$RES/bin/nmoxstudio" --jdkhome "$JDK" -J-Xdock:name="NMOX Studio" "$@"
 fi
 osascript -e 'display dialog "NMOX Studio could not start its bundled Java runtime on this machine, and no Java 21+ installation was found.\n\nInstall a JDK 21 or newer (for example Temurin from adoptium.net) and launch again." buttons {"OK"} default button 1 with title "NMOX Studio" with icon caution' >/dev/null 2>&1 || true

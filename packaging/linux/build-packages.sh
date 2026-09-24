@@ -21,6 +21,9 @@ mkdir -p "$TAR_STAGE/nmox-studio-$VERSION"
 cp -R "$APP_INPUT"/. "$TAR_STAGE/nmox-studio-$VERSION/"
 chmod +x "$TAR_STAGE/nmox-studio-$VERSION/bin/nmoxstudio" \
          "$TAR_STAGE/nmox-studio-$VERSION/platform/lib/nbexec" 2>/dev/null || true
+# `nmox .` from a terminal, like `code .` - see packaging/linux/nmox. In the
+# tarball it is bin/nmox; link it into your PATH (~/.local/bin) to use it.
+install -m 755 packaging/linux/nmox "$TAR_STAGE/nmox-studio-$VERSION/bin/nmox"
 ./packaging/tools/bundle-jre.sh "$TAR_STAGE/nmox-studio-$VERSION"
 tar -czf "$DIST/NMOX-Studio-${VERSION}-linux.tar.gz" -C "$TAR_STAGE" "nmox-studio-$VERSION"
 echo "    $DIST/NMOX-Studio-${VERSION}-linux.tar.gz"
@@ -55,6 +58,12 @@ cat > "$DEB_STAGE/usr/bin/nmox-studio" <<'WRAPPER'
 exec /opt/nmox-studio/bin/nmoxstudio "$@"
 WRAPPER
 chmod 755 "$DEB_STAGE/usr/bin/nmox-studio"
+
+# The terminal command: /usr/bin/nmox -> /opt/nmox-studio/bin/nmox, which
+# backgrounds the IDE and returns (nmox-studio above stays in the
+# foreground - the menu entry runs it). The script resolves the link.
+install -m 755 packaging/linux/nmox "$DEB_STAGE/opt/nmox-studio/bin/nmox"
+ln -s /opt/nmox-studio/bin/nmox "$DEB_STAGE/usr/bin/nmox"
 
 # The menu entry speaks every language the IDE speaks: freedesktop reads
 # Comment[xx]/GenericName[xx] for the session locale and falls back to the
