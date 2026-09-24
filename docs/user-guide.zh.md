@@ -198,6 +198,7 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
   ![操作项列出两条 gopls 错误，其中一条来自从未打开过的文件，状态栏上是 ✕ 2 ⚠ 0 计数](images/lsp-action-items.png)
 
 - **`.editorconfig` 会被遵守** —— 输入时和保存时都是。`indent_style`、`indent_size` 和 `tab_width` 决定 Tab、回车和重新缩进写出什么，所以用制表符的项目得到制表符，用四个空格的项目得到四个空格，按文件、按通配符小节分别生效；每次保存都会应用 `trim_trailing_whitespace` 和 `insert_final_newline`。对 `.editorconfig` 的修改会在几秒钟内到达已打开的编辑器。文件里已有的字面制表符仍按选项中设置的制表符宽度显示，`charset` 和 `end_of_line` 不会被应用。其余的交给你的格式化设备（GLOSS 等）。
+- **仓库的 `.vscode/settings.json` 也以同样的方式被遵守**：`editor.tabSize`、`editor.insertSpaces` 和 `editor.indentSize` 决定缩进，`files.trimTrailingWhitespace` 和 `files.insertFinalNewline`（为 `true` 时）在保存时生效，而像 `"[typescript]": {…}` 这样的语言块会为它的语言覆盖这些设置。如果项目同时还有 `.editorconfig`，凡是两者都有规定的地方，以 `.editorconfig` 为准。VS Code 的 `editor.detectIndentation`（让文件自己的缩进说了算）在这里没有对应的设置。
 
 ### 展开缩写（⌥⌘E）
 
@@ -233,7 +234,7 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
 
 ### 用真正的断点调试
 
-在左侧边栏点击，选择**调试文件（断点）**，程序就会停在那里 — 带调用栈、变量和表达式求值。JavaScript 与 TypeScript 依靠内置适配器开箱即用；Python 使用 debugpy，Go 使用 delve，这两个需要你自己安装。**在 Chrome 中调试**对网页做同样的事：你源码里的断点会在 IDE 内停下，而浏览器跑在一个用完即弃的配置文件上。所有这些都要先经过工作区信任确认。带有 `.vscode/launch.json` 的仓库还有第三扇门：在快速搜索里输入某个配置的名字，回车就会在它的 `cwd` 里启动该配置的 Node 或 Python `program`，或者用它的 `webRoot` 打开 Chrome 配置的 `url`；设置了 `args`、`env` 或其他任何调试器无法传递的字段的配置，会在状态栏上按名字被拒绝，而不是缺了它们照样启动。
+在左侧边栏点击，选择**调试文件（断点）**，程序就会停在那里 — 带调用栈、变量和表达式求值。JavaScript 与 TypeScript 依靠内置适配器开箱即用；Python 使用 debugpy，Go 使用 delve，这两个需要你自己安装。**在 Chrome 中调试**对网页做同样的事：你源码里的断点会在 IDE 内停下，而浏览器跑在一个用完即弃的配置文件上。所有这些都要先经过工作区信任确认。带有 `.vscode/launch.json` 的仓库还有第三扇门：在快速搜索里输入某个配置的名字，回车就会在它的 `cwd` 里、带着它的 `args` 和 `env` 启动该配置的 Node 或 Python `program`，或者用它的 `webRoot` 打开 Chrome 配置的 `url`；设置了 `envFile`、`runtimeExecutable` 或其他任何调试器无法传递的字段的配置，会在状态栏上按名字被拒绝，而不是缺了它们照样启动。
 
 ### 在浏览器里调试
 
@@ -337,7 +338,7 @@ Docker 标签页是一块控制面板：引擎状态、容器、镜像、卷和�
 
 ### ⌘I，万能查找
 
-一个输入框就够到：你的项目（最近的和已知的）、机架上的每个设备（直接跳到它的旋钮）、**正在跑的服务器**（回车就在浏览器里打开）、API 工作室的请求、数据库工作室的连接和表、合约、基础设施节点，任务板的卡片（命中还会说出卡片所在的那一列），以及瞄准的项目的 **npm 脚本**：输入 `dev` 或 `test`，命中会写成 *运行脚本：dev — vite*；回车就用项目自己的包管理器（npm、yarn 或 pnpm）运行它，和在 NPM 浏览器里双击完全一样 —— 对还没信任的项目，工作区信任会先问你，这次运行归工具栏的 ■ 管，它打印出的开发服务器会点亮 ⇄ 标记。在单体仓库里，列出的脚本就是 NPM 浏览器显示的那些。带有 `.vscode/tasks.json` 的仓库以同样的方式列出它的任务 —— *运行任务：build — make all* —— 回车就在同样的信任询问之后运行该任务，输出在 Output 窗口，归工具栏的 ■ 管；shell 任务在 VS Code 会使用的那个 shell 里运行（你的 `$SHELL`，在 macOS 上是登录 shell；Windows 上是 PowerShell），或者在它的 `options.shell` 指定的那个 shell 里运行；需要某个只有 VS Code 才能提供的值、或者依赖另一个任务的任务，会在状态栏上说明原因，而不会运行。它的 `.vscode/launch.json` 列在旁边 —— *调试：Launch Program — ${workspaceFolder}/server.js* —— 回车会在同样的信任询问之后，对该配置启动断点调试器。
+一个输入框就够到：你的项目（最近的和已知的）、机架上的每个设备（直接跳到它的旋钮）、**正在跑的服务器**（回车就在浏览器里打开）、API 工作室的请求、数据库工作室的连接和表、合约、基础设施节点，任务板的卡片（命中还会说出卡片所在的那一列），**VS Code 的命令名**（*Format Document*、*Toggle Terminal*、*Git: Commit*、*Open Settings* —— 每一个都列在 *VS Code 命令* 下，挨着在这里做同一件事的操作，所以下次你输入的就是它在这里的名字），以及瞄准的项目的 **npm 脚本**：输入 `dev` 或 `test`，命中会写成 *运行脚本：dev — vite*；回车就用项目自己的包管理器（npm、yarn 或 pnpm）运行它，和在 NPM 浏览器里双击完全一样 —— 对还没信任的项目，工作区信任会先问你，这次运行归工具栏的 ■ 管，它打印出的开发服务器会点亮 ⇄ 标记。在单体仓库里，列出的脚本就是 NPM 浏览器显示的那些。带有 `.vscode/tasks.json` 的仓库以同样的方式列出它的任务 —— *运行任务：build — make all* —— 回车就在同样的信任询问之后运行该任务，输出在 Output 窗口，归工具栏的 ■ 管；shell 任务在 VS Code 会使用的那个 shell 里运行（你的 `$SHELL`，在 macOS 上是登录 shell；Windows 上是 PowerShell），或者在它的 `options.shell` 指定的那个 shell 里运行；需要某个只有 VS Code 才能提供的值、或者依赖另一个任务的任务，会在状态栏上说明原因，而不会运行。该仓库的 `.vscode/launch.json` 把它的配置列在旁边 —— *调试：Launch Program — ${workspaceFolder}/server.js* —— 回车会在同样的信任询问之后，对该配置启动断点调试器。
 
 ### 状态栏告诉你什么还活着
 
