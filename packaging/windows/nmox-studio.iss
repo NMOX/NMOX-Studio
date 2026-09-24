@@ -47,7 +47,9 @@ ChangesEnvironment=yes
 ; translations rather than any written here: an installer is the first text
 ; a user ever sees, and it is the one surface where a wrong word cannot be
 ; corrected by a later release. Inno picks the entry matching the machine's
-; language and falls back to English (v2.105.0).
+; language and falls back to English (v2.105.0). One sentence is ours, the
+; "Add nmox to PATH" task (3.1.0): Inno ships no message for it, so it lives
+; in [CustomMessages] below, written to docs/i18n/conventions.md.
 ;
 ; Five of the IDE's fifteen are absent ON PURPOSE — Bahasa Indonesia,
 ; Filipino, Tiếng Việt, 简体中文 and हिन्दी ship no official .isl with Inno
