@@ -118,9 +118,23 @@ a release asset is still right for major platform jumps.
 
 ## 2. First launch
 
-From a terminal, `nmoxstudio --open <folder>` launches the app with
-that folder opened as a project and the rack aimed at it — the same
-door the Welcome page's Open Folder… opens.
+From a terminal, `nmox .` opens the folder you are standing in, the way
+`code .` does: `cd myproject && nmox .`. A folder is aimed exactly as the
+Welcome page's Open Folder… aims it, manifest or not; a file opens in the
+editor (`nmox src/app.js`). The command returns at once — the first
+`nmox` starts the IDE in the background, and each later one hands its
+folder to the IDE already running. Bare `nmox` just starts the IDE.
+Getting `nmox` onto your PATH:
+
+- **macOS, Homebrew:** the cask links it for you.
+- **macOS, from the DMG:** link (not copy) the app's launcher —
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`.
+  Started through a link it knows it came from a terminal; started from
+  Finder or the Dock it behaves as it always has.
+- **Windows:** the installer's *Add "nmox" to PATH* box, ticked by default.
+  Open a new terminal afterwards; one already open keeps its old PATH.
+- **Linux:** the `.deb` installs `/usr/bin/nmox`. From the tarball, link
+  it yourself: `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`.
 
 The IDE opens with three tabs along the editor area: **Welcome → Task
 Rack → Browser** — the launchpad, the rack, and where a run's page

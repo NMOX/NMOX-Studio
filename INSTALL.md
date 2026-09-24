@@ -49,6 +49,20 @@ tar -xzf NMOX-Studio-<version>-linux.tar.gz
 ./nmox-studio-<version>/bin/nmoxstudio
 ```
 
+## From a terminal: `nmox .`
+
+`cd myproject && nmox .` opens the folder you are in, the way `code .`
+does; `nmox src/app.js` opens a file. The command returns at once and
+hands later folders to the IDE that is already running.
+
+- **macOS, Homebrew:** the cask puts `nmox` on your PATH.
+- **macOS, DMG:** link the app's launcher yourself (a link, not a copy):
+  `sudo mkdir -p /usr/local/bin && sudo ln -s "/Applications/NMOX Studio.app/Contents/MacOS/nmox-studio" /usr/local/bin/nmox`
+- **Windows:** leave the installer's *Add "nmox" to PATH* box ticked (it
+  is by default), then open a new terminal. Uninstalling removes it.
+- **Linux:** the `.deb` installs `/usr/bin/nmox`. From the tarball:
+  `ln -s "$PWD/nmox-studio-<version>/bin/nmox" ~/.local/bin/nmox`
+
 ## Portable (all platforms)
 
 `NMOX-Studio-<version>-portable.zip` contains the full application:
@@ -71,7 +85,7 @@ guide's [Verifying your download](./docs/user-guide.md#verifying-your-download).
 mvn clean package -DskipTests
 ./packaging/macos/build-dmg.sh 1.2.3        # macOS only
 ./packaging/linux/build-packages.sh 1.2.3   # tar.gz anywhere, .deb on Debian
-iscc /DAppVersion=1.2.3 packaging\windows\nmox-studio.iss   # Windows + Inno Setup 6
+iscc /DAppVersion=1.2.3 packaging\windows\nmox-studio.iss   # Windows + Inno Setup 6.3+
 ```
 
 Releases are produced automatically by `.github/workflows/release.yml`
