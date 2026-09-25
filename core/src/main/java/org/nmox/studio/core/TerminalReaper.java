@@ -24,6 +24,12 @@ import org.openide.modules.OnStart;
  * (measured: TERM to the helper, and its {@code zsh} was gone within a
  * second). A process the IDE did not start is never touched: the census
  * is the JVM's own children.
+ *
+ * <p>A {@code git} still running under a Terminal gets a short grace
+ * first: quitting hands every commit message the IDE is holding back to
+ * the {@code nmox -w} waiting for it (the edit-request watcher's own
+ * shutdown hook), and a hang-up arriving in the same instant would end
+ * the {@code git commit} before it could use the message the user saved.
  */
 @OnStart
 public class TerminalReaper implements Runnable {
@@ -54,6 +60,9 @@ public class TerminalReaper implements Runnable {
         return hangUp(ProcessHandle.current().children());
     }
 
+    /** How long a git under a Terminal may take to finish once the IDE is quitting. */
+    static final long GIT_GRACE_MS = 3_000;
+
     static int hangUp(Stream<ProcessHandle> children) {
         List<ProcessHandle> helpers = new ArrayList<>();
         children.forEach(h -> {
@@ -61,8 +70,44 @@ public class TerminalReaper implements Runnable {
                 helpers.add(h);
             }
         });
+        awaitGit(helpers, GIT_GRACE_MS);
         helpers.forEach(ProcessHandle::destroy);
         return helpers.size();
+    }
+
+    /** Waits, at most {@code graceMs} in all, for every git beneath the helpers to exit. */
+    static void awaitGit(List<ProcessHandle> helpers, long graceMs) {
+        long deadline = System.currentTimeMillis() + graceMs;
+        for (ProcessHandle helper : helpers) {
+            for (ProcessHandle p : helper.descendants().toList()) {
+                long left = deadline - System.currentTimeMillis();
+                if (left <= 0) {
+                    return;
+                }
+                if (!isGit(p.info().command().orElse(null))) {
+                    continue;
+                }
+                try {
+                    p.onExit().get(left, java.util.concurrent.TimeUnit.MILLISECONDS);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    return;
+                } catch (java.util.concurrent.ExecutionException
+                        | java.util.concurrent.TimeoutException stillRunning) {
+                    return; // the grace is spent; the hang-up goes ahead
+                }
+            }
+        }
+    }
+
+    /** Whether {@code command} is git itself (any install: Xcode's, Homebrew's, Git for Windows'). */
+    static boolean isGit(String command) {
+        if (command == null) {
+            return false;
+        }
+        String name = command.replace('\\', '/');
+        name = name.substring(name.lastIndexOf('/') + 1);
+        return "git".equals(name) || "git.exe".equalsIgnoreCase(name);
     }
 
     /**
