@@ -27,9 +27,12 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Who wrote the line the caret is on, as a quiet note on the status line
- * (3.2.0): {@code Ada Lovelace, 3 days ago · Fix the parser}. A click opens
- * the whole file's annotations — the git module's own Annotate, through the
- * git chip's door ({@link GitStatusLine#showAnnotations}).
+ * (3.2.0): {@code Ada Lovelace, 3 days ago · Fix the parser}. A click
+ * offers the next questions — the whole file's annotations (the git
+ * module's own Annotate, through the git chip's door,
+ * {@link GitStatusLine#showAnnotations}), the commit's page on GitHub, and
+ * its full id on the clipboard; on a line not committed yet only the first
+ * means anything, so the click opens it directly.
  *
  * <p><b>When it says nothing.</b> No focused editor yet (so nothing runs at
  * boot until an editor has had focus), a document that is not a file on
@@ -56,7 +59,11 @@ import org.openide.util.lookup.ServiceProvider;
     "# {0} - short commit id",
     "# {1} - author",
     "# {2} - date and time",
-    "BlameStatusLine_tooltip=Commit {0} by {1}, {2}. Click to see who last changed every line of the file.",
+    "BlameStatusLine_tooltip=Commit {0} by {1}, {2}. Click for every line's author, or the commit on GitHub.",
+    "BlameStatusLine_annotations=Show Annotations",
+    "BlameStatusLine_copyId=Copy Commit ID",
+    "# {0} - the full commit id",
+    "BlameStatusLine_copied=Copied commit ID {0}",
     "BlameStatusLine_tooltipUncommitted=This line has changes that are not committed yet. Click to see who last changed every line of the file.",
     "BlameStatusLine_tooltipUnsaved=Line blame reads the file as it is saved on disk; save to see who last changed this line.",
     "BlameStatusLine_name=Line blame"
@@ -139,9 +146,19 @@ public final class BlameStatusLine implements StatusLineElementProvider {
         tk.addAWTEventListener(self[0], java.awt.AWTEvent.KEY_EVENT_MASK | java.awt.AWTEvent.MOUSE_EVENT_MASK);
     }
 
+    /** Where a copied commit id goes: the system clipboard; a seam for tests. */
+    static java.util.function.Consumer<String> clipboard = id -> java.awt.Toolkit.getDefaultToolkit()
+            .getSystemClipboard().setContents(new java.awt.datatransfer.StringSelection(id), null);
+
+    /** Where a copy is said; a seam for tests. */
+    static java.util.function.Consumer<String> status = text -> org.openide.awt.StatusDisplayer
+            .getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
+
     static final class Strip extends JLabel {
 
         private final LineBlame blame;
+        /** The commit the note shows, or null (nothing, unsaved, not committed). */
+        private BlamePorcelain.Line shownEntry;
         private final Timer debounce;
         private JTextComponent target;
         private DataObject targetDob;
@@ -171,7 +188,10 @@ public final class BlameStatusLine implements StatusLineElementProvider {
             addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
                 public void mousePressed(java.awt.event.MouseEvent e) {
-                    if (shownFile != null) {
+                    javax.swing.JPopupMenu menu = menu();
+                    if (menu != null) {
+                        menu.show(Strip.this, 0, -menu.getPreferredSize().height);
+                    } else if (shownFile != null) {
                         GitStatusLine.showAnnotations(shownFile, Strip.this);
                     }
                 }
@@ -293,6 +313,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
                 return;
             }
             shownFile = answer.file();
+            shownEntry = answer.entry();
             setText(PlainText.plain(text));
             setToolTipText(PlainText.plain(tooltip(answer.entry())));
             getAccessibleContext().setAccessibleDescription(getToolTipText());
@@ -301,6 +322,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
 
         private void showUnsaved() {
             shownFile = null;
+            shownEntry = null;
             setText(PlainText.plain(Bundle.BlameStatusLine_unsaved()));
             setToolTipText(PlainText.plain(Bundle.BlameStatusLine_tooltipUnsaved()));
             getAccessibleContext().setAccessibleDescription(getToolTipText());
@@ -309,9 +331,39 @@ public final class BlameStatusLine implements StatusLineElementProvider {
 
         private void showNothing() {
             shownFile = null;
+            shownEntry = null;
             setText("");
             setToolTipText(null);
             setVisible(false);
+        }
+
+        /**
+         * What a click offers for a committed line, or null when there is no
+         * commit to speak of (the click then opens the annotations, or does
+         * nothing). Built per click, from the answer on screen.
+         */
+        javax.swing.JPopupMenu menu() {
+            File file = shownFile;
+            BlamePorcelain.Line entry = shownEntry;
+            if (file == null || entry == null || entry.uncommitted()) {
+                return null;
+            }
+            javax.swing.JPopupMenu m = new javax.swing.JPopupMenu();
+            m.add(item(Bundle.BlameStatusLine_annotations(),
+                    () -> GitStatusLine.showAnnotations(file, this)));
+            m.add(item(org.nmox.studio.rack.service.GitHubLinks.openCommitLabel(),
+                    () -> org.nmox.studio.rack.service.GitHubLinks.openCommit(file, entry.sha())));
+            m.add(item(Bundle.BlameStatusLine_copyId(), () -> {
+                clipboard.accept(entry.sha());
+                status.accept(Bundle.BlameStatusLine_copied(entry.sha()));
+            }));
+            return m;
+        }
+
+        private static javax.swing.JMenuItem item(String name, Runnable run) {
+            javax.swing.JMenuItem i = new javax.swing.JMenuItem(PlainText.plain(name));
+            i.addActionListener(e -> run.run());
+            return i;
         }
 
         /** The file the note speaks about now, or null. */

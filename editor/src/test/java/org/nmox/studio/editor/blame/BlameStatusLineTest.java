@@ -90,6 +90,45 @@ class BlameStatusLineTest {
     }
 
     @Test
+    @DisplayName("a click on a commit offers its annotations, its page on GitHub and its id; an uncommitted line offers no menu")
+    void clickOffersTheCommit() {
+        Locale.setDefault(Locale.ENGLISH);
+        java.util.function.Consumer<String> savedClip = BlameStatusLine.clipboard;
+        java.util.function.Consumer<String> savedStatus = BlameStatusLine.status;
+        java.util.List<String> copied = new java.util.ArrayList<>();
+        java.util.List<String> said = new java.util.ArrayList<>();
+        try {
+            BlameStatusLine.clipboard = copied::add;
+            BlameStatusLine.status = said::add;
+            BlameStatusLine.Strip strip = new BlameStatusLine.Strip(
+                    new LineBlame((a, d, t) -> null, new RequestProcessor("unused", 1)));
+            File f = new File("x.js");
+            assertThat(strip.menu()).as("nothing shown: nothing to offer").isNull();
+            strip.show(new LineBlame.Answer(1, f, 1, line("Ada", 60, "s")));
+            javax.swing.JPopupMenu m = strip.menu();
+            assertThat(m).isNotNull();
+            java.util.List<String> rows = new java.util.ArrayList<>();
+            for (java.awt.Component c : m.getComponents()) {
+                String t = ((javax.swing.JMenuItem) c).getText();
+                assertThat(BasicHTML.isHTMLString(t)).isFalse();
+                rows.add(t.strip());
+            }
+            assertThat(rows).containsExactly("Show Annotations", "Open Commit on GitHub", "Copy Commit ID");
+            ((javax.swing.JMenuItem) m.getComponent(2)).doClick();
+            assertThat(copied).containsExactly(BlamePorcelainTest.B);
+            assertThat(said).containsExactly("Copied commit ID " + BlamePorcelainTest.B);
+
+            strip.show(new LineBlame.Answer(2, f, 1, new BlamePorcelain.Line(BlamePorcelainTest.ZERO,
+                    "Not Committed Yet", NOW / 1000, "Version of a from a")));
+            assertThat(strip.menu()).as("a line not committed has no commit to offer").isNull();
+            assertThat(strip.shownFile()).as("its click still opens the annotations").isEqualTo(f);
+        } finally {
+            BlameStatusLine.clipboard = savedClip;
+            BlameStatusLine.status = savedStatus;
+        }
+    }
+
+    @Test
     @DisplayName("registered where the status line looks for its elements")
     void registered() {
         assertThat(Lookup.getDefault().lookupAll(StatusLineElementProvider.class))

@@ -1,5 +1,6 @@
 package org.nmox.studio.rack.service;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -201,5 +202,40 @@ class GitHubLinksTest {
                 "[remote \"origin\"]\n\turl = https://oauth2:glpat-SECRET@gitlab.com/g/p.git\n");
         String refusal = GitHubLinks.resolve(repo.resolve("src/App.jsx").toFile(), 1, 1).refusal();
         assertThat(refusal).contains("gitlab.com/g/p.git").doesNotContain("SECRET").doesNotContain("oauth2");
+    }
+
+    @Test
+    @DisplayName("Open Commit on GitHub opens the commit's page from a file inside; the status says an unpushed commit is not there")
+    void openCommit(@TempDir Path tmp) throws Exception {
+        Path repo = repo(tmp, "https://github.com/NMOX/demo.git");
+        List<String> opened = new ArrayList<>();
+        List<String> said = new ArrayList<>();
+        String sha = "0123456789ABCDEF0123456789abcdef01234567";
+        GitHubLinks.actCommit(repo.resolve("src/App.jsx").toFile(), sha, u -> opened.add(u), said::add);
+        assertThat(opened).containsExactly(
+                "https://github.com/NMOX/demo/commit/0123456789abcdef0123456789abcdef01234567");
+        assertThat(said).containsExactly(
+                "Opened commit 01234567 on GitHub (NMOX/demo) — a commit not pushed yet is not there");
+    }
+
+    @Test
+    @DisplayName("Open Commit refuses what is not a commit id, a non-GitHub origin and a missing browser — and opens nothing")
+    void openCommitRefuses(@TempDir Path tmp) throws Exception {
+        Path repo = repo(tmp, "git@github.com:NMOX/demo.git");
+        File app = repo.resolve("src/App.jsx").toFile();
+        List<String> opened = new ArrayList<>();
+        List<String> said = new ArrayList<>();
+        GitHubLinks.actCommit(app, "../../evil", u -> opened.add(u), said::add);
+        GitHubLinks.actCommit(app, "abc12", u -> opened.add(u), said::add);
+        assertThat(said).containsExactly("Open Commit on GitHub: that is not a commit id",
+                "Open Commit on GitHub: that is not a commit id");
+        Files.writeString(repo.resolve(".git/config"), "[remote \"origin\"]\n\turl = https://tok@gitlab.com/a/b.git\n");
+        GitHubLinks.actCommit(app, "0123456789abcdef", u -> opened.add(u), said::add);
+        assertThat(said.get(2)).isEqualTo("Open Commit on GitHub: origin is not a GitHub remote (https://gitlab.com/a/b.git)");
+        assertThat(opened).isEmpty();
+        Files.writeString(repo.resolve(".git/config"), "[remote \"origin\"]\n\turl = git@github.com:NMOX/demo.git\n");
+        GitHubLinks.actCommit(app, "0123456789abcdef", u -> false, said::add);
+        assertThat(said.get(3)).isEqualTo(
+                "Open Commit on GitHub: no browser could open https://github.com/NMOX/demo/commit/0123456789abcdef");
     }
 }

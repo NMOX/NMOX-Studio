@@ -149,4 +149,17 @@ class GitLinkTest {
         assertThat(GitFacts.originUrl(tmp.resolve("nowhere").toFile())).isNull();
         assertThat(GitFacts.originUrl((File) null)).isNull();
     }
+
+    @Test
+    @DisplayName("a commit url takes only a commit id — 7 to 64 hex digits — so repository text never steers it (3.2.0)")
+    void commitUrls() {
+        GitLink.Remote r = GitLink.parseRemote("git@github.com:o/r.git");
+        assertThat(GitLink.commitUrl(r, "ABCDEF0")).isEqualTo("https://github.com/o/r/commit/abcdef0");
+        assertThat(GitLink.commitUrl(r, "a".repeat(64))).isNotNull();
+        assertThat(GitLink.commitUrl(r, "a".repeat(65))).isNull();
+        assertThat(GitLink.commitUrl(r, "abcdef")).isNull();
+        assertThat(GitLink.commitUrl(r, "abcdefg")).isNull();
+        assertThat(GitLink.commitUrl(r, "abc/../x")).isNull();
+        assertThat(GitLink.commitUrl(r, null)).isNull();
+    }
 }

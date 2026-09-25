@@ -63,7 +63,16 @@ import org.openide.util.RequestProcessor;
     "# {0} - the branch, {1} - owner/repo",
     "GitHubLinks_newPullRequestOpened=Opened the New Pull Request page on GitHub for {0} ({1})",
     "# {0} - the URL",
-    "GitHubLinks_newPullRequestNoBrowser=New Pull Request: no browser could open {0}"
+    "GitHubLinks_newPullRequestNoBrowser=New Pull Request: no browser could open {0}",
+    "GitHubLinks_openCommit=Open Commit on GitHub",
+    "# {0} - the commit's short id",
+    "# {1} - owner/repo",
+    "GitHubLinks_commitOpened=Opened commit {0} on GitHub ({1}) — a commit not pushed yet is not there",
+    "# {0} - why no link",
+    "GitHubLinks_commitRefused=Open Commit on GitHub: {0}",
+    "# {0} - the commit page's URL",
+    "GitHubLinks_commitNoBrowser=Open Commit on GitHub: no browser could open {0}",
+    "GitHubLinks_notACommit=that is not a commit id"
 })
 public final class GitHubLinks {
 
@@ -182,6 +191,54 @@ public final class GitHubLinks {
         } else {
             status.accept(Bundle.GitHubLinks_newPullRequestNoBrowser(link.url()));
         }
+    }
+
+    /**
+     * Off the EDT: the repository {@code file} is in → its GitHub origin →
+     * the page of commit {@code sha}. The answer's {@code ref} is the sha.
+     */
+    public static Link resolveCommit(File file, String sha) {
+        File root = GitFacts.repoRoot(file.isDirectory() ? file : file.getParentFile());
+        if (root == null) {
+            return Link.refuse(Bundle.GitHubLinks_notInRepo(file.getName()));
+        }
+        String origin = GitFacts.originUrl(root);
+        if (origin == null) {
+            return Link.refuse(Bundle.GitHubLinks_noOrigin());
+        }
+        GitLink.Remote remote = GitLink.parseRemote(origin);
+        if (remote == null) {
+            return Link.refuse(Bundle.GitHubLinks_notGitHub(GitLink.withoutCredentials(origin)));
+        }
+        String url = GitLink.commitUrl(remote, sha);
+        if (url == null) {
+            return Link.refuse(Bundle.GitHubLinks_notACommit());
+        }
+        return new Link(url, "", remote.slug(), sha, null);
+    }
+
+    /** Open Commit on GitHub, on this class's lane: resolve, open the user's browser, say what happened. */
+    public static void openCommit(File file, String sha) {
+        RP.post(() -> actCommit(file, sha, ServingLinks::openInSystemBrowser,
+                text -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(text))));
+    }
+
+    /** The seam: {@link #openCommit} with the browser and the status line handed in. */
+    static void actCommit(File file, String sha, Predicate<String> browser, Consumer<String> status) {
+        Link link = resolveCommit(file, sha);
+        if (link.refusal() != null) {
+            status.accept(Bundle.GitHubLinks_commitRefused(link.refusal()));
+        } else if (browser.test(link.url())) {
+            String shortSha = sha.length() > 8 ? sha.substring(0, 8) : sha;
+            status.accept(Bundle.GitHubLinks_commitOpened(shortSha, link.slug()));
+        } else {
+            status.accept(Bundle.GitHubLinks_commitNoBrowser(link.url()));
+        }
+    }
+
+    /** The menu name of Open Commit on GitHub, in the reader's language. */
+    public static String openCommitLabel() {
+        return Bundle.GitHubLinks_openCommit();
     }
 
     /** The menu name of New Pull Request, in the reader's language. */

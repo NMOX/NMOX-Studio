@@ -162,6 +162,25 @@ public final class GitLink {
     }
 
     /**
+     * {@code https://github.com/o/r/commit/<sha>} — a commit's own page
+     * (3.2.0, the line blame note's Open Commit on GitHub), or null when
+     * {@code sha} is not a commit id: 7 to 64 hexadecimal digits, so a
+     * repository's text can never steer the link anywhere else.
+     */
+    public static String commitUrl(Remote remote, String sha) {
+        if (sha == null || sha.length() < 7 || sha.length() > 64) {
+            return null;
+        }
+        for (int i = 0; i < sha.length(); i++) {
+            if (Character.digit(sha.charAt(i), 16) < 0) {
+                return null;
+            }
+        }
+        return "https://github.com/" + remote.owner() + '/' + remote.repo()
+                + "/commit/" + sha.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /**
      * A remote URL fit to show: the user-info part of a {@code scheme://}
      * URL is dropped, because a remote like
      * {@code https://oauth2:glpat-…@gitlab.com/g/p.git} carries a token in
