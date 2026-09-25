@@ -160,16 +160,25 @@ public final class GitSetupAction implements ActionListener {
         status(Bundle.GitSetupAction_applied());
     }
 
-    /** The user's own git with fixed words, bounded; null when it could not start. */
-    private static ProcessSupport.BoundedResult run(List<String> argv) {
+    /** The spawn, a seam: tests answer for git. Null when git could not start. */
+    static java.util.function.Function<List<String>, ProcessSupport.BoundedResult> runner = argv -> {
         try {
             return ProcessSupport.runBounded(argv, null, LEASH);
         } catch (java.io.IOException ex) {
             return null;
         }
+    };
+
+    /** The status line, a seam: tests read what was said. */
+    static java.util.function.Consumer<String> status = text ->
+            SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(text)));
+
+    /** The user's own git with fixed words, bounded; null when it could not start. */
+    private static ProcessSupport.BoundedResult run(List<String> argv) {
+        return runner.apply(argv);
     }
 
     private static void status(String text) {
-        SwingUtilities.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(text)));
+        status.accept(text);
     }
 }

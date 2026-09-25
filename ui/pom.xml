@@ -214,6 +214,25 @@
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- masterfs registers the disk URLMapper, so FileUtil.toFileObject
+             resolves real files in headless tests - DiffWindowTest opens the
+             platform's diff controller over real files (3.2.0); at runtime
+             the platform cluster provides it, as for core, rack and tools -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- projectapi-nb registers the ProjectManagerImplementation the
+             diff controller's FileEncodingQuery reaches through project
+             lookup (DiffWindowTest, 3.2.0); runtime gets it from the cluster -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-projectapi-nb</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

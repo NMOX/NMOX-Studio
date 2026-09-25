@@ -159,15 +159,16 @@ final class DiffWindow extends TopComponent {
     }
 
     private static StreamSource source(File f) throws IOException {
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
-        if (fo == null) {
+        if (!f.isFile()) {
             throw new IOException(f.getPath() + ": no such file");
         }
+        // the FileObject only names the type, for the panes' colouring
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(f));
         byte[] head;
         try (InputStream in = Files.newInputStream(f.toPath())) {
             head = in.readNBytes(SNIFF);
         }
-        String mime = looksBinary(head) ? BINARY : fo.getMIMEType();
+        String mime = looksBinary(head) ? BINARY : fo == null ? "text/plain" : fo.getMIMEType();
         return StreamSource.createSource(f.getName(), f.getPath(), mime, f);
     }
 
@@ -221,6 +222,21 @@ final class DiffWindow extends TopComponent {
         int at = Math.max(index, 0);
         previous.setEnabled(count > 0 && at > 0);
         next.setEnabled(count > 0 && at < count - 1);
+    }
+
+    /** Tests: the bar brought up to date, and what it says. EDT. */
+    void showWhereForTest() {
+        showWhere();
+    }
+
+    String whereTextForTest() {
+        return where.getText().strip();
+    }
+
+    /** Tests: waits until every pending byte comparison has run and painted. */
+    static void awaitBytesForTest() throws Exception {
+        BYTES.post(() -> { }).waitFinished();
+        SwingUtilities.invokeAndWait(() -> { });
     }
 
     @Override

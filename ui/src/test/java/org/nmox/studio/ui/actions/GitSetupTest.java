@@ -86,4 +86,44 @@ class GitSetupTest {
         org.assertj.core.api.Assertions.assertThat(GitSetupAction.alreadySet(now)).isFalse();
         org.assertj.core.api.Assertions.assertThat(GitSetupAction.alreadySet(java.util.Map.of())).isFalse();
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("Apply sets every setting in order, says so, and stops at git's first refusal in git's own words")
+    void applyRunsAndStops() {
+        var savedRunner = GitSetupAction.runner;
+        var savedStatus = GitSetupAction.status;
+        java.util.List<java.util.List<String>> ran = new java.util.ArrayList<>();
+        java.util.List<String> said = new java.util.ArrayList<>();
+        try {
+            GitSetupAction.status = said::add;
+            GitSetupAction.runner = argv -> {
+                ran.add(argv);
+                return new org.nmox.studio.core.process.ProcessSupport.BoundedResult(0, "", "", false, false);
+            };
+            GitSetupAction.apply();
+            org.assertj.core.api.Assertions.assertThat(ran).hasSize(GitSetup.settings().size());
+            org.assertj.core.api.Assertions.assertThat(ran.get(0))
+                    .isEqualTo(GitSetup.setCommand("core.editor", "nmox -w"));
+            org.assertj.core.api.Assertions.assertThat(said).containsExactly(Bundle.GitSetupAction_applied());
+            ran.clear();
+            said.clear();
+            GitSetupAction.runner = argv -> {
+                ran.add(argv);
+                return new org.nmox.studio.core.process.ProcessSupport.BoundedResult(
+                        ran.size() == 2 ? 5 : 0, "", "error: could not lock config file\n", false, false);
+            };
+            GitSetupAction.apply();
+            org.assertj.core.api.Assertions.assertThat(ran).as("stops at the refusal").hasSize(2);
+            org.assertj.core.api.Assertions.assertThat(said).containsExactly(
+                    Bundle.GitSetupAction_failed("diff.tool", "error: could not lock config file"));
+            said.clear();
+            GitSetupAction.runner = argv -> null;
+            GitSetupAction.apply();
+            org.assertj.core.api.Assertions.assertThat(said).containsExactly(
+                    Bundle.GitSetupAction_failed("core.editor", Bundle.GitSetupAction_noGit()));
+        } finally {
+            GitSetupAction.runner = savedRunner;
+            GitSetupAction.status = savedStatus;
+        }
+    }
 }
