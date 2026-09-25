@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * {@link Routes#MAX_FILES} a miss is a miss among the files read, not proof
  * that no route registers the path — the jump's refusal must not claim it.
  */
-class RoutesCensusTest {
+class RoutesLookupTest {
 
     @Test
     @DisplayName("a small project's miss is complete: no route registers the path")
