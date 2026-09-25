@@ -673,7 +673,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             // 3.2.0: GitHub's own New Pull Request page for the branch the
             // chip names — the step after the push, one click from where the
             // branch is shown
-            JMenuItem newPull = new JMenuItem(GitHubLinks.newPullRequestLabel());
+            JMenuItem newPull = new JMenuItem(org.nmox.studio.core.util.PlainText.plain(GitHubLinks.newPullRequestLabel()));
             newPull.addActionListener(e -> {
                 java.io.File dir = RackService.getDefault().getRack().getProjectDir();
                 if (dir != null) {
