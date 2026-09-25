@@ -45,12 +45,15 @@ the git chip's one spawn is not where a big repository hurts.
    Find in Projects for a literal in two files of 50,202 answered correctly
    in 10–34 s cold (between two samples) and in 4 s or less warm, the heap
    climbing to about 700 MB on the first run.
-6. **Find in Projects' results read as empty on first open.** In a fresh
-   userdir the Search Results window opens with its preview pane showing
+6. **Find in Projects' results read as empty on first open — on any
+   project.** The Search Results window opens with its preview pane showing
    and the results tree squeezed to a column about 10 pixels wide, so a
-   search that found its two matches looks like one that found nothing;
-   toggling the preview off shows them. Seen on the fixture; whether a
-   small project opens the same way is not yet checked.
+   search that found its matches looks like one that found nothing. The
+   platform places the divider at `max(saved, 250)`, but its first layout
+   happens while the window has almost no width, Swing clamps the divider,
+   and the panel's own listener saves the clamp (`replace_results_divider=14`
+   in a fresh userdir's preferences) — so every later session reopens
+   squeezed too. Reproduced on the five-file walk repository.
 4. **The project-wide editor scans were sized for small projects, and
    stop quietly.** Design-token and CSS-class completion (and ⌘-click to a
    token or class) read at most 60 stylesheet and markup files, and the
@@ -71,7 +74,7 @@ the git chip's one spawn is not where a big repository hurts.
 |---|------|---------|-------|
 | 1 | The watcher becomes incremental: a poll stats the directories it knows and relists only those whose time moved (how git, an atomic save and a generator write), stats the tracked files for in-place edits (the tree every 10th poll), reconciles with a full walk every 20 s, waits at least eight times its own last duration, and says once when the cap is reached | 1, 2 | **Done on `claude/after-3.2`.** The same 150 s boot: the watchers' CPU samples 305 → 44, their allocation 6.8 → 0.6 GB. The first cut measured 14 and 0.19 GB, and a hostile review proved it could go blind where the old walk healed (a file written in the tick its directory was listed: 9–21 of 9,000 lost in a real race; a failed listing; a root that came back; quadratic mass changes); the reconcile, git's racily-clean rule and one-pass removal are the price. `IncrementalWatcherTest` (twelve), a mutant by name for each |
 | 2 | Go to File, Go to Symbol and Find in Projects on the fixture: time to first result, and what each reads | 3, 5 | Go to File and Find in Projects walked (finding 5); a profile of the cold Find in Projects and Go to Symbol still to take |
-| 5 | Find in Projects' results open readable: the tree has its width the first time | 6 | to reproduce on a small project, then fix |
+| 5 | Find in Projects' results open readable: the first real layout of a results split moves a divider under 120 px to the platform's 250 (or 40% of the window), once, and the platform's listener saves that | 6 | **Done on `claude/after-3.2`.** Walked twice: a fresh userdir's first search reads "Found 1 match of three in 1 file" with the tree 352 px wide, and a userdir already carrying the saved 14 opens healed; `replace_results_divider=352` saved both times. `SearchResultsSplitTest`, three mutants by name |
 | 3 | Project Studio's tree expanding a 250-file folder, and the Workbench's detection sweep, on the fixture | — | to measure |
 | 4 | The project-wide editor scans on a big tree: read the likely places first (the aimed package, `src/`, a `tokens`/`theme` stylesheet, the server package) rather than walk order, and say in the completion popup when the census stopped at its cap | 4 | to design: read from source, not yet walked |
 
@@ -89,3 +92,4 @@ Written after 3.2.0 shipped, held for the release this plan becomes:
   Ukrainian and the eight Latin-script languages, Hindi's appended letters,
   the top menu bar's uniqueness law (ledger 122 closed).
 - The file watchers (row 1).
+- Find in Projects' results open readable (row 5).
