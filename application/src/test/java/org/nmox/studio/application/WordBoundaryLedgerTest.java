@@ -67,6 +67,11 @@ class WordBoundaryLedgerTest {
             + "and every kind of mark are kept, because GitHub keeps them — "
             + "## Überblick is #überblick and a Hindi heading keeps its vowel signs, or a "
             + "link into a translated document would be reported dead when it lands",
+            "TerminalLinks.java",
+            "reads a FILE NAME out of a terminal line so a click can open it (3.2): a "
+            + "person names their files in their own script, so a combining mark stays "
+            + "with its letter (NON_SPACING_MARK, COMBINING_SPACING_MARK, ENCLOSING_MARK) "
+            + "and a Hindi file name is one link, not three",
             "CodeSpellTokenListProvider.java",
             "scans comments and strings for words to spell-check — and DELIBERATELY keeps "
             + "the letters-only rule: its two-letter minimum means a Devanagari word "
