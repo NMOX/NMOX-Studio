@@ -132,9 +132,12 @@ counting as open, Windows sh). What is left:
   current-file scope lists them (walked in 3.2: nothing under the project
   scope, three rows under current file, all three again once a
   `package.json` made the folder a project).
-- **A git folder not named `.git`** (`--separate-git-dir`, a bare
+- ~~**A git folder not named `.git`** (`--separate-git-dir`, a bare
   repository) is not recognised by the left-over-message sweep, so a
-  restored `COMMIT_EDITMSG` there reopens as before.
+  restored `COMMIT_EDITMSG` there reopens as before.~~ Closed after 3.2.0:
+  `GitRequestFiles` also recognises git's own shape (a `HEAD` beside
+  `objects` and `refs`, or a linked worktree's `HEAD` beside `commondir`),
+  tested against folders real git made; the sweep reads that on a lane.
 - **If git's `nmox -w` starts the IDE and the restore also brings back a
   tab on the same message**, the request waits until both are closed.
   Plausible from the code, not walked.
