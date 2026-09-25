@@ -64,8 +64,8 @@ comment** ang isang linya nang hindi ito binubura.
 **Makikita:** Ang **tandang ⎇** sa status line — ang `⎇ main ±3 ↑2 ↓1` ay
 ang iyong branch, tatlong binagong file, dalawang commit na ipu-push at
 isang ipu-pull (lumalabas lamang ang mga arrow kapag may ipu-push o
-ipu-pull). Nagsisimula ang menu nito sa **Lumipat ng Branch…** at
-**I-commit…**.
+ipu-pull). Nagsisimula ang menu nito sa **Lumipat ng Branch…**, **I-commit…**, **I-pull…** at
+**I-push…**.
 
 **Gawin:** Ilagay ang caret sa anumang linya ng isang sinusubaybayang file.
 

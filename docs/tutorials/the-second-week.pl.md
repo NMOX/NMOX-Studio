@@ -61,8 +61,8 @@ go.
 **Zobacz:** **plakietkę ⎇** na pasku stanu — `⎇ main ±3 ↑2 ↓1` to twoja
 gałąź, trzy zmienione pliki, dwa commity do wypchnięcia i jeden do
 pobrania (strzałki pojawiają się tylko wtedy, gdy jest coś do wypchnięcia
-lub pobrania). Jej menu zaczyna się od **Przełącz gałąź…** i
-**Zatwierdź…**.
+lub pobrania). Jej menu zaczyna się od **Przełącz gałąź…**, **Zatwierdź…**, **Pobierz (pull)…** i
+**Wypchnij (push)…**.
 
 **Zrób:** postaw kursor na dowolnym wierszu śledzonego pliku.
 
