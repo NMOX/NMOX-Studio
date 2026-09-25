@@ -59,6 +59,15 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("'Create New Terminal' always starts a shell: its own action, not the one that brings a terminal forward")
+    void createNewTerminalStartsOne() {
+        var byTitle = VsCodeCommandSearchProvider.COMMANDS.stream()
+                .collect(java.util.stream.Collectors.toMap(c -> c.title(), c -> c.id()));
+        assertThat(byTitle.get("View: Toggle Terminal")).endsWith(".ProjectTerminalAction");
+        assertThat(byTitle.get("Terminal: Create New Terminal")).endsWith(".ProjectTerminalNewAction");
+    }
+
+    @Test
     @DisplayName("the label is VS Code's title, then the action's own name without mnemonic or ellipsis")
     void theLabelTeachesTheName() {
         VsCodeCommandSearchProvider.Resolver r = (c, id) -> named("&Options...", true);

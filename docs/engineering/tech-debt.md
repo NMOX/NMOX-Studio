@@ -106,8 +106,11 @@ counting as open, Windows sh). What is left:
   file. A mount whose clock runs BEHIND makes fresh files look settled at
   once, and an in-place edit that restores both the time and the size is
   not seen; both are recorded, neither measured on a real mount.
-- **Quick Search's *Terminal: Create New Terminal*** fires ⌃`'s action,
-  which brings an open terminal forward rather than always starting one.
+- ~~**Quick Search's *Terminal: Create New Terminal*** fires ⌃`'s action,
+  which brings an open terminal forward rather than always starting one.~~
+  Closed after 3.2.0: the row fires *New Terminal in Project*
+  (`ProjectTerminalNew`), which always starts a shell through
+  `ProjectTerminal.openNew`, the Terminal button's own rule.
 - **Copy Path from a diff pane or a history revision** may copy the
   platform's temporary file for that side. Plausible, not walked.
 - **The grouped-DataObject rules guard nothing today.** `EditedFile` and
