@@ -121,7 +121,9 @@ loop as one sitting is the new tutorial
   terminal window sends — and a job started with `nohup` survives, as it
   would anywhere else. A `git` still running in one gets up to three seconds
   first, so a `git commit` whose message the IDE hands back on quitting
-  lands with it. Walked: Quit with two Terminals open left none behind.
+  lands with it. Walked: Quit with two Terminals open left none behind, and
+  a `git commit -a` typed in the IDE's own Terminal, its message saved and
+  its tab still open at Quit, landed with that message.
 
 ### The Agent Port connects once
 
