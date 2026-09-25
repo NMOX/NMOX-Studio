@@ -11,7 +11,8 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
  * call and land on the Express/Fastify/Koa route that serves it
  * (v2.31.0, the full-stack wishlist) — the client and the server of
  * the same project, finally on speaking terms. Exact-path match; a
- * path no route declares refuses with the sweep's honest scope.
+ * path no route declares refuses with the sweep's honest scope — and a
+ * sweep that stopped at its cap says so rather than claim no route exists.
  */
 @MimeRegistrations({
     @MimeRegistration(mimeType = "text/javascript", service = HyperlinkProviderExt.class, position = 17),
@@ -19,7 +20,9 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 })
 @org.openide.util.NbBundle.Messages({
     "FetchRouteHyperlink_tooltip=Go to the route that serves this path",
-    "FetchRouteHyperlink_noRoute=No route registers {0} in this project''s JS/TS sources"
+    "FetchRouteHyperlink_noRoute=No route registers {0} in this project''s JS/TS sources",
+    "# {0} - the path, {1} - how many files the lookup reads at most",
+    "FetchRouteHyperlink_noRouteCapped=No route registers {0} in the first {1} of this project''s JS/TS files, and only those are read"
 })
 public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
 
@@ -36,11 +39,15 @@ public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
     @Override
     protected void click(String text, int[] span, File projectDir) {
         String path = text.substring(span[0], span[1]);
-        Routes.Route found = Routes.findRoute(projectDir, path);
-        if (found == null) {
+        Routes.Lookup found = Routes.lookup(projectDir, path);
+        if (found.route() != null) {
+            openAt(found.route().file(), found.route().offset());
+        } else if (found.complete()) {
             status(Bundle.FetchRouteHyperlink_noRoute(path));
         } else {
-            openAt(found.file(), found.offset());
+            // the census stopped at its cap: "no route" would be a claim
+            // about files it never read (a monorepo's server package)
+            status(Bundle.FetchRouteHyperlink_noRouteCapped(path, Routes.MAX_FILES));
         }
     }
 }
