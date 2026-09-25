@@ -30,6 +30,12 @@ public final class EditedFile {
     /** The file {@code doc} holds, or null (no document, no file, or no way to tell which). */
     public static FileObject of(Document doc) {
         Object sd = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
+        if (sd instanceof FileObject fo) {
+            // a document can name its file directly, as NbEditorUtilities
+            // accepted (7th review: the i18n completion's documents do, and
+            // ProjectRoot.of went null for them)
+            return fo;
+        }
         if (!(sd instanceof DataObject dob)) {
             return null;
         }

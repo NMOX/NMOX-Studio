@@ -57,6 +57,9 @@ class EditedFileTest {
         pane.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, DataObject.find(app));
         assertThat(EditedFile.of(pane.getDocument())).isEqualTo(app);
         assertThat(EditedFile.of(new JEditorPane().getDocument())).isNull();
+        JEditorPane named = new JEditorPane();
+        named.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, app);
+        assertThat(EditedFile.of(named.getDocument())).as("a document that names its file directly").isEqualTo(app);
         assertThat(EditedFile.of(null)).isNull();
     }
 
