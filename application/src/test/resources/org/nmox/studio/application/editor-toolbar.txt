@@ -1,0 +1,66 @@
+# The editor toolbar's buttons whose tooltip key lives in platform CODE.
+#
+# 3.2: every button above an editor (Back, Forward, Find Next, the
+# bookmarks, Shift Line, Comment…) painted its tooltip in English in every
+# translated build. The toolbar paints each button's tooltip from its
+# action's SHORT_DESCRIPTION (NbEditorToolBar: JToolBar.add(Action), then
+# updateTooltip appends the shortcut). WHICH buttons exist is DERIVED by
+# MainWindowChromeSpeaksTest from every Editors/**/Toolbars/Default
+# registration in the cluster's layers, and so is the key of every button
+# whose action the layer registers with a ShortDescription
+# (Editors/Actions/<name>.instance). The buttons below are the rest: an
+# action built in code, whose key only the bytecode and the running toolbar
+# say. Each row was read from both: a probe of the running German and
+# English toolbars (the action's NAME, SHORT_DESCRIPTION and the painted
+# tooltip, per file type: .txt .css .sql .xml .rs .dtd .yaml) and the
+# javap of the action class that sets it:
+#
+#   jump-list-prev/next: NbEditorKit installs NavigationHistoryBack/Forward
+#     Action (not editor-lib's jump-list-* action), which puts
+#     *_Tooltip_simple while the history is empty and *_Tooltip ({0} = the
+#     target) once it is not; editor-lib's jump-list-prev overlay is NOT
+#     what this button reads.
+#   toggle-rectangular-selection, comment, uncomment: LocalBaseAction /
+#     ExtKit.BaseKitLocalizedAction, whose short-description bundle is
+#     BaseKit's (org/netbeans/editor), key = the action name.
+#   start/stop-macro-recording: BaseAction with no bundle class, so
+#     LocaleSupport's one localizer (EditorModule adds NbLocalizer(BaseKit))
+#     answers the action name from org/netbeans/editor.
+#   bookmark-*: WrapperBookmarkAction copies the delegate's SHORT_DESCRIPTION
+#     through Actions.cutAmpersand, so the key carries a mnemonic the tooltip
+#     drops.
+#   the SQL and XML buttons: SystemActions, painted by name (Check and
+#     Validate name themselves ...File while disabled); the SQL
+#     connection presenter paints a label, an accessible name and a loading
+#     line of its own.
+#
+# toolbar item (the layer file's name) | jar | package | key | English as shipped
+# (a row per key the button can paint; a button may paint more than one)
+
+jump-list-prev|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|NavigationHistoryBackAction_Tooltip_simple|Back
+jump-list-prev|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|NavigationHistoryBackAction_Tooltip|Go back to {0}
+jump-list-next|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|NavigationHistoryForwardAction_Tooltip_simple|Forward
+jump-list-next|org-netbeans-modules-editor.jar|org/netbeans/modules/editor/impl/actions|NavigationHistoryForwardAction_Tooltip|Go forward to {0}
+toggle-rectangular-selection|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|toggle-rectangular-selection|Toggle Rectangular Selection
+start-macro-recording|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|start-macro-recording|Start Macro Recording
+stop-macro-recording|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|stop-macro-recording|Stop Macro Recording
+comment|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|comment|Comment
+uncomment|org-netbeans-modules-editor-lib.jar|org/netbeans/editor|uncomment|Uncomment
+bookmark-toggle.shadow|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/lib/editor/bookmarks/actions|bookmark-toggle|Toggle Bookmar&k
+bookmark-next.shadow|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/lib/editor/bookmarks/actions|bookmark-next|Next B&ookmark
+bookmark-previous.shadow|org-netbeans-modules-editor-bookmarks.jar|org/netbeans/lib/editor/bookmarks/actions|bookmark-previous|Previo&us Bookmark
+org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_ConnectionAction|C&onnection:
+org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_DatabaseConnection|Database Connection
+org-netbeans-modules-db-sql-editor-ui-actions-ConnectionAction.instance|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|ConnectionAction.ToolbarPresenter.LoadingConnections|<html><i>Loading Connections...</i></html>
+org-netbeans-modules-db-sql-editor-ui-actions-RunSQLAction.shadow|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_RunSqlAction|Run SQL
+org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_RunCurrentStatementAction|&Run Statement
+org-netbeans-modules-db-sql-editor-ui-actions-RunSQLSelectionAction.shadow|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_RunSelectionAction|&Run Selection
+org-netbeans-modules-db-sql-editor-ui-actions-SQLHistoryAction.shadow|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_SQLHistoryAction|SQL History
+org-netbeans-modules-db-sql-editor-ui-actions-SelectInExplorerAction.instance|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_SelectInExplorerAction|Select Connection in Services
+org-netbeans-modules-db-sql-editor-ui-actions-ToggleKeepOldResultTabsAction.shadow|org-netbeans-modules-db-sql-editor.jar|org/netbeans/modules/db/sql/editor/ui/actions|LBL_ToggleKeepOldResultTabsAction|Keep Prior Tabs
+org-netbeans-modules-xml-tools-actions-CheckAction.shadow|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Check_XML|Chec&k XML
+org-netbeans-modules-xml-tools-actions-CheckAction.shadow|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Check_File|Chec&k File
+org-netbeans-modules-xml-tools-actions-ValidateAction.shadow|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_XML|&Validate XML
+org-netbeans-modules-xml-tools-actions-ValidateAction.shadow|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_File|&Validate File
+org-netbeans-modules-xml-tools-actions-CheckDTDAction.shadow|org-netbeans-modules-xml-tools.jar|org/netbeans/modules/xml/tools/actions|NAME_Validate_DTD|Check &DTD
+org-netbeans-modules-xsl-actions-TransformAction.shadow|org-netbeans-modules-xsl.jar|org/netbeans/modules/xsl/actions|NAME_transform_action|XSL &Transformation...

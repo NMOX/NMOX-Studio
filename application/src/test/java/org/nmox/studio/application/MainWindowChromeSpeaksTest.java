@@ -63,6 +63,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  * shape: every recorded key must still exist saying exactly what the ledger
  * records, and every one must be overlaid in every shipped language.
  *
+ * <p>The editor's toolbar (Back, Forward, Find Next, the bookmarks, Shift
+ * Line, Comment, and the SQL and XML buttons) painted every tooltip in
+ * English. Which buttons exist is DERIVED from every
+ * {@code Editors/**&#47;Toolbars/Default} registration; a button whose action
+ * the layer registers with a {@code ShortDescription}
+ * ({@code Editors/**&#47;Actions/<name>.instance}) has its key derived too, and
+ * every other button must have rows in a second checked ledger
+ * ({@code editor-toolbar.txt}), read from the running toolbar and the
+ * bytecode of its action. A button the layers add that neither the layer nor
+ * the ledger names fails here by name.
+ *
  * <p>A platform key is translated by a branding overlay
  * ({@code branding/src/main/nbm-branding/modules/<jar>/<pkg>/Bundle_<lang>});
  * a key in one of OUR jars must carry {@code Bundle_<lang>} in that jar.
@@ -97,6 +108,10 @@ class MainWindowChromeSpeaksTest {
     private static Set<String> multiViewSpecs;
     /** QuickSearch/&lt;name&gt; → the localizing bundle package that names it. */
     private static Map<String, String> quickSearchCategories;
+    /** Every editor-toolbar button the layers register (the layer file's name), separators excepted. */
+    private static Set<String> toolbarItems;
+    /** Action name to the ShortDescription specs its {@code Editors/**&#47;Actions/<name>.instance} declares. */
+    private static Map<String, Set<String>> actionShortDescriptions;
     /** Layers the parser refused although they speak about a surface this test reads. */
     private static List<String> unreadable;
 
@@ -108,6 +123,8 @@ class MainWindowChromeSpeaksTest {
         Map<String, Map<String, Properties>> found = new LinkedHashMap<>();
         Set<String> mv = new TreeSet<>();
         Map<String, String> qs = new LinkedHashMap<>();
+        Set<String> tb = new TreeSet<>();
+        Map<String, Set<String>> sd = new LinkedHashMap<>();
         List<String> refused = new ArrayList<>();
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
@@ -141,12 +158,13 @@ class MainWindowChromeSpeaksTest {
                                 doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(raw));
                             } catch (Exception malformed) {
                                 String text = new String(raw, StandardCharsets.UTF_8);
-                                if (text.contains("MultiView") || text.contains("\"QuickSearch\"")) {
+                                if (text.contains("MultiView") || text.contains("\"QuickSearch\"")
+                                        || text.contains("\"Toolbars\"")) {
                                     refused.add(jarName + "!" + n);
                                 }
                                 continue;
                             }
-                            walk(doc.getDocumentElement(), new ArrayList<>(), mv, qs);
+                            walk(doc.getDocumentElement(), new ArrayList<>(), mv, qs, tb, sd);
                         }
                     }
                 } catch (IOException unreadableJar) {
@@ -157,10 +175,13 @@ class MainWindowChromeSpeaksTest {
         bundles = found;
         multiViewSpecs = mv;
         quickSearchCategories = qs;
+        toolbarItems = tb;
+        actionShortDescriptions = sd;
         unreadable = refused;
     }
 
-    private static void walk(Element folder, List<String> path, Set<String> mv, Map<String, String> qs) {
+    private static void walk(Element folder, List<String> path, Set<String> mv, Map<String, String> qs,
+            Set<String> tb, Map<String, Set<String>> sd) {
         for (Node c = folder.getFirstChild(); c != null; c = c.getNextSibling()) {
             if (!(c instanceof Element el)) {
                 continue;
@@ -175,13 +196,25 @@ class MainWindowChromeSpeaksTest {
                         qs.put(name, bundle);
                     }
                 }
-                walk(el, next, mv, qs);
+                walk(el, next, mv, qs, tb, sd);
             } else if ("file".equals(el.getTagName()) && !path.isEmpty()
                     && "Editors".equals(path.get(0)) && path.contains("MultiView")
                     && !name.endsWith("_hidden")) {
                 String spec = attr(el, "displayName");
                 if (spec != null && spec.contains("#")) {
                     mv.add(spec);
+                }
+            } else if ("file".equals(el.getTagName()) && path.size() >= 3 && "Editors".equals(path.get(0))
+                    && "Toolbars".equals(path.get(path.size() - 2)) && "Default".equals(path.get(path.size() - 1))
+                    && !name.endsWith("_hidden")
+                    && !"javax.swing.JSeparator".equals(attr(el, "instanceClass"))) {
+                tb.add(name);
+            } else if ("file".equals(el.getTagName()) && path.size() >= 2 && "Editors".equals(path.get(0))
+                    && "Actions".equals(path.get(path.size() - 1)) && name.endsWith(".instance")) {
+                String spec = attr(el, "ShortDescription");
+                if (spec != null && spec.contains("#")) {
+                    sd.computeIfAbsent(name.substring(0, name.length() - ".instance".length()),
+                            k -> new TreeSet<>()).add(spec);
                 }
             }
         }
@@ -238,18 +271,67 @@ class MainWindowChromeSpeaksTest {
         return rows;
     }
 
+    /**
+     * The editor-toolbar buttons whose key the layer states: a button named like an
+     * action {@code Editors/**&#47;Actions/<name>.instance} registers with a
+     * {@code ShortDescription}. The toolbar paints that SHORT_DESCRIPTION
+     * (NbEditorToolBar: {@code JToolBar.add(Action)}, the shortcut appended).
+     */
+    private static Map<String, List<Row>> toolbarDerived() throws IOException {
+        scan();
+        Map<String, List<Row>> byItem = new LinkedHashMap<>();
+        for (String item : toolbarItems) {
+            Set<String> specs = actionShortDescriptions.get(item);
+            if (specs == null) {
+                continue;
+            }
+            for (String spec : specs) {
+                int hash = spec.indexOf('#');
+                Row r = resolve(spec.substring(0, hash), spec.substring(hash + 1));
+                byItem.computeIfAbsent(item, k -> new ArrayList<>()).add(
+                        r != null ? r : new Row("?", spec.substring(0, hash), spec.substring(hash + 1), null));
+            }
+        }
+        return byItem;
+    }
+
+    /** The editor-toolbar ledger: toolbar item to the rows its button can paint. */
+    private static Map<String, List<Row>> toolbarLedger() {
+        Map<String, List<Row>> byItem = new LinkedHashMap<>();
+        for (String[] p : ledgerLines("editor-toolbar.txt", 5)) {
+            byItem.computeIfAbsent(p[0], k -> new ArrayList<>())
+                    .add(new Row(p[1], p[2], p[3], p[4].replace("\\n", "\n")));
+        }
+        return byItem;
+    }
+
+    private static List<Row> toolbarRows() throws IOException {
+        List<Row> rows = new ArrayList<>();
+        toolbarDerived().values().forEach(rows::addAll);
+        toolbarLedger().values().forEach(rows::addAll);
+        return rows;
+    }
+
     private static List<Row> ledger() {
         List<Row> rows = new ArrayList<>();
-        try (InputStream in = MainWindowChromeSpeaksTest.class.getResourceAsStream("main-window-chrome.txt")) {
-            assertThat(in).as("the main-window chrome ledger").isNotNull();
+        for (String[] p : ledgerLines("main-window-chrome.txt", 4)) {
+            rows.add(new Row(p[0], p[1], p[2], p[3].replace("\\n", "\n")));
+        }
+        return rows;
+    }
+
+    private static List<String[]> ledgerLines(String resource, int fields) {
+        List<String[]> rows = new ArrayList<>();
+        try (InputStream in = MainWindowChromeSpeaksTest.class.getResourceAsStream(resource)) {
+            assertThat(in).as("the ledger " + resource).isNotNull();
             for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8)
                     .replace("\r\n", "\n").split("\n")) {
                 if (line.isBlank() || line.startsWith("#")) {
                     continue;
                 }
-                String[] p = line.split("\\|", 4);
-                assertThat(p).as("ledger line: " + line).hasSize(4);
-                rows.add(new Row(p[0], p[1], p[2], p[3].replace("\\n", "\n")));
+                String[] p = line.split("\\|", fields);
+                assertThat(p).as("ledger line: " + line).hasSize(fields);
+                rows.add(p);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -384,6 +466,10 @@ class MainWindowChromeSpeaksTest {
         scan();
         List<Row> rows = ledger();
         assertThat(rows).as("recorded main-window rows").hasSizeGreaterThan(30);
+        assertThat(truthProblems(rows)).as("ledger claims the shipped cluster contradicts").isEmpty();
+    }
+
+    private static List<String> truthProblems(List<Row> rows) {
         List<String> problems = new ArrayList<>();
         for (Row row : rows) {
             Properties base = bundles.getOrDefault(row.pkg(), Map.of()).get(row.jar());
@@ -400,7 +486,7 @@ class MainWindowChromeSpeaksTest {
                         + "\", the ledger records \"" + row.english() + "\"");
             }
         }
-        assertThat(problems).as("ledger claims the shipped cluster contradicts").isEmpty();
+        return problems;
     }
 
     @Test
@@ -415,6 +501,63 @@ class MainWindowChromeSpeaksTest {
         List<Row> all = new ArrayList<>(multiViewRows());
         all.addAll(quickSearchRows());
         all.addAll(ledger());
+        all.addAll(toolbarRows());
         assertThat(wellFormed(all)).as("values the renderer would mangle").isEmpty();
+    }
+
+    @Test
+    @DisplayName("the editor-toolbar population is derived from the layers and includes a plain file's buttons")
+    void theToolbarPopulationIsDerived() throws IOException {
+        scan();
+        assertThat(toolbarItems).as("editor-toolbar buttons declared in the cluster's layers")
+                .hasSizeGreaterThan(25)
+                .contains("jump-list-prev", "find-next", "bookmark-toggle.shadow", "shift-line-left",
+                        "start-macro-recording", "comment", "uncomment");
+        Map<String, List<Row>> derived = toolbarDerived();
+        assertThat(derived).as("buttons whose key the layer states (Editors/Actions ShortDescription)")
+                .containsKeys("find-next", "find-previous", "find-selection", "toggle-highlight-search",
+                        "jump-list-last-edit", "shift-line-left", "shift-line-right");
+        assertThat(derived.get("find-next")).as("Find Next paints editor-search's find-next")
+                .anyMatch(r -> r.pkg().equals("org/netbeans/modules/editor/search/actions")
+                        && r.key().equals("find-next"));
+    }
+
+    @Test
+    @DisplayName("every editor-toolbar button's key is derived or in the ledger, and no ledger row is stale")
+    void everyToolbarButtonIsAccountedFor() throws IOException {
+        scan();
+        Map<String, List<Row>> derived = toolbarDerived();
+        Map<String, List<Row>> ledger = toolbarLedger();
+        List<String> problems = new ArrayList<>();
+        for (String item : toolbarItems) {
+            if (!derived.containsKey(item) && !ledger.containsKey(item)) {
+                problems.add(item + ": a toolbar button whose tooltip key no layer states and the "
+                        + "ledger does not name; read it from the running toolbar and record it");
+            }
+        }
+        for (String item : ledger.keySet()) {
+            if (!toolbarItems.contains(item)) {
+                problems.add(item + ": in the ledger but no layer registers it on an editor toolbar now");
+            } else if (derived.containsKey(item)) {
+                problems.add(item + ": the layer already states this key; the ledger row is a second home");
+            }
+        }
+        assertThat(problems).as("editor-toolbar buttons with no known key").isEmpty();
+    }
+
+    @Test
+    @DisplayName("every editor-toolbar ledger key still exists, still saying what the ledger records")
+    void theToolbarLedgerTellsTheTruth() throws IOException {
+        scan();
+        List<Row> rows = new ArrayList<>();
+        toolbarLedger().values().forEach(rows::addAll);
+        assertThat(rows).as("recorded editor-toolbar rows").hasSizeGreaterThan(20);
+        assertThat(truthProblems(rows)).as("editor-toolbar ledger claims the cluster contradicts").isEmpty();
+    }
+
+    @Test
+    @DisplayName("every editor-toolbar tooltip speaks every shipped language")
+    void everyToolbarTooltipSpeaks() throws IOException {
+        assertThat(speaks(toolbarRows())).as("editor-toolbar tooltips a reader would meet in English").isEmpty();
     }
 }
