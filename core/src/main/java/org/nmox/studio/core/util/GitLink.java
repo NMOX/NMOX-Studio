@@ -133,6 +133,23 @@ public final class GitLink {
         return sb.toString();
     }
 
+    /**
+     * {@code https://github.com/o/r/tree/<ref>/<path>} — a FOLDER's page
+     * (3.2.0, the file tree's Open on GitHub). The path is repo-relative
+     * with forward slashes and encoded exactly as {@link #blobUrl} encodes
+     * it; an empty path is the repository's root at that ref
+     * ({@code …/tree/<ref>}), never a trailing slash.
+     */
+    public static String treeUrl(Remote remote, String ref, String relPath) {
+        StringBuilder sb = new StringBuilder("https://github.com/")
+                .append(remote.owner()).append('/').append(remote.repo())
+                .append("/tree/").append(encodePath(ref));
+        if (relPath != null && !relPath.isEmpty()) {
+            sb.append('/').append(encodePath(relPath));
+        }
+        return sb.toString();
+    }
+
     /** The Markdown link line under the block: {@code [src/App.jsx#L3-L14](url)}. */
     public static String linkLine(String relPath, int startLine, int endLine, String url) {
         String label = relPath;

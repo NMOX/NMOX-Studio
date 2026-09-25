@@ -97,6 +97,25 @@ class FileTreeRowsLiveTest {
     }
 
     @Test
+    @DisplayName("files, folders and the root all carry Open on GitHub and Copy GitHub Link, after the path rows (3.2.0)")
+    void gitHubRowsOnFilesAndFolders(@TempDir Path dir) throws Exception {
+        Tree t = tree(dir);
+        for (Node n : new Node[] {t.root(), t.folder(), t.file()}) {
+            java.util.List<String> names = new java.util.ArrayList<>();
+            for (Action a : n.getActions(true)) {
+                names.add(a == null ? "—" : String.valueOf(a.getValue(Action.NAME)));
+            }
+            assertThat(names).as(n.getDisplayName() + "'s menu")
+                    .containsSubsequence("Copy Path", "Copy Relative Path", "—", "Open on GitHub", "Copy GitHub Link");
+            for (Action a : n.getActions(true)) {
+                if (a != null && String.valueOf(a.getValue(Action.NAME)).contains("GitHub")) {
+                    assertThat(a.isEnabled()).as("a GitHub row is live; its refusals speak on click").isTrue();
+                }
+            }
+        }
+    }
+
+    @Test
     @DisplayName("Open and Rename on a file, Rename and Properties on a folder, are live")
     void theOtherPlatformRowsWork(@TempDir Path dir) throws Exception {
         Tree t = tree(dir);

@@ -37,6 +37,17 @@ public final class ServingLinks {
         return system.test(url);
     }
 
+    /**
+     * Opens {@code url} in the user's OWN browser, never the in-app one
+     * (3.2.0, Open on GitHub): a GitHub page wants the browser the reader
+     * is signed in to, where blame, review comments and the edit pencil
+     * work. May block on the desktop; call it off the EDT.
+     * @return false when no browser took it — the caller says so.
+     */
+    public static boolean openInSystemBrowser(String url) {
+        return systemBrowse(url);
+    }
+
     static boolean systemBrowse(String url) {
         try {
             if (java.awt.Desktop.isDesktopSupported()

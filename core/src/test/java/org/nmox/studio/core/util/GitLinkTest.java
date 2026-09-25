@@ -70,6 +70,26 @@ class GitLinkTest {
     }
 
     @Test
+    @DisplayName("a folder is a tree url; the repository root is tree/<ref> with no trailing slash (3.2.0)")
+    void treeUrls() {
+        GitLink.Remote r = new GitLink.Remote("NMOX", "NMOX-Studio");
+        assertThat(GitLink.treeUrl(r, "main", "")).isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/main");
+        assertThat(GitLink.treeUrl(r, "main", null)).isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/main");
+        assertThat(GitLink.treeUrl(r, "feature/x", "rack/src/main"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/feature/x/rack/src/main");
+    }
+
+    @Test
+    @DisplayName("a tree url encodes its segments exactly as a blob url does")
+    void treeUrlsEncodeLikeBlobs() {
+        GitLink.Remote r = new GitLink.Remote("o", "r");
+        assertThat(GitLink.treeUrl(r, "main", "docs/My Notes#1/ü"))
+                .isEqualTo("https://github.com/o/r/tree/main/docs/My%20Notes%231/%C3%BC");
+        assertThat(GitLink.treeUrl(r, "main", "docs/My Notes#1/ü").replace("/tree/", "/blob/"))
+                .isEqualTo(GitLink.blobUrl(r, "main", "docs/My Notes#1/ü", 0, 0));
+    }
+
+    @Test
     @DisplayName("the link line labels the path and range and escapes a bracket in the name")
     void linkLine() {
         assertThat(GitLink.linkLine("src/App.jsx", 3, 14, "U")).isEqualTo("[src/App.jsx#L3-L14](U)");

@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.nmox.studio.core.util.PlainStatus;
+import org.nmox.studio.rack.service.GitHubLinks;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -19,7 +20,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
- * The three rows a switcher reaches for on a file tree's right-click (3.1.0):
+ * The rows a switcher reaches for on a file tree's right-click (3.1.0):
  * VS Code's Explorer offers Copy Path, Copy Relative Path and Reveal in
  * Finder / File Explorer, and Project Studio's tree offered none of them -
  * the platform's Copy Path sits only on an editor tab, and nothing showed
@@ -31,6 +32,11 @@ import org.openide.util.Utilities;
  * platform can, else open its folder) on this class's own lane: the call
  * can block on the file manager, and it launches nothing the project
  * chose.
+ *
+ * <p>3.2.0 adds Open on GitHub and Copy GitHub Link, the gestures a
+ * developer reaches for to share a file or a folder as the repository
+ * shows it; their ladder lives in {@link GitHubLinks}, shared with the
+ * editor.
  */
 @Messages({
     "PathActions_copyPath=Copy Path",
@@ -52,7 +58,11 @@ final class PathActions {
     private PathActions() {
     }
 
-    /** The three rows for {@code node}'s file, or none when it has no file on disk. */
+    /**
+     * The path rows for {@code node}'s file or folder — Copy Path, Copy Relative
+     * Path, Reveal, then (behind a separator) Open on GitHub and Copy GitHub
+     * Link — or none when it has no file on disk.
+     */
     static Action[] forNode(Node node) {
         FileObject fo = node.getLookup().lookup(FileObject.class);
         File file = fo == null ? null : FileUtil.toFile(fo);
@@ -63,6 +73,25 @@ final class PathActions {
             copy(Bundle.PathActions_copyPath(), () -> file.getAbsolutePath()),
             copy(Bundle.PathActions_copyRelativePath(), () -> relativePath(aimedRoot(), file)),
             reveal(file),
+            null,
+            github(GitHubLinks.Gesture.OPEN, file),
+            github(GitHubLinks.Gesture.COPY, file),
+        };
+    }
+
+    /**
+     * Open on GitHub / Copy GitHub Link (3.2.0): a file links its blob as
+     * pushed (a tree row has no lines), a folder its tree, the repository's
+     * root folder {@code tree/<ref>}. The tree has no buffer, so there is
+     * no unsaved-changes refusal here; every other rung of the ladder is
+     * {@link GitHubLinks}', off the EDT.
+     */
+    private static Action github(GitHubLinks.Gesture gesture, File file) {
+        return new AbstractAction(GitHubLinks.label(gesture)) {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                GitHubLinks.perform(gesture, file, 0, 0);
+            }
         };
     }
 
