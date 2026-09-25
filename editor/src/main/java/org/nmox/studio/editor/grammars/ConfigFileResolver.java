@@ -31,6 +31,16 @@ public final class ConfigFileResolver extends MIMEResolver {
     @Override
     public String findMIMEType(FileObject fo) {
         String name = fo.getNameExt();
+        // 3.2.0: the files git hands its editor (core.editor "nmox -w").
+        // No extension, so only the exact name can claim them; without
+        // this they open as plain text and git's own # instructions read
+        // like the message being written. The names have one home.
+        if (org.nmox.studio.core.util.GitRequestFiles.MESSAGES.contains(name)) {
+            return GitCommitGrammar.MIME;
+        }
+        if (org.nmox.studio.core.util.GitRequestFiles.REBASE_TODO.equals(name)) {
+            return GitRebaseGrammar.MIME;
+        }
         switch (name) {
             case ".editorconfig":
             case ".npmrc":
@@ -49,19 +59,6 @@ public final class ConfigFileResolver extends MIMEResolver {
                 return "text/x-makefile";
             case "nginx.conf":
                 return "text/x-nginx-conf";
-            // 3.2.0: the files git hands its editor (core.editor "nmox -w").
-            // No extension, so only the exact name can claim them; without
-            // this they open as plain text and git's own # instructions read
-            // like the message being written.
-            case "COMMIT_EDITMSG":
-            case "MERGE_MSG":
-            case "TAG_EDITMSG":
-            case "SQUASH_MSG":
-            case "NOTES_EDITMSG":
-            case "EDIT_DESCRIPTION":
-                return GitCommitGrammar.MIME;
-            case "git-rebase-todo":
-                return GitRebaseGrammar.MIME;
             case ".htaccess":
             case "httpd.conf":
             case "apache2.conf":

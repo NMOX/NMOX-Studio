@@ -213,6 +213,18 @@ final class EditRequestWatcher {
         }
     }
 
+    /** Whether a waiting request holds {@code target} (a DataObject or a window). On the EDT. */
+    static boolean waitedOn(Object target) {
+        synchronized (WAITING) {
+            for (Session s : WAITING) {
+                if (s.armed.containsKey(target)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     /** The shutdown hook's answer: every request still waiting is done. */
     static void answerAll() {
         List<Session> all;
