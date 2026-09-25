@@ -298,6 +298,7 @@
                                 <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
                                 <exclude>**/MainWindowChromeSpeaksTest.java</exclude>
+                                <exclude>**/ToolbarOverlayGateTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -347,6 +348,7 @@
                                 <include>**/DialogChromeOverlayGateTest.java</include>
                                 <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
                                 <include>**/MainWindowChromeSpeaksTest.java</include>
+                                <include>**/ToolbarOverlayGateTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
