@@ -3,7 +3,10 @@ package org.nmox.studio.tools.npm;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -51,10 +54,28 @@ import org.openide.util.BaseUtilities;
  * ignores is still searched, the under-matching side (see
  * {@link GitIgnore} for why every doubt errs that way).
  *
- * <p><b>Cost.</b> The search asks once per folder and once per file. Each
- * {@code .gitignore} is read at most once per change (bounded, 1 MiB),
- * a file's and a directory's facts are trusted for {@link #FRESH_MS}
- * before they are stat'ed again, and both caches are bounded.
+ * <p><b>Never a stale answer.</b> The git module REMEMBERS a
+ * {@code NOT_SHARABLE} answer for the rest of the session
+ * ({@code GitUtils.addNotSharable} fills a static map nothing clears), so
+ * one wrong answer hides a file from Commit until the IDE restarts. Every
+ * question therefore re-reads the facts it rests on: the work-tree root
+ * is looked for again (a {@code git init} a second ago counts) and each
+ * {@code .gitignore} in the chain is stat'ed, its RULES reused only while
+ * its modification time and size are unchanged (3.2 review: the first cut
+ * trusted both for two seconds, and an edit that stopped ignoring
+ * {@code dist/} could be answered with the old rules exactly when the
+ * git module refreshed).
+ *
+ * <p><b>A symbolic link is a file.</b> Git records a link as a link and
+ * never follows it, so {@code node_modules/} does not match a
+ * {@code node_modules} that is a link to a folder; neither does this.
+ * An in-tree {@code .gitignore} that is itself a link is not read,
+ * because git refuses to read one.
+ *
+ * <p><b>Cost.</b> The search asks once per folder and once per file: a
+ * stat per level up to the work-tree root, a stat per {@code .gitignore}
+ * in the chain, and a read only when one changed (bounded, 1 MiB). The
+ * rules cache is bounded.
  */
 final class WebProjectSharability implements SharabilityQueryImplementation2 {
 
@@ -62,9 +83,6 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
 
     /** A {@code .gitignore} is hand-written text; a mebibyte is absurd. */
     static final long MAX_IGNORE_BYTES = 1024L * 1024;
-
-    /** How long a stat'ed fact is trusted before it is asked again. */
-    static final long FRESH_MS = 2_000;
 
     /** How far up the tree the work-tree root is looked for. */
     private static final int MAX_ASCENT = 64;
@@ -92,8 +110,11 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
         } catch (IllegalArgumentException e) { // incl. InvalidPathException
             return Sharability.UNKNOWN;
         }
-        boolean isDirectory = uri.getPath() != null && uri.getPath().endsWith("/")
-                || path.toFile().isDirectory();
+        // a link is never a directory to git, whatever it points at, and a
+        // folder URI's trailing slash says nothing about that
+        boolean isDirectory = !Files.isSymbolicLink(path)
+                && (uri.getPath() != null && uri.getPath().endsWith("/")
+                        || Files.isDirectory(path, LinkOption.NOFOLLOW_LINKS));
         return ignored(projectFile.toPath().toAbsolutePath().normalize(), path, isDirectory)
                 ? Sharability.NOT_SHARABLE : Sharability.UNKNOWN;
     }
@@ -131,73 +152,71 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
                         (d.isEmpty() ? base : base.resolve(d)).resolve(".gitignore"))));
     }
 
-    // ---- the work-tree root, by directory ----------------------------------
-
-    private record RootFact(Path root, long checkedAt) {
-    }
-
-    private static final Map<Path, RootFact> ROOTS = lru();
+    // ---- the work-tree root, looked for on every question -----------------
 
     /**
      * The nearest directory at or above {@code dir} holding a {@code .git}
      * entry (a directory, or the file a worktree or submodule carries), or
-     * null outside a work tree.
+     * null outside a work tree. Not cached: a stat per level is cheap, and
+     * a remembered "no repository here" would outlive a {@code git init}.
      */
     static Path workTreeRoot(Path dir) {
-        if (dir == null) {
-            return null;
-        }
-        long now = System.currentTimeMillis();
-        synchronized (ROOTS) {
-            RootFact f = ROOTS.get(dir);
-            if (f != null && now - f.checkedAt() < FRESH_MS) {
-                return f.root();
-            }
-        }
-        Path found = null;
         Path d = dir;
         for (int i = 0; d != null && i < MAX_ASCENT; i++, d = d.getParent()) {
-            if (d.resolve(".git").toFile().exists()) {
-                found = d;
-                break;
+            if (Files.exists(d.resolve(".git"), LinkOption.NOFOLLOW_LINKS)) {
+                return d;
             }
         }
-        synchronized (ROOTS) {
-            ROOTS.put(dir, new RootFact(found, now));
-        }
-        return found;
+        return null;
     }
 
     // ---- one ignore file, read once per change -----------------------------
 
-    private record RulesFact(long stamp, long size, long checkedAt, GitIgnore rules) {
+    private record RulesFact(long stamp, long size, GitIgnore rules) {
     }
 
     private static final Map<Path, RulesFact> RULES = lru();
 
-    /** The rules one file states; {@link GitIgnore#empty()} when it has none. */
+    /**
+     * The rules one file states: {@link GitIgnore#empty()} when there is no
+     * such file (or it is a link git will not read), {@link
+     * GitIgnore#unknown()} when it exists but cannot be read. Stat'ed on
+     * every call; parsed again only when its time or size moved.
+     */
     static GitIgnore rules(Path file) {
-        long now = System.currentTimeMillis();
+        BasicFileAttributes a;
+        try {
+            a = Files.readAttributes(file, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        } catch (IOException | RuntimeException e) {
+            return GitIgnore.empty(); // absent: states nothing
+        }
+        if (a.isSymbolicLink()) {
+            // git opens an in-tree .gitignore without following links; the
+            // repository's own info/exclude is outside the tree and followed
+            if (".gitignore".equals(String.valueOf(file.getFileName()))) {
+                return GitIgnore.empty();
+            }
+            try {
+                a = Files.readAttributes(file, BasicFileAttributes.class);
+            } catch (IOException | RuntimeException e) {
+                return GitIgnore.empty();
+            }
+        }
+        if (!a.isRegularFile()) {
+            return GitIgnore.empty();
+        }
+        long stamp = a.lastModifiedTime().toMillis();
+        long size = a.size();
         RulesFact known;
         synchronized (RULES) {
             known = RULES.get(file);
         }
-        if (known != null && now - known.checkedAt() < FRESH_MS) {
+        if (known != null && known.stamp() == stamp && known.size() == size) {
             return known.rules();
         }
-        File f = file.toFile();
-        long stamp = f.lastModified();
-        long size = f.length();
-        GitIgnore parsed;
-        if (stamp == 0L || !f.isFile()) {
-            parsed = GitIgnore.empty();
-        } else if (known != null && known.stamp() == stamp && known.size() == size) {
-            parsed = known.rules();
-        } else {
-            parsed = read(file);
-        }
+        GitIgnore parsed = read(file);
         synchronized (RULES) {
-            RULES.put(file, new RulesFact(stamp, size, now, parsed));
+            RULES.put(file, new RulesFact(stamp, size, parsed));
         }
         return parsed;
     }
@@ -214,14 +233,12 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
             LOG.log(Level.INFO, "{0} not read for Find in Projects: {1}",
                     new Object[]{file, e.toString()});
         }
-        return GitIgnore.empty();
+        // unread is not "no rules": what it would re-include is unknown too
+        return GitIgnore.unknown();
     }
 
     /** Test seam: forget every cached fact. */
     static void forgetForTest() {
-        synchronized (ROOTS) {
-            ROOTS.clear();
-        }
         synchronized (RULES) {
             RULES.clear();
         }

@@ -1,5 +1,6 @@
 package org.nmox.studio.core.util;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,9 +26,23 @@ import java.util.function.Function;
  * for directories only, a slash anywhere else anchoring the pattern to
  * this file's directory, {@code *} {@code ?} and {@code [...]} (with
  * {@code !}/{@code ^} and ranges) inside one path segment, and
- * {@code **} as a whole segment (leading, trailing or between). Matching
- * is case-sensitive, which is git's default everywhere except where
- * {@code core.ignorecase} says otherwise — the under-matching side.
+ * {@code **} as a whole segment (leading, trailing or between).
+ *
+ * <p><b>Where a dropped line could matter, the file says so.</b> Dropping
+ * a rule under-matches only when the rule EXCLUDES; a dropped {@code !}
+ * rule would have brought a path back, so dropping it ignores MORE. A
+ * file that lost a negation — unreadable, over-long, past the rule cap —
+ * is therefore {@linkplain #doubtful() doubtful}, and a chain holding a
+ * doubtful file never answers "ignored" (3.2 review: {@code *.log} plus
+ * {@code !*[[:digit:]].log} hid {@code a1.log}, which git keeps).
+ *
+ * <p><b>Bytes, and case.</b> Git matches {@code ?} and {@code [...]} one
+ * BYTE at a time, so both sides are compared as their UTF-8 bytes
+ * ({@code ?x} does not match {@code éx}; git agrees). Git folds case
+ * where {@code core.ignorecase} is set — every fresh repository on macOS
+ * and Windows — and not elsewhere; this class never reads the config and
+ * instead lets a NEGATION match either way while an exclusion matches
+ * exactly, so both settings err toward searching more.
  *
  * <p><b>Bounded.</b> A file this reads arrives with a clone. The reader
  * caps the bytes; this caps the rules ({@link #MAX_RULES}) and the line
@@ -58,17 +73,40 @@ public final class GitIgnore {
         INCLUDED
     }
 
-    private static final GitIgnore EMPTY = new GitIgnore(List.of());
+    private static final GitIgnore EMPTY = new GitIgnore(List.of(), false);
+
+    private static final GitIgnore UNKNOWN = new GitIgnore(List.of(), true);
 
     private final List<Rule> rules;
 
-    private GitIgnore(List<Rule> rules) {
+    /** A line that might have been a negation was not read. */
+    private final boolean doubtful;
+
+    private GitIgnore(List<Rule> rules, boolean doubtful) {
         this.rules = rules;
+        this.doubtful = doubtful;
     }
 
-    /** A file with no rules — what an absent or unreadable file states. */
+    /** A file with no rules — what an ABSENT file states. */
     public static GitIgnore empty() {
         return EMPTY;
+    }
+
+    /**
+     * A file that exists but could not be read (too large, unreadable):
+     * nothing it says is known, including what it re-includes, so no path
+     * beneath it is answered "ignored".
+     */
+    public static GitIgnore unknown() {
+        return UNKNOWN;
+    }
+
+    /**
+     * Whether a line that could have re-included a path ({@code !...}) was
+     * dropped, or the file was not read at all.
+     */
+    public boolean doubtful() {
+        return doubtful;
     }
 
     /** How many rules were kept (dropped lines are not counted). */
@@ -85,22 +123,39 @@ public final class GitIgnore {
             return EMPTY;
         }
         List<Rule> out = new ArrayList<>();
+        boolean doubt = false;
         int start = 0;
         int n = text.length();
-        while (start <= n && out.size() < MAX_RULES) {
+        while (start <= n) {
             int end = text.indexOf('\n', start);
             if (end < 0) {
                 end = n;
             }
+            if (out.size() >= MAX_RULES) {
+                // past the cap: nothing more is read, and if a negation
+                // lies in what was not read, the file can no longer say
+                if (start < n && text.charAt(start) == '!' || text.indexOf("\n!", start) >= 0) {
+                    doubt = true;
+                }
+                break;
+            }
             if (end - start <= MAX_LINE) {
-                Rule r = Rule.of(text.substring(start, end));
+                String line = text.substring(start, end);
+                Rule r = Rule.of(line);
                 if (r != null) {
                     out.add(r);
+                } else if (line.startsWith("!")) {
+                    doubt = true; // a re-include this class could not read
                 }
+            } else if (text.charAt(start) == '!') {
+                doubt = true;
             }
             start = end + 1;
         }
-        return out.isEmpty() ? EMPTY : new GitIgnore(Collections.unmodifiableList(out));
+        if (out.isEmpty()) {
+            return doubt ? UNKNOWN : EMPTY;
+        }
+        return new GitIgnore(Collections.unmodifiableList(out), doubt);
     }
 
     /**
@@ -110,9 +165,15 @@ public final class GitIgnore {
      */
     public Verdict match(String relPath, boolean isDirectory) {
         String[] segments = relPath.split("/", -1);
+        String[] folded = new String[segments.length];
+        for (int i = 0; i < segments.length; i++) {
+            segments[i] = bytes(segments[i]);
+            folded[i] = fold(segments[i]);
+        }
         Verdict v = Verdict.NONE;
         for (Rule r : rules) {
-            if (r.matches(segments, isDirectory)) {
+            if (r.matches(segments, isDirectory)
+                    || r.negated && r.foldedMatches(folded, isDirectory)) {
                 v = r.negated ? Verdict.INCLUDED : Verdict.IGNORED;
             }
         }
@@ -152,10 +213,15 @@ public final class GitIgnore {
             boolean prefixIsDir = k < s.length || isDirectory;
             String prefix = String.join("/", java.util.Arrays.copyOfRange(s, 0, k));
             Verdict v = base.match(prefix, prefixIsDir);
+            boolean doubt = base.doubtful;
             for (int j = 0; j < k; j++) {
                 String dir = String.join("/", java.util.Arrays.copyOfRange(s, 0, j));
                 GitIgnore g = rulesInDir.apply(dir);
-                if (g == null || g.rules.isEmpty()) {
+                if (g == null) {
+                    continue;
+                }
+                doubt |= g.doubtful;
+                if (g.rules.isEmpty()) {
                     continue;
                 }
                 String under = String.join("/", java.util.Arrays.copyOfRange(s, j, k));
@@ -165,10 +231,38 @@ public final class GitIgnore {
                 }
             }
             if (v == Verdict.IGNORED) {
-                return true;
+                // a doubtful file might have re-included this prefix; and
+                // past an ignored directory git looks no further, so
+                // neither does this: under-match, never guess
+                return !doubt;
             }
         }
         return false;
+    }
+
+    /** A name as git sees it: its UTF-8 bytes, one char per byte. */
+    static String bytes(String s) {
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) >= 0x80) {
+                return new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
+            }
+        }
+        return s; // ASCII: already one char per byte
+    }
+
+    /** ASCII case folding, as git's {@code WM_CASEFOLD} does it. */
+    static String fold(String s) {
+        StringBuilder b = null;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c >= 'A' && c <= 'Z') {
+                if (b == null) {
+                    b = new StringBuilder(s);
+                }
+                b.setCharAt(i, (char) (c + ('a' - 'A')));
+            }
+        }
+        return b == null ? s : b.toString();
     }
 
     /** One line of a file, read. */
@@ -179,12 +273,18 @@ public final class GitIgnore {
         /** Anchored rules match the whole path; the rest match a name at any depth. */
         final boolean anchored;
         final String[] segments;
+        /** The segments folded, for a negation's case-blind second try. */
+        final String[] folded;
 
         private Rule(boolean negated, boolean dirOnly, boolean anchored, String[] segments) {
             this.negated = negated;
             this.dirOnly = dirOnly;
             this.anchored = anchored;
             this.segments = segments;
+            this.folded = new String[segments.length];
+            for (int i = 0; i < segments.length; i++) {
+                folded[i] = fold(segments[i]);
+            }
         }
 
         static Rule of(String rawLine) {
@@ -192,10 +292,18 @@ public final class GitIgnore {
             if (line.endsWith("\r")) {
                 line = line.substring(0, line.length() - 1);
             }
-            // trailing spaces are dropped unless the last is escaped
+            // trailing spaces are dropped unless the last is escaped — by
+            // an ODD run of backslashes: "foo\\ " is an escaped backslash
+            // followed by a space git trims
             int end = line.length();
-            while (end > 0 && line.charAt(end - 1) == ' '
-                    && !(end >= 2 && line.charAt(end - 2) == '\\')) {
+            while (end > 0 && line.charAt(end - 1) == ' ') {
+                int slashes = 0;
+                while (end - 2 - slashes >= 0 && line.charAt(end - 2 - slashes) == '\\') {
+                    slashes++;
+                }
+                if (slashes % 2 == 1) {
+                    break;
+                }
                 end--;
             }
             line = line.substring(0, end);
@@ -223,10 +331,11 @@ public final class GitIgnore {
                 return null;
             }
             String[] segs = line.split("/", -1);
-            for (String seg : segs) {
-                if (seg.isEmpty() || !wellFormed(seg)) {
+            for (int i = 0; i < segs.length; i++) {
+                if (segs[i].isEmpty() || !wellFormed(segs[i])) {
                     return null;
                 }
+                segs[i] = bytes(segs[i]);
             }
             return new Rule(negated, dirOnly, anchored, segs);
         }
@@ -258,14 +367,22 @@ public final class GitIgnore {
         }
 
         boolean matches(String[] path, boolean isDirectory) {
+            return matches(segments, path, isDirectory);
+        }
+
+        boolean foldedMatches(String[] foldedPath, boolean isDirectory) {
+            return matches(folded, foldedPath, isDirectory);
+        }
+
+        private boolean matches(String[] pat, String[] path, boolean isDirectory) {
             if (dirOnly && !isDirectory) {
                 return false;
             }
             if (!anchored) {
                 // a name rule: the path's last segment, at any depth
-                return segmentMatches(segments[0], path[path.length - 1]);
+                return segmentMatches(pat[0], path[path.length - 1]);
             }
-            return segmentsMatch(segments, path);
+            return segmentsMatch(pat, path);
         }
     }
 

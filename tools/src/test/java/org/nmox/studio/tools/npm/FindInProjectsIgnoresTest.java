@@ -196,4 +196,84 @@ class FindInProjectsIgnoresTest {
                 .as("the repository's own store is never part of the work")
                 .isEqualTo(SharabilityQuery.Sharability.NOT_SHARABLE);
     }
+
+    // ---- the 3.2 review: the git module remembers a NOT_SHARABLE answer
+    // ---- for the whole session, so a wrong one hides a file from Commit
+
+    /** A link, or the test is skipped where the OS will not make one (Windows without the privilege). */
+    private static void link(Path at, Path target) throws IOException {
+        try {
+            Files.createSymbolicLink(at, target);
+        } catch (UnsupportedOperationException | IOException e) {
+            org.junit.jupiter.api.Assumptions.abort("no symbolic links here: " + e);
+        }
+    }
+
+    private static SharabilityQuery.Sharability ask(Path project, Path file) {
+        FileObject dir = FileUtil.toFileObject(FileUtil.normalizeFile(project.toFile()));
+        return new WebProjectSharability(dir).getSharability(file.toUri());
+    }
+
+    @Test
+    @DisplayName("A symbolic link is a file to git: node_modules/ does not match a linked node_modules")
+    void symlinkIsNotADirectory(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        write(dir, ".gitignore", "node_modules/\nbuild/\n");
+        write(dir, "real/x.js", "x");
+        link(dir.resolve("node_modules"), dir.resolve("real"));
+        link(dir.resolve("build"), Path.of("real"));
+        assertThat(ask(dir, dir.resolve("node_modules")))
+                .as("git reports the link untracked, not ignored")
+                .isEqualTo(SharabilityQuery.Sharability.UNKNOWN);
+        assertThat(ask(dir, dir.resolve("build"))).isEqualTo(SharabilityQuery.Sharability.UNKNOWN);
+        Files.createDirectories(dir.resolve("dist"));
+        write(dir, ".gitignore", "node_modules/\nbuild/\ndist/\n");
+        assertThat(ask(dir, dir.resolve("dist"))).as("a real folder still is one")
+                .isEqualTo(SharabilityQuery.Sharability.NOT_SHARABLE);
+    }
+
+    @Test
+    @DisplayName("An edit to .gitignore is seen by the very next question, however soon")
+    void noStaleRules(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        write(dir, ".gitignore", "dist/\n");
+        Path dist = dir.resolve("dist");
+        Files.createDirectories(dist);
+        assertThat(WebProjectSharability.ignored(dir, dist, true)).isTrue();
+        write(dir, ".gitignore", "# dist is committed now\n");
+        assertThat(WebProjectSharability.ignored(dir, dist, true))
+                .as("no remembered answer outlives the edit").isFalse();
+    }
+
+    @Test
+    @DisplayName("git init is seen at once: the heavy-folder names stop applying inside a new repository")
+    void noStaleRoot(@TempDir Path dir) throws IOException {
+        Path nm = dir.resolve("node_modules");
+        Files.createDirectories(nm);
+        assertThat(WebProjectSharability.ignored(dir, nm, true))
+                .as("outside a repository the product's heavy names apply").isTrue();
+        gitInit(dir);
+        assertThat(WebProjectSharability.ignored(dir, nm, true))
+                .as("inside one only the repository's own files speak").isFalse();
+    }
+
+    @Test
+    @DisplayName("An unreadable .gitignore hides nothing beneath it; a linked one is not read at all")
+    void unreadableAndLinkedIgnoreFiles(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        write(dir, ".gitignore", "*.log\n");
+        write(dir, "sub/.gitignore", "!keep.log\n" + "#".repeat((int) WebProjectSharability.MAX_IGNORE_BYTES));
+        Path log = dir.resolve("sub/keep.log");
+        write(dir, "sub/keep.log", "x");
+        assertThat(WebProjectSharability.ignored(dir, log, false))
+                .as("the over-cap file re-includes keep.log for git").isFalse();
+        assertThat(WebProjectSharability.ignored(dir, dir.resolve("other.log"), false)).isTrue();
+
+        write(dir, "rules.txt", "*.txt\n");
+        Files.createDirectories(dir.resolve("lnk"));
+        link(dir.resolve("lnk/.gitignore"), dir.resolve("rules.txt"));
+        write(dir, "lnk/a.txt", "x");
+        assertThat(WebProjectSharability.ignored(dir, dir.resolve("lnk/a.txt"), false))
+                .as("git does not follow an in-tree .gitignore link").isFalse();
+    }
 }

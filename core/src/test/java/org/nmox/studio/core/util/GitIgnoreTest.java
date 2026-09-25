@@ -155,4 +155,69 @@ class GitIgnoreTest {
         java.util.Arrays.fill(s, "d");
         assertThat(GitIgnore.segmentsMatch(p, s)).isFalse();
     }
+
+    // ---- the 3.2 review: each case below was answered "ignored" while
+    // ---- git kept the file, measured against git check-ignore
+
+    @Test
+    @DisplayName("A dropped negation makes the file doubtful, and a doubtful chain never says ignored")
+    void droppedNegationIsDoubt() {
+        assertThat(ignored("*.log\n!*[[:digit:]].log\n", "a1.log", false))
+                .as("git keeps a1.log; the POSIX-class negation was dropped").isFalse();
+        assertThat(ignored("*.cfg\n![[:alpha:]]*.cfg\n", "app.cfg", false)).isFalse();
+        assertThat(GitIgnore.parse("*.log\n![[:digit:]]\n").doubtful()).isTrue();
+        assertThat(GitIgnore.parse("*.log\n[[:digit:]]x\n").doubtful())
+                .as("a dropped EXCLUSION under-matches on its own: no doubt").isFalse();
+        assertThat(ignored("*.log\n[[:digit:]]x\n", "a.log", false)).isTrue();
+        assertThat(GitIgnore.parse("!" + "x".repeat(GitIgnore.MAX_LINE + 1) + "\n").doubtful())
+                .as("an over-long negation").isTrue();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < GitIgnore.MAX_RULES; i++) {
+            sb.append("r").append(i).append('\n');
+        }
+        assertThat(GitIgnore.parse(sb + "plain\n").doubtful()).isFalse();
+        assertThat(GitIgnore.parse(sb + "plain\n!keep\n").doubtful())
+                .as("a negation past the rule cap").isTrue();
+        assertThat(GitIgnore.unknown().doubtful()).as("a file that was not read").isTrue();
+        assertThat(GitIgnore.isIgnored("x.log", false, GitIgnore.empty(),
+                d -> d.isEmpty() ? GitIgnore.parse("*.log\n") : GitIgnore.empty())).isTrue();
+        assertThat(GitIgnore.isIgnored("sub/x.log", false, GitIgnore.empty(),
+                d -> d.isEmpty() ? GitIgnore.parse("*.log\n")
+                        : d.equals("sub") ? GitIgnore.unknown() : GitIgnore.empty()))
+                .as("an unread nested file might re-include").isFalse();
+        assertThat(GitIgnore.isIgnored("x.log", false, GitIgnore.unknown(),
+                d -> d.isEmpty() ? GitIgnore.parse("*.log\n") : GitIgnore.empty()))
+                .as("doubt in info/exclude counts too").isFalse();
+    }
+
+    @Test
+    @DisplayName("A negation matches whatever the case, because git folds case where core.ignorecase is on")
+    void negationIsCaseBlind() {
+        assertThat(ignored("*.log\n!Keep.log\n", "keep.log", false))
+                .as("macOS and Windows repositories keep keep.log").isFalse();
+        assertThat(ignored("*.log\n!Keep.log\n", "other.log", false)).isTrue();
+        assertThat(ignored("Build/\n", "build", true))
+                .as("an exclusion stays exact: under-matching where git folds").isFalse();
+        assertThat(ignored("*.LOG\n", "a.log", false)).isFalse();
+    }
+
+    @Test
+    @DisplayName("? and [...] match one byte, as git's wildmatch does")
+    void bytesNotCharacters() {
+        assertThat(ignored("?x\n", "éx", false)).as("é is two bytes").isFalse();
+        assertThat(ignored("[é]x\n", "éx", false)).isFalse();
+        assertThat(ignored("??x\n", "éx", false)).isTrue();
+        assertThat(ignored("éx\n", "éx", false)).as("literal text still matches").isTrue();
+        assertThat(ignored("*é\n", "caféé", false)).isTrue();
+    }
+
+    @Test
+    @DisplayName("A space after an escaped backslash is trailing, and trimmed")
+    void escapedBackslashThenSpace() {
+        GitIgnore g = GitIgnore.parse("foo\\\\ \n");
+        assertThat(g.match("foo\\ ", false)).isEqualTo(Verdict.NONE);
+        assertThat(g.match("foo\\", false)).isEqualTo(Verdict.IGNORED);
+        assertThat(GitIgnore.parse("bar\\\\\\ \n").match("bar\\ ", false))
+                .as("three backslashes: the space is escaped").isEqualTo(Verdict.IGNORED);
+    }
 }
