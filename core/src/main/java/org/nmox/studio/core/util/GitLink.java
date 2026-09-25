@@ -150,6 +150,17 @@ public final class GitLink {
         return sb.toString();
     }
 
+    /**
+     * {@code https://github.com/o/r/compare/<branch>?expand=1} — GitHub's
+     * own New Pull Request page for {@code branch} against the repository's
+     * default branch (3.2.0). The branch is encoded as {@link #blobUrl}
+     * encodes a ref, so {@code feature/x} keeps its slash.
+     */
+    public static String compareUrl(Remote remote, String branch) {
+        return "https://github.com/" + remote.owner() + '/' + remote.repo()
+                + "/compare/" + encodePath(branch) + "?expand=1";
+    }
+
     /** The Markdown link line under the block: {@code [src/App.jsx#L3-L14](url)}. */
     public static String linkLine(String relPath, int startLine, int endLine, String url) {
         String label = relPath;

@@ -90,6 +90,16 @@ class GitLinkTest {
     }
 
     @Test
+    @DisplayName("New Pull Request is GitHub's compare page for the branch, its slash kept and its segments encoded")
+    void compareUrls() {
+        GitLink.Remote r = new GitLink.Remote("NMOX", "NMOX-Studio");
+        assertThat(GitLink.compareUrl(r, "claude/dx-3.2"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/compare/claude/dx-3.2?expand=1");
+        assertThat(GitLink.compareUrl(r, "fix #12"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/compare/fix%20%2312?expand=1");
+    }
+
+    @Test
     @DisplayName("the link line labels the path and range and escapes a bracket in the name")
     void linkLine() {
         assertThat(GitLink.linkLine("src/App.jsx", 3, 14, "U")).isEqualTo("[src/App.jsx#L3-L14](U)");

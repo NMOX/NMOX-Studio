@@ -55,7 +55,15 @@ import org.openide.util.RequestProcessor;
     "GitHubLinks_notGitHub=origin is not a GitHub remote ({0})",
     "GitHubLinks_noHead=HEAD could not be read",
     "GitHubLinks_pathUnresolved=the file's path inside the repository could not be resolved",
-    "GitHubLinks_outsideRepo=the file is not inside the repository"
+    "GitHubLinks_outsideRepo=the file is not inside the repository",
+    "GitHubLinks_newPullRequest=New Pull Request on GitHub",
+    "# {0} - why no page could be opened",
+    "GitHubLinks_newPullRequestRefused=New Pull Request: {0}",
+    "GitHubLinks_detached=HEAD is detached — check out the branch to propose",
+    "# {0} - the branch, {1} - owner/repo",
+    "GitHubLinks_newPullRequestOpened=Opened the New Pull Request page on GitHub for {0} ({1})",
+    "# {0} - the URL",
+    "GitHubLinks_newPullRequestNoBrowser=New Pull Request: no browser could open {0}"
 })
 public final class GitHubLinks {
 
@@ -128,6 +136,56 @@ public final class GitHubLinks {
                 ? GitLink.treeUrl(remote, ref, rel)
                 : GitLink.blobUrl(remote, ref, rel, startLine, endLine);
         return new Link(url, rel, remote.slug(), ref, null);
+    }
+
+    /**
+     * Off the EDT: the repository {@code dir} is in → its GitHub origin →
+     * the checked-out branch → GitHub's compare page for it, or the reason
+     * there is none. The same ladder as a link, plus one rung: a detached
+     * HEAD has no branch to propose. The answer is a {@link Link} whose
+     * {@code ref} is the branch and whose {@code relPath} is empty.
+     */
+    public static Link resolvePullRequest(File dir) {
+        File root = GitFacts.repoRoot(dir);
+        if (root == null) {
+            return Link.refuse(Bundle.GitHubLinks_notInRepo(dir.getName()));
+        }
+        String origin = GitFacts.originUrl(root);
+        if (origin == null) {
+            return Link.refuse(Bundle.GitHubLinks_noOrigin());
+        }
+        GitLink.Remote remote = GitLink.parseRemote(origin);
+        if (remote == null) {
+            return Link.refuse(Bundle.GitHubLinks_notGitHub(origin));
+        }
+        if (!GitFacts.onBranch(root)) {
+            return Link.refuse(Bundle.GitHubLinks_detached());
+        }
+        String branch = GitFacts.branch(root);
+        return new Link(GitLink.compareUrl(remote, branch), "", remote.slug(), branch, null);
+    }
+
+    /** New Pull Request, end to end on this class's lane: resolve, open the user's browser, say what happened. */
+    public static void openPullRequest(File dir) {
+        RP.post(() -> actPullRequest(dir, ServingLinks::openInSystemBrowser,
+                text -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(text))));
+    }
+
+    /** The seam: {@link #openPullRequest} with the browser and the status line handed in. */
+    static void actPullRequest(File dir, Predicate<String> browser, Consumer<String> status) {
+        Link link = resolvePullRequest(dir);
+        if (link.refusal() != null) {
+            status.accept(Bundle.GitHubLinks_newPullRequestRefused(link.refusal()));
+        } else if (browser.test(link.url())) {
+            status.accept(Bundle.GitHubLinks_newPullRequestOpened(link.ref(), link.slug()));
+        } else {
+            status.accept(Bundle.GitHubLinks_newPullRequestNoBrowser(link.url()));
+        }
+    }
+
+    /** The menu name of New Pull Request, in the reader's language. */
+    public static String newPullRequestLabel() {
+        return Bundle.GitHubLinks_newPullRequest();
     }
 
     /**

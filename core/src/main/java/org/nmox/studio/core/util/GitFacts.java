@@ -70,6 +70,21 @@ public final class GitFacts {
     }
 
     /**
+     * True when HEAD names a branch ({@code ref: refs/heads/…}), false for a
+     * detached HEAD or anything unreadable: {@link #branch} answers a short
+     * sha for a detached HEAD, which is a fine ref for a link and no branch
+     * to propose (3.2.0, New Pull Request).
+     */
+    public static boolean onBranch(File repoRoot) {
+        if (repoRoot == null) {
+            return false;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        String head = gitDir == null ? null : readFirstLine(new File(gitDir, "HEAD"));
+        return head != null && head.startsWith("ref: refs/heads/") && head.length() > "ref: refs/heads/".length();
+    }
+
+    /**
      * Lines of {@code git status --porcelain} output = changed paths;
      * blank lines don't count (the trailing newline must not inflate a
      * clean tree into a dirty one).

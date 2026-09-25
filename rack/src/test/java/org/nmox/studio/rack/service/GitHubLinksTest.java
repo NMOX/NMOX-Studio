@@ -157,4 +157,34 @@ class GitHubLinksTest {
         assertThat(src).contains("ServingLinks::openInSystemBrowser").contains("RP.post(")
                 .doesNotContain("EmbeddedBrowser").doesNotContain("ProcessBuilder");
     }
+
+    @Test
+    @DisplayName("New Pull Request opens GitHub's compare page for the checked-out branch, slash kept, from anywhere inside")
+    void newPullRequest(@TempDir Path tmp) throws Exception {
+        Path repo = repo(tmp, "git@github.com:NMOX/demo.git");
+        Files.writeString(repo.resolve(".git/HEAD"), "ref: refs/heads/feature/login form\n");
+        List<String> opened = new ArrayList<>();
+        List<String> said = new ArrayList<>();
+        GitHubLinks.actPullRequest(repo.resolve("src/components").toFile(), u -> opened.add(u), said::add);
+        assertThat(opened).containsExactly("https://github.com/NMOX/demo/compare/feature/login%20form?expand=1");
+        assertThat(said).containsExactly("Opened the New Pull Request page on GitHub for feature/login form (NMOX/demo)");
+    }
+
+    @Test
+    @DisplayName("a detached HEAD has no branch to propose; not GitHub and no origin refuse as a link does; nothing opens")
+    void newPullRequestRefuses(@TempDir Path tmp) throws Exception {
+        Path repo = repo(tmp, "https://github.com/NMOX/demo");
+        Files.writeString(repo.resolve(".git/HEAD"), "0123456789abcdef0123456789abcdef01234567\n");
+        List<String> opened = new ArrayList<>();
+        List<String> said = new ArrayList<>();
+        GitHubLinks.actPullRequest(repo.toFile(), u -> opened.add(u), said::add);
+        assertThat(said).containsExactly("New Pull Request: HEAD is detached — check out the branch to propose");
+        Files.writeString(repo.resolve(".git/HEAD"), "ref: refs/heads/main\n");
+        Files.writeString(repo.resolve(".git/config"), "[remote \"origin\"]\n\turl = https://gitlab.com/a/b.git\n");
+        GitHubLinks.actPullRequest(repo.toFile(), u -> opened.add(u), said::add);
+        assertThat(said.get(1)).startsWith("New Pull Request: origin is not a GitHub remote");
+        assertThat(opened).as("a refusal opens nothing").isEmpty();
+        GitHubLinks.actPullRequest(repo.toFile(), u -> false, said::add);
+        assertThat(said).hasSize(3);
+    }
 }

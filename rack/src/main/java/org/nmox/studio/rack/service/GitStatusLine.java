@@ -652,6 +652,17 @@ public class GitStatusLine implements StatusLineElementProvider {
             JMenuItem pulls = new JMenuItem(Bundle.GitStatusLine_pullRequests());
             pulls.addActionListener(e -> showPullRequests());
             menu.add(pulls);
+            // 3.2.0: GitHub's own New Pull Request page for the branch the
+            // chip names — the step after the push, one click from where the
+            // branch is shown
+            JMenuItem newPull = new JMenuItem(GitHubLinks.newPullRequestLabel());
+            newPull.addActionListener(e -> {
+                java.io.File dir = RackService.getDefault().getRack().getProjectDir();
+                if (dir != null) {
+                    GitHubLinks.openPullRequest(dir);
+                }
+            });
+            menu.add(newPull);
             menu.addSeparator();
             JMenuItem draft = new JMenuItem(Bundle.GitStatusLine_draftCommit());
             draft.addActionListener(e -> draftCommitMessage());
