@@ -43,3 +43,4 @@ Every row the walks add is written below as it is found.
 
 | # | Found by | What was wrong | What 3.2.0 does | Proof |
 |---|----------|----------------|-----------------|-------|
+| 4 | walking row 1 with a real `git commit` | the `#` lines of a commit message read as plain text, where VS Code greys them as comments | *(queued)* | |
