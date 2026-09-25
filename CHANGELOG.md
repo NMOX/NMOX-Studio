@@ -4,6 +4,144 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.3.0] - 2026-09-25
+
+**The big-project release. 3.1 asked how long the first hour takes; 3.2
+asked what a developer who stayed does all day; 3.3 asks what happens when
+the project is big — a monorepo of two hundred workspace packages and fifty
+thousand tracked files, left open all day.** The question was measured
+before anything was built: a script-built fixture (200 packages × 250
+files, an ignored `node_modules` of 60,000 more) aimed under a 150-second
+JFR recording, a five-file repository as the control. The survey, each
+finding's number and each unit's proof are in
+[docs/engineering/dx-plan-3.3.md](docs/engineering/dx-plan-3.3.md).
+
+### What the survey found, and what changed
+
+- **The file watchers stop re-walking the whole tree.** Project Studio's
+  tree polled every 1.5 s and the manifest pulse every second, each
+  walking and `stat`-ing every file and rebuilding a 50,000-entry map: 305
+  of the boot's 572 CPU samples and 6.8 of its 9.8 GB of allocation, the
+  heap swinging between 226 and 462 MB. A poll now stats the directories
+  it knows and relists only those whose time moved (how git, an atomic
+  save and a generator write), stats the tracked files for in-place edits,
+  reconciles with a full walk every 20 s, waits at least eight times its
+  own last duration, and says once when it reaches its cap instead of
+  silently leaving files unwatched. Measured on the same boot: 305 → 44
+  samples, 6.8 → 0.6 GB. Two hostile reviews of the first cut found where
+  an incremental poll goes blind while a full walk self-heals — a file
+  written in the tick its directory was listed (9–21 of 9,000 lost in a
+  real race), a failed listing, a root that came back, a future-dated
+  directory relisted forever — so the reconcile and git's racily-clean
+  rule are the price, and each blind spot is a named test.
+- **Find in Projects' results open readable — on any project.** The
+  results window opened with its tree squeezed to about ten pixels beside
+  the preview, so a search that found its matches looked like one that
+  found nothing: the platform places its divider at `max(saved, 250)`, but
+  the first layout happens while the window has almost no width, Swing
+  clamps the divider, and the panel's own listener saves the clamp
+  (`replace_results_divider=14` in a fresh userdir) — every later session
+  reopened squeezed too. The first real layout of a results split now gives
+  a tree under 120 px the platform's own 250, once, watching only the
+  Search Results window; the platform's listener saves that instead.
+- **Go to Symbol indexes the package being edited first.** The index stops
+  at 2,000 files and walked alphabetically, so on 200 packages it held the
+  first eight by name — about 4% of the fixture — and none of the one the
+  cursor was in. Measured after: 23,892 symbols in about 130 ms cold and 16
+  ms warm at that cap, so a larger cap is affordable and is the plan's next
+  measurement.
+- **Design tokens and CSS classes reach across a monorepo.** `var(`
+  completion, class completion and their ⌘-clicks resolved their project
+  as the nearest `package.json`, which in a monorepo is the file's own
+  package — right for everything it declares and blind to the one place a
+  monorepo keeps its design system. They now read the file's package and
+  then **the workspace packages its `package.json` depends on**, in the
+  order it declares them, found where the package manager linked them (else
+  among the declared workspace packages), inside the workspace and outside
+  `node_modules`, eight at most, in fair shares of a second 60-file budget.
+  Walked: `var(--s` in `packages/web` offers `--space-lg` from
+  `@acme/tokens`, and an unrelated sibling's `--stranger-hue` stays out.
+  **Rename Class…** still edits only its own package, and now refuses both
+  a new name a dependency declares and an old one (its usages here would
+  lose that rule).
+- **The fetch-path → route jump reads the workspace's server packages.** A
+  `web` package rarely depends on the `api` package it calls, so here the
+  question is which packages declare a server framework (`express`,
+  `fastify`, `koa`, `@koa/router`, `hono`); an exact match anywhere beats a
+  `:param` match. A path no route registers says so — and says when it
+  stopped at its 80-file cap, or when the workspace had more packages than
+  it read, instead of claiming no route exists. In fifteen languages.
+- **Cold Find in Projects is the platform's cost, not ours.** Profiled: a
+  FileObject and a DataObject per file, then 213 of 746 samples on the
+  reference-queue thread removing their weak listeners; the product's own
+  share is a handful. The tree, its live refresh and the Workbench on the
+  fixture needed nothing — measured, not assumed.
+
+### Every translated mnemonic reaches a key (ledger 122)
+
+- Russian and Ukrainian mnemonics were letters no key could press: the
+  platform's `Mnemonics` maps A–Z and 0–9 itself and looks other letters up
+  in a bundle that ships only for locales with a locale jar. Both languages
+  now carry a Cyrillic → key table (the ЙЦУКЕН layout, pinned exactly) and
+  the eight Latin-script languages a 506-entry accented-letter table, built
+  as unbranded locale jars by a second `nbm:branding` execution per locale.
+  Hindi's mnemonics are appended Latin letters. Measured on a booted build:
+  Russian's 241 refusals → 0.
+- Swing selects an item of an OPEN menu by the typed character, letters and
+  digits only, so a mnemonic mapped to a punctuation key is dead there:
+  the tables hold letter keys only, `TranslatedMnemonicsTest` requires a
+  letter or digit key in every language, and collisions are measured by
+  the KEY pressed, not the letter shown — which found nine real clashes in
+  the top bar, all moved.
+
+### The second week, a day later
+
+- An edit request (`nmox -w`, `nmox -d`) is read off the EDT before any of
+  it opens; a failure there is refused by name instead of leaving git
+  waiting; walked with a real `git commit` and `git difftool`.
+- *Terminal: Create New Terminal* (Quick Search) always starts a shell in
+  the project.
+- A left-over git message is recognised in a git folder under any name —
+  `--separate-git-dir`, a bare repository — stopping at a worktree's root.
+- DB Studio watches its `.nmoxdb.json` with one stat a poll instead of a
+  walk of the whole project.
+- ⌃Space at the top of a stylesheet offers selectors instead of throwing
+  (`StringIndexOutOfBoundsException` on an empty file), and the prefix no
+  longer drops the file's first character — a test had pinned that as "a
+  known quirk"; a pinned quirk is a bug with a witness.
+
+### Found by reviewing the night's own code
+
+- The search-results heal's first cut listened to every component in the
+  IDE (25,909 events for ten relayouts), saved 40% of a wide window as an
+  absolute width, and measured the preview in a mirrored window; rewritten
+  to watch one window and give the platform's own constant, RTL-aware.
+- The dependency lookup's first cut: a manifest of 100,000 dependency names
+  hung completion for minutes (a quadratic dedupe), "declared first" was
+  hash order (`JSONObject` keeps no order; a streaming tokener reads the
+  file's), a component package declared first could starve the tokens
+  package after it, a workspace glob could send the IDE reading manifests
+  outside the repository, and a self-check compared a real path to an
+  unresolved one. All fixed; `WorkspacesContainmentTest` also stops a
+  `**` workspace glob following a link out of the repository, which
+  WAYPOINT had done since v1.63.0.
+- The house's own ledgers caught the new containment checks in the clean
+  verify — two more spellings of "inside this root" — and both now ask
+  `core.util.Containment`, the one home.
+
+### Proof
+
+- Sixteen mutants by name on the monorepo units, fourteen on the watcher,
+  seven on the results split, two on Go to Symbol; each new gate bound to
+  the packaged-app lane. Full `mvn clean verify` green on the branch head:
+  every module, SpotBugs/find-sec-bugs, JaCoCo floors, the packaged-app
+  gates.
+- Walked in the assembled app: the watcher's live refresh on the 50k
+  fixture (a file made from outside appears within 3 s), a fresh userdir's
+  first search readable and a userdir already carrying the saved 14 healed,
+  Go to Symbol finding a function in `pkg-150`, the token completion across
+  packages, the tree and the Workbench on 50,000 files under JFR.
+
 ## [3.2.0] - 2026-09-25
 
 **The second-week release. 3.1 asked how long the first hour takes; 3.2 asks
@@ -24349,6 +24487,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.2...v3.1.0

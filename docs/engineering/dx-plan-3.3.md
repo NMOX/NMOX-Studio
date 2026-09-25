@@ -1,4 +1,4 @@
-# The 3.3 developer-experience plan (draft)
+# The 3.3 developer-experience plan
 
 *Started 2026-09-25, the night 3.2.0 shipped. 3.1 asked how long the first
 hour takes; 3.2 asked what a developer who stayed does all day. 3.3 asks
@@ -90,7 +90,7 @@ the git chip's one spawn is not where a big repository hurts.
 
 ## Already on the branch
 
-Written after 3.2.0 shipped, held for the release this plan becomes:
+Written after 3.2.0 shipped and released as 3.3.0:
 
 - An edit request (`nmox -w`, `nmox -d`) is read off the EDT before any of
   it opens; an unchecked failure there is refused instead of leaving git
