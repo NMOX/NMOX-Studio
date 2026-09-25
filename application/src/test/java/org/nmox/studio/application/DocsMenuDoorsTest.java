@@ -111,6 +111,11 @@ class DocsMenuDoorsTest {
         final Map<String, Door> children = new TreeMap<>();
         /** Hidden by a module that loads on one OS only: the path is not in that OS's menu bar. */
         boolean notEverywhere;
+        /**
+         * Opens a dialog (an ellipsis, or the platform's Options and Plugins),
+         * so a path may go on past it to the dialog's own tab or button.
+         */
+        boolean dialog;
 
         Door(String name) {
             this.name = name;
@@ -224,9 +229,9 @@ class DocsMenuDoorsTest {
         // leaf row (Options ▸ Keyboard Shortcuts, Plugins ▸ Check for Updates):
         // the text before the arrow is some door's row, or the macOS app
         // menu's Settings…
-        // the macOS app menu's Settings… (the ellipsis names that item and
-        // nothing else); a bare "Settings" only as a path's own start
-        if (endsWith(text, at, "Settings…") || endsWordAt(text, at, "Settings")) {
+        // the macOS app menu's Settings… as a word of its own ("Project
+        // Settings…" is something else); a bare "Settings" only as a hop
+        if (settingsItemAt(text, at) || endsWordAt(text, at, "Settings")) {
             return null;
         }
         // a row before the arrow excuses the path only as a HOP — itself
@@ -260,9 +265,9 @@ class DocsMenuDoorsTest {
     }
 
     /**
-     * {@code name} ends at {@code at} (spaces aside) and is itself a path's
-     * start or hop: bold-opened ({@code **Settings…}) or after an arrow — so
-     * "Project Settings ▸ Save" is not the macOS app menu's Settings…
+     * {@code name} ends at {@code at} (spaces aside) and is itself a hop, an
+     * arrow before it. (Bold is stripped before this law reads the text, so
+     * a "bold-opened" start cannot be told apart — 5th review.)
      */
     private static boolean endsWordAt(String text, int at, String name) {
         int end = at;
@@ -270,10 +275,24 @@ class DocsMenuDoorsTest {
             end--;
         }
         int start = end - name.length();
-        if (start < 0 || !text.startsWith(name, start)) {
+        return start >= 0 && text.startsWith(name, start) && arrowBefore(text, start);
+    }
+
+    /** "Settings…" ends at {@code at}, not the tail of a longer name: no letter or digit before it but spaces. */
+    static boolean settingsItemAt(String text, int at) {
+        int end = at;
+        while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) {
+            end--;
+        }
+        int start = end - "Settings…".length();
+        if (start < 0 || !text.startsWith("Settings…", start)) {
             return false;
         }
-        return start >= 2 && text.startsWith("**", start - 2) || arrowBefore(text, start);
+        int b = start - 1;
+        while (b >= 0 && text.charAt(b) == ' ') {
+            b--;
+        }
+        return b < 0 || !Character.isLetterOrDigit(text.charAt(b));
     }
 
     /** Whether an arrow ends just before {@code at}, markup and spaces aside. */
@@ -302,7 +321,11 @@ class DocsMenuDoorsTest {
         }
         for (Door row : door.children.values()) {
             String n = row.name.endsWith("…") ? row.name.substring(0, row.name.length() - 1) : row.name;
-            if (endsWith(text, end, row.name)) {
+            if (row.children.isEmpty() && !row.dialog) {
+                // a leaf that opens neither a submenu nor a dialog cannot be
+                // followed by an arrow (5th review: "File ▸ Close Project ▸
+                // Copy Path" passed)
+            } else if (endsWith(text, end, row.name)) {
                 best = Math.max(best, at - (end - row.name.length()));
             } else if (!n.isEmpty() && endsWith(text, end, n)) {
                 best = Math.max(best, at - (end - n.length()));
@@ -566,7 +589,10 @@ class DocsMenuDoorsTest {
             if (name == null) {
                 continue;
             }
-            place(bar, file, name, folderNames).notEverywhere |= c.hiddenOnOneOs().contains(file);
+            Door row = place(bar, file, name, folderNames);
+            row.notEverywhere |= c.hiddenOnOneOs().contains(file);
+            row.dialog |= name.endsWith("…") || file.contains("OptionsWindowAction")
+                    || file.contains("PluginManagerAction");
         }
         try (InputStream in = DocsMenuDoorsTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
             assertThat(in).as("the code-named menu rows ledger").isNotNull();
