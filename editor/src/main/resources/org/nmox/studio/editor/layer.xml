@@ -819,9 +819,13 @@
     <!-- v2.61.0 Complete with KVASIR ⌥⌘G = "DA-G" (D is ⌘ on macOS, A is ⌥;
          O would be ⌃) — the chord lives in every keymap profile (the v2.3.0
          parity law), ui/layer.xml's Tests-window precedent.
-         3.2.0 Copy Path ⌥⌘C = "DA-C" and Copy Relative Path ⇧⌥⌘C =
-         "DAS-C", VS Code's chords, measured free in every profile by
-         VsCodeKeymapResolutionTest. -->
+         3.2.0 Copy Path ⌥⌘C = "DA-C", VS Code's chord, measured by
+         VsCodeKeymapResolutionTest (the Idea profile keeps its editor's
+         Ctrl+Alt+C, Extract Constant, on Windows and Linux). Copy Relative
+         Path has no chord: VS Code's ⇧⌥⌘C is "DAS-C", which on Windows and
+         Linux is the platform's Clear Split in every profile, and a layer
+         shadow cannot bind per OS; it answers to its VS Code title in
+         Quick Search instead. -->
     <folder name="Keymaps">
         <folder name="NetBeans">
             <file name="DA-G.shadow">
@@ -829,9 +833,6 @@
             </file>
             <file name="DA-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
-            </file>
-            <file name="DAS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance"/>
             </file>
         </folder>
         <folder name="Eclipse">
@@ -841,9 +842,6 @@
             <file name="DA-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
             </file>
-            <file name="DAS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance"/>
-            </file>
         </folder>
         <folder name="Emacs">
             <file name="DA-G.shadow">
@@ -851,9 +849,6 @@
             </file>
             <file name="DA-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
-            </file>
-            <file name="DAS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance"/>
             </file>
         </folder>
         <folder name="Idea">
@@ -863,9 +858,6 @@
             <file name="DA-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
             </file>
-            <file name="DAS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance"/>
-            </file>
         </folder>
         <folder name="NetBeans55">
             <file name="DA-G.shadow">
@@ -873,9 +865,6 @@
             </file>
             <file name="DA-C.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
-            </file>
-            <file name="DAS-C.shadow">
-                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance"/>
             </file>
         </folder>
     </folder>

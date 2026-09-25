@@ -81,7 +81,6 @@ class VsCodeKeymapResolutionTest {
         CHORDS.put("DA-K", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
         CHORDS.put("DAS-K", "Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance");
         CHORDS.put("DA-C", "Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance");
-        CHORDS.put("DAS-C", "Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance");
     }
 
     /** The Eclipse profile keeps its own Ctrl+Shift+E (Switch to Editor). */
@@ -94,7 +93,10 @@ class VsCodeKeymapResolutionTest {
      * matching brace, Ctrl+Shift+X upper-cases). Keyed "profile|chord".
      */
     private static final Set<String> BLESSED_EDITOR = Set.of(
-            "Eclipse|DS-P|match-brace", "Eclipse|DS-X|to-upper-case");
+            "Eclipse|DS-P|match-brace", "Eclipse|DS-X|to-upper-case",
+            // Ctrl+Alt+C is IntelliJ's Extract Constant on Windows and Linux;
+            // an Idea user keeps it in the editor, Copy Path outside it (3.2.0)
+            "Idea|DA-C|introduce-constant");
 
     // ---- the merged layer model ------------------------------------------
 
