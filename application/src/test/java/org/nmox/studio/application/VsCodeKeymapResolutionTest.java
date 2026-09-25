@@ -80,6 +80,8 @@ class VsCodeKeymapResolutionTest {
         CHORDS.put("DA-P", "Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance");
         CHORDS.put("DA-K", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
         CHORDS.put("DAS-K", "Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance");
+        CHORDS.put("DA-C", "Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance");
+        CHORDS.put("DAS-C", "Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Relative.instance");
     }
 
     /** The Eclipse profile keeps its own Ctrl+Shift+E (Switch to Editor). */

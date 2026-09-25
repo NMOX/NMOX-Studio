@@ -6,7 +6,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.nmox.studio.core.util.PlainStatus;
@@ -101,16 +100,7 @@ final class PathActions {
      * (a relative path that climbs out would name somewhere else).
      */
     static String relativePath(File root, File file) {
-        if (root == null) {
-            return file.getAbsolutePath();
-        }
-        Path r = root.toPath().toAbsolutePath().normalize();
-        Path f = file.toPath().toAbsolutePath().normalize();
-        if (!f.startsWith(r)) {
-            return file.getAbsolutePath();
-        }
-        String rel = r.relativize(f).toString();
-        return rel.isEmpty() ? "." : rel;
+        return org.nmox.studio.core.util.PathLabel.relative(root, file);
     }
 
     /** The reveal row's name, in the file manager's own name for the OS. */
