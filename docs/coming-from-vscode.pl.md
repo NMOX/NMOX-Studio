@@ -101,6 +101,8 @@ git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 Wtedy `git commit` otwiera wiadomość w IDE; zapisz ją i zamknij kartę, a git
 działa dalej. Zamknięcie IDE, gdy plik jest jeszcze otwarty, też go oddaje —
 z tym, co zostało zapisane.
+**Zespół ▸ Używaj NMOX Studio z Git…** ustawia te same trzy wiersze za ciebie,
+po pokazaniu, na co każdy z nich jest teraz ustawiony.
 Homebrew, instalator Windows
 (*Add "nmox" to PATH*) i pakiety dla Linuksa dodają je do PATH; przy instalacji z DMG
 [podręcznik](user-guide.pl.md#2-first-launch) pokazuje jednowierszowe

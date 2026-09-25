@@ -98,6 +98,8 @@ git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 
 Khi đó `git commit` mở thông điệp trong IDE; lưu lại, đóng thẻ, và git sẽ tiếp
 tục. Thoát IDE khi tệp vẫn còn mở cũng trả nó về, với những gì đã được lưu.
+**Nhóm ▸ Dùng NMOX Studio với Git…** đặt giúp bạn đúng ba dòng đó, sau khi
+cho thấy mỗi dòng hiện đang có giá trị gì.
 Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và
 các gói Linux đưa nó vào PATH của bạn; với bản cài từ DMG,
 [hướng dẫn sử dụng](user-guide.vi.md#2-first-launch) chỉ cách tạo liên kết

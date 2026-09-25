@@ -54,7 +54,7 @@ spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
 <a id="2-first-launch"></a>
 ## 2. 首次启动
 
-在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。VS Code 的 `-r` 可以使用，`-n` 会在那唯一的窗口里打开；`-a` 和 `-v` 会被按名字拒绝。`nmox -w file` 会打开文件并一直等到你关闭它的标签页，`nmox -d left right` 会在差异视图中比较两个文件，这样 NMOX Studio 就能充当 git 的编辑器和 difftool：`git config --global core.editor "nmox -w"`，而 `nmox --help` 会打印出让它成为 difftool 的那两行。保存提交信息、关闭标签页，git 就会继续。除此之外，命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
+在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。VS Code 的 `-r` 可以使用，`-n` 会在那唯一的窗口里打开；`-a` 和 `-v` 会被按名字拒绝。`nmox -w file` 会打开文件并一直等到你关闭它的标签页，`nmox -d left right` 会在差异视图中比较两个文件，这样 NMOX Studio 就能充当 git 的编辑器和 difftool：`git config --global core.editor "nmox -w"`，而 `nmox --help` 会打印出让它成为 difftool 的那两行。保存提交信息、关闭标签页，git 就会继续。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会把这些设置和它们现在的值并排列出，并替你设好。除此之外，命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
 
 - **macOS，Homebrew：**cask 会替你建好链接。
 - **macOS，从 DMG 安装：**为应用的启动器建一个链接（不是复制）——
@@ -225,6 +225,12 @@ KVASIR 会用 NMOX Studio 当前设置的语言回答。
 ### 你项目里的翻译
 
 一个 Web 项目自己的翻译目录，就是编辑器会去读的数据 —— 和你的样式表、你的 `.env` 一样。**工具 ▸ 检查翻译…** 会找到这些目录（i18next、vue-i18n、svelte-i18n、Angular 的 XLIFF、Lingui、Paraglide、react-intl，或者 I18n Kit 自己的），挑出源语言，然后报告三件事，以波浪线和任务列表中的条目呈现：**缺失**（复数与上下文形式按基础键比较）、**与源相同**（是复制而非翻译），以及**占位符不匹配** —— 这一项才是错误，因为 `{{name}}` 或 `%s` 集合与源不同的翻译就是坏的。第四项**未使用**只在完整普查时出现。
+
+### 文档里的链接
+
+README 是在 GitHub 上读的，里面一个哪儿也去不了的链接，会被下一位读者发现，而不是你。**工具 ▸ 检查 Markdown 链接…** 会读取瞄准的项目中的每个 Markdown 文件，并按 GitHub 渲染的方式检查每个相对链接和图片：它指向的文件或文件夹必须存在，`#heading` 必须按 GitHub 的锚点规则是该文件中的一个标题（转成小写、去掉标点、空格换成连字符，重复的标题依次编号 `-1`、`-2`）。哪儿也去不了的链接是错误；缺失的标题，以及跳出项目的链接，是警告。它们以链接上的波浪线和任务列表中的条目呈现，状态栏则用一句话总结这次检查（`Markdown 链接：12 个文件，148 个链接，1 个指向不存在的文件`）。
+
+带协议的链接（`https:`、`mailto:`）不检查：什么都不会离开你的机器。代码块或行内代码里的内容也不检查，因为示例里的链接就是示例；指向源文件的链接里的片段同样不检查（`app.js#L10` 是 GitHub 的行锚点）。以 `/` 开头的链接从项目根目录读起，和 GitHub 的读法一样。
 
 ### Angular 模板，一等公民
 

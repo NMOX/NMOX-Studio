@@ -73,7 +73,7 @@ git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 ```
 
-`git commit` öffnet die Nachricht dann in der IDE; speichern Sie sie, schließen Sie den Tab, und git macht weiter. Auch wenn Sie die IDE beenden, während eine Datei noch offen ist, geht sie zurück, mit dem, was gespeichert wurde. Homebrew, das Windows-Installationsprogramm (*„nmox“ zum PATH hinzufügen*) und die Linux-Pakete legen ihn in Ihren PATH; für eine Installation aus dem DMG zeigt das [Benutzerhandbuch](user-guide.de.md#2-first-launch) den einzeiligen Link.
+`git commit` öffnet die Nachricht dann in der IDE; speichern Sie sie, schließen Sie den Tab, und git macht weiter. Auch wenn Sie die IDE beenden, während eine Datei noch offen ist, geht sie zurück, mit dem, was gespeichert wurde. **Team ▸ NMOX Studio mit Git verwenden…** setzt dieselben drei Zeilen für Sie, nachdem es gezeigt hat, worauf jede gerade steht. Homebrew, das Windows-Installationsprogramm (*„nmox“ zum PATH hinzufügen*) und die Linux-Pakete legen ihn in Ihren PATH; für eine Installation aus dem DMG zeigt das [Benutzerhandbuch](user-guide.de.md#2-first-launch) den einzeiligen Link.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Wo jede Idee aus VS Code wohnt

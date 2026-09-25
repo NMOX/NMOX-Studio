@@ -101,6 +101,8 @@ git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 `git commit` abre entonces el mensaje en el IDE; guárdalo, cierra la pestaña
 y git sigue su camino. Salir del IDE con un archivo todavía abierto también
 lo devuelve, con lo que se haya guardado.
+**Equipo ▸ Usar NMOX Studio con Git…** configura esas mismas tres líneas por ti,
+después de mostrarte qué valor tiene ahora cada una.
 Homebrew, el instalador de Windows
 (*Añadir «nmox» al PATH*) y los paquetes de Linux lo ponen en tu PATH; para
 una instalación desde el DMG, la [guía del usuario](user-guide.es.md#2-first-launch)

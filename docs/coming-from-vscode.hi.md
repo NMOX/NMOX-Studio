@@ -72,7 +72,7 @@ git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 ```
 
-फिर `git commit` संदेश को IDE में खोलता है; उसे सहेजें और टैब बंद करें, और git आगे बढ़ जाता है। कोई फ़ाइल खुली रहते IDE से बाहर निकलना भी उसे लौटा देता है, जितना सहेजा गया था उसके साथ। Homebrew, Windows संस्थापक (*Add "nmox" to PATH*) और Linux पैकेज इसे आपके PATH पर रख देते हैं; DMG से संस्थापन हो तो [उपयोगकर्ता मार्गदर्शिका](user-guide.hi.md#2-first-launch) एक पंक्ति वाला लिंक दिखाती है।
+फिर `git commit` संदेश को IDE में खोलता है; उसे सहेजें और टैब बंद करें, और git आगे बढ़ जाता है। कोई फ़ाइल खुली रहते IDE से बाहर निकलना भी उसे लौटा देता है, जितना सहेजा गया था उसके साथ। **टीम ▸ NMOX Studio को Git के साथ इस्तेमाल करें…** पहले दिखाता है कि हर एक अभी किस पर सेट है, फिर वही तीन पंक्तियाँ आपके लिए सेट कर देता है। Homebrew, Windows संस्थापक (*Add "nmox" to PATH*) और Linux पैकेज इसे आपके PATH पर रख देते हैं; DMG से संस्थापन हो तो [उपयोगकर्ता मार्गदर्शिका](user-guide.hi.md#2-first-launch) एक पंक्ति वाला लिंक दिखाती है।
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## VS Code का हर विचार कहाँ रहता है
