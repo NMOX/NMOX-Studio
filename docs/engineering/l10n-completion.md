@@ -21,6 +21,7 @@ digits kept Latin; every gate below derives its population from
 | The editor's right-click menus, every mime | `PopupRowsSpeakTest`, population derived from the layer |
 | The platform toolbar | `ToolbarOverlayGateTest`, every MessageFormat branch rendered |
 | Platform dialogs (Options, Plugin Manager, About, …) | `PlatformDialogLedgerTest`, a checked hand-kept ledger |
+| The main window's own chrome (3.2.0) — the editor's tabs (`Source`, `History`, `Preview`) for every file type, Quick Search's categories, the Favorites tab, the Quick Search field and its popup, the progress and editor parts of the status line | `MainWindowChromeSpeaksTest` — editor tabs and search categories DERIVED from every `Editors/**/MultiView` and `QuickSearch/<name>` registration in the cluster's layers; the code-named rest a checked ledger (`main-window-chrome.txt`). A German walk found `Source`/`History`/`Favorites`/the Quick Search hint English on the first window while every gate was green: the text loader's `CTL_Source` names the tab of every file with no DataObject of its own (every TextMate-grammar language), and the Window menu's `Favoriten` paints `ACT_View` while the tab paints `Favorites`. The Output window keeps its English name inside `Show Output` (ceiling 3) |
 | Dialog buttons (OK / Cancel / wizard chrome) | `DialogChromeOverlayGateTest` |
 | Module names in the Plugin Manager and About ▸ Details | `ModuleDescriptorsSpeakTest` |
 | Catalogues: devices, learning spaces, templates, palettes, chains | `CatalogueProseLedgerTest`, keyed per ENUM |
