@@ -224,13 +224,21 @@ class DocsMenuDoorsTest {
         // leaf row (Options ▸ Keyboard Shortcuts, Plugins ▸ Check for Updates):
         // the text before the arrow is some door's row, or the macOS app
         // menu's Settings…
-        if (endsWith(text, at, "Settings…") || endsWith(text, at, "Settings")) {
+        // the macOS app menu's Settings… (the ellipsis names that item and
+        // nothing else); a bare "Settings" only as a path's own start
+        if (endsWith(text, at, "Settings…") || endsWordAt(text, at, "Settings")) {
             return null;
         }
+        // a row before the arrow excuses the path only as a HOP — itself
+        // preceded by an arrow — never as a root (4th review: "Editor ▸ Copy
+        // as Markdown", "Git ▸ Commit…" and "Projects ▸ Close Project" passed
+        // because their wrong roots happen to be rows somewhere)
+        int hop = 0;
         for (Door menu : bar.values()) {
-            if (endsWithRow(menu, text, at)) {
-                return null;
-            }
+            hop = Math.max(hop, rowBefore(menu, text, at));
+        }
+        if (hop > 0 && arrowBefore(text, at - hop)) {
+            return null;
         }
         // a context menu's path starts at a right-click, which no menu bar
         // has: "Right-click ▸ …", "right-click in the editor ▸ …"
@@ -251,20 +259,62 @@ class DocsMenuDoorsTest {
         return head.endsWith("right-click") || head.endsWith("right-click in the editor");
     }
 
-    private static boolean endsWith(String text, int at, String name) {
-        int start = at - name.length();
-        return start >= 0 && text.startsWith(name, start);
+    /**
+     * {@code name} ends at {@code at} (spaces aside) and is itself a path's
+     * start or hop: bold-opened ({@code **Settings…}) or after an arrow — so
+     * "Project Settings ▸ Save" is not the macOS app menu's Settings…
+     */
+    private static boolean endsWordAt(String text, int at, String name) {
+        int end = at;
+        while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) {
+            end--;
+        }
+        int start = end - name.length();
+        if (start < 0 || !text.startsWith(name, start)) {
+            return false;
+        }
+        return start >= 2 && text.startsWith("**", start - 2) || arrowBefore(text, start);
     }
 
-    /** Whether the text just before {@code at} is the name of some row under {@code door}, at any depth. */
-    private static boolean endsWithRow(Door door, String text, int at) {
-        for (Door row : door.children.values()) {
-            String n = row.name.endsWith("…") ? row.name.substring(0, row.name.length() - 1) : row.name;
-            if (endsWith(text, at, row.name) || (!n.isEmpty() && endsWith(text, at, n)) || endsWithRow(row, text, at)) {
+    /** Whether an arrow ends just before {@code at}, markup and spaces aside. */
+    private static boolean arrowBefore(String text, int at) {
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        for (String a : ARROWS) {
+            String bare = a.strip();
+            if (!bare.isEmpty() && end >= bare.length() && text.startsWith(bare, end - bare.length())) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** The length of the longest row name under {@code door}, at any depth, ending just before {@code at}; 0 for none. */
+    private static int rowBefore(Door door, String text, int at) {
+        int best = 0;
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        for (Door row : door.children.values()) {
+            String n = row.name.endsWith("…") ? row.name.substring(0, row.name.length() - 1) : row.name;
+            if (endsWith(text, end, row.name)) {
+                best = Math.max(best, at - (end - row.name.length()));
+            } else if (!n.isEmpty() && endsWith(text, end, n)) {
+                best = Math.max(best, at - (end - n.length()));
+            }
+            best = Math.max(best, rowBefore(row, text, at));
+        }
+        return best;
+    }
+
+    private static boolean endsWith(String text, int at, String name) {
+        int start = at - name.length();
+        return start >= 0 && text.startsWith(name, start);
     }
 
     private static String arrowAt(String text, int at) {
