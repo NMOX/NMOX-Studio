@@ -51,6 +51,12 @@ class ActionIdsResolveTest {
      * each row resolved through {@code Actions::forID} (3.1.0).
      */
     private static final Pattern CMD = Pattern.compile("\\bcmd\\(\\s*\"[^\"]*\"\\s*,\\s*(\"[^\"]+\")\\s*,\\s*(\"[^\"]+\")\\s*\\)");
+    /**
+     * A resolver seam fed {@code Actions::forID} — Getting Started's Point an
+     * Agent, {@code resolver.resolve(category, id)} (6th review: the method
+     * reference was invisible to a census that counted only calls).
+     */
+    private static final Pattern RESOLVE = Pattern.compile("\\bresolver\\.resolve\\(\\s*([^,()]+?)\\s*,\\s*([^,()]+?)\\s*\\)");
     private static final Pattern CONSTANT = Pattern.compile("static\\s+final\\s+String\\s+(\\w+)\\s*=\\s*\"([^\"]*)\"");
 
     @Test
@@ -64,7 +70,7 @@ class ActionIdsResolveTest {
             for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
                     && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
                 String src = Files.readString(p);
-                if (!src.contains("Actions.forID(") && !src.contains("Actions::forID")) {
+                if (!src.contains("Actions.forID") && !src.contains("Actions::forID")) {
                     continue;
                 }
                 Map<String, String> constants = new HashMap<>();
@@ -74,7 +80,7 @@ class ActionIdsResolveTest {
                 }
                 List<String[]> pairs = new ArrayList<>();
                 int callShapes = 0;
-                for (Pattern shape : new Pattern[] {CALL, LINK, CMD}) {
+                for (Pattern shape : new Pattern[] {CALL, LINK, CMD, RESOLVE}) {
                     Matcher m = shape.matcher(src);
                     while (m.find()) {
                         pairs.add(new String[] {m.group(1), m.group(2)});
@@ -87,7 +93,14 @@ class ActionIdsResolveTest {
                 // arguments or counted: a call whose arguments are method calls
                 // (t.category()) is not matched by CALL at all (5th review)
                 int raw = src.split("Actions\\.forID\\(", -1).length - 1;
-                int unreadable = raw - callShapes;
+                // a method reference hands the lookup to a seam: counted and
+                // pinned like any lookup read elsewhere, its pairs read
+                // through the seam's own call shape (RESOLVE)
+                int refs = src.split("Actions::forID", -1).length - 1;
+                int unreadable = raw - callShapes + refs;
+                if (src.matches("(?s).*import\\s+static\\s+org\\.openide\\.awt\\.Actions\\.(forID|\\*)\\s*;.*")) {
+                    missing.add(p.getFileName() + ": a static import hides forID from this census — write Actions.forID");
+                }
                 int computed = 0;
                 for (String[] pair : pairs) {
                     String category = value(pair[0], constants);
@@ -231,7 +244,8 @@ class ActionIdsResolveTest {
     private static final Map<String, Integer> HELPERS = Map.of(
             "VsCodeCommandSearchProvider.java", 1,
             "MainWindow.java", 2,
-            "DocsShots.java", 1);
+            "DocsShots.java", 1,
+            "PointAnAgentAction.java", 1);
 
     /** Paths a module that loads on one OS only hides there (filled by {@link #registeredActions}). */
     private static final Set<String> ONE_OS_MASKS = new HashSet<>();
