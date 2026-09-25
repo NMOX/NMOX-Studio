@@ -112,7 +112,9 @@ run. `OpenFolderFromOsGateTest` holds the absence until then.
 
 ### 119. The menu-doors gate checks only paths that start at a real menu
 
-**Open, deliberately.** `DocsMenuDoorsTest` walks a `▸` path only when its
+**Closed in 3.2.0.** Tonight's translators found three guides naming the Edit menu wrongly (es `Editar ▸`, vi `Sửa ▸`, id `Sunting ▸` where the menus read Edición, Chỉnh sửa and Edit), and the gate had passed all three. It now also reads a path whose first segment is not a menu: when the next segment is a row some menu has (two words or more), the path names the wrong door — unless the segment before the arrow is itself a row (a dialog's tab after a leaf, `Options ▸ Keyboard Shortcuts`), the macOS `Settings…`, the menu with a joined conjunction (Arabic و, Hebrew ו), or a right-click. The reintroduced `Editar ▸ Copiar como Markdown` fails it by name. What follows is the entry as it stood:
+
+**Was open, deliberately.** `DocsMenuDoorsTest` walks a `▸` path only when its
 first segment is a top-level menu of the document's language. A translated
 guide that writes a menu that does not exist (`Werkzeuge ▸` where German
 reads `Extras ▸`, `Ver ▸` where Portuguese reads `Exibir ▸`) is therefore

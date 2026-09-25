@@ -167,7 +167,15 @@ class DocsMenuDoorsTest {
                     }
                 }
                 if (menu == null) {
-                    continue; // a submenu hop of a path already walked, or prose with an arrow
+                    // not a menu name: a dialog's tab, a submenu hop already walked,
+                    // or a WRONG menu name (ledger 119: "Editar ▸" where the Spanish
+                    // menu reads "Edición"). The last shows itself when the row after
+                    // the arrow is a row a menu HAS, reached from another name
+                    String misroot = misrooted(bar, text, at, arrow);
+                    if (misroot != null) {
+                        wrong.add(doc.getFileName() + ": " + snippet(text, Math.max(0, at - 20)) + "   (" + misroot + ")");
+                    }
+                    continue;
                 }
                 String problem = walk(menu, text, at + arrow.length());
                 if (problem != null) {
@@ -176,6 +184,69 @@ class DocsMenuDoorsTest {
             }
         }
         return wrong;
+    }
+
+    /**
+     * Ledger 119, closed in 3.2.0: a path whose first segment is not a menu of
+     * the language, but whose next segment IS a row of one — at least two
+     * words long, so a lone word a dialog tab shares with a menu row is not
+     * mistaken — names that row under the wrong door. Null when the arrow
+     * follows a real hop (a submenu inside a walked path) or leads nowhere a
+     * menu goes.
+     */
+    private static String misrooted(Map<String, Door> bar, String text, int at, String arrow) {
+        int after = at + arrow.length();
+        Door best = null;
+        Door under = null;
+        for (Door menu : bar.values()) {
+            Door row = longestPrefix(menu, text, after);
+            if (row != null && (best == null || row.name.length() > best.name.length())) {
+                best = row;
+                under = menu;
+            }
+        }
+        if (best == null || best.name.strip().split("\\s+").length < 2) {
+            return null;
+        }
+        // the menu IS named, with a one-letter conjunction joined on
+        // (Arabic وتعديل, Hebrew ועריכה — "and Edit ▸")
+        if (endsWith(text, at, under.name)) {
+            return null;
+        }
+        // a hop inside a path already walked, or a dialog's own tab after a
+        // leaf row (Options ▸ Keyboard Shortcuts, Plugins ▸ Check for Updates):
+        // the text before the arrow is some door's row, or the macOS app
+        // menu's Settings…
+        if (endsWith(text, at, "Settings…") || endsWith(text, at, "Settings")) {
+            return null;
+        }
+        for (Door menu : bar.values()) {
+            if (endsWithRow(menu, text, at)) {
+                return null;
+            }
+        }
+        // a context menu's path starts at a right-click, which no menu bar has
+        String before = text.substring(Math.max(0, at - 40), at).toLowerCase(java.util.Locale.ROOT);
+        if (before.contains("click") || before.contains("editor")) {
+            return null;
+        }
+        return best.name + " is a row of " + under.name + ", not of the menu named before it";
+    }
+
+    private static boolean endsWith(String text, int at, String name) {
+        int start = at - name.length();
+        return start >= 0 && text.startsWith(name, start);
+    }
+
+    /** Whether the text just before {@code at} is the name of some row under {@code door}, at any depth. */
+    private static boolean endsWithRow(Door door, String text, int at) {
+        for (Door row : door.children.values()) {
+            String n = row.name.endsWith("…") ? row.name.substring(0, row.name.length() - 1) : row.name;
+            if (endsWith(text, at, row.name) || (!n.isEmpty() && endsWith(text, at, n)) || endsWithRow(row, text, at)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static String arrowAt(String text, int at) {
