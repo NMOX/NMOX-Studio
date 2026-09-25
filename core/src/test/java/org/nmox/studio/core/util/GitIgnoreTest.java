@@ -220,4 +220,39 @@ class GitIgnoreTest {
         assertThat(GitIgnore.parse("bar\\\\\\ \n").match("bar\\ ", false))
                 .as("three backslashes: the space is escaped").isEqualTo(Verdict.IGNORED);
     }
+
+    // ---- the 3.2 fourth review, each measured against git check-ignore
+
+    @Test
+    @DisplayName("a run of stars as a whole segment is **, as git reads it")
+    void starRunIsDoubleStar() {
+        assertThat(ignored("*.log\n!a/***/keep.log\n", "a/x/y/keep.log", false)).isFalse();
+        assertThat(ignored("*.log\n!a/***/keep.log\n", "a/keep.log", false)).isFalse();
+        assertThat(ignored("a/***/x\n", "a/b/c/x", false)).isTrue();
+    }
+
+    @Test
+    @DisplayName("a byte-order mark does not hide the first line")
+    void byteOrderMark() {
+        GitIgnore g = GitIgnore.parse("\uFEFF!keep.log\n");
+        assertThat(g.match("keep.log", false)).isEqualTo(Verdict.INCLUDED);
+        assertThat(GitIgnore.isIgnored("sub/keep.log", false, GitIgnore.empty(),
+                d -> d.isEmpty() ? GitIgnore.parse("*.log\n") : d.equals("sub") ? g : GitIgnore.empty()))
+                .isFalse();
+        assertThat(GitIgnore.parse("\uFEFF").size()).isZero();
+    }
+
+    @Test
+    @DisplayName("an exclusion git's case folding cannot reach is dropped: escaped capitals, capitals in a class")
+    void caseTraps() {
+        assertThat(ignored("\\Xfoo\n", "Xfoo", false)).as("git with ignorecase keeps Xfoo").isFalse();
+        assertThat(ignored("X[A]\n", "XA", false)).isFalse();
+        assertThat(ignored("x[B]\n", "xB", false)).isFalse();
+        assertThat(ignored("[A-Z]x\n", "Qx", false)).isFalse();
+        assertThat(ignored("x[b]\n", "xb", false)).as("lower-case classes fold both ways").isTrue();
+        assertThat(ignored("Xfoo\n", "Xfoo", false)).as("plain capitals fold").isTrue();
+        assertThat(GitIgnore.parse("\\Xfoo\n").doubtful()).as("a dropped exclusion is no doubt").isFalse();
+        assertThat(ignored("*.log\n![A]*.log\n", "Ab.log", false))
+                .as("a negation keeps its class: it can only include more").isFalse();
+    }
 }

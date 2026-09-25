@@ -122,6 +122,14 @@ public final class GitIgnore {
         if (text == null || text.isEmpty()) {
             return EMPTY;
         }
+        if (text.charAt(0) == '\uFEFF') {
+            // git skips a UTF-8 byte-order mark; kept, it turns a first-line
+            // "!keep.log" into an exclusion that matches nothing (4th review)
+            text = text.substring(1);
+            if (text.isEmpty()) {
+                return EMPTY;
+            }
+        }
         List<Rule> out = new ArrayList<>();
         boolean doubt = false;
         int start = 0;
@@ -335,9 +343,44 @@ public final class GitIgnore {
                 if (segs[i].isEmpty() || !wellFormed(segs[i])) {
                     return null;
                 }
+                if (!negated && caseTrap(segs[i])) {
+                    // under core.ignorecase git folds the path but not an
+                    // escaped letter or a letter in [...]: "\Xfoo" and
+                    // "X[A]" then match nothing there, and this class does
+                    // not read the setting — so the exclusion is dropped
+                    return null;
+                }
+                if (segs[i].length() >= 2 && segs[i].chars().allMatch(c -> c == '*')) {
+                    segs[i] = "**"; // git reads a run of stars as a whole segment as **
+                }
                 segs[i] = bytes(segs[i]);
             }
             return new Rule(negated, dirOnly, anchored, segs);
+        }
+
+        /** An escaped upper-case letter, or one inside a class: where git's case folding does not reach. */
+        private static boolean caseTrap(String seg) {
+            for (int i = 0; i < seg.length(); i++) {
+                char c = seg.charAt(i);
+                if (c == '\\' && i + 1 < seg.length()) {
+                    char e = seg.charAt(++i);
+                    if (e >= 'A' && e <= 'Z') {
+                        return true;
+                    }
+                } else if (c == '[') {
+                    int close = bracketEnd(seg, i);
+                    for (int j = i + 1; close > 0 && j < close; j++) {
+                        char k = seg.charAt(j);
+                        if (k >= 'A' && k <= 'Z') {
+                            return true;
+                        }
+                    }
+                    if (close > 0) {
+                        i = close;
+                    }
+                }
+            }
+            return false;
         }
 
         /** Brackets closed and no dangling escape: git's grammar, exactly. */
