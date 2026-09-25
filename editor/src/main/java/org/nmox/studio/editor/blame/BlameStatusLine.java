@@ -110,6 +110,35 @@ public final class BlameStatusLine implements StatusLineElementProvider {
     }
 
     /** The label on the status line. Listens only while it is in the status bar. */
+    /**
+     * Whether the user has pressed a key or a mouse button in this session.
+     * Zero processes at boot is a house law (v1.38.0), and the window system
+     * restores and focuses the last editor at startup: without this gate that
+     * restore alone would run {@code git blame}. The first real gesture arms
+     * the note; a seam for tests.
+     */
+    static volatile boolean gestureSeen;
+    static final java.util.concurrent.atomic.AtomicBoolean GESTURE_WATCH =
+            new java.util.concurrent.atomic.AtomicBoolean();
+
+    /** Listens once, app-wide, for the first key or mouse press; then runs {@code then} and stops listening. */
+    static void armOnFirstGesture(Runnable then) {
+        if (gestureSeen || !GESTURE_WATCH.compareAndSet(false, true)) {
+            return;
+        }
+        java.awt.Toolkit tk = java.awt.Toolkit.getDefaultToolkit();
+        java.awt.event.AWTEventListener[] self = new java.awt.event.AWTEventListener[1];
+        self[0] = e -> {
+            int id = e.getID();
+            if (id == java.awt.event.KeyEvent.KEY_PRESSED || id == java.awt.event.MouseEvent.MOUSE_PRESSED) {
+                gestureSeen = true;
+                tk.removeAWTEventListener(self[0]);
+                then.run();
+            }
+        };
+        tk.addAWTEventListener(self[0], java.awt.AWTEvent.KEY_EVENT_MASK | java.awt.AWTEvent.MOUSE_EVENT_MASK);
+    }
+
     static final class Strip extends JLabel {
 
         private final LineBlame blame;
@@ -153,6 +182,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
         @Override
         public void addNotify() {
             super.addNotify();
+            armOnFirstGesture(this::schedule);
             EditorRegistry.addPropertyChangeListener(registryListener);
             BlamePrefs.prefs().addPreferenceChangeListener(prefsListener);
             retarget();
@@ -224,7 +254,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
 
         /** The debounced step, on the EDT: decide what can be asked, then ask off the EDT. */
         void update() {
-            if (!BlamePrefs.enabled() || target == null) {
+            if (!BlamePrefs.enabled() || target == null || !gestureSeen) {
                 blame.cancel();
                 showNothing();
                 return;
