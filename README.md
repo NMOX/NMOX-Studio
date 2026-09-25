@@ -867,8 +867,10 @@ brittle tests), so the floors mean what they say.
 ## The Agent Port (MCP)
 
 Tools ▸ **Agent Port (MCP)…** starts a Model Context Protocol server any
-agent can connect to — loopback only, a per-start bearer token, any
-browser `Origin` refused — and it is **read-only by construction**: a
+agent can connect to — loopback only, a per-start bearer token (or, when
+you tick **Keep this address and token**, one kept in the system keychain,
+so an agent configured once still connects tomorrow; **Copy for Claude
+Code** copies the `claude mcp add` line), any browser `Origin` refused — and it is **read-only by construction**: a
 build-failing ledger bans every spawn, write and stop primitive from
 the package. Twelve typed tools (`ide_context` for the whole picture;
 `project_state`, `live_servers`, `live_runs`, `run_history`,
