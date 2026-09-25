@@ -79,4 +79,18 @@ class EditedFileTest {
         assertThat(EditedFile.of(appDob, null)).as("an editor not built yet").isEqualTo(app);
         assertThat(EditedFile.of((DataObject) null, null)).isNull();
     }
+
+    @Test
+    @DisplayName("a group's tab: its own document decides; with none of its own it is the group, named by its primary")
+    void groupTab(@TempDir Path dir) throws Exception {
+        FileObject base = file(dir, "Bundle.properties");
+        FileObject de = file(dir, "Bundle_de.properties");
+        List<FileObject> group = List.of(base, de);
+        assertThat(EditedFile.forTab(base, group, true, de)).isEqualTo(de);
+        assertThat(EditedFile.forTab(base, group, true, null))
+                .as("a built editor that cannot tell answers nothing").isNull();
+        assertThat(EditedFile.forTab(base, group, false, null))
+                .as("the table editor, or a tab not shown yet").isEqualTo(base);
+        assertThat(EditedFile.forTab(base, List.of(base), true, null)).isEqualTo(base);
+    }
 }

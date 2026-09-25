@@ -18,7 +18,8 @@ import org.openide.windows.TopComponent;
  * the RELEASE310 bytecode), so the file is told from the editor's DOCUMENT
  * (3.2 sixth review: the Agent Port listed, Annotate annotated and Save
  * Editor Screenshot named the base bundle while the German one was on
- * screen).
+ * screen). A group tab with no document of its own — the table editor,
+ * which shows every locale — is the group, named by its primary.
  */
 public final class EditorTabs {
 
@@ -34,7 +35,9 @@ public final class EditorTabs {
         if (dob == null) {
             return null;
         }
-        FileObject fo = EditedFile.of(dob, documentOf(tc));
+        // one file: never touch the editor pane (asking a multiview tab for
+        // it can build its editor, and a half-built one is waited for)
+        FileObject fo = dob.files().size() <= 1 ? dob.getPrimaryFile() : EditedFile.of(dob, documentOf(tc));
         return fo == null || fo.isFolder() ? null : fo;
     }
 

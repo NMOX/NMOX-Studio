@@ -44,18 +44,29 @@ public final class EditedFile {
 
     /**
      * The file an editor TAB holds, given its DataObject and — when the tab's
-     * editor has been built — its document: the document decides when there
-     * is one; without one, a DataObject of one file is that file and a
-     * DataObject of several is null, for the same reason as above.
+     * editor has been built — its document. A DataObject of one file is that
+     * file. For a group, the tab's own document decides (null when it cannot
+     * tell, as above); a tab with no document of its own — the properties
+     * table editor, which shows every locale, or a tab not shown since the
+     * restore — is the group, named by its primary (7th review: answering
+     * nothing dropped an open tab from the Agent Port and the recent files).
      */
     public static FileObject of(DataObject dob, Document docOrNull) {
         if (dob == null) {
             return null;
         }
-        if (docOrNull != null && docOrNull.getProperty(Document.StreamDescriptionProperty) == dob) {
-            return of(docOrNull);
+        boolean own = docOrNull != null
+                && docOrNull.getProperty(Document.StreamDescriptionProperty) == dob;
+        return forTab(dob.getPrimaryFile(), dob.files(), own, own ? of(docOrNull) : null);
+    }
+
+    /** The tab rule, with the platform left out. */
+    static FileObject forTab(FileObject primary, Collection<FileObject> files, boolean ownDocument,
+            FileObject fromDocument) {
+        if (files == null || files.size() <= 1 || !ownDocument) {
+            return primary;
         }
-        return pick(null, dob.getPrimaryFile(), dob.files());
+        return fromDocument;
     }
 
     /** The rule, with the platform left out. */

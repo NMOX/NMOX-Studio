@@ -740,7 +740,12 @@ public class GitStatusLine implements StatusLineElementProvider {
                 String instancePath, String verb, File focusFile) {
             lane.post(() -> {
                 Lookup context = contextFor(focusFile);
+                FileObject member = ANNOTATE_INSTANCE.equals(instancePath) ? groupMember(focusFile) : null;
                 javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (member != null) {
+                        annotateMember(member, focusFile, verb);
+                        return;
+                    }
                     if (context == null) {
                         teamMenuFallback(verb, Bundle.GitStatusLine_whyNoFolder());
                         return;
@@ -774,6 +779,73 @@ public class GitStatusLine implements StatusLineElementProvider {
                 DataObject dob = DataObject.find(fo);
                 return Lookups.fixed(dob.getNodeDelegate(), dob, fo);
             } catch (IOException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /**
+         * {@code file} when it is one of several files of one DataObject and
+         * not its primary (a locale's {@code Bundle_de.properties}); null
+         * otherwise. The git module's Annotate reads its context's NODE and
+         * takes the node's primary file, so a group node annotates
+         * {@code Bundle.properties} whichever locale is on screen (3.2 seventh
+         * review, read from the module's bytecode). Runs on RP.
+         */
+        static FileObject groupMember(File file) {
+            try {
+                FileObject fo = file == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                if (fo == null) {
+                    return null;
+                }
+                DataObject dob = DataObject.find(fo);
+                return dob.files().size() > 1 && !fo.equals(dob.getPrimaryFile()) ? fo : null;
+            } catch (IOException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /**
+         * Annotates a group member in its own open editor through the
+         * module's public {@code AnnotateAction.showAnnotations(pane, file,
+         * revision)} — the call its own action makes once it has a pane,
+         * with {@code null} for the working copy. On the EDT.
+         */
+        private static void annotateMember(FileObject member, File file, String verb) {
+            javax.swing.JEditorPane pane = null;
+            for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+                if (member.equals(EditorTabs.fileOf(tc))) {
+                    org.openide.text.CloneableEditorSupport.Pane p = tc instanceof org.openide.text.CloneableEditorSupport.Pane own
+                            ? own : tc.getLookup().lookup(org.openide.text.CloneableEditorSupport.Pane.class);
+                    pane = p == null ? null : p.getEditorPane();
+                    if (pane != null) {
+                        break;
+                    }
+                }
+            }
+            if (pane == null) {
+                teamMenuFallback(verb, Bundle.GitStatusLine_whyNoEditorFile());
+                return;
+            }
+            Object action = rawGitAction(ANNOTATE_INSTANCE);
+            try {
+                if (action == null) {
+                    throw new NoSuchMethodException("no AnnotateAction");
+                }
+                action.getClass().getMethod("showAnnotations", javax.swing.JEditorPane.class, File.class,
+                        String.class).invoke(action, pane, FileUtil.normalizeFile(file), null);
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                teamMenuFallback(verb, Bundle.GitStatusLine_whyNoGitModule());
+            }
+        }
+
+        /** The registered action's own instance, unbound (not a context-aware copy); null when absent. */
+        private static Object rawGitAction(String instancePath) {
+            try {
+                FileObject cfg = FileUtil.getConfigFile(instancePath);
+                InstanceCookie cookie = cfg == null ? null
+                        : DataObject.find(cfg).getLookup().lookup(InstanceCookie.class);
+                return cookie == null ? null : cookie.instanceCreate();
+            } catch (IOException | ClassNotFoundException | RuntimeException ex) {
                 return null;
             }
         }
