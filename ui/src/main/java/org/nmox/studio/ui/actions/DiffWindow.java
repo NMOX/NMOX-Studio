@@ -32,8 +32,13 @@ import org.openide.windows.WindowManager;
 })
 final class DiffWindow extends TopComponent {
 
-    private DiffWindow(DiffController diff, File left, File right) {
+    /** The void constructor a TopComponent's Externalizable contract asks for; the window is never restored. */
+    public DiffWindow() {
         setLayout(new BorderLayout());
+    }
+
+    private DiffWindow(DiffController diff, File left, File right) {
+        this();
         add(diff.getJComponent(), BorderLayout.CENTER);
         setName(Bundle.DiffWindow_name(left.getName(), right.getName()));
         setDisplayName(getName());
