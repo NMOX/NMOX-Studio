@@ -254,7 +254,10 @@ is clean.
 for New, Cut, Copy, Paste, Delete and Rename, and — as in VS Code's
 Explorer — **Copy Path**, **Copy Relative Path** (relative to the
 project) and **Reveal in Finder** (**Reveal in File Explorer** on
-Windows, **Open Containing Folder** on Linux).
+Windows, **Open Containing Folder** on Linux). For the file you are
+editing, **Edit ▸ Copy Path** (⌥⌘C, Ctrl+Alt+C on Windows and Linux) and
+**Edit ▸ Copy Relative Path** do the same — from the Terminal or the tree
+too, for the editor you were last typing in.
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.

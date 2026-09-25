@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 30 rows the walks and reviews added are in
+developer works. The plan and the 31 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -131,6 +131,11 @@ loop as one sitting is the new tutorial
   **F2**, **⌘.**, **⌘]**, **⌥⌘F**, **⌃- / ⌃⇧-**, **⇧⌥F** — each only where the
   profile leaves it free. 3.1.0's ⌘D was wrong in Emacs and IDEA and is scoped
   now. `VsCodeKeymapResolutionTest` replays the platform's keymap rules.
+- **Edit ▸ Copy Path (⌥⌘C) and Copy Relative Path** for the file you were
+  last typing in, from anywhere in the window: the file tree had both since
+  3.1.0, the editor had neither. Quick Search answers to VS Code's two
+  titles. Copy Relative Path has no chord: VS Code's ⇧⌥⌘C is the platform's
+  Clear Split on Windows and Linux in every profile, which the census found.
 
 ### Docs
 

@@ -48,6 +48,8 @@ keyboard.
 | Replace | ⌥⌘F | **⌥⌘F** or ⌘R | Ctrl+H | **Ctrl+H** |
 | Format the document | ⇧⌥F | **⇧⌥F** or ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Close the editor tab | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Copy the path of the file you are editing | ⌥⌘C | **⌥⌘C** — Edit ▸ Copy Path | Shift+Alt+C | **Ctrl+Alt+C** |
+| Copy its relative path | ⇧⌥⌘C | Edit ▸ Copy Relative Path (no chord) | Ctrl+K Ctrl+Shift+Alt+C | Edit ▸ Copy Relative Path (no chord) |
 | The Problems panel | ⇧⌘M | **⌘6** — Action Items (⇧⌘M toggles a bookmark here) | Ctrl+Shift+M | **Ctrl+6** |
 | Toggle a breakpoint | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Start debugging | F5 | **⇧⌘F5** — Debug File | F5 | **Ctrl+Shift+F5** |
@@ -64,6 +66,10 @@ cannot say in a cell:
 - **⌃R is Rename here**, which is why *Switch Project* lives on ⌥⌘P
   instead of VS Code's Open Recent chord. Rename works where the
   language behind the file supports it.
+- **Copy Relative Path has no chord.** VS Code's ⇧⌥⌘C is Ctrl+Alt+Shift+C
+  on a PC, which is the platform's Clear Split in every keymap profile;
+  the row is in the Edit menu, and ⇧⌘P finds it by VS Code's own title,
+  *File: Copy Relative Path of Active File*.
 - **Ctrl+, on Windows and Linux** moves back through your edit history,
   as it always has in NetBeans; the settings live under
   Tools ▸ Options (on macOS the app menu's **Settings…**, ⌘,).
