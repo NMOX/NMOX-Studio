@@ -237,4 +237,40 @@ class IncrementalWatcherTest {
         Files.writeString(root.resolve("c.js"), "c");
         assertThat(w.poll(false)).as("c.js cannot be tracked; the tree must still refresh").contains(root);
     }
+
+    @Test
+    @DisplayName("past the file cap every directory is still watched: a file added anywhere refreshes the tree")
+    void capKeepsWatchingEveryDirectory() throws Exception {
+        for (int d = 0; d < 10; d++) {
+            Path dir = Files.createDirectories(root.resolve("d" + d));
+            for (int f = 0; f < 3; f++) {
+                Files.writeString(dir.resolve("f" + f + ".js"), "x");
+            }
+        }
+        FileWatcher w = new FileWatcher(root.toFile(), 1000, null, changed -> { });
+        w.maxFiles = 5;
+        w.baseline();
+        assertThat(w.dirCount()).as("the root and all ten directories").isEqualTo(11);
+        tick();
+        for (int d = 0; d < 10; d++) {
+            Files.writeString(root.resolve("d" + d + "/NEW.js"), "n");
+        }
+        List<Path> changed = w.poll(false);
+        for (int d = 0; d < 10; d++) {
+            assertThat(changed).as("d" + d).contains(root.resolve("d" + d));
+        }
+    }
+
+    @Test
+    @DisplayName("a directory dated in the future is not listed again on every poll")
+    void futureDirectoryIsSettled() throws Exception {
+        Path future = Files.createDirectories(root.resolve("future"));
+        Files.writeString(future.resolve("a.js"), "a");
+        Files.setLastModifiedTime(future, FileTime.fromMillis(System.currentTimeMillis() + 3_600_000));
+        Files.setLastModifiedTime(root, FileTime.fromMillis(System.currentTimeMillis() - 60_000));
+        FileWatcher w = watcher();
+        assertThat(w.unsureCount()).as("nothing here was written in the last two seconds").isZero();
+        w.poll(true);
+        assertThat(w.unsureCount()).isZero();
+    }
 }

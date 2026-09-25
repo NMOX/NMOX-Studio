@@ -136,7 +136,19 @@ counting as open, Windows sh). What is left:
   A change the incremental poll misses on a coarse-grained filesystem
   (FAT, SMB, HFS+) waits for the 20-second reconcile. Four consumers share
   the engine: the tree, the manifest pulse, REFLEX and DB Studio's
-  external-edit reload of `.nmoxdb.json`.
+  external-edit reload of `.nmoxdb.json`. From its second review, proven
+  and accepted: past the file cap a reconcile can report files that did
+  not change (which files fit under the cap follows walk order); a
+  project root that is itself a symlink leaves the watcher blind (as the
+  old one was); a directory made unreadable reports its files deleted,
+  then the reconcile reports them back; the racily-clean rule covers
+  directories, not files, so two edits in one second on a 1 s-grained
+  filesystem can hide the second; DB Studio walks the whole project to
+  watch one file, where one stat would do.
+- **Find in Projects' results split is healed once per split.** If a
+  results tab already healed is later laid out narrow (a sliding
+  minimised window), Swing clamps it again and the platform saves the
+  clamp; the next search opens at the platform's 250 again.
 - **Find in Projects on a network mount.** Every question re-reads what it
   rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
   where a stat costs a millisecond makes a 20,000-file search pay seconds.

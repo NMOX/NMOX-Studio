@@ -63,6 +63,12 @@ public final class FileWatcher {
             org.nmox.studio.core.util.HeavyDirs.plus(".cache", ".idea");
     private static final int MAX_DEPTH = 12;
     static final int MAX_FILES = 50_000;
+    /**
+     * Directories keep being watched past the file cap (its second review:
+     * a walk that stopped at the cap left most of a big tree's directories
+     * unwatched, so the tree never saw a file added there) — up to this many.
+     */
+    static final int MAX_DIRS = 20_000;
 
     /**
      * A poll waits at least this many times as long as its last scan took
@@ -261,7 +267,7 @@ public final class FileWatcher {
                         continue;
                     }
                     relisted.add(dir);
-                    if (wallNow - attrs.lastModifiedTime().toMillis() < RACY_MS) {
+                    if (racy(wallNow, attrs)) {
                         unsure.add(dir);
                     }
                     if (truncated && unfiltered) {
@@ -351,8 +357,11 @@ public final class FileWatcher {
                     if (skipped(dir)) {
                         return FileVisitResult.SKIP_SUBTREE;
                     }
+                    if (dirMap.size() >= MAX_DIRS) {
+                        return FileVisitResult.SKIP_SUBTREE;
+                    }
                     dirMap.put(dir, nanos(attrs));
-                    if (System.currentTimeMillis() - attrs.lastModifiedTime().toMillis() < RACY_MS) {
+                    if (racy(System.currentTimeMillis(), attrs)) {
                         unsure.add(dir);   // being written in right now, perhaps: list it again
                     }
                     return FileVisitResult.CONTINUE;
@@ -363,13 +372,11 @@ public final class FileWatcher {
                     if (attrs.isDirectory()) {
                         return FileVisitResult.CONTINUE;   // a directory at the depth limit
                     }
-                    if (matches(file) && !fileMap.containsKey(file)) {
-                        if (!track(fileMap, file, nanos(attrs))) {
-                            return FileVisitResult.TERMINATE;
-                        }
-                        if (added != null) {
-                            added.add(file);
-                        }
+                    // past the cap a file is not tracked, but the walk goes on:
+                    // its directories must still be watched
+                    if (matches(file) && !fileMap.containsKey(file) && track(fileMap, file, nanos(attrs))
+                            && added != null) {
+                        added.add(file);
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -481,6 +488,30 @@ public final class FileWatcher {
         }
         String name = dir.getFileName() == null ? "" : dir.getFileName().toString();
         return SKIP_DIRS.contains(name) || name.startsWith(".");
+    }
+
+    /**
+     * Whether a directory was written too recently to trust its listing. A
+     * time in the future (clock skew on a mount, an archive's dates) is not
+     * racy: it would otherwise be listed again on every poll, forever.
+     */
+    static boolean racy(long wallNow, BasicFileAttributes attrs) {
+        long age = wallNow - attrs.lastModifiedTime().toMillis();
+        return age >= 0 && age < RACY_MS;
+    }
+
+    /** How many directories wait to be listed again (tests). */
+    int unsureCount() {
+        synchronized (lock) {
+            return unsure.size();
+        }
+    }
+
+    /** How many directories are watched (tests). */
+    int dirCount() {
+        synchronized (lock) {
+            return dirs.size();
+        }
     }
 
     /** A path's attributes without following a link, or null when it is gone or unreadable. */
