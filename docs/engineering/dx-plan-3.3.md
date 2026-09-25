@@ -63,7 +63,9 @@ the git chip's one spawn is not where a big repository hurts.
    packages a token declared in the 61st stylesheet, or a server package
    the walk reaches late, is simply not offered. Rename Class refuses at
    the cap (a partial rename is corruption), which is right; the lookups
-   say nothing.
+   say nothing. Go to Symbol's project index stops at 2,000 files
+   (`ProjectSymbols.MAX_FILES`) and says it is partial — honest, and about
+   4% of the fixture.
 3. **The platform's indexer sees no source roots in a web project**
    (`Complete indexing of 0 source roots`). Whatever Go to File and Go to
    Symbol do on a big tree, they do without its index. To measure.
