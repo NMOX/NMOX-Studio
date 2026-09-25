@@ -114,7 +114,9 @@ final class EditRequestWatcher {
         for (EditRequest.Item item : request.items()) {
             try {
                 if (item instanceof EditRequest.Open o) {
-                    targets.add(open(o.file(), o.line()));
+                    DataObject opened = open(o.file(), o.line());
+                    remember(opened);
+                    targets.add(opened);
                     names.add(o.file().getName());
                 } else if (item instanceof EditRequest.Diff d) {
                     DiffWindow w = DiffWindow.open(d.left(), d.right());
@@ -211,6 +213,26 @@ final class EditRequestWatcher {
             EditRequestOption.answer(s.folder, "done", "");
             status.accept(PlainStatus.text(Bundle.EditRequestWatcher_handedBack(s.names)));
         }
+    }
+
+    /**
+     * Every file a request opened this session, waiting or not, so the
+     * start-up sweep of left-over git files never closes one a terminal
+     * just asked for ({@code nmox .git/COMMIT_EDITMSG} without {@code -w}
+     * — 3.2 eighth review). Weak, so a closed file is not held.
+     */
+    private static final java.util.Set<Object> REQUESTED =
+            java.util.Collections.synchronizedSet(java.util.Collections.newSetFromMap(new java.util.WeakHashMap<>()));
+
+    static void remember(Object target) {
+        if (target != null) {
+            REQUESTED.add(target);
+        }
+    }
+
+    /** Whether any request this session opened {@code target}. */
+    static boolean requested(Object target) {
+        return REQUESTED.contains(target);
     }
 
     /** Whether a waiting request holds {@code target} (a DataObject or a window). On the EDT. */

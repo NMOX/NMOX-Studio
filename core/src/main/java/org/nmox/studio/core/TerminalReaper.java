@@ -25,11 +25,14 @@ import org.openide.modules.OnStart;
  * second). A process the IDE did not start is never touched: the census
  * is the JVM's own children.
  *
- * <p>A {@code git} still running under a Terminal gets a short grace
- * first: quitting hands every commit message the IDE is holding back to
- * the {@code nmox -w} waiting for it (the edit-request watcher's own
- * shutdown hook), and a hang-up arriving in the same instant would end
- * the {@code git commit} before it could use the message the user saved.
+ * <p>A {@code git} still running under a Terminal WITH AN {@code nmox}
+ * EDITOR beneath it gets a short grace first: quitting hands every commit
+ * message the IDE is holding back to the {@code nmox -w} waiting for it
+ * (the edit-request watcher's own shutdown hook), and a hang-up arriving
+ * in the same instant would end the {@code git commit} before it could
+ * use the message the user saved. Any other git — a {@code git log} in
+ * its pager, a commit open in vim — would only hold the quit up, so it
+ * gets none (3.2 eighth review).
  */
 @OnStart
 public class TerminalReaper implements Runnable {
@@ -84,7 +87,7 @@ public class TerminalReaper implements Runnable {
                 if (left <= 0) {
                     return;
                 }
-                if (!isGit(p.info().command().orElse(null))) {
+                if (!isGit(p.info().command().orElse(null)) || !editsInNmox(p)) {
                     continue;
                 }
                 try {
@@ -98,6 +101,24 @@ public class TerminalReaper implements Runnable {
                 }
             }
         }
+    }
+
+    /** Whether a process beneath {@code git} is an {@code nmox} editor request. */
+    static boolean editsInNmox(ProcessHandle git) {
+        return git.descendants().anyMatch(d -> d.info().commandLine()
+                .or(() -> d.info().command()).map(TerminalReaper::namesNmox).orElse(false));
+    }
+
+    /** Whether a command line runs the {@code nmox} launcher (any spelling of its path or wrapper). */
+    static boolean namesNmox(String commandLine) {
+        for (String word : commandLine.split("\\s+")) {
+            String name = word.replace('\\', '/');
+            name = name.substring(name.lastIndexOf('/') + 1);
+            if (name.startsWith("nmox")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Whether {@code command} is git itself (any install: Xcode's, Homebrew's, Git for Windows'). */
@@ -124,8 +145,11 @@ public class TerminalReaper implements Runnable {
         String path = command.endsWith(" (deleted)")
                 ? command.substring(0, command.length() - " (deleted)".length()) : command;
         String[] parts = path.replace('\\', '/').split("/");
+        if (parts.length < 2) {
+            return false;
+        }
         String name = parts[parts.length - 1];
-        if (parts.length < 2 || !("pty".equals(name) || "pty.exe".equalsIgnoreCase(name))) {
+        if (!("pty".equals(name) || "pty.exe".equalsIgnoreCase(name))) {
             return false;
         }
         for (int i = 0; i < parts.length - 1; i++) {

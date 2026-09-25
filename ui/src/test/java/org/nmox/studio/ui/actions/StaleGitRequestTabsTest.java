@@ -24,4 +24,15 @@ class StaleGitRequestTabsTest {
         assertThat(StaleGitRequestTabs.shouldClose(new File("/r/src/app.js"), false, false)).isFalse();
         assertThat(StaleGitRequestTabs.shouldClose(null, false, false)).isFalse();
     }
+
+    @Test
+    @DisplayName("a file any request opened is remembered, waiting or not, so the sweep leaves it alone")
+    void requestedFilesAreRemembered() {
+        Object asked = new Object();
+        Object other = new Object();
+        EditRequestWatcher.remember(asked);
+        assertThat(EditRequestWatcher.requested(asked)).isTrue();
+        assertThat(EditRequestWatcher.requested(other)).isFalse();
+        EditRequestWatcher.remember(null);
+    }
 }

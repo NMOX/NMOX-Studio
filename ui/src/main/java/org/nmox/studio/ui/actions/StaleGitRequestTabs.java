@@ -28,7 +28,11 @@ import org.openide.windows.WindowManager;
  * open at UI-ready, the restored message tab not among them), so tabs
  * opened in the first {@link #WATCH_MS} are checked too — each on the
  * next EDT turn, by when a request that opened it has registered itself
- * as waiting.
+ * as waiting. A late tab is left alone when it is the ACTIVE one (a file
+ * the user just opened is activated; a restored background tab is not)
+ * or when any request this session opened it, waiting or not (3.2 eighth
+ * review: {@code nmox .git/MERGE_MSG} without {@code -w}, or File ▸ Open
+ * in the first half minute, lost its tab).
  */
 @OnShowing
 public final class StaleGitRequestTabs implements Runnable {
@@ -41,12 +45,12 @@ public final class StaleGitRequestTabs implements Runnable {
     @Override
     public void run() {
         for (TopComponent tc : TopComponent.getRegistry().getOpened().toArray(new TopComponent[0])) {
-            check(tc);
+            check(tc, false);
         }
         java.beans.PropertyChangeListener late = e -> {
             if (TopComponent.Registry.PROP_TC_OPENED.equals(e.getPropertyName())
                     && e.getNewValue() instanceof TopComponent tc) {
-                javax.swing.SwingUtilities.invokeLater(() -> check(tc));
+                javax.swing.SwingUtilities.invokeLater(() -> check(tc, true));
             }
         };
         TopComponent.getRegistry().addPropertyChangeListener(late);
@@ -56,21 +60,23 @@ public final class StaleGitRequestTabs implements Runnable {
         stop.start();
     }
 
-    private static void check(TopComponent tc) {
+    private static void check(TopComponent tc, boolean late) {
         if (!tc.isOpened() || !WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
             return;
         }
         DataObject dob = tc.getLookup().lookup(DataObject.class);
         FileObject fo = EditorTabs.fileOf(tc);
         File file = fo == null ? null : FileUtil.toFile(fo);
-        if (dob != null && shouldClose(file, dob.isModified(), EditRequestWatcher.waitedOn(dob))) {
+        boolean asked = dob != null && (EditRequestWatcher.waitedOn(dob) || EditRequestWatcher.requested(dob));
+        boolean userOpened = late && TopComponent.getRegistry().getActivated() == tc;
+        if (dob != null && shouldClose(file, dob.isModified(), asked || userOpened)) {
             LOG.log(Level.FINE, "closing the left-over {0}", file);
             tc.close();
         }
     }
 
-    /** The rule, with the window system left out. */
-    static boolean shouldClose(File file, boolean modified, boolean waitedOn) {
-        return GitRequestFiles.isRequestFile(file) && !modified && !waitedOn;
+    /** The rule, with the window system left out: {@code wanted} is a request's file or the user's own open. */
+    static boolean shouldClose(File file, boolean modified, boolean wanted) {
+        return GitRequestFiles.isRequestFile(file) && !modified && !wanted;
     }
 }
