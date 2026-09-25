@@ -132,6 +132,7 @@ git config --global mergetool.nmox.trustExitCode false
 | **集成终端** | **终端**窗口（⌃\`）：第一次按下会在项目文件夹里启动一个 shell，之后再按会把它调回来。 |
 | **`settings.json`** | 工具 ▸ 选项（macOS 上是 NMOX Studio ▸ Settings…）。仓库的 `.vscode/settings.json` 也会被读取：`editor.tabSize`、`editor.insertSpaces` 和 `editor.indentSize` 在你输入时设定它的缩进，`files.trimTrailingWhitespace` 和 `files.insertFinalNewline`（值为 `true` 时）在保存时生效，而像 `"[typescript]"` 这样的语言块会为它的语言覆盖这些设置。如果仓库里还有 `.editorconfig`，两者都有规定的地方以 `.editorconfig` 为准。 |
 | **问题面板** | **操作项**（⌘6），或者点击状态栏上的 **✕ ⚠** 计数：语言服务器报告的错误和警告，以及机架上 PURITY 和 TYPEGUARD 设备的代码检查和类型检查结果。和 VS Code 一样，有些服务器只报告你打开着的文件；gopls 报告整个包。 |
+| **搜索视图** (`search.useIgnoreFiles`) | **在项目中查找**（⇧⌘F）。和 VS Code 一样，它会跳过仓库的 `.gitignore` 文件和 `.git/info/exclude` 所忽略的内容，所以当 `.gitignore` 列出 `node_modules` 和 `dist/` 时，它们不会出现在结果里；在仓库之外，它按名字跳过 `node_modules`、`dist`、`build` 以及其他构建文件夹。在它的对话框中勾选**在生成的源代码中搜索**，就会连它们也一起搜索。你的全局 git 排除文件不会被读取。 |
 | **大纲** | **导航器**（⌘7）。 |
 | **源代码管理** | 状态栏上的 git 标记（分支和改动，一次点击就到历史）以及**团队**菜单。 |
 | **工作区信任** | 同样的理念，在运行仓库所选择的任何东西之前强制执行：打开一个克隆下来的项目，在你信任它之前什么都不会运行。 |
