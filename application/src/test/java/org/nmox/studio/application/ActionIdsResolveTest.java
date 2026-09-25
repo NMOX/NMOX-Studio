@@ -100,6 +100,9 @@ class ActionIdsResolveTest {
     /** A path to an action's .instance file, written out whole in product source. */
     private static final Pattern INSTANCE_PATH = Pattern.compile("\"(Actions/[^\"]+\\.instance)\"");
 
+    /** An action path BUILT from pieces, which the census above could not read. */
+    private static final Pattern BUILT_PATH = Pattern.compile("\"Actions/[^\"]*\"\\s*\\+");
+
     @Test
     @DisplayName("every Actions/…/….instance path the product names is one the cluster registers")
     void everyNamedInstancePathExists() throws Exception {
@@ -113,7 +116,13 @@ class ActionIdsResolveTest {
         try (Stream<Path> walk = Files.walk(Path.of(".."))) {
             for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
                     && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
-                Matcher m = INSTANCE_PATH.matcher(Files.readString(p));
+                String src = Files.readString(p);
+                if (BUILT_PATH.matcher(src).find()) {
+                    // a path this census cannot read is a path it cannot hold:
+                    // write it whole (3.2 review)
+                    missing.add(p.getFileName() + ": an Actions/ path built by concatenation");
+                }
+                Matcher m = INSTANCE_PATH.matcher(src);
                 while (m.find()) {
                     named++;
                     if (!registered.contains(m.group(1))) {
@@ -141,15 +150,38 @@ class ActionIdsResolveTest {
                 try (JarFile jf = new JarFile(jar.toFile())) {
                     String declared = jf.getManifest() == null ? null
                             : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer");
+                    String requires = jf.getManifest() == null ? null
+                            : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Requires");
+                    // a module that loads on one OS only (applemenu hides the
+                    // full-screen action on macOS, where the window's own
+                    // control and ^⌘F do it) masks nothing on the others: its
+                    // masks are not counted, since the path is there elsewhere
+                    boolean oneOs = requires != null && requires.contains("org.openide.modules.os.");
+                    Set<String> into = oneOs ? new HashSet<>() : out;
                     for (String name : new String[] {declared, "META-INF/generated-layer.xml"}) {
                         ZipEntry e = name == null ? null : jf.getEntry(name);
                         if (e != null) {
-                            collect(parse(jf.getInputStream(e).readAllBytes()), "", out);
+                            collect(parse(jf.getInputStream(e).readAllBytes()), "", into);
                         }
+                    }
+                    if (oneOs) {
+                        into.removeIf(f -> f.endsWith("_hidden"));
+                        out.addAll(into);
                     }
                 }
             }
         }
+        // a layer that hides another's file (name.instance_hidden) removes
+        // it from what the running IDE finds: the ui layer alone carries two
+        // dozen, so a mask over a path the product names would otherwise
+        // pass here and fall back in silence at run time (3.2 review)
+        Set<String> masks = new HashSet<>();
+        for (String f : out) {
+            if (f.endsWith("_hidden")) {
+                masks.add(f.substring(0, f.length() - "_hidden".length()));
+            }
+        }
+        out.removeIf(f -> f.endsWith("_hidden") || masks.contains(f));
         return out;
     }
 
