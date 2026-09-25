@@ -179,7 +179,10 @@ public final class WorkspaceDependencies {
                 break;
             }
             File dir = linked(pkg, workspace, name, wsReal);
-            if (dir == null) {
+            if (dir == null && !installed(pkg, workspace, name)) {
+                // not installed yet: the workspace's own list says where it is
+                // (an install that is not a workspace package is third-party,
+                // and never costs a read of every manifest — its review)
                 if (declared == null) {
                     declared = byName(workspace);
                 }
@@ -218,25 +221,81 @@ public final class WorkspaceDependencies {
         return o != null && o.has("workspaces");
     }
 
-    /** Every dependency name the package declares, runtime first, in file order. */
+    /** Dependency names read from one manifest, at most: a clone's manifest can declare any number. */
+    static final int MAX_NAMES = 200;
+    private static final List<String> SECTIONS = List.of("dependencies", "devDependencies", "peerDependencies");
+
+    /**
+     * Every dependency name the package declares, runtime first, in the
+     * order the file writes them — read with a streaming tokener, because
+     * {@code JSONObject} keeps its keys in hash order and "the first
+     * {@value #MAX_DEPENDENCIES} declared" must mean the file's first
+     * (its review). At most {@value #MAX_NAMES}; the reading stops there.
+     */
     static List<String> dependencyNames(File pkg) {
-        JSONObject o = manifest(new File(pkg, "package.json"));
-        List<String> names = new ArrayList<>();
-        if (o == null) {
-            return names;
+        File f = new File(pkg, "package.json");
+        if (!f.isFile()) {
+            return List.of();
         }
-        for (String section : List.of("dependencies", "devDependencies", "peerDependencies")) {
-            JSONObject deps = o.optJSONObject(section);
-            if (deps == null) {
-                continue;
+        java.util.Map<String, List<String>> bySection = new java.util.HashMap<>();
+        try {
+            org.json.JSONTokener t = new org.json.JSONTokener(
+                    org.nmox.studio.core.util.BoundedReads.read(f.toPath()));
+            if (t.nextClean() != '{') {
+                return List.of();
             }
-            for (String name : deps.keySet()) {
-                if (isPackageName(name) && !names.contains(name)) {
+            int read = 0;
+            for (char c = t.nextClean(); c == '"' && read < MAX_NAMES; ) {
+                String key = t.nextString('"');
+                if (t.nextClean() != ':') {
+                    break;
+                }
+                if (SECTIONS.contains(key) && t.nextClean() == '{') {
+                    List<String> keys = bySection.computeIfAbsent(key, k -> new ArrayList<>());
+                    read += orderedKeys(t, keys, MAX_NAMES - read);
+                } else {
+                    if (SECTIONS.contains(key)) {
+                        t.back();
+                    }
+                    t.nextValue();
+                }
+                char sep = t.nextClean();
+                c = sep == ',' ? t.nextClean() : 0;
+            }
+        } catch (IOException | RuntimeException ex) {
+            // an unreadable or malformed manifest declares what was read before it
+        }
+        Set<String> names = new LinkedHashSet<>();
+        for (String section : SECTIONS) {
+            for (String name : bySection.getOrDefault(section, List.of())) {
+                if (isPackageName(name)) {
                     names.add(name);
                 }
             }
         }
-        return names;
+        return new ArrayList<>(names);
+    }
+
+    /** Reads an object's keys in order (the tokener just past its brace), skipping values; returns how many were read. */
+    private static int orderedKeys(org.json.JSONTokener t, List<String> into, int max) {
+        int n = 0;
+        for (char c = t.nextClean(); c == '"'; ) {
+            String key = t.nextString('"');
+            if (t.nextClean() != ':') {
+                return n;
+            }
+            t.nextValue();
+            if (n < max) {
+                into.add(key);
+                n++;
+            }
+            char sep = t.nextClean();
+            if (sep != ',' || n >= max) {
+                return n;
+            }
+            c = t.nextClean();
+        }
+        return n;
     }
 
     /**
@@ -277,6 +336,16 @@ public final class WorkspaceDependencies {
 
     private static boolean isLowerAlnum(char c) {
         return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9');
+    }
+
+    /** Whether anything is installed under {@code name}, a link or a directory. */
+    private static boolean installed(File pkg, File workspace, String name) {
+        for (File base : List.of(pkg, workspace)) {
+            if (Files.exists(new File(new File(base, "node_modules"), name).toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Where the package manager linked {@code name}, if that is a workspace package. */

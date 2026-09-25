@@ -154,4 +154,71 @@ class WorkspaceDependenciesTest {
         assertThat(WorkspaceDependencies.of(web)).extracting(File::getName).containsExactly("tokens");
         assertThat(WorkspaceDependencies.serverPackages(web).dirs()).isEmpty();
     }
+
+    @Test
+    @DisplayName("the first dependencies the FILE declares are kept, not the first in hash order")
+    void declarationOrder() throws IOException {
+        Path ws = monorepo("\"@acme/tokens\":\"*\"");
+        String[] order = {"tokens2", "ui", "zeta", "alpha", "eslint-config", "tsconfig", "icons", "utils", "api", "theme"};
+        StringBuilder deps = new StringBuilder();
+        for (String n : order) {
+            write(ws.resolve("packages/" + n + "/package.json"), "{\"name\":\"@acme/" + n + "\"}");
+            deps.append(deps.length() == 0 ? "" : ",").append("\"@acme/").append(n).append("\":\"*\"");
+        }
+        write(ws.resolve("packages/web/package.json"), "{\"name\":\"@acme/web\",\"devDependencies\":{\"x-dev\":\"1\"},\"dependencies\":{" + deps + "}}");
+        File web = ws.resolve("packages/web").toFile();
+        assertThat(WorkspaceDependencies.dependencyNames(web)).startsWith("@acme/tokens2", "@acme/ui", "@acme/zeta", "@acme/alpha")
+                .endsWith("x-dev");
+        assertThat(WorkspaceDependencies.resolve(web)).extracting(File::getName)
+                .containsExactly("tokens2", "ui", "zeta", "alpha", "eslint-config", "tsconfig", "icons", "utils");
+    }
+
+    @Test
+    @DisplayName("a manifest declaring a hundred thousand dependencies is read to the bound, quickly")
+    void hostileManifest() throws IOException {
+        Path ws = monorepo("\"@acme/tokens\":\"*\"");
+        StringBuilder deps = new StringBuilder("\"@acme/tokens\":\"*\"");
+        for (int i = 0; i < 100_000; i++) {
+            deps.append(",\"d").append(i).append("\":\"1\"");
+        }
+        write(ws.resolve("packages/web/package.json"), "{\"dependencies\":{" + deps + "}}");
+        long t0 = System.nanoTime();
+        java.util.List<String> names = WorkspaceDependencies.dependencyNames(ws.resolve("packages/web").toFile());
+        long ms = (System.nanoTime() - t0) / 1_000_000;
+        assertThat(names).hasSize(WorkspaceDependencies.MAX_NAMES).startsWith("@acme/tokens");
+        assertThat(ms).as("the old quadratic dedupe took minutes here").isLessThan(5_000);
+    }
+
+    @Test
+    @DisplayName("a big component package declared first cannot starve the tokens package after it")
+    void fairShares() throws IOException {
+        Path ws = monorepo("\"@acme/ui\":\"*\",\"@acme/tokens\":\"*\"");
+        write(ws.resolve("packages/ui/package.json"), "{\"name\":\"@acme/ui\"}");
+        for (int i = 0; i < 80; i++) {
+            write(ws.resolve("packages/ui/c" + i + ".vue"), "<template><b/></template>\n");
+        }
+        assertThat(CssTokens.scanProject(ws.resolve("packages/web").toFile()))
+                .extracting(CssTokens.ProjectToken::name).contains("--brand");
+    }
+
+    @Test
+    @DisplayName("Rename Class refuses a class a dependency declares: its usages here would lose the rule")
+    void renameRefusesADependencysClass() throws IOException {
+        Path ws = monorepo("\"@acme/tokens\":\"*\"");
+        write(ws.resolve("packages/web/index.html"), "<a class=\"btn\">go</a>\n");
+        CssClasses.RenameSurvey s = CssClasses.surveyRename(ws.resolve("packages/web").toFile(), "btn", "button");
+        assertThat(s.declaredElsewhere()).isNotNull();
+        assertThat(s.declaredElsewhere().getName()).isEqualTo("tokens.css");
+        assertThat(CssClasses.surveyRename(ws.resolve("packages/web").toFile(), "card", "tile").declaredElsewhere()).isNull();
+    }
+
+    @Test
+    @DisplayName("a third-party install never sends the lookup to read every workspace manifest")
+    void thirdPartyInstallIsNotAWorkspacePackage() throws IOException {
+        Path ws = monorepo("\"react\":\"^19\"");
+        write(ws.resolve("node_modules/react/package.json"), "{\"name\":\"react\"}");
+        // a workspace package that happens to share the name must not be offered for an installed third-party one
+        write(ws.resolve("packages/react/package.json"), "{\"name\":\"react\"}");
+        assertThat(WorkspaceDependencies.of(ws.resolve("packages/web").toFile())).isEmpty();
+    }
 }

@@ -48,8 +48,20 @@ public final class Workspaces {
         if (root == null || !root.isDirectory()) {
             return found;
         }
+        java.nio.file.Path rootReal;
+        try {
+            rootReal = root.toPath().toRealPath();
+        } catch (IOException ex) {
+            return found;
+        }
         for (String glob : declaredGlobs(root)) {
+            if (!staysInside(glob)) {
+                continue;   // a clone's glob naming a path outside it (3.3 review)
+            }
             for (File dir : resolve(root, glob)) {
+                if (!inside(dir, rootReal)) {
+                    continue;   // reached through a link that leaves the repository
+                }
                 if (found.size() >= max) {
                     return found;
                 }
@@ -63,6 +75,28 @@ public final class Workspaces {
             }
         }
         return found;
+    }
+
+    /** A glob that cannot climb out of the root: relative, and no {@code ..} segment. */
+    static boolean staysInside(String glob) {
+        if (glob.startsWith("/") || glob.startsWith("\\") || (glob.length() > 1 && glob.charAt(1) == ':')) {
+            return false;
+        }
+        for (String part : glob.split("[/\\\\]")) {
+            if (part.equals("..")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether {@code dir}'s real path lies inside the root's: a link out of the repository is not a package of it. */
+    private static boolean inside(File dir, java.nio.file.Path rootReal) {
+        try {
+            return dir.toPath().toRealPath().startsWith(rootReal);
+        } catch (IOException ex) {
+            return false;
+        }
     }
 
     /** The raw globs both manifest dialects declare, in file order. */
@@ -153,8 +187,9 @@ public final class Workspaces {
      */
     private static void walk(File dir, int depth, List<File> out) {
         if (depth < 0 || dir == null || !dir.isDirectory()
+                || java.nio.file.Files.isSymbolicLink(dir.toPath())
                 || org.nmox.studio.core.util.HeavyDirs.isHeavy(dir.getName())) {
-            return;
+            return;   // (3.3 review) a ** walk never follows a link: its target may be anywhere
         }
         if (new File(dir, "package.json").isFile()) {
             out.add(dir);

@@ -420,7 +420,11 @@ public final class CssClasses {
 
     /** The rename survey: what would change, and whether it may proceed. */
     public record RenameSurvey(List<File> files, int spanCount,
-            boolean collision, boolean censusComplete) {
+            boolean collision, boolean censusComplete, File declaredElsewhere) {
+
+        public RenameSurvey(List<File> files, int spanCount, boolean collision, boolean censusComplete) {
+            this(files, spanCount, collision, censusComplete, null);
+        }
     }
 
     /**
@@ -462,34 +466,46 @@ public final class CssClasses {
                 // skip the file, keep the survey
             }
         }
-        // 3.3: a class a dependency package declares collides too — the
-        // rename edits only this package, but the merged rule would be
-        // styled by both (read, never written)
-        if (!collision && root != null && root.isDirectory()) {
+        // 3.3: the packages this one depends on are read, never written —
+        // a new name one of them declares collides (the merged rule would
+        // be styled by both), and an old name one of them declares is not
+        // this package's to rename (its usages here would lose that rule)
+        File declaredElsewhere = null;
+        if (root != null && root.isDirectory()) {
             for (File dep : org.nmox.studio.editor.WorkspaceDependencies.of(root)) {
                 for (File f : CssTokens.collectStylesheets(dep)) {
-                    collision |= declaresIn(f, newName);
+                    String text = readOrNull(f);
+                    if (text == null) {
+                        continue;
+                    }
+                    collision |= declares(text, f, newName);
+                    if (declaredElsewhere == null && declares(text, f, oldName)) {
+                        declaredElsewhere = f;
+                    }
                 }
             }
         }
         return new RenameSurvey(files, spans, collision,
-                census.size() < CssTokens.MAX_FILES);
+                census.size() < CssTokens.MAX_FILES, declaredElsewhere);
     }
 
-    /** Whether {@code f} declares {@code name} as a class selector (stylesheet, or a markup file's style blocks). */
-    private static boolean declaresIn(File f, String name) {
+    private static String readOrNull(File f) {
         try {
-            String text = Files.readString(f.toPath());
-            if (!isMarkupFile(f.getName())) {
-                return !selectorSpans(text, name).isEmpty();
-            }
-            for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
-                if (!selectorSpans(text.substring(r.start(), r.end()), name).isEmpty()) {
-                    return true;
-                }
-            }
+            return Files.readString(f.toPath());
         } catch (IOException | OutOfMemoryError unreadable) {
-            // an unreadable file declares nothing we can see
+            return null;   // an unreadable file declares nothing we can see
+        }
+    }
+
+    /** Whether {@code text} (the content of {@code f}) declares {@code name} as a class selector — a stylesheet, or a markup file's style blocks. */
+    private static boolean declares(String text, File f, String name) {
+        if (!isMarkupFile(f.getName())) {
+            return !selectorSpans(text, name).isEmpty();
+        }
+        for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
+            if (!selectorSpans(text.substring(r.start(), r.end()), name).isEmpty()) {
+                return true;
+            }
         }
         return false;
     }

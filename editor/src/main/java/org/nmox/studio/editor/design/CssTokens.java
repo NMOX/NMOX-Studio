@@ -201,19 +201,22 @@ public final class CssTokens {
      * stylesheets, then those of the workspace packages it depends on
      * ({@link org.nmox.studio.editor.WorkspaceDependencies}) — a monorepo
      * keeps its design tokens and shared styles in one of them. The
-     * dependencies share a second budget of {@value #MAX_FILES} files, and
+     * dependencies share a second budget of {@value #MAX_FILES} files in
+     * fair shares, and
      * the own package's files come first, so its declarations win every
      * name they share.
      */
     static List<File> collectWithDependencies(File root) {
         List<File> files = new ArrayList<>(collectStylesheets(root));
+        List<File> deps = org.nmox.studio.editor.WorkspaceDependencies.of(root);
+        // each dependency a fair share, so a component package of sixty
+        // .vue files declared first cannot starve the tokens package after
+        // it (its review); a small package's unused share passes on
         int budget = MAX_FILES;
-        for (File dep : org.nmox.studio.editor.WorkspaceDependencies.of(root)) {
-            if (budget <= 0) {
-                break;
-            }
-            List<File> more = org.nmox.studio.editor.fullstack.BoundedWalk.collect(dep,
-                    CssTokens::isStylesheetName, budget);
+        for (int i = 0; i < deps.size() && budget > 0; i++) {
+            int share = Math.max(1, budget / (deps.size() - i));
+            List<File> more = org.nmox.studio.editor.fullstack.BoundedWalk.collect(deps.get(i),
+                    CssTokens::isStylesheetName, share);
             files.addAll(more);
             budget -= more.size();
         }
