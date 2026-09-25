@@ -131,6 +131,24 @@ class DocsMenuDoorsTest {
         assertThat(wrongPaths(bar, documents(""))).as("a documented menu path that names a door the menu bar does not have").isEmpty();
     }
 
+    @Test
+    @DisplayName("a dialog's own button after its row, and Settings… after a word of prose, are not wrong doors")
+    void dialogHopsAndProseSettings(@org.junit.jupiter.api.io.TempDir Path dir) throws IOException {
+        Path en = dir.resolve("en.md");
+        Files.writeString(en, "Press **File ▸ Save As… ▸ Save** to keep a copy.\n", StandardCharsets.UTF_8);
+        assertThat(wrongPaths(menuBar(""), List.of(en))).as("the platform's Save As... opens a dialog").isEmpty();
+        Path de = dir.resolve("de.md");
+        Files.writeString(de, "Mit **Datei ▸ Speichern unter… ▸ Speichern** eine Kopie behalten.\n", StandardCharsets.UTF_8);
+        assertThat(wrongPaths(menuBar("de"), List.of(de))).as("German Speichern unter…").isEmpty();
+        assertThat(settingsItemAt("use macOS Settings…", "use macOS Settings…".length())).isTrue();
+        assertThat(settingsItemAt("在 macOS 上是 Settings…", "在 macOS 上是 Settings…".length())).isTrue();
+        assertThat(settingsItemAt("OS là Settings…", "OS là Settings…".length())).isTrue();
+        assertThat(settingsItemAt("OS पर Settings…", "OS पर Settings…".length())).isTrue();
+        assertThat(settingsItemAt("Settings…", "Settings…".length())).isTrue();
+        assertThat(settingsItemAt("Project Settings…", "Project Settings…".length()))
+                .as("a longer name ending in Settings…").isFalse();
+    }
+
     static List<String> translated() {
         return ShippedLocales.TRANSLATED;
     }
@@ -153,7 +171,7 @@ class DocsMenuDoorsTest {
      * the product speaks have no capitals, and a capital-led phrase ("Open the
      * File ▸") had been hiding the menu name inside it.
      */
-    private static List<String> wrongPaths(Map<String, Door> bar, List<Path> docs) throws IOException {
+    static List<String> wrongPaths(Map<String, Door> bar, List<Path> docs) throws IOException {
         List<String> wrong = new ArrayList<>();
         for (Path doc : docs) {
             String text = normalized(Files.readString(doc, StandardCharsets.UTF_8));
@@ -278,7 +296,13 @@ class DocsMenuDoorsTest {
         return start >= 0 && text.startsWith(name, start) && arrowBefore(text, start);
     }
 
-    /** "Settings…" ends at {@code at}, not the tail of a longer name: no letter or digit before it but spaces. */
+    /**
+     * "Settings…" ends at {@code at}, not the tail of a longer name. A name
+     * like "Project Settings…" is a capitalized Latin word before it; any
+     * other word is prose ("use macOS Settings…", "macOS 上是 Settings…",
+     * "OS là Settings…", "OS पर Settings…" — 6th review: the first cut
+     * refused any letter at all and failed every one of these).
+     */
     static boolean settingsItemAt(String text, int at) {
         int end = at;
         while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) {
@@ -292,7 +316,16 @@ class DocsMenuDoorsTest {
         while (b >= 0 && text.charAt(b) == ' ') {
             b--;
         }
-        return b < 0 || !Character.isLetterOrDigit(text.charAt(b));
+        if (b < 0 || !Character.isLetterOrDigit(text.charAt(b))) {
+            return true;
+        }
+        int w = b;
+        while (w > 0 && Character.isLetterOrDigit(text.charAt(w - 1))) {
+            w--;
+        }
+        char first = text.charAt(w);
+        return !(Character.isUpperCase(first)
+                && Character.UnicodeScript.of(first) == Character.UnicodeScript.LATIN);
     }
 
     /** Whether an arrow ends just before {@code at}, markup and spaces aside. */
@@ -591,7 +624,10 @@ class DocsMenuDoorsTest {
             }
             Door row = place(bar, file, name, folderNames);
             row.notEverywhere |= c.hiddenOnOneOs().contains(file);
-            row.dialog |= name.endsWith("…") || file.contains("OptionsWindowAction")
+            // plain(): the platform spells its ellipsis "...", which plain()
+            // turns into "…" (6th review: Save As... and Commit... were not
+            // dialogs to this law, so "File ▸ Save As… ▸ Save" failed)
+            row.dialog |= plain(name).endsWith("…") || file.contains("OptionsWindowAction")
                     || file.contains("PluginManagerAction");
         }
         try (InputStream in = DocsMenuDoorsTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
@@ -606,7 +642,8 @@ class DocsMenuDoorsTest {
                 if (name == null) {
                     continue;
                 }
-                place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
+                Door row = place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
+                row.dialog |= plain(name).endsWith("…");
             }
         }
         CACHED.put(lang, bar);
