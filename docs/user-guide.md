@@ -933,6 +933,26 @@ status line, naming the catalog folder. Both work in JS/TS, HTML, Vue,
 Svelte and Angular templates, and neither fires inside `fetch('…')` or
 a template literal with `${…}` in it.
 
+### Links in your documentation
+
+A README is read on GitHub, and a link in it that goes nowhere is found by
+the next reader, not by you. **Tools ▸ Check Markdown Links…** reads every
+Markdown file in the aimed project and checks each relative link and image
+the way GitHub will render it: the file or folder it names must exist, and
+a `#heading` must be a heading of that file under GitHub's anchor rule
+(lower-cased, punctuation dropped, spaces as hyphens, a repeated heading
+numbered `-1`, `-2`). A link that goes nowhere is an error; a missing
+heading, and a link that climbs out of the project, are warnings. They
+arrive as squiggles on the link and as rows in Action Items, and the status
+line sums the run up (`Markdown links: 12 files, 148 links, 1 goes
+nowhere`).
+
+Links with a scheme (`https:`, `mailto:`) are not checked: nothing leaves
+your machine. Neither is anything inside a code fence or an inline code
+span, since a link in an example is an example, nor the fragment of a link
+into a source file (`app.js#L10` is GitHub's line anchor). A link starting
+`/` is read from the project's root, as GitHub reads it.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by
