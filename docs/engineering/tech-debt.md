@@ -56,7 +56,7 @@ exposure; v2.183.0 already holds its one long-lived message in a field.
 ### 124. The 3.2.0 review's LOW remainder
 
 **Open, deliberately small.** The hostile reviews of the night's code found
-twenty-seven problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
+thirty-five problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
 link read to exhaustion, two backtracking patterns, the macOS newline guard,
 a trailing newline naming another file, git's `/dev/null`, a selected file
 counting as open, Windows sh). What is left:
@@ -89,6 +89,19 @@ counting as open, Windows sh). What is left:
   module asks the sharability query for each top-level child while it
   decides whether a Team action is enabled; each answer is a few stats,
   but a changed `.gitignore` (at most 1 MiB) is read there once.
+- **Ctrl+Alt+letter chords and AltGr (Windows).** ⌥⌘C is Ctrl+Alt+C off
+  macOS, and on a Polish layout AltGr+C types "ć"; the platform's shortcut
+  processor has no AltGr case (its bytecode read in 3.2), so if the JDK
+  reports AltGr as Ctrl+Alt without the AltGraph flag the chord could fire
+  on the letter. The ⌥⌘ family has been in the product since v1.38.1
+  (⌥⌘O Open Folder, ⌥⌘E Emmet, ⌥⌘P), so this is one question for the whole
+  family, answerable only on Windows with a Polish (Programmers) layout.
+- **Find in Projects on a network mount.** Every question re-reads what it
+  rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
+  where a stat costs a millisecond makes a 20,000-file search pay seconds.
+  Measured locally only.
+- **Copy Path from a diff pane or a history revision** may copy the
+  platform's temporary file for that side. Plausible, not walked.
 - **The diff view reads 8,000 bytes of each side on the EDT** to decide
   text or binary, and `nmox -d` refuses two binaries over 16 MiB although
   their comparison already runs off the EDT.
