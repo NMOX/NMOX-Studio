@@ -9,18 +9,18 @@ import org.openide.loaders.DataObject;
  * The file an editor's document holds — not its DataObject's primary file.
  *
  * <p>A document names its DataObject ({@link Document#StreamDescriptionProperty}),
- * and one DataObject can own several files: the properties module groups
- * {@code Bundle_de.properties} under {@code Bundle.properties} and gives each
- * locale's editor a document whose stream is the WHOLE group (its
- * {@code PropertiesEditorSupport.createStyledDocument}, read from the
- * RELEASE310 bytecode). Taking the primary file there named
- * {@code Bundle.properties} while the user edited the German file — Copy
- * Path copied the wrong path, and line blame blamed the wrong file's line
- * (3.2 fourth review). The same editor support writes the entry's own file
- * into {@link Document#TitleProperty}, as {@code FileObject.toString()}, so
- * that is how the file is told apart; a DataObject of several files whose
- * document names none of them answers null — every caller then says
- * nothing rather than naming the wrong file.
+ * and one DataObject can own several files. The properties module's editor
+ * is built for that — it gives a grouped locale's editor a document whose
+ * stream is the WHOLE group and writes the entry's own file into
+ * {@link Document#TitleProperty} ({@code PropertiesEditorSupport}, read from
+ * the RELEASE310 bytecode), so that is how the file is told apart; a
+ * DataObject of several files whose document names none of them answers
+ * null, and every caller then says nothing rather than naming the wrong
+ * file. (The 3.2 fourth review took that to mean Copy Path and line blame
+ * named {@code Bundle.properties} for {@code Bundle_de.properties}; a walk
+ * could not show it, because this platform's loader never forms the group —
+ * its {@code nestedView} switch is false and set nowhere. The rule stands
+ * for any DataObject of several files.)
  */
 public final class EditedFile {
 

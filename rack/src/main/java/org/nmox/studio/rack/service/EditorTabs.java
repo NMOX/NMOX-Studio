@@ -11,15 +11,15 @@ import org.openide.windows.TopComponent;
 /**
  * The file an editor TAB holds — the tab-shaped twin of
  * {@link EditedFile#of(javax.swing.text.Document)}. A tab's lookup carries
- * its DataObject, and for a grouped DataObject (a locale's
- * {@code Bundle_de.properties} under {@code Bundle.properties}) that names
- * the group, not the file: the properties module's editor puts only
- * itself in the tab's lookup (its {@code PropertiesEditorLookup}, read from
- * the RELEASE310 bytecode), so the file is told from the editor's DOCUMENT
- * (3.2 sixth review: the Agent Port listed, Annotate annotated and Save
- * Editor Screenshot named the base bundle while the German one was on
- * screen). A group tab with no document of its own — the table editor,
- * which shows every locale — is the group, named by its primary.
+ * its DataObject, and for a DataObject of several files that names the
+ * group, not the file: the properties module's editor puts only itself in
+ * the tab's lookup (its {@code PropertiesEditorLookup}, read from the
+ * RELEASE310 bytecode), so the file is told from the editor's DOCUMENT. A
+ * group tab with no document of its own — the table editor, which shows
+ * every locale — is the group, named by its primary. (This platform's
+ * properties loader forms no such group — see {@link EditedFile} — so the
+ * rule is held for any DataObject of several files, not for a defect a
+ * user met.)
  */
 public final class EditorTabs {
 

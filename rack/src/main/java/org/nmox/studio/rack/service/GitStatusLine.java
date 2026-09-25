@@ -785,11 +785,12 @@ public class GitStatusLine implements StatusLineElementProvider {
 
         /**
          * {@code file} when it is one of several files of one DataObject and
-         * not its primary (a locale's {@code Bundle_de.properties}); null
-         * otherwise. The git module's Annotate reads its context's NODE and
-         * takes the node's primary file, so a group node annotates
-         * {@code Bundle.properties} whichever locale is on screen (3.2 seventh
-         * review, read from the module's bytecode). Runs on RP.
+         * not its primary; null otherwise. The git module's Annotate reads its
+         * context's NODE and takes the node's primary file (its bytecode), so
+         * a group node would annotate the primary whichever member is on
+         * screen. No DataObject of this platform groups editable files today
+         * (see {@code EditedFile}); the branch is the rule for one that does.
+         * Runs on RP.
          */
         static FileObject groupMember(File file) {
             try {

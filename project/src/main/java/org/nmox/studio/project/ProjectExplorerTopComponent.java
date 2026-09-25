@@ -503,8 +503,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             if (dob == null) {
                 continue;
             }
-            // the file the tab holds, not its group's primary (a locale's
-            // Bundle_de.properties is grouped under Bundle.properties, 3.2);
+            // the file the tab holds, not its DataObject's primary (one
+            // DataObject can own several files; see EditedFile, 3.2);
             // a group whose editor is not built yet is rowed by its tab's
             // own name rather than by a file it may not be
             org.openide.filesystems.FileObject edited =

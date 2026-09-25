@@ -105,8 +105,8 @@ final class EditorState {
                 continue;
             }
             DataObject dob = tc.getLookup().lookup(DataObject.class);
-            // the file this tab holds, not its DataObject's primary: a
-            // locale's Bundle_de.properties is grouped under Bundle.properties
+            // the file this tab holds, not its DataObject's primary (one
+            // DataObject can own several files; see EditedFile)
             org.openide.filesystems.FileObject edited =
                     org.nmox.studio.rack.service.EditorTabs.fileOf(tc);
             if (dob == null || edited == null) {

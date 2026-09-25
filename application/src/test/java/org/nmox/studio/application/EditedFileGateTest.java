@@ -14,9 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Code that names the file being edited asks {@code core.util.EditedFile}
  * (a document) or {@code rack.service.EditorTabs} (a tab), never a
- * DataObject's primary file — which names the wrong file for a grouped
- * DataObject such as a locale's {@code Bundle_de.properties} under
- * {@code Bundle.properties} (3.2 fourth review).
+ * DataObject's primary file, which names the wrong file for a DataObject
+ * of several files (3.2 fourth review, read from the properties editor's
+ * bytecode; this platform's loader forms no such group, so the gate holds
+ * a rule rather than a defect a user met — see {@code EditedFile}).
  *
  * <p>The population is derived, across every module, from what a file
  * reads rather than from folders listed by hand (fifth review: the first
