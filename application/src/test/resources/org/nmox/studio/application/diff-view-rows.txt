@@ -1,0 +1,40 @@
+# The platform's diff view speaks the reader's language (3.2.0).
+#
+# `nmox -d left right` and `git difftool` open two files in the platform's own
+# diff view (ui DiffWindow embeds DiffController.createEnhanced, which is
+# EditableDiffView), and the Team menu's diffs are the same view. The
+# platform ships no localization, so every word it paints read English in
+# all fourteen translated builds.
+#
+# The population is DERIVED by DiffViewOverlayLedgerTest: every key of the
+# view package's shipped Bundle.properties that some class of that package
+# names in its constant pool. Each one is here, OVERLAID (its English, which
+# must still be the shipped value) or RECORDED (with the reason the view
+# never paints it, which a person must be able to disagree with).
+#
+# OVERLAID | key | the English value
+# RECORDED | key | why no reader meets it
+
+OVERLAID|EditableDiffView.viewGraphical.title|Graphical
+OVERLAID|EditableDiffView.viewTextual.title|Textual
+OVERLAID|TT_DiffPanel_JumpToCurrent|Go to Current Difference
+OVERLAID|CTL_DiffPanel_NoContent|<Content Not Available>
+OVERLAID|CTL_DiffPanel_BinaryFile|<Binary File>
+OVERLAID|ACS_DiffPanelA11yName|Diff Panel
+OVERLAID|ACS_DiffPanelA11yDesc|Diff panel.
+OVERLAID|ACS_EditorPane1A11yName|The First File
+OVERLAID|ACS_EditorPane1A11yDescr|The content of the first file.
+OVERLAID|ACS_EditorPane2A11yName|The Second File
+OVERLAID|ACS_EditorPane2A11yDescr|The content of the second file.
+OVERLAID|TT_DiffPanel_Remove|Remove
+OVERLAID|TT_DiffPanel_Replace|Replace
+OVERLAID|TT_DiffPanel_Insert|Insert
+OVERLAID|TT_DiffPanel_MoveAll|Replace All
+OVERLAID|EditableDiffView.ConfirmOpenningTitle|Cannot open file
+
+RECORDED|Diff.dev_null|a path, not a word: the textual view's patch header names /dev/null for an absent side, and a patch must say exactly that in every language
+RECORDED|DiffComponent.title|passed only to setName on the split pane and the view, a component name no reader sees (the accessible name is ACS_DiffPanelA11yName, overlaid)
+RECORDED|CTL_DiffPanel_NoTitle|stands in for a source with no title; DiffWindow passes each file's path and the Team menu's sources carry revision titles, so no product door reaches it
+RECORDED|CTL_DiffPanel_UnsupportedTextUI|shown only when the editor kit for the file provides an unsupported TextUI, a broken-install state; its text sends the reader to a netbeans.org bug page that no longer exists, so a translation would only translate a dead end
+RECORDED|CTL_EditableDiffVisualizer_Name|the visualizer's name in the old DiffPresenter selector, which appears only when the platform's showDiffSelector property is on (default off); the view never paints it
+RECORDED|CTL_EditableDiffVisualizer_Desc|the same selector's description, as above

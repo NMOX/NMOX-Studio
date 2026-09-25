@@ -114,6 +114,12 @@ public final class BoundedReads {
 
     /** The file's text as UTF-8, or {@link TooLarge} over {@code maxBytes}. */
     public static String read(Path file, long maxBytes) throws IOException {
+        // only a regular file has a size that means anything: a link to
+        // /dev/zero reports 0 and never ends, a FIFO reports 0 and blocks
+        // (3.2.0, found by planting one in a repository a check walked)
+        if (!Files.isRegularFile(file)) {
+            throw new IOException(file + ": not a regular file");
+        }
         long size = Files.size(file);
         if (size > maxBytes) {
             String name = file.getFileName() == null
@@ -130,7 +136,20 @@ public final class BoundedReads {
             }
             throw new TooLarge(message, name, size, maxBytes);
         }
-        return Files.readString(file, StandardCharsets.UTF_8);
+        // and the read itself is bounded: a file that grows between the size
+        // and the read still cannot hand back more than the cap
+        byte[] bytes;
+        try (java.io.InputStream in = Files.newInputStream(file)) {
+            bytes = in.readNBytes((int) Math.min(maxBytes + 1, Integer.MAX_VALUE - 8));
+        }
+        if (bytes.length > maxBytes) {
+            String name = file.getFileName() == null ? file.toString() : file.getFileName().toString();
+            throw new TooLarge(refusal("", name, bytes.length, maxBytes), name, bytes.length, maxBytes);
+        }
+        return StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+                .decode(java.nio.ByteBuffer.wrap(bytes)).toString();
     }
 
     /**

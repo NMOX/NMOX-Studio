@@ -39,8 +39,21 @@ pakai:
 }
 ```
 
-Tempelkan ke `.mcp.json` agen Anda. Tokennya hanya ada di dialog itu —
-tidak pernah dicatat atau disimpan — dan mati bersama portanya.
+Tempelkan ke `.mcp.json` agen Anda, atau tekan **Salin untuk Claude Code**
+untuk satu baris yang diterima Claude Code sebagai gantinya:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+Tokennya tidak pernah dicatat. Kecuali Anda meminta lain, ia hanya ada di
+dialog itu dan mati bersama portanya, jadi awal berikutnya mendapat alamat baru
+dan token baru. Centang **Simpan alamat dan token ini** dan ia disimpan di
+gantungan kunci sistem lalu dipakai lagi, dengan port yang sama, sehingga agen
+yang diatur sekali tetap terhubung besok; bila program lain sudah memakai port
+itu, NMOX Studio mengikat port baru dan mengatakannya. Centang juga **Mulai saat
+NMOX Studio dimulai** dan port ikut menyala bersama IDE. Menghapus centang
+Simpan menghapus entrinya dari gantungan kunci.
 **Hentikan Agent Port** mengakhirinya; begitu pula menutup IDE. Selama
 ia mendengarkan, baris status menampilkan **⌁ agent port :N** — porta
 yang bisa membaca IDE Anda tidak pernah tersembunyi; keterangan tanda

@@ -37,9 +37,22 @@ configuration client prête à l’emploi :
 }
 ```
 
-Collez-la dans le `.mcp.json` de votre agent. Le jeton n’existe que dans cette
-boîte de dialogue — il n’est jamais journalisé ni conservé — et meurt avec le
-port. **Arrêter l'Agent Port** y met fin ; quitter l’IDE aussi. Tant qu’il
+Collez-la dans le `.mcp.json` de votre agent, ou appuyez sur **Copier pour
+Claude Code** pour obtenir la ligne unique que Claude Code attend à la place :
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+Le jeton n’est jamais journalisé. Sauf demande contraire, il n’existe que dans
+cette boîte de dialogue et meurt avec le port, si bien que le démarrage suivant
+a une nouvelle adresse et un nouveau jeton. Cochez **Conserver cette adresse et
+ce jeton** et il est enregistré dans le trousseau du système et réutilisé, avec
+le même port, si bien qu’un agent configuré une fois se connecte encore
+demain ; si un autre programme a pris ce port, NMOX Studio en ouvre un nouveau
+et le dit. Cochez aussi **Démarrer au lancement de NMOX Studio** et le port
+démarre avec l’IDE. Décocher Conserver supprime l’entrée du trousseau.
+**Arrêter l'Agent Port** y met fin ; quitter l’IDE aussi. Tant qu’il
 écoute, la barre d’état affiche **⌁ agent port :N** — un port capable de lire
 votre IDE n’est jamais invisible ; l’infobulle de la pastille compte les
 agents abonnés au flux, et un clic rouvre la boîte de dialogue (la

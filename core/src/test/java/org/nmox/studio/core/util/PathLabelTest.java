@@ -89,4 +89,20 @@ class PathLabelTest {
             assertThat(label.getText()).doesNotStartWith("<html>");
         });
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("relative: under the root in the OS's separators, '.' for the root, absolute when outside or rootless")
+    void relative() {
+        java.io.File root = new java.io.File("/work/shop");
+        String sep = java.io.File.separator;
+        org.assertj.core.api.Assertions.assertThat(PathLabel.relative(root, new java.io.File("/work/shop/src/app.js")))
+                .isEqualTo("src" + sep + "app.js");
+        org.assertj.core.api.Assertions.assertThat(PathLabel.relative(root, root)).isEqualTo(".");
+        java.io.File sibling = new java.io.File("/work/shopping/x.js");
+        org.assertj.core.api.Assertions.assertThat(PathLabel.relative(root, sibling))
+                .as("a sibling that merely shares a prefix").isEqualTo(sibling.getAbsolutePath());
+        org.assertj.core.api.Assertions.assertThat(PathLabel.relative(null, sibling)).isEqualTo(sibling.getAbsolutePath());
+        org.assertj.core.api.Assertions.assertThat(PathLabel.relative(root, new java.io.File("/work/shop/../etc/passwd")))
+                .as("a path that climbs out is not relative to the root").doesNotStartWith("..");
+    }
 }

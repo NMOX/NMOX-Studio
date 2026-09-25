@@ -23,9 +23,10 @@ so there's nothing else to install ([details](#download)).
 
 **Then:** [the five-minute quickstart](docs/quickstart.md) ·
 [coming from VS Code](docs/coming-from-vscode.md) ·
+[the second week](docs/tutorials/the-second-week.md) ·
 [the user guide](docs/user-guide.md) · [glossary](docs/glossary.md)
 
-`53 RACK DEVICES` · `88 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `90 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
 
@@ -70,7 +71,7 @@ nothing is sent without a gesture; keys live in the OS keychain. **Works
 with Claude, ChatGPT or Gemini** — your key, your pick, one switch for
 every face.
 
-**A polyglot editor that came to work.** 88 TextMate grammars through
+**A polyglot editor that came to work.** 90 TextMate grammars through
 NetBeans CSL, LSP with ordered fallbacks, project-wide Go to Symbol
 (⌥⇧⌘O), a minimap and sticky scroll on every editor, zero-setup
 JavaScript/TypeScript/Chrome debugging, color swatches that resolve
@@ -398,6 +399,29 @@ Rack faceplates keep their panel vocabulary on purpose.
   Shortcuts…** lists every NMOX chord from the running keymap, never a
   hand-kept list, with Copy as Markdown.
 
+### 🌿 Git and GitHub, all day
+
+- **NMOX Studio is git's editor, difftool and mergetool** (`nmox -w`,
+  `nmox -d`), on all three operating systems: `git commit` opens the
+  message in the IDE and waits for the tab to close; **Team ▸ Use NMOX
+  Studio with Git…** sets it up, showing each setting's current value first.
+- **Git's own files are real files**: the commit message's `#` lines are
+  comments, only what you write is spellchecked, and a summary past 72
+  characters is flagged; `git rebase -i` lists highlight each command.
+- **Conflicts resolve where they are written**: both sides tinted, and
+  **Accept Current / Incoming / Both** as a Quick Fix, each one undo.
+- **Where you stand, at a glance**: the chip reads `⎇ main ±2 ↑2 ↓1`
+  (changed files, commits to push and pull), and the status line names who
+  last changed the caret's line — `Ada Lovelace, 3 days ago · Fix the parser`.
+- **GitHub one gesture away**: **Open on GitHub** / **Copy GitHub Link** for
+  lines, files and folders, and **New Pull Request on GitHub** for the branch
+  you just pushed — in your own browser.
+- **A failing stack trace is a door**: ⌘-click `src/app.ts:42:7` in the
+  Terminal and the file opens there. **Tools ▸ Check Markdown Links…** finds
+  the README link that would 404 on GitHub before you push.
+
+The whole loop as one sitting: [The Second Week](docs/tutorials/the-second-week.md).
+
 ### 🎤 Made to be shown
 - **View ▸ Presentation Mode**: one toggle and every open editor is
   +10 pt, the in-app Browser's page is at 150%, and the Output window
@@ -412,7 +436,9 @@ Rack faceplates keep their panel vocabulary on purpose.
   backticks. **Copy as Markdown with Link** adds the GitHub
   `blob/<branch>/path#L3-L14` link to the same lines — from disk facts
   alone, refusing rather than guessing (no origin, not GitHub, an
-  unsaved buffer).
+  unsaved buffer). **Open on GitHub** and **Copy GitHub Link** give the
+  link alone, for lines, a file or a folder, in the editor and on
+  Project Studio's tree.
 - **Tools ▸ Save Screenshot… / Save Editor Screenshot… / Copy Editor
   Screenshot**: the IDE painted by Swing itself at 2x — no
   screen-recording permission, no desktop, no crop; the editor tab
@@ -492,7 +518,7 @@ and a MooTools learning space that tours `Class`/`Extends`, the extended
 natives, and Fx on a live page.
 
 ### ⌨️ Polyglot editing
-70+ languages with syntax highlighting (88 TextMate grammars through
+70+ languages with syntax highlighting (90 TextMate grammars through
 NetBeans CSL) — code plus the whole config layer: `.editorconfig`,
 dotenv, ignore files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars,
 Liquid, nginx, Makefile, Protocol Buffers, Prisma, YAML, TOML,
@@ -867,8 +893,10 @@ brittle tests), so the floors mean what they say.
 ## The Agent Port (MCP)
 
 Tools ▸ **Agent Port (MCP)…** starts a Model Context Protocol server any
-agent can connect to — loopback only, a per-start bearer token, any
-browser `Origin` refused — and it is **read-only by construction**: a
+agent can connect to — loopback only, a per-start bearer token (or, when
+you tick **Keep this address and token**, one kept in the system keychain,
+so an agent configured once still connects tomorrow; **Copy for Claude
+Code** copies the `claude mcp add` line), any browser `Origin` refused — and it is **read-only by construction**: a
 build-failing ledger bans every spawn, write and stop primitive from
 the package. Twelve typed tools (`ide_context` for the whole picture;
 `project_state`, `live_servers`, `live_runs`, `run_history`,

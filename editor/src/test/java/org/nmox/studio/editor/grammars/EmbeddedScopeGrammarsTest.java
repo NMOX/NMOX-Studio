@@ -167,8 +167,10 @@ class EmbeddedScopeGrammarsTest {
         // (xml for text.xml, jsx for source.js.jsx) + ng-expression
         // (v1.217.0: expression.ng is include-only — injecting it stomped
         // host HTML, so it rides the embed idiom like the others)
-        // + the forty-two v2.85.0 scope stubs (11 + 31)
-        assertThat(embedFolders).hasSize(50);
+        // + the forty-two v2.85.0 scope stubs (11 + 31), less the two
+        // text.git-* stubs 3.2.0 replaced with the real grammars (whose
+        // mimes are editor mimes, not embed mimes)
+        assertThat(embedFolders).hasSize(48);
         try (InputStream layer = EmbeddedScopeGrammars.class
                 .getResourceAsStream("/META-INF/generated-layer.xml")) {
             String xml = new String(layer.readAllBytes(), StandardCharsets.UTF_8);

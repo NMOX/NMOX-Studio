@@ -75,6 +75,9 @@ public final class LanguageComments {
             Map.entry("text/x-haxe", "//"),
             Map.entry("text/x-janet", "#"),
             Map.entry("text/x-http-request", "#"),
+            // 3.2.0: git strips # lines from a message and skips them in a todo
+            Map.entry("text/x-git-commit", "#"),
+            Map.entry("text/x-git-rebase", "#"),
             Map.entry("text/x-crystal", "#"),
             Map.entry("text/x-solidity", "//"),
             Map.entry("text/coffeescript", "#"),

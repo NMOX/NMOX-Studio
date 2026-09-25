@@ -84,7 +84,7 @@ public final class CopyAsMarkdownAction implements ActionListener {
     }
 
     static String fileName(Document doc) {
-        Object sd = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        return sd instanceof DataObject dob ? dob.getPrimaryFile().getNameExt() : Bundle.CopyAsMarkdownAction_theBuffer();
+        org.openide.filesystems.FileObject edited = org.nmox.studio.core.util.EditedFile.of(doc);
+        return edited != null ? edited.getNameExt() : Bundle.CopyAsMarkdownAction_theBuffer();
     }
 }

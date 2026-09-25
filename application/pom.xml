@@ -293,9 +293,12 @@
                                 <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/PopupRowsSpeakTest.java</exclude>
                                 <exclude>**/FileTreeRowsSpeakTest.java</exclude>
+                                <exclude>**/DiffViewOverlayLedgerTest.java</exclude>
                                 <exclude>**/PaintedSurfaceLedgerTest.java</exclude>
                                 <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
+                                <exclude>**/MainWindowChromeSpeaksTest.java</exclude>
+                                <exclude>**/ToolbarOverlayGateTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -325,6 +328,7 @@
                                 <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/PopupRowsSpeakTest.java</include>
                                 <include>**/FileTreeRowsSpeakTest.java</include>
+                                <include>**/DiffViewOverlayLedgerTest.java</include>
                                 <include>**/PaintedSurfaceLedgerTest.java</include>
                                 <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
@@ -343,6 +347,8 @@
                                 <include>**/CatalogueEnumsSpeakTest.java</include>
                                 <include>**/DialogChromeOverlayGateTest.java</include>
                                 <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
+                                <include>**/MainWindowChromeSpeaksTest.java</include>
+                                <include>**/ToolbarOverlayGateTest.java</include>
                             </includes>
                         </configuration>
                     </execution>

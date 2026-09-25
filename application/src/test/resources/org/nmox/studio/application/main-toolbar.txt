@@ -1,0 +1,84 @@
+# The main toolbar's buttons whose tooltip key lives in platform CODE.
+#
+# 3.2.0: a German build's main toolbar read "New File... (⌘N)", "Open
+# Project... (⇧⌘O)" and "Pause I/O Checks" in English while
+# ToolbarOverlayGateTest was green, because its population was five
+# overlay packages chosen by the MENU rows of the same actions. A toolbar
+# button does not paint the menu's key: Actions.ButtonBridge (openide-awt,
+# read from its bytecode) sets the tooltip to the action's
+# SHORT_DESCRIPTION, and only when that is null to its NAME with the
+# ampersand cut, then formats FMT_ButtonHint with the shortcut.
+#
+# WHICH buttons exist is DERIVED by ToolbarOverlayGateTest from every
+# Toolbars/<toolbar>/<item> registration of every toolbar a shipped
+# configuration (Toolbars/Standard.xml, Toolbars/Debugging.xml) shows, and
+# so is the key of every button the layer builds with a generic factory
+# (Actions.alwaysEnabled/context/callback/checkbox read the layer's own
+# ShortDescription, else displayName). The rows below are the rest: an
+# action built in code, whose key only its bytecode says. Each row was read
+# from the javap of the class that sets it:
+#
+#   NewFile, OpenProject: putValue(SHORT_DESCRIPTION, LBL_*Action_Tooltip)
+#     in the constructor (OpenProject through its static _SHORT_DESCRIPTION);
+#     the menu row reads LBL_*Action_Name, which is why v2.143.0's menu
+#     overlay never reached the toolbar.
+#   NewProject: the layer builds Actions.alwaysEnabled over the NewProject
+#     delegate, and AlwaysEnabledAction.getValue asks the delegate first
+#     once it exists; the delegate puts LBL_NewProjectAction_Tooltip. The
+#     layer's displayName (derived) paints until then.
+#   Build/Rebuild/Run/Debug Main Project: MainProjectAction formats the
+#     choice pattern into NAME (setDisplayName); no SHORT_DESCRIPTION.
+#   StopRunAction (ours): CTL_StopRun at construction, then StopRunText's
+#     tooltip keys on every change of what is running.
+#   Debug toolbar: DebuggerAction.getValue(NAME) answers
+#     NbBundle.getMessage(DebuggerAction.class, <key put at creation>); no
+#     SHORT_DESCRIPTION. The Debug toolbar shows while a session runs (the
+#     debugger switches to the Debugging configuration), and these keys
+#     paint nowhere else in this product: no menu carries the actions.
+#   PauseAction (masterfs-ui): SHORT_DESCRIPTION = CTL_PauseAction; while
+#     I/O is suspended the toggle button's TEXT is MSG_Resume.
+#   SelfSamplerAction: the delegate puts ActionNameStart, and
+#     ActionNameStop while it samples, into NAME and SHORT_DESCRIPTION.
+#   GarbageCollectAction: its toolbar presenter is the HeapView memory
+#     meter, whose tooltip is CTL_GC and whose right-click menu is
+#     LBL_ShowText.
+#   QuickSearchAction: its toolbar presenter is the search field; the field
+#     is main-window chrome and MainWindowChromeSpeaksTest owns the rest of
+#     its keys.
+#   Undo/Redo: UndoRedoAction puts UndoSimple/RedoSimple into NAME, or
+#     UndoWithParameter/RedoWithParameter when the edit has a presentation
+#     name of its own.
+#
+# Format: toolbar/item|jar|package|key|English value the jar ships
+Build/org-netbeans-modules-debugger-ui-actions-DebugMainProjectAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|LBL_DebugMainProjectAction_Name|&Debug {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
+Build/org-netbeans-modules-project-ui-BuildMainProject.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_BuildMainProjectAction_Name|&Build {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
+Build/org-netbeans-modules-project-ui-RebuildMainProject.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_RebuildMainProjectAction_Name|&Clean and Build {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
+Build/org-netbeans-modules-project-ui-RunMainProject.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_RunMainProjectAction_Name|&Run {0,choice,-1#Main Project|0#Project|1#Project ({1})|1<{0} Projects}
+Build/org-nmox-studio-tools-npm-StopRunAction.shadow|org-nmox-NMOX-Studio-tools.jar|org/nmox/studio/tools/npm|CTL_StopRun|Stop Running Command
+Build/org-nmox-studio-tools-npm-StopRunAction.shadow|org-nmox-NMOX-Studio-tools.jar|org/nmox/studio/tools/npm|StopRunText_tooltipIdle|Stop Running Command — nothing is running
+Build/org-nmox-studio-tools-npm-StopRunAction.shadow|org-nmox-NMOX-Studio-tools.jar|org/nmox/studio/tools/npm|StopRunText_tooltipOne|Stop the running command: {0}
+Build/org-nmox-studio-tools-npm-StopRunAction.shadow|org-nmox-NMOX-Studio-tools.jar|org/nmox/studio/tools/npm|StopRunText_tooltipMany|Stop {0} running commands: {1}
+Build/org-nmox-studio-tools-npm-StopRunAction.shadow|org-nmox-NMOX-Studio-tools.jar|org/nmox/studio/tools/npm|StopRunText_runSince|{0} (since {1})
+Debug/org-netbeans-modules-debugger-ui-actions-ContinueAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Continue_action_name|&Continue
+Debug/org-netbeans-modules-debugger-ui-actions-FixAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Fix_action_name|Appl&y Code Changes
+Debug/org-netbeans-modules-debugger-ui-actions-KillAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_KillAction_name|&Finish Debugger Session
+Debug/org-netbeans-modules-debugger-ui-actions-PauseAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Pause_action_name|&Pause
+Debug/org-netbeans-modules-debugger-ui-actions-RunToCursorAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Run_to_cursor_action_name|R&un to Cursor
+Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Step_into_action_name|Step &Into
+Debug/org-netbeans-modules-debugger-ui-actions-StepOperationAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Step_operation_action_name|Step Over &Expression
+Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Step_out_action_name|Step &Out
+Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.shadow|org-netbeans-spi-debugger-ui.jar|org/netbeans/modules/debugger/ui/actions|CTL_Step_over_action_name|Step O&ver
+File/org-netbeans-modules-project-ui-NewFile.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_NewFileAction_Tooltip|New File...
+File/org-netbeans-modules-project-ui-NewProject.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_NewProjectAction_Tooltip|New Project...
+File/org-netbeans-modules-project-ui-OpenProject.shadow|org-netbeans-modules-projectui.jar|org/netbeans/modules/project/ui/actions|LBL_OpenProjectAction_Tooltip|Open Project...
+Memory/org-netbeans-modules-masterfs-ui-suspend-PauseAction.shadow|org-netbeans-modules-masterfs-ui.jar|org/netbeans/modules/masterfs/ui/suspend|CTL_PauseAction|Pause I/O Checks
+Memory/org-netbeans-modules-masterfs-ui-suspend-PauseAction.shadow|org-netbeans-modules-masterfs-ui.jar|org/netbeans/modules/masterfs/ui/suspend|MSG_Resume|Resume (pending events: {0})
+Memory/org-netbeans-modules-profiler-actions-SelfSamplerAction.shadow|org-netbeans-core-ui.jar|org/netbeans/core/ui/sampler|SelfSamplerAction_ActionNameStop|Stop Application Profiling and Take a Snapshot
+Memory/org-openide-actions-GarbageCollectAction.shadow|org-openide-actions.jar|org/openide/actions|CTL_GC|Click to force garbage collection
+Memory/org-openide-actions-GarbageCollectAction.shadow|org-openide-actions.jar|org/openide/actions|LBL_ShowText|Show Text
+QuickSearch/org-netbeans-modules-quicksearch-QuickSearchAction.shadow|org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|AbstractQuickSearchComboBar.command.toolTipText|Quick Search in the system {0}
+QuickSearch/org-netbeans-modules-quicksearch-QuickSearchAction.shadow|org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_DiscoverabilityHint|Search
+UndoRedo/org-openide-actions-RedoAction.shadow|org-openide-actions.jar|org/openide/actions|RedoSimple|&Redo
+UndoRedo/org-openide-actions-RedoAction.shadow|org-openide-actions.jar|org/openide/actions|RedoWithParameter|&Redo {0}
+UndoRedo/org-openide-actions-UndoAction.shadow|org-openide-actions.jar|org/openide/actions|UndoSimple|&Undo
+UndoRedo/org-openide-actions-UndoAction.shadow|org-openide-actions.jar|org/openide/actions|UndoWithParameter|&Undo {0}

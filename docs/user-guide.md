@@ -121,9 +121,33 @@ does (`nmox src/app.js:42` — a column is accepted and the editor opens at
 the start of the line). A name that is not there is refused on the
 terminal (`nmox: typo.js: no such file or folder`) instead of starting
 anything. VS Code's `-r` is accepted and `-n` opens in NMOX Studio's
-single window, since there is no second one; `--wait`, `--diff` and the
-other VS Code-only flags are refused by name.
-The command returns at once — the first `nmox` starts the IDE in the
+single window, since there is no second one; `-a` and `-v` are refused
+by name.
+`nmox -w file` opens the file and waits until you close its tab, and
+`nmox -d left right` compares two files in the diff view, which makes NMOX
+Studio git's editor and difftool: `git config --global core.editor
+"nmox -w"`, and `nmox --help` prints the lines that make it the difftool
+and the mergetool. Save the message, close the tab, and git carries on.
+With the mergetool set (`mergetool.nmox.cmd 'nmox -w "$MERGED"'`),
+`git mergetool` opens each conflicted file in the editor. In that file,
+and in any file carrying git's conflict markers, the current side of each
+conflict is tinted one color and the incoming side another, and the
+`<<<<<<<` line carries a warning whose Quick Fix (⌘. on a Mac, Alt+Enter
+elsewhere, or the bulb in the gutter) offers VS Code's three choices:
+Accept Current Change, Accept Incoming Change and Accept Both Changes. Each
+is one edit, undone by one ⌘Z; if the block changed after the warning
+appeared, nothing is replaced and the status line says so. A block that
+is not git's exact shape (a second separator, a block inside a block) gets
+no offer, rather than a guess. The tints are the Merge Conflict colorings
+in Options ▸ Fonts & Colors ▸ Highlighting.
+**Team ▸ Use NMOX Studio with Git…** shows those settings beside the values
+they have now, and sets them for you.
+A commit message opens as git's own file: the `#` lines are comments,
+only what you write is spellchecked, and a summary line past the 72
+characters git's tools cut at gets a warning. A `git rebase -i` list
+highlights each command and commit, and Toggle Comment drops a line
+without deleting it.
+Otherwise the command returns at once — the first `nmox` starts the IDE in the
 background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
 Getting `nmox` onto your PATH:
@@ -196,6 +220,16 @@ Arriving from VS Code? [Coming from VS Code](coming-from-vscode.md) maps
 the chords and the ideas, with the Windows and Linux spellings beside
 the macOS ones.
 
+**Locations in the Terminal open on ⌘-click** (Ctrl-click on Windows and
+Linux). Click a place a tool printed and the file opens at that line:
+`src/app.ts:42:7` from tsc, `(/abs/app.js:10:5)` in a Node or Jest stack
+frame, `tests/test_x.py:12:` from pytest, `--> src/main.rs:3:5` from
+rustc, `File "x.py", line 12` from a Python traceback. An absolute path
+opens as printed. A relative one is read from the aimed project's folder,
+where ⌃\` starts its shell; after a `cd` into a subfolder the path may
+name a file that is not there, and the status line says which path it
+looked for instead of guessing. A URL or a `host:port` is never a link.
+
 ## 3. Projects
 
 **Opening:** any folder carrying one of 63 recognized manifests opens as a
@@ -220,7 +254,10 @@ is clean.
 for New, Cut, Copy, Paste, Delete and Rename, and — as in VS Code's
 Explorer — **Copy Path**, **Copy Relative Path** (relative to the
 project) and **Reveal in Finder** (**Reveal in File Explorer** on
-Windows, **Open Containing Folder** on Linux).
+Windows, **Open Containing Folder** on Linux). For the file you are
+editing, **Edit ▸ Copy Path** (⌥⌘C, Ctrl+Alt+C on Windows and Linux) and
+**Edit ▸ Copy Relative Path** do the same — from the Terminal or the tree
+too, for the editor you were last typing in.
 
 **Switching is safe:** if devices are running (a dev server, a watcher),
 the IDE asks before switching projects and shuts them down cleanly.
@@ -928,6 +965,26 @@ status line, naming the catalog folder. Both work in JS/TS, HTML, Vue,
 Svelte and Angular templates, and neither fires inside `fetch('…')` or
 a template literal with `${…}` in it.
 
+### Links in your documentation
+
+A README is read on GitHub, and a link in it that goes nowhere is found by
+the next reader, not by you. **Tools ▸ Check Markdown Links…** reads every
+Markdown file in the aimed project and checks each relative link and image
+the way GitHub will render it: the file or folder it names must exist, and
+a `#heading` must be a heading of that file under GitHub's anchor rule
+(lower-cased, punctuation dropped, spaces as hyphens, a repeated heading
+numbered `-1`, `-2`). A link that goes nowhere is an error; a missing
+heading, and a link that climbs out of the project, are warnings. They
+arrive as squiggles on the link and as rows in Action Items, and the status
+line sums the run up (`Markdown links: 12 files, 148 links, 1 goes
+nowhere`).
+
+Links with a scheme (`https:`, `mailto:`) are not checked: nothing leaves
+your machine. Neither is anything inside a code fence or an inline code
+span, since a link in an example is an example, nor the fragment of a link
+into a source file (`app.js#L10` is GitHub's line anchor). A link starting
+`/` is read from the project's root, as GitHub reads it.
+
 ### Angular templates, first-class
 
 `.component.html` files are their own language in NMOX Studio, lit by
@@ -1114,6 +1171,19 @@ reader, or a feed — the developer-evangelist grant:
   vouches for what it can read: a file outside a git repository, a
   repository without an `origin`, or an origin that is not GitHub is a
   spoken refusal on the status line, and nothing is copied.
+- **Edit ▸ Open on GitHub** and **Edit ▸ Copy GitHub Link** (or
+  right-click, in the editor and on Project Studio's tree). The same
+  link without the block: the caret's line or the selection's lines, a
+  file, or a folder (its `tree` page; the project's root folder is the
+  repository's front page). Open goes to your own browser, where you are
+  signed in, so blame and review comments work. The same refusals apply,
+  and an editor with unsaved changes is refused, since the link would
+  show lines that differ from what you see.
+- **Team ▸ New Pull Request on GitHub** (also on the git chip's menu).
+  GitHub's own New Pull Request page for the branch you have checked out,
+  in your browser: the step after a push, without finding the repository
+  and the branch by hand. A detached HEAD is refused, since it has no
+  branch to propose.
 - **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
   2x, saved as a PNG where you choose (Pictures by default, named by
   the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
@@ -1170,6 +1240,11 @@ Aim at any project inside a git repository and the status line grows a
 files. The branch is read from `.git/HEAD` directly (no git process runs
 until you interact); the count refreshes on aim, on click, and every 30
 seconds while visible.
+`↑2 ↓1` after it are the commits your branch has that its upstream has
+not (to push) and the other way round (to pull), shown only when not
+zero and only for a branch with an upstream.
+Its menu starts with **Switch Branch…**, **Commit…**, **Pull…** and
+**Push…**, the git module's own dialogs.
 
 ![The platform's Show History window opened from the git chip, with the branch and dirty count in the status line](images/git-history.png)
 
@@ -1183,6 +1258,22 @@ project is aimed — aiming opens the project for the whole platform (it
 shows up in the Projects and Files windows too), so every project-sensitive
 verb has real context without selecting anything first. In-editor change
 stripes appear in the gutter as you edit a tracked file.
+
+Beside the chip, a quieter note answers the question you ask most often:
+who wrote the line the caret is on. `Ada Lovelace, 3 days ago · Fix the
+parser` follows the caret as you move it, in your own language, and its
+tooltip names the commit and the date. Click it for **Show Annotations**
+(the whole file's, the same **Annotate** the chip offers), **Open Commit on
+GitHub** (the commit's own page, when origin is a GitHub remote) or **Copy
+Commit ID**; on a line not committed yet the click goes straight to the
+annotations. It asks git once per
+saved version of the file, never at startup and never for a file outside a
+repository, and it says nothing for a file git does not track. A line you
+changed but have not committed reads **Not committed yet**. While the file
+has unsaved changes the note reads **Line blame: unsaved changes** instead
+of a name, because git reads the file as saved and line 40 on screen need
+not be line 40 on disk; save and the name comes back. **View ▸ Line Blame**
+turns the note off and on.
 
 ### Task Board (⌥⌘1)
 
@@ -1785,6 +1876,23 @@ repository's `.vscode/launch.json` lists its configurations beside them —
 *Debug: Launch Program — ${workspaceFolder}/server.js* — and Enter
 starts the breakpoint debugger on that configuration after the same
 trust question.
+
+**Find in Projects (⇧⌘F) searches your code, not what the repository
+ignores.** In a git repository it skips whatever the repository's own
+`.gitignore` files (the root one and any nested ones) and
+`.git/info/exclude` ignore, and `.git` itself — so a search for a
+function name finds `src/`, not the copies in `node_modules` and `dist/`
+that the templates' `.gitignore` lists. It never goes past what git
+ignores: a folder your repository tracks is searched, whatever its name.
+Outside a repository it also skips the build and package folders every
+walk in the product skips (`node_modules`, `dist`, `build`, `out`,
+`target`, `coverage`, `.next`, `.nuxt`, `.svelte-kit`, `.angular`,
+`.venv`, `__pycache__`). The folders stay in the project tree; only the
+search passes them by. To search them anyway, tick **Search in Generated
+Sources** in the Find in Projects dialog (it is remembered until you
+untick it); Replace in Projects offers no such box and never rewrites
+what the repository ignores. Your global git excludes file is not read, so a path only it
+ignores is still searched.
 
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to

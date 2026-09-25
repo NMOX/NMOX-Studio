@@ -111,6 +111,11 @@ class DocsMenuDoorsTest {
         final Map<String, Door> children = new TreeMap<>();
         /** Hidden by a module that loads on one OS only: the path is not in that OS's menu bar. */
         boolean notEverywhere;
+        /**
+         * Opens a dialog (an ellipsis, or the platform's Options and Plugins),
+         * so a path may go on past it to the dialog's own tab or button.
+         */
+        boolean dialog;
 
         Door(String name) {
             this.name = name;
@@ -124,6 +129,24 @@ class DocsMenuDoorsTest {
         assertThat(bar).as("top menus read from the assembled cluster").containsKeys("File", "Tools", "Window");
         assertThat(bar.get("Tools").children).as("Tools rows").isNotEmpty();
         assertThat(wrongPaths(bar, documents(""))).as("a documented menu path that names a door the menu bar does not have").isEmpty();
+    }
+
+    @Test
+    @DisplayName("a dialog's own button after its row, and Settings… after a word of prose, are not wrong doors")
+    void dialogHopsAndProseSettings(@org.junit.jupiter.api.io.TempDir Path dir) throws IOException {
+        Path en = dir.resolve("en.md");
+        Files.writeString(en, "Press **File ▸ Save As… ▸ Save** to keep a copy.\n", StandardCharsets.UTF_8);
+        assertThat(wrongPaths(menuBar(""), List.of(en))).as("the platform's Save As... opens a dialog").isEmpty();
+        Path de = dir.resolve("de.md");
+        Files.writeString(de, "Mit **Datei ▸ Speichern unter… ▸ Speichern** eine Kopie behalten.\n", StandardCharsets.UTF_8);
+        assertThat(wrongPaths(menuBar("de"), List.of(de))).as("German Speichern unter…").isEmpty();
+        assertThat(settingsItemAt("use macOS Settings…", "use macOS Settings…".length())).isTrue();
+        assertThat(settingsItemAt("在 macOS 上是 Settings…", "在 macOS 上是 Settings…".length())).isTrue();
+        assertThat(settingsItemAt("OS là Settings…", "OS là Settings…".length())).isTrue();
+        assertThat(settingsItemAt("OS पर Settings…", "OS पर Settings…".length())).isTrue();
+        assertThat(settingsItemAt("Settings…", "Settings…".length())).isTrue();
+        assertThat(settingsItemAt("Project Settings…", "Project Settings…".length()))
+                .as("a longer name ending in Settings…").isFalse();
     }
 
     static List<String> translated() {
@@ -148,7 +171,7 @@ class DocsMenuDoorsTest {
      * the product speaks have no capitals, and a capital-led phrase ("Open the
      * File ▸") had been hiding the menu name inside it.
      */
-    private static List<String> wrongPaths(Map<String, Door> bar, List<Path> docs) throws IOException {
+    static List<String> wrongPaths(Map<String, Door> bar, List<Path> docs) throws IOException {
         List<String> wrong = new ArrayList<>();
         for (Path doc : docs) {
             String text = normalized(Files.readString(doc, StandardCharsets.UTF_8));
@@ -167,7 +190,15 @@ class DocsMenuDoorsTest {
                     }
                 }
                 if (menu == null) {
-                    continue; // a submenu hop of a path already walked, or prose with an arrow
+                    // not a menu name: a dialog's tab, a submenu hop already walked,
+                    // or a WRONG menu name (ledger 119: "Editar ▸" where the Spanish
+                    // menu reads "Edición"). The last shows itself when the row after
+                    // the arrow is a row a menu HAS, reached from another name
+                    String misroot = misrooted(bar, text, at, arrow);
+                    if (misroot != null) {
+                        wrong.add(doc.getFileName() + ": " + snippet(text, Math.max(0, at - 20)) + "   (" + misroot + ")");
+                    }
+                    continue;
                 }
                 String problem = walk(menu, text, at + arrow.length());
                 if (problem != null) {
@@ -176,6 +207,170 @@ class DocsMenuDoorsTest {
             }
         }
         return wrong;
+    }
+
+    /**
+     * Ledger 119, closed in 3.2.0: a path whose first segment is not a menu of
+     * the language, but whose next segment IS a row of one, names that row
+     * under the wrong door. Null when the arrow follows a real hop (a submenu
+     * inside a walked path), a right-click, or leads nowhere a menu goes.
+     *
+     * <p>The first cut asked for a row of at least two words and exempted any
+     * path with "click" or "editor" in the forty characters before it; the
+     * third review planted {@code Utilidades ▸ Complementos},
+     * {@code 功能 ▸ 插件} (Chinese rows have no spaces, so the word count
+     * never fired) and {@code En el editor, **Editar ▸ …} (a Spanish word
+     * the window matched), and all three passed. Measured on the corpus the
+     * word count guarded nothing; the right-click exemption now reads only
+     * the words that END just before the arrow.
+     */
+    private static String misrooted(Map<String, Door> bar, String text, int at, String arrow) {
+        int after = at + arrow.length();
+        Door best = null;
+        Door under = null;
+        for (Door menu : bar.values()) {
+            Door row = longestPrefix(menu, text, after);
+            if (row != null && (best == null || row.name.length() > best.name.length())) {
+                best = row;
+                under = menu;
+            }
+        }
+        if (best == null) {
+            return null;
+        }
+        // the menu IS named, with a one-letter conjunction joined on
+        // (Arabic وتعديل, Hebrew ועריכה — "and Edit ▸")
+        if (endsWith(text, at, under.name)) {
+            return null;
+        }
+        // a hop inside a path already walked, or a dialog's own tab after a
+        // leaf row (Options ▸ Keyboard Shortcuts, Plugins ▸ Check for Updates):
+        // the text before the arrow is some door's row, or the macOS app
+        // menu's Settings…
+        // the macOS app menu's Settings… as a word of its own ("Project
+        // Settings…" is something else); a bare "Settings" only as a hop
+        if (settingsItemAt(text, at) || endsWordAt(text, at, "Settings")) {
+            return null;
+        }
+        // a row before the arrow excuses the path only as a HOP — itself
+        // preceded by an arrow — never as a root (4th review: "Editor ▸ Copy
+        // as Markdown", "Git ▸ Commit…" and "Projects ▸ Close Project" passed
+        // because their wrong roots happen to be rows somewhere)
+        int hop = 0;
+        for (Door menu : bar.values()) {
+            hop = Math.max(hop, rowBefore(menu, text, at));
+        }
+        if (hop > 0 && arrowBefore(text, at - hop)) {
+            return null;
+        }
+        // a context menu's path starts at a right-click, which no menu bar
+        // has: "Right-click ▸ …", "right-click in the editor ▸ …"
+        if (rightClickBefore(text, at)) {
+            return null;
+        }
+        return best.name + " is a row of " + under.name + ", not of the menu named before it";
+    }
+
+    /** The words ending just before {@code at} (markup and spaces aside) are a right-click. */
+    static boolean rightClickBefore(String text, int at) {
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        String head = text.substring(Math.max(0, end - 40), end).toLowerCase(java.util.Locale.ROOT);
+        return head.endsWith("right-click") || head.endsWith("right-click in the editor");
+    }
+
+    /**
+     * {@code name} ends at {@code at} (spaces aside) and is itself a hop, an
+     * arrow before it. (Bold is stripped before this law reads the text, so
+     * a "bold-opened" start cannot be told apart — 5th review.)
+     */
+    private static boolean endsWordAt(String text, int at, String name) {
+        int end = at;
+        while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) {
+            end--;
+        }
+        int start = end - name.length();
+        return start >= 0 && text.startsWith(name, start) && arrowBefore(text, start);
+    }
+
+    /**
+     * "Settings…" ends at {@code at}, not the tail of a longer name. A name
+     * like "Project Settings…" is a capitalized Latin word before it; any
+     * other word is prose ("use macOS Settings…", "macOS 上是 Settings…",
+     * "OS là Settings…", "OS पर Settings…" — 6th review: the first cut
+     * refused any letter at all and failed every one of these).
+     */
+    static boolean settingsItemAt(String text, int at) {
+        int end = at;
+        while (end > 0 && Character.isWhitespace(text.charAt(end - 1))) {
+            end--;
+        }
+        int start = end - "Settings…".length();
+        if (start < 0 || !text.startsWith("Settings…", start)) {
+            return false;
+        }
+        int b = start - 1;
+        while (b >= 0 && text.charAt(b) == ' ') {
+            b--;
+        }
+        if (b < 0 || !Character.isLetterOrDigit(text.charAt(b))) {
+            return true;
+        }
+        int w = b;
+        while (w > 0 && Character.isLetterOrDigit(text.charAt(w - 1))) {
+            w--;
+        }
+        char first = text.charAt(w);
+        return !(Character.isUpperCase(first)
+                && Character.UnicodeScript.of(first) == Character.UnicodeScript.LATIN);
+    }
+
+    /** Whether an arrow ends just before {@code at}, markup and spaces aside. */
+    private static boolean arrowBefore(String text, int at) {
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        for (String a : ARROWS) {
+            String bare = a.strip();
+            if (!bare.isEmpty() && end >= bare.length() && text.startsWith(bare, end - bare.length())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The length of the longest row name under {@code door}, at any depth, ending just before {@code at}; 0 for none. */
+    private static int rowBefore(Door door, String text, int at) {
+        int best = 0;
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        for (Door row : door.children.values()) {
+            String n = row.name.endsWith("…") ? row.name.substring(0, row.name.length() - 1) : row.name;
+            if (row.children.isEmpty() && !row.dialog) {
+                // a leaf that opens neither a submenu nor a dialog cannot be
+                // followed by an arrow (5th review: "File ▸ Close Project ▸
+                // Copy Path" passed)
+            } else if (endsWith(text, end, row.name)) {
+                best = Math.max(best, at - (end - row.name.length()));
+            } else if (!n.isEmpty() && endsWith(text, end, n)) {
+                best = Math.max(best, at - (end - n.length()));
+            }
+            best = Math.max(best, rowBefore(row, text, at));
+        }
+        return best;
+    }
+
+    private static boolean endsWith(String text, int at, String name) {
+        int start = at - name.length();
+        return start >= 0 && text.startsWith(name, start);
     }
 
     private static String arrowAt(String text, int at) {
@@ -427,7 +622,13 @@ class DocsMenuDoorsTest {
             if (name == null) {
                 continue;
             }
-            place(bar, file, name, folderNames).notEverywhere |= c.hiddenOnOneOs().contains(file);
+            Door row = place(bar, file, name, folderNames);
+            row.notEverywhere |= c.hiddenOnOneOs().contains(file);
+            // plain(): the platform spells its ellipsis "..." — no row declared
+            // in a layer does today (an equivalent mutant, kept so one that
+            // does is a dialog on the day it arrives)
+            row.dialog |= plain(name).endsWith("…") || file.contains("OptionsWindowAction")
+                    || file.contains("PluginManagerAction");
         }
         try (InputStream in = DocsMenuDoorsTest.class.getResourceAsStream("code-named-menu-rows.txt")) {
             assertThat(in).as("the code-named menu rows ledger").isNotNull();
@@ -441,7 +642,11 @@ class DocsMenuDoorsTest {
                 if (name == null) {
                     continue;
                 }
-                place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
+                Door row = place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
+                // the code-named rows ARE where the platform's "..." lives:
+                // Save As... and Commit... were not dialogs to this law, so
+                // "File ▸ Save As… ▸ Save" failed (6th review)
+                row.dialog |= plain(name).endsWith("…");
             }
         }
         CACHED.put(lang, bar);

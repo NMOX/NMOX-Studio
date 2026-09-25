@@ -4,7 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.modules.OnStart;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -32,9 +31,10 @@ public class RecentFilesTracker implements Runnable, PropertyChangeListener {
         if (tc == null || !WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
             return;
         }
-        DataObject dob = tc.getLookup().lookup(DataObject.class);
-        if (dob != null) {
-            File file = FileUtil.toFile(dob.getPrimaryFile());
+        // the file the tab holds, not its group's primary (3.2)
+        org.openide.filesystems.FileObject edited = org.nmox.studio.rack.service.EditorTabs.fileOf(tc);
+        if (edited != null) {
+            File file = FileUtil.toFile(edited);
             if (file != null) {
                 RecentFiles.record(file);
             }

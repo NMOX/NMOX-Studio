@@ -477,7 +477,7 @@ public class PolyglotCompletionProvider implements CompletionProvider {
     /** The edited file behind a document, or null (unsaved buffer, virtual fs). */
     private static java.nio.file.Path fileOf(Document doc) {
         org.openide.filesystems.FileObject fo =
-                org.netbeans.modules.editor.NbEditorUtilities.getFileObject(doc);
+                org.nmox.studio.core.util.EditedFile.of(doc);
         java.io.File file = fo == null ? null : org.openide.filesystems.FileUtil.toFile(fo);
         return file == null ? null : file.toPath();
     }

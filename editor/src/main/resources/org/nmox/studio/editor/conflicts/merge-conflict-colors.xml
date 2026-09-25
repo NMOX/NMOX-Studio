@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
+
+<!-- The tints a merge-conflict block wears in every editor (3.2.0,
+     org.nmox.studio.editor.conflicts.ConflictWatcher): VS Code's own
+     merge.currentContentBackground, incomingContentBackground and
+     commonContentBackground. ARGB with alpha - the storage reads eight
+     hex digits as a translucent color - so one file reads on a light
+     and a dark profile alike; Tools > Options > Fonts & Colors >
+     Highlighting names them and changes them. -->
+<fontscolors>
+    <fontcolor name="nmox_merge_current"  bgColor="3340C8AE"/>
+    <fontcolor name="nmox_merge_incoming" bgColor="3340A6FF"/>
+    <fontcolor name="nmox_merge_base"     bgColor="29606060"/>
+</fontscolors>

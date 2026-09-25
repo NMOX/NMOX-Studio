@@ -18,6 +18,9 @@ Every document here is current; the v0.x-era papers were removed in
 - **[dx-plan-3.1.md](./dx-plan-3.1.md)** — the developer-experience
   plan behind 3.1: what the first-hour, VS Code switcher and contributor
   walks found, and what was built about each.
+- **[dx-plan-3.2.md](./dx-plan-3.2.md)** — the plan behind 3.2: the
+  second week, where a developer who stayed commits, reviews diffs and
+  hands work to a coding agent, and what the walks of that week found.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
 - **[gates.md](./gates.md)** — every build-failing law test, grouped by

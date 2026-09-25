@@ -29,6 +29,7 @@ Geräteliste steht in [devices.md](../devices.md).
 | [Mehrsprachig bearbeiten und debuggen](polyglot-editing-and-debugging.de.md) | Einen Haltepunkt in einer Node-App setzen und treffen | ein beliebiges Projekt öffnen |
 | [Vom Browser zum Quelltext](browser-to-source.de.md) | Ein Element in der Seite anklicken, in seinem Quelltext landen und es aus den DevTools umgestalten | ⌥⌘4 → DevTools → DOM |
 | [Der Agent Port (MCP)](agent-port.de.md) | Einen KI-Agenten auf den Live-Zustand der IDE richten — von Bauart nur lesend | Extras ▸ Agent Port (MCP)… |
+| [Die zweite Woche](the-second-week.de.md) | Committen, einen Diff prüfen, einen Konflikt auflösen, einen Pull Request eröffnen und einem Stacktrace folgen — gits eigene Schritte, in dem Fenster, in dem Sie arbeiten | Team ▸ NMOX Studio mit Git verwenden… |
 | [Das Docker-Panel](docker-panel.de.md) | Container untersuchen und ein Projekt dockerisieren | Tab Docker-Panel |
 | [Das Aufgaben-Board und Sprints](task-board.de.md) | Ein Kanban mit Stechuhr, Standup per Klick und Sprint-Burndown aus einer eingecheckten Datei führen | ⌥⌘1 |
 | [Vor Publikum zeigen](show-it-to-a-room.de.md) | Aus der IDE heraus vorführen, teilen und Screenshots machen — vom Präsentationsmodus bis zu „Projektbaum als Markdown kopieren“ | Ansicht ▸ Präsentationsmodus |

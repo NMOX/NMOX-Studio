@@ -30,9 +30,12 @@ Kolumny macOS używają symboli z paska menu (⌃ Control, ⌥ Option, ⇧ Shift
 | Terminal w katalogu projektu | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Otwórz ostatni projekt | ⌃R | **⌥⌘P** — Przełącz projekt… | Ctrl+R | **Ctrl+Alt+P** |
 | Przejdź do symbolu w projekcie | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Przejdź do definicji | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Zmień nazwę symbolu | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Przejdź do definicji | F12 | **F12** albo ⌘B | F12 | **F12** albo Ctrl+B |
+| Znajdź odwołania | ⇧F12 | **⇧F12** — Znajdź użycia | Shift+F12 | **Shift+F12** |
+| Zmień nazwę symbolu | F2 | **F2** albo ⌃R | F2 | **F2** albo Ctrl+R |
+| Szybka poprawka | ⌘. | **⌘.** albo ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Przejdź do wiersza | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Wstecz / dalej | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Przełącz komentarz wiersza | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Pokaż podpowiedzi | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Dodaj następne wystąpienie do zaznaczenia | ⌘D | **⌘D** albo ⌘J | Ctrl+D | **Ctrl+D** albo Ctrl+J |
@@ -41,8 +44,12 @@ Kolumny macOS używają symboli z paska menu (⌃ Control, ⌥ Option, ⇧ Shift
 | Przesuń wiersz w górę / w dół | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Skopiuj wiersz w dół | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Usuń wiersz | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Sformatuj dokument | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Zwiększ wcięcie wiersza | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Zamień | ⌥⌘F | **⌥⌘F** albo ⌘R | Ctrl+H | **Ctrl+H** |
+| Sformatuj dokument | ⇧⌥F | **⇧⌥F** albo ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Zamknij kartę edytora | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Skopiuj ścieżkę edytowanego pliku | ⌥⌘C | **⌥⌘C** — Edycja ▸ Kopiuj ścieżkę | Shift+Alt+C | **Ctrl+Alt+C** |
+| Skopiuj jego ścieżkę względną | ⇧⌥⌘C | Edycja ▸ Kopiuj ścieżkę względną (bez skrótu) | Ctrl+K Ctrl+Shift+Alt+C | Edycja ▸ Kopiuj ścieżkę względną (bez skrótu) |
 | Panel problemów | ⇧⌘M | **⌘6** — Elementy do zrobienia (⇧⌘M przełącza tu zakładkę) | Ctrl+Shift+M | **Ctrl+6** |
 | Przełącz pułapkę | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Zacznij debugowanie | F5 | **⇧⌘F5** — Debuguj plik | F5 | **Ctrl+Shift+F5** |
@@ -59,6 +66,11 @@ nie powie w komórce:
 - **⌃R to tu Zmiana nazwy**, dlatego *Przełącz projekt* mieszka pod ⌥⌘P,
   a nie pod skrótem Open Recent z VS Code. Zmiana nazwy działa tam, gdzie
   obsługuje ją język stojący za plikiem.
+- **Kopiuj ścieżkę względną nie ma skrótu.** ⇧⌥⌘C z VS Code to na PC
+  Ctrl+Alt+Shift+C, czyli *Clear Split* platformy w każdym profilu
+  klawiatury; wiersz jest w menu Edycja, a ⇧⌘P znajduje go po tytule,
+  który nadaje mu sam VS Code: *File: Copy Relative Path of Active
+  File*.
 - **Ctrl+, w Windows i Linuksie** cofa przez historię twoich edycji,
   jak zawsze w NetBeans; ustawienia są pod
   Narzędzia ▸ Opcje (w macOS w menu aplikacji: **Settings…**, ⌘,).
@@ -66,6 +78,53 @@ nie powie w komórce:
 **Pomoc ▸ Skróty klawiszowe…** wymienia każdy skrót NMOX z twojego czynnego
 profilu, łącznie z czterema skrótami VS Code, odczytany z działającej mapy
 klawiszy, więc nie może rozminąć się z tym, co robią klawisze.
+
+### Każdy skrót edycji, zmierzony
+
+Skróty, po które sięgają twoje ręce z VS Code podczas edycji, każdy
+sprawdzony w dostarczanej mapie klawiszy domyślnego profilu w macOS. Tam,
+gdzie skrót VS Code był tu wolny, robi teraz to, co w VS Code (wiersze z
+oznaczeniem **To samo:**); tam, gdzie już znaczył coś, na czym polegają
+użytkownicy NetBeans, zachowuje to znaczenie, a wiersz mówi, gdzie jest
+akcja z VS Code.
+
+| VS Code, macOS | Co robi VS Code | W NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **To samo:** Przejdź do deklaracji, tak jak ⌘B |
+| ⇧F12 | Go to References | **To samo:** Znajdź użycia, tak jak ⌃F7 |
+| F2 | Rename Symbol | **To samo:** Zmień nazwę, tak jak ⌃R |
+| ⌘. | Quick Fix | **To samo:** poprawki dla wiersza, tak jak pokazuje je ⌃↩ |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Poprzednie / następne oznaczone wystąpienie; wiersz przenosi ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | To samo, jak zawsze |
+| ⇧⌘K | Delete Line | Wstaw następne pasujące słowo (uzupełnia słowo na podstawie pliku); wiersz usuwa ⌘E |
+| ⌘L | Expand Line Selection | Zaznacz identyfikator; zaznaczanie wiersza nie ma skrótu |
+| ⇧⌘L | Select All Occurrences | Wklej jako wiersze w edytorze; wszystkie wystąpienia zaznacza ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | To samo, jak zawsze |
+| ⇧⌥A | Toggle Block Comment | Nic: nie ma osobnej akcji komentarza blokowego, a ⌘/ przełącza komentarz |
+| ⌘] | Indent Line | **To samo:** Przesuń w prawo |
+| ⌘[ | Outdent Line | Skok do pasującego nawiasu, jak zawsze; wcięcie zmniejsza ⇧Tab albo ⌃⇧← |
+| ⌘B | Toggle Sidebar | Przejdź do deklaracji; ⇧⌘↩ zostawia sam edytor, ⇧Esc maksymalizuje okno, w którym jesteś |
+| ⌘J | Toggle Panel | Dodaje następne wystąpienie w edytorze (tak jak ⌘D); okno Output to ⌘4 |
+| ⌘\ | Split Editor | Uzupełnij kod w edytorze; edytor dzieli ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | To samo, jak zawsze: skrót Otwórz ostatni plik ponownie otwiera ostatnio zamknięty plik |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **To samo:** Wstecz i Dalej po miejscach ostatnich edycji, tak jak ⌃← / ⌃→ (skróty, które macOS zwykle zostawia do przełączania biurek) |
+| ⌘G / ⇧⌘G | Find Next / Previous | To samo, jak zawsze |
+| ⌥⌘F | Replace | **To samo:** Zamień, tak jak ⌘R |
+| ⇧⌘F | Find in Files | To samo, jak zawsze: Znajdź w projektach |
+| ⇧⌘O | Go to Symbol in Editor | Otwórz projekt; symbole pliku są w Nawigatorze (⌘7) |
+| ⌘T | Go to Symbol in Workspace | Zamienia miejscami dwie litery przy kursorze w edytorze; symbole projektu to ⌥⇧⌘O |
+| ⌃G | Go to Line | To samo, jak zawsze |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K to Wstaw poprzednie pasujące słowo; zestawienie to **Pomoc ▸ Skróty klawiszowe…** |
+| ⌘, | Settings | To samo, jak zawsze: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **To samo:** Formatuj, tak jak ⌃⇧F |
+
+Skróty oznaczone **To samo:** są przypisane w każdym profilu mapy
+klawiszy, który zostawia je wolne, a profil, który nadaje któremuś z nich
+własne znaczenie, to znaczenie zachowuje: F12 w profilach Eclipse, Emacs i
+NetBeans 5.5, F2 we wszystkich profilach poza domyślnym, ⇧F12 w Emacs i
+NetBeans 5.5, ⌃- i ⌃⇧- w Emacs i IntelliJ, ⇧⌥F w IntelliJ. W Windows i
+Linuksie F12, ⇧F12 i F2 działają tak samo; pozostałe skróty VS Code są tam
+inne, a tabela wyżej podaje oba.
 
 
 <a id="from-the-terminal"></a>
@@ -85,8 +144,36 @@ Polecenie wraca od razu, a drugie `nmox` przekazuje swój katalog IDE, które
 już działa. Kolumna (`src/app.ts:42:7`) jest przyjmowana, a edytor
 otwiera się na początku wiersza; nazwa, której nie ma, zostaje odrzucona
 w terminalu, zamiast cokolwiek uruchamiać. Przełącznik `-r` jest
-przyjmowany, `-n` otwiera w tym jednym oknie, a `--wait`, `--diff` i inne
-flagi, które zna tylko VS Code, zostają odrzucone z nazwy. Homebrew, instalator Windows
+przyjmowany, `-n` otwiera w tym jednym oknie, a `-a` i `-v` zostają
+odrzucone z nazwy.
+
+`-w` (`--wait`) otwiera plik i czeka, aż zamkniesz jego kartę, a `-d`
+(`--diff`) porównuje dwa pliki obok siebie, więc NMOX Studio może być
+edytorem, difftoolem i mergetoolem gita, tak jak `code --wait`:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
+```
+
+Wtedy `git commit` otwiera wiadomość w IDE; zapisz ją i zamknij kartę, a git
+działa dalej. Zamknięcie IDE, gdy plik jest jeszcze otwarty, też go oddaje —
+z tym, co zostało zapisane.
+`git mergetool` otwiera każdy plik z konfliktem w ten sam sposób. Tam, gdzie
+VS Code umieszcza nad konfliktem *Accept Current Change | Accept Incoming
+Change | Accept Both Changes*, NMOX Studio barwi obie strony i stawia
+ostrzeżenie na wierszu `<<<<<<<`; żarówka na marginesie albo szybka poprawka z
+kursorem na tym wierszu (⌘. na Macu, Alt+Enter gdzie indziej) proponuje te
+same trzy, każdy jako jedną edycję do cofnięcia. Zapisz, zamknij kartę, a git
+przejdzie do następnego pliku. Kolory i trzy wybory działają w każdym pliku ze
+znacznikami konfliktu, z `git mergetool` lub bez.
+**Zespół ▸ Używaj NMOX Studio z Git…** ustawia te same wiersze za ciebie,
+po pokazaniu, na co każdy z nich jest teraz ustawiony.
+Homebrew, instalator Windows
 (*Add "nmox" to PATH*) i pakiety dla Linuksa dodają je do PATH; przy instalacji z DMG
 [podręcznik](user-guide.pl.md#2-first-launch) pokazuje jednowierszowe
 dowiązanie.
@@ -104,6 +191,7 @@ dowiązanie.
 | **Integrated terminal** | Okno **Terminal** (⌃\`): pierwsze naciśnięcie uruchamia powłokę w katalogu projektu, kolejne przywracają ją na wierzch. |
 | **`settings.json`** | Narzędzia ▸ Opcje (w macOS: NMOX Studio ▸ Settings…). Plik `.vscode/settings.json` repozytorium też jest czytany: `editor.tabSize`, `editor.insertSpaces` i `editor.indentSize` ustalają wcięcia jego plików podczas pisania, `files.trimTrailingWhitespace` i `files.insertFinalNewline` (gdy mają wartość `true`) działają przy zapisie, a blok języka, taki jak `"[typescript]"`, nadpisuje je dla swojego języka. Tam, gdzie repozytorium ma też `.editorconfig`, to `.editorconfig` wygrywa wszędzie, gdzie oba coś mówią. |
 | **Problems panel** | **Elementy do zrobienia** (⌘6) albo kliknięcie licznika **✕ ⚠** na pasku stanu: błędy i ostrzeżenia serwerów języka oraz wyniki lintowania i typów z urządzeń PURITY i TYPEGUARD na stojaku. Tak jak w VS Code, niektóre serwery zgłaszają tylko otwarte pliki; gopls zgłasza cały pakiet. |
+| **Search view** (`search.useIgnoreFiles`) | **Znajdź w projektach** (⇧⌘F). Tak jak w VS Code, wyszukiwanie pomija to, co ignorują pliki `.gitignore` repozytorium i `.git/info/exclude`, więc `node_modules` i `dist/` nie trafiają do wyników, gdy wymienia je `.gitignore`; poza repozytorium pomija po nazwie `node_modules`, `dist`, `build` i pozostałe foldery kompilacji. Zaznacz **Szukaj w źródłach generowanych** w jego oknie, aby przeszukać i je. Globalny plik wykluczeń git nie jest czytany. |
 | **Outline** | **Nawigator** (⌘7). |
 | **Source Control** | Wskaźnik gałęzi git na pasku stanu (gałąź i zmiany, jedno kliknięcie do historii) oraz menu **Zespół**. |
 | **Workspace Trust** | Ten sam pomysł, egzekwowany przed uruchomieniem czegokolwiek, co wybrało repozytorium: otwarcie sklonowanego projektu nie uruchamia niczego, dopóki mu nie zaufasz. |
@@ -117,10 +205,15 @@ raz na projekt.
 <a id="what-is-honestly-different"></a>
 ## Co uczciwie działa inaczej
 
-- **⌘D dodaje następne wystąpienie w domyślnej mapie klawiszy, ale nie
-  w każdym profilu.** Profil Eclipse zachowuje ⌘D jako *Delete Line*
-  z Eclipse’a, a profil NetBeans 5.5 jako *Shift Line Left*; tam ten sam
-  gest to ⌘J (Ctrl+J).
+- **⌘D dodaje następne wystąpienie w domyślnej mapie klawiszy, ale nie w
+  każdym profilu.** Profil Eclipse zachowuje ⌘D jako *Delete Line* z
+  Eclipse’a, profil NetBeans 5.5 jako *Shift Line Left*, a profil Emacs
+  jako *kill word* (a Ctrl+D jako *delete character* w Windows i
+  Linuksie); profil IntelliJ ma ⌘D w macOS i zachowuje Ctrl+D jako
+  *Duplicate Line* w Windows i Linuksie. Drugi skrót tego gestu też zależy
+  od profilu: ⌘J (Ctrl+J) w domyślnym, ⌃J (Alt+J) w Eclipse i IntelliJ, a
+  w Emacs i NetBeans 5.5 żaden — tam można go nadać w Skrótach
+  klawiszowych.
 - **⌃\` otwiera Terminal i przenosi na niego fokus; nie ukrywa go.** A gdy
   Terminal ma fokus, klawisze należą do twojej powłoki, więc drugie
   naciśnięcie trafia do powłoki, zamiast przenosić cię z powrotem do edytora.

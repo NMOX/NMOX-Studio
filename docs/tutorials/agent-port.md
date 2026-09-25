@@ -35,8 +35,21 @@ per-start bearer token, and a ready-made client configuration:
 }
 ```
 
-Paste it into your agent's `.mcp.json`. The token exists only in that
-dialog — it is never logged or persisted — and dies with the port.
+Paste it into your agent's `.mcp.json`, or press **Copy for Claude Code**
+for the one line Claude Code takes instead:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+The token is never logged. Unless you ask otherwise it exists only in that
+dialog and dies with the port, so the next start has a new address and a
+new token. Tick **Keep this address and token** and it is stored in your
+system keychain and reused, with the same port, so an agent configured
+once still connects tomorrow; if another program has taken that port,
+NMOX Studio binds a new one and says so. Tick **Start when NMOX Studio
+starts** as well and the port comes up with the IDE. Clearing Keep deletes
+the keychain entry.
 **Stop Agent Port** ends it; so does quitting the IDE. While it
 listens, the status line shows **⌁ agent port :N** — a port that can
 read your IDE is never invisible; the chip's tooltip counts the agents

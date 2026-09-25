@@ -50,6 +50,32 @@ class ConfigFileResolverTest {
     }
 
     @Test
+    @DisplayName("git's message files resolve to the commit mime by exact name (3.2.0)")
+    void gitMessageFiles() throws Exception {
+        for (String name : new String[]{"COMMIT_EDITMSG", "MERGE_MSG", "TAG_EDITMSG",
+            "SQUASH_MSG", "NOTES_EDITMSG", "EDIT_DESCRIPTION"}) {
+            assertThat(mimeOf(name)).as(name).isEqualTo("text/x-git-commit");
+        }
+    }
+
+    @Test
+    @DisplayName("git-rebase-todo resolves to the rebase mime by exact name (3.2.0)")
+    void gitRebaseTodo() throws Exception {
+        assertThat(mimeOf("git-rebase-todo")).isEqualTo("text/x-git-rebase");
+    }
+
+    @Test
+    @DisplayName("git file names claim only the exact name — lookalikes stay unclaimed")
+    void gitNamesAreExact() throws Exception {
+        // the exact name is the whole contract: a notes file a user keeps
+        // called commit_editmsg.txt, or a backup, is not git's editor handoff
+        assertThat(mimeOf("commit_editmsg")).isNull();
+        assertThat(mimeOf("COMMIT_EDITMSG.txt")).isNull();
+        assertThat(mimeOf("git-rebase-todo.backup")).isNull();
+        assertThat(mimeOf("MERGE_HEAD")).as("a ref file, not a message").isNull();
+    }
+
+    @Test
     @DisplayName("dotenv family matches .env and .env.* but not lookalikes")
     void dotenvFamily() throws Exception {
         assertThat(mimeOf(".env")).isEqualTo("text/x-properties");

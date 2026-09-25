@@ -71,25 +71,71 @@ public final class AgentPort {
     /**
      * Binds loopback on an ephemeral port with a fresh SecureRandom
      * token and starts serving. The caller shows the user the port and
-     * token ONCE; the token is never logged and never persisted.
+     * token ONCE; the token is never logged, and it is persisted only
+     * when the user asks for it to be kept — and then only in the OS
+     * keychain ({@link AgentPortKeep}, 3.2), never in a file of ours.
      */
     public static AgentPort start(McpTools tools, String productVersion)
             throws IOException {
-        byte[] raw = new byte[32];
-        TOKEN_RANDOM.nextBytes(raw);
-        String token = HexFormat.of().formatHex(raw);
+        return start(tools, productVersion, 0, newToken());
+    }
+
+    /**
+     * The kept-address start (3.2): binds loopback on exactly
+     * {@code port} (0 = ephemeral) and demands exactly {@code token}.
+     * A taken port is a {@link java.net.BindException}, not a silent
+     * move — the caller decides what a moved address means and says so.
+     * A token outside {@link #wellFormedToken} is refused: a kept value
+     * read back from the keychain is still input.
+     */
+    public static AgentPort start(McpTools tools, String productVersion,
+            int port, String token) throws IOException {
+        if (!wellFormedToken(token)) {
+            throw new IOException("Refused to serve: the token is not well-formed.");
+        }
+        if (port < 0 || port > 65535) {
+            throw new IOException("Refused to serve: no such port " + port + ".");
+        }
         HttpServer server = HttpServer.create(
-                new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+                new InetSocketAddress(InetAddress.getLoopbackAddress(), port), 0);
         if (!server.getAddress().getAddress().isLoopbackAddress()) {
             // the witness: never trust the request, verify the bind
             server.stop(0);
             throw new IOException("Refused to serve: bind is not loopback.");
         }
-        AgentPort port = new AgentPort(server, token, tools, productVersion);
-        server.createContext("/mcp", port::handle);
-        port.watch();
+        AgentPort agentPort = new AgentPort(server, token, tools, productVersion);
+        server.createContext("/mcp", agentPort::handle);
+        agentPort.watch();
         server.start();
-        return port;
+        return agentPort;
+    }
+
+    /** A fresh 256-bit token, hex — a subset of the url-safe alphabet a shell passes untouched. */
+    static String newToken() {
+        byte[] raw = new byte[32];
+        TOKEN_RANDOM.nextBytes(raw);
+        return HexFormat.of().formatHex(raw);
+    }
+
+    /**
+     * True for a token this port will demand: 32 to 256 characters of
+     * {@code [A-Za-z0-9_-]} — the alphabet {@link #newToken} draws from
+     * (hex) and url-safe base64 both fit, and nothing a shell, a JSON
+     * string or an HTTP header would reinterpret does.
+     */
+    static boolean wellFormedToken(String token) {
+        if (token == null || token.length() < 32 || token.length() > 256) {
+            return false;
+        }
+        for (int i = 0; i < token.length(); i++) {
+            char c = token.charAt(i);
+            boolean ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+                    || (c >= '0' && c <= '9') || c == '_' || c == '-';
+            if (!ok) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int port() {

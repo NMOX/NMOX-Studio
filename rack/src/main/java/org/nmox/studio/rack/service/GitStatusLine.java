@@ -43,7 +43,7 @@ import org.openide.windows.TopComponent;
  */
 @ServiceProvider(service = StatusLineElementProvider.class, position = 590)
 @org.openide.util.NbBundle.Messages({
-    "GitStatusLine_chipTooltip=<html>git — {0}<br>click for Show Changes / Diff / Annotate / History</html>",
+    "GitStatusLine_chipTooltip=<html>git — {0}<br>click for Switch Branch, Commit, Pull, Push and more</html>",
     "GitStatusLine_aimFirst=Aim a project first.",
     "GitStatusLine_ghNotFound=GitHub CLI (gh) not found — install it (brew install gh) and run gh auth login.",
     "GitStatusLine_exitCode=exit {0}",
@@ -88,6 +88,10 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_draftTitle=KVASIR commit message — draft",
     "GitStatusLine_draftCopied=Commit message copied — paste it into your commit.",
     "GitStatusLine_showChanges=Show Changes",
+    "GitStatusLine_switchBranch=Switch Branch…",
+    "GitStatusLine_commit=Commit…",
+    "GitStatusLine_pull=Pull…",
+    "GitStatusLine_push=Push…",
     "GitStatusLine_diffProject=Diff Project",
     "GitStatusLine_annotate=Annotate",
     "GitStatusLine_history=History",
@@ -112,6 +116,24 @@ public class GitStatusLine implements StatusLineElementProvider {
     @Override
     public Component getStatusLineElement() {
         return new GitStrip();
+    }
+
+    /** The line-blame note's lane: resolving a file's DataObject touches disk. */
+    private static final RequestProcessor ANNOTATE_LANE = new RequestProcessor("Git Annotate", 1);
+
+    /**
+     * The whole file's Annotate (Team ▸ Git ▸ Show Annotations), for the
+     * editor's line-blame note (3.2.0): the same registered action, the same
+     * file context and the same spoken refusals as the chip's own Annotate
+     * row — one door, reached from a second place.
+     */
+    public static void showAnnotations(File file, Object source) {
+        if (file == null) {
+            GitStrip.teamMenuFallback(Bundle.GitStatusLine_annotate(), Bundle.GitStatusLine_whyNoEditorFile());
+            return;
+        }
+        GitStrip.performGitAction(ANNOTATE_LANE, source, GitStrip.ANNOTATE_INSTANCE,
+                Bundle.GitStatusLine_annotate(), file);
     }
 
     /** Listens and polls only while it is actually in the status bar. */
@@ -195,8 +217,9 @@ public class GitStatusLine implements StatusLineElementProvider {
             }
             chip.refreshBranch(); // checkouts in a terminal move HEAD under us
             try {
+                // v2 with --branch: the same one spawn also answers ahead/behind
                 ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                        List.of("git", "status", "--porcelain"),
+                        List.of("git", "status", "--porcelain=v2", "--branch"),
                         chip.repoRoot(), Duration.ofSeconds(5));
                 if (r.ok()) {
                     chip.porcelain(r.stdout());
@@ -238,6 +261,18 @@ public class GitStatusLine implements StatusLineElementProvider {
                 "Actions/Git/org-netbeans-modules-git-ui-diff-DiffAction.instance";
         private static final String ANNOTATE_INSTANCE =
                 "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance";
+        // 3.2.0: VS Code's branch name on the status bar opens a branch
+        // picker, and its source-control view commits; the chip reaches the
+        // git module's own two dialogs the same way it reaches Show Changes
+        private static final String SWITCH_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-checkout-SwitchBranchAction.instance";
+        private static final String COMMIT_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-commit-CommitAction.instance";
+        // the chip's ↑/↓ say what there is to push and pull; these are the doors
+        private static final String PULL_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-fetch-PullAction.instance";
+        private static final String PUSH_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-push-PushAction.instance";
 
         /**
          * Pull Requests (competitive-lens R6): lists the repo's open
@@ -629,6 +664,19 @@ public class GitStatusLine implements StatusLineElementProvider {
             // the git NodeActions finally have real context — the chip hands
             // them the SAME node explicitly via createContextAwareInstance,
             // so they work even when a non-publishing window is active.
+            JMenuItem switchBranch = new JMenuItem(Bundle.GitStatusLine_switchBranch());
+            switchBranch.addActionListener(e -> runGitAction(SWITCH_INSTANCE, Bundle.GitStatusLine_switchBranch(), null));
+            menu.add(switchBranch);
+            JMenuItem commit = new JMenuItem(Bundle.GitStatusLine_commit());
+            commit.addActionListener(e -> runGitAction(COMMIT_INSTANCE, Bundle.GitStatusLine_commit(), null));
+            menu.add(commit);
+            JMenuItem pull = new JMenuItem(Bundle.GitStatusLine_pull());
+            pull.addActionListener(e -> runGitAction(PULL_INSTANCE, Bundle.GitStatusLine_pull(), null));
+            menu.add(pull);
+            JMenuItem push = new JMenuItem(Bundle.GitStatusLine_push());
+            push.addActionListener(e -> runGitAction(PUSH_INSTANCE, Bundle.GitStatusLine_push(), null));
+            menu.add(push);
+            menu.addSeparator();
             JMenuItem changes = new JMenuItem(Bundle.GitStatusLine_showChanges());
             changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, Bundle.GitStatusLine_showChanges(), null));
             menu.add(changes);
@@ -652,6 +700,17 @@ public class GitStatusLine implements StatusLineElementProvider {
             JMenuItem pulls = new JMenuItem(Bundle.GitStatusLine_pullRequests());
             pulls.addActionListener(e -> showPullRequests());
             menu.add(pulls);
+            // 3.2.0: GitHub's own New Pull Request page for the branch the
+            // chip names — the step after the push, one click from where the
+            // branch is shown
+            JMenuItem newPull = new JMenuItem(org.nmox.studio.core.util.PlainText.plain(GitHubLinks.newPullRequestLabel()));
+            newPull.addActionListener(e -> {
+                java.io.File dir = RackService.getDefault().getRack().getProjectDir();
+                if (dir != null) {
+                    GitHubLinks.openPullRequest(dir);
+                }
+            });
+            menu.add(newPull);
             menu.addSeparator();
             JMenuItem draft = new JMenuItem(Bundle.GitStatusLine_draftCommit());
             draft.addActionListener(e -> draftCommitMessage());
@@ -673,9 +732,20 @@ public class GitStatusLine implements StatusLineElementProvider {
          * the Team menu — never a silent no-op.
          */
         private void runGitAction(String instancePath, String verb, File focusFile) {
-            RP.post(() -> {
+            performGitAction(RP, chipLabel, instancePath, verb, focusFile);
+        }
+
+        /** {@link #runGitAction}'s body, on a caller's lane and naming a caller's source. */
+        static void performGitAction(RequestProcessor lane, Object source,
+                String instancePath, String verb, File focusFile) {
+            lane.post(() -> {
                 Lookup context = contextFor(focusFile);
+                FileObject member = ANNOTATE_INSTANCE.equals(instancePath) ? groupMember(focusFile) : null;
                 javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (member != null) {
+                        annotateMember(member, focusFile, verb);
+                        return;
+                    }
                     if (context == null) {
                         teamMenuFallback(verb, Bundle.GitStatusLine_whyNoFolder());
                         return;
@@ -687,7 +757,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                                 : Bundle.GitStatusLine_whyRejectedContext());
                         return;
                     }
-                    action.actionPerformed(new ActionEvent(chipLabel,
+                    action.actionPerformed(new ActionEvent(source,
                             ActionEvent.ACTION_PERFORMED, verb));
                 });
             });
@@ -709,6 +779,74 @@ public class GitStatusLine implements StatusLineElementProvider {
                 DataObject dob = DataObject.find(fo);
                 return Lookups.fixed(dob.getNodeDelegate(), dob, fo);
             } catch (IOException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /**
+         * {@code file} when it is one of several files of one DataObject and
+         * not its primary; null otherwise. The git module's Annotate reads its
+         * context's NODE and takes the node's primary file (its bytecode), so
+         * a group node would annotate the primary whichever member is on
+         * screen. No DataObject of this platform groups editable files today
+         * (see {@code EditedFile}); the branch is the rule for one that does.
+         * Runs on RP.
+         */
+        static FileObject groupMember(File file) {
+            try {
+                FileObject fo = file == null ? null : FileUtil.toFileObject(FileUtil.normalizeFile(file));
+                if (fo == null) {
+                    return null;
+                }
+                DataObject dob = DataObject.find(fo);
+                return dob.files().size() > 1 && !fo.equals(dob.getPrimaryFile()) ? fo : null;
+            } catch (IOException | RuntimeException ex) {
+                return null;
+            }
+        }
+
+        /**
+         * Annotates a group member in its own open editor through the
+         * module's public {@code AnnotateAction.showAnnotations(pane, file,
+         * revision)} — the call its own action makes once it has a pane,
+         * with {@code null} for the working copy. On the EDT.
+         */
+        private static void annotateMember(FileObject member, File file, String verb) {
+            javax.swing.JEditorPane pane = null;
+            for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+                if (member.equals(EditorTabs.fileOf(tc))) {
+                    org.openide.text.CloneableEditorSupport.Pane p = tc instanceof org.openide.text.CloneableEditorSupport.Pane own
+                            ? own : tc.getLookup().lookup(org.openide.text.CloneableEditorSupport.Pane.class);
+                    pane = p == null ? null : p.getEditorPane();
+                    if (pane != null) {
+                        break;
+                    }
+                }
+            }
+            if (pane == null) {
+                teamMenuFallback(verb, Bundle.GitStatusLine_whyNoEditorFile());
+                return;
+            }
+            Object action = rawGitAction(ANNOTATE_INSTANCE);
+            try {
+                if (action == null) {
+                    throw new NoSuchMethodException("no AnnotateAction");
+                }
+                action.getClass().getMethod("showAnnotations", javax.swing.JEditorPane.class, File.class,
+                        String.class).invoke(action, pane, FileUtil.normalizeFile(file), null);
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                teamMenuFallback(verb, Bundle.GitStatusLine_whyNoGitModule());
+            }
+        }
+
+        /** The registered action's own instance, unbound (not a context-aware copy); null when absent. */
+        private static Object rawGitAction(String instancePath) {
+            try {
+                FileObject cfg = FileUtil.getConfigFile(instancePath);
+                InstanceCookie cookie = cfg == null ? null
+                        : DataObject.find(cfg).getLookup().lookup(InstanceCookie.class);
+                return cookie == null ? null : cookie.instanceCreate();
+            } catch (IOException | ClassNotFoundException | RuntimeException ex) {
                 return null;
             }
         }
@@ -802,7 +940,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         if (tc == null) {
             return null;
         }
-        DataObject dob = tc.getLookup().lookup(DataObject.class);
-        return dob == null ? null : FileUtil.toFile(dob.getPrimaryFile());
+        org.openide.filesystems.FileObject fo = EditorTabs.fileOf(tc);
+        return fo == null ? null : FileUtil.toFile(fo);
     }
 }

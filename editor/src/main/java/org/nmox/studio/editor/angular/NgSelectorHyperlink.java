@@ -10,7 +10,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
@@ -212,7 +211,7 @@ public final class NgSelectorHyperlink implements HyperlinkProviderExt {
     // ---- project + open --------------------------------------------------
 
     private static File projectDirOf(Document doc) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        FileObject fo = org.nmox.studio.core.util.EditedFile.of(doc);
         File f = fo == null ? null : FileUtil.toFile(fo);
         return f == null ? null : projectDirAbove(f.getParentFile());
     }

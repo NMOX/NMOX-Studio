@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    3.2: F2 renames the symbol under the caret, as it does in VS Code on
+    every OS. The action is the one Ctrl+R runs in an editor here
+    (in-place-refactoring: the platform's own binding of C-R on macOS and
+    D-R elsewhere), so F2 and Ctrl+R are the same gesture.
+
+    Registered in the NetBeans profile only. Measured in the assembled
+    cluster: F2 is free there, while the defaults module gives it a meaning
+    in every other profile - Eclipse (Rename, and Show Documentation in the
+    editor), Emacs and NetBeans55 (the bookmark list), Idea (Next Error).
+    A profile's own meaning of a chord wins there, the 3.1.0 rule.
+-->
+<bindings>
+    <bind actionName="in-place-refactoring" key="F2"/>
+</bindings>

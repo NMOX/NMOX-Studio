@@ -28,6 +28,7 @@ lihat [Panduan pengguna](../user-guide.id.md). Untuk daftar perangkat lengkap li
 | [Menyunting banyak bahasa & debugging](polyglot-editing-and-debugging.id.md) | Memasang titik henti di aplikasi Node dan mengenainya | buka proyek apa saja |
 | [Dari peramban ke sumber](browser-to-source.id.md) | Mengeklik elemen di halaman, mendarat di sumbernya, mengubah gayanya dari DevTools | ⌥⌘4 → DevTools → DOM |
 | [Agent Port (MCP)](agent-port.id.md) | Mengarahkan agen AI ke keadaan hidup IDE — hanya-baca menurut rancangannya | Alat ▸ Agent Port (MCP)… |
+| [Minggu Kedua](the-second-week.id.md) | Commit, meninjau diff, menyelesaikan konflik, membuka pull request, dan menelusuri stack trace — langkah git sendiri, di jendela tempat Anda bekerja | Tim ▸ Gunakan NMOX Studio dengan Git… |
 | [Panel Docker](docker-panel.id.md) | Memeriksa kontainer dan men-dockerize proyek | tab Panel Docker |
 | [Papan Tugas dan sprint](task-board.id.md) | Menjalankan kanban dengan jam kerja, standup sekali klik, dan burndown sprint dari satu berkas yang dikomit | ⌥⌘1 |
 | [Tunjukkan ke seisi ruangan](show-it-to-a-room.id.md) | Mempresentasikan, berbagi, dan mengambil tangkapan layar dari dalam IDE — dari Mode presentasi sampai Salin Pohon Proyek sebagai Markdown | Tampilan ▸ Mode presentasi |

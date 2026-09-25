@@ -133,6 +133,76 @@ public final class GitLink {
         return sb.toString();
     }
 
+    /**
+     * {@code https://github.com/o/r/tree/<ref>/<path>} — a FOLDER's page
+     * (3.2.0, the file tree's Open on GitHub). The path is repo-relative
+     * with forward slashes and encoded exactly as {@link #blobUrl} encodes
+     * it; an empty path is the repository's root at that ref
+     * ({@code …/tree/<ref>}), never a trailing slash.
+     */
+    public static String treeUrl(Remote remote, String ref, String relPath) {
+        StringBuilder sb = new StringBuilder("https://github.com/")
+                .append(remote.owner()).append('/').append(remote.repo())
+                .append("/tree/").append(encodePath(ref));
+        if (relPath != null && !relPath.isEmpty()) {
+            sb.append('/').append(encodePath(relPath));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * {@code https://github.com/o/r/compare/<branch>?expand=1} — GitHub's
+     * own New Pull Request page for {@code branch} against the repository's
+     * default branch (3.2.0). The branch is encoded as {@link #blobUrl}
+     * encodes a ref, so {@code feature/x} keeps its slash.
+     */
+    public static String compareUrl(Remote remote, String branch) {
+        return "https://github.com/" + remote.owner() + '/' + remote.repo()
+                + "/compare/" + encodePath(branch) + "?expand=1";
+    }
+
+    /**
+     * {@code https://github.com/o/r/commit/<sha>} — a commit's own page
+     * (3.2.0, the line blame note's Open Commit on GitHub), or null when
+     * {@code sha} is not a commit id: 7 to 64 hexadecimal digits, so a
+     * repository's text can never steer the link anywhere else.
+     */
+    public static String commitUrl(Remote remote, String sha) {
+        if (sha == null || sha.length() < 7 || sha.length() > 64) {
+            return null;
+        }
+        for (int i = 0; i < sha.length(); i++) {
+            char c = sha.charAt(i);
+            // ASCII only: Character.digit also accepts fullwidth ０-９ Ａ-Ｆ
+            if (!(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')) {
+                return null;
+            }
+        }
+        return "https://github.com/" + remote.owner() + '/' + remote.repo()
+                + "/commit/" + sha.toLowerCase(java.util.Locale.ROOT);
+    }
+
+    /**
+     * A remote URL fit to show: the user-info part of a {@code scheme://}
+     * URL is dropped, because a remote like
+     * {@code https://oauth2:glpat-…@gitlab.com/g/p.git} carries a token in
+     * it and a refusal must not print it on the status line (3.2.0 review).
+     * An scp-style {@code git@host:path} has no secret in it and is kept.
+     */
+    public static String withoutCredentials(String url) {
+        if (url == null) {
+            return null;
+        }
+        int scheme = url.indexOf("://");
+        if (scheme < 0) {
+            return url;
+        }
+        int hostStart = scheme + 3;
+        int pathStart = url.indexOf('/', hostStart);
+        int at = url.lastIndexOf('@', pathStart < 0 ? url.length() : pathStart);
+        return at < hostStart ? url : url.substring(0, hostStart) + url.substring(at + 1);
+    }
+
     /** The Markdown link line under the block: {@code [src/App.jsx#L3-L14](url)}. */
     public static String linkLine(String relPath, int startLine, int endLine, String url) {
         String label = relPath;

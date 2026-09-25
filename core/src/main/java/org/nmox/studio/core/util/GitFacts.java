@@ -70,6 +70,116 @@ public final class GitFacts {
     }
 
     /**
+     * True when HEAD names a branch ({@code ref: refs/heads/…}), false for a
+     * detached HEAD or anything unreadable: {@link #branch} answers a short
+     * sha for a detached HEAD, which is a fine ref for a link and no branch
+     * to propose (3.2.0, New Pull Request).
+     */
+    public static boolean onBranch(File repoRoot) {
+        if (repoRoot == null) {
+            return false;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        String head = gitDir == null ? null : readFirstLine(new File(gitDir, "HEAD"));
+        return head != null && head.startsWith("ref: refs/heads/") && head.length() > "ref: refs/heads/".length();
+    }
+
+    /**
+     * A token that changes whenever the commit HEAD points at changes, no
+     * process (3.2.0, line blame's cache key): HEAD's own line, and for a
+     * symbolic HEAD the loose ref it names — read from the git dir, then
+     * from the common dir of a linked worktree — plus the size and time of
+     * {@code packed-refs}, where a ref lives once git packs it. A commit,
+     * a checkout, a reset or a pull moves one of those. Null outside a
+     * repository or on unreadable state.
+     *
+     * <p>A ref path is confined to {@code refs/} with no {@code ..} segment:
+     * a crafted HEAD must not turn this into a first-line reader of any file.
+     */
+    public static String headStamp(File repoRoot) {
+        if (repoRoot == null) {
+            return null;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        if (gitDir == null) {
+            return null;
+        }
+        String head = readFirstLine(new File(gitDir, "HEAD"));
+        if (head == null) {
+            return null;
+        }
+        File common = gitDir;
+        String commondir = readFirstLine(new File(gitDir, "commondir"));
+        if (commondir != null) {
+            File c = new File(commondir);
+            File resolved = insideGitDir(c.isAbsolute() ? c : new File(gitDir, commondir));
+            if (resolved != null) {
+                common = resolved;
+            }
+        }
+        StringBuilder stamp = new StringBuilder(head);
+        String refPrefix = "ref: ";
+        if (head.startsWith(refPrefix)) {
+            String ref = head.substring(refPrefix.length()).trim();
+            if (ref.startsWith("refs/") && !ref.contains("..") && !ref.contains("\\")) {
+                String value = readFirstLine(new File(gitDir, ref));
+                if (value == null && common != gitDir) {
+                    value = readFirstLine(new File(common, ref));
+                }
+                stamp.append('|').append(value);
+            }
+        }
+        File packed = new File(common, "packed-refs");
+        stamp.append('|').append(packed.length()).append(':').append(packed.lastModified());
+        return stamp.toString();
+    }
+
+    /**
+     * The changed paths in {@code git status --porcelain=v2 --branch}
+     * output: every entry line ({@code 1 }, {@code 2 }, {@code u },
+     * {@code ? }) counts, the {@code # branch.*} header lines never do
+     * (3.2.0, the chip's one spawn now also answers ahead/behind).
+     */
+    public static int changeCountV2(String porcelainV2) {
+        if (porcelainV2 == null) {
+            return 0;
+        }
+        int n = 0;
+        for (String line : porcelainV2.split("\n")) {
+            if (!line.isBlank() && !line.startsWith("#")) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * {@code [ahead, behind]} from the {@code # branch.ab +A -B} header of
+     * {@code git status --porcelain=v2 --branch}, or null when the branch
+     * has no upstream (git prints no such line then) or the line is
+     * malformed — the chip then says nothing rather than a false 0.
+     */
+    public static int[] aheadBehind(String porcelainV2) {
+        if (porcelainV2 == null) {
+            return null;
+        }
+        for (String line : porcelainV2.split("\n")) {
+            if (line.startsWith("# branch.ab ")) {
+                String[] parts = line.substring("# branch.ab ".length()).trim().split(" ");
+                if (parts.length != 2 || !parts[0].startsWith("+") || !parts[1].startsWith("-")) {
+                    return null;
+                }
+                try {
+                    return new int[] {Integer.parseInt(parts[0].substring(1)), Integer.parseInt(parts[1].substring(1))};
+                } catch (NumberFormatException bad) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Lines of {@code git status --porcelain} output = changed paths;
      * blank lines don't count (the trailing newline must not inflate a
      * clean tree into a dirty one).
@@ -179,6 +289,11 @@ public final class GitFacts {
     static final int FIRST_LINE_CAP = 4_096;
 
     private static String readFirstLine(File file) {
+        // a FIFO (or a device) planted in a hostile .git would block the open
+        // forever on the lane that asked (3.2.0 review): regular files only
+        if (!Files.isRegularFile(file.toPath())) {
+            return null;
+        }
         try (java.io.InputStream in = Files.newInputStream(file.toPath())) {
             // bounded prefix, never a full slurp: this class already treats
             // a crafted .git FILE as adversarial (the gitdir confinement) —

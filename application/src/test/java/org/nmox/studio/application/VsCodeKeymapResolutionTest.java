@@ -50,6 +50,18 @@ import static org.assertj.core.api.Assertions.assertThat;
  * any editor keybinding file of the profile (or of the NetBeans base the
  * other profiles build on) that claims the keystroke shadows the global
  * chord while an editor has focus, and must be one this gate blesses.
+ *
+ * <p>The editing chords (3.2, {@link #EDITING}) are the census of VS Code's
+ * everyday editing and navigation chords that this product binds: each is
+ * resolved per profile and OS family - an editor binding the way the
+ * editor settings storage merges them (per profile, with no inheritance
+ * between profiles, a file skipped when its {@code nbeditor-settings-targetOS}
+ * names another OS, a mime's own bindings over the base's) - and must fire
+ * exactly its action where it is bound, leave every other profile its own
+ * meaning, name an action that exists, and be the whole population of the
+ * shipped {@code vscode} keybinding files. The census's first run found
+ * 3.1.0's Cmd+D colliding with the Emacs profile's own M-D and C-D and the
+ * Idea profile's C-D, which 3.1.0 had measured as free.
  */
 class VsCodeKeymapResolutionTest {
 
@@ -68,6 +80,7 @@ class VsCodeKeymapResolutionTest {
         CHORDS.put("DA-P", "Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance");
         CHORDS.put("DA-K", "Actions/File/org-nmox-studio-ui-actions-NewExperimentAction.instance");
         CHORDS.put("DAS-K", "Actions/File/org-nmox-studio-ui-actions-ManageExperimentsAction.instance");
+        CHORDS.put("DA-C", "Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance");
     }
 
     /** The Eclipse profile keeps its own Ctrl+Shift+E (Switch to Editor). */
@@ -80,7 +93,10 @@ class VsCodeKeymapResolutionTest {
      * matching brace, Ctrl+Shift+X upper-cases). Keyed "profile|chord".
      */
     private static final Set<String> BLESSED_EDITOR = Set.of(
-            "Eclipse|DS-P|match-brace", "Eclipse|DS-X|to-upper-case");
+            "Eclipse|DS-P|match-brace", "Eclipse|DS-X|to-upper-case",
+            // Ctrl+Alt+C is IntelliJ's Extract Constant on Windows and Linux;
+            // an Idea user keeps it in the editor, Copy Path outside it (3.2.0)
+            "Idea|DA-C|introduce-constant");
 
     // ---- the merged layer model ------------------------------------------
 
@@ -88,7 +104,11 @@ class VsCodeKeymapResolutionTest {
     private final Map<String, Map<String, String>> files = new LinkedHashMap<>();
     /** folder path -> masked file names. */
     private final Map<String, Set<String>> masks = new LinkedHashMap<>();
-    /** Editor keybinding records: profile, mime folder, key, action, file name. */
+    /**
+     * Editor keybinding records: profile, mime folder, key, action, file name,
+     * the file's {@code nbeditor-settings-targetOS} attribute ("" for every
+     * OS), and the jar that ships it.
+     */
     private final List<String[]> editorBindings = new ArrayList<>();
 
     private void load() throws Exception {
@@ -176,7 +196,7 @@ class VsCodeKeymapResolutionTest {
                 }
                 files.computeIfAbsent(path, k -> new LinkedHashMap<>()).put(name, original(e));
                 if (path.contains("/Keybindings/") && !e.getAttribute("url").isEmpty()) {
-                    readKeybindings(jf, layer, path, name, e.getAttribute("url"));
+                    readKeybindings(jf, layer, path, name, e.getAttribute("url"), attr(e, "nbeditor-settings-targetOS"));
                 }
             }
         }
@@ -194,7 +214,19 @@ class VsCodeKeymapResolutionTest {
         return "";
     }
 
-    private void readKeybindings(JarFile jf, String layer, String path, String name, String url) throws Exception {
+    private static String attr(Element file, String name) {
+        NodeList attrs = file.getElementsByTagName("attr");
+        for (int i = 0; i < attrs.getLength(); i++) {
+            Element a = (Element) attrs.item(i);
+            if (name.equals(a.getAttribute("name"))) {
+                return a.getAttribute("stringvalue");
+            }
+        }
+        return "";
+    }
+
+    private void readKeybindings(JarFile jf, String layer, String path, String name, String url, String targetOs)
+            throws Exception {
         String entry;
         if (url.startsWith("nbres:") || url.startsWith("nbresloc:")) {
             entry = url.substring(url.indexOf(':') + 1).replaceFirst("^/+", "");
@@ -217,7 +249,8 @@ class VsCodeKeymapResolutionTest {
             if (b.hasAttribute("remove")) {
                 continue;
             }
-            editorBindings.add(new String[] {profile, path, b.getAttribute("key"), b.getAttribute("actionName"), name});
+            editorBindings.add(new String[] {profile, path, b.getAttribute("key"), b.getAttribute("actionName"), name,
+                    targetOs, Path.of(jf.getName()).getFileName().toString()});
         }
     }
 
@@ -344,8 +377,8 @@ class VsCodeKeymapResolutionTest {
         for (String[] b : editorBindings) {
             String profile = b[0];
             for (Os os : Os.values()) {
-                if (b[4].endsWith("-mac.xml") && os != Os.MAC) {
-                    continue; // the storage reads *-mac files on macOS only
+                if (!appliesOn(b[5], os)) {
+                    continue; // the storage skips a file whose targetOS is another OS
                 }
                 String ks = keystroke(b[2], os);
                 for (String chord : CHORDS.keySet()) {
@@ -360,6 +393,248 @@ class VsCodeKeymapResolutionTest {
         assertThat(problems).isEmpty();
         assertThat(editorBindings).as("the editor keybinding files were read, including the defaults module's")
                 .hasSizeGreaterThan(300);
+    }
+
+    // ---- the editing chords (3.2) ----------------------------------------
+
+    /**
+     * Whether a keybinding file applies on an OS family, read the way the
+     * editor settings storage reads it: {@code SettingsType$DefaultLocator}
+     * skips a file whose {@code nbeditor-settings-targetOS} attribute names
+     * another OS (a {@code BaseUtilities} field such as {@code OS_MAC},
+     * read from the bytecode). The {@code -mac.xml} suffix is only the
+     * platform's naming habit; the attribute is the switch. A value this
+     * replay does not model fails the census rather than being guessed.
+     */
+    static boolean appliesOn(String targetOs, Os os) {
+        if (targetOs == null || targetOs.isEmpty()) {
+            return true;
+        }
+        if ("OS_MAC".equals(targetOs)) {
+            return os == Os.MAC;
+        }
+        throw new AssertionError("a keybinding file targets " + targetOs
+                + ", which this replay does not model - teach appliesOn before trusting the census");
+    }
+
+    enum Where { GLOBAL, EDITOR }
+
+    private static final Set<String> ALL_PROFILES = Set.copyOf(PROFILES);
+    private static final Set<Os> EVERY_OS = Set.of(Os.MAC, Os.WINDOWS, Os.LINUX);
+    private static final Set<Os> MAC_ONLY = Set.of(Os.MAC);
+
+    /**
+     * One VS Code chord this product binds: where it lives (a global
+     * Keymaps shadow, or an editor keybinding for {@code mime}, the base
+     * when it is empty), what it must fire, and the profiles that carry it
+     * with the OS families each carries it on. Every other profile - and a
+     * carrying profile on an OS it leaves out - keeps its own meaning of
+     * the chord, and the census checks that too.
+     */
+    record Chord(String name, Where where, String action, String mime, Map<String, Set<Os>> scope) {
+        boolean bound(String profile, Os os) {
+            return scope.getOrDefault(profile, Set.of()).contains(os);
+        }
+
+        Set<Os> oses() {
+            Set<Os> out = new TreeSet<>();
+            scope.values().forEach(out::addAll);
+            return out;
+        }
+    }
+
+    /** A scope: these profiles, on these OS families. */
+    private static Map<String, Set<Os>> on(Set<Os> oses, String... profiles) {
+        Map<String, Set<Os>> out = new LinkedHashMap<>();
+        for (String p : profiles) {
+            out.put(p, oses);
+        }
+        return out;
+    }
+
+    private static Map<String, Set<Os>> on(Set<Os> oses, Set<String> profiles) {
+        return on(oses, profiles.toArray(String[]::new));
+    }
+
+    /** Two scopes joined (a profile named in both takes the second's OS families). */
+    private static Map<String, Set<Os>> plus(Map<String, Set<Os>> a, Map<String, Set<Os>> b) {
+        Map<String, Set<Os>> out = new LinkedHashMap<>(a);
+        out.putAll(b);
+        return out;
+    }
+
+    /**
+     * The editing chords a VS Code user reaches for after the first four
+     * (3.2's census, docs/coming-from-vscode.md "The editing chords"), plus
+     * 3.1.0's Cmd+D. Each one's profiles are the ones where nothing else
+     * claims the chord, measured in the assembled cluster; each file's own
+     * comment names what the other profiles bind. The census corrected
+     * 3.1.0's Cmd+D: Emacs binds it on every OS and Idea binds Ctrl+D off
+     * macOS, so it rides NetBeans everywhere and Idea on macOS only.
+     */
+    static final List<Chord> EDITING = List.of(
+            new Chord("D-D", Where.EDITOR, "addCaretSelectNext", "",
+                    plus(on(EVERY_OS, "NetBeans"), on(MAC_ONLY, "Idea"))),
+            new Chord("F12", Where.EDITOR, "goto-declaration", "", on(EVERY_OS, "NetBeans", "Idea")),
+            new Chord("F12", Where.EDITOR, "ng-goto-declaration", "text/x-ng-template",
+                    on(EVERY_OS, "NetBeans", "Idea")),
+            new Chord("F2", Where.EDITOR, "in-place-refactoring", "", on(EVERY_OS, "NetBeans")),
+            new Chord("D-CLOSE_BRACKET", Where.EDITOR, "shift-line-right", "", on(MAC_ONLY, ALL_PROFILES)),
+            new Chord("DA-F", Where.EDITOR, "replace", "", on(MAC_ONLY, ALL_PROFILES)),
+            new Chord("O-MINUS", Where.EDITOR, "jump-list-prev", "",
+                    on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
+            new Chord("OS-MINUS", Where.EDITOR, "jump-list-next", "",
+                    on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
+            new Chord("AS-F", Where.EDITOR, "format", "",
+                    on(MAC_ONLY, "NetBeans", "Eclipse", "Emacs", "NetBeans55")),
+            new Chord("S-F12", Where.GLOBAL,
+                    "Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance", "",
+                    on(EVERY_OS, "NetBeans", "Eclipse", "Idea")),
+            new Chord("M-PERIOD", Where.GLOBAL,
+                    "Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance", "",
+                    on(MAC_ONLY, ALL_PROFILES)));
+
+    /** The actions an editor with focus fires for ks: a mime's own bindings win over the base's. */
+    private Set<String> editorActions(String profile, String mime, String ks, Os os) {
+        Set<String> base = editorClaims("Editors/Keybindings/" + profile + "/Defaults", ks, os);
+        if (mime.isEmpty()) {
+            return base;
+        }
+        Set<String> own = editorClaims("Editors/" + mime + "/Keybindings/" + profile + "/Defaults", ks, os);
+        return own.isEmpty() ? base : own;
+    }
+
+    private Set<String> editorClaims(String folder, String ks, Os os) {
+        Set<String> out = new TreeSet<>();
+        for (String[] b : editorBindings) {
+            if (b[1].equals(folder) && appliesOn(b[5], os) && ks.equals(keystroke(b[2], os))) {
+                out.add(b[3]);
+            }
+        }
+        return out;
+    }
+
+    /** Every editor binding of ks in the profile, in any mime: what shadows a global chord somewhere. */
+    private Set<String> editorClaimsAnywhere(String profile, String ks, Os os) {
+        Set<String> out = new TreeSet<>();
+        for (String[] b : editorBindings) {
+            if (b[0].equals(profile) && appliesOn(b[5], os) && ks.equals(keystroke(b[2], os))) {
+                out.add(b[1] + "/" + b[4] + " -> " + b[3]);
+            }
+        }
+        return out;
+    }
+
+    @Test
+    @DisplayName("every editing chord fires exactly its action where it is bound, and leaves every other profile its own meaning")
+    void eachEditingChordResolvesToExactlyItsAction() throws Exception {
+        load();
+        List<String> problems = new ArrayList<>();
+        for (Chord c : EDITING) {
+            for (String profile : PROFILES) {
+                for (Os os : c.oses()) {
+                    String ks = keystroke(c.name(), os);
+                    String at = profile + "/" + os + " " + c.name() + " (" + ks + ")"
+                            + (c.mime().isEmpty() ? "" : " in " + c.mime());
+                    List<String> global = bindingsFor(profile, ks, os);
+                    List<String> prefixes = prefixesFor(profile, ks, os);
+                    boolean bound = c.bound(profile, os);
+                    if (c.where() == Where.GLOBAL) {
+                        Set<String> shadows = editorClaimsAnywhere(profile, ks, os);
+                        if (bound && (global.isEmpty() || !global.stream().allMatch(c.action()::equals)
+                                || !prefixes.isEmpty() || !shadows.isEmpty())) {
+                            problems.add(at + " fires " + global + ", prefixes " + prefixes
+                                    + ", shadowed in the editor by " + shadows + "; want only " + c.action());
+                        }
+                        if (!bound && (global.contains(c.action()) || (global.isEmpty() && shadows.isEmpty()))) {
+                            problems.add(at + " is scoped out of " + profile + " for the profile's own meaning, but fires "
+                                    + global + " / editor " + shadows);
+                        }
+                    } else {
+                        Set<String> claims = editorActions(profile, c.mime(), ks, os);
+                        if (bound && (!claims.equals(Set.of(c.action())) || !global.isEmpty() || !prefixes.isEmpty())) {
+                            problems.add(at + " fires " + claims + " in the editor and " + global
+                                    + " globally (prefixes " + prefixes + "); want only " + c.action());
+                        }
+                        if (!bound && (claims.contains(c.action()) || (claims.isEmpty() && global.isEmpty()))) {
+                            problems.add(at + " is scoped out of " + profile + " for the profile's own meaning, but fires "
+                                    + claims + " / globally " + global);
+                        }
+                    }
+                }
+            }
+        }
+        assertThat(problems).as("editing chords that fire something else, or were scoped out of a profile for nothing")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("every editing chord names a real action: a registered or platform-bound editor action, a registered global instance")
+    void everyEditingChordNamesARealAction() throws Exception {
+        load();
+        Set<String> editorActionFiles = new TreeSet<>();
+        files.forEach((folder, names) -> {
+            if (folder.startsWith("Editors/") && folder.endsWith("/Actions")) {
+                names.keySet().forEach(n -> editorActionFiles.add(n.replaceFirst("\\.instance$", "")));
+            }
+        });
+        Set<String> platformBound = new TreeSet<>();
+        for (String[] b : editorBindings) {
+            if (!b[6].startsWith("org-nmox-")) {
+                platformBound.add(b[3]);
+            }
+        }
+        List<String> missing = new ArrayList<>();
+        for (Chord c : EDITING) {
+            if (c.where() == Where.EDITOR) {
+                if (!editorActionFiles.contains(c.action()) && !platformBound.contains(c.action())) {
+                    missing.add(c.name() + " -> " + c.action());
+                }
+            } else {
+                String folder = c.action().substring(0, c.action().lastIndexOf('/'));
+                String name = c.action().substring(c.action().lastIndexOf('/') + 1);
+                if (!visible(folder).containsKey(name)) {
+                    missing.add(c.name() + " -> " + c.action());
+                }
+            }
+        }
+        assertThat(platformBound).as("the platform's own keybinding files were read").hasSizeGreaterThan(100);
+        assertThat(missing).as("chords bound to an action no module registers or binds - the key would do nothing")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("every binding in a shipped vscode keybinding file is in the census, so a new chord cannot ship unmeasured")
+    void theCensusCoversEveryVsCodeKeybindingFile() throws Exception {
+        load();
+        Set<String> census = new TreeSet<>();
+        for (Chord c : EDITING) {
+            if (c.where() == Where.EDITOR) {
+                census.add(c.name() + " -> " + c.action());
+            }
+        }
+        Set<String> shipped = new TreeSet<>();
+        for (String[] b : editorBindings) {
+            if (b[6].startsWith("org-nmox-") && b[4].contains("vscode")) {
+                shipped.add(b[2] + " -> " + b[3]);
+            }
+        }
+        assertThat(shipped).as("the vscode keybinding files were read from the NMOX jars").isNotEmpty();
+        assertThat(census).as("the census names exactly what the vscode keybinding files bind").isEqualTo(shipped);
+    }
+
+    @Test
+    @DisplayName("Cmd+. is M-PERIOD, so Ctrl+. stays the NetBeans and Eclipse profiles' Jump Next on Windows and Linux")
+    void quickFixLeavesCtrlPeriodAlone() throws Exception {
+        load();
+        String jumpNext = "Actions/System/org-netbeans-core-actions-JumpNextAction.instance";
+        for (String profile : List.of("NetBeans", "Eclipse")) {
+            for (Os os : List.of(Os.WINDOWS, Os.LINUX)) {
+                assertThat(bindingsFor(profile, "ctrl|PERIOD", os))
+                        .as(profile + "/" + os + ": Ctrl+. must still fire only Jump Next")
+                        .containsExactly(jumpNext);
+            }
+        }
     }
 
     @Test
@@ -385,13 +660,18 @@ class VsCodeKeymapResolutionTest {
     @Test
     @DisplayName("no chord is one macOS takes for itself, so the replay's macOS keystrokes are the real ones")
     void noChordIsRemappedOnMac() {
-        for (String chord : CHORDS.keySet()) {
+        List<String> all = new ArrayList<>(CHORDS.keySet());
+        EDITING.forEach(c -> all.add(c.name()));
+        for (String chord : all) {
             int dash = chord.lastIndexOf('-');
+            if (dash < 0) {
+                continue; // a bare function key carries no modifier macOS could claim
+            }
             String mods = chord.substring(0, dash);
             String key = chord.substring(dash + 1);
-            boolean meta = mods.contains("D");
+            boolean meta = mods.contains("D") || mods.contains("M");
             assertThat(meta && key.equals("Q")).as(chord).isFalse();
-            assertThat(meta && mods.equals("D") && List.of("H", "SPACE", "TAB").contains(key)).as(chord).isFalse();
+            assertThat(meta && mods.length() == 1 && List.of("H", "SPACE", "TAB").contains(key)).as(chord).isFalse();
             assertThat(meta && mods.contains("A") && key.equals("D")).as(chord).isFalse();
         }
     }

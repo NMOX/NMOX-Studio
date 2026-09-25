@@ -7,12 +7,18 @@
     D-J in NetBeans-keybindings.xml); this puts the switcher's chord on it
     too, and D-J keeps working.
 
-    Registered in the NetBeans, Emacs and Idea profiles only. Measured in
-    the assembled cluster: D-D is bound by no shipped keybinding file or
-    layer in those three, while the defaults module binds it in Eclipse
+    Registered where the chord is free, the rule 3.1.0 stated: a
+    profile's own meaning of a chord wins there - the same rule the
+    Keymaps side keeps for DS-E. The defaults module binds D-D in Eclipse
     (remove-line, Eclipse's own Ctrl+D) and NetBeans55 (shift-line-left).
-    A profile's own meaning of a chord wins there - the same rule the
-    Keymaps side keeps for DS-E. KeymapProfileParityTest holds the scope.
+    3.2's census corrected 3.1.0's measurement, which had also called the
+    chord free in Emacs and Idea: Emacs binds it on every OS (M-D, kill
+    word, in its macOS file - M is Cmd there - and C-D, delete character,
+    on Windows and Linux, where D-D is Ctrl+D), and Idea binds Ctrl+D to
+    Duplicate Line. So this file rides the NetBeans profile on every OS
+    and the Idea profile on macOS only (its layer registration carries
+    nbeditor-settings-targetOS=OS_MAC there). KeymapProfileParityTest holds
+    the profiles and VsCodeKeymapResolutionTest resolves the chord.
 -->
 <bindings>
     <bind actionName="addCaretSelectNext" key="D-D"/>

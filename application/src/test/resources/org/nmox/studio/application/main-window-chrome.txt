@@ -1,0 +1,52 @@
+# The main window's own chrome that no derived population reaches.
+#
+# 3.2: a German walk (--locale de, a text file open) read four English
+# strings on the main window of a product whose l10n arc is recorded as
+# closed: the editor's Source and History tabs, the Favorites tab (while
+# its Window-menu row read "Favoriten": the menu paints ACT_View, the tab
+# paints Favorites) and the Quick Search hint. The tab names and the Quick
+# Search categories are DERIVED from the cluster's layers by
+# MainWindowChromeSpeaksTest; the rows below are named in platform CODE, so
+# only a grep of the assembled cluster by VALUE places them, and this list
+# is kept by hand and checked against that cluster.
+#
+# jar | package | key | the English value as the platform ships it
+# (a literal \n in the English stands for the newline in the value)
+
+org-netbeans-modules-favorites.jar|org/netbeans/modules/favorites|Favorites|Favorites
+org-netbeans-modules-favorites.jar|org/netbeans/modules/favorites|TT_Favorites|Favorite Files and Locations \n({0}) to select editor file in view
+org-netbeans-modules-favorites.jar|org/netbeans/modules/favorites|MSG_Tab.rootNode.loading|Favorites - Loading...
+org-netbeans-modules-favorites.jar|org/netbeans/modules/favorites|ACSN_ExplorerBeanTree|Explorer Tree
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|AbstractQuickSearchComboBar.command.toolTipText|Quick Search in the system {0}
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_DiscoverabilityHint|Search
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_DiscoverabilityHint2|Search in {0}
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|LBL_AllCategories|All Categories
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|LBL_NoCategory|Deselect All
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_RightClickDisablesOthers|Right-click to de-select all other categories
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_RightClickEnablesAllOthers|Right-click to select all categories excluding this one
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|LBL_TooltipCommandPrefix|<i>Start your term with <b>{0} + &lt;Space&gt;</b> to search in this category.</i>
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|QuickSearchComboBar.jLabel2.toolTipText|Click or press Shift+F10 for Category selection
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|QuickSearchPopup.searchingLabel.text|Searching ...
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|QuickSearchPopup.noResultsLabel.text|( No Results )
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|QuickSearchPopup.hintLabel.text|{0}; Press {1} for All Enabled Categories
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|MSG_INVALID_SEARCH_TEST|Search text is too long.
+org-netbeans-spi-quicksearch.jar|org/netbeans/modules/quicksearch|CTL_QuickSearchAction|Quick Search
+org-netbeans-core-multiview.jar|org/netbeans/core/multiview|TabButton.tool_tip|{0} View
+org-netbeans-core-multiview.jar|org/netbeans/core/multiview|Hint_SplitView|Drag me to split this window horizontally or vertically.
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|NbProgressBar.tooltip1|{0} tasks running. Click for details.
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|NbProgressBar.tooltip2|{0} task running. Click for details.
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|ListComponent.btnClose.tooltip|Click to cancel process
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|ListComponent.bar.tooltip|Click to watch the process
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|Cancel_Question|Are you sure you want to cancel {0}?
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|Cancel_Question_Title|Cancel Running Task
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|StatusLineComponent.ShowProcessList|Show Processes
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|StatusLineComponent.Cancel|Cancel Process
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|StatusLineComponent.View|Show Output
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|StatusLineComponent.extra|({0} more…)
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|ListComponent.Watch|Watch Process
+org-netbeans-modules-progress-ui.jar|org/netbeans/modules/progress/ui|CTL_CancelAction|Cancel Process
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-insert|INS
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-overwrite|OVR
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-insert-mode|Insert Mode
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-overwrite-mode|Overwrite Mode
+org-netbeans-modules-editor-lib.jar|org/netbeans/editor|status-bar-caret-position|Caret Position

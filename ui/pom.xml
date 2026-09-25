@@ -156,6 +156,13 @@
             <artifactId>org-netbeans-modules-sendopts</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- 3.2.0: nmox -d (git difftool) shows two files in the
+             platform's own diff view (DiffWindow), a public API module -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-diff</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <!-- The IRC client's NickServ passwords live in the OS keychain
              (irc.engine.IrcSecrets — the Keyring-only law, the ApiSecrets
              idiom; v1.204.0) -->
@@ -205,6 +212,25 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- masterfs registers the disk URLMapper, so FileUtil.toFileObject
+             resolves real files in headless tests - DiffWindowTest opens the
+             platform's diff controller over real files (3.2.0); at runtime
+             the platform cluster provides it, as for core, rack and tools -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- projectapi-nb registers the ProjectManagerImplementation the
+             diff controller's FileEncodingQuery reaches through project
+             lookup (DiffWindowTest, 3.2.0); runtime gets it from the cluster -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-projectapi-nb</artifactId>
+            <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

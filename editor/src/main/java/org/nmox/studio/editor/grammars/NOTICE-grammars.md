@@ -42,6 +42,8 @@ redistributes them under MIT-compatible licenses. Upstream origins:
 | tact.tmLanguage.json | sha256 f817bcfe08facbc544222c0ca3ad75f9176bbdb368ad670e88f1b9d68d136f75 | tact-lang/tact-vscode syntaxes/tact.json (Apache-2.0; FunC grammar deliberately NOT used: GPL-3.0 + archived) |
 | vyper.tmLanguage.json | sha256 34a9d9e65de57655dbedad9b95f2aa2d902b2dc564cab4f8091b31b91e2719f3 | tintinweb/vscode-vyper syntaxes/vyper.tmLanguage.json at commit 8cb5090a7ce578c4a54a5a63300093361eb768fd (MIT) |
 | http.tmLanguage.json | sha256 0f5d2d6ffe1127371b37256b8bf04a28d3208b24dea86266f0d930c16e4d9820 | Huachao/vscode-restclient syntaxes/http.tmLanguage.json (MIT) |
+| gitcommit.tmLanguage.json | sha256 ab22b2dab5076daf6a8f990f02bdf6a9b9db99bb647c0d8bbcf15e3eb31f1005 | microsoft/vscode extensions/git-base/syntaxes/git-commit.tmLanguage.json at commit f8c3f89468fea14103d8790d59ea8594d6e644eb (the latest to touch that directory on main, fetched 2026-09-24; itself converted from walles/git-commit-message-plus), MIT. Verbatim. Its `source.diff` include (the `git commit -v` diff section) resolves to the in-house `stub-source.diff.json` below, so that section reads as plain text (3.2.0) |
+| gitrebase.tmLanguage.json | sha256 3c45cc21be0af9a599fb25b35207db9e2a438a84eaa17e54812875235a2266f0 | microsoft/vscode extensions/git-base/syntaxes/git-rebase.tmLanguage.json at commit f8c3f89468fea14103d8790d59ea8594d6e644eb (fetched 2026-09-24; itself converted from textmate/git.tmbundle), MIT. Verbatim. Its `exec` lines include `source.shell`, which the vendored shell grammar supplies (3.2.0) |
 | clarity.tmLanguage.json | sha256 e32cf9c707dda399bb7bebb505afd10d4222eeadf39f1945cdbb42bc83ab2d5d | hirosystems/clarity.tmbundle Syntaxes/clarity.JSON-tmLanguage (MIT) |
 | vlang.tmLanguage.json | sha256 b3b8a46ce457fca0f22dde2c256ad5237665b8e7725285d98f703db873bfa45a | vlang/vscode-vlang syntaxes/v.tmLanguage.json (MIT) |
 | fortran.tmLanguage.json | sha256 b8df797e51e65b45c54511a123e20297c6dd04f3a4745c3a15da7383c6596808 | fortran-lang/vscode-fortran-support syntaxes/fortran_free-form.tmLanguage.json (MIT) |
@@ -166,12 +168,14 @@ only for their scope names — `source.x86_64`, `source.x86`,
 `source.js.jquery`, `source.c++`, `text.elixir`, `text.html.elixir`,
 `source.regexp.python`, `source.postscript`, `source.less`,
 `source.cpp.embedded.macro`, `text.xml.xsl`, `text.tex.latex`,
-`text.log`, `text.git-rebase`, `text.git-commit`, `text.bibtex`,
+`text.log`, `text.bibtex`,
 `source.twig`, `source.powershell`, `source.perl.6`, `source.objc`,
 `source.json.comments`, `source.go`, `source.asp.vb.net`,
 `source.css.postcss`, `text.html.javadoc`, `source.toml`,
 `source.postcss`, `source.openesql`, `source.ocaml.ocamldoc`,
-`source.ocaml.interface`, `source.json5`, `regexp`) — the scopes
+`source.ocaml.interface`, `source.json5`, `regexp`; the batch also
+held `text.git-rebase` and `text.git-commit` until 3.2.0 vendored the
+real grammars) — the scopes
 vendored grammars (and the platform's own markdown fences) include and
 this product ships no grammar for. A stub must go the day a real
 grammar arrives for its scope; the embed test fails on a scope

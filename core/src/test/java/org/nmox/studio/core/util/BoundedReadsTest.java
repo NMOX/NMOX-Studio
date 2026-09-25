@@ -205,4 +205,24 @@ class BoundedReadsTest {
                         + "must not stay quiet about it")
                 .hasSize(1);
     }
+
+    @Test
+    @DisplayName("a link to /dev/zero reports size 0 and never ends: it is refused as not a regular file, not read")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void aDeviceIsNotAFile(@TempDir Path dir) throws Exception {
+        Path link = Files.createSymbolicLink(dir.resolve("README.md"), Path.of("/dev/zero"));
+        assertThat(Files.size(link)).as("the size check alone lets it through").isZero();
+        assertThatThrownBy(() -> BoundedReads.read(link, 1024)).hasMessageContaining("not a regular file");
+        assertThatThrownBy(() -> BoundedReads.read(dir, 1024)).hasMessageContaining("not a regular file");
+    }
+
+    @Test
+    @DisplayName("text that is not UTF-8 is still refused, as the whole-file read did")
+    void malformedStillThrows(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve("bad.txt");
+        Files.write(f, new byte[] {'a', (byte) 0xff, 'b'});
+        assertThatThrownBy(() -> BoundedReads.read(f, 1024)).isInstanceOf(java.nio.charset.CharacterCodingException.class);
+        Files.writeString(f, "héllo ✓");
+        assertThat(BoundedReads.read(f, 1024)).isEqualTo("héllo ✓");
+    }
 }

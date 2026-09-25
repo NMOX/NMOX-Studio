@@ -48,6 +48,8 @@ text/x-env|UNREACHABLE|text/x-properties|.env resolves to the properties mime
 text/x-erlang|DERIVED|census.erl|
 text/x-fortran|DERIVED|census.f03|
 text/x-fsharp|DERIVED|census.fs|
+text/x-git-commit|NAMED|COMMIT_EDITMSG|git's message files carry no extension; ConfigFileResolver claims six exact names (3.2.0)
+text/x-git-rebase|NAMED|git-rebase-todo|git's rebase todo carries no extension; ConfigFileResolver claims the exact name (3.2.0)
 text/x-gleam|DERIVED|census.gleam|
 text/x-go|DERIVED|census.go|
 text/x-graphql|DERIVED|census.gql|

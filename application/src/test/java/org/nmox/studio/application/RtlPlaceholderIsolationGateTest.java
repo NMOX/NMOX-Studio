@@ -70,6 +70,15 @@ class RtlPlaceholderIsolationGateTest {
 
     static final char LRI = '⁦';
     static final char PDI = '⁩';
+    /**
+     * FIRST STRONG ISOLATE (U+2068): the isolate for an argument whose own
+     * direction varies — a joined list of right-to-left phrases, which an
+     * LRI would lay out left to right and so reverse (3.2.0, Check
+     * Translations' summary in Hebrew and Arabic). A file name still
+     * starts with a Latin letter or a neutral, and FSI then isolates it
+     * left to right exactly as LRI would.
+     */
+    static final char FSI = '\u2068';
 
     /** A real HTML tag, so ChoiceFormat's {@code 1<} limit is not read as one. */
     private static final Pattern TAG = Pattern.compile("<\\s*/?\\s*[A-Za-z][^<>]*>");
@@ -182,7 +191,7 @@ class RtlPlaceholderIsolationGateTest {
             return false;
         }
         int before = slot.start();
-        if (before > 0 && (value.charAt(before - 1) == LRI
+        if (before > 0 && (value.charAt(before - 1) == LRI || value.charAt(before - 1) == FSI
                 || value.charAt(before - 1) == '‎')) {
             before--;                      // step over this element's own guard
         }
@@ -207,7 +216,8 @@ class RtlPlaceholderIsolationGateTest {
                     continue;
                 }
                 checked++;
-                boolean open = slot.start() > 0 && v.text().charAt(slot.start() - 1) == LRI;
+                boolean open = slot.start() > 0 && (v.text().charAt(slot.start() - 1) == LRI
+                        || v.text().charAt(slot.start() - 1) == FSI);
                 boolean close = slot.end() < v.text().length()
                         && v.text().charAt(slot.end()) == PDI;
                 if (!open || !close) {
@@ -232,7 +242,7 @@ class RtlPlaceholderIsolationGateTest {
 
     /** An isolate wraps exactly one element, opens before it closes, and nests. */
     private static final Pattern ISOLATED = Pattern.compile(
-            "\\u2066(\\{\\d+(?:\\}|,number,[^{}]*\\}))\\u2069");
+            "[\\u2066\\u2068](\\{\\d+(?:\\}|,number,[^{}]*\\}))\\u2069");
 
     @Test
     @DisplayName("every isolate is well formed and wraps exactly one argument")
@@ -241,7 +251,7 @@ class RtlPlaceholderIsolationGateTest {
         int carrying = 0;
         for (Value v : rtlValues()) {
             String text = v.text();
-            if (text.indexOf(LRI) < 0 && text.indexOf(PDI) < 0) {
+            if (text.indexOf(LRI) < 0 && text.indexOf(FSI) < 0 && text.indexOf(PDI) < 0) {
                 continue;
             }
             carrying++;
@@ -249,7 +259,7 @@ class RtlPlaceholderIsolationGateTest {
             boolean ok = true;
             for (int i = 0; i < text.length() && ok; i++) {
                 char c = text.charAt(i);
-                if (c == LRI) {
+                if (c == LRI || c == FSI) {
                     depth++;
                 } else if (c == PDI && --depth < 0) {
                     ok = false;
@@ -260,7 +270,7 @@ class RtlPlaceholderIsolationGateTest {
                 continue;
             }
             // every opened isolate must close around one element and nothing else
-            int opens = (int) text.chars().filter(c -> c == LRI).count();
+            int opens = (int) text.chars().filter(c -> c == LRI || c == FSI).count();
             int wraps = 0;
             Matcher m = ISOLATED.matcher(text);
             while (m.find()) {

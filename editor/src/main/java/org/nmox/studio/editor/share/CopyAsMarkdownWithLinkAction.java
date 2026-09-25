@@ -9,10 +9,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.nmox.studio.core.util.GitFacts;
 import org.nmox.studio.core.util.GitLink;
 import org.nmox.studio.core.util.PlainStatus;
 import org.nmox.studio.core.util.Plural;
+import org.nmox.studio.rack.service.GitHubLinks;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -35,7 +35,9 @@ import org.openide.util.RequestProcessor;
  * remote (worktree-aware), HEAD. Every step that cannot vouch for a link
  * refuses out loud — not in a repo, no origin, an origin that is not
  * GitHub, an unsaved buffer — and copies nothing, because a block
- * without its promised link is the wrong clipboard. Written limit:
+ * without its promised link is the wrong clipboard. The ladder is
+ * {@link GitHubLinks#resolve} (3.2.0), shared with Open on GitHub and
+ * Copy GitHub Link in the editor and on Project Studio's tree. Written limit:
  * {@code url.<base>.insteadOf} rewrites in the git config are not
  * applied, so an aliased origin ({@code gh:o/r}) refuses as "not a
  * GitHub remote" rather than guessing the alias.
@@ -55,13 +57,7 @@ import org.openide.util.RequestProcessor;
     "CopyAsMarkdownWithLinkAction_refused=Copy as Markdown with Link: {0}",
     "CopyAsMarkdownWithLinkAction_copied=Copied {0} as Markdown with a GitHub link — {1} in a ```{2} block, {3} (the link shows the branch as pushed)",
     "CopyAsMarkdownWithLinkAction_wholeOf=the whole of {0}",
-    "CopyAsMarkdownWithLinkAction_theSelection=the selection",
-    "CopyAsMarkdownWithLinkAction_notInRepo={0} is not inside a git repository",
-    "CopyAsMarkdownWithLinkAction_noOrigin=the repository has no origin remote",
-    "CopyAsMarkdownWithLinkAction_notGitHub=origin is not a GitHub remote ({0})",
-    "CopyAsMarkdownWithLinkAction_noHead=HEAD could not be read",
-    "CopyAsMarkdownWithLinkAction_pathUnresolved=the file's path inside the repository could not be resolved",
-    "CopyAsMarkdownWithLinkAction_outsideRepo=the file is not inside the repository"
+    "CopyAsMarkdownWithLinkAction_theSelection=the selection"
 })
 public final class CopyAsMarkdownWithLinkAction implements ActionListener {
 
@@ -76,7 +72,8 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
         }
         Document doc = editor.getDocument();
         Object sd = doc.getProperty(Document.StreamDescriptionProperty);
-        File file = sd instanceof DataObject dob ? FileUtil.toFile(dob.getPrimaryFile()) : null;
+        org.openide.filesystems.FileObject edited = org.nmox.studio.core.util.EditedFile.of(doc);
+        File file = edited == null ? null : FileUtil.toFile(edited);
         if (file == null) {
             StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_noFile());
             return;
@@ -103,18 +100,18 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
         String block = CopyAsMarkdown.block(code, mime, name);
         // the git reads are disk: off the EDT, then back for the clipboard and the status line
         RP.post(() -> {
-            Outcome out = resolve(file, lines[0], lines[1]);
+            GitHubLinks.Link out = GitHubLinks.resolve(file, lines[0], lines[1]);
             SwingUtilities.invokeLater(() -> {
-                if (out.refusal != null) {
-                    StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.CopyAsMarkdownWithLinkAction_refused(out.refusal)));
+                if (out.refusal() != null) {
+                    StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.CopyAsMarkdownWithLinkAction_refused(out.refusal())));
                     return;
                 }
-                String text = block + "\n" + GitLink.linkLine(out.relPath, lines[0], lines[1], out.url) + "\n";
+                String text = block + "\n" + GitLink.linkLine(out.relPath(), lines[0], lines[1], out.url()) + "\n";
                 Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(text), null);
                 StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.CopyAsMarkdownWithLinkAction_copied(
                         lines[0] == 0 ? Bundle.CopyAsMarkdownWithLinkAction_wholeOf(name) : Bundle.CopyAsMarkdownWithLinkAction_theSelection(),
                         Plural.of(CopyAsMarkdown.lineCount(code), "line"), CopyAsMarkdown.fence(mime, name),
-                        out.slug + "@" + out.ref)));
+                        out.slug() + "@" + out.ref())));
             });
         });
     }
@@ -122,42 +119,5 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
     /** The buffer-vs-disk gap the product can see: a modified DataObject means the block would not match the link. */
     static boolean unsaved(Object streamDescription) {
         return streamDescription instanceof DataObject dob && dob.isModified();
-    }
-
-    /** What the link needs, or the one reason it cannot be made. */
-    record Outcome(String url, String relPath, String slug, String ref, String refusal) {
-        static Outcome refuse(String why) {
-            return new Outcome(null, null, null, null, why);
-        }
-    }
-
-    /** Off the EDT: repo root → origin → GitHub remote → HEAD → the link. Pure over the disk facts. */
-    static Outcome resolve(File file, int startLine, int endLine) {
-        File root = GitFacts.repoRoot(file.getParentFile());
-        if (root == null) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_notInRepo(file.getName()));
-        }
-        String origin = GitFacts.originUrl(root);
-        if (origin == null) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_noOrigin());
-        }
-        GitLink.Remote remote = GitLink.parseRemote(origin);
-        if (remote == null) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_notGitHub(origin));
-        }
-        String ref = GitFacts.branch(root);
-        if (ref == null) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_noHead());
-        }
-        String rel;
-        try {
-            rel = root.toPath().toRealPath().relativize(file.toPath().toRealPath()).toString().replace(File.separatorChar, '/');
-        } catch (java.io.IOException | IllegalArgumentException ex) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_pathUnresolved());
-        }
-        if (rel.isEmpty() || rel.startsWith("..")) {
-            return Outcome.refuse(Bundle.CopyAsMarkdownWithLinkAction_outsideRepo());
-        }
-        return new Outcome(GitLink.blobUrl(remote, ref, rel, startLine, endLine), rel, remote.slug(), ref, null);
     }
 }

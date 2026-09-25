@@ -121,6 +121,20 @@ public final class CopyAsMarkdown {
      * count that next line: what you see highlighted is what the link
      * names.
      */
+    /**
+     * The lines a GitHub link points at (3.2.0, Open on GitHub / Copy
+     * GitHub Link): the selection's range as {@link #lineRange} reads it,
+     * and with nothing selected the CARET's line — a link to "here", where
+     * Copy as Markdown's empty selection means the whole file.
+     */
+    public static int[] linkLines(javax.swing.text.Document doc, int selStart, int selEnd, int caret) {
+        if (selEnd > selStart) {
+            return lineRange(doc, selStart, selEnd);
+        }
+        int line = doc.getDefaultRootElement().getElementIndex(Math.max(0, Math.min(caret, doc.getLength()))) + 1;
+        return new int[] {line, line};
+    }
+
     public static int[] lineRange(javax.swing.text.Document doc, int selStart, int selEnd) {
         if (selEnd <= selStart) {
             return new int[] {0, 0};

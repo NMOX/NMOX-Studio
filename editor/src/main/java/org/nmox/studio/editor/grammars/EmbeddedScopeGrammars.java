@@ -295,21 +295,9 @@ public final class EmbeddedScopeGrammars {
         }
     }
 
-    /** text.git-rebase — stub. */
-    @GrammarRegistration(grammar = "stub-text.git-rebase.json", mimeType = "text/x-nmox-embed-stub-text-git-rebase")
-    public static final class StubTextGitRebase {
-
-        private StubTextGitRebase() {
-        }
-    }
-
-    /** text.git-commit — stub. */
-    @GrammarRegistration(grammar = "stub-text.git-commit.json", mimeType = "text/x-nmox-embed-stub-text-git-commit")
-    public static final class StubTextGitCommit {
-
-        private StubTextGitCommit() {
-        }
-    }
+    // text.git-rebase and text.git-commit were stubs here until 3.2.0,
+    // when the real grammars arrived (GitCommitGrammar, GitRebaseGrammar)
+    // and the stubs went, per the rule above: one grammar per scope.
 
     /** text.bibtex — stub. */
     @GrammarRegistration(grammar = "stub-text.bibtex.json", mimeType = "text/x-nmox-embed-stub-text-bibtex")

@@ -32,10 +32,25 @@ import org.openide.windows.WindowManager;
  * from the node it is given, so the aimed project's folder node is handed
  * to it; when that module is absent or declines, the plain action runs and
  * the status line says where the other door is.
+ *
+ * <p>After a re-aim (3.2.0, ledger 120): ⌃` remembers the project it last
+ * started a shell in, and when the aim has moved since, it starts a new
+ * shell in the NEW project beside the old one rather than bringing forward
+ * a terminal whose prompt sits in a folder the user has left - the VS Code
+ * habit this chord comes from keeps one terminal per window, and a window
+ * there IS a folder. A terminal ⌃` did not start (the platform's own menu,
+ * the Terminal button) is simply brought forward: where it sits is not
+ * known. And when a shell could not be started in the project, the status
+ * line says so rather than leaving a home-folder prompt to be mistaken for
+ * the project's.
  */
 @ActionID(category = "Window", id = "org.nmox.studio.rack.projectstudio.ProjectTerminalAction")
 @ActionRegistration(displayName = "#CTL_ProjectTerminalAction")
-@Messages("CTL_ProjectTerminalAction=Terminal in Project")
+@Messages({
+    "CTL_ProjectTerminalAction=Terminal in Project",
+    "# {0} - the project folder's name",
+    "ProjectTerminal_notInProject=The terminal could not start in {0}, so this one starts in your home folder"
+})
 public final class ProjectTerminal implements ActionListener {
 
     /**
@@ -65,25 +80,44 @@ public final class ProjectTerminal implements ActionListener {
         OPEN_PLAIN
     }
 
+    /** The project ⌃` last started a shell in; null until it has (an AtomicReference: written from the action instance). */
+    private static final java.util.concurrent.atomic.AtomicReference<File> LAST_STARTED_IN =
+            new java.util.concurrent.atomic.AtomicReference<>();
+
     /** The rule, pure: an open terminal wins, then the aimed project, then the plain terminal. */
     static Choice decide(boolean terminalOpen, File projectDir) {
-        if (terminalOpen) {
+        return decide(terminalOpen, projectDir, null);
+    }
+
+    /**
+     * The rule with the re-aim (3.2.0): an open terminal is brought forward
+     * unless ⌃` started it in a project the aim has since left, in which
+     * case a shell starts in the aimed project.
+     */
+    static Choice decide(boolean terminalOpen, File projectDir, File startedIn) {
+        boolean inProject = projectDir != null && projectDir.isDirectory();
+        if (terminalOpen && !(inProject && startedIn != null && !startedIn.equals(projectDir))) {
             return Choice.FOCUS_EXISTING;
         }
-        return projectDir != null && projectDir.isDirectory() ? Choice.OPEN_IN_PROJECT : Choice.OPEN_PLAIN;
+        return inProject ? Choice.OPEN_IN_PROJECT : Choice.OPEN_PLAIN;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         TopComponent container = WindowManager.getDefault().findTopComponent(CONTAINER_ID);
         boolean open = container != null && container.isOpened();
-        switch (decide(open, aimedProject())) {
+        File project = aimedProject();
+        switch (decide(open, project, LAST_STARTED_IN.get())) {
             case FOCUS_EXISTING -> {
                 container.requestActive();
             }
             case OPEN_IN_PROJECT -> {
-                if (!openIn(aimedProject(), e.getSource())) {
+                if (openIn(project, e.getSource())) {
+                    LAST_STARTED_IN.set(project);
+                } else {
                     openPlain(e.getSource());
+                    StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
+                            Bundle.ProjectTerminal_notInProject(project.getName())));
                 }
             }
             default -> openPlain(e.getSource());
@@ -91,9 +125,18 @@ public final class ProjectTerminal implements ActionListener {
     }
 
     /** Project Studio's Terminal button: always a new shell, in the project when it can be. */
-    static void openNew(Object source) {
+    public static void openNew(Object source) {
         File dir = aimedProject();
-        if (decide(false, dir) == Choice.OPEN_IN_PROJECT && openIn(dir, source)) {
+        if (decide(false, dir) == Choice.OPEN_IN_PROJECT) {
+            if (openIn(dir, source)) {
+                // the chord's memory too: a shell is now in THIS project, so
+                // the next ^` brings it forward instead of starting another
+                LAST_STARTED_IN.set(dir);
+                return;
+            }
+            openPlain(source);
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
+                    Bundle.ProjectTerminal_notInProject(dir.getName())));
             return;
         }
         openPlain(source);

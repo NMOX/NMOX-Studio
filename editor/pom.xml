@@ -251,6 +251,15 @@
             <artifactId>org-openide-util-lookup</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- projectapi-nb registers the ProjectManagerImplementation that
+             FileOwnerQuery reaches (Copy Relative Path's owning project,
+             CopyFilePathActionTest, 3.2.0); runtime gets it from the cluster -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-projectapi-nb</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

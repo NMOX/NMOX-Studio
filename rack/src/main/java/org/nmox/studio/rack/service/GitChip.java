@@ -28,6 +28,8 @@ final class GitChip {
     private volatile File repoRoot;
     private volatile String branch;
     private volatile int changeCount = UNKNOWN;
+    /** Commits to push and to pull, or null: no upstream, or not known yet. */
+    private volatile int[] aheadBehind;
 
     /**
      * An aim event landed. Equality-guarded: the same directory again
@@ -45,6 +47,7 @@ final class GitChip {
         repoRoot = dir == null ? null : GitFacts.repoRoot(dir);
         branch = repoRoot == null ? null : GitFacts.branch(repoRoot);
         changeCount = UNKNOWN;
+        aheadBehind = null;
         return true;
     }
 
@@ -74,16 +77,37 @@ final class GitChip {
         return repoRoot;
     }
 
-    /** Porcelain output arrived; the count is now known (0 is honest here). */
-    void porcelain(String porcelainOutput) {
-        changeCount = GitFacts.changeCount(porcelainOutput);
+    /**
+     * {@code git status --porcelain=v2 --branch} arrived: the dirty count
+     * is known (0 is honest here), and so is where the branch stands
+     * against its upstream when it has one.
+     */
+    void porcelain(String porcelainV2Output) {
+        changeCount = GitFacts.changeCountV2(porcelainV2Output);
+        aheadBehind = GitFacts.aheadBehind(porcelainV2Output);
     }
 
-    /** "⎇ main", then "⎇ main ±3" once a count is known; null = hidden. */
+    /**
+     * "⎇ main", then "⎇ main ±3" once a count is known, then "↑2 ↓1" for
+     * commits to push and to pull (3.2.0; VS Code's status bar sync
+     * counts) — each only when not zero, so an up-to-date branch reads as
+     * before. Null = hidden.
+     */
     String label() {
         if (!visible()) {
             return null;
         }
-        return "⎇ " + branch + (changeCount == UNKNOWN ? "" : " ±" + changeCount);
+        StringBuilder b = new StringBuilder("⎇ ").append(branch);
+        if (changeCount != UNKNOWN) {
+            b.append(" ±").append(changeCount);
+        }
+        int[] ab = aheadBehind;
+        if (ab != null && ab[0] > 0) {
+            b.append(" ↑").append(ab[0]);
+        }
+        if (ab != null && ab[1] > 0) {
+            b.append(" ↓").append(ab[1]);
+        }
+        return b.toString();
     }
 }

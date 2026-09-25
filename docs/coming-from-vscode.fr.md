@@ -22,9 +22,12 @@ Les colonnes macOS utilisent les symboles de la barre des menus (⌃ Contrôle, 
 | Le terminal, dans le dossier du projet | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Ouvrir un projet récent | ⌃R | **⌥⌘P** — Changer de projet… | Ctrl+R | **Ctrl+Alt+P** |
 | Aller à un symbole du projet | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Aller à la définition | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Renommer un symbole | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Aller à la définition | F12 | **F12** ou ⌘B | F12 | **F12** ou Ctrl+B |
+| Trouver les références | ⇧F12 | **⇧F12** — Rechercher les utilisations | Shift+F12 | **Shift+F12** |
+| Renommer un symbole | F2 | **F2** ou ⌃R | F2 | **F2** ou Ctrl+R |
+| Correction rapide | ⌘. | **⌘.** ou ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Aller à la ligne | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Revenir en arrière / aller en avant | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Commenter ou décommenter la ligne | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Afficher les suggestions | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Ajouter l’occurrence suivante à la sélection | ⌘D | **⌘D** ou ⌘J | Ctrl+D | **Ctrl+D** ou Ctrl+J |
@@ -33,8 +36,12 @@ Les colonnes macOS utilisent les symboles de la barre des menus (⌃ Contrôle, 
 | Déplacer la ligne vers le haut / le bas | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Copier la ligne vers le bas | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Supprimer la ligne | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Mettre le document en forme | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Indenter la ligne | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Remplacer | ⌥⌘F | **⌥⌘F** ou ⌘R | Ctrl+H | **Ctrl+H** |
+| Mettre le document en forme | ⇧⌥F | **⇧⌥F** ou ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Fermer l’onglet de l’éditeur | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Copier le chemin du fichier en cours d’édition | ⌥⌘C | **⌥⌘C** — Édition ▸ Copier le chemin | Shift+Alt+C | **Ctrl+Alt+C** |
+| Copier son chemin relatif | ⇧⌥⌘C | Édition ▸ Copier le chemin relatif (pas d’accord) | Ctrl+K Ctrl+Shift+Alt+C | Édition ▸ Copier le chemin relatif (pas d’accord) |
 | Le panneau Problèmes | ⇧⌘M | **⌘6** — Éléments à traiter (⇧⌘M y bascule un signet) | Ctrl+Shift+M | **Ctrl+6** |
 | Poser ou retirer un point d’arrêt | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Lancer le débogage | F5 | **⇧⌘F5** — Déboguer le fichier | F5 | **Ctrl+Shift+F5** |
@@ -45,9 +52,46 @@ Sous macOS, ⌘, est l’accord du menu de l’application lui-même ; chaque a
 
 - **F5 est pris pendant le débogage.** Ici il veut dire *Continuer*, comme dans tout IDE de la famille NetBeans : une session de débogage démarre donc par **⇧⌘F5** (Ctrl+Shift+F5) et reprend par F5.
 - **⌃R, c’est Renommer ici**, et c’est pourquoi *Changer de projet* vit sur ⌥⌘P au lieu de l’accord Open Recent de VS Code. Renommer fonctionne là où le langage du fichier le permet.
+- **Copier le chemin relatif n’a pas d’accord.** Le ⇧⌥⌘C de VS Code est Ctrl+Alt+Shift+C sur un PC, c’est-à-dire le *Clear Split* de la plateforme dans tous les profils de raccourcis ; la ligne est dans le menu Édition, et ⇧⌘P la trouve par le titre même que lui donne VS Code, *File: Copy Relative Path of Active File*.
 - **Ctrl+, sous Windows et Linux** recule dans l’historique de vos modifications, comme depuis toujours dans NetBeans ; les réglages sont sous Outils ▸ Options (sous macOS, **Settings…** dans le menu de l’application, ⌘,).
 
 **Aide ▸ Raccourcis clavier…** liste chaque accord NMOX de votre profil de raccourcis actif, les quatre accords de VS Code compris, lu dans les raccourcis en marche pour qu’il ne puisse pas s’écarter de ce que font les touches.
+
+### Chaque accord d’édition, mesuré
+
+Les accords que cherchent vos mains habituées à VS Code pendant que vous éditez, chacun recherché dans les raccourcis livrés du profil par défaut sous macOS. Là où l’accord de VS Code était libre ici, il fait désormais ce que fait VS Code (les lignes marquées **Pareil :**) ; là où il signifiait déjà quelque chose sur quoi comptent les utilisateurs de NetBeans, il garde ce sens et la ligne dit où se trouve l’action de VS Code.
+
+| VS Code, macOS | Ce que fait VS Code | Dans NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **Pareil :** Aller à la déclaration, comme ⌘B |
+| ⇧F12 | Go to References | **Pareil :** Rechercher les utilisations, comme ⌃F7 |
+| F2 | Rename Symbol | **Pareil :** Renommer, comme ⌃R |
+| ⌘. | Quick Fix | **Pareil :** les corrections de la ligne, telles que ⌃↩ les affiche |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Occurrence marquée précédente / suivante ; déplacer la ligne, c’est ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | Pareil, comme depuis toujours |
+| ⇧⌘K | Delete Line | Insérer le mot correspondant suivant (complète le mot à partir du fichier) ; supprimer la ligne, c’est ⌘E |
+| ⌘L | Expand Line Selection | Sélectionner l’identifiant ; sélectionner la ligne n’a pas d’accord |
+| ⇧⌘L | Select All Occurrences | Coller comme lignes dans l’éditeur ; sélectionner toutes les occurrences, c’est ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | Pareil, comme depuis toujours |
+| ⇧⌥A | Toggle Block Comment | Rien : il n’y a pas d’action à part pour les commentaires de bloc, et ⌘/ commente ou décommente |
+| ⌘] | Indent Line | **Pareil :** Décaler à droite |
+| ⌘[ | Outdent Line | Aller à l’accolade correspondante, comme depuis toujours ; désindenter, c’est ⇧Tab ou ⌃⇧← |
+| ⌘B | Toggle Sidebar | Aller à la déclaration ; ⇧⌘↩ n’affiche que l’éditeur, ⇧Esc agrandit la fenêtre où vous êtes |
+| ⌘J | Toggle Panel | Ajoute l’occurrence suivante dans l’éditeur (comme ⌘D) ; la fenêtre Output, c’est ⌘4 |
+| ⌘\ | Split Editor | Compléter le code dans l’éditeur ; scinder l’éditeur, c’est ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | Pareil, comme depuis toujours : l’accord d’Ouvrir un fichier récent rouvre le dernier fichier fermé |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **Pareil :** Précédent et Suivant parmi les endroits où vous avez modifié, comme ⌃← / ⌃→ (des accords que macOS garde d’habitude pour changer de bureau) |
+| ⌘G / ⇧⌘G | Find Next / Previous | Pareil, comme depuis toujours |
+| ⌥⌘F | Replace | **Pareil :** Remplacer, comme ⌘R |
+| ⇧⌘F | Find in Files | Pareil, comme depuis toujours : Rechercher dans les projets |
+| ⇧⌘O | Go to Symbol in Editor | Ouvrir un projet ; les symboles du fichier sont dans le Navigateur (⌘7) |
+| ⌘T | Go to Symbol in Workspace | Dans l’éditeur, échange les deux lettres autour du curseur ; les symboles du projet, c’est ⌥⇧⌘O |
+| ⌃G | Go to Line | Pareil, comme depuis toujours |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K est Insérer le mot correspondant précédent ; la liste est **Aide ▸ Raccourcis clavier…** |
+| ⌘, | Settings | Pareil, comme depuis toujours : NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **Pareil :** Mettre en forme, comme ⌃⇧F |
+
+Les accords marqués **Pareil :** sont posés dans chaque profil de raccourcis qui les laisse libres, et un profil qui donne à l’un d’eux son propre sens le garde : F12 dans les profils Eclipse, Emacs et NetBeans 5.5, F2 dans tous les profils sauf celui par défaut, ⇧F12 dans Emacs et NetBeans 5.5, ⌃- et ⌃⇧- dans Emacs et IntelliJ, ⇧⌥F dans IntelliJ. Sous Windows et Linux, F12, ⇧F12 et F2 fonctionnent de la même façon ; les autres accords de VS Code y sont différents, et le tableau plus haut donne les deux.
 
 
 <a id="from-the-terminal"></a>
@@ -63,7 +107,20 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-La commande rend la main aussitôt, et un deuxième `nmox` confie son dossier à l’IDE déjà lancé. Une colonne (`src/app.ts:42:7`) est acceptée et l’éditeur s’ouvre au début de la ligne ; un nom qui n’existe pas est refusé dans le terminal au lieu de démarrer quoi que ce soit. `-r` est accepté, `-n` ouvre dans l’unique fenêtre, et `--wait`, `--diff` et les autres options propres à VS Code sont refusées par leur nom. Homebrew, l’installateur Windows (*Ajouter « nmox » au PATH*) et les paquets Linux la mettent dans votre PATH ; pour une installation depuis le DMG, le [guide de l’utilisateur](user-guide.fr.md#2-first-launch) donne le lien en une ligne.
+La commande rend la main aussitôt, et un deuxième `nmox` confie son dossier à l’IDE déjà lancé. Une colonne (`src/app.ts:42:7`) est acceptée et l’éditeur s’ouvre au début de la ligne ; un nom qui n’existe pas est refusé dans le terminal au lieu de démarrer quoi que ce soit. `-r` est accepté, `-n` ouvre dans l’unique fenêtre, et les options `-a` et `-v` sont refusées par leur nom.
+
+`-w` (`--wait`) ouvre un fichier et attend que vous fermiez son onglet, et `-d` (`--diff`) compare deux fichiers côte à côte : NMOX Studio peut donc être l’éditeur, le difftool et le mergetool de git, comme l’est `code --wait` :
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
+```
+
+`git commit` ouvre alors le message dans l’IDE ; enregistrez-le, fermez l’onglet, et git poursuit. Quitter l’IDE alors qu’un fichier est encore ouvert le rend aussi, avec ce qui a été enregistré. `git mergetool` ouvre chaque fichier en conflit de la même façon. Là où VS Code place *Accept Current Change | Accept Incoming Change | Accept Both Changes* au-dessus d’un conflit, NMOX Studio teinte les deux côtés et pose un avertissement sur la ligne `<<<<<<<` ; l’ampoule dans la marge, ou le correctif rapide avec le curseur sur cette ligne (⌘. sur Mac, Alt+Enter ailleurs), propose les trois mêmes, chacun une seule modification annulable. Enregistrez, fermez l’onglet, et git passe au fichier suivant. Les teintes et les trois choix sont là dans tout fichier qui porte des marqueurs de conflit, avec ou sans `git mergetool`. **Équipe ▸ Utiliser NMOX Studio avec Git…** règle ces mêmes lignes pour vous, après avoir montré la valeur actuelle de chacune. Homebrew, l’installateur Windows (*Ajouter « nmox » au PATH*) et les paquets Linux la mettent dans votre PATH ; pour une installation depuis le DMG, le [guide de l’utilisateur](user-guide.fr.md#2-first-launch) donne le lien en une ligne.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Où vit chaque idée de VS Code
@@ -78,6 +135,7 @@ La commande rend la main aussitôt, et un deuxième `nmox` confie son dossier à
 | **Terminal intégré** | La fenêtre **Terminal** (⌃\`) : la première pression démarre un shell dans le dossier du projet, les suivantes le ramènent. |
 | **`settings.json`** | Outils ▸ Options (sous macOS, NMOX Studio ▸ Settings…). Le `.vscode/settings.json` d’un dépôt est lu lui aussi : `editor.tabSize`, `editor.insertSpaces` et `editor.indentSize` règlent son indentation pendant la frappe, `files.trimTrailingWhitespace` et `files.insertFinalNewline` (quand ils valent `true`) s’appliquent à l’enregistrement, et un bloc de langage comme `"[typescript]"` les remplace pour son langage. Là où le dépôt a aussi un `.editorconfig`, c’est le `.editorconfig` qui l’emporte partout où les deux s’expriment. |
 | **Problems panel** | **Éléments à traiter** (⌘6), ou un clic sur le compte **✕ ⚠** de la barre d’état : les erreurs et avertissements des serveurs de langage, et les constats de lint et de typage des appareils PURITY et TYPEGUARD du rack. Comme dans VS Code, certains serveurs ne signalent que les fichiers que vous avez ouverts ; gopls signale tout le paquet. |
+| **Search view** (`search.useIgnoreFiles`) | **Rechercher dans les projets** (⇧⌘F). Comme dans VS Code, la recherche passe ce qu’ignorent les fichiers `.gitignore` du dépôt et `.git/info/exclude` : `node_modules` et `dist/` restent donc hors des résultats quand le `.gitignore` les liste ; hors d’un dépôt, elle passe par leur nom `node_modules`, `dist`, `build` et les autres dossiers de build. Cochez **Rechercher dans les sources générées** dans sa boîte de dialogue pour y chercher aussi. Votre fichier global d’exclusions git n’est pas lu. |
 | **Outline** | Le **Navigateur** (⌘7). |
 | **Source Control** | La pastille git de la barre d’état (branche et modifications, un clic vers l’historique) et le menu **Équipe**. |
 | **Workspace Trust** | La même idée, appliquée avant que quoi que ce soit choisi par un dépôt ne s’exécute : ouvrir un projet cloné n’exécute rien tant que vous ne l’avez pas approuvé (**Confiance de l’espace de travail**). |
@@ -88,7 +146,7 @@ La première fois que vous ouvrez un dépôt qui porte `.vscode/tasks.json`, `la
 <a id="what-is-honestly-different"></a>
 ## Ce qui est franchement différent
 
-- **⌘D ajoute l’occurrence suivante dans le profil par défaut, pas dans tous les profils.** Le profil Eclipse garde ⌘D pour le *Delete Line* d’Eclipse et le profil NetBeans 5.5 pour *Shift Line Left* ; là, ⌘J (Ctrl+J) est le même geste.
+- **⌘D ajoute l’occurrence suivante dans le profil par défaut, pas dans tous les profils.** Le profil Eclipse garde ⌘D pour le *Delete Line* d’Eclipse, le profil NetBeans 5.5 pour *Shift Line Left* et le profil Emacs pour *kill word* (et Ctrl+D pour *delete character* sous Windows et Linux) ; le profil IntelliJ a ⌘D sous macOS et garde Ctrl+D pour *Duplicate Line* sous Windows et Linux. L’autre accord du geste change aussi selon le profil : ⌘J (Ctrl+J) dans le profil par défaut, ⌃J (Alt+J) dans Eclipse et IntelliJ, et aucun dans Emacs et NetBeans 5.5, où Raccourcis clavier peut lui en donner un.
 - **⌃\` ouvre le Terminal et lui donne le focus ; il ne le masque pas.** Et tant que le Terminal a le focus, les touches appartiennent à votre shell : la deuxième pression atteint le shell au lieu de vous ramener dans l’éditeur.
 - **`launch.json` est lu, et ce que le débogueur ne peut pas honorer est refusé.** Le débogueur transmet ici un programme, son dossier de travail, ses `args` (une liste de chaînes) et son `env` (des chaînes ajoutées à l’environnement hérité) : une configuration qui fixe `envFile`, `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` ou tout autre champ qu’on ne lui a pas appris est listée mais pas démarrée, et Entrée nomme ces champs dans la barre d’état. Démarrer le programme sans eux déboguerait autre chose que ce que dit le fichier. Des `args` écrits en une seule chaîne (VS Code la confie à un shell) et une valeur `null` dans `env` (qui supprime une variable) sont refusés de la même façon, tout comme `"request": "attach"`, une entrée `compounds`, un type sans adaptateur ici (`go`, `msedge`, `cppdbg` et les autres), une valeur que seul VS Code peut fournir (`${file}`, `${input:…}`) et un chemin hors du projet. Les champs qui ne font que façonner ce que montre le débogueur — `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`, `presentation` — sont acceptés mais pas appliqués ; la sortie du programme va dans la fenêtre Output.
 - **`tasks.json` est lu, et ce qui ne peut pas s’exécuter tel qu’il est écrit est refusé.** Une tâche qui utilise une valeur que seul VS Code peut fournir (`${input:…}`, `${file}`, `${config:…}`, `${command:…}`) ou qui dépend d’une autre tâche par `dependsOn` est listée mais pas exécutée : Entrée dit dans la barre d’état quelle variable ou quelle tâche. L’exécuter avec la valeur laissée vide, ou sans la tâche dont elle dépend, exécuterait autre chose que ce que dit le fichier. De même pour un type de tâche fourni par une extension (`gulp`, `typescript`) et pour un dossier de travail hors du projet.

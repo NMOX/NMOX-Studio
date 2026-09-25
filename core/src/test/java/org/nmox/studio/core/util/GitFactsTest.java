@@ -226,4 +226,83 @@ class GitFactsTest {
     void branchRefusesNonHexSha() throws Exception {
         assertThat(GitFacts.branch(repoWithHead("z".repeat(40) + "\n"))).isNull();
     }
+
+    // ---- headStamp (3.2.0, line blame's cache key) ----
+
+    @Test
+    @DisplayName("headStamp moves when the branch ref moves — a commit re-keys the blame cache")
+    void headStampFollowsTheRef() throws Exception {
+        File repo = repoWithHead("ref: refs/heads/main\n");
+        Path ref = repo.toPath().resolve(".git/refs/heads/main");
+        Files.createDirectories(ref.getParent());
+        Files.writeString(ref, "a".repeat(40) + "\n", StandardCharsets.UTF_8);
+        String before = GitFacts.headStamp(repo);
+        Files.writeString(ref, "b".repeat(40) + "\n", StandardCharsets.UTF_8);
+        String after = GitFacts.headStamp(repo);
+        assertThat(before).isNotNull().contains("a".repeat(40));
+        assertThat(after).isNotEqualTo(before).contains("b".repeat(40));
+    }
+
+    @Test
+    @DisplayName("headStamp: a detached HEAD is its own stamp; outside a repository it is null")
+    void headStampDetachedAndOutside() throws Exception {
+        assertThat(GitFacts.headStamp(repoWithHead("c".repeat(40) + "\n"))).startsWith("c".repeat(40));
+        assertThat(GitFacts.headStamp(null)).isNull();
+        Path plain = dir.resolve("plain");
+        Files.createDirectories(plain);
+        assertThat(GitFacts.headStamp(plain.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("headStamp never reads outside refs/: a crafted HEAD naming ../ is not followed")
+    void headStampRefusesTraversal() throws Exception {
+        File repo = repoWithHead("ref: refs/../../secret\n");
+        Files.writeString(dir.resolve("repo/secret"), "TOKEN-VALUE\n", StandardCharsets.UTF_8);
+        assertThat(GitFacts.headStamp(repo)).isNotNull().doesNotContain("TOKEN-VALUE");
+    }
+
+    // ---- 3.2.0: porcelain v2, onBranch, regular files only ----
+
+    @Test
+    @DisplayName("porcelain v2: entry lines count, # branch headers never do")
+    void changeCountV2() {
+        String out = "# branch.oid abc\n# branch.head main\n# branch.ab +1 -0\n"
+                + "1 .M N... 100644 100644 100644 a b x.js\n2 R. N... 100644 100644 100644 a b R100 y.js\tz.js\n"
+                + "u UU N... 100644 100644 100644 100644 a b c w.js\n? new.txt\n\n";
+        assertThat(GitFacts.changeCountV2(out)).isEqualTo(4);
+        assertThat(GitFacts.changeCountV2("# branch.head main\n")).isZero();
+        assertThat(GitFacts.changeCountV2(null)).isZero();
+    }
+
+    @Test
+    @DisplayName("ahead/behind from # branch.ab; none without an upstream or when malformed")
+    void aheadBehind() {
+        assertThat(GitFacts.aheadBehind("# branch.head main\n# branch.ab +3 -12\n")).containsExactly(3, 12);
+        assertThat(GitFacts.aheadBehind("# branch.head main\n")).as("no upstream").isNull();
+        assertThat(GitFacts.aheadBehind("# branch.ab 3 -1\n")).isNull();
+        assertThat(GitFacts.aheadBehind("# branch.ab +x -1\n")).isNull();
+        assertThat(GitFacts.aheadBehind("# branch.ab +1\n")).isNull();
+        assertThat(GitFacts.aheadBehind(null)).isNull();
+    }
+
+    @Test
+    @DisplayName("onBranch: a ref is a branch; a detached sha, an empty ref and no repo are not")
+    void onBranch() throws Exception {
+        assertThat(GitFacts.onBranch(repoWithHead("ref: refs/heads/main\n"))).isTrue();
+        assertThat(GitFacts.onBranch(repoWithHead("0123456789abcdef0123456789abcdef01234567\n"))).isFalse();
+        assertThat(GitFacts.onBranch(repoWithHead("ref: refs/heads/\n"))).isFalse();
+        assertThat(GitFacts.onBranch(null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("a HEAD that is not a regular file (a FIFO planted in .git) reads as nothing, never blocks")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void headNotARegularFile() throws Exception {
+        Path gitDir = dir.resolve("fifo/.git");
+        Files.createDirectories(gitDir);
+        Process mk = new ProcessBuilder("mkfifo", gitDir.resolve("HEAD").toString()).start();
+        assertThat(mk.waitFor()).isZero();
+        org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(5),
+                () -> assertThat(GitFacts.branch(dir.resolve("fifo").toFile())).isNull());
+    }
 }

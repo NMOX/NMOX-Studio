@@ -86,8 +86,8 @@ public class RackSquiggler implements Runnable {
                 : org.netbeans.api.editor.EditorRegistry.componentList()) {
             javax.swing.text.Document doc = comp.getDocument();
             Object sdp = doc.getProperty(javax.swing.text.Document.StreamDescriptionProperty);
-            FileObject fo = sdp instanceof org.openide.loaders.DataObject dataObject
-                    ? dataObject.getPrimaryFile()
+            FileObject fo = sdp instanceof org.openide.loaders.DataObject
+                    ? org.nmox.studio.core.util.EditedFile.of(doc)
                     : sdp instanceof FileObject f ? f : null;
             if (fo != null && file.equals(FileUtil.toFile(fo))) {
                 return doc;
@@ -106,8 +106,8 @@ public class RackSquiggler implements Runnable {
             }
             Object sdp = comp.getDocument()
                     .getProperty(javax.swing.text.Document.StreamDescriptionProperty);
-            FileObject fo = sdp instanceof org.openide.loaders.DataObject dataObject
-                    ? dataObject.getPrimaryFile()
+            FileObject fo = sdp instanceof org.openide.loaders.DataObject
+                    ? org.nmox.studio.core.util.EditedFile.of(comp.getDocument())
                     : sdp instanceof FileObject f ? f : null;
             File file = fo == null ? null : FileUtil.toFile(fo);
             if (file == null) {

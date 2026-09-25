@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    3.2: two VS Code macOS editing chords, on actions the platform already
+    has:
+      Cmd+]      indent the line or the selection  (shift-line-right)
+      Opt+Cmd+F  Replace                           (replace; Cmd+R stays)
+
+    macOS only: the layer gives this file nbeditor-settings-targetOS=OS_MAC,
+    the attribute the editor settings storage reads (the -mac.xml suffix is
+    the platform's naming habit, not the switch). On Windows and Linux D is
+    Ctrl, and there Ctrl+] is the Idea profile's Match Brace and Ctrl+Alt+F
+    its Introduce Field - while VS Code's own Windows Replace, Ctrl+H,
+    already replaces here.
+
+    Cmd+[ is NOT bound: it has always been Match Brace (the braces-matching
+    module), which NetBeans users rely on. Measured in the assembled
+    cluster: Cmd+] and Opt+Cmd+F are free on macOS in all five profiles,
+    in the editor and globally, so this file rides all five.
+-->
+<bindings>
+    <bind actionName="shift-line-right" key="D-CLOSE_BRACKET"/>
+    <bind actionName="replace" key="DA-F"/>
+</bindings>

@@ -70,6 +70,49 @@ class GitLinkTest {
     }
 
     @Test
+    @DisplayName("a folder is a tree url; the repository root is tree/<ref> with no trailing slash (3.2.0)")
+    void treeUrls() {
+        GitLink.Remote r = new GitLink.Remote("NMOX", "NMOX-Studio");
+        assertThat(GitLink.treeUrl(r, "main", "")).isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/main");
+        assertThat(GitLink.treeUrl(r, "main", null)).isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/main");
+        assertThat(GitLink.treeUrl(r, "feature/x", "rack/src/main"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/tree/feature/x/rack/src/main");
+    }
+
+    @Test
+    @DisplayName("a tree url encodes its segments exactly as a blob url does")
+    void treeUrlsEncodeLikeBlobs() {
+        GitLink.Remote r = new GitLink.Remote("o", "r");
+        assertThat(GitLink.treeUrl(r, "main", "docs/My Notes#1/ü"))
+                .isEqualTo("https://github.com/o/r/tree/main/docs/My%20Notes%231/%C3%BC");
+        assertThat(GitLink.treeUrl(r, "main", "docs/My Notes#1/ü").replace("/tree/", "/blob/"))
+                .isEqualTo(GitLink.blobUrl(r, "main", "docs/My Notes#1/ü", 0, 0));
+    }
+
+    @Test
+    @DisplayName("New Pull Request is GitHub's compare page for the branch, its slash kept and its segments encoded")
+    void compareUrls() {
+        GitLink.Remote r = new GitLink.Remote("NMOX", "NMOX-Studio");
+        assertThat(GitLink.compareUrl(r, "claude/dx-3.2"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/compare/claude/dx-3.2?expand=1");
+        assertThat(GitLink.compareUrl(r, "fix #12"))
+                .isEqualTo("https://github.com/NMOX/NMOX-Studio/compare/fix%20%2312?expand=1");
+    }
+
+    @Test
+    @DisplayName("a remote shown in a refusal loses the token its URL may carry; scp remotes are kept")
+    void withoutCredentials() {
+        assertThat(GitLink.withoutCredentials("https://oauth2:glpat-SECRET@gitlab.com/g/p.git"))
+                .isEqualTo("https://gitlab.com/g/p.git");
+        assertThat(GitLink.withoutCredentials("https://ghp_SECRET@github.com/o/r"))
+                .isEqualTo("https://github.com/o/r");
+        assertThat(GitLink.withoutCredentials("git@gitlab.com:g/p.git")).isEqualTo("git@gitlab.com:g/p.git");
+        assertThat(GitLink.withoutCredentials("https://example.com/a@b/c")).as("an @ in the path is not user info")
+                .isEqualTo("https://example.com/a@b/c");
+        assertThat(GitLink.withoutCredentials("ssh://git@host:2222/r.git")).isEqualTo("ssh://host:2222/r.git");
+    }
+
+    @Test
     @DisplayName("the link line labels the path and range and escapes a bracket in the name")
     void linkLine() {
         assertThat(GitLink.linkLine("src/App.jsx", 3, 14, "U")).isEqualTo("[src/App.jsx#L3-L14](U)");
@@ -105,5 +148,19 @@ class GitLinkTest {
         assertThat(GitFacts.originUrl(main.toFile())).isNull();
         assertThat(GitFacts.originUrl(tmp.resolve("nowhere").toFile())).isNull();
         assertThat(GitFacts.originUrl((File) null)).isNull();
+    }
+
+    @Test
+    @DisplayName("a commit url takes only a commit id — 7 to 64 hex digits — so repository text never steers it (3.2.0)")
+    void commitUrls() {
+        GitLink.Remote r = GitLink.parseRemote("git@github.com:o/r.git");
+        assertThat(GitLink.commitUrl(r, "ABCDEF0")).isEqualTo("https://github.com/o/r/commit/abcdef0");
+        assertThat(GitLink.commitUrl(r, "a".repeat(64))).isNotNull();
+        assertThat(GitLink.commitUrl(r, "a".repeat(65))).isNull();
+        assertThat(GitLink.commitUrl(r, "abcdef")).isNull();
+        assertThat(GitLink.commitUrl(r, "abcdefg")).isNull();
+        assertThat(GitLink.commitUrl(r, "abc/../x")).isNull();
+        assertThat(GitLink.commitUrl(r, null)).isNull();
+        assertThat(GitLink.commitUrl(r, "\uFF10\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16")).as("fullwidth digits").isNull();
     }
 }

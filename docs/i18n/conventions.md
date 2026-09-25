@@ -15,7 +15,7 @@ the build by key. Register (formal or informal address) is gated by a small
 word list per language. Idiom is not gated, and cannot be: that half is a
 reader's job, done again for every language that ships.
 
-Two rules hold for every language:
+Three rules hold for every language:
 
 - **The ellipsis is one character, `…` (U+2026).** The platform's own
   English writes three periods, and a translated menu that mixes `...`
@@ -23,6 +23,24 @@ Two rules hold for every language:
 - **Quotation marks are the language's own.** A straight `"` pair around
   a name is a typewriter habit. It stays straight only inside markup,
   code, or examples the user types (`"?" "*"` in a search pattern).
+- **A mnemonic is a letter the platform can map: `A`–`Z` or `0`–`9`.**
+  Measured in 3.2.0 on the shipped `org.openide.awt.Mnemonics`: `&Editor`
+  gives the key E, but `&Éditeur`, `Pozosta&łe`, `&Đóng` and `&Файл` give
+  NO mnemonic at all. Any other character is looked up in a branded
+  `Mnemonics.properties` table the product does not ship; the lookup fails,
+  logs an INFO line every time the menu is built, and assigns nothing.
+- **Where the label is written in letters, the mnemonic is one of them,
+  underlined in place**: `Edito&r`, `Dokum&ente…`, `Tài &liệu…`. The Latin
+  letter appended in parentheses, `Editor(&J)`, is the convention of
+  scripts with no Latin letter to underline (Chinese, Hindi, Hebrew,
+  Arabic, below). In a language written in Latin letters it is the lazy
+  answer to a collision, and on macOS, where Swing shows no mnemonics, the
+  reader sees a stray `(J)` after the word. A label keeps an appended
+  letter only when every mappable letter it contains is already claimed by
+  another row of the same menu — which is why Russian and Ukrainian keep
+  theirs: a Cyrillic letter cannot be mapped (the first rule), so their
+  appended Latin letter is the only mnemonic that works. `MenuRowsSpeakTest`
+  holds both rules over every platform menu row.
 
 ## es — Español
 
@@ -55,6 +73,15 @@ Two rules hold for every language:
 - Quotes: «ёлочки», no inner spaces.
 - Ukrainian apostrophes are `’` (U+2019), which MessageFormat leaves alone
   (v2.98.0).
+- **Mnemonics: open.** The overlays embed a Cyrillic letter (`&Файл`), and
+  measured in 3.2.0 no Cyrillic letter maps to a key (the mapping rule
+  above), so about 260 values per language carry a mnemonic that does
+  nothing (138 Russian and 136 Ukrainian menu rows among them). The fix is
+  either a shipped Cyrillic-to-keycode table for `org.openide.awt.Mnemonics`
+  (a key by keyboard position, as the platform's own l10n once did) or
+  Latin letters; until one is chosen, `MenuRowsSpeakTest` records these two
+  languages as the one exception to the mapping law, and the appended Latin
+  letters they carry stay, because they are the only mnemonics that work.
 
 ## pl — Polski
 
@@ -128,6 +155,34 @@ Two rules hold for every language:
 - Technical tokens (`npm`, `package.json`, `{0}`) stay Latin inside the
   Hebrew sentence. The bidi algorithm places them; a translation never
   reorders them by hand.
+- **A path or name that begins or ends with a neutral character takes an
+  LRM (U+200E) on that side** (decided in 3.2.0, ledger 121). `.` `~` `/`
+  and a glob's `*` have no direction of their own, so between a Hebrew
+  word and a Latin letter they take the sentence's direction and move to
+  the far side of the name. Measured with `java.text.Bidi` in a
+  right-to-left paragraph: `שלום ~/NMOX/app` is drawn `NMOX/app/~`,
+  `./app/src` as `app/src/.`, `../shared/lib` as `shared/lib/..`,
+  `/usr/local/bin` as `usr/local/bin/`, `.env` as `env.` and `*.json` as
+  `json.*`; with an LRM before the path each is drawn whole. The end
+  detaches too: `~/.nmox/devices.d/` before a Hebrew word (or at the end
+  of a right-to-left line) is drawn with its last `/` on the far side, and
+  `nmox .` as `. nmox`; an LRM after the path keeps it. So: an LRM before
+  a path beginning with `.` `~` `/` (or a glob's `*`) when the nearest
+  strong character before it is right to left (a letter or an RLM), and
+  an LRM after one ending with `/` (or, in a code span, `.`) when the
+  nearest strong character after it is right to left or the right-to-left
+  line ends there. The mark goes **outside** the code span, before its
+  opening backtick or after its closing one, so a reader who copies the
+  path copies no invisible character. `RtlDocsPathDirectionGateTest` derives the paths from every
+  Hebrew and Arabic document and pins the measurement itself.
+- **An argument after a right-to-left word is isolated**: LRI (U+2066)
+  … PDI (U+2069) around a `{n}` that carries a name, a path or a number,
+  so its leading `.` or `~` stays with it (`RtlPlaceholderIsolationGateTest`).
+  An argument that is itself a joined list of **right-to-left phrases**
+  takes FSI (U+2068) … PDI instead: an LRI lays such a list out left to
+  right and so draws its phrases in reverse order (3.2.0, found in Check
+  Translations' summary). FSI takes the direction of the argument's first
+  strong letter, so a file name inside it still reads left to right.
 
 ## ar — العربية (مصري)
 
@@ -164,6 +219,10 @@ Two rules hold for every language:
 - **A dotfile name after an Arabic word takes an LRM before its dot**:
   `في ‎.env`, `(‎.nmoxdb.json)`. Without it the dot takes the sentence's
   direction and is drawn after the name. The gate holds this for Hebrew too.
+  In the documents the rule is the Hebrew section's wider one, measured in
+  3.2.0: any path beginning with `.` `~` `/` (or a glob's `*`) takes the
+  LRM before it, and one ending with `/` takes one after it
+  (`RtlDocsPathDirectionGateTest`).
 - **Machine text is kept in one direction by the code, not the translation.**
   An Arabic clock ends in a letter (`2:14 م`), so a history row that begins
   with the time would run right to left and move a SQL statement's semicolon

@@ -14,6 +14,15 @@ class PointAnAgentActionTest {
     @Test
     @DisplayName("without the rack's action the door says so on the status line")
     void speaksWithoutRack() {
+        // The platform's NbStatusDisplayer.add reads messages.get(0) inside its
+        // index loop, so when the head of its list is a message an earlier test
+        // set and nobody held (collected), the NEXT plain setStatusText lands
+        // behind an older live message and getStatusText keeps answering the
+        // older one (measured on RELEASE310: "second", importance-5 message
+        // collected, "third" → still reads "second"; "fourth" → "fourth").
+        // getStatusText purges a dead head, so read once first; the product's
+        // exposure is recorded, this test is about the door's own sentence.
+        StatusDisplayer.getDefault().getStatusText();
         new PointAnAgentAction((category, id) -> null).actionPerformed(null);
         assertThat(StatusDisplayer.getDefault().getStatusText()).contains("Agent Port").contains("not installed");
     }

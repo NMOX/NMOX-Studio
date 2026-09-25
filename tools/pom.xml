@@ -114,6 +114,13 @@
             <artifactId>org-openide-util-ui</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- SharabilityQuery: a WebProject answers NOT_SHARABLE for what its
+             repository ignores, so Find in Projects skips it by default (3.2) -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-queries</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <!-- Quick Search (Cmd+I): the aimed project's npm scripts (v3.1.0) -->
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -154,6 +161,25 @@
         <dependency>
             <groupId>org.netbeans.modules</groupId>
             <artifactId>org-netbeans-modules-masterfs</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- The platform's own search walk (SearchInfoUtils + its default
+             Sharability/Visibility filters), so FindInProjectsIgnoresTest
+             measures what Find in Projects enumerates rather than a model
+             of it; at runtime the platform cluster provides it -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-api-search</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- ProjectManager.<clinit> needs the ProjectManagerImplementation
+             projectapi-nb registers; FileOwnerQuery -> WebProjectFactory is
+             the path the sharability answer takes (same entry as rack's) -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-projectapi-nb</artifactId>
             <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>

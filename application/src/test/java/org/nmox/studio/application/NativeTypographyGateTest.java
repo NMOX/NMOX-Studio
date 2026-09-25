@@ -95,6 +95,17 @@ class NativeTypographyGateTest {
                 word("", "افتح|اختار|اضغط|دوس|اكتب|جرب|روح|خلي|استخدم|اسأل")));
     }
 
+    /**
+     * Whether this language's convention APPENDS a Latin mnemonic,
+     * {@code 文件(&F)}, rather than underlining a letter of the label. One
+     * home for the fact: {@code MenuRowsSpeakTest} asks here before it
+     * refuses an appended letter.
+     */
+    static boolean appendsMnemonic(String lang) {
+        Convention c = CONVENTION.get(lang);
+        return c != null && c.appendedMnemonic();
+    }
+
     private static Pattern word(String flags, String alternatives) {
         return Pattern.compile(flags + "(?<![\\p{L}\\-/.])(" + alternatives + ")(?!\\p{L})");
     }
@@ -278,7 +289,10 @@ class NativeTypographyGateTest {
     private static final Pattern RTL_NEUTRAL_OPENS_LATIN = Pattern.compile("^\\s*[.\\/\\-_~#@]+[A-Za-z]");
     /** A dotfile name after a right-to-left word, no LRM before its dot: `في ملف .env`. */
     private static final Pattern RTL_DOTFILE_AFTER_RTL_WORD =
-            Pattern.compile("[\\u0590-\\u05ff\\u0600-\\u06ff][\\s«\"(]+\\.[A-Za-z]");
+            // 3.2.0 widened it from a dotfile's dot to any path beginning with a
+            // neutral (`~/`, `./`, `../`), the rule the documents' gate
+            // (RtlDocsPathDirectionGateTest) measured: each detaches the same way
+            Pattern.compile("[\\u0590-\\u05ff\\u0600-\\u06ff][\\s«\"(]+(\\.[A-Za-z]|~/|\\.{1,2}/)");
     /** A keyboard chord glyph anywhere in the value. */
     private static final Pattern CHORD = Pattern.compile("[⌘⌥⇧⌃]");
 
@@ -328,7 +342,7 @@ class NativeTypographyGateTest {
             // of `.env` takes the sentence's direction and is drawn after the
             // name (the Arabic walk). An LRM before the dot keeps it with `env`.
             if (RTL_DOTFILE_AFTER_RTL_WORD.matcher(t).find()) {
-                wrong.add(v.name() + "   (LRM U+200E before the dotfile's dot)");
+                wrong.add(v.name() + "   (LRM U+200E before the path's leading neutral)");
             }
             // The second walk found no mark at all could move `IRC  ⌥⌘3`: Swing
             // runs bidi only over text it calls complex — a right-to-left

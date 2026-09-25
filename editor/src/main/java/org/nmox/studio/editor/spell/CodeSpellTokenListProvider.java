@@ -98,6 +98,10 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
     @MimeRegistration(mimeType = "text/x-makefile", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-protobuf", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-prisma", service = TokenListProvider.class),
+    // 3.2.0: a rebase todo is commands and hashes, and its comments are the
+    // only prose in it (the commit MESSAGE file is prose throughout and has
+    // its own provider, GitMessageSpellTokenListProvider)
+    @MimeRegistration(mimeType = "text/x-git-rebase", service = TokenListProvider.class),
     // platform-owned config mimes that ship without a comments-only binding
     @MimeRegistration(mimeType = "text/x-yaml", service = TokenListProvider.class),
     @MimeRegistration(mimeType = "text/x-toml", service = TokenListProvider.class),

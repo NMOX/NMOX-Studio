@@ -347,8 +347,15 @@ class BoundedReadLedgerTest {
     void theReaderRefusesBeforeReading() throws IOException {
         String body = read(Path.of("..", "core", "src", "main", "java", "org", "nmox",
                 "studio", "core", "util", "BoundedReads.java"));
+        int regular = body.indexOf("Files.isRegularFile(file)");
         int size = body.indexOf("Files.size(file)");
-        int read = body.indexOf("Files.readString(file");
+        // 3.2.0: the read itself is capped too, so a file that grows between
+        // the size and the read cannot hand back more than the cap
+        int read = body.indexOf("readNBytes(");
+        assertThat(regular)
+                .as("only a regular file's size means anything: a link to /dev/zero reports 0 "
+                        + "and never ends (3.2.0) — asked before the size")
+                .isGreaterThan(0).isLessThan(size);
         assertThat(size).as("BoundedReads must measure the file").isGreaterThan(0);
         assertThat(read).as("BoundedReads must read the file").isGreaterThan(0);
         assertThat(size)

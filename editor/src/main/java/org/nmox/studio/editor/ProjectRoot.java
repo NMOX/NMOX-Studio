@@ -2,7 +2,6 @@ package org.nmox.studio.editor;
 
 import java.io.File;
 import javax.swing.text.Document;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -43,7 +42,7 @@ public final class ProjectRoot {
 
     /** The project root for the file behind {@code doc}, or null when it has none on disk. */
     public static File of(Document doc) {
-        return of(NbEditorUtilities.getFileObject(doc));
+        return of(org.nmox.studio.core.util.EditedFile.of(doc));
     }
 
     /** The project root for {@code fo}, or null when it is not a real file. */

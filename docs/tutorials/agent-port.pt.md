@@ -38,8 +38,21 @@ cliente pronta:
 }
 ```
 
-Cole isso no `.mcp.json` do seu agente. O token existe só nessa caixa de
-diálogo — nunca vai para log nem é gravado — e morre com a porta.
+Cole isso no `.mcp.json` do seu agente, ou pressione **Copiar para o Claude
+Code** para obter a única linha que o Claude Code aceita no lugar:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+O token nunca vai para log. A menos que você peça o contrário, ele existe só
+nessa caixa de diálogo e morre com a porta, então a próxima inicialização tem
+um endereço novo e um token novo. Marque **Manter este endereço e este token**
+e ele é guardado no chaveiro do sistema e reutilizado, com a mesma porta, de
+modo que um agente configurado uma vez ainda se conecta amanhã; se outro
+programa tiver ocupado essa porta, o NMOX Studio abre uma nova e avisa.
+Marque também **Iniciar junto com o NMOX Studio** e a porta sobe junto com a
+IDE. Desmarcar Manter apaga a entrada do chaveiro.
 **Parar Agent Port** encerra; sair da IDE também. Enquanto ele escuta, a
 linha de status mostra **⌁ agent port :N** — uma porta que pode ler a sua
 IDE nunca fica invisível; a dica do selo conta os agentes com stream

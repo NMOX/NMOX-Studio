@@ -37,8 +37,21 @@ sẵn:
 }
 ```
 
-Dán nó vào `.mcp.json` của tác nhân. Token chỉ tồn tại trong hộp thoại đó —
-không bao giờ được ghi vào nhật ký hay lưu lại — và mất đi cùng với cổng.
+Dán nó vào `.mcp.json` của tác nhân, hoặc nhấn **Sao chép cho Claude Code**
+để lấy một dòng duy nhất mà Claude Code nhận thay vào đó:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+Token không bao giờ được ghi vào nhật ký. Trừ khi bạn yêu cầu khác, nó chỉ tồn
+tại trong hộp thoại đó và mất đi cùng với cổng, nên lần khởi động sau có địa
+chỉ mới và token mới. Đánh dấu **Giữ địa chỉ và mã thông báo này** thì nó được
+lưu trong chùm khóa của hệ thống và dùng lại, với cùng cổng, nên tác nhân đã
+cấu hình một lần vẫn kết nối được vào ngày mai; nếu chương trình khác đã chiếm
+cổng đó, NMOX Studio mở một cổng mới và báo cho bạn. Đánh dấu thêm **Khởi động
+cùng NMOX Studio** thì cổng khởi động cùng IDE. Bỏ đánh dấu Giữ sẽ xóa mục đó
+khỏi chùm khóa.
 **Dừng Agent Port** kết thúc nó; thoát IDE cũng vậy. Trong lúc nó lắng nghe,
 thanh trạng thái hiện **⌁ agent port :N** — một cổng đọc được IDE của bạn
 không bao giờ được vô hình; chú giải của dấu này đếm số tác nhân đang nhận

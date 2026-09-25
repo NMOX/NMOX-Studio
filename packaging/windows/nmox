@@ -1,0 +1,8 @@
+#!/bin/sh
+# The nmox command as Git for Windows' sh sees it (3.2.0). git runs
+# core.editor ("nmox -w") and a difftool's cmd through its own sh, and sh
+# finds a command by its exact name, never by adding .cmd: without this file
+# the setting nmox --help prints would break every commit on Windows. It
+# only hands everything to nmox.cmd beside it; sh turns POSIX paths into
+# Windows ones on the way (and git's /dev/null into nul, which -d accepts).
+exec "$(dirname "$0")/nmox.cmd" "$@"

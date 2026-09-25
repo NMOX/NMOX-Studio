@@ -78,6 +78,9 @@ Source: "..\icons\nmox-studio.ico"; DestDir: "{app}"
 ; exactly one command and not the launcher exes beside it in bin\. Shipped
 ; whether or not the PATH task is ticked, so it can be added by hand later.
 Source: "nmox.cmd"; DestDir: "{app}\cli"
+; the same command for Git for Windows' sh, which runs core.editor and
+; a difftool by exact name and would never find nmox.cmd as "nmox"
+Source: "nmox"; DestDir: "{app}\cli"
 
 [Icons]
 Name: "{group}\NMOX Studio"; Filename: "{app}\bin\nmoxstudio64.exe"; \

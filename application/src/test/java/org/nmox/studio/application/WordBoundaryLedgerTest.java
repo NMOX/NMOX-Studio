@@ -62,6 +62,16 @@ class WordBoundaryLedgerTest {
             + "so a rack named in Hindi keeps its name instead of being cut into single "
             + "letters — the v2.114.0 bug, not repeated. Its other scan reads the first "
             + "word of a COMMAND, which is ASCII by the tool-name rule and asks no script",
+            "MarkdownLinks.java",
+            "turns a HEADING a person wrote into GitHub's anchor (3.2.0): letters, digits "
+            + "and every kind of mark are kept, because GitHub keeps them — "
+            + "## Überblick is #überblick and a Hindi heading keeps its vowel signs, or a "
+            + "link into a translated document would be reported dead when it lands",
+            "TerminalLinks.java",
+            "reads a FILE NAME out of a terminal line so a click can open it (3.2): a "
+            + "person names their files in their own script, so a combining mark stays "
+            + "with its letter (NON_SPACING_MARK, COMBINING_SPACING_MARK, ENCLOSING_MARK) "
+            + "and a Hindi file name is one link, not three",
             "CodeSpellTokenListProvider.java",
             "scans comments and strings for words to spell-check — and DELIBERATELY keeps "
             + "the letters-only rule: its two-letter minimum means a Devanagari word "

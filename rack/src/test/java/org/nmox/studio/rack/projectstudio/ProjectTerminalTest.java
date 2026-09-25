@@ -40,6 +40,21 @@ class ProjectTerminalTest {
     }
 
     @Test
+    @DisplayName("after a re-aim, the chord starts a shell in the new project instead of focusing the old one")
+    void reaimStartsANewShell() throws Exception {
+        File a = java.nio.file.Files.createDirectory(tmp.resolve("a")).toFile();
+        File b = java.nio.file.Files.createDirectory(tmp.resolve("b")).toFile();
+        assertThat(ProjectTerminal.decide(true, b, a)).as("the aim moved from a to b")
+                .isEqualTo(ProjectTerminal.Choice.OPEN_IN_PROJECT);
+        assertThat(ProjectTerminal.decide(true, a, a)).as("same project: bring it forward")
+                .isEqualTo(ProjectTerminal.Choice.FOCUS_EXISTING);
+        assertThat(ProjectTerminal.decide(true, b, null)).as("a terminal the chord did not start: bring it forward")
+                .isEqualTo(ProjectTerminal.Choice.FOCUS_EXISTING);
+        assertThat(ProjectTerminal.decide(true, null, a)).as("nothing aimed any more: bring it forward")
+                .isEqualTo(ProjectTerminal.Choice.FOCUS_EXISTING);
+    }
+
+    @Test
     @DisplayName("the action is registered where the chord's shadow points")
     void registered() throws Exception {
         String layer = new String(ProjectTerminal.class.getClassLoader()

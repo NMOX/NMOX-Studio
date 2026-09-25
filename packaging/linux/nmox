@@ -20,6 +20,10 @@
 # output discarded, so a refusal it made would reach nobody; the platform's
 # own --aim refusal still speaks to whoever runs bin/nmoxstudio directly.
 #
+# -w waits until the files it opened are closed, and -d compares two files:
+# `git config --global core.editor "nmox -w"` makes NMOX Studio git's editor
+# (see nmox_request below, and EditRequestOption in the IDE).
+#
 # The IDE starts in the BACKGROUND and the command returns at once, as
 # `code .` does: it must neither hold the shell until the IDE quits nor die
 # when the terminal closes. When the IDE is already running, the launcher
@@ -67,15 +71,92 @@ Usage: nmox [options] [folder | file[:line[:column]]]...
   nmox .              aim NMOX Studio at this folder, as File > Open Folder... does
   nmox src/app.js     open a file
   nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)
+  nmox -w file        open it and wait until its tab is closed
+  nmox -d left right  compare two files side by side
   nmox                start NMOX Studio
 
-It returns at once; a second nmox hands its folder or files to the IDE
-already running. A name that is not there is refused here, before anything
-starts. VS Code's -r is accepted and -n opens in the one window;
--w, -d, -a and -v have no counterpart and are refused. Any other
+It returns at once unless -w asks it to wait; a second nmox hands its folder
+or files to the IDE already running. A name that is not there is refused
+here, before anything starts. VS Code's -r is accepted and -n opens in the
+one window; -a and -v have no counterpart and are refused. Any other
 option goes to the IDE unchanged.
+
+NMOX Studio as git's editor, difftool and mergetool:
+  git config --global core.editor "nmox -w"
+  git config --global diff.tool nmox
+  git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+  git config --global merge.tool nmox
+  git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+  git config --global mergetool.nmox.trustExitCode false
 USAGE
 }
+# -w and -d (3.2.0) hand the IDE a REQUEST in a private folder rather than
+# --open: nmox_request writes it, the IDE answers there - accepted (its
+# process id), refused (why) or done (every tab it opened was closed) - and
+# nmox_finish waits for the answer. The folder is removed however nmox ends.
+# a newline built by printf, so an indented copy of this script (the macOS
+# launcher is a heredoc) still holds exactly one newline and nothing after it
+NL=$(printf '\nx')
+NL=${NL%x}
+NMOX_REQ=
+nmox_request() {
+    for np in "$@"; do
+        case "$np" in *"$NL"*)
+            printf 'nmox: a name holding a newline cannot be handed over\n' >&2
+            exit 2 ;;
+        esac
+    done
+    if [ -z "$NMOX_REQ" ]; then
+        NMOX_REQ=$(mktemp -d "${TMPDIR:-/tmp}/nmox-request.XXXXXX") || exit 1
+        trap '/bin/rm -rf "$NMOX_REQ"' EXIT
+        trap 'exit 130' INT TERM HUP
+        printf 'nmox-request 1\n' > "$NMOX_REQ/request"
+        [ "$wait" = yes ] && printf 'wait\n' >> "$NMOX_REQ/request"
+    fi
+    printf '%s\n' "$@" >> "$NMOX_REQ/request"
+}
+nmox_path() {
+    # the RAW name: command substitution below strips trailing newlines, so
+    # 'z<newline>' would otherwise become a different file, z
+    case "$1" in *"$NL"*)
+        printf 'nmox: a name holding a newline cannot be handed over\n' >&2
+        exit 2 ;;
+    esac
+    np="$(CDPATH= cd -- "$(dirname -- "$1")" && pwd)/$(basename -- "$1")"
+}
+nmox_finish() {
+    [ -n "$NMOX_REQ" ] || exit 0
+    i=0
+    pid=
+    while :; do
+        if [ -f "$NMOX_REQ/refused" ]; then
+            printf 'nmox: %s\n' "$(cat "$NMOX_REQ/refused")" >&2
+            exit 2
+        fi
+        [ -f "$NMOX_REQ/done" ] && exit 0
+        if [ -z "$pid" ] && [ -s "$NMOX_REQ/accepted" ]; then
+            pid=$(cat "$NMOX_REQ/accepted")
+            [ "$wait" = yes ] || exit 0
+        fi
+        if [ -n "$pid" ]; then
+            if ! kill -0 "$pid" 2>/dev/null; then
+                [ -f "$NMOX_REQ/done" ] && exit 0
+                printf 'nmox: NMOX Studio quit before the file was closed\n' >&2
+                exit 1
+            fi
+        elif [ "$i" -ge 1200 ]; then
+            printf 'nmox: NMOX Studio did not answer\n' >&2
+            exit 1
+        fi
+        sleep 0.1
+        i=$((i + 1))
+    done
+}
+wait=no
+for a in "$@"; do
+    case "$a" in -w|--wait) wait=yes ;; esac
+done
+diff=0
 n=$#
 value=no
 while [ "$n" -gt 0 ]; do
@@ -98,6 +179,29 @@ while [ "$n" -gt 0 ]; do
         value=no
         continue
     fi
+    if [ "$diff" -gt 0 ]; then
+        # git names the missing side of an added or a deleted file /dev/null:
+        # that side is handed over as nothing
+        if [ "$a" = /dev/null ]; then
+            np=
+        elif [ ! -f "$a" ]; then
+            printf 'nmox: %s: not a file (-d compares two files)\n' "$a" >&2
+            exit 2
+        else
+            nmox_path "$a"
+        fi
+        if [ "$diff" = 2 ]; then
+            dl=$np
+            diff=1
+        elif [ -z "$dl" ] && [ -z "$np" ]; then
+            printf 'nmox: -d needs at least one file\n' >&2
+            exit 2
+        else
+            nmox_request diff "$dl" "$np"
+            diff=0
+        fi
+        continue
+    fi
     case "$a" in
         --userdir|--cachedir|--jdkhome|--open|--aim|--locale|--laf|--fontsize|--branding|--clusters)
             set -- "$@" "$a"
@@ -105,17 +209,33 @@ while [ "$n" -gt 0 ]; do
         -h|--help) nmox_usage; exit 0 ;;
         -g|--goto) ;;
         -r|--reuse-window) ;;
+        -w|--wait) ;;
+        -d|--diff) diff=2 ;;
         -n|--new-window) printf 'nmox: NMOX Studio has one window; opening there\n' >&2 ;;
-        -w|--wait|-d|--diff|-a|--add|-v|--version)
+        -a|--add|-v|--version)
             printf 'nmox: %s is VS Code'"'"'s and has no counterpart here\n' "$a" >&2
             exit 2 ;;
         -*) set -- "$@" "$a" ;;
         *)  if [ -d "$a" ]; then
+                if [ "$wait" = yes ]; then
+                    printf 'nmox: %s: a folder (-w waits for a file to be closed)\n' "$a" >&2
+                    exit 2
+                fi
                 set -- "$@" --aim "$(CDPATH= cd -- "$a" && pwd)"
             elif [ -e "$a" ]; then
-                set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+                if [ "$wait" = yes ]; then
+                    nmox_path "$a"
+                    nmox_request open "$np" ""
+                else
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$a")" && pwd)/$(basename -- "$a")"
+                fi
             elif goto_line "$a"; then
-                set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$gf")" && pwd)/$(basename -- "$gf"):$gl"
+                if [ "$wait" = yes ]; then
+                    nmox_path "$gf"
+                    nmox_request open "$np" "$gl"
+                else
+                    set -- "$@" --open "$(CDPATH= cd -- "$(dirname -- "$gf")" && pwd)/$(basename -- "$gf"):$gl"
+                fi
             else
                 printf 'nmox: %s: no such file or folder\n' "$a" >&2
                 exit 2
@@ -125,6 +245,14 @@ done
 if [ "$value" != no ]; then
     printf 'nmox: %s needs a value\n' "$value" >&2
     exit 2
+elif [ "$diff" != 0 ]; then
+    printf 'nmox: -d needs two files\n' >&2
+    exit 2
+elif [ "$wait" = yes ] && [ -z "$NMOX_REQ" ]; then
+    printf 'nmox: -w needs a file to wait for\n' >&2
+    exit 2
+elif [ -n "$NMOX_REQ" ]; then
+    set -- "$@" --nmox-request "$NMOX_REQ"
 fi
 nohup /bin/sh "$BIN/nmoxstudio" "$@" </dev/null >/dev/null 2>&1 &
-exit 0
+nmox_finish

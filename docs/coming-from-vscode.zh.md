@@ -22,9 +22,12 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 | 终端，在项目文件夹里 | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | 打开最近的项目 | ⌃R | **⌥⌘P** — 切换项目… | Ctrl+R | **Ctrl+Alt+P** |
 | 转到项目中的符号 | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| 转到定义 | F12 | **⌘B** | F12 | **Ctrl+B** |
-| 重命名符号 | F2 | **⌃R** | F2 | **Ctrl+R** |
+| 转到定义 | F12 | **F12** 或 ⌘B | F12 | **F12** 或 Ctrl+B |
+| 查找引用 | ⇧F12 | **⇧F12** — 查找用法 | Shift+F12 | **Shift+F12** |
+| 重命名符号 | F2 | **F2** 或 ⌃R | F2 | **F2** 或 Ctrl+R |
+| 快速修复 | ⌘. | **⌘.** 或 ⌃↩ | Ctrl+. | **Alt+Enter** |
 | 转到行 | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| 后退 / 前进 | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | 切换行注释 | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | 显示建议 | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | 把下一处出现加入选区 | ⌘D | **⌘D** 或 ⌘J | Ctrl+D | **Ctrl+D** 或 Ctrl+J |
@@ -33,8 +36,12 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 | 把行上移 / 下移 | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | 向下复制行 | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | 删除行 | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| 格式化文档 | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| 增加行缩进 | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| 替换 | ⌥⌘F | **⌥⌘F** 或 ⌘R | Ctrl+H | **Ctrl+H** |
+| 格式化文档 | ⇧⌥F | **⇧⌥F** 或 ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | 关闭编辑器标签页 | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| 复制正在编辑的文件的路径 | ⌥⌘C | **⌥⌘C** — 编辑 ▸ 复制路径 | Shift+Alt+C | **Ctrl+Alt+C** |
+| 复制它的相对路径 | ⇧⌥⌘C | 编辑 ▸ 复制相对路径（无组合键） | Ctrl+K Ctrl+Shift+Alt+C | 编辑 ▸ 复制相对路径（无组合键） |
 | 问题面板 | ⇧⌘M | **⌘6** — 操作项（在这里 ⇧⌘M 切换书签） | Ctrl+Shift+M | **Ctrl+6** |
 | 切换断点 | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | 开始调试 | F5 | **⇧⌘F5** — 调试文件 | F5 | **Ctrl+Shift+F5** |
@@ -45,9 +52,46 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 
 - **调试时 F5 已被占用。**在这里它表示*继续*（Continue），和每个 NetBeans 系的 IDE 一样，所以调试运行从 **⇧⌘F5**（Ctrl+Shift+F5）开始，用 F5 继续。
 - **⌃R 在这里是重命名**，所以*切换项目*放在 ⌥⌘P 上，而不是 VS Code 的“打开最近”组合键。只要文件背后的语言支持，重命名就能用。
+- **复制相对路径没有组合键。** VS Code 的 ⇧⌥⌘C 在 PC 上是 Ctrl+Alt+Shift+C，而它在每个键位配置里都是平台的 *Clear Split*；这一项在编辑菜单里，⇧⌘P 也能用 VS Code 自己的标题找到它：*File: Copy Relative Path of Active File*。
 - **Windows 和 Linux 上的 Ctrl+,** 在你的编辑历史里后退，NetBeans 一直是这样；设置在 工具 ▸ 选项 下面（macOS 上是应用菜单的 **Settings…**，⌘,）。
 
 **帮助 ▸ 键盘快捷键…** 列出你当前键盘映射里的每个 NMOX 组合键，包括这四个 VS Code 组合键，它是从正在运行的键盘映射里读的，所以不可能和按键实际做的事情走岔。
+
+### 每个编辑组合键，都实测过
+
+你从 VS Code 带来的手在编辑时会去按的组合键，每一个都在 macOS 上默认配置随产品发布的键盘映射里查过。VS Code 的组合键在这里空着的，现在做的就是 VS Code 做的事（写着“相同”的那几行）；已经有了 NetBeans 用户依赖的含义的，保留这个含义，那一行会告诉你 VS Code 的这个操作在哪里。
+
+| VS Code，macOS | VS Code 做什么 | 在 NMOX Studio 里 |
+|---|---|---|
+| F12 | Go to Definition | **相同**：转到声明，和 ⌘B 一样 |
+| ⇧F12 | Go to References | **相同**：查找用法，和 ⌃F7 一样 |
+| F2 | Rename Symbol | **相同**：重命名，和 ⌃R 一样 |
+| ⌘. | Quick Fix | **相同**：这一行的修复，和 ⌃↩ 显示的一样 |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | 上一个 / 下一个标记的出现位置；移动行是 ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | 相同，一直如此 |
+| ⇧⌘K | Delete Line | 插入下一个匹配词（根据文件补全单词）；删除行是 ⌘E |
+| ⌘L | Expand Line Selection | 选中标识符；选中整行没有组合键 |
+| ⇧⌘L | Select All Occurrences | 编辑器里的按行粘贴；选中所有出现位置是 ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | 相同，一直如此 |
+| ⇧⌥A | Toggle Block Comment | 没有：没有单独的块注释操作，⌘/ 切换注释 |
+| ⌘] | Indent Line | **相同**：右移 |
+| ⌘[ | Outdent Line | 跳到匹配的括号，一直如此；减少缩进是 ⇧Tab 或 ⌃⇧← |
+| ⌘B | Toggle Sidebar | 转到声明；⇧⌘↩ 只显示编辑器，⇧Esc 最大化你所在的窗口 |
+| ⌘J | Toggle Panel | 在编辑器里添加下一处出现（和 ⌘D 一样）；Output 窗口是 ⌘4 |
+| ⌘\ | Split Editor | 编辑器里的补全代码；拆分编辑器是 ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | 相同，一直如此：打开最近的文件的组合键会重新打开最后关闭的文件 |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **相同**：在你编辑过的位置之间后退和前进，和 ⌃← / ⌃→ 一样（macOS 通常把这两个组合键留给切换桌面） |
+| ⌘G / ⇧⌘G | Find Next / Previous | 相同，一直如此 |
+| ⌥⌘F | Replace | **相同**：替换，和 ⌘R 一样 |
+| ⇧⌘F | Find in Files | 相同，一直如此：在项目中查找 |
+| ⇧⌘O | Go to Symbol in Editor | 打开项目；文件的符号在导航器里（⌘7） |
+| ⌘T | Go to Symbol in Workspace | 在编辑器里交换光标两边的两个字母；项目的符号是 ⌥⇧⌘O |
+| ⌃G | Go to Line | 相同，一直如此 |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K 是插入上一个匹配词；快捷键一览在 **帮助 ▸ 键盘快捷键…** |
+| ⌘, | Settings | 相同，一直如此：NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **相同**：格式化，和 ⌃⇧F 一样 |
+
+标着“相同”的组合键装在每一套把它们空着的键盘映射配置里；某套配置给了其中某个组合键自己的含义，就保留那个含义：Eclipse、Emacs 和 NetBeans 5.5 配置里的 F12，除默认配置之外每套配置里的 F2，Emacs 和 NetBeans 5.5 里的 ⇧F12，Emacs 和 IntelliJ 里的 ⌃- 和 ⌃⇧-，IntelliJ 里的 ⇧⌥F。在 Windows 和 Linux 上，F12、⇧F12 和 F2 也是这样；VS Code 在那里的其他组合键不一样，上面的表格两种都列出了。
 
 
 <a id="from-the-terminal"></a>
@@ -63,7 +107,20 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-它会立即返回，第二个 `nmox` 会把它的文件夹交给已经在运行的 IDE。也接受列号（`src/app.ts:42:7`），编辑器会打开到那一行的行首；不存在的名字会在终端里被拒绝，而不会启动任何东西。`-r` 可以使用，`-n` 在那唯一的窗口里打开，`--wait`、`--diff` 以及其他仅属于 VS Code 的选项会被按名字拒绝。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
+它会立即返回，第二个 `nmox` 会把它的文件夹交给已经在运行的 IDE。也接受列号（`src/app.ts:42:7`），编辑器会打开到那一行的行首；不存在的名字会在终端里被拒绝，而不会启动任何东西。`-r` 可以使用，`-n` 在那唯一的窗口里打开，`-a` 和 `-v` 会被按名字拒绝。
+
+`-w`（`--wait`）会打开一个文件并一直等到你关闭它的标签页，`-d`（`--diff`）会把两个文件并排比较，所以 NMOX Studio 可以像 `code --wait` 那样，充当 git 的编辑器、difftool 和 mergetool：
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
+```
+
+之后 `git commit` 会在 IDE 里打开提交信息；保存并关闭标签页，git 就会继续。文件还开着时退出 IDE，也会把它交还回去，内容是已经保存的部分。`git mergetool` 也用同样的方式逐个打开有冲突的文件。VS Code 在冲突上方放 *Accept Current Change | Accept Incoming Change | Accept Both Changes*，NMOX Studio 则给两边着色，并在 `<<<<<<<` 那一行放一条警告；点边栏里的灯泡，或者把光标放在那一行用快速修复（Mac 上按 ⌘.，其他系统按 Alt+Enter），都会给出同样的三个选择，每个都是一次可撤销的编辑。保存、关闭标签页，git 就转到下一个文件。无论用不用 `git mergetool`，只要文件里有冲突标记，着色和这三个选择就都在。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会先告诉你这些行现在各是什么值，再替你设好。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## VS Code 的每个概念住在哪儿
@@ -78,6 +135,7 @@ nmox            # just start the IDE
 | **集成终端** | **终端**窗口（⌃\`）：第一次按下会在项目文件夹里启动一个 shell，之后再按会把它调回来。 |
 | **`settings.json`** | 工具 ▸ 选项（macOS 上是 NMOX Studio ▸ Settings…）。仓库的 `.vscode/settings.json` 也会被读取：`editor.tabSize`、`editor.insertSpaces` 和 `editor.indentSize` 在你输入时设定它的缩进，`files.trimTrailingWhitespace` 和 `files.insertFinalNewline`（值为 `true` 时）在保存时生效，而像 `"[typescript]"` 这样的语言块会为它的语言覆盖这些设置。如果仓库里还有 `.editorconfig`，两者都有规定的地方以 `.editorconfig` 为准。 |
 | **问题面板** | **操作项**（⌘6），或者点击状态栏上的 **✕ ⚠** 计数：语言服务器报告的错误和警告，以及机架上 PURITY 和 TYPEGUARD 设备的代码检查和类型检查结果。和 VS Code 一样，有些服务器只报告你打开着的文件；gopls 报告整个包。 |
+| **搜索视图** (`search.useIgnoreFiles`) | **在项目中查找**（⇧⌘F）。和 VS Code 一样，它会跳过仓库的 `.gitignore` 文件和 `.git/info/exclude` 所忽略的内容，所以当 `.gitignore` 列出 `node_modules` 和 `dist/` 时，它们不会出现在结果里；在仓库之外，它按名字跳过 `node_modules`、`dist`、`build` 以及其他构建文件夹。在它的对话框中勾选**在生成的源代码中搜索**，就会连它们也一起搜索。你的全局 git 排除文件不会被读取。 |
 | **大纲** | **导航器**（⌘7）。 |
 | **源代码管理** | 状态栏上的 git 标记（分支和改动，一次点击就到历史）以及**团队**菜单。 |
 | **工作区信任** | 同样的理念，在运行仓库所选择的任何东西之前强制执行：打开一个克隆下来的项目，在你信任它之前什么都不会运行。 |
@@ -88,7 +146,7 @@ nmox            # just start the IDE
 <a id="what-is-honestly-different"></a>
 ## 如实说明哪些地方不一样
 
-- **⌘D 在默认键盘映射里会添加下一处出现，但不是每套配置都这样。**Eclipse 配置把 ⌘D 保留为 Eclipse 的*删除行*，NetBeans 5.5 配置则保留为*行左移*；在那两套配置里，同样的操作是 ⌘J（Ctrl+J）。
+- **⌘D 在默认键盘映射里会添加下一处出现，但不是每套配置都这样。**Eclipse 配置把 ⌘D 保留为 Eclipse 的*删除行*，NetBeans 5.5 配置保留为*行左移*，Emacs 配置保留为*删除单词*（在 Windows 和 Linux 上把 Ctrl+D 保留为*删除字符*）；IntelliJ 配置在 macOS 上有 ⌘D，在 Windows 和 Linux 上把 Ctrl+D 保留为*复制行*。这个操作的另一个组合键也因配置而异：默认配置里是 ⌘J（Ctrl+J），Eclipse 和 IntelliJ 里是 ⌃J（Alt+J），Emacs 和 NetBeans 5.5 里没有，可以在键盘映射里给它设一个。
 - **⌃\` 会打开终端并让它获得焦点；它不会把终端隐藏起来。**而且当终端有焦点时，按键属于你的 shell，所以第二次按下会传给 shell，而不是把你带回编辑器。
 - **`launch.json` 会被读取，调试器无法照办的部分会被拒绝。**这里的调试器传递程序、它的工作文件夹、它的 `args`（一个字符串列表）和它的 `env`（加进继承来的环境里的字符串），所以设置了 `envFile`、`runtimeExecutable`、`runtimeArgs`、`preLaunchTask` 或任何它还没学会的字段的配置，会被列出来但不会启动：回车会在状态栏上说出这些字段的名字。不带上它们就启动程序，调试的就不是文件里写的那个东西了。写成一个字符串的 `args`（VS Code 会把它交给 shell）和值为 `null` 的 `env`（它会删除一个变量）也会以同样的方式被拒绝；`"request": "attach"`、`compounds` 条目、这里没有适配器的类型（`go`、`msedge`、`cppdbg` 等等）、只有 VS Code 才能提供的值（`${file}`、`${input:…}`），以及项目之外的路径也是一样。只影响调试器显示内容的字段 —— `skipFiles`、`outFiles`、`sourceMaps`、`console`、`justMyCode`、`presentation` —— 会被接受，但不会应用；程序的输出进入 Output 窗口。
 - **`tasks.json` 会被读取，无法照写法运行的会被拒绝。**使用了只有 VS Code 才能提供的值（`${input:…}`、`${file}`、`${config:…}`、`${command:…}`）或者 `dependsOn` 另一个任务的任务，会被列出来但不会运行：回车会在状态栏上说出是哪个变量或哪个任务。把那个值留空去运行，或者不带它所依赖的任务去运行，运行的就不是文件里写的那个东西了。扩展提供的任务类型（`gulp`、`typescript`）和项目之外的工作文件夹也是如此。

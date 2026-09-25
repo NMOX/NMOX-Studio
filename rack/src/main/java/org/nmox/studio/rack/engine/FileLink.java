@@ -60,6 +60,15 @@ public final class FileLink {
     }
 
     public static void open(Location location) {
+        open(location, 0);
+    }
+
+    /**
+     * Opens {@code location} with the caret at 1-based {@code column} of its
+     * line ({@code column <= 0}: the line's start). The data-object lookup
+     * runs on the caller's thread; the editor is shown on the EDT.
+     */
+    public static void open(Location location, int column) {
         try {
             // tool output paths are often relative or carry '..'; toFileObject
             // silently returns null for non-normalized files (a dead hyperlink)
@@ -71,8 +80,13 @@ public final class FileLink {
             if (lines != null) {
                 Line line = lines.getLineSet().getCurrent(
                         Math.max(0, location.line() - 1));
-                javax.swing.SwingUtilities.invokeLater(() ->
-                        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS));
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    if (column > 0) {
+                        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column - 1);
+                    } else {
+                        line.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                    }
+                });
             }
         } catch (Exception ignored) {
             // file vanished or no editor support; the click just does nothing

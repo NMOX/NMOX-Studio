@@ -105,6 +105,24 @@ class ContainmentLedgerTest {
                 + "refuse exactly the layouts that pointer exists to support."),
 
             // --- real copies of the rule, named rather than hidden ---
+            Map.entry("TerminalLinks.java",
+                "A DIFFERENT QUESTION (3.2.0): a location the user CLICKED in their own "
+                + "terminal output is opened where it is, because a stack frame names files "
+                + "anywhere on disk — node_modules, /usr/lib/python3, ~/.cargo — and refusing "
+                + "those would refuse the frames people click most. It asks no 'inside this "
+                + "root?' question; the relative case joins the aimed project only to FIND the "
+                + "file, the click is the user's own gesture, and only an existing regular file "
+                + "is opened, read-only, in the editor. Nothing is written or run."),
+            Map.entry("WebProjectSharability.java",
+                "A DIFFERENT QUESTION (3.2): the platform's SharabilityQuery hands it a URI "
+                + "naming a file that already exists, and the prefix test decides only "
+                + "whether this project has an OPINION about it — outside the work tree "
+                + "(or the project, with no repository) the answer is UNKNOWN, the "
+                + "platform's own 'no opinion'. Nothing is opened, read or written at the "
+                + "path, and the only names it resolves are the directories of that same "
+                + "path (to read each one's .gitignore), never a caller-supplied string. "
+                + "Containment's join-and-refuse would turn an outside file into a "
+                + "refusal where the query wants silence."),
             Map.entry("SymbolIndexProvider.java",
                 "A DIFFERENT QUESTION, measured (ledger 117, which swept its sibling "
                 + "McpSubscriptions and left this one): outline() must accept an "

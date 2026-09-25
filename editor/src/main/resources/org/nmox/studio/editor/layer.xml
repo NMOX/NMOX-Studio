@@ -53,11 +53,46 @@
                 <attr name="position" intvalue="9000"/>
             </file>
         </folder>
+        <!-- 3.2.0 merge conflicts: the three tints a conflict block wears
+             in every editor, as highlight colorings a theme can change
+             (Fonts & Colors > Highlighting). The same translucent file
+             serves the light and the dark profiles; a profile not named
+             here gets the same values from ConflictWatcher's defaults. -->
+        <folder name="FontsColors">
+            <folder name="NetBeans">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="FlatLafLight">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="FlatLafDark">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <folder name="text">
             <folder name="x-ng-template">
                 <folder name="Keybindings">
                     <folder name="NetBeans">
                         <folder name="Defaults">
+                            <!-- F12 = the template's own go-to-declaration, as Cmd+B (3.2);
+                                 NetBeans and Idea only, like the root F12 file -->
+                            <file name="ng-template-vscode-keybindings.xml"
+                                  url="ng-template-vscode-keybindings.xml"/>
                             <file name="ng-template-keybindings.xml"
                                   url="ng-template-keybindings.xml"/>
                             <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
@@ -91,6 +126,10 @@
                     </folder>
                     <folder name="Idea">
                         <folder name="Defaults">
+                            <!-- F12 = the template's own go-to-declaration, as Cmd+B (3.2);
+                                 NetBeans and Idea only, like the root F12 file -->
+                            <file name="ng-template-vscode-keybindings.xml"
+                                  url="ng-template-vscode-keybindings.xml"/>
                             <file name="ng-template-keybindings.xml"
                                   url="ng-template-keybindings.xml"/>
                             <!-- Expand Abbreviation ⌥⌘E (v1.329.0) — Emmet
@@ -607,12 +646,41 @@
         <folder name="Keybindings">
             <folder name="NetBeans">
                 <folder name="Defaults">
+                    <!-- F12 = go to definition (3.2); not in Eclipse, Emacs or NetBeans55, which bind F12 themselves -->
+                    <file name="vscode-f12-keybindings.xml"
+                          url="vscode-f12-keybindings.xml">
+                        <attr name="position" intvalue="9997"/>
+                    </file>
+                    <!-- F2 = rename symbol (3.2); every other profile binds F2 itself -->
+                    <file name="vscode-f2-keybindings.xml"
+                          url="vscode-f2-keybindings.xml">
+                        <attr name="position" intvalue="9996"/>
+                    </file>
+                    <!-- macOS: Cmd+] indent, Opt+Cmd+F replace (3.2); free in all five -->
+                    <file name="vscode-editing-keybindings-mac.xml"
+                          url="vscode-editing-keybindings-mac.xml">
+                        <attr name="position" intvalue="9995"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Ctrl+- back, Ctrl+Shift+- forward (3.2); not in Emacs or Idea, which bind them itself -->
+                    <file name="vscode-history-keybindings-mac.xml"
+                          url="vscode-history-keybindings-mac.xml">
+                        <attr name="position" intvalue="9994"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Shift+Opt+F format (3.2); not in Idea, which binds it itself -->
+                    <file name="vscode-format-keybindings-mac.xml"
+                          url="vscode-format-keybindings-mac.xml">
+                        <attr name="position" intvalue="9993"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
                     </file>
-                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
-                         NetBeans55, which bind D-D themselves -->
+                    <!-- Cmd+D = next occurrence (3.1.0), every OS; also Idea
+                         on macOS; not Eclipse, Emacs or NetBeans55, which
+                         bind the chord themselves -->
                     <file name="vscode-keybindings.xml"
                           url="vscode-keybindings.xml">
                         <attr name="position" intvalue="9998"/>
@@ -621,6 +689,24 @@
             </folder>
             <folder name="Eclipse">
                 <folder name="Defaults">
+                    <!-- macOS: Cmd+] indent, Opt+Cmd+F replace (3.2); free in all five -->
+                    <file name="vscode-editing-keybindings-mac.xml"
+                          url="vscode-editing-keybindings-mac.xml">
+                        <attr name="position" intvalue="9995"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Ctrl+- back, Ctrl+Shift+- forward (3.2); not in Emacs or Idea, which bind them itself -->
+                    <file name="vscode-history-keybindings-mac.xml"
+                          url="vscode-history-keybindings-mac.xml">
+                        <attr name="position" intvalue="9994"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Shift+Opt+F format (3.2); not in Idea, which binds it itself -->
+                    <file name="vscode-format-keybindings-mac.xml"
+                          url="vscode-format-keybindings-mac.xml">
+                        <attr name="position" intvalue="9993"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -629,34 +715,75 @@
             </folder>
             <folder name="Emacs">
                 <folder name="Defaults">
+                    <!-- macOS: Cmd+] indent, Opt+Cmd+F replace (3.2); free in all five -->
+                    <file name="vscode-editing-keybindings-mac.xml"
+                          url="vscode-editing-keybindings-mac.xml">
+                        <attr name="position" intvalue="9995"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Shift+Opt+F format (3.2); not in Idea, which binds it itself -->
+                    <file name="vscode-format-keybindings-mac.xml"
+                          url="vscode-format-keybindings-mac.xml">
+                        <attr name="position" intvalue="9993"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
                     </file>
-                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
-                         NetBeans55, which bind D-D themselves -->
-                    <file name="vscode-keybindings.xml"
-                          url="vscode-keybindings.xml">
-                        <attr name="position" intvalue="9998"/>
-                    </file>
+                    <!-- No Cmd+D here (3.2 correction of 3.1.0): Emacs binds
+                         it itself - M-D, kill word, on macOS and C-D, delete
+                         character, on Windows and Linux (the defaults
+                         module's Emacs files). -->
                 </folder>
             </folder>
             <folder name="Idea">
                 <folder name="Defaults">
+                    <!-- F12 = go to definition (3.2); not in Eclipse, Emacs or NetBeans55, which bind F12 themselves -->
+                    <file name="vscode-f12-keybindings.xml"
+                          url="vscode-f12-keybindings.xml">
+                        <attr name="position" intvalue="9997"/>
+                    </file>
+                    <!-- macOS: Cmd+] indent, Opt+Cmd+F replace (3.2); free in all five -->
+                    <file name="vscode-editing-keybindings-mac.xml"
+                          url="vscode-editing-keybindings-mac.xml">
+                        <attr name="position" intvalue="9995"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
                     </file>
-                    <!-- Cmd+D = next occurrence (3.1.0); not in Eclipse or
-                         NetBeans55, which bind D-D themselves -->
+                    <!-- Cmd+D = next occurrence (3.1.0), on macOS only here
+                         (3.2 correction): on Windows and Linux D-D is Ctrl+D,
+                         the Idea profile's own Duplicate Line (C-D) -->
                     <file name="vscode-keybindings.xml"
                           url="vscode-keybindings.xml">
                         <attr name="position" intvalue="9998"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
                 </folder>
             </folder>
             <folder name="NetBeans55">
                 <folder name="Defaults">
+                    <!-- macOS: Cmd+] indent, Opt+Cmd+F replace (3.2); free in all five -->
+                    <file name="vscode-editing-keybindings-mac.xml"
+                          url="vscode-editing-keybindings-mac.xml">
+                        <attr name="position" intvalue="9995"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Ctrl+- back, Ctrl+Shift+- forward (3.2); not in Emacs or Idea, which bind them itself -->
+                    <file name="vscode-history-keybindings-mac.xml"
+                          url="vscode-history-keybindings-mac.xml">
+                        <attr name="position" intvalue="9994"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- macOS: Shift+Opt+F format (3.2); not in Idea, which binds it itself -->
+                    <file name="vscode-format-keybindings-mac.xml"
+                          url="vscode-format-keybindings-mac.xml">
+                        <attr name="position" intvalue="9993"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -691,31 +818,53 @@
          comes from the html module. -->
     <!-- v2.61.0 Complete with KVASIR ⌥⌘G = "DA-G" (D is ⌘ on macOS, A is ⌥;
          O would be ⌃) — the chord lives in every keymap profile (the v2.3.0
-         parity law), ui/layer.xml's Tests-window precedent. -->
+         parity law), ui/layer.xml's Tests-window precedent.
+         3.2.0 Copy Path ⌥⌘C = "DA-C", VS Code's chord, measured by
+         VsCodeKeymapResolutionTest (the Idea profile keeps its editor's
+         Ctrl+Alt+C, Extract Constant, on Windows and Linux). Copy Relative
+         Path has no chord: VS Code's ⇧⌥⌘C is "DAS-C", which on Windows and
+         Linux is the platform's Clear Split in every profile, and a layer
+         shadow cannot bind per OS; it answers to its VS Code title in
+         Quick Search instead. -->
     <folder name="Keymaps">
         <folder name="NetBeans">
             <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithKvasirAction.instance"/>
+            </file>
+            <file name="DA-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
             </file>
         </folder>
         <folder name="Eclipse">
             <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithKvasirAction.instance"/>
             </file>
+            <file name="DA-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
+            </file>
         </folder>
         <folder name="Emacs">
             <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithKvasirAction.instance"/>
+            </file>
+            <file name="DA-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
             </file>
         </folder>
         <folder name="Idea">
             <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithKvasirAction.instance"/>
             </file>
+            <file name="DA-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
+            </file>
         </folder>
         <folder name="NetBeans55">
             <file name="DA-G.shadow">
                 <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-ghost-CompleteWithKvasirAction.instance"/>
+            </file>
+            <file name="DA-C.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance"/>
             </file>
         </folder>
     </folder>

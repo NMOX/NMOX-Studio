@@ -24,6 +24,7 @@
 | [多语言编辑与调试](polyglot-editing-and-debugging.zh.md) | 在 Node 应用里设一个断点并让它命中 | 打开任意项目 |
 | [从浏览器到源码](browser-to-source.zh.md) | 在页面里点一个元素，落到它的源码上，再从 DevTools 改它的样式 | ⌥⌘4 → DevTools → DOM |
 | [Agent Port (MCP)](agent-port.zh.md) | 让 AI 代理读取 IDE 的实时状态 — 构造上就是只读的 | 工具 ▸ Agent Port (MCP)… |
+| [第二周](the-second-week.zh.md) | 提交、审阅 diff、解决冲突、开拉取请求、追查堆栈跟踪 — 都是 git 自己的步骤，就在你工作的窗口里 | 团队 ▸ 在 Git 中使用 NMOX Studio… |
 | [Docker 面板](docker-panel.zh.md) | 查看容器，并给项目做 Dockerize | Docker 标签页 |
 | [任务看板与冲刺](task-board.zh.md) | 用一个签入版本库的文件跑看板：计时、一键站会、冲刺燃尽图 | ⌥⌘1 |
 | [讲给一屋子人看](show-it-to-a-room.zh.md) | 在 IDE 里演示、分享、截图 — 从演示模式到将项目树复制为 Markdown | 视图 ▸ 演示模式 |

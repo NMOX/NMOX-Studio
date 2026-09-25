@@ -472,6 +472,17 @@
              prepare-agent is skipped (e.g. -Djacoco.skip=true); when JaCoCo
              runs it overrides this with its -javaagent line. -->
         <argLine></argLine>
+        <!-- The JaCoCo floor stands down when the tests do (3.2.0). With
+             -DskipTests nothing is measured, so a coverage-floor check can
+             only read a jacoco.exec some EARLIER, partial run left behind -
+             a focused -Dtest=X run measures one class - and fail the build
+             on it: CONTRIBUTING's everyday `mvn -o install -DskipTests`
+             failed that way after any focused test run. jacoco.skip follows
+             skipTests unless it is given itself; an explicit
+             -Djacoco.skip=true or =false on the command line still wins.
+             CoverageFloorGateTest holds both properties. -->
+        <skipTests>false</skipTests>
+        <jacoco.skip>${skipTests}</jacoco.skip>
         <!-- The product version the module manifests carry as their
              OpenIDE-Module-Specification-Version (see the nbm-maven-plugin
              pluginManagement entry for the mechanism). Committed value = the

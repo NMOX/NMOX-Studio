@@ -12,7 +12,7 @@
 רק דרך אחת להוסיף את החמישים וארבעה: לכתוב תוסף NetBeans. זו הדרך
 האחרת.
 
-![ראק המשימות: מדף המכשירים משמאל הוא המקום שבו מכשיר מ‑~/.nmox/devices.d מופיע, לצד המכשירים המובנים](../images/he/tabs/the-task-rack.png)
+![ראק המשימות: מדף המכשירים משמאל הוא המקום שבו מכשיר מ‑‎~/.nmox/devices.d מופיע, לצד המכשירים המובנים](../images/he/tabs/the-task-rack.png)
 
 ## 1. צרו את התיקייה
 
@@ -25,7 +25,7 @@ mkdir -p ~/.nmox/devices.d
 
 ## 2. כתבו את המכשיר
 
-שימו את זה ב‑`~/.nmox/devices.d/counter.json`:
+שימו את זה ב‑‎`~/.nmox/devices.d/counter.json`:
 
 ```json
 {
@@ -112,7 +112,7 @@ device file counter.json skipped: button "COUNT" command token
 
 ## מה למדתם עכשיו
 
-- מכשיר הוא **קובץ**: `~/.nmox/devices.d/*.json`, נקרא רק כשצריך, בלי
+- מכשיר הוא **קובץ**: ‎`~/.nmox/devices.d/*.json`, נקרא רק כשצריך, בלי
   הפעלה מחדש ובלי בנייה.
 - חוגות הופכות ל‑`{{variables}}`; תפקידים בוחרים צבעים; יציאות מאפשרות
   לחווט אותו ולקרוא את הפלט שלו.

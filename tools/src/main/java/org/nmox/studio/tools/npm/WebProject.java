@@ -41,7 +41,9 @@ import javax.swing.Action;
  * node wrapped so it shows the web icon and the Run/Build/Test/Clean +
  * common project actions), {@link WebProjectActionProvider} (the
  * toolchain-aware command routing), the opened hook that aims the rack,
- * and the recommended-template scoping. No mutable state — a project
+ * the recommended-template scoping, and the sharability answer that
+ * keeps Find in Projects out of what the repository ignores
+ * ({@link WebProjectSharability}). No mutable state — a project
  * instance is a value the platform caches per directory.
  */
 public class WebProject implements Project {
@@ -63,7 +65,8 @@ public class WebProject implements Project {
             GenericSources.genericOnly(this),
             new WebProjectActionProvider(this),
             new WebProjectOpenedHook(this),
-            new WebProjectRecommendedTemplates()
+            new WebProjectRecommendedTemplates(),
+            new WebProjectSharability(projectDir)
         });
     }
 

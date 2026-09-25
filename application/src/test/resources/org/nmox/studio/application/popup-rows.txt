@@ -88,3 +88,11 @@ org-openide-actions.jar|org/openide/actions|Delete|&Delete
 org-openide-actions.jar|org/openide/actions|Rename|Rename...
 org-openide-actions.jar|org/openide/actions|Open|Open
 org-openide-actions.jar|org/openide/actions|Properties|&Properties
+
+# The name a screen reader hears for every editor pane (3.2.0). Not a row, but
+# the same kind of platform key in the same kind of overlay, held by the same
+# laws: the platform builds it from the pane's name, EditorAccessibleNames now
+# sets that name to the file's, and the sentence around it speaks every
+# language.
+org-openide-text.jar|org/openide/text|ACS_CloneableEditor_QuietEditorPane|Editor for {0}
+org-openide-text.jar|org/openide/text|ACSD_CloneableEditor_QuietEditorPane|Editor for {0}

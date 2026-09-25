@@ -63,6 +63,25 @@ class GitChipTest {
     }
 
     @Test
+    @DisplayName("v2 with --branch: headers are not changes, and ↑/↓ show commits to push and pull only when not zero")
+    void aheadBehind() throws Exception {
+        GitChip chip = new GitChip();
+        chip.aim(repo("proj", "ref: refs/heads/main\n").toFile());
+        chip.porcelain("# branch.oid 0123456789abcdef0123456789abcdef01234567\n# branch.head main\n"
+                + "# branch.upstream origin/main\n# branch.ab +2 -1\n1 .M N... 100644 100644 100644 a b src/x.js\n"
+                + "? notes.txt\n");
+        assertThat(chip.label()).isEqualTo("⎇ main ±2 ↑2 ↓1");
+        chip.porcelain("# branch.head main\n# branch.upstream origin/main\n# branch.ab +0 -0\n");
+        assertThat(chip.label()).as("up to date reads as before").isEqualTo("⎇ main ±0");
+        chip.porcelain("# branch.head main\n# branch.ab +0 -3\n");
+        assertThat(chip.label()).isEqualTo("⎇ main ±0 ↓3");
+        chip.porcelain("# branch.head main\n");
+        assertThat(chip.label()).as("no upstream: no arrows, never a false 0").isEqualTo("⎇ main ±0");
+        chip.porcelain("# branch.ab +x -1\n");
+        assertThat(chip.label()).as("a malformed header says nothing").isEqualTo("⎇ main ±0");
+    }
+
+    @Test
     @DisplayName("re-aiming the same directory is a no-op — listener storms cost a compare")
     void aimEqualityGuard() throws Exception {
         Path repo = repo("proj", "ref: refs/heads/main\n");

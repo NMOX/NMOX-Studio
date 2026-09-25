@@ -117,4 +117,24 @@ public class PathLabel extends JLabel {
         int tail = keep - head;
         return new String(cps, 0, head) + ELLIPSIS + new String(cps, cps.length - tail, tail);
     }
+
+    /**
+     * {@code file} relative to {@code root}, in the platform's separators,
+     * as VS Code's Copy Relative Path writes it ({@code .} for the root
+     * itself); the absolute path when there is no root or the file is
+     * outside it, because a relative path that climbs out names somewhere
+     * else. One rule for the file tree's row and the editor's (3.2.0).
+     */
+    public static String relative(java.io.File root, java.io.File file) {
+        if (root == null) {
+            return file.getAbsolutePath();
+        }
+        java.nio.file.Path r = root.toPath().toAbsolutePath().normalize();
+        java.nio.file.Path f = file.toPath().toAbsolutePath().normalize();
+        if (!f.startsWith(r)) {
+            return file.getAbsolutePath();
+        }
+        String rel = r.relativize(f).toString();
+        return rel.isEmpty() ? "." : rel;
+    }
 }

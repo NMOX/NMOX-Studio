@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DisplayName;
@@ -44,6 +46,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       language (a collision means one of them cannot be reached by
  *       keyboard);
  *   <li>a declared mnemonic really occurs in the label it marks;
+ *   <li>a mnemonic is a letter the platform can map to a key, {@code A-Z}
+ *       or {@code 0-9} (3.2.0, measured: any other letter gives no mnemonic);
+ *   <li>in a language written in letters, a mnemonic is underlined IN the
+ *       label ({@code Edito&r}), and a Latin letter appended in parentheses
+ *       ({@code Editor(&J)}, the Chinese convention) survives only where
+ *       every mappable letter of the label is claimed by another row of the
+ *       same menu;
  *   <li>no value carries a bare ASCII apostrophe (the v2.98.0 hazard).
  * </ul>
  *
@@ -180,6 +189,176 @@ class MenuRowsSpeakTest {
             }
         }
         assertThat(wrong).as("menu row values that would misrender or accelerate nothing").isEmpty();
+    }
+
+    /** An appended mnemonic, {@code Editor(&J)}: the letter in parentheses. */
+    private static final Pattern APPENDED = Pattern.compile("\\(&([^)])\\)");
+
+    /**
+     * The languages exempt from the mapping law, and why. Their overlays
+     * underline a Cyrillic letter ({@code &Файл}), and no Cyrillic letter maps
+     * to a key (see {@link #onlyLatinLettersAndDigitsMapToAKey}), so about
+     * 138 Russian and 136 Ukrainian menu rows carry a mnemonic that does
+     * nothing. That is OPEN, not blessed: the fix is either a shipped
+     * Cyrillic-to-keycode table for {@code org.openide.awt.Mnemonics} or
+     * Latin letters, and it is recorded in {@code docs/i18n/conventions.md}.
+     * An exemption that turns out to be empty fails, so it cannot outlive the fix.
+     */
+    private static final Set<String> CYRILLIC_UNMAPPED = Set.of("ru", "uk");
+
+    @Test
+    @DisplayName("a mnemonic is a letter the platform maps to a key: A-Z or 0-9")
+    void mnemonicsAreLettersThePlatformMaps() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        Map<String, Integer> exempt = new TreeMap<>();
+        for (String locale : LOCALES) {
+            for (Row row : allRows()) {
+                Properties p = overlay(row, locale);
+                String value = p == null ? null : p.getProperty(paintedKey(row));
+                if (value == null) {
+                    continue;
+                }
+                int i = value.indexOf('&');
+                if (i < 0 || i == value.length() - 1 || mapsToAKey(value.charAt(i + 1))) {
+                    continue;
+                }
+                if (CYRILLIC_UNMAPPED.contains(locale)) {
+                    exempt.merge(locale, 1, Integer::sum);
+                    continue;
+                }
+                wrong.add(locale + " " + row.menu() + " " + paintedKey(row) + ": \"" + value
+                        + "\" underlines '" + value.charAt(i + 1) + "', which maps to no key, so the row "
+                        + "has no mnemonic at all (and the platform logs it every time the menu is built)");
+            }
+        }
+        assertThat(wrong).as("mnemonics that do nothing — underline a letter A-Z or a digit").isEmpty();
+        assertThat(exempt.keySet()).as("the Cyrillic exemption still describes something; "
+                + "when it does not, delete it").isEqualTo(CYRILLIC_UNMAPPED);
+    }
+
+    @Test
+    @DisplayName("in a language written in letters, a mnemonic is appended only when no letter of its label is free")
+    void appendedMnemonicOnlyWhenNoLetterIsFree() throws IOException {
+        List<String> wrong = new ArrayList<>();
+        List<Row> all = allRows();
+        for (String locale : LOCALES) {
+            if (NativeTypographyGateTest.appendsMnemonic(locale)) {
+                continue;   // zh, hi, he, ar: appended Latin IS the convention
+            }
+            for (Row row : all) {
+                Properties p = overlay(row, locale);
+                String value = p == null ? null : p.getProperty(paintedKey(row));
+                if (value == null) {
+                    continue;
+                }
+                Matcher m = APPENDED.matcher(value);
+                if (!m.find()) {
+                    continue;
+                }
+                String label = value.substring(0, m.start()) + value.substring(m.end());
+                Set<String> taken = new HashSet<>();
+                for (Row other : all) {
+                    if (!other.menu().equals(row.menu()) || sameKey(other, row)) {
+                        continue;
+                    }
+                    Properties op = overlay(other, locale);
+                    String ov = op == null ? null : op.getProperty(paintedKey(other));
+                    String letter = ov == null ? null : mnemonicOf(ov);
+                    if (letter != null) {
+                        taken.add(letter);
+                    }
+                }
+                Set<String> free = new java.util.TreeSet<>(mappableLetters(label));
+                free.removeAll(taken);
+                if (!free.isEmpty()) {
+                    wrong.add(locale + " " + row.menu() + " " + paintedKey(row) + ": \"" + value
+                            + "\" appends " + m.group(1) + " while " + free
+                            + " of its own label are free in this menu — underline one in place");
+                }
+            }
+        }
+        assertThat(wrong).as("a Latin letter appended in parentheses where the label had its own "
+                + "letter to underline (on macOS the reader sees the stray \"(J)\")").isEmpty();
+    }
+
+    /**
+     * The premise of the mapping law, measured on the platform this build
+     * ships rather than remembered: {@code Mnemonics.setLocalizedText} gives a
+     * key for an ASCII letter and NONE for an accented, Polish, Vietnamese or
+     * Cyrillic one. If a platform upgrade learns to map them, this fails, and
+     * the mapping law (and the Cyrillic exemption) should be revisited.
+     */
+    @Test
+    @DisplayName("the platform maps only A-Z and 0-9 to a mnemonic key (measured on the shipped jar)")
+    void onlyLatinLettersAndDigitsMapToAKey() throws Exception {
+        List<java.net.URL> jars = new ArrayList<>();
+        try (Stream<Path> s = Files.walk(CLUSTER)) {
+            for (Path jar : s.filter(p -> {
+                String n = p.getFileName().toString();
+                return n.equals("org-openide-awt.jar") || n.equals("org-openide-util.jar")
+                        || n.equals("org-openide-util-ui.jar") || n.equals("org-openide-util-lookup.jar");
+            }).toList()) {
+                jars.add(jar.toUri().toURL());
+            }
+        }
+        assertThat(jars).as("the platform's awt and util jars in the assembled cluster").hasSize(4);
+        javax.swing.LookAndFeel before = javax.swing.UIManager.getLookAndFeel();
+        // Aqua turns mnemonics off entirely, so measure under a look and feel
+        // that has them, as Windows and Linux do; restore it afterwards.
+        javax.swing.UIManager.setLookAndFeel(new javax.swing.plaf.metal.MetalLookAndFeel());
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger("org.openide.awt.Mnemonics");
+        java.util.logging.Level level = log.getLevel();
+        log.setLevel(java.util.logging.Level.WARNING);   // the refusal we are measuring logs at INFO
+        try (java.net.URLClassLoader cl = new java.net.URLClassLoader(
+                jars.toArray(java.net.URL[]::new), getClass().getClassLoader())) {
+            java.lang.reflect.Method set = Class.forName("org.openide.awt.Mnemonics", true, cl)
+                    .getMethod("setLocalizedText", javax.swing.AbstractButton.class, String.class);
+            Map<String, Integer> got = new LinkedHashMap<>();
+            for (String label : List.of("&Editor", "Edito&r", "Tab &9", "&Éditeur", "Pozosta&łe", "&Đóng", "&Файл")) {
+                javax.swing.JMenuItem item = new javax.swing.JMenuItem();
+                set.invoke(null, item, label);
+                got.put(label, item.getMnemonic());
+            }
+            assertThat(got).as("mnemonic key per label").containsEntry("&Editor", (int) 'E')
+                    .containsEntry("Edito&r", (int) 'R').containsEntry("Tab &9", (int) '9')
+                    .containsEntry("&Éditeur", 0).containsEntry("Pozosta&łe", 0)
+                    .containsEntry("&Đóng", 0).containsEntry("&Файл", 0);
+            for (Map.Entry<String, Integer> e : got.entrySet()) {
+                int amp = e.getKey().indexOf('&');
+                if (amp >= 0 && amp < e.getKey().length() - 1) {
+                    assertThat(e.getValue() != 0).as("the gate's own rule agrees with the platform for "
+                            + e.getKey()).isEqualTo(mapsToAKey(e.getKey().charAt(amp + 1)));
+                }
+            }
+        } finally {
+            log.setLevel(level);
+            javax.swing.UIManager.setLookAndFeel(before);
+        }
+    }
+
+    /** Only these reach a key without a branded table the product does not ship. */
+    private static boolean mapsToAKey(char c) {
+        return c < 128 && Character.isLetterOrDigit(c);
+    }
+
+    /** The letters of a label a mnemonic could underline: ASCII, outside any {@code {…}} pattern. */
+    private static Set<String> mappableLetters(String label) {
+        Set<String> out = new HashSet<>();
+        int depth = 0;
+        for (char c : label.toCharArray()) {
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth = Math.max(0, depth - 1);
+            } else if (depth == 0 && mapsToAKey(c)) {
+                out.add(String.valueOf(c).toUpperCase(Locale.ROOT));
+            }
+        }
+        return out;
+    }
+
+    private static boolean sameKey(Row a, Row b) {
+        return a.jar().equals(b.jar()) && a.pkg().equals(b.pkg()) && paintedKey(a).equals(paintedKey(b));
     }
 
     /**

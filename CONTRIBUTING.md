@@ -3,7 +3,7 @@
 NMOX Studio is a NetBeans-Platform IDE for doing, learning, and
 experimenting with web development: the Task Rack (53 hardware-styled
 devices wired with patch cables), a polyglot editor (LSP plus
-88 TextMate grammars), seven per-project studios (Task Board, Block, API,
+90 TextMate grammars), seven per-project studios (Task Board, Block, API,
 DB, Contract/Web3, Infra, Project), 93 Learning Spaces, experiments
 that teach, and installers for all three OSes with an in-app update
 center. Apache-2.0. The product even ships its own website — press
