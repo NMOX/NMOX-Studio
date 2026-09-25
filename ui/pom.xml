@@ -156,6 +156,13 @@
             <artifactId>org-netbeans-modules-sendopts</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- 3.2.0: nmox -d (git difftool) shows two files in the
+             platform's own diff view (DiffWindow), a public API module -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-diff</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
         <!-- The IRC client's NickServ passwords live in the OS keychain
              (irc.engine.IrcSecrets — the Keyring-only law, the ApiSecrets
              idiom; v1.204.0) -->
