@@ -92,7 +92,8 @@ final class EditRequestWatcher {
     private static PropertyChangeListener registryListener;
 
     /** Where the status line is, as a seam: tests capture it instead of sharing the platform's one line. */
-    static java.util.function.Consumer<String> status = text -> StatusDisplayer.getDefault().setStatusText(text);
+    static java.util.function.Consumer<String> status =
+            text -> StatusDisplayer.getDefault().setStatusText(PlainStatus.text(text));
 
     /** The seam tests replace: whether a target is still showing. */
     static Predicate<Object> showing = EditRequestWatcher::isShowing;

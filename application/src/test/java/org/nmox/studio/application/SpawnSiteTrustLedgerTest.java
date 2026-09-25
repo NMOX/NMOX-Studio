@@ -161,6 +161,10 @@ class SpawnSiteTrustLedgerTest {
                 "BLESSED: fixed tool-version argv from the device tables — never project-controlled"),
             Map.entry("EnvironmentDoctor.java",
                 "BLESSED: the fixed probe table's own `tool --version` argv, bounded (v1.106.0)"),
+            Map.entry("GitSetupAction.java",
+                "BLESSED: the user's own `git config --global` with fixed words and a value "
+                + "from GitSetup's constant table (3.2.0) — reads with --get, writes only on "
+                + "Apply, Close the default button; nothing a project controls is executed"),
             Map.entry("GitStatusLine.java",
                 "BLESSED: fixed `git`/`gh` argv on the aim — porcelain (v1.40.0), gh pr list / gh api "
                 + "review comments (read-only, v2.51.0/v2.62.0), and gh pr checkout behind the "

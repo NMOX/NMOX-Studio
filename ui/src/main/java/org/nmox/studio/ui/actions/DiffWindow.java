@@ -76,7 +76,7 @@ final class DiffWindow extends TopComponent {
         bar.getAccessibleContext().setAccessibleName(Bundle.DiffWindow_bar());
         for (JButton b : new JButton[] {previous, next}) {
             String label = b == previous ? Bundle.DiffWindow_previous() : Bundle.DiffWindow_next();
-            b.setToolTipText(label);
+            b.setToolTipText(PlainText.plain(label));
             b.getAccessibleContext().setAccessibleName(label);
             b.setFocusable(true);
             bar.add(b);
