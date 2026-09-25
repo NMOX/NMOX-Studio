@@ -52,7 +52,9 @@ class SoftDependencyGateTest {
         // KEPT/why comment at the site
         allowed.put("../web3/src/main/java/org/nmox/studio/web3/ui/Web3StudioTopComponent.java", 1);
         allowed.put("../infra/src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java", 2);
-        allowed.put("../dbstudio/src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java", 7);
+        // 6 after 3.2.0: the workspace watch moved from the rack's FileWatcher
+        // (guarded) to core's FilePulse (no guard needed)
+        allowed.put("../dbstudio/src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java", 6);
         allowed.put("../project/src/main/java/org/nmox/studio/project/ProjectExplorerTopComponent.java", 4);
         return allowed;
     }
