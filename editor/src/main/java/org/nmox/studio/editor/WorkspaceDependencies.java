@@ -118,18 +118,12 @@ public final class WorkspaceDependencies {
         if (workspace == null) {
             return new Servers(List.of(), true);
         }
-        Path wsReal;
-        try {
-            wsReal = workspace.toPath().toRealPath();
-        } catch (IOException ex) {
-            return new Servers(List.of(), true);
-        }
         File self = real(pkg);
         Map<String, File> all = org.nmox.studio.rack.devices.Workspaces.packages(workspace, MAX_WORKSPACE_PACKAGES);
         boolean complete = all.size() < MAX_WORKSPACE_PACKAGES;
         List<File> out = new ArrayList<>();
         for (File candidate : all.values()) {
-            File dir = inside(candidate.toPath(), wsReal);
+            File dir = inside(candidate, workspace);
             if (dir == null || dir.equals(self) || out.contains(dir) || !declaresServer(dir)) {
                 continue;
             }
@@ -145,7 +139,7 @@ public final class WorkspaceDependencies {
     /** The package's real path, so it compares equal to the real paths {@link #inside} returns. */
     private static File real(File pkg) {
         try {
-            return pkg.toPath().toRealPath().toFile();
+            return pkg.getCanonicalFile();   // the spelling Containment answers in
         } catch (IOException ex) {
             return pkg.getAbsoluteFile();
         }
@@ -165,12 +159,6 @@ public final class WorkspaceDependencies {
         if (workspace == null) {
             return List.of();
         }
-        Path wsReal;
-        try {
-            wsReal = workspace.toPath().toRealPath();
-        } catch (IOException ex) {
-            return List.of();
-        }
         File self = real(pkg);
         Set<File> out = new LinkedHashSet<>();
         Map<String, File> declared = null;   // read only when a link is missing
@@ -178,7 +166,7 @@ public final class WorkspaceDependencies {
             if (out.size() >= MAX_DEPENDENCIES) {
                 break;
             }
-            File dir = linked(pkg, workspace, name, wsReal);
+            File dir = linked(pkg, workspace, name);
             if (dir == null && !installed(pkg, workspace, name)) {
                 // not installed yet: the workspace's own list says where it is
                 // (an install that is not a workspace package is third-party,
@@ -187,7 +175,7 @@ public final class WorkspaceDependencies {
                     declared = byName(workspace);
                 }
                 File candidate = declared.get(name);
-                dir = candidate == null ? null : inside(candidate.toPath(), wsReal);
+                dir = candidate == null ? null : inside(candidate, workspace);
             }
             if (dir != null && !dir.equals(self)) {
                 out.add(dir);
@@ -349,17 +337,13 @@ public final class WorkspaceDependencies {
     }
 
     /** Where the package manager linked {@code name}, if that is a workspace package. */
-    private static File linked(File pkg, File workspace, String name, Path wsReal) {
+    private static File linked(File pkg, File workspace, String name) {
         for (File base : List.of(pkg, workspace)) {
-            Path link = new File(new File(base, "node_modules"), name).toPath();
-            if (Files.exists(link, LinkOption.NOFOLLOW_LINKS)) {
-                try {
-                    File dir = inside(link.toRealPath(), wsReal);
-                    if (dir != null) {
-                        return dir;
-                    }
-                } catch (IOException ex) {
-                    // a dangling link names nothing
+            File link = new File(new File(base, "node_modules"), name);
+            if (Files.exists(link.toPath(), LinkOption.NOFOLLOW_LINKS)) {
+                File dir = inside(link, workspace);   // a dangling link resolves to nothing there
+                if (dir != null) {
+                    return dir;
                 }
             }
         }
@@ -368,24 +352,31 @@ public final class WorkspaceDependencies {
 
     /**
      * {@code dir} when it is a package inside the workspace and outside
-     * every {@code node_modules}; null otherwise.
+     * every {@code node_modules}; null otherwise. Containment is the one
+     * home's ({@link org.nmox.studio.core.util.Containment}): it judges
+     * the RESOLVED path, so a link that leaves the workspace is refused
+     * and one that stays inside is followed to where it lands.
      */
-    static File inside(Path dir, Path wsReal) {
-        Path real;
+    static File inside(File dir, File workspace) {
+        File real;
+        Path canonicalRoot;
         try {
-            real = dir.toRealPath();
-        } catch (IOException ex) {
-            return null;
-        }
-        if (!real.startsWith(wsReal) || real.equals(wsReal)) {
-            return null;
-        }
-        for (Path part : wsReal.relativize(real)) {
-            if ("node_modules".equals(part.toString())) {
+            String relative = workspace.getAbsoluteFile().toPath()
+                    .relativize(dir.getAbsoluteFile().toPath()).toString();
+            real = org.nmox.studio.core.util.Containment.resolve(workspace, relative);
+            if (real == null) {
                 return null;
             }
+            canonicalRoot = workspace.getCanonicalFile().toPath();
+        } catch (IOException | IllegalArgumentException ex) {
+            return null;   // different roots (another drive) or unprovable: refused
         }
-        return Files.isRegularFile(real.resolve("package.json")) ? real.toFile() : null;
+        for (Path part : canonicalRoot.relativize(real.toPath())) {
+            if ("node_modules".equals(part.toString())) {
+                return null;   // a third-party install, not a workspace package
+            }
+        }
+        return new File(real, "package.json").isFile() ? real : null;
     }
 
     /**

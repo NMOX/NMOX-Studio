@@ -48,18 +48,12 @@ public final class Workspaces {
         if (root == null || !root.isDirectory()) {
             return found;
         }
-        java.nio.file.Path rootReal;
-        try {
-            rootReal = root.toPath().toRealPath();
-        } catch (IOException ex) {
-            return found;
-        }
         for (String glob : declaredGlobs(root)) {
             if (!staysInside(glob)) {
                 continue;   // a clone's glob naming a path outside it (3.3 review)
             }
             for (File dir : resolve(root, glob)) {
-                if (!inside(dir, rootReal)) {
+                if (!inside(root, dir)) {
                     continue;   // reached through a link that leaves the repository
                 }
                 if (found.size() >= max) {
@@ -90,12 +84,15 @@ public final class Workspaces {
         return true;
     }
 
-    /** Whether {@code dir}'s real path lies inside the root's: a link out of the repository is not a package of it. */
-    private static boolean inside(File dir, java.nio.file.Path rootReal) {
+    /** Whether {@code dir} resolves inside the root: a link out of the repository is not a package of it. */
+    private static boolean inside(File root, File dir) {
         try {
-            return dir.toPath().toRealPath().startsWith(rootReal);
-        } catch (IOException ex) {
-            return false;
+            String relative = root.getAbsoluteFile().toPath()
+                    .relativize(dir.getAbsoluteFile().toPath()).toString();
+            // the one home judges the RESOLVED path (ledger 111)
+            return org.nmox.studio.core.util.Containment.resolve(root, relative) != null;
+        } catch (IllegalArgumentException ex) {
+            return false;   // another drive: not inside
         }
     }
 
