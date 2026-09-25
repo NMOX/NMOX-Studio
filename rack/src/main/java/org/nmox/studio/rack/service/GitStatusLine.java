@@ -90,6 +90,8 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_showChanges=Show Changes",
     "GitStatusLine_switchBranch=Switch Branch…",
     "GitStatusLine_commit=Commit…",
+    "GitStatusLine_pull=Pull…",
+    "GitStatusLine_push=Push…",
     "GitStatusLine_diffProject=Diff Project",
     "GitStatusLine_annotate=Annotate",
     "GitStatusLine_history=History",
@@ -266,6 +268,11 @@ public class GitStatusLine implements StatusLineElementProvider {
                 "Actions/Git/org-netbeans-modules-git-ui-checkout-SwitchBranchAction.instance";
         private static final String COMMIT_INSTANCE =
                 "Actions/Git/org-netbeans-modules-git-ui-commit-CommitAction.instance";
+        // the chip's ↑/↓ say what there is to push and pull; these are the doors
+        private static final String PULL_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-fetch-PullAction.instance";
+        private static final String PUSH_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-push-PushAction.instance";
 
         /**
          * Pull Requests (competitive-lens R6): lists the repo's open
@@ -663,6 +670,12 @@ public class GitStatusLine implements StatusLineElementProvider {
             JMenuItem commit = new JMenuItem(Bundle.GitStatusLine_commit());
             commit.addActionListener(e -> runGitAction(COMMIT_INSTANCE, Bundle.GitStatusLine_commit(), null));
             menu.add(commit);
+            JMenuItem pull = new JMenuItem(Bundle.GitStatusLine_pull());
+            pull.addActionListener(e -> runGitAction(PULL_INSTANCE, Bundle.GitStatusLine_pull(), null));
+            menu.add(pull);
+            JMenuItem push = new JMenuItem(Bundle.GitStatusLine_push());
+            push.addActionListener(e -> runGitAction(PUSH_INSTANCE, Bundle.GitStatusLine_push(), null));
+            menu.add(push);
             menu.addSeparator();
             JMenuItem changes = new JMenuItem(Bundle.GitStatusLine_showChanges());
             changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, Bundle.GitStatusLine_showChanges(), null));
