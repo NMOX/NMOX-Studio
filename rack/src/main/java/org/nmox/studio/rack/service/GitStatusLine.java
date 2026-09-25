@@ -213,8 +213,9 @@ public class GitStatusLine implements StatusLineElementProvider {
             }
             chip.refreshBranch(); // checkouts in a terminal move HEAD under us
             try {
+                // v2 with --branch: the same one spawn also answers ahead/behind
                 ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                        List.of("git", "status", "--porcelain"),
+                        List.of("git", "status", "--porcelain=v2", "--branch"),
                         chip.repoRoot(), Duration.ofSeconds(5));
                 if (r.ok()) {
                     chip.porcelain(r.stdout());

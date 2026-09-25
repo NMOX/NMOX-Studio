@@ -135,6 +135,51 @@ public final class GitFacts {
     }
 
     /**
+     * The changed paths in {@code git status --porcelain=v2 --branch}
+     * output: every entry line ({@code 1 }, {@code 2 }, {@code u },
+     * {@code ? }) counts, the {@code # branch.*} header lines never do
+     * (3.2.0, the chip's one spawn now also answers ahead/behind).
+     */
+    public static int changeCountV2(String porcelainV2) {
+        if (porcelainV2 == null) {
+            return 0;
+        }
+        int n = 0;
+        for (String line : porcelainV2.split("\n")) {
+            if (!line.isBlank() && !line.startsWith("#")) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /**
+     * {@code [ahead, behind]} from the {@code # branch.ab +A -B} header of
+     * {@code git status --porcelain=v2 --branch}, or null when the branch
+     * has no upstream (git prints no such line then) or the line is
+     * malformed — the chip then says nothing rather than a false 0.
+     */
+    public static int[] aheadBehind(String porcelainV2) {
+        if (porcelainV2 == null) {
+            return null;
+        }
+        for (String line : porcelainV2.split("\n")) {
+            if (line.startsWith("# branch.ab ")) {
+                String[] parts = line.substring("# branch.ab ".length()).trim().split(" ");
+                if (parts.length != 2 || !parts[0].startsWith("+") || !parts[1].startsWith("-")) {
+                    return null;
+                }
+                try {
+                    return new int[] {Integer.parseInt(parts[0].substring(1)), Integer.parseInt(parts[1].substring(1))};
+                } catch (NumberFormatException bad) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * Lines of {@code git status --porcelain} output = changed paths;
      * blank lines don't count (the trailing newline must not inflate a
      * clean tree into a dirty one).
