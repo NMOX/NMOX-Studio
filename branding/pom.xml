@@ -38,7 +38,10 @@
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
                 <executions>
-                    <!-- The Cyrillic mnemonic tables (after 3.2.0, ledger 122).
+                    <!-- The mnemonic tables (after 3.2.0, ledger 122): Cyrillic
+                         letters by keyboard position for ru and uk, accented
+                         Latin letters by their base letter for the eight
+                         languages written in Latin letters.
                          The platform's Mnemonics reads them with a plain
                          ResourceBundle.getBundle, which finds only an
                          UNBRANDED locale jar (org-openide-awt_ru.jar), and
@@ -48,7 +51,7 @@
                          file with NO locale suffix under a token that IS the
                          locale gives exactly the platform's name. Bound
                          before package so the cluster and the NBM carry
-                         them; CyrillicMnemonicsTest holds the result. -->
+                         them; TranslatedMnemonicsTest holds the result. -->
                     <execution>
                         <id>mnemonics-ru</id>
                         <phase>prepare-package</phase>
@@ -69,6 +72,94 @@
                         <configuration>
                             <brandingToken>uk</brandingToken>
                             <brandingSources>${basedir}/src/main/nbm-mnemonics/uk</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-es</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>es</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/es</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-fr</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>fr</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/fr</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-de</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>de</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/de</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-pl</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>pl</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/pl</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-pt</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>pt</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/pt</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-id</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>id</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/id</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-tl</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>tl</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/tl</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-vi</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>vi</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/vi</brandingSources>
                         </configuration>
                     </execution>
                 </executions>

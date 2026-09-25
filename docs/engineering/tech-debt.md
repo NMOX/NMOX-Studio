@@ -22,9 +22,9 @@ guess. These are decisions.
 
 ## Open — added by 3.2.0 (the second-week release)
 
-### 122. ~~Russian and Ukrainian menu mnemonics do nothing~~ — Russian and Ukrainian CLOSED after 3.2.0
+### 122. ~~Russian and Ukrainian menu mnemonics do nothing~~ — CLOSED after 3.2.0
 
-**Closed for Russian and Ukrainian.** The platform's `org.openide.awt.Mnemonics`
+**Closed.** The platform's `org.openide.awt.Mnemonics`
 gives a key only to `A–Z` and `0–9` and looks any other letter up with a
 plain `ResourceBundle.getBundle("org.openide.awt.Mnemonics")`, which finds a
 table only in an UNBRANDED locale jar (`org-openide-awt_ru.jar`). The entry
@@ -42,16 +42,25 @@ out to press a key another row of the same menu already claimed (`Другая
 &VCS` and `От&менить` both V) or kept an appended Latin letter though a
 letter of their own was free; the mnemonic laws now compare the KEY a
 mnemonic presses (the letter comparison, as a control, passed the collision
-silently) and the fourteen were moved. `CyrillicMnemonicsTest` runs the
+silently) and the fourteen were moved. `TranslatedMnemonicsTest` runs the
 platform's own `Mnemonics` over every Russian and Ukrainian value in the
 cluster.
 
-**Still open:** the accented and non-Latin mnemonics outside Russian and
-Ukrainian (French `&Édition`, Spanish `&Ámbito:`, Vietnamese `&Đóng`,
-German `Gro&ß-/Kleinschreibung`, Polish `Zwi&ń`, and Hindi, whose top menu
-bar underlines Devanagari — `&फ़ाइल` — where its own convention appends a
-Latin letter), and the top menu bar has no uniqueness gate (French:
-Affichage and Refactoriser both claim A).
+**The rest of the entry, closed the same way.** The eight languages written
+in Latin letters ship one generated table each (every precomposed Latin
+letter to its base letter's key: `&Édition` presses E, `&Đóng` D, `Zwi&ń`
+N), so the accented mnemonics work where the translators put them; a
+French boot logged one refusal (the É) without it and none with it. Hindi
+needed no table and got none: its convention appends a Latin letter, and
+25 values (its whole top menu bar among them) underlined Devanagari
+instead; they now append the letter the other appending languages use
+(`फ़ाइल(&F)`, the Refactor menu `(&G)`). The top menu bar gained its
+uniqueness law, measured through the platform's own `Mnemonics`, and it
+found clashes in four languages, not just the French one this entry
+recorded: French (A three times, N twice), Spanish (E, A, V), German (A
+three times, D) and Russian (three, visible only once its letters had
+keys). `TranslatedMnemonicsTest` holds all of it for every translated
+language.
 
 ### 123. The platform status line can drop a message (upstream)
 

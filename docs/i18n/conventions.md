@@ -29,8 +29,12 @@ Three rules hold for every language:
   `&Éditeur`, `Pozosta&łe` and `&Đóng` give NO mnemonic at all. Any other
   character is looked up in a `Mnemonics_<lang>.properties` table in an
   unbranded locale jar; with none, the lookup fails, logs an INFO line
-  every time the menu is built, and assigns nothing. Russian and Ukrainian
-  ship one (after 3.2.0, below), so `&Файл` presses A.
+  every time the menu is built, and assigns nothing. After 3.2.0 every
+  language written in Latin letters ships one mapping each accented letter
+  to its base letter (`&Édition` presses E, `&Đóng` D), and Russian and
+  Ukrainian ship one by keyboard position (below), so `&Файл` presses A.
+  The languages that append a Latin letter ship none, so a letter of
+  their own script underlined in place does nothing.
 - **Two mnemonics collide on the KEY they press, not the letter they
   show.** With a table, `&Файл` and `Документы(&A)` are different letters
   and the same key A, so a keyboard cannot tell them apart.
@@ -43,7 +47,9 @@ Three rules hold for every language:
   shows no mnemonics, the reader sees a stray `(J)` after the word. A label
   keeps an appended letter only when every letter it could underline
   presses a key another row of the same menu already claims.
-  `MenuRowsSpeakTest` holds all three rules over every platform menu row.
+  `MenuRowsSpeakTest` holds all three rules over every platform menu row,
+  and `TranslatedMnemonicsTest` runs the platform's own `Mnemonics` over
+  every translated value and every top menu bar.
 
 ## es — Español
 
@@ -85,7 +91,7 @@ Three rules hold for every language:
   language underlined a letter no key reached; a boot of the assembled app
   under `--locale ru` logged 241 refusals without the table and none with
   it. Underline a letter of the label itself, and when two rows of one
-  menu land on the same key, move one of them: `CyrillicMnemonicsTest`
+  menu land on the same key, move one of them: `TranslatedMnemonicsTest`
   runs the platform's own `Mnemonics` over every value.
 
 ## pl — Polski
