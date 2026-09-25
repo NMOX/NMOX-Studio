@@ -66,4 +66,20 @@ class WorkspacesContainmentTest {
         assertThat(Workspaces.packages(repo.toFile())).hasSize(Workspaces.MAX_PACKAGES);
         assertThat(Workspaces.packages(repo.toFile(), 500)).hasSize(Workspaces.MAX_PACKAGES + 6);
     }
+
+    /**
+     * Equivalent in outcome, pinned by its source: the real-path check
+     * already drops whatever a {@code **} walk finds through a link, so
+     * no result can show the walk following one — what the rule saves is
+     * the reads outside the repository (three levels of someone else's
+     * folders), which no assertion on the result can see.
+     */
+    @Test
+    @DisplayName("a ** walk does not follow a link (source-pinned: the result cannot show it)")
+    void walkFollowsNoLink() throws IOException {
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/devices/Workspaces.java"));
+        String walk = src.substring(src.indexOf("private static void walk("));
+        assertThat(walk.substring(0, walk.indexOf("File[] children")))
+                .contains("java.nio.file.Files.isSymbolicLink(dir.toPath())");
+    }
 }
