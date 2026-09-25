@@ -23,6 +23,17 @@ rem refuses a file: it takes a folder). START detaches the launcher, so a
 rem refusal the IDE made would reach nobody at this console.
 rem
 rem START returns at once, so the console is not held until the IDE quits.
+rem -w and -d (3.2.0) make nmox.cmd git's editor and difftool, as the Unix
+rem launchers do: every file is also written as an item into a private
+rem request folder under %TEMP% (nmox-request.*), and when -w or -d was given
+rem the IDE is handed that folder with --nmox-request and answers there -
+rem accepted (its process id), refused (why) or done (every tab it opened was
+rem closed); :await waits for the answer and removes the folder. A file named
+rem before -w also rides --open, so it opens twice and is waited on once. The
+rem items are written with the console switched to UTF-8 (chcp 65001, put
+rem back after each item): echo writes in the console's code page and the IDE
+rem reads UTF-8, so a name with an accent would otherwise not be found.
+rem
 rem cmd splits arguments on = too, so an option value holding = (-J-Dx=y)
 rem does not survive this shim; run bin\nmoxstudio64.exe for those.
 rem
@@ -36,11 +47,17 @@ setlocal DisableDelayedExpansion
 set "NMOX_EXE=%~dp0..\bin\nmoxstudio64.exe"
 set "NMOX_ARGS="
 set "NMOX_VALUE="
+set "NMOX_WAIT="
+set "NMOX_DIFF="
+set "NMOX_DIFFED="
+set "NMOX_REQ="
+set "NMOX_FOLDER="
 :next
 if "%~1"=="" goto launch
 set "NMOX_A=%~1"
 set "NMOX_VERB="
 if defined NMOX_VALUE goto value
+if defined NMOX_DIFF goto diffarg
 for %%V in (--userdir --cachedir --jdkhome --open --aim --locale --laf --fontsize --branding --clusters) do if /i "%~1"=="%%V" set "NMOX_VALUE=%%V"
 if /i "%~1"=="-h" goto usage
 if /i "%~1"=="--help" goto usage
@@ -49,7 +66,11 @@ if /i "%~1"=="-r" goto skip
 if /i "%~1"=="--reuse-window" goto skip
 if /i "%~1"=="-n" goto newwindow
 if /i "%~1"=="--new-window" goto newwindow
-for %%V in (-w --wait -d --diff -a --add -v --version) do if /i "%~1"=="%%V" goto vscodeonly
+if /i "%~1"=="-w" goto waitflag
+if /i "%~1"=="--wait" goto waitflag
+if /i "%~1"=="-d" goto diffflag
+if /i "%~1"=="--diff" goto diffflag
+for %%V in (-a --add -v --version) do if /i "%~1"=="%%V" goto vscodeonly
 if /i "%~1"=="-g" goto skip
 if /i "%~1"=="--goto" goto skip
 if "%NMOX_A:~0,1%"=="-" goto keep
@@ -57,6 +78,11 @@ if exist "%~1\*" goto folder
 if exist "%~1" goto file
 call :goto
 if errorlevel 1 goto missing
+for %%P in ("%NMOX_GF%") do set "NMOX_OPEN=%%~fP"
+set "NMOX_LINE=%NMOX_GL%"
+call :recordopen
+if errorlevel 1 exit /b 1
+if defined NMOX_WAIT goto skip
 for %%P in ("%NMOX_GF%") do set "NMOX_A=%%~fP:%NMOX_GL%"
 set "NMOX_VERB=--open"
 goto keep
@@ -84,11 +110,78 @@ rem "\." then the for-variable's full-path form drops a trailing backslash,
 rem which would otherwise escape the closing quote on the launcher's command line
 for %%D in ("%~f1\.") do set "NMOX_A=%%~fD"
 set "NMOX_VERB=--aim"
+set "NMOX_FOLDER=1"
 goto keep
 :file
+set "NMOX_OPEN=%~f1"
+set "NMOX_LINE="
+call :recordopen
+if errorlevel 1 exit /b 1
+if defined NMOX_WAIT goto skip
 set "NMOX_A=%~f1"
 set "NMOX_VERB=--open"
 goto keep
+:waitflag
+set "NMOX_WAIT=1"
+goto skip
+:diffflag
+set "NMOX_DIFF=2"
+goto skip
+:diffarg
+if not exist "%~1" goto notafile
+if exist "%~1\*" goto notafile
+if not "%NMOX_DIFF%"=="2" goto diffright
+set "NMOX_DL=%~f1"
+set "NMOX_DIFF=1"
+goto skip
+:diffright
+set "NMOX_DR=%~f1"
+set "NMOX_DIFF="
+set "NMOX_DIFFED=1"
+call :recorddiff
+if errorlevel 1 exit /b 1
+goto skip
+:recordopen
+set "NMOX_KIND=open"
+goto record
+:recorddiff
+set "NMOX_KIND=diff"
+:record
+rem appends one item to the request folder's items file, making the folder
+rem first; the names are read with delayed expansion ON, so nothing in a name
+rem is parsed again, and written with the console in UTF-8. Two entry
+rem labels rather than an argument: CALL parses its arguments a second time
+if defined NMOX_REQ goto recordwrite
+set /a NMOX_TRY=0
+:mkreq
+set /a NMOX_TRY+=1
+set "NMOX_REQ=%TEMP%\nmox-request.%RANDOM%%RANDOM%"
+md "%NMOX_REQ%" 2>nul
+if not errorlevel 1 goto recordwrite
+if %NMOX_TRY% lss 5 goto mkreq
+>&2 echo(nmox: could not make a request folder in %%TEMP%%
+exit /b 1
+:recordwrite
+set "NMOX_CP="
+for /f "tokens=2 delims=:" %%C in ('chcp') do set "NMOX_CP=%%C"
+if defined NMOX_CP set "NMOX_CP=%NMOX_CP: =%"
+if defined NMOX_CP set "NMOX_CP=%NMOX_CP:.=%"
+chcp 65001 >nul
+:recordput
+setlocal EnableDelayedExpansion
+if "!NMOX_KIND!"=="open" goto recordfile
+>>"!NMOX_REQ!\items" echo(diff
+>>"!NMOX_REQ!\items" echo(!NMOX_DL!
+>>"!NMOX_REQ!\items" echo(!NMOX_DR!
+goto recorded
+:recordfile
+>>"!NMOX_REQ!\items" echo(open
+>>"!NMOX_REQ!\items" echo(!NMOX_OPEN!
+>>"!NMOX_REQ!\items" echo(!NMOX_LINE!
+:recorded
+endlocal
+if defined NMOX_CP chcp %NMOX_CP% >nul
+exit /b 0
 :append
 setlocal EnableDelayedExpansion
 if defined NMOX_VERB (set "NMOX_L=!NMOX_ARGS! !NMOX_VERB! "!NMOX_A!"") else set "NMOX_L=!NMOX_ARGS! "!NMOX_A!""
@@ -138,13 +231,20 @@ echo(
 echo(  nmox .              aim NMOX Studio at this folder, as File ^> Open Folder... does
 echo(  nmox src/app.js     open a file
 echo(  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)
+echo(  nmox -w file        open it and wait until its tab is closed
+echo(  nmox -d left right  compare two files side by side
 echo(  nmox                start NMOX Studio
 echo(
-echo(It returns at once; a second nmox hands its folder or files to the IDE
-echo(already running. A name that is not there is refused here, before anything
-echo(starts. VS Code's -r is accepted and -n opens in the one window;
-echo(-w, -d, -a and -v have no counterpart and are refused. Any other
+echo(It returns at once unless -w asks it to wait; a second nmox hands its folder
+echo(or files to the IDE already running. A name that is not there is refused
+echo(here, before anything starts. VS Code's -r is accepted and -n opens in the
+echo(one window; -a and -v have no counterpart and are refused. Any other
 echo(option goes to the IDE unchanged.
+echo(
+echo(NMOX Studio as git's editor and difftool:
+echo(  git config --global core.editor "nmox -w"
+echo(  git config --global diff.tool nmox
+echo(  git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 exit /b 0
 :newwindow
 >&2 echo(nmox: NMOX Studio has one window; opening there
@@ -161,9 +261,73 @@ exit /b 2
 setlocal EnableDelayedExpansion
 >&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)
 exit /b 2
+:notafile
+setlocal EnableDelayedExpansion
+>&2 echo(nmox: !NMOX_A!: not a file ^(-d compares two files^)
+exit /b 2
+:needtwo
+>&2 echo(nmox: -d needs two files
+exit /b 2
+:waitfolder
+>&2 echo(nmox: -w waits for a file to be closed, not a folder
+exit /b 2
+:waitnofile
+>&2 echo(nmox: -w needs a file to wait for
+exit /b 2
 :launch
 if defined NMOX_VALUE (
     >&2 echo(nmox: %NMOX_VALUE% needs a value
     exit /b 2
 )
+if defined NMOX_DIFF goto needtwo
+if defined NMOX_WAIT if defined NMOX_FOLDER goto waitfolder
+if defined NMOX_WAIT if not defined NMOX_REQ goto waitnofile
+if not defined NMOX_REQ goto launchplain
+if defined NMOX_WAIT goto launchrequest
+if defined NMOX_DIFFED goto launchrequest
+rd /s /q "%NMOX_REQ%" 2>nul
+:launchplain
 start "" "%NMOX_EXE%" %NMOX_ARGS%
+exit /b 0
+:launchrequest
+>"%NMOX_REQ%\request" echo(nmox-request 1
+if defined NMOX_WAIT >>"%NMOX_REQ%\request" echo(wait
+type "%NMOX_REQ%\items" >>"%NMOX_REQ%\request"
+rem the folder rides the start line itself: NMOX_ARGS has one way in (:append)
+start "" "%NMOX_EXE%" %NMOX_ARGS% --nmox-request "%NMOX_REQ%"
+set "NMOX_N=0"
+set "NMOX_PID="
+:await
+if exist "%NMOX_REQ%\refused" goto awaitrefused
+if exist "%NMOX_REQ%\done" goto awaitend
+if not defined NMOX_PID if exist "%NMOX_REQ%\accepted" set /p NMOX_PID=<"%NMOX_REQ%\accepted"
+if defined NMOX_PID if not defined NMOX_WAIT goto awaitend
+if defined NMOX_PID goto awaitalive
+set /a NMOX_N+=1
+if %NMOX_N% geq 120 goto awaitsilent
+goto awaitsleep
+:awaitalive
+tasklist /FI "PID eq %NMOX_PID%" /NH 2>nul | find " %NMOX_PID% " >nul
+if errorlevel 1 goto awaitgone
+:awaitsleep
+ping -n 2 127.0.0.1 >nul
+goto await
+:awaitrefused
+setlocal EnableDelayedExpansion
+set /p NMOX_WHY=<"!NMOX_REQ!\refused"
+>&2 echo(nmox: !NMOX_WHY!
+endlocal
+rd /s /q "%NMOX_REQ%" 2>nul
+exit /b 2
+:awaitgone
+if exist "%NMOX_REQ%\done" goto awaitend
+rd /s /q "%NMOX_REQ%" 2>nul
+>&2 echo(nmox: NMOX Studio quit before the file was closed
+exit /b 1
+:awaitsilent
+rd /s /q "%NMOX_REQ%" 2>nul
+>&2 echo(nmox: NMOX Studio did not answer
+exit /b 1
+:awaitend
+rd /s /q "%NMOX_REQ%" 2>nul
+exit /b 0

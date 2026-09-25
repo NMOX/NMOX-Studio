@@ -225,6 +225,148 @@ class TerminalCommandGateTest {
         assertThat(slurp(tmp.resolve("nmox.out"))).contains("cannot find nmoxstudio");
     }
 
+    // ------------------------------------------------ -w and -d (3.2.0)
+
+    /**
+     * An IDE stand-in for {@code --nmox-request}: it copies the request it
+     * was handed, then answers the way {@code mode} says - {@code accept}
+     * (its process id, then {@code done} once {@code release} appears),
+     * {@code refuse} (a sentence), or {@code die} (accepted, then gone
+     * without answering).
+     */
+    private static void writeRequestIde(Path at, Path copy, Path release, String mode) throws IOException {
+        Files.writeString(at, "#!/bin/sh\n"
+                + "prev=\n"
+                + "for a in \"$@\"; do [ \"$prev\" = --nmox-request ] && dir=$a; prev=$a; done\n"
+                + "cp \"$dir/request\" '" + copy + "'\n"
+                + "case " + mode + " in\n"
+                + "refuse) printf 'the request names no file\\n' > \"$dir/r.tmp\"; mv \"$dir/r.tmp\" \"$dir/refused\" ;;\n"
+                + "die) echo $$ > \"$dir/a.tmp\"; mv \"$dir/a.tmp\" \"$dir/accepted\"; sleep 0.5 ;;\n"
+                + "accept) echo $$ > \"$dir/a.tmp\"; mv \"$dir/a.tmp\" \"$dir/accepted\"\n"
+                + "  i=0; while [ ! -f '" + release + "' ] && [ $i -lt 300 ]; do sleep 0.1; i=$((i+1)); done\n"
+                + "  : > \"$dir/done\" ;;\n"
+                + "esac\n");
+    }
+
+    /** Both Unix commands, each beside a request-answering IDE stand-in. */
+    private List<Path> requestCommands(Path copy, Path release, String mode) throws IOException {
+        Path appBin = Files.createDirectories(tmp.resolve("opt/nmox-studio/bin"));
+        Path nmox = appBin.resolve("nmox");
+        Files.copy(LINUX_NMOX, nmox, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        executable(nmox);
+        writeRequestIde(appBin.resolve("nmoxstudio"), copy, release, mode);
+        Bundle b = bundle();
+        writeRequestIde(b.launcher.resolveSibling("../Resources/nmoxstudio/bin/nmoxstudio").normalize(),
+                copy, release, mode);
+        Path link = Files.createDirectories(tmp.resolve("brew/bin")).resolve("nmox");
+        Files.deleteIfExists(link);
+        Files.createSymbolicLink(link, b.launcher);
+        return List.of(nmox, link);
+    }
+
+    private Process startIn(Path cwd, Path tmpdir, String command, List<String> args) throws IOException {
+        List<String> argv = new ArrayList<>();
+        argv.add(command);
+        argv.addAll(args);
+        ProcessBuilder pb = new ProcessBuilder(argv).directory(cwd.toFile()).redirectErrorStream(true)
+                .redirectOutput(tmp.resolve("launcher.out").toFile());
+        pb.environment().put("TMPDIR", tmpdir.toString());
+        return pb.start();
+    }
+
+    private static void assertNoRequestLeft(Path tmpdir) throws IOException {
+        try (var left = Files.list(tmpdir)) {
+            assertThat(left.map(Path::getFileName).map(Path::toString))
+                    .as("the request folder is removed when nmox ends").isEmpty();
+        }
+    }
+
+    @Test
+    @DisplayName("Unix: nmox -w FILE:LINE hands the IDE a waiting request and returns only when it is done")
+    @DisabledOnOs(OS.WINDOWS)
+    void waitHoldsUntilDone() throws Exception {
+        Path project = project();
+        Path copy = tmp.resolve("request.copy");
+        Path release = tmp.resolve("release");
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        for (Path command : requestCommands(copy, release, "accept")) {
+            Files.deleteIfExists(release);
+            Files.deleteIfExists(copy);
+            Process p = startIn(project, tmpdir, command.toString(), List.of("--wait", "src/app.js:3"));
+            for (int i = 0; i < 100 && !Files.exists(copy); i++) {
+                Thread.sleep(100);
+            }
+            Thread.sleep(800);
+            assertThat(p.isAlive()).as("%s waits while the file is open", command).isTrue();
+            Path app = project.toRealPath().resolve("src/app.js");
+            List<String> req = Files.readAllLines(copy);
+            assertThat(req).as("the request the IDE was handed").hasSize(5);
+            assertThat(req.subList(0, 3)).containsExactly("nmox-request 1", "wait", "open");
+            assertThat(Path.of(req.get(3)).toRealPath()).isEqualTo(app);
+            assertThat(req.get(4)).isEqualTo("3");
+            Files.writeString(release, "go");
+            assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("done ends the wait").isTrue();
+            assertThat(p.exitValue()).as(slurp(tmp.resolve("launcher.out"))).isZero();
+            assertNoRequestLeft(tmpdir);
+        }
+    }
+
+    @Test
+    @DisplayName("Unix: nmox -d LEFT RIGHT hands the IDE a comparison and returns once it is accepted")
+    @DisabledOnOs(OS.WINDOWS)
+    void diffReturnsOnceAccepted() throws Exception {
+        Path project = project();
+        Files.writeString(project.resolve("b.js"), "y");
+        Path copy = tmp.resolve("request.copy");
+        Path release = tmp.resolve("release");
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        try {
+            for (Path command : requestCommands(copy, release, "accept")) {
+                Process p = startIn(project, tmpdir, command.toString(), List.of("-d", "src/app.js", "b.js"));
+                assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("%s returns without -w", command).isTrue();
+                assertThat(p.exitValue()).as(slurp(tmp.resolve("launcher.out"))).isZero();
+                List<String> req = Files.readAllLines(copy);
+                assertThat(req).hasSize(4);
+                assertThat(req.subList(0, 2)).as("no wait line").containsExactly("nmox-request 1", "diff");
+                assertThat(Path.of(req.get(2)).toRealPath()).isEqualTo(project.toRealPath().resolve("src/app.js"));
+                assertThat(Path.of(req.get(3)).toRealPath()).isEqualTo(project.toRealPath().resolve("b.js"));
+                assertNoRequestLeft(tmpdir);
+            }
+        } finally {
+            Files.writeString(release, "go");
+        }
+    }
+
+    @Test
+    @DisplayName("Unix: the IDE's refusal is printed on the terminal and exits 2")
+    @DisabledOnOs(OS.WINDOWS)
+    void refusalSpeaksOnTheTerminal() throws Exception {
+        Path project = project();
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        for (Path command : requestCommands(tmp.resolve("c"), tmp.resolve("r"), "refuse")) {
+            Process p = startIn(project, tmpdir, command.toString(), List.of("-w", "src/app.js"));
+            assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+            assertThat(p.exitValue()).isEqualTo(2);
+            assertThat(slurp(tmp.resolve("launcher.out"))).contains("nmox: the request names no file");
+            assertNoRequestLeft(tmpdir);
+        }
+    }
+
+    @Test
+    @DisplayName("Unix: an IDE that goes away without answering ends the wait with exit 1, not a hang")
+    @DisabledOnOs(OS.WINDOWS)
+    void aVanishedIdeEndsTheWait() throws Exception {
+        Path project = project();
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        for (Path command : requestCommands(tmp.resolve("c"), tmp.resolve("r"), "die")) {
+            Process p = startIn(project, tmpdir, command.toString(), List.of("-w", "src/app.js"));
+            assertThat(p.waitFor(20, TimeUnit.SECONDS)).as("%s notices", command).isTrue();
+            assertThat(p.exitValue()).isEqualTo(1);
+            assertThat(slurp(tmp.resolve("launcher.out"))).contains("nmox: NMOX Studio quit before the file was closed");
+            assertNoRequestLeft(tmpdir);
+        }
+    }
+
     // ---------------------------------------------------------------- refusals
 
     /**
@@ -253,8 +395,16 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("src/app.js:12345678901"), "nmox: src/app.js:12345678901: no such file or folder"),
                 // VS Code's own flags with no counterpart: the platform answered
                 // "Unknown option" to /dev/null and never started (measured)
-                Arguments.of(List.of("--wait", "src/app.js"), "nmox: --wait is VS Code's and has no counterpart here"),
-                Arguments.of(List.of("-d", "a", "b"), "nmox: -d is VS Code's and has no counterpart here"));
+                Arguments.of(List.of("--add", "src"), "nmox: --add is VS Code's and has no counterpart here"),
+                Arguments.of(List.of("-v"), "nmox: -v is VS Code's and has no counterpart here"),
+                // -w and -d (3.2.0) are refused before anything starts when
+                // there is nothing to wait for or compare
+                Arguments.of(List.of("-w"), "nmox: -w needs a file to wait for"),
+                Arguments.of(List.of("--wait", "."), "nmox: .: a folder (-w waits for a file to be closed)"),
+                Arguments.of(List.of("-w", "gone.txt"), "nmox: gone.txt: no such file or folder"),
+                Arguments.of(List.of("-d", "src/app.js"), "nmox: -d needs two files"),
+                Arguments.of(List.of("-d", "src/app.js", "gone.js"), "nmox: gone.js: not a file (-d compares two files)"),
+                Arguments.of(List.of("--diff", "src", "src/app.js"), "nmox: src: not a file (-d compares two files)"));
     }
 
     @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
@@ -463,13 +613,20 @@ class TerminalCommandGateTest {
             "  nmox .              aim NMOX Studio at this folder, as File > Open Folder... does",
             "  nmox src/app.js     open a file",
             "  nmox src/app.js:42  open it at line 42 (-g and --goto are accepted)",
+            "  nmox -w file        open it and wait until its tab is closed",
+            "  nmox -d left right  compare two files side by side",
             "  nmox                start NMOX Studio",
             "",
-            "It returns at once; a second nmox hands its folder or files to the IDE",
-            "already running. A name that is not there is refused here, before anything",
-            "starts. VS Code's -r is accepted and -n opens in the one window;",
-            "-w, -d, -a and -v have no counterpart and are refused. Any other",
-            "option goes to the IDE unchanged.");
+            "It returns at once unless -w asks it to wait; a second nmox hands its folder",
+            "or files to the IDE already running. A name that is not there is refused",
+            "here, before anything starts. VS Code's -r is accepted and -n opens in the",
+            "one window; -a and -v have no counterpart and are refused. Any other",
+            "option goes to the IDE unchanged.",
+            "",
+            "NMOX Studio as git's editor and difftool:",
+            "  git config --global core.editor \"nmox -w\"",
+            "  git config --global diff.tool nmox",
+            "  git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
 
     @Test
     @DisplayName("all three launchers print the same usage")
@@ -505,13 +662,13 @@ class TerminalCommandGateTest {
             assertThat(unix).contains("printf 'nmox: %s: no such file or folder\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s: not a folder (--aim takes a folder)\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s needs a value\\n' \"$value\" >&2\n");
-            assertThat(unix.split("\n\\s*exit 2( ;;)?\n", -1)).as("each of the five refusal sites exits 2").hasSize(6);
+            assertThat(unix.split("\n\\s*exit 2( ;;)?\n", -1)).as("each of the eleven refusal sites exits 2").hasSize(12);
         }
         String cmd = read(NMOX_CMD);
         assertThat(cmd).contains(">&2 echo(nmox: !NMOX_A!: no such file or folder\n")
                 .contains(">&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)\n")
                 .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n");
-        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the four refusal sites exits 2").hasSize(5);
+        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the nine refusal sites exits 2").hasSize(10);
         assertThat(cmd).as("a bare name that is neither folder nor file nor NAME:LINE is refused, not passed on")
                 .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ncall :goto\n"
                         + "if errorlevel 1 goto missing\n");
@@ -582,13 +739,15 @@ class TerminalCommandGateTest {
         List<String> code = cmd.lines().filter(l -> !l.startsWith("rem")).toList();
         assertThat(code).as("CALL re-expands %% and doubles ^ in its arguments: no `call set`, no `call` with"
                 + " arguments at all (a bare `call :label` passes nothing through the second parse)")
-                .noneMatch(l -> l.matches("(?i)\\s*call\\s+(?!:(append|goto)$).*"));
+                .noneMatch(l -> l.matches("(?i)\\s*call\\s+(?!:(append|goto|recordopen|recorddiff)$).*"));
         assertThat(code.get(1)).as("the argument is read with delayed expansion OFF, so a ! stays a character")
                 .isEqualTo("setlocal DisableDelayedExpansion");
         for (int i = 0; i < code.size(); i++) {
             if (code.get(i).equalsIgnoreCase("setlocal EnableDelayedExpansion")) {
                 assertThat(code.get(i - 1)).as("delayed expansion is switched on only inside the routines that"
-                        + " read a value back, never where %~1 is read").isIn(":append", ":goto", ":missing", ":notfolder", ":vscodeonly");
+                        + " read a value back, never where %~1 is read").isIn(":append", ":goto", ":missing", ":notfolder", ":vscodeonly",
+                                // 3.2.0: -w/-d write names read into variables with it off
+                                ":recordput", ":notafile", ":awaitrefused");
             }
         }
         assertThat(cmd).as("the value is appended with delayed expansion on and carried out of the inner"
@@ -614,6 +773,13 @@ class TerminalCommandGateTest {
                 .contains("if ($p.ExitCode -ne 2)")
                 .contains("started the launcher it refused");
         assertThat(body).as("a missing name no longer passes through").doesNotContain("'missing.txt', '-J-Xmx1g'");
+        assertThat(body).as("-w and -d run for real on Windows: the request, UTF-8 names, the folder removed, the wait's end")
+                .contains("@('-w', 'nmox: -w needs a file to wait for')")
+                .contains("@('-d src\\app.js', 'nmox: -d needs two files')")
+                .contains("$accent = \"caf$([char]0xE9).txt\"")
+                .contains("throw \"nmox -d wrote the wrong request\"")
+                .contains("throw \"nmox -d left its request folder behind\"")
+                .contains("throw \"nmox -w did not notice the IDE was gone\"");
     }
 
     @Test
@@ -750,7 +916,7 @@ class TerminalCommandGateTest {
             // the MAIN loop's done: goto_line has a for ... done of its own,
             // and stopping there compared nothing past it (3.1.0 - a mutant
             // in the option case lived through this test until it did)
-            inLoop |= line.strip().startsWith("while ");
+            inLoop |= line.strip().startsWith("while [ \"$n\" -gt 0 ]");
             looped |= inLoop && line.strip().equals("done");
             if (looped && line.strip().equals("fi")) {
                 return lines;

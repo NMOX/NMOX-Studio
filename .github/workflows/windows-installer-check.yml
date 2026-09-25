@@ -232,9 +232,17 @@ jobs:
           $odd = 'p%NMOXNOPE%q ^r &s !t.js'
           Set-Content -LiteralPath "$root\proj dir\src\$odd" 'x'
           $record = Join-Path $root 'record.txt'
+          # the stand-in also answers nmox -w/-d's request folder the way the
+          # IDE does: it keeps a copy of the request and writes accepted (its
+          # own process id), then exits - so -d returns 0 and -w notices the
+          # IDE went away (exit 1) rather than hanging
           $src = 'using System; using System.IO; public static class Stub { public static void Main(string[] a) { ' +
                  'string[] head = { Environment.CurrentDirectory }; File.WriteAllLines(@"' + $record + '.tmp", head); ' +
-                 'File.AppendAllLines(@"' + $record + '.tmp", a); File.Move(@"' + $record + '.tmp", @"' + $record + '"); } }'
+                 'File.AppendAllLines(@"' + $record + '.tmp", a); ' +
+                 'for (int i = 0; i + 1 < a.Length; i++) { if (a[i] == "--nmox-request") { ' +
+                 'File.Copy(Path.Combine(a[i + 1], "request"), @"' + $record + '.request", true); ' +
+                 'File.WriteAllText(Path.Combine(a[i + 1], "accepted"), System.Diagnostics.Process.GetCurrentProcess().Id + "\n"); } } ' +
+                 'File.Move(@"' + $record + '.tmp", @"' + $record + '"); } }'
           Add-Type -TypeDefinition $src -OutputAssembly "$root\bin\nmoxstudio64.exe" -OutputType ConsoleApplication
           $line = '/c ""' + "$root\cli\nmox.cmd" + '" . src\app.js --userdir "' + "$root\u d" + '" -J-Xmx1g "src\' + $odd + '""'
           Start-Process -FilePath cmd.exe -ArgumentList $line -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow
@@ -279,7 +287,11 @@ jobs:
                               @('gone.js:4', 'nmox: gone.js:4: no such file or folder'),
                               @('src:4', 'nmox: src:4: no such file or folder'),
                               @('src\app.js:12345678901', 'nmox: src\app.js:12345678901: no such file or folder'),
-                              @('--wait src\app.js', 'nmox: --wait is VS Code''s and has no counterpart here'))) {
+                              @('-v', 'nmox: -v is VS Code''s and has no counterpart here'),
+                              @('-w', 'nmox: -w needs a file to wait for'),
+                              @('-w .', 'nmox: -w waits for a file to be closed, not a folder'),
+                              @('-d src\app.js', 'nmox: -d needs two files'),
+                              @('-d src\app.js gone.js', 'nmox: gone.js: not a file'))) {
             Remove-Item $record -ErrorAction SilentlyContinue
             $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" ' + $case[0] + '"') `
                    -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err
@@ -290,6 +302,32 @@ jobs:
             Start-Sleep -Seconds 2
             if (Test-Path $record) { throw "nmox $($case[0]) started the launcher it refused" }
           }
+          # -d hands the IDE a request folder and returns once it is accepted;
+          # the names, the one with % ^ & ! and one with an accent, arrive
+          # whole and in UTF-8, and the folder is gone afterwards
+          $accent = "caf$([char]0xE9).txt"
+          Set-Content -LiteralPath "$root\proj dir\src\$accent" 'x'
+          Remove-Item $record, "$record.request" -ErrorAction SilentlyContinue
+          $line = '/c ""' + "$root\cli\nmox.cmd" + '" -d "src\' + $odd + '" "src\' + $accent + '""'
+          $p = Start-Process -FilePath cmd.exe -ArgumentList $line -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru
+          if ($p.ExitCode -ne 0) { throw "nmox -d exited $($p.ExitCode), not 0" }
+          $req = @(Get-Content -LiteralPath "$record.request" -Encoding UTF8)
+          Write-Host "nmox -d request:"; $req | ForEach-Object { Write-Host "  [$_]" }
+          $want = @('nmox-request 1', 'diff', "$root\proj dir\src\$odd", "$root\proj dir\src\$accent")
+          if (($req -join "`n") -ne ($want -join "`n")) { throw "nmox -d wrote the wrong request" }
+          $got = @(Get-Content -LiteralPath $record)
+          if ($got[-2] -ne '--nmox-request' -or -not (Split-Path $got[-1] -Leaf).StartsWith('nmox-request.')) { throw "nmox -d did not hand over its request folder" }
+          if (Test-Path $got[-1]) { throw "nmox -d left its request folder behind" }
+          # -w waits; this IDE accepts and exits, so the wait ends with 1 and says why
+          Remove-Item $record, "$record.request" -ErrorAction SilentlyContinue
+          $p = Start-Process -FilePath cmd.exe -ArgumentList ('/c ""' + "$root\cli\nmox.cmd" + '" -w src\app.js:3"') `
+                 -WorkingDirectory "$root\proj dir" -Wait -NoNewWindow -PassThru -RedirectStandardError $err
+          $said = [string](Get-Content -Raw $err)
+          Write-Host "nmox -w -> exit $($p.ExitCode): $said"
+          if ($p.ExitCode -ne 1 -or -not $said.Contains('nmox: NMOX Studio quit before the file was closed')) { throw "nmox -w did not notice the IDE was gone" }
+          $req = @(Get-Content -LiteralPath "$record.request" -Encoding UTF8)
+          $want = @('nmox-request 1', 'wait', 'open', "$root\proj dir\src\app.js", '3')
+          if (($req -join "`n") -ne ($want -join "`n")) { throw "nmox -w wrote the wrong request: $($req -join ' | ')" }
 
   # The one place the Windows half of WebKitTextPath is exercised for real:
   # the library path inside a linked runtime, the exported setter, the
