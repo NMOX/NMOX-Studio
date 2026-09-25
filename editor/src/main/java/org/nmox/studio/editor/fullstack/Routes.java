@@ -133,7 +133,11 @@ public final class Routes {
      * route registers this path" (after 3.2.0: on a 200-package monorepo
      * the server package can lie past the cap).
      */
-    public record Lookup(Route route, boolean complete) {
+    public record Lookup(Route route, boolean complete, boolean allPackages) {
+
+        public Lookup(Route route, boolean complete) {
+            this(route, complete, true);
+        }
     }
 
     /** {@link #findRoute}, saying whether the census was complete. Off the EDT. */
@@ -152,24 +156,35 @@ public final class Routes {
                 return new Lookup(null, true);
             }
         }
-        List<File> sources = new ArrayList<>();
-        collect(root, sources, 0);
+        // 3.3: the file's own package, then the workspace's server
+        // packages — the api package a web package's fetch talks to
+        List<File> roots = new ArrayList<>();
+        roots.add(root);
+        org.nmox.studio.editor.WorkspaceDependencies.Servers servers =
+                org.nmox.studio.editor.WorkspaceDependencies.serverPackages(root);
+        roots.addAll(servers.dirs());
         Route paramMatch = null;
-        for (File f : sources) {
-            try {
-                for (Route r : routesIn(Files.readString(f.toPath()), f)) {
-                    if (r.path().equals(path)) {
-                        return new Lookup(r, true);     // exact always wins
+        boolean complete = true;
+        for (File packageRoot : roots) {
+            List<File> sources = new ArrayList<>();
+            collect(packageRoot, sources, 0);
+            complete &= sources.size() < MAX_FILES;
+            for (File f : sources) {
+                try {
+                    for (Route r : routesIn(Files.readString(f.toPath()), f)) {
+                        if (r.path().equals(path)) {
+                            return new Lookup(r, true);     // exact always wins
+                        }
+                        if (paramMatch == null && servesViaParams(r.path(), path)) {
+                            paramMatch = r;
+                        }
                     }
-                    if (paramMatch == null && servesViaParams(r.path(), path)) {
-                        paramMatch = r;
-                    }
+                } catch (IOException | OutOfMemoryError unreadable) {
+                    // skip the file, keep the sweep
                 }
-            } catch (IOException | OutOfMemoryError unreadable) {
-                // skip the file, keep the sweep
             }
         }
-        return new Lookup(paramMatch, sources.size() < MAX_FILES);
+        return new Lookup(paramMatch, complete, servers.complete());
     }
 
     /**

@@ -10,7 +10,9 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
  * ⌘-click the {@code '/api/users'} in a {@code fetch(}/{@code axios.*}
  * call and land on the Express/Fastify/Koa route that serves it
  * (v2.31.0, the full-stack wishlist) — the client and the server of
- * the same project, finally on speaking terms. Exact-path match; a
+ * the same project, finally on speaking terms — in a monorepo, the
+ * route in the workspace package that declares a server framework (3.3).
+ * Exact-path match; a
  * path no route declares refuses with the sweep's honest scope — and a
  * sweep that stopped at its cap says so rather than claim no route exists.
  */
@@ -22,7 +24,9 @@ import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
     "FetchRouteHyperlink_tooltip=Go to the route that serves this path",
     "FetchRouteHyperlink_noRoute=No route registers {0} in this project''s JS/TS sources",
     "# {0} - the path, {1} - how many files the lookup reads at most",
-    "FetchRouteHyperlink_noRouteCapped=No route registers {0} in the first {1} of this project''s JS/TS files, and only those are read"
+    "FetchRouteHyperlink_noRouteCapped=No route registers {0} in the first {1} of this project''s JS/TS files, and only those are read",
+    "# {0} - the path",
+    "FetchRouteHyperlink_noRouteSomePackages=No route registers {0} in the server packages read, and this workspace has more than were read"
 })
 public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
 
@@ -42,6 +46,10 @@ public final class FetchRouteHyperlink extends ProjectJumpHyperlink {
         Routes.Lookup found = Routes.lookup(projectDir, path);
         if (found.route() != null) {
             openAt(found.route().file(), found.route().offset());
+        } else if (!found.allPackages()) {
+            // a workspace too large to enumerate, or with more server
+            // packages than are read: the miss is about the ones read
+            status(Bundle.FetchRouteHyperlink_noRouteSomePackages(path));
         } else if (found.complete()) {
             status(Bundle.FetchRouteHyperlink_noRoute(path));
         } else {

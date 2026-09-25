@@ -93,6 +93,63 @@ public final class WorkspaceDependencies {
         return all;
     }
 
+    /** Packages the route jump reads beyond the file's own: at most this many. */
+    static final int MAX_SERVERS = 8;
+    /** Workspace manifests the route jump enumerates, once per click. */
+    public static final int MAX_WORKSPACE_PACKAGES = 512;
+    /** The server frameworks whose route registrations the route jump reads ({@code Routes.SERVER_ROUTE}'s shape). */
+    static final List<String> SERVER_FRAMEWORKS = List.of("express", "fastify", "koa", "@koa/router", "hono");
+
+    /**
+     * The workspace's server packages, for the fetch-path → route jump
+     * (3.3): a {@code web} package's {@code fetch('/api/users')} is served
+     * by an {@code api} package it does not depend on, so here the
+     * question is which packages declare a server framework. {@code
+     * complete} is false when the workspace has more packages than
+     * {@value #MAX_WORKSPACE_PACKAGES} or more server packages than
+     * {@value #MAX_SERVERS}, so a miss can say it did not read them all.
+     * A click-time query, uncached; off the EDT.
+     */
+    public record Servers(List<File> dirs, boolean complete) {
+    }
+
+    public static Servers serverPackages(File pkg) {
+        File workspace = pkg == null ? null : workspaceAbove(pkg);
+        if (workspace == null) {
+            return new Servers(List.of(), true);
+        }
+        Path wsReal;
+        try {
+            wsReal = workspace.toPath().toRealPath();
+        } catch (IOException ex) {
+            return new Servers(List.of(), true);
+        }
+        Map<String, File> all = org.nmox.studio.rack.devices.Workspaces.packages(workspace, MAX_WORKSPACE_PACKAGES);
+        boolean complete = all.size() < MAX_WORKSPACE_PACKAGES;
+        List<File> out = new ArrayList<>();
+        for (File candidate : all.values()) {
+            File dir = inside(candidate.toPath(), wsReal);
+            if (dir == null || dir.equals(pkg) || out.contains(dir) || !declaresServer(dir)) {
+                continue;
+            }
+            if (out.size() >= MAX_SERVERS) {
+                complete = false;
+                break;
+            }
+            out.add(dir);
+        }
+        return new Servers(out, complete);
+    }
+
+    private static boolean declaresServer(File dir) {
+        for (String name : dependencyNames(dir)) {
+            if (SERVER_FRAMEWORKS.contains(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     static List<File> resolve(File pkg) {
         File workspace = workspaceAbove(pkg);
         if (workspace == null) {

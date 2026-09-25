@@ -34,13 +34,23 @@ public final class Workspaces {
      * directory name otherwise.
      */
     public static LinkedHashMap<String, File> packages(File root) {
+        return packages(root, MAX_PACKAGES);
+    }
+
+    /**
+     * {@link #packages(File)} with a caller's own ceiling: the editor's
+     * route jump reads a whole monorepo's manifests once per click (3.3),
+     * where WAYPOINT's knob wants a list a person can dial. A map exactly
+     * {@code max} long may have stopped short.
+     */
+    public static LinkedHashMap<String, File> packages(File root, int max) {
         LinkedHashMap<String, File> found = new LinkedHashMap<>();
         if (root == null || !root.isDirectory()) {
             return found;
         }
         for (String glob : declaredGlobs(root)) {
             for (File dir : resolve(root, glob)) {
-                if (found.size() >= MAX_PACKAGES) {
+                if (found.size() >= max) {
                     return found;
                 }
                 String name = packageName(dir);
