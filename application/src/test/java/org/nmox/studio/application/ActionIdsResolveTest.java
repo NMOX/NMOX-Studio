@@ -97,6 +97,35 @@ class ActionIdsResolveTest {
         assertThat(missing).as("action ids that answer null, so a fallback runs in silence").isEmpty();
     }
 
+    /** A path to an action's .instance file, written out whole in product source. */
+    private static final Pattern INSTANCE_PATH = Pattern.compile("\"(Actions/[^\"]+\\.instance)\"");
+
+    @Test
+    @DisplayName("every Actions/…/….instance path the product names is one the cluster registers")
+    void everyNamedInstancePathExists() throws Exception {
+        // the git chip reaches the git module's own actions by their config
+        // path (Show Changes, Diff, Annotate, and 3.2.0's Switch Branch and
+        // Commit); a renamed action would degrade to the Team-menu message
+        // in silence, so each path is held to the assembled cluster
+        Set<String> registered = registeredActions();
+        List<String> missing = new ArrayList<>();
+        int named = 0;
+        try (Stream<Path> walk = Files.walk(Path.of(".."))) {
+            for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
+                    && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
+                Matcher m = INSTANCE_PATH.matcher(Files.readString(p));
+                while (m.find()) {
+                    named++;
+                    if (!registered.contains(m.group(1))) {
+                        missing.add(p.getFileName() + ": " + m.group(1));
+                    }
+                }
+            }
+        }
+        assertThat(named).as("the census found the product's named instance paths").isGreaterThanOrEqualTo(5);
+        assertThat(missing).as("instance paths no module registers").isEmpty();
+    }
+
     private static String value(String expr, Map<String, String> constants) {
         expr = expr.strip();
         if (expr.startsWith("\"") && expr.endsWith("\"")) {

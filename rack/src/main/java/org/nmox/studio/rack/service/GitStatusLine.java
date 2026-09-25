@@ -88,6 +88,8 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_draftTitle=KVASIR commit message — draft",
     "GitStatusLine_draftCopied=Commit message copied — paste it into your commit.",
     "GitStatusLine_showChanges=Show Changes",
+    "GitStatusLine_switchBranch=Switch Branch…",
+    "GitStatusLine_commit=Commit…",
     "GitStatusLine_diffProject=Diff Project",
     "GitStatusLine_annotate=Annotate",
     "GitStatusLine_history=History",
@@ -257,6 +259,13 @@ public class GitStatusLine implements StatusLineElementProvider {
                 "Actions/Git/org-netbeans-modules-git-ui-diff-DiffAction.instance";
         private static final String ANNOTATE_INSTANCE =
                 "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance";
+        // 3.2.0: VS Code's branch name on the status bar opens a branch
+        // picker, and its source-control view commits; the chip reaches the
+        // git module's own two dialogs the same way it reaches Show Changes
+        private static final String SWITCH_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-checkout-SwitchBranchAction.instance";
+        private static final String COMMIT_INSTANCE =
+                "Actions/Git/org-netbeans-modules-git-ui-commit-CommitAction.instance";
 
         /**
          * Pull Requests (competitive-lens R6): lists the repo's open
@@ -648,6 +657,13 @@ public class GitStatusLine implements StatusLineElementProvider {
             // the git NodeActions finally have real context — the chip hands
             // them the SAME node explicitly via createContextAwareInstance,
             // so they work even when a non-publishing window is active.
+            JMenuItem switchBranch = new JMenuItem(Bundle.GitStatusLine_switchBranch());
+            switchBranch.addActionListener(e -> runGitAction(SWITCH_INSTANCE, Bundle.GitStatusLine_switchBranch(), null));
+            menu.add(switchBranch);
+            JMenuItem commit = new JMenuItem(Bundle.GitStatusLine_commit());
+            commit.addActionListener(e -> runGitAction(COMMIT_INSTANCE, Bundle.GitStatusLine_commit(), null));
+            menu.add(commit);
+            menu.addSeparator();
             JMenuItem changes = new JMenuItem(Bundle.GitStatusLine_showChanges());
             changes.addActionListener(e -> runGitAction(STATUS_INSTANCE, Bundle.GitStatusLine_showChanges(), null));
             menu.add(changes);

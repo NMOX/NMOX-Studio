@@ -41,6 +41,8 @@ class GitChipVerbsTest {
             english.load(in);
         }
         for (String[] verb : new String[][]{
+            {"GitStatusLine_switchBranch", "Switch Branch…"},
+            {"GitStatusLine_commit", "Commit…"},
             {"GitStatusLine_showChanges", "Show Changes"},
             {"GitStatusLine_diffProject", "Diff Project"},
             {"GitStatusLine_annotate", "Annotate"},
@@ -62,7 +64,9 @@ class GitChipVerbsTest {
         for (String instance : new String[]{
             "Actions/Git/org-netbeans-modules-git-ui-status-StatusAction.instance",
             "Actions/Git/org-netbeans-modules-git-ui-diff-DiffAction.instance",
-            "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance"}) {
+            "Actions/Git/org-netbeans-modules-git-ui-blame-AnnotateAction.instance",
+            "Actions/Git/org-netbeans-modules-git-ui-checkout-SwitchBranchAction.instance",
+            "Actions/Git/org-netbeans-modules-git-ui-commit-CommitAction.instance"}) {
             assertThat(source).contains(instance);
         }
         assertThat(source)
