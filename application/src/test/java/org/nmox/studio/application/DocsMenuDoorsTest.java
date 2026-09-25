@@ -624,9 +624,9 @@ class DocsMenuDoorsTest {
             }
             Door row = place(bar, file, name, folderNames);
             row.notEverywhere |= c.hiddenOnOneOs().contains(file);
-            // plain(): the platform spells its ellipsis "...", which plain()
-            // turns into "…" (6th review: Save As... and Commit... were not
-            // dialogs to this law, so "File ▸ Save As… ▸ Save" failed)
+            // plain(): the platform spells its ellipsis "..." — no row declared
+            // in a layer does today (an equivalent mutant, kept so one that
+            // does is a dialog on the day it arrives)
             row.dialog |= plain(name).endsWith("…") || file.contains("OptionsWindowAction")
                     || file.contains("PluginManagerAction");
         }
@@ -643,6 +643,9 @@ class DocsMenuDoorsTest {
                     continue;
                 }
                 Door row = place(bar, "Menu/" + f[0] + "/ledger", plain(name), folderNames);
+                // the code-named rows ARE where the platform's "..." lives:
+                // Save As... and Commit... were not dialogs to this law, so
+                // "File ▸ Save As… ▸ Save" failed (6th review)
                 row.dialog |= plain(name).endsWith("…");
             }
         }
