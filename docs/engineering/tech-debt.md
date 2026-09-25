@@ -55,8 +55,8 @@ exposure; v2.183.0 already holds its one long-lived message in a field.
 
 ### 124. The 3.2.0 review's LOW remainder
 
-**Open, deliberately small.** The hostile review of the night's code found
-ten problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
+**Open, deliberately small.** The hostile reviews of the night's code found
+twenty-seven problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
 link read to exhaustion, two backtracking patterns, the macOS newline guard,
 a trailing newline naming another file, git's `/dev/null`, a selected file
 counting as open, Windows sh). What is left:
@@ -78,6 +78,20 @@ counting as open, Windows sh). What is left:
   refuses nesting on purpose (it cannot tell a recursive merge's markers from
   prose); restarting at a later marker would guess. The file still opens and
   git still owns the merge.
+- **One unreadable negation turns a repository's search back to
+  everything.** `core.util.GitIgnore` cannot read a POSIX class
+  (`![[:digit:]]*.log`); rather than guess what it re-includes, the file
+  becomes doubtful and no path beneath it is answered "ignored" — so
+  `node_modules` is searched again in that repository. The under-matching
+  side, by design: a wrong "ignored" is remembered by the git module and
+  hides the file from Commit.
+- **The first read of a `.gitignore` can land on the EDT.** The versioning
+  module asks the sharability query for each top-level child while it
+  decides whether a Team action is enabled; each answer is a few stats,
+  but a changed `.gitignore` (at most 1 MiB) is read there once.
+- **The diff view reads 8,000 bytes of each side on the EDT** to decide
+  text or binary, and `nmox -d` refuses two binaries over 16 MiB although
+  their comparison already runs off the EDT.
 
 ## Open — added by 3.1.0 (the developer-experience release)
 

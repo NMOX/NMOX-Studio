@@ -93,7 +93,13 @@ loop as one sitting is the new tutorial
   commit shows, so a tracked `node_modules` is still searched — and the
   folders stay in the project tree. **Search in Generated Sources** searches
   them anyway. The `.gitignore` reader (`core.util.GitIgnore`) is new, pure,
-  bounded and linear, and drops any rule it cannot read exactly as git does.
+  bounded and linear, matches bytes as git does, and never answers "ignored"
+  where it could be wrong: a negation it cannot read, or a file it cannot
+  read, stops it; a negation matches whatever the case, because
+  `core.ignorecase` is on in every fresh macOS and Windows repository; a
+  symbolic link is a file, as it is to git; and every answer re-reads what
+  it rests on, because the git module remembers a "not sharable" answer for
+  the rest of the session.
 
 ### The Terminal
 
@@ -175,15 +181,21 @@ loop as one sitting is the new tutorial
 
 ### Found by reviewing the night's own code
 
-Two hostile reviews of the release's fresh code found nineteen problems;
-every proven one is fixed and pinned. Among them: a symbolic link to
+Three hostile reviews of the release's fresh code found twenty-seven
+problems; every proven one is fixed and pinned. Among them: five cases,
+each measured against `git check-ignore`, where Find in Projects' new answer
+called a file ignored that git keeps (a linked `node_modules`, a dropped
+negation, `core.ignorecase`, a character where git matches a byte, and a
+two-second cache) — each would have hidden the file from Commit until a
+restart; a symbolic link to
 `/dev/zero` read until the IDE ran out of memory (every bounded read now reads
 regular files only, and the read itself is capped); two backtracking patterns
 in the link checker (31 s for one heading line); a newline guard that never
 fired inside the macOS launcher; a name ending in a newline that named a
 different file; a file selected in Project Studio's tree counting as still
-open; a remote's embedded token printed in a refusal; and a FIFO planted in
-`.git` able to block the chip. The small remainder is ledger 124.
+open; a remote's embedded token printed in a refusal; a FIFO planted in
+`.git` able to block the chip; and two new documentation laws that three
+planted mistakes walked past. The small remainder is ledger 124.
 
 ## [3.1.1] - 2026-09-24
 
