@@ -67,7 +67,8 @@ starts with **Switch Branch…**, **Commit…**, **Pull…** and **Push…**.
 why: `Ada Lovelace, 3 days ago · Fix the parser`. A line you have not
 committed says so, and a file with unsaved changes says that instead of
 naming the wrong author. Click the note for the whole file's
-annotations; **View ▸ Line Blame** turns it off.
+annotations, the commit on GitHub or its ID; **View ▸ Line Blame** turns
+it off.
 
 ## 4. Review a diff
 

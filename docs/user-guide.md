@@ -1259,8 +1259,11 @@ stripes appear in the gutter as you edit a tracked file.
 Beside the chip, a quieter note answers the question you ask most often:
 who wrote the line the caret is on. `Ada Lovelace, 3 days ago · Fix the
 parser` follows the caret as you move it, in your own language, and its
-tooltip names the commit and the date. Click it for the whole file's
-annotations — the same **Annotate** the chip offers. It asks git once per
+tooltip names the commit and the date. Click it for **Show Annotations**
+(the whole file's, the same **Annotate** the chip offers), **Open Commit on
+GitHub** (the commit's own page, when origin is a GitHub remote) or **Copy
+Commit ID**; on a line not committed yet the click goes straight to the
+annotations. It asks git once per
 saved version of the file, never at startup and never for a file outside a
 repository, and it says nothing for a file git does not track. A line you
 changed but have not committed reads **Not committed yet**. While the file

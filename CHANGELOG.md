@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 28 rows the walks and reviews added are in
+developer works. The plan and the 30 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -65,7 +65,9 @@ loop as one sitting is the new tutorial
   parser` for the caret's line, in the reader's language with real plural
   forms. One `git blame --porcelain --no-textconv` per saved version of a file,
   newest answer wins, unsaved changes say so rather than name the wrong author,
-  a click opens Team's annotations, and nothing runs before the user's first
+  a click offers the file's annotations, the commit's page on GitHub and its
+  full id (a line not committed yet goes straight to the annotations; a
+  commit link takes only 7–64 hex digits), and nothing runs before the user's first
   key or click — a restored editor spawns nothing at boot (measured under JFR).
   View ▸ Line Blame turns it off.
 
