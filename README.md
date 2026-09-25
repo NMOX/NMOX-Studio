@@ -23,6 +23,7 @@ so there's nothing else to install ([details](#download)).
 
 **Then:** [the five-minute quickstart](docs/quickstart.md) ·
 [coming from VS Code](docs/coming-from-vscode.md) ·
+[the second week](docs/tutorials/the-second-week.md) ·
 [the user guide](docs/user-guide.md) · [glossary](docs/glossary.md)
 
 `53 RACK DEVICES` · `90 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
@@ -397,6 +398,29 @@ Rack faceplates keep their panel vocabulary on purpose.
   that YOU submit on GitHub — the product sends nothing; **Keyboard
   Shortcuts…** lists every NMOX chord from the running keymap, never a
   hand-kept list, with Copy as Markdown.
+
+### 🌿 Git and GitHub, all day
+
+- **NMOX Studio is git's editor, difftool and mergetool** (`nmox -w`,
+  `nmox -d`), on all three operating systems: `git commit` opens the
+  message in the IDE and waits for the tab to close; **Team ▸ Use NMOX
+  Studio with Git…** sets it up, showing each setting's current value first.
+- **Git's own files are real files**: the commit message's `#` lines are
+  comments, only what you write is spellchecked, and a summary past 72
+  characters is flagged; `git rebase -i` lists highlight each command.
+- **Conflicts resolve where they are written**: both sides tinted, and
+  **Accept Current / Incoming / Both** as a Quick Fix, each one undo.
+- **Where you stand, at a glance**: the chip reads `⎇ main ±2 ↑2 ↓1`
+  (changed files, commits to push and pull), and the status line names who
+  last changed the caret's line — `Ada Lovelace, 3 days ago · Fix the parser`.
+- **GitHub one gesture away**: **Open on GitHub** / **Copy GitHub Link** for
+  lines, files and folders, and **New Pull Request on GitHub** for the branch
+  you just pushed — in your own browser.
+- **A failing stack trace is a door**: ⌘-click `src/app.ts:42:7` in the
+  Terminal and the file opens there. **Tools ▸ Check Markdown Links…** finds
+  the README link that would 404 on GitHub before you push.
+
+The whole loop as one sitting: [The Second Week](docs/tutorials/the-second-week.md).
 
 ### 🎤 Made to be shown
 - **View ▸ Presentation Mode**: one toggle and every open editor is
