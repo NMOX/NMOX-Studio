@@ -167,7 +167,7 @@ public final class CssTokens {
         if (root == null || !root.isDirectory()) {
             return out;
         }
-        for (File f : collectStylesheets(root)) {
+        for (File f : collectWithDependencies(root)) {
             String path = f.getAbsolutePath();
             long mtime = f.lastModified();
             long size = f.length();
@@ -184,7 +184,9 @@ public final class CssTokens {
     /**
      * The bounded stylesheet census both design scans share (extracted
      * v2.27.0 when {@link CssClasses} became its second consumer — the
-     * FilePulse law: promote on the second copy, never grow it).
+     * FilePulse law: promote on the second copy, never grow it). The
+     * package's own files only: the usage search and Rename Class read
+     * this, and a rename must never reach into another package.
      */
     static List<File> collectStylesheets(File root) {
         // the loop itself (skip dirs, depth, size, count) is BoundedWalk
@@ -192,6 +194,30 @@ public final class CssTokens {
         // consumer of what had been this method's private walk
         return org.nmox.studio.editor.fullstack.BoundedWalk.collect(root,
                 CssTokens::isStylesheetName, MAX_FILES);
+    }
+
+    /**
+     * What the declaration scans read (3.3): the package's own
+     * stylesheets, then those of the workspace packages it depends on
+     * ({@link org.nmox.studio.editor.WorkspaceDependencies}) — a monorepo
+     * keeps its design tokens and shared styles in one of them. The
+     * dependencies share a second budget of {@value #MAX_FILES} files, and
+     * the own package's files come first, so its declarations win every
+     * name they share.
+     */
+    static List<File> collectWithDependencies(File root) {
+        List<File> files = new ArrayList<>(collectStylesheets(root));
+        int budget = MAX_FILES;
+        for (File dep : org.nmox.studio.editor.WorkspaceDependencies.of(root)) {
+            if (budget <= 0) {
+                break;
+            }
+            List<File> more = org.nmox.studio.editor.fullstack.BoundedWalk.collect(dep,
+                    CssTokens::isStylesheetName, budget);
+            files.addAll(more);
+            budget -= more.size();
+        }
+        return files;
     }
 
     private static boolean isStylesheetName(String name) {

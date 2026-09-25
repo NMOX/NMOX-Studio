@@ -128,7 +128,7 @@ public final class CssClasses {
         if (root == null || !root.isDirectory()) {
             return out;
         }
-        for (File f : CssTokens.collectStylesheets(root)) {
+        for (File f : CssTokens.collectWithDependencies(root)) {
             String path = f.getAbsolutePath();
             long mtime = f.lastModified();
             long size = f.length();
@@ -462,8 +462,36 @@ public final class CssClasses {
                 // skip the file, keep the survey
             }
         }
+        // 3.3: a class a dependency package declares collides too — the
+        // rename edits only this package, but the merged rule would be
+        // styled by both (read, never written)
+        if (!collision && root != null && root.isDirectory()) {
+            for (File dep : org.nmox.studio.editor.WorkspaceDependencies.of(root)) {
+                for (File f : CssTokens.collectStylesheets(dep)) {
+                    collision |= declaresIn(f, newName);
+                }
+            }
+        }
         return new RenameSurvey(files, spans, collision,
                 census.size() < CssTokens.MAX_FILES);
+    }
+
+    /** Whether {@code f} declares {@code name} as a class selector (stylesheet, or a markup file's style blocks). */
+    private static boolean declaresIn(File f, String name) {
+        try {
+            String text = Files.readString(f.toPath());
+            if (!isMarkupFile(f.getName())) {
+                return !selectorSpans(text, name).isEmpty();
+            }
+            for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
+                if (!selectorSpans(text.substring(r.start(), r.end()), name).isEmpty()) {
+                    return true;
+                }
+            }
+        } catch (IOException | OutOfMemoryError unreadable) {
+            // an unreadable file declares nothing we can see
+        }
+        return false;
     }
 
     // ---- the JavaScript side (v2.30.0) ------------------------------------
