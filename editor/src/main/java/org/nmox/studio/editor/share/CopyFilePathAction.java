@@ -62,7 +62,15 @@ abstract class CopyFilePathAction implements ActionListener {
         // the relative path may ask FileOwnerQuery, which walks the disk: off
         // the EDT, and the clipboard and the status line back on it
         LANE.post(() -> {
-            String path = pathOf(file);
+            String computed;
+            try {
+                computed = pathOf(file);
+            } catch (RuntimeException lookupFailed) {
+                // a project lookup that throws must not swallow the gesture:
+                // the absolute path, as for a file in no project
+                computed = file.getAbsolutePath();
+            }
+            String path = computed;
             java.awt.EventQueue.invokeLater(() -> {
                 clipboard.accept(path);
                 status.accept(Bundle.CopyFilePathAction_copied(path));

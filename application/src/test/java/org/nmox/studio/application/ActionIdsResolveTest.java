@@ -257,6 +257,10 @@ class ActionIdsResolveTest {
                 String p = path + c.getAttribute("name") + ("folder".equals(c.getTagName()) ? "/" : "");
                 if ("file".equals(c.getTagName()) && p.startsWith("Actions/")) {
                     out.add(p);
+                } else if ("folder".equals(c.getTagName()) && p.startsWith("Actions/")
+                        && c.getAttribute("name").endsWith("_hidden")) {
+                    // a mask written as a folder hides the folder all the same (5th review)
+                    out.add(p.substring(0, p.length() - 1));
                 }
                 collect(c, p, out);
             }
