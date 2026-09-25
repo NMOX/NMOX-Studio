@@ -168,6 +168,8 @@ class TerminalLinksTest {
         "Local:   http://localhost:5173/",
         "listening on http://x:8080",
         "https://example.com/assets/app.js:3",
+        "clone user@host:src/app.js:3",
+        "see //cdn.example.com/lib.js:3",
         "curl http://127.0.0.1:8080/index.html",
         "server on localhost:3000",
         "Time: 12:30:45",
