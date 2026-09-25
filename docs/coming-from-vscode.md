@@ -85,7 +85,21 @@ is already running. A column (`src/app.ts:42:7`) is accepted and the
 editor opens at the start of the line; a name that is not there is
 refused on the terminal instead of starting anything. `-r` is accepted,
 `-n` opens in NMOX Studio's single window (there is no second one), and
-`--wait`, `--diff` and the other VS Code-only flags are refused by name.
+`-a` and `-v` are refused by name.
+
+`-w` (`--wait`) opens a file and waits until you close its tab, and `-d`
+(`--diff`) compares two files side by side, so NMOX Studio can be git's
+editor and difftool, the way `code --wait` is:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+`git commit` then opens the message in the IDE; save it and close the tab,
+and git carries on. Quitting the IDE while a file is still open also hands
+it back, with whatever was saved.
 Homebrew, the Windows installer (*Add "nmox" to PATH*) and the Linux
 packages put it on your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)
 shows the one-line link.

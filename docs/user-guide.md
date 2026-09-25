@@ -121,9 +121,14 @@ does (`nmox src/app.js:42` — a column is accepted and the editor opens at
 the start of the line). A name that is not there is refused on the
 terminal (`nmox: typo.js: no such file or folder`) instead of starting
 anything. VS Code's `-r` is accepted and `-n` opens in NMOX Studio's
-single window, since there is no second one; `--wait`, `--diff` and the
-other VS Code-only flags are refused by name.
-The command returns at once — the first `nmox` starts the IDE in the
+single window, since there is no second one; `-a` and `-v` are refused
+by name.
+`nmox -w file` opens the file and waits until you close its tab, and
+`nmox -d left right` compares two files in the diff view, which makes NMOX
+Studio git's editor and difftool: `git config --global core.editor
+"nmox -w"`, and `nmox --help` prints the two lines that make it the
+difftool. Save the message, close the tab, and git carries on.
+Otherwise the command returns at once — the first `nmox` starts the IDE in the
 background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
 Getting `nmox` onto your PATH:
