@@ -38,8 +38,10 @@ import org.openide.windows.OnShowing;
  * {@code TerminalContainerTopComponent}. So nothing here compiles against
  * the terminal and nothing reflects into it: the terminal's screen already
  * answers the public {@link AccessibleText} contract a screen reader uses -
- * {@code getIndexAtPoint}, and {@code getAtIndex(SENTENCE, i)} for the row -
- * and that is the whole door.
+ * {@code getIndexAtPoint}, and {@code getAtIndex(SENTENCE, i)} for the row
+ * (the terminal's own word, {@code WORD}, when the row reader fails) - and
+ * that is the whole door. Proven against the real RELEASE310 {@code Term}
+ * fed tsc, node and rustc lines, with and without {@code -ea}.
  *
  * <p>One {@link AWTEventListener} for mouse events, installed once the
  * window is up; every event that is not a single modifier-click on a
@@ -114,7 +116,10 @@ public final class TerminalLinkClicks implements Runnable {
         int rowStart = text.getIndexAtPoint(new Point(0, p.y));
         String row = rowText(text, rowStart < 0 ? index : rowStart);
         if (row == null) {
-            return null;
+            // the row reader failed (the emulator's Line.toString asserts, so a
+            // JVM run with -ea lands here): the word under the pointer, read by
+            // the terminal's own word rule (textWithin), is the next best text
+            return TerminalLinks.at(safe(() -> text.getAtIndex(AccessibleText.WORD, index)), -1);
         }
         int col = rowStart < 0 ? -1 : index - rowStart;
         if (col >= row.length()) {

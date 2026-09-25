@@ -87,6 +87,23 @@ class TerminalLinkClicksTest {
                 }
                 return row + "\0".repeat(nulPadding);
             }
+            if (part == AccessibleText.WORD) {
+                // the emulator's default delimiters include the space, ( ) and quotes
+                int c = index - start(r);
+                String delims = " ()\"'";
+                if (c >= row.length() || delims.indexOf(row.charAt(c)) >= 0) {
+                    return null;
+                }
+                int b = c;
+                while (b > 0 && delims.indexOf(row.charAt(b - 1)) < 0) {
+                    b--;
+                }
+                int e = c;
+                while (e < row.length() && delims.indexOf(row.charAt(e)) < 0) {
+                    e++;
+                }
+                return row.substring(b, e);
+            }
             if (part == AccessibleText.CHARACTER) {
                 int c = index - start(r);
                 return c < row.length() ? String.valueOf(row.charAt(c)) : "\0";
@@ -200,11 +217,13 @@ class TerminalLinkClicksTest {
     }
 
     @Test
-    @DisplayName("a screen whose row reader fails is no link, not a crash")
-    void unreadableScreen() {
-        Screen s = new Screen("src/app.ts:4:2");
+    @DisplayName("a screen whose row reader fails (a JVM run with -ea) falls back to the word under the pointer")
+    void unreadableRowFallsBackToTheWord() {
+        Screen s = new Screen("    at run (/srv/app/index.js:7:13) and then");
         s.assertsOnSentence = true;
-        assertThat(TerminalLinkClicks.linkAt(s, at(0, 2))).isNull();
+        assertThat(TerminalLinkClicks.linkAt(s, at(0, 20)).path()).isEqualTo("/srv/app/index.js");
+        assertThat(TerminalLinkClicks.linkAt(s, at(0, 5)))
+                .as("a word that names no place is no link, and nothing throws").isNull();
     }
 
     @Test
