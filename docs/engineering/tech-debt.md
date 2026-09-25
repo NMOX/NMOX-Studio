@@ -56,7 +56,7 @@ exposure; v2.183.0 already holds its one long-lived message in a field.
 ### 124. The 3.2.0 review's LOW remainder
 
 **Open, deliberately small.** The hostile reviews of the night's code found
-thirty-five problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
+forty-three problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
 link read to exhaustion, two backtracking patterns, the macOS newline guard,
 a trailing newline naming another file, git's `/dev/null`, a selected file
 counting as open, Windows sh). What is left:
@@ -100,6 +100,19 @@ counting as open, Windows sh). What is left:
   rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
   where a stat costs a millisecond makes a 20,000-file search pay seconds.
   Measured locally only.
+- **Renaming a properties group** leaves each open locale editor's
+  document title naming the old file (the properties module writes it
+  once), so Copy Path, blame, the GitHub links and the accessible name go
+  quiet on that tab until it is reopened — `EditedFile` answers nothing
+  rather than a wrong file.
+- **A `.gitignore` with a modification time in the future** (a tarball,
+  `rsync -t`, a skewed network mount) is never "settled", so it is re-read
+  on every question — correct, and about a millisecond a time for a 1 MiB
+  file. A mount whose clock runs BEHIND makes fresh files look settled at
+  once, and an in-place edit that restores both the time and the size is
+  not seen; both are recorded, neither measured on a real mount.
+- **Quick Search's *Terminal: Create New Terminal*** fires ⌃`'s action,
+  which brings an open terminal forward rather than always starting one.
 - **Copy Path from a diff pane or a history revision** may copy the
   platform's temporary file for that side. Plausible, not walked.
 - **The diff view reads 8,000 bytes of each side on the EDT** to decide

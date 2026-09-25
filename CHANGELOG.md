@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 33 rows the walks and reviews added are in
+developer works. The plan and the 34 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -194,19 +194,24 @@ loop as one sitting is the new tutorial
 
 ### Found by reviewing the night's own code
 
-Four hostile reviews of the release's fresh code found thirty-five
-problems; every proven one is fixed and pinned. Among them: six editor
+Five hostile reviews of the release's fresh code found forty-three
+problems; every proven one is fixed and pinned. Among them: nine editor
 features naming `Bundle.properties` while you edited `Bundle_de.properties`
-(Copy Path, line blame, Open on GitHub, Copy GitHub Link, Copy as Markdown
-and the editor's accessible name all read the group's primary file; they
-now read the file the document holds); the Workbench's Terminal row
-opening a plain terminal in the home folder rather than the project; nine cases,
+(Copy Path, line blame, Open on GitHub, Copy GitHub Link, Copy as Markdown,
+the editor's accessible name, `.editorconfig` sections, the diagnostics'
+squiggles and KVASIR's Ask all read the group's primary file; they now
+read the file the document holds); the Workbench's Terminal row opening
+a plain terminal in the home folder rather than a new one in the
+project; twelve cases,
 each measured against `git check-ignore`, where Find in Projects' new answer
 called a file ignored that git keeps (a linked `node_modules`, a dropped
-negation, `core.ignorecase` twice, a character where git matches a byte,
-a run of stars, a byte-order mark, and a cache that trusted a timestamp
-to the millisecond) — each would have hidden the file from Commit until
-a restart; a symbolic link to
+negation, `core.ignorecase` four times, a reversed range, a character
+where git matches a byte, a run of stars, a byte-order mark, and a cache
+that trusted a timestamp to the millisecond) — each would have hidden the
+file from Commit until a restart, and the matcher now reproduces git's
+wildmatch, asking every rule under both `core.ignorecase` settings, with
+zero disagreements over two thousand fuzzed rule files against
+`git check-ignore`; a symbolic link to
 `/dev/zero` read until the IDE ran out of memory (every bounded read now reads
 regular files only, and the read itself is capped); two backtracking patterns
 in the link checker (31 s for one heading line); a newline guard that never
