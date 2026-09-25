@@ -1237,6 +1237,9 @@ Aim at any project inside a git repository and the status line grows a
 files. The branch is read from `.git/HEAD` directly (no git process runs
 until you interact); the count refreshes on aim, on click, and every 30
 seconds while visible.
+`↑2 ↓1` after it are the commits your branch has that its upstream has
+not (to push) and the other way round (to pull), shown only when not
+zero and only for a branch with an upstream.
 
 ![The platform's Show History window opened from the git chip, with the branch and dirty count in the status line](images/git-history.png)
 
