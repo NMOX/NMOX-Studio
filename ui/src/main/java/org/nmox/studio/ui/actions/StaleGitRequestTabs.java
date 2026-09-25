@@ -22,25 +22,50 @@ import org.openide.windows.WindowManager;
  * the NEXT commit's message, written by a {@code git commit -m} in between).
  * Nothing is waiting on such a tab; a request that arrives with the launch
  * is left alone, and so is a tab with unsaved changes.
+ *
+ * <p>The window system restores only the SELECTED tab of each mode by the
+ * time the UI is ready and loads the others afterwards (walked: four tabs
+ * open at UI-ready, the restored message tab not among them), so tabs
+ * opened in the first {@link #WATCH_MS} are checked too — each on the
+ * next EDT turn, by when a request that opened it has registered itself
+ * as waiting.
  */
 @OnShowing
 public final class StaleGitRequestTabs implements Runnable {
 
     private static final Logger LOG = Logger.getLogger(StaleGitRequestTabs.class.getName());
 
+    /** How long after the UI is ready a tab the window system restores late is still checked. */
+    static final int WATCH_MS = 30_000;
+
     @Override
     public void run() {
         for (TopComponent tc : TopComponent.getRegistry().getOpened().toArray(new TopComponent[0])) {
-            if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
-                continue;
+            check(tc);
+        }
+        java.beans.PropertyChangeListener late = e -> {
+            if (TopComponent.Registry.PROP_TC_OPENED.equals(e.getPropertyName())
+                    && e.getNewValue() instanceof TopComponent tc) {
+                javax.swing.SwingUtilities.invokeLater(() -> check(tc));
             }
-            DataObject dob = tc.getLookup().lookup(DataObject.class);
-            FileObject fo = EditorTabs.fileOf(tc);
-            File file = fo == null ? null : FileUtil.toFile(fo);
-            if (dob != null && shouldClose(file, dob.isModified(), EditRequestWatcher.waitedOn(dob))) {
-                LOG.log(Level.FINE, "closing the left-over {0}", file);
-                tc.close();
-            }
+        };
+        TopComponent.getRegistry().addPropertyChangeListener(late);
+        javax.swing.Timer stop = new javax.swing.Timer(WATCH_MS,
+                e -> TopComponent.getRegistry().removePropertyChangeListener(late));
+        stop.setRepeats(false);
+        stop.start();
+    }
+
+    private static void check(TopComponent tc) {
+        if (!tc.isOpened() || !WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
+            return;
+        }
+        DataObject dob = tc.getLookup().lookup(DataObject.class);
+        FileObject fo = EditorTabs.fileOf(tc);
+        File file = fo == null ? null : FileUtil.toFile(fo);
+        if (dob != null && shouldClose(file, dob.isModified(), EditRequestWatcher.waitedOn(dob))) {
+            LOG.log(Level.FINE, "closing the left-over {0}", file);
+            tc.close();
         }
     }
 
