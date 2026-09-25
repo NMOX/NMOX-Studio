@@ -16,7 +16,8 @@ watching it?
 ## How it is measured
 
 A fixture a script can rebuild in a minute rather than a borrowed
-repository: an npm-workspaces monorepo of 200 packages × 250 source files
+repository — `scripts/big-fixture.sh <dir>`, from a fixed seed, 31 s on
+this machine: an npm-workspaces monorepo of 200 packages × 250 source files
 (50,202 tracked files, 800 directories) with an ignored `node_modules` of
 60,000 files, committed so git has real work. The assembled app is aimed at
 it under a 150-second JFR recording (`settings=profile`), and the same boot
