@@ -67,20 +67,15 @@ class TerminalReaperTest {
     }
 
     /**
-     * A real executable named git (a copy of {@code sleep}): a shell script
-     * named git would read as {@code /bin/sh}, which is how the first cut of
-     * these tests passed while recognising nothing.
+     * A helper whose child is the real git, running for {@code $1} seconds
+     * ({@code git hash-object --stdin} waits for its input to end). A shell
+     * script named git would read as {@code /bin/sh}, and a copy of
+     * {@code sleep} named git is killed at launch on macOS — the first two
+     * cuts of these tests, the first of which passed recognising nothing.
      */
-    private static Path fakeGit(Path dir) throws IOException {
-        Path git = Files.createDirectories(dir.resolve("bin")).resolve("git");
-        Files.copy(Path.of("/bin/sleep"), git);
-        git.toFile().setExecutable(true);
-        return git;
-    }
-
     private static Path fakePty(Path dir) throws IOException {
         Path pty = Files.createDirectories(dir.resolve("dlight_test").resolve("h").resolve("1")).resolve("pty");
-        Files.writeString(pty, "#!/bin/sh\n\"$1\" \"$2\"\nsleep 30\n");
+        Files.writeString(pty, "#!/bin/sh\nsleep \"$1\" | git hash-object --stdin\nsleep 30\n");
         pty.toFile().setExecutable(true);
         return pty;
     }
@@ -102,7 +97,7 @@ class TerminalReaperTest {
     @DisplayName("hanging up waits for the Terminal's git to finish before ending its helper")
     void hangUpLetsGitLand(@TempDir Path dir) throws Exception {
         Path pty = fakePty(dir);
-        Process helper = new ProcessBuilder(pty.toString(), fakeGit(dir).toString(), "0.5").start();
+        Process helper = new ProcessBuilder(pty.toString(), "0.8").start();
         try {
             ProcessHandle git = gitUnder(helper);
             assertThat(TerminalReaper.hangUp(Stream.of(fake(helper.toHandle(), pty.toString())))).isEqualTo(1);
@@ -118,7 +113,7 @@ class TerminalReaperTest {
     @DisabledOnOs(OS.WINDOWS)
     @DisplayName("a git that will not finish costs only the grace")
     void graceIsBounded(@TempDir Path dir) throws Exception {
-        Process helper = new ProcessBuilder(fakePty(dir).toString(), fakeGit(dir).toString(), "30").start();
+        Process helper = new ProcessBuilder(fakePty(dir).toString(), "30").start();
         try {
             ProcessHandle git = gitUnder(helper);
             long t0 = System.currentTimeMillis();
