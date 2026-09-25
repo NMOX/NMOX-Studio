@@ -8,8 +8,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.DirectoryStream;
+import java.nio.file.LinkOption;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +24,18 @@ import java.util.function.Consumer;
  * identically on every platform - macOS WatchService can lag multiple
  * seconds and miss bursts - and the scan is cheap because the heavy
  * directories (node_modules, .git, dist...) are skipped outright.
+ *
+ * <p><b>Incremental since after 3.2.0.</b> Every poll used to walk the
+ * whole tree and stat every file: measured on a 50,000-file monorepo, the
+ * watchers took half the IDE's CPU samples and two thirds of its
+ * allocation. A directory's modification time changes when an entry is
+ * added, removed or renamed in it — which is how git's checkout, an
+ * editor's atomic save and a generator all write — so a poll now stats the
+ * known directories (hundreds, not tens of thousands), relists only those
+ * that changed, and stats the tracked files for in-place edits. A
+ * consumer that needs structure more than content (the Project Studio
+ * tree) asks for the file stats only every {@link #contentEvery(int) Nth}
+ * poll.
  */
 public final class FileWatcher {
 
@@ -47,7 +62,21 @@ public final class FileWatcher {
     private static final Set<String> SKIP_DIRS =
             org.nmox.studio.core.util.HeavyDirs.plus(".cache", ".idea");
     private static final int MAX_DEPTH = 12;
-    private static final int MAX_FILES = 50_000;
+    static final int MAX_FILES = 50_000;
+
+    /**
+     * A poll waits at least this many times as long as its last scan took
+     * (after 3.2.0). Measured on a 50,000-file monorepo: a scan took about
+     * 135 ms and the diff 30 ms, so the Project Studio tree's 1.5 s poll
+     * spent ~11% of a core walking the tree, and the watchers together
+     * allocated ~45 MB/s — two thirds of everything the IDE allocated. With
+     * the factor, a tree's own size sets the pace: a small project keeps its
+     * interval, a huge one polls a little less often, and no watcher spends
+     * more than about a ninth of its time scanning.
+     */
+    static final int SCAN_BUDGET_FACTOR = 8;
+
+    private static final java.util.logging.Logger LOG = java.util.logging.Logger.getLogger(FileWatcher.class.getName());
 
     private final File root;
     private final long intervalMs;
@@ -57,6 +86,37 @@ public final class FileWatcher {
 
     private volatile boolean running;
     private Thread thread;
+    /** Whether a walk stopped at {@link #maxFiles}; said once, not every poll. */
+    private volatile boolean truncated;
+    /** The cap this watcher uses: {@link #MAX_FILES}, lowered only by tests. */
+    int maxFiles = MAX_FILES;
+    /** Stat the tracked files every this many polls (1 = every poll). */
+    private int contentEvery = 1;
+
+    /**
+     * A full walk reconciles everything this often (after 3.2.0's review):
+     * the incremental poll trusts directory times, and a file written in the
+     * same clock tick as a relist, a listing that failed once, a root that
+     * vanished and came back or a coarse-grained filesystem can each leave
+     * it blind where the old walk-everything poll healed on the next pass.
+     * This is that pass, at a fifteenth of the frequency.
+     */
+    static final long RECONCILE_MS = 20_000;
+    /**
+     * A directory whose time is this close to the moment it was listed is
+     * listed again on the next poll: something may still be writing in it
+     * within the same tick (git's "racily clean" rule).
+     */
+    static final long RACY_MS = 2_000;
+
+    // guarded by LOCK: the watcher thread, and tests driving baseline/poll
+    private final Object lock = new Object();
+    private Map<Path, Long> dirs = new HashMap<>();
+    private Map<Path, Long> files = new HashMap<>();
+    private final Set<Path> unsure = new HashSet<>();
+    private long lastReconcile;
+    /** Which start() the running thread belongs to: a restarted watcher's old thread sees a newer one and leaves. */
+    private volatile int generation;
 
     /**
      * @param root       directory to watch
@@ -87,26 +147,54 @@ public final class FileWatcher {
         return new FileWatcher(root, intervalMs, null, filenames, onChange);
     }
 
+    public boolean isRunning() {
+        return running;
+    }
+
+    /** Whether the tree has more matching files than one watcher keeps ({@link #MAX_FILES}). */
+    public boolean isTruncated() {
+        return truncated;
+    }
+
+    /**
+     * Checks the tracked files' own modification times only every
+     * {@code n}th poll; the others notice what changes a directory (a file
+     * added, removed, renamed or replaced). For a consumer that needs the
+     * tree's shape promptly and an in-place edit eventually. Before start.
+     */
+    public FileWatcher contentEvery(int n) {
+        this.contentEvery = Math.max(1, n);
+        return this;
+    }
+
+    /** How long to wait before the next poll: the interval, or longer when polls are slow. */
+    static long nextSleep(long intervalMs, long lastScanMs) {
+        return Math.max(intervalMs, SCAN_BUDGET_FACTOR * Math.max(0, lastScanMs));
+    }
+
     public synchronized void start() {
         if (running) {
             return;
         }
         running = true;
+        int gen = ++generation;
         thread = Threads.daemon(() -> {
-            Map<Path, Long> baseline = scan();
-            while (running) {
+            long t0 = System.nanoTime();
+            baseline();
+            long lastScanMs = (System.nanoTime() - t0) / 1_000_000;
+            for (int n = 1; running && gen == generation; n++) {
                 try {
-                    Thread.sleep(intervalMs);
+                    Thread.sleep(nextSleep(intervalMs, lastScanMs));
                 } catch (InterruptedException ex) {
                     return;
                 }
-                if (!running) {
+                if (!running || gen != generation) {
                     return;
                 }
-                Map<Path, Long> current = scan();
-                List<Path> changed = diff(baseline, current);
-                baseline = current;
-                if (!changed.isEmpty() && running) {
+                t0 = System.nanoTime();
+                List<Path> changed = poll(n % contentEvery == 0);
+                lastScanMs = (System.nanoTime() - t0) / 1_000_000;
+                if (!changed.isEmpty() && running && gen == generation) {
                     onChange.accept(changed);
                 }
             }
@@ -122,33 +210,166 @@ public final class FileWatcher {
         }
     }
 
-    public boolean isRunning() {
-        return running;
+    /** The first walk: every directory and matching file, reported to nobody. */
+    void baseline() {
+        synchronized (lock) {
+            Map<Path, Long> d = new HashMap<>();
+            Map<Path, Long> f = new HashMap<>();
+            unsure.clear();
+            if (root.isDirectory()) {
+                walk(root.toPath(), d, f, null);
+            }
+            dirs = d;
+            files = f;
+            lastReconcile = System.nanoTime();
+        }
     }
 
-    private Map<Path, Long> scan() {
-        Map<Path, Long> result = new HashMap<>();
-        if (!root.isDirectory()) {
-            return result;
+    /**
+     * One poll: directories whose time moved (or that were listed too close
+     * to a write) are relisted, what vanished goes with its subtree, and —
+     * when {@code content} — every tracked file is statted for an in-place
+     * edit. Every {@link #RECONCILE_MS} the poll is a full walk instead.
+     * Returns what changed.
+     */
+    List<Path> poll(boolean content) {
+        synchronized (lock) {
+            if (System.nanoTime() - lastReconcile >= RECONCILE_MS * 1_000_000L) {
+                return reconcile();
+            }
+            List<Path> changed = new ArrayList<>();
+            Set<Path> relisted = new HashSet<>();
+            Set<Path> present = new HashSet<>();
+            Set<Path> gone = new HashSet<>();
+            boolean unfiltered = extensions == null && filenames == null;
+            long wallNow = System.currentTimeMillis();
+            for (Path dir : new ArrayList<>(dirs.keySet())) {
+                Long known = dirs.get(dir);
+                if (known == null) {
+                    continue;   // gone with an ancestor already this poll
+                }
+                BasicFileAttributes attrs = attributes(dir);
+                if (attrs == null || !attrs.isDirectory()) {
+                    gone.add(dir);   // gone, or no longer a directory (a link, a file)
+                    continue;
+                }
+                long now = nanos(attrs);
+                if (now != known || unsure.remove(dir)) {
+                    dirs.put(dir, now);
+                    if (!relist(dir, changed, present)) {
+                        gone.add(dir);   // a listing that failed; the next reconcile brings it back
+                        continue;
+                    }
+                    relisted.add(dir);
+                    if (wallNow - attrs.lastModifiedTime().toMillis() < RACY_MS) {
+                        unsure.add(dir);
+                    }
+                    if (truncated && unfiltered) {
+                        // past the cap a new file may not be tracked; the
+                        // moved directory is the change itself
+                        changed.add(dir);
+                    }
+                }
+            }
+            if (!relisted.isEmpty()) {
+                // one pass for everything the relisted directories no longer hold
+                for (Path f : new ArrayList<>(files.keySet())) {
+                    if (relisted.contains(f.getParent()) && !present.contains(f)) {
+                        files.remove(f);
+                        changed.add(f);
+                    }
+                }
+                for (Path d : dirs.keySet()) {
+                    if (relisted.contains(d.getParent()) && !present.contains(d)) {
+                        gone.add(d);
+                    }
+                }
+            }
+            if (!gone.isEmpty()) {
+                removeUnder(gone, changed);
+            }
+            if (content) {
+                for (Map.Entry<Path, Long> e : new ArrayList<>(files.entrySet())) {
+                    BasicFileAttributes attrs = attributes(e.getKey());
+                    if (attrs == null || attrs.isDirectory()) {
+                        files.remove(e.getKey());
+                        changed.add(e.getKey());
+                    } else if (nanos(attrs) != e.getValue()) {
+                        files.put(e.getKey(), nanos(attrs));
+                        changed.add(e.getKey());
+                    }
+                }
+            }
+            return changed;
+        }
+    }
+
+    /** Makes the next poll a full reconcile (tests: nothing here waits twenty seconds). */
+    void expireReconcile() {
+        synchronized (lock) {
+            lastReconcile = System.nanoTime() - RECONCILE_MS * 1_000_000L - 1;
+        }
+    }
+
+    /** The full walk, compared with what was tracked: the old poll, as a periodic heal. */
+    private List<Path> reconcile() {
+        Map<Path, Long> d = new HashMap<>();
+        Map<Path, Long> f = new HashMap<>();
+        unsure.clear();
+        if (root.isDirectory()) {
+            walk(root.toPath(), d, f, null);
+        }
+        List<Path> changed = new ArrayList<>();
+        for (Map.Entry<Path, Long> e : f.entrySet()) {
+            Long old = files.get(e.getKey());
+            if (old == null || !old.equals(e.getValue())) {
+                changed.add(e.getKey());
+            }
+        }
+        for (Path p : files.keySet()) {
+            if (!f.containsKey(p)) {
+                changed.add(p);
+            }
+        }
+        dirs = d;
+        files = f;
+        lastReconcile = System.nanoTime();
+        return changed;
+    }
+
+    /** Walks {@code start} into the given maps; new files go to {@code added} when given. */
+    private void walk(Path start, Map<Path, Long> dirMap, Map<Path, Long> fileMap, List<Path> added) {
+        Path top = root.toPath();
+        int depth = MAX_DEPTH - (start.equals(top) ? 0 : top.relativize(start).getNameCount());
+        if (depth < 0) {
+            return;
         }
         try {
-            Files.walkFileTree(root.toPath(), Set.of(), MAX_DEPTH, new SimpleFileVisitor<>() {
+            Files.walkFileTree(start, Set.of(), depth, new SimpleFileVisitor<>() {
                 @Override
                 public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-                    String name = dir.getFileName() == null ? "" : dir.getFileName().toString();
-                    if (SKIP_DIRS.contains(name) || name.startsWith(".") && !dir.equals(root.toPath())) {
+                    if (skipped(dir)) {
                         return FileVisitResult.SKIP_SUBTREE;
+                    }
+                    dirMap.put(dir, nanos(attrs));
+                    if (System.currentTimeMillis() - attrs.lastModifiedTime().toMillis() < RACY_MS) {
+                        unsure.add(dir);   // being written in right now, perhaps: list it again
                     }
                     return FileVisitResult.CONTINUE;
                 }
 
                 @Override
                 public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                    if (result.size() >= MAX_FILES) {
-                        return FileVisitResult.TERMINATE;
+                    if (attrs.isDirectory()) {
+                        return FileVisitResult.CONTINUE;   // a directory at the depth limit
                     }
-                    if (matches(file)) {
-                        result.put(file, attrs.lastModifiedTime().toMillis());
+                    if (matches(file) && !fileMap.containsKey(file)) {
+                        if (!track(fileMap, file, nanos(attrs))) {
+                            return FileVisitResult.TERMINATE;
+                        }
+                        if (added != null) {
+                            added.add(file);
+                        }
                     }
                     return FileVisitResult.CONTINUE;
                 }
@@ -159,9 +380,121 @@ public final class FileWatcher {
                 }
             });
         } catch (IOException ignored) {
-            // partial scan is fine; next poll catches up
+            // partial walk is fine; the next reconcile catches up
         }
-        return result;
+    }
+
+    /**
+     * Relists one directory whose time moved: new entries in, a file and a
+     * directory that swapped places sorted out. What it holds goes into
+     * {@code present}; the caller removes what is missing. False when the
+     * listing failed.
+     */
+    private boolean relist(Path dir, List<Path> changed, Set<Path> present) {
+        try (DirectoryStream<Path> entries = Files.newDirectoryStream(dir)) {
+            for (Path entry : entries) {
+                BasicFileAttributes attrs = attributes(entry);
+                if (attrs == null) {
+                    continue;
+                }
+                present.add(entry);
+                if (attrs.isDirectory()) {
+                    if (files.remove(entry) != null) {
+                        changed.add(entry);   // a file became a directory
+                    }
+                    if (!dirs.containsKey(entry) && !skipped(entry)) {
+                        walk(entry, dirs, files, changed);
+                    }
+                } else {
+                    if (dirs.containsKey(entry)) {
+                        removeUnder(Set.of(entry), changed);   // a directory became a file (or a link)
+                    }
+                    if (matches(entry)) {
+                        Long old = files.get(entry);
+                        long now = nanos(attrs);
+                        if (old == null) {
+                            if (track(files, entry, now)) {
+                                changed.add(entry);
+                            }
+                        } else if (old != now) {
+                            // replaced (written to a temp file and renamed over)
+                            files.put(entry, now);
+                            changed.add(entry);
+                        }
+                    }
+                }
+            }
+            return true;
+        } catch (IOException | java.nio.file.DirectoryIteratorException failed) {
+            return false;
+        }
+    }
+
+    /** Forgets every directory in {@code gone} with its subtree, reporting each tracked file under it. One pass. */
+    private void removeUnder(Set<Path> gone, List<Path> changed) {
+        dirs.keySet().removeIf(d -> under(d, gone));
+        unsure.removeIf(d -> under(d, gone));
+        files.keySet().removeIf(f -> {
+            if (under(f, gone)) {
+                changed.add(f);
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /** Whether {@code p} is one of {@code gone} or lies beneath one: a walk up its parents. */
+    private boolean under(Path p, Set<Path> gone) {
+        Path top = root.toPath();
+        for (Path q = p; q != null; q = q.getParent()) {
+            if (gone.contains(q)) {
+                return true;
+            }
+            if (q.equals(top)) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /** Tracks a file, unless the cap is reached — which is said once. */
+    private boolean track(Map<Path, Long> fileMap, Path file, long mtime) {
+        if (fileMap.size() >= maxFiles) {
+            if (!truncated) {
+                truncated = true;
+                // which files are dropped depends on walk order, so a change
+                // past the cap is simply not seen: say so rather than watch
+                // part of a tree quietly
+                LOG.log(java.util.logging.Level.WARNING,
+                        "{0} has more than {1} files to watch; changes past the first {1} are not seen",
+                        new Object[] {root, maxFiles});
+            }
+            return false;
+        }
+        fileMap.put(file, mtime);
+        return true;
+    }
+
+    private boolean skipped(Path dir) {
+        if (dir.equals(root.toPath())) {
+            return false;
+        }
+        String name = dir.getFileName() == null ? "" : dir.getFileName().toString();
+        return SKIP_DIRS.contains(name) || name.startsWith(".");
+    }
+
+    /** A path's attributes without following a link, or null when it is gone or unreadable. */
+    private static BasicFileAttributes attributes(Path p) {
+        try {
+            return Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        } catch (IOException gone) {
+            return null;
+        }
+    }
+
+    /** The full-precision modification time: two writes in one millisecond differ here. */
+    private static long nanos(BasicFileAttributes attrs) {
+        return attrs.lastModifiedTime().to(java.util.concurrent.TimeUnit.NANOSECONDS);
     }
 
     private boolean matches(Path file) {
@@ -172,23 +505,17 @@ public final class FileWatcher {
         if (extensions == null) {
             return true;
         }
+        // no substring per file: this runs for every file a walk meets
         int dot = name.lastIndexOf('.');
-        return dot >= 0 && extensions.contains(name.substring(dot + 1).toLowerCase(java.util.Locale.ROOT));
-    }
-
-    private static List<Path> diff(Map<Path, Long> before, Map<Path, Long> after) {
-        List<Path> changed = new ArrayList<>();
-        for (Map.Entry<Path, Long> e : after.entrySet()) {
-            Long old = before.get(e.getKey());
-            if (old == null || !old.equals(e.getValue())) {
-                changed.add(e.getKey());     // new or modified
+        if (dot < 0) {
+            return false;
+        }
+        int len = name.length() - dot - 1;
+        for (String ext : extensions) {
+            if (ext.length() == len && name.regionMatches(true, dot + 1, ext, 0, len)) {
+                return true;
             }
         }
-        for (Path p : before.keySet()) {
-            if (!after.containsKey(p)) {
-                changed.add(p);              // deleted
-            }
-        }
-        return changed;
+        return false;
     }
 }
