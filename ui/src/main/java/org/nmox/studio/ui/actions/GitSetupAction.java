@@ -53,6 +53,7 @@ import org.openide.util.RequestProcessor;
     "GitSetupAction_intro=These global git settings make git open commit messages, rebase plans and merge messages in NMOX Studio, and show git difftool's comparisons in its diff view. Close the tab to hand the file back to git.",
     "GitSetupAction_notOnPath=The nmox command is not on your PATH, so git could not start it. The user guide shows how to put it there; then open this again.",
     "GitSetupAction_noGit=Git was not found on this computer.",
+    "GitSetupAction_alreadySet=Git already uses NMOX Studio: every setting below has the value shown.",
     "GitSetupAction_settingsName=The settings and their current values",
     "# {0} - the current value",
     "GitSetupAction_now=now: {0}",
@@ -86,6 +87,16 @@ public final class GitSetupAction implements ActionListener {
         });
     }
 
+    /** True when every setting already has the value this dialog would give it. */
+    static boolean alreadySet(Map<String, String> current) {
+        for (Map.Entry<String, String> s : GitSetup.settings().entrySet()) {
+            if (!s.getValue().equals(current.get(s.getKey()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** The settings, one per line, with what each is now. */
     static String describe(Map<String, String> current) {
         StringBuilder b = new StringBuilder();
@@ -101,8 +112,10 @@ public final class GitSetupAction implements ActionListener {
     private void show(boolean git, boolean nmox, Map<String, String> current) {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        boolean done = git && alreadySet(current);
         JTextArea intro = new JTextArea(!git ? Bundle.GitSetupAction_noGit()
-                : Bundle.GitSetupAction_intro() + (nmox ? "" : "\n\n" + Bundle.GitSetupAction_notOnPath()));
+                : Bundle.GitSetupAction_intro() + (done ? "\n\n" + Bundle.GitSetupAction_alreadySet()
+                        : nmox ? "" : "\n\n" + Bundle.GitSetupAction_notOnPath()));
         intro.setEditable(false);
         intro.setLineWrap(true);
         intro.setWrapStyleWord(true);
@@ -119,7 +132,7 @@ public final class GitSetupAction implements ActionListener {
         Object apply = Bundle.GitSetupAction_apply();
         Object copy = Bundle.GitSetupAction_copy();
         Object close = Bundle.GitSetupAction_close();
-        Object[] options = git && nmox ? new Object[] {apply, copy, close} : new Object[] {copy, close};
+        Object[] options = git && nmox && !done ? new Object[] {apply, copy, close} : new Object[] {copy, close};
         DialogDescriptor d = new DialogDescriptor(panel, Bundle.GitSetupAction_title(), true, options,
                 close, DialogDescriptor.DEFAULT_ALIGN, null, null);
         Object chosen = DialogDisplayer.getDefault().notify(d);

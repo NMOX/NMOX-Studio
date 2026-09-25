@@ -61,4 +61,14 @@ class GitSetupTest {
                 .contains("git config --global diff.tool nmox")
                 .contains("git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
     }
+
+    @Test
+    @org.junit.jupiter.api.DisplayName("a git that already uses NMOX Studio is told so, and Apply is not offered")
+    void alreadySet() {
+        java.util.Map<String, String> now = new java.util.HashMap<>(GitSetup.settings());
+        org.assertj.core.api.Assertions.assertThat(GitSetupAction.alreadySet(now)).isTrue();
+        now.put("diff.tool", "vimdiff");
+        org.assertj.core.api.Assertions.assertThat(GitSetupAction.alreadySet(now)).isFalse();
+        org.assertj.core.api.Assertions.assertThat(GitSetupAction.alreadySet(java.util.Map.of())).isFalse();
+    }
 }
