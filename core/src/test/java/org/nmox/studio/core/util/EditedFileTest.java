@@ -1,4 +1,4 @@
-package org.nmox.studio.editor.share;
+package org.nmox.studio.core.util;
 
 import java.nio.file.Files;
 import java.nio.file.Path;

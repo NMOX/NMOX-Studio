@@ -75,7 +75,7 @@ abstract class CopyFilePathAction implements ActionListener {
 
     /** The file on disk behind an editor, or null. */
     static File fileOf(JTextComponent editor) {
-        FileObject fo = EditedFile.of(editor == null ? null : editor.getDocument());
+        FileObject fo = org.nmox.studio.core.util.EditedFile.of(editor == null ? null : editor.getDocument());
         return fo == null ? null : FileUtil.toFile(fo);
     }
 

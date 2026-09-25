@@ -286,7 +286,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
             Object described = doc.getProperty(Document.StreamDescriptionProperty);
             DataObject dob = described instanceof DataObject d ? d : null;
             watch(dob);
-            org.openide.filesystems.FileObject edited = org.nmox.studio.editor.share.EditedFile.of(doc);
+            org.openide.filesystems.FileObject edited = org.nmox.studio.core.util.EditedFile.of(doc);
             File file = dob == null || edited == null ? null : FileUtil.toFile(edited);
             if (file == null) {
                 blame.cancel();

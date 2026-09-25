@@ -180,8 +180,10 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
         }
         Object stream = doc.getProperty(Document.StreamDescriptionProperty);
         FileObject fo = null;
-        if (stream instanceof DataObject dob) {
-            fo = dob.getPrimaryFile();
+        if (stream instanceof DataObject) {
+            // the file edited, not its group's primary: a Bundle_de.properties
+            // takes the sections that match ITS name (3.2 fifth review)
+            fo = org.nmox.studio.core.util.EditedFile.of(doc);
         } else if (stream instanceof FileObject f) {
             fo = f;
         }

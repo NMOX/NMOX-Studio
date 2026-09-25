@@ -107,9 +107,11 @@ public final class AskKvasirAction implements ActionListener {
 
     /** The file's display name off the document, or an honest unknown. */
     public static String fileName(Document doc) {
-        Object sd = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        if (sd instanceof DataObject dob) {
-            return dob.getPrimaryFile().getNameExt();
+        // the file edited, not its group's primary (a Bundle_de.properties
+        // selection is not a question about Bundle.properties — 3.2 fifth review)
+        org.openide.filesystems.FileObject fo = org.nmox.studio.core.util.EditedFile.of(doc);
+        if (fo != null) {
+            return fo.getNameExt();
         }
         return Bundle.AskKvasirAction_unsavedBuffer();
     }

@@ -72,7 +72,7 @@ public final class CopyAsMarkdownWithLinkAction implements ActionListener {
         }
         Document doc = editor.getDocument();
         Object sd = doc.getProperty(Document.StreamDescriptionProperty);
-        org.openide.filesystems.FileObject edited = EditedFile.of(doc);
+        org.openide.filesystems.FileObject edited = org.nmox.studio.core.util.EditedFile.of(doc);
         File file = edited == null ? null : FileUtil.toFile(edited);
         if (file == null) {
             StatusDisplayer.getDefault().setStatusText(Bundle.CopyAsMarkdownWithLinkAction_noFile());

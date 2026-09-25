@@ -1,4 +1,4 @@
-package org.nmox.studio.editor.share;
+package org.nmox.studio.core.util;
 
 import java.util.Collection;
 import javax.swing.text.Document;
