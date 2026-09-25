@@ -17,3 +17,8 @@ KEYS -text
 
 # Git for Windows sh runs this file: a CR would end every line with one
 packaging/windows/nmox text eol=lf
+
+# The Linux/macOS terminal launcher is a shell script, and gates read it
+# for git's setup lines: a windows autocrlf checkout gave it CRLF and
+# GitSetupTest.helpAgrees failed on the first line it matched (3.2.0 CI)
+packaging/linux/nmox text eol=lf

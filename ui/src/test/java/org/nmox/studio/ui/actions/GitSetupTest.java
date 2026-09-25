@@ -63,7 +63,10 @@ class GitSetupTest {
     @Test
     @DisplayName("the help text all three launchers print carries every setting the dialog applies")
     void helpAgrees() throws Exception {
-        String linux = java.nio.file.Files.readString(java.nio.file.Path.of("..", "packaging", "linux", "nmox"));
+        // line endings folded: a checkout that predates .gitattributes' eol=lf
+        // for this file still reads CRLF on windows (3.2.0 CI)
+        String linux = java.nio.file.Files.readString(java.nio.file.Path.of("..", "packaging", "linux", "nmox"))
+                .replace("\r\n", "\n");
         assertThat(linux).contains("git config --global core.editor \"nmox -w\"")
                 .contains("git config --global diff.tool nmox")
                 .contains("git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
