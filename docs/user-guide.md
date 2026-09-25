@@ -1871,6 +1871,23 @@ repository's `.vscode/launch.json` lists its configurations beside them —
 starts the breakpoint debugger on that configuration after the same
 trust question.
 
+**Find in Projects (⇧⌘F) searches your code, not what the repository
+ignores.** In a git repository it skips whatever the repository's own
+`.gitignore` files (the root one and any nested ones) and
+`.git/info/exclude` ignore, and `.git` itself — so a search for a
+function name finds `src/`, not the copies in `node_modules` and `dist/`
+that the templates' `.gitignore` lists. It never goes past what git
+ignores: a folder your repository tracks is searched, whatever its name.
+Outside a repository it also skips the build and package folders every
+walk in the product skips (`node_modules`, `dist`, `build`, `out`,
+`target`, `coverage`, `.next`, `.nuxt`, `.svelte-kit`, `.angular`,
+`.venv`, `__pycache__`). The folders stay in the project tree; only the
+search passes them by. To search them anyway, tick **Search in Generated
+Sources** in the Find in Projects dialog (it is remembered until you
+untick it); Replace in Projects offers no such box and never rewrites
+what the repository ignores. Your global git excludes file is not read, so a path only it
+ignores is still searched.
+
 **The status line tells you what's alive:** a `⇄ serving N` chip appears
 whenever dev servers are up — click it to see URLs and open one. Next to
 it: the aimed project and toolchain. While anything the IDE checks has a
