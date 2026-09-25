@@ -150,4 +150,59 @@ class ProjectSymbolsTest {
         assertThat(refresh(index, root)).extracting(Symbol::name)
                 .doesNotContain("ghost");
     }
+
+    /** A monorepo past the cap: 22 packages of 100 files, the last one alphabetically being the one edited. */
+    private static Path monorepo(Path root) throws Exception {
+        for (int p = 0; p < 22; p++) {
+            Path src = java.nio.file.Files.createDirectories(root.resolve(String.format("packages/pkg-%02d/src", p)));
+            java.nio.file.Files.writeString(root.resolve(String.format("packages/pkg-%02d/package.json", p)), "{}");
+            for (int f = 0; f < 100; f++) {
+                java.nio.file.Files.writeString(src.resolve("m" + f + ".js"),
+                        String.format("function sym_p%02d_f%d() {}%n", p, f));
+            }
+        }
+        return root;
+    }
+
+    @Test
+    @DisplayName("on a monorepo past the cap, the package being edited is indexed first")
+    void focusPackageFirst(@TempDir Path root) throws Exception {
+        monorepo(root);
+        ProjectSymbols plain = new ProjectSymbols();
+        List<Symbol> alphabetical = refresh(plain, root);
+        assertThat(plain.wasTruncated()).as("the fixture is past the cap").isTrue();
+        assertThat(alphabetical).extracting(Symbol::name).doesNotContain("sym_p21_f7");
+
+        ProjectSymbols focused = new ProjectSymbols();
+        List<Symbol> all = focused.refresh(root, root.resolve("packages/pkg-21"), JS_MIME, v -> false);
+        assertThat(all).extracting(Symbol::name).contains("sym_p21_f7", "sym_p00_f0");
+        assertThat(all).as("each file once, the focus not walked twice")
+                .extracting(Symbol::name).doesNotHaveDuplicates();
+        assertThat(all.size()).isLessThanOrEqualTo(ProjectSymbols.MAX_FILES);
+        // a focus the alphabetical walk would reach again must not be read twice
+        List<Symbol> early = new ProjectSymbols().refresh(root, root.resolve("packages/pkg-00"), JS_MIME, v -> false);
+        assertThat(early).extracting(Symbol::name).doesNotHaveDuplicates();
+    }
+
+    @Test
+    @DisplayName("a focus outside the project, or the project itself, changes nothing")
+    void focusOutsideChangesNothing(@TempDir Path tmp) throws Exception {
+        Path root = java.nio.file.Files.createDirectories(tmp.resolve("proj"));
+        java.nio.file.Files.writeString(root.resolve("a.js"), "function a() {}\n");
+        Path elsewhere = java.nio.file.Files.createDirectories(tmp.resolve("elsewhere"));
+        java.nio.file.Files.writeString(elsewhere.resolve("b.js"), "function b() {}\n");
+        assertThat(new ProjectSymbols().refresh(root, elsewhere, JS_MIME, v -> false))
+                .extracting(Symbol::name).containsExactly("a");
+        assertThat(new ProjectSymbols().refresh(root, root, JS_MIME, v -> false))
+                .extracting(Symbol::name).containsExactly("a");
+    }
+
+    @Test
+    @DisplayName("the dialog's provider hands the index the package of the file being edited")
+    void providerPassesTheFocus() throws Exception {
+        String src = java.nio.file.Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/editor/symbols/NmoxSymbolProvider.java"));
+        assertThat(src).contains("index.refresh(dir.toPath(), focus(),")
+                .contains("ProjectRoot.of(editor.getDocument())");
+    }
 }

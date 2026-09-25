@@ -107,6 +107,12 @@ class HeavyDirsLedgerTest {
                 + "EXISTS beside a package.json that declares dependencies, so that a "
                 + "clone's first Run says 'install first' instead of 'Cannot find "
                 + "module'. The name is the subject of the question, not a walk's exclusion"),
+            Map.entry("WorkspaceDependencies.java",
+                "NOT A SKIP — A RESOLVE AND A REFUSAL (3.3): it looks INTO node_modules for "
+                + "the link the package manager made to a workspace package, then refuses "
+                + "any answer whose resolved path lies under a node_modules segment, because "
+                + "that is a third-party install. HeavyDirs would be the wrong rule: it also "
+                + "names build/ and dist/, and a workspace package may be called either"),
             Map.entry("DockerizeGenerator.java",
                 "NOT A WALK AT ALL: this is the CONTENT of a generated .dockerignore, "
                 + "read by docker build inside the user's own container context. It "

@@ -219,8 +219,11 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
             // builds and generators write behind the platform's back;
             // refreshFor re-syncs the FileObject tree and the view keeps
             // its own expansion state — no rebuild, no re-expand dance
+            // the tree needs its SHAPE promptly (a directory's time moves
+            // when git, a generator or an atomic save writes in it) and an
+            // in-place edit eventually: stat every file only each 10th poll
             watcher = new FileWatcher(watched, 1500, null,
-                    changed -> scanner.post(() -> FileUtil.refreshFor(watched)));
+                    changed -> scanner.post(() -> FileUtil.refreshFor(watched))).contentEvery(10);
             watcher.start();
         }
     }

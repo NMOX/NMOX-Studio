@@ -72,6 +72,8 @@ import org.openide.util.RequestProcessor;
     "RenameClassAction_invalidName=\"{0}\" is not a valid class name.",
     "RenameClassAction_censusCap=Rename refused: the project has more stylesheets than the bounded census reads — a partial rename would corrupt it.",
     "RenameClassAction_collision=Rename refused: .{0} already exists — renaming onto it would merge the two classes'' rules.",
+    "# {0} - the class, {1} - the file in the other package that declares it",
+    "RenameClassAction_declaredElsewhere=Rename refused: .{0} is declared in {1}, in a package this one depends on — the rename edits only this package, and its usages here would lose that rule.",
     "RenameClassAction_nowhere=.{0} appears nowhere in this project.",
     "RenameClassAction_unsaved=Rename refused: unsaved changes in {0} — save first.",
     "RenameClassAction_stopped=Rename stopped at {0}: {1}",
@@ -197,6 +199,10 @@ public final class RenameClassAction implements ActionListener {
                 CssClasses.surveyRename(root, oldName, newName);
         if (!survey.censusComplete()) {
             status(Bundle.RenameClassAction_censusCap());
+            return;
+        }
+        if (survey.declaredElsewhere() != null) {
+            status(Bundle.RenameClassAction_declaredElsewhere(oldName, survey.declaredElsewhere().getName()));
             return;
         }
         if (survey.collision()) {

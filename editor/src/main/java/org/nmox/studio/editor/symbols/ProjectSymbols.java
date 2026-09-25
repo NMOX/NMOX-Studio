@@ -71,9 +71,31 @@ public final class ProjectSymbols {
     public synchronized List<Symbol> refresh(Path root,
             java.util.function.Function<Path, String> mimeOf,
             Predicate<Void> cancelled) {
+        return refresh(root, null, mimeOf, cancelled);
+    }
+
+    /**
+     * {@link #refresh(Path, java.util.function.Function, Predicate)}, with
+     * {@code focus} — the package holding the file being edited — read
+     * first (after 3.2.0). The walk is alphabetical and stops at
+     * {@link #MAX_FILES}, so on a monorepo of 200 packages the index held
+     * the first packages by name and none of the one the user works in
+     * (measured on a 50,000-file fixture: 4% of it). The package the
+     * cursor is in is where a symbol search usually aims; the rest of the
+     * project follows in the old order while the cap allows. A focus
+     * outside {@code root}, or the root itself, changes nothing.
+     */
+    public synchronized List<Symbol> refresh(Path root, Path focus,
+            java.util.function.Function<Path, String> mimeOf,
+            Predicate<Void> cancelled) {
         truncated = false;
         List<Path> candidates = new ArrayList<>();
-        collect(root, candidates, 0, cancelled);
+        Path first = focus != null && !focus.equals(root) && focus.startsWith(root)
+                && Files.isDirectory(focus) ? focus : null;
+        if (first != null) {
+            collect(first, candidates, root.relativize(first).getNameCount(), cancelled, null);
+        }
+        collect(root, candidates, 0, cancelled, first);
         // drop cache entries for files that vanished
         seen.keySet().retainAll(Set.copyOf(candidates));
         byFile.keySet().retainAll(Set.copyOf(candidates));
@@ -95,7 +117,7 @@ public final class ProjectSymbols {
     }
 
     private void collect(Path dir, List<Path> into, int depth,
-            Predicate<Void> cancelled) {
+            Predicate<Void> cancelled, Path skip) {
         if (depth > MAX_DEPTH) {
             truncated = true;
             return;
@@ -116,8 +138,8 @@ public final class ProjectSymbols {
         for (Path child : children) {
             String name = child.getFileName().toString();
             if (Files.isDirectory(child)) {
-                if (!name.startsWith(".") && !SKIP_DIRS.contains(name)) {
-                    collect(child, into, depth + 1, cancelled);
+                if (!name.startsWith(".") && !SKIP_DIRS.contains(name) && !child.equals(skip)) {
+                    collect(child, into, depth + 1, cancelled, skip);
                 }
             } else if (!name.startsWith(".")) {
                 if (into.size() >= MAX_FILES) {

@@ -12,9 +12,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p><b>NOT a soft-dependency boundary</b> — the correction is worth
  * recording. Unlike API Studio (which dropped its rack dependency in
- * v1.46.0), DB Studio still DECLARES one: {@code FileWatcher} and
- * {@code DockerClient} are rack surfaces with no core equivalent, and
- * their KEPT catches are documented against ledger 30. So the KVASIR
+ * v1.46.0), DB Studio still DECLARES one: {@code DockerClient} is a
+ * rack surface with no core equivalent (its workspace file is watched by
+ * core's {@code FilePulse} since after 3.2.0), and
+ * its KEPT catches are documented against ledger 30. So the KVASIR
  * provider IS on this module's classpath and the lookup finds it. An
  * earlier version of this test asserted the lookup was null; it passed
  * under {@code -pl dbstudio} and failed the full reactor, because the

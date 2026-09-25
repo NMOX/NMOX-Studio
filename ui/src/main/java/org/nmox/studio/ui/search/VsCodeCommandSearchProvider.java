@@ -71,7 +71,8 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Preferences: Open Keyboard Shortcuts", "Help", "org.nmox.studio.ui.shortcuts.KeyboardShortcutsAction"),
             cmd("Extensions: Install Extensions", "System", "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction"),
             cmd("View: Toggle Terminal", "Window", "org.nmox.studio.rack.projectstudio.ProjectTerminalAction"),
-            cmd("Terminal: Create New Terminal", "Window", "org.nmox.studio.rack.projectstudio.ProjectTerminalAction"),
+            // ^` brings an open terminal forward; "Create New" always starts one
+            cmd("Terminal: Create New Terminal", "Window", "org.nmox.studio.rack.projectstudio.ProjectTerminalNewAction"),
             cmd("View: Show Explorer", "Window", "org.nmox.studio.rack.projectstudio.ProjectStudioTopComponent"),
             cmd("View: Toggle Problems", "Window", "org.netbeans.modules.tasklist.ui.TaskListAction"),
             cmd("View: Toggle Output", "Window", "org.netbeans.core.io.ui.IOWindowAction"),

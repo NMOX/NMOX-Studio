@@ -290,6 +290,7 @@
                                 <exclude>**/DialogChromeOverlayGateTest.java</exclude>
                                 <exclude>**/PlatformDialogLedgerTest.java</exclude>
                                 <exclude>**/MenuRowsSpeakTest.java</exclude>
+                                <exclude>**/TranslatedMnemonicsTest.java</exclude>
                                 <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/PopupRowsSpeakTest.java</exclude>
                                 <exclude>**/FileTreeRowsSpeakTest.java</exclude>
@@ -325,6 +326,7 @@
                                 <include>**/ModuleDescriptorsSpeakTest.java</include>
                                 <include>**/PlatformDialogLedgerTest.java</include>
                                 <include>**/MenuRowsSpeakTest.java</include>
+                                <include>**/TranslatedMnemonicsTest.java</include>
                                 <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/PopupRowsSpeakTest.java</include>
                                 <include>**/FileTreeRowsSpeakTest.java</include>

@@ -34,13 +34,29 @@ public final class Workspaces {
      * directory name otherwise.
      */
     public static LinkedHashMap<String, File> packages(File root) {
+        return packages(root, MAX_PACKAGES);
+    }
+
+    /**
+     * {@link #packages(File)} with a caller's own ceiling: the editor's
+     * route jump reads a whole monorepo's manifests once per click (3.3),
+     * where WAYPOINT's knob wants a list a person can dial. A map exactly
+     * {@code max} long may have stopped short.
+     */
+    public static LinkedHashMap<String, File> packages(File root, int max) {
         LinkedHashMap<String, File> found = new LinkedHashMap<>();
         if (root == null || !root.isDirectory()) {
             return found;
         }
         for (String glob : declaredGlobs(root)) {
+            if (!staysInside(glob)) {
+                continue;   // a clone's glob naming a path outside it (3.3 review)
+            }
             for (File dir : resolve(root, glob)) {
-                if (found.size() >= MAX_PACKAGES) {
+                if (!inside(root, dir)) {
+                    continue;   // reached through a link that leaves the repository
+                }
+                if (found.size() >= max) {
                     return found;
                 }
                 String name = packageName(dir);
@@ -53,6 +69,31 @@ public final class Workspaces {
             }
         }
         return found;
+    }
+
+    /** A glob that cannot climb out of the root: relative, and no {@code ..} segment. */
+    static boolean staysInside(String glob) {
+        if (glob.startsWith("/") || glob.startsWith("\\") || (glob.length() > 1 && glob.charAt(1) == ':')) {
+            return false;
+        }
+        for (String part : glob.split("[/\\\\]")) {
+            if (part.equals("..")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Whether {@code dir} resolves inside the root: a link out of the repository is not a package of it. */
+    private static boolean inside(File root, File dir) {
+        try {
+            String relative = root.getAbsoluteFile().toPath()
+                    .relativize(dir.getAbsoluteFile().toPath()).toString();
+            // the one home judges the RESOLVED path (ledger 111)
+            return org.nmox.studio.core.util.Containment.resolve(root, relative) != null;
+        } catch (IllegalArgumentException ex) {
+            return false;   // another drive: not inside
+        }
     }
 
     /** The raw globs both manifest dialects declare, in file order. */
@@ -143,8 +184,9 @@ public final class Workspaces {
      */
     private static void walk(File dir, int depth, List<File> out) {
         if (depth < 0 || dir == null || !dir.isDirectory()
+                || java.nio.file.Files.isSymbolicLink(dir.toPath())
                 || org.nmox.studio.core.util.HeavyDirs.isHeavy(dir.getName())) {
-            return;
+            return;   // (3.3 review) a ** walk never follows a link: its target may be anywhere
         }
         if (new File(dir, "package.json").isFile()) {
             out.add(dir);

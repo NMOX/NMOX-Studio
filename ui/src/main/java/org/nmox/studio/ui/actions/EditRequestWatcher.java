@@ -107,29 +107,167 @@ final class EditRequestWatcher {
     private EditRequestWatcher() {
     }
 
-    /** Opens everything {@code request} names; tracks it when it waits. On the EDT. */
-    static void show(File folder, EditRequest request) {
-        List<Object> targets = new ArrayList<>();
-        List<String> names = new ArrayList<>();
+    /** A file resolved off the EDT: the DataObject that will be opened, at a line. */
+    record ResolvedOpen(DataObject dob, int line, String name) {
+    }
+
+    /**
+     * What a request names, read OFF the EDT — every DataObject found and
+     * every diff side sniffed — or the first item that could not be, which
+     * refuses the whole request before anything opens (ledger 124, closed
+     * after 3.2.0: the lookups and the diff's 8,000-byte sniff ran on the
+     * EDT).
+     */
+    record Prepared(List<Object> items, String failedFile, IOException failure) {
+    }
+
+    private static final org.openide.util.RequestProcessor PREPARE =
+            new org.openide.util.RequestProcessor("nmox-edit-request", 1);
+
+    /**
+     * The launcher's door: resolve on a lane, then open and track in ONE
+     * EDT turn once the UI is ready — the start-up sweep of left-over git
+     * files relies on a request's tab being tracked in the turn it opens.
+     */
+    static void showLater(File folder, EditRequest request) {
+        register(request);
+        PREPARE.post(() -> {
+            Prepared p = prepare(request);
+            org.openide.windows.WindowManager.getDefault().invokeWhenUIReady(() -> {
+                try {
+                    show(folder, request, p);
+                } finally {
+                    unregister(request);
+                }
+            });
+        });
+    }
+
+    /**
+     * The files of requests accepted but not yet opened, counted (two
+     * requests can name one file). The start-up sweep of left-over git
+     * files asks this too: a tab the window system restores late, of a file
+     * a request is still resolving on the lane, is the one that request is
+     * about to open, and closing it first would only make it flicker.
+     */
+    private static final Map<File, Integer> PENDING = new java.util.HashMap<>();
+
+    static void register(EditRequest request) {
+        synchronized (PENDING) {
+            for (File f : files(request)) {
+                PENDING.merge(f, 1, Integer::sum);
+            }
+        }
+    }
+
+    static void unregister(EditRequest request) {
+        synchronized (PENDING) {
+            for (File f : files(request)) {
+                PENDING.computeIfPresent(f, (k, n) -> n > 1 ? n - 1 : null);
+            }
+        }
+    }
+
+    /** Whether an accepted request names {@code file} and has not opened it yet. */
+    static boolean pending(File file) {
+        if (file == null) {
+            return false;
+        }
+        synchronized (PENDING) {
+            return PENDING.containsKey(FileUtil.normalizeFile(file.getAbsoluteFile()));
+        }
+    }
+
+    private static List<File> files(EditRequest request) {
+        List<File> out = new ArrayList<>();
+        for (EditRequest.Item item : request.items()) {
+            if (item instanceof EditRequest.Open o) {
+                out.add(o.file());
+            } else if (item instanceof EditRequest.Diff d) {
+                out.add(d.left());
+                out.add(d.right());
+            }
+        }
+        out.removeIf(java.util.Objects::isNull);
+        out.replaceAll(f -> {
+            try {
+                return FileUtil.normalizeFile(f.getAbsoluteFile());
+            } catch (RuntimeException unnormalizable) {
+                return f.getAbsoluteFile();
+            }
+        });
+        return out;
+    }
+
+    /** Resolves every item; never on the EDT. */
+    static Prepared prepare(EditRequest request) {
+        List<Object> items = new ArrayList<>();
         for (EditRequest.Item item : request.items()) {
             try {
                 if (item instanceof EditRequest.Open o) {
-                    DataObject opened = open(o.file(), o.line());
+                    items.add(new ResolvedOpen(resolve(o.file()), o.line(), o.file().getName()));
+                } else if (item instanceof EditRequest.Diff d) {
+                    items.add(DiffWindow.prepare(d.left(), d.right()));
+                }
+            } catch (IOException | RuntimeException ex) {
+                // unchecked too (an InvalidPathException from a name the OS
+                // refuses): the launcher has been told "accepted", so a
+                // request that dies here unanswered leaves git waiting on an
+                // IDE that will never reply
+                IOException why = ex instanceof IOException io ? io
+                        : new IOException(ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.toString(), ex);
+                return new Prepared(items, nameOf(item), why);
+            }
+        }
+        return new Prepared(items, null, null);
+    }
+
+    /** The name a refusal gives for {@code item}; never throws, whatever the item holds. */
+    private static String nameOf(EditRequest.Item item) {
+        List<File> named = new ArrayList<>();
+        if (item instanceof EditRequest.Open o) {
+            named.add(o.file());
+        } else if (item instanceof EditRequest.Diff d) {
+            named.add(d.left());
+            named.add(d.right());
+        }
+        for (File f : named) {
+            if (f != null) {
+                return f.getName();
+            }
+        }
+        return "?";
+    }
+
+    /** Both halves at once (tests, and callers already off the EDT's clock). */
+    static void show(File folder, EditRequest request) {
+        show(folder, request, prepare(request));
+    }
+
+    /** Opens everything a prepared request names; tracks it when it waits. On the EDT. */
+    static void show(File folder, EditRequest request, Prepared prepared) {
+        if (prepared.failure() != null) {
+            refuse(folder, prepared.failedFile(), prepared.failure());
+            return;
+        }
+        List<Object> targets = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (Object item : prepared.items()) {
+            try {
+                if (item instanceof ResolvedOpen o) {
+                    DataObject opened = open(o.dob(), o.line());
                     remember(opened);
                     targets.add(opened);
-                    names.add(o.file().getName());
-                } else if (item instanceof EditRequest.Diff d) {
-                    DiffWindow w = DiffWindow.open(d.left(), d.right());
+                    names.add(o.name());
+                } else if (item instanceof DiffWindow.Prepared d) {
+                    DiffWindow w = DiffWindow.open(d);
                     targets.add(w);
                     names.add(w.getDisplayName());
                 }
             } catch (IOException ex) {
-                String file = item instanceof EditRequest.Open o ? o.file().getName()
-                        : ((EditRequest.Diff) item).left() != null ? ((EditRequest.Diff) item).left().getName()
-                        : ((EditRequest.Diff) item).right().getName();
-                String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
-                status.accept(PlainStatus.text(why));
-                EditRequestOption.answer(folder, "refused", why);
+                refuse(folder, item instanceof ResolvedOpen o ? o.name()
+                        : ((DiffWindow.Prepared) item).left() != null ? ((DiffWindow.Prepared) item).left().getName()
+                        : ((DiffWindow.Prepared) item).right().getName(), ex);
                 return;
             }
         }
@@ -145,6 +283,12 @@ final class EditRequestWatcher {
         recheck();
     }
 
+    private static void refuse(File folder, String file, IOException ex) {
+        String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
+        status.accept(PlainStatus.text(why));
+        EditRequestOption.answer(folder, "refused", why);
+    }
+
     /** Starts waiting on {@code s}. On the EDT. */
     static void track(Session s) {
         synchronized (WAITING) {
@@ -153,13 +297,17 @@ final class EditRequestWatcher {
         listen();
     }
 
-    /** Opens {@code file}, at {@code line} when it is positive, and answers the DataObject that tracks it. */
-    private static DataObject open(File file, int line) throws IOException {
+    /** The DataObject of {@code file}; touches the disk, so never on the EDT. */
+    static DataObject resolve(File file) throws IOException {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fo == null) {
             throw new IOException("no such file");
         }
-        DataObject dob = DataObject.find(fo);
+        return DataObject.find(fo);
+    }
+
+    /** Opens {@code dob}, at {@code line} when it is positive, and answers it. On the EDT. */
+    private static DataObject open(DataObject dob, int line) throws IOException {
         LineCookie lc = dob.getLookup().lookup(LineCookie.class);
         if (line > 0 && lc != null) {
             Line.Set set = lc.getLineSet();

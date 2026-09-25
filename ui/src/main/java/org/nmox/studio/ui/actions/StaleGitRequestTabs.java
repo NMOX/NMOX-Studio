@@ -60,6 +60,10 @@ public final class StaleGitRequestTabs implements Runnable {
         stop.start();
     }
 
+    /** Where the git-folder test reads the disk: never on the EDT. */
+    private static final org.openide.util.RequestProcessor LANE =
+            new org.openide.util.RequestProcessor("nmox-stale-git-requests", 1);
+
     private static void check(TopComponent tc, boolean late) {
         if (!tc.isOpened() || !WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
             return;
@@ -67,16 +71,32 @@ public final class StaleGitRequestTabs implements Runnable {
         DataObject dob = tc.getLookup().lookup(DataObject.class);
         FileObject fo = EditorTabs.fileOf(tc);
         File file = fo == null ? null : FileUtil.toFile(fo);
-        boolean asked = dob != null && (EditRequestWatcher.waitedOn(dob) || EditRequestWatcher.requested(dob));
-        boolean userOpened = late && TopComponent.getRegistry().getActivated() == tc;
-        if (dob != null && shouldClose(file, dob.isModified(), asked || userOpened)) {
-            LOG.log(Level.FINE, "closing the left-over {0}", file);
-            tc.close();
+        if (dob == null || !GitRequestFiles.hasRequestName(file)) {
+            return;
         }
+        // asked on the EDT, now: "the active tab" means the one active when it arrived
+        boolean userOpened = late && TopComponent.getRegistry().getActivated() == tc;
+        LANE.post(() -> {
+            if (GitRequestFiles.isRequestFile(file)) {
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    boolean asked = EditRequestWatcher.waitedOn(dob) || EditRequestWatcher.requested(dob)
+                            || EditRequestWatcher.pending(file);
+                    if (tc.isOpened() && shouldClose(true, dob.isModified(), asked || userOpened)) {
+                        LOG.log(Level.FINE, "closing the left-over {0}", file);
+                        tc.close();
+                    }
+                });
+            }
+        });
     }
 
     /** The rule, with the window system left out: {@code wanted} is a request's file or the user's own open. */
     static boolean shouldClose(File file, boolean modified, boolean wanted) {
-        return GitRequestFiles.isRequestFile(file) && !modified && !wanted;
+        return shouldClose(GitRequestFiles.isRequestFile(file), modified, wanted);
+    }
+
+    /** The same rule once the disk has answered whether it is git's file. */
+    static boolean shouldClose(boolean requestFile, boolean modified, boolean wanted) {
+        return requestFile && !modified && !wanted;
     }
 }

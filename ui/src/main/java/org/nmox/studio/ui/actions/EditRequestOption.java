@@ -15,7 +15,6 @@ import org.netbeans.spi.sendopts.OptionProcessor;
 import org.nmox.studio.core.util.AtomicFiles;
 import org.nmox.studio.core.util.BoundedReads;
 import org.openide.util.lookup.ServiceProvider;
-import org.openide.windows.WindowManager;
 
 /**
  * {@code --nmox-request <folder>}: the IDE's half of {@code nmox --wait} and
@@ -69,8 +68,7 @@ public final class EditRequestOption extends OptionProcessor {
     private static final Option REQUEST = Option.requiredArgument(Option.NO_SHORT_NAME, "nmox-request");
 
     /** The seam tests replace: what an accepted request is handed to. */
-    static BiConsumer<File, EditRequest> shower = (folder, request) ->
-            WindowManager.getDefault().invokeWhenUIReady(() -> EditRequestWatcher.show(folder, request));
+    static BiConsumer<File, EditRequest> shower = EditRequestWatcher::showLater;
 
     @Override
     protected Set<Option> getOptions() {

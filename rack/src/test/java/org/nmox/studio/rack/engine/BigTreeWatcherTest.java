@@ -86,4 +86,78 @@ class BigTreeWatcherTest {
         assertThat(fired.await(2, TimeUnit.SECONDS))
                 .as("node_modules churn must not fire the watcher").isFalse();
     }
+
+    @Test
+    @DisplayName("a slow scan slows the poll: the interval, or eight scans' worth, whichever is longer")
+    void slowScansPollLessOften() {
+        assertThat(FileWatcher.nextSleep(1500, 100)).as("a small tree keeps its interval").isEqualTo(1500);
+        assertThat(FileWatcher.nextSleep(1500, 300)).as("a 300 ms scan waits 2.4 s").isEqualTo(2400);
+        assertThat(FileWatcher.nextSleep(300, 0)).isEqualTo(300);
+        assertThat(FileWatcher.nextSleep(300, -5)).as("a clock step back is no scan at all").isEqualTo(300);
+        String src;
+        try {
+            src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/engine/FileWatcher.java"));
+        } catch (java.io.IOException ex) {
+            throw new AssertionError(ex);
+        }
+        assertThat(src).as("the poll loop sleeps by the rule, not by the bare interval")
+                .contains("Thread.sleep(nextSleep(intervalMs, lastScanMs));").doesNotContain("Thread.sleep(intervalMs)");
+    }
+
+    @Test
+    @DisplayName("a tree past the cap says so, once")
+    void theCapSpeaks() throws Exception {
+        for (int f = 0; f < 30; f++) {
+            Files.writeString(root.resolve("f" + f + ".js"), "x");
+        }
+        java.util.List<String> said = new java.util.ArrayList<>();
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(FileWatcher.class.getName());
+        java.util.logging.Handler h = new java.util.logging.Handler() {
+            @Override
+            public void publish(java.util.logging.LogRecord r) {
+                said.add(java.text.MessageFormat.format(r.getMessage(), r.getParameters()));
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        log.addHandler(h);
+        try {
+            CountDownLatch polled = new CountDownLatch(1);
+            watcher = new FileWatcher(root.toFile(), 200, null, changed -> polled.countDown());
+            watcher.maxFiles = 10;
+            watcher.start();
+            Thread.sleep(900);   // baseline and a few polls, each hitting the cap
+            assertThat(watcher.isTruncated()).isTrue();
+            assertThat(said).as("said once, not every poll").hasSize(1);
+            assertThat(said.get(0)).contains(root.toString()).contains("10");
+        } finally {
+            log.removeHandler(h);
+        }
+    }
+
+    @Test
+    @DisplayName("an extension matches in any case, without a substring per file")
+    void extensionsMatchInAnyCase() throws Exception {
+        CountDownLatch fired = new CountDownLatch(1);
+        java.util.List<Path> seen = new java.util.concurrent.CopyOnWriteArrayList<>();
+        watcher = new FileWatcher(root.toFile(), 200, java.util.Set.of("js"), changed -> {
+            seen.addAll(changed);
+            fired.countDown();
+        });
+        watcher.start();
+        Thread.sleep(500);
+        Files.writeString(root.resolve("README"), "no extension");
+        Files.writeString(root.resolve("notjs"), "no dot");
+        Files.writeString(root.resolve("a.jsx"), "longer");
+        Files.writeString(root.resolve("LOUD.JS"), "upper");
+        assertThat(fired.await(5, TimeUnit.SECONDS)).isTrue();
+        Thread.sleep(500);
+        assertThat(seen).extracting(p -> p.getFileName().toString()).containsOnly("LOUD.JS");
+    }
 }

@@ -358,7 +358,7 @@ public final class DbStudioTopComponent extends TopComponent {
     private final org.nmox.studio.dbstudio.io.ExternalEdits externalEdits =
             new org.nmox.studio.dbstudio.io.ExternalEdits();
     /** Watches .nmoxdb.json while the tab is open; null when closed. */
-    private org.nmox.studio.rack.engine.FileWatcher workspaceWatcher;
+    private org.nmox.studio.core.util.FilePulse workspaceWatcher;
     /** True while the add/edit connection dialog is up — external reloads wait. */
     private boolean connectionDialogOpen;
     /** A foreign .nmoxdb.json version seen while busy; re-checked when free. */
@@ -1458,8 +1458,11 @@ public final class DbStudioTopComponent extends TopComponent {
     // ---- .nmoxdb.json edited outside the studio ----
 
     /**
-     * Watches the project's {@code .nmoxdb.json} while the tab is open.
-     * The watcher reports on its own thread; the stamp is taken there
+     * Watches the project's {@code .nmoxdb.json} while the tab is open —
+     * one file, so one stat a poll ({@code FilePulse}, after 3.2.0: the
+     * rack's tree watcher walked the whole project, 50,000 files on a
+     * monorepo, to watch this one). The pulse reports on its own thread;
+     * the stamp is taken there
      * (never stat on the EDT) and the verdict is decided on the EDT by
      * the tested {@link org.nmox.studio.dbstudio.io.ExternalEdits}
      * core. Only the project-root file matters — nested .nmoxdb.json
@@ -1469,30 +1472,19 @@ public final class DbStudioTopComponent extends TopComponent {
         stopWorkspaceWatcher();
         File dir = projectDir();
         File workspaceFile = new File(dir, org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
-        org.nmox.studio.rack.engine.FileWatcher watcher;
-        try {
-            watcher = org.nmox.studio.rack.engine.FileWatcher.forFilenames(dir, 2_000,
-                    Set.of(org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME), batch -> {
-                        if (!batch.contains(workspaceFile.toPath())) {
-                            return;
-                        }
-                        // the stat rides the save lane, so it queues behind
-                        // any write+stamp pair this report may have raced —
-                        // our own save mid-landing never stats as a foreign
-                        // version (debt #16)
-                        SAVES.classify(() -> {
-                            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
-                                    org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
-                            SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
-                        });
+        org.nmox.studio.core.util.FilePulse watcher = new org.nmox.studio.core.util.FilePulse(workspaceFile,
+                (mtime, size) -> {
+                    // the stat rides the save lane, so it queues behind
+                    // any write+stamp pair this report may have raced —
+                    // our own save mid-landing never stats as a foreign
+                    // version (debt #16)
+                    SAVES.classify(() -> {
+                        org.nmox.studio.dbstudio.io.ExternalEdits.Stamp stamp =
+                                org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(workspaceFile);
+                        SwingUtilities.invokeLater(() -> handleExternalStamp(stamp));
                     });
-        } catch (RuntimeException | LinkageError rackUnavailable) {
-            // KEPT (ledger 30): FileWatcher is a rack utility with no core
-            // facade; dbstudio hard-depends on rack for it, and this guard
-            // covers stripped test platforms
-            return;
-        }
-        watcher.start();
+                });
+        watcher.start(2_000);
         workspaceWatcher = watcher;
     }
 

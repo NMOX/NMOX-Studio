@@ -1,5 +1,52 @@
 # The Plan
 
+*Currency addendum 2026-09-25 (v3.2.0, the second-week release). The
+question moved from the first hour to the second week: commit, review a
+diff, resolve a conflict, open a pull request, chase a stack trace, keep a
+README honest, hand work to an agent — each now git's own step, opened
+where the developer works. The plan grew to 39 rows
+([dx-plan-3.2.md](dx-plan-3.2.md)); eight hostile reviews of the night's
+own code found forty-five defects. Five lessons are worth more than the
+rows.*
+
+***A defect read from bytecode is a hypothesis until a walk shows it.***
+*The fourth review read the properties module's editor and concluded a
+locale's `Bundle_de.properties` opens under its base bundle's DataObject,
+so sixteen features would name `Bundle.properties`. Three reviews fixed
+it and a gate held it; a walk that tried to see it could not, because the
+loader groups locale files only behind a switch (`nestedView`) that is
+false and set nowhere in the cluster. The claim was withdrawn before the
+tag and the rule kept. Reading the class that USES a structure is not
+proof the structure is ever built — trace the precondition to where it is
+set, or reproduce the defect first.*
+
+***A process the product starts is the product's to end, even when the
+platform starts it.*** *Every Terminal left its shell running after Quit —
+the native-execution pty helper is the IDE's child and nothing ended it,
+so a dev server started in a Terminal kept its port forever. The v2.15.0
+reaper covered what `CommandExecutor` spawns; this one covers the
+platform's helper, and only by hanging up the session the way a closed
+terminal window does, so `nohup` still means what it says.*
+
+***The window system restores lazily.*** *Only each mode's selected tab
+exists when the UI is ready; the others load afterwards. A start-up sweep
+that closes left-over git messages saw four tabs and missed the one it
+was for; it watches the first half minute now, and spares anything the
+user opened or a request asked for — the review that found the second
+half would have lost a file the user had just opened.*
+
+***A file a test reads needs its line endings pinned.*** *The first
+Windows CI run of the release failed on a test matching `\n` in the Linux
+launcher, which a Windows checkout gives CRLF. The launcher is pinned LF
+in `.gitattributes` beside the Windows shim, and the test folds line
+endings like every other gate.*
+
+***The walk harness carries the harness's environment.*** *A `git commit`
+in the IDE's Terminal aborted at once because the shell that launched the
+walk exports `GIT_EDITOR=true`, which outranks `core.editor`. Walk IDEs
+start under `env -u GIT_EDITOR`; before calling a git-editor walk a
+product failure, ask `git var GIT_EDITOR` in the same environment.*
+
 *Currency addendum 2026-09-24 (v3.1.1, a dependency release). Dependabot moved the MongoDB driver from 5.11.1 to 5.12.0, and the new rule it leaves is about the direction of an upgrade: **a newer version number is not a superset of an older patch until the patch's content is in it.** 5.12.0 was cut from a branch that diverged from 5.11.1, so neither CVE fix commit is its ancestor; the fixes arrived as separate commits, proven by comparing the files each fix touched (identical in 5.11.1 and 5.12.0, different from 5.11.0). After a security patch, the next minor gets that check before it is taken.*
 
 *Currency addendum 2026-09-24 (v3.1.0, the developer-experience release). David

@@ -51,6 +51,14 @@ class WorkspaceSaveWiringTest {
     }
 
     @Test
+    @DisplayName("one file is watched with one stat a poll, not a walk of the whole project")
+    void workspaceFileIsPulsedNotWalked() throws Exception {
+        String src = source();
+        assertThat(src).contains("new org.nmox.studio.core.util.FilePulse(workspaceFile")
+                .doesNotContain("FileWatcher.forFilenames(");
+    }
+
+    @Test
     @DisplayName("the watcher's stat and the deferred re-check queue behind writes on the same lane")
     void classificationRidesTheLane() throws Exception {
         String src = source();

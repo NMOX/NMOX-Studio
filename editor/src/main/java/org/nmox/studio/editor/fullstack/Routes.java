@@ -124,8 +124,26 @@ public final class Routes {
      * run this OFF the EDT.
      */
     public static Route findRoute(File root, String path) {
+        return lookup(root, path).route();
+    }
+
+    /**
+     * A route lookup and whether it read the whole project: a census that
+     * stopped at {@link #MAX_FILES} did not, and a miss there is not "no
+     * route registers this path" (after 3.2.0: on a 200-package monorepo
+     * the server package can lie past the cap).
+     */
+    public record Lookup(Route route, boolean complete, boolean allPackages) {
+
+        public Lookup(Route route, boolean complete) {
+            this(route, complete, true);
+        }
+    }
+
+    /** {@link #findRoute}, saying whether the census was complete. Off the EDT. */
+    public static Lookup lookup(File root, String path) {
         if (root == null || !root.isDirectory() || path == null || path.isEmpty()) {
-            return null;
+            return new Lookup(null, true);
         }
         // a query string is not part of the route — stripped HERE so the
         // EXACT pass benefits too (the v2.33.1 review: only the param
@@ -135,27 +153,38 @@ public final class Routes {
         if (q >= 0) {
             path = path.substring(0, q);
             if (path.isEmpty()) {
-                return null;
+                return new Lookup(null, true);
             }
         }
-        List<File> sources = new ArrayList<>();
-        collect(root, sources, 0);
+        // 3.3: the file's own package, then the workspace's server
+        // packages — the api package a web package's fetch talks to
+        List<File> roots = new ArrayList<>();
+        roots.add(root);
+        org.nmox.studio.editor.WorkspaceDependencies.Servers servers =
+                org.nmox.studio.editor.WorkspaceDependencies.serverPackages(root);
+        roots.addAll(servers.dirs());
         Route paramMatch = null;
-        for (File f : sources) {
-            try {
-                for (Route r : routesIn(Files.readString(f.toPath()), f)) {
-                    if (r.path().equals(path)) {
-                        return r;                       // exact always wins
+        boolean complete = true;
+        for (File packageRoot : roots) {
+            List<File> sources = new ArrayList<>();
+            collect(packageRoot, sources, 0);
+            complete &= sources.size() < MAX_FILES;
+            for (File f : sources) {
+                try {
+                    for (Route r : routesIn(Files.readString(f.toPath()), f)) {
+                        if (r.path().equals(path)) {
+                            return new Lookup(r, true);     // exact always wins
+                        }
+                        if (paramMatch == null && servesViaParams(r.path(), path)) {
+                            paramMatch = r;
+                        }
                     }
-                    if (paramMatch == null && servesViaParams(r.path(), path)) {
-                        paramMatch = r;
-                    }
+                } catch (IOException | OutOfMemoryError unreadable) {
+                    // skip the file, keep the sweep
                 }
-            } catch (IOException | OutOfMemoryError unreadable) {
-                // skip the file, keep the sweep
             }
         }
-        return paramMatch;
+        return new Lookup(paramMatch, complete, servers.complete());
     }
 
     /**

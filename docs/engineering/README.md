@@ -21,6 +21,9 @@ Every document here is current; the v0.x-era papers were removed in
 - **[dx-plan-3.2.md](./dx-plan-3.2.md)** — the plan behind 3.2: the
   second week, where a developer who stayed commits, reviews diffs and
   hands work to a coding agent, and what the walks of that week found.
+- **[dx-plan-3.3.md](./dx-plan-3.3.md)** — the draft plan for 3.3: what
+  a big repository costs, measured on a 50,000-file fixture, and the units
+  already written after 3.2.0.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
 - **[gates.md](./gates.md)** — every build-failing law test, grouped by

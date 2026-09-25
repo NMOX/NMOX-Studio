@@ -22,24 +22,55 @@ guess. These are decisions.
 
 ## Open — added by 3.2.0 (the second-week release)
 
-### 122. Russian and Ukrainian menu mnemonics do nothing
+### 122. ~~Russian and Ukrainian menu mnemonics do nothing~~ — CLOSED after 3.2.0
 
-**Open, for a decision.** The platform's `org.openide.awt.Mnemonics`
-gives a key only to `A–Z` and `0–9` (measured on the shipped jar in 3.2.0):
-for any other letter it looks for a translated `Mnemonics.properties`
-table the product does not ship, logs an INFO line each time the menu is
-built, and assigns nothing. So about 138 Russian and 136 Ukrainian menu
-rows (and about 120 other values each) underline a Cyrillic letter that no
-key reaches; only the few rows with an appended Latin letter work.
-`MenuRowsSpeakTest` exempts the two languages by name and fails when the
-exemption stops describing anything. **What would close it:** a
-Cyrillic-to-key table for `Mnemonics` (the branding overlay cannot carry it,
-since it renames the file to `Mnemonics_nmoxstudio_ru`), or Latin letters
-appended the way Chinese and Hindi do. Nineteen accented mnemonics outside
-the menu rows (a French top-level `&Édition`, Vietnamese `&Đóng` on Close
-buttons, German `Gro&ß-/Kleinschreibung`) are dead the same way, and the
-top menu bar has no uniqueness gate (French: Affichage and Refactoriser
-both claim A).
+**Closed.** The platform's `org.openide.awt.Mnemonics`
+gives a key only to `A–Z` and `0–9` and looks any other letter up with a
+plain `ResourceBundle.getBundle("org.openide.awt.Mnemonics")`, which finds a
+table only in an UNBRANDED locale jar (`org-openide-awt_ru.jar`). The entry
+called that jar impossible because the branding goal writes
+`org-openide-awt_nmoxstudio_ru.jar`; read from the mojo, it names a jar
+`brandingToken + "_" + the file's locale`, so a second `nbm:branding`
+execution whose token IS the locale, over a file with no locale suffix,
+writes exactly the platform's name. `branding/src/main/nbm-mnemonics` holds
+the two tables (each letter on a letter key to the Latin letter on that key
+in the ЙЦУКЕН layout; letters on punctuation keys deliberately have no entry,
+because an open menu ignores a typed character that is not a letter or digit,
+so a mnemonic there would underline a key that does nothing); they ride the
+cluster, the branding NBM and its `update_tracking`, so an update-center
+install gets them too. Measured on the assembled app under `--locale ru`:
+241 "Mapping from a non-Latin character" refusals at boot without the table,
+0 with it (and 0 under `uk`). With the letters live, fourteen of them turned
+out to press a key another row of the same menu already claimed (`Другая
+&VCS` and `От&менить` both V) or kept an appended Latin letter though a
+letter of their own was free; the mnemonic laws now compare the KEY a
+mnemonic presses (the letter comparison, as a control, passed the collision
+silently) and the fourteen were moved. The hostile review of that change
+found 26 more values underlining a letter on a punctuation key (`Со&хранить`,
+`З&берегти як…`), which the first tables mapped to the key code and which an
+open menu cannot select; they moved to letter keys. What stays true of every
+Cyrillic mnemonic, and is Swing's (`BasicPopupMenuUI` compares the typed
+CHARACTER inside an open menu): an item is selected there only while a Latin
+layout is active; Alt+letter on the menu bar and on a dialog's buttons goes by
+key code and works under either layout. `TranslatedMnemonicsTest` runs the
+platform's own `Mnemonics` over every Russian and Ukrainian value in the
+cluster.
+
+**The rest of the entry, closed the same way.** The eight languages written
+in Latin letters ship one generated table each (every precomposed Latin
+letter to its base letter's key: `&Édition` presses E, `&Đóng` D, `Zwi&ń`
+N), so the accented mnemonics work where the translators put them; a
+French boot logged one refusal (the É) without it and none with it. Hindi
+needed no table and got none: its convention appends a Latin letter, and
+25 values (its whole top menu bar among them) underlined Devanagari
+instead; they now append the letter the other appending languages use
+(`फ़ाइल(&F)`, the Refactor menu `(&G)`). The top menu bar gained its
+uniqueness law, measured through the platform's own `Mnemonics`, and it
+found clashes in four languages, not just the French one this entry
+recorded: French (A three times, N twice), Spanish (E, A, V), German (A
+three times, D) and Russian (three, visible only once its letters had
+keys). `TranslatedMnemonicsTest` holds all of it for every translated
+language.
 
 ### 123. The platform status line can drop a message (upstream)
 
@@ -96,6 +127,28 @@ counting as open, Windows sh). What is left:
   on the letter. The ⌥⌘ family has been in the product since v1.38.1
   (⌥⌘O Open Folder, ⌥⌘E Emmet, ⌥⌘P), so this is one question for the whole
   family, answerable only on Windows with a Polish (Programmers) layout.
+- **The incremental file watcher's accepted edges** (after 3.2.0). The
+  Project Studio tree stats its files only every 10th poll, so an edit
+  made in place (an append, `eslint --fix` rewriting a file without
+  renaming) reaches the tree up to 15 s late; open editors have the
+  platform's own native watchers (`masterfs-*`, not walked). A directory
+  at the twelfth level is no longer tracked as a file of the level above.
+  A change the incremental poll misses on a coarse-grained filesystem
+  (FAT, SMB, HFS+) waits for the 20-second reconcile. Four consumers share
+  the engine: the tree, the manifest pulse and REFLEX. From its second review, proven
+  and accepted: past the file cap a reconcile can report files that did
+  not change (which files fit under the cap follows walk order); a
+  project root that is itself a symlink leaves the watcher blind (as the
+  old one was); a directory made unreadable reports its files deleted,
+  then the reconcile reports them back; the racily-clean rule covers
+  directories, not files, so two edits in one second on a 1 s-grained
+  filesystem can hide the second. (It also found DB Studio walking the
+  whole project to watch its one `.nmoxdb.json`; that watch is core's
+  single-file `FilePulse` now.)
+- **Find in Projects' results split is healed once per split.** If a
+  results tab already healed is later laid out narrow (a sliding
+  minimised window), Swing clamps it again and the platform saves the
+  clamp; the next search opens at the platform's 250 again.
 - **Find in Projects on a network mount.** Every question re-reads what it
   rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
   where a stat costs a millisecond makes a 20,000-file search pay seconds.
@@ -106,8 +159,11 @@ counting as open, Windows sh). What is left:
   file. A mount whose clock runs BEHIND makes fresh files look settled at
   once, and an in-place edit that restores both the time and the size is
   not seen; both are recorded, neither measured on a real mount.
-- **Quick Search's *Terminal: Create New Terminal*** fires ⌃`'s action,
-  which brings an open terminal forward rather than always starting one.
+- ~~**Quick Search's *Terminal: Create New Terminal*** fires ⌃`'s action,
+  which brings an open terminal forward rather than always starting one.~~
+  Closed after 3.2.0: the row fires *New Terminal in Project*
+  (`ProjectTerminalNew`), which always starts a shell through
+  `ProjectTerminal.openNew`, the Terminal button's own rule.
 - **Copy Path from a diff pane or a history revision** may copy the
   platform's temporary file for that side. Plausible, not walked.
 - **The grouped-DataObject rules guard nothing today.** `EditedFile` and
@@ -129,9 +185,12 @@ counting as open, Windows sh). What is left:
   current-file scope lists them (walked in 3.2: nothing under the project
   scope, three rows under current file, all three again once a
   `package.json` made the folder a project).
-- **A git folder not named `.git`** (`--separate-git-dir`, a bare
+- ~~**A git folder not named `.git`** (`--separate-git-dir`, a bare
   repository) is not recognised by the left-over-message sweep, so a
-  restored `COMMIT_EDITMSG` there reopens as before.
+  restored `COMMIT_EDITMSG` there reopens as before.~~ Closed after 3.2.0:
+  `GitRequestFiles` also recognises git's own shape (a `HEAD` beside
+  `objects` and `refs`, or a linked worktree's `HEAD` beside `commondir`),
+  tested against folders real git made; the sweep reads that on a lane.
 - **If git's `nmox -w` starts the IDE and the restore also brings back a
   tab on the same message**, the request waits until both are closed.
   Plausible from the code, not walked.
@@ -141,9 +200,16 @@ counting as open, Windows sh). What is left:
 - **The census pins are keyed by a file's simple name** (the action census's
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.
-- **The diff view reads 8,000 bytes of each side on the EDT** to decide
-  text or binary, and `nmox -d` refuses two binaries over 16 MiB although
-  their comparison already runs off the EDT.
+- **`nmox -d` refuses two binaries over 16 MiB** although their
+  comparison runs off the EDT.
+- **The diff view still reads both files on the EDT.** After 3.2.0 our part
+  moved: the 8,000-byte binary sniff and every DataObject lookup run on a
+  lane, then the request is opened and tracked in one EDT turn. But the
+  platform's `EditableDiffView` sets its two sources in an `invokeLater`
+  and reads each whole file there (its bytecode, read after the review
+  said so), and a line-positioned open can load the document on the EDT
+  too. Neither is ours to move; a large file compared with `nmox -d`
+  pauses the window for as long as that read takes.
 
 ## Open — added by 3.1.0 (the developer-experience release)
 

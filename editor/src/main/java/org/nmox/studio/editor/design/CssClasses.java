@@ -128,7 +128,7 @@ public final class CssClasses {
         if (root == null || !root.isDirectory()) {
             return out;
         }
-        for (File f : CssTokens.collectStylesheets(root)) {
+        for (File f : CssTokens.collectWithDependencies(root)) {
             String path = f.getAbsolutePath();
             long mtime = f.lastModified();
             long size = f.length();
@@ -420,7 +420,11 @@ public final class CssClasses {
 
     /** The rename survey: what would change, and whether it may proceed. */
     public record RenameSurvey(List<File> files, int spanCount,
-            boolean collision, boolean censusComplete) {
+            boolean collision, boolean censusComplete, File declaredElsewhere) {
+
+        public RenameSurvey(List<File> files, int spanCount, boolean collision, boolean censusComplete) {
+            this(files, spanCount, collision, censusComplete, null);
+        }
     }
 
     /**
@@ -462,8 +466,48 @@ public final class CssClasses {
                 // skip the file, keep the survey
             }
         }
+        // 3.3: the packages this one depends on are read, never written —
+        // a new name one of them declares collides (the merged rule would
+        // be styled by both), and an old name one of them declares is not
+        // this package's to rename (its usages here would lose that rule)
+        File declaredElsewhere = null;
+        if (root != null && root.isDirectory()) {
+            for (File dep : org.nmox.studio.editor.WorkspaceDependencies.of(root)) {
+                for (File f : CssTokens.collectStylesheets(dep)) {
+                    String text = readOrNull(f);
+                    if (text == null) {
+                        continue;
+                    }
+                    collision |= declares(text, f, newName);
+                    if (declaredElsewhere == null && declares(text, f, oldName)) {
+                        declaredElsewhere = f;
+                    }
+                }
+            }
+        }
         return new RenameSurvey(files, spans, collision,
-                census.size() < CssTokens.MAX_FILES);
+                census.size() < CssTokens.MAX_FILES, declaredElsewhere);
+    }
+
+    private static String readOrNull(File f) {
+        try {
+            return Files.readString(f.toPath());
+        } catch (IOException | OutOfMemoryError unreadable) {
+            return null;   // an unreadable file declares nothing we can see
+        }
+    }
+
+    /** Whether {@code text} (the content of {@code f}) declares {@code name} as a class selector — a stylesheet, or a markup file's style blocks. */
+    private static boolean declares(String text, File f, String name) {
+        if (!isMarkupFile(f.getName())) {
+            return !selectorSpans(text, name).isEmpty();
+        }
+        for (HtmlStyleRegions.Region r : HtmlStyleRegions.find(text)) {
+            if (!selectorSpans(text.substring(r.start(), r.end()), name).isEmpty()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ---- the JavaScript side (v2.30.0) ------------------------------------

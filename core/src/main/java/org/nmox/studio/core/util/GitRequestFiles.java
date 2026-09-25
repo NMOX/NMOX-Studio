@@ -27,24 +27,57 @@ public final class GitRequestFiles {
     }
 
     /**
-     * Whether {@code file} is one git wrote for its editor: one of the names
-     * above, inside a {@code .git} folder (a worktree's and a submodule's
-     * are beneath the main one), so a file of the same name in the project
-     * is not one.
+     * Whether {@code file} carries one of the names above; pure, no disk.
+     * A caller on the EDT asks this first and leaves {@link #isRequestFile}
+     * to a lane.
      */
-    public static boolean isRequestFile(File file) {
+    public static boolean hasRequestName(File file) {
         if (file == null) {
             return false;
         }
         String name = file.getName();
-        if (!MESSAGES.contains(name) && !REBASE_TODO.equals(name) && !PATCHES.contains(name)) {
+        return MESSAGES.contains(name) || REBASE_TODO.equals(name) || PATCHES.contains(name);
+    }
+
+    /**
+     * Whether {@code file} is one git wrote for its editor: one of the names
+     * above, inside a git folder (a worktree's and a submodule's are beneath
+     * the main one), so a file of the same name in the project is not one.
+     * A folder named {@code .git} is one by name; any other folder is one
+     * when it has git's own shape (after 3.2.0: {@code --separate-git-dir}
+     * and bare repositories keep theirs under other names) — a {@code HEAD}
+     * file beside {@code objects} and {@code refs} folders, or a linked
+     * worktree's {@code HEAD} beside its {@code commondir}. The walk stops at
+     * a worktree's root (a folder holding a {@code .git} entry): past it the
+     * file belongs to the project, even inside a bare repository that holds
+     * its worktrees. Reads the disk for a file that has the name; call it
+     * off the EDT.
+     */
+    public static boolean isRequestFile(File file) {
+        if (!hasRequestName(file)) {
             return false;
         }
         for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
-            if (".git".equals(d.getName())) {
+            if (".git".equals(d.getName()) || isGitDir(d)) {
                 return true;
+            }
+            if (new File(d, ".git").exists()) {
+                // a worktree's root: the file is the project's, whatever
+                // holds the worktree (a bare repository with its worktrees
+                // inside it is a common layout, and its tracked fixtures
+                // can carry a message's name)
+                return false;
             }
         }
         return false;
+    }
+
+    /** Git's own test for a git directory, as {@code setup.c}'s {@code is_git_directory} makes it. */
+    static boolean isGitDir(File d) {
+        if (!new File(d, "HEAD").isFile()) {
+            return false;
+        }
+        return new File(d, "commondir").isFile()
+                || (new File(d, "objects").isDirectory() && new File(d, "refs").isDirectory());
     }
 }
