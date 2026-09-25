@@ -140,7 +140,7 @@ dòng; một tên không tồn tại sẽ bị từ chối ngay trên dòng lệ
 
 `-w` (`--wait`) mở một tệp và chờ đến khi bạn đóng thẻ của nó, còn `-d`
 (`--diff`) so sánh hai tệp cạnh nhau, nên NMOX Studio có thể làm trình soạn
-thảo và difftool của git, giống như `code --wait`:
+thảo, difftool và mergetool của git, giống như `code --wait`:
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -153,6 +153,14 @@ git config --global mergetool.nmox.trustExitCode false
 
 Khi đó `git commit` mở thông điệp trong IDE; lưu lại, đóng thẻ, và git sẽ tiếp
 tục. Thoát IDE khi tệp vẫn còn mở cũng trả nó về, với những gì đã được lưu.
+`git mergetool` mở từng tệp bị xung đột theo cùng cách đó. Ở chỗ VS Code đặt
+*Accept Current Change | Accept Incoming Change | Accept Both Changes* phía
+trên một xung đột, NMOX Studio tô màu hai phía và đặt một cảnh báo ở dòng
+`<<<<<<<`; bóng đèn ở lề, hoặc bản sửa nhanh khi con trỏ nằm trên dòng đó (⌘.
+trên Mac, Alt+Enter ở nơi khác), đưa ra đúng ba lựa chọn ấy, mỗi lựa chọn là
+một lần sửa có thể hoàn tác. Lưu, đóng thẻ, và git chuyển sang tệp kế tiếp.
+Màu tô và ba lựa chọn có mặt trong mọi tệp có dấu xung đột, dù có dùng
+`git mergetool` hay không.
 **Nhóm ▸ Dùng NMOX Studio với Git…** đặt giúp bạn đúng những dòng đó, sau khi
 cho thấy mỗi dòng hiện đang có giá trị gì.
 Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và

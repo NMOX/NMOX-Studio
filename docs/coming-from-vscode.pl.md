@@ -142,7 +142,7 @@ odrzucone z nazwy.
 
 `-w` (`--wait`) otwiera plik i czeka, aż zamkniesz jego kartę, a `-d`
 (`--diff`) porównuje dwa pliki obok siebie, więc NMOX Studio może być
-edytorem i difftoolem gita, tak jak `code --wait`:
+edytorem, difftoolem i mergetoolem gita, tak jak `code --wait`:
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -156,6 +156,14 @@ git config --global mergetool.nmox.trustExitCode false
 Wtedy `git commit` otwiera wiadomość w IDE; zapisz ją i zamknij kartę, a git
 działa dalej. Zamknięcie IDE, gdy plik jest jeszcze otwarty, też go oddaje —
 z tym, co zostało zapisane.
+`git mergetool` otwiera każdy plik z konfliktem w ten sam sposób. Tam, gdzie
+VS Code umieszcza nad konfliktem *Accept Current Change | Accept Incoming
+Change | Accept Both Changes*, NMOX Studio barwi obie strony i stawia
+ostrzeżenie na wierszu `<<<<<<<`; żarówka na marginesie albo szybka poprawka z
+kursorem na tym wierszu (⌘. na Macu, Alt+Enter gdzie indziej) proponuje te
+same trzy, każdy jako jedną edycję do cofnięcia. Zapisz, zamknij kartę, a git
+przejdzie do następnego pliku. Kolory i trzy wybory działają w każdym pliku ze
+znacznikami konfliktu, z `git mergetool` lub bez.
 **Zespół ▸ Używaj NMOX Studio z Git…** ustawia te same wiersze za ciebie,
 po pokazaniu, na co każdy z nich jest teraz ustawiony.
 Homebrew, instalator Windows

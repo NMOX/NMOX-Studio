@@ -106,7 +106,7 @@ nmox            # just start the IDE
 
 La commande rend la main aussitôt, et un deuxième `nmox` confie son dossier à l’IDE déjà lancé. Une colonne (`src/app.ts:42:7`) est acceptée et l’éditeur s’ouvre au début de la ligne ; un nom qui n’existe pas est refusé dans le terminal au lieu de démarrer quoi que ce soit. `-r` est accepté, `-n` ouvre dans l’unique fenêtre, et les options `-a` et `-v` sont refusées par leur nom.
 
-`-w` (`--wait`) ouvre un fichier et attend que vous fermiez son onglet, et `-d` (`--diff`) compare deux fichiers côte à côte : NMOX Studio peut donc être l’éditeur et le difftool de git, comme l’est `code --wait` :
+`-w` (`--wait`) ouvre un fichier et attend que vous fermiez son onglet, et `-d` (`--diff`) compare deux fichiers côte à côte : NMOX Studio peut donc être l’éditeur, le difftool et le mergetool de git, comme l’est `code --wait` :
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -117,7 +117,7 @@ git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
 git config --global mergetool.nmox.trustExitCode false
 ```
 
-`git commit` ouvre alors le message dans l’IDE ; enregistrez-le, fermez l’onglet, et git poursuit. Quitter l’IDE alors qu’un fichier est encore ouvert le rend aussi, avec ce qui a été enregistré. **Équipe ▸ Utiliser NMOX Studio avec Git…** règle ces mêmes lignes pour vous, après avoir montré la valeur actuelle de chacune. Homebrew, l’installateur Windows (*Ajouter « nmox » au PATH*) et les paquets Linux la mettent dans votre PATH ; pour une installation depuis le DMG, le [guide de l’utilisateur](user-guide.fr.md#2-first-launch) donne le lien en une ligne.
+`git commit` ouvre alors le message dans l’IDE ; enregistrez-le, fermez l’onglet, et git poursuit. Quitter l’IDE alors qu’un fichier est encore ouvert le rend aussi, avec ce qui a été enregistré. `git mergetool` ouvre chaque fichier en conflit de la même façon. Là où VS Code place *Accept Current Change | Accept Incoming Change | Accept Both Changes* au-dessus d’un conflit, NMOX Studio teinte les deux côtés et pose un avertissement sur la ligne `<<<<<<<` ; l’ampoule dans la marge, ou le correctif rapide avec le curseur sur cette ligne (⌘. sur Mac, Alt+Enter ailleurs), propose les trois mêmes, chacun une seule modification annulable. Enregistrez, fermez l’onglet, et git passe au fichier suivant. Les teintes et les trois choix sont là dans tout fichier qui porte des marqueurs de conflit, avec ou sans `git mergetool`. **Équipe ▸ Utiliser NMOX Studio avec Git…** règle ces mêmes lignes pour vous, après avoir montré la valeur actuelle de chacune. Homebrew, l’installateur Windows (*Ajouter « nmox » au PATH*) et les paquets Linux la mettent dans votre PATH ; pour une installation depuis le DMG, le [guide de l’utilisateur](user-guide.fr.md#2-first-launch) donne le lien en une ligne.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Où vit chaque idée de VS Code

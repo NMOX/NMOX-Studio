@@ -143,7 +143,7 @@ satu-satunya jendela, dan `-a` serta `-v` ditolak dengan menyebut namanya.
 
 `-w` (`--wait`) membuka sebuah berkas dan menunggu sampai Anda menutup tabnya,
 dan `-d` (`--diff`) membandingkan dua berkas berdampingan, sehingga NMOX Studio
-bisa menjadi penyunting dan difftool untuk git, seperti `code --wait`:
+bisa menjadi penyunting, difftool, dan mergetool untuk git, seperti `code --wait`:
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -157,6 +157,15 @@ git config --global mergetool.nmox.trustExitCode false
 Setelah itu `git commit` membuka pesannya di IDE; simpan, tutup tabnya, dan git
 melanjutkan. Keluar dari IDE selagi berkas masih terbuka juga
 mengembalikannya, dengan isi yang sudah disimpan.
+`git mergetool` membuka setiap berkas yang berkonflik dengan cara yang sama.
+Di tempat VS Code menaruh *Accept Current Change | Accept Incoming Change |
+Accept Both Changes* di atas sebuah konflik, NMOX Studio mewarnai kedua
+sisinya dan menaruh peringatan di baris `<<<<<<<`; bola lampu di margin, atau
+perbaikan cepat dengan kursor di baris itu (⌘. di Mac, Alt+Enter di tempat
+lain), menawarkan tiga pilihan yang sama, masing-masing satu suntingan yang
+bisa dibatalkan. Simpan, tutup tabnya, dan git pindah ke berkas berikutnya.
+Warna dan tiga pilihan itu ada di berkas apa pun yang memiliki penanda
+konflik, dengan atau tanpa `git mergetool`.
 **Tim ▸ Gunakan NMOX Studio dengan Git…** mengatur baris-baris yang sama itu untuk Anda,
 setelah menunjukkan nilai masing-masing saat ini.
 Homebrew, pemasang Windows (*Add "nmox" to

@@ -106,7 +106,7 @@ nmox            # just start the IDE
 
 Agad itong bumabalik, at ibinibigay ng pangalawang `nmox` ang folder nito sa IDE na tumatakbo na. Tinatanggap ang column (`src/app.ts:42:7`), at bumubukas ang editor sa simula ng linya; ang pangalang wala roon ay tinatanggihan sa terminal sa halip na may simulan. Tinatanggap ang `-r`, binubuksan ng `-n` sa iisang bintana, at tinatanggihan ayon sa pangalan ang `-a` at `-v`.
 
-Binubuksan ng `-w` (`--wait`) ang isang file at naghihintay hanggang isara mo ang tab nito, at ikinukumpara ng `-d` (`--diff`) ang dalawang file nang magkatabi, kaya maaaring maging editor at difftool ng git ang NMOX Studio, gaya ng `code --wait`:
+Binubuksan ng `-w` (`--wait`) ang isang file at naghihintay hanggang isara mo ang tab nito, at ikinukumpara ng `-d` (`--diff`) ang dalawang file nang magkatabi, kaya maaaring maging editor, difftool at mergetool ng git ang NMOX Studio, gaya ng `code --wait`:
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -117,7 +117,7 @@ git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
 git config --global mergetool.nmox.trustExitCode false
 ```
 
-Pagkatapos, binubuksan ng `git commit` ang mensahe sa IDE; i-save ito at isara ang tab, at magpapatuloy ang git. Ang pag-quit sa IDE habang bukas pa ang isang file ay ibinabalik din ito, kasama ang anumang na-save. Itinatakda ng **Pangkat ▸ Gamitin ang NMOX Studio sa Git…** ang parehong mga linya para sa iyo, matapos ipakita kung ano ang halaga ng bawat isa ngayon. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
+Pagkatapos, binubuksan ng `git commit` ang mensahe sa IDE; i-save ito at isara ang tab, at magpapatuloy ang git. Ang pag-quit sa IDE habang bukas pa ang isang file ay ibinabalik din ito, kasama ang anumang na-save. Sa parehong paraan binubuksan ng `git mergetool` ang bawat file na may conflict. Kung saan inilalagay ng VS Code ang *Accept Current Change | Accept Incoming Change | Accept Both Changes* sa itaas ng conflict, kinukulayan ng NMOX Studio ang dalawang panig at naglalagay ng babala sa linyang `<<<<<<<`; ang bumbilya sa gilid, o ang quick fix habang nasa linyang iyon ang cursor (⌘. sa Mac, Alt+Enter sa iba), ay nag-aalok ng parehong tatlo, bawat isa ay iisang edit na mababawi. I-save, isara ang tab, at lilipat ang git sa susunod na file. Nariyan ang mga kulay at ang tatlong pagpipilian sa anumang file na may mga conflict marker, may `git mergetool` man o wala. Itinatakda ng **Pangkat ▸ Gamitin ang NMOX Studio sa Git…** ang parehong mga linya para sa iyo, matapos ipakita kung ano ang halaga ng bawat isa ngayon. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Kung saan nakatira ang bawat ideya ng VS Code

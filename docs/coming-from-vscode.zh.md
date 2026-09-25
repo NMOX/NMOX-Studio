@@ -106,7 +106,7 @@ nmox            # just start the IDE
 
 它会立即返回，第二个 `nmox` 会把它的文件夹交给已经在运行的 IDE。也接受列号（`src/app.ts:42:7`），编辑器会打开到那一行的行首；不存在的名字会在终端里被拒绝，而不会启动任何东西。`-r` 可以使用，`-n` 在那唯一的窗口里打开，`-a` 和 `-v` 会被按名字拒绝。
 
-`-w`（`--wait`）会打开一个文件并一直等到你关闭它的标签页，`-d`（`--diff`）会把两个文件并排比较，所以 NMOX Studio 可以像 `code --wait` 那样，充当 git 的编辑器和 difftool：
+`-w`（`--wait`）会打开一个文件并一直等到你关闭它的标签页，`-d`（`--diff`）会把两个文件并排比较，所以 NMOX Studio 可以像 `code --wait` 那样，充当 git 的编辑器、difftool 和 mergetool：
 
 ```bash
 git config --global core.editor "nmox -w"
@@ -117,7 +117,7 @@ git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
 git config --global mergetool.nmox.trustExitCode false
 ```
 
-之后 `git commit` 会在 IDE 里打开提交信息；保存并关闭标签页，git 就会继续。文件还开着时退出 IDE，也会把它交还回去，内容是已经保存的部分。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会先告诉你这些行现在各是什么值，再替你设好。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
+之后 `git commit` 会在 IDE 里打开提交信息；保存并关闭标签页，git 就会继续。文件还开着时退出 IDE，也会把它交还回去，内容是已经保存的部分。`git mergetool` 也用同样的方式逐个打开有冲突的文件。VS Code 在冲突上方放 *Accept Current Change | Accept Incoming Change | Accept Both Changes*，NMOX Studio 则给两边着色，并在 `<<<<<<<` 那一行放一条警告；点边栏里的灯泡，或者把光标放在那一行用快速修复（Mac 上按 ⌘.，其他系统按 Alt+Enter），都会给出同样的三个选择，每个都是一次可撤销的编辑。保存、关闭标签页，git 就转到下一个文件。无论用不用 `git mergetool`，只要文件里有冲突标记，着色和这三个选择就都在。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会先告诉你这些行现在各是什么值，再替你设好。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## VS Code 的每个概念住在哪儿
