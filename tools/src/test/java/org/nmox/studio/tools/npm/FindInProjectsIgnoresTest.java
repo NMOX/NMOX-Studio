@@ -276,4 +276,47 @@ class FindInProjectsIgnoresTest {
         assertThat(WebProjectSharability.ignored(dir, dir.resolve("lnk/a.txt"), false))
                 .as("git does not follow an in-tree .gitignore link").isFalse();
     }
+
+    @Test
+    @DisplayName("a same-size edit in the same instant is still seen: a fresh file's rules are never reused")
+    void sameSizeEditsAreSeen(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        Path dist = dir.resolve("dist");
+        Files.createDirectories(dist);
+        for (int i = 0; i < 200; i++) {
+            write(dir, ".gitignore", "dist/\n");
+            assertThat(WebProjectSharability.ignored(dir, dist, true)).isTrue();
+            write(dir, ".gitignore", "#ist/\n");
+            assertThat(WebProjectSharability.ignored(dir, dist, true))
+                    .as("round %d: the edit is the same size and lands in the same millisecond", i).isFalse();
+        }
+    }
+
+    @Test
+    @DisplayName("a settled file's rules are read once and reused")
+    void settledRulesAreReused(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        write(dir, ".gitignore", "dist/\n");
+        Path gi = dir.resolve(".gitignore");
+        Files.setLastModifiedTime(gi, java.nio.file.attribute.FileTime.fromMillis(
+                System.currentTimeMillis() - 60_000));
+        GitIgnoreProbe first = new GitIgnoreProbe(WebProjectSharability.rules(gi));
+        assertThat(WebProjectSharability.rules(gi)).as("the same parse, not a re-read").isSameAs(first.rules);
+    }
+
+    @Test
+    @DisplayName("a file modified within the settle window is read again on every question")
+    void freshRulesAreNotReused(@TempDir Path dir) throws IOException {
+        gitInit(dir);
+        write(dir, ".gitignore", "dist/\n");
+        Path gi = dir.resolve(".gitignore");
+        Files.setLastModifiedTime(gi, java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis()));
+        org.nmox.studio.core.util.GitIgnore first = WebProjectSharability.rules(gi);
+        assertThat(WebProjectSharability.rules(gi))
+                .as("a file system counting in seconds could give the next edit this very time")
+                .isNotSameAs(first);
+    }
+
+    private record GitIgnoreProbe(org.nmox.studio.core.util.GitIgnore rules) {
+    }
 }

@@ -172,8 +172,22 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
 
     // ---- one ignore file, read once per change -----------------------------
 
-    private record RulesFact(long stamp, long size, GitIgnore rules) {
+    /**
+     * What one read saw: the full modification time (APFS keeps nanoseconds;
+     * {@code toMillis()} threw them away and a same-size edit in the same
+     * millisecond served the old rules 1,057 times in 2,000 — 4th review),
+     * the size, the file's identity (an atomic save is a new inode), and
+     * whether the file had SETTLED — its time more than {@link #SETTLE_MS}
+     * behind the clock — when it was read. An unsettled read is never
+     * reused: a file system counting in whole seconds (HFS+, FAT, many
+     * network mounts) can give the next edit the same time.
+     */
+    private record RulesFact(java.nio.file.attribute.FileTime stamp, long size, Object key,
+            boolean settled, GitIgnore rules) {
     }
+
+    /** How far behind the clock a modification time must be before a read of it is reused. */
+    static final long SETTLE_MS = 2_000;
 
     private static final Map<Path, RulesFact> RULES = lru();
 
@@ -205,18 +219,21 @@ final class WebProjectSharability implements SharabilityQueryImplementation2 {
         if (!a.isRegularFile()) {
             return GitIgnore.empty();
         }
-        long stamp = a.lastModifiedTime().toMillis();
+        java.nio.file.attribute.FileTime stamp = a.lastModifiedTime();
         long size = a.size();
+        Object key = a.fileKey();
         RulesFact known;
         synchronized (RULES) {
             known = RULES.get(file);
         }
-        if (known != null && known.stamp() == stamp && known.size() == size) {
+        if (known != null && known.settled() && known.stamp().equals(stamp)
+                && known.size() == size && java.util.Objects.equals(known.key(), key)) {
             return known.rules();
         }
+        boolean settled = System.currentTimeMillis() - stamp.toMillis() > SETTLE_MS;
         GitIgnore parsed = read(file);
         synchronized (RULES) {
-            RULES.put(file, new RulesFact(stamp, size, parsed));
+            RULES.put(file, new RulesFact(stamp, size, key, settled, parsed));
         }
         return parsed;
     }
