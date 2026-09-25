@@ -45,6 +45,7 @@ class EditedFileGateTest {
             Map.entry("RunScriptAction.java", "package.json: one file per DataObject"),
             Map.entry("CopyTsTypesAction.java", "JSON files: one file per DataObject"),
             Map.entry("TestInApiStudioAction.java", "JS/TS route sources: one file per DataObject"),
+            Map.entry("GitStatusLine.java", "reads a DataObject's primary only to tell a group member from it (groupMember); the file it annotates comes from EditorTabs"),
             Map.entry("EditedFile.java", "the rule itself: a DataObject of one file is that file"));
 
     @Test
