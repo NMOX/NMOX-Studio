@@ -243,16 +243,32 @@ class GitIgnoreTest {
     }
 
     @Test
-    @DisplayName("an exclusion git's case folding cannot reach is dropped: escaped capitals, capitals in a class")
+    @DisplayName("an exclusion counts only where git matches it under both core.ignorecase settings")
     void caseTraps() {
         assertThat(ignored("\\Xfoo\n", "Xfoo", false)).as("git with ignorecase keeps Xfoo").isFalse();
         assertThat(ignored("X[A]\n", "XA", false)).isFalse();
         assertThat(ignored("x[B]\n", "xB", false)).isFalse();
-        assertThat(ignored("[A-Z]x\n", "Qx", false)).isFalse();
+        assertThat(ignored("[A-Z]x\n", "Qx", false))
+                .as("a range is retried upper-cased under folding: git ignores Qx both ways").isTrue();
         assertThat(ignored("x[b]\n", "xb", false)).as("lower-case classes fold both ways").isTrue();
         assertThat(ignored("Xfoo\n", "Xfoo", false)).as("plain capitals fold").isTrue();
-        assertThat(GitIgnore.parse("\\Xfoo\n").doubtful()).as("a dropped exclusion is no doubt").isFalse();
+        assertThat(GitIgnore.parse("\\Xfoo\n").doubtful()).isFalse();
         assertThat(ignored("*.log\n![A]*.log\n", "Ab.log", false))
                 .as("a negation keeps its class: it can only include more").isFalse();
+    }
+
+    @Test
+    @DisplayName("the fifth review's cases: negated classes, a folded negation, reversed ranges — as git check-ignore answers")
+    void wildmatchAsGitDoes() {
+        assertThat(ignored("[!a]bc\n", "Abc", false)).as("git with ignorecase keeps Abc").isFalse();
+        assertThat(ignored("[!a-z]*.tmp\n", "Foo.tmp", false)).isFalse();
+        assertThat(ignored("[!a]bc\n", "xbc", false)).as("both settings ignore xbc").isTrue();
+        assertThat(ignored("*\n![^B]*\n", "B", false)).as("git with ignorecase re-includes B").isFalse();
+        assertThat(ignored("*\n![B-A]x\n", "Bx", false)).as("a reversed range's first end is a member").isFalse();
+        assertThat(ignored("[!B-A]x\n", "Bx", false)).isFalse();
+        assertThat(ignored("[B-A]x\n", "Bx", false))
+                .as("git ignores Bx without ignorecase and keeps it with: only both counts").isFalse();
+        assertThat(ignored("*.py[cod]\n", "a.pyc", false)).as("the everyday class still ignores").isTrue();
+        assertThat(ignored("*.py[cod]\n", "a.PYC", false)).as("only case-blind: git without ignorecase keeps it").isFalse();
     }
 }

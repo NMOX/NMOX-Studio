@@ -40,9 +40,16 @@ import java.util.function.Function;
  * BYTE at a time, so both sides are compared as their UTF-8 bytes
  * ({@code ?x} does not match {@code éx}; git agrees). Git folds case
  * where {@code core.ignorecase} is set — every fresh repository on macOS
- * and Windows — and not elsewhere; this class never reads the config and
- * instead lets a NEGATION match either way while an exclusion matches
- * exactly, so both settings err toward searching more.
+ * and Windows — and not elsewhere, and its folding is its own: wildmatch
+ * lowers the path and the pattern's literal letters, but not an escaped
+ * letter nor a class member, and retries a range with the letter upper-
+ * cased ({@link #segmentMatches(String, String, boolean)} reproduces it).
+ * This class never reads the config, so each rule is asked both ways: an
+ * EXCLUSION counts only where git would match it under both settings, a
+ * NEGATION wherever git would match it under either, and so "ignored" is
+ * only ever answered where git agrees whichever setting the repository
+ * has (3.2 fifth review: approximating it rule by rule leaked twice — a
+ * negated class {@code [!a]bc} and a folded negation {@code ![^B]*}).
  *
  * <p><b>Bounded.</b> A file this reads arrives with a clone. The reader
  * caps the bytes; this caps the rules ({@link #MAX_RULES}) and the line
@@ -180,8 +187,11 @@ public final class GitIgnore {
         }
         Verdict v = Verdict.NONE;
         for (Rule r : rules) {
-            if (r.matches(segments, isDirectory)
-                    || r.negated && r.foldedMatches(folded, isDirectory)) {
+            boolean exact = r.matches(segments, isDirectory, false);
+            boolean caseBlind = r.matches(folded, isDirectory, true);
+            // an exclusion git would make under both core.ignorecase
+            // settings; a negation git would make under either
+            if (r.negated ? exact || caseBlind : exact && caseBlind) {
                 v = r.negated ? Verdict.INCLUDED : Verdict.IGNORED;
             }
         }
@@ -281,18 +291,12 @@ public final class GitIgnore {
         /** Anchored rules match the whole path; the rest match a name at any depth. */
         final boolean anchored;
         final String[] segments;
-        /** The segments folded, for a negation's case-blind second try. */
-        final String[] folded;
 
         private Rule(boolean negated, boolean dirOnly, boolean anchored, String[] segments) {
             this.negated = negated;
             this.dirOnly = dirOnly;
             this.anchored = anchored;
             this.segments = segments;
-            this.folded = new String[segments.length];
-            for (int i = 0; i < segments.length; i++) {
-                folded[i] = fold(segments[i]);
-            }
         }
 
         static Rule of(String rawLine) {
@@ -343,44 +347,12 @@ public final class GitIgnore {
                 if (segs[i].isEmpty() || !wellFormed(segs[i])) {
                     return null;
                 }
-                if (!negated && caseTrap(segs[i])) {
-                    // under core.ignorecase git folds the path but not an
-                    // escaped letter or a letter in [...]: "\Xfoo" and
-                    // "X[A]" then match nothing there, and this class does
-                    // not read the setting — so the exclusion is dropped
-                    return null;
-                }
                 if (segs[i].length() >= 2 && segs[i].chars().allMatch(c -> c == '*')) {
                     segs[i] = "**"; // git reads a run of stars as a whole segment as **
                 }
                 segs[i] = bytes(segs[i]);
             }
             return new Rule(negated, dirOnly, anchored, segs);
-        }
-
-        /** An escaped upper-case letter, or one inside a class: where git's case folding does not reach. */
-        private static boolean caseTrap(String seg) {
-            for (int i = 0; i < seg.length(); i++) {
-                char c = seg.charAt(i);
-                if (c == '\\' && i + 1 < seg.length()) {
-                    char e = seg.charAt(++i);
-                    if (e >= 'A' && e <= 'Z') {
-                        return true;
-                    }
-                } else if (c == '[') {
-                    int close = bracketEnd(seg, i);
-                    for (int j = i + 1; close > 0 && j < close; j++) {
-                        char k = seg.charAt(j);
-                        if (k >= 'A' && k <= 'Z') {
-                            return true;
-                        }
-                    }
-                    if (close > 0) {
-                        i = close;
-                    }
-                }
-            }
-            return false;
         }
 
         /** Brackets closed and no dangling escape: git's grammar, exactly. */
@@ -409,23 +381,16 @@ public final class GitIgnore {
             return true;
         }
 
-        boolean matches(String[] path, boolean isDirectory) {
-            return matches(segments, path, isDirectory);
-        }
-
-        boolean foldedMatches(String[] foldedPath, boolean isDirectory) {
-            return matches(folded, foldedPath, isDirectory);
-        }
-
-        private boolean matches(String[] pat, String[] path, boolean isDirectory) {
+        /** Git's match of this rule; {@code fold} as under core.ignorecase, with {@code path} already lowered. */
+        boolean matches(String[] path, boolean isDirectory, boolean fold) {
             if (dirOnly && !isDirectory) {
                 return false;
             }
             if (!anchored) {
                 // a name rule: the path's last segment, at any depth
-                return segmentMatches(pat[0], path[path.length - 1]);
+                return segmentMatches(segments[0], path[path.length - 1], fold);
             }
-            return segmentsMatch(pat, path);
+            return segmentsMatch(segments, path, fold);
         }
     }
 
@@ -435,6 +400,11 @@ public final class GitIgnore {
      * where git's "everything inside" means at least one.
      */
     static boolean segmentsMatch(String[] p, String[] s) {
+        return segmentsMatch(p, s, false);
+    }
+
+    /** {@link #segmentsMatch(String[], String[])} as git matches under {@code core.ignorecase} when {@code fold}. */
+    static boolean segmentsMatch(String[] p, String[] s, boolean fold) {
         int pn = p.length;
         int sn = s.length;
         // ok[i][j]: p[i..] matches s[j..]
@@ -450,7 +420,7 @@ public final class GitIgnore {
                         ok[i][j] = ok[i + 1][j] || (j < sn && ok[i][j + 1]);
                     }
                 } else {
-                    ok[i][j] = j < sn && segmentMatches(p[i], s[j]) && ok[i + 1][j + 1];
+                    ok[i][j] = j < sn && segmentMatches(p[i], s[j], fold) && ok[i + 1][j + 1];
                 }
             }
         }
@@ -465,6 +435,17 @@ public final class GitIgnore {
      * practice, O(pattern × name) at worst, never exponential.
      */
     static boolean segmentMatches(String pat, String name) {
+        return segmentMatches(pat, name, false);
+    }
+
+    /**
+     * {@link #segmentMatches(String, String)} as git's wildmatch does it,
+     * and with {@code fold} as it does under {@code core.ignorecase}: the
+     * name arrives lowered (ASCII), a literal pattern letter is lowered
+     * before comparing, an escaped letter and a class member are compared
+     * as written, and a range is retried with the letter upper-cased.
+     */
+    static boolean segmentMatches(String pat, String name, boolean fold) {
         int p = 0;
         int s = 0;
         int starP = -1;
@@ -482,7 +463,7 @@ public final class GitIgnore {
                     starS = s;
                     continue;
                 }
-                int step = singleMatch(pat, p, name.charAt(s));
+                int step = singleMatch(pat, p, name.charAt(s), fold);
                 if (step > 0) {
                     p += step;
                     s++;
@@ -505,17 +486,20 @@ public final class GitIgnore {
      * Does the pattern element at {@code p} match {@code ch}? Returns how
      * many pattern characters the element spans, or 0 on a mismatch.
      */
-    private static int singleMatch(String pat, int p, char ch) {
+    private static int singleMatch(String pat, int p, char ch, boolean fold) {
         char c = pat.charAt(p);
         if (c == '?') {
             return 1;
         }
         if (c == '\\') {
-            return pat.charAt(p + 1) == ch ? 2 : 0;
+            return pat.charAt(p + 1) == ch ? 2 : 0; // escaped: never folded (git)
         }
         if (c == '[') {
             int close = bracketEnd(pat, p);
-            return inClass(pat, p + 1, close, ch) ? close - p + 1 : 0;
+            return inClass(pat, p + 1, close, ch, fold) ? close - p + 1 : 0;
+        }
+        if (fold && c >= 'A' && c <= 'Z') {
+            c = (char) (c + ('a' - 'A'));
         }
         return c == ch ? 1 : 0;
     }
@@ -543,7 +527,15 @@ public final class GitIgnore {
         return -1;
     }
 
-    private static boolean inClass(String s, int from, int close, char ch) {
+    /**
+     * Git's class loop (wildmatch.c), member by member: each character is
+     * tested as a literal as it is read, so a range's first end is always
+     * a member even when the range is reversed ({@code [B-A]} matches
+     * {@code B} — 3.2 fifth review); a {@code -} between two members makes
+     * a range; members are compared as written, and under folding a range
+     * is retried with the letter upper-cased.
+     */
+    private static boolean inClass(String s, int from, int close, char ch, boolean fold) {
         int i = from;
         boolean negate = false;
         if (s.charAt(i) == '!' || s.charAt(i) == '^') {
@@ -551,31 +543,40 @@ public final class GitIgnore {
             i++;
         }
         boolean hit = false;
-        boolean first = true;
+        char prev = 0;
         while (i < close) {
-            char lo = s.charAt(i);
-            if (lo == '\\' && i + 1 < close) {
-                lo = s.charAt(++i);
-            } else if (lo == ']' && !first) {
-                break;
-            }
-            first = false;
-            if (i + 2 < close && s.charAt(i + 1) == '-') {
-                char hi = s.charAt(i + 2);
-                if (hi == '\\' && i + 3 < close) {
-                    hi = s.charAt(i + 3);
-                    i++;
-                }
-                if (lo <= ch && ch <= hi) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 1 < close) {
+                c = s.charAt(++i);
+                if (c == ch) {
                     hit = true;
                 }
-                i += 3;
-            } else {
-                if (lo == ch) {
-                    hit = true;
-                }
+                prev = c;
                 i++;
+                continue;
             }
+            if (c == '-' && prev != 0 && i + 1 < close) {
+                char hi = s.charAt(++i);
+                if (hi == '\\' && i + 1 < close) {
+                    hi = s.charAt(++i);
+                }
+                if (prev <= ch && ch <= hi) {
+                    hit = true;
+                } else if (fold && ch >= 'a' && ch <= 'z') {
+                    char up = (char) (ch - ('a' - 'A'));
+                    if (prev <= up && up <= hi) {
+                        hit = true;
+                    }
+                }
+                prev = 0; // a range's end starts nothing
+                i++;
+                continue;
+            }
+            if (c == ch) {
+                hit = true;
+            }
+            prev = c;
+            i++;
         }
         return hit != negate;
     }
