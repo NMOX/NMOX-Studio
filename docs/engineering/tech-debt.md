@@ -56,7 +56,7 @@ exposure; v2.183.0 already holds its one long-lived message in a field.
 ### 124. The 3.2.0 review's LOW remainder
 
 **Open, deliberately small.** The hostile reviews of the night's code found
-forty-two problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
+forty-five problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
 link read to exhaustion, two backtracking patterns, the macOS newline guard,
 a trailing newline naming another file, git's `/dev/null`, a selected file
 counting as open, Windows sh). What is left:
@@ -129,6 +129,15 @@ counting as open, Windows sh). What is left:
   current-file scope lists them (walked in 3.2: nothing under the project
   scope, three rows under current file, all three again once a
   `package.json` made the folder a project).
+- **A git folder not named `.git`** (`--separate-git-dir`, a bare
+  repository) is not recognised by the left-over-message sweep, so a
+  restored `COMMIT_EDITMSG` there reopens as before.
+- **If git's `nmox -w` starts the IDE and the restore also brings back a
+  tab on the same message**, the request waits until both are closed.
+  Plausible from the code, not walked.
+- **The action census** still cannot read `Actions . forID(` with spaces
+  around the dot, and reads the last of two same-named constants in one
+  file. No source spells either.
 - **The census pins are keyed by a file's simple name** (the action census's
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.

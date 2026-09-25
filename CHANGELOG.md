@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 38 rows the walks and reviews added are in
+developer works. The plan and the 39 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -31,7 +31,8 @@ loop as one sitting is the new tutorial
   with whatever was saved, and the next launch does not reopen it: a
   restored tab of a file git wrote for its editor (`COMMIT_EDITMSG`,
   `MERGE_MSG`, the rebase list…) that nothing waits on closes itself —
-  walked, it had come back holding the NEXT commit's message. An IDE that
+  walked, it had come back holding the NEXT commit's message. One you open
+  yourself, or that a terminal asks for, stays. An IDE that
   disappears ends the wait with exit 1, not a hang. On Windows the installer also ships an extensionless `nmox`,
   because git runs its editor through its own sh, which never finds
   `nmox.cmd` as `nmox`.
@@ -122,9 +123,10 @@ loop as one sitting is the new tutorial
   earlier were on the machine that found it. The IDE now ends each shell's
   pty helper as it exits, so the shell and its jobs get the hang-up a closed
   terminal window sends — and a job started with `nohup` survives, as it
-  would anywhere else. A `git` still running in one gets up to three seconds
-  first, so a `git commit` whose message the IDE hands back on quitting
-  lands with it. Walked: Quit with two Terminals open left none behind, and
+  would anywhere else. A `git` waiting on NMOX Studio as its editor gets up
+  to three seconds first, so a `git commit` whose message the IDE hands back
+  on quitting lands with it; any other git (a pager, vim) holds the quit up
+  not at all. Walked: Quit with two Terminals open left none behind, and
   a `git commit -a` typed in the IDE's own Terminal, its message saved and
   its tab still open at Quit, landed with that message.
 
@@ -224,7 +226,7 @@ module keeps it so. What is withdrawn is the claim that anyone saw the
 wrong file. *A defect read from bytecode is a hypothesis until a walk
 shows it.*
 
-Seven hostile reviews of the release's fresh code found forty-two
+Eight hostile reviews of the release's fresh code found forty-five
 problems; every proven one is fixed and pinned. Among them: the Workbench's Terminal row opening
 a plain terminal in the home folder rather than a new one in the
 project; twelve cases,
