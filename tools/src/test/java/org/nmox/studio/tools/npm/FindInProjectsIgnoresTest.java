@@ -192,5 +192,8 @@ class FindInProjectsIgnoresTest {
                 .isEqualTo(SharabilityQuery.Sharability.UNKNOWN);
         assertThat(SharabilityQuery.getSharability(root.getFileObject("dist")))
                 .isEqualTo(SharabilityQuery.Sharability.NOT_SHARABLE);
+        assertThat(SharabilityQuery.getSharability(root.getFileObject(".git/HEAD")))
+                .as("the repository's own store is never part of the work")
+                .isEqualTo(SharabilityQuery.Sharability.NOT_SHARABLE);
     }
 }
