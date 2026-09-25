@@ -175,6 +175,14 @@ Three rules hold for every language:
   opening backtick or after its closing one, so a reader who copies the
   path copies no invisible character. `RtlDocsPathDirectionGateTest` derives the paths from every
   Hebrew and Arabic document and pins the measurement itself.
+- **An argument after a right-to-left word is isolated**: LRI (U+2066)
+  … PDI (U+2069) around a `{n}` that carries a name, a path or a number,
+  so its leading `.` or `~` stays with it (`RtlPlaceholderIsolationGateTest`).
+  An argument that is itself a joined list of **right-to-left phrases**
+  takes FSI (U+2068) … PDI instead: an LRI lays such a list out left to
+  right and so draws its phrases in reverse order (3.2.0, found in Check
+  Translations' summary). FSI takes the direction of the argument's first
+  strong letter, so a file name inside it still reads left to right.
 
 ## ar — العربية (مصري)
 
