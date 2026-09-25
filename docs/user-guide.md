@@ -220,6 +220,16 @@ Arriving from VS Code? [Coming from VS Code](coming-from-vscode.md) maps
 the chords and the ideas, with the Windows and Linux spellings beside
 the macOS ones.
 
+**Locations in the Terminal open on ⌘-click** (Ctrl-click on Windows and
+Linux). Click a place a tool printed and the file opens at that line:
+`src/app.ts:42:7` from tsc, `(/abs/app.js:10:5)` in a Node or Jest stack
+frame, `tests/test_x.py:12:` from pytest, `--> src/main.rs:3:5` from
+rustc, `File "x.py", line 12` from a Python traceback. An absolute path
+opens as printed. A relative one is read from the aimed project's folder,
+where ⌃\` starts its shell; after a `cd` into a subfolder the path may
+name a file that is not there, and the status line says which path it
+looked for instead of guessing. A URL or a `host:port` is never a link.
+
 ## 3. Projects
 
 **Opening:** any folder carrying one of 63 recognized manifests opens as a
