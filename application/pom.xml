@@ -297,6 +297,7 @@
                                 <exclude>**/PaintedSurfaceLedgerTest.java</exclude>
                                 <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
+                                <exclude>**/MainWindowChromeSpeaksTest.java</exclude>
                             </excludes>
                         </configuration>
                     </execution>
@@ -345,6 +346,7 @@
                                 <include>**/CatalogueEnumsSpeakTest.java</include>
                                 <include>**/DialogChromeOverlayGateTest.java</include>
                                 <include>**/AuthoredMarkupIsNotGuardedTest.java</include>
+                                <include>**/MainWindowChromeSpeaksTest.java</include>
                             </includes>
                         </configuration>
                     </execution>
