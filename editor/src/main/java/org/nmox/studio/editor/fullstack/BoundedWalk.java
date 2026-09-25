@@ -77,7 +77,8 @@ public final class BoundedWalk {
                 if (!SKIP_DIRS.contains(name) && !name.startsWith(".")) {
                     collect(f, accept, maxFiles, files, depth + 1);
                 }
-            } else if (accept.test(name) && f.length() <= MAX_FILE_BYTES) {
+            } else if (accept.test(name) && f.isFile() && f.length() <= MAX_FILE_BYTES) {
+                // isFile: a link to a device (/dev/zero reports length 0) is not a file
                 files.add(f);
             }
         }

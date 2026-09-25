@@ -147,11 +147,82 @@ class MarkdownLinksTest {
     void sentences() throws Exception {
         write("docs/g.md", "# G\n");
         Path readme = write("README.md", "[a](docs/g.md) [b](docs/x.md) [c](docs/g.md#zz)\n");
-        String s = CheckMarkdownLinksAction.sentence(check(readme), true);
+        String s = CheckMarkdownLinksAction.sentence(check(readme), true, 0);
         assertThat(s).isEqualTo("Markdown links: 1 file, 3 links, 1 goes nowhere, 1 names a missing heading");
         Path clean = write("CLEAN.md", "[a](docs/g.md)\n");
-        assertThat(CheckMarkdownLinksAction.sentence(check(clean), false))
+        assertThat(CheckMarkdownLinksAction.sentence(check(clean), false, 0))
                 .isEqualTo("Markdown links: 1 file, 1 link, every link lands, the walk stopped at "
                         + CheckMarkdownLinksAction.MAX_FILES + " files");
+        assertThat(CheckMarkdownLinksAction.sentence(check(clean), true, 1))
+                .as("a file left out is said, not passed over as 'every link lands'")
+                .isEqualTo("Markdown links: 1 file, 1 link, every link lands, 1 file over 2 MiB not read");
+    }
+
+    @Test
+    @DisplayName("hostile text stays linear: a long heading line and a run of \"](\" cost milliseconds, not minutes")
+    void linearOnHostileText() throws Exception {
+        // the review's measurements of the first cut: 31 s and 21 s
+        String heading = "# a" + " ".repeat(2000) + "b\n";
+        Path target = write("t.md", heading.repeat(20));
+        Path readme = write("README.md", "[x](t.md#nope)\n" + "](".repeat(20000) + "\n");
+        org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(5),
+                () -> check(readme, target));
+        assertThat(MarkdownLinks.trimClosing("Title ##  ")).isEqualTo("Title");
+        assertThat(MarkdownLinks.trimClosing("C#")).as("a # that is part of a word stays").isEqualTo("C#");
+        assertThat(MarkdownLinks.trimClosing("##")).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a target no file can have is a dead link, not a crash that loses the whole run; a ?query is the same file")
+    void impossibleNamesAndQueries() throws Exception {
+        write("a.md", "# A\n");
+        Path readme = write("README.md", "[nul](docs%00x.md)\n[plain](a.md?plain=1#a)\n[good](a.md)\n");
+        MarkdownLinks.Report r = check(readme);
+        assertThat(r.links()).isEqualTo(3);
+        assertThat(r.findings()).extracting(MarkdownLinks.Finding::target, MarkdownLinks.Finding::kind)
+                .containsExactly(org.assertj.core.groups.Tuple.tuple("docs%00x.md", MarkdownLinks.Kind.MISSING_FILE));
+    }
+
+    @Test
+    @DisplayName("a link inside the project that leads out through a symlink is refused, never read")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void symlinkOut(@TempDir Path outside) throws Exception {
+        Files.writeString(outside.resolve("secret.md"), "# Secret\n");
+        Files.createSymbolicLink(root.resolve("elsewhere"), outside);
+        Path readme = write("README.md", "[s](elsewhere/secret.md#secret)\n");
+        java.util.List<Path> read = new java.util.ArrayList<>();
+        MarkdownLinks.Report r = MarkdownLinks.check(root, List.of(readme), p -> {
+            read.add(p);
+            try {
+                return Files.readString(p);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        });
+        assertThat(r.findings()).extracting(MarkdownLinks.Finding::kind)
+                .containsExactly(MarkdownLinks.Kind.OUTSIDE_PROJECT);
+        assertThat(read).as("only the README was read").containsExactly(readme.toAbsolutePath().normalize());
+    }
+
+    @Test
+    @DisplayName("the walk reads regular files only, never follows a link out, and counts what is too large")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void theWalk(@TempDir Path outside) throws Exception {
+        write("README.md", "hi\n");
+        write("docs/guide.md", "hi\n");
+        write("node_modules/pkg/README.md", "hi\n");
+        write(".github/notes.md", "hi\n");
+        Files.writeString(outside.resolve("far.md"), "x");
+        Files.createSymbolicLink(root.resolve("docs/out"), outside);
+        Files.createSymbolicLink(root.resolve("zero.md"), Path.of("/dev/zero"));
+        Path big = root.resolve("BIG.md");
+        try (java.io.RandomAccessFile f = new java.io.RandomAccessFile(big.toFile(), "rw")) {
+            f.setLength(CheckMarkdownLinksAction.MAX_BYTES + 1);
+        }
+        CheckMarkdownLinksAction.Walk w = CheckMarkdownLinksAction.walk(root);
+        assertThat(w.docs()).extracting(p -> root.relativize(p).toString().replace('\\', '/'))
+                .containsExactlyInAnyOrder("README.md", "docs/guide.md");
+        assertThat(w.tooLarge()).isEqualTo(1);
+        assertThat(w.capped()).isFalse();
     }
 }
