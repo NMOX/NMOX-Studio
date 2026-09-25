@@ -43,7 +43,7 @@ Every row the walks add is written below as it is found.
 
 | # | Found by | What was wrong | What 3.2.0 does | Proof |
 |---|----------|----------------|-----------------|-------|
-| 4 | walking row 1 with a real `git commit` | the `#` lines of a commit message read as plain text, where VS Code greys them as comments | *(in progress)* | |
+| 4 | walking row 1 with a real `git commit` | the `#` lines of a commit message read as plain text, where VS Code greys them as comments | git's message files and the rebase todo are their own languages (VS Code's MIT grammars, pinned), spellcheck reads only what the author writes, and a summary past 72 characters is a warning | `GitGrammarsTokenizeTest` through the real TextMate engine, `GitSummaryLineTest`, five mutants by name |
 | 5 | walking row 1 with the accessibility tree | every editor pane announced itself as "Editor for null": the platform names it after the pane's component name, which nothing sets | each pane is named after its file, and the sentence is overlaid in fourteen languages | `EditorAccessibleNamesTest`; walked in German: "Editor für quit.txt" |
 | 6 | walking row 1 as `git difftool` | the diff view it opens paints its chrome (Graphical, Textual…) in English in every translated build | *(in progress)* | |
 | 7 | walking row 5 in German | the Window menu read `Editor(J)`, `Dokumente(G)…`: the Chinese appended-mnemonic form in languages whose labels are letters | *(in progress)* | |
