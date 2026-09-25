@@ -82,13 +82,24 @@ class ActionIdsResolveTest {
                 for (String[] pair : pairs) {
                     String category = value(pair[0], constants);
                     String id = value(pair[1], constants);
+                    if ((category == null || id == null) && HELPERS.containsKey(p.getFileName().toString())) {
+                        continue;
+                    }
                     if (category == null || id == null) {
-                        continue; // computed at run time: out of a static census's reach
+                        // computed at run time — a loop, a parameter — is out of
+                        // this census's reach, so it is not allowed (4th review:
+                        // the Workbench's Terminal row looped over two ids, the
+                        // first of which never existed)
+                        missing.add(p.getFileName() + ": a computed id (" + pair[0] + ", " + pair[1]
+                                + ") — write it literally or as a constant");
+                        continue;
                     }
                     calls++;
                     String file = "Actions/" + category + "/" + id.replace('.', '-') + ".instance";
                     if (!registered.contains(file)) {
                         missing.add(p.getFileName() + ": " + category + " / " + id);
+                    } else if (hiddenOnOneOs(file)) {
+                        missing.add(p.getFileName() + ": " + category + " / " + id + " is hidden on one OS, unblessed");
                     }
                 }
             }
@@ -127,6 +138,8 @@ class ActionIdsResolveTest {
                     named++;
                     if (!registered.contains(m.group(1))) {
                         missing.add(p.getFileName() + ": " + m.group(1));
+                    } else if (hiddenOnOneOs(m.group(1))) {
+                        missing.add(p.getFileName() + ": " + m.group(1) + " is hidden on one OS, unblessed");
                     }
                 }
             }
@@ -152,10 +165,10 @@ class ActionIdsResolveTest {
                             : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer");
                     String requires = jf.getManifest() == null ? null
                             : jf.getManifest().getMainAttributes().getValue("OpenIDE-Module-Requires");
-                    // a module that loads on one OS only (applemenu hides the
-                    // full-screen action on macOS, where the window's own
-                    // control and ^⌘F do it) masks nothing on the others: its
-                    // masks are not counted, since the path is there elsewhere
+                    // a module that loads on one OS only (applemenu on macOS)
+                    // masks nothing on the others, so its masks do not remove
+                    // a path; they are recorded instead, and a path the
+                    // product names that one OS hides must be blessed by name
                     boolean oneOs = requires != null && requires.contains("org.openide.modules.os.");
                     Set<String> into = oneOs ? new HashSet<>() : out;
                     for (String name : new String[] {declared, "META-INF/generated-layer.xml"}) {
@@ -165,6 +178,11 @@ class ActionIdsResolveTest {
                         }
                     }
                     if (oneOs) {
+                        for (String f : into) {
+                            if (f.endsWith("_hidden")) {
+                                ONE_OS_MASKS.add(f.substring(0, f.length() - "_hidden".length()));
+                            }
+                        }
                         into.removeIf(f -> f.endsWith("_hidden"));
                         out.addAll(into);
                     }
@@ -181,8 +199,37 @@ class ActionIdsResolveTest {
                 masks.add(f.substring(0, f.length() - "_hidden".length()));
             }
         }
-        out.removeIf(f -> f.endsWith("_hidden") || masks.contains(f));
+        // a mask can hide a whole folder (Actions/Git_hidden): everything under it goes
+        out.removeIf(f -> f.endsWith("_hidden") || masks.contains(f)
+                || masks.stream().anyMatch(m -> f.startsWith(m + "/")));
         return out;
+    }
+
+    /**
+     * Files whose one computed {@code Actions.forID} is a helper, each with where
+     * its inputs are checked instead. Anything else computed fails.
+     */
+    private static final Map<String, String> HELPERS = Map.of(
+            "VsCodeCommandSearchProvider.java", "the resolver behind cmd(...) rows, each censused by CMD",
+            "MainWindow.java", "the resolver behind actionLink(...) doors, each censused by LINK",
+            "DocsShots.java", "the docs forge's -Dnmox.shots.dialogs spec, a build-time argument, not product lookups");
+
+    /** Paths a module that loads on one OS only hides there (filled by {@link #registeredActions}). */
+    private static final Set<String> ONE_OS_MASKS = new HashSet<>();
+
+    /**
+     * Paths the product names that one OS hides, each with the reason that is
+     * acceptable. The full-screen action: applemenu hides it on macOS, where
+     * the window's own green button and ^⌘F do it, so Quick Search's "View:
+     * Toggle Full Screen" row is absent on a Mac and present elsewhere.
+     */
+    private static final Set<String> BLESSED_ONE_OS = Set.of(
+            "Actions/Window/org-netbeans-core-windows-actions-ToggleFullScreenAction.instance");
+
+    /** Whether a path the product names is hidden on one OS without a blessing. */
+    private static boolean hiddenOnOneOs(String path) {
+        return !BLESSED_ONE_OS.contains(path)
+                && (ONE_OS_MASKS.contains(path) || ONE_OS_MASKS.stream().anyMatch(m -> path.startsWith(m + "/")));
     }
 
     private static void collect(Element el, String path, Set<String> out) {

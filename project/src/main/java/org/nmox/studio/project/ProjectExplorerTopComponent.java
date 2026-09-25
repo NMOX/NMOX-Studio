@@ -704,16 +704,18 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         }
     }
 
-    /** Finds the platform's terminal action wherever the module registered it. */
+    /**
+     * A shell in the aimed project, as the row promises — the same action as
+     * Project Studio's button and ⌃` (3.2 fourth review: this row opened the
+     * platform's plain terminal in the home folder, through a loop of two
+     * ids the first of which never existed, and a loop is out of the action
+     * census's reach).
+     */
     private void openTerminal() {
-        for (String id : new String[]{
-                "org.netbeans.modules.dlight.terminal.action.LocalTerminalAction",
-                "LocalTerminalAction"}) {
-            javax.swing.Action action = org.openide.awt.Actions.forID("Window", id);
-            if (action != null) {
-                action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
-                return;
-            }
+        javax.swing.Action action = org.openide.awt.Actions.forID("Window",
+                "org.nmox.studio.rack.projectstudio.ProjectTerminalAction");
+        if (action != null) {
+            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
         }
     }
 
