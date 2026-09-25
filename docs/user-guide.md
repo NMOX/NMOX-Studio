@@ -130,6 +130,11 @@ Studio git's editor and difftool: `git config --global core.editor
 difftool. Save the message, close the tab, and git carries on.
 **Team ▸ Use NMOX Studio with Git…** shows those settings beside the values
 they have now, and sets them for you.
+A commit message opens as git's own file: the `#` lines are comments,
+only what you write is spellchecked, and a summary line past the 72
+characters git's tools cut at gets a warning. A `git rebase -i` list
+highlights each command and commit, and Toggle Comment drops a line
+without deleting it.
 Otherwise the command returns at once — the first `nmox` starts the IDE in the
 background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
