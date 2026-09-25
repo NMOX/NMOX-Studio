@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 35 rows the walks and reviews added are in
+developer works. The plan and the 36 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -113,6 +113,13 @@ loop as one sitting is the new tutorial
   text, with no reflection into the platform.
 - **⌃\` after a re-aim** starts a shell in the new project, and a shell that
   could not start there says so (ledger 120).
+- **Quitting hangs up the Terminal's shells.** Every Terminal ever opened
+  left its shell running after Quit, invisible and still holding whatever it
+  had started (a dev server kept its port); four such shells from two days
+  earlier were on the machine that found it. The IDE now ends each shell's
+  pty helper as it exits, so the shell and its jobs get the hang-up a closed
+  terminal window sends — and a job started with `nohup` survives, as it
+  would anywhere else. Walked: Quit with two Terminals open left none behind.
 
 ### The Agent Port connects once
 
