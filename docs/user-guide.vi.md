@@ -265,7 +265,7 @@ Mọi nút điều khiển trên giá đều có một tên đọc được, và
 
 Dấu **⎇ nhánh** cho biết bạn đang ở nhánh nào và bao nhiêu tệp đã đổi; nó được đọc từ đĩa nên không tốn một tiến trình nào. Một cú nhấp mở ra toàn bộ lịch sử, còn trình đơn mang theo **Diff dự án**, **Chú giải**, các yêu cầu kéo qua chính `gh` của bạn, và **Soạn thông điệp commit bằng KVASIR…**.
 
-Sau nó, `↑2 ↓1` là các commit mà nhánh của bạn có còn upstream của nó chưa có (cần push) và ngược lại (cần pull), chỉ hiện khi khác không và chỉ với nhánh có upstream. Trình đơn của nó bắt đầu bằng **Chuyển nhánh…** và **Commit…**, chính các hộp thoại của mô-đun git.
+Sau nó, `↑2 ↓1` là các commit mà nhánh của bạn có còn upstream của nó chưa có (cần push) và ngược lại (cần pull), chỉ hiện khi khác không và chỉ với nhánh có upstream. Trình đơn của nó bắt đầu bằng **Chuyển nhánh…**, **Commit…**, **Pull…** và **Push…**, chính các hộp thoại của mô-đun git.
 
 Bên cạnh dấu nhánh, một ghi chú kín đáo hơn trả lời câu hỏi bạn hỏi thường xuyên nhất: ai đã viết dòng mà con trỏ đang ở? `Ada Lovelace, 3 ngày trước · Fix the parser` đi theo con trỏ, bằng ngôn ngữ của bạn, và chú thích nổi của nó nêu commit và ngày. Một cú nhấp mở chú giải của cả tệp — đúng mục **Chú giải** mà dấu nhánh đưa ra. Ghi chú hỏi git một lần cho mỗi phiên bản đã lưu của tệp, không bao giờ lúc khởi động và không bao giờ cho một tệp nằm ngoài kho, và không nói gì với tệp mà git không theo dõi. Một dòng bạn đã sửa nhưng chưa commit sẽ hiện **Chưa commit**. Khi tệp còn thay đổi chưa lưu, ghi chú hiện **Tác giả dòng: có thay đổi chưa lưu** thay cho một cái tên, vì git đọc tệp như nó đã được lưu, và dòng 40 trên màn hình chưa chắc là dòng 40 trên đĩa; lưu lại là cái tên quay về. **Xem ▸ Tác giả dòng** tắt và bật ghi chú.
 
