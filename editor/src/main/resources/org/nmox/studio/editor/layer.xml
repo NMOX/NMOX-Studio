@@ -53,6 +53,37 @@
                 <attr name="position" intvalue="9000"/>
             </file>
         </folder>
+        <!-- 3.2.0 merge conflicts: the three tints a conflict block wears
+             in every editor, as highlight colorings a theme can change
+             (Fonts & Colors > Highlighting). The same translucent file
+             serves the light and the dark profiles; a profile not named
+             here gets the same values from ConflictWatcher's defaults. -->
+        <folder name="FontsColors">
+            <folder name="NetBeans">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="FlatLafLight">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+            <folder name="FlatLafDark">
+                <folder name="Defaults">
+                    <file name="org-nmox-studio-editor-merge-conflict-colors.xml" url="conflicts/merge-conflict-colors.xml">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.conflicts.Bundle"/>
+                        <attr name="nbeditor-settings-ColoringType" stringvalue="highlight"/>
+                    </file>
+                </folder>
+            </folder>
+        </folder>
         <folder name="text">
             <folder name="x-ng-template">
                 <folder name="Keybindings">
