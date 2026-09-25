@@ -47,7 +47,8 @@ abstract class GitHubLinkAction implements ActionListener {
         }
         Document doc = editor.getDocument();
         Object sd = doc.getProperty(Document.StreamDescriptionProperty);
-        File file = sd instanceof DataObject dob ? FileUtil.toFile(dob.getPrimaryFile()) : null;
+        org.openide.filesystems.FileObject edited = EditedFile.of(doc);
+        File file = edited == null ? null : FileUtil.toFile(edited);
         if (file == null) {
             refuse(g, Bundle.GitHubLinkAction_noFile());
             return;

@@ -59,16 +59,24 @@ abstract class CopyFilePathAction implements ActionListener {
             status.accept(Bundle.CopyFilePathAction_noFile());
             return;
         }
-        String path = pathOf(file);
-        clipboard.accept(path);
-        status.accept(Bundle.CopyFilePathAction_copied(path));
+        // the relative path may ask FileOwnerQuery, which walks the disk: off
+        // the EDT, and the clipboard and the status line back on it
+        LANE.post(() -> {
+            String path = pathOf(file);
+            java.awt.EventQueue.invokeLater(() -> {
+                clipboard.accept(path);
+                status.accept(Bundle.CopyFilePathAction_copied(path));
+            });
+        });
     }
+
+    private static final org.openide.util.RequestProcessor LANE =
+            new org.openide.util.RequestProcessor("nmox-copy-path", 1);
 
     /** The file on disk behind an editor, or null. */
     static File fileOf(JTextComponent editor) {
-        Document doc = editor == null ? null : editor.getDocument();
-        Object sd = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        return sd instanceof DataObject dob ? FileUtil.toFile(dob.getPrimaryFile()) : null;
+        FileObject fo = EditedFile.of(editor == null ? null : editor.getDocument());
+        return fo == null ? null : FileUtil.toFile(fo);
     }
 
     /** The folder a relative path starts from: the aimed project holding it, else its owner, else none. */

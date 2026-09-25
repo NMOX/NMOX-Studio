@@ -72,7 +72,9 @@ public final class EditorAccessibleNames implements Runnable {
             return null;
         }
         Object sdp = doc.getProperty(Document.StreamDescriptionProperty);
-        FileObject fo = sdp instanceof DataObject d ? d.getPrimaryFile()
+        // the file edited, not its group's primary (a Bundle_de.properties
+        // editor is not "Editor for Bundle.properties")
+        FileObject fo = sdp instanceof DataObject ? org.nmox.studio.editor.share.EditedFile.of(doc)
                 : sdp instanceof FileObject f ? f : null;
         return fo == null ? null : fo.getNameExt();
     }
