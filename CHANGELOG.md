@@ -4,6 +4,173 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.2.0] - 2026-09-25
+
+**The second-week release. 3.1 asked how long the first hour takes; 3.2 asks
+what a developer who stayed does all day — commit, read a diff, resolve a
+conflict, open a pull request, chase a stack trace, keep a README honest,
+hand work to an agent — and where NMOX Studio made them leave for another
+tool to do it.** Every one of those is now git's own step, opened where the
+developer works. The plan and the 27 rows the walks and reviews added are in
+[docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
+loop as one sitting is the new tutorial
+[The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
+
+### NMOX Studio as git's editor, difftool and mergetool
+
+- **`nmox -w` and `nmox -d`**, on all three operating systems — refused by
+  name in 3.1. `-w` opens a file and waits until its tab is closed; `-d`
+  compares two files in the platform's diff view. With
+  `git config --global core.editor "nmox -w"` a commit message is written in
+  the IDE; `git difftool` and `git mergetool` open there too, and
+  `nmox --help` prints all six lines.
+- **How it waits.** The terminal command writes a request into a private
+  folder and the IDE answers there — accepted (with its process id), refused
+  (with the sentence the terminal prints) or done — so it works whether the
+  IDE was running or `nmox` started it. Quitting the IDE hands the file back
+  with whatever was saved; an IDE that disappears ends the wait with exit 1,
+  not a hang. On Windows the installer also ships an extensionless `nmox`,
+  because git runs its editor through its own sh, which never finds
+  `nmox.cmd` as `nmox`.
+- **Team ▸ Use NMOX Studio with Git…** shows the six settings beside the value
+  each has now, so nothing is replaced unseen, and copies or applies them;
+  Close is the default button, because this writes the global git config.
+- **Git's own files are the editor's.** `COMMIT_EDITMSG`, `MERGE_MSG`,
+  `TAG_EDITMSG` and the rest open as a commit message and `git-rebase-todo` as
+  a rebase list, lit by VS Code's MIT grammars (pinned by sha256; 90 grammars
+  now): `#` lines are comments, Toggle Comment drops a rebase line, spellcheck
+  reads only what the author wrote, and a summary past the 72 characters git's
+  tools cut at is a warning.
+- **The diff view** gains Previous / Next Difference and "Difference 2 of 5",
+  shows a binary file as binary (and says whether two binaries differ, which
+  the platform's view does not), takes git's `/dev/null` for an added or a
+  deleted file as an empty side, and refuses a side over 16 MiB on the
+  terminal instead of freezing.
+- **Merge conflicts resolve where they are written**: the current and incoming
+  sides (and git's diff3 base) tinted in any editor, and VS Code's three
+  choices — **Accept Current Change, Accept Incoming Change, Accept Both
+  Changes** — as a Quick Fix on the `<<<<<<<` line (⌘. or Alt+Enter), each one
+  undoable edit; a block that changed since the offer is refused, not guessed.
+- **Walked for real**: a `git commit` typed in the IDE, `git difftool` on text,
+  binary and added files, `git mergetool` on a real conflict, and the setup
+  dialog against a throwaway `GIT_CONFIG_GLOBAL`.
+
+### Where you stand, and who wrote this line
+
+- **The git chip** reads `⎇ main ±2 ↑2 ↓1` — changed files, commits to push
+  and to pull — from the one `git status` it already ran (now
+  `--porcelain=v2 --branch`), and its menu leads with **Switch Branch…,
+  Commit…, Pull… and Push…**, the git module's own dialogs.
+- **Line blame on the status line**: `Ada Lovelace, 3 days ago · Fix the
+  parser` for the caret's line, in the reader's language with real plural
+  forms. One `git blame --porcelain --no-textconv` per saved version of a file,
+  newest answer wins, unsaved changes say so rather than name the wrong author,
+  a click opens Team's annotations, and nothing runs before the user's first
+  key or click — a restored editor spawns nothing at boot (measured under JFR).
+  View ▸ Line Blame turns it off.
+
+### GitHub, one gesture away
+
+- **Open on GitHub** and **Copy GitHub Link** — in the Edit menu, the editor's
+  right-click and Project Studio's tree — for the caret's line, a selection, a
+  file or a folder, in the user's own browser. One resolver (`GitHubLinks`)
+  holds the refusal ladder Copy as Markdown with Link had to itself.
+- **New Pull Request on GitHub** (Team menu and the chip): GitHub's compare
+  page for the checked-out branch, the step after a push.
+- Quick Search answers to VS Code's titles for them — *GitHub Pull Requests:
+  Create Pull Request*, *GitHub: Open on GitHub*, *GitHub: Copy GitHub
+  Permalink* — and to *Find All References* (57 titles).
+
+### The Terminal
+
+- **Locations open on ⌘-click** (Ctrl-click elsewhere): `src/app.ts:42:7`
+  from tsc, `(/abs/app.js:10:5)` and `file://` frames from Node and Jest,
+  pytest, go and rustc `-->` lines, Python tracebacks — at the line and
+  column. A URL, `localhost:3000` or a clock time is never a link, and a path
+  that is not there is refused by name. Built on the terminal's accessibility
+  text, with no reflection into the platform.
+- **⌃\` after a re-aim** starts a shell in the new project, and a shell that
+  could not start there says so (ledger 120).
+
+### The Agent Port connects once
+
+- **Keep this address and token** keeps the token in the system keychain and
+  the port in preferences, so an agent configured on Monday still connects on
+  Tuesday; a taken port moves AND gets a new token (whatever held the old
+  address may have been sent it), and that is a notification, not a status
+  line that lives five seconds. **Start when NMOX Studio starts** brings the
+  port up with the IDE. **Copy for Claude Code** copies the one
+  `claude mcp add` line.
+
+### VS Code's editing chords, measured
+
+- 27 of VS Code's editing chords were read against all five keymap profiles,
+  and the ten that were free now do what VS Code does: **F12**, **⇧F12**,
+  **F2**, **⌘.**, **⌘]**, **⌥⌘F**, **⌃- / ⌃⇧-**, **⇧⌥F** — each only where the
+  profile leaves it free. 3.1.0's ⌘D was wrong in Emacs and IDEA and is scoped
+  now. `VsCodeKeymapResolutionTest` replays the platform's keymap rules.
+
+### Docs
+
+- **Tools ▸ Check Markdown Links…** checks every relative link and image in
+  the project's Markdown the way GitHub renders it (the file must exist, the
+  `#heading` must be a heading of it), to Action Items and squiggles; nothing
+  leaves the machine. On this repository: 448 files, 7,649 links, 660 ms, and
+  one finding — a dead link in the vendored js-debug README.
+- **[The Second Week](docs/tutorials/the-second-week.md)** — the release as one
+  sitting — and the README's new *Git and GitHub, all day*.
+
+### Every language, further in
+
+- **The Team menu**: git's own rows — Show Changes, Commit, Diff ▸, Checkout ▸,
+  Branch/Tag ▸, Remote ▸, Repository ▸, Shelve Changes ▸ and the rest, 61
+  keys — were English in every translated build.
+- **The main window's own chrome**: the editor's Source, History and Preview
+  tabs, Favorites, Quick Search's field, popup and categories, the progress
+  area and INS/OVR (924 values); **the editor toolbar's tooltips** (294); and
+  **every main-toolbar tooltip** — v2.102.0 had translated the menu rows' keys,
+  but a toolbar button paints the short description (266).
+- **The diff view's** tabs, tooltips and screen-reader names.
+- **A menu's mnemonic is a letter of its own label**: German read `Editor(J)`,
+  it reads `Edito&r`; 91 appended letters moved into their labels and 49 dead
+  accented mnemonics were re-lettered (the platform maps only A–Z and 0–9 —
+  measured; Russian and Ukrainian are ledger 122).
+- Every overlay found by what a translated build painted, and held by a gate
+  whose population is derived from the cluster: `MainWindowChromeSpeaksTest`,
+  `ToolbarOverlayGateTest`, `DiffViewOverlayLedgerTest`, and a wider
+  `CodeNamedMenuRowsTest`.
+- **Right to left**: a path after a Hebrew or Arabic word keeps its shape (163
+  marks, `RtlDocsPathDirectionGateTest`, ledger 121), and Check Translations'
+  summary reads its phrases in order (a first-strong isolate).
+- **Docs name real doors**: three translated guides named the Edit menu by a
+  word it does not use; `DocsMenuDoorsTest` now catches a path under the wrong
+  menu (ledger 119 closed).
+
+### Accessibility
+
+- **Every editor tells a screen reader which file it is** — VoiceOver read
+  "Editor for null" for every file — and follows a rename.
+
+### Contributors
+
+- CONTRIBUTING's everyday `mvn -o install -DskipTests` failed after a focused
+  test run (the JaCoCo floor measured leftovers); `jacoco.skip` follows
+  `skipTests` now (`CoverageFloorGateTest`).
+- `ActionIdsResolveTest` holds every `Actions/…/….instance` path the product
+  writes out to the assembled cluster.
+
+### Found by reviewing the night's own code
+
+Two hostile reviews of the release's fresh code found nineteen problems;
+every proven one is fixed and pinned. Among them: a symbolic link to
+`/dev/zero` read until the IDE ran out of memory (every bounded read now reads
+regular files only, and the read itself is capped); two backtracking patterns
+in the link checker (31 s for one heading line); a newline guard that never
+fired inside the macOS launcher; a name ending in a newline that named a
+different file; a file selected in Project Studio's tree counting as still
+open; a remote's embedded token printed in a refusal; and a FIFO planted in
+`.git` able to block the chip. The small remainder is ledger 124.
+
 ## [3.1.1] - 2026-09-24
 
 **The MongoDB driver moves to 5.12.0, and the question worth answering first
@@ -24105,6 +24272,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.0...v3.1.1
 [3.1.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.2...v3.1.0
 [3.0.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.0.1...v3.0.2
