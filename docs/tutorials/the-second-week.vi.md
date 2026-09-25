@@ -60,7 +60,7 @@ với những gì đã được lưu.
 **Thấy:** **dấu ⎇** trên dòng trạng thái — `⎇ main ±3 ↑2 ↓1` là nhánh của
 bạn, ba tệp đã đổi, hai commit cần push và một commit cần pull (các mũi
 tên chỉ xuất hiện khi có gì đó để push hoặc pull). Trình đơn của nó bắt
-đầu bằng **Chuyển nhánh…** và **Commit…**.
+đầu bằng **Chuyển nhánh…**, **Commit…**, **Pull…** và **Push…**.
 
 **Làm:** đặt con trỏ lên bất kỳ dòng nào của một tệp được theo dõi.
 

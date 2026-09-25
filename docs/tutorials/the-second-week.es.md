@@ -62,7 +62,7 @@ borrarla.
 **Verás:** el **indicador ⎇** en la línea de estado — `⎇ main ±3 ↑2 ↓1`
 es tu rama, tres archivos cambiados, dos commits por enviar y uno por
 traer (las flechas solo aparecen cuando hay algo que enviar o traer). Su
-menú empieza con **Cambiar de rama…** y **Confirmar…**.
+menú empieza con **Cambiar de rama…**, **Confirmar…**, **Traer (pull)…** y **Enviar (push)…**.
 
 **Haz:** pon el cursor en cualquier línea de un archivo versionado.
 

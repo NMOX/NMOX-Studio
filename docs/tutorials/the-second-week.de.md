@@ -64,7 +64,7 @@ heraus, ohne sie zu löschen.
 **Sehen:** Das **⎇-Zeichen** in der Statuszeile — `⎇ main ±3 ↑2 ↓1` ist
 Ihr Branch, drei geänderte Dateien, zwei Commits zum Pushen und einer zum
 Pullen (die Pfeile erscheinen nur, wenn es etwas zu pushen oder zu pullen
-gibt). Sein Menü beginnt mit **Branch wechseln…** und **Commit…**.
+gibt). Sein Menü beginnt mit **Branch wechseln…**, **Commit…**, **Pull…** und **Push…**.
 
 **Tun:** Setzen Sie den Cursor auf eine beliebige Zeile einer
 versionierten Datei.

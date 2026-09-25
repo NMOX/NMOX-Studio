@@ -59,7 +59,7 @@ highlighted, and **Toggle Comment** drops a line without deleting it.
 **See:** the **⎇ chip** on the status line — `⎇ main ±3 ↑2 ↓1` is your
 branch, three changed files, two commits to push and one to pull (the
 arrows appear only when there is something to push or pull). Its menu
-starts with **Switch Branch…** and **Commit…**.
+starts with **Switch Branch…**, **Commit…**, **Pull…** and **Push…**.
 
 **Do:** put the caret on any line of a tracked file.
 

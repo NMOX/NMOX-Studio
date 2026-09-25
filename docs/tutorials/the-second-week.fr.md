@@ -62,7 +62,7 @@ ligne sans la supprimer.
 **Vous voyez :** la **pastille ⎇** dans la ligne d’état — `⎇ main ±3 ↑2 ↓1`
 est votre branche, trois fichiers modifiés, deux commits à pousser et un à
 tirer (les flèches n’apparaissent que s’il y a quelque chose à pousser ou
-à tirer). Son menu commence par **Changer de branche…** et **Valider…**.
+à tirer). Son menu commence par **Changer de branche…**, **Valider…**, **Tirer (pull)…** et **Pousser (push)…**.
 
 **Faites :** placez le curseur sur n’importe quelle ligne d’un fichier
 suivi.

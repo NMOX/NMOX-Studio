@@ -61,7 +61,7 @@ destacados, e **Alternar comentário** descarta uma linha sem apagá-la.
 **Veja:** o **indicador ⎇** na linha de status — `⎇ main ±3 ↑2 ↓1` é o seu
 branch, três arquivos alterados, dois commits para enviar e um para trazer
 (as setas só aparecem quando há algo para enviar ou trazer). O menu dele
-começa com **Trocar de branch…** e **Fazer commit…**.
+começa com **Trocar de branch…**, **Fazer commit…**, **Fazer pull…** e **Fazer push…**.
 
 **Faça:** ponha o cursor em qualquer linha de um arquivo versionado.
 

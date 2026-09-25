@@ -62,7 +62,7 @@ tanpa menghapusnya.
 **Lihat:** **tanda ⎇** di baris status — `⎇ main ±3 ↑2 ↓1` adalah branch
 Anda, tiga berkas berubah, dua commit untuk di-push dan satu untuk
 di-pull (panah hanya muncul bila ada yang perlu di-push atau di-pull).
-Menunya diawali dengan **Ganti Branch…** dan **Commit…**.
+Menunya diawali dengan **Ganti Branch…**, **Commit…**, **Pull…** dan **Push…**.
 
 **Lakukan:** letakkan kursor di baris mana pun dari berkas yang dilacak.
 
