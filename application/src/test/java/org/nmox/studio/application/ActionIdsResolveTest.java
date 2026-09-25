@@ -73,25 +73,31 @@ class ActionIdsResolveTest {
                     constants.put(c.group(1), c.group(2));
                 }
                 List<String[]> pairs = new ArrayList<>();
+                int callShapes = 0;
                 for (Pattern shape : new Pattern[] {CALL, LINK, CMD}) {
                     Matcher m = shape.matcher(src);
                     while (m.find()) {
                         pairs.add(new String[] {m.group(1), m.group(2)});
+                        if (shape == CALL) {
+                            callShapes++;
+                        }
                     }
                 }
+                // every raw Actions.forID( is either read here with literal
+                // arguments or counted: a call whose arguments are method calls
+                // (t.category()) is not matched by CALL at all (5th review)
+                int raw = src.split("Actions\\.forID\\(", -1).length - 1;
+                int unreadable = raw - callShapes;
+                int computed = 0;
                 for (String[] pair : pairs) {
                     String category = value(pair[0], constants);
                     String id = value(pair[1], constants);
-                    if ((category == null || id == null) && HELPERS.containsKey(p.getFileName().toString())) {
-                        continue;
-                    }
                     if (category == null || id == null) {
                         // computed at run time — a loop, a parameter — is out of
-                        // this census's reach, so it is not allowed (4th review:
-                        // the Workbench's Terminal row looped over two ids, the
-                        // first of which never existed)
-                        missing.add(p.getFileName() + ": a computed id (" + pair[0] + ", " + pair[1]
-                                + ") — write it literally or as a constant");
+                        // this census's reach (4th review: the Workbench's
+                        // Terminal row looped over two ids, the first of which
+                        // never existed); counted, and held to the file's pin
+                        computed++;
                         continue;
                     }
                     calls++;
@@ -101,6 +107,12 @@ class ActionIdsResolveTest {
                     } else if (hiddenOnOneOs(file)) {
                         missing.add(p.getFileName() + ": " + category + " / " + id + " is hidden on one OS, unblessed");
                     }
+                }
+                int allowed = HELPERS.getOrDefault(p.getFileName().toString(), 0);
+                if (computed + unreadable != allowed) {
+                    missing.add(p.getFileName() + ": " + (computed + unreadable)
+                            + " lookup(s) the census cannot read (pinned " + allowed
+                            + ") — write the id literally or as a constant");
                 }
             }
         }
@@ -183,8 +195,8 @@ class ActionIdsResolveTest {
                                 ONE_OS_MASKS.add(f.substring(0, f.length() - "_hidden".length()));
                             }
                         }
-                        into.removeIf(f -> f.endsWith("_hidden"));
-                        out.addAll(into);
+                        // and what it ADDS exists on that OS alone (applemenu's
+                        // MinimizeWindowAction): not counted as registered (5th review)
                     }
                 }
             }
@@ -206,13 +218,20 @@ class ActionIdsResolveTest {
     }
 
     /**
-     * Files whose one computed {@code Actions.forID} is a helper, each with where
-     * its inputs are checked instead. Anything else computed fails.
+     * How many {@code Actions.forID} calls in a file this census cannot read,
+     * pinned per file with where their inputs are checked instead; any other
+     * count, anywhere, fails.
+     * <ul>
+     * <li>VsCodeCommandSearchProvider: the resolver behind {@code cmd(...)} rows, each censused by CMD.</li>
+     * <li>MainWindow: the resolver behind {@code actionLink(...)} doors (censused by LINK) and the
+     *     Getting Started targets ({@code t.category(), t.id()}, held by GettingStartedTest).</li>
+     * <li>DocsShots: the docs forge's {@code -Dnmox.shots.dialogs} spec, a build-time argument.</li>
+     * </ul>
      */
-    private static final Map<String, String> HELPERS = Map.of(
-            "VsCodeCommandSearchProvider.java", "the resolver behind cmd(...) rows, each censused by CMD",
-            "MainWindow.java", "the resolver behind actionLink(...) doors, each censused by LINK",
-            "DocsShots.java", "the docs forge's -Dnmox.shots.dialogs spec, a build-time argument, not product lookups");
+    private static final Map<String, Integer> HELPERS = Map.of(
+            "VsCodeCommandSearchProvider.java", 1,
+            "MainWindow.java", 2,
+            "DocsShots.java", 1);
 
     /** Paths a module that loads on one OS only hides there (filled by {@link #registeredActions}). */
     private static final Set<String> ONE_OS_MASKS = new HashSet<>();

@@ -705,18 +705,14 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     /**
-     * A shell in the aimed project, as the row promises — the same action as
-     * Project Studio's button and ⌃` (3.2 fourth review: this row opened the
-     * platform's plain terminal in the home folder, through a loop of two
-     * ids the first of which never existed, and a loop is out of the action
-     * census's reach).
+     * A new shell in the aimed project, as the row promises — what Project
+     * Studio's Terminal button does (3.2 fourth review: this row opened the
+     * platform's plain terminal in the home folder; fifth review: ⌃`'s
+     * action, tried next, only brings forward a terminal already open,
+     * wherever it started).
      */
     private void openTerminal() {
-        javax.swing.Action action = org.openide.awt.Actions.forID("Window",
-                "org.nmox.studio.rack.projectstudio.ProjectTerminalAction");
-        if (action != null) {
-            action.actionPerformed(new java.awt.event.ActionEvent(this, 0, "open"));
-        }
+        org.nmox.studio.rack.projectstudio.ProjectTerminal.openNew(this);
     }
 
     // ---- widgets ----

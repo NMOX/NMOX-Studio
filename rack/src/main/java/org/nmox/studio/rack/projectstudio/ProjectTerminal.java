@@ -125,7 +125,7 @@ public final class ProjectTerminal implements ActionListener {
     }
 
     /** Project Studio's Terminal button: always a new shell, in the project when it can be. */
-    static void openNew(Object source) {
+    public static void openNew(Object source) {
         File dir = aimedProject();
         if (decide(false, dir) == Choice.OPEN_IN_PROJECT) {
             if (openIn(dir, source)) {
