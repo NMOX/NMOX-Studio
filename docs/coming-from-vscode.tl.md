@@ -112,9 +112,12 @@ Binubuksan ng `-w` (`--wait`) ang isang file at naghihintay hanggang isara mo an
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
-Pagkatapos, binubuksan ng `git commit` ang mensahe sa IDE; i-save ito at isara ang tab, at magpapatuloy ang git. Ang pag-quit sa IDE habang bukas pa ang isang file ay ibinabalik din ito, kasama ang anumang na-save. Itinatakda ng **Pangkat ▸ Gamitin ang NMOX Studio sa Git…** ang parehong tatlong linya para sa iyo, matapos ipakita kung ano ang halaga ng bawat isa ngayon. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
+Pagkatapos, binubuksan ng `git commit` ang mensahe sa IDE; i-save ito at isara ang tab, at magpapatuloy ang git. Ang pag-quit sa IDE habang bukas pa ang isang file ay ibinabalik din ito, kasama ang anumang na-save. Itinatakda ng **Pangkat ▸ Gamitin ang NMOX Studio sa Git…** ang parehong mga linya para sa iyo, matapos ipakita kung ano ang halaga ng bawat isa ngayon. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Kung saan nakatira ang bawat ideya ng VS Code

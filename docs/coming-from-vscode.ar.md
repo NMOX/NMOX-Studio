@@ -111,9 +111,12 @@ nmox            # just start the IDE
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
-بعدها `git commit` بيفتح الرسالة في الـ IDE؛ احفظوها واقفلوا التبويب، وgit يكمّل. ولو قفلتوا الـ IDE والملف لسه مفتوح، برضه بيرجع، باللي اتحفظ منه. **الفريق ◂ استخدام NMOX Studio مع Git…** بيضبط لكم نفس التلات سطور دول، بعد ما يوريكم كل واحد فيهم متظبط على إيه دلوقتي. Homebrew، والـ installer بتاع Windows (*إضافة «nmox» لـ PATH*)، وحزم Linux بيحطوه على الـ PATH بتاعكم؛ ولو ثبّتوا من الـ DMG، [دليل المستخدم](user-guide.ar.md#2-first-launch) بيوريكم الرابط في سطر واحد.
+بعدها `git commit` بيفتح الرسالة في الـ IDE؛ احفظوها واقفلوا التبويب، وgit يكمّل. ولو قفلتوا الـ IDE والملف لسه مفتوح، برضه بيرجع، باللي اتحفظ منه. **الفريق ◂ استخدام NMOX Studio مع Git…** بيضبط لكم نفس السطور دي، بعد ما يوريكم كل واحد فيهم متظبط على إيه دلوقتي. Homebrew، والـ installer بتاع Windows (*إضافة «nmox» لـ PATH*)، وحزم Linux بيحطوه على الـ PATH بتاعكم؛ ولو ثبّتوا من الـ DMG، [دليل المستخدم](user-guide.ar.md#2-first-launch) بيوريكم الرابط في سطر واحد.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## كل فكرة من VS Code موجودة فين

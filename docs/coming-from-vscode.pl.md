@@ -148,12 +148,15 @@ edytorem i difftoolem gita, tak jak `code --wait`:
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
 Wtedy `git commit` otwiera wiadomość w IDE; zapisz ją i zamknij kartę, a git
 działa dalej. Zamknięcie IDE, gdy plik jest jeszcze otwarty, też go oddaje —
 z tym, co zostało zapisane.
-**Zespół ▸ Używaj NMOX Studio z Git…** ustawia te same trzy wiersze za ciebie,
+**Zespół ▸ Używaj NMOX Studio z Git…** ustawia te same wiersze za ciebie,
 po pokazaniu, na co każdy z nich jest teraz ustawiony.
 Homebrew, instalator Windows
 (*Add "nmox" to PATH*) i pakiety dla Linuksa dodają je do PATH; przy instalacji z DMG

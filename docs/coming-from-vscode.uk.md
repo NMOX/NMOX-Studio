@@ -111,9 +111,12 @@ nmox            # just start the IDE
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
-Тоді `git commit` відкриває повідомлення в IDE; збережіть його і закрийте вкладку, і git продовжить. Вихід з IDE, поки файл ще відкритий, теж повертає його — з тим, що було збережено. **Команда ▸ Використовувати NMOX Studio з Git…** виставляє ті самі три рядки за вас, спершу показавши, яке значення має кожен із них зараз. Homebrew, інсталятор Windows (*Add "nmox" to PATH*, «Додати nmox до PATH») і пакети Linux кладуть її у PATH; для встановлення з DMG [посібник користувача](user-guide.uk.md#2-first-launch) показує посилання в один рядок.
+Тоді `git commit` відкриває повідомлення в IDE; збережіть його і закрийте вкладку, і git продовжить. Вихід з IDE, поки файл ще відкритий, теж повертає його — з тим, що було збережено. **Команда ▸ Використовувати NMOX Studio з Git…** виставляє ті самі рядки за вас, спершу показавши, яке значення має кожен із них зараз. Homebrew, інсталятор Windows (*Add "nmox" to PATH*, «Додати nmox до PATH») і пакети Linux кладуть її у PATH; для встановлення з DMG [посібник користувача](user-guide.uk.md#2-first-launch) показує посилання в один рядок.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Де живе кожна ідея VS Code

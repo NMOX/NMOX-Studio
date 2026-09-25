@@ -33,7 +33,7 @@ import org.openide.util.RequestProcessor;
  * Team ▸ Use NMOX Studio with Git… (3.2.0): the door to {@code nmox -w} and
  * {@code nmox -d} for someone who will never read {@code nmox --help}.
  *
- * <p>The dialog shows the three global settings ({@link GitSetup}) with the
+ * <p>The dialog shows the global settings ({@link GitSetup}) with the
  * value each has NOW, so nothing is replaced unseen, and offers them two
  * ways: Copy Commands puts the {@code git config} lines on the clipboard, and
  * Apply runs them. Close is the default button: this writes the user's global
@@ -50,7 +50,7 @@ import org.openide.util.RequestProcessor;
 @Messages({
     "CTL_GitSetupAction=Use NMOX Studio with Git…",
     "GitSetupAction_title=Use NMOX Studio with Git",
-    "GitSetupAction_intro=These global git settings make git open commit messages, rebase plans and merge messages in NMOX Studio, and show git difftool's comparisons in its diff view. Close the tab to hand the file back to git.",
+    "GitSetupAction_intro=These global git settings make git open commit messages, rebase plans and merge messages in NMOX Studio, show git difftool's comparisons in its diff view, and open git mergetool's conflicted files in its editor. Close the tab to hand the file back to git.",
     "GitSetupAction_notOnPath=The nmox command is not on your PATH, so git could not start it. The user guide shows how to put it there; then open this again.",
     "GitSetupAction_noGit=Git was not found on this computer.",
     "GitSetupAction_alreadySet=Git already uses NMOX Studio: every setting below has the value shown.",
@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
     "GitSetupAction_copy=Copy Commands",
     "GitSetupAction_close=Close",
     "GitSetupAction_copied=The git config commands are on the clipboard",
-    "GitSetupAction_applied=Git now opens its messages and comparisons in NMOX Studio",
+    "GitSetupAction_applied=Git now opens its messages, comparisons and conflicts in NMOX Studio",
     "# {0} - the setting, {1} - git's own words",
     "GitSetupAction_failed=Git refused to set {0}: {1}"
 })

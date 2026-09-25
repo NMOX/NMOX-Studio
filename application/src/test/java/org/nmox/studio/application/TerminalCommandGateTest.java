@@ -676,10 +676,13 @@ class TerminalCommandGateTest {
             "one window; -a and -v have no counterpart and are refused. Any other",
             "option goes to the IDE unchanged.",
             "",
-            "NMOX Studio as git's editor and difftool:",
+            "NMOX Studio as git's editor, difftool and mergetool:",
             "  git config --global core.editor \"nmox -w\"",
             "  git config --global diff.tool nmox",
-            "  git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
+            "  git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'",
+            "  git config --global merge.tool nmox",
+            "  git config --global mergetool.nmox.cmd 'nmox -w \"$MERGED\"'",
+            "  git config --global mergetool.nmox.trustExitCode false");
 
     @Test
     @DisplayName("all three launchers print the same usage")

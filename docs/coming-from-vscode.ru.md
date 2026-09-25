@@ -147,12 +147,15 @@ nmox            # just start the IDE
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
 Тогда `git commit` открывает сообщение в IDE; сохраните его и закройте
 вкладку, и git продолжит. Выход из IDE, пока файл ещё открыт, тоже
 возвращает его — с тем, что было сохранено.
-**Команда ▸ Использовать NMOX Studio с Git…** выставляет те же три строки за вас,
+**Команда ▸ Использовать NMOX Studio с Git…** выставляет те же строки за вас,
 сначала показав, чему равна каждая из них сейчас.
 Homebrew, установщик Windows (*Add "nmox" to PATH*) и
 пакеты Linux ставят её в PATH; для установки из DMG

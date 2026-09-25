@@ -140,18 +140,30 @@ refused on the terminal instead of starting anything. `-r` is accepted,
 
 `-w` (`--wait`) opens a file and waits until you close its tab, and `-d`
 (`--diff`) compares two files side by side, so NMOX Studio can be git's
-editor and difftool, the way `code --wait` is:
+editor, difftool and mergetool, the way `code --wait` is:
 
 ```bash
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
 `git commit` then opens the message in the IDE; save it and close the tab,
 and git carries on. Quitting the IDE while a file is still open also hands
 it back, with whatever was saved.
-**Team ▸ Use NMOX Studio with Git…** sets the same three lines for you,
+`git mergetool` opens each conflicted file the same way. Where VS Code puts
+*Accept Current Change | Accept Incoming Change | Accept Both Changes* above
+a conflict, NMOX Studio tints the two sides and puts a warning on the
+`<<<<<<<` line; the bulb in the gutter, or Quick Fix with the caret on that
+line (⌘. on a Mac, Alt+Enter elsewhere), offers the same three, each one
+undoable edit. Save,
+close the tab, and git moves to the next file. The tints and the three
+choices are there in any file with conflict markers, with or without
+`git mergetool`.
+**Team ▸ Use NMOX Studio with Git…** sets the same lines for you,
 after showing what each one is set to now.
 Homebrew, the Windows installer (*Add "nmox" to PATH*) and the Linux
 packages put it on your PATH; for a DMG install, the [user guide](user-guide.md#2-first-launch)

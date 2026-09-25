@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * What it takes to make NMOX Studio git's editor and difftool (3.2.0): the
- * three global settings {@code nmox -w} and {@code nmox -d} need, and the
+ * What it takes to make NMOX Studio git's editor, difftool and mergetool
+ * (3.2.0): the global settings {@code nmox -w} and {@code nmox -d} need, and the
  * {@code git config} commands that set them. Pure, so the exact strings are
  * a unit test; {@link GitSetupAction} reads the current values and applies.
  *
@@ -28,15 +28,26 @@ public final class GitSetup {
 
     /**
      * The settings, in the order they are shown and applied: the editor,
-     * the difftool's name, and its command. {@code $LOCAL} and
-     * {@code $REMOTE} stay literal: git substitutes them when it runs the
+     * the difftool's name and its command, then the mergetool's name, its
+     * command and how git judges it. {@code $LOCAL}, {@code $REMOTE} and
+     * {@code $MERGED} stay literal: git substitutes them when it runs the
      * tool.
+     *
+     * <p>The mergetool opens the conflicted file itself ({@code $MERGED})
+     * and waits for its tab to close; the editor's conflict hints do the
+     * resolving (3.2.0, {@code editor.conflicts}). {@code trustExitCode
+     * false} because {@code nmox -w} exits 0 whether or not the file was
+     * resolved: git then asks "Was the merge successful?" when the file was
+     * not saved, instead of marking an untouched conflict resolved.
      */
     public static Map<String, String> settings() {
         Map<String, String> s = new LinkedHashMap<>();
         s.put("core.editor", "nmox -w");
         s.put("diff.tool", TOOL);
         s.put("difftool." + TOOL + ".cmd", "nmox -w -d \"$LOCAL\" \"$REMOTE\"");
+        s.put("merge.tool", TOOL);
+        s.put("mergetool." + TOOL + ".cmd", "nmox -w \"$MERGED\"");
+        s.put("mergetool." + TOOL + ".trustExitCode", "false");
         return s;
     }
 

@@ -149,12 +149,15 @@ bisa menjadi penyunting dan difftool untuk git, seperti `code --wait`:
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
 Setelah itu `git commit` membuka pesannya di IDE; simpan, tutup tabnya, dan git
 melanjutkan. Keluar dari IDE selagi berkas masih terbuka juga
 mengembalikannya, dengan isi yang sudah disimpan.
-**Tim ▸ Gunakan NMOX Studio dengan Git…** mengatur tiga baris yang sama itu untuk Anda,
+**Tim ▸ Gunakan NMOX Studio dengan Git…** mengatur baris-baris yang sama itu untuk Anda,
 setelah menunjukkan nilai masing-masing saat ini.
 Homebrew, pemasang Windows (*Add "nmox" to
 PATH*), dan paket Linux memasukkannya ke PATH Anda; untuk pemasangan dari DMG,

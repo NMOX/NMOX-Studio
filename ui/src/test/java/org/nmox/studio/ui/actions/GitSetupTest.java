@@ -17,12 +17,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GitSetupTest {
 
     @Test
-    @DisplayName("the three settings, in order, the difftool's variables left for git to fill")
+    @DisplayName("the six settings, in order, the tools' variables left for git to fill")
     void settings() {
         assertThat(GitSetup.settings()).containsExactly(
                 Map.entry("core.editor", "nmox -w"),
                 Map.entry("diff.tool", "nmox"),
-                Map.entry("difftool.nmox.cmd", "nmox -w -d \"$LOCAL\" \"$REMOTE\""));
+                Map.entry("difftool.nmox.cmd", "nmox -w -d \"$LOCAL\" \"$REMOTE\""),
+                Map.entry("merge.tool", "nmox"),
+                Map.entry("mergetool.nmox.cmd", "nmox -w \"$MERGED\""),
+                // nmox -w exits 0 either way: git must judge by whether the file was saved
+                Map.entry("mergetool.nmox.trustExitCode", "false"));
     }
 
     @Test
@@ -39,7 +43,10 @@ class GitSetupTest {
         assertThat(GitSetup.shellLines()).containsExactly(
                 "git config --global core.editor 'nmox -w'",
                 "git config --global diff.tool 'nmox'",
-                "git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
+                "git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'",
+                "git config --global merge.tool 'nmox'",
+                "git config --global mergetool.nmox.cmd 'nmox -w \"$MERGED\"'",
+                "git config --global mergetool.nmox.trustExitCode 'false'");
     }
 
     @Test
@@ -50,16 +57,24 @@ class GitSetupTest {
         String text = GitSetupAction.describe(now);
         assertThat(text).contains("core.editor = nmox -w\n    now: vim\n")
                 .contains("diff.tool = nmox\n    now: not set\n");
-        assertThat(List.of(text.split("\n"))).hasSize(6);
+        assertThat(List.of(text.split("\n"))).hasSize(2 * GitSetup.settings().size());
     }
 
     @Test
-    @DisplayName("the help text all three launchers print carries the same three settings")
+    @DisplayName("the help text all three launchers print carries every setting the dialog applies")
     void helpAgrees() throws Exception {
         String linux = java.nio.file.Files.readString(java.nio.file.Path.of("..", "packaging", "linux", "nmox"));
         assertThat(linux).contains("git config --global core.editor \"nmox -w\"")
                 .contains("git config --global diff.tool nmox")
                 .contains("git config --global difftool.nmox.cmd 'nmox -w -d \"$LOCAL\" \"$REMOTE\"'");
+        // derived, so a setting added to one home and not the other fails here
+        // (TerminalCommandGateTest holds the three launchers to one text)
+        for (Map.Entry<String, String> s : GitSetup.settings().entrySet()) {
+            String line = "  git config --global " + s.getKey() + " ";
+            String v = s.getValue();
+            assertThat(linux).as(s.getKey()).containsAnyOf(line + v + "\n",
+                    line + "\"" + v + "\"\n", line + "'" + v + "'\n");
+        }
     }
 
     @Test

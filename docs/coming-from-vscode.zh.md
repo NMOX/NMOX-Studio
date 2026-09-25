@@ -112,9 +112,12 @@ nmox            # just start the IDE
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
-之后 `git commit` 会在 IDE 里打开提交信息；保存并关闭标签页，git 就会继续。文件还开着时退出 IDE，也会把它交还回去，内容是已经保存的部分。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会先告诉你这三行现在各是什么值，再替你设好。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
+之后 `git commit` 会在 IDE 里打开提交信息；保存并关闭标签页，git 就会继续。文件还开着时退出 IDE，也会把它交还回去，内容是已经保存的部分。**团队 ▸ 在 Git 中使用 NMOX Studio…** 会先告诉你这些行现在各是什么值，再替你设好。Homebrew、Windows 安装程序（*Add "nmox" to PATH*）和 Linux 软件包都会把它放进 PATH；用 DMG 安装的，[用户指南](user-guide.zh.md#2-first-launch)给出了那一行建链接的命令。
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## VS Code 的每个概念住在哪儿

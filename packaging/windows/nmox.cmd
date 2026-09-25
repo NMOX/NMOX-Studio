@@ -249,10 +249,13 @@ echo(here, before anything starts. VS Code's -r is accepted and -n opens in the
 echo(one window; -a and -v have no counterpart and are refused. Any other
 echo(option goes to the IDE unchanged.
 echo(
-echo(NMOX Studio as git's editor and difftool:
+echo(NMOX Studio as git's editor, difftool and mergetool:
 echo(  git config --global core.editor "nmox -w"
 echo(  git config --global diff.tool nmox
 echo(  git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+echo(  git config --global merge.tool nmox
+echo(  git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+echo(  git config --global mergetool.nmox.trustExitCode false
 exit /b 0
 :newwindow
 >&2 echo(nmox: NMOX Studio has one window; opening there

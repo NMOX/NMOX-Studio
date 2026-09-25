@@ -148,12 +148,15 @@ editor e o difftool do git, do jeito que `code --wait` é:
 git config --global core.editor "nmox -w"
 git config --global diff.tool nmox
 git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+git config --global merge.tool nmox
+git config --global mergetool.nmox.cmd 'nmox -w "$MERGED"'
+git config --global mergetool.nmox.trustExitCode false
 ```
 
 Aí o `git commit` abre a mensagem na IDE; salve, feche a aba e o git segue em
 frente. Sair da IDE com um arquivo ainda aberto também o devolve, com o que
 tiver sido salvo.
-**Equipe ▸ Usar o NMOX Studio com o Git…** define essas mesmas três linhas para você,
+**Equipe ▸ Usar o NMOX Studio com o Git…** define essas mesmas linhas para você,
 depois de mostrar o valor atual de cada uma.
 O Homebrew, o instalador do Windows (*Adicionar
 “nmox” ao PATH*) e os pacotes do Linux o põem no seu PATH; para uma

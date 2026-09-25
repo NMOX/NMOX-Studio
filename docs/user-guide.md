@@ -126,8 +126,20 @@ by name.
 `nmox -w file` opens the file and waits until you close its tab, and
 `nmox -d left right` compares two files in the diff view, which makes NMOX
 Studio git's editor and difftool: `git config --global core.editor
-"nmox -w"`, and `nmox --help` prints the two lines that make it the
-difftool. Save the message, close the tab, and git carries on.
+"nmox -w"`, and `nmox --help` prints the lines that make it the difftool
+and the mergetool. Save the message, close the tab, and git carries on.
+With the mergetool set (`mergetool.nmox.cmd 'nmox -w "$MERGED"'`),
+`git mergetool` opens each conflicted file in the editor. In that file,
+and in any file carrying git's conflict markers, the current side of each
+conflict is tinted one color and the incoming side another, and the
+`<<<<<<<` line carries a warning whose Quick Fix (⌘. on a Mac, Alt+Enter
+elsewhere, or the bulb in the gutter) offers VS Code's three choices:
+Accept Current Change, Accept Incoming Change and Accept Both Changes. Each
+is one edit, undone by one ⌘Z; if the block changed after the warning
+appeared, nothing is replaced and the status line says so. A block that
+is not git's exact shape (a second separator, a block inside a block) gets
+no offer, rather than a guess. The tints are the Merge Conflict colorings
+in Options ▸ Fonts & Colors ▸ Highlighting.
 **Team ▸ Use NMOX Studio with Git…** shows those settings beside the values
 they have now, and sets them for you.
 A commit message opens as git's own file: the `#` lines are comments,
