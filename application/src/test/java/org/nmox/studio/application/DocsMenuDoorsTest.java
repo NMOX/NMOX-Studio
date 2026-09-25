@@ -188,11 +188,18 @@ class DocsMenuDoorsTest {
 
     /**
      * Ledger 119, closed in 3.2.0: a path whose first segment is not a menu of
-     * the language, but whose next segment IS a row of one — at least two
-     * words long, so a lone word a dialog tab shares with a menu row is not
-     * mistaken — names that row under the wrong door. Null when the arrow
-     * follows a real hop (a submenu inside a walked path) or leads nowhere a
-     * menu goes.
+     * the language, but whose next segment IS a row of one, names that row
+     * under the wrong door. Null when the arrow follows a real hop (a submenu
+     * inside a walked path), a right-click, or leads nowhere a menu goes.
+     *
+     * <p>The first cut asked for a row of at least two words and exempted any
+     * path with "click" or "editor" in the forty characters before it; the
+     * third review planted {@code Utilidades ▸ Complementos},
+     * {@code 功能 ▸ 插件} (Chinese rows have no spaces, so the word count
+     * never fired) and {@code En el editor, **Editar ▸ …} (a Spanish word
+     * the window matched), and all three passed. Measured on the corpus the
+     * word count guarded nothing; the right-click exemption now reads only
+     * the words that END just before the arrow.
      */
     private static String misrooted(Map<String, Door> bar, String text, int at, String arrow) {
         int after = at + arrow.length();
@@ -205,7 +212,7 @@ class DocsMenuDoorsTest {
                 under = menu;
             }
         }
-        if (best == null || best.name.strip().split("\\s+").length < 2) {
+        if (best == null) {
             return null;
         }
         // the menu IS named, with a one-letter conjunction joined on
@@ -225,12 +232,23 @@ class DocsMenuDoorsTest {
                 return null;
             }
         }
-        // a context menu's path starts at a right-click, which no menu bar has
-        String before = text.substring(Math.max(0, at - 40), at).toLowerCase(java.util.Locale.ROOT);
-        if (before.contains("click") || before.contains("editor")) {
+        // a context menu's path starts at a right-click, which no menu bar
+        // has: "Right-click ▸ …", "right-click in the editor ▸ …"
+        if (rightClickBefore(text, at)) {
             return null;
         }
         return best.name + " is a row of " + under.name + ", not of the menu named before it";
+    }
+
+    /** The words ending just before {@code at} (markup and spaces aside) are a right-click. */
+    static boolean rightClickBefore(String text, int at) {
+        int end = at;
+        while (end > 0 && (Character.isWhitespace(text.charAt(end - 1))
+                || text.charAt(end - 1) == '*' || text.charAt(end - 1) == '_')) {
+            end--;
+        }
+        String head = text.substring(Math.max(0, end - 40), end).toLowerCase(java.util.Locale.ROOT);
+        return head.endsWith("right-click") || head.endsWith("right-click in the editor");
     }
 
     private static boolean endsWith(String text, int at, String name) {
