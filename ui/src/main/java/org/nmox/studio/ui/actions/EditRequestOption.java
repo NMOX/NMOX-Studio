@@ -2,8 +2,6 @@ package org.nmox.studio.ui.actions;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
@@ -15,6 +13,7 @@ import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
 import org.nmox.studio.core.util.AtomicFiles;
+import org.nmox.studio.core.util.BoundedReads;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.WindowManager;
 
@@ -107,10 +106,9 @@ public final class EditRequestOption extends OptionProcessor {
             if (!request.isFile()) {
                 throw new EditRequest.Refused("the request folder holds no request");
             }
-            if (request.length() > MAX_BYTES) {
-                throw new EditRequest.Refused("the request is larger than nmox ever writes");
-            }
-            return Files.readString(request.toPath(), StandardCharsets.UTF_8);
+            return BoundedReads.read(request, MAX_BYTES);
+        } catch (BoundedReads.TooLarge ex) {
+            throw new EditRequest.Refused("the request is larger than nmox ever writes");
         } catch (IOException ex) {
             throw new EditRequest.Refused("the request could not be read: " + ex.getMessage());
         }
