@@ -29,6 +29,7 @@ listahan ng mga device, tingnan ang [devices.md](../devices.md).
 | [Pag-edit at pag-debug sa maraming wika](polyglot-editing-and-debugging.tl.md) | Maglagay ng breakpoint sa Node app at huminto roon | buksan ang anumang proyekto |
 | [Mula browser tungo sa source](browser-to-source.tl.md) | I-click ang elemento sa pahina, dumapo sa source nito, baguhin ang estilo mula sa DevTools | ⌥⌘4 → DevTools → DOM |
 | [Ang Agent Port (MCP)](agent-port.tl.md) | Itutok ang isang AI agent sa buhay na kalagayan ng IDE — read-only ayon sa pagkakagawa | Kasangkapan ▸ Agent Port (MCP)… |
+| [Ang Ikalawang Linggo](the-second-week.tl.md) | Mag-commit, magsuri ng diff, lumutas ng conflict, magbukas ng pull request, at habulin ang isang stack trace — ang sariling mga hakbang ng git, sa window kung saan ka nagtatrabaho | Pangkat ▸ Gamitin ang NMOX Studio sa Git… |
 | [Ang Panel ng Docker](docker-panel.tl.md) | Suriin ang mga container at i-dockerize ang isang proyekto | tab na Panel ng Docker |
 | [Ang Task Board at mga sprint](task-board.tl.md) | Magpatakbo ng kanban na may time clock, standup sa isang click, at sprint burndown mula sa iisang file sa repo | ⌥⌘1 |
 | [Ipakita sa isang silid](show-it-to-a-room.tl.md) | Magpresenta, magbahagi, at kumuha ng screenshot mula sa loob ng IDE — mula Mode ng presentasyon hanggang Kopyahin ang Project Tree bilang Markdown | Tingnan ▸ Mode ng presentasyon |

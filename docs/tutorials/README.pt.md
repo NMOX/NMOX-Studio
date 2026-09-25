@@ -28,6 +28,7 @@ dispositivos veja [devices.md](../devices.md).
 | [Edição poliglota e depuração](polyglot-editing-and-debugging.pt.md) | Pôr um ponto de interrupção num app Node e fazê-lo parar ali | abra qualquer projeto |
 | [Do navegador ao código-fonte](browser-to-source.pt.md) | Clicar num elemento da página, cair no código-fonte dele e mudar o estilo pelo DevTools | ⌥⌘4 → DevTools → DOM |
 | [O Agent Port (MCP)](agent-port.pt.md) | Apontar um agente de IA para o estado vivo da IDE — somente leitura por construção | Ferramentas ▸ Agent Port (MCP)… |
+| [A segunda semana](the-second-week.pt.md) | Fazer commit, revisar um diff, resolver um conflito, abrir um pull request e rastrear um stack trace — os passos do próprio git, na janela em que você trabalha | Equipe ▸ Usar o NMOX Studio com o Git… |
 | [O Painel do Docker](docker-panel.pt.md) | Inspecionar contêineres e dockerizar um projeto | aba Painel do Docker |
 | [O Quadro de tarefas e os sprints](task-board.pt.md) | Tocar um kanban com relógio de ponto, standup de um clique e burndown de sprint a partir de um único arquivo versionado | ⌥⌘1 |
 | [Mostre para uma sala](show-it-to-a-room.pt.md) | Apresentar, compartilhar e capturar a tela de dentro da IDE — do Modo de apresentação a Copiar árvore do projeto como Markdown | Exibir ▸ Modo de apresentação |

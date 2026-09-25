@@ -28,6 +28,7 @@ urządzeń jest w [devices.md](../devices.md).
 | [Edycja wielu języków i debugowanie](polyglot-editing-and-debugging.pl.md) | Postawisz pułapkę w aplikacji Node i zatrzymasz się na niej | dowolny otwarty projekt |
 | [Od przeglądarki do źródła](browser-to-source.pl.md) | Klikniesz element na stronie, trafisz do jego źródła i zmienisz mu styl z DevTools | ⌥⌘4 → DevTools → DOM |
 | [Agent Port (MCP)](agent-port.pl.md) | Wycelujesz agenta SI w żywy stan IDE — tylko do odczytu z samej konstrukcji | Narzędzia ▸ Agent Port (MCP)… |
+| [Drugi tydzień](the-second-week.pl.md) | Zatwierdzisz zmiany, przejrzysz diff, rozwiążesz konflikt, otworzysz pull request i prześledzisz ślad stosu — własne kroki gita, w oknie, w którym pracujesz | Zespół ▸ Używaj NMOX Studio z Git… |
 | [Panel Docker](docker-panel.pl.md) | Obejrzysz kontenery i zdockeryzujesz projekt | karta Panel Docker |
 | [Tablica zadań i sprinty](task-board.pl.md) | Poprowadzisz kanban z zegarem pracy, standupem jednym kliknięciem i wykresem spalania sprintu — wszystko z jednego wersjonowanego pliku | ⌥⌘1 |
 | [Pokaż to sali](show-it-to-a-room.pl.md) | Będziesz prezentować, udostępniać i robić zrzuty wprost z IDE — od trybu prezentacji po kopiowanie drzewa projektu jako Markdown | Widok ▸ Tryb prezentacji |

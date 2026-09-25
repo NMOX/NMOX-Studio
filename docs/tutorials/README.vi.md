@@ -28,6 +28,7 @@ Muốn tra cứu rộng hơn (cài đặt, mọi trình đơn, mọi lưới an 
 | [Soạn thảo và gỡ lỗi đa ngôn ngữ](polyglot-editing-and-debugging.vi.md) | Đặt điểm dừng trong một ứng dụng Node và dừng đúng ở đó | mở dự án bất kỳ |
 | [Từ trình duyệt tới mã nguồn](browser-to-source.vi.md) | Nhấp một phần tử trên trang, đáp xuống mã nguồn của nó, đổi kiểu từ DevTools | ⌥⌘4 → DevTools → DOM |
 | [Agent Port (MCP)](agent-port.vi.md) | Hướng một tác nhân AI vào trạng thái đang sống của IDE — chỉ đọc theo thiết kế | Công cụ ▸ Agent Port (MCP)… |
+| [Tuần thứ hai](the-second-week.vi.md) | Commit, xem lại diff, giải quyết xung đột, mở pull request và lần theo stack trace — các bước của chính git, ngay trong cửa sổ bạn đang làm việc | Nhóm ▸ Dùng NMOX Studio với Git… |
 | [Bảng điều khiển Docker](docker-panel.vi.md) | Xem các container và dockerize một dự án | thẻ Bảng điều khiển Docker |
 | [Bảng công việc và sprint](task-board.vi.md) | Chạy một kanban có đồng hồ chấm công, bản họp nhanh một cú nhấp và biểu đồ burndown của sprint, tất cả từ một tệp đưa vào kho | ⌥⌘1 |
 | [Trình bày trước cả phòng](show-it-to-a-room.vi.md) | Trình bày, chia sẻ và chụp màn hình ngay trong IDE — từ Chế độ trình chiếu tới Sao chép cây dự án dưới dạng Markdown | Xem ▸ Chế độ trình chiếu |
