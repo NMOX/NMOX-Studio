@@ -20,11 +20,18 @@ class CssCompletionProviderTest {
     @Test
     @DisplayName("Outside any rule block the caret is in selector context")
     void selectorContext() {
-        // at the very start of the file the prefix scan begins at index 1,
-        // so a leading '.' is dropped — a known quirk of the classifier
+        // at the very start of the file the prefix is the whole text (this
+        // test once pinned the first character being dropped as a quirk)
         CssContext c = CssCompletionProvider.analyzeContext(".ca");
         assertThat(c.type).isEqualTo(CssContextType.SELECTOR);
-        assertThat(c.prefix).isEqualTo("ca");
+        assertThat(c.prefix).isEqualTo(".ca");
+        assertThat(CssCompletionProvider.analyzeContext("bo").prefix).isEqualTo("bo");
+
+        // Ctrl+Space at the top of an empty stylesheet: an empty selector
+        // prefix, not a StringIndexOutOfBoundsException (found walking 3.3)
+        CssContext empty = CssCompletionProvider.analyzeContext("");
+        assertThat(empty.type).isEqualTo(CssContextType.SELECTOR);
+        assertThat(empty.prefix).isEmpty();
 
         // after a closed rule we are back in selector context, prefix intact
         CssContext after = CssCompletionProvider.analyzeContext(".a { color: red; }\n.b");

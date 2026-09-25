@@ -342,7 +342,11 @@ public class CssCompletionProvider implements CompletionProvider {
         } else {
             // We're outside a rule block (selector area)
             context.type = CssContextType.SELECTOR;
-            int start = Math.max(lastCloseBrace, 0) + 1;
+            // just after the last '}', or the start of the text when there
+            // is none (the old max(lastCloseBrace, 0) + 1 dropped the file's
+            // first character and read past an empty one: Ctrl+Space at the
+            // top of a new stylesheet threw)
+            int start = lastCloseBrace + 1;
             context.prefix = text.substring(start).trim();
         }
 
