@@ -112,17 +112,19 @@ public final class ConflictWatcher implements DocumentListener {
 
     /** The document's watcher, attached (and scanned) the first time it is asked for. */
     static ConflictWatcher of(Document doc) {
-        synchronized (doc) {
-            Object w = doc.getProperty(ConflictWatcher.class);
-            if (w instanceof ConflictWatcher watcher) {
-                return watcher;
-            }
-            ConflictWatcher watcher = new ConflictWatcher(doc);
-            doc.putProperty(ConflictWatcher.class, watcher);
-            doc.addDocumentListener(watcher);
-            watcher.schedule(0);
+        // editors are built on the EDT, so two views of one document arrive
+        // here one after the other and the property is the whole guard (the
+        // GitSummaryLineHint reasoning); no lock on the document itself,
+        // whose monitor AbstractDocument's own write lock waits on
+        Object w = doc.getProperty(ConflictWatcher.class);
+        if (w instanceof ConflictWatcher watcher) {
             return watcher;
         }
+        ConflictWatcher watcher = new ConflictWatcher(doc);
+        doc.putProperty(ConflictWatcher.class, watcher);
+        doc.addDocumentListener(watcher);
+        watcher.schedule(0);
+        return watcher;
     }
 
     OffsetsBag bag() {
