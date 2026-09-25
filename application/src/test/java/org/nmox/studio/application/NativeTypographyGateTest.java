@@ -95,6 +95,17 @@ class NativeTypographyGateTest {
                 word("", "افتح|اختار|اضغط|دوس|اكتب|جرب|روح|خلي|استخدم|اسأل")));
     }
 
+    /**
+     * Whether this language's convention APPENDS a Latin mnemonic,
+     * {@code 文件(&F)}, rather than underlining a letter of the label. One
+     * home for the fact: {@code MenuRowsSpeakTest} asks here before it
+     * refuses an appended letter.
+     */
+    static boolean appendsMnemonic(String lang) {
+        Convention c = CONVENTION.get(lang);
+        return c != null && c.appendedMnemonic();
+    }
+
     private static Pattern word(String flags, String alternatives) {
         return Pattern.compile(flags + "(?<![\\p{L}\\-/.])(" + alternatives + ")(?!\\p{L})");
     }

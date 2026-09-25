@@ -15,7 +15,7 @@ the build by key. Register (formal or informal address) is gated by a small
 word list per language. Idiom is not gated, and cannot be: that half is a
 reader's job, done again for every language that ships.
 
-Two rules hold for every language:
+Three rules hold for every language:
 
 - **The ellipsis is one character, `…` (U+2026).** The platform's own
   English writes three periods, and a translated menu that mixes `...`
@@ -23,6 +23,24 @@ Two rules hold for every language:
 - **Quotation marks are the language's own.** A straight `"` pair around
   a name is a typewriter habit. It stays straight only inside markup,
   code, or examples the user types (`"?" "*"` in a search pattern).
+- **A mnemonic is a letter the platform can map: `A`–`Z` or `0`–`9`.**
+  Measured in 3.2.0 on the shipped `org.openide.awt.Mnemonics`: `&Editor`
+  gives the key E, but `&Éditeur`, `Pozosta&łe`, `&Đóng` and `&Файл` give
+  NO mnemonic at all. Any other character is looked up in a branded
+  `Mnemonics.properties` table the product does not ship; the lookup fails,
+  logs an INFO line every time the menu is built, and assigns nothing.
+- **Where the label is written in letters, the mnemonic is one of them,
+  underlined in place**: `Edito&r`, `Dokum&ente…`, `Tài &liệu…`. The Latin
+  letter appended in parentheses, `Editor(&J)`, is the convention of
+  scripts with no Latin letter to underline (Chinese, Hindi, Hebrew,
+  Arabic, below). In a language written in Latin letters it is the lazy
+  answer to a collision, and on macOS, where Swing shows no mnemonics, the
+  reader sees a stray `(J)` after the word. A label keeps an appended
+  letter only when every mappable letter it contains is already claimed by
+  another row of the same menu — which is why Russian and Ukrainian keep
+  theirs: a Cyrillic letter cannot be mapped (the first rule), so their
+  appended Latin letter is the only mnemonic that works. `MenuRowsSpeakTest`
+  holds both rules over every platform menu row.
 
 ## es — Español
 
@@ -55,6 +73,15 @@ Two rules hold for every language:
 - Quotes: «ёлочки», no inner spaces.
 - Ukrainian apostrophes are `’` (U+2019), which MessageFormat leaves alone
   (v2.98.0).
+- **Mnemonics: open.** The overlays embed a Cyrillic letter (`&Файл`), and
+  measured in 3.2.0 no Cyrillic letter maps to a key (the mapping rule
+  above), so about 260 values per language carry a mnemonic that does
+  nothing (138 Russian and 136 Ukrainian menu rows among them). The fix is
+  either a shipped Cyrillic-to-keycode table for `org.openide.awt.Mnemonics`
+  (a key by keyboard position, as the platform's own l10n once did) or
+  Latin letters; until one is chosen, `MenuRowsSpeakTest` records these two
+  languages as the one exception to the mapping law, and the appended Latin
+  letters they carry stay, because they are the only mnemonics that work.
 
 ## pl — Polski
 
