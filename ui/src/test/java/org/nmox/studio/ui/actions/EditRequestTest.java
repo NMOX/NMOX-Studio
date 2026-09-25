@@ -147,10 +147,12 @@ class EditRequestTest {
     }
 
     @Test
-    @DisplayName("the diff bar steps inside the list, from nowhere forward to the first and back to the last")
+    @DisplayName("the diff bar steps inside the list; before any choice the first difference is the one shown")
     void diffSteps() {
-        assertThat(DiffWindow.step(-1, 3, 1)).isZero();
-        assertThat(DiffWindow.step(-1, 3, -1)).isEqualTo(2);
+        // the controller reports -1 while its divider already reads 1/N: the
+        // first Next must move, not land on what is on screen (the walk's find)
+        assertThat(DiffWindow.step(-1, 3, 1)).isEqualTo(1);
+        assertThat(DiffWindow.step(-1, 3, -1)).isZero();
         assertThat(DiffWindow.step(0, 3, 1)).isEqualTo(1);
         assertThat(DiffWindow.step(2, 3, 1)).as("stays on the last").isEqualTo(2);
         assertThat(DiffWindow.step(0, 3, -1)).as("stays on the first").isZero();

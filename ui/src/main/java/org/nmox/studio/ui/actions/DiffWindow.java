@@ -147,18 +147,19 @@ final class DiffWindow extends TopComponent {
     }
 
     /**
-     * The difference a step lands on: {@code delta} from {@code index},
-     * kept inside the list; from no difference yet, forward lands on the
-     * first and back on the last. -1 when there is none.
+     * The difference a step lands on: {@code delta} from {@code index}, kept
+     * inside the list; -1 when there is none. The controller reports -1
+     * before anything was chosen while its own divider already presents the
+     * first difference ("1/2"), so -1 counts as the first: the first press
+     * of Next goes to the second, as the reader expects (walked in 3.2.0,
+     * where it spent a press landing on the difference already shown).
      */
     static int step(int index, int count, int delta) {
         if (count <= 0) {
             return -1;
         }
-        if (index < 0 || index >= count) {
-            return delta > 0 ? 0 : count - 1;
-        }
-        return Math.max(0, Math.min(count - 1, index + delta));
+        int at = Math.min(Math.max(index, 0), count - 1);
+        return Math.max(0, Math.min(count - 1, at + delta));
     }
 
     /** The bar's sentence: which difference is shown, or that there are none. */
@@ -181,8 +182,9 @@ final class DiffWindow extends TopComponent {
         int count = diff.getDifferenceCount();
         int index = diff.getDifferenceIndex();
         where.setText(PlainText.plain(position(index, count)));
-        previous.setEnabled(count > 0 && index != 0);
-        next.setEnabled(count > 0 && index < count - 1);
+        int at = Math.max(index, 0);
+        previous.setEnabled(count > 0 && at > 0);
+        next.setEnabled(count > 0 && at < count - 1);
     }
 
     @Override
