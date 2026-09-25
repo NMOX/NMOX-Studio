@@ -96,3 +96,5 @@ Written after 3.2.0 shipped, held for the release this plan becomes:
 - The file watchers (row 1).
 - Find in Projects' results open readable (row 5).
 - The route jump says when it stopped at its cap (row 4, in part).
+- DB Studio watches its `.nmoxdb.json` with one stat a poll instead of a
+  walk of the whole project.
