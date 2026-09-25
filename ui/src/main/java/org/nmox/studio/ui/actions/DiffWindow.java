@@ -114,9 +114,30 @@ final class DiffWindow extends TopComponent {
      * a null side (git's {@code /dev/null}) is an empty one, typed like the
      * other so both panes colour alike. On the EDT.
      */
+    /**
+     * The two sides' sources, read OFF the EDT: the binary sniff reads up to
+     * {@link #SNIFF} bytes of each file and the type lookup resolves a
+     * FileObject (ledger 124, closed after 3.2.0: both ran on the EDT).
+     */
+    record Prepared(File left, File right, StreamSource l, StreamSource r) {
+    }
+
+    /** Reads what {@link #open(Prepared)} needs; never on the EDT. */
+    static Prepared prepare(File left, File right) throws IOException {
+        return new Prepared(left, right, left == null ? null : source(left), right == null ? null : source(right));
+    }
+
+    /** Both halves at once, for callers already off the EDT and for tests. */
     static DiffWindow open(File left, File right) throws IOException {
-        StreamSource l = left == null ? null : source(left);
-        StreamSource r = right == null ? null : source(right);
+        return open(prepare(left, right));
+    }
+
+    /** Builds and shows the window from sources already read. On the EDT. */
+    static DiffWindow open(Prepared p) throws IOException {
+        File left = p.left();
+        File right = p.right();
+        StreamSource l = p.l();
+        StreamSource r = p.r();
         if (l == null) {
             l = StreamSource.createSource("", Bundle.DiffWindow_nothing(), r.getMIMEType(), new java.io.StringReader(""));
         }

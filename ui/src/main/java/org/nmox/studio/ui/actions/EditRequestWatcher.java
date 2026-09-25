@@ -107,29 +107,84 @@ final class EditRequestWatcher {
     private EditRequestWatcher() {
     }
 
-    /** Opens everything {@code request} names; tracks it when it waits. On the EDT. */
-    static void show(File folder, EditRequest request) {
-        List<Object> targets = new ArrayList<>();
-        List<String> names = new ArrayList<>();
+    /** A file resolved off the EDT: the DataObject that will be opened, at a line. */
+    record ResolvedOpen(DataObject dob, int line, String name) {
+    }
+
+    /**
+     * What a request names, read OFF the EDT — every DataObject found and
+     * every diff side sniffed — or the first item that could not be, which
+     * refuses the whole request before anything opens (ledger 124, closed
+     * after 3.2.0: the lookups and the diff's 8,000-byte sniff ran on the
+     * EDT).
+     */
+    record Prepared(List<Object> items, String failedFile, IOException failure) {
+    }
+
+    private static final org.openide.util.RequestProcessor PREPARE =
+            new org.openide.util.RequestProcessor("nmox-edit-request", 1);
+
+    /**
+     * The launcher's door: resolve on a lane, then open and track in ONE
+     * EDT turn once the UI is ready — the start-up sweep of left-over git
+     * files relies on a request's tab being tracked in the turn it opens.
+     */
+    static void showLater(File folder, EditRequest request) {
+        PREPARE.post(() -> {
+            Prepared p = prepare(request);
+            org.openide.windows.WindowManager.getDefault().invokeWhenUIReady(() -> show(folder, request, p));
+        });
+    }
+
+    /** Resolves every item; never on the EDT. */
+    static Prepared prepare(EditRequest request) {
+        List<Object> items = new ArrayList<>();
         for (EditRequest.Item item : request.items()) {
             try {
                 if (item instanceof EditRequest.Open o) {
-                    DataObject opened = open(o.file(), o.line());
-                    remember(opened);
-                    targets.add(opened);
-                    names.add(o.file().getName());
+                    items.add(new ResolvedOpen(resolve(o.file()), o.line(), o.file().getName()));
                 } else if (item instanceof EditRequest.Diff d) {
-                    DiffWindow w = DiffWindow.open(d.left(), d.right());
-                    targets.add(w);
-                    names.add(w.getDisplayName());
+                    items.add(DiffWindow.prepare(d.left(), d.right()));
                 }
             } catch (IOException ex) {
                 String file = item instanceof EditRequest.Open o ? o.file().getName()
                         : ((EditRequest.Diff) item).left() != null ? ((EditRequest.Diff) item).left().getName()
                         : ((EditRequest.Diff) item).right().getName();
-                String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
-                status.accept(PlainStatus.text(why));
-                EditRequestOption.answer(folder, "refused", why);
+                return new Prepared(items, file, ex);
+            }
+        }
+        return new Prepared(items, null, null);
+    }
+
+    /** Both halves at once (tests, and callers already off the EDT's clock). */
+    static void show(File folder, EditRequest request) {
+        show(folder, request, prepare(request));
+    }
+
+    /** Opens everything a prepared request names; tracks it when it waits. On the EDT. */
+    static void show(File folder, EditRequest request, Prepared prepared) {
+        if (prepared.failure() != null) {
+            refuse(folder, prepared.failedFile(), prepared.failure());
+            return;
+        }
+        List<Object> targets = new ArrayList<>();
+        List<String> names = new ArrayList<>();
+        for (Object item : prepared.items()) {
+            try {
+                if (item instanceof ResolvedOpen o) {
+                    DataObject opened = open(o.dob(), o.line());
+                    remember(opened);
+                    targets.add(opened);
+                    names.add(o.name());
+                } else if (item instanceof DiffWindow.Prepared d) {
+                    DiffWindow w = DiffWindow.open(d);
+                    targets.add(w);
+                    names.add(w.getDisplayName());
+                }
+            } catch (IOException ex) {
+                refuse(folder, item instanceof ResolvedOpen o ? o.name()
+                        : ((DiffWindow.Prepared) item).left() != null ? ((DiffWindow.Prepared) item).left().getName()
+                        : ((DiffWindow.Prepared) item).right().getName(), ex);
                 return;
             }
         }
@@ -145,6 +200,12 @@ final class EditRequestWatcher {
         recheck();
     }
 
+    private static void refuse(File folder, String file, IOException ex) {
+        String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
+        status.accept(PlainStatus.text(why));
+        EditRequestOption.answer(folder, "refused", why);
+    }
+
     /** Starts waiting on {@code s}. On the EDT. */
     static void track(Session s) {
         synchronized (WAITING) {
@@ -153,13 +214,17 @@ final class EditRequestWatcher {
         listen();
     }
 
-    /** Opens {@code file}, at {@code line} when it is positive, and answers the DataObject that tracks it. */
-    private static DataObject open(File file, int line) throws IOException {
+    /** The DataObject of {@code file}; touches the disk, so never on the EDT. */
+    static DataObject resolve(File file) throws IOException {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fo == null) {
             throw new IOException("no such file");
         }
-        DataObject dob = DataObject.find(fo);
+        return DataObject.find(fo);
+    }
+
+    /** Opens {@code dob}, at {@code line} when it is positive, and answers it. On the EDT. */
+    private static DataObject open(DataObject dob, int line) throws IOException {
         LineCookie lc = dob.getLookup().lookup(LineCookie.class);
         if (line > 0 && lc != null) {
             Line.Set set = lc.getLineSet();

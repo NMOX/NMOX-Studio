@@ -141,9 +141,10 @@ counting as open, Windows sh). What is left:
 - **The census pins are keyed by a file's simple name** (the action census's
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.
-- **The diff view reads 8,000 bytes of each side on the EDT** to decide
-  text or binary, and `nmox -d` refuses two binaries over 16 MiB although
-  their comparison already runs off the EDT.
+- **`nmox -d` refuses two binaries over 16 MiB** although their
+  comparison runs off the EDT. (The 8,000-byte sniff and the DataObject
+  lookups moved off the EDT after 3.2.0: a request is resolved on a lane,
+  then opened and tracked in one EDT turn.)
 
 ## Open — added by 3.1.0 (the developer-experience release)
 
