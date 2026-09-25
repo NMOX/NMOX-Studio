@@ -22,24 +22,36 @@ guess. These are decisions.
 
 ## Open — added by 3.2.0 (the second-week release)
 
-### 122. Russian and Ukrainian menu mnemonics do nothing
+### 122. ~~Russian and Ukrainian menu mnemonics do nothing~~ — Russian and Ukrainian CLOSED after 3.2.0
 
-**Open, for a decision.** The platform's `org.openide.awt.Mnemonics`
-gives a key only to `A–Z` and `0–9` (measured on the shipped jar in 3.2.0):
-for any other letter it looks for a translated `Mnemonics.properties`
-table the product does not ship, logs an INFO line each time the menu is
-built, and assigns nothing. So about 138 Russian and 136 Ukrainian menu
-rows (and about 120 other values each) underline a Cyrillic letter that no
-key reaches; only the few rows with an appended Latin letter work.
-`MenuRowsSpeakTest` exempts the two languages by name and fails when the
-exemption stops describing anything. **What would close it:** a
-Cyrillic-to-key table for `Mnemonics` (the branding overlay cannot carry it,
-since it renames the file to `Mnemonics_nmoxstudio_ru`), or Latin letters
-appended the way Chinese and Hindi do. Nineteen accented mnemonics outside
-the menu rows (a French top-level `&Édition`, Vietnamese `&Đóng` on Close
-buttons, German `Gro&ß-/Kleinschreibung`) are dead the same way, and the
-top menu bar has no uniqueness gate (French: Affichage and Refactoriser
-both claim A).
+**Closed for Russian and Ukrainian.** The platform's `org.openide.awt.Mnemonics`
+gives a key only to `A–Z` and `0–9` and looks any other letter up with a
+plain `ResourceBundle.getBundle("org.openide.awt.Mnemonics")`, which finds a
+table only in an UNBRANDED locale jar (`org-openide-awt_ru.jar`). The entry
+called that jar impossible because the branding goal writes
+`org-openide-awt_nmoxstudio_ru.jar`; read from the mojo, it names a jar
+`brandingToken + "_" + the file's locale`, so a second `nbm:branding`
+execution whose token IS the locale, over a file with no locale suffix,
+writes exactly the platform's name. `branding/src/main/nbm-mnemonics` holds
+the two tables (each letter to its key in the ЙЦУКЕН layout); they ride the
+cluster, the branding NBM and its `update_tracking`, so an update-center
+install gets them too. Measured on the assembled app under `--locale ru`:
+241 "Mapping from a non-Latin character" refusals at boot without the table,
+0 with it (and 0 under `uk`). With the letters live, fourteen of them turned
+out to press a key another row of the same menu already claimed (`Другая
+&VCS` and `От&менить` both V) or kept an appended Latin letter though a
+letter of their own was free; the mnemonic laws now compare the KEY a
+mnemonic presses (the letter comparison, as a control, passed the collision
+silently) and the fourteen were moved. `CyrillicMnemonicsTest` runs the
+platform's own `Mnemonics` over every Russian and Ukrainian value in the
+cluster.
+
+**Still open:** the accented and non-Latin mnemonics outside Russian and
+Ukrainian (French `&Édition`, Spanish `&Ámbito:`, Vietnamese `&Đóng`,
+German `Gro&ß-/Kleinschreibung`, Polish `Zwi&ń`, and Hindi, whose top menu
+bar underlines Devanagari — `&फ़ाइल` — where its own convention appends a
+Latin letter), and the top menu bar has no uniqueness gate (French:
+Affichage and Refactoriser both claim A).
 
 ### 123. The platform status line can drop a message (upstream)
 

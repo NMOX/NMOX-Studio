@@ -129,11 +129,12 @@ class MenuRowsSpeakTest {
                 if (letter == null) {
                     continue;
                 }
+                String key = keyOf(letter, locale);
                 Map<String, String> taken = perMenu.computeIfAbsent(row.menu(), m -> new TreeMap<>());
-                String other = taken.putIfAbsent(letter, value);
+                String other = taken.putIfAbsent(key, value);
                 if (other != null) {
                     clashes.add(locale + " " + row.menu() + ": \"" + value + "\" and \"" + other
-                            + "\" both claim " + letter);
+                            + "\" both press " + key);
                 }
             }
         }
@@ -195,22 +196,68 @@ class MenuRowsSpeakTest {
     private static final Pattern APPENDED = Pattern.compile("\\(&([^)])\\)");
 
     /**
-     * The languages exempt from the mapping law, and why. Their overlays
-     * underline a Cyrillic letter ({@code &Файл}), and no Cyrillic letter maps
-     * to a key (see {@link #onlyLatinLettersAndDigitsMapToAKey}), so about
-     * 138 Russian and 136 Ukrainian menu rows carry a mnemonic that does
-     * nothing. That is OPEN, not blessed: the fix is either a shipped
-     * Cyrillic-to-keycode table for {@code org.openide.awt.Mnemonics} or
-     * Latin letters, and it is recorded in {@code docs/i18n/conventions.md}.
-     * An exemption that turns out to be empty fails, so it cannot outlive the fix.
+     * The letters a language's shipped mnemonic table maps (after 3.2.0,
+     * ledger 122): {@code modules/locale/org-openide-awt_<lang>.jar}, read
+     * from the cluster, so the mapping law asks what the product ships and
+     * not what this test remembers. Russian and Ukrainian carry one; until
+     * they did, about 138 Russian and 136 Ukrainian rows underlined a letter
+     * no key reached and this test exempted both languages by name.
      */
-    private static final Set<String> CYRILLIC_UNMAPPED = Set.of("ru", "uk");
+    private static final Map<String, Map<Character, String>> TABLES = new java.util.HashMap<>();
+
+    /** Letter to key ({@code "A"}, or a {@code KeyEvent} code such as {@code "91"}) in the language's shipped table. */
+    private static synchronized Map<Character, String> table(String locale) throws IOException {
+        Map<Character, String> known = TABLES.get(locale);
+        if (known != null) {
+            return known;
+        }
+        Map<Character, String> letters = new HashMap<>();
+        Path jar = CLUSTER.resolve("nmoxstudio").resolve("modules").resolve("locale")
+                .resolve("org-openide-awt_" + locale + ".jar");
+        if (Files.isRegularFile(jar)) {
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
+                java.util.zip.ZipEntry e = zip.getEntry("org/openide/awt/Mnemonics_" + locale + ".properties");
+                if (e != null) {
+                    Properties p = new Properties();
+                    try (java.io.InputStream in = zip.getInputStream(e)) {
+                        p.load(in);
+                    }
+                    for (String key : p.stringPropertyNames()) {
+                        if (key.startsWith("MNEMONIC_") && key.length() == "MNEMONIC_".length() + 1) {
+                            letters.put(key.charAt(key.length() - 1), p.getProperty(key).trim());
+                        }
+                    }
+                }
+            }
+        }
+        TABLES.put(locale, letters);
+        return letters;
+    }
+
+    /** A letter reaches a key: A-Z and 0-9 on their own, anything else only through the language's table. */
+    private static boolean mapsToAKey(char c, String locale) throws IOException {
+        return mapsToAKey(c) || table(locale).containsKey(c);
+    }
+
+    /**
+     * The key a mnemonic letter presses, which is what two rows can collide
+     * on: {@code &Файл} and {@code Документы(&A)} are different letters and
+     * the same key A. An ASCII letter is its own key; any other letter is
+     * the language's table's answer, or itself when it has none.
+     */
+    private static String keyOf(String letter, String locale) throws IOException {
+        char c = letter.charAt(0);
+        if (mapsToAKey(c)) {
+            return letter.toUpperCase(Locale.ROOT);
+        }
+        String k = table(locale).get(c);
+        return k == null ? letter : k.length() == 1 ? k.toUpperCase(Locale.ROOT) : "#" + k;
+    }
 
     @Test
     @DisplayName("a mnemonic is a letter the platform maps to a key: A-Z or 0-9")
     void mnemonicsAreLettersThePlatformMaps() throws IOException {
         List<String> wrong = new ArrayList<>();
-        Map<String, Integer> exempt = new TreeMap<>();
         for (String locale : LOCALES) {
             for (Row row : allRows()) {
                 Properties p = overlay(row, locale);
@@ -219,11 +266,7 @@ class MenuRowsSpeakTest {
                     continue;
                 }
                 int i = value.indexOf('&');
-                if (i < 0 || i == value.length() - 1 || mapsToAKey(value.charAt(i + 1))) {
-                    continue;
-                }
-                if (CYRILLIC_UNMAPPED.contains(locale)) {
-                    exempt.merge(locale, 1, Integer::sum);
+                if (i < 0 || i == value.length() - 1 || mapsToAKey(value.charAt(i + 1), locale)) {
                     continue;
                 }
                 wrong.add(locale + " " + row.menu() + " " + paintedKey(row) + ": \"" + value
@@ -231,9 +274,10 @@ class MenuRowsSpeakTest {
                         + "has no mnemonic at all (and the platform logs it every time the menu is built)");
             }
         }
-        assertThat(wrong).as("mnemonics that do nothing — underline a letter A-Z or a digit").isEmpty();
-        assertThat(exempt.keySet()).as("the Cyrillic exemption still describes something; "
-                + "when it does not, delete it").isEqualTo(CYRILLIC_UNMAPPED);
+        assertThat(wrong).as("mnemonics that do nothing — underline a letter A-Z, a digit, "
+                + "or a letter the language's shipped table maps").isEmpty();
+        assertThat(table("ru")).as("the Russian table in the cluster").containsKeys('Ф', 'ф', 'Ы');
+        assertThat(table("uk")).as("the Ukrainian table in the cluster").containsKeys('Ф', 'ф', 'І', 'Ї', 'Є', 'Ґ');
     }
 
     @Test
@@ -265,11 +309,15 @@ class MenuRowsSpeakTest {
                     String ov = op == null ? null : op.getProperty(paintedKey(other));
                     String letter = ov == null ? null : mnemonicOf(ov);
                     if (letter != null) {
-                        taken.add(letter);
+                        taken.add(keyOf(letter, locale));
                     }
                 }
-                Set<String> free = new java.util.TreeSet<>(mappableLetters(label));
-                free.removeAll(taken);
+                Set<String> free = new java.util.TreeSet<>();
+                for (String own : mappableLetters(label, locale)) {
+                    if (!taken.contains(keyOf(own, locale))) {
+                        free.add(own);
+                    }
+                }
                 if (!free.isEmpty()) {
                     wrong.add(locale + " " + row.menu() + " " + paintedKey(row) + ": \"" + value
                             + "\" appends " + m.group(1) + " while " + free
@@ -285,8 +333,10 @@ class MenuRowsSpeakTest {
      * The premise of the mapping law, measured on the platform this build
      * ships rather than remembered: {@code Mnemonics.setLocalizedText} gives a
      * key for an ASCII letter and NONE for an accented, Polish, Vietnamese or
-     * Cyrillic one. If a platform upgrade learns to map them, this fails, and
-     * the mapping law (and the Cyrillic exemption) should be revisited.
+     * Cyrillic one on its own — the reason the product ships tables for
+     * Russian and Ukrainian (after 3.2.0). If a platform upgrade learns to
+     * map them, this fails, and the mapping law and the tables should be
+     * revisited.
      */
     @Test
     @DisplayName("the platform maps only A-Z and 0-9 to a mnemonic key (measured on the shipped jar)")
@@ -336,13 +386,13 @@ class MenuRowsSpeakTest {
         }
     }
 
-    /** Only these reach a key without a branded table the product does not ship. */
+    /** Only these reach a key without a language's table. */
     private static boolean mapsToAKey(char c) {
         return c < 128 && Character.isLetterOrDigit(c);
     }
 
     /** The letters of a label a mnemonic could underline: ASCII, outside any {@code {…}} pattern. */
-    private static Set<String> mappableLetters(String label) {
+    private static Set<String> mappableLetters(String label, String locale) throws IOException {
         Set<String> out = new HashSet<>();
         int depth = 0;
         for (char c : label.toCharArray()) {
@@ -350,7 +400,7 @@ class MenuRowsSpeakTest {
                 depth++;
             } else if (c == '}') {
                 depth = Math.max(0, depth - 1);
-            } else if (depth == 0 && mapsToAKey(c)) {
+            } else if (depth == 0 && mapsToAKey(c, locale)) {
                 out.add(String.valueOf(c).toUpperCase(Locale.ROOT));
             }
         }

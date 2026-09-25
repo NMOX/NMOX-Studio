@@ -37,6 +37,41 @@
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
+                <executions>
+                    <!-- The Cyrillic mnemonic tables (after 3.2.0, ledger 122).
+                         The platform's Mnemonics reads them with a plain
+                         ResourceBundle.getBundle, which finds only an
+                         UNBRANDED locale jar (org-openide-awt_ru.jar), and
+                         the default branding execution can only write
+                         org-openide-awt_nmoxstudio_ru.jar. The goal names a
+                         jar brandingToken + "_" + the file's locale, so a
+                         file with NO locale suffix under a token that IS the
+                         locale gives exactly the platform's name. Bound
+                         before package so the cluster and the NBM carry
+                         them; CyrillicMnemonicsTest holds the result. -->
+                    <execution>
+                        <id>mnemonics-ru</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>ru</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/ru</brandingSources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>mnemonics-uk</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>branding</goal>
+                        </goals>
+                        <configuration>
+                            <brandingToken>uk</brandingToken>
+                            <brandingSources>${basedir}/src/main/nbm-mnemonics/uk</brandingSources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

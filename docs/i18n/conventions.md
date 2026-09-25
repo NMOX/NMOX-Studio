@@ -23,24 +23,27 @@ Three rules hold for every language:
 - **Quotation marks are the language's own.** A straight `"` pair around
   a name is a typewriter habit. It stays straight only inside markup,
   code, or examples the user types (`"?" "*"` in a search pattern).
-- **A mnemonic is a letter the platform can map: `A`–`Z` or `0`–`9`.**
-  Measured in 3.2.0 on the shipped `org.openide.awt.Mnemonics`: `&Editor`
-  gives the key E, but `&Éditeur`, `Pozosta&łe`, `&Đóng` and `&Файл` give
-  NO mnemonic at all. Any other character is looked up in a branded
-  `Mnemonics.properties` table the product does not ship; the lookup fails,
-  logs an INFO line every time the menu is built, and assigns nothing.
+- **A mnemonic is a letter the platform can map: `A`–`Z`, `0`–`9`, or a
+  letter the language's shipped table maps.** Measured in 3.2.0 on the
+  shipped `org.openide.awt.Mnemonics`: `&Editor` gives the key E, but
+  `&Éditeur`, `Pozosta&łe` and `&Đóng` give NO mnemonic at all. Any other
+  character is looked up in a `Mnemonics_<lang>.properties` table in an
+  unbranded locale jar; with none, the lookup fails, logs an INFO line
+  every time the menu is built, and assigns nothing. Russian and Ukrainian
+  ship one (after 3.2.0, below), so `&Файл` presses A.
+- **Two mnemonics collide on the KEY they press, not the letter they
+  show.** With a table, `&Файл` and `Документы(&A)` are different letters
+  and the same key A, so a keyboard cannot tell them apart.
 - **Where the label is written in letters, the mnemonic is one of them,
-  underlined in place**: `Edito&r`, `Dokum&ente…`, `Tài &liệu…`. The Latin
-  letter appended in parentheses, `Editor(&J)`, is the convention of
-  scripts with no Latin letter to underline (Chinese, Hindi, Hebrew,
-  Arabic, below). In a language written in Latin letters it is the lazy
-  answer to a collision, and on macOS, where Swing shows no mnemonics, the
-  reader sees a stray `(J)` after the word. A label keeps an appended
-  letter only when every mappable letter it contains is already claimed by
-  another row of the same menu — which is why Russian and Ukrainian keep
-  theirs: a Cyrillic letter cannot be mapped (the first rule), so their
-  appended Latin letter is the only mnemonic that works. `MenuRowsSpeakTest`
-  holds both rules over every platform menu row.
+  underlined in place**: `Edito&r`, `Dokum&ente…`, `Tài &liệu…`,
+  `Редак&тор`. The Latin letter appended in parentheses, `Editor(&J)`, is
+  the convention of scripts with no Latin letter to underline and no
+  table (Chinese, Hindi, Hebrew, Arabic, below). In a language written in
+  letters it is the lazy answer to a collision, and on macOS, where Swing
+  shows no mnemonics, the reader sees a stray `(J)` after the word. A label
+  keeps an appended letter only when every letter it could underline
+  presses a key another row of the same menu already claims.
+  `MenuRowsSpeakTest` holds all three rules over every platform menu row.
 
 ## es — Español
 
@@ -73,15 +76,17 @@ Three rules hold for every language:
 - Quotes: «ёлочки», no inner spaces.
 - Ukrainian apostrophes are `’` (U+2019), which MessageFormat leaves alone
   (v2.98.0).
-- **Mnemonics: open.** The overlays embed a Cyrillic letter (`&Файл`), and
-  measured in 3.2.0 no Cyrillic letter maps to a key (the mapping rule
-  above), so about 260 values per language carry a mnemonic that does
-  nothing (138 Russian and 136 Ukrainian menu rows among them). The fix is
-  either a shipped Cyrillic-to-keycode table for `org.openide.awt.Mnemonics`
-  (a key by keyboard position, as the platform's own l10n once did) or
-  Latin letters; until one is chosen, `MenuRowsSpeakTest` records these two
-  languages as the one exception to the mapping law, and the appended Latin
-  letters they carry stay, because they are the only mnemonics that work.
+- **Mnemonics: a Cyrillic letter presses the key it sits on** (after
+  3.2.0). The branding module ships `Mnemonics_ru` and `Mnemonics_uk`
+  tables (`branding/src/main/nbm-mnemonics`) mapping each letter to its key
+  in the standard ЙЦУКЕН layout (`Ф` → A, `Ы`/`І` → S, `Х` → `[`), the key
+  a Latin layout presses in the same place and the key code Windows and
+  X11 report under a Cyrillic one. Until then about 340 values per
+  language underlined a letter no key reached; a boot of the assembled app
+  under `--locale ru` logged 241 refusals without the table and none with
+  it. Underline a letter of the label itself, and when two rows of one
+  menu land on the same key, move one of them: `CyrillicMnemonicsTest`
+  runs the platform's own `Mnemonics` over every value.
 
 ## pl — Polski
 
