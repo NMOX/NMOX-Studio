@@ -127,6 +127,16 @@ counting as open, Windows sh). What is left:
   on the letter. The ⌥⌘ family has been in the product since v1.38.1
   (⌥⌘O Open Folder, ⌥⌘E Emmet, ⌥⌘P), so this is one question for the whole
   family, answerable only on Windows with a Polish (Programmers) layout.
+- **The incremental file watcher's accepted edges** (after 3.2.0). The
+  Project Studio tree stats its files only every 10th poll, so an edit
+  made in place (an append, `eslint --fix` rewriting a file without
+  renaming) reaches the tree up to 15 s late; open editors have the
+  platform's own native watchers (`masterfs-*`, not walked). A directory
+  at the twelfth level is no longer tracked as a file of the level above.
+  A change the incremental poll misses on a coarse-grained filesystem
+  (FAT, SMB, HFS+) waits for the 20-second reconcile. Four consumers share
+  the engine: the tree, the manifest pulse, REFLEX and DB Studio's
+  external-edit reload of `.nmoxdb.json`.
 - **Find in Projects on a network mount.** Every question re-reads what it
   rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
   where a stat costs a millisecond makes a 20,000-file search pay seconds.
