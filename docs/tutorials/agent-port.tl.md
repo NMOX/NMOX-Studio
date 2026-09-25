@@ -37,9 +37,23 @@ isang bearer token kada pagsisimula, at isang handang configuration ng client:
 }
 ```
 
-Idikit ito sa `.mcp.json` ng iyong agent. Umiiral ang token sa dialog na
-iyon lamang — hindi kailanman itinatala o iniimbak — at namamatay kasama ang
-port. Tinatapos ito ng **Ihinto ang Agent Port**; gayon din ang pagsasara ng
+Idikit ito sa `.mcp.json` ng iyong agent, o pindutin ang **Kopyahin para sa
+Claude Code** para sa iisang linyang tinatanggap ng Claude Code sa halip:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+Hindi kailanman itinatala ang token. Maliban kung iba ang hilingin mo, umiiral
+ito sa dialog na iyon lamang at namamatay kasama ang port, kaya bagong address
+at bagong token ang kasunod na pagsisimula. I-tsek ang **Panatilihin ang
+address at token na ito** at iniimbak ito sa keychain ng iyong system at
+ginagamit muli, sa parehong port, kaya ang agent na minsang na-configure ay
+makakakonekta pa rin bukas; kung ibang programa na ang kumuha sa port na iyon,
+nagbubukas ang NMOX Studio ng bago at sinasabi ito. I-tsek din ang **Simulan
+kapag nagsimula ang NMOX Studio** at sasabay ang port sa pagbukas ng IDE. Ang
+pag-alis ng tsek sa Panatilihin ay bumubura sa entry sa keychain.
+Tinatapos ito ng **Ihinto ang Agent Port**; gayon din ang pagsasara ng
 IDE. Habang nakikinig, ipinapakita ng status line ang **⌁ agent port :N** —
 ang port na makakabasa sa iyong IDE ay hindi kailanman di-nakikita; binibilang
 ng tooltip ng chip ang mga agent na nag-stream, at muling binubuksan ng isang

@@ -38,9 +38,22 @@ klienta:
 }
 ```
 
-Wklej ją do `.mcp.json` swojego agenta. Token istnieje tylko w tym
-oknie — nigdy nie trafia do dziennika ani na dysk — i umiera razem
-z portem. **Zatrzymaj Agent Port** go kończy; zamknięcie IDE również.
+Wklej ją do `.mcp.json` swojego agenta albo naciśnij **Kopiuj dla Claude
+Code**, by dostać jedną linię, którą Claude Code przyjmuje zamiast tego:
+
+```bash
+claude mcp add --transport http nmox-studio http://127.0.0.1:PORT/mcp --header "Authorization: Bearer TOKEN"
+```
+
+Token nigdy nie trafia do dziennika. Jeśli nie poprosisz inaczej, istnieje
+tylko w tym oknie i umiera razem z portem, więc następne uruchomienie ma nowy
+adres i nowy token. Zaznacz **Zachowaj ten adres i token**, a zostanie zapisany
+w pęku kluczy systemu i użyty ponownie, z tym samym portem, więc agent
+skonfigurowany raz połączy się także jutro; jeśli ten port zajął inny
+program, NMOX Studio otwiera nowy i to mówi. Zaznacz też **Uruchamiaj razem
+z NMOX Studio**, a port wstaje razem z IDE. Odznaczenie Zachowaj usuwa wpis
+z pęku kluczy.
+**Zatrzymaj Agent Port** go kończy; zamknięcie IDE również.
 Póki nasłuchuje, pasek stanu pokazuje **⌁ agent port :N** — port, który
 może czytać twoje IDE, nigdy nie jest niewidoczny; podpowiedź znacznika
 liczy agentów podłączonych do strumienia, a kliknięcie ponownie otwiera
