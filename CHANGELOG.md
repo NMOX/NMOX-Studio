@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 32 rows the walks and reviews added are in
+developer works. The plan and the 33 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -136,6 +136,12 @@ loop as one sitting is the new tutorial
   3.1.0, the editor had neither. Quick Search answers to VS Code's two
   titles. Copy Relative Path has no chord: VS Code's ⇧⌥⌘C is the platform's
   Clear Split on Windows and Linux in every profile, which the census found.
+- **Quick Search answers to nineteen more of VS Code's git titles**: *Git:
+  Stash*, *Merge…*, *Rebase Branch…*, *Cherry Pick…*, *Stage All Changes*,
+  *Discard All Changes*, *View File History*, *Create Tag*, the remote and
+  branch rows, and GitLens' *Toggle File Blame* / *Toggle Line Blame* — each
+  the git module's own dialog (or View ▸ Line Blame), each id held to the
+  assembled cluster by `ActionIdsResolveTest`.
 
 ### Docs
 

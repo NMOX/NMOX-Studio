@@ -102,6 +102,30 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Git: Fetch", "Git", "org.netbeans.modules.git.ui.fetch.FetchAction"),
             cmd("Git: Checkout to...", "Git", "org.netbeans.modules.git.ui.checkout.SwitchBranchAction"),
             cmd("Git: Create Branch...", "Git", "org.netbeans.modules.git.ui.branch.CreateBranchAction"),
+            // 3.2.0: the rest of the git module's own dialogs, under VS Code's
+            // titles for them; a row whose action is disabled (nothing aimed)
+            // is left out, and each id is held to the cluster by ActionIdsResolveTest
+            cmd("Git: Stage Changes", "Git", "org.netbeans.modules.git.ui.actions.AddAction"),
+            cmd("Git: Stage All Changes", "Git", "org.netbeans.modules.git.ui.actions.AddAllAction"),
+            cmd("Git: Commit All", "Git", "org.netbeans.modules.git.ui.commit.CommitAllAction"),
+            cmd("Git: Open Changes", "Git", "org.netbeans.modules.git.ui.diff.DiffAction"),
+            cmd("Git: Discard All Changes", "Git", "org.netbeans.modules.git.ui.checkout.RevertAllChangesAction"),
+            cmd("Git: Stash", "Git", "org.netbeans.modules.git.ui.stash.SaveStashAction"),
+            cmd("Git: Merge...", "Git", "org.netbeans.modules.git.ui.merge.MergeRevisionAction"),
+            cmd("Git: Rebase Branch...", "Git", "org.netbeans.modules.git.ui.rebase.RebaseAction"),
+            cmd("Git: Cherry Pick...", "Git", "org.netbeans.modules.git.ui.branch.CherryPickAction"),
+            cmd("Git: Rename Branch...", "Git", "org.netbeans.modules.git.ui.branch.RenameBranchAction"),
+            cmd("Git: Delete Branch...", "Git", "org.netbeans.modules.git.ui.branch.DeleteBranchAction"),
+            cmd("Git: Create Tag", "Git", "org.netbeans.modules.git.ui.tag.CreateTagAction"),
+            cmd("Git: Add Remote...", "Git", "org.netbeans.modules.git.ui.repository.remote.AddRemoteAction"),
+            cmd("Git: Remove Remote", "Git", "org.netbeans.modules.git.ui.repository.remote.RemoveRemoteAction"),
+            cmd("Git: Initialize Repository", "Git", "org.netbeans.modules.git.ui.init.InitAction"),
+            cmd("Git: Show Git Output", "Git", "org.netbeans.modules.git.ui.output.OpenOutputAction"),
+            cmd("Git: View File History", "Git", "org.netbeans.modules.git.ui.history.SearchHistoryAction"),
+            // GitLens' two blame toggles: the whole file (the git module's own
+            // Annotate) and the caret line (View ▸ Line Blame, 3.2.0)
+            cmd("GitLens: Toggle File Blame", "Git", "org.netbeans.modules.git.ui.blame.AnnotateAction"),
+            cmd("GitLens: Toggle Line Blame", "View", "org.nmox.studio.editor.blame.ToggleLineBlameAction"),
             // 3.2.0: the GitHub gestures, as VS Code's GitHub extension titles them
             cmd("GitHub Pull Requests: Create Pull Request", "Team", "org.nmox.studio.rack.service.NewPullRequestAction"),
             cmd("GitHub: Open on GitHub", "Edit", "org.nmox.studio.editor.share.OpenOnGitHubAction"),

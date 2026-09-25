@@ -43,7 +43,11 @@ class VsCodeCommandSearchProviderTest {
     @DisplayName("VS Code's palette words find the action that does the same thing here")
     void palettewordsFindTheirAction() {
         assertThat(titles("toggle terminal", ALL)).containsExactly("View: Toggle Terminal");
-        assertThat(titles("git commit", ALL)).containsExactly("Git: Commit");
+        assertThat(titles("git commit", ALL)).containsExactly("Git: Commit", "Git: Commit All");
+        assertThat(titles("stash", ALL)).containsExactly("Git: Stash");
+        assertThat(titles("cherry pick", ALL)).containsExactly("Git: Cherry Pick...");
+        assertThat(titles("line blame", ALL)).containsExactly("GitLens: Toggle Line Blame");
+        assertThat(titles("file history", ALL)).containsExactly("Git: View File History");
         assertThat(titles("settings", ALL)).containsExactly("Preferences: Open Settings");
         assertThat(titles("keyboard shortcuts", ALL)).containsExactly("Preferences: Open Keyboard Shortcuts");
         assertThat(titles("problems", ALL)).containsExactly("View: Toggle Problems");
