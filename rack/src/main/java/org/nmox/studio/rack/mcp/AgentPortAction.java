@@ -237,7 +237,7 @@ public final class AgentPortAction implements ActionListener {
                 // replaces it (the v2.182.0 finding) — the bell keeps it
                 if (started.moved()) {
                     String said = Bundle.AgentPortAction_moved(String.valueOf(started.port().port()));
-                    StatusDisplayer.getDefault().setStatusText(said);
+                    StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(said));
                     notifyChanged(said);
                 } else if (started.newToken()) {
                     StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_newToken());
