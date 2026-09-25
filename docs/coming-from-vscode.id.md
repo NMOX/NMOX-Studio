@@ -49,6 +49,8 @@ PC.
 | Mengganti | ⌥⌘F | **⌥⌘F** atau ⌘R | Ctrl+H | **Ctrl+H** |
 | Memformat dokumen | ⇧⌥F | **⇧⌥F** atau ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Menutup tab penyunting | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Menyalin jalur berkas yang sedang Anda sunting | ⌥⌘C | **⌥⌘C** — Edit ▸ Salin Jalur | Shift+Alt+C | **Ctrl+Alt+C** |
+| Menyalin jalur relatifnya | ⇧⌥⌘C | Edit ▸ Salin Jalur Relatif (tanpa pintasan) | Ctrl+K Ctrl+Shift+Alt+C | Edit ▸ Salin Jalur Relatif (tanpa pintasan) |
 | Panel Problems | ⇧⌘M | **⌘6** — Item tindakan (di sini ⇧⌘M adalah *Alihkan markah*) | Ctrl+Shift+M | **Ctrl+6** |
 | Menyalakan/mematikan titik henti | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Mulai awakutu | F5 | **⇧⌘F5** — Awakutu berkas | F5 | **Ctrl+Shift+F5** |
@@ -65,6 +67,11 @@ yang tidak bisa dikatakan tabel di dalam sebuah sel:
 - **⌃R di sini adalah Ganti Nama**, itulah sebabnya *Ganti Proyek* ada di ⌥⌘P,
   bukan di pintasan Open Recent milik VS Code. Ganti Nama bekerja di tempat
   bahasa di balik berkas itu mendukungnya.
+- **Salin Jalur Relatif tidak punya pintasan.** ⇧⌥⌘C milik VS Code
+  adalah Ctrl+Alt+Shift+C di PC, yang merupakan *Clear Split* milik
+  platform di setiap profil keymap; barisnya ada di menu Edit, dan ⇧⌘P
+  menemukannya lewat judul dari VS Code sendiri, *File: Copy Relative
+  Path of Active File*.
 - **Ctrl+, di Windows dan Linux** mundur menelusuri riwayat suntingan Anda,
   seperti yang selalu dilakukannya di NetBeans; pengaturannya ada di bawah
   Alat ▸ Opsi (di macOS, **Settings…** di menu aplikasi, ⌘,).

@@ -49,6 +49,8 @@ atajo en un teclado de PC.
 | Reemplazar | ⌥⌘F | **⌥⌘F** o ⌘R | Ctrl+H | **Ctrl+H** |
 | Dar formato al documento | ⇧⌥F | **⇧⌥F** o ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Cerrar la pestaña del editor | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Copiar la ruta del archivo que estás editando | ⌥⌘C | **⌥⌘C** — Edición ▸ Copiar ruta | Shift+Alt+C | **Ctrl+Alt+C** |
+| Copiar su ruta relativa | ⇧⌥⌘C | Edición ▸ Copiar ruta relativa (sin atajo) | Ctrl+K Ctrl+Shift+Alt+C | Edición ▸ Copiar ruta relativa (sin atajo) |
 | El panel de problemas | ⇧⌘M | **⌘6** — Elementos de acción (aquí ⇧⌘M pone o quita un marcador) | Ctrl+Shift+M | **Ctrl+6** |
 | Poner o quitar un punto de interrupción | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Empezar a depurar | F5 | **⇧⌘F5** — Depurar el archivo | F5 | **Ctrl+Shift+F5** |
@@ -65,6 +67,11 @@ Algunas cosas que la tabla no puede decir en una celda:
 - **⌃R aquí es Renombrar**, y por eso *Cambiar de proyecto* vive en ⌥⌘P en
   lugar del atajo de Abrir reciente de VS Code. Renombrar funciona donde lo
   admite el lenguaje del archivo.
+- **Copiar ruta relativa no tiene atajo.** El ⇧⌥⌘C de VS Code es
+  Ctrl+Alt+Shift+C en un PC, que es el *Clear Split* de la plataforma en
+  todos los perfiles de teclado; la fila está en el menú Edición, y ⇧⌘P
+  la encuentra por el propio título de VS Code, *File: Copy Relative
+  Path of Active File*.
 - **Ctrl+, en Windows y Linux** retrocede por tu historial de edición, como
   siempre ha hecho en NetBeans; los ajustes están en
   Herramientas ▸ Opciones (en macOS, en **Settings…** del menú de la app, ⌘,).

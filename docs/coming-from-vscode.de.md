@@ -40,6 +40,8 @@ Die macOS-Spalten benutzen die Zeichen der Menüleiste (⌃ Control, ⌥ Wahltas
 | Ersetzen | ⌥⌘F | **⌥⌘F** oder ⌘R | Strg+H | **Strg+H** |
 | Das Dokument formatieren | ⇧⌥F | **⇧⌥F** oder ⌃⇧F | Umschalt+Alt+F | **Alt+Umschalt+F** |
 | Den Editor-Tab schließen | ⌘W | **⌘W** | Strg+W | **Strg+W** |
+| Den Pfad der Datei kopieren, die Sie bearbeiten | ⌥⌘C | **⌥⌘C** — Bearbeiten ▸ Pfad kopieren | Umschalt+Alt+C | **Strg+Alt+C** |
+| Ihren relativen Pfad kopieren | ⇧⌥⌘C | Bearbeiten ▸ Relativen Pfad kopieren (kein Kürzel) | Strg+K Strg+Umschalt+Alt+C | Bearbeiten ▸ Relativen Pfad kopieren (kein Kürzel) |
 | Das Problemfenster | ⇧⌘M | **⌘6** — Aufgabenliste (⇧⌘M setzt hier ein Lesezeichen oder entfernt es) | Strg+Umschalt+M | **Strg+6** |
 | Einen Haltepunkt umschalten | F9 | **⌘F8** | F9 | **Strg+F8** |
 | Das Debugging starten | F5 | **⇧⌘F5** — Datei debuggen | F5 | **Strg+Umschalt+F5** |
@@ -50,6 +52,7 @@ Jedes NMOX-Kürzel in der Tabelle wurde aus der ausgelieferten Tastaturbelegung 
 
 - **F5 ist beim Debuggen belegt.** Hier bedeutet es *Fortsetzen*, wie in jeder IDE aus der NetBeans-Familie, daher startet ein Debug-Lauf mit **⇧⌘F5** (Strg+Umschalt+F5) und läuft mit F5 weiter.
 - **⌃R ist hier Umbenennen**, deshalb liegt *Projekt wechseln* auf ⌥⌘P statt auf dem Kürzel, mit dem VS Code zuletzt Geöffnetes öffnet. Umbenennen funktioniert dort, wo die Sprache hinter der Datei es unterstützt.
+- **Relativen Pfad kopieren hat kein Kürzel.** Das ⇧⌥⌘C von VS Code ist auf einem PC Strg+Alt+Umschalt+C, und das ist in jedem Tastaturprofil das *Clear Split* der Plattform; die Zeile steht im Menü Bearbeiten, und ⇧⌘P findet sie unter dem Titel, den VS Code selbst ihr gibt: *File: Copy Relative Path of Active File*.
 - **Strg+, unter Windows und Linux** geht in Ihrem Bearbeitungsverlauf zurück, wie es in NetBeans schon immer war; die Einstellungen liegen unter Extras ▸ Optionen (unter macOS die **Einstellungen…** im App-Menü, ⌘,).
 
 **Hilfe ▸ Tastenkürzel…** listet jedes NMOX-Kürzel Ihrer aktiven Tastaturbelegung auf, die vier Kürzel aus VS Code eingeschlossen, gelesen aus der laufenden Tastaturbelegung, sodass die Liste nicht von dem abweichen kann, was die Tasten tun.

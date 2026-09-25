@@ -69,8 +69,8 @@ começa com **Trocar de branch…**, **Fazer commit…**, **Fazer pull…** e **
 quanto tempo e por quê: `Ada Lovelace, há 3 dias · Fix the parser`. Uma
 linha que você ainda não commitou diz isso, e um arquivo com alterações
 não salvas diz isso em vez de nomear o autor errado. Clique na nota para
-ver as anotações do arquivo inteiro; **Exibir ▸ Autoria da linha** a
-desliga.
+ver as anotações do arquivo inteiro, o commit no GitHub ou o ID dele;
+**Exibir ▸ Autoria da linha** a desliga.
 
 ## 4. Revise um diff
 

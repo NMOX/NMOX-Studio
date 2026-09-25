@@ -40,6 +40,8 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 | 替换 | ⌥⌘F | **⌥⌘F** 或 ⌘R | Ctrl+H | **Ctrl+H** |
 | 格式化文档 | ⇧⌥F | **⇧⌥F** 或 ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | 关闭编辑器标签页 | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| 复制正在编辑的文件的路径 | ⌥⌘C | **⌥⌘C** — 编辑 ▸ 复制路径 | Shift+Alt+C | **Ctrl+Alt+C** |
+| 复制它的相对路径 | ⇧⌥⌘C | 编辑 ▸ 复制相对路径（无组合键） | Ctrl+K Ctrl+Shift+Alt+C | 编辑 ▸ 复制相对路径（无组合键） |
 | 问题面板 | ⇧⌘M | **⌘6** — 操作项（在这里 ⇧⌘M 切换书签） | Ctrl+Shift+M | **Ctrl+6** |
 | 切换断点 | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | 开始调试 | F5 | **⇧⌘F5** — 调试文件 | F5 | **Ctrl+Shift+F5** |
@@ -50,6 +52,7 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 
 - **调试时 F5 已被占用。**在这里它表示*继续*（Continue），和每个 NetBeans 系的 IDE 一样，所以调试运行从 **⇧⌘F5**（Ctrl+Shift+F5）开始，用 F5 继续。
 - **⌃R 在这里是重命名**，所以*切换项目*放在 ⌥⌘P 上，而不是 VS Code 的“打开最近”组合键。只要文件背后的语言支持，重命名就能用。
+- **复制相对路径没有组合键。** VS Code 的 ⇧⌥⌘C 在 PC 上是 Ctrl+Alt+Shift+C，而它在每个键位配置里都是平台的 *Clear Split*；这一项在编辑菜单里，⇧⌘P 也能用 VS Code 自己的标题找到它：*File: Copy Relative Path of Active File*。
 - **Windows 和 Linux 上的 Ctrl+,** 在你的编辑历史里后退，NetBeans 一直是这样；设置在 工具 ▸ 选项 下面（macOS 上是应用菜单的 **Settings…**，⌘,）。
 
 **帮助 ▸ 键盘快捷键…** 列出你当前键盘映射里的每个 NMOX 组合键，包括这四个 VS Code 组合键，它是从正在运行的键盘映射里读的，所以不可能和按键实际做的事情走岔。

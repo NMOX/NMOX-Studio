@@ -40,6 +40,8 @@ Ginagamit ng mga hanay para sa macOS ang mga glyph ng menu bar (⌃ Control, ⌥
 | Palitan | ⌥⌘F | **⌥⌘F** o ⌘R | Ctrl+H | **Ctrl+H** |
 | I-format ang dokumento | ⇧⌥F | **⇧⌥F** o ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Isara ang tab ng editor | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Kopyahin ang path ng file na ine-edit mo | ⌥⌘C | **⌥⌘C** — Baguhin ▸ Kopyahin ang Path | Shift+Alt+C | **Ctrl+Alt+C** |
+| Kopyahin ang relative path nito | ⇧⌥⌘C | Baguhin ▸ Kopyahin ang Relative Path (walang kombinasyon) | Ctrl+K Ctrl+Shift+Alt+C | Baguhin ▸ Kopyahin ang Relative Path (walang kombinasyon) |
 | Ang panel ng Problems | ⇧⌘M | **⌘6** — Action Items (dito, nagto-toggle ng bookmark ang ⇧⌘M) | Ctrl+Shift+M | **Ctrl+6** |
 | Mag-toggle ng breakpoint | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Simulan ang pag-debug | F5 | **⇧⌘F5** — I-debug ang file | F5 | **Ctrl+Shift+F5** |
@@ -50,6 +52,7 @@ Sa macOS, sariling kombinasyon ng app menu ang ⌘,; ang bawat iba pang kombinas
 
 - **Kinukuha ang F5 habang nagde-debug.** Dito, *Continue* ang ibig sabihin nito, gaya sa bawat IDE na kamag-anak ng NetBeans, kaya nagsisimula ang pag-debug sa **⇧⌘F5** (Ctrl+Shift+F5) at nagpapatuloy sa F5.
 - **Rename ang ⌃R dito**, kaya nasa ⌥⌘P ang *Lumipat ng Proyekto* sa halip na sa kombinasyong Open Recent ng VS Code. Gumagana ang Rename kung saan sinusuportahan ito ng wikang nasa likod ng file.
+- **Walang kombinasyon ang Kopyahin ang Relative Path.** Ang ⇧⌥⌘C ng VS Code ay Ctrl+Alt+Shift+C sa PC, na siyang *Clear Split* ng platform sa bawat keymap profile; nasa menu na Baguhin ang row, at nahahanap ito ng ⇧⌘P sa sariling pamagat ng VS Code, *File: Copy Relative Path of Active File*.
 - **Ang Ctrl+, sa Windows at Linux** ay bumabalik sa iyong kasaysayan ng pag-edit, gaya ng dati sa NetBeans; nasa ilalim ng Kasangkapan ▸ Mga Opsyon ang mga setting (sa macOS, ang **Settings…** ng app menu, ⌘,).
 
 Inililista ng **Tulong ▸ Mga Keyboard Shortcut…** ang bawat kombinasyon ng NMOX sa iyong aktibong keymap, kasama ang apat na kombinasyon ng VS Code, binasa mula sa tumatakbong keymap kaya hindi ito maaaring lumihis sa ginagawa ng mga key.

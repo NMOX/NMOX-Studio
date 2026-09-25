@@ -70,8 +70,8 @@ Menunya diawali dengan **Ganti Branch…**, **Commit…**, **Pull…** dan **Pus
 tersebut, kapan, dan mengapa: `Ada Lovelace, 3 hari yang lalu · Fix the parser`.
 Baris yang belum Anda commit mengatakannya, dan berkas dengan perubahan
 yang belum disimpan mengatakan hal itu alih-alih menyebut penulis yang
-salah. Klik catatan itu untuk anotasi seluruh berkas; **Tampilan ▸
-Penulis baris** mematikannya.
+salah. Klik catatan itu untuk anotasi seluruh berkas, commit-nya di GitHub,
+atau ID-nya; **Tampilan ▸ Penulis baris** mematikannya.
 
 ## 4. Tinjau diff
 

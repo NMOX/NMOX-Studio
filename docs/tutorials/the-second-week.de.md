@@ -73,8 +73,8 @@ versionierten Datei.
 lange das her ist und warum: `Ada Lovelace, vor 3 Tagen · Fix the parser`.
 Eine Zeile, die Sie noch nicht committet haben, sagt das, und eine Datei
 mit ungespeicherten Änderungen sagt eben das, statt den falschen Autor zu
-nennen. Ein Klick auf die Notiz zeigt die Anmerkungen der ganzen Datei;
-**Ansicht ▸ Zeilenautor** schaltet sie aus.
+nennen. Ein Klick auf die Notiz zeigt die Anmerkungen der ganzen Datei, den
+Commit auf GitHub oder seine ID; **Ansicht ▸ Zeilenautor** schaltet sie aus.
 
 ## 4. Einen Diff prüfen
 

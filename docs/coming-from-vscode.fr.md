@@ -40,6 +40,8 @@ Les colonnes macOS utilisent les symboles de la barre des menus (⌃ Contrôle, 
 | Remplacer | ⌥⌘F | **⌥⌘F** ou ⌘R | Ctrl+H | **Ctrl+H** |
 | Mettre le document en forme | ⇧⌥F | **⇧⌥F** ou ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Fermer l’onglet de l’éditeur | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Copier le chemin du fichier en cours d’édition | ⌥⌘C | **⌥⌘C** — Édition ▸ Copier le chemin | Shift+Alt+C | **Ctrl+Alt+C** |
+| Copier son chemin relatif | ⇧⌥⌘C | Édition ▸ Copier le chemin relatif (pas d’accord) | Ctrl+K Ctrl+Shift+Alt+C | Édition ▸ Copier le chemin relatif (pas d’accord) |
 | Le panneau Problèmes | ⇧⌘M | **⌘6** — Éléments à traiter (⇧⌘M y bascule un signet) | Ctrl+Shift+M | **Ctrl+6** |
 | Poser ou retirer un point d’arrêt | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Lancer le débogage | F5 | **⇧⌘F5** — Déboguer le fichier | F5 | **Ctrl+Shift+F5** |
@@ -50,6 +52,7 @@ Sous macOS, ⌘, est l’accord du menu de l’application lui-même ; chaque a
 
 - **F5 est pris pendant le débogage.** Ici il veut dire *Continuer*, comme dans tout IDE de la famille NetBeans : une session de débogage démarre donc par **⇧⌘F5** (Ctrl+Shift+F5) et reprend par F5.
 - **⌃R, c’est Renommer ici**, et c’est pourquoi *Changer de projet* vit sur ⌥⌘P au lieu de l’accord Open Recent de VS Code. Renommer fonctionne là où le langage du fichier le permet.
+- **Copier le chemin relatif n’a pas d’accord.** Le ⇧⌥⌘C de VS Code est Ctrl+Alt+Shift+C sur un PC, c’est-à-dire le *Clear Split* de la plateforme dans tous les profils de raccourcis ; la ligne est dans le menu Édition, et ⇧⌘P la trouve par le titre même que lui donne VS Code, *File: Copy Relative Path of Active File*.
 - **Ctrl+, sous Windows et Linux** recule dans l’historique de vos modifications, comme depuis toujours dans NetBeans ; les réglages sont sous Outils ▸ Options (sous macOS, **Settings…** dans le menu de l’application, ⌘,).
 
 **Aide ▸ Raccourcis clavier…** liste chaque accord NMOX de votre profil de raccourcis actif, les quatre accords de VS Code compris, lu dans les raccourcis en marche pour qu’il ne puisse pas s’écarter de ce que font les touches.

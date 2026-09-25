@@ -47,6 +47,8 @@ Các cột macOS dùng ký hiệu của thanh trình đơn (⌃ Control, ⌥ Opt
 | Thay thế | ⌥⌘F | **⌥⌘F** hoặc ⌘R | Ctrl+H | **Ctrl+H** |
 | Định dạng tài liệu | ⇧⌥F | **⇧⌥F** hoặc ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Đóng thẻ trình soạn thảo | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Sao chép đường dẫn của tệp đang sửa | ⌥⌘C | **⌥⌘C** — Chỉnh sửa ▸ Sao chép đường dẫn | Shift+Alt+C | **Ctrl+Alt+C** |
+| Sao chép đường dẫn tương đối của nó | ⇧⌥⌘C | Chỉnh sửa ▸ Sao chép đường dẫn tương đối (không có tổ hợp phím) | Ctrl+K Ctrl+Shift+Alt+C | Chỉnh sửa ▸ Sao chép đường dẫn tương đối (không có tổ hợp phím) |
 | Bảng Problems | ⇧⌘M | **⌘6** — Action Items (ở đây ⇧⌘M là Bật/tắt dấu trang) | Ctrl+Shift+M | **Ctrl+6** |
 | Bật/tắt điểm dừng | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Bắt đầu gỡ lỗi | F5 | **⇧⌘F5** — Gỡ lỗi tệp | F5 | **Ctrl+Shift+F5** |
@@ -63,6 +65,11 @@ chứ không phải nhớ lại (⌘, là của chính trình đơn ứng dụng
 - **⌃R ở đây là Đổi tên**, vì vậy *Chuyển dự án* nằm ở ⌥⌘P thay vì tổ hợp
   Open Recent của VS Code. Đổi tên hoạt động ở nơi ngôn ngữ đứng sau tệp hỗ
   trợ nó.
+- **Sao chép đường dẫn tương đối không có tổ hợp phím.** ⇧⌥⌘C của VS
+  Code là Ctrl+Alt+Shift+C trên PC, tức là *Clear Split* của nền tảng
+  trong mọi hồ sơ phím tắt; mục này nằm trong menu Chỉnh sửa, và ⇧⌘P tìm
+  thấy nó qua chính tiêu đề của VS Code, *File: Copy Relative Path of
+  Active File*.
 - **Ctrl+, trên Windows và Linux** lùi lại qua lịch sử chỉnh sửa của bạn, như
   nó vẫn luôn làm trong NetBeans; phần cài đặt nằm trong Công cụ ▸ Tùy chọn
   (trên macOS là mục **Settings…** của trình đơn ứng dụng, ⌘,).

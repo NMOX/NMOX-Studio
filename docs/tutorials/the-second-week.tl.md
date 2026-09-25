@@ -74,8 +74,9 @@ gaano katagal na, at bakit:
 `Ada Lovelace, 3 araw na ang nakalipas · Fix the parser`. Sinasabi ng
 isang linyang hindi mo pa naicommit ang ganoon, at sinasabi iyon ng isang
 file na may hindi pa na-save na pagbabago sa halip na pangalanan ang
-maling may-akda. I-click ang tala para sa mga anotasyon ng buong file;
-pinapatay ito ng **Tingnan ▸ May-akda ng linya**.
+maling may-akda. I-click ang tala para sa mga anotasyon ng buong file, sa
+commit sa GitHub, o sa ID nito; pinapatay ito ng **Tingnan ▸ May-akda ng
+linya**.
 
 ## 4. Magsuri ng diff
 

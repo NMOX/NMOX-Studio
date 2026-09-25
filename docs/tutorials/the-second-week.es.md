@@ -70,8 +70,8 @@ menú empieza con **Cambiar de rama…**, **Confirmar…**, **Traer (pull)…** 
 hace cuánto y por qué: `Ada Lovelace, hace 3 días · Fix the parser`. Una
 línea que aún no has confirmado lo dice, y un archivo con cambios sin
 guardar dice eso en lugar de nombrar al autor equivocado. Haz clic en la
-nota para ver las anotaciones de todo el archivo; **Ver ▸ Autoría de la
-línea** la desactiva.
+nota para ver las anotaciones de todo el archivo, el commit en GitHub o su
+ID; **Ver ▸ Autoría de la línea** la desactiva.
 
 ## 4. Revisa un diff
 

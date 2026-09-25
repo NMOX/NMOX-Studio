@@ -72,8 +72,8 @@ dernier, il y a combien de temps et pourquoi :
 `Ada Lovelace, il y a 3 jours · Fix the parser`. Une ligne que vous n’avez
 pas encore validée le dit, et un fichier aux modifications non
 enregistrées dit cela plutôt que de nommer le mauvais auteur. Cliquez sur
-la note pour les annotations de tout le fichier ; **Affichage ▸ Auteur de
-la ligne** la désactive.
+la note pour les annotations de tout le fichier, le commit sur GitHub ou son
+identifiant ; **Affichage ▸ Auteur de la ligne** la désactive.
 
 ## 4. Relire un diff
 

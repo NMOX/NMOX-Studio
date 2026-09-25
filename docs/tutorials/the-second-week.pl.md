@@ -70,7 +70,8 @@ lub pobrania). Jej menu zaczyna się od **Przełącz gałąź…**, **Zatwierdź
 dlaczego: `Ada Lovelace, 3 dni temu · Fix the parser`. Wiersz, którego
 jeszcze nie zatwierdziłeś, mówi to, a plik z niezapisanymi zmianami mówi
 właśnie to, zamiast wskazać złego autora. Kliknij notkę, by zobaczyć
-adnotacje całego pliku; **Widok ▸ Autor wiersza** ją wyłącza.
+adnotacje całego pliku, commit w GitHub albo jego identyfikator; **Widok ▸
+Autor wiersza** ją wyłącza.
 
 ## 4. Przejrzyj diff
 

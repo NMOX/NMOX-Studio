@@ -67,8 +67,8 @@ tên chỉ xuất hiện khi có gì đó để push hoặc pull). Trình đơn 
 **Thấy:** cạnh dấu đó, ai đã sửa dòng ấy lần cuối, cách đây bao lâu và vì
 sao: `Ada Lovelace, 3 ngày trước · Fix the parser`. Một dòng bạn chưa
 commit sẽ nói như vậy, và một tệp có thay đổi chưa lưu sẽ nói điều đó thay
-vì nêu sai tác giả. Nhấp vào ghi chú để xem chú giải của cả tệp;
-**Xem ▸ Tác giả dòng** tắt nó đi.
+vì nêu sai tác giả. Nhấp vào ghi chú để xem chú giải của cả tệp, commit trên
+GitHub hoặc mã của nó; **Xem ▸ Tác giả dòng** tắt nó đi.
 
 ## 4. Xem lại một bản diff
 

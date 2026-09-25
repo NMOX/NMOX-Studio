@@ -48,6 +48,8 @@ Kolumny macOS używają symboli z paska menu (⌃ Control, ⌥ Option, ⇧ Shift
 | Zamień | ⌥⌘F | **⌥⌘F** albo ⌘R | Ctrl+H | **Ctrl+H** |
 | Sformatuj dokument | ⇧⌥F | **⇧⌥F** albo ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Zamknij kartę edytora | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
+| Skopiuj ścieżkę edytowanego pliku | ⌥⌘C | **⌥⌘C** — Edycja ▸ Kopiuj ścieżkę | Shift+Alt+C | **Ctrl+Alt+C** |
+| Skopiuj jego ścieżkę względną | ⇧⌥⌘C | Edycja ▸ Kopiuj ścieżkę względną (bez skrótu) | Ctrl+K Ctrl+Shift+Alt+C | Edycja ▸ Kopiuj ścieżkę względną (bez skrótu) |
 | Panel problemów | ⇧⌘M | **⌘6** — Elementy do zrobienia (⇧⌘M przełącza tu zakładkę) | Ctrl+Shift+M | **Ctrl+6** |
 | Przełącz pułapkę | F9 | **⌘F8** | F9 | **Ctrl+F8** |
 | Zacznij debugowanie | F5 | **⇧⌘F5** — Debuguj plik | F5 | **Ctrl+Shift+F5** |
@@ -64,6 +66,11 @@ nie powie w komórce:
 - **⌃R to tu Zmiana nazwy**, dlatego *Przełącz projekt* mieszka pod ⌥⌘P,
   a nie pod skrótem Open Recent z VS Code. Zmiana nazwy działa tam, gdzie
   obsługuje ją język stojący za plikiem.
+- **Kopiuj ścieżkę względną nie ma skrótu.** ⇧⌥⌘C z VS Code to na PC
+  Ctrl+Alt+Shift+C, czyli *Clear Split* platformy w każdym profilu
+  klawiatury; wiersz jest w menu Edycja, a ⇧⌘P znajduje go po tytule,
+  który nadaje mu sam VS Code: *File: Copy Relative Path of Active
+  File*.
 - **Ctrl+, w Windows i Linuksie** cofa przez historię twoich edycji,
   jak zawsze w NetBeans; ustawienia są pod
   Narzędzia ▸ Opcje (w macOS w menu aplikacji: **Settings…**, ⌘,).
