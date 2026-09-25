@@ -148,6 +148,11 @@ public final class LineBlame {
         }
         if (blame == null) {
             blame = run(file, dir);
+            if (blame == null) {
+                // timed out (cold caches, a huge history): say nothing now,
+                // and ask again next time rather than remember the silence
+                return null;
+            }
             synchronized (cache) {
                 cache.put(key, blame);
             }
@@ -158,6 +163,9 @@ public final class LineBlame {
     private BlamePorcelain.Blame run(File file, File dir) {
         try {
             ProcessSupport.BoundedResult r = runner.run(argv(file.getName()), dir, TIMEOUT);
+            if (r.timedOut()) {
+                return null; // not an answer: never cached
+            }
             if (!r.ok() || r.truncated()) {
                 // untracked, outside the index, git missing its object, or too much: nothing to say
                 return BlamePorcelain.parse(null);

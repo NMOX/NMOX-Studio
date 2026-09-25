@@ -147,6 +147,18 @@ class EditRequestTest {
     }
 
     @Test
+    @DisplayName("a side over 16 MiB is refused before the diff view would load it whole")
+    void hugeSideRefused() throws Exception {
+        Path big = tmp.resolve("big.log");
+        try (java.io.RandomAccessFile f = new java.io.RandomAccessFile(big.toFile(), "rw")) {
+            f.setLength(EditRequest.MAX_COMPARED + 1);
+        }
+        Path small = file("small.txt");
+        assertThatThrownBy(() -> EditRequest.parse("nmox-request 1\ndiff\n" + big + "\n" + small + "\n"))
+                .hasMessageContaining("too large to compare");
+    }
+
+    @Test
     @DisplayName("the diff bar steps inside the list; before any choice the first difference is the one shown")
     void diffSteps() {
         // the controller reports -1 while its divider already reads 1/N: the

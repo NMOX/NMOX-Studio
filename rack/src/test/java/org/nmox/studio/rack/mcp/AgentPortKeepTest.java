@@ -164,9 +164,13 @@ class AgentPortKeepTest {
             AgentPortKeep.Started s = keep.start(new McpTools(List.of()), "t");
             track(s.port());
             assertThat(s.moved()).as("the caller is told the address changed").isTrue();
-            assertThat(s.newToken()).isFalse();
+            assertThat(s.newToken()).as("a moved port gets a new token too").isTrue();
             assertThat(s.port().port()).isNotEqualTo(taken);
-            assertThat(s.port().token()).as("the token survives the move").isEqualTo(token);
+            // whatever holds the old address may have been sent the old token
+            // by the configured agent: it must not unlock the new port
+            assertThat(s.port().token()).as("the token never follows a taken port").isNotEqualTo(token);
+            assertThat(new String(secrets.map.get(AgentPortKeep.TOKEN_KEY)))
+                    .as("the new token is the kept one").isEqualTo(s.port().token());
             assertThat(prefs.getInt(AgentPortKeep.PORT, 0)).as("the new address is the kept one now")
                     .isEqualTo(s.port().port());
         }
@@ -219,12 +223,22 @@ class AgentPortKeepTest {
             secrets.map.put(AgentPortKeep.TOKEN_KEY, AgentPort.newToken().toCharArray());
             prefs.putInt(AgentPortKeep.PORT, squatter.getLocalPort());
             prefs.putBoolean(AgentPortKeep.KEEP, true);
-            AgentPortAction.start(keep, false);
-            AgentPortAction.awaitLaneIdle();
-            java.awt.EventQueue.invokeAndWait(() -> { });
+            java.util.List<String> notified = new java.util.ArrayList<>();
+            var savedChanged = AgentPortAction.changed;
+            AgentPortAction.changed = notified::add;
+            try {
+                AgentPortAction.start(keep, false);
+                AgentPortAction.awaitLaneIdle();
+                java.awt.EventQueue.invokeAndWait(() -> { });
+            } finally {
+                AgentPortAction.changed = savedChanged;
+            }
             AgentPort running = AgentPortAction.running();
             assertThat(running).as("the port started on a new address").isNotNull();
-            assertThat(org.openide.awt.StatusDisplayer.getDefault().getStatusText())
+            // the autostart says this during boot, when a plain status line
+            // lives five seconds: the sentence the user must act on is a
+            // notification as well
+            assertThat(notified).singleElement().asString()
                     .contains("127.0.0.1:" + running.port())
                     .contains("give your agent the new address");
             assertThat(prefs.getBoolean(AgentPortKeep.STARTED, false)).as("the FIRST STEPS record").isTrue();

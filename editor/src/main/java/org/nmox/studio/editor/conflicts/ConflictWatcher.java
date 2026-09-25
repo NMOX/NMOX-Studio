@@ -47,9 +47,10 @@ import org.openide.util.RequestProcessor;
  * 250 ms after the last keystroke, under {@code doc.render}; a document
  * over {@link #MAX_CHARS} is never read (git does not write conflicts
  * into files that size by hand-resolution, and a log or a dump must not
- * cost a full copy on every pause), and a text with no {@code <<<<<<<}
- * costs one {@code indexOf}. A document that never had a conflict never
- * touches the bag or the hints.
+ * cost a full copy on every pause); under it, each pause after an edit
+ * copies the text once and a text with no {@code <<<<<<<} then costs one
+ * {@code indexOf}. A document that never had a conflict never touches the
+ * bag or the hints.
  *
  * <p><b>Colors a theme can change.</b> The three tints are highlight
  * colorings registered in the layer for the NetBeans and FlatLaf profiles

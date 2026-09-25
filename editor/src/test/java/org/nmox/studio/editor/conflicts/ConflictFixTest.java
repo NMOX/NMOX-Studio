@@ -71,6 +71,20 @@ class ConflictFixTest {
     }
 
     @Test
+    @DisplayName("text typed at the very start of the block's line is not joined onto the kept side")
+    void typedBeforeTheMarkerRefuses() throws Exception {
+        // the position sits at the <<<<<<< line's start; typing there moves it
+        // one character on while the block's own text still matches — only the
+        // line-start check stops the fix from gluing "x" onto the kept side
+        BaseDocument d = doc(TEXT);
+        ConflictFix f = fix(d, Resolution.CURRENT);
+        d.insertString(TEXT.indexOf("<<<<<<<"), "x", null);
+        String before = text(d);
+        assertThat(f.apply()).isFalse();
+        assertThat(text(d)).isEqualTo(before);
+    }
+
+    @Test
     @DisplayName("a block that ended the file refuses once text is typed after it")
     void eofBlockStillEndsTheFile() throws Exception {
         String t = "a\n<<<<<<< HEAD\nx\n=======\ny\n>>>>>>> b";

@@ -187,4 +187,19 @@ class GitHubLinksTest {
         GitHubLinks.actPullRequest(repo.toFile(), u -> false, said::add);
         assertThat(said).hasSize(3);
     }
+
+    @Test
+    @DisplayName("a name starting with two dots is inside the repository; a token in a non-GitHub origin is never shown")
+    void dotDotNamesAndCredentials(@TempDir Path tmp) throws Exception {
+        Path repo = repo(tmp, "https://github.com/NMOX/demo");
+        Files.createDirectories(repo.resolve("..cache"));
+        Files.writeString(repo.resolve("..cache/x.ts"), "x");
+        GitHubLinks.Link out = GitHubLinks.resolve(repo.resolve("..cache/x.ts").toFile(), 1, 1);
+        assertThat(out.refusal()).isNull();
+        assertThat(out.url()).isEqualTo("https://github.com/NMOX/demo/blob/main/..cache/x.ts#L1");
+        Files.writeString(repo.resolve(".git/config"),
+                "[remote \"origin\"]\n\turl = https://oauth2:glpat-SECRET@gitlab.com/g/p.git\n");
+        String refusal = GitHubLinks.resolve(repo.resolve("src/App.jsx").toFile(), 1, 1).refusal();
+        assertThat(refusal).contains("gitlab.com/g/p.git").doesNotContain("SECRET").doesNotContain("oauth2");
+    }
 }

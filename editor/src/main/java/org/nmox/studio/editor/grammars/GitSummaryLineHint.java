@@ -85,11 +85,20 @@ public final class GitSummaryLineHint implements DocumentListener {
      * part of the summary line past the limit. Package-private so the
      * mapping from rule to hint is a unit test.
      */
+    /** The most of line one ever read: past it the length only grows, and the warning already shows. */
+    static final int FIRST_LINE_CAP = 64 * 1024;
+
     static List<ErrorDescription> describe(Document doc) {
         String[] text = {""};
         doc.render(() -> {
             try {
-                text[0] = doc.getText(0, doc.getLength());
+                // the first line only, bounded: under git commit -v the file
+                // holds the whole diff, and the rule judges line one (3.2.0
+                // review — each pause used to copy all of it)
+                javax.swing.text.Element first = doc.getDefaultRootElement().getElement(0);
+                int start = first.getStartOffset();
+                int end = Math.min(first.getEndOffset(), doc.getLength());
+                text[0] = doc.getText(start, Math.min(end - start, FIRST_LINE_CAP));
             } catch (BadLocationException ex) {
                 text[0] = "";
             }

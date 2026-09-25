@@ -115,7 +115,7 @@ public final class GitHubLinks {
         }
         GitLink.Remote remote = GitLink.parseRemote(origin);
         if (remote == null) {
-            return Link.refuse(Bundle.GitHubLinks_notGitHub(origin));
+            return Link.refuse(Bundle.GitHubLinks_notGitHub(GitLink.withoutCredentials(origin)));
         }
         String ref = GitFacts.branch(root);
         if (ref == null) {
@@ -129,7 +129,8 @@ public final class GitHubLinks {
             return Link.refuse(Bundle.GitHubLinks_pathUnresolved());
         }
         // a folder may BE the root (tree/<ref>); a file never can
-        if ((rel.isEmpty() && !folder) || rel.startsWith("..")) {
+        // "..cache/x.ts" is a name inside the repository, not a way out of it
+        if ((rel.isEmpty() && !folder) || rel.equals("..") || rel.startsWith("../")) {
             return Link.refuse(Bundle.GitHubLinks_outsideRepo());
         }
         String url = folder
@@ -156,7 +157,7 @@ public final class GitHubLinks {
         }
         GitLink.Remote remote = GitLink.parseRemote(origin);
         if (remote == null) {
-            return Link.refuse(Bundle.GitHubLinks_notGitHub(origin));
+            return Link.refuse(Bundle.GitHubLinks_notGitHub(GitLink.withoutCredentials(origin)));
         }
         if (!GitFacts.onBranch(root)) {
             return Link.refuse(Bundle.GitHubLinks_detached());

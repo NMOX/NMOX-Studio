@@ -289,6 +289,11 @@ public final class GitFacts {
     static final int FIRST_LINE_CAP = 4_096;
 
     private static String readFirstLine(File file) {
+        // a FIFO (or a device) planted in a hostile .git would block the open
+        // forever on the lane that asked (3.2.0 review): regular files only
+        if (!Files.isRegularFile(file.toPath())) {
+            return null;
+        }
         try (java.io.InputStream in = Files.newInputStream(file.toPath())) {
             // bounded prefix, never a full slurp: this class already treats
             // a crafted .git FILE as adversarial (the gitdir confinement) —

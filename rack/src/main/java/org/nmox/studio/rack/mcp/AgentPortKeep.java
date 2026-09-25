@@ -162,6 +162,12 @@ final class AgentPortKeep {
                 port = AgentPort.start(tools, productVersion, wanted, token);
             } catch (BindException taken) {
                 // something else holds the kept port: a new one, said out loud
+                // — AND a new token. Whatever holds the old address may be a
+                // squatter the configured agent has just sent its bearer to,
+                // and a scan of loopback would find the new port; a kept token
+                // must never follow the port it was handed out on (3.2.0 review)
+                token = AgentPort.newToken();
+                newToken = true;
                 port = AgentPort.start(tools, productVersion, 0, token);
                 moved = true;
             }

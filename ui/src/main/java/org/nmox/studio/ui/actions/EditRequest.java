@@ -97,7 +97,7 @@ public record EditRequest(boolean waits, List<Item> items) {
                     if (a.isEmpty() && b.isEmpty()) {
                         throw new Refused("the request compares nothing with nothing");
                     }
-                    items.add(new Diff(a.isEmpty() ? null : file(a), b.isEmpty() ? null : file(b)));
+                    items.add(new Diff(a.isEmpty() ? null : compared(a), b.isEmpty() ? null : compared(b)));
                 }
                 default -> throw new Refused("the request asks for \"" + kind + "\", which nmox never writes");
             }
@@ -115,6 +115,22 @@ public record EditRequest(boolean waits, List<Item> items) {
         }
         if (!f.isFile()) {
             throw new Refused(path + ": no such file");
+        }
+        return f;
+    }
+
+    /**
+     * The largest file one side of a diff may be: the diff view loads each
+     * side whole, so a log or a dump handed to {@code nmox -d} or git's
+     * difftool would freeze the IDE (3.2.0 review). Refused here, off the
+     * EDT, where the terminal hears why.
+     */
+    static final long MAX_COMPARED = 16L * 1024 * 1024;
+
+    private static File compared(String path) throws Refused {
+        File f = file(path);
+        if (f.length() > MAX_COMPARED) {
+            throw new Refused(path + ": too large to compare here (over 16 MiB)");
         }
         return f;
     }

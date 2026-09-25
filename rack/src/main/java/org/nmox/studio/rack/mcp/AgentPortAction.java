@@ -66,8 +66,9 @@ import org.openide.util.RequestProcessor;
     "AgentPortAction_kept=Agent Port address and token kept.",
     "AgentPortAction_keptSession=Keychain unavailable — the Agent Port token is kept for this session only.",
     "AgentPortAction_forgotten=Agent Port address and token forgotten — the keychain entry is deleted.",
-    "AgentPortAction_moved=The kept Agent Port address was taken, so the port now listens on 127.0.0.1:{0} — give your agent the new address.",
-    "AgentPortAction_newToken=The kept Agent Port token was not found, so the port has a new one — give your agent the new token."
+    "AgentPortAction_moved=The kept Agent Port address was taken, so the port now listens on 127.0.0.1:{0} with a new token — give your agent the new address and token.",
+    "AgentPortAction_newToken=The kept Agent Port token was not found, so the port has a new one — give your agent the new token.",
+    "AgentPortAction_changedTitle=Your agent needs the Agent Port's new details"
 })
 public final class AgentPortAction implements ActionListener {
 
@@ -230,11 +231,17 @@ public final class AgentPortAction implements ActionListener {
             RUNNING.set(started.port());
             EventQueue.invokeLater(() -> {
                 // the address change is the sentence the user must act on, so it wins the line
+                // a sentence the user must ACT on is also a notification: a
+                // plain status line deletes itself after five seconds, and the
+                // autostart says it during boot, when project-open traffic
+                // replaces it (the v2.182.0 finding) — the bell keeps it
                 if (started.moved()) {
-                    StatusDisplayer.getDefault().setStatusText(
-                            Bundle.AgentPortAction_moved(String.valueOf(started.port().port())));
+                    String said = Bundle.AgentPortAction_moved(String.valueOf(started.port().port()));
+                    StatusDisplayer.getDefault().setStatusText(said);
+                    notifyChanged(said);
                 } else if (started.newToken()) {
                     StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_newToken());
+                    notifyChanged(Bundle.AgentPortAction_newToken());
                 } else {
                     StatusDisplayer.getDefault().setStatusText(
                             Bundle.AgentPortAction_listening(String.valueOf(started.port().port())));
@@ -244,6 +251,27 @@ public final class AgentPortAction implements ActionListener {
                 }
             });
         });
+    }
+
+    private static final javax.swing.Icon CHANGED_ICON = changedIcon();
+
+    /** The notification a changed address or token raises; a seam for tests. */
+    static java.util.function.Consumer<String> changed = details ->
+            org.openide.awt.NotificationDisplayer.getDefault().notify(Bundle.AgentPortAction_changedTitle(),
+                    CHANGED_ICON, org.nmox.studio.core.util.PlainText.plain(details), null);
+
+    private static javax.swing.Icon changedIcon() {
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(16, 16, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+        java.awt.Graphics2D g = img.createGraphics();
+        g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(new java.awt.Color(240, 196, 25));
+        g.fillOval(3, 3, 10, 10);
+        g.dispose();
+        return new javax.swing.ImageIcon(img);
+    }
+
+    private static void notifyChanged(String details) {
+        changed.accept(details);
     }
 
     /** Waits for the lane to drain — tests only. */

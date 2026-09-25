@@ -82,6 +82,11 @@ final class TerminalLinks {
                 continue;
             }
             Link link = located(s, spanStart, pathStart, tokenEnd);
+            if (link != null && pathStart != spanStart) {
+                // a file:// URL percent-encodes: Node writes a folder named
+                // "My Project" as My%20Project in an ES module's frame
+                link = new Link(link.start(), link.end(), percentDecoded(link.path()), link.line(), link.column());
+            }
             if (link != null) {
                 out.add(link);
                 i = link.end();
@@ -90,6 +95,31 @@ final class TerminalLinks {
             }
         }
         return out;
+    }
+
+    /**
+     * {@code %XX} sequences decoded as UTF-8 bytes; a malformed escape is
+     * kept as written rather than guessed at.
+     */
+    static String percentDecoded(String path) {
+        if (path.indexOf('%') < 0) {
+            return path;
+        }
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        byte[] raw = path.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        for (int i = 0; i < raw.length; i++) {
+            if (raw[i] == '%' && i + 2 < raw.length) {
+                int hi = Character.digit(raw[i + 1], 16);
+                int lo = Character.digit(raw[i + 2], 16);
+                if (hi >= 0 && lo >= 0) {
+                    bytes.write(hi * 16 + lo);
+                    i += 2;
+                    continue;
+                }
+            }
+            bytes.write(raw[i]);
+        }
+        return bytes.toString(java.nio.charset.StandardCharsets.UTF_8);
     }
 
     /**

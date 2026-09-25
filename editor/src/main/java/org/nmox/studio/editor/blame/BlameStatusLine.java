@@ -225,6 +225,9 @@ public final class BlameStatusLine implements StatusLineElementProvider {
 
         /** Moves the caret listener to {@code c}; EDT only. */
         void attach(JTextComponent c) {
+            // an answer still in flight belongs to the editor being left: it
+            // must not paint under the next one, nor a click annotate it
+            blame.cancel();
             if (target != null) {
                 target.removeCaretListener(caretListener);
             }

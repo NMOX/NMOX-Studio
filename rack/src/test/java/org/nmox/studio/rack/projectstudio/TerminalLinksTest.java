@@ -245,4 +245,15 @@ class TerminalLinksTest {
                 .isEqualTo(new File(project, "src/app.ts"));
         assertThat(TerminalLinks.candidate("src/app.ts", null, home)).isNull();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("a file:// frame is percent-decoded: a folder with a space, or not ASCII, is the folder on disk")
+    void fileUrlsDecode() {
+        java.util.List<TerminalLinks.Link> found = TerminalLinks.find(
+                "    at main (file:///Users/d/My%20Project/caf%C3%A9.mjs:3:1)");
+        org.assertj.core.api.Assertions.assertThat(found).singleElement()
+                .extracting(TerminalLinks.Link::path).isEqualTo("/Users/d/My Project/café.mjs");
+        org.assertj.core.api.Assertions.assertThat(TerminalLinks.percentDecoded("/a/100%/b.js"))
+                .as("a malformed escape is kept").isEqualTo("/a/100%/b.js");
+    }
 }

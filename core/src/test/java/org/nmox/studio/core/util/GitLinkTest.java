@@ -100,6 +100,19 @@ class GitLinkTest {
     }
 
     @Test
+    @DisplayName("a remote shown in a refusal loses the token its URL may carry; scp remotes are kept")
+    void withoutCredentials() {
+        assertThat(GitLink.withoutCredentials("https://oauth2:glpat-SECRET@gitlab.com/g/p.git"))
+                .isEqualTo("https://gitlab.com/g/p.git");
+        assertThat(GitLink.withoutCredentials("https://ghp_SECRET@github.com/o/r"))
+                .isEqualTo("https://github.com/o/r");
+        assertThat(GitLink.withoutCredentials("git@gitlab.com:g/p.git")).isEqualTo("git@gitlab.com:g/p.git");
+        assertThat(GitLink.withoutCredentials("https://example.com/a@b/c")).as("an @ in the path is not user info")
+                .isEqualTo("https://example.com/a@b/c");
+        assertThat(GitLink.withoutCredentials("ssh://git@host:2222/r.git")).isEqualTo("ssh://host:2222/r.git");
+    }
+
+    @Test
     @DisplayName("the link line labels the path and range and escapes a bracket in the name")
     void linkLine() {
         assertThat(GitLink.linkLine("src/App.jsx", 3, 14, "U")).isEqualTo("[src/App.jsx#L3-L14](U)");

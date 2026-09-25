@@ -161,6 +161,27 @@ public final class GitLink {
                 + "/compare/" + encodePath(branch) + "?expand=1";
     }
 
+    /**
+     * A remote URL fit to show: the user-info part of a {@code scheme://}
+     * URL is dropped, because a remote like
+     * {@code https://oauth2:glpat-…@gitlab.com/g/p.git} carries a token in
+     * it and a refusal must not print it on the status line (3.2.0 review).
+     * An scp-style {@code git@host:path} has no secret in it and is kept.
+     */
+    public static String withoutCredentials(String url) {
+        if (url == null) {
+            return null;
+        }
+        int scheme = url.indexOf("://");
+        if (scheme < 0) {
+            return url;
+        }
+        int hostStart = scheme + 3;
+        int pathStart = url.indexOf('/', hostStart);
+        int at = url.lastIndexOf('@', pathStart < 0 ? url.length() : pathStart);
+        return at < hostStart ? url : url.substring(0, hostStart) + url.substring(at + 1);
+    }
+
     /** The Markdown link line under the block: {@code [src/App.jsx#L3-L14](url)}. */
     public static String linkLine(String relPath, int startLine, int endLine, String url) {
         String label = relPath;
