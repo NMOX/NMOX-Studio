@@ -25,7 +25,7 @@ so there's nothing else to install ([details](#download)).
 [coming from VS Code](docs/coming-from-vscode.md) ·
 [the user guide](docs/user-guide.md) · [glossary](docs/glossary.md)
 
-`53 RACK DEVICES` · `88 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
+`53 RACK DEVICES` · `90 LANGUAGE GRAMMARS` · `93 LEARNING SPACES` · `5 STUDIOS` · `11 CONTRACT CHAINS`
 
 ![A 20-second tour: the Welcome launchpad, the product serving its own website with the ⇄ chip, the teaching loop, the house laws switching to Spanish live, and the Task Rack](docs/images/tour.gif)
 
@@ -70,7 +70,7 @@ nothing is sent without a gesture; keys live in the OS keychain. **Works
 with Claude, ChatGPT or Gemini** — your key, your pick, one switch for
 every face.
 
-**A polyglot editor that came to work.** 88 TextMate grammars through
+**A polyglot editor that came to work.** 90 TextMate grammars through
 NetBeans CSL, LSP with ordered fallbacks, project-wide Go to Symbol
 (⌥⇧⌘O), a minimap and sticky scroll on every editor, zero-setup
 JavaScript/TypeScript/Chrome debugging, color swatches that resolve
@@ -494,7 +494,7 @@ and a MooTools learning space that tours `Class`/`Extends`, the extended
 natives, and Fx on a live page.
 
 ### ⌨️ Polyglot editing
-70+ languages with syntax highlighting (88 TextMate grammars through
+70+ languages with syntax highlighting (90 TextMate grammars through
 NetBeans CSL) — code plus the whole config layer: `.editorconfig`,
 dotenv, ignore files, GraphQL, Vue, Svelte, Astro, Pug, Handlebars,
 Liquid, nginx, Makefile, Protocol Buffers, Prisma, YAML, TOML,

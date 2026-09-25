@@ -25,7 +25,7 @@ public final class ConfigFileResolver extends MIMEResolver {
     public ConfigFileResolver() {
         super("text/x-ini", "text/x-ignore", "text/x-properties",
                 "text/x-makefile", "text/x-nginx-conf", "text/x-apache-conf",
-                "text/x-markdown");
+                "text/x-markdown", GitCommitGrammar.MIME, GitRebaseGrammar.MIME);
     }
 
     @Override
@@ -49,6 +49,19 @@ public final class ConfigFileResolver extends MIMEResolver {
                 return "text/x-makefile";
             case "nginx.conf":
                 return "text/x-nginx-conf";
+            // 3.2.0: the files git hands its editor (core.editor "nmox -w").
+            // No extension, so only the exact name can claim them; without
+            // this they open as plain text and git's own # instructions read
+            // like the message being written.
+            case "COMMIT_EDITMSG":
+            case "MERGE_MSG":
+            case "TAG_EDITMSG":
+            case "SQUASH_MSG":
+            case "NOTES_EDITMSG":
+            case "EDIT_DESCRIPTION":
+                return GitCommitGrammar.MIME;
+            case "git-rebase-todo":
+                return GitRebaseGrammar.MIME;
             case ".htaccess":
             case "httpd.conf":
             case "apache2.conf":
