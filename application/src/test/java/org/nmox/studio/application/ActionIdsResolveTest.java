@@ -43,7 +43,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ActionIdsResolveTest {
 
     private static final Path CLUSTER = Path.of("target", "nmoxstudio");
-    private static final Pattern CALL = Pattern.compile("Actions\\.forID\\(\\s*([^,()]+?)\\s*,\\s*([^,()]+?)\\s*\\)");
+    private static final Pattern CALL = Pattern.compile("Actions\\.forID\\s*\\(\\s*([^,()]+?)\\s*,\\s*([^,()]+?)\\s*\\)");
     /** The Welcome's door helper, {@code actionLink(label, category, id)}, which looks the id up for you. */
     private static final Pattern LINK = Pattern.compile("actionLink\\([^;]*?,\\s*(\"[^\"]+\")\\s*,\\s*(\"[^\"]+\")\\s*\\)");
     /**
@@ -70,7 +70,8 @@ class ActionIdsResolveTest {
             for (Path p : walk.filter(x -> x.toString().endsWith(".java") && x.toString().replace('\\', '/').contains("/src/main/java/")
                     && !x.toString().replace('\\', '/').contains("/.claude/")).toList()) {
                 String src = Files.readString(p);
-                if (!src.contains("Actions.forID") && !src.contains("Actions::forID")) {
+                if (!src.contains("Actions.forID") && !src.contains("Actions::forID")
+                        && !src.matches("(?s).*import\\s+static\\s+org\\.openide\\.awt\\.Actions\\.\\*.*")) {
                     continue;
                 }
                 Map<String, String> constants = new HashMap<>();
@@ -92,12 +93,23 @@ class ActionIdsResolveTest {
                 // every raw Actions.forID( is either read here with literal
                 // arguments or counted: a call whose arguments are method calls
                 // (t.category()) is not matched by CALL at all (5th review)
-                int raw = src.split("Actions\\.forID\\(", -1).length - 1;
+                int raw = src.split("Actions\\.forID\\s*\\(", -1).length - 1;
                 // a method reference hands the lookup to a seam: counted and
                 // pinned like any lookup read elsewhere, its pairs read
                 // through the seam's own call shape (RESOLVE)
                 int refs = src.split("Actions::forID", -1).length - 1;
                 int unreadable = raw - callShapes + refs;
+                int seamReads = 0;
+                Matcher sr = RESOLVE.matcher(src);
+                while (sr.find()) {
+                    seamReads++;
+                }
+                if (refs > 0 && seamReads < refs) {
+                    // a method reference whose seam's call is not read here
+                    // would meet its pin while nothing checks its id (7th review)
+                    missing.add(p.getFileName() + ": " + refs + " Actions::forID handed to a seam, "
+                            + seamReads + " read as resolver.resolve(category, id)");
+                }
                 if (src.matches("(?s).*import\\s+static\\s+org\\.openide\\.awt\\.Actions\\.(forID|\\*)\\s*;.*")) {
                     missing.add(p.getFileName() + ": a static import hides forID from this census — write Actions.forID");
                 }
