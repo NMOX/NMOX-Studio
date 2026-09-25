@@ -68,7 +68,7 @@ public final class NmoxSymbolProvider implements SymbolProvider {
         } catch (IllegalArgumentException badPattern) {
             return; // a half-typed regex matches nothing, quietly
         }
-        List<Symbol> all = index.refresh(dir.toPath(),
+        List<Symbol> all = index.refresh(dir.toPath(), focus(),
                 NmoxSymbolProvider::mimeOf, v -> cancelled);
         List<SymbolDescriptor> hits = new ArrayList<>();
         Path root = dir.toPath();
@@ -95,6 +95,17 @@ public final class NmoxSymbolProvider implements SymbolProvider {
     @Override
     public void cleanup() {
         cancelled = true;
+    }
+
+    /**
+     * The package holding the file last edited — read first, so on a
+     * monorepo the symbols of the package the user works in are indexed
+     * before the walk reaches its cap (after 3.2.0). Null without one.
+     */
+    static Path focus() {
+        javax.swing.text.JTextComponent editor = org.netbeans.api.editor.EditorRegistry.lastFocusedComponent();
+        File pkg = editor == null ? null : org.nmox.studio.editor.ProjectRoot.of(editor.getDocument());
+        return pkg == null ? null : pkg.toPath();
     }
 
     /** The platform's resolvers know every mime the product registered. */
