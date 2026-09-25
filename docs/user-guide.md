@@ -128,6 +128,8 @@ by name.
 Studio git's editor and difftool: `git config --global core.editor
 "nmox -w"`, and `nmox --help` prints the two lines that make it the
 difftool. Save the message, close the tab, and git carries on.
+**Team ▸ Use NMOX Studio with Git…** shows those settings beside the values
+they have now, and sets them for you.
 Otherwise the command returns at once — the first `nmox` starts the IDE in the
 background, and each later one hands its
 folder to the IDE already running. Bare `nmox` just starts the IDE.
