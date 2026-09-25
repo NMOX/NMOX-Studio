@@ -43,14 +43,22 @@ public final class EditorAccessibleNames implements Runnable {
         }
     }
 
-    /** Gives {@code c} its document's file name when it has none. */
+    /** Marks a name this class gave, so a rename can follow the file. */
+    static final String OURS = "nmox.a11y.namedAfterFile";
+
+    /**
+     * Gives {@code c} its document's file name when it has none, and keeps
+     * a name this class gave current: after a rename the next focus names
+     * the pane after the file it now shows. A name anyone else set is kept.
+     */
     static void name(JTextComponent c) {
-        if (c.getName() != null) {
+        if (c.getName() != null && c.getClientProperty(OURS) == null) {
             return;
         }
         String file = fileName(c.getDocument());
-        if (file != null) {
+        if (file != null && !file.equals(c.getName())) {
             c.setName(file);
+            c.putClientProperty(OURS, Boolean.TRUE);
         }
     }
 

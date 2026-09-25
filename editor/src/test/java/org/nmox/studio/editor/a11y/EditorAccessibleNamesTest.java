@@ -51,6 +51,18 @@ class EditorAccessibleNamesTest {
     }
 
     @Test
+    @DisplayName("after a rename the pane is named after the file it now shows, and a screen reader hears it")
+    void followsARename() throws Exception {
+        Path f = Files.writeString(tmp.resolve("old.js"), "x");
+        DataObject dob = DataObject.find(FileUtil.toFileObject(f.toFile()));
+        JEditorPane pane = paneOver(dob);
+        EditorAccessibleNames.name(pane);
+        dob.rename("new");
+        EditorAccessibleNames.name(pane);
+        assertThat(pane.getName()).isEqualTo("new.js");
+    }
+
+    @Test
     @DisplayName("a name someone else set is kept, and a document with no file stays unnamed")
     void leavesOthersAlone() throws Exception {
         Path f = Files.writeString(tmp.resolve("a.txt"), "x");

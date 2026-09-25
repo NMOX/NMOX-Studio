@@ -129,6 +129,9 @@ public final class ProjectTerminal implements ActionListener {
         File dir = aimedProject();
         if (decide(false, dir) == Choice.OPEN_IN_PROJECT) {
             if (openIn(dir, source)) {
+                // the chord's memory too: a shell is now in THIS project, so
+                // the next ^` brings it forward instead of starting another
+                LAST_STARTED_IN.set(dir);
                 return;
             }
             openPlain(source);
