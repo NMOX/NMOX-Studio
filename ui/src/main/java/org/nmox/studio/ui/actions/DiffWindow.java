@@ -51,7 +51,8 @@ import org.openide.windows.WindowManager;
     "DiffWindow_none=The files are the same",
     "DiffWindow_bar=Differences",
     "# git names the missing side of an added or a deleted file /dev/null",
-    "DiffWindow_nothing=no file"
+    "DiffWindow_nothing=no file",
+    "DiffWindow_binaryDiffer=Binary files that differ"
 })
 final class DiffWindow extends TopComponent {
 
@@ -60,10 +61,20 @@ final class DiffWindow extends TopComponent {
         setLayout(new BorderLayout());
     }
 
+    /** The one type the diff view shows as its binary placeholder. */
+    static final String BINARY = "application/octet-stream";
+
+    private static final org.openide.util.RequestProcessor BYTES =
+            new org.openide.util.RequestProcessor("nmox-diff-bytes", 1);
+
     /** How many bytes are read to decide whether a file is binary: git's own sniff is 8000. */
     static final int SNIFF = 8000;
 
     private DiffController diff;
+    /** Binary sides only: whether their bytes differ, which the controller does not count. */
+    private Boolean binaryDiffer;
+    /** True for a binary pair: until the bytes are compared the bar says nothing rather than "the same". */
+    private boolean binary;
     private final JLabel where = new JLabel();
     private final JButton previous = new JButton("\u2191");
     private final JButton next = new JButton("\u2193");
@@ -114,6 +125,30 @@ final class DiffWindow extends TopComponent {
         }
         DiffController diff = DiffController.createEnhanced(l, r);
         DiffWindow w = new DiffWindow(diff, left, right);
+        if (BINARY.equals(l.getMIMEType()) || BINARY.equals(r.getMIMEType())) {
+            w.binary = true;
+            // the view paints "<Binary File>" twice and counts no difference
+            // at all, so the bar would say the files are the same (walked in
+            // 3.2.0 on two PNGs one byte apart): compare the bytes here
+            if (left == null || right == null) {
+                w.binaryDiffer = Boolean.TRUE;
+            } else {
+                // off the EDT: two large binaries are read to the first byte that differs
+                BYTES.post(() -> {
+                    boolean differ;
+                    try {
+                        differ = Files.mismatch(left.toPath(), right.toPath()) >= 0;
+                    } catch (IOException unreadable) {
+                        differ = true;
+                    }
+                    boolean d = differ;
+                    SwingUtilities.invokeLater(() -> {
+                        w.binaryDiffer = d;
+                        w.showWhere();
+                    });
+                });
+            }
+        }
         Mode editor = WindowManager.getDefault().findMode("editor");
         if (editor != null) {
             editor.dockInto(w);
@@ -132,7 +167,7 @@ final class DiffWindow extends TopComponent {
         try (InputStream in = Files.newInputStream(f.toPath())) {
             head = in.readNBytes(SNIFF);
         }
-        String mime = looksBinary(head) ? "application/octet-stream" : fo.getMIMEType();
+        String mime = looksBinary(head) ? BINARY : fo.getMIMEType();
         return StreamSource.createSource(f.getName(), f.getPath(), mime, f);
     }
 
@@ -181,7 +216,8 @@ final class DiffWindow extends TopComponent {
         }
         int count = diff.getDifferenceCount();
         int index = diff.getDifferenceIndex();
-        where.setText(PlainText.plain(position(index, count)));
+        where.setText(PlainText.plain(binary && binaryDiffer == null ? ""
+                : Boolean.TRUE.equals(binaryDiffer) ? Bundle.DiffWindow_binaryDiffer() : position(index, count)));
         int at = Math.max(index, 0);
         previous.setEnabled(count > 0 && at > 0);
         next.setEnabled(count > 0 && at < count - 1);
