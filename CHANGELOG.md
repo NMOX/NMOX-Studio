@@ -81,6 +81,20 @@ loop as one sitting is the new tutorial
   Create Pull Request*, *GitHub: Open on GitHub*, *GitHub: Copy GitHub
   Permalink* — and to *Find All References* (57 titles).
 
+### Search
+
+- **Find in Projects searches your code, not what the repository ignores.**
+  It searched `node_modules`, `dist/` and everything `.gitignore` lists; a
+  `WebProject` now answers the platform's `SharabilityQuery` with exactly what
+  git ignores (every `.gitignore` from the repository root down,
+  `.git/info/exclude`, `.git`), and with the usual build folders outside a
+  repository. Measured: 4 hits become 1 on a Node fixture. It never goes past
+  what git ignores — the git module reads the same answer to decide what a
+  commit shows, so a tracked `node_modules` is still searched — and the
+  folders stay in the project tree. **Search in Generated Sources** searches
+  them anyway. The `.gitignore` reader (`core.util.GitIgnore`) is new, pure,
+  bounded and linear, and drops any rule it cannot read exactly as git does.
+
 ### The Terminal
 
 - **Locations open on ⌘-click** (Ctrl-click elsewhere): `src/app.ts:42:7`
