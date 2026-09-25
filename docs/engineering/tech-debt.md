@@ -111,6 +111,14 @@ than proven:
   neutral too, and about thirty such paths in the Hebrew and Arabic docs
   carry no LRM. Whether the rule should say "a path beginning with a
   neutral character" is the decision; the sweep after it is mechanical.
+  **Decided in 3.2.0, by measurement:** `java.text.Bidi` in a
+  right-to-left paragraph draws `שלום ~/NMOX/app` as `NMOX/app/~` (and
+  `./`, `../`, `/usr`, `.env`, `*.json` the same way, a trailing `/` or
+  `.` detaching to the far side too), so conventions.md now asks for an
+  LRM before a path beginning with a neutral and after one ending with
+  one, 163 marks were added across the Hebrew and Arabic documents, and
+  `RtlDocsPathDirectionGateTest` derives the population and pins the
+  measurement.
 
 ## Closed by v2.186.0 — every "Decided, not done" item, done
 

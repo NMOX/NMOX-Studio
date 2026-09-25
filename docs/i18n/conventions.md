@@ -128,6 +128,26 @@ Two rules hold for every language:
 - Technical tokens (`npm`, `package.json`, `{0}`) stay Latin inside the
   Hebrew sentence. The bidi algorithm places them; a translation never
   reorders them by hand.
+- **A path or name that begins or ends with a neutral character takes an
+  LRM (U+200E) on that side** (decided in 3.2.0, ledger 121). `.` `~` `/`
+  and a glob's `*` have no direction of their own, so between a Hebrew
+  word and a Latin letter they take the sentence's direction and move to
+  the far side of the name. Measured with `java.text.Bidi` in a
+  right-to-left paragraph: `שלום ~/NMOX/app` is drawn `NMOX/app/~`,
+  `./app/src` as `app/src/.`, `../shared/lib` as `shared/lib/..`,
+  `/usr/local/bin` as `usr/local/bin/`, `.env` as `env.` and `*.json` as
+  `json.*`; with an LRM before the path each is drawn whole. The end
+  detaches too: `~/.nmox/devices.d/` before a Hebrew word (or at the end
+  of a right-to-left line) is drawn with its last `/` on the far side, and
+  `nmox .` as `. nmox`; an LRM after the path keeps it. So: an LRM before
+  a path beginning with `.` `~` `/` (or a glob's `*`) when the nearest
+  strong character before it is right to left (a letter or an RLM), and
+  an LRM after one ending with `/` (or, in a code span, `.`) when the
+  nearest strong character after it is right to left or the right-to-left
+  line ends there. The mark goes **outside** the code span, before its
+  opening backtick or after its closing one, so a reader who copies the
+  path copies no invisible character. `RtlDocsPathDirectionGateTest` derives the paths from every
+  Hebrew and Arabic document and pins the measurement itself.
 
 ## ar — العربية (مصري)
 
@@ -164,6 +184,10 @@ Two rules hold for every language:
 - **A dotfile name after an Arabic word takes an LRM before its dot**:
   `في ‎.env`, `(‎.nmoxdb.json)`. Without it the dot takes the sentence's
   direction and is drawn after the name. The gate holds this for Hebrew too.
+  In the documents the rule is the Hebrew section's wider one, measured in
+  3.2.0: any path beginning with `.` `~` `/` (or a glob's `*`) takes the
+  LRM before it, and one ending with `/` takes one after it
+  (`RtlDocsPathDirectionGateTest`).
 - **Machine text is kept in one direction by the code, not the translation.**
   An Arabic clock ends in a letter (`2:14 م`), so a history row that begins
   with the time would run right to left and move a SQL statement's semicolon
