@@ -172,7 +172,9 @@ public final class GitLink {
             return null;
         }
         for (int i = 0; i < sha.length(); i++) {
-            if (Character.digit(sha.charAt(i), 16) < 0) {
+            char c = sha.charAt(i);
+            // ASCII only: Character.digit also accepts fullwidth ０-９ Ａ-Ｆ
+            if (!(c >= '0' && c <= '9' || c >= 'a' && c <= 'f' || c >= 'A' && c <= 'F')) {
                 return null;
             }
         }

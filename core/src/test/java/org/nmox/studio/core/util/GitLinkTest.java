@@ -161,5 +161,6 @@ class GitLinkTest {
         assertThat(GitLink.commitUrl(r, "abcdefg")).isNull();
         assertThat(GitLink.commitUrl(r, "abc/../x")).isNull();
         assertThat(GitLink.commitUrl(r, null)).isNull();
+        assertThat(GitLink.commitUrl(r, "\uFF10\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16")).as("fullwidth digits").isNull();
     }
 }
