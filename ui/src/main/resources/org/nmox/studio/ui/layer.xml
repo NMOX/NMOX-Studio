@@ -258,6 +258,32 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
+            <!-- The editing chords a VS Code user reaches for next (3.2),
+                 measured the same way against every shipped cluster
+                 layer and editor keybinding:
+                 S-F12     Find Usages (VS Code's Go to References), the
+                           action Ctrl+F7 runs. NOT in Emacs or NetBeans55,
+                           whose own S-F12.shadow (Jump Prev) sits under
+                           the SAME file name - a profile keeps its own.
+                 M-PERIOD  Show Hints, VS Code's Quick Fix (Cmd+.), the
+                           action the platform's O-Enter runs. M, not D:
+                           M is Meta on every OS, so this is Cmd+. on
+                           macOS and never Ctrl+. on Windows and Linux,
+                           where Ctrl+. is the NetBeans and Eclipse
+                           profiles' Jump Next (C-PERIOD) - and VS Code's
+                           Windows Quick Fix, Ctrl+., is not granted here.
+                 The editor-side chords (F12, F2, Cmd+], Opt+Cmd+F,
+                 Ctrl+-, Shift+Opt+F) live in the editor module's
+                 vscode-*-keybindings files. VsCodeKeymapResolutionTest
+                 resolves every one through the assembled cluster. -->
+            <file name="S-F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="M-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
             <!-- On Linux (never macOS or Windows: the originalFile is a
                  methodvalue that answers null there) the defaults module
                  binds Ctrl+` to the Recent View List, a fallback for KDE,
@@ -328,6 +354,15 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
+            <!-- The 3.2 editing chords: see the NetBeans profile above. -->
+            <file name="S-F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="M-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
             <file name="DA-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
             </file>
@@ -391,6 +426,11 @@
             </file>
             <file name="C-BACK_QUOTE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <!-- The 3.2 editing chords: see the NetBeans profile above. -->
+            <file name="M-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="D-BACK_QUOTE.shadow_hidden"/>
@@ -459,6 +499,15 @@
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
+            <!-- The 3.2 editing chords: see the NetBeans profile above. -->
+            <file name="S-F12.shadow">
+                <attr name="originalFile" stringvalue="Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <file name="M-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
             <file name="DA-P.shadow">
                 <attr name="originalFile" stringvalue="Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance"/>
             </file>
@@ -522,6 +571,11 @@
             </file>
             <file name="C-BACK_QUOTE.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance"/>
+                <attr name="nmoxShortcut" boolvalue="true"/>
+            </file>
+            <!-- The 3.2 editing chords: see the NetBeans profile above. -->
+            <file name="M-PERIOD.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance"/>
                 <attr name="nmoxShortcut" boolvalue="true"/>
             </file>
             <file name="D-BACK_QUOTE.shadow_hidden"/>

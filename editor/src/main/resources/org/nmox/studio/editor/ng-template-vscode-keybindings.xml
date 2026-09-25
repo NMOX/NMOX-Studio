@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    3.2: F12 in an Angular template runs the template's own go-to-
+    declaration, the action ng-template-keybindings.xml gives Cmd+B here,
+    so F12 and Cmd+B stay one gesture in templates too (the root
+    vscode-f12-keybindings.xml alone would send F12 to the platform's
+    goto-declaration, which never consults the hyperlink chain on these
+    panes). Same profiles as the root F12 file: NetBeans and Idea.
+-->
+<bindings>
+    <bind actionName="ng-goto-declaration" key="F12"/>
+</bindings>

@@ -30,9 +30,12 @@ keyboard.
 | The terminal, in the project folder | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Open a recent project | ⌃R | **⌥⌘P** — Switch Project… | Ctrl+R | **Ctrl+Alt+P** |
 | Go to a symbol in the project | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Go to definition | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Rename a symbol | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Go to definition | F12 | **F12** or ⌘B | F12 | **F12** or Ctrl+B |
+| Find references | ⇧F12 | **⇧F12** — Find Usages | Shift+F12 | **Shift+F12** |
+| Rename a symbol | F2 | **F2** or ⌃R | F2 | **F2** or Ctrl+R |
+| Quick fix | ⌘. | **⌘.** or ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Go to line | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Go back / forward | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Toggle line comment | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Show suggestions | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Add the next occurrence to the selection | ⌘D | **⌘D** or ⌘J | Ctrl+D | **Ctrl+D** or Ctrl+J |
@@ -41,7 +44,9 @@ keyboard.
 | Move the line up / down | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Copy the line down | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Delete the line | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Format the document | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Indent the line | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Replace | ⌥⌘F | **⌥⌘F** or ⌘R | Ctrl+H | **Ctrl+H** |
+| Format the document | ⇧⌥F | **⇧⌥F** or ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Close the editor tab | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | The Problems panel | ⇧⌘M | **⌘6** — Action Items (⇧⌘M toggles a bookmark here) | Ctrl+Shift+M | **Ctrl+6** |
 | Toggle a breakpoint | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -66,6 +71,52 @@ cannot say in a cell:
 **Help ▸ Keyboard Shortcuts…** lists every NMOX chord in your active
 keymap, the four VS Code chords included, read from the running keymap so it cannot
 drift from what the keys do.
+
+### Every editing chord, measured
+
+The chords a VS Code user's hands reach for while editing, each looked
+up in the shipped keymap of the default profile on macOS. Where VS Code's
+chord was free here it now does what VS Code does (the rows that say
+**The same:**); where it already meant something NetBeans users rely on,
+it keeps that meaning and the row says where VS Code's action lives.
+
+| VS Code, macOS | VS Code does | In NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **The same:** Go to Declaration, as ⌘B does |
+| ⇧F12 | Go to References | **The same:** Find Usages, as ⌃F7 does |
+| F2 | Rename Symbol | **The same:** Rename, as ⌃R does |
+| ⌘. | Quick Fix | **The same:** the fixes for the line, as ⌃↩ shows them |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Previous / next marked occurrence; moving the line is ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | The same, as it always was |
+| ⇧⌘K | Delete Line | Next Matching Word (completes the word from the file); deleting the line is ⌘E |
+| ⌘L | Expand Line Selection | Select Identifier; selecting the line has no chord |
+| ⇧⌘L | Select All Occurrences | Paste as Lines in the editor; selecting every occurrence is ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | The same, as it always was |
+| ⇧⌥A | Toggle Block Comment | Nothing: there is no separate block-comment action, and ⌘/ toggles the comment |
+| ⌘] | Indent Line | **The same:** Shift Line Right |
+| ⌘[ | Outdent Line | Match Brace, as it always was; outdenting is ⇧Tab or ⌃⇧← |
+| ⌘B | Toggle Sidebar | Go to Declaration; ⇧⌘↩ shows only the editor, ⇧Esc maximizes the window you are in |
+| ⌘J | Toggle Panel | Adds the next occurrence in the editor (as ⌘D does); the Output window is ⌘4 |
+| ⌘\ | Split Editor | Show Code Completion Popup in the editor; splitting the editor is ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | The same, as it always was: Open Recent File's chord reopens the last closed file |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **The same:** Back and Forward through where you have been editing, as ⌃← / ⌃→ (chords macOS usually keeps for switching desktops) |
+| ⌘G / ⇧⌘G | Find Next / Previous | The same, as it always was |
+| ⌥⌘F | Replace | **The same:** Replace, as ⌘R does |
+| ⇧⌘F | Find in Files | The same, as it always was: Find in Projects |
+| ⇧⌘O | Go to Symbol in Editor | Open Project; the file's symbols are in the Navigator (⌘7) |
+| ⌘T | Go to Symbol in Workspace | Transpose Letters in the editor; the project's symbols are ⌥⇧⌘O |
+| ⌃G | Go to Line | The same, as it always was |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K is Previous Matching Word; the sheet is **Help ▸ Keyboard Shortcuts…** |
+| ⌘, | Settings | The same, as it always was: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **The same:** Format, as ⌃⇧F does |
+
+The **The same:** chords ride every keymap profile that leaves them
+free, and a profile that gives one of them its own meaning keeps it:
+F12 in the Eclipse, Emacs and NetBeans 5.5 profiles, F2 in every profile
+but the default, ⇧F12 in Emacs and NetBeans 5.5, ⌃- and ⌃⇧- in Emacs
+and IntelliJ, ⇧⌥F in IntelliJ. On Windows and Linux F12, ⇧F12 and F2
+work the same way; VS Code's other chords are different there, and the
+table above gives both.
 
 
 ## From the terminal
@@ -130,9 +181,13 @@ it lives; click it for Quick Search. It says so once per project.
 ## What is honestly different
 
 - **⌘D adds the next occurrence in the default keymap, not in every
-  profile.** The Eclipse profile keeps ⌘D as Eclipse's *Delete Line* and
-  the NetBeans 5.5 profile as *Shift Line Left*; there, ⌘J (Ctrl+J) is the
-  same gesture.
+  profile.** The Eclipse profile keeps ⌘D as Eclipse's *Delete Line*, the
+  NetBeans 5.5 profile as *Shift Line Left* and the Emacs profile as *kill
+  word* (and Ctrl+D as *delete character* on Windows and Linux); the
+  IntelliJ profile has ⌘D on macOS and keeps Ctrl+D as *Duplicate Line*
+  on Windows and Linux. The gesture's other chord differs by profile too:
+  ⌘J (Ctrl+J) in the default, ⌃J (Alt+J) in Eclipse and IntelliJ, and none
+  in Emacs and NetBeans 5.5, where Keymap can give it one.
 - **⌃\` opens and focuses the Terminal; it does not hide it.** And while
   the Terminal has focus, the keys belong to your shell, so the second
   press reaches the shell rather than taking you back to the editor.

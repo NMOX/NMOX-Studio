@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    3.2: VS Code's macOS Go Back / Go Forward, Ctrl+- and Ctrl+Shift+-, on
+    the platform's own jump list (jump-list-prev / jump-list-next, the
+    actions Ctrl+Left / Ctrl+Right run - chords macOS takes for switching
+    desktops, so on a Mac they seldom arrive at all).
+
+    macOS only (nbeditor-settings-targetOS=OS_MAC in the layer): O is Alt on
+    Windows and Linux, where VS Code goes back with Alt+Left - which the
+    platform's O-LEFT already is there.
+
+    Registered in the NetBeans, Eclipse and NetBeans55 profiles. Measured
+    in the assembled cluster: Emacs binds Ctrl+- to Collapse Fold and
+    Ctrl+Shift+- to Undo, and Idea binds them to Collapse Fold and Collapse
+    All Folds - a profile's own meaning of a chord wins there.
+-->
+<bindings>
+    <bind actionName="jump-list-prev" key="O-MINUS"/>
+    <bind actionName="jump-list-next" key="OS-MINUS"/>
+</bindings>

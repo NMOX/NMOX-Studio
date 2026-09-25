@@ -64,12 +64,16 @@ class KeymapProfileParityTest {
      * <li>{@code DS-E.shadow} (3.1.0): VS Code's Explorer chord, everywhere
      *     but Eclipse, where Ctrl+Shift+E is Eclipse's own Switch to Editor
      *     under the same file name.</li>
+     * <li>{@code S-F12.shadow} (3.2): VS Code's Go to References (Find
+     *     Usages) everywhere but Emacs and NetBeans55, whose defaults ship
+     *     their own S-F12.shadow (Jump Prev) under the same file name.</li>
      * </ul>
      */
     private static final Map<String, Set<String>> PROFILE_SCOPED = Map.of(
             "D-O.shadow_hidden|", Set.of("NetBeans"),
             "D-BACK_QUOTE.shadow_hidden|", Set.of("NetBeans", "Emacs", "NetBeans55"),
-            "DS-E.shadow|", Set.of("NetBeans", "Emacs", "Idea", "NetBeans55"));
+            "DS-E.shadow|", Set.of("NetBeans", "Emacs", "Idea", "NetBeans55"),
+            "S-F12.shadow|", Set.of("NetBeans", "Eclipse", "Idea"));
 
     /**
      * The editor Keybindings files that deliberately ride only SOME
@@ -77,10 +81,31 @@ class KeymapProfileParityTest {
      * scoped out of a profile only where that profile binds it itself.
      * {@code vscode-keybindings.xml} (3.1.0) puts Cmd+D on add-next-occurrence;
      * the defaults module binds D-D in Eclipse (remove-line) and NetBeans55
-     * (shift-line-left), measured in the assembled cluster.
+     * (shift-line-left), measured in the assembled cluster. 3.2 corrected
+     * 3.1.0's Emacs and Idea scope: Emacs binds the chord on every OS (M-D
+     * kill word on macOS, C-D delete character elsewhere), so the file left
+     * it; Idea binds Ctrl+D (Duplicate Line) off macOS, so its registration
+     * carries the macOS-only targetOS attribute, which the resolution test
+     * reads.
+     *
+     * <p>The 3.2 editing chords, each scoped by the same measurement (every
+     * file's own comment names what the other profiles bind):
+     * {@code vscode-f12-keybindings.xml} and its Angular-template twin
+     * (F12) in NetBeans and Idea; {@code vscode-f2-keybindings.xml} (F2) in
+     * NetBeans alone; the macOS-only {@code vscode-history-keybindings-mac.xml}
+     * (Ctrl+- / Ctrl+Shift+-) in NetBeans, Eclipse and NetBeans55; the
+     * macOS-only {@code vscode-format-keybindings-mac.xml} (Shift+Opt+F) in
+     * every profile but Idea. {@code vscode-editing-keybindings-mac.xml}
+     * (Cmd+] and Opt+Cmd+F) is free everywhere, so it rides all five and is
+     * held by the plain parity law.
      */
     private static final Map<String, Set<String>> EDITOR_PROFILE_SCOPED = Map.of(
-            "vscode-keybindings.xml|", Set.of("NetBeans", "Emacs", "Idea"));
+            "vscode-keybindings.xml|", Set.of("NetBeans", "Idea"),
+            "vscode-f12-keybindings.xml|", Set.of("NetBeans", "Idea"),
+            "ng-template-vscode-keybindings.xml|", Set.of("NetBeans", "Idea"),
+            "vscode-f2-keybindings.xml|", Set.of("NetBeans"),
+            "vscode-history-keybindings-mac.xml|", Set.of("NetBeans", "Eclipse", "NetBeans55"),
+            "vscode-format-keybindings-mac.xml|", Set.of("NetBeans", "Eclipse", "Emacs", "NetBeans55"));
 
     /** module dir -> its layer path, relative to the ui module's cwd. */
     private static final Map<String, String> KEYMAP_LAYERS = Map.of(
