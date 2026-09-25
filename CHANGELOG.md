@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 37 rows the walks and reviews added are in
+developer works. The plan and the 38 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -28,8 +28,11 @@ loop as one sitting is the new tutorial
   folder and the IDE answers there — accepted (with its process id), refused
   (with the sentence the terminal prints) or done — so it works whether the
   IDE was running or `nmox` started it. Quitting the IDE hands the file back
-  with whatever was saved; an IDE that disappears ends the wait with exit 1,
-  not a hang. On Windows the installer also ships an extensionless `nmox`,
+  with whatever was saved, and the next launch does not reopen it: a
+  restored tab of a file git wrote for its editor (`COMMIT_EDITMSG`,
+  `MERGE_MSG`, the rebase list…) that nothing waits on closes itself —
+  walked, it had come back holding the NEXT commit's message. An IDE that
+  disappears ends the wait with exit 1, not a hang. On Windows the installer also ships an extensionless `nmox`,
   because git runs its editor through its own sh, which never finds
   `nmox.cmd` as `nmox`.
 - **Team ▸ Use NMOX Studio with Git…** shows the six settings beside the value
