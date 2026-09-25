@@ -18,8 +18,7 @@ import org.netbeans.modules.spellchecker.spi.language.TokenListProvider;
  * <p>The grammar (VS Code's git-commit) wraps every line the user writes
  * in {@code meta.scope.message.git-commit}; its {@code #} template lines
  * sit in {@code meta.scope.metadata} and the verbose diff in
- * {@code meta.embedded.diff}. So prose is exactly the message scope,
- * minus anything embedded.
+ * {@code meta.embedded.diff}. So prose is exactly the message scope.
  */
 @MimeRegistration(mimeType = "text/x-git-commit", service = TokenListProvider.class)
 public class GitMessageSpellTokenListProvider implements TokenListProvider {
@@ -41,13 +40,14 @@ public class GitMessageSpellTokenListProvider implements TokenListProvider {
      * means the grammar never ran, and then nothing is claimed as prose —
      * an unlexed file is not evidence of a sentence.
      */
-    static boolean isMessageScope(Object categoriesProperty) {
+    public static boolean isMessageScope(Object categoriesProperty) {
         if (categoriesProperty == null) {
             return false;
         }
-        String stack = categoriesProperty.toString();
-        return stack.contains("meta.scope.message")
-                && !stack.contains("meta.embedded")
-                && !stack.contains("comment.");
+        // the template (meta.scope.metadata) and the verbose diff
+        // (meta.embedded.diff) are the message scope's SIBLINGS in the
+        // grammar, never inside it, so one positive test is the whole rule;
+        // a second "and not a comment" clause could never change an answer
+        return categoriesProperty.toString().contains("meta.scope.message");
     }
 }

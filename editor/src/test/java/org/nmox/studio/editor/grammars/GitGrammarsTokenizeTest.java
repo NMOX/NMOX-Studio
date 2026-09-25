@@ -123,6 +123,33 @@ class GitGrammarsTokenizeTest {
     }
 
     @Test
+    @DisplayName("spellcheck reads the grammar's REAL scopes: the message is prose, the template and diff are not")
+    void spellcheckAgreesWithTheGrammar() {
+        IGrammar g = grammar("text.git-commit");
+        String[] lines = {
+            "Fix the parser",
+            "# Please enter the commit message for your changes.",
+            "diff --git a/x b/x"};
+        IStateStack state = null;
+        List<List<List<String>>> stacks = new ArrayList<>();
+        for (String line : lines) {
+            ITokenizeLineResult<IToken[]> r = g.tokenizeLine(line, state, Duration.ofSeconds(5));
+            List<List<String>> row = new ArrayList<>();
+            for (IToken t : r.getTokens()) {
+                row.add(t.getScopes());
+            }
+            stacks.add(row);
+            state = r.getRuleStack();
+        }
+        assertThat(stacks.get(0)).as("every token of the summary is prose")
+                .allMatch(org.nmox.studio.editor.spell.GitMessageSpellTokenListProvider::isMessageScope);
+        assertThat(stacks.get(1)).as("no token of git's template is prose")
+                .noneMatch(org.nmox.studio.editor.spell.GitMessageSpellTokenListProvider::isMessageScope);
+        assertThat(stacks.get(2)).as("no token of a commit -v diff is prose")
+                .noneMatch(org.nmox.studio.editor.spell.GitMessageSpellTokenListProvider::isMessageScope);
+    }
+
+    @Test
     @DisplayName("the registered grammars carry the scopes the mimes are named for")
     void registeredScopes() {
         assertThat(grammar("text.git-commit").getScopeName()).isEqualTo("text.git-commit");
