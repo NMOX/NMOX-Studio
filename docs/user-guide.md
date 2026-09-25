@@ -1240,8 +1240,8 @@ seconds while visible.
 `↑2 ↓1` after it are the commits your branch has that its upstream has
 not (to push) and the other way round (to pull), shown only when not
 zero and only for a branch with an upstream.
-Its menu starts with **Switch Branch…** and **Commit…**, the git module's
-own dialogs.
+Its menu starts with **Switch Branch…**, **Commit…**, **Pull…** and
+**Push…**, the git module's own dialogs.
 
 ![The platform's Show History window opened from the git chip, with the branch and dirty count in the status line](images/git-history.png)
 
