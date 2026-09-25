@@ -301,7 +301,7 @@ public final class GitIgnore {
                 while (end - 2 - slashes >= 0 && line.charAt(end - 2 - slashes) == '\\') {
                     slashes++;
                 }
-                if (slashes % 2 == 1) {
+                if ((slashes & 1) != 0) {
                     break;
                 }
                 end--;
