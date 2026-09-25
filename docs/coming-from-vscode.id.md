@@ -87,8 +87,22 @@ Perintah itu langsung kembali, dan `nmox` yang kedua menyerahkan foldernya
 kepada IDE yang sudah berjalan. Kolom (`src/app.ts:42:7`) juga diterima, dan
 penyunting terbuka di awal baris; nama yang tidak ada ditolak di terminal
 alih-alih menjalankan apa pun. Opsi `-r` diterima, `-n` membuka di
-satu-satunya jendela, dan `--wait`, `--diff`, serta opsi lain yang hanya
-dikenal VS Code ditolak dengan menyebut namanya. Homebrew, pemasang Windows (*Add "nmox" to
+satu-satunya jendela, dan `-a` serta `-v` ditolak dengan menyebut namanya.
+
+`-w` (`--wait`) membuka sebuah berkas dan menunggu sampai Anda menutup tabnya,
+dan `-d` (`--diff`) membandingkan dua berkas berdampingan, sehingga NMOX Studio
+bisa menjadi penyunting dan difftool untuk git, seperti `code --wait`:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+Setelah itu `git commit` membuka pesannya di IDE; simpan, tutup tabnya, dan git
+melanjutkan. Keluar dari IDE selagi berkas masih terbuka juga
+mengembalikannya, dengan isi yang sudah disimpan.
+Homebrew, pemasang Windows (*Add "nmox" to
 PATH*), dan paket Linux memasukkannya ke PATH Anda; untuk pemasangan dari DMG,
 [panduan pengguna](user-guide.id.md#2-first-launch) menunjukkan tautan satu
 baris itu.

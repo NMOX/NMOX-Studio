@@ -62,7 +62,17 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-الأمر بيرجع على طول، و`nmox` تاني بيسلّم المجلد بتاعه للـ IDE اللي شغال بالفعل. العمود كمان (`src/app.ts:42:7`) مقبول، والمحرر بيفتح في أول السطر؛ والاسم اللي مش موجود بيترفض في التيرمينال بدل ما يشغّل أي حاجة. الـ ‎`-r` بتاع VS Code مقبول، و‎`-n` بيفتح في النافذة الوحيدة؛ و‎`--wait` و‎`--diff` وباقي الـ flags اللي موجودة في VS Code بس بتترفض برسالة بتذكر اسمها. Homebrew، والـ installer بتاع Windows (*إضافة «nmox» لـ PATH*)، وحزم Linux بيحطوه على الـ PATH بتاعكم؛ ولو ثبّتوا من الـ DMG، [دليل المستخدم](user-guide.ar.md#2-first-launch) بيوريكم الرابط في سطر واحد.
+الأمر بيرجع على طول، و`nmox` تاني بيسلّم المجلد بتاعه للـ IDE اللي شغال بالفعل. العمود كمان (`src/app.ts:42:7`) مقبول، والمحرر بيفتح في أول السطر؛ والاسم اللي مش موجود بيترفض في التيرمينال بدل ما يشغّل أي حاجة. الـ ‎`-r` بتاع VS Code مقبول، و‎`-n` بيفتح في النافذة الوحيدة؛ و‎`-a` و‎`-v` بيترفضوا برسالة بتذكر اسمهم.
+
+الـ ‎`-w` (`--wait`) بيفتح ملف ويستنى لحد ما تقفلوا التبويب بتاعه، والـ ‎`-d` (`--diff`) بيقارن بين ملفين جنب بعض، فـ NMOX Studio يقدر يبقى المحرر والـ difftool بتوع git، زي ما `code --wait` بيعمل:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+بعدها `git commit` بيفتح الرسالة في الـ IDE؛ احفظوها واقفلوا التبويب، وgit يكمّل. ولو قفلتوا الـ IDE والملف لسه مفتوح، برضه بيرجع، باللي اتحفظ منه. Homebrew، والـ installer بتاع Windows (*إضافة «nmox» لـ PATH*)، وحزم Linux بيحطوه على الـ PATH بتاعكم؛ ولو ثبّتوا من الـ DMG، [دليل المستخدم](user-guide.ar.md#2-first-launch) بيوريكم الرابط في سطر واحد.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## كل فكرة من VS Code موجودة فين

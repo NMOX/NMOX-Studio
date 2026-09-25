@@ -85,9 +85,23 @@ nmox            # just start the IDE
 Ele volta na hora, e um segundo `nmox` entrega a pasta dele à IDE que já
 está rodando. Uma coluna (`src/app.ts:42:7`) é aceita e o editor abre no
 começo da linha; um nome que não existe é recusado no terminal em vez de
-iniciar qualquer coisa. `-r` é aceito, `-n` abre na única janela, e
-`--wait`, `--diff` e as demais opções exclusivas do VS Code são recusadas
-pelo nome. O Homebrew, o instalador do Windows (*Adicionar
+iniciar qualquer coisa. `-r` é aceito, `-n` abre na única janela, e as
+opções `-a` e `-v` são recusadas pelo nome.
+
+`-w` (`--wait`) abre um arquivo e espera até você fechar a aba dele, e `-d`
+(`--diff`) compara dois arquivos lado a lado, então o NMOX Studio pode ser o
+editor e o difftool do git, do jeito que `code --wait` é:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+Aí o `git commit` abre a mensagem na IDE; salve, feche a aba e o git segue em
+frente. Sair da IDE com um arquivo ainda aberto também o devolve, com o que
+tiver sido salvo.
+O Homebrew, o instalador do Windows (*Adicionar
 “nmox” ao PATH*) e os pacotes do Linux o põem no seu PATH; para uma
 instalação pelo DMG, o [guia do usuário](user-guide.pt.md#2-first-launch) mostra o link de
 uma linha.

@@ -63,7 +63,17 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-Agad itong bumabalik, at ibinibigay ng pangalawang `nmox` ang folder nito sa IDE na tumatakbo na. Tinatanggap ang column (`src/app.ts:42:7`), at bumubukas ang editor sa simula ng linya; ang pangalang wala roon ay tinatanggihan sa terminal sa halip na may simulan. Tinatanggap ang `-r`, binubuksan ng `-n` sa iisang bintana, at tinatanggihan ayon sa pangalan ang `--wait`, `--diff` at ang iba pang flag na sa VS Code lamang. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
+Agad itong bumabalik, at ibinibigay ng pangalawang `nmox` ang folder nito sa IDE na tumatakbo na. Tinatanggap ang column (`src/app.ts:42:7`), at bumubukas ang editor sa simula ng linya; ang pangalang wala roon ay tinatanggihan sa terminal sa halip na may simulan. Tinatanggap ang `-r`, binubuksan ng `-n` sa iisang bintana, at tinatanggihan ayon sa pangalan ang `-a` at `-v`.
+
+Binubuksan ng `-w` (`--wait`) ang isang file at naghihintay hanggang isara mo ang tab nito, at ikinukumpara ng `-d` (`--diff`) ang dalawang file nang magkatabi, kaya maaaring maging editor at difftool ng git ang NMOX Studio, gaya ng `code --wait`:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+Pagkatapos, binubuksan ng `git commit` ang mensahe sa IDE; i-save ito at isara ang tab, at magpapatuloy ang git. Ang pag-quit sa IDE habang bukas pa ang isang file ay ibinabalik din ito, kasama ang anumang na-save. Inilalagay ito sa iyong PATH ng Homebrew, ng Windows installer (*Add "nmox" to PATH*) at ng mga package para sa Linux; para sa install mula sa DMG, ipinapakita ng [gabay ng gumagamit](user-guide.tl.md#2-first-launch) ang link na isang linya lang.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Kung saan nakatira ang bawat ideya ng VS Code

@@ -84,7 +84,20 @@ Lệnh trả về ngay, và một lệnh `nmox` thứ hai trao thư mục của 
 chạy. Cột cũng được chấp nhận (`src/app.ts:42:7`) và trình soạn thảo mở ở đầu
 dòng; một tên không tồn tại sẽ bị từ chối ngay trên dòng lệnh thay vì khởi
 động bất cứ thứ gì. `-r` được chấp nhận, `-n` mở trong cửa sổ duy nhất, còn
-`--wait`, `--diff` và các cờ khác chỉ VS Code mới có sẽ bị từ chối kèm tên.
+`-a` và `-v` sẽ bị từ chối kèm tên.
+
+`-w` (`--wait`) mở một tệp và chờ đến khi bạn đóng thẻ của nó, còn `-d`
+(`--diff`) so sánh hai tệp cạnh nhau, nên NMOX Studio có thể làm trình soạn
+thảo và difftool của git, giống như `code --wait`:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+Khi đó `git commit` mở thông điệp trong IDE; lưu lại, đóng thẻ, và git sẽ tiếp
+tục. Thoát IDE khi tệp vẫn còn mở cũng trả nó về, với những gì đã được lưu.
 Homebrew, trình cài đặt Windows (*Add "nmox" to PATH*) và
 các gói Linux đưa nó vào PATH của bạn; với bản cài từ DMG,
 [hướng dẫn sử dụng](user-guide.vi.md#2-first-launch) chỉ cách tạo liên kết

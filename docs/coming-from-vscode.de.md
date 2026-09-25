@@ -63,7 +63,17 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-Der Befehl kehrt sofort zurück, und ein zweites `nmox` übergibt seinen Ordner an die IDE, die schon läuft. Eine Spalte (`src/app.ts:42:7`) wird akzeptiert, und der Editor öffnet am Anfang der Zeile; ein Name, den es nicht gibt, wird im Terminal abgelehnt, statt irgendetwas zu starten. `-r` wird akzeptiert, `-n` öffnet im einzigen Fenster, und `--wait`, `--diff` und die übrigen VS-Code-eigenen Optionen werden mit ihrem Namen abgelehnt. Homebrew, das Windows-Installationsprogramm (*„nmox“ zum PATH hinzufügen*) und die Linux-Pakete legen ihn in Ihren PATH; für eine Installation aus dem DMG zeigt das [Benutzerhandbuch](user-guide.de.md#2-first-launch) den einzeiligen Link.
+Der Befehl kehrt sofort zurück, und ein zweites `nmox` übergibt seinen Ordner an die IDE, die schon läuft. Eine Spalte (`src/app.ts:42:7`) wird akzeptiert, und der Editor öffnet am Anfang der Zeile; ein Name, den es nicht gibt, wird im Terminal abgelehnt, statt irgendetwas zu starten. `-r` wird akzeptiert, `-n` öffnet im einzigen Fenster, und `-a` und `-v` werden mit ihrem Namen abgelehnt.
+
+`-w` (`--wait`) öffnet eine Datei und wartet, bis Sie ihren Tab schließen, und `-d` (`--diff`) vergleicht zwei Dateien nebeneinander; so kann NMOX Studio der Editor und das Difftool von git sein, wie `code --wait` es ist:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+`git commit` öffnet die Nachricht dann in der IDE; speichern Sie sie, schließen Sie den Tab, und git macht weiter. Auch wenn Sie die IDE beenden, während eine Datei noch offen ist, geht sie zurück, mit dem, was gespeichert wurde. Homebrew, das Windows-Installationsprogramm (*„nmox“ zum PATH hinzufügen*) und die Linux-Pakete legen ihn in Ihren PATH; für eine Installation aus dem DMG zeigt das [Benutzerhandbuch](user-guide.de.md#2-first-launch) den einzeiligen Link.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## Wo jede Idee aus VS Code wohnt

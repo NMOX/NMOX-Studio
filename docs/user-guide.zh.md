@@ -54,7 +54,7 @@ spctl --assess --type execute -vv "/Applications/NMOX Studio.app"
 <a id="2-first-launch"></a>
 ## 2. 首次启动
 
-在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。VS Code 的 `-r` 可以使用，`-n` 会在那唯一的窗口里打开；`--wait`、`--diff` 以及其他仅属于 VS Code 的选项会被按名字拒绝。命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
+在终端里，`nmox .` 会打开你所在的文件夹，就像 `code .` 那样：`cd myproject && nmox .`。文件夹的指向方式与欢迎页上“打开文件夹…”完全相同，有没有清单文件都一样；如果给的是一个文件，它会在编辑器里打开（`nmox src/app.js`）；像 `code -g` 那样写上行号，就会打开到那一行（`nmox src/app.js:42` —— 也接受列号，编辑器会打开到那一行的行首）。不存在的名字会在终端里被拒绝（`nmox: typo.js: no such file or folder`），而不会启动任何东西。VS Code 的 `-r` 可以使用，`-n` 会在那唯一的窗口里打开；`-a` 和 `-v` 会被按名字拒绝。`nmox -w file` 会打开文件并一直等到你关闭它的标签页，`nmox -d left right` 会在差异视图中比较两个文件，这样 NMOX Studio 就能充当 git 的编辑器和 difftool：`git config --global core.editor "nmox -w"`，而 `nmox --help` 会打印出让它成为 difftool 的那两行。保存提交信息、关闭标签页，git 就会继续。除此之外，命令会立即返回 —— 第一次 `nmox` 在后台启动 IDE，之后每一次都把它的文件夹交给已经在运行的 IDE。只输入 `nmox` 则只是启动 IDE。把 `nmox` 放进 PATH：
 
 - **macOS，Homebrew：**cask 会替你建好链接。
 - **macOS，从 DMG 安装：**为应用的启动器建一个链接（不是复制）——

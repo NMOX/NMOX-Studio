@@ -62,7 +62,17 @@ nmox src/app.ts:42  # open it at line 42 (code -g's form; -g itself is accepted)
 nmox            # just start the IDE
 ```
 
-הפקודה חוזרת מיד, ו‑`nmox` שני מעביר את התיקייה שלו ל‑IDE שכבר רץ. גם עמודה (`src/app.ts:42:7`) מתקבלת, והעורך נפתח בתחילת השורה; שם שלא קיים נדחה במסוף במקום להפעיל משהו. הדגל ‎`-r` של VS Code מתקבל, ו‑‎`-n` פותח בחלון היחיד; ‎`--wait`, ‎`--diff` ושאר הדגלים שקיימים רק ב‑VS Code נדחים בהודעה שמציינת את שמם. Homebrew, מתקין Windows (*הוספת "nmox" ל-PATH*) וחבילות Linux מכניסים אותה ל‑PATH שלכם; להתקנה מה‑DMG, [המדריך למשתמש](user-guide.he.md#2-first-launch) מראה את הקישור בשורה אחת.
+הפקודה חוזרת מיד, ו‑`nmox` שני מעביר את התיקייה שלו ל‑IDE שכבר רץ. גם עמודה (`src/app.ts:42:7`) מתקבלת, והעורך נפתח בתחילת השורה; שם שלא קיים נדחה במסוף במקום להפעיל משהו. הדגל ‎`-r` של VS Code מתקבל, ו‑‎`-n` פותח בחלון היחיד; ‎`-a` ו‑‎`-v` נדחים בהודעה שמציינת את שמם.
+
+הדגל ‎`-w` (`--wait`) פותח קובץ ומחכה עד שתסגרו את הלשונית שלו, והדגל ‎`-d` (`--diff`) משווה בין שני קבצים זה לצד זה, כך ש‑NMOX Studio יכול לשמש כעורך וככלי ה‑difftool של git, כמו ש‑`code --wait` משמש:
+
+```bash
+git config --global core.editor "nmox -w"
+git config --global diff.tool nmox
+git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
+```
+
+מעכשיו `git commit` פותח את ההודעה ב‑IDE; שמרו אותה וסגרו את הלשונית, ו‑git ממשיך. גם יציאה מה‑IDE כשקובץ עדיין פתוח מחזירה אותו, עם מה שנשמר. Homebrew, מתקין Windows (*הוספת "nmox" ל-PATH*) וחבילות Linux מכניסים אותה ל‑PATH שלכם; להתקנה מה‑DMG, [המדריך למשתמש](user-guide.he.md#2-first-launch) מראה את הקישור בשורה אחת.
 
 <a id="where-each-vs-code-idea-lives"></a>
 ## איפה נמצא כל רעיון של VS Code
