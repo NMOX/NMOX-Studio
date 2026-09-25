@@ -11,7 +11,7 @@ what a developer who stayed does all day — commit, read a diff, resolve a
 conflict, open a pull request, chase a stack trace, keep a README honest,
 hand work to an agent — and where NMOX Studio made them leave for another
 tool to do it.** Every one of those is now git's own step, opened where the
-developer works. The plan and the 36 rows the walks and reviews added are in
+developer works. The plan and the 37 rows the walks and reviews added are in
 [docs/engineering/dx-plan-3.2.md](docs/engineering/dx-plan-3.2.md); the whole
 loop as one sitting is the new tutorial
 [The Second Week](docs/tutorials/the-second-week.md), in fifteen languages.
@@ -205,16 +205,24 @@ loop as one sitting is the new tutorial
 
 ### Found by reviewing the night's own code
 
-Six hostile reviews of the release's fresh code found fifty-two
-problems; every proven one is fixed and pinned. Among them: sixteen
-features naming `Bundle.properties` while you edited `Bundle_de.properties`
-(Copy Path, line blame, Open on GitHub, Copy GitHub Link, Copy as Markdown,
-the editor's accessible name, `.editorconfig` sections and the trailing
-whitespace it strips on save, Prettier on save, the diagnostics'
-squiggles, KVASIR's Ask, the Agent Port's open files, the git chip's
-Annotate, the Workbench's open and recent files and Save Editor
-Screenshot all read the group's primary file; they now read the file the
-document or the tab holds, and one census over every module keeps it so); the Workbench's Terminal row opening
+**A finding withdrawn first.** The fourth review read the properties
+module's editor and concluded that a locale's `Bundle_de.properties` opens
+as part of its base bundle's DataObject, so that Copy Path, line blame,
+the GitHub links, the on-save formatters, the Agent Port, Annotate and
+more would name `Bundle.properties` while the German file was edited.
+Three reviews fixed it and a gate held it. Then a walk tried to see it
+and could not: this platform's properties loader groups locale files only
+behind a switch (`nestedView`) that is false and that nothing in the
+cluster sets, so every locale file is its own DataObject and no user of
+this build could have met the defect. The code keeps the rule it gained,
+because it is right for any DataObject of several files: the file named
+is the one the document or the tab holds, and one census over every
+module keeps it so. What is withdrawn is the claim that anyone saw the
+wrong file. *A defect read from bytecode is a hypothesis until a walk
+shows it.*
+
+Seven hostile reviews of the release's fresh code found forty-two
+problems; every proven one is fixed and pinned. Among them: the Workbench's Terminal row opening
 a plain terminal in the home folder rather than a new one in the
 project; twelve cases,
 each measured against `git check-ignore`, where Find in Projects' new answer

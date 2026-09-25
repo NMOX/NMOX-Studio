@@ -56,7 +56,7 @@ exposure; v2.183.0 already holds its one long-lived message in a field.
 ### 124. The 3.2.0 review's LOW remainder
 
 **Open, deliberately small.** The hostile reviews of the night's code found
-fifty-two problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
+forty-two problems; every proven one was fixed before 3.2.0 shipped (a `/dev/zero`
 link read to exhaustion, two backtracking patterns, the macOS newline guard,
 a trailing newline naming another file, git's `/dev/null`, a selected file
 counting as open, Windows sh). What is left:
@@ -100,11 +100,6 @@ counting as open, Windows sh). What is left:
   rests on (about 40 µs a file, seven levels deep, on local APFS); a mount
   where a stat costs a millisecond makes a 20,000-file search pay seconds.
   Measured locally only.
-- **Renaming a properties group** leaves each open locale editor's
-  document title naming the old file (the properties module writes it
-  once), so Copy Path, blame, the GitHub links and the accessible name go
-  quiet on that tab until it is reopened — `EditedFile` answers nothing
-  rather than a wrong file.
 - **A `.gitignore` with a modification time in the future** (a tarball,
   `rsync -t`, a skewed network mount) is never "settled", so it is re-read
   on every question — correct, and about a millisecond a time for a 1 MiB
@@ -115,17 +110,15 @@ counting as open, Windows sh). What is left:
   which brings an open terminal forward rather than always starting one.
 - **Copy Path from a diff pane or a history revision** may copy the
   platform's temporary file for that side. Plausible, not walked.
-- **A grouped editor that has not been built yet** (a restored background
-  tab of `Bundle_de.properties`) has no document to say which file it is,
-  so `EditorTabs` answers nothing: the Workbench rows it by its tab's name
-  without a path, the Agent Port leaves it out of the open files, and
-  Annotate falls to the next showing editor. Showing the tab builds it.
-- **`DataObject.files()` can list the folder on its first call**, and the
-  tab readers (the Agent Port's snapshot, the Workbench's refresh) ask it on
-  the EDT. The properties group answers from its entries; plausible, not
-  measured.
-- **A group's modified flag is the group's**, so a Workbench row or the
-  Agent Port marks `Bundle_de.properties` modified while only the base is.
+- **The grouped-DataObject rules guard nothing today.** `EditedFile` and
+  `EditorTabs` name the file a document or tab holds when one DataObject
+  owns several; this platform's properties loader forms no such group
+  (`nestedView` is false and nothing sets it), so the rules, their gate and
+  the group branches of Annotate and the Workbench are exercised only by
+  tests. Kept because the rule is right for any DataObject of several
+  files; if a platform bump turns grouping on, the table editor and a tab
+  not shown yet name the group's primary, a renamed group's open editor
+  names nothing until reopened, and a group's modified flag is the group's.
 - **The census pins are keyed by a file's simple name** (the action census's
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.
