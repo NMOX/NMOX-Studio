@@ -156,7 +156,9 @@ class CodeNamedMenuRowsTest {
     void theLedgerTellsTheTruthAboutTheCluster() throws IOException {
         assertThat(CLUSTER).as("the assembled cluster").exists();
         List<Row> rows = ledger();
-        assertThat(rows).as("recorded rows").hasSizeGreaterThan(90);
+        // measured 177 at 3.2.0, 64 of them the Team menu's; a floor, so a
+        // ledger that silently lost a menu's rows fails here first
+        assertThat(rows).as("recorded rows").hasSizeGreaterThan(170);
 
         List<String> problems = new ArrayList<>();
         Map<String, Path> jars = new HashMap<>();

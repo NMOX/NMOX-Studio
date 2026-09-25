@@ -18,6 +18,7 @@ digits kept Latin; every gate below derives its population from
 | 2,830 product chrome keys × 12 translations, 71 packages | `LocaleBundleParityTest` over the assembled cluster |
 | The platform menu bar — rows the layer declares | `MenuRowsSpeakTest`, population derived from the layer |
 | The platform menu bar — rows named in action code | `CodeNamedMenuRowsTest`, a checked hand-kept ledger |
+| The Team menu (3.2.0) — every git row and submenu (Show Changes, Diff ▸, Commit…, Checkout ▸, Branch/Tag ▸, Remote ▸, Revert/Recover ▸, Repository ▸, Ignore ▸, Patches ▸, the stash, Disconnect…, Other VCS, local history's History ▸) and the Git ▸ submenu an unversioned project shows | `CodeNamedMenuRowsTest` and `MenuRowsSpeakTest` over 64 ledger rows, each submenu its own menu for the mnemonic laws. The git module names these in code (its `Annotator` and `DynamicMenu`s, `VersioningMainMenu`), so no layer-derived gate could see them and a German walk of the git release read them English; keys placed from bytecode (`GitAction.getName()` reads `LBL_<SimpleName>_Name`) and walked in German and Hebrew. Ceiling: the Other VCS submenu lists other version control systems by name and this build ships one, so its contents were not walked |
 | The editor's right-click menus, every mime | `PopupRowsSpeakTest`, population derived from the layer |
 | The platform toolbar | `ToolbarOverlayGateTest`, every MessageFormat branch rendered |
 | Platform dialogs (Options, Plugin Manager, About, …) | `PlatformDialogLedgerTest`, a checked hand-kept ledger |
