@@ -124,12 +124,13 @@ public final class WorkspaceDependencies {
         } catch (IOException ex) {
             return new Servers(List.of(), true);
         }
+        File self = real(pkg);
         Map<String, File> all = org.nmox.studio.rack.devices.Workspaces.packages(workspace, MAX_WORKSPACE_PACKAGES);
         boolean complete = all.size() < MAX_WORKSPACE_PACKAGES;
         List<File> out = new ArrayList<>();
         for (File candidate : all.values()) {
             File dir = inside(candidate.toPath(), wsReal);
-            if (dir == null || dir.equals(pkg) || out.contains(dir) || !declaresServer(dir)) {
+            if (dir == null || dir.equals(self) || out.contains(dir) || !declaresServer(dir)) {
                 continue;
             }
             if (out.size() >= MAX_SERVERS) {
@@ -139,6 +140,15 @@ public final class WorkspaceDependencies {
             out.add(dir);
         }
         return new Servers(out, complete);
+    }
+
+    /** The package's real path, so it compares equal to the real paths {@link #inside} returns. */
+    private static File real(File pkg) {
+        try {
+            return pkg.toPath().toRealPath().toFile();
+        } catch (IOException ex) {
+            return pkg.getAbsoluteFile();
+        }
     }
 
     private static boolean declaresServer(File dir) {
@@ -161,6 +171,7 @@ public final class WorkspaceDependencies {
         } catch (IOException ex) {
             return List.of();
         }
+        File self = real(pkg);
         Set<File> out = new LinkedHashSet<>();
         Map<String, File> declared = null;   // read only when a link is missing
         for (String name : dependencyNames(pkg)) {
@@ -175,7 +186,7 @@ public final class WorkspaceDependencies {
                 File candidate = declared.get(name);
                 dir = candidate == null ? null : inside(candidate.toPath(), wsReal);
             }
-            if (dir != null && !dir.equals(pkg)) {
+            if (dir != null && !dir.equals(self)) {
                 out.add(dir);
             }
         }

@@ -144,4 +144,14 @@ class WorkspaceDependenciesTest {
         Path ws = monorepo("\"@acme/tokens\":\"*\"");
         assertThat(WorkspaceDependencies.of(ws.toFile())).isEmpty();
     }
+
+    @Test
+    @DisplayName("a package is never its own dependency or its own server package, whatever path spells it")
+    void neverItself() throws IOException {
+        Path ws = monorepo("\"@acme/web\":\"*\",\"express\":\"^5\",\"@acme/tokens\":\"*\"");
+        // the temporary folder's own spelling (on macOS /var, really /private/var)
+        File web = ws.resolve("packages/web").toFile();
+        assertThat(WorkspaceDependencies.of(web)).extracting(File::getName).containsExactly("tokens");
+        assertThat(WorkspaceDependencies.serverPackages(web).dirs()).isEmpty();
+    }
 }

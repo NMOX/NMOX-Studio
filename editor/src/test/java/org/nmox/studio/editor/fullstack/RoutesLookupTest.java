@@ -59,7 +59,7 @@ class RoutesLookupTest {
         write(dir.resolve("packages/web/src/app.js"), "fetch('/api/users');\napp.get('/api/:thing', h);\n");
         write(dir.resolve("packages/api/package.json"), "{\"name\":\"api\",\"dependencies\":{\"express\":\"^5\"}}");
         write(dir.resolve("packages/api/server.js"), "app.get('/api/users', list);\n");
-        write(dir.resolve("packages/lib/package.json"), "{\"name\":\"lib\"}");
+        write(dir.resolve("packages/lib/package.json"), "{\"name\":\"lib\",\"dependencies\":{\"lodash\":\"^4\"}}");
         write(dir.resolve("packages/lib/mock.js"), "app.get('/orders', h);\n");
         return dir.resolve("packages/web");
     }
