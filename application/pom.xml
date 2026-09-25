@@ -293,6 +293,7 @@
                                 <exclude>**/CodeNamedMenuRowsTest.java</exclude>
                                 <exclude>**/PopupRowsSpeakTest.java</exclude>
                                 <exclude>**/FileTreeRowsSpeakTest.java</exclude>
+                                <exclude>**/DiffViewOverlayLedgerTest.java</exclude>
                                 <exclude>**/PaintedSurfaceLedgerTest.java</exclude>
                                 <exclude>**/RightToLeftWiringTest.java</exclude>
                                 <exclude>**/AuthoredMarkupIsNotGuardedTest.java</exclude>
@@ -325,6 +326,7 @@
                                 <include>**/CodeNamedMenuRowsTest.java</include>
                                 <include>**/PopupRowsSpeakTest.java</include>
                                 <include>**/FileTreeRowsSpeakTest.java</include>
+                                <include>**/DiffViewOverlayLedgerTest.java</include>
                                 <include>**/PaintedSurfaceLedgerTest.java</include>
                                 <include>**/RightToLeftWiringTest.java</include>
                                 <include>**/LayerPositionCensusTest.java</include>
