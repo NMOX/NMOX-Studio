@@ -114,6 +114,8 @@ class PluralCopyGateTest {
         // what that thing does. Nothing is being counted.
         m.put("CheckTranslationsAction_findingMismatch",
                 "VERB: {1} is the catalog KEY — that key formats with different arguments");
+        m.put("CheckMarkdownLinksAction_findingOutside",
+                "VERB: {0} is the link as written — that link points outside the project");
         m.put("LanguageServerHealth_needsProject",
                 "VERB: {0} is the server's package name — it installs into the project");
         m.put("LanguageServersPanel_needsProject",
@@ -144,6 +146,8 @@ class PluralCopyGateTest {
         // one by construction, so it can never read "1".
         m.put("NmoxSymbolProvider_truncated",
                 "CONSTANT: {0} is ProjectSymbols.MAX_FILES (2,000)");
+        m.put("CheckMarkdownLinksAction_partial",
+                "CONSTANT: {0} is CheckMarkdownLinksAction.MAX_FILES (2,000)");
         m.put("TestsExplorerTopComponent_truncated",
                 "CONSTANT: {0} is TestIndex.MAX_FILES (2,000)");
         m.put("EditWithKvasirAction_tooLarge",
