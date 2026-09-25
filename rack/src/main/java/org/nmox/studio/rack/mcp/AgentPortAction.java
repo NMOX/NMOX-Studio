@@ -1,11 +1,13 @@
 package org.nmox.studio.rack.mcp;
 
 import org.nmox.studio.core.util.PlainText;
+import java.awt.EventQueue;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -18,6 +20,7 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * Tools ▸ Agent Port… — the explicit gesture that is the Agent Port's
@@ -27,6 +30,16 @@ import org.openide.util.NbBundle.Messages;
  * dialog and the caller's config — never a log, never a file of ours.
  * Zero boot cost: a menu item. Stop is one click and the port dies
  * with the JVM regardless.
+ *
+ * <p>3.2, "connects once": two opt-in boxes in the running dialog.
+ * <b>Keep this address and token</b> puts the token in the OS keychain
+ * and the port in the module's preferences ({@link AgentPortKeep}), so
+ * the next start reuses both and an agent configured once stays
+ * connected; clearing it deletes the keychain entry. <b>Start when NMOX
+ * Studio starts</b> (only while Keep is on) lets {@link AgentPortAutostart}
+ * start the port once the window shows. Both default off: nothing
+ * listens unless the user asked, and the dialog says what each box does
+ * while it is ticked.
  */
 @ActionID(category = "Tools", id = "org.nmox.studio.rack.mcp.AgentPortAction")
 @ActionRegistration(displayName = "#CTL_AgentPortAction", lazy = true)
@@ -42,7 +55,19 @@ import org.openide.util.NbBundle.Messages;
     "AgentPortAction_stop=Stop Agent Port",
     "AgentPortAction_close=Close",
     "AgentPortAction_title=Agent Port (MCP)",
-    "AgentPortAction_stopped=Agent Port stopped — nothing is listening."
+    "AgentPortAction_stopped=Agent Port stopped — nothing is listening.",
+    "AgentPortAction_copyClaude=Copy for Claude Code",
+    "AgentPortAction_claudeCopied=Claude Code command copied — run it once in a terminal.",
+    "AgentPortAction_claudeRefused=Not copied: the token holds a character a shell would change.",
+    "AgentPortAction_keep=Keep this address and token",
+    "AgentPortAction_autostart=Start when NMOX Studio starts",
+    "AgentPortAction_keepNote=The token is kept in the system keychain until you clear the first box.",
+    "AgentPortAction_autostartNote=The port also starts with NMOX Studio, so an agent can connect whenever NMOX Studio is open.",
+    "AgentPortAction_kept=Agent Port address and token kept.",
+    "AgentPortAction_keptSession=Keychain unavailable — the Agent Port token is kept for this session only.",
+    "AgentPortAction_forgotten=Agent Port address and token forgotten — the keychain entry is deleted.",
+    "AgentPortAction_moved=The kept Agent Port address was taken, so the port now listens on 127.0.0.1:{0} — give your agent the new address.",
+    "AgentPortAction_newToken=The kept Agent Port token was not found, so the port has a new one — give your agent the new token."
 })
 public final class AgentPortAction implements ActionListener {
 
@@ -112,30 +137,131 @@ public final class AgentPortAction implements ActionListener {
         return new int[]{p.port(), p.attachedStreams(), since < 0 ? -1 : (int) Math.min(Integer.MAX_VALUE, since / 1000)};
     }
 
+
+    /**
+     * The one lane every start and every keep/forget rides (3.2): the
+     * keychain may block on OS calls and a bind is socket work, so neither
+     * happens on the EDT. Throughput 1 also serializes a double-click into
+     * one start and a second look at the running port.
+     */
+    private static final RequestProcessor LANE = new RequestProcessor("nmox-agent-port", 1);
+
+    /**
+     * The command that points Claude Code at this port, once:
+     * {@code claude mcp add --transport http nmox-studio <url> --header "Authorization: Bearer <token>"}.
+     * Returns null — and the caller says so rather than copy — when the URL
+     * is not this port's loopback shape or the token holds a character
+     * outside {@code [A-Za-z0-9_-]}: the header value rides inside double
+     * quotes, and only that alphabet passes through them unchanged by every
+     * shell a user might paste into.
+     */
+    static String claudeCodeCommand(String url, String token) {
+        if (url == null || !url.matches("http://127\\.0\\.0\\.1:[0-9]{1,5}/mcp")
+                || !shellInert(token)) {
+            return null;
+        }
+        return "claude mcp add --transport http nmox-studio " + url
+                + " --header \"Authorization: Bearer " + token + "\"";
+    }
+
+    private static boolean shellInert(String token) {
+        if (token == null || token.isEmpty()) {
+            return false;
+        }
+        for (int i = 0; i < token.length(); i++) {
+            char c = token.charAt(i);
+            boolean ok = (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+                    || (c >= '0' && c <= '9') || c == '_' || c == '-';
+            if (!ok) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * The honest sentence under the two boxes: what ticking them has done,
+     * or nothing when neither is ticked. The keychain half is said whenever
+     * Keep is on; the start-with-the-IDE half only when both are.
+     */
+    static String keepNote(boolean keep, boolean autostart) {
+        if (!keep) {
+            return "";
+        }
+        return autostart
+                ? Bundle.AgentPortAction_keepNote() + " " + Bundle.AgentPortAction_autostartNote()
+                : Bundle.AgentPortAction_keepNote();
+    }
+
     @Override
     public void actionPerformed(ActionEvent e) {
         if (RUNNING.get() != null) {
             showRunning();
             return;
         }
-        McpTools tools = McpTools.production();
-        AgentPort port;
-        try {
-            port = AgentPort.start(tools, productVersion());
-            // the FIRST STEPS record (v2.84.0): the port was started once —
-            // a userdir preference, the Getting Started column's own idiom;
-            // it never carries the token
-            org.openide.util.NbPreferences.forModule(AgentPortAction.class)
-                    .putBoolean("agentport.started", true);
-        } catch (IOException ex) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    org.nmox.studio.core.util.PlainDialogs.plain(Bundle.AgentPortAction_startFailed(ex.getMessage()), "Message")));
-            return;
+        start(AgentPortKeep.production(), true);
+    }
+
+    /**
+     * Starts the port on the lane and applies the outcome on the EDT: the
+     * listening sentence, any moved-address or new-token sentence, and —
+     * for the menu gesture, not the autostart — the dialog.
+     */
+    static void start(AgentPortKeep keep, boolean showDialog) {
+        LANE.post(() -> {
+            AgentPort running = RUNNING.get();
+            if (running != null) {
+                if (showDialog) {
+                    EventQueue.invokeLater(() -> new AgentPortAction().showRunning());
+                }
+                return;
+            }
+            AgentPortKeep.Started started;
+            try {
+                started = keep.start(McpTools.production(), productVersion());
+            } catch (IOException ex) {
+                String why = ex.getMessage();
+                EventQueue.invokeLater(() -> DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        org.nmox.studio.core.util.PlainDialogs.plain(Bundle.AgentPortAction_startFailed(why), "Message"))));
+                return;
+            }
+            // the FIRST STEPS record (v2.84.0) is written by keep.start, in
+            // the same preferences node the Getting Started column reads
+            RUNNING.set(started.port());
+            EventQueue.invokeLater(() -> {
+                // the address change is the sentence the user must act on, so it wins the line
+                if (started.moved()) {
+                    StatusDisplayer.getDefault().setStatusText(
+                            Bundle.AgentPortAction_moved(String.valueOf(started.port().port())));
+                } else if (started.newToken()) {
+                    StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_newToken());
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(
+                            Bundle.AgentPortAction_listening(String.valueOf(started.port().port())));
+                }
+                if (showDialog) {
+                    new AgentPortAction().showRunning();
+                }
+            });
+        });
+    }
+
+    /** Waits for the lane to drain — tests only. */
+    static void awaitLaneIdle() {
+        LANE.post(() -> { }).waitFinished();
+    }
+
+    /** The running port, or null — tests only. */
+    static AgentPort running() {
+        return RUNNING.get();
+    }
+
+    /** Stops whatever runs — tests only; the dialog's Stop is the user's door. */
+    static void stopForTest() {
+        AgentPort p = RUNNING.getAndSet(null);
+        if (p != null) {
+            p.stop();
         }
-        RUNNING.set(port);
-        StatusDisplayer.getDefault().setStatusText(
-                Bundle.AgentPortAction_listening(String.valueOf(port.port())));
-        showRunning();
     }
 
     /** The running product version, or "dev" — through the one reader (core.util.ProductVersion). */
@@ -175,8 +301,60 @@ public final class AgentPortAction implements ActionListener {
                     .setContents(new java.awt.datatransfer.StringSelection(snippet), null);
             StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_configCopied());
         });
-        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
-        south.add(copy);
+        JButton copyClaude = new JButton(Bundle.AgentPortAction_copyClaude());
+        copyClaude.addActionListener(ev -> {
+            String command = claudeCodeCommand(port.url(), shownToken(port));
+            if (command == null) {
+                StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_claudeRefused());
+                return;
+            }
+            java.awt.Toolkit.getDefaultToolkit().getSystemClipboard()
+                    .setContents(new java.awt.datatransfer.StringSelection(command), null);
+            StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_claudeCopied());
+        });
+        JPanel buttons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        buttons.add(copy);
+        buttons.add(copyClaude);
+
+        // the two opt-in boxes read their state from the preferences alone —
+        // a preference read, no keychain, so the EDT never waits here
+        AgentPortKeep keep = AgentPortKeep.production();
+        JCheckBox keepBox = new JCheckBox(Bundle.AgentPortAction_keep(), keep.keeping());
+        JCheckBox autostartBox = new JCheckBox(Bundle.AgentPortAction_autostart(), keep.autostart());
+        autostartBox.setEnabled(keepBox.isSelected());
+        JLabel note = new JLabel(PlainText.plain(keepNote(keepBox.isSelected(), autostartBox.isSelected())));
+        Runnable renote = () -> note.setText(PlainText.plain(
+                keepNote(keepBox.isSelected(), autostartBox.isSelected())));
+        keepBox.addActionListener(ev -> {
+            boolean on = keepBox.isSelected();
+            autostartBox.setEnabled(on);
+            if (!on) {
+                autostartBox.setSelected(false);
+            }
+            renote.run();
+            LANE.post(() -> {
+                if (on) {
+                    boolean durable = keep.keep(port);
+                    EventQueue.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(durable
+                            ? Bundle.AgentPortAction_kept() : Bundle.AgentPortAction_keptSession()));
+                } else {
+                    keep.forget();
+                    EventQueue.invokeLater(() -> StatusDisplayer.getDefault().setStatusText(
+                            Bundle.AgentPortAction_forgotten()));
+                }
+            });
+        });
+        autostartBox.addActionListener(ev -> {
+            boolean on = autostartBox.isSelected();
+            renote.run();
+            LANE.post(() -> keep.setAutostart(on));
+        });
+        JPanel south = new JPanel();
+        south.setLayout(new javax.swing.BoxLayout(south, javax.swing.BoxLayout.Y_AXIS));
+        for (javax.swing.JComponent c : new javax.swing.JComponent[]{buttons, keepBox, autostartBox, note}) {
+            c.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+            south.add(c);
+        }
         panel.add(south, BorderLayout.SOUTH);
 
         Object stopOption = Bundle.AgentPortAction_stop();
