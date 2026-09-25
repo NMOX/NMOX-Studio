@@ -119,6 +119,16 @@ counting as open, Windows sh). What is left:
   files; if a platform bump turns grouping on, the table editor and a tab
   not shown yet name the group's primary, a renamed group's open editor
   names nothing until reopened, and a group's modified flag is the group's.
+- **Action Items' project scopes see nothing in a folder with no
+  manifest.** Check Markdown Links… (and every other finding) reaches the
+  platform's Action Items through its scanner, whose "current project" and
+  "open projects" scopes ask the platform for a project; a folder aimed
+  with `nmox .` that has no manifest is no project to it, so the window
+  reads "no current project" and lists nothing. The squiggles, the ✕/⚠
+  count and the status line's sentence still speak, and the window's
+  current-file scope lists them (walked in 3.2: nothing under the project
+  scope, three rows under current file, all three again once a
+  `package.json` made the folder a project).
 - **The census pins are keyed by a file's simple name** (the action census's
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.
