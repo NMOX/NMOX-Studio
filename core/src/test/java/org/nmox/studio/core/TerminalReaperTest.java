@@ -26,6 +26,9 @@ class TerminalReaperTest {
         assertThat(TerminalReaper.isPtyHelper("/usr/local/bin/pty")).as("a pty not unpacked by the platform").isFalse();
         assertThat(TerminalReaper.isPtyHelper("/tmp/dlight_ana/1/2/pty-other")).isFalse();
         assertThat(TerminalReaper.isPtyHelper(null)).isFalse();
+        assertThat(TerminalReaper.isPtyHelper("/tmp/dlight_ana/1/2/pty (deleted)"))
+                .as("Linux names a removed executable so").isTrue();
+        assertThat(TerminalReaper.isPtyHelper("C:\\Users\\ana\\AppData\\Local\\Temp\\dlight_ana\\1\\pty.exe")).isTrue();
     }
 
     @Test

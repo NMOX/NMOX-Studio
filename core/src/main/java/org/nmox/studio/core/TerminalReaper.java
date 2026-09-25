@@ -119,8 +119,13 @@ public class TerminalReaper implements Runnable {
         if (command == null) {
             return false;
         }
-        String[] parts = command.replace('\\', '/').split("/");
-        if (parts.length < 2 || !"pty".equals(parts[parts.length - 1])) {
+        // Linux names a running executable whose file was removed
+        // "…/pty (deleted)"; Windows would name it pty.exe (7th review)
+        String path = command.endsWith(" (deleted)")
+                ? command.substring(0, command.length() - " (deleted)".length()) : command;
+        String[] parts = path.replace('\\', '/').split("/");
+        String name = parts[parts.length - 1];
+        if (parts.length < 2 || !("pty".equals(name) || "pty.exe".equalsIgnoreCase(name))) {
             return false;
         }
         for (int i = 0; i < parts.length - 1; i++) {
