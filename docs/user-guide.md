@@ -1154,6 +1154,11 @@ reader, or a feed — the developer-evangelist grant:
   signed in, so blame and review comments work. The same refusals apply,
   and an editor with unsaved changes is refused, since the link would
   show lines that differ from what you see.
+- **Team ▸ New Pull Request on GitHub** (also on the git chip's menu).
+  GitHub's own New Pull Request page for the branch you have checked out,
+  in your browser: the step after a push, without finding the repository
+  and the branch by hand. A detached HEAD is refused, since it has no
+  branch to propose.
 - **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
   2x, saved as a PNG where you choose (Pictures by default, named by
   the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
