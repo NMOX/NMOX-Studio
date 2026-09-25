@@ -412,7 +412,9 @@ Rack faceplates keep their panel vocabulary on purpose.
   backticks. **Copy as Markdown with Link** adds the GitHub
   `blob/<branch>/path#L3-L14` link to the same lines — from disk facts
   alone, refusing rather than guessing (no origin, not GitHub, an
-  unsaved buffer).
+  unsaved buffer). **Open on GitHub** and **Copy GitHub Link** give the
+  link alone, for lines, a file or a folder, in the editor and on
+  Project Studio's tree.
 - **Tools ▸ Save Screenshot… / Save Editor Screenshot… / Copy Editor
   Screenshot**: the IDE painted by Swing itself at 2x — no
   screen-recording permission, no desktop, no crop; the editor tab

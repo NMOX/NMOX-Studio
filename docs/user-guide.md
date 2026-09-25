@@ -1141,6 +1141,14 @@ reader, or a feed — the developer-evangelist grant:
   vouches for what it can read: a file outside a git repository, a
   repository without an `origin`, or an origin that is not GitHub is a
   spoken refusal on the status line, and nothing is copied.
+- **Edit ▸ Open on GitHub** and **Edit ▸ Copy GitHub Link** (or
+  right-click, in the editor and on Project Studio's tree). The same
+  link without the block: the caret's line or the selection's lines, a
+  file, or a folder (its `tree` page; the project's root folder is the
+  repository's front page). Open goes to your own browser, where you are
+  signed in, so blame and review comments work. The same refusals apply,
+  and an editor with unsaved changes is refused, since the link would
+  show lines that differ from what you see.
 - **Tools ▸ Save Screenshot…** The whole IDE window, painted by Swing at
   2x, saved as a PNG where you choose (Pictures by default, named by
   the moment: `nmox-studio-2026-09-06-081530.png`). Because it is the
