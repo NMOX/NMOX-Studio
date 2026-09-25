@@ -14,3 +14,6 @@ KEYS -text
 
 # cmd.exe reads a batch file line by line and needs CRLF to do it reliably
 *.cmd text eol=crlf
+
+# Git for Windows sh runs this file: a CR would end every line with one
+packaging/windows/nmox text eol=lf

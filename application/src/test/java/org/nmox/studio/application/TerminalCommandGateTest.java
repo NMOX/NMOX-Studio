@@ -768,6 +768,33 @@ class TerminalCommandGateTest {
     // ---------------------------------------------------------------- Windows
 
     @Test
+    @DisplayName("Windows: git's sh reaches nmox.cmd through an extensionless nmox, installed beside it, LF only")
+    @DisabledOnOs(OS.WINDOWS)
+    void gitShReachesTheWindowsCommand() throws Exception {
+        // git runs core.editor ("nmox -w") and a difftool through its own sh,
+        // which finds a command by exact name: nmox.cmd is never "nmox" to it
+        Path sh = Path.of("..", "packaging", "windows", "nmox");
+        String body = read(sh);
+        assertThat(body).startsWith("#!/bin/sh\n").doesNotContain("\r")
+                .contains("exec \"$(dirname \"$0\")/nmox.cmd\" \"$@\"");
+        assertThat(read(ISS)).contains("Source: \"nmox\"; DestDir: \"{app}\\cli\"");
+        assertThat(read(Path.of("..", ".gitattributes"))).contains("packaging/windows/nmox text eol=lf");
+        assertThat(read(WIN_CHECK)).contains("the sh command git runs (cli\\nmox) is not installed")
+                .contains("git's sh could not run nmox");
+        // and it hands every argument over untouched, spaces and quotes included
+        Path cli = Files.createDirectories(tmp.resolve("cli dir"));
+        Path copy = cli.resolve("nmox");
+        Files.copy(sh, copy);
+        executable(copy);
+        Path record = tmp.resolve("argv.txt");
+        Files.writeString(cli.resolve("nmox.cmd"), "#!/bin/sh\nprintf '%s\\n' \"$@\" > '" + record + "'\n");
+        executable(cli.resolve("nmox.cmd"));
+        Process p = new ProcessBuilder(copy.toString(), "-w", "-d", "a b.txt", "it's \"q\".txt").start();
+        assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+        assertThat(Files.readAllLines(record)).containsExactly("-w", "-d", "a b.txt", "it's \"q\".txt");
+    }
+
+    @Test
     @DisplayName("Windows: nmox.cmd starts the launcher the Start menu starts, without holding the console")
     void windowsShimStartsTheLauncher() throws IOException {
         String iss = read(ISS);
