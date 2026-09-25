@@ -43,4 +43,10 @@ Every row the walks add is written below as it is found.
 
 | # | Found by | What was wrong | What 3.2.0 does | Proof |
 |---|----------|----------------|-----------------|-------|
-| 4 | walking row 1 with a real `git commit` | the `#` lines of a commit message read as plain text, where VS Code greys them as comments | *(queued)* | |
+| 4 | walking row 1 with a real `git commit` | the `#` lines of a commit message read as plain text, where VS Code greys them as comments | *(in progress)* | |
+| 5 | walking row 1 with the accessibility tree | every editor pane announced itself as "Editor for null": the platform names it after the pane's component name, which nothing sets | each pane is named after its file, and the sentence is overlaid in fourteen languages | `EditorAccessibleNamesTest`; walked in German: "Editor für quit.txt" |
+| 6 | walking row 1 as `git difftool` | the diff view it opens paints its chrome (Graphical, Textual…) in English in every translated build | *(in progress)* | |
+| 7 | walking row 5 in German | the Window menu read `Editor(J)`, `Dokumente(G)…`: the Chinese appended-mnemonic form in languages whose labels are letters | *(in progress)* | |
+| 8 | the same German walk | the main window itself still carries English: the editor's Source/History tabs, the Favorites tab, the Quick Search hint | *(in progress)* | |
+| 9 | the right-to-left sweep of row 10 | a path beginning `~/` after a Hebrew or Arabic word is drawn `NMOX/app/~` (ledger 121) | measured with `java.text.Bidi`, the rule written, 163 marks in the documents and two in the bundles | `RtlDocsPathDirectionGateTest`, `NativeTypographyGateTest` |
+| 10 | ledger 120 | ⌃\` after a re-aim brought forward a terminal sitting in the project the user had left | a shell starts in the new project; a shell that could not start there says so | `ProjectTerminalTest` |
