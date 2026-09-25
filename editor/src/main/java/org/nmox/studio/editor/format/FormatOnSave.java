@@ -7,7 +7,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.document.OnSaveTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -43,7 +42,7 @@ public final class FormatOnSave implements OnSaveTask {
         if (cancelled || !isEnabled()) {
             return;
         }
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        FileObject fo = org.nmox.studio.core.util.EditedFile.of(doc);
         File file = fo == null ? null : FileUtil.toFile(fo);
         if (file == null) {
             return; // in-memory or virtual documents save as-is

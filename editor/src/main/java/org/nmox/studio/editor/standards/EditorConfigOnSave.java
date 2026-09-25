@@ -5,7 +5,6 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.spi.editor.document.OnSaveTask;
 import org.nmox.studio.editor.format.FormatOnSave;
 import org.openide.filesystems.FileObject;
@@ -32,7 +31,7 @@ public final class EditorConfigOnSave implements OnSaveTask {
         if (cancelled) {
             return;
         }
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        FileObject fo = org.nmox.studio.core.util.EditedFile.of(doc);
         File file = fo == null ? null : FileUtil.toFile(fo);
         if (file == null || file.getName().equals(".editorconfig")) {
             return; // in-memory docs, and never rewrite the config itself

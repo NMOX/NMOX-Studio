@@ -867,7 +867,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         if (tc == null) {
             return null;
         }
-        DataObject dob = tc.getLookup().lookup(DataObject.class);
-        return dob == null ? null : FileUtil.toFile(dob.getPrimaryFile());
+        org.openide.filesystems.FileObject fo = EditorTabs.fileOf(tc);
+        return fo == null ? null : FileUtil.toFile(fo);
     }
 }

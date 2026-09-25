@@ -59,4 +59,21 @@ class EditedFileTest {
         assertThat(EditedFile.of(new JEditorPane().getDocument())).isNull();
         assertThat(EditedFile.of(null)).isNull();
     }
+
+    @Test
+    @DisplayName("a tab's file: its own document decides, a stranger's document does not, no document means the single file")
+    void tabRule(@TempDir Path dir) throws Exception {
+        FileObject app = file(dir, "app.js");
+        FileObject other = file(dir, "other.js");
+        DataObject appDob = DataObject.find(app);
+        JEditorPane mine = new JEditorPane();
+        mine.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty, appDob);
+        JEditorPane stranger = new JEditorPane();
+        stranger.getDocument().putProperty(javax.swing.text.Document.StreamDescriptionProperty,
+                DataObject.find(other));
+        assertThat(EditedFile.of(appDob, mine.getDocument())).isEqualTo(app);
+        assertThat(EditedFile.of(appDob, stranger.getDocument())).as("another tab's document").isEqualTo(app);
+        assertThat(EditedFile.of(appDob, null)).as("an editor not built yet").isEqualTo(app);
+        assertThat(EditedFile.of((DataObject) null, null)).isNull();
+    }
 }

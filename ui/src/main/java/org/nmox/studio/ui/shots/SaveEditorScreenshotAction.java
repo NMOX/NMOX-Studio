@@ -62,9 +62,14 @@ public final class SaveEditorScreenshotAction implements ActionListener {
 
     /** The document's file name when the tab carries one, else the tab's own name (a studio tab). */
     static String documentName(TopComponent tab) {
-        DataObject dob = tab.getLookup().lookup(DataObject.class);
-        if (dob != null) {
-            return dob.getPrimaryFile().getNameExt();
+        if (tab.getLookup().lookup(DataObject.class) != null) {
+            // the file on screen, not the group's primary (Bundle_de.properties
+            // under Bundle.properties); an undecidable group falls to the tab's name
+            org.openide.filesystems.FileObject fo =
+                    org.nmox.studio.rack.service.EditorTabs.fileOf(tab);
+            if (fo != null) {
+                return fo.getNameExt();
+            }
         }
         String name = tab.getName();
         return name == null ? "" : name;

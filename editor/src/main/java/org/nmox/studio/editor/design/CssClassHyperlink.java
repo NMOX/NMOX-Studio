@@ -12,7 +12,6 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.nmox.studio.editor.ProjectRoot;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.LineCookie;
@@ -170,7 +169,7 @@ public final class CssClassHyperlink implements HyperlinkProviderExt {
     }
 
     private static void jumpTo(Document doc, int offset) {
-        FileObject fo = NbEditorUtilities.getFileObject(doc);
+        FileObject fo = org.nmox.studio.core.util.EditedFile.of(doc);
         if (fo != null) {
             openAt(FileUtil.toFile(fo), offset);
         }

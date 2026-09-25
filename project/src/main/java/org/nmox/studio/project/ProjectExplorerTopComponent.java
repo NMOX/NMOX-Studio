@@ -503,8 +503,15 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             if (dob == null) {
                 continue;
             }
-            File file = FileUtil.toFile(dob.getPrimaryFile());
-            String title = dob.getPrimaryFile().getNameExt();
+            // the file the tab holds, not its group's primary (a locale's
+            // Bundle_de.properties is grouped under Bundle.properties, 3.2);
+            // a group whose editor is not built yet is rowed by its tab's
+            // own name rather than by a file it may not be
+            org.openide.filesystems.FileObject edited =
+                    org.nmox.studio.rack.service.EditorTabs.fileOf(tc);
+            File file = edited == null ? null : FileUtil.toFile(edited);
+            String title = edited != null ? edited.getNameExt()
+                    : tc.getName() != null ? tc.getName() : dob.getName();
             // an OPEN FILES list lists FILES (v1.279.0, the Task Rack walk):
             // opening a folder as a project leaves a folder-backed editor
             // TopComponent in the registry, so the project directory itself
@@ -548,9 +555,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         section(Bundle.ProjectExplorerTopComponent_recentFiles());
         java.util.Set<String> openPaths = new java.util.HashSet<>();
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
-            DataObject dob = tc.getLookup().lookup(DataObject.class);
-            if (dob != null) {
-                File f = FileUtil.toFile(dob.getPrimaryFile());
+            org.openide.filesystems.FileObject edited =
+                    org.nmox.studio.rack.service.EditorTabs.fileOf(tc);
+            if (edited != null) {
+                File f = FileUtil.toFile(edited);
                 if (f != null) {
                     openPaths.add(f.getAbsolutePath());
                 }

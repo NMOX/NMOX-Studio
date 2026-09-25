@@ -105,11 +105,15 @@ final class EditorState {
                 continue;
             }
             DataObject dob = tc.getLookup().lookup(DataObject.class);
-            if (dob == null || dob.getPrimaryFile().isFolder()) {
+            // the file this tab holds, not its DataObject's primary: a
+            // locale's Bundle_de.properties is grouped under Bundle.properties
+            org.openide.filesystems.FileObject edited =
+                    org.nmox.studio.rack.service.EditorTabs.fileOf(tc);
+            if (dob == null || edited == null) {
                 continue;
             }
-            File file = FileUtil.toFile(dob.getPrimaryFile());
-            String path = file != null ? file.getAbsolutePath() : dob.getPrimaryFile().getPath();
+            File file = FileUtil.toFile(edited);
+            String path = file != null ? file.getAbsolutePath() : edited.getPath();
             if (!listed.add(path)) {
                 continue;
             }

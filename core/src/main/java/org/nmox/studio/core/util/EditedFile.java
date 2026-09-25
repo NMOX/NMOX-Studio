@@ -36,6 +36,22 @@ public final class EditedFile {
         return pick(doc.getProperty(Document.TitleProperty), dob.getPrimaryFile(), dob.files());
     }
 
+    /**
+     * The file an editor TAB holds, given its DataObject and — when the tab's
+     * editor has been built — its document: the document decides when there
+     * is one; without one, a DataObject of one file is that file and a
+     * DataObject of several is null, for the same reason as above.
+     */
+    public static FileObject of(DataObject dob, Document docOrNull) {
+        if (dob == null) {
+            return null;
+        }
+        if (docOrNull != null && docOrNull.getProperty(Document.StreamDescriptionProperty) == dob) {
+            return of(docOrNull);
+        }
+        return pick(null, dob.getPrimaryFile(), dob.files());
+    }
+
     /** The rule, with the platform left out. */
     static FileObject pick(Object title, FileObject primary, Collection<FileObject> files) {
         if (files == null || files.size() <= 1) {
