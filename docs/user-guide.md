@@ -912,7 +912,11 @@ naming its declaring file, with values truncated in the popup so a
 secret is reminded, never disclosed. **⌘-click** a key to land on its
 declaring line. `fetch('/api/…')` gets the same treatment one gesture
 over: ⌘-click the path string and land on the Express route that
-registers it.
+registers it — in a monorepo, in whichever workspace package declares
+a server framework (`express`, `fastify`, `koa`, `hono`), since a
+`web` package rarely depends on the `api` package it calls. A path no
+route registers says so on the status line, and says when it could
+not read every package.
 
 ![process.env completion from the project's own .env](images/env-completion.png)
 
