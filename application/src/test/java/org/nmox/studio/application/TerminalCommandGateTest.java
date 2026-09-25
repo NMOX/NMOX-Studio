@@ -367,6 +367,58 @@ class TerminalCommandGateTest {
         }
     }
 
+    @Test
+    @DisplayName("Unix: a name holding a newline is refused, including one that ENDS in a newline and would otherwise name a different file")
+    @DisabledOnOs(OS.WINDOWS)
+    void newlineNamesAreRefused() throws Exception {
+        Path project = project();
+        // the review's probes: "x<newline>" beside a real "x" (command
+        // substitution strips the newline, so the IDE would wait on x), and a
+        // name whose newline would forge a second request line
+        Files.writeString(project.resolve("x"), "x");
+        Files.writeString(project.resolve("x\n"), "x");
+        Files.writeString(project.resolve("a\nopen\nx"), "x");
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        Path copy = tmp.resolve("request.copy");
+        for (Path command : requestCommands(copy, tmp.resolve("release"), "accept")) {
+            for (List<String> typed : List.of(List.of("-w", "x\n"), List.of("-w", "a\nopen\nx"),
+                    List.of("-d", "a\nopen\nx", "x"), List.of("-d", "x", "x\n"))) {
+                Files.deleteIfExists(copy);
+                Process p = startIn(project, tmpdir, command.toString(), typed);
+                assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+                assertThat(p.exitValue()).as("%s %s: %s", command, typed, slurp(tmp.resolve("launcher.out"))).isEqualTo(2);
+                assertThat(slurp(tmp.resolve("launcher.out")))
+                        .contains("nmox: a name holding a newline cannot be handed over");
+                assertThat(copy).as("no request reached the IDE").doesNotExist();
+                assertNoRequestLeft(tmpdir);
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("Unix: git's /dev/null for an added or a deleted file is handed over as an empty side")
+    @DisabledOnOs(OS.WINDOWS)
+    void devNullIsAnEmptySide() throws Exception {
+        Path project = project();
+        Path copy = tmp.resolve("request.copy");
+        Path release = tmp.resolve("release");
+        Path tmpdir = Files.createDirectories(tmp.resolve("t"));
+        try {
+            for (Path command : requestCommands(copy, release, "accept")) {
+                Process p = startIn(project, tmpdir, command.toString(), List.of("-d", "/dev/null", "src/app.js"));
+                assertThat(p.waitFor(20, TimeUnit.SECONDS)).isTrue();
+                assertThat(p.exitValue()).as(slurp(tmp.resolve("launcher.out"))).isZero();
+                List<String> req = Files.readAllLines(copy);
+                assertThat(req).hasSize(4);
+                assertThat(req.subList(0, 3)).containsExactly("nmox-request 1", "diff", "");
+                assertThat(Path.of(req.get(3)).toRealPath()).isEqualTo(project.toRealPath().resolve("src/app.js"));
+                assertNoRequestLeft(tmpdir);
+            }
+        } finally {
+            Files.writeString(release, "go");
+        }
+    }
+
     // ---------------------------------------------------------------- refusals
 
     /**
@@ -404,7 +456,8 @@ class TerminalCommandGateTest {
                 Arguments.of(List.of("-w", "gone.txt"), "nmox: gone.txt: no such file or folder"),
                 Arguments.of(List.of("-d", "src/app.js"), "nmox: -d needs two files"),
                 Arguments.of(List.of("-d", "src/app.js", "gone.js"), "nmox: gone.js: not a file (-d compares two files)"),
-                Arguments.of(List.of("--diff", "src", "src/app.js"), "nmox: src: not a file (-d compares two files)"));
+                Arguments.of(List.of("--diff", "src", "src/app.js"), "nmox: src: not a file (-d compares two files)"),
+                Arguments.of(List.of("-d", "/dev/null", "/dev/null"), "nmox: -d needs at least one file"));
     }
 
     @ParameterizedTest(name = "Linux: nmox {0} is refused before anything starts")
@@ -662,13 +715,14 @@ class TerminalCommandGateTest {
             assertThat(unix).contains("printf 'nmox: %s: no such file or folder\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s: not a folder (--aim takes a folder)\\n' \"$a\" >&2\n")
                     .contains("printf 'nmox: %s needs a value\\n' \"$value\" >&2\n");
-            assertThat(unix.split("\n\\s*exit 2( ;;)?\n", -1)).as("each of the eleven refusal sites exits 2").hasSize(12);
+            assertThat(unix.split("\n\\s*exit 2( ;;)?\n", -1)).as("each of the thirteen refusal sites exits 2").hasSize(14);
         }
         String cmd = read(NMOX_CMD);
         assertThat(cmd).contains(">&2 echo(nmox: !NMOX_A!: no such file or folder\n")
                 .contains(">&2 echo(nmox: !NMOX_A!: not a folder ^(--aim takes a folder^)\n")
-                .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n");
-        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the nine refusal sites exits 2").hasSize(10);
+                .contains(">&2 echo(nmox: %NMOX_VALUE% needs a value\n")
+                .contains(">&2 echo(nmox: -d needs at least one file\n");
+        assertThat(cmd.split("\n\\s*exit /b 2\n", -1)).as("each of the ten refusal sites exits 2").hasSize(11);
         assertThat(cmd).as("a bare name that is neither folder nor file nor NAME:LINE is refused, not passed on")
                 .contains("if exist \"%~1\\*\" goto folder\nif exist \"%~1\" goto file\ncall :goto\n"
                         + "if errorlevel 1 goto missing\n");

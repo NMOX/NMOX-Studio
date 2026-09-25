@@ -1,8 +1,16 @@
 package org.nmox.studio.ui.actions;
 
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
@@ -17,9 +25,16 @@ import org.openide.windows.WindowManager;
 /**
  * Two files side by side in the platform's own diff view (3.2.0,
  * {@code nmox --diff a b}, and {@code git difftool} through it): the
- * graphical and textual panes, the change navigation and the colours the
- * Team menu's diffs use. Read-only: git hands a difftool temporary copies,
- * and an edit to one would be lost when the tool returns.
+ * graphical and textual panes and the colours the Team menu's diffs use,
+ * under a bar of this window's own: Previous and Next Difference and where
+ * the reader is ("Difference 2 of 5"), because the platform's controller
+ * paints no toolbar and the stripe alone is a mouse-only way through a
+ * long diff. Read-only: git hands a difftool temporary copies, and an edit
+ * to one would be lost when the tool returns.
+ *
+ * <p>A file whose first bytes hold a NUL is handed over as
+ * {@code application/octet-stream}, the one type the view shows as its
+ * binary placeholder; any other type would paint the bytes as text.
  *
  * <p>Never persisted: a comparison of two temporary files is meaningless
  * after a restart.
@@ -28,7 +43,15 @@ import org.openide.windows.WindowManager;
     "# {0} - the left file's name, {1} - the right file's name",
     "DiffWindow_name={0} ↔ {1}",
     "# {0} - the left file's path, {1} - the right file's path",
-    "DiffWindow_tooltip={0} compared with {1}"
+    "DiffWindow_tooltip={0} compared with {1}",
+    "DiffWindow_previous=Previous Difference",
+    "DiffWindow_next=Next Difference",
+    "# {0} - the difference shown, {1} - how many there are",
+    "DiffWindow_position=Difference {0} of {1}",
+    "DiffWindow_none=The files are the same",
+    "DiffWindow_bar=Differences",
+    "# git names the missing side of an added or a deleted file /dev/null",
+    "DiffWindow_nothing=no file"
 })
 final class DiffWindow extends TopComponent {
 
@@ -37,18 +60,59 @@ final class DiffWindow extends TopComponent {
         setLayout(new BorderLayout());
     }
 
+    /** How many bytes are read to decide whether a file is binary: git's own sniff is 8000. */
+    static final int SNIFF = 8000;
+
+    private DiffController diff;
+    private final JLabel where = new JLabel();
+    private final JButton previous = new JButton("\u2191");
+    private final JButton next = new JButton("\u2193");
+    private final PropertyChangeListener differences = e -> SwingUtilities.invokeLater(this::showWhere);
+
     private DiffWindow(DiffController diff, File left, File right) {
         this();
+        this.diff = diff;
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
+        bar.getAccessibleContext().setAccessibleName(Bundle.DiffWindow_bar());
+        for (JButton b : new JButton[] {previous, next}) {
+            String label = b == previous ? Bundle.DiffWindow_previous() : Bundle.DiffWindow_next();
+            b.setToolTipText(label);
+            b.getAccessibleContext().setAccessibleName(label);
+            b.setFocusable(true);
+            bar.add(b);
+        }
+        previous.addActionListener(e -> go(-1));
+        next.addActionListener(e -> go(1));
+        bar.add(where);
+        add(bar, BorderLayout.NORTH);
         add(diff.getJComponent(), BorderLayout.CENTER);
-        setName(Bundle.DiffWindow_name(left.getName(), right.getName()));
+        setName(Bundle.DiffWindow_name(name(left), name(right)));
         setDisplayName(getName());
-        setToolTipText(PlainText.plain(Bundle.DiffWindow_tooltip(left.getPath(), right.getPath())));
+        setToolTipText(PlainText.plain(Bundle.DiffWindow_tooltip(
+                left == null ? Bundle.DiffWindow_nothing() : left.getPath(),
+                right == null ? Bundle.DiffWindow_nothing() : right.getPath())));
         getAccessibleContext().setAccessibleName(getName());
     }
 
-    /** Opens {@code left} and {@code right} side by side in the editor area. On the EDT. */
+    private static String name(File f) {
+        return f == null ? Bundle.DiffWindow_nothing() : f.getName();
+    }
+
+    /**
+     * Opens {@code left} and {@code right} side by side in the editor area;
+     * a null side (git's {@code /dev/null}) is an empty one, typed like the
+     * other so both panes colour alike. On the EDT.
+     */
     static DiffWindow open(File left, File right) throws IOException {
-        DiffController diff = DiffController.createEnhanced(source(left), source(right));
+        StreamSource l = left == null ? null : source(left);
+        StreamSource r = right == null ? null : source(right);
+        if (l == null) {
+            l = StreamSource.createSource("", Bundle.DiffWindow_nothing(), r.getMIMEType(), new java.io.StringReader(""));
+        }
+        if (r == null) {
+            r = StreamSource.createSource("", Bundle.DiffWindow_nothing(), l.getMIMEType(), new java.io.StringReader(""));
+        }
+        DiffController diff = DiffController.createEnhanced(l, r);
         DiffWindow w = new DiffWindow(diff, left, right);
         Mode editor = WindowManager.getDefault().findMode("editor");
         if (editor != null) {
@@ -64,7 +128,76 @@ final class DiffWindow extends TopComponent {
         if (fo == null) {
             throw new IOException(f.getPath() + ": no such file");
         }
-        return StreamSource.createSource(f.getName(), f.getPath(), fo.getMIMEType(), f);
+        byte[] head;
+        try (InputStream in = Files.newInputStream(f.toPath())) {
+            head = in.readNBytes(SNIFF);
+        }
+        String mime = looksBinary(head) ? "application/octet-stream" : fo.getMIMEType();
+        return StreamSource.createSource(f.getName(), f.getPath(), mime, f);
+    }
+
+    /** Git's rule: a NUL in the first bytes makes a file binary. */
+    static boolean looksBinary(byte[] head) {
+        for (byte b : head) {
+            if (b == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * The difference a step lands on: {@code delta} from {@code index},
+     * kept inside the list; from no difference yet, forward lands on the
+     * first and back on the last. -1 when there is none.
+     */
+    static int step(int index, int count, int delta) {
+        if (count <= 0) {
+            return -1;
+        }
+        if (index < 0 || index >= count) {
+            return delta > 0 ? 0 : count - 1;
+        }
+        return Math.max(0, Math.min(count - 1, index + delta));
+    }
+
+    /** The bar's sentence: which difference is shown, or that there are none. */
+    static String position(int index, int count) {
+        return count <= 0 ? Bundle.DiffWindow_none() : Bundle.DiffWindow_position(Math.max(index, 0) + 1, count);
+    }
+
+    private void go(int delta) {
+        int target = step(diff.getDifferenceIndex(), diff.getDifferenceCount(), delta);
+        if (target >= 0) {
+            diff.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, target);
+        }
+        showWhere();
+    }
+
+    private void showWhere() {
+        if (diff == null) {
+            return;
+        }
+        int count = diff.getDifferenceCount();
+        int index = diff.getDifferenceIndex();
+        where.setText(PlainText.plain(position(index, count)));
+        previous.setEnabled(count > 0 && index != 0);
+        next.setEnabled(count > 0 && index < count - 1);
+    }
+
+    @Override
+    protected void componentOpened() {
+        if (diff != null) {
+            diff.addPropertyChangeListener(differences);
+            showWhere();
+        }
+    }
+
+    @Override
+    protected void componentClosed() {
+        if (diff != null) {
+            diff.removePropertyChangeListener(differences);
+        }
     }
 
     @Override

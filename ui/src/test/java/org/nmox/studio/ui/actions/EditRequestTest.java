@@ -135,6 +135,40 @@ class EditRequestTest {
     }
 
     @Test
+    @DisplayName("git's /dev/null (an added or a deleted file) arrives as an empty line: that side is null, never both")
+    void anEmptySideIsNothing() throws Exception {
+        Path f = file("b.txt");
+        EditRequest added = EditRequest.parse("nmox-request 1\ndiff\n\n" + f + "\n");
+        assertThat(added.items()).containsExactly(new EditRequest.Diff(null, f.toFile()));
+        EditRequest deleted = EditRequest.parse("nmox-request 1\ndiff\n" + f + "\n\n");
+        assertThat(deleted.items()).containsExactly(new EditRequest.Diff(f.toFile(), null));
+        assertThatThrownBy(() -> EditRequest.parse("nmox-request 1\ndiff\n\n\n"))
+                .hasMessage("the request compares nothing with nothing");
+    }
+
+    @Test
+    @DisplayName("the diff bar steps inside the list, from nowhere forward to the first and back to the last")
+    void diffSteps() {
+        assertThat(DiffWindow.step(-1, 3, 1)).isZero();
+        assertThat(DiffWindow.step(-1, 3, -1)).isEqualTo(2);
+        assertThat(DiffWindow.step(0, 3, 1)).isEqualTo(1);
+        assertThat(DiffWindow.step(2, 3, 1)).as("stays on the last").isEqualTo(2);
+        assertThat(DiffWindow.step(0, 3, -1)).as("stays on the first").isZero();
+        assertThat(DiffWindow.step(0, 0, 1)).as("nothing to step to").isEqualTo(-1);
+        assertThat(DiffWindow.position(1, 5)).isEqualTo("Difference 2 of 5");
+        assertThat(DiffWindow.position(-1, 5)).isEqualTo("Difference 1 of 5");
+        assertThat(DiffWindow.position(-1, 0)).isEqualTo("The files are the same");
+    }
+
+    @Test
+    @DisplayName("a NUL in the first bytes is binary, git's own rule, so the view shows its placeholder instead of bytes")
+    void binaryByNul() {
+        assertThat(DiffWindow.looksBinary("hello\n".getBytes(java.nio.charset.StandardCharsets.UTF_8))).isFalse();
+        assertThat(DiffWindow.looksBinary(new byte[] {(byte) 0x89, 'P', 'N', 'G', 0, 1})).isTrue();
+        assertThat(DiffWindow.looksBinary(new byte[0])).as("an empty file is text").isFalse();
+    }
+
+    @Test
     @DisplayName("an accepted request is answered with this JVM's process id and handed on")
     void acceptedCarriesThePid() throws Exception {
         Path f = file("COMMIT_EDITMSG");

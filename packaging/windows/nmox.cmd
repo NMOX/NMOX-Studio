@@ -128,14 +128,22 @@ goto skip
 set "NMOX_DIFF=2"
 goto skip
 :diffarg
+rem git names the missing side of an added or a deleted file /dev/null,
+rem which Git for Windows hands a .cmd as nul: that side is nothing
+set "NMOX_SIDE="
+if /i "%~1"=="nul" goto diffside
+if "%~1"=="/dev/null" goto diffside
 if not exist "%~1" goto notafile
 if exist "%~1\*" goto notafile
+set "NMOX_SIDE=%~f1"
+:diffside
 if not "%NMOX_DIFF%"=="2" goto diffright
-set "NMOX_DL=%~f1"
+set "NMOX_DL=%NMOX_SIDE%"
 set "NMOX_DIFF=1"
 goto skip
 :diffright
-set "NMOX_DR=%~f1"
+if not defined NMOX_DL if not defined NMOX_SIDE goto diffnone
+set "NMOX_DR=%NMOX_SIDE%"
 set "NMOX_DIFF="
 set "NMOX_DIFFED=1"
 call :recorddiff
@@ -267,6 +275,9 @@ setlocal EnableDelayedExpansion
 exit /b 2
 :needtwo
 >&2 echo(nmox: -d needs two files
+exit /b 2
+:diffnone
+>&2 echo(nmox: -d needs at least one file
 exit /b 2
 :waitfolder
 >&2 echo(nmox: -w waits for a file to be closed, not a folder

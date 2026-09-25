@@ -20,8 +20,8 @@ import java.util.List;
  * /absolute/path
  * 42                   (or an empty line: no line)
  * diff
- * /absolute/left
- * /absolute/right
+ * /absolute/left      (or an empty line: git's /dev/null, an added file)
+ * /absolute/right     (or an empty line: a deleted file)
  * </pre>
  * Pure, so every rule is a unit test: {@link #parse} answers a request or
  * throws {@link Refused} with the sentence the terminal prints.
@@ -42,7 +42,10 @@ public record EditRequest(boolean waits, List<Item> items) {
     public record Open(File file, int line) implements Item {
     }
 
-    /** Two files to compare, left and right. */
+    /**
+     * Two files to compare, left and right; one side is null when git names
+     * it {@code /dev/null} (an added or a deleted file), never both.
+     */
     public record Diff(File left, File right) implements Item {
     }
 
@@ -90,7 +93,12 @@ public record EditRequest(boolean waits, List<Item> items) {
             String b = lines[i++];
             switch (kind) {
                 case "open" -> items.add(new Open(file(a), line(b)));
-                case "diff" -> items.add(new Diff(file(a), file(b)));
+                case "diff" -> {
+                    if (a.isEmpty() && b.isEmpty()) {
+                        throw new Refused("the request compares nothing with nothing");
+                    }
+                    items.add(new Diff(a.isEmpty() ? null : file(a), b.isEmpty() ? null : file(b)));
+                }
                 default -> throw new Refused("the request asks for \"" + kind + "\", which nmox never writes");
             }
         }

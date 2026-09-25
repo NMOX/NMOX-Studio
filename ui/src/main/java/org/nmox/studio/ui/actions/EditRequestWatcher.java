@@ -122,7 +122,8 @@ final class EditRequestWatcher {
                 }
             } catch (IOException ex) {
                 String file = item instanceof EditRequest.Open o ? o.file().getName()
-                        : ((EditRequest.Diff) item).left().getName();
+                        : ((EditRequest.Diff) item).left() != null ? ((EditRequest.Diff) item).left().getName()
+                        : ((EditRequest.Diff) item).right().getName();
                 String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
                 status.accept(PlainStatus.text(why));
                 EditRequestOption.answer(folder, "refused", why);
@@ -238,7 +239,23 @@ final class EditRequestWatcher {
         if (target instanceof TopComponent tc) {
             return tc.isOpened();
         }
+        // the platform's own answer first: an editor's panes. A window whose
+        // lookup merely HOLDS the file is not the file being open - Project
+        // Studio publishes the selected file's node, so with the file selected
+        // in the tree a closed tab would otherwise never count as closed
+        if (target instanceof DataObject d) {
+            org.openide.cookies.EditorCookie ec = d.getLookup().lookup(org.openide.cookies.EditorCookie.class);
+            if (ec != null) {
+                javax.swing.JEditorPane[] panes = ec.getOpenedPanes();
+                return panes != null && panes.length > 0;
+            }
+        }
+        // a file with no editor (an image): only a window that is a document
+        // of its own - a cloneable one, as every file window is - counts
         for (TopComponent tc : TopComponent.getRegistry().getOpened()) {
+            if (!(tc instanceof org.openide.windows.CloneableTopComponent)) {
+                continue;
+            }
             DataObject d = tc.getLookup().lookup(DataObject.class);
             if (d != null && d.equals(target)) {
                 return true;

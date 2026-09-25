@@ -91,8 +91,10 @@ USAGE
 # --open: nmox_request writes it, the IDE answers there - accepted (its
 # process id), refused (why) or done (every tab it opened was closed) - and
 # nmox_finish waits for the answer. The folder is removed however nmox ends.
-NL='
-'
+# a newline built by printf, so an indented copy of this script (the macOS
+# launcher is a heredoc) still holds exactly one newline and nothing after it
+NL=$(printf '\nx')
+NL=${NL%x}
 NMOX_REQ=
 nmox_request() {
     for np in "$@"; do
@@ -111,6 +113,12 @@ nmox_request() {
     printf '%s\n' "$@" >> "$NMOX_REQ/request"
 }
 nmox_path() {
+    # the RAW name: command substitution below strips trailing newlines, so
+    # 'z<newline>' would otherwise become a different file, z
+    case "$1" in *"$NL"*)
+        printf 'nmox: a name holding a newline cannot be handed over\n' >&2
+        exit 2 ;;
+    esac
     np="$(CDPATH= cd -- "$(dirname -- "$1")" && pwd)/$(basename -- "$1")"
 }
 nmox_finish() {
@@ -169,14 +177,22 @@ while [ "$n" -gt 0 ]; do
         continue
     fi
     if [ "$diff" -gt 0 ]; then
-        if [ ! -f "$a" ]; then
+        # git names the missing side of an added or a deleted file /dev/null:
+        # that side is handed over as nothing
+        if [ "$a" = /dev/null ]; then
+            np=
+        elif [ ! -f "$a" ]; then
             printf 'nmox: %s: not a file (-d compares two files)\n' "$a" >&2
             exit 2
+        else
+            nmox_path "$a"
         fi
-        nmox_path "$a"
         if [ "$diff" = 2 ]; then
             dl=$np
             diff=1
+        elif [ -z "$dl" ] && [ -z "$np" ]; then
+            printf 'nmox: -d needs at least one file\n' >&2
+            exit 2
         else
             nmox_request diff "$dl" "$np"
             diff=0
