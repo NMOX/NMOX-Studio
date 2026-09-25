@@ -119,7 +119,9 @@ loop as one sitting is the new tutorial
   earlier were on the machine that found it. The IDE now ends each shell's
   pty helper as it exits, so the shell and its jobs get the hang-up a closed
   terminal window sends — and a job started with `nohup` survives, as it
-  would anywhere else. Walked: Quit with two Terminals open left none behind.
+  would anywhere else. A `git` still running in one gets up to three seconds
+  first, so a `git commit` whose message the IDE hands back on quitting
+  lands with it. Walked: Quit with two Terminals open left none behind.
 
 ### The Agent Port connects once
 
