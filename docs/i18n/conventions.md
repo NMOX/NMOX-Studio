@@ -85,9 +85,15 @@ Three rules hold for every language:
 - **Mnemonics: a Cyrillic letter presses the key it sits on** (after
   3.2.0). The branding module ships `Mnemonics_ru` and `Mnemonics_uk`
   tables (`branding/src/main/nbm-mnemonics`) mapping each letter to its key
-  in the standard ЙЦУКЕН layout (`Ф` → A, `Ы`/`І` → S, `Х` → `[`), the key
-  a Latin layout presses in the same place and the key code Windows and
-  X11 report under a Cyrillic one. Until then about 340 values per
+  in the standard ЙЦУКЕН layout (`Ф` → A, `Ы`/`І` → S), the key a Latin
+  layout presses in the same place and the key code Windows and X11 report
+  under a Cyrillic one. **Never underline a letter on a punctuation key**
+  (`Х Ъ Ж Э Б Ю Ё`, Ukrainian `Х Ї Ж Є Б Ю Ґ`): an open menu selects by the
+  typed character and ignores one that is not a letter or digit, so the
+  tables leave those letters out and the gate fails the value. Inside an
+  open menu a Cyrillic mnemonic works only while a Latin layout is active
+  (Swing compares the typed character); on the menu bar and on buttons it
+  works under either. Until then about 340 values per
   language underlined a letter no key reached; a boot of the assembled app
   under `--locale ru` logged 241 refusals without the table and none with
   it. Underline a letter of the label itself, and when two rows of one

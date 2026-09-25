@@ -130,10 +130,73 @@ final class EditRequestWatcher {
      * files relies on a request's tab being tracked in the turn it opens.
      */
     static void showLater(File folder, EditRequest request) {
+        register(request);
         PREPARE.post(() -> {
             Prepared p = prepare(request);
-            org.openide.windows.WindowManager.getDefault().invokeWhenUIReady(() -> show(folder, request, p));
+            org.openide.windows.WindowManager.getDefault().invokeWhenUIReady(() -> {
+                try {
+                    show(folder, request, p);
+                } finally {
+                    unregister(request);
+                }
+            });
         });
+    }
+
+    /**
+     * The files of requests accepted but not yet opened, counted (two
+     * requests can name one file). The start-up sweep of left-over git
+     * files asks this too: a tab the window system restores late, of a file
+     * a request is still resolving on the lane, is the one that request is
+     * about to open, and closing it first would only make it flicker.
+     */
+    private static final Map<File, Integer> PENDING = new java.util.HashMap<>();
+
+    static void register(EditRequest request) {
+        synchronized (PENDING) {
+            for (File f : files(request)) {
+                PENDING.merge(f, 1, Integer::sum);
+            }
+        }
+    }
+
+    static void unregister(EditRequest request) {
+        synchronized (PENDING) {
+            for (File f : files(request)) {
+                PENDING.computeIfPresent(f, (k, n) -> n > 1 ? n - 1 : null);
+            }
+        }
+    }
+
+    /** Whether an accepted request names {@code file} and has not opened it yet. */
+    static boolean pending(File file) {
+        if (file == null) {
+            return false;
+        }
+        synchronized (PENDING) {
+            return PENDING.containsKey(FileUtil.normalizeFile(file.getAbsoluteFile()));
+        }
+    }
+
+    private static List<File> files(EditRequest request) {
+        List<File> out = new ArrayList<>();
+        for (EditRequest.Item item : request.items()) {
+            if (item instanceof EditRequest.Open o) {
+                out.add(o.file());
+            } else if (item instanceof EditRequest.Diff d) {
+                out.add(d.left());
+                out.add(d.right());
+            }
+        }
+        out.removeIf(java.util.Objects::isNull);
+        out.replaceAll(f -> {
+            try {
+                return FileUtil.normalizeFile(f.getAbsoluteFile());
+            } catch (RuntimeException unnormalizable) {
+                return f.getAbsoluteFile();
+            }
+        });
+        return out;
     }
 
     /** Resolves every item; never on the EDT. */
@@ -146,14 +209,34 @@ final class EditRequestWatcher {
                 } else if (item instanceof EditRequest.Diff d) {
                     items.add(DiffWindow.prepare(d.left(), d.right()));
                 }
-            } catch (IOException ex) {
-                String file = item instanceof EditRequest.Open o ? o.file().getName()
-                        : ((EditRequest.Diff) item).left() != null ? ((EditRequest.Diff) item).left().getName()
-                        : ((EditRequest.Diff) item).right().getName();
-                return new Prepared(items, file, ex);
+            } catch (IOException | RuntimeException ex) {
+                // unchecked too (an InvalidPathException from a name the OS
+                // refuses): the launcher has been told "accepted", so a
+                // request that dies here unanswered leaves git waiting on an
+                // IDE that will never reply
+                IOException why = ex instanceof IOException io ? io
+                        : new IOException(ex.getLocalizedMessage() != null ? ex.getLocalizedMessage() : ex.toString(), ex);
+                return new Prepared(items, nameOf(item), why);
             }
         }
         return new Prepared(items, null, null);
+    }
+
+    /** The name a refusal gives for {@code item}; never throws, whatever the item holds. */
+    private static String nameOf(EditRequest.Item item) {
+        List<File> named = new ArrayList<>();
+        if (item instanceof EditRequest.Open o) {
+            named.add(o.file());
+        } else if (item instanceof EditRequest.Diff d) {
+            named.add(d.left());
+            named.add(d.right());
+        }
+        for (File f : named) {
+            if (f != null) {
+                return f.getName();
+            }
+        }
+        return "?";
     }
 
     /** Both halves at once (tests, and callers already off the EDT's clock). */

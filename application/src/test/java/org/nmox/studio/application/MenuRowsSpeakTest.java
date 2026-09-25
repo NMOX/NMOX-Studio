@@ -223,7 +223,10 @@ class MenuRowsSpeakTest {
                         p.load(in);
                     }
                     for (String key : p.stringPropertyNames()) {
-                        if (key.startsWith("MNEMONIC_") && key.length() == "MNEMONIC_".length() + 1) {
+                        // only letter keys: an open menu ignores a typed character
+                        // that is not a letter or digit (BasicPopupMenuUI)
+                        if (key.startsWith("MNEMONIC_") && key.length() == "MNEMONIC_".length() + 1
+                                && p.getProperty(key).trim().matches("[A-Z0-9]")) {
                             letters.put(key.charAt(key.length() - 1), p.getProperty(key).trim());
                         }
                     }
@@ -277,7 +280,7 @@ class MenuRowsSpeakTest {
         assertThat(wrong).as("mnemonics that do nothing — underline a letter A-Z, a digit, "
                 + "or a letter the language's shipped table maps").isEmpty();
         assertThat(table("ru")).as("the Russian table in the cluster").containsKeys('Ф', 'ф', 'Ы');
-        assertThat(table("uk")).as("the Ukrainian table in the cluster").containsKeys('Ф', 'ф', 'І', 'Ї', 'Є', 'Ґ');
+        assertThat(table("uk")).as("the Ukrainian table in the cluster").containsKeys('Ф', 'ф', 'І', 'і');
     }
 
     @Test

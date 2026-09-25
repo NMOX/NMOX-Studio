@@ -79,7 +79,8 @@ public final class StaleGitRequestTabs implements Runnable {
         LANE.post(() -> {
             if (GitRequestFiles.isRequestFile(file)) {
                 javax.swing.SwingUtilities.invokeLater(() -> {
-                    boolean asked = EditRequestWatcher.waitedOn(dob) || EditRequestWatcher.requested(dob);
+                    boolean asked = EditRequestWatcher.waitedOn(dob) || EditRequestWatcher.requested(dob)
+                            || EditRequestWatcher.pending(file);
                     if (tc.isOpened() && shouldClose(true, dob.isModified(), asked || userOpened)) {
                         LOG.log(Level.FINE, "closing the left-over {0}", file);
                         tc.close();

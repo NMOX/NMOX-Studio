@@ -82,8 +82,15 @@ class TranslatedMnemonicsTest {
             for (String[] v : values) {
                 javax.swing.JMenuItem item = new javax.swing.JMenuItem();
                 set.invoke(null, item, v[1]);
-                if (item.getMnemonic() == 0) {
+                int k = item.getMnemonic();
+                if (k == 0) {
                     dead.add(v[0] + ": \"" + v[1] + "\"");
+                } else if (!letterOrDigitKey(k)) {
+                    // Swing selects an item of an open menu by the typed
+                    // character and ignores one that is not a letter or digit
+                    // (BasicPopupMenuUI.MenuKeyboardHelper), so a punctuation
+                    // key would underline a key that does nothing there
+                    dead.add(v[0] + ": \"" + v[1] + "\" reaches key " + k + ", a punctuation key an open menu ignores");
                 }
             }
             return null;
@@ -206,6 +213,41 @@ class TranslatedMnemonicsTest {
             return null;
         });
         assertThat(clashes).as("%s top menu bar entries Alt+letter cannot tell apart", lang).isEmpty();
+    }
+
+    /** A key an open menu can select by: A-Z or 0-9. */
+    private static boolean letterOrDigitKey(int k) {
+        return (k >= 'A' && k <= 'Z') || (k >= '0' && k <= '9');
+    }
+
+    /**
+     * The Cyrillic tables, entry for entry, against the layouts written out
+     * here independently: each letter on a letter key of the standard
+     * JCUKEN layout (Russian; Ukrainian Enhanced puts I on S and has no
+     * letter where Russian has hard sign or E) maps to the Latin letter on
+     * that key, both cases, and nothing else is in the table.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"ru", "uk"})
+    @DisplayName("the Cyrillic table is exactly the layout's letter keys")
+    void cyrillicTableIsTheLayout(String lang) throws Exception {
+        String[][] rows = lang.equals("ru")
+                ? new String[][] {{"ЙЦУКЕНГШЩЗ", "QWERTYUIOP"}, {"ФЫВАПРОЛД", "ASDFGHJKL"}, {"ЯЧСМИТЬ", "ZXCVBNM"}}
+                : new String[][] {{"ЙЦУКЕНГШЩЗ", "QWERTYUIOP"}, {"ФІВАПРОЛД", "ASDFGHJKL"}, {"ЯЧСМИТЬ", "ZXCVBNM"}};
+        Map<String, String> expected = new TreeMap<>();
+        for (String[] r : rows) {
+            for (int i = 0; i < r[0].length(); i++) {
+                String latin = String.valueOf(r[1].charAt(i));
+                expected.put("MNEMONIC_" + r[0].charAt(i), latin);
+                expected.put("MNEMONIC_" + Character.toLowerCase(r[0].charAt(i)), latin);
+            }
+        }
+        Properties p = tableEntries(lang);
+        Map<String, String> actual = new TreeMap<>();
+        for (String key : p.stringPropertyNames()) {
+            actual.put(key, p.getProperty(key));
+        }
+        assertThat(actual).as("the %s table", lang).isEqualTo(expected);
     }
 
     private interface Body {

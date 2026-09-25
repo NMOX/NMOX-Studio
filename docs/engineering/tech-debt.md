@@ -33,7 +33,10 @@ called that jar impossible because the branding goal writes
 `brandingToken + "_" + the file's locale`, so a second `nbm:branding`
 execution whose token IS the locale, over a file with no locale suffix,
 writes exactly the platform's name. `branding/src/main/nbm-mnemonics` holds
-the two tables (each letter to its key in the ЙЦУКЕН layout); they ride the
+the two tables (each letter on a letter key to the Latin letter on that key
+in the ЙЦУКЕН layout; letters on punctuation keys deliberately have no entry,
+because an open menu ignores a typed character that is not a letter or digit,
+so a mnemonic there would underline a key that does nothing); they ride the
 cluster, the branding NBM and its `update_tracking`, so an update-center
 install gets them too. Measured on the assembled app under `--locale ru`:
 241 "Mapping from a non-Latin character" refusals at boot without the table,
@@ -42,7 +45,14 @@ out to press a key another row of the same menu already claimed (`Другая
 &VCS` and `От&менить` both V) or kept an appended Latin letter though a
 letter of their own was free; the mnemonic laws now compare the KEY a
 mnemonic presses (the letter comparison, as a control, passed the collision
-silently) and the fourteen were moved. `TranslatedMnemonicsTest` runs the
+silently) and the fourteen were moved. The hostile review of that change
+found 26 more values underlining a letter on a punctuation key (`Со&хранить`,
+`З&берегти як…`), which the first tables mapped to the key code and which an
+open menu cannot select; they moved to letter keys. What stays true of every
+Cyrillic mnemonic, and is Swing's (`BasicPopupMenuUI` compares the typed
+CHARACTER inside an open menu): an item is selected there only while a Latin
+layout is active; Alt+letter on the menu bar and on a dialog's buttons goes by
+key code and works under either layout. `TranslatedMnemonicsTest` runs the
 platform's own `Mnemonics` over every Russian and Ukrainian value in the
 cluster.
 
@@ -169,9 +179,15 @@ counting as open, Windows sh). What is left:
   helpers, the edited-file blessings): two sources of one name in two
   modules would share a pin. None do today.
 - **`nmox -d` refuses two binaries over 16 MiB** although their
-  comparison runs off the EDT. (The 8,000-byte sniff and the DataObject
-  lookups moved off the EDT after 3.2.0: a request is resolved on a lane,
-  then opened and tracked in one EDT turn.)
+  comparison runs off the EDT.
+- **The diff view still reads both files on the EDT.** After 3.2.0 our part
+  moved: the 8,000-byte binary sniff and every DataObject lookup run on a
+  lane, then the request is opened and tracked in one EDT turn. But the
+  platform's `EditableDiffView` sets its two sources in an `invokeLater`
+  and reads each whole file there (its bytecode, read after the review
+  said so), and a line-positioned open can load the document on the EDT
+  too. Neither is ours to move; a large file compared with `nmox -d`
+  pauses the window for as long as that read takes.
 
 ## Open — added by 3.1.0 (the developer-experience release)
 

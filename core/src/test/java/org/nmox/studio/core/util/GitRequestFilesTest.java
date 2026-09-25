@@ -86,4 +86,25 @@ class GitRequestFilesTest {
         assertThat(GitRequestFiles.hasRequestName(new File("/nowhere/HEAD"))).isFalse();
         assertThat(GitRequestFiles.hasRequestName(null)).isFalse();
     }
+
+    @Test
+    @DisplayName("a worktree's own files are the project's, even inside a bare repository that holds the worktree")
+    void worktreeInsideABareRepository(@TempDir Path tmp) throws Exception {
+        Path seed = tmp.resolve("seed");
+        Files.createDirectories(seed);
+        git(seed, "init", "-q");
+        git(seed, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-q", "--allow-empty", "-m", "one");
+        Path bare = tmp.resolve("repo");
+        git(tmp, "clone", "-q", "--bare", seed.toString(), bare.toString());
+        git(bare, "worktree", "add", "-q", bare.resolve("main").toString());
+        Path fixture = bare.resolve("main/tests/fixtures/MERGE_MSG");
+        Files.createDirectories(fixture.getParent());
+        Files.writeString(fixture, "Merge branch 'x'\n");
+        assertThat(GitRequestFiles.isRequestFile(fixture.toFile()))
+                .as("a tracked fixture named like git's message, in a worktree inside the bare repository").isFalse();
+        assertThat(GitRequestFiles.isRequestFile(bare.resolve("MERGE_MSG").toFile()))
+                .as("the bare repository's own message").isTrue();
+        assertThat(GitRequestFiles.isRequestFile(bare.resolve("worktrees/main/COMMIT_EDITMSG").toFile()))
+                .as("the worktree's message, kept in the bare repository").isTrue();
+    }
 }

@@ -47,8 +47,11 @@ public final class GitRequestFiles {
      * when it has git's own shape (after 3.2.0: {@code --separate-git-dir}
      * and bare repositories keep theirs under other names) — a {@code HEAD}
      * file beside {@code objects} and {@code refs} folders, or a linked
-     * worktree's {@code HEAD} beside its {@code commondir}. Reads the disk
-     * for a file that has the name; call it off the EDT.
+     * worktree's {@code HEAD} beside its {@code commondir}. The walk stops at
+     * a worktree's root (a folder holding a {@code .git} entry): past it the
+     * file belongs to the project, even inside a bare repository that holds
+     * its worktrees. Reads the disk for a file that has the name; call it
+     * off the EDT.
      */
     public static boolean isRequestFile(File file) {
         if (!hasRequestName(file)) {
@@ -57,6 +60,13 @@ public final class GitRequestFiles {
         for (File d = file.getParentFile(); d != null; d = d.getParentFile()) {
             if (".git".equals(d.getName()) || isGitDir(d)) {
                 return true;
+            }
+            if (new File(d, ".git").exists()) {
+                // a worktree's root: the file is the project's, whatever
+                // holds the worktree (a bare repository with its worktrees
+                // inside it is a common layout, and its tracked fixtures
+                // can carry a message's name)
+                return false;
             }
         }
         return false;
