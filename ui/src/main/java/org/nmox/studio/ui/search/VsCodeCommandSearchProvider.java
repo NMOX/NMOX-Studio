@@ -82,6 +82,7 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("View: Close Other Editors", "Window", "org.netbeans.core.windows.actions.CloseAllButThisAction"),
             cmd("Developer: Toggle Screencast Mode", "View", "org.nmox.studio.editor.present.ShowKeystrokesAction"),
             cmd("Rename Symbol", "Refactoring", "org.netbeans.modules.refactoring.api.ui.RenameAction"),
+            cmd("Find All References", "Refactoring", "org.netbeans.modules.refactoring.api.ui.WhereUsedAction"),
             cmd("Tasks: Run Build Task", "Project", "org.netbeans.modules.project.ui.BuildMainProject"),
             cmd("Tasks: Terminate Task", "Run", "org.nmox.studio.tools.npm.StopRunAction"),
             cmd("Debug: Start Debugging", "Debug", "org.netbeans.modules.debugger.ui.actions.DebugMainProjectAction"),
@@ -99,6 +100,10 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Git: Fetch", "Git", "org.netbeans.modules.git.ui.fetch.FetchAction"),
             cmd("Git: Checkout to...", "Git", "org.netbeans.modules.git.ui.checkout.SwitchBranchAction"),
             cmd("Git: Create Branch...", "Git", "org.netbeans.modules.git.ui.branch.CreateBranchAction"),
+            // 3.2.0: the GitHub gestures, as VS Code's GitHub extension titles them
+            cmd("GitHub Pull Requests: Create Pull Request", "Team", "org.nmox.studio.rack.service.NewPullRequestAction"),
+            cmd("GitHub: Open on GitHub", "Edit", "org.nmox.studio.editor.share.OpenOnGitHubAction"),
+            cmd("GitHub: Copy GitHub Permalink", "Edit", "org.nmox.studio.editor.share.CopyGitHubLinkAction"),
             cmd("Help: Welcome", "Window", "org.nmox.studio.ui.MainWindow"),
             cmd("Help: Show Release Notes", "Help", "org.nmox.studio.ui.whatsnew.WhatsNewAction"),
             cmd("Help: Report Issue...", "Help", "org.nmox.studio.ui.report.ReportProblemAction"),
