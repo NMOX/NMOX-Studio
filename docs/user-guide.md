@@ -859,6 +859,13 @@ through the indirection (document-local by design; cross-file
 resolution rides the completion and the jump, which run off the paint
 path).
 
+In a monorepo, "the project" is the file's own package **and the
+workspace packages it depends on**: when `packages/web/package.json`
+lists `"@acme/tokens": "workspace:*"`, the tokens declared in
+`packages/tokens` complete and ⌘-click from `packages/web`, and a
+sibling package it does not depend on stays out. The same goes for
+the classes below. Its own package's declarations come first.
+
 ### The class attribute knows your stylesheets
 
 ![class="btn-" completion offering the project stylesheet classes with their declaring file](images/class-completion.png)
@@ -870,7 +877,9 @@ blocks — each row naming its declaring file (⌃Space; this file's
 classes list first). **⌘-click** a class in the attribute to land on
 its rule, or ⌘-click a `.selector` in a stylesheet to land on its
 first `class="…"` usage in your markup — the status line reports the
-count when there are more. Classes only, deliberately: `#id` selectors
+count when there are more. **Rename Class…** rewrites only the
+package you are in, and refuses a new name that a package it depends
+on already declares. Classes only, deliberately: `#id` selectors
 are textually indistinguishable from hex colors without a full value
 parser, so the id attribute waits rather than guessing.
 
