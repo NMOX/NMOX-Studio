@@ -66,56 +66,66 @@ class TerminalReaperTest {
         assertThat(TerminalReaper.isGit(null)).isFalse();
     }
 
-    @Test
-    @DisabledOnOs(OS.WINDOWS)
-    @DisplayName("a git under a Terminal is given its grace before the hang-up, and the grace is bounded")
-    void gitFinishesFirst(@TempDir Path dir) throws Exception {
-        Path bin = Files.createDirectories(dir.resolve("bin"));
-        Path git = bin.resolve("git");
-        Files.writeString(git, "#!/bin/sh\nsleep \"$1\"\n");
+    /**
+     * A real executable named git (a copy of {@code sleep}): a shell script
+     * named git would read as {@code /bin/sh}, which is how the first cut of
+     * these tests passed while recognising nothing.
+     */
+    private static Path fakeGit(Path dir) throws IOException {
+        Path git = Files.createDirectories(dir.resolve("bin")).resolve("git");
+        Files.copy(Path.of("/bin/sleep"), git);
         git.toFile().setExecutable(true);
-        Path helper = dir.resolve("helper");
-        Files.writeString(helper, "#!/bin/sh\n\"$1\" \"$2\"\nsleep 30\n");
-        helper.toFile().setExecutable(true);
-        Process quick = new ProcessBuilder(helper.toString(), git.toString(), "0.4").start();
-        Process slow = new ProcessBuilder(helper.toString(), git.toString(), "30").start();
-        try {
-            Thread.sleep(200); // let each helper start its git
-            long t0 = System.currentTimeMillis();
-            TerminalReaper.awaitGit(java.util.List.of(quick.toHandle()), 5_000);
-            assertThat(quick.toHandle().descendants().filter(p -> TerminalReaper.isGit(
-                    p.info().command().orElse(null))).count()).as("the git finished first").isZero();
-            long waited = System.currentTimeMillis() - t0;
-            assertThat(waited).as("it waited for git, not for the grace").isLessThan(4_000);
-            long t1 = System.currentTimeMillis();
-            TerminalReaper.awaitGit(java.util.List.of(slow.toHandle()), 300);
-            assertThat(System.currentTimeMillis() - t1).as("a git that will not finish costs only the grace")
-                    .isLessThan(3_000);
-        } finally {
-            quick.descendants().forEach(ProcessHandle::destroyForcibly);
-            slow.descendants().forEach(ProcessHandle::destroyForcibly);
-            quick.destroyForcibly();
-            slow.destroyForcibly();
+        return git;
+    }
+
+    private static Path fakePty(Path dir) throws IOException {
+        Path pty = Files.createDirectories(dir.resolve("dlight_test").resolve("h").resolve("1")).resolve("pty");
+        Files.writeString(pty, "#!/bin/sh\n\"$1\" \"$2\"\nsleep 30\n");
+        pty.toFile().setExecutable(true);
+        return pty;
+    }
+
+    private static ProcessHandle gitUnder(Process helper) throws InterruptedException {
+        for (int i = 0; i < 50; i++) {
+            java.util.Optional<ProcessHandle> g = helper.descendants()
+                    .filter(p -> TerminalReaper.isGit(p.info().command().orElse(null))).findFirst();
+            if (g.isPresent()) {
+                return g.get();
+            }
+            Thread.sleep(20);
         }
+        throw new AssertionError("the helper never started its git");
     }
 
     @Test
     @DisabledOnOs(OS.WINDOWS)
     @DisplayName("hanging up waits for the Terminal's git to finish before ending its helper")
     void hangUpLetsGitLand(@TempDir Path dir) throws Exception {
-        Path git = Files.createDirectories(dir.resolve("bin")).resolve("git");
-        Path landed = dir.resolve("landed");
-        Files.writeString(git, "#!/bin/sh\nsleep 0.5\ntouch \"" + landed + "\"\n");
-        git.toFile().setExecutable(true);
-        Path pty = Files.createDirectories(dir.resolve("dlight_test").resolve("h").resolve("1")).resolve("pty");
-        Files.writeString(pty, "#!/bin/sh\n\"$1\"\nsleep 30\n");
-        pty.toFile().setExecutable(true);
-        Process helper = new ProcessBuilder(pty.toString(), git.toString()).start();
+        Path pty = fakePty(dir);
+        Process helper = new ProcessBuilder(pty.toString(), fakeGit(dir).toString(), "0.5").start();
         try {
-            Thread.sleep(150); // the helper has started its git
+            ProcessHandle git = gitUnder(helper);
             assertThat(TerminalReaper.hangUp(Stream.of(fake(helper.toHandle(), pty.toString())))).isEqualTo(1);
-            assertThat(Files.exists(landed)).as("git finished before the hang-up").isTrue();
+            assertThat(git.isAlive()).as("git finished before the hang-up").isFalse();
             assertThat(helper.waitFor(5, TimeUnit.SECONDS)).as("then the helper ended").isTrue();
+        } finally {
+            helper.descendants().forEach(ProcessHandle::destroyForcibly);
+            helper.destroyForcibly();
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("a git that will not finish costs only the grace")
+    void graceIsBounded(@TempDir Path dir) throws Exception {
+        Process helper = new ProcessBuilder(fakePty(dir).toString(), fakeGit(dir).toString(), "30").start();
+        try {
+            ProcessHandle git = gitUnder(helper);
+            long t0 = System.currentTimeMillis();
+            TerminalReaper.awaitGit(java.util.List.of(helper.toHandle()), 300);
+            long waited = System.currentTimeMillis() - t0;
+            assertThat(waited).as("it waited for the grace").isGreaterThanOrEqualTo(250).isLessThan(3_000);
+            assertThat(git.isAlive()).isTrue();
         } finally {
             helper.descendants().forEach(ProcessHandle::destroyForcibly);
             helper.destroyForcibly();
