@@ -114,6 +114,24 @@ public class GitStatusLine implements StatusLineElementProvider {
         return new GitStrip();
     }
 
+    /** The line-blame note's lane: resolving a file's DataObject touches disk. */
+    private static final RequestProcessor ANNOTATE_LANE = new RequestProcessor("Git Annotate", 1);
+
+    /**
+     * The whole file's Annotate (Team ▸ Git ▸ Show Annotations), for the
+     * editor's line-blame note (3.2.0): the same registered action, the same
+     * file context and the same spoken refusals as the chip's own Annotate
+     * row — one door, reached from a second place.
+     */
+    public static void showAnnotations(File file, Object source) {
+        if (file == null) {
+            GitStrip.teamMenuFallback(Bundle.GitStatusLine_annotate(), Bundle.GitStatusLine_whyNoEditorFile());
+            return;
+        }
+        GitStrip.performGitAction(ANNOTATE_LANE, source, GitStrip.ANNOTATE_INSTANCE,
+                Bundle.GitStatusLine_annotate(), file);
+    }
+
     /** Listens and polls only while it is actually in the status bar. */
     private static final class GitStrip extends javax.swing.JPanel {
 
@@ -684,7 +702,13 @@ public class GitStatusLine implements StatusLineElementProvider {
          * the Team menu — never a silent no-op.
          */
         private void runGitAction(String instancePath, String verb, File focusFile) {
-            RP.post(() -> {
+            performGitAction(RP, chipLabel, instancePath, verb, focusFile);
+        }
+
+        /** {@link #runGitAction}'s body, on a caller's lane and naming a caller's source. */
+        static void performGitAction(RequestProcessor lane, Object source,
+                String instancePath, String verb, File focusFile) {
+            lane.post(() -> {
                 Lookup context = contextFor(focusFile);
                 javax.swing.SwingUtilities.invokeLater(() -> {
                     if (context == null) {
@@ -698,7 +722,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                                 : Bundle.GitStatusLine_whyRejectedContext());
                         return;
                     }
-                    action.actionPerformed(new ActionEvent(chipLabel,
+                    action.actionPerformed(new ActionEvent(source,
                             ActionEvent.ACTION_PERFORMED, verb));
                 });
             });

@@ -226,4 +226,38 @@ class GitFactsTest {
     void branchRefusesNonHexSha() throws Exception {
         assertThat(GitFacts.branch(repoWithHead("z".repeat(40) + "\n"))).isNull();
     }
+
+    // ---- headStamp (3.2.0, line blame's cache key) ----
+
+    @Test
+    @DisplayName("headStamp moves when the branch ref moves — a commit re-keys the blame cache")
+    void headStampFollowsTheRef() throws Exception {
+        File repo = repoWithHead("ref: refs/heads/main\n");
+        Path ref = repo.toPath().resolve(".git/refs/heads/main");
+        Files.createDirectories(ref.getParent());
+        Files.writeString(ref, "a".repeat(40) + "\n", StandardCharsets.UTF_8);
+        String before = GitFacts.headStamp(repo);
+        Files.writeString(ref, "b".repeat(40) + "\n", StandardCharsets.UTF_8);
+        String after = GitFacts.headStamp(repo);
+        assertThat(before).isNotNull().contains("a".repeat(40));
+        assertThat(after).isNotEqualTo(before).contains("b".repeat(40));
+    }
+
+    @Test
+    @DisplayName("headStamp: a detached HEAD is its own stamp; outside a repository it is null")
+    void headStampDetachedAndOutside() throws Exception {
+        assertThat(GitFacts.headStamp(repoWithHead("c".repeat(40) + "\n"))).startsWith("c".repeat(40));
+        assertThat(GitFacts.headStamp(null)).isNull();
+        Path plain = dir.resolve("plain");
+        Files.createDirectories(plain);
+        assertThat(GitFacts.headStamp(plain.toFile())).isNull();
+    }
+
+    @Test
+    @DisplayName("headStamp never reads outside refs/: a crafted HEAD naming ../ is not followed")
+    void headStampRefusesTraversal() throws Exception {
+        File repo = repoWithHead("ref: refs/../../secret\n");
+        Files.writeString(dir.resolve("repo/secret"), "TOKEN-VALUE\n", StandardCharsets.UTF_8);
+        assertThat(GitFacts.headStamp(repo)).isNotNull().doesNotContain("TOKEN-VALUE");
+    }
 }

@@ -85,6 +85,56 @@ public final class GitFacts {
     }
 
     /**
+     * A token that changes whenever the commit HEAD points at changes, no
+     * process (3.2.0, line blame's cache key): HEAD's own line, and for a
+     * symbolic HEAD the loose ref it names — read from the git dir, then
+     * from the common dir of a linked worktree — plus the size and time of
+     * {@code packed-refs}, where a ref lives once git packs it. A commit,
+     * a checkout, a reset or a pull moves one of those. Null outside a
+     * repository or on unreadable state.
+     *
+     * <p>A ref path is confined to {@code refs/} with no {@code ..} segment:
+     * a crafted HEAD must not turn this into a first-line reader of any file.
+     */
+    public static String headStamp(File repoRoot) {
+        if (repoRoot == null) {
+            return null;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        if (gitDir == null) {
+            return null;
+        }
+        String head = readFirstLine(new File(gitDir, "HEAD"));
+        if (head == null) {
+            return null;
+        }
+        File common = gitDir;
+        String commondir = readFirstLine(new File(gitDir, "commondir"));
+        if (commondir != null) {
+            File c = new File(commondir);
+            File resolved = insideGitDir(c.isAbsolute() ? c : new File(gitDir, commondir));
+            if (resolved != null) {
+                common = resolved;
+            }
+        }
+        StringBuilder stamp = new StringBuilder(head);
+        String refPrefix = "ref: ";
+        if (head.startsWith(refPrefix)) {
+            String ref = head.substring(refPrefix.length()).trim();
+            if (ref.startsWith("refs/") && !ref.contains("..") && !ref.contains("\\")) {
+                String value = readFirstLine(new File(gitDir, ref));
+                if (value == null && common != gitDir) {
+                    value = readFirstLine(new File(common, ref));
+                }
+                stamp.append('|').append(value);
+            }
+        }
+        File packed = new File(common, "packed-refs");
+        stamp.append('|').append(packed.length()).append(':').append(packed.lastModified());
+        return stamp.toString();
+    }
+
+    /**
      * Lines of {@code git status --porcelain} output = changed paths;
      * blank lines don't count (the trailing newline must not inflate a
      * clean tree into a dirty one).

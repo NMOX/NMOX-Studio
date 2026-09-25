@@ -180,6 +180,15 @@ class SpawnSiteTrustLedgerTest {
                 + "script runs go through CommandExecutor and the run-ledger above (v1.103.0)"),
             Map.entry("PortScanner.java",
                 "BLESSED: SONAR's fixed lsof/netstat argv — nothing project-controlled"),
+            Map.entry("LineBlame.java",
+                "BLESSED: the user's own `git blame --porcelain --no-textconv -- <name>`, "
+                + "fixed words with the file's name after `--` so it cannot read as an "
+                + "option (3.2.0, line blame). Nothing the repository controls runs: "
+                + "blame reads objects and the working file, and --no-textconv refuses the "
+                + "one door a checked-in .gitattributes has to a converter program; the "
+                + "config git honours is the user's, as for the chip's `git status`. "
+                + "Bounded (10 s, capped capture, a truncated answer discarded), on its own "
+                + "lane, never at boot, never for a file outside a repository"),
             Map.entry("TasksTopComponent.java",
                 "BLESSED: the Standup's bounded fixed-argv `git log` (v2.8.0)"),
             Map.entry("ProjectTemplates.java",

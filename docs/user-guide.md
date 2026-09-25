@@ -1241,6 +1241,19 @@ shows up in the Projects and Files windows too), so every project-sensitive
 verb has real context without selecting anything first. In-editor change
 stripes appear in the gutter as you edit a tracked file.
 
+Beside the chip, a quieter note answers the question you ask most often:
+who wrote the line the caret is on. `Ada Lovelace, 3 days ago · Fix the
+parser` follows the caret as you move it, in your own language, and its
+tooltip names the commit and the date. Click it for the whole file's
+annotations — the same **Annotate** the chip offers. It asks git once per
+saved version of the file, never at startup and never for a file outside a
+repository, and it says nothing for a file git does not track. A line you
+changed but have not committed reads **Not committed yet**. While the file
+has unsaved changes the note reads **Line blame: unsaved changes** instead
+of a name, because git reads the file as saved and line 40 on screen need
+not be line 40 on disk; save and the name comes back. **View ▸ Line Blame**
+turns the note off and on.
+
 ### Task Board (⌥⌘1)
 
 ![The Task Board: three columns, a clocked card, and the live ticker in the header](images/task-board.png)
