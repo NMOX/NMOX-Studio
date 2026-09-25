@@ -43,7 +43,7 @@ import org.openide.windows.TopComponent;
  */
 @ServiceProvider(service = StatusLineElementProvider.class, position = 590)
 @org.openide.util.NbBundle.Messages({
-    "GitStatusLine_chipTooltip=<html>git — {0}<br>click for Show Changes / Diff / Annotate / History</html>",
+    "GitStatusLine_chipTooltip=<html>git — {0}<br>click for Switch Branch, Commit, Pull, Push and more</html>",
     "GitStatusLine_aimFirst=Aim a project first.",
     "GitStatusLine_ghNotFound=GitHub CLI (gh) not found — install it (brew install gh) and run gh auth login.",
     "GitStatusLine_exitCode=exit {0}",
