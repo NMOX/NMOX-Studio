@@ -36,12 +36,17 @@ class EditRequestTest {
     private final List<EditRequest> shown = new ArrayList<>();
     private BiConsumer<File, EditRequest> savedShower;
     private Predicate<Object> savedShowing;
+    private java.util.function.Consumer<String> savedStatus;
+    private final List<String> statuses = new ArrayList<>();
 
     @BeforeEach
     void seams() {
         savedShower = EditRequestOption.shower;
         EditRequestOption.shower = (folder, r) -> shown.add(r);
         savedShowing = EditRequestWatcher.showing;
+        // the status line is one line shared by every test in the fork: never write to it from here
+        savedStatus = EditRequestWatcher.status;
+        EditRequestWatcher.status = statuses::add;
     }
 
     @AfterEach
@@ -49,6 +54,7 @@ class EditRequestTest {
         EditRequestOption.shower = savedShower;
         EditRequestWatcher.showing = savedShowing;
         EditRequestWatcher.answerAll();
+        EditRequestWatcher.status = savedStatus;
     }
 
     private Path file(String name) throws Exception {
@@ -208,6 +214,7 @@ class EditRequestTest {
         });
         assertThat(dir.resolve("done")).as("both closed").exists();
         assertThat(EditRequestWatcher.waiting()).isZero();
+        assertThat(statuses).last().asString().contains("a, b");
     }
 
     @Test

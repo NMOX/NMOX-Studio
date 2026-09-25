@@ -91,6 +91,9 @@ final class EditRequestWatcher {
     private static final List<Session> WAITING = new ArrayList<>();
     private static PropertyChangeListener registryListener;
 
+    /** Where the status line is, as a seam: tests capture it instead of sharing the platform's one line. */
+    static java.util.function.Consumer<String> status = text -> StatusDisplayer.getDefault().setStatusText(text);
+
     /** The seam tests replace: whether a target is still showing. */
     static Predicate<Object> showing = EditRequestWatcher::isShowing;
 
@@ -121,7 +124,7 @@ final class EditRequestWatcher {
                 String file = item instanceof EditRequest.Open o ? o.file().getName()
                         : ((EditRequest.Diff) item).left().getName();
                 String why = Bundle.EditRequestWatcher_couldNotOpen(file, ex.getLocalizedMessage());
-                StatusDisplayer.getDefault().setStatusText(PlainStatus.text(why));
+                status.accept(PlainStatus.text(why));
                 EditRequestOption.answer(folder, "refused", why);
                 return;
             }
@@ -132,7 +135,7 @@ final class EditRequestWatcher {
         Session s = new Session(folder, String.join(", ", names), targets);
         // a plain status text, gone in seconds: a raised one would hide every
         // other status line for as long as the message is being written
-        StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.EditRequestWatcher_waiting(s.names)));
+        status.accept(PlainStatus.text(Bundle.EditRequestWatcher_waiting(s.names)));
         track(s);
         // the editor may have opened synchronously; arm what already shows
         recheck();
@@ -204,7 +207,7 @@ final class EditRequestWatcher {
         }
         for (Session s : finished) {
             EditRequestOption.answer(s.folder, "done", "");
-            StatusDisplayer.getDefault().setStatusText(PlainStatus.text(Bundle.EditRequestWatcher_handedBack(s.names)));
+            status.accept(PlainStatus.text(Bundle.EditRequestWatcher_handedBack(s.names)));
         }
     }
 
