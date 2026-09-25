@@ -35,4 +35,17 @@ class StaleGitRequestTabsTest {
         assertThat(EditRequestWatcher.requested(other)).isFalse();
         EditRequestWatcher.remember(null);
     }
+
+    @Test
+    @DisplayName("the git-folder test reads the disk on its lane, never on the EDT that runs the sweep")
+    void diskStaysOffTheEdt() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/ui/actions/StaleGitRequestTabs.java"));
+        String check = src.substring(src.indexOf("private static void check("), src.indexOf("static boolean shouldClose("));
+        assertThat(check).contains("hasRequestName(file)");
+        int lane = check.indexOf("LANE.post(");
+        assertThat(lane).isPositive();
+        assertThat(check.indexOf("isRequestFile(")).as("the disk test only inside the lane").isGreaterThan(lane);
+        assertThat(check.substring(0, lane)).doesNotContain("isRequestFile(").doesNotContain("shouldClose(file");
+    }
 }
