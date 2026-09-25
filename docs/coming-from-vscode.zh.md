@@ -22,9 +22,12 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 | 终端，在项目文件夹里 | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | 打开最近的项目 | ⌃R | **⌥⌘P** — 切换项目… | Ctrl+R | **Ctrl+Alt+P** |
 | 转到项目中的符号 | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| 转到定义 | F12 | **⌘B** | F12 | **Ctrl+B** |
-| 重命名符号 | F2 | **⌃R** | F2 | **Ctrl+R** |
+| 转到定义 | F12 | **F12** 或 ⌘B | F12 | **F12** 或 Ctrl+B |
+| 查找引用 | ⇧F12 | **⇧F12** — 查找用法 | Shift+F12 | **Shift+F12** |
+| 重命名符号 | F2 | **F2** 或 ⌃R | F2 | **F2** 或 Ctrl+R |
+| 快速修复 | ⌘. | **⌘.** 或 ⌃↩ | Ctrl+. | **Alt+Enter** |
 | 转到行 | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| 后退 / 前进 | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | 切换行注释 | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | 显示建议 | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | 把下一处出现加入选区 | ⌘D | **⌘D** 或 ⌘J | Ctrl+D | **Ctrl+D** 或 Ctrl+J |
@@ -33,7 +36,9 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 | 把行上移 / 下移 | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | 向下复制行 | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | 删除行 | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| 格式化文档 | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| 增加行缩进 | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| 替换 | ⌥⌘F | **⌥⌘F** 或 ⌘R | Ctrl+H | **Ctrl+H** |
+| 格式化文档 | ⇧⌥F | **⇧⌥F** 或 ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | 关闭编辑器标签页 | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | 问题面板 | ⇧⌘M | **⌘6** — 操作项（在这里 ⇧⌘M 切换书签） | Ctrl+Shift+M | **Ctrl+6** |
 | 切换断点 | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -48,6 +53,42 @@ macOS 各列使用菜单栏上的符号（⌃ Control、⌥ Option、⇧ Shift�
 - **Windows 和 Linux 上的 Ctrl+,** 在你的编辑历史里后退，NetBeans 一直是这样；设置在 工具 ▸ 选项 下面（macOS 上是应用菜单的 **Settings…**，⌘,）。
 
 **帮助 ▸ 键盘快捷键…** 列出你当前键盘映射里的每个 NMOX 组合键，包括这四个 VS Code 组合键，它是从正在运行的键盘映射里读的，所以不可能和按键实际做的事情走岔。
+
+### 每个编辑组合键，都实测过
+
+你从 VS Code 带来的手在编辑时会去按的组合键，每一个都在 macOS 上默认配置随产品发布的键盘映射里查过。VS Code 的组合键在这里空着的，现在做的就是 VS Code 做的事（写着“相同”的那几行）；已经有了 NetBeans 用户依赖的含义的，保留这个含义，那一行会告诉你 VS Code 的这个操作在哪里。
+
+| VS Code，macOS | VS Code 做什么 | 在 NMOX Studio 里 |
+|---|---|---|
+| F12 | Go to Definition | **相同**：转到声明，和 ⌘B 一样 |
+| ⇧F12 | Go to References | **相同**：查找用法，和 ⌃F7 一样 |
+| F2 | Rename Symbol | **相同**：重命名，和 ⌃R 一样 |
+| ⌘. | Quick Fix | **相同**：这一行的修复，和 ⌃↩ 显示的一样 |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | 上一个 / 下一个标记的出现位置；移动行是 ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | 相同，一直如此 |
+| ⇧⌘K | Delete Line | 插入下一个匹配词（根据文件补全单词）；删除行是 ⌘E |
+| ⌘L | Expand Line Selection | 选中标识符；选中整行没有组合键 |
+| ⇧⌘L | Select All Occurrences | 编辑器里的按行粘贴；选中所有出现位置是 ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | 相同，一直如此 |
+| ⇧⌥A | Toggle Block Comment | 没有：没有单独的块注释操作，⌘/ 切换注释 |
+| ⌘] | Indent Line | **相同**：右移 |
+| ⌘[ | Outdent Line | 跳到匹配的括号，一直如此；减少缩进是 ⇧Tab 或 ⌃⇧← |
+| ⌘B | Toggle Sidebar | 转到声明；⇧⌘↩ 只显示编辑器，⇧Esc 最大化你所在的窗口 |
+| ⌘J | Toggle Panel | 在编辑器里添加下一处出现（和 ⌘D 一样）；Output 窗口是 ⌘4 |
+| ⌘\ | Split Editor | 编辑器里的补全代码；拆分编辑器是 ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | 相同，一直如此：打开最近的文件的组合键会重新打开最后关闭的文件 |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **相同**：在你编辑过的位置之间后退和前进，和 ⌃← / ⌃→ 一样（macOS 通常把这两个组合键留给切换桌面） |
+| ⌘G / ⇧⌘G | Find Next / Previous | 相同，一直如此 |
+| ⌥⌘F | Replace | **相同**：替换，和 ⌘R 一样 |
+| ⇧⌘F | Find in Files | 相同，一直如此：在项目中查找 |
+| ⇧⌘O | Go to Symbol in Editor | 打开项目；文件的符号在导航器里（⌘7） |
+| ⌘T | Go to Symbol in Workspace | 在编辑器里交换光标两边的两个字母；项目的符号是 ⌥⇧⌘O |
+| ⌃G | Go to Line | 相同，一直如此 |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K 是插入上一个匹配词；快捷键一览在 **帮助 ▸ 键盘快捷键…** |
+| ⌘, | Settings | 相同，一直如此：NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **相同**：格式化，和 ⌃⇧F 一样 |
+
+标着“相同”的组合键装在每一套把它们空着的键盘映射配置里；某套配置给了其中某个组合键自己的含义，就保留那个含义：Eclipse、Emacs 和 NetBeans 5.5 配置里的 F12，除默认配置之外每套配置里的 F2，Emacs 和 NetBeans 5.5 里的 ⇧F12，Emacs 和 IntelliJ 里的 ⌃- 和 ⌃⇧-，IntelliJ 里的 ⇧⌥F。在 Windows 和 Linux 上，F12、⇧F12 和 F2 也是这样；VS Code 在那里的其他组合键不一样，上面的表格两种都列出了。
 
 
 <a id="from-the-terminal"></a>
@@ -98,7 +139,7 @@ git config --global difftool.nmox.cmd 'nmox -w -d "$LOCAL" "$REMOTE"'
 <a id="what-is-honestly-different"></a>
 ## 如实说明哪些地方不一样
 
-- **⌘D 在默认键盘映射里会添加下一处出现，但不是每套配置都这样。**Eclipse 配置把 ⌘D 保留为 Eclipse 的*删除行*，NetBeans 5.5 配置则保留为*行左移*；在那两套配置里，同样的操作是 ⌘J（Ctrl+J）。
+- **⌘D 在默认键盘映射里会添加下一处出现，但不是每套配置都这样。**Eclipse 配置把 ⌘D 保留为 Eclipse 的*删除行*，NetBeans 5.5 配置保留为*行左移*，Emacs 配置保留为*删除单词*（在 Windows 和 Linux 上把 Ctrl+D 保留为*删除字符*）；IntelliJ 配置在 macOS 上有 ⌘D，在 Windows 和 Linux 上把 Ctrl+D 保留为*复制行*。这个操作的另一个组合键也因配置而异：默认配置里是 ⌘J（Ctrl+J），Eclipse 和 IntelliJ 里是 ⌃J（Alt+J），Emacs 和 NetBeans 5.5 里没有，可以在键盘映射里给它设一个。
 - **⌃\` 会打开终端并让它获得焦点；它不会把终端隐藏起来。**而且当终端有焦点时，按键属于你的 shell，所以第二次按下会传给 shell，而不是把你带回编辑器。
 - **`launch.json` 会被读取，调试器无法照办的部分会被拒绝。**这里的调试器传递程序、它的工作文件夹、它的 `args`（一个字符串列表）和它的 `env`（加进继承来的环境里的字符串），所以设置了 `envFile`、`runtimeExecutable`、`runtimeArgs`、`preLaunchTask` 或任何它还没学会的字段的配置，会被列出来但不会启动：回车会在状态栏上说出这些字段的名字。不带上它们就启动程序，调试的就不是文件里写的那个东西了。写成一个字符串的 `args`（VS Code 会把它交给 shell）和值为 `null` 的 `env`（它会删除一个变量）也会以同样的方式被拒绝；`"request": "attach"`、`compounds` 条目、这里没有适配器的类型（`go`、`msedge`、`cppdbg` 等等）、只有 VS Code 才能提供的值（`${file}`、`${input:…}`），以及项目之外的路径也是一样。只影响调试器显示内容的字段 —— `skipFiles`、`outFiles`、`sourceMaps`、`console`、`justMyCode`、`presentation` —— 会被接受，但不会应用；程序的输出进入 Output 窗口。
 - **`tasks.json` 会被读取，无法照写法运行的会被拒绝。**使用了只有 VS Code 才能提供的值（`${input:…}`、`${file}`、`${config:…}`、`${command:…}`）或者 `dependsOn` 另一个任务的任务，会被列出来但不会运行：回车会在状态栏上说出是哪个变量或哪个任务。把那个值留空去运行，或者不带它所依赖的任务去运行，运行的就不是文件里写的那个东西了。扩展提供的任务类型（`gulp`、`typescript`）和项目之外的工作文件夹也是如此。

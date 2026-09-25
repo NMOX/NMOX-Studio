@@ -22,9 +22,12 @@ Ginagamit ng mga hanay para sa macOS ang mga glyph ng menu bar (⌃ Control, ⌥
 | Ang terminal, sa folder ng proyekto | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Magbukas ng kamakailang proyekto | ⌃R | **⌥⌘P** — Lumipat ng Proyekto… | Ctrl+R | **Ctrl+Alt+P** |
 | Pumunta sa isang simbolo sa proyekto | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Pumunta sa definition | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Palitan ang pangalan ng simbolo | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Pumunta sa definition | F12 | **F12** o ⌘B | F12 | **F12** o Ctrl+B |
+| Hanapin ang mga reference | ⇧F12 | **⇧F12** — Hanapin ang mga paggamit | Shift+F12 | **Shift+F12** |
+| Palitan ang pangalan ng simbolo | F2 | **F2** o ⌃R | F2 | **F2** o Ctrl+R |
+| Mabilis na ayos | ⌘. | **⌘.** o ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Pumunta sa linya | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Bumalik / sumulong | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | I-toggle ang komento ng linya | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Ipakita ang mga mungkahi | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Idagdag sa pinili ang susunod na paglitaw | ⌘D | **⌘D** o ⌘J | Ctrl+D | **Ctrl+D** o Ctrl+J |
@@ -33,7 +36,9 @@ Ginagamit ng mga hanay para sa macOS ang mga glyph ng menu bar (⌃ Control, ⌥
 | Ilipat pataas / pababa ang linya | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Kopyahin pababa ang linya | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Burahin ang linya | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| I-format ang dokumento | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| I-indent ang linya | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Palitan | ⌥⌘F | **⌥⌘F** o ⌘R | Ctrl+H | **Ctrl+H** |
+| I-format ang dokumento | ⇧⌥F | **⇧⌥F** o ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Isara ang tab ng editor | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | Ang panel ng Problems | ⇧⌘M | **⌘6** — Action Items (dito, nagto-toggle ng bookmark ang ⇧⌘M) | Ctrl+Shift+M | **Ctrl+6** |
 | Mag-toggle ng breakpoint | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -48,6 +53,42 @@ Sa macOS, sariling kombinasyon ng app menu ang ⌘,; ang bawat iba pang kombinas
 - **Ang Ctrl+, sa Windows at Linux** ay bumabalik sa iyong kasaysayan ng pag-edit, gaya ng dati sa NetBeans; nasa ilalim ng Kasangkapan ▸ Mga Opsyon ang mga setting (sa macOS, ang **Settings…** ng app menu, ⌘,).
 
 Inililista ng **Tulong ▸ Mga Keyboard Shortcut…** ang bawat kombinasyon ng NMOX sa iyong aktibong keymap, kasama ang apat na kombinasyon ng VS Code, binasa mula sa tumatakbong keymap kaya hindi ito maaaring lumihis sa ginagawa ng mga key.
+
+### Bawat kombinasyon sa pag-edit, sinukat
+
+Ang mga kombinasyong inaabot ng mga kamay mong sanay sa VS Code habang nag-e-edit, bawat isa hinanap sa ipinapadalang keymap ng default na profile sa macOS. Kung saan malaya pa rito ang kombinasyon ng VS Code, ginagawa na nito ngayon ang ginagawa ng VS Code (ang mga hanay na nagsasabing **Pareho:**); kung saan may kahulugan na ito na inaasahan ng mga gumagamit ng NetBeans, pinapanatili nito ang kahulugang iyon at sinasabi ng hanay kung nasaan ang aksyon ng VS Code.
+
+| VS Code, macOS | Ginagawa ng VS Code | Sa NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **Pareho:** Pumunta sa deklarasyon, gaya ng ⌘B |
+| ⇧F12 | Go to References | **Pareho:** Hanapin ang mga paggamit, gaya ng ⌃F7 |
+| F2 | Rename Symbol | **Pareho:** Palitan ang pangalan, gaya ng ⌃R |
+| ⌘. | Quick Fix | **Pareho:** ang mga ayos para sa linya, gaya ng ipinapakita ng ⌃↩ |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Nauna / susunod na minarkahang paglitaw; ang paglipat ng linya ay ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | Pareho, gaya ng dati |
+| ⇧⌘K | Delete Line | Ipasok ang susunod na tugmang salita (kinukumpleto ang salita mula sa file); ang pagbura ng linya ay ⌘E |
+| ⌘L | Expand Line Selection | Piliin ang identifier; walang kombinasyon ang pagpili ng linya |
+| ⇧⌘L | Select All Occurrences | I-paste bilang mga linya sa editor; ang pagpili ng bawat paglitaw ay ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | Pareho, gaya ng dati |
+| ⇧⌥A | Toggle Block Comment | Wala: walang hiwalay na aksyon para sa block comment, at ang ⌘/ ang nagto-toggle ng komento |
+| ⌘] | Indent Line | **Pareho:** Ilipat pakanan |
+| ⌘[ | Outdent Line | Tumalon sa katapat na bracket, gaya ng dati; ang pagbawas ng indent ay ⇧Tab o ⌃⇧← |
+| ⌘B | Toggle Sidebar | Pumunta sa deklarasyon; ang ⇧⌘↩ ay nagpapakita lang ng editor, ang ⇧Esc ay nagma-maximize ng bintanang kinaroroonan mo |
+| ⌘J | Toggle Panel | Idinadagdag ang susunod na paglitaw sa editor (gaya ng ⌘D); ang bintana ng Output ay ⌘4 |
+| ⌘\ | Split Editor | Kumpletuhin ang code sa editor; ang paghati ng editor ay ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | Pareho, gaya ng dati: binubuksan muli ng kombinasyon ng Buksan ang kamakailang file ang huling isinarang file |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **Pareho:** Bumalik at Sumulong sa mga lugar na pinag-edit-an mo, gaya ng ⌃← / ⌃→ (mga kombinasyong karaniwang itinatabi ng macOS para sa paglipat ng desktop) |
+| ⌘G / ⇧⌘G | Find Next / Previous | Pareho, gaya ng dati |
+| ⌥⌘F | Replace | **Pareho:** Palitan, gaya ng ⌘R |
+| ⇧⌘F | Find in Files | Pareho, gaya ng dati: Hanapin sa mga proyekto |
+| ⇧⌘O | Go to Symbol in Editor | Buksan ang Proyekto; nasa Navigator (⌘7) ang mga simbolo ng file |
+| ⌘T | Go to Symbol in Workspace | Pinagpapalit ang dalawang titik sa paligid ng cursor sa editor; ang mga simbolo ng proyekto ay ⌥⇧⌘O |
+| ⌃G | Go to Line | Pareho, gaya ng dati |
+| ⌘K ⌘S | Keyboard Shortcuts | Ang ⌘K ay Ipasok ang naunang tugmang salita; ang listahan ay **Tulong ▸ Mga Keyboard Shortcut…** |
+| ⌘, | Settings | Pareho, gaya ng dati: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **Pareho:** I-format, gaya ng ⌃⇧F |
+
+Nakakabit ang mga kombinasyong may **Pareho:** sa bawat keymap profile na nag-iiwan sa mga ito na malaya, at pinapanatili ng profile na nagbibigay ng sariling kahulugan sa isa sa mga ito ang kahulugang iyon: F12 sa mga profile na Eclipse, Emacs at NetBeans 5.5, F2 sa bawat profile maliban sa default, ⇧F12 sa Emacs at NetBeans 5.5, ⌃- at ⌃⇧- sa Emacs at IntelliJ, ⇧⌥F sa IntelliJ. Sa Windows at Linux, pareho ang gawa ng F12, ⇧F12 at F2; iba roon ang iba pang kombinasyon ng VS Code, at ibinibigay ng talahanayan sa itaas ang dalawa.
 
 
 <a id="from-the-terminal"></a>
@@ -98,7 +139,7 @@ Sa unang pagbukas mo ng repository na may `.vscode/tasks.json`, `launch.json` o 
 <a id="what-is-honestly-different"></a>
 ## Kung ano ang tapat na naiiba
 
-- **Idinadagdag ng ⌘D ang susunod na paglitaw sa default na keymap, hindi sa bawat profile.** Pinapanatili ng profile na Eclipse ang ⌘D bilang *Delete Line* ng Eclipse, at ng profile na NetBeans 5.5 bilang *Shift Line Left*; doon, ang ⌘J (Ctrl+J) ang parehong kilos.
+- **Idinadagdag ng ⌘D ang susunod na paglitaw sa default na keymap, hindi sa bawat profile.** Pinapanatili ng profile na Eclipse ang ⌘D bilang *Delete Line* ng Eclipse, ng profile na NetBeans 5.5 bilang *Shift Line Left*, at ng profile na Emacs bilang *kill word* (at ang Ctrl+D bilang *delete character* sa Windows at Linux); may ⌘D ang profile na IntelliJ sa macOS at pinapanatili nito ang Ctrl+D bilang *Duplicate Line* sa Windows at Linux. Iba-iba rin bawat profile ang isa pang kombinasyon ng kilos: ⌘J (Ctrl+J) sa default, ⌃J (Alt+J) sa Eclipse at IntelliJ, at wala sa Emacs at NetBeans 5.5, kung saan puwede itong bigyan ng isa sa Mga keyboard shortcut.
 - **Binubuksan at tinututukan ng ⌃\` ang Terminal; hindi nito ito itinatago.** At habang nasa Terminal ang pokus, sa iyong shell ang mga key, kaya ang pangalawang pindot ay napupunta sa shell sa halip na ibalik ka sa editor.
 - **Binabasa ang `launch.json`, at tinatanggihan ang hindi kayang sundin ng debugger.** Isang programa, ang working folder nito, ang `args` nito (listahan ng mga string) at ang `env` nito (mga string na idinadagdag sa minanang environment) ang ipinapasa ng debugger dito, kaya ang configuration na nagtatakda ng `envFile`, `runtimeExecutable`, `runtimeArgs`, `preLaunchTask` o anumang ibang field na hindi pa naituturo rito ay nakalista pero hindi sinisimulan: pinangangalanan ng Enter ang mga field sa status line. Ang pagsisimula ng programa nang wala ang mga iyon ay magde-debug ng ibang bagay kaysa sa sinasabi ng file. Tinatanggihan din sa parehong paraan ang `args` na isinulat bilang iisang string (ibinibigay iyon ng VS Code sa isang shell) at ang halagang `null` sa `env` (na nag-aalis ng isang variable), at ganoon din ang `"request": "attach"`, ang isang entry na `compounds`, ang isang type na walang adapter dito (`go`, `msedge`, `cppdbg` at ang iba pa), ang isang halagang VS Code lamang ang makapagbibigay (`${file}`, `${input:…}`), at ang isang path sa labas ng proyekto. Ang mga field na humuhubog lamang sa ipinapakita ng debugger — `skipFiles`, `outFiles`, `sourceMaps`, `console`, `justMyCode`, `presentation` — ay tinatanggap at hindi inilalapat; napupunta sa bintana ng Output ang output ng programa.
 - **Binabasa ang `tasks.json`, at tinatanggihan ang hindi mapapatakbo ayon sa pagkakasulat.** Ang task na gumagamit ng halagang VS Code lamang ang makapagbibigay (`${input:…}`, `${file}`, `${config:…}`, `${command:…}`) o may `dependsOn` sa ibang task ay nakalista pero hindi pinapatakbo: sinasabi ng Enter sa status line kung aling variable o aling task. Ang pagpapatakbo nito nang blangko ang halaga, o nang wala ang task na inaasahan nito, ay magpapatakbo ng ibang bagay kaysa sa sinasabi ng file. Ganoon din ang uri ng task na ibinibigay ng isang extension (`gulp`, `typescript`), at ang working folder sa labas ng proyekto.

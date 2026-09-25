@@ -31,9 +31,12 @@ mesmo atalho num teclado de PC.
 | O terminal, na pasta do projeto | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Abrir um projeto recente | ⌃R | **⌥⌘P** — Alternar projeto… | Ctrl+R | **Ctrl+Alt+P** |
 | Ir para um símbolo do projeto | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Ir para a definição | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Renomear um símbolo | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Ir para a definição | F12 | **F12** ou ⌘B | F12 | **F12** ou Ctrl+B |
+| Localizar as referências | ⇧F12 | **⇧F12** — Localizar usos | Shift+F12 | **Shift+F12** |
+| Renomear um símbolo | F2 | **F2** ou ⌃R | F2 | **F2** ou Ctrl+R |
+| Correção rápida | ⌘. | **⌘.** ou ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Ir para a linha | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Voltar / avançar | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Comentar ou descomentar a linha | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Mostrar sugestões | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Acrescentar a próxima ocorrência à seleção | ⌘D | **⌘D** ou ⌘J | Ctrl+D | **Ctrl+D** ou Ctrl+J |
@@ -42,7 +45,9 @@ mesmo atalho num teclado de PC.
 | Mover a linha para cima / para baixo | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Copiar a linha para baixo | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Apagar a linha | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Formatar o documento | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Aumentar o recuo da linha | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Substituir | ⌥⌘F | **⌥⌘F** ou ⌘R | Ctrl+H | **Ctrl+H** |
+| Formatar o documento | ⇧⌥F | **⇧⌥F** ou ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Fechar a aba do editor | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | O painel de problemas | ⇧⌘M | **⌘6** — Itens de ação (aqui ⇧⌘M liga e desliga um marcador) | Ctrl+Shift+M | **Ctrl+6** |
 | Ligar ou desligar um ponto de interrupção | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -67,6 +72,53 @@ Algumas coisas não cabem numa célula:
 **Ajuda ▸ Atalhos de teclado…** lista todos os atalhos do NMOX no seu
 mapa de teclado ativo, incluindo os quatro atalhos do VS Code, lidos do
 mapa em uso, de modo que não podem divergir do que as teclas fazem.
+
+### Cada atalho de edição, medido
+
+Os atalhos que as suas mãos acostumadas ao VS Code procuram enquanto você
+edita, cada um conferido no mapa de teclado distribuído do perfil padrão
+no macOS. Onde o atalho do VS Code estava livre aqui, agora ele faz o que
+o VS Code faz (as linhas que dizem **O mesmo:**); onde ele já significava
+algo de que os usuários do NetBeans dependem, mantém esse significado e a
+linha diz onde fica a ação do VS Code.
+
+| VS Code, macOS | O que o VS Code faz | No NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **O mesmo:** Ir para a declaração, como ⌘B faz |
+| ⇧F12 | Go to References | **O mesmo:** Localizar usos, como ⌃F7 faz |
+| F2 | Rename Symbol | **O mesmo:** Renomear, como ⌃R faz |
+| ⌘. | Quick Fix | **O mesmo:** as correções da linha, como ⌃↩ as mostra |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Ocorrência marcada anterior / seguinte; mover a linha é ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | O mesmo, como sempre foi |
+| ⇧⌘K | Delete Line | Inserir a próxima palavra correspondente (completa a palavra a partir do arquivo); apagar a linha é ⌘E |
+| ⌘L | Expand Line Selection | Selecionar o identificador; selecionar a linha não tem atalho |
+| ⇧⌘L | Select All Occurrences | Colar como linhas no editor; selecionar todas as ocorrências é ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | O mesmo, como sempre foi |
+| ⇧⌥A | Toggle Block Comment | Nada: não existe uma ação separada de comentário de bloco, e ⌘/ comenta e descomenta |
+| ⌘] | Indent Line | **O mesmo:** Deslocar para a direita |
+| ⌘[ | Outdent Line | Ir para a chave correspondente, como sempre foi; tirar o recuo é ⇧Tab ou ⌃⇧← |
+| ⌘B | Toggle Sidebar | Ir para a declaração; ⇧⌘↩ mostra só o editor, ⇧Esc maximiza a janela em que você está |
+| ⌘J | Toggle Panel | Acrescenta a próxima ocorrência no editor (como ⌘D); a janela Output é ⌘4 |
+| ⌘\ | Split Editor | Completar código no editor; dividir o editor é ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | O mesmo, como sempre foi: o atalho de Abrir arquivo recente reabre o último arquivo fechado |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **O mesmo:** Voltar e Avançar pelos lugares onde você esteve editando, como ⌃← / ⌃→ (atalhos que o macOS costuma guardar para trocar de mesa) |
+| ⌘G / ⇧⌘G | Find Next / Previous | O mesmo, como sempre foi |
+| ⌥⌘F | Replace | **O mesmo:** Substituir, como ⌘R faz |
+| ⇧⌘F | Find in Files | O mesmo, como sempre foi: Localizar nos projetos |
+| ⇧⌘O | Go to Symbol in Editor | Abrir projeto; os símbolos do arquivo ficam no Navegador (⌘7) |
+| ⌘T | Go to Symbol in Workspace | No editor, troca as duas letras em volta do cursor; os símbolos do projeto são ⌥⇧⌘O |
+| ⌃G | Go to Line | O mesmo, como sempre foi |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K é Inserir a palavra correspondente anterior; a lista é **Ajuda ▸ Atalhos de teclado…** |
+| ⌘, | Settings | O mesmo, como sempre foi: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **O mesmo:** Formatar, como ⌃⇧F faz |
+
+Os atalhos marcados **O mesmo:** estão em todo perfil de teclado que os
+deixa livres, e um perfil que dá a um deles um significado próprio o
+mantém: F12 nos perfis Eclipse, Emacs e NetBeans 5.5, F2 em todos os
+perfis menos o padrão, ⇧F12 no Emacs e no NetBeans 5.5, ⌃- e ⌃⇧- no Emacs
+e no IntelliJ, ⇧⌥F no IntelliJ. No Windows e no Linux, F12, ⇧F12 e F2
+funcionam do mesmo jeito; os outros atalhos do VS Code são diferentes lá,
+e a tabela mais acima traz os dois.
 
 
 <a id="from-the-terminal"></a>
@@ -134,10 +186,15 @@ projeto.
 <a id="what-is-honestly-different"></a>
 ## O que é, sinceramente, diferente
 
-- **⌘D acrescenta a próxima ocorrência no perfil de teclado padrão, não
-  em todos os perfis.** O perfil do Eclipse mantém ⌘D como o *Delete
-  Line* do Eclipse, e o perfil do NetBeans 5.5 como *Shift Line Left*;
-  nesses, ⌘J (Ctrl+J) é o mesmo gesto.
+- **⌘D acrescenta a próxima ocorrência no perfil de teclado padrão, não em
+  todos os perfis.** O perfil do Eclipse mantém ⌘D como o *Delete Line* do
+  Eclipse, o perfil do NetBeans 5.5 como *Shift Line Left* e o perfil do
+  Emacs como *kill word* (e Ctrl+D como *delete character* no Windows e no
+  Linux); o perfil do IntelliJ tem ⌘D no macOS e mantém Ctrl+D como
+  *Duplicate Line* no Windows e no Linux. O outro atalho do gesto também
+  muda conforme o perfil: ⌘J (Ctrl+J) no padrão, ⌃J (Alt+J) no Eclipse e
+  no IntelliJ, e nenhum no Emacs e no NetBeans 5.5, onde Atalhos de
+  teclado pode lhe dar um.
 - **⌃\` abre o Terminal e dá foco a ele; não o esconde.** E enquanto o
   Terminal tem o foco, as teclas pertencem ao seu shell, então o segundo
   toque chega ao shell em vez de levar você de volta ao editor.

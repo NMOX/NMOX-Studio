@@ -31,9 +31,12 @@ PC.
 | Terminal, di folder proyek | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Membuka proyek terkini | ⌃R | **⌥⌘P** — Ganti Proyek… | Ctrl+R | **Ctrl+Alt+P** |
 | Ke simbol di proyek | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Ke definisi | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Mengganti nama simbol | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Ke definisi | F12 | **F12** atau ⌘B | F12 | **F12** atau Ctrl+B |
+| Mencari referensi | ⇧F12 | **⇧F12** — Cari penggunaan | Shift+F12 | **Shift+F12** |
+| Mengganti nama simbol | F2 | **F2** atau ⌃R | F2 | **F2** atau Ctrl+R |
+| Perbaikan cepat | ⌘. | **⌘.** atau ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Ke baris | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Kembali / maju | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Komentar baris | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Menampilkan saran | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Menambahkan kemunculan berikutnya ke seleksi | ⌘D | **⌘D** atau ⌘J | Ctrl+D | **Ctrl+D** atau Ctrl+J |
@@ -42,7 +45,9 @@ PC.
 | Memindahkan baris ke atas / ke bawah | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Menyalin baris ke bawah | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Menghapus baris | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Memformat dokumen | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Menjorokkan baris | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Mengganti | ⌥⌘F | **⌥⌘F** atau ⌘R | Ctrl+H | **Ctrl+H** |
+| Memformat dokumen | ⇧⌥F | **⇧⌥F** atau ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Menutup tab penyunting | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | Panel Problems | ⇧⌘M | **⌘6** — Item tindakan (di sini ⇧⌘M adalah *Alihkan markah*) | Ctrl+Shift+M | **Ctrl+6** |
 | Menyalakan/mematikan titik henti | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -68,6 +73,53 @@ yang tidak bisa dikatakan tabel di dalam sebuah sel:
 Anda yang aktif, termasuk keempat pintasan VS Code, dibaca dari peta tombol yang
 sedang berjalan sehingga ia tidak mungkin menyimpang dari apa yang dilakukan
 tombol-tombolnya.
+
+### Setiap pintasan penyuntingan, diukur
+
+Pintasan yang dicari tangan Anda dari VS Code saat menyunting,
+masing-masing dicek di peta tombol yang dikirimkan untuk profil bawaan di
+macOS. Di mana pintasan VS Code masih bebas di sini, sekarang pintasan itu
+melakukan apa yang dilakukan VS Code (baris bertanda **Sama:**); di mana
+pintasan itu sudah berarti sesuatu yang diandalkan pengguna NetBeans,
+artinya dipertahankan dan barisnya menyebut di mana aksi VS Code berada.
+
+| VS Code, macOS | Yang dilakukan VS Code | Di NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **Sama:** Ke deklarasi, seperti ⌘B |
+| ⇧F12 | Go to References | **Sama:** Cari penggunaan, seperti ⌃F7 |
+| F2 | Rename Symbol | **Sama:** Ganti nama, seperti ⌃R |
+| ⌘. | Quick Fix | **Sama:** perbaikan untuk baris itu, seperti yang ditampilkan ⌃↩ |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Kemunculan bertanda sebelumnya / berikutnya; memindahkan baris adalah ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | Sama, seperti selama ini |
+| ⇧⌘K | Delete Line | Sisipkan kata cocok berikutnya (melengkapi kata dari berkas); menghapus baris adalah ⌘E |
+| ⌘L | Expand Line Selection | Pilih pengenal; memilih baris tidak punya pintasan |
+| ⇧⌘L | Select All Occurrences | Tempel sebagai baris di editor; memilih semua kemunculan adalah ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | Sama, seperti selama ini |
+| ⇧⌥A | Toggle Block Comment | Tidak ada: tidak ada aksi komentar blok tersendiri, dan ⌘/ menyalakan atau mematikan komentar |
+| ⌘] | Indent Line | **Sama:** Geser ke kanan |
+| ⌘[ | Outdent Line | Lompat ke kurung pasangannya, seperti selama ini; mengurangi indentasi adalah ⇧Tab atau ⌃⇧← |
+| ⌘B | Toggle Sidebar | Ke deklarasi; ⇧⌘↩ hanya menampilkan editor, ⇧Esc memaksimalkan jendela tempat Anda berada |
+| ⌘J | Toggle Panel | Menambahkan kemunculan berikutnya di editor (seperti ⌘D); jendela Output adalah ⌘4 |
+| ⌘\ | Split Editor | Lengkapi kode di editor; membelah editor adalah ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | Sama, seperti selama ini: pintasan Buka berkas terkini membuka lagi berkas yang terakhir ditutup |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **Sama:** Kembali dan Maju melalui tempat-tempat yang tadi Anda sunting, seperti ⌃← / ⌃→ (pintasan yang biasanya dipakai macOS untuk berpindah desktop) |
+| ⌘G / ⇧⌘G | Find Next / Previous | Sama, seperti selama ini |
+| ⌥⌘F | Replace | **Sama:** Ganti, seperti ⌘R |
+| ⇧⌘F | Find in Files | Sama, seperti selama ini: Cari di proyek |
+| ⇧⌘O | Go to Symbol in Editor | Buka Proyek; simbol berkas ada di Navigator (⌘7) |
+| ⌘T | Go to Symbol in Workspace | Menukar dua huruf di sekitar kursor di editor; simbol proyek adalah ⌥⇧⌘O |
+| ⌃G | Go to Line | Sama, seperti selama ini |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K adalah Sisipkan kata cocok sebelumnya; daftarnya ada di **Bantuan ▸ Pintasan Papan Ketik…** |
+| ⌘, | Settings | Sama, seperti selama ini: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **Sama:** Format, seperti ⌃⇧F |
+
+Pintasan bertanda **Sama:** dipasang di setiap profil peta tombol yang
+membiarkannya bebas, dan profil yang memberi salah satunya arti sendiri
+tetap mempertahankan arti itu: F12 di profil Eclipse, Emacs, dan NetBeans
+5.5, F2 di setiap profil kecuali profil bawaan, ⇧F12 di Emacs dan NetBeans
+5.5, ⌃- dan ⌃⇧- di Emacs dan IntelliJ, ⇧⌥F di IntelliJ. Di Windows dan
+Linux, F12, ⇧F12, dan F2 bekerja dengan cara yang sama; pintasan VS Code
+lainnya berbeda di sana, dan tabel di atas memberikan keduanya.
 
 
 <a id="from-the-terminal"></a>
@@ -135,10 +187,16 @@ Pemberitahuan itu muncul sekali per proyek.
 <a id="what-is-honestly-different"></a>
 ## Apa yang memang berbeda
 
-- **⌘D menambahkan kemunculan berikutnya di peta tombol bawaan, tetapi tidak
-  di setiap profil.** Profil Eclipse mempertahankan ⌘D sebagai *Delete Line*
-  milik Eclipse, dan profil NetBeans 5.5 sebagai *Shift Line Left*; di sana,
-  ⌘J (Ctrl+J) adalah gerakan yang sama.
+- **⌘D menambahkan kemunculan berikutnya di peta tombol bawaan, tetapi
+  tidak di setiap profil.** Profil Eclipse mempertahankan ⌘D sebagai
+  *Delete Line* milik Eclipse, profil NetBeans 5.5 sebagai *Shift Line
+  Left*, dan profil Emacs sebagai *kill word* (serta Ctrl+D sebagai
+  *delete character* di Windows dan Linux); profil IntelliJ punya ⌘D di
+  macOS dan mempertahankan Ctrl+D sebagai *Duplicate Line* di Windows dan
+  Linux. Pintasan kedua untuk gerakan ini juga berbeda per profil: ⌘J
+  (Ctrl+J) di profil bawaan, ⌃J (Alt+J) di Eclipse dan IntelliJ, dan tidak
+  ada di Emacs dan NetBeans 5.5, tempat Pintasan keyboard bisa memberinya
+  satu.
 - **⌃\` membuka dan memfokuskan Terminal; ia tidak menyembunyikannya.** Dan
   selama Terminal punya fokus, tombol-tombolnya milik shell Anda, sehingga
   tekanan kedua sampai ke shell alih-alih membawa Anda kembali ke penyunting.

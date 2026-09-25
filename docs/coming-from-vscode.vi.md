@@ -29,9 +29,12 @@ Các cột macOS dùng ký hiệu của thanh trình đơn (⌃ Control, ⌥ Opt
 | Terminal, trong thư mục dự án | ⌃\` | **⌃\`** | Ctrl+\` | **Ctrl+\`** |
 | Mở một dự án gần đây | ⌃R | **⌥⌘P** — Chuyển dự án… | Ctrl+R | **Ctrl+Alt+P** |
 | Tới một ký hiệu trong dự án | ⌘T | **⌥⇧⌘O** | Ctrl+T | **Ctrl+Alt+Shift+O** |
-| Tới định nghĩa | F12 | **⌘B** | F12 | **Ctrl+B** |
-| Đổi tên một ký hiệu | F2 | **⌃R** | F2 | **Ctrl+R** |
+| Tới định nghĩa | F12 | **F12** hoặc ⌘B | F12 | **F12** hoặc Ctrl+B |
+| Tìm tham chiếu | ⇧F12 | **⇧F12** — Tìm nơi sử dụng | Shift+F12 | **Shift+F12** |
+| Đổi tên một ký hiệu | F2 | **F2** hoặc ⌃R | F2 | **F2** hoặc Ctrl+R |
+| Sửa nhanh | ⌘. | **⌘.** hoặc ⌃↩ | Ctrl+. | **Alt+Enter** |
 | Tới dòng | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
+| Lùi / tiến | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Bật/tắt chú thích dòng | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
 | Hiện gợi ý | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Thêm lần xuất hiện kế tiếp vào vùng chọn | ⌘D | **⌘D** hoặc ⌘J | Ctrl+D | **Ctrl+D** hoặc Ctrl+J |
@@ -40,7 +43,9 @@ Các cột macOS dùng ký hiệu của thanh trình đơn (⌃ Control, ⌥ Opt
 | Dời dòng lên / xuống | ⌥↑ / ⌥↓ | **⌃⇧↑ / ⌃⇧↓** | Alt+↑ / ↓ | **Alt+Shift+↑ / ↓** |
 | Nhân bản dòng xuống dưới | ⇧⌥↓ | **⌥⇧↓** | Shift+Alt+↓ | **Ctrl+Shift+↓** |
 | Xóa dòng | ⇧⌘K | **⌘E** | Ctrl+Shift+K | **Ctrl+E** |
-| Định dạng tài liệu | ⇧⌥F | **⌃⇧F** | Shift+Alt+F | **Alt+Shift+F** |
+| Thụt lề dòng | ⌘] | **⌘]** | Ctrl+] | **Alt+Shift+→** |
+| Thay thế | ⌥⌘F | **⌥⌘F** hoặc ⌘R | Ctrl+H | **Ctrl+H** |
+| Định dạng tài liệu | ⇧⌥F | **⇧⌥F** hoặc ⌃⇧F | Shift+Alt+F | **Alt+Shift+F** |
 | Đóng thẻ trình soạn thảo | ⌘W | **⌘W** | Ctrl+W | **Ctrl+W** |
 | Bảng Problems | ⇧⌘M | **⌘6** — Action Items (ở đây ⇧⌘M là Bật/tắt dấu trang) | Ctrl+Shift+M | **Ctrl+6** |
 | Bật/tắt điểm dừng | F9 | **⌘F8** | F9 | **Ctrl+F8** |
@@ -65,6 +70,53 @@ chứ không phải nhớ lại (⌘, là của chính trình đơn ứng dụng
 **Trợ giúp ▸ Phím tắt bàn phím…** liệt kê mọi tổ hợp phím NMOX trong hồ sơ phím
 đang dùng, kể cả bốn tổ hợp của VS Code, đọc từ sơ đồ phím đang chạy nên nó
 không thể lệch khỏi những gì các phím làm.
+
+### Mọi tổ hợp phím soạn thảo, đã đo
+
+Những tổ hợp phím mà tay bạn quen VS Code tìm tới khi soạn thảo, mỗi tổ
+hợp được tra trong sơ đồ phím đi kèm của hồ sơ mặc định trên macOS. Chỗ
+nào tổ hợp phím của VS Code còn trống ở đây, giờ nó làm đúng việc VS Code
+làm (các dòng ghi **Như nhau:**); chỗ nào nó đã mang một nghĩa mà người
+dùng NetBeans dựa vào, nó giữ nghĩa đó và dòng đó cho biết hành động của
+VS Code nằm ở đâu.
+
+| VS Code, macOS | VS Code làm gì | Trong NMOX Studio |
+|---|---|---|
+| F12 | Go to Definition | **Như nhau:** Đi tới khai báo, như ⌘B |
+| ⇧F12 | Go to References | **Như nhau:** Tìm nơi sử dụng, như ⌃F7 |
+| F2 | Rename Symbol | **Như nhau:** Đổi tên, như ⌃R |
+| ⌘. | Quick Fix | **Như nhau:** các cách sửa cho dòng đó, như ⌃↩ hiện ra |
+| ⌥↑ / ⌥↓ | Move Line Up / Down | Lần xuất hiện được đánh dấu trước / kế tiếp; di chuyển dòng là ⌃⇧↑ / ⌃⇧↓ |
+| ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | Như nhau, như xưa nay |
+| ⇧⌘K | Delete Line | Chèn từ khớp kế tiếp (hoàn tất từ dựa trên tệp); xóa dòng là ⌘E |
+| ⌘L | Expand Line Selection | Chọn định danh; chọn dòng không có tổ hợp phím |
+| ⇧⌘L | Select All Occurrences | Dán thành dòng trong trình soạn thảo; chọn mọi lần xuất hiện là ⌃⇧⌘J |
+| ⌘/ | Toggle Line Comment | Như nhau, như xưa nay |
+| ⇧⌥A | Toggle Block Comment | Không có gì: không có hành động chú thích khối riêng, và ⌘/ bật/tắt chú thích |
+| ⌘] | Indent Line | **Như nhau:** Dịch sang phải |
+| ⌘[ | Outdent Line | Nhảy tới dấu ngoặc tương ứng, như xưa nay; bỏ thụt lề là ⇧Tab hoặc ⌃⇧← |
+| ⌘B | Toggle Sidebar | Đi tới khai báo; ⇧⌘↩ chỉ hiện trình soạn thảo, ⇧Esc phóng to cửa sổ bạn đang ở |
+| ⌘J | Toggle Panel | Thêm lần xuất hiện kế tiếp trong trình soạn thảo (như ⌘D); cửa sổ Output là ⌘4 |
+| ⌘\ | Split Editor | Hoàn tất mã trong trình soạn thảo; chia đôi trình soạn thảo là ⌃⇧⌘V |
+| ⇧⌘T | Reopen Closed Editor | Như nhau, như xưa nay: tổ hợp phím của Mở tệp gần đây mở lại tệp vừa đóng |
+| ⌃- / ⌃⇧- | Go Back / Go Forward | **Như nhau:** Lùi và Tiến qua những chỗ bạn vừa sửa, như ⌃← / ⌃→ (các tổ hợp mà macOS thường giữ để chuyển màn hình nền) |
+| ⌘G / ⇧⌘G | Find Next / Previous | Như nhau, như xưa nay |
+| ⌥⌘F | Replace | **Như nhau:** Thay thế, như ⌘R |
+| ⇧⌘F | Find in Files | Như nhau, như xưa nay: Tìm trong dự án |
+| ⇧⌘O | Go to Symbol in Editor | Mở dự án; các ký hiệu của tệp nằm trong Bộ điều hướng (⌘7) |
+| ⌘T | Go to Symbol in Workspace | Hoán đổi hai chữ cái quanh con trỏ trong trình soạn thảo; ký hiệu của dự án là ⌥⇧⌘O |
+| ⌃G | Go to Line | Như nhau, như xưa nay |
+| ⌘K ⌘S | Keyboard Shortcuts | ⌘K là Chèn từ khớp trước đó; bảng liệt kê là **Trợ giúp ▸ Phím tắt bàn phím…** |
+| ⌘, | Settings | Như nhau, như xưa nay: NMOX Studio ▸ Settings… |
+| ⇧⌥F | Format Document | **Như nhau:** Định dạng, như ⌃⇧F |
+
+Các tổ hợp ghi **Như nhau:** được gán trong mọi hồ sơ phím để trống chúng,
+và hồ sơ nào đã cho một tổ hợp trong số đó nghĩa riêng thì giữ nghĩa ấy:
+F12 trong các hồ sơ Eclipse, Emacs và NetBeans 5.5, F2 trong mọi hồ sơ trừ
+hồ sơ mặc định, ⇧F12 trong Emacs và NetBeans 5.5, ⌃- và ⌃⇧- trong Emacs và
+IntelliJ, ⇧⌥F trong IntelliJ. Trên Windows và Linux, F12, ⇧F12 và F2 hoạt
+động giống vậy; các tổ hợp khác của VS Code ở đó thì khác, và bảng ở trên
+ghi cả hai.
 
 
 <a id="from-the-terminal"></a>
@@ -130,10 +182,15 @@ nhấp vào đó để mở Tìm kiếm nhanh. Thông báo chỉ hiện một l�
 <a id="what-is-honestly-different"></a>
 ## Những gì thật sự khác
 
-- **⌘D thêm lần xuất hiện kế tiếp trong sơ đồ phím mặc định, chứ không phải
-  trong mọi hồ sơ.** Hồ sơ Eclipse giữ ⌘D là *Delete Line* của Eclipse, và hồ
-  sơ NetBeans 5.5 giữ nó là *Shift Line Left*; ở đó, ⌘J (Ctrl+J) là cùng thao
-  tác ấy.
+- **⌘D thêm lần xuất hiện kế tiếp trong sơ đồ phím mặc định, chứ không
+  phải trong mọi hồ sơ.** Hồ sơ Eclipse giữ ⌘D là *Delete Line* của
+  Eclipse, hồ sơ NetBeans 5.5 giữ nó là *Shift Line Left* và hồ sơ Emacs
+  giữ nó là *kill word* (còn Ctrl+D là *delete character* trên Windows và
+  Linux); hồ sơ IntelliJ có ⌘D trên macOS và giữ Ctrl+D là *Duplicate
+  Line* trên Windows và Linux. Tổ hợp phím còn lại của thao tác này cũng
+  khác theo hồ sơ: ⌘J (Ctrl+J) trong hồ sơ mặc định, ⌃J (Alt+J) trong
+  Eclipse và IntelliJ, và không có trong Emacs và NetBeans 5.5, nơi Phím
+  tắt có thể gán cho nó một tổ hợp.
 - **⌃\` mở và đặt tiêu điểm vào Terminal; nó không ẩn Terminal.** Và khi
   Terminal đang có tiêu điểm, các phím thuộc về shell của bạn, nên lần bấm thứ
   hai tới shell chứ không đưa bạn về trình soạn thảo.
