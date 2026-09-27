@@ -262,14 +262,30 @@ public final class CommandExecutor {
                 process.descendants().forEach(tree::add);
                 tree.forEach(ProcessHandle::destroy);
                 process.destroy();
+                // ONE deadline for the whole tree, as kill() keeps (3.4 review):
+                // a shell root that dies on TERM at once made waitFor return
+                // immediately, and the sweep then SIGKILLed children still
+                // inside their grace, shutting down cleanly
+                long deadline = System.nanoTime()
+                        + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(graceMillis);
                 try {
                     if (!process.waitFor(graceMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
                         tree.forEach(ProcessHandle::destroyForcibly);
                         process.destroyForcibly();
                         process.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
                     }
-                    // descendants may outlive the parent's exit; sweep them
+                    // descendants may outlive the parent's exit; each gets what is
+                    // left of the grace, then the sweep
                     for (ProcessHandle h : tree) {
+                        long left = deadline - System.nanoTime();
+                        if (left > 0) {
+                            try {
+                                h.onExit().get(left, java.util.concurrent.TimeUnit.NANOSECONDS);
+                            } catch (java.util.concurrent.TimeoutException
+                                    | java.util.concurrent.ExecutionException notYet) {
+                                // still alive at the deadline: the sweep below
+                            }
+                        }
                         if (h.isAlive()) {
                             h.destroyForcibly();
                         }

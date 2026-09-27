@@ -328,6 +328,31 @@ class CommandExecutorTest {
         }
     }
 
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("Stop All and the panic give a graceful child its grace too (killAndWait; the 3.4 review)")
+    void stopAllGivesAGracefulChildItsGrace() throws Exception {
+        java.nio.file.Path marker = java.nio.file.Files.createTempFile("nmox-graceful-all", ".txt");
+        java.nio.file.Files.delete(marker);
+        String child = "trap 'sleep 0.5; echo clean > " + marker + "; exit 0' TERM; sleep 1105 & wait";
+        CommandExecutor.Handle h = CommandExecutor.run("graceful-all-" + System.nanoTime(), new File("."), Map.of(),
+                List.of("sh", "-c", "sh -c \"" + child + "\" & wait"), l -> { }, code -> { });
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (sleeper("1105") == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(20);
+        }
+        try {
+            h.killAndWait(3_000);
+            assertThat(marker).as("killAndWait waited out the child's TERM handler instead of SIGKILLing it").exists();
+        } finally {
+            ProcessHandle stray = sleeper("1105");
+            if (stray != null) {
+                stray.destroyForcibly();
+            }
+            java.nio.file.Files.deleteIfExists(marker);
+        }
+    }
+
     /** The {@code sleep <seconds>} process itself — never a shell whose command text merely names it. */
     private static ProcessHandle sleeper(String seconds) {
         return ProcessHandle.allProcesses()
