@@ -197,8 +197,10 @@ final class ConnectionDialog extends JPanel {
         row.add(fileField, BorderLayout.CENTER);
         JButton browse = new JButton(Bundle.ConnectionDialog_browse());
         browse.addActionListener(e -> {
+            // a stored path may be project-relative (3.4): start where it points
             JFileChooser chooser = new JFileChooser(fileField.getText().isBlank()
-                    ? System.getProperty("user.home") : fileField.getText());
+                    ? (project != null ? project.getPath() : System.getProperty("user.home"))
+                    : org.nmox.studio.dbstudio.model.SqlitePaths.resolved(project, fileField.getText()));
             chooser.setDialogTitle(Bundle.ConnectionDialog_chooserTitle());
             // save-style dialog: an Open dialog can't pick a file that doesn't
             // exist yet, but "point at a NEW db file" is the normal first use
@@ -274,7 +276,8 @@ final class ConnectionDialog extends JPanel {
     }
 
     private void testConnection() {
-        ConnectionSpec probe = specFromFields(existing != null ? existing.id() : "test");
+        ConnectionSpec probe = org.nmox.studio.dbstudio.model.SqlitePaths.forOpening(project,
+                specFromFields(existing != null ? existing.id() : "test"));
         char[] typed = passwordField.getPassword();
         String storedId = existing != null ? existing.id() : null;
         testLabel.setForeground(Color.GRAY);
@@ -314,8 +317,19 @@ final class ConnectionDialog extends JPanel {
             });
         }
         Arrays.fill(typed, '\0');
-        return spec;
+        // the chooser writes an absolute path; inside the project it is
+        // stored relative, so a teammate's clone opens the same file (3.4)
+        return org.nmox.studio.dbstudio.model.SqlitePaths.forStoring(project, spec);
     }
+
+    /**
+     * The project the dialog was opened for (3.4): a SQLite path inside it
+     * is stored relative to it and a relative path is tested against it.
+     * EDT-confined; set by DB Studio before it shows the dialog.
+     */
+    static java.io.File currentProject;
+
+    private final java.io.File project = currentProject;
 
     /**
      * Prefills the fields from a {@code .env} suggestion — a NEW

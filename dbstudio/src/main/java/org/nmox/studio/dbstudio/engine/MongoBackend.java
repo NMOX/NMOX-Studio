@@ -126,7 +126,7 @@ public final class MongoBackend implements DbBackend {
             probe.getDatabase(database).runCommand(new Document("ping", 1));
             return null;
         } catch (RuntimeException e) {
-            return humanize(e);
+            return MissingPassword.explain(spec, password, humanize(e));
         }
     }
 
@@ -160,7 +160,7 @@ public final class MongoBackend implements DbBackend {
             if (fresh != null) {
                 fresh.close();
             }
-            return humanize(e);
+            return MissingPassword.explain(spec, password, humanize(e));
         }
     }
 

@@ -206,7 +206,10 @@ class DbWorkspaceIOTest {
                 DbWorkspaceIO.toJson(richWorkspaceState()));
 
         assertThat(back.connections()).hasSize(3);
-        assertThat(back.history()).containsExactly(
+        // 3.4: the history is one person's — it rides their own state, never the file
+        assertThat(back.history()).isEmpty();
+        assertThat(DbWorkspaceIO.personalHistory(DbWorkspaceIO.personalJson(
+                richWorkspaceState().history()))).containsExactly(
                 new DbWorkspaceIO.HistoryEntry("SELECT * FROM users;", "MySQL", 2000L),
                 new DbWorkspaceIO.HistoryEntry("SELECT 1;", "PostgreSQL", 1000L));
         assertThat(back.saved()).containsExactly(
@@ -272,13 +275,12 @@ class DbWorkspaceIOTest {
             // newest first, as the console's history model keeps them
             sixty.add(new DbWorkspaceIO.HistoryEntry("SELECT " + i + ";", "MySQL", 60L - i));
         }
-        DbWorkspaceIO.Workspace big = new DbWorkspaceIO.Workspace(List.of(), sixty, List.of());
+        List<DbWorkspaceIO.HistoryEntry> back = DbWorkspaceIO.personalHistory(
+                DbWorkspaceIO.personalJson(sixty));
 
-        DbWorkspaceIO.Workspace back = DbWorkspaceIO.workspaceFromJson(DbWorkspaceIO.toJson(big));
-
-        assertThat(back.history()).hasSize(DbWorkspaceIO.HISTORY_CAP);
-        assertThat(back.history().get(0).text()).isEqualTo("SELECT 0;");
-        assertThat(back.history().get(49).text()).isEqualTo("SELECT 49;");
+        assertThat(back).hasSize(DbWorkspaceIO.HISTORY_CAP);
+        assertThat(back.get(0).text()).isEqualTo("SELECT 0;");
+        assertThat(back.get(49).text()).isEqualTo("SELECT 49;");
 
         // a hand-fattened file is trimmed on load too
         StringBuilder handEdited = new StringBuilder("{\"version\":1,\"history\":[");
@@ -350,7 +352,8 @@ class DbWorkspaceIOTest {
         DbWorkspaceIO.Workspace back = DbWorkspaceIO.loadWorkspace(dir.toFile());
 
         assertThat(back.connections()).hasSize(3);
-        assertThat(back.history()).hasSize(2);
+        assertThat(back.history()).as("3.4: one person's history is never written to the shared file")
+                .isEmpty();
         assertThat(back.saved()).hasSize(2);
         // a missing file is the empty workspace
         assertThat(DbWorkspaceIO.loadWorkspace(dir.resolve("nowhere").toFile()).connections())
@@ -358,7 +361,7 @@ class DbWorkspaceIOTest {
     }
 
     @Test
-    @DisplayName("The connections-only save PRESERVES the file's history and saved queries")
+    @DisplayName("The connections-only save PRESERVES the file's saved queries")
     void connectionsOnlySavePreservesHistory(@TempDir Path dir) throws Exception {
         DbWorkspaceIO.save(dir.toFile(), richWorkspaceState());
 
@@ -367,7 +370,6 @@ class DbWorkspaceIOTest {
 
         DbWorkspaceIO.Workspace back = DbWorkspaceIO.loadWorkspace(dir.toFile());
         assertThat(back.connections()).hasSize(1);
-        assertThat(back.history()).as("history survives a specs-only save").hasSize(2);
         assertThat(back.saved()).as("saved queries survive a specs-only save").hasSize(2);
     }
 

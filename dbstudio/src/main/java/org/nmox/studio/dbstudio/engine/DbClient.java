@@ -106,7 +106,7 @@ public final class DbClient implements DbBackend {
                 return null;
             }
         } catch (Exception e) {
-            return humanize(e);
+            return MissingPassword.explain(spec, password, humanize(e));
         }
     }
 
@@ -129,7 +129,7 @@ public final class DbClient implements DbBackend {
         } catch (Exception e) {
             connection = null;
             liveConnection = null;
-            return humanize(e);
+            return MissingPassword.explain(spec, password, humanize(e));
         }
     }
 

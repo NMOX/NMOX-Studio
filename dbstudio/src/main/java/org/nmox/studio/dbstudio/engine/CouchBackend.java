@@ -114,7 +114,7 @@ public final class CouchBackend implements DbBackend {
             }
             return null;
         } catch (java.io.IOException e) {
-            return humanize(e);
+            return MissingPassword.explain(spec, password, humanize(e));
         }
     }
 
