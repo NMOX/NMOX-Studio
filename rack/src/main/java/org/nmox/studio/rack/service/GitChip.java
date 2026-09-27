@@ -23,6 +23,8 @@ import org.openide.util.NbBundle.Messages;
     "GitChip_merging=merging",
     "GitChip_cherryPicking=cherry-picking",
     "GitChip_reverting=reverting",
+    "GitChip_applyingPatches=applying patches",
+    "GitChip_bisecting=bisecting",
     "# {0} = the branch being rebased, or a short commit id",
     "GitChip_rebasing=rebasing {0}",
     "GitChip_conflicts={0,choice,1#{0} conflict|1<{0} conflicts}"
@@ -158,7 +160,9 @@ final class GitChip {
             case MERGE -> Bundle.GitChip_merging();
             case CHERRY_PICK -> Bundle.GitChip_cherryPicking();
             case REBASE -> Bundle.GitChip_rebasing(op.rebasedBranch() == null ? branch : op.rebasedBranch());
-            default -> Bundle.GitChip_reverting();
+            case REVERT -> Bundle.GitChip_reverting();
+            case APPLYING_PATCHES -> Bundle.GitChip_applyingPatches();
+            case BISECT -> Bundle.GitChip_bisecting();
         };
     }
 

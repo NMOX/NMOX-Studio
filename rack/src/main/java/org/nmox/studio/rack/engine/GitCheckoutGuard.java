@@ -15,7 +15,9 @@ import org.openide.util.NbBundle.Messages;
     "GitCheckoutGuard_midMerge=a merge is in progress \u2014 finish it or abort it first (git merge --continue, or git merge --abort)",
     "GitCheckoutGuard_midRebase=a rebase is in progress \u2014 finish it or abort it first (git rebase --continue, or git rebase --abort)",
     "GitCheckoutGuard_midCherryPick=a cherry-pick is in progress \u2014 finish it or abort it first (git cherry-pick --continue, or git cherry-pick --abort)",
-    "GitCheckoutGuard_midRevert=a revert is in progress \u2014 finish it or abort it first (git revert --continue, or git revert --abort)"
+    "GitCheckoutGuard_midRevert=a revert is in progress \u2014 finish it or abort it first (git revert --continue, or git revert --abort)",
+    "GitCheckoutGuard_midAm=git am is applying patches \u2014 finish it or abort it first (git am --continue, or git am --abort)",
+    "GitCheckoutGuard_midBisect=a bisect is in progress \u2014 end it first (git bisect reset)"
 })
 public final class GitCheckoutGuard {
 
@@ -63,6 +65,8 @@ public final class GitCheckoutGuard {
                 case REBASE -> Bundle.GitCheckoutGuard_midRebase();
                 case CHERRY_PICK -> Bundle.GitCheckoutGuard_midCherryPick();
                 case REVERT -> Bundle.GitCheckoutGuard_midRevert();
+                case APPLYING_PATCHES -> Bundle.GitCheckoutGuard_midAm();
+                case BISECT -> Bundle.GitCheckoutGuard_midBisect();
             });
         }
         return judge(porcelain);

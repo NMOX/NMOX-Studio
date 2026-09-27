@@ -316,7 +316,24 @@ class GitFactsTest {
         Files.writeString(apply.resolve("head-name"), "refs/heads/main\n");
         assertThat(GitFacts.inProgress(repo).rebasedBranch()).isEqualTo("main");
         Files.writeString(apply.resolve("applying"), "");
-        assertThat(GitFacts.inProgress(repo)).as("rebase-apply/applying is git am, not a rebase").isNull();
+        assertThat(GitFacts.inProgress(repo).operation()).as("rebase-apply/applying is git am, not a rebase")
+                .isEqualTo(GitFacts.Operation.APPLYING_PATCHES);
+
+        // the rest of what stops half-way (the 3.4 review)
+        Files.delete(apply.resolve("applying"));
+        Files.delete(apply.resolve("head-name"));
+        Files.delete(apply);
+        Path sequencer = dir.resolve("repo/.git/sequencer");
+        Files.createDirectories(sequencer);
+        Files.writeString(sequencer.resolve("todo"), "pick 0123456 second commit\n");
+        assertThat(GitFacts.inProgress(repo).operation()).as("a multi-commit cherry-pick between commits")
+                .isEqualTo(GitFacts.Operation.CHERRY_PICK);
+        Files.writeString(sequencer.resolve("todo"), "revert 0123456 second commit\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.REVERT);
+        Files.delete(sequencer.resolve("todo"));
+        Files.delete(sequencer);
+        Files.writeString(dir.resolve("repo/.git/BISECT_LOG"), "git bisect start\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.BISECT);
     }
 
     @Test

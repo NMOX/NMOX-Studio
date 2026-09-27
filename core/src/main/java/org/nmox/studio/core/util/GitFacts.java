@@ -172,7 +172,11 @@ public final class GitFacts {
 
     /** A git operation that stopped half-way and is waiting for the user. */
     public enum Operation {
-        MERGE, REBASE, CHERRY_PICK, REVERT
+        MERGE, REBASE, CHERRY_PICK, REVERT,
+        /** {@code git am} stopped on a patch ({@code rebase-apply/applying}). */
+        APPLYING_PATCHES,
+        /** {@code git bisect} is running ({@code BISECT_LOG}). */
+        BISECT
     }
 
     /**
@@ -215,6 +219,23 @@ public final class GitFacts {
         }
         if (Files.isRegularFile(new File(gitDir, "REVERT_HEAD").toPath())) {
             return new InProgress(Operation.REVERT, null);
+        }
+        // the rest of what stops half-way (the 3.4 review: the checkout
+        // guard said it refused ANY stopped operation and let these through)
+        if (new File(new File(gitDir, "rebase-apply"), "applying").exists()) {
+            return new InProgress(Operation.APPLYING_PATCHES, null);
+        }
+        File sequencer = new File(gitDir, "sequencer");
+        if (sequencer.isDirectory()) {
+            // a multi-commit cherry-pick or revert keeps its plan here after
+            // the current commit's HEAD file is gone; the plan's first word
+            // says which
+            String next = readFirstLine(new File(sequencer, "todo"));
+            return new InProgress(next != null && next.startsWith("revert")
+                    ? Operation.REVERT : Operation.CHERRY_PICK, null);
+        }
+        if (Files.isRegularFile(new File(gitDir, "BISECT_LOG").toPath())) {
+            return new InProgress(Operation.BISECT, null);
         }
         return null;
     }
