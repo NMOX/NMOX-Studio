@@ -137,6 +137,22 @@ class RackKeyboardCablesTest {
     }
 
     @Test
+    @DisplayName("after a keyboard move the moved device is selected again, even if focus-follows-selection took another (the review)")
+    void moveKeepsTheMovedDevice() throws Exception {
+        onEdt(() -> {
+            panel.moveBy(b, -1);
+            // the rebuild's removeAll moves focus; the focus listener selects whoever caught it
+            panel.setSelected(a);
+        });
+        onEdt(() -> { });
+        onEdt(() -> {
+            assertThat(rack.getDevices()).containsExactly(b, a);
+            assertThat(panel.getSelected()).isSameAs(b);
+            assertThat(RackPanel.firstFocusable(b)).isSameAs(b.go);
+        });
+    }
+
+    @Test
     @DisplayName("Move Up / Move Down reorder through the drag's own call, undoably, and grey at the ends")
     void moveUpAndDown() throws Exception {
         onEdt(() -> {

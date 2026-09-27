@@ -187,7 +187,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
         return selected;
     }
 
-    private void setSelected(RackDevice device) {
+    void setSelected(RackDevice device) {
         if (selected != device) {
             selected = device;
             repaint();
@@ -699,6 +699,36 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
         rack.moveDevice(device, to);
         setSelected(device);
+        // the move's rebuild is posted (structureChanged); removeAll moves
+        // focus off the device and the focus-follows-selection listener then
+        // selects whichever device caught it — so after the rebuild, the
+        // selection and the keyboard both go back to the moved device (the
+        // 3.4 review: the javadoc promised this and nothing did it)
+        SwingUtilities.invokeLater(() -> {
+            if (rack.getDevices().contains(device)) {
+                setSelected(device);
+                java.awt.Component first = firstFocusable(device);
+                if (first != null) {
+                    first.requestFocusInWindow();
+                }
+            }
+        });
+    }
+
+    /** The first control under {@code c} that takes keyboard focus, in component order. */
+    static java.awt.Component firstFocusable(java.awt.Component c) {
+        if (c != null && c.isFocusable() && c.isEnabled() && !(c instanceof RackDevice)) {
+            return c;
+        }
+        if (c instanceof java.awt.Container k) {
+            for (java.awt.Component child : k.getComponents()) {
+                java.awt.Component hit = firstFocusable(child);
+                if (hit != null) {
+                    return hit;
+                }
+            }
+        }
+        return null;
     }
 
     /** Patch Cable…: the dialog, then the drag's own {@link Rack#connect}, and a word on the status line either way. */
