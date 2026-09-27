@@ -51,12 +51,23 @@ class Ledger53RemainderTest {
         String canvas = source("src/main/java/org/nmox/studio/infra/ui/FlowCanvas.java");
         // the three structural entry points all check the lock
         int del = canvas.indexOf("private void deleteSelection()");
-        assertThat(canvas.substring(del, del + 200)).contains("if (locked)");
+        assertThat(canvas.substring(del, del + 200)).contains("if (refusedWhileLocked())");
+        // one check, spoken: it says why on the status line (3.4)
+        int refused = canvas.indexOf("public boolean refusedWhileLocked()");
+        assertThat(canvas.substring(refused, refused + 300)).contains("if (!locked)").contains("setStatusText");
+        // the gestures outside the canvas's own handlers ask the same check (3.4)
+        int remove = canvas.indexOf("public void removeNode(InfraNode node)");
+        assertThat(canvas.substring(remove, remove + 200)).contains("refusedWhileLocked()");
+        String palette = source("src/main/java/org/nmox/studio/infra/ui/InfraPalette.java");
+        assertThat(palette).contains("!refused.getAsBoolean()");
         assertThat(canvas).contains("target != null && !locked");
         int drop = canvas.indexOf("public boolean importData(TransferSupport support)");
         assertThat(canvas.substring(drop, drop + 200)).contains("if (locked)");
         // the TC's one op choke point arms the lock and defers re-aims
         String tc = source("src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java");
+        // ...and the window wires them there: a guarded seam nobody calls guards nothing
+        assertThat(tc).contains("new InfraPalette(graph, canvas::refusedWhileLocked)");
+        assertThat(tc).contains("remove.addActionListener(e -> canvas.removeNode(node))");
         int run = tc.indexOf("private void runExclusive(");
         String runBody = tc.substring(run, tc.indexOf("\n    }\n", run));
         // a DEPTH, not a flag: the popup destroy path can queue a second op
