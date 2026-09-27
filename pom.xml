@@ -146,7 +146,8 @@
                         --add-opens=java.base/java.io=ALL-UNNAMED
                         --add-opens=java.base/java.security=ALL-UNNAMED
                         --add-opens=java.base/java.util=ALL-UNNAMED
-                        --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED</argLine>
+                        --add-opens=java.prefs/java.util.prefs=ALL-UNNAMED
+                        --add-opens=java.desktop/java.awt=ALL-UNNAMED</argLine>
                     <!-- Run the unit suite headless so it matches CI and never
                          pops a real Swing dialog (e.g. a workspace-trust prompt)
                          onto the developer's screen mid-build. -->

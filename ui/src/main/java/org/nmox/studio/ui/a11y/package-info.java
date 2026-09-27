@@ -10,5 +10,11 @@
  * accessible name ({@code &New File...}), installed once the main window
  * shows ({@code @OnShowing}) and kept right as buttons are renamed or
  * added.
+ *
+ * <p>{@link org.nmox.studio.ui.a11y.WindowTabsAccessibility} (3.4) gives
+ * the window system's tab containers the tab-list structure their role
+ * promises, so a screen reader can navigate into a window's content at all:
+ * before it, every container exposed no children and only pointing reached
+ * anything inside.
  */
 package org.nmox.studio.ui.a11y;
