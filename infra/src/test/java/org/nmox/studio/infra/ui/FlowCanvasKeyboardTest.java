@@ -194,6 +194,24 @@ class FlowCanvasKeyboardTest {
         assertThat(graph.getNodes()).as("unlocked, Remove removes").doesNotContain(droplet);
     }
 
+    @Test
+    @DisplayName("a reload forgets the selection: W and Delete never act on the next design's same-id node (the review)")
+    void reloadForgetsTheSelection() throws Exception {
+        canvas.selectNode(droplet);
+        String id = droplet.id;
+        graph.clear();
+        InfraNode twin = graph.restoreNode(id, NodeKind.DROPLET, 400, 100);
+        javax.swing.SwingUtilities.invokeAndWait(() -> { });  // the graph listener's EDT hop
+        assertThat(canvas.getSelectedNode()).as("the old design's node is not selected in the new one").isNull();
+        canvas.wireFrom(droplet);
+        assertThat(graph.getWires()).as("W from a forgotten node wires nothing").isEmpty();
+        for (java.awt.event.KeyListener kl : canvas.getKeyListeners()) {
+            kl.keyPressed(new java.awt.event.KeyEvent(canvas, java.awt.event.KeyEvent.KEY_PRESSED, 0, 0,
+                    java.awt.event.KeyEvent.VK_DELETE, java.awt.event.KeyEvent.CHAR_UNDEFINED));
+        }
+        assertThat(graph.getNodes()).contains(twin);
+    }
+
     private static <T> T find(Container c, Class<T> type) {
         for (Component child : c.getComponents()) {
             if (type.isInstance(child)) {

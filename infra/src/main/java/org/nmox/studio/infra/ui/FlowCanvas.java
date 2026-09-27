@@ -128,7 +128,10 @@ public class FlowCanvas extends JPanel {
         graph.addListener(new InfraGraph.Listener() {
             @Override
             public void graphChanged() {
-                javax.swing.SwingUtilities.invokeLater(FlowCanvas.this::repaint);
+                javax.swing.SwingUtilities.invokeLater(() -> {
+                    dropStaleSelection();
+                    repaint();
+                });
             }
 
             @Override
@@ -314,7 +317,7 @@ public class FlowCanvas extends JPanel {
      * operation holds the canvas, as the drag is (53b), and out loud.
      */
     public void wireFrom(InfraNode from) {
-        if (from == null) {
+        if (from == null || !graph.getNodes().contains(from)) {
             return;
         }
         if (refusedWhileLocked()) {
@@ -490,6 +493,25 @@ public class FlowCanvas extends JPanel {
     }
 
     /**
+     * Forgets a selection the graph no longer holds. A reload (a re-aim, an
+     * external edit, a resolved merge) replaces every node, and node ids
+     * repeat across designs, so a remembered node let W wire and Delete
+     * remove a same-id node of the NEXT design with nothing highlighted —
+     * a result acting on a workspace that did not produce it (the 3.4
+     * review).
+     */
+    void dropStaleSelection() {
+        boolean nodeGone = selectedNode != null && !graph.getNodes().contains(selectedNode);
+        // by identity: a Wire is a record, and a reloaded design's wire
+        // between same-id nodes would compare equal to the forgotten one
+        boolean wireGone = selectedWire != null
+                && graph.getWires().stream().noneMatch(w -> w == selectedWire);
+        if (nodeGone || wireGone) {
+            select(null, null);
+        }
+    }
+
+    /**
      * True, having said so on the status line, when a cloud operation holds
      * the canvas (53b). Every structural gesture outside the canvas's own
      * mouse handlers asks here — the palette's double-click and Enter, the
@@ -520,6 +542,7 @@ public class FlowCanvas extends JPanel {
         if (refusedWhileLocked()) {
             return; // a cloud op is running — structural edits are refused
         }
+        dropStaleSelection(); // a key can arrive before the reload's repaint
         if (selectedNode != null) {
             graph.removeNode(selectedNode);
             select(null, null);
