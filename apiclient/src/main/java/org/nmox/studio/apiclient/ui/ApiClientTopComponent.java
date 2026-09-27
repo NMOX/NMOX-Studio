@@ -210,6 +210,7 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_sendFailed=Send failed — {0}",
     "ApiClientTopComponent_cancelledAfter=Cancelled  ·  {0,number,0}ms",
     "ApiClientTopComponent_noRouteVerdict=No route — {0}  ·  {1,number,0}ms",
+    "ApiClientTopComponent_bodyBrokeVerdict=HTTP {0,number,0} arrived, then {1}  ·  {2,number,0}ms",
     // the verdict strip is PlainText.plain-guarded; {0} is the numeric HTTP status
     "ApiClientTopComponent_verdict={0,number,0}  ·  {1,number,0}ms  ·  {2}",
     "ApiClientTopComponent_truncatedAt=  ·  body truncated at {0}",
@@ -1696,7 +1697,13 @@ public final class ApiClientTopComponent extends TopComponent {
         lastMethod = current == null ? "GET" : current.method;
         lastUrl = current == null ? "" : current.url;
         explainButton.setEnabled(true);
-        if (!r.reached()) {
+        if (r.bodyBroke()) {
+            // the server answered and the body broke off: say both halves
+            verdict(Bundle.ApiClientTopComponent_bodyBrokeVerdict(r.headStatus(), r.error(), r.millis()),
+                    FAIL_RED);
+            responseBody.setText(r.error());
+            refindInBody();
+        } else if (!r.reached()) {
             boolean cancelled = "cancelled".equals(r.error());
             verdict(cancelled ? Bundle.ApiClientTopComponent_cancelledAfter(r.millis())
                     : Bundle.ApiClientTopComponent_noRouteVerdict(r.error(), r.millis()), cancelled ? Color.GRAY : FAIL_RED);

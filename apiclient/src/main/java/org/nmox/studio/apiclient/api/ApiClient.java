@@ -141,6 +141,13 @@ public final class ApiClient {
     }
 
     /**
+     * The whole-body deadline. The request's 30 s timeout ends when the
+     * headers arrive; a server that then stops sending held the send lane
+     * forever (3.4). A slow download gets a minute, then speaks.
+     */
+    static final Duration BODY_DEADLINE = Duration.ofSeconds(60);
+
+    /**
      * Sends the request and captures timing, size, headers, and body. A
      * request without the credential its auth type needs is refused here
      * too, never sent (the UI refuses first, in words; this is the floor).
@@ -157,9 +164,17 @@ public final class ApiClient {
             org.nmox.studio.core.http.HttpBodies.Capped capped;
             try (java.io.InputStream in = response.body()) {
                 capped = org.nmox.studio.core.http.HttpBodies.read(in, MAX_BODY_BYTES,
-                        charsetOf(response.headers().firstValue("content-type").orElse("")));
+                        charsetOf(response.headers().firstValue("content-type").orElse("")),
+                        BODY_DEADLINE);
                 // closing the stream aborts the rest of the transfer —
                 // we never drain what we won't show
+            } catch (org.nmox.studio.core.http.HttpBodies.StalledException
+                    | org.nmox.studio.core.http.HttpBodies.BrokenBodyException bodyFailed) {
+                // the server answered; its body did not arrive whole. Say
+                // that — HttpBodies names the shortfall — not "No route — closed"
+                long ms = (System.nanoTime() - start) / 1_000_000;
+                return ApiResponse.bodyBroken(ms, response.statusCode(),
+                        new LinkedHashMap<>(response.headers().map()), bodyFailed.getMessage());
             }
             long ms = (System.nanoTime() - start) / 1_000_000;
             Map<String, java.util.List<String>> headers = new LinkedHashMap<>(response.headers().map());

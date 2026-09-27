@@ -56,7 +56,8 @@ import org.nmox.studio.dbstudio.model.TableInfo;
     // chrome (shift-2970): the reasons this backend speaks to the user.
     "CouchBackend_noDatabase=No database set \u2014 CouchDB queries need a database name in the connection settings (query \"_all_dbs\" to list what the server has).",
     "CouchBackend_notCouchDb=The server answered but does not look like CouchDB (no welcome document)",
-    "CouchBackend_notMango=Not a Mango query (expected a JSON selector): {0}"
+    "CouchBackend_notMango=Not a Mango query (expected a JSON selector): {0}",
+    "CouchBackend_cancelled=Cancelled \u2014 the request was stopped before it finished."
 })
 public final class CouchBackend implements DbBackend {
 
@@ -72,6 +73,16 @@ public final class CouchBackend implements DbBackend {
      * bounded — the apiclient v1.99.0 fix, here.
      */
     static final int MAX_RESPONSE_BYTES = 8 * 1024 * 1024;
+
+    /** The whole-body deadline: the request timeout ends at the headers. */
+    static final Duration BODY_DEADLINE = Duration.ofSeconds(30);
+
+    /** The request in flight, for {@link #cancel()}; null between requests. */
+    private volatile java.util.concurrent.Future<?> inFlightSend;
+    /** The body being read, for {@link #cancel()}; closing it frees the read. */
+    private volatile java.io.InputStream inFlightBody;
+    private volatile boolean cancelRequested;
+    private volatile boolean consoleRunning;
 
     private static final String NO_DATABASE = Bundle.CouchBackend_noDatabase();
 
@@ -203,6 +214,17 @@ public final class CouchBackend implements DbBackend {
      */
     @Override
     public List<QueryResult> runConsole(String text, int rowLimit) {
+        cancelRequested = false; // a Cancel belongs to the run it was pressed during
+        consoleRunning = true;
+        try {
+            return runConsoleNow(text, rowLimit);
+        } finally {
+            consoleRunning = false;
+            cancelRequested = false;
+        }
+    }
+
+    private List<QueryResult> runConsoleNow(String text, int rowLimit) {
         List<QueryResult> results = new ArrayList<>();
         if (text == null || text.isBlank()) {
             return results;
@@ -242,13 +264,36 @@ public final class CouchBackend implements DbBackend {
     }
 
     /**
-     * No-op: each console run is a single bounded HTTP request
-     * ({@value #TIMEOUT_SECONDS}s timeout), so there is nothing
-     * meaningful to cancel — the timeout is the cancellation.
+     * Stops the request in flight. It used to be a no-op on the reasoning
+     * that the {@value #TIMEOUT_SECONDS}s request timeout "is the
+     * cancellation" — but that timeout ends when the HEADERS arrive, so a
+     * server that stalled mid-body held the console forever and Cancel did
+     * nothing (3.4, measured). Now it cancels a request still waiting for
+     * its headers and CLOSES a body being read, which is the only thing that
+     * frees a blocked read; the run answers "Cancelled".
      */
     @Override
     public void cancel() {
-        // deliberately empty — see javadoc
+        if (!consoleRunning) {
+            return; // Cancel stops a console run; nothing else listens for it
+        }
+        cancelRequested = true;
+        java.util.concurrent.Future<?> sending = inFlightSend;
+        if (sending != null) {
+            sending.cancel(true);
+        }
+        java.io.InputStream reading = inFlightBody;
+        if (reading != null) {
+            try {
+                reading.close();
+            } catch (java.io.IOException | RuntimeException closeFailed) {
+                LOG.log(Level.FINE, "closing a cancelled CouchDB body", closeFailed);
+            }
+        }
+    }
+
+    private static java.io.IOException cancelledIo() {
+        return new java.io.IOException(Bundle.CouchBackend_cancelled());
     }
 
     // ---- parsing seams (static, String-in, no server needed) --------
@@ -433,15 +478,50 @@ public final class CouchBackend implements DbBackend {
      */
     private String send(HttpRequest request) throws java.io.IOException {
         try {
-            HttpResponse<java.io.InputStream> response = HttpClientFactory.shared()
-                    .send(request, HttpResponse.BodyHandlers.ofInputStream());
+            // async so Cancel can abort a request still waiting for its
+            // headers; the sync send had no handle to cancel
+            java.util.concurrent.CompletableFuture<HttpResponse<java.io.InputStream>> pending =
+                    HttpClientFactory.shared().sendAsync(request,
+                            HttpResponse.BodyHandlers.ofInputStream());
+            inFlightSend = pending;
+            if (cancelRequested) {
+                pending.cancel(true);
+            }
+            HttpResponse<java.io.InputStream> response;
+            try {
+                response = pending.get();
+            } catch (java.util.concurrent.CancellationException stopped) {
+                throw cancelledIo();
+            } catch (java.util.concurrent.ExecutionException failed) {
+                Throwable cause = failed.getCause();
+                if (cancelRequested) {
+                    throw cancelledIo();
+                }
+                if (cause instanceof java.io.IOException io) {
+                    throw io;
+                }
+                throw new java.io.IOException(cause == null ? failed : cause);
+            } finally {
+                inFlightSend = null;
+            }
             String body;
             boolean truncated;
             try (java.io.InputStream in = response.body()) {
+                inFlightBody = in;
+                if (cancelRequested) {
+                    in.close(); // a Cancel that landed between the headers and here
+                }
                 var capped = org.nmox.studio.core.http.HttpBodies
-                        .readUtf8(in, MAX_RESPONSE_BYTES);
+                        .readUtf8(in, MAX_RESPONSE_BYTES, BODY_DEADLINE);
                 truncated = capped.truncated(); // closing aborts the rest of the transfer
                 body = capped.text();
+            } catch (java.io.IOException readFailed) {
+                if (cancelRequested) {
+                    throw cancelledIo();
+                }
+                throw readFailed;
+            } finally {
+                inFlightBody = null;
             }
             if (response.statusCode() >= 400) {
                 String detail = "";

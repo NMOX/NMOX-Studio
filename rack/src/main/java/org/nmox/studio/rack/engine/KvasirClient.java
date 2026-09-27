@@ -425,8 +425,11 @@ public final class KvasirClient {
             try (java.io.InputStream in = response.body()) {
                 // 4xx/5xx bodies from every vendor carry a JSON error we parse
                 // for a real message; hand the body up rather than a status.
+                // the request timeout ends at the headers; a model API that
+                // stalls mid-body held KVASIR's CONSULTING LED lit forever
                 return org.nmox.studio.core.http.HttpBodies.readUtf8(in,
-                        org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES).text();
+                        org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES,
+                        Duration.ofSeconds(TIMEOUT_SECONDS)).text();
             }
         }
     }

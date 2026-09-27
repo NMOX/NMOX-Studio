@@ -229,8 +229,10 @@ public final class DigitalOceanClient {
         // DO API list response is small; 8 MB is orders of magnitude past it.
         String text;
         try (java.io.InputStream in = response.body()) {
+            // the request's 60 s timeout ends at the headers; the body gets its own
             text = org.nmox.studio.core.http.HttpBodies.readUtf8(in,
-                    org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES).text();
+                    org.nmox.studio.core.http.HttpBodies.DEFAULT_CAP_BYTES,
+                    Duration.ofSeconds(60)).text();
         }
         if (response.statusCode() >= 300) {
             throw new IOException("HTTP " + response.statusCode() + ": " + compact(text));

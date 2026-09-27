@@ -144,9 +144,13 @@ public class HttpDevice extends RackDevice {
                     String body;
                     try (java.io.InputStream in = response.body()) {
                         body = org.nmox.studio.core.http.HttpBodies
-                                .readUtf8(in, 1024 * 1024).text();
+                                .readUtf8(in, 1024 * 1024, Duration.ofSeconds(15)).text();
                     } catch (java.io.IOException readFailed) {
-                        body = "";
+                        // a body that stalled or broke off says so in the
+                        // history (HttpBodies names what happened), never ""
+                        body = "[" + (readFailed.getMessage() == null
+                                ? readFailed.getClass().getSimpleName()
+                                : readFailed.getMessage()) + "]";
                     }
                     // capped before it enters history: fifty retained multi-MB
                     // payloads is a leak, not a console log
