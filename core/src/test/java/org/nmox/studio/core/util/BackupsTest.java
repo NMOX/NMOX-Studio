@@ -88,4 +88,32 @@ class BackupsTest {
         Files.createDirectory(dir.resolve(".nmoxweb3.json.bak"));
         assertThat(Backups.copyAside(f.toFile()).getName()).isEqualTo(".nmoxweb3.json.2.bak");
     }
+
+    @Test
+    @DisplayName("keep: new bytes take the next free name; the same bytes reuse their copy")
+    void keepWritesNewBytesAndReusesSame(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve(".nmoxtasks.json");
+        Path first = Backups.keep(f, "{ one".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Path second = Backups.keep(f, "{ two, longer".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Path again = Backups.keep(f, "{ one".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertThat(first).isEqualTo(dir.resolve(".nmoxtasks.json.bak"));
+        assertThat(second).isEqualTo(dir.resolve(".nmoxtasks.json.2.bak"));
+        assertThat(again).as("the same bytes are already kept").isEqualTo(first);
+        assertThat(Files.readString(second)).isEqualTo("{ two, longer");
+    }
+
+    @Test
+    @DisplayName("when every rescue name is taken, keep and copyAside refuse rather than overwrite")
+    void everyNameTakenIsRefused(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve("x.json");
+        Files.writeString(f, "{ broken");
+        for (int n = 1; n <= Backups.MAX_NUMBERED; n++) {
+            Files.writeString(Backups.sibling(f, n), "older " + n);
+        }
+        assertThat(Backups.freeSibling(f)).isNull();
+        org.junit.jupiter.api.Assertions.assertThrows(java.io.IOException.class,
+                () -> Backups.keep(f, "{ new".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        org.junit.jupiter.api.Assertions.assertThrows(java.io.IOException.class, () -> Backups.copyAside(f.toFile()));
+        assertThat(Files.readString(Backups.sibling(f, 1))).as("nothing overwritten").isEqualTo("older 1");
+    }
 }

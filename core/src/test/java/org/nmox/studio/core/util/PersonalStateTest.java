@@ -83,4 +83,19 @@ class PersonalStateTest {
         assertThat(PersonalState.base().toString())
                 .startsWith(Path.of(System.getProperty("java.io.tmpdir")).toString());
     }
+
+    @Test
+    @DisplayName("a project that does not exist yet still has one stable key; an oversize file is refused unread")
+    void unresolvableProjectAndOversizeFile(@TempDir Path base, @TempDir File parent) throws Exception {
+        PersonalState.setBaseForTest(base);
+        File notYet = new File(parent, "not-created-yet");
+        assertThat(PersonalState.fileFor(notYet, "api")).isEqualTo(PersonalState.fileFor(notYet, "api"));
+
+        File project = new File(parent, "p");
+        assertThat(project.mkdir()).isTrue();
+        Path file = PersonalState.fileFor(project, "db");
+        java.nio.file.Files.createDirectories(file.getParent());
+        java.nio.file.Files.write(file, new byte[(int) PersonalState.MAX_BYTES + 1]);
+        assertThat(PersonalState.read(project, "db")).as("over the cap: not read").isNull();
+    }
 }
