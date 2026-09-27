@@ -183,29 +183,44 @@ public final class RackTopComponent extends TopComponent {
         if (e.getModifiersEx() != 0) {
             return false;
         }
+        java.awt.Component focus = java.awt.KeyboardFocusManager
+                .getCurrentKeyboardFocusManager().getFocusOwner();
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            // faceplate controls are keyboard-operable: while one of them
-            // (or the REPL's text field) holds focus, Tab must traverse to
-            // the next control, not flip the rack — the toolbar toggle
-            // still flips at any time
-            java.awt.Component focus = java.awt.KeyboardFocusManager
-                    .getCurrentKeyboardFocusManager().getFocusOwner();
-            if (focus != null && focus != rackPanel && focus.isFocusable()
-                    && javax.swing.SwingUtilities.isDescendingFrom(focus, rackPanel)) {
+            if (!tabFlipsRack(focus, rackPanel, RackTopComponent.this)) {
                 return false;
             }
             flipToggle.doClick();
             return true;
         }
         if ((e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
-                && rackPanel.getSelected() != null
                 // never swallow Delete while something editable has focus
-                && !inText) {
-            rackPanel.removeSelected();
+                && !inText
+                && rackPanel.removeTarget(focus) != null) {
+            rackPanel.removeFor(focus);
             return true;
         }
         return false;
     };
+
+    /**
+     * Whether a plain Tab flips the rack rather than moving focus.
+     *
+     * <p>The flip is the rack's own gesture and it stays where nothing is
+     * being operated: no focus at all, focus on the rack panel itself (where
+     * a click on a faceplate or the rails leaves it), or on something that
+     * cannot hold focus. Anywhere a real control holds focus in this window —
+     * a faceplate control (v1.41.0), and since 3.4 the device shelf, its
+     * search field and the toolbar — Tab moves focus, because until then the
+     * only way off the shelf was Shift+Tab and a keyboard user could not
+     * reach the rack from it at all.
+     */
+    static boolean tabFlipsRack(java.awt.Component focus, java.awt.Component rackPanel,
+            java.awt.Component window) {
+        if (focus == null || focus == rackPanel || focus == window || !focus.isFocusable()) {
+            return true;
+        }
+        return !javax.swing.SwingUtilities.isDescendingFrom(focus, window);
+    }
 
     public RackTopComponent() {
         setName(org.openide.util.NbBundle.getMessage(RackTopComponent.class, "CTL_RackTopComponent"));
