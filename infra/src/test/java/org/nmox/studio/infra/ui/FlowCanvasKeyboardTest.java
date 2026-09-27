@@ -107,10 +107,16 @@ class FlowCanvasKeyboardTest {
         assertThat(offered.get(1)).as("a wire already made is not offered again").hasSize(1)
                 .doesNotContain(offered.get(0).get(0));
 
+        // the database can serve the droplet: a legal wire, refused only by the lock
         offered.clear();
         canvas.setLocked(true);
+        key("DOWN");
+        assertThat(canvas.getSelectedNode()).isSameAs(db);
         key("W");
         assertThat(offered).as("a cloud operation holds the canvas: no wiring, as for the drag").isEmpty();
+        canvas.setLocked(false);
+        key("W");
+        assertThat(offered).as("the lock was the only reason").containsExactly(List.of(droplet));
     }
 
     @Test
