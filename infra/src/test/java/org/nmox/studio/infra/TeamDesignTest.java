@@ -137,6 +137,27 @@ class TeamDesignTest {
         assertThat(Files.readString(second.toPath())).isEqualTo("{ second");
     }
 
+    /**
+     * The other half of the two-proof law: the seam returns what it did not
+     * find instead of severing it ({@code DriftNeverSeversTest}); this pins
+     * that the designer forgets only behind the safe-default question
+     * ({@code confirm} defaults to No — {@code DialogSafetyTest}).
+     */
+    @Test
+    @DisplayName("Refresh forgets a link only behind the safe-default question")
+    void refreshForgetsOnlyOnYes() throws Exception {
+        String src = Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"),
+                StandardCharsets.UTF_8).replaceAll("\\s+", " ");
+        int start = src.indexOf("private void refreshDrift()");
+        String body = src.substring(start, src.indexOf("static String notFoundQuestion(", start));
+        assertThat(body).contains("if (!notFound.isEmpty() && confirm(notFoundQuestion(notFound), "
+                + "Bundle.InfraDesigner_notFoundTitle())) { forgetCloudLinks(notFound); }");
+        assertThat(body.split("forgetCloudLinks\\(", -1).length - 1)
+                .as("no second, unguarded forget").isEqualTo(1);
+        assertThat(body).doesNotContain("doId = null");
+    }
+
     @Test
     @DisplayName("the forget question says how many, which, and that it is shared")
     void forgetQuestionSpeaks() {
