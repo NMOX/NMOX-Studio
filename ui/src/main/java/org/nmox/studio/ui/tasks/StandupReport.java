@@ -9,7 +9,8 @@ import org.openide.util.NbBundle.Messages;
 
 /**
  * The daily standup, generated from data the product already records
- * (v2.8.0): the board's done stamps and time sessions say what you
+ * (v2.8.0): the board's done stamps and YOUR time sessions (3.4: a
+ * teammate's clock on the same board is theirs) say what you
  * worked on and for how long, the blocker register says what is stuck,
  * and the git log says what actually landed. Pure — the window gathers
  * the commit lines and the clock, this class only assembles markdown —
@@ -72,6 +73,11 @@ final class StandupReport {
 
         StringBuilder md = new StringBuilder();
         md.append("## ").append(Bundle.StandupReport_heading(today.toString()));
+        // whose standup (3.4): the times below are this person's clock only —
+        // a teammate's sessions on the same board are theirs — and a report
+        // pasted into a team channel must say whose it is. A name is data,
+        // joined the way the sprint clause below joins its name.
+        md.append(" · ").append(TaskBoard.currentUser());
         // the sprint context (v2.38.2): inside the window the header
         // carries "Sprint 8 · day 3 of 14" — the one number a standup
         // opens with; outside the window (a sprint set for next week)

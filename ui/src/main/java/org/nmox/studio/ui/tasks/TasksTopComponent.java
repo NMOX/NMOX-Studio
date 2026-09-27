@@ -114,6 +114,12 @@ import org.openide.windows.TopComponent;
     "TasksTopComponent_tooltip=Per-project task board (.nmoxtasks.json)",
     "TasksTopComponent_changedOutside={0} changed outside the IDE — reloaded; repeat your change",
     "TasksTopComponent_unreadable={0} could not be read — the board is read-only so nothing overwrites it",
+    "TasksTopComponent_conflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
+    "# {0} - the board file's name; {1} - the name the unreadable bytes were kept under",
+    "TasksTopComponent_rescued={0} is not a board this build can read — your file was kept as {1}, and the board starts fresh",
+    "TasksTopComponent_unrescued={0} is not a board this build can read and no copy of it could be kept — the board is read-only so nothing overwrites it",
+    "# {0} - the board file's name; {1} - the failure, as the file system said it",
+    "TasksTopComponent_saveFailed=Could not save {0}: {1}",
     "TasksTopComponent_newCard=New Card…",
     "TasksTopComponent_newCardA11y=New card",
     "TasksTopComponent_newCardTip=Adds a card to the first column",
@@ -251,8 +257,16 @@ public final class TasksTopComponent extends TopComponent {
      * this project's board. Every mutation refuses while it is set — the
      * never-clobber law reaches the case where there is nothing to
      * compare against, because we hold none of the file's bytes.
+     *
+     * <p>Since 3.4 it is also set while the file holds git's unresolved
+     * merge conflict: those bytes are both people's boards, and the one
+     * correct answer is to write nothing over them until git's markers are
+     * gone. {@link #readOnlyReason} is what the header and the status line
+     * say about it.
      */
     private boolean readOnly;
+    /** Why the board is read-only, said on the header and on every refused gesture; null when writable. */
+    private String readOnlyReason;
     private boolean built;
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
@@ -350,7 +364,7 @@ public final class TasksTopComponent extends TopComponent {
             // and mutate()'s foreign-edit guard then waved the first card
             // edit through onto a board nobody had seen. The stamp belongs
             // to a read that happened.
-            if (f.isFile() && !outcome.unreadable()) {
+            if (f.isFile() && !outcome.readOnly()) {
                 tracker.noteSync(f);
             }
             java.awt.EventQueue.invokeLater(() -> {
@@ -359,10 +373,16 @@ public final class TasksTopComponent extends TopComponent {
                 }
                 board = outcome.board();
                 boundDir = dir;
-                readOnly = outcome.unreadable();
+                readOnly = outcome.readOnly();
+                readOnlyReason = readOnlyReason(outcome);
                 rebuild();
                 if (readOnly) {
-                    status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
+                    status(readOnlyReason);
+                } else if (outcome.rescuedAs() != null) {
+                    // a starter replaced a malformed board: the copy is safe,
+                    // and the reader is told where it is instead of finding
+                    // three empty columns with the reason in a log file
+                    status(Bundle.TasksTopComponent_rescued(TasksIO.FILENAME, outcome.rescuedAs()));
                 }
                 // the pulse keeps watching: a file that becomes readable
                 // again (permissions fixed, an over-cap file trimmed) is a
@@ -399,7 +419,7 @@ public final class TasksTopComponent extends TopComponent {
             return false;
         }
         if (readOnly) {
-            status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
+            status(readOnlyReason);
             return false;
         }
         if (!mutation.getAsBoolean()) {
@@ -419,9 +439,33 @@ public final class TasksTopComponent extends TopComponent {
                 TasksIO.save(dir, snapshot, tracker);
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, "Could not save " + TasksIO.FILENAME, ex);
+                // refusals speak: a full disk or a revoked permission used to
+                // leave the board on screen looking saved, with the only
+                // trace in a log file (3.4, the fault survey)
+                String why = ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
+                java.awt.EventQueue.invokeLater(() ->
+                        status(Bundle.TasksTopComponent_saveFailed(TasksIO.FILENAME, why)));
             }
         });
         return true;
+    }
+
+    /**
+     * What a read-only board says, or null for a writable one. Pure so the
+     * sentence is pinned without a window: a conflicted file names git and
+     * the way out, an unreadable one says it could not be read.
+     */
+    static String readOnlyReason(TasksIO.LoadOutcome outcome) {
+        if (outcome.conflicted()) {
+            return Bundle.TasksTopComponent_conflicted(TasksIO.FILENAME);
+        }
+        if (outcome.unreadable()) {
+            return Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME);
+        }
+        if (outcome.readOnly()) {
+            return Bundle.TasksTopComponent_unrescued(TasksIO.FILENAME);
+        }
+        return null;
     }
 
     /** One-line outcome report on the status line — every refused or
@@ -510,7 +554,12 @@ public final class TasksTopComponent extends TopComponent {
      *  30s ticker can refresh it WITHOUT rebuilding the strip (a rebuild
      *  would drop the list selection every tick). */
     private String headerText() {
-        String base = Bundle.TasksTopComponent_header(boundDir.getName(),
+        if (readOnly && readOnlyReason != null) {
+            // the placard: a stand-in board must never read as this
+            // project's board, and the status line forgets in seconds
+            return readOnlyReason;
+        }
+        String base =Bundle.TasksTopComponent_header(boundDir.getName(),
                 org.nmox.studio.core.util.Plural.of(board.cardCount(),
                         Bundle.TasksTopComponent_card(), Bundle.TasksTopComponent_cards()));
         TaskBoard.Card running = board.runningCard();

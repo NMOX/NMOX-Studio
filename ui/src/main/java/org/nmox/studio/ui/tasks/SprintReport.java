@@ -40,7 +40,7 @@ final class SprintReport {
                 } else if (card.done() == 0) {
                     open.add(card.title());
                 }
-                for (long[] session : card.sessions()) {
+                for (long[] session : card.allSessions()) { // the team's time: a sprint is everyone's
                     long s = Math.max(session[0], board.sprintStart());
                     long e = session[1] == 0 ? nowMillis : session[1];
                     e = Math.min(e, windowEnd);

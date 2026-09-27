@@ -54,9 +54,10 @@ public final class TaskBoard {
         private String blockAction = "";
         private long blockedSince;
         /** Work sessions (v2.6.0): [start, end] pairs, end 0 while the
-         *  clock runs. At most ONE session on the whole board is open —
-         *  clocking in anywhere clocks out whatever was running. */
-        private final List<long[]> sessions = new ArrayList<>();
+         *  clock runs, each with its OWNER (3.4). At most ONE session per
+         *  owner on the whole board is open — clocking in anywhere clocks
+         *  out whatever that same person had running, and nobody else. */
+        private final List<Session> sessions = new ArrayList<>();
 
         /**
          * Only the four REQUIRED fields ride the constructor; everything
@@ -114,19 +115,97 @@ public final class TaskBoard {
             return !blockAction.isEmpty();
         }
 
-        /** Work sessions as [startMillis, endMillis] pairs (end 0 = running). */
+        /**
+         * The CURRENT USER's work sessions as [startMillis, endMillis]
+         * pairs (end 0 = running) — what the TIME report and the Standup
+         * count (3.4). A teammate's sessions on the same card are theirs:
+         * see {@link #sessions(String)} and {@link #allSessions()}.
+         */
         public List<long[]> sessions() {
+            return sessions(currentUser());
+        }
+
+        /** {@code owner}'s sessions on this card, in the order they were clocked. */
+        public List<long[]> sessions(String owner) {
             List<long[]> out = new ArrayList<>(sessions.size());
-            for (long[] sn : sessions) {
-                out.add(sn.clone());
+            for (Session sn : sessions) {
+                if (sn.owner.equals(owner)) {
+                    out.add(new long[]{sn.start, sn.end});
+                }
             }
             return out;
         }
 
-        public boolean clockedIn() {
-            return !sessions.isEmpty()
-                    && sessions.get(sessions.size() - 1)[1] == 0L;
+        /** Every person's sessions on this card — the team's time (the sprint report). */
+        public List<long[]> allSessions() {
+            List<long[]> out = new ArrayList<>(sessions.size());
+            for (Session sn : sessions) {
+                out.add(new long[]{sn.start, sn.end});
+            }
+            return out;
         }
+
+        /** Whether the current user's clock runs on this card. */
+        public boolean clockedIn() {
+            return clockedIn(currentUser());
+        }
+
+        /** Whether {@code owner}'s clock runs on this card: their LAST session here is open. */
+        public boolean clockedIn(String owner) {
+            Session last = lastOf(owner);
+            return last != null && last.end == 0L;
+        }
+
+        /** {@code owner}'s most recent session on this card, or null. */
+        private Session lastOf(String owner) {
+            for (int i = sessions.size() - 1; i >= 0; i--) {
+                if (sessions.get(i).owner.equals(owner)) {
+                    return sessions.get(i);
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * One clocked session and whose it is (3.4). Until 3.4 a session was a
+     * bare [start, end] pair and the board allowed ONE running clock in the
+     * whole file — so on a board a team checks in, Bob clocking in clocked
+     * Alice out, and two clocks merged from two machines healed by closing
+     * one of them at zero credit. The owner is the operating system's user
+     * name ({@code user.name}): it needs no setup, it is the name the shell
+     * already shows, and it is stable across a person's sessions on one
+     * machine. It is a label, not an identity — nothing is secured by it,
+     * and two people sharing one login share one clock, which is what a
+     * shared login means.
+     *
+     * <p>{@code legacy} marks a session read from a file written before
+     * owners existed. Such a session belongs to whoever is reading the
+     * board (the only honest reading of an unlabelled record), and it is
+     * written back WITHOUT an owner, so opening an old board on Alice's
+     * machine does not quietly sign Bob's past hours as hers.
+     */
+    static final class Session {
+        final long start;
+        long end;
+        final String owner;
+        final boolean legacy;
+
+        Session(long start, long end, String owner, boolean legacy) {
+            this.start = start;
+            this.end = end;
+            this.owner = owner;
+            this.legacy = legacy;
+        }
+    }
+
+    /**
+     * Who the current user is, for the clock: the OS login ({@code user.name}),
+     * or {@code "me"} where the JVM reports none — a board must still clock.
+     */
+    public static String currentUser() {
+        String name = System.getProperty("user.name", "").strip();
+        return name.isEmpty() ? "me" : name;
     }
 
     /** One column: a name, its cards in order, and an advisory WIP limit. */
@@ -499,13 +578,18 @@ public final class TaskBoard {
         return true;
     }
 
-    // ---- the time clock (v2.6.0) -----------------------------------------
+    // ---- the time clock (v2.6.0; one clock PER OWNER since 3.4) ----------
 
-    /** The card whose clock is running, or null. */
+    /** The card whose clock the current user has running, or null. */
     public Card runningCard() {
+        return runningCard(currentUser());
+    }
+
+    /** The card whose clock {@code owner} has running, or null. */
+    public Card runningCard(String owner) {
         for (Column col : columns) {
             for (Card c : col.cards) {
-                if (c.clockedIn()) {
+                if (c.clockedIn(owner)) {
                     return c;
                 }
             }
@@ -513,23 +597,29 @@ public final class TaskBoard {
         return null;
     }
 
-    /**
-     * Starts the clock on {@code id} at {@code now}. Only one clock runs
-     * on the whole board — you are only ever working on one thing — so
-     * clocking in here first clocks out whatever was running. Refused
-     * when the card is unknown or ALREADY running (a double clock-in
-     * would silently fork time).
-     */
+    /** Starts the current user's clock on {@code id}; see {@link #clockIn(String, long, String)}. */
     public boolean clockIn(String id, long now) {
+        return clockIn(id, now, currentUser());
+    }
+
+    /**
+     * Starts {@code owner}'s clock on {@code id} at {@code now}. One clock
+     * runs PER PERSON — you are only ever working on one thing — so
+     * clocking in here first clocks out whatever that same owner had
+     * running; a teammate's clock is never touched (3.4). Refused when
+     * the card is unknown or ALREADY running for this owner (a double
+     * clock-in would silently fork time).
+     */
+    public boolean clockIn(String id, long now, String owner) {
         Card c = find(id);
-        if (c == null || c.clockedIn()) {
+        if (c == null || owner == null || owner.isBlank() || c.clockedIn(owner)) {
             return false;
         }
-        Card running = runningCard();
+        Card running = runningCard(owner);
         if (running != null) {
-            clockOut(running.id(), now);
+            clockOut(running.id(), now, owner);
         }
-        c.sessions.add(new long[]{now, 0L});
+        c.sessions.add(new Session(now, 0L, owner, false));
         return true;
     }
 
@@ -538,21 +628,26 @@ public final class TaskBoard {
      *  SAY a session was dropped instead of deleting it silently. */
     public static final long BLIP_MS = 60_000L;
 
-    /**
-     * Stops the running clock on {@code id} at {@code now}; refused when
-     * that card's clock is not running. A session shorter than
-     * {@link #BLIP_MS} is DROPPED whole.
-     */
+    /** Stops the current user's clock on {@code id}; see {@link #clockOut(String, long, String)}. */
     public boolean clockOut(String id, long now) {
+        return clockOut(id, now, currentUser());
+    }
+
+    /**
+     * Stops {@code owner}'s running clock on {@code id} at {@code now};
+     * refused when that owner's clock is not running there. A session
+     * shorter than {@link #BLIP_MS} is DROPPED whole.
+     */
+    public boolean clockOut(String id, long now, String owner) {
         Card c = find(id);
-        if (c == null || !c.clockedIn()) {
+        if (c == null || owner == null || !c.clockedIn(owner)) {
             return false;
         }
-        long[] open = c.sessions.get(c.sessions.size() - 1);
-        if (now - open[0] < BLIP_MS) {
-            c.sessions.remove(c.sessions.size() - 1);
+        Session open = c.lastOf(owner);
+        if (now - open.start < BLIP_MS) {
+            c.sessions.remove(open);
         } else {
-            open[1] = now;
+            open.end = now;
         }
         return true;
     }
@@ -593,13 +688,25 @@ public final class TaskBoard {
                 }
                 if (!c.sessions.isEmpty()) {
                     JSONArray sess = new JSONArray();
-                    for (long[] sn : c.sessions) {
+                    JSONArray owners = new JSONArray();
+                    boolean anyOwned = false;
+                    for (Session sn : c.sessions) {
                         JSONArray pair = new JSONArray();
-                        pair.put(sn[0]);
-                        pair.put(sn[1]);
+                        pair.put(sn.start);
+                        pair.put(sn.end);
                         sess.put(pair);
+                        owners.put(sn.legacy ? "" : sn.owner);
+                        anyOwned |= !sn.legacy;
                     }
                     j.put("sessions", sess);
+                    // owners ride a PARALLEL array rather than a third
+                    // element in each pair: a 3.3 reader keeps only
+                    // two-element pairs, so [start, end, owner] would make
+                    // an older NMOX Studio drop the sessions themselves on
+                    // its next save — this way it drops only the labels
+                    if (anyOwned) {
+                        j.put(SESSION_OWNERS, owners);
+                    }
                 }
                 cards.put(j);
             }
@@ -646,6 +753,15 @@ public final class TaskBoard {
      * deleting either would delete both.
      */
     public static TaskBoard fromJson(String json) {
+        return fromJson(json, currentUser());
+    }
+
+    /**
+     * Parses a board as {@code viewer} reads it: sessions written without
+     * an owner (every board before 3.4) are {@code viewer}'s. Package-private
+     * so tests can read one file as two people.
+     */
+    static TaskBoard fromJson(String json, String viewer) {
         JSONObject root = new JSONObject(json);
         TaskBoard b = new TaskBoard();
         b.retro = root.optString("retro", "");
@@ -709,6 +825,15 @@ public final class TaskBoard {
                     card.blockedSince = j.optLong("blockedSince", 0L);
                     JSONArray sess = j.optJSONArray("sessions");
                     if (sess != null) {
+                        // the owners array is trusted only when it lines up
+                        // with the sessions one-for-one: a merge that grew
+                        // one array and not the other cannot say which
+                        // label belongs to which session, so every session
+                        // is read as unlabelled rather than misattributed
+                        JSONArray owners = j.optJSONArray(SESSION_OWNERS);
+                        if (owners != null && owners.length() != sess.length()) {
+                            owners = null;
+                        }
                         for (int m = 0; m < sess.length(); m++) {
                             JSONArray pair = sess.optJSONArray(m);
                             if (pair != null && pair.length() == 2
@@ -718,8 +843,11 @@ public final class TaskBoard {
                                 // whole board parses — healOpenSessions
                                 long start = pair.optLong(0, 0L);
                                 long end = pair.optLong(1, 0L);
-                                card.sessions.add(new long[]{start,
-                                        end != 0L && end < start ? start : end});
+                                String owner = owners == null ? "" : owners.optString(m, "").strip();
+                                boolean legacy = owner.isEmpty();
+                                card.sessions.add(new Session(start,
+                                        end != 0L && end < start ? start : end,
+                                        legacy ? viewer : owner, legacy));
                             }
                         }
                     }
@@ -735,42 +863,54 @@ public final class TaskBoard {
         return b;
     }
 
+    /** The card key holding each session's owner, aligned with {@code sessions} (3.4). */
+    static final String SESSION_OWNERS = "sessionOwners";
+
     /**
      * Enforces the two open-session invariants the runtime keeps by
      * construction but a checked-in file cannot promise (v2.9.0, the
-     * arc review): a keep-both merge or hand edit can leave an open
-     * pair (end 0) that is NOT a card's last session, or leave TWO
-     * cards both "running". {@link Card#clockedIn()} and
-     * {@link #clockOut} only ever see the LAST pair, so a stray open
-     * pair is unreachable by any gesture while the TIME report and the
-     * standup count it up to NOW forever — a phantom session that
-     * silently inflates every number. The heal closes each stray at
-     * its OWN start (zero credit — any other end would be invented
-     * time); when several cards are open, the LATEST start keeps the
-     * clock, because it is the one still plausibly running.
+     * arc review), PER OWNER since 3.4: a keep-both merge or hand edit
+     * can leave an open pair (end 0) that is NOT its owner's last
+     * session on the card, or leave one owner running on TWO cards.
+     * {@link Card#clockedIn(String)} and {@link #clockOut} only ever see
+     * an owner's LAST session on a card, so a stray open pair is
+     * unreachable by any gesture while the TIME report and the standup
+     * count it up to NOW forever — a phantom session that silently
+     * inflates every number. The heal closes each stray at its OWN start
+     * (zero credit — any other end would be invented time); when one
+     * owner is open on several cards, the LATEST start keeps the clock,
+     * because it is the one still plausibly running.
+     *
+     * <p>Two DIFFERENT people each running a clock is not a stray and is
+     * left alone. Until 3.4 it was healed like one: every merge of two
+     * machines' boards closed one teammate's running session at zero
+     * credit.
      */
     private static void healOpenSessions(TaskBoard b) {
-        Card latestOpen = null;
+        java.util.Map<String, Session> latestOpen = new java.util.HashMap<>();
         for (Column col : b.columns) {
             for (Card c : col.cards) {
-                for (int s = 0; s < c.sessions.size() - 1; s++) {
-                    long[] sn = c.sessions.get(s);
-                    if (sn[1] == 0L) {
-                        sn[1] = sn[0];
+                for (Session sn : c.sessions) {
+                    if (sn.end != 0L) {
+                        continue;
                     }
-                }
-                if (c.clockedIn() && (latestOpen == null
-                        || c.sessions.get(c.sessions.size() - 1)[0]
-                        > latestOpen.sessions.get(latestOpen.sessions.size() - 1)[0])) {
-                    latestOpen = c;
+                    if (c.lastOf(sn.owner) != sn) {
+                        sn.end = sn.start; // open, but not its owner's last here
+                        continue;
+                    }
+                    Session best = latestOpen.get(sn.owner);
+                    if (best == null || sn.start > best.start) {
+                        latestOpen.put(sn.owner, sn);
+                    }
                 }
             }
         }
         for (Column col : b.columns) {
             for (Card c : col.cards) {
-                if (c.clockedIn() && c != latestOpen) {
-                    long[] open = c.sessions.get(c.sessions.size() - 1);
-                    open[1] = open[0];
+                for (Session sn : c.sessions) {
+                    if (sn.end == 0L && latestOpen.get(sn.owner) != sn) {
+                        sn.end = sn.start;
+                    }
                 }
             }
         }

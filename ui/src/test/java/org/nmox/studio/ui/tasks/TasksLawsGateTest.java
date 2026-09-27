@@ -225,9 +225,9 @@ class TasksLawsGateTest {
                 .as("ownership is recorded for a read that HAPPENED — a stamp"
                         + " on a file we could not read disarms the"
                         + " never-clobber guard for every later gesture")
-                .contains("!outcome.unreadable()")
+                .contains("!outcome.readOnly()")
                 .contains("tracker.noteSync(f)");
-        assertThat(body.indexOf("!outcome.unreadable()"))
+        assertThat(body.indexOf("!outcome.readOnly()"))
                 .as("the guard sits on the stamp, not somewhere after it")
                 .isLessThan(body.indexOf("tracker.noteSync(f)"));
 
@@ -239,7 +239,7 @@ class TasksLawsGateTest {
                         + " the gesture must stop rather than write a"
                         + " stand-in board over work nobody has seen")
                 .contains("if (readOnly) {")
-                .contains("Bundle.TasksTopComponent_unreadable(");
+                .contains("status(readOnlyReason)");
         assertThat(mutate.indexOf("if (readOnly) {"))
                 .as("the refusal comes before the mutation runs at all")
                 .isLessThan(mutate.indexOf("mutation.getAsBoolean()"));
