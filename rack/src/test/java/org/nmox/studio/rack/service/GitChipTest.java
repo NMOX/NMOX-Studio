@@ -62,6 +62,8 @@ class GitChipTest {
                 + "u UU N... 100644 100644 100644 100644 a b c x.js\n"
                 + "u AA N... 100644 100644 100644 100644 a b c y.js\n");
         assertThat(chip.label()).isEqualTo("⎇ main · merging · 2 conflicts");
+        assertThat(chip.spokenName()).as("a screen reader hears the merge and its conflicts too (the fold's gap)")
+                .isEqualTo("Git: branch main, merging, 2 conflicts");
         chip.porcelain("# branch.head main\n1 M. N... 100644 100644 100644 a b z.js\n");
         assertThat(chip.label()).as("resolved and staged, the merge still waits for its commit")
                 .isEqualTo("⎇ main ±1 · merging");
@@ -78,6 +80,7 @@ class GitChipTest {
         chip.aim(repo.toFile());
         chip.porcelain("u UU N... 100644 100644 100644 100644 a b c x.js\n");
         assertThat(chip.label()).isEqualTo("⎇ rebasing feature · 1 conflict");
+        assertThat(chip.spokenName()).contains("rebasing feature").endsWith(", 1 conflict");
         assertThat(chip.inProgress().operation())
                 .isEqualTo(org.nmox.studio.core.util.GitFacts.Operation.REBASE);
     }

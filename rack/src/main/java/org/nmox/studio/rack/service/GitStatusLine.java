@@ -107,6 +107,8 @@ import org.openide.windows.TopComponent;
     "# {0} the branch; {1}, {2}, {3} the optional clauses below, each carrying its own leading separator",
     "GitStatusLine_a11yName=Git: branch {0}{1}{2}{3}",
     "GitStatusLine_a11yChanged=, {0} changed",
+    "# a further clause of the chip's spoken name: the operation in progress, the conflicts (3.4)",
+    "GitStatusLine_a11yClause=, {0}",
     "GitStatusLine_a11yAhead=, {0} ahead",
     "GitStatusLine_a11yBehind=, {0} behind",
     "GitStatusLine_historyUnavailable=Git history unavailable: {0}"

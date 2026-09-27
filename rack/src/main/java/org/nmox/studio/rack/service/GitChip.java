@@ -137,11 +137,7 @@ final class GitChip {
             b.append(" ±").append(changeCount);
         }
         if (op != null && op.operation() != GitFacts.Operation.REBASE) {
-            b.append(" · ").append(switch (op.operation()) {
-                case MERGE -> Bundle.GitChip_merging();
-                case CHERRY_PICK -> Bundle.GitChip_cherryPicking();
-                default -> Bundle.GitChip_reverting();
-            });
+            b.append(" · ").append(operationWords(op));
         }
         if (conflicts > 0) {
             b.append(" · ").append(Bundle.GitChip_conflicts(conflicts));
@@ -156,6 +152,16 @@ final class GitChip {
         return b.toString();
     }
 
+    /** The words for an operation in progress, as the label and the spoken name both say them. */
+    private String operationWords(GitFacts.InProgress op) {
+        return switch (op.operation()) {
+            case MERGE -> Bundle.GitChip_merging();
+            case CHERRY_PICK -> Bundle.GitChip_cherryPicking();
+            case REBASE -> Bundle.GitChip_rebasing(op.rebasedBranch() == null ? branch : op.rebasedBranch());
+            default -> Bundle.GitChip_reverting();
+        };
+    }
+
     /**
      * What a screen reader says for the chip (3.4): the label's facts in
      * words — "Git: branch main, 2 changed, 2 ahead, 1 behind" — where the
@@ -168,9 +174,22 @@ final class GitChip {
             return null;
         }
         int[] ab = aheadBehind;
-        return Bundle.GitStatusLine_a11yName(branch,
-                changeCount != UNKNOWN ? Bundle.GitStatusLine_a11yChanged(String.valueOf(changeCount)) : "",
+        GitFacts.InProgress op = inProgress;
+        String spoken = Bundle.GitStatusLine_a11yName(branch,
+                changeCount != UNKNOWN && (op == null || changeCount > 0)
+                        ? Bundle.GitStatusLine_a11yChanged(String.valueOf(changeCount)) : "",
                 ab != null && ab[0] > 0 ? Bundle.GitStatusLine_a11yAhead(String.valueOf(ab[0])) : "",
                 ab != null && ab[1] > 0 ? Bundle.GitStatusLine_a11yBehind(String.valueOf(ab[1])) : "");
+        // the operation git stopped in and its conflicts, which the label
+        // leads with: a screen reader must hear "merging, 2 conflicts" too
+        // (the 3.4 fold — the label and the spoken name were built by two
+        // hands that could not see each other)
+        if (op != null) {
+            spoken += Bundle.GitStatusLine_a11yClause(operationWords(op));
+        }
+        if (conflicts > 0) {
+            spoken += Bundle.GitStatusLine_a11yClause(Bundle.GitChip_conflicts(conflicts));
+        }
+        return spoken;
     }
 }
