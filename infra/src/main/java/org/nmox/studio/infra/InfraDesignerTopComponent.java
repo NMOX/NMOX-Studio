@@ -242,7 +242,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
 
-        add(new InfraPalette(graph), BorderLayout.WEST);
+        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.WEST);
         add(canvas, BorderLayout.CENTER);
         add(properties, BorderLayout.EAST);
         add(buildToolbar(), BorderLayout.NORTH);
@@ -780,7 +780,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         wire.addActionListener(e -> canvas.wireFrom(node));
         menu.add(wire);
         JMenuItem remove = new JMenuItem(Bundle.InfraDesigner_removeFromDesign());
-        remove.addActionListener(e -> graph.removeNode(node));
+        remove.addActionListener(e -> canvas.removeNode(node)); // refused while a cloud op runs (53b)
         menu.add(remove);
         Point local = new Point(screenPoint);
         SwingUtilities.convertPointFromScreen(local, canvas);

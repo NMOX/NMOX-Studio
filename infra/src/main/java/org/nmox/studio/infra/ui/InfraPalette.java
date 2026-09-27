@@ -38,7 +38,17 @@ public class InfraPalette extends JPanel {
     private record Entry(NodeKind kind, String header) {
     }
 
+    /** A palette nothing locks (tests, and any host without a canvas lock). */
     public InfraPalette(InfraGraph graph) {
+        this(graph, () -> false);
+    }
+
+    /**
+     * @param refused asked before every add; true (having said why) while a
+     *        cloud operation holds the canvas — a palette drop was already
+     *        refused then (53b), and its double-click and Enter must be too
+     */
+    public InfraPalette(InfraGraph graph, java.util.function.BooleanSupplier refused) {
         super(new BorderLayout());
         setBackground(new Color(0x17, 0x17, 0x1B));
         setPreferredSize(new Dimension(190, 400));
@@ -78,7 +88,7 @@ public class InfraPalette extends JPanel {
         });
         Runnable addSelected = () -> {
             Entry entry = list.getSelectedValue();
-            if (entry != null && entry.kind() != null) {
+            if (entry != null && entry.kind() != null && !refused.getAsBoolean()) {
                 graph.addNode(entry.kind(), 120 + (int) (Math.random() * 80),
                         80 + (int) (Math.random() * 120));
             }

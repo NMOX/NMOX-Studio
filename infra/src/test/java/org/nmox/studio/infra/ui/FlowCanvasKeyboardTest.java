@@ -167,6 +167,33 @@ class FlowCanvasKeyboardTest {
         assertThat(graph.getNodes()).hasSize(before + 1);
     }
 
+    @Test
+    @DisplayName("while a cloud operation holds the canvas, the palette adds nothing and Remove and Delete remove nothing")
+    @SuppressWarnings("unchecked")
+    void lockedCanvasRefusesEveryStructuralGesture() {
+        InfraPalette palette = new InfraPalette(graph, canvas::refusedWhileLocked);
+        JList<Object> list = find(palette, JList.class);
+        list.setSelectedIndex(1);
+        int before = graph.getNodes().size();
+        canvas.setLocked(true);
+        KeyboardAccess.perform(list, KeyboardAccess.ENTER);
+        assertThat(graph.getNodes()).as("palette Enter mid-op").hasSize(before);
+        canvas.removeNode(droplet);
+        assertThat(graph.getNodes()).as("the node menu's Remove mid-op").contains(droplet);
+        canvas.selectNode(db);
+        for (java.awt.event.KeyListener kl : canvas.getKeyListeners()) {
+            kl.keyPressed(new java.awt.event.KeyEvent(canvas, java.awt.event.KeyEvent.KEY_PRESSED, 0, 0,
+                    java.awt.event.KeyEvent.VK_DELETE, java.awt.event.KeyEvent.CHAR_UNDEFINED));
+        }
+        assertThat(graph.getNodes()).as("Delete mid-op").contains(db);
+
+        canvas.setLocked(false);
+        KeyboardAccess.perform(list, KeyboardAccess.ENTER);
+        assertThat(graph.getNodes()).as("unlocked, the palette adds").hasSize(before + 1);
+        canvas.removeNode(droplet);
+        assertThat(graph.getNodes()).as("unlocked, Remove removes").doesNotContain(droplet);
+    }
+
     private static <T> T find(Container c, Class<T> type) {
         for (Component child : c.getComponents()) {
             if (type.isInstance(child)) {

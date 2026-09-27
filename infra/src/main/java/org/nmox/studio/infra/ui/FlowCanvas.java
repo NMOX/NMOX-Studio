@@ -317,9 +317,7 @@ public class FlowCanvas extends JPanel {
         if (from == null) {
             return;
         }
-        if (locked) {
-            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                    org.nmox.studio.core.util.PlainStatus.text(Bundle.FlowCanvas_lockedBanner()));
+        if (refusedWhileLocked()) {
             return;
         }
         java.util.List<InfraNode> targets = new java.util.ArrayList<>();
@@ -491,8 +489,35 @@ public class FlowCanvas extends JPanel {
         return locked;
     }
 
+    /**
+     * True, having said so on the status line, when a cloud operation holds
+     * the canvas (53b). Every structural gesture outside the canvas's own
+     * mouse handlers asks here — the palette's double-click and Enter, the
+     * node menu's Remove and Wire to…, the keyboard's Delete — so none of
+     * them can add or remove a resource mid-plan, and none refuses silently.
+     */
+    public boolean refusedWhileLocked() {
+        if (!locked) {
+            return false;
+        }
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                org.nmox.studio.core.util.PlainStatus.text(Bundle.FlowCanvas_lockedBanner()));
+        return true;
+    }
+
+    /** Removes {@code node} from the design, unless a cloud operation holds the canvas. */
+    public void removeNode(InfraNode node) {
+        if (node == null || refusedWhileLocked()) {
+            return;
+        }
+        graph.removeNode(node);
+        if (node == selectedNode) {
+            select(null, null);
+        }
+    }
+
     private void deleteSelection() {
-        if (locked) {
+        if (refusedWhileLocked()) {
             return; // a cloud op is running — structural edits are refused
         }
         if (selectedNode != null) {
