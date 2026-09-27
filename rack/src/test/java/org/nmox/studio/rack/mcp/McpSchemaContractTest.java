@@ -181,7 +181,8 @@ class McpSchemaContractTest {
         try {
             assertValid("live_runs", McpTools.liveRuns(org.nmox.studio.core.spi.LiveRuns.live()));
         } finally {
-            org.nmox.studio.core.spi.LiveRuns.stopAll();
+            org.nmox.studio.core.spi.LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+            org.nmox.studio.core.spi.LiveRuns.clearForTest();
         }
         assertValid("live_runs", McpTools.liveRuns(List.of()));
     }

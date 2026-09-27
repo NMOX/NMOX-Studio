@@ -41,6 +41,34 @@ public final class PlainText {
     }
 
     /**
+     * The words a markup-painted label shows, for a screen reader (3.4): the
+     * tags removed and the common entities decoded. A renderer that paints
+     * {@code <html>} (the platform's node renderer paints a file's git state
+     * that way) otherwise gives assistive technology its accessible name AS
+     * markup: VoiceOver read {@code <font color="#ff6464">a.txt</font>}.
+     * Null answers the empty string.
+     */
+    public static String words(String html) {
+        if (html == null) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder(html.length());
+        boolean inTag = false;
+        for (int i = 0; i < html.length(); i++) {
+            char c = html.charAt(i);
+            if (c == '<') {
+                inTag = true;
+            } else if (c == '>' && inTag) {
+                inTag = false;
+            } else if (!inTag) {
+                out.append(c);
+            }
+        }
+        return out.toString().replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")
+                .replace("&#39;", "'").replace("&nbsp;", " ").replace("&amp;", "&").strip();
+    }
+
+    /**
      * The characters that could open or close a tag, or break out of a
      * double- OR single-quoted attribute, as entities — so a spliced
      * external string can never become markup wherever an authored

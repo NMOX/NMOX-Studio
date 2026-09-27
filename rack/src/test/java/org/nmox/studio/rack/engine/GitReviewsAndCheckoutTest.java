@@ -96,4 +96,27 @@ class GitReviewsAndCheckoutTest {
         assertThat(untracked.allowed()).isTrue();
         assertThat(untracked.reason()).isEqualTo("2 untracked files stay in place.");
     }
+
+    @Test
+    @DisplayName("A checkout mid-rebase is refused by name even on a clean tree (3.4)")
+    void checkoutRefusedMidOperation() {
+        org.nmox.studio.core.util.GitFacts.InProgress rebase = new org.nmox.studio.core.util.GitFacts
+                .InProgress(org.nmox.studio.core.util.GitFacts.Operation.REBASE, "feature");
+        Verdict v = GitCheckoutGuard.judge("", rebase);
+        assertThat(v.allowed()).as("a rebase stopped at an edit step has a clean tree").isFalse();
+        assertThat(v.reason()).contains("rebase is in progress").contains("git rebase --abort");
+        assertThat(GitCheckoutGuard.judge("", new org.nmox.studio.core.util.GitFacts.InProgress(
+                org.nmox.studio.core.util.GitFacts.Operation.MERGE, null)).reason())
+                .contains("merge is in progress");
+        assertThat(GitCheckoutGuard.judge("", null)).isEqualTo(new Verdict(true, ""));
+        // every operation git can stop in is refused, by its own name (the 3.4 review)
+        for (org.nmox.studio.core.util.GitFacts.Operation op : org.nmox.studio.core.util.GitFacts.Operation.values()) {
+            Verdict refused = GitCheckoutGuard.judge("", new org.nmox.studio.core.util.GitFacts.InProgress(op, null));
+            assertThat(refused.allowed()).as(op.name()).isFalse();
+        }
+        assertThat(GitCheckoutGuard.judge("", new org.nmox.studio.core.util.GitFacts.InProgress(
+                org.nmox.studio.core.util.GitFacts.Operation.APPLYING_PATCHES, null)).reason()).contains("git am --abort");
+        assertThat(GitCheckoutGuard.judge("", new org.nmox.studio.core.util.GitFacts.InProgress(
+                org.nmox.studio.core.util.GitFacts.Operation.BISECT, null)).reason()).contains("git bisect reset");
+    }
 }

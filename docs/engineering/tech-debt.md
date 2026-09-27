@@ -20,6 +20,40 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
+
+### 125. A background child that outlives its script is not stopped
+
+A run is a process tree, and Stop ends the tree it can see: the root and,
+since 3.4, every descendant snapshotted at the moment of the kill — so a
+child that ignores SIGTERM no longer keeps its port after its shell died
+(bf077b310, with the grace a cleanly-exiting child needs). What is **not**
+covered: a script that ends with `server &` exits a millisecond after the
+fork, the server is reparented to launchd/init, and from then on nothing
+links it to the run — not Stop, not quitting the IDE, not the JVM reaper.
+
+3.4 built a sampler for it and took it out again. Measured by the hostile
+review of the build: the common shape got a row in **0 of 8** runs (the
+root is gone between samples), a double fork `(server &)` was missed 2 of
+3 times, and the bounded set filled with dead processes so a later server
+was never tracked. The rule was also wrong at its edge: sampling cannot
+tell a forgotten server from something a run starts on purpose to outlive
+it — the browser a dev server's `--open` launches, `gpg-agent` from a
+signed commit, an ssh ControlPersist master, a Gradle or Nx daemon the
+user's terminal shares — and Stop or quitting the IDE would have killed
+them. *A feature that sometimes kills the user's browser and usually
+misses the server it was for is worse than an honest gap.*
+
+**The design that would work:** start each run's root in its own process
+group (POSIX `setsid`/`setpgid`, a job object on Windows) and signal the
+group. A shell's `&` child stays in the group and is ended with it; a
+program that detaches deliberately calls `setsid` itself and leaves the
+group, so it is spared by construction. Java cannot set a child's process
+group, so it needs a spawn wrapper per platform — `setsid` exists on Linux,
+macOS has no such command — and the wrapper must never put the IDE's own
+group in reach. Deferred for that reason: it is a spawn-path change under
+every lane, and it needs walking on all three systems.
+
 ## Open — added by 3.2.0 (the second-week release)
 
 ### 122. ~~Russian and Ukrainian menu mnemonics do nothing~~ — CLOSED after 3.2.0

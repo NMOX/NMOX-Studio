@@ -34,7 +34,8 @@ class DeviceRunsJoinTheStopTest {
 
     @AfterEach
     void drain() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
         try {
             // belt and braces: a shell that outlived the kill ends itself on
             // its next turn round the loop, so nothing holds the @TempDir

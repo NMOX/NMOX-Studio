@@ -41,4 +41,43 @@ public final class SelfWriteTracker {
     public synchronized boolean isForeign(long mtime, long size) {
         return mtime != this.mtime || size != this.size;
     }
+
+    /** What {@link #beforeWrite} found on disk. */
+    public enum OnDisk {
+        /** The bytes this studio last read or wrote, or nothing at all: the write may go ahead. */
+        OURS,
+        /** Somebody else's bytes — a pull, a checkout, a teammate's edit, another tool. */
+        CHANGED,
+        /** Somebody else's bytes, holding git's unresolved merge conflict. */
+        CONFLICTED
+    }
+
+    /**
+     * Asked on the save lane immediately before a studio writes over
+     * {@code file} (3.4, question 1). A studio checked for a conflict only
+     * when it LOADED; a {@code git pull} with the IDE open then left a
+     * writable studio over a conflicted file, and the next Send, Run or
+     * edit replaced both people's work with one side's (the 3.4 review,
+     * in six studios). Anything but {@link OnDisk#OURS} means: write
+     * nothing, reload, and say why — the Task Board's rule since v2.7.0,
+     * now everyone's.
+     *
+     * <p>The conflict read happens only when the stamp is foreign, bounded
+     * by {@code maxBytes}; a file too big to read is simply CHANGED.
+     */
+    public OnDisk beforeWrite(File file, long maxBytes) {
+        if (!file.exists()) {
+            // nothing there (never written, or deleted): a write loses nobody's bytes
+            return OnDisk.OURS;
+        }
+        if (!isForeign(file.lastModified(), file.length())) {
+            return OnDisk.OURS;
+        }
+        try {
+            return MergeConflicts.hasMarkers(BoundedReads.read(file, maxBytes))
+                    ? OnDisk.CONFLICTED : OnDisk.CHANGED;
+        } catch (java.io.IOException unreadable) {
+            return OnDisk.CHANGED;
+        }
+    }
 }

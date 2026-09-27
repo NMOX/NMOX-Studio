@@ -70,6 +70,22 @@ public class KvasirDevice extends RackDevice {
     private final Knob modelKnob;
     private final Runnable recorderListener = this::onRecorderChange;
 
+    /**
+     * KVASIR's own lane (3.4). Its work is a network call to a model API
+     * and a keychain read that can wait on an unlock prompt; on the shared
+     * single-threaded device background lane a slow or stalled API queued
+     * every other device's background work behind it (DYNAMO, NPM-9000,
+     * ROSETTA and four more measured waiting while CONSULTING stayed lit).
+     * One thread, so KVASIR's own consults stay in order.
+     */
+    private static final org.openide.util.RequestProcessor CONSULT_LANE =
+            new org.openide.util.RequestProcessor("nmox-kvasir-consult", 1, true);
+
+    /** Runs {@code r} off the EDT on KVASIR's own lane, never the shared device lane. */
+    static org.openide.util.RequestProcessor.Task onConsultLane(Runnable r) {
+        return CONSULT_LANE.post(r);
+    }
+
     // ---- seams: production wiring, overridable by tests ----
     /** The model call. Package-private so a test can inject a canned transport. */
     KvasirClient client = new KvasirClient();
@@ -168,7 +184,7 @@ public class KvasirDevice extends RackDevice {
             return;
         }
         thinking(true);
-        offEdt(() -> {
+        onConsultLane(() -> {
             try {
                 autoConsultBody();
             } finally {
@@ -274,7 +290,7 @@ public class KvasirDevice extends RackDevice {
             return;
         }
         thinking(true);
-        offEdt(() -> {
+        onConsultLane(() -> {
             try {
                 // Peek whether a key exists so we refuse before prompting for
                 // consent or hitting the network — wipe the peek immediately.
@@ -447,7 +463,7 @@ public class KvasirDevice extends RackDevice {
         char[] entered = field.getPassword();
         boolean drop = forget.isSelected();
         KvasirProvider.remember(chosen);
-        offEdt(() -> {
+        onConsultLane(() -> {
             try {
                 if (drop) {
                     KvasirKeys.delete(chosen);

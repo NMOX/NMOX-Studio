@@ -225,9 +225,9 @@ class TasksLawsGateTest {
                 .as("ownership is recorded for a read that HAPPENED — a stamp"
                         + " on a file we could not read disarms the"
                         + " never-clobber guard for every later gesture")
-                .contains("!outcome.unreadable()")
+                .contains("!outcome.readOnly()")
                 .contains("tracker.noteSync(f)");
-        assertThat(body.indexOf("!outcome.unreadable()"))
+        assertThat(body.indexOf("!outcome.readOnly()"))
                 .as("the guard sits on the stamp, not somewhere after it")
                 .isLessThan(body.indexOf("tracker.noteSync(f)"));
 
@@ -239,10 +239,27 @@ class TasksLawsGateTest {
                         + " the gesture must stop rather than write a"
                         + " stand-in board over work nobody has seen")
                 .contains("if (readOnly) {")
-                .contains("Bundle.TasksTopComponent_unreadable(");
+                .contains("status(readOnlyReason)");
         assertThat(mutate.indexOf("if (readOnly) {"))
                 .as("the refusal comes before the mutation runs at all")
                 .isLessThan(mutate.indexOf("mutation.getAsBoolean()"));
+    }
+
+    @Test
+    @DisplayName("a rescued board and a failed save both SPEAK on the status line, not only in the log (3.4)")
+    void rescueAndSaveFailureSpeak() throws Exception {
+        String src = tc();
+        int reload = src.indexOf("private void reload()");
+        String body = src.substring(reload, src.indexOf("\n    }", reload));
+        assertThat(body).as("a starter that replaced a malformed board says where the copy went")
+                .contains("status(Bundle.TasksTopComponent_rescued(");
+        int m = src.indexOf("private boolean mutate(");
+        String mutate = src.substring(m, src.indexOf("\n    }", m));
+        int caught = mutate.indexOf("catch (IOException ex)");
+        assertThat(caught).isPositive();
+        assertThat(mutate.substring(caught))
+                .as("a full disk is told to the person looking at an unsaved board")
+                .contains("Bundle.TasksTopComponent_saveFailed(");
     }
 
     @Test

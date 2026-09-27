@@ -160,10 +160,50 @@ public final class BlockWorkspace {
 
     // ---- persistence ----
 
+    /**
+     * The committed shape: the version and the components — and NOT which
+     * component is open (3.4). That is one person's state, and it used to be
+     * rewritten into the checked-in file on every switch, so two people
+     * working in different components conflicted on a line neither of them
+     * cared about. The open component is kept per user, per project
+     * ({@link BlockActiveMemory}); {@link #fromJson} still reads a legacy
+     * {@code active} once, so an old file opens where its author left it.
+     */
+    /** The workspace format this build writes; a higher {@code version} came from a newer NMOX Studio (3.4). */
+    public static final int FORMAT = 2;
+
+    /**
+     * A workspace or doc in a format newer than this build writes (3.4).
+     * Until 3.4 {@code version} was written and never read, so a newer
+     * build's added field loaded, was dropped by {@link #toJson}, and the
+     * next ordinary edit saved the loss. Refused, typed, so the studio leaves
+     * the file alone rather than starting fresh over it.
+     */
+    public static final class NewerFormatException extends IllegalArgumentException {
+        private static final long serialVersionUID = 1L;
+        private final int version;
+        private final int writes;
+
+        NewerFormatException(int version, int writes) {
+            super("format " + version + " is newer than " + writes);
+            this.version = version;
+            this.writes = writes;
+        }
+
+        /** The format the file says it is in. */
+        public int version() {
+            return version;
+        }
+
+        /** The format this build writes for that object. */
+        public int writes() {
+            return writes;
+        }
+    }
+
     public JSONObject toJson() {
         JSONObject o = new JSONObject();
-        o.put("version", 2);
-        o.put("active", active);
+        o.put("version", FORMAT);
         JSONArray arr = new JSONArray();
         for (BlockDoc d : components) {
             arr.put(d.toJson());
@@ -185,6 +225,10 @@ public final class BlockWorkspace {
             List<BlockDoc> one = new ArrayList<>();
             one.add(BlockDoc.fromJson(o));
             return new BlockWorkspace(one, 0);
+        }
+        int version = o.optInt("version", FORMAT);
+        if (version > FORMAT) {
+            throw new NewerFormatException(version, FORMAT);
         }
         if (arr.length() == 0) {
             throw new IllegalArgumentException("components must not be empty");

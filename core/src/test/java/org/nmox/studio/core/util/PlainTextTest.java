@@ -57,4 +57,14 @@ class PlainTextTest {
         assertThat(rendered[0]).as("the property on the component does not stop the tooltip's html view").isTrue();
         assertThat(rendered[1]).as("the text guard does").isFalse();
     }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("words: what a markup-painted row says, tags gone, entities decoded (the 3.4 walk)")
+    void wordsOfMarkup() {
+        org.assertj.core.api.Assertions.assertThat(PlainText.words(
+                "<font color=\"#ff6464\">a.txt</font><font color=\"#ffffff\"> [UU]</font>")).isEqualTo("a.txt [UU]");
+        org.assertj.core.api.Assertions.assertThat(PlainText.words("<html><b>a &amp; b &lt;c&gt;</b>")).isEqualTo("a & b <c>");
+        org.assertj.core.api.Assertions.assertThat(PlainText.words("plain")).isEqualTo("plain");
+        org.assertj.core.api.Assertions.assertThat(PlainText.words(null)).isEmpty();
+    }
 }

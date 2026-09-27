@@ -33,7 +33,7 @@ public class GitDevice extends CommandDevice {
         RackButton commit = place(new RackButton("COMMIT", RackStyle.MUTATE), 350, 52);
         RackButton push = place(new RackButton("PUSH", RackStyle.MUTATE), 414, 52);
 
-        status.addActionListener(e -> launch(List.of("git", "status", "--short")));
+        status.addActionListener(e -> launch(List.of("git", "--no-optional-locks", "status", "--short")));
         pull.addActionListener(e -> launch(List.of("git", "pull")));
         push.addActionListener(e -> launch(List.of("git", "push")));
         commit.addActionListener(e -> {
@@ -81,13 +81,13 @@ public class GitDevice extends CommandDevice {
                 branch::append, code -> onEdt(() ->
                         branchLcd.setText(code == 0 ? branch.toString() : "NO REPO")));
         StringBuilder dirt = new StringBuilder();
-        CommandProbe.run(projectDir(), List.of("git", "status", "--porcelain"),
+        CommandProbe.run(projectDir(), List.of("git", "--no-optional-locks", "status", "--porcelain"),
                 dirt::append, code -> onEdt(() ->
                         dirtyLed.setOn(code == 0 && dirt.length() > 0)));
     }
 
     @Override
     protected List<String> buildCommand() {
-        return List.of("git", "status", "--short");
+        return List.of("git", "--no-optional-locks", "status", "--short");
     }
 }

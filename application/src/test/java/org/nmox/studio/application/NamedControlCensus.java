@@ -52,7 +52,7 @@ import java.util.stream.Stream;
  */
 final class NamedControlCensus {
 
-    private static final List<String> MODULES = List.of("core", "editor", "tools", "rack",
+    static final List<String> MODULES = List.of("core", "editor", "tools", "rack",
             "project", "ui", "apiclient", "dbstudio", "web3", "infra");
 
     private NamedControlCensus() {

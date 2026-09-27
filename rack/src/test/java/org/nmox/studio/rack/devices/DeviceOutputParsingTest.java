@@ -181,7 +181,7 @@ class DeviceOutputParsingTest {
         try {
             GitDevice git = new GitDevice();
             rack.addDevice(git);
-            assertThat(git.buildCommand()).containsExactly("git", "status", "--short");
+            assertThat(git.buildCommand()).containsExactly("git", "--no-optional-locks", "status", "--short");
         } finally {
             rack.shutdown();
         }

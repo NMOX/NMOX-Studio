@@ -93,7 +93,8 @@ class VsCodeTaskSearchProviderTest {
         VsCodeTaskSearchProvider.npmRunner = realNpm;
         VsCodeTaskSearchProvider.statusSink = realStatus;
         VsCodeTaskSearchProvider.host = realHost;
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
     }
 
     private static List<String> labels(List<VsCodeTaskSearchProvider.Item> items) {

@@ -210,6 +210,7 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_sendFailed=Send failed — {0}",
     "ApiClientTopComponent_cancelledAfter=Cancelled  ·  {0,number,0}ms",
     "ApiClientTopComponent_noRouteVerdict=No route — {0}  ·  {1,number,0}ms",
+    "ApiClientTopComponent_bodyBrokeVerdict=HTTP {0,number,0} arrived, then {1}  ·  {2,number,0}ms",
     // the verdict strip is PlainText.plain-guarded; {0} is the numeric HTTP status
     "ApiClientTopComponent_verdict={0,number,0}  ·  {1,number,0}ms  ·  {2}",
     "ApiClientTopComponent_truncatedAt=  ·  body truncated at {0}",
@@ -229,6 +230,13 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_couldNotRead=Couldn''t read {0} — starting empty",
     "ApiClientTopComponent_backupKept=The unreadable original was kept at {0}.",
     "ApiClientTopComponent_workspaceReadOnly={0} could not be read — the workspace is read-only so nothing overwrites it",
+    // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
+    "ApiClientTopComponent_workspaceConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
+    "ApiClientTopComponent_workspaceNewer={0} was written by a newer NMOX Studio — it is read-only here so nothing it holds is lost",
+    // {0} is the auth scheme's own name (Bearer, Basic)
+    "ApiClientTopComponent_tokenMissing=Not sent — this request uses {0} authentication and this machine’s keychain holds no token for it. Tokens stay in each person’s own keychain, never in the shared file: enter yours on the Auth tab.",
+    // {0} is the auth type's name as a newer version wrote it
+    "ApiClientTopComponent_authUnknown=Not sent — this request’s authentication ({0}) was set by a newer NMOX Studio, and this version cannot apply it.",
     "ApiClientTopComponent_cannotSave=API Studio can't save its workspace",
     "ApiClientTopComponent_notPersisted=Changes are not being persisted: {0}",
     "ApiClientTopComponent_offerCreateEnvironment=Click to create environment \"{0}\" with '{{'{1}'}}' set",
@@ -237,7 +245,12 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_changedOnDisk={0} changed on disk — Reload?",
     "ApiClientTopComponent_unsavedEditsReload=You have unsaved edits; click to reload from disk and discard them",
     "ApiClientTopComponent_reloaded=Reloaded {0}",
-    "ApiClientTopComponent_pickedUpChanges=Picked up changes made outside the studio"
+    "ApiClientTopComponent_pickedUpChanges=Picked up changes made outside the studio",
+    "ApiClientTopComponent_notWrittenReloaded=Your last change was not written over it — the file was reloaded as it is now",
+    "# {0} is the authentication scheme, Bearer or Basic",
+    "ApiClientTopComponent_tokenEmpty=Not sent — this request’s {0} credential resolves to nothing: a variable it names is unset or empty in the active environment.",
+    "ApiClientTopComponent_basicNoColon=Not sent — this request’s Basic credential has no user:password colon once its variables resolve, so there is no header to send.",
+    "ApiClientTopComponent_authHeaderEmpty=Not sent — the Authorization header resolves to no credential: a variable it names is unset or empty in the active environment."
 })
 public final class ApiClientTopComponent extends TopComponent {
 
@@ -313,6 +326,13 @@ public final class ApiClientTopComponent extends TopComponent {
      * so writes are refused out loud until the file can be read again.
      */
     private boolean workspaceReadOnly;
+    /**
+     * What the strip says while {@link #workspaceReadOnly} holds — the one
+     * of three reasons that applies (3.4): the file could not be read, it
+     * holds git's unresolved merge conflict, or a newer NMOX Studio wrote
+     * values this one would drop. Every refused save repeats it.
+     */
+    private String readOnlyText = "";
     /** Follows the rack's mid-session re-aims; see onProjectReaimed. */
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
@@ -446,7 +466,8 @@ public final class ApiClientTopComponent extends TopComponent {
         envCombo.addActionListener(e -> {
             if (!loading && envCombo.getSelectedItem() != null) {
                 workspace.activeEnvironment = (String) envCombo.getSelectedItem();
-                touch();
+                // one person's pick, not the team's file (3.4)
+                savePersonal();
             }
         });
         bar.add(envCombo);
@@ -1292,7 +1313,9 @@ public final class ApiClientTopComponent extends TopComponent {
                 org.nmox.studio.apiclient.model.SendHistory.of(
                         System.currentTimeMillis(), sent, status, durationMs));
         refreshHistory();
-        touch();
+        // a Send used to rewrite the committed .nmoxapi.json (3.4): the
+        // history is this person's, so it goes to their own state only
+        savePersonal();
     }
 
     private void restoreFromHistory(org.nmox.studio.apiclient.model.SendHistory.Entry entry) {
@@ -1332,7 +1355,7 @@ public final class ApiClientTopComponent extends TopComponent {
         }
         workspace.history.clear();
         refreshHistory();
-        touch();
+        savePersonal();
     }
 
     // ---- center: request editor over response viewer ----
@@ -1611,6 +1634,19 @@ public final class ApiClientTopComponent extends TopComponent {
                 // already off the EDT — a first use of this request's
                 // auth loads its token here, right where it's needed
                 hydrateAuthNow(request);
+                String refusal = credentialRefusal(request, vars);
+                if (refusal != null) {
+                    // 3.4: a teammate's clone has none of this person's
+                    // tokens; sending anyway went out with no Authorization
+                    // header and read as the API's fault. Refused, in words,
+                    // and nothing is recorded — nothing was sent.
+                    delivered = true;
+                    SwingUtilities.invokeLater(() -> {
+                        sendButton.setText(Bundle.ApiClientTopComponent_send());
+                        verdict(refusal, FAIL_RED);
+                    });
+                    return;
+                }
                 ApiResponse response = client.send(request, vars);
                 List<TestRunner.Result> results = TestRunner.run(request, response);
                 // the pretty re-parse belongs HERE: on the EDT it froze
@@ -1644,6 +1680,28 @@ public final class ApiClientTopComponent extends TopComponent {
         });
     }
 
+    /**
+     * Why a request may not be sent as it stands, or null when it may
+     * (3.4). Pure over the request after its token was looked up, so the
+     * words are tested without a window.
+     */
+    static String credentialRefusal(Request request) {
+        return credentialRefusal(request, Map.of());
+    }
+
+    /** The same, with the active environment's variables resolved (3.4). */
+    static String credentialRefusal(Request request, Map<String, String> vars) {
+        String scheme = request.authType == AuthType.BASIC ? "Basic" : "Bearer";
+        return switch (ApiClient.credential(request, vars)) {
+            case PRESENT -> null;
+            case MISSING -> Bundle.ApiClientTopComponent_tokenMissing(scheme);
+            case EMPTY -> Bundle.ApiClientTopComponent_tokenEmpty(scheme);
+            case NO_COLON -> Bundle.ApiClientTopComponent_basicNoColon();
+            case HEADER_EMPTY -> Bundle.ApiClientTopComponent_authHeaderEmpty();
+            case UNKNOWN_TYPE -> Bundle.ApiClientTopComponent_authUnknown(request.foreignAuthType);
+        };
+    }
+
     private void showResponse(ApiResponse r, List<TestRunner.Result> results, String display) {
         sendButton.setText(Bundle.ApiClientTopComponent_send());
         sendButton.setEnabled(true);
@@ -1652,7 +1710,13 @@ public final class ApiClientTopComponent extends TopComponent {
         lastMethod = current == null ? "GET" : current.method;
         lastUrl = current == null ? "" : current.url;
         explainButton.setEnabled(true);
-        if (!r.reached()) {
+        if (r.bodyBroke()) {
+            // the server answered and the body broke off: say both halves
+            verdict(Bundle.ApiClientTopComponent_bodyBrokeVerdict(r.headStatus(), r.error(), r.millis()),
+                    FAIL_RED);
+            responseBody.setText(r.error());
+            refindInBody();
+        } else if (!r.reached()) {
             boolean cancelled = "cancelled".equals(r.error());
             verdict(cancelled ? Bundle.ApiClientTopComponent_cancelledAfter(r.millis())
                     : Bundle.ApiClientTopComponent_noRouteVerdict(r.error(), r.millis()), cancelled ? Color.GRAY : FAIL_RED);
@@ -2155,9 +2219,21 @@ public final class ApiClientTopComponent extends TopComponent {
      * the studio stamped it as its own, and the next edit wrote the starter
      * over it.
      */
-    private WorkspaceIO.LoadOutcome readWorkspace(File dir) {
+    private Loaded readWorkspace(File dir) {
         WorkspaceIO.LoadOutcome outcome = WorkspaceIO.loadGuarded(dir);
-        if (outcome.backup() != null) {
+        // one person's history and active environment (3.4), read on the
+        // same thread as the shared file and applied on the EDT with it
+        String personal = org.nmox.studio.core.util.PersonalState.read(
+                dir, WorkspaceIO.PERSONAL_STUDIO);
+        if (outcome.conflicted()) {
+            SwingUtilities.invokeLater(() -> balloon(
+                    Bundle.ApiClientTopComponent_workspaceConflicted(WorkspaceIO.FILENAME),
+                    null, false, null));
+        } else if (outcome.newerFormat()) {
+            SwingUtilities.invokeLater(() -> balloon(
+                    Bundle.ApiClientTopComponent_workspaceNewer(WorkspaceIO.FILENAME),
+                    null, false, null));
+        } else if (outcome.backup() != null) {
             // corrupt file: the IO layer copied it aside BEFORE handing us
             // the empty fallback (the next autosave can't clobber it) — say so
             File backup = outcome.backup();
@@ -2173,7 +2249,22 @@ public final class ApiClientTopComponent extends TopComponent {
                     Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
                     false, null));
         }
-        return outcome;
+        return new Loaded(outcome, personal);
+    }
+
+    /** One disk read's result: the shared file's outcome and this person's document. */
+    private record Loaded(WorkspaceIO.LoadOutcome outcome, String personal) {
+    }
+
+    /** The sentence the strip keeps while the bound file must not be written. */
+    private static String readOnlyText(WorkspaceIO.LoadOutcome outcome) {
+        if (outcome.conflicted()) {
+            return Bundle.ApiClientTopComponent_workspaceConflicted(WorkspaceIO.FILENAME);
+        }
+        if (outcome.newerFormat()) {
+            return Bundle.ApiClientTopComponent_workspaceNewer(WorkspaceIO.FILENAME);
+        }
+        return Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME);
     }
 
     /**
@@ -2213,9 +2304,16 @@ public final class ApiClientTopComponent extends TopComponent {
      * all — so the studio binds READ-ONLY rather than trusting a
      * comparison against bytes it does not hold.
      */
-    private void applyWorkspace(WorkspaceIO.LoadOutcome outcome, File dir) {
-        workspaceReadOnly = outcome.unreadable();
-        workspace = outcome.workspace() != null ? outcome.workspace() : starterWorkspace();
+    private void applyWorkspace(Loaded loaded, File dir) {
+        WorkspaceIO.LoadOutcome outcome = loaded.outcome();
+        workspaceReadOnly = outcome.readOnly();
+        readOnlyText = workspaceReadOnly ? readOnlyText(outcome) : "";
+        // a conflicted file's stand-in is EMPTY, never the starter: the
+        // starter would claim a collection this project does not have
+        workspace = outcome.workspace() != null ? outcome.workspace()
+                : outcome.conflicted() ? new Workspace() : starterWorkspace();
+        WorkspaceIO.applyPersonal(workspace, loaded.personal());
+        adoptDefaultEnvironment(workspace);
         current = null;
         loading = true;
         try {
@@ -2244,8 +2342,7 @@ public final class ApiClientTopComponent extends TopComponent {
         if (workspaceReadOnly) {
             // the strip keeps it: this is the state the window is IN, not a
             // passing notice, and every refused save says it again
-            verdict(Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
-                    Color.GRAY);
+            verdict(readOnlyText, Color.GRAY);
         }
         // select the first request so the editor isn't blank
         if (!workspace.collections.isEmpty() && !workspace.collections.get(0).requests.isEmpty()) {
@@ -2301,6 +2398,42 @@ public final class ApiClientTopComponent extends TopComponent {
         }
     }
 
+    /**
+     * EDT: writes this person's history and active environment (3.4) — the
+     * state a Send or an environment pick changes. Those gestures used to
+     * rewrite the committed {@code .nmoxapi.json} every time, so two people
+     * sharing a project conflicted on every merge over state neither meant
+     * to share; now they touch only {@code core.util.PersonalState}. The
+     * snapshot is taken here (the model is EDT-confined) and the write
+     * rides the save lane. It is written even while the shared file is
+     * read-only: it is not that file.
+     */
+    private void savePersonal() {
+        File dir = boundDir();
+        String json = WorkspaceIO.personalJson(workspace);
+        SAVES.save(() -> {
+            try {
+                org.nmox.studio.core.util.PersonalState.write(dir, WorkspaceIO.PERSONAL_STUDIO, json);
+            } catch (java.io.IOException ex) {
+                java.util.logging.Logger.getLogger(ApiClientTopComponent.class.getName())
+                        .log(java.util.logging.Level.WARNING,
+                                "API Studio could not keep its history for " + dir, ex);
+            }
+        });
+    }
+
+    /**
+     * The active environment is one person's choice, so a teammate's clone
+     * arrives with none (3.4). The combo shows the first environment in
+     * that case, so the workspace resolves {@code {{vars}}} against the
+     * one on screen instead of against nothing.
+     */
+    static void adoptDefaultEnvironment(Workspace w) {
+        if (w.active() == null && !w.environments.isEmpty()) {
+            w.activeEnvironment = w.environments.get(0).name;
+        }
+    }
+
     /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
@@ -2318,13 +2451,18 @@ public final class ApiClientTopComponent extends TopComponent {
             // collection, environment and history row with a starter.
             // Measured through this exact path on an over-cap file:
             // 9,437,184 bytes became 550. The refusal speaks rather than
-            // failing silently.
-            verdict(Bundle.ApiClientTopComponent_workspaceReadOnly(WorkspaceIO.FILENAME),
-                    Color.GRAY);
+            // failing silently. (3.4: the same holds for a file holding git's
+            // merge conflict and one a newer version wrote — each says which.)
+            verdict(readOnlyText, Color.GRAY);
             return;
         }
         File target = new File(boundDir(), WorkspaceIO.FILENAME);
         String json = WorkspaceIO.toJson(workspace);
+        // the shared file no longer carries the history or the active
+        // environment (3.4); writing this person's copy with every shared
+        // save is what lets a pre-3.4 file's legacy rows move over before
+        // the shared write drops them
+        savePersonal();
         // Snapshot id->token on the EDT (the model is EDT-confined), push
         // to the keychain off-EDT on the same lane BEFORE the file write,
         // so the secret is durable before the tokenless JSON lands.
@@ -2355,6 +2493,16 @@ public final class ApiClientTopComponent extends TopComponent {
      * never observe the write without the stamp.
      */
     private void writeSnapshot(File target, String json) {
+        // 3.4: the load checked the file; nothing checked it again before a
+        // write, so a `git pull` landing a conflict after the bind was
+        // replaced by this window's pre-merge copy on the next edit or
+        // Send. Asked here, on the lane, immediately before the write.
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = selfWrites.beforeWrite(
+                target, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), json);
             selfWrites.noteSync(target);
@@ -2372,6 +2520,24 @@ public final class ApiClientTopComponent extends TopComponent {
                         Bundle.ApiClientTopComponent_notPersisted(ex.getMessage()),
                         null);
             }
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing. The
+     * Task Board's rule: say so and read the file as it is now — a
+     * conflicted one binds read-only (its own balloon and strip say why),
+     * a merely changed one comes back writable, and the edit that could
+     * not be written is named as lost rather than left to look saved.
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        saveDebounce.stop();
+        loadWorkspace();
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            String detail = Bundle.ApiClientTopComponent_notWrittenReloaded();
+            verdict(detail, Color.GRAY);
+            balloon(Bundle.ApiClientTopComponent_changedOnDisk(WorkspaceIO.FILENAME),
+                    detail, false, null);
         }
     }
 
@@ -2531,7 +2697,7 @@ public final class ApiClientTopComponent extends TopComponent {
             SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
         }
         RP.post(() -> {
-            WorkspaceIO.LoadOutcome loaded = readWorkspace(aimed);
+            Loaded loaded = readWorkspace(aimed);
             SwingUtilities.invokeLater(() -> {
                 if (!rebind.shouldApply(aimed, projectDir())) {
                     return; // re-aimed again while reading — the newer aim wins
@@ -2647,7 +2813,23 @@ public final class ApiClientTopComponent extends TopComponent {
         if (!selfWrites.isForeign(mtime, size)) {
             return; // our save landed between the verdict and this dispatch
         }
-        if (saveDebounce.isRunning()) {
+        if (workspaceReadOnly) {
+            // a read-only bind has nothing it may save, so edits pending in
+            // the debounce are not the user's to lose: the file changed —
+            // a merge conflict resolved in git, a newer file replaced, a
+            // permission fixed — so read it again and let it say what it is
+            saveDebounce.stop();
+            loadWorkspace();
+            if (!workspaceReadOnly) {
+                balloon(Bundle.ApiClientTopComponent_reloaded(WorkspaceIO.FILENAME),
+                        Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
+            }
+        } else if (saveDebounce.isRunning()) {
+            // the pending save must not land on the file that just changed
+            // (3.4: it did, on a conflicted one): stop it; the edits stay on
+            // screen until the user reloads, and a further edit's save is
+            // refused by writeSnapshot's check rather than written over it
+            saveDebounce.stop();
             balloon(Bundle.ApiClientTopComponent_changedOnDisk(WorkspaceIO.FILENAME),
                     Bundle.ApiClientTopComponent_unsavedEditsReload(),
                     false, e -> {

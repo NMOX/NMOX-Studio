@@ -70,9 +70,9 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_theSavedPatch=the saved patch",
     "RackTopComponent_noPatchInProject=No {0} in project.",
     "RackTopComponent_presetsButton=Presets ▾",
-    "RackTopComponent_presetsTooltip=Wire a ready-made pipeline into the rack — drop a saved patch into ~/.nmox/presets.d to add your own",
+    "RackTopComponent_presetsTooltip=Wire a ready-made pipeline into the rack \u2014 drop a saved patch into ~/.nmox/presets.d to add your own",
     "RackTopComponent_exportCi=Export CI…",
-    "RackTopComponent_exportCiTooltip=Compile this patch into .github/workflows/nmox-rack.yml — the same commands the rack runs, as a GitHub Actions pipeline",
+    "RackTopComponent_exportCiTooltip=Compile this patch into .github/workflows/nmox-rack.yml \u2014 the same commands the rack runs, as a GitHub Actions pipeline",
     "RackTopComponent_exported=Exported {0}",
     "RackTopComponent_exportFailed=Could not export the CI workflow: {0}",
     "RackTopComponent_stopAll=Stop All",
@@ -81,44 +81,46 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_stoppedMany=Stopped {0} tools",
     "RackTopComponent_stoppingOne=Stopping {0} tool…",
     "RackTopComponent_stoppingMany=Stopping {0} tools…",
-    "RackTopComponent_replaceConfirm=Replace the rack with {0}? This patch has unsaved changes, and loading cannot be undone — save it first if you want to keep it.",
+    "RackTopComponent_replaceConfirm=Replace the rack with {0}? This patch has unsaved changes, and loading cannot be undone \u2014 save it first if you want to keep it.",
     "RackTopComponent_replaceTitle=Replace Rack",
     "RackTopComponent_thePreset=the {0} preset",
     "RackTopComponent_presetFailed=Could not wire the preset: {0}",
     "RackTopComponent_yoursItem={0} · yours",
     "RackTopComponent_loadFailed=Could not load the patch: {0}",
     "RackTopComponent_shareRack=Share…",
-    "RackTopComponent_shareTooltip=Save this rack as a file another NMOX Studio user can import — commands and settings travel, your home directory does not",
+    "RackTopComponent_shareTooltip=Save this rack as a file another NMOX Studio user can import \u2014 commands and settings travel, your home directory does not",
     "RackTopComponent_shareTitle=Share Rack As",
     "RackTopComponent_shareFilter=Rack patch (*.nmoxrack.json)",
     "RackTopComponent_sharedLabel={0}  [shared]",
     "RackTopComponent_shareFailed=Could not share the rack: {0}",
+    "# {0} - the file name the sender chose",
+    "RackTopComponent_shareNotThePatch=Not shared: {0} is the name of a project\u2019s own rack. Share writes a copy for someone else \u2014 choose another name.",
     "RackTopComponent_copiedLabel={0}  [copied]",
     "RackTopComponent_keptLabel=[kept as {0}]",
-    "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
+    "RackTopComponent_alreadyKept=My Racks already holds {0} \u2014 give this rack another name, or remove that one in the Rack Gallery first.",
     "# {0} - device count, {1} - cable count; both take plural branches",
     "RackTopComponent_leavingSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Settings that travel:",
     "# {0} - device count, {1} - cable count; both take plural branches",
-    "RackTopComponent_leavingNothing={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
-    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — remove before sharing (shown masked here):",
-    "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
+    "RackTopComponent_leavingNothing={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. No command, path or address travels in its settings \u2014 the devices work out their commands from the project they land in.",
+    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL \u2014 remove before sharing (shown masked here):",
+    "RackTopComponent_leavingPaths=Still names somebody\u2019s home directory:",
     "RackTopComponent_importRack=Import…",
-    "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
+    "RackTopComponent_importTooltip=Mount a rack someone shared as a file \u2014 you see what it holds before anything mounts, and nothing runs until you press GO",
     "RackTopComponent_importTitle=Import Rack",
     "# {0} - device count, {1} - cable count; both take plural branches",
     "RackTopComponent_importSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Nothing runs on import.",
     "# {0} - how many devices were saved with a self-starting switch on; never shown for none",
     "RackTopComponent_importAtRest={0,choice,1#One device was saved with a switch on; it arrives at rest.|1<{0} devices were saved with a switch on; they arrive at rest.}",
     "RackTopComponent_importUnknown=Not in this install (they mount as placeholders that keep their cables): {0}",
-    "RackTopComponent_importSettings=Settings this rack carries — read them before mounting:",
+    "RackTopComponent_importSettings=Settings this rack carries \u2014 read them before mounting:",
     "RackTopComponent_importMount=Mount",
     "RackTopComponent_importFailed=Could not import the rack: {0}",
     "RackTopComponent_theSharedRack=the shared rack",
     "RackTopComponent_importSharedBy=Shared by {0}",
-    "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install — update to get everything it uses.",
+    "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install \u2014 update to get everything it uses.",
     "RackTopComponent_importCarriesWhole=Every cable and setting it uses exists in this install.",
-    "RackTopComponent_importLostCables=Cables this install cannot connect — it will mount WITHOUT them:",
-    "RackTopComponent_importLostSettings=Settings this install’s devices do not have — ignored:",
+    "RackTopComponent_importLostCables=Cables this install cannot connect \u2014 it will mount WITHOUT them:",
+    "RackTopComponent_importLostSettings=Settings this install\u2019s devices do not have \u2014 ignored:",
     "RackTopComponent_importTooNew=This rack file is in format {0}; this install reads format {1}. Update NMOX Studio to import it.",
     "RackTopComponent_importClipboard=Import Rack from Clipboard",
     "RackTopComponent_gallery=Rack Gallery…",
@@ -129,10 +131,10 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_theRack=the {0} rack",
     "RackTopComponent_clipboardEmpty=The clipboard holds no text.",
     "RackTopComponent_clipboardTooLarge=The clipboard text is too large to be a rack.",
-    "RackTopComponent_clipboardNotJson=The clipboard text is not a rack — copy the whole file, from its first brace to its last.",
+    "RackTopComponent_clipboardNotJson=The clipboard text is not a rack \u2014 copy the whole file, from its first brace to its last.",
     "RackTopComponent_clipboardNoDevices=The clipboard holds JSON, but not a rack: it has no devices.",
-    "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again.",
-    "RackTopComponent_galleryAimMoved=The project changed while the gallery was open — nothing was mounted. Choose the rack again."
+    "RackTopComponent_importAimMoved=The project changed while the manifest was open \u2014 nothing was mounted. Import again.",
+    "RackTopComponent_galleryAimMoved=The project changed while the gallery was open \u2014 nothing was mounted. Choose the rack again."
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -168,8 +170,14 @@ public final class RackTopComponent extends TopComponent {
                 || TopComponent.getRegistry().getActivated() != RackTopComponent.this) {
             return false;
         }
-        boolean inText = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .getFocusOwner() instanceof javax.swing.text.JTextComponent;
+        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .getFocusOwner();
+        // a modal dialog opened from the rack (Patch Cable…, an LCD edit)
+        // leaves the rack the activated window: its keys are the dialog's
+        if (!keysAreTheRacks(owner, RackTopComponent.this)) {
+            return false;
+        }
+        boolean inText = isText(owner);
         // ⌘Z undo / ⇧⌘Z redo — the biggest missing safety net on the rack
         if (e.getKeyCode() == KeyEvent.VK_Z && (e.getModifiersEx() & MENU_MASK) != 0 && !inText) {
             boolean shift = (e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0;
@@ -183,29 +191,66 @@ public final class RackTopComponent extends TopComponent {
         if (e.getModifiersEx() != 0) {
             return false;
         }
+        java.awt.Component focus = java.awt.KeyboardFocusManager
+                .getCurrentKeyboardFocusManager().getFocusOwner();
         if (e.getKeyCode() == KeyEvent.VK_TAB) {
-            // faceplate controls are keyboard-operable: while one of them
-            // (or the REPL's text field) holds focus, Tab must traverse to
-            // the next control, not flip the rack — the toolbar toggle
-            // still flips at any time
-            java.awt.Component focus = java.awt.KeyboardFocusManager
-                    .getCurrentKeyboardFocusManager().getFocusOwner();
-            if (focus != null && focus != rackPanel && focus.isFocusable()
-                    && javax.swing.SwingUtilities.isDescendingFrom(focus, rackPanel)) {
+            if (!tabFlipsRack(focus, rackPanel, RackTopComponent.this)) {
                 return false;
             }
             flipToggle.doClick();
             return true;
         }
         if ((e.getKeyCode() == KeyEvent.VK_DELETE || e.getKeyCode() == KeyEvent.VK_BACK_SPACE)
-                && rackPanel.getSelected() != null
                 // never swallow Delete while something editable has focus
-                && !inText) {
-            rackPanel.removeSelected();
+                && !inText
+                && rackPanel.removeTarget(focus) != null) {
+            rackPanel.removeFor(focus);
             return true;
         }
         return false;
     };
+
+    /**
+     * Whether a plain Tab flips the rack rather than moving focus.
+     *
+     * <p>The flip is the rack's own gesture and it stays where nothing is
+     * being operated: no focus at all, focus on the rack panel itself (where
+     * a click on a faceplate or the rails leaves it), or on something that
+     * cannot hold focus. Anywhere a real control holds focus in this window —
+     * a faceplate control (v1.41.0), and since 3.4 the device shelf, its
+     * search field and the toolbar — Tab moves focus, because until then the
+     * only way off the shelf was Shift+Tab and a keyboard user could not
+     * reach the rack from it at all.
+     */
+    static boolean tabFlipsRack(java.awt.Component focus, java.awt.Component rackPanel,
+            java.awt.Component window) {
+        if (focus == null || focus == rackPanel || focus == window || !focus.isFocusable()) {
+            return true;
+        }
+        return !javax.swing.SwingUtilities.isDescendingFrom(focus, window);
+    }
+
+    /**
+     * Whether the rack's own keys (Tab flips, Delete unracks, ⌘Z undoes)
+     * apply to a key pressed with {@code focus} holding focus: no focus at
+     * all, or focus inside the rack window. Focus in a dialog the rack
+     * opened is the dialog's — before 3.4's review, Tab there flipped the
+     * rack behind it and Delete on a combo unracked the dialog's own device.
+     */
+    static boolean keysAreTheRacks(java.awt.Component focus, java.awt.Component window) {
+        return focus == null || focus == window
+                || javax.swing.SwingUtilities.isDescendingFrom(focus, window);
+    }
+
+    /**
+     * Whether a key belongs to the text under focus: a text field, or an
+     * LCD the user can edit (it reads like input, so Backspace there must
+     * never unrack its device and stop what it runs — the 3.4 review).
+     */
+    static boolean isText(java.awt.Component focus) {
+        return focus instanceof javax.swing.text.JTextComponent
+                || focus instanceof org.nmox.studio.rack.ui.controls.LcdDisplay lcd && lcd.isEditable();
+    }
 
     public RackTopComponent() {
         setName(org.openide.util.NbBundle.getMessage(RackTopComponent.class, "CTL_RackTopComponent"));
@@ -301,6 +346,9 @@ public final class RackTopComponent extends TopComponent {
         flipToggle = new JToggleButton(Bundle.RackTopComponent_rearToggle());
         flipToggle.setToolTipText(Bundle.RackTopComponent_flipTooltip());
         flipToggle.setFocusable(false);
+        // Tab itself flips the rack, so the toggle stays out of the Tab
+        // order even where toolbars are made keyboard-reachable (3.4)
+        flipToggle.putClientProperty("nmox.keyboard.skip", Boolean.TRUE);
         flipToggle.addActionListener(e -> {
             rackPanel.setFront(!flipToggle.isSelected());
             flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? Bundle.RackTopComponent_frontToggle() : Bundle.RackTopComponent_rearToggle()));
@@ -311,6 +359,14 @@ public final class RackTopComponent extends TopComponent {
         JButton save = new JButton(Bundle.RackTopComponent_savePatch());
         save.addActionListener(e -> {
             File target = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
+            // a patch this session could not read, or one git has not finished
+            // merging, is never written over — the rack on screen is a
+            // stand-in for it, not its contents (3.4)
+            String refusal = org.nmox.studio.rack.service.RackService.getDefault().saveRefusal(target);
+            if (refusal != null) {
+                error(refusal);
+                return;
+            }
             // the JSON snapshot is taken here (synchronous, model-consistent);
             // only the disk write rides the lane — the one workspace writer
             // the v1.44 SaveLane sweep left on the EDT (v1.56 review, F3)
@@ -318,8 +374,10 @@ public final class RackTopComponent extends TopComponent {
             String projectName = rack.getProjectDir().getName();
             SAVE_RP.post(() -> {
                 try {
-                    org.nmox.studio.core.util.AtomicFiles.writeString(
-                            target.toPath(), snapshot.toString(2));
+                    // the disk is asked again on the lane, immediately before
+                    // the write: a pull or a checkout since the patch was read
+                    // refuses it, whatever the lock said a moment ago (3.4)
+                    org.nmox.studio.rack.service.RackService.getDefault().writePatch(target, snapshot);
                     java.awt.EventQueue.invokeLater(() -> {
                         markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
@@ -330,6 +388,8 @@ public final class RackTopComponent extends TopComponent {
                         revert.setRepeats(false);
                         revert.start();
                     });
+                } catch (org.nmox.studio.rack.service.RackService.PatchWriteRefusedException refused) {
+                    java.awt.EventQueue.invokeLater(() -> error(refused.getMessage()));
                 } catch (IOException ex) {
                     java.awt.EventQueue.invokeLater(() ->
                             error(Bundle.RackTopComponent_saveFailed(ex.getMessage())));
@@ -557,6 +617,8 @@ public final class RackTopComponent extends TopComponent {
         // needs but load() (called from off-EDT autoload) doesn't.
         SAVE_RP.post(() -> {
             org.json.JSONObject doc;
+            // taken BEFORE the read: a change landing during it stays foreign
+            long[] stamp = org.nmox.studio.rack.service.RackService.stampBeforeRead(file);
             try {
                 doc = RackIO.readDocument(file);
             } catch (IOException | RuntimeException ex) {
@@ -566,8 +628,14 @@ public final class RackTopComponent extends TopComponent {
             }
             java.awt.EventQueue.invokeLater(() -> {
                 try {
-                    RackIO.fromJson(rack, doc);
+                    RackIO.CableReport cables = RackIO.fromJson(rack, doc);
                     markPersisted();
+                    // the file was read and is now the rack on screen: a lock
+                    // a refused autoload set on it no longer applies
+                    org.nmox.studio.rack.service.RackService.getDefault().patchLoaded(file, cables, stamp);
+                    if (!cables.quiet()) {
+                        info(org.nmox.studio.rack.service.RackService.cablesSentence(file, cables));
+                    }
                 } catch (RuntimeException ex) {
                     error(Bundle.RackTopComponent_loadFailed(ex.getMessage()));
                 }
@@ -655,6 +723,11 @@ public final class RackTopComponent extends TopComponent {
             return;
         }
         File target = picked.getName().endsWith(".json") ? picked : new File(picked.getPath() + ".nmoxrack.json");
+        String refused = shareRefusal(target);
+        if (refused != null) {
+            error(refused);
+            return;
+        }
         SAVE_RP.post(() -> {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), shared.toString(2));
@@ -663,6 +736,19 @@ public final class RackTopComponent extends TopComponent {
                 java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_shareFailed(ex.getMessage())));
             }
         });
+    }
+
+    /**
+     * Why Share may not write {@code target}, or null when it may (3.4). A
+     * shared rack is a copy for somebody else — its home paths are {@code ~},
+     * its header names a version — and written over a project's own patch it
+     * would replace that rack past every check Save asks: a lock, a
+     * conflict, a teammate's pull. Any file named like a project's patch is
+     * refused, in any folder.
+     */
+    static String shareRefusal(File target) {
+        return RackIO.DEFAULT_FILENAME.equals(target.getName())
+                ? Bundle.RackTopComponent_shareNotThePatch(target.getName()) : null;
     }
 
     /** EDT: a two-second word on the project label, then the label again. */

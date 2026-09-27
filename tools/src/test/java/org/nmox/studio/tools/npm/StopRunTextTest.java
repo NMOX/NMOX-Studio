@@ -42,19 +42,39 @@ class StopRunTextTest {
     }
 
     @Test
-    @DisplayName("The status line after ■: every stopped label, or that nothing was running")
+    @DisplayName("The status line after ■: what is stopping, or that nothing was running (3.4: not yet \"stopped\")")
     void stoppedMessage() {
         assertThat(StopRunText.stopped(List.of())).isEqualTo("Nothing is running");
         assertThat(StopRunText.stopped(List.of(new LiveRuns.Run("a", "Run — one", () -> { }),
                 new LiveRuns.Run("b", "Build — two", () -> { }))))
-                .isEqualTo("Stopped: Run — one, Build — two");
+                .as("the kill is asked for; the run has not exited yet")
+                .isEqualTo("Stopping: Run — one, Build — two");
+    }
+
+    @Test
+    @DisplayName("A second ■ press while a run is still stopping does not claim nothing runs (3.4)")
+    void secondPressWhileStopping() {
+        LiveRuns.add(new LiveRuns.Run("slow", "npm run dev — shop", () -> { }));
+        try {
+            List<LiveRuns.Run> first = LiveRuns.stopAll();
+            assertThat(StopRunText.afterPress(first, LiveRuns.live())).isEqualTo("Stopping: npm run dev — shop");
+            List<LiveRuns.Run> second = LiveRuns.stopAll();
+            assertThat(StopRunText.afterPress(second, LiveRuns.live()))
+                    .isEqualTo("Already stopping: npm run dev — shop — waiting for it to exit");
+            assertThat(StopRunText.tooltip(LiveRuns.live())).contains("npm run dev — shop (stopping…)");
+            LiveRuns.remove("slow");
+            assertThat(StopRunText.afterPress(LiveRuns.stopAll(), LiveRuns.live())).isEqualTo("Nothing is running");
+        } finally {
+            LiveRuns.clearForTest();
+        }
     }
 
     @Test
     @DisplayName("every language says all six, in its own words — no key falls back to English")
     void everyLanguageHasItsOwnWords() {
         String[] keys = {"StopRunText_tooltipIdle", "StopRunText_tooltipOne", "StopRunText_tooltipMany",
-            "StopRunText_runSince", "StopRunText_stoppedNone", "StopRunText_stopped"};
+            "StopRunText_runSince", "StopRunText_stoppedNone", "StopRunText_stopped",
+            "StopRunText_runStopping", "StopRunText_alreadyStopping"};
         ResourceBundle en = bundle(Locale.ENGLISH);
         for (String locale : LOCALES) {
             ResourceBundle b = bundle(Locale.of(locale));

@@ -9,7 +9,6 @@ import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -440,6 +439,11 @@ public final class IrcTopComponent extends TopComponent {
                 maybeTreePopup(e);
             }
         });
+        // the keyboard's way to the same menu: Shift+F10 / the menu key, under
+        // the selected row (3.4 — Add Network had no other door)
+        org.nmox.studio.core.util.KeyboardAccess.onMenuKey(tree, () ->
+                treeMenuShower.accept(treeMenu(),
+                        org.nmox.studio.core.util.KeyboardAccess.menuAnchor(tree)));
 
         transcript = new JTextPane();
         transcript.setEditable(false);
@@ -511,7 +515,7 @@ public final class IrcTopComponent extends TopComponent {
 
         // ⌘F anywhere in the tab toggles the find bar
         KeyStroke find = KeyStroke.getKeyStroke(KeyEvent.VK_F,
-                Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx());
+                org.nmox.studio.core.util.KeyboardAccess.menuShortcutMask());
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(find, "irc-find");
         getActionMap().put("irc-find", new AbstractAction() {
             @Override
@@ -693,6 +697,35 @@ public final class IrcTopComponent extends TopComponent {
         if (path != null) {
             tree.setSelectionPath(path);
         }
+        treeMenuShower.accept(treeMenu(), new java.awt.Point(e.getX(), e.getY()));
+    }
+
+    /**
+     * Shows a built tree menu; tests replace it to read the menu headless.
+     * The menu keys (3.4) and the right-click reach the SAME menu, so Add
+     * Network — the only way to add one — has a keyboard route.
+     */
+    java.util.function.BiConsumer<JPopupMenu, java.awt.Point> treeMenuShower =
+            (menu, at) -> {
+                if (tree.isShowing()) {
+                    menu.show(tree, at.x, at.y);
+                }
+            };
+
+    /** Package-private for tests: builds what the first show builds. */
+    void buildUiForTest() {
+        if (!built) {
+            built = true;
+            buildUi();
+        }
+    }
+
+    JTree treeForTest() {
+        return tree;
+    }
+
+    /** The tree's menu for the selected network (Shift+F10's and the right-click's). */
+    JPopupMenu treeMenu() {
         TargetRef ref = selectedRef();
         JPopupMenu menu = new JPopupMenu();
         JMenuItem add = new JMenuItem(Bundle.IrcTopComponent_addNetwork());
@@ -719,7 +752,7 @@ public final class IrcTopComponent extends TopComponent {
             delete.addActionListener(a -> deleteNetwork(network));
             menu.add(delete);
         }
-        menu.show(tree, e.getX(), e.getY());
+        return menu;
     }
 
     private void deleteNetwork(String network) {

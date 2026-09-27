@@ -24,14 +24,16 @@ class WorkspaceSaveWiringTest {
     private static String source() throws Exception {
         return Files.readString(Path.of(
                 "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8).replace("\r\n", "\n"); // a Windows checkout
     }
 
     @Test
     @DisplayName("save() snapshots on the EDT and queues the write on the lane")
     void saveQueuesOnTheLane() throws Exception {
         String src = source();
-        assertThat(src).contains("SAVES.save(() -> writeSnapshot(");
+        // 3.4: the lane task writes, and a write that landed settles the
+        // cloud links it carried — still one task, still the only writer
+        assertThat(src).contains("SAVES.save(() -> {\n            if (writeSnapshot(file, json)) {");
         assertThat(src)
                 .as("no synchronous EDT write may remain — the lane is the only writer")
                 .doesNotContain("GraphIO.save(");
@@ -41,7 +43,7 @@ class WorkspaceSaveWiringTest {
     @DisplayName("the write and its self-write stamp are one lane task")
     void writeAndStampAreOneTask() throws Exception {
         String src = source();
-        int start = src.indexOf("private void writeSnapshot");
+        int start = src.indexOf("private boolean writeSnapshot");
         assertThat(start).as("writeSnapshot exists").isPositive();
         String body = src.substring(start, src.indexOf("\n    private", start + 1));
         assertThat(body).contains("AtomicFiles.writeString(");

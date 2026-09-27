@@ -22,8 +22,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = RackService.class)
 @org.openide.util.NbBundle.Messages({
     "RackService_resumeTitle=Resume last session?",
-    "RackService_resumeOne={0} was running when the IDE closed — click to bring it back",
-    "RackService_resumeMany={0} were running when the IDE closed — click to bring them back",
+    "RackService_resumeOne={0} was running when the IDE closed \u2014 click to bring it back",
+    "RackService_resumeMany={0} were running when the IDE closed \u2014 click to bring them back",
     "RackService_theCurrentProject=the current project",
     "RackService_switchOne={0} is still running in {1}.\nStop and switch to {2}?",
     "RackService_switchMany={0} are still running in {1}.\nStop and switch to {2}?",
@@ -36,7 +36,31 @@ import org.openide.util.lookup.ServiceProvider;
     "# {0} - the patch file's name; {1} - its size in KiB; {2} - the cap in MiB",
     "RackService_patchTooLarge=Could not load this project\u2019s saved rack, so the rack is empty: {0} is {1} KiB, over the {2} MiB limit.",
     "# {0} - the patch file's name; {1} - the name it was kept under",
-    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}."
+    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}.",
+    "# {0} - the patch file's name",
+    "RackService_patchConflicted=Could not load this project\u2019s saved rack, so the rack is empty: {0} has unresolved merge conflicts. Resolve them in git \u2014 NMOX Studio won\u2019t write it until then.",
+    "# {0} - the patch file's name",
+    "RackService_patchUnreadable=Could not load this project\u2019s saved rack, so the rack is empty: {0} could not be read. NMOX Studio won\u2019t write over it.",
+    "# {0} - the patch file's name",
+    "RackService_patchCorruptUnkept=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON and no copy of it could be kept. NMOX Studio won\u2019t write over it.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedConflicted=Not saved: {0} has unresolved merge conflicts \u2014 resolve them in git first.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedUnread=Not saved: {0} was not read in this session, and NMOX Studio does not write over a file it has not read.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedChanged=Not saved: {0} changed on disk after this session read it (a pull, a checkout or another tool). Your rack stays on screen; Load Patch reads the file.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedNewer=Not saved: {0} was saved by a newer NMOX Studio, and saving it here would drop what that version added.",
+    "# {0} - the patch file's name",
+    "RackService_patchChangedKept={0} changed on disk (a pull, a checkout or another tool). Your unsaved rack stays on screen and Save Patch won\u2019t write over the file; Load Patch reads it.",
+    "# {0} - the patch file's name",
+    "RackService_patchNowConflicted={0} now has unresolved merge conflicts. The rack on screen stays, and NMOX Studio won\u2019t write the file until they are resolved in git.",
+    "# {0} - the patch file's name",
+    "RackService_patchReloaded={0} changed on disk, so the rack was read again.",
+    "# {0} - the patch file's name; {1} - the file's format number; {2} - the format this build writes",
+    "RackService_patchNewer={0} was saved by a newer NMOX Studio (format {1}; this one writes {2}). It is shown, and NMOX Studio won\u2019t write over it.",
+    "# {0} - the patch file's name; {1} - how many cables followed their device; {2} - how many were dropped",
+    "RackService_cablesRestored={0}: cables that followed a moved device: {1} \u00b7 cables dropped: {2}"
 })
 public class RackService {
 
@@ -264,20 +288,8 @@ public class RackService {
                 // offer survives another restart instead of being consumed
                 return;
             }
-            Runnable io = () -> {
-                try {
-                    if (live) {
-                        java.nio.file.Files.createDirectories(file.getParentFile().toPath());
-                        java.nio.file.Files.writeString(file.toPath(), state.toJson(),
-                                java.nio.charset.StandardCharsets.UTF_8);
-                    } else {
-                        // stopped after running: nothing to resume anymore
-                        java.nio.file.Files.deleteIfExists(file.toPath());
-                    }
-                } catch (Exception ignored) {
-                    // a failed snapshot must never disturb the rack
-                }
-            };
+            String json = live ? state.toJson() : null;
+            Runnable io = () -> writeSnapshot(file, json);
             if (pendingSnapshotIo.getAndSet(io) == null) {
                 SNAPSHOT_RP.post(() -> {
                     Runnable job = pendingSnapshotIo.getAndSet(null);
@@ -292,18 +304,76 @@ public class RackService {
         sessionSnapshotTimer = snap;
     }
 
+    /**
+     * One snapshot write, or its removal when {@code json} is null (3.4).
+     * It used to be a plain {@code Files.writeString} with the error
+     * swallowed: on a full 4 MB volume the snapshot went from 37 bytes to 0
+     * (the truncating open succeeded, the write did not), and the next
+     * launch's resume offer then failed to parse it — silently — so a crash
+     * lost the one thing this file exists to keep. The write is atomic now
+     * (a failed write leaves the last good snapshot), and a failure is
+     * logged at WARNING. It still never disturbs the rack.
+     */
+    /**
+     * The snapshot a resume offer is built from, or null. A snapshot that
+     * cannot be read or parsed used to vanish silently with the offer it
+     * carried; it is logged at WARNING now (3.4).
+     */
+    static SessionState readSnapshot(java.io.File file) {
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(RackService.class.getName());
+        try {
+            SessionState state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath(),
+                    java.nio.charset.StandardCharsets.UTF_8));
+            if (state == null) {
+                log.log(java.util.logging.Level.WARNING,
+                        "The session snapshot {0} is not a snapshot (empty or damaged), so no crash-resume offer can be made",
+                        file);
+            }
+            return state;
+        } catch (java.io.IOException | RuntimeException unreadable) {
+            log.log(java.util.logging.Level.WARNING,
+                    "The session snapshot " + file + " could not be read, so no crash-resume offer can be made",
+                    unreadable);
+            return null;
+        }
+    }
+
+    /** Whether the last snapshot write failed: a failing disk is said once, not every five seconds. */
+    static volatile boolean snapshotFailing;
+
+    /**
+     * Writes (or, given null, removes) the session snapshot, atomically. It
+     * is rewritten every few seconds while anything runs, so a failure is
+     * logged at WARNING once per failing streak and at FINE after that — a
+     * full disk used to add a stack trace to the log every five seconds (the
+     * 3.4 review) — and a success ends the streak.
+     */
+    static void writeSnapshot(java.io.File file, String json) {
+        try {
+            if (json != null) {
+                java.nio.file.Files.createDirectories(file.getParentFile().toPath());
+                org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
+            } else {
+                // stopped after running: nothing to resume anymore
+                java.nio.file.Files.deleteIfExists(file.toPath());
+            }
+            snapshotFailing = false;
+        } catch (java.io.IOException | RuntimeException failed) {
+            java.util.logging.Level level = snapshotFailing ? java.util.logging.Level.FINE : java.util.logging.Level.WARNING;
+            snapshotFailing = true;
+            java.util.logging.Logger.getLogger(RackService.class.getName()).log(level,
+                    "Could not " + (json != null ? "write" : "remove") + " the session snapshot " + file
+                    + " (the crash-resume offer depends on it)", failed);
+        }
+    }
+
     /** After aiming: if the last session here died with tools running, offer them back. */
     private void offerResume() {
         java.io.File file = sessionFile(rack.getProjectDir());
         if (file == null || !file.isFile()) {
             return;
         }
-        SessionState state;
-        try {
-            state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8));
-        } catch (Exception ex) {
-            return;
-        }
+        SessionState state = readSnapshot(file);
         if (state == null || !state.fresh()
                 || !state.project().equals(rack.getProjectDir().getAbsolutePath())) {
             return;
@@ -614,9 +684,18 @@ public class RackService {
             return Bundle.RackService_patchTooLarge(patch.getName(),
                     tooLarge.kib(), RackIO.PatchTooLargeException.capMib());
         }
+        if (failure instanceof RackIO.PatchConflictedException) {
+            return Bundle.RackService_patchConflicted(patch.getName());
+        }
+        if (failure instanceof RackIO.PatchUnreadableException) {
+            return Bundle.RackService_patchUnreadable(patch.getName());
+        }
         if (failure instanceof RackIO.CorruptPatchException corrupt) {
             // the parser's own complaint is already in the WARNING below; it is
             // English and untranslatable, so it never reaches the status line
+            if (corrupt.backupName() == null) {
+                return Bundle.RackService_patchCorruptUnkept(patch.getName());
+            }
             return Bundle.RackService_patchCorrupt(patch.getName(), corrupt.backupName());
         }
         String reason = failure.getMessage();
@@ -624,6 +703,336 @@ public class RackService {
             reason = failure.getClass().getSimpleName();
         }
         return Bundle.RackService_patchNotLoaded(patch.getName(), reason);
+    }
+
+    /** What a load says about cables that followed their device or were dropped (3.4). */
+    public static String cablesSentence(File patch, RackIO.CableReport cables) {
+        return Bundle.RackService_cablesRestored(patch.getName(),
+                String.valueOf(cables.followed()), String.valueOf(cables.dropped()));
+    }
+
+    // ---- a patch this session must not write (3.4) ----
+
+    /**
+     * Why the project's patch may not be written right now. Each kind lifts
+     * differently: a file this build could not read, a conflict or a newer
+     * format lift when the file is read cleanly again; a file that CHANGED
+     * under unsaved work on screen lifts when the user takes the file (Load
+     * Patch) — never by itself, because either choice by itself loses one
+     * person's rack.
+     */
+    enum LockKind {
+        /** Could not be read at all, or is broken and no copy of it could be kept. */
+        UNREAD,
+        /** Holds git's unresolved merge conflict. */
+        CONFLICTED,
+        /** Written by a newer NMOX Studio; a save here would drop what it added. */
+        NEWER,
+        /** Changed on disk after this session read it, while the rack on screen had unsaved work. */
+        CHANGED
+    }
+
+    /**
+     * The project's patch file while it may not be written. {@code reason}
+     * is the sentence a refused Save says.
+     */
+    record PatchLock(File file, String reason, LockKind kind) {
+    }
+
+    private volatile PatchLock patchLock;
+
+    /**
+     * The one watcher on the aimed project's patch, alive from every aim
+     * (3.4). Until 3.4 the only watcher was the one a FAILED load created, so
+     * a patch that loaded cleanly and then turned conflicted under a
+     * {@code git pull} with the IDE open was never looked at again, and Save
+     * Patch replaced both people's racks with the one on screen.
+     */
+    private org.nmox.studio.core.util.FilePulse patchPulse;
+    /** The patch {@link #patchPulse} watches and {@link #patchStamp} describes. */
+    private volatile File watchedPatch;
+    /** The bytes this session last read from or wrote to {@link #watchedPatch}. */
+    private final org.nmox.studio.core.util.SelfWriteTracker patchStamp =
+            new org.nmox.studio.core.util.SelfWriteTracker();
+    /** The rack as last read or written — what "unsaved work on screen" is measured against. EDT-confined. */
+    private volatile String syncedJson;
+    /**
+     * One lane for every read and write of the project's patch, so the
+     * disk's stamp is compared, and a write stamped, with nothing between.
+     */
+    private static final org.openide.util.RequestProcessor PATCH_RP =
+            new org.openide.util.RequestProcessor("nmox-rack-patch", 1);
+    /** Serialises the compare-then-write of a save against the watcher's compare-then-read. */
+    private final Object patchIo = new Object();
+    /** Newest-wins: a reload read earlier than a later one is never applied over it. */
+    private final java.util.concurrent.atomic.AtomicLong reloadSeq = new java.util.concurrent.atomic.AtomicLong();
+
+    private synchronized void bindPatchReadOnly(File patch, Exception refusal) {
+        bindLock(patch, refusal instanceof RackIO.PatchConflictedException
+                ? LockKind.CONFLICTED : LockKind.UNREAD);
+    }
+
+    private void bindLock(File patch, LockKind kind) {
+        String reason = switch (kind) {
+            case CONFLICTED -> Bundle.RackService_saveRefusedConflicted(patch.getName());
+            case NEWER -> Bundle.RackService_saveRefusedNewer(patch.getName());
+            case CHANGED -> Bundle.RackService_saveRefusedChanged(patch.getName());
+            case UNREAD -> Bundle.RackService_saveRefusedUnread(patch.getName());
+        };
+        patchLock = new PatchLock(patch, reason, kind);
+    }
+
+    private synchronized void unbindPatch() {
+        patchLock = null;
+        watchedPatch = null;
+        reloadSeq.incrementAndGet(); // a reload still in flight belongs to the old aim
+        if (patchPulse != null) {
+            patchPulse.stop();
+            patchPulse = null;
+        }
+    }
+
+    /**
+     * Starts watching the aimed project's patch. The baseline is primed on
+     * this thread, right after the read, and the lane is asked once at once:
+     * a change that landed between the read and the prime would otherwise be
+     * the pulse's baseline and never fire.
+     */
+    private synchronized void watchPatch(File patch) {
+        watchedPatch = patch;
+        patchPulse = new org.nmox.studio.core.util.FilePulse(patch, (mtime, size) -> askDisk(patch));
+        patchPulse.tick();
+        patchPulse.start(org.nmox.studio.core.util.FilePulse.DEFAULT_INTERVAL_MS);
+        askDisk(patch);
+    }
+
+    /** Records the bytes on disk as this session's own — after a load or a write. */
+    private void noteSynced(File patch, long mtime, long size) {
+        patchStamp.noteSync(mtime, size);
+    }
+
+    private static long[] stampOf(File f) {
+        return f.isFile() ? new long[]{f.lastModified(), f.length()} : new long[]{-1, -1};
+    }
+
+    private void askDisk(File patch) {
+        long seq = reloadSeq.incrementAndGet();
+        PATCH_RP.post(() -> readIfForeign(patch, seq));
+    }
+
+    /**
+     * Lane: the file moved on disk — a pull, a checkout, a teammate's tool.
+     * Our own writes are told apart by the stamp; anything else is read here,
+     * off the EDT, and the verdict is applied there.
+     */
+    private void readIfForeign(File patch, long seq) {
+        JSONOutcome outcome;
+        synchronized (patchIo) {
+            if (!patch.equals(watchedPatch)) {
+                return;
+            }
+            long[] now = stampOf(patch);
+            if (!patchStamp.isForeign(now[0], now[1])) {
+                return;
+            }
+            if (now[0] < 0) {
+                // gone (a checkout of a branch without it): nothing of anyone's
+                // is on disk to overwrite, and the rack on screen stays
+                noteSynced(patch, -1, -1);
+                return;
+            }
+            outcome = JSONOutcome.read(patch, now);
+        }
+        java.awt.EventQueue.invokeLater(() -> applyForeign(patch, seq, outcome));
+    }
+
+    /** What the lane read: a document or a refusal, with the stamp it was read at. */
+    record JSONOutcome(org.json.JSONObject doc, Exception refusal, long[] stamp) {
+        static JSONOutcome read(File patch, long[] stamp) {
+            try {
+                return new JSONOutcome(RackIO.readDocument(patch), null, stamp);
+            } catch (java.io.IOException | RuntimeException refused) {
+                return new JSONOutcome(null, refused, stamp);
+            }
+        }
+    }
+
+    /**
+     * EDT: a foreign change to the aimed patch. The file wins when the rack
+     * on screen holds nothing unsaved; with unsaved work the rack stays and
+     * Save refuses until the user chooses (Load Patch takes the file). A file
+     * that is now conflicted, unreadable or from a newer build locks Save and
+     * leaves the rack on screen alone. Every outcome is spoken.
+     */
+    void applyForeign(File patch, long seq, JSONOutcome outcome) {
+        if (seq != reloadSeq.get() || !patch.equals(watchedPatch)) {
+            return; // a newer read, or another aim, owns the answer now
+        }
+        if (outcome.refusal() != null) {
+            Exception refusal = outcome.refusal();
+            java.util.logging.Logger.getLogger(RackService.class.getName())
+                    .warning("Rack patch changed on disk and could not be read: " + refusal);
+            if (RackIO.mayOverwrite(refusal)) {
+                // broken, and its bytes were copied aside: the copy is safe
+                noteSynced(patch, outcome.stamp()[0], outcome.stamp()[1]);
+            } else {
+                bindPatchReadOnly(patch, refusal);
+            }
+            statusThatLingers(refusal instanceof RackIO.PatchConflictedException
+                    ? Bundle.RackService_patchNowConflicted(patch.getName())
+                    : patchNotLoadedText(patch, refusal));
+            return;
+        }
+        if (unsavedOnScreen()) {
+            bindLock(patch, LockKind.CHANGED);
+            statusThatLingers(Bundle.RackService_patchChangedKept(patch.getName()));
+            return;
+        }
+        RackIO.CableReport cables;
+        try {
+            cables = RackIO.fromJson(rack, outcome.doc());
+        } catch (RuntimeException notAPatch) {
+            java.util.logging.Logger.getLogger(RackService.class.getName())
+                    .warning("Rack patch changed on disk and is not a patch: " + notAPatch);
+            bindLock(patch, LockKind.UNREAD);
+            statusThatLingers(patchNotLoadedText(patch, notAPatch));
+            return;
+        }
+        adoptLoaded(patch, cables, outcome.stamp());
+        statusThatLingers(cables.quiet() ? Bundle.RackService_patchReloaded(patch.getName())
+                : cablesSentence(patch, cables));
+    }
+
+    /**
+     * The file just became the rack on screen: its stamp is ours, its rack is
+     * the baseline for unsaved work, and a newer format locks Save.
+     */
+    private void adoptLoaded(File patch, RackIO.CableReport cables, long[] stamp) {
+        noteSynced(patch, stamp[0], stamp[1]);
+        syncedJson = RackIO.toJson(rack).toString();
+        if (cables.newerFormat()) {
+            bindLock(patch, LockKind.NEWER);
+            statusThatLingers(Bundle.RackService_patchNewer(patch.getName(),
+                    String.valueOf(cables.format()), String.valueOf(RackIO.FORMAT)));
+        } else {
+            patchLock = null;
+        }
+    }
+
+    /** EDT: the rack differs from what was last read or written. */
+    private boolean unsavedOnScreen() {
+        return syncedJson != null && !syncedJson.equals(RackIO.toJson(rack).toString());
+    }
+
+    /**
+     * Test seam: one tick of the watcher, then the lane and the EDT drained,
+     * so a test reads the outcome the watcher would have reached.
+     */
+    void tickPatchLock() throws Exception {
+        org.nmox.studio.core.util.FilePulse pulse;
+        synchronized (this) {
+            pulse = patchPulse;
+        }
+        if (pulse != null) {
+            pulse.tick();
+        }
+        awaitPatchIdle();
+    }
+
+    /** Test seam: every read and write queued on the patch lane has finished, and the EDT has applied it. */
+    void awaitPatchIdle() throws Exception {
+        PATCH_RP.post(() -> { }).waitFinished();
+        if (!java.awt.EventQueue.isDispatchThread()) {
+            java.awt.EventQueue.invokeAndWait(() -> { });
+        }
+    }
+
+    /**
+     * Why {@code target} may not be written by Save Patch, or null when it
+     * may. The EDT's quick answer — the lock only, no disk; the write itself
+     * asks the disk again ({@link #writePatch}).
+     */
+    public String saveRefusal(File target) {
+        PatchLock lock = patchLock;
+        return lock != null && lock.file().getAbsoluteFile().equals(target.getAbsoluteFile())
+                ? lock.reason() : null;
+    }
+
+    /** A save the disk refused: the file is not the one this session read. The message is the sentence to show. */
+    public static final class PatchWriteRefusedException extends java.io.IOException {
+        private static final long serialVersionUID = 1L;
+
+        PatchWriteRefusedException(String reason) {
+            super(reason);
+        }
+    }
+
+    /**
+     * Writes the project's patch — on a lane, never the EDT — only over the
+     * bytes this session last read or wrote (3.4). The lock is asked, then the
+     * disk: a pull, a checkout or a teammate's tool that changed the file
+     * since it was read refuses the write and locks Save, and a conflict git
+     * left behind refuses it by name. Nothing is written in either case.
+     */
+    public void writePatch(File target, org.json.JSONObject snapshot) throws java.io.IOException {
+        synchronized (patchIo) {
+            String locked = saveRefusal(target);
+            if (locked != null) {
+                throw new PatchWriteRefusedException(locked);
+            }
+            if (!target.getAbsoluteFile().equals(watchedPatch == null ? null : watchedPatch.getAbsoluteFile())) {
+                // not the patch this session read (the aim moved under the click):
+                // anything already there is somebody's, never ours to replace
+                if (target.exists()) {
+                    throw new PatchWriteRefusedException(Bundle.RackService_saveRefusedUnread(target.getName()));
+                }
+            } else {
+                switch (patchStamp.beforeWrite(target, RackIO.MAX_PATCH_BYTES)) {
+                    case CONFLICTED -> {
+                        bindLock(target, LockKind.CONFLICTED);
+                        throw new PatchWriteRefusedException(Bundle.RackService_saveRefusedConflicted(target.getName()));
+                    }
+                    case CHANGED -> {
+                        bindLock(target, LockKind.CHANGED);
+                        throw new PatchWriteRefusedException(Bundle.RackService_saveRefusedChanged(target.getName()));
+                    }
+                    case OURS -> {
+                        // the bytes on disk are the ones this session read or wrote
+                    }
+                }
+            }
+            String text = snapshot.toString(2);
+            org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), text);
+            if (target.getAbsoluteFile().equals(watchedPatch == null ? null : watchedPatch.getAbsoluteFile())) {
+                long[] now = stampOf(target);
+                noteSynced(target, now[0], now[1]);
+            }
+        }
+        String synced = snapshot.toString();
+        java.awt.EventQueue.invokeLater(() -> {
+            if (target.equals(watchedPatch)) {
+                syncedJson = synced;
+            }
+        });
+    }
+
+    /**
+     * The project's patch was read by an explicit gesture (Load Patch): the
+     * file is now the rack on screen, so whatever lock a refused or foreign
+     * read set on it no longer describes it — except a newer format, which
+     * the document itself decides. {@code stamp} is the file's stamp taken
+     * before the read. EDT.
+     */
+    public void patchLoaded(File patch, RackIO.CableReport cables, long[] stamp) {
+        if (!patch.getAbsoluteFile().equals(watchedPatch == null ? null : watchedPatch.getAbsoluteFile())) {
+            return;
+        }
+        adoptLoaded(watchedPatch, cables, stamp);
+    }
+
+    /** The stamp {@link #patchLoaded} wants: taken before the read, so a change during the read is still foreign. */
+    public static long[] stampBeforeRead(File patch) {
+        return stampOf(patch);
     }
 
     /**
@@ -810,12 +1219,34 @@ public class RackService {
 
     private void autoLoadPatch() {
         File patch = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
-        if (patch.isFile()) {
+        unbindPatch();
+        if (patch.exists()) {
+            // the stamp BEFORE the read: a change landing during the read is
+            // still somebody else's, and the watcher will see it
+            long[] seen = stampOf(patch);
             try {
-                RackIO.load(rack, patch);
+                RackIO.CableReport cables = RackIO.load(rack, patch);
+                if (!cables.quiet()) {
+                    // a teammate's device edits moved or removed what some
+                    // cables were patched to: said, not only logged (3.4)
+                    statusThatLingers(cablesSentence(patch, cables));
+                }
+                adoptLoaded(patch, cables, seen);
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(RackService.class.getName())
                         .warning("Could not load rack patch " + patch + ": " + ex);
+                if (!RackIO.mayOverwrite(ex)) {
+                    // never write a file this build could not read: a conflict
+                    // git is waiting on, bytes it could not read, or a broken
+                    // file no copy of exists (3.4 — Save Patch used to replace
+                    // a mode-000 or conflicted patch with the rack on screen)
+                    bindPatchReadOnly(patch, ex);
+                }
+                // the refused bytes are the ones this session has seen: the
+                // watcher speaks again only when they CHANGE (a resolved
+                // conflict reloads by itself), never twice about one file
+                noteSynced(patch, seen[0], seen[1]);
+                syncedJson = RackIO.toJson(rack).toString();
                 // REFUSALS SPEAK (ledger 104): aiming a project whose patch is
                 // corrupt or over the cap left the reader looking at an empty
                 // rack with the reason in a log file they never open. The load
@@ -837,10 +1268,15 @@ public class RackService {
             // same known state a fresh launch gets — removeDevice
             // disposes each device, so anything running stops first.
             resetToStarterRack();
+            noteSynced(patch, -1, -1);
+            syncedJson = RackIO.toJson(rack).toString();
         }
         // switching projects loads a different rack; undo starts fresh, and
         // must never peel a just-loaded patch apart device by device
         rack.clearUndoHistory();
+        // watched from every aim, not only after a refusal (3.4): a pull with
+        // the IDE open must reach the rack before a Save can overwrite it
+        watchPatch(patch);
     }
 
     /**

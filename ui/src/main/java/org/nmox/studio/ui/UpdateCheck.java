@@ -108,8 +108,10 @@ public class UpdateCheck implements Runnable {
             // redirected/hostile endpoint can't OOM the IDE on a boot check
             String bodyText;
             try (java.io.InputStream in = response.body()) {
+                // the body has its own 10 s deadline: the request timeout ends
+                // at the headers, and a stalled GitHub body leaked a thread per check
                 bodyText = org.nmox.studio.core.http.HttpBodies
-                        .readUtf8(in, 2 * 1024 * 1024).text();
+                        .readUtf8(in, 2 * 1024 * 1024, Duration.ofSeconds(10)).text();
             }
             String latest = latestTag(bodyText);
             if (latest == null || Versions.compare(running, latest) >= 0) {

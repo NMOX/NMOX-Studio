@@ -31,7 +31,10 @@ class WorkspaceSaveWiringTest {
     @DisplayName("saveWorkspace() snapshots on the EDT and queues the write on the lane")
     void saveQueuesOnTheLane() throws Exception {
         String src = source();
-        assertThat(src).contains("SAVES.save(() -> writeSnapshot(");
+        // the lane task writes (and, since 3.4, reports whether it wrote, so
+        // a deployment a refused save carried stays held until one lands)
+        assertThat(src.replaceAll("\\s+", " ")).containsPattern(
+                "SAVES\\.save\\(\\(\\) -> (\\{ if \\()?writeSnapshot\\(");
         assertThat(src)
                 .as("no synchronous EDT write may remain — the lane is the only writer")
                 .doesNotContain("Web3WorkspaceIO.save(");
@@ -41,13 +44,17 @@ class WorkspaceSaveWiringTest {
     @DisplayName("the write and its self-write stamp are one lane task")
     void writeAndStampAreOneTask() throws Exception {
         String src = source();
-        int start = src.indexOf("private void writeSnapshot");
+        int start = src.indexOf("private boolean writeSnapshot");
         assertThat(start).as("writeSnapshot exists").isPositive();
         String body = src.substring(start, src.indexOf("\n    private", start + 1));
         assertThat(body).contains("AtomicFiles.writeString(");
         assertThat(body)
                 .as("the stamp must be taken by the SAME task that writes")
                 .contains("selfWrites.noteSync(");
+        assertThat(body.indexOf("selfWrites.beforeWrite("))
+                .as("3.4: the disk is re-checked on the lane BEFORE the write")
+                .isPositive()
+                .isLessThan(body.indexOf("AtomicFiles.writeString("));
     }
 
     @Test
@@ -70,8 +77,8 @@ class WorkspaceSaveWiringTest {
         String applyBody = src.substring(apply, src.indexOf("\n    }", apply));
         assertThat(applyBody)
                 .as("ownership is recorded for a read that HAPPENED")
-                .contains("workspaceReadOnly = outcome.unreadable()");
-        assertThat(applyBody.indexOf("workspaceReadOnly = outcome.unreadable()"))
+                .contains("workspaceReadOnly = outcome.readOnly()");
+        assertThat(applyBody.indexOf("workspaceReadOnly = outcome.readOnly()"))
                 .as("the verdict is taken before the stamp it guards")
                 .isLessThan(applyBody.indexOf("selfWrites.noteSync("));
 
@@ -84,7 +91,7 @@ class WorkspaceSaveWiringTest {
                         + " network and the whole deployment address book"
                         + " with nothing (9,437,184 bytes → 75, measured)")
                 .contains("if (workspaceReadOnly) {")
-                .contains("Bundle.Web3StudioTopComponent_workspaceReadOnly(");
+                .contains("status(readOnlyText");
         assertThat(saveBody.indexOf("if (workspaceReadOnly) {"))
                 .as("the refusal comes before the snapshot is even taken")
                 .isLessThan(saveBody.indexOf("SAVES.save("));

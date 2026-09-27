@@ -192,6 +192,60 @@ class DeviceContractTest {
         assertThat(nameless).as(type + " controls without an accessible name").isEmpty();
     }
 
+    /**
+     * The name law's other half (3.4): the controls were named since v1.41.0
+     * and the DEVICE was not — every faceplate reported {@code role=panel
+     * name=null}, so SOLDER's STOP and VERITAS's STOP sounded the same. A
+     * device names itself with its title (its bus name once racked), its
+     * description says what it is for, and every placed control's accessible
+     * parent is the device, so the control is heard as the device's.
+     */
+    @ParameterizedTest
+    @MethodSource("catalog")
+    @DisplayName("Every device names itself, describes itself, and parents its controls")
+    void devicesNameThemselves(DeviceCatalog.Entry type) {
+        RackDevice device = type.create();
+        javax.accessibility.AccessibleContext ac = device.getAccessibleContext();
+        assertThat(ac.getAccessibleName()).as(type + " accessible name").isEqualTo(device.getTitle());
+        assertThat(ac.getAccessibleName()).as(type + " accessible name").isNotBlank();
+        assertThat(ac.getAccessibleDescription()).as(type + " accessible description").isNotBlank();
+        for (java.awt.Component c : device.getComponents()) {
+            if (c instanceof javax.accessibility.Accessible a && a.getAccessibleContext() != null) {
+                assertThat(a.getAccessibleContext().getAccessibleParent())
+                        .as(type + " " + c.getClass().getSimpleName() + " is heard as the device's")
+                        .isSameAs(device);
+            }
+        }
+    }
+
+    /**
+     * An editable panel is a control and a read-only one is status (3.4): the
+     * ~20 editable LCDs across the fleet (SOLDER's command, TAIL's path, the
+     * HTTP console's URL…) were double-click only, so they could not be set
+     * without a mouse. Every editable LCD is focusable and offers its edit as
+     * an accessible action; every read-only one stays out of the Tab order.
+     */
+    @ParameterizedTest
+    @MethodSource("catalog")
+    @DisplayName("Every editable LCD takes focus and offers its edit; every read-only one stays out of the Tab order")
+    void editableDisplaysAreKeyboardOperable(DeviceCatalog.Entry type) {
+        RackDevice device = type.create();
+        for (java.awt.Component c : device.getComponents()) {
+            if (c instanceof org.nmox.studio.rack.ui.controls.LcdDisplay lcd) {
+                String where = type + " LCD '" + lcd.getAccessibleContext().getAccessibleName() + "'";
+                if (lcd.isEditable()) {
+                    assertThat(lcd.isFocusable()).as(where + " is editable, so focusable").isTrue();
+                    assertThat(lcd.getAccessibleContext().getAccessibleAction())
+                            .as(where + " offers its edit to assistive technology").isNotNull();
+                    assertThat(lcd.getAccessibleContext().getAccessibleAction().getAccessibleActionCount())
+                            .isEqualTo(1);
+                } else {
+                    assertThat(lcd.isFocusable()).as(where + " is status, so not focusable").isFalse();
+                }
+            }
+        }
+    }
+
     @ParameterizedTest
     @MethodSource("catalog")
     @DisplayName("Every device has a palette category and a usage recipe")

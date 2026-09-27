@@ -15,6 +15,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BlockStudioLifecycleTest {
 
+    @org.junit.jupiter.api.BeforeAll
+    static void noRealPreferences() {
+        BlockActiveMemory.useMemoryStoreForTests(); // the open component is kept per user (3.4)
+    }
+
     @Test
     @DisplayName("Open/close cycles stay listener-symmetric and aim-less showing is safe")
     void lifecycle() throws Exception {

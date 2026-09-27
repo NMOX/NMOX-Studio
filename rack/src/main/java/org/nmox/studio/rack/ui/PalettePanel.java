@@ -36,7 +36,9 @@ import org.nmox.studio.rack.ui.controls.RackStyle;
     "PalettePanel_listName=Device shelf",
     "PalettePanel_addFailed=Could not add {0}: {1}",
     "PalettePanel_hint=<html>Drag a device onto the rack &middot; Tab flips the rack &middot; drag or click jacks to patch cables</html>",
-    "PalettePanel_entryTooltip=<html><b>{0}</b> — {1}<br><i>{2}</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>"
+    "PalettePanel_entryTooltip=<html><b>{0}</b> — {1}<br><i>{2}</i><br>(drag onto the rack; right-click a racked device for the full recipe)</html>",
+    "PalettePanel_entryHint=Press Enter to add it to the rack",
+    "PalettePanel_sectionDescription=A group of devices"
 })
 public class PalettePanel extends JPanel {
 
@@ -137,21 +139,42 @@ public class PalettePanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2) {
-                    if (list.getSelectedValue() instanceof DeviceCatalog.Entry t) {
-                        // a third-party device's build() (or a stale entry whose
-                        // module was just uninstalled) can throw — one bad
-                        // plugin must not blow up the palette, matching the
-                        // drop path's guard
-                        try {
-                            rack.addDevice(t.create());
-                        } catch (Exception | LinkageError ex) {
-                            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
-                                    Bundle.PalettePanel_addFailed(t.title(), String.valueOf(ex)));
-                        }
-                    }
+                    mount(rack, list.getSelectedValue());
                 }
             }
         });
+        // Enter and Space mount the selected device exactly as a double-click
+        // does (3.4): the shelf was mouse-only — double-click or drag — so a
+        // keyboard user could search for a device and never rack it. Space
+        // replaces the list's own "add to selection", which a single-selection
+        // shelf has no use for.
+        var keys = list.getInputMap(JComponent.WHEN_FOCUSED);
+        keys.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "mount-device");
+        keys.put(javax.swing.KeyStroke.getKeyStroke("SPACE"), "mount-device");
+        list.getActionMap().put("mount-device", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                mount(rack, list.getSelectedValue());
+            }
+        });
+        // Down from the search field lands in the results: typing then
+        // arrowing is how a keyboard user picks from a filtered list
+        search.getInputMap(JComponent.WHEN_FOCUSED).put(
+                javax.swing.KeyStroke.getKeyStroke("DOWN"), "to-results");
+        search.getActionMap().put("to-results", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                for (int i = 0; i < model.size(); i++) {
+                    if (model.get(i) instanceof DeviceCatalog.Entry) {
+                        list.setSelectedIndex(i);
+                        list.ensureIndexIsVisible(i);
+                        break;
+                    }
+                }
+                list.requestFocusInWindow();
+            }
+        });
+        search.getAccessibleContext().setAccessibleName(Bundle.PalettePanel_searchPlaceholder());
 
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -164,6 +187,41 @@ public class PalettePanel extends JPanel {
         hint.setBorder(BorderFactory.createEmptyBorder(6, 10, 8, 10));
         add(hint, BorderLayout.SOUTH);
         setPreferredSize(new Dimension(228, 400));
+    }
+
+    /**
+     * Racks the shelf entry {@code value} at the bottom of the rack: the one
+     * path double-click, Enter and Space take. A section header or nothing
+     * selected mounts nothing. A third-party device's build() (or a stale
+     * entry whose module was just uninstalled) can throw — one bad plugin
+     * must not blow up the palette, matching the drop path's guard.
+     *
+     * @return whether a device was racked
+     */
+    static boolean mount(Rack rack, Object value) {
+        if (!(value instanceof DeviceCatalog.Entry t)) {
+            return false;
+        }
+        try {
+            rack.addDevice(t.create());
+            return true;
+        } catch (Exception | LinkageError ex) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                    org.nmox.studio.core.util.PlainStatus.text(
+                            Bundle.PalettePanel_addFailed(t.title(), String.valueOf(ex))));
+            return false;
+        }
+    }
+
+    /**
+     * What a screen reader hears for a shelf card: the device and its gloss
+     * in the reader's language, as plain words. The card's tooltip is markup
+     * for the eye, and Swing hands a component's tooltip to assistive
+     * technology when it has no description of its own — which is how the
+     * shelf used to read {@code <html><b>MAESTRO</b> — …} aloud.
+     */
+    static String accessibleName(DeviceCatalog.Entry t) {
+        return t.title() + " — " + DeviceText.gloss(t);
     }
 
     private static final class DeviceRenderer extends JPanel implements ListCellRenderer<Object> {
@@ -185,12 +243,16 @@ public class PalettePanel extends JPanel {
                 setPreferredSize(new Dimension(210, 52));
                 String firstRecipeLine = t.usage().split("\\n")[0];
                 setToolTipText(Bundle.PalettePanel_entryTooltip(t.title(), DeviceText.description(t), firstRecipeLine));
+                getAccessibleContext().setAccessibleName(accessibleName(t));
+                getAccessibleContext().setAccessibleDescription(Bundle.PalettePanel_entryHint());
             } else {
                 this.type = null;
                 this.headerText = String.valueOf(value);
                 this.selected = false;
                 setPreferredSize(new Dimension(210, 24));
                 setToolTipText(null);
+                getAccessibleContext().setAccessibleName(headerText);
+                getAccessibleContext().setAccessibleDescription(Bundle.PalettePanel_sectionDescription());
             }
             return this;
         }

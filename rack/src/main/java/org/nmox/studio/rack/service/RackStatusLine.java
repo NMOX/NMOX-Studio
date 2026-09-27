@@ -23,6 +23,9 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = StatusLineElementProvider.class, position = 600)
 @org.openide.util.NbBundle.Messages({
     "RackStatusLine_servingChip=⇄ serving: {0}",
+    "# {0} every serving, each written as RackStatusLine_servingLine",
+    "RackStatusLine_servingA11y=Serving: {0}",
+    "RackStatusLine_agentA11y=Agent Port listening on port {0}",
     "RackStatusLine_moreSuffix= +{0}",
     "RackStatusLine_agentChip=⌁ agent port :{0}",
     "RackStatusLine_agentTooltip=The Agent Port is listening on 127.0.0.1:{0} (read-only) — {1}{2}. Click for the config, or to stop it.",
@@ -69,7 +72,30 @@ public class RackStatusLine implements StatusLineElementProvider {
         return Bundle.RackStatusLine_servingChip(servings.get(0).url()) + (more > 0 ? Bundle.RackStatusLine_moreSuffix(String.valueOf(more)) : "");
     }
 
-    /** Tooltip: every serving, one per line. */
+    /**
+     * What a screen reader says for the serving chip (3.4): every serving in
+     * words — "Serving: app — http://localhost:5173, api — …" — where the
+     * label begins with a glyph and names only the first. Null when idle.
+     */
+    static String spokenServing(List<ServingRegistry.Serving> servings) {
+        if (servings.isEmpty()) {
+            return null;
+        }
+        StringBuilder all = new StringBuilder();
+        for (ServingRegistry.Serving s : servings) {
+            if (all.length() > 0) {
+                all.append(", ");
+            }
+            all.append(Bundle.RackStatusLine_servingLine(s.deviceTitle(), s.url()));
+        }
+        return Bundle.RackStatusLine_servingA11y(all.toString());
+    }
+
+    /** The Agent Port chip in words (3.4); null when it is not listening. */
+    static String spokenAgent(int[] listening) {
+        return listening == null ? null : Bundle.RackStatusLine_agentA11y(String.valueOf(listening[0]));
+    }
+
     /** HTML-escapes an external string for the tooltip that means its markup. */
     static String esc(String s) {
         return PlainText.escape(s);
@@ -126,9 +152,11 @@ public class RackStatusLine implements StatusLineElementProvider {
     private static final class RackStrip extends javax.swing.JPanel {
 
         private final JLabel liveLabel = new JLabel();
-        private final JLabel servingLabel = new JLabel();
+        // pressable by keyboard and screen reader, and named in words (3.4)
+        private final JLabel servingLabel = new org.nmox.studio.core.util.KeyboardAccess.Chip(this::showServingMenu);
         private final JLabel envLabel = new JLabel();
-        private final JLabel agentLabel = new JLabel();
+        private final JLabel agentLabel = new org.nmox.studio.core.util.KeyboardAccess.Chip(
+                () -> new org.nmox.studio.rack.mcp.AgentPortAction().actionPerformed(null));
         private final Timer poll = new Timer(2_000, e -> refresh());
         private final ServingRegistry.Listener servingListener =
                 () -> javax.swing.SwingUtilities.invokeLater(this::refresh);
@@ -204,11 +232,16 @@ public class RackStatusLine implements StatusLineElementProvider {
             servingLabel.setText(PlainText.plain(chip == null ? "" : chip));
             servingLabel.setForeground(new java.awt.Color(90, 170, 235));
             servingLabel.setToolTipText(PlainText.plain(chipTooltip(servings)));
+            servingLabel.getAccessibleContext().setAccessibleName(spokenServing(servings));
+            servingLabel.setFocusable(chip != null);
             int[] listening = org.nmox.studio.rack.mcp.AgentPortAction.listening();
             String agent = agentChipText(listening);
             agentLabel.setText(PlainText.plain(agent == null ? "" : agent));
             agentLabel.setForeground(new java.awt.Color(200, 150, 235));
             agentLabel.setToolTipText(PlainText.plain(agentChipTooltip(listening)));
+            agentLabel.getAccessibleContext().setAccessibleName(spokenAgent(listening));
+            agentLabel.getAccessibleContext().setAccessibleDescription(agentChipTooltip(listening));
+            agentLabel.setFocusable(agent != null);
             boolean envNote = RackService.getDefault().envNoteActive();
             envLabel.setText(PlainText.plain(envNote ? Bundle.RackStatusLine_envChanged() : ""));
             envLabel.setForeground(new java.awt.Color(222, 178, 80));

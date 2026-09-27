@@ -37,6 +37,7 @@ The house laws themselves, with the incidents behind them, are in
 Nothing runs a stranger's code, leaks a secret, or paints a stranger's markup.
 
 - [`SpawnSiteTrustLedgerTest`](../../application/src/test/java/org/nmox/studio/application/SpawnSiteTrustLedgerTest.java): Every `CommandExecutor.run` and `ProcessBuilder` spawn site is classified: gated by Workspace Trust before the spawn, gated by its caller, or blessed in writing because its argv is not project-controlled. Born v1.224.0, after Run Focused Test spawned project runners ungated for ~190 releases.
+- [`GitStatusNoLocksGateTest`](../../rack/src/test/java/org/nmox/studio/rack/service/GitStatusNoLocksGateTest.java): Every `git status` the product spawns carries `--no-optional-locks`, so a status killed on its leash can never strand `index.lock` (3.4, after the chip's five-second SIGKILL made the user's next `git add` fail with "File exists").
 - [`SpawnTrustGateTest`](../../tools/src/test/java/org/nmox/studio/tools/npm/SpawnTrustGateTest.java): Run/Build/Test/Clean and the NPM Explorer ask for trust before they spawn project code (v1.103.0, an RCE found by review).
 - [`DebugTrustGateTest`](../../editor/src/test/java/org/nmox/studio/editor/debug/DebugTrustGateTest.java): The debug actions consult Workspace Trust before launching anything, against the project root rather than the file's folder (v1.37.0).
 - [`LspFormatTrustGateTest`](../../editor/src/test/java/org/nmox/studio/editor/lsp/LspFormatTrustGateTest.java): A project's own `node_modules/.bin` language server or Prettier is used only when the workspace is trusted, via the silent check (v1.102.0: opening a file was RCE).
@@ -116,6 +117,7 @@ Every control speaks its name; a screen reader hears the thing, not the role.
 - [`InputsNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/InputsNamedGateTest.java): Every text field, password field, combo and spinner is named or labelled (v2.85.0: 46 were not).
 - [`TextAreasNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/TextAreasNamedGateTest.java): Every text area carries an accessible name (v2.85.0).
 - [`CollectionsNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/CollectionsNamedGateTest.java): Every table, list and tree is named or labelled (v2.85.0).
+- [`RenderersNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/RenderersNamedGateTest.java): Every cell renderer not built on a label names itself with the words it paints, so a row is never read as blank (3.4.0: the Task Board's cards were empty text fields to VoiceOver).
 - [`A11yInputNamesGateTest`](../../application/src/test/java/org/nmox/studio/application/A11yInputNamesGateTest.java): No studio adds an input without also naming one (v2.38.0).
 - [`LabelNamesAreTheirTextGateTest`](../../ui/src/test/java/org/nmox/studio/ui/actions/LabelNamesAreTheirTextGateTest.java): A label with text is named by its text, not by a constant a screen reader would read instead (v2.85.0).
 

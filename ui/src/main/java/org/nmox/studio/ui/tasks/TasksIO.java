@@ -2,7 +2,6 @@ package org.nmox.studio.ui.tasks;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,7 +65,60 @@ final class TasksIO {
      * {@link IOException}) was destroyed by the very cap that refused to
      * read it.
      */
-    record LoadOutcome(TaskBoard board, boolean unreadable) {
+    record LoadOutcome(TaskBoard board, Refusal refusal, String rescuedAs, int format) {
+
+        LoadOutcome(TaskBoard board, Refusal refusal, String rescuedAs) {
+            this(board, refusal, rescuedAs, TaskBoard.FORMAT);
+        }
+
+        /** The file came from a newer NMOX Studio: shown as read, and not written over (3.4). */
+        boolean newer() {
+            return refusal == Refusal.NEWER;
+        }
+
+        /** The bytes exist and could not be read at all. */
+        boolean unreadable() {
+            return refusal == Refusal.UNREADABLE;
+        }
+
+        /** The bytes hold git's unresolved merge conflict (3.4). */
+        boolean conflicted() {
+            return refusal == Refusal.CONFLICTED;
+        }
+
+        /**
+         * True when the board on screen is a stand-in for a file that
+         * exists and is not ours to write: unread bytes, bytes holding
+         * git's unresolved merge conflict, or malformed bytes no copy
+         * could be kept of (3.4). Every save refuses while this holds, and
+         * the file pulse brings the real board back when the file changes
+         * on disk.
+         */
+        boolean readOnly() {
+            return refusal != Refusal.NONE;
+        }
+    }
+
+    /**
+     * Why a board on screen is not the project's own (3.4). NONE is a
+     * board we may write: the parsed file, a fresh starter, or a starter
+     * after the malformed bytes were safely copied aside
+     * ({@link LoadOutcome#rescuedAs()} names the copy).
+     */
+    enum Refusal {
+        NONE,
+        UNREADABLE,
+        CONFLICTED,
+        /** Malformed, and the copy aside failed: writing would lose the only copy. */
+        UNRESCUED,
+        /**
+         * Written by a newer NMOX Studio (its {@code version} is above
+         * {@link TaskBoard#FORMAT}) (3.4). Until the review {@code version}
+         * was written and never read, so the board loaded, a save dropped
+         * every field the newer build had added, and the next ordinary card
+         * edit committed the loss. The board is shown as read, read-only.
+         */
+        NEWER
     }
 
     /**
@@ -100,8 +152,14 @@ final class TasksIO {
      */
     static LoadOutcome load(File projectDir) {
         File f = fileFor(projectDir);
+        if (!f.exists()) {
+            return new LoadOutcome(starterBoard(), Refusal.NONE, null);
+        }
         if (!f.isFile()) {
-            return new LoadOutcome(starterBoard(), false);
+            // something that is not a file wears the board's name (a
+            // directory, a device): it is not ours to replace
+            LOG.log(Level.WARNING, "{0} is not a file; the board is read-only", f);
+            return new LoadOutcome(starterBoard(), Refusal.UNREADABLE, null);
         }
         String text;
         try {
@@ -119,21 +177,48 @@ final class TasksIO {
             LOG.log(Level.WARNING,
                     "Unreadable {0}; the board is read-only until it can be read ({1})",
                     new Object[]{f, ex.getMessage()});
-            return new LoadOutcome(starterBoard(), true);
+            return new LoadOutcome(starterBoard(), Refusal.UNREADABLE, null);
+        }
+        if (org.nmox.studio.core.util.MergeConflicts.hasMarkers(text)) {
+            // A merge git has not finished holds BOTH people's boards. It
+            // is neither corrupt nor ours to repair: until 3.4 it failed
+            // to parse, was copied to .bak, and the next card edit wrote a
+            // starter board over it — so the commit that finished the
+            // merge recorded the loss. It is left exactly as it is, and
+            // nothing is written over it until git's markers are gone.
+            LOG.log(Level.INFO,
+                    "{0} has unresolved merge conflicts; the board is read-only until they are resolved",
+                    f);
+            return new LoadOutcome(starterBoard(), Refusal.CONFLICTED, null);
         }
         try {
-            return new LoadOutcome(TaskBoard.fromJson(text), false);
-        } catch (RuntimeException broken) {
-            File bak = new File(projectDir, FILENAME + ".bak");
-            try {
-                Files.writeString(bak.toPath(), text);
-                LOG.log(Level.WARNING,
-                        "Malformed {0}; kept a .bak and started fresh ({1})",
-                        new Object[] {f, broken.toString()});
-            } catch (IOException io) {
-                LOG.log(Level.WARNING, "Malformed {0} and .bak failed", f);
+            TaskBoard parsed = TaskBoard.fromJson(text);
+            if (parsed.readFormat() > TaskBoard.FORMAT) {
+                LOG.log(Level.INFO, "{0} is format {1}, newer than this build writes; the board is read-only",
+                        new Object[]{f, parsed.readFormat()});
+                return new LoadOutcome(parsed, Refusal.NEWER, null, parsed.readFormat());
             }
-            return new LoadOutcome(starterBoard(), false);
+            return new LoadOutcome(parsed, Refusal.NONE, null);
+        } catch (RuntimeException broken) {
+            // never over an earlier rescue: a second corrupt load used to
+            // replace the first .bak, and the older bytes were gone; the
+            // same broken bytes read again (a re-aim, a search) reuse the
+            // copy they already have
+            try {
+                File bak = org.nmox.studio.core.util.Backups.keep(f.toPath(),
+                        text.getBytes(java.nio.charset.StandardCharsets.UTF_8)).toFile();
+                LOG.log(Level.WARNING,
+                        "Malformed {0}; kept a copy as {1} and started fresh ({2})",
+                        new Object[] {f, bak.getName(), broken.toString()});
+                return new LoadOutcome(starterBoard(), Refusal.NONE, bak.getName());
+            } catch (IOException io) {
+                // No copy exists anywhere but the file itself. Until 3.4
+                // the starter still bound WRITABLE here, so the next card
+                // edit replaced the only copy of the user's bytes.
+                LOG.log(Level.WARNING, "Malformed {0} and its copy failed ({1}); the board is read-only",
+                        new Object[] {f, io.getMessage()});
+                return new LoadOutcome(starterBoard(), Refusal.UNRESCUED, null);
+            }
         }
     }
 

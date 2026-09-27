@@ -30,7 +30,8 @@ class AgentPortStreamTest {
 
     @AfterEach
     void stop() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
         if (port != null) {
             port.stop();
         }

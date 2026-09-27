@@ -330,6 +330,12 @@ public final class Rack {
         if (a == null || !a.canConnectTo(b)) {
             return null;
         }
+        // both ends on this rack: a modal Patch Cable… dialog can outlive a
+        // device (a re-aim, a patch load, Delete) and a cable to a device
+        // that has left would save as device -1 (the 3.4 review)
+        if (!devices.contains(a.getDevice()) || !devices.contains(b.getDevice())) {
+            return null;
+        }
         Port out = a.getDirection() == Port.Direction.OUT ? a : b;
         Port in = out == a ? b : a;
         for (Cable c : cables) {

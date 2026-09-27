@@ -212,7 +212,7 @@ class PreflightPlanKindsTest {
         File cmake = project("CMakeLists.txt");
         Files.createDirectories(new File(cmake, ".git").toPath());
         assertThat(commands(cmake)).containsExactly(
-                List.of("git", "status", "--porcelain"));
+                List.of("git", "--no-optional-locks", "status", "--porcelain"));
     }
 
     @Test

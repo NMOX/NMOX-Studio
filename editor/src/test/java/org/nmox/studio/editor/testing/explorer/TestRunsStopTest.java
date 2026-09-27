@@ -16,7 +16,8 @@ class TestRunsStopTest {
 
     @AfterEach
     void drain() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
     }
 
     @Test
@@ -30,8 +31,11 @@ class TestRunsStopTest {
         assertThat(TestRunsStop.anyLive()).isTrue();
         assertThat(TestRunsStop.stopAll()).isEqualTo(2);
         assertThat(killed).containsExactlyInAnyOrder("t1", "t2");
+        assertThat(TestRunsStop.stopAll()).as("already stopping: nothing killed twice").isZero();
+        // 3.4: a stopped run leaves when it has exited
+        LiveRuns.remove("focused-test:/p/a.test.js#2");
+        LiveRuns.remove("focused-test:/p/b.test.js#3");
         assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).as("the dev server survived").containsExactly("ide-run:/p#1");
-        assertThat(TestRunsStop.stopAll()).isZero();
     }
 
     @Test

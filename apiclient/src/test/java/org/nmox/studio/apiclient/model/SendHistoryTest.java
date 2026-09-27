@@ -79,16 +79,21 @@ class SendHistoryTest {
     }
 
     @Test
-    @DisplayName("History round-trips through .nmoxapi.json with no token anywhere in the bytes")
+    @DisplayName("History round-trips through this person's own state with no token anywhere in the bytes")
     void persistenceRoundTripLeaksNothing() {
         ApiModel.Workspace w = new ApiModel.Workspace();
         SendHistory.record(w.history, SendHistory.of(99L, request(), 404, 12L));
 
-        String json = WorkspaceIO.toJson(w);
-        assertThat(json).as("the committable file").doesNotContain("SECRET-BEARER-TOKEN");
+        // 3.4: the history is one person's state — the committable file no
+        // longer carries it at all, and the personal document never a token
+        assertThat(WorkspaceIO.toJson(w)).as("the committable file")
+                .doesNotContain("SECRET-BEARER-TOKEN").doesNotContain("{{baseUrl}}/pets");
+        String json = WorkspaceIO.personalJson(w);
+        assertThat(json).as("this person's state").doesNotContain("SECRET-BEARER-TOKEN");
         assertThat(json).contains("{{baseUrl}}/pets");
 
-        ApiModel.Workspace back = WorkspaceIO.fromJson(json);
+        ApiModel.Workspace back = new ApiModel.Workspace();
+        WorkspaceIO.applyPersonal(back, json);
         assertThat(back.history).hasSize(1);
         SendHistory.Entry e = back.history.get(0);
         assertThat(e.timestamp).isEqualTo(99L);

@@ -477,7 +477,10 @@ public final class JsonRpcClient {
             }
             org.nmox.studio.core.http.HttpBodies.Capped capped;
             try (java.io.InputStream in = response.body()) {
-                capped = org.nmox.studio.core.http.HttpBodies.readUtf8(in, MAX_RESPONSE_BYTES);
+                // the request timeout ends at the headers: a node that stalls
+                // mid-body stopped the Watch pane forever until 3.4
+                capped = org.nmox.studio.core.http.HttpBodies.readUtf8(in, MAX_RESPONSE_BYTES,
+                        Duration.ofSeconds(TIMEOUT_SECONDS));
             }
             if (capped.truncated()) {
                 // closing aborted the transfer; a truncated JSON-RPC

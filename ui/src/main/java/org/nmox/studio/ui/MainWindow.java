@@ -366,6 +366,9 @@ public final class MainWindow extends TopComponent {
             button.setContentAreaFilled(false);
             button.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 2, 3, 2));
             button.setFocusPainted(false);
+            // a link Tab lands on shows it (3.4): the empty border and focus
+            // painting off left the keyboard's place invisible
+            org.nmox.studio.core.util.KeyboardAccess.focusRing(button);
             button.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
             button.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             button.setAlignmentX(Component.LEFT_ALIGNMENT);

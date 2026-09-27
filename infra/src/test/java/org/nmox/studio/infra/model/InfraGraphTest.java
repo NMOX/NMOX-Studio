@@ -31,42 +31,49 @@ class InfraGraphTest {
     }
 
     @Test
-    @DisplayName("Node ids are kind-prefixed and strictly sequential across kinds")
-    void idsAreSequential() {
+    @DisplayName("Node ids are kind-prefixed and unique")
+    void idsAreKindPrefixedAndUnique() {
         InfraGraph graph = new InfraGraph();
 
         var vpc = graph.addNode(NodeKind.VPC, 0, 0);
         var droplet = graph.addNode(NodeKind.DROPLET, 100, 0);
         var second = graph.addNode(NodeKind.DROPLET, 200, 0);
 
-        assertThat(vpc.id).isEqualTo("vpc-1");
-        assertThat(droplet.id).isEqualTo("droplet-2");
-        assertThat(second.id).isEqualTo("droplet-3");
-        assertThat(graph.node("droplet-2")).isSameAs(droplet);
+        assertThat(vpc.id).matches("vpc-[0-9a-f]{6}");
+        assertThat(droplet.id).matches("droplet-[0-9a-f]{6}");
+        assertThat(second.id).isNotEqualTo(droplet.id);
+        assertThat(graph.node(droplet.id)).isSameAs(droplet);
         assertThat(graph.node("droplet-99")).as("stranger id").isNull();
     }
 
     @Test
-    @DisplayName("Restoring a high-numbered node bumps the sequence so new nodes never collide")
-    void restoreBumpsSequence() {
-        InfraGraph graph = new InfraGraph();
-
-        graph.restoreNode("droplet-7", NodeKind.DROPLET, 0, 0);
-        var next = graph.addNode(NodeKind.VPC, 0, 0);
-
-        assertThat(next.id).isEqualTo("vpc-8");
+    @DisplayName("Two people adding a node to the same design never mint the same id (3.4)")
+    void twoPeopleNeverCollide() {
+        // Alice and Bob each load the committed design and each add a
+        // droplet. With a counter both made droplet-3, and after the
+        // keep-both merge Bob's wire resolved to Alice's node.
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (int person = 0; person < 200; person++) {
+            InfraGraph clone = new InfraGraph();
+            clone.restoreNode("droplet-1", NodeKind.DROPLET, 0, 0);
+            clone.restoreNode("droplet-2", NodeKind.DROPLET, 0, 0);
+            ids.add(clone.addNode(NodeKind.DROPLET, 0, 0).id);
+        }
+        assertThat(ids).as("200 clones, 200 different new ids").hasSize(200);
     }
 
     @Test
-    @DisplayName("A restored id without a numeric suffix leaves sequencing untouched")
-    void nonNumericRestoredIdIsHarmless() {
+    @DisplayName("Restored ids are kept exactly, and a new node never takes one")
+    void restoredIdsAreKept() {
         InfraGraph graph = new InfraGraph();
 
         graph.restoreNode("imported-legacy", NodeKind.VPC, 0, 0);
+        graph.restoreNode("droplet-7", NodeKind.DROPLET, 0, 0);
         var next = graph.addNode(NodeKind.DROPLET, 0, 0);
 
-        assertThat(next.id).isEqualTo("droplet-1");
         assertThat(graph.node("imported-legacy")).isNotNull();
+        assertThat(graph.node("droplet-7")).isNotNull();
+        assertThat(next.id).isNotIn("imported-legacy", "droplet-7");
     }
 
     @Test

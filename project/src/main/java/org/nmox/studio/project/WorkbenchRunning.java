@@ -22,7 +22,9 @@ import org.nmox.studio.core.spi.LiveServings;
     "WorkbenchRunning_running=running",
     "WorkbenchRunning_runningSince=running since {0}",
     // the served row already shows its address; this only adds when
-    "WorkbenchRunning_since=since {0}"
+    "WorkbenchRunning_since=since {0}",
+    // asked to stop, not exited yet (3.4): the row stays until the exit
+    "WorkbenchRunning_stopping=stopping\u2026"
 })
 final class WorkbenchRunning {
 
@@ -83,6 +85,9 @@ final class WorkbenchRunning {
 
     /** The row's subtitle: the address when it serves, else since when it runs (v2.73.0), else that it runs. */
     static String subtitle(Row row) {
+        if (row.stoppable() && LiveRuns.isStopping(row.runId())) {
+            return Bundle.WorkbenchRunning_stopping();
+        }
         return subtitle(row, row.stoppable() ? LiveRuns.sinceTime(row.runId()) : "");
     }
 

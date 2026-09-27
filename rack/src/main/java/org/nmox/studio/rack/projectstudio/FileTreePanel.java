@@ -72,7 +72,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     };
 
     private final ExplorerManager manager = new ExplorerManager();
-    private final BeanTreeView view = new BeanTreeView();
+    private final SpokenTreeView view = new SpokenTreeView();
     private final RootResolver resolver;
     /** Every filesystem walk we initiate runs here, never on the EDT. */
     private final org.openide.util.RequestProcessor scanner =
@@ -102,6 +102,54 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         manager.setRootContext(placeholder(Bundle.FileTreePanel_noProject()));
         manager.addPropertyChangeListener(selectionRelay);
         add(view, BorderLayout.CENTER);
+        speakRowsAsWords(view);
+    }
+
+    /**
+     * The platform's node renderer paints a file's git state in HTML, and a
+     * screen reader was given that markup as the row's name
+     * ({@code <font color="#ff6464">a.txt</font><font color="#ffffff"> [UU]</font>},
+     * read from the AX tree in the 3.4 walk). The renderer is wrapped so each
+     * row is heard as the words it paints: {@code a.txt [UU]}.
+     */
+    static void speakRowsAsWords(SpokenTreeView view) {
+        javax.swing.JTree tree = view.tree();
+        if (tree != null) {
+            javax.swing.tree.TreeCellRenderer platform = tree.getCellRenderer();
+            if (platform != null && !(platform instanceof SpokenRows)) {
+                tree.setCellRenderer(new SpokenRows(platform));
+            }
+        }
+    }
+
+    /** The platform's view, with its tree in reach: TreeView keeps it in a protected field. */
+    static final class SpokenTreeView extends BeanTreeView {
+        private static final long serialVersionUID = 1L;
+
+        javax.swing.JTree tree() {
+            return tree;
+        }
+    }
+
+    /** Delegates the paint; names the painted component with its words. */
+    static final class SpokenRows implements javax.swing.tree.TreeCellRenderer {
+        private final javax.swing.tree.TreeCellRenderer platform;
+
+        SpokenRows(javax.swing.tree.TreeCellRenderer platform) {
+            this.platform = platform;
+        }
+
+        @Override
+        public java.awt.Component getTreeCellRendererComponent(javax.swing.JTree tree, Object value,
+                boolean selected, boolean expanded, boolean leaf, int row, boolean focus) {
+            java.awt.Component c = platform.getTreeCellRendererComponent(tree, value, selected, expanded,
+                    leaf, row, focus);
+            if (c instanceof javax.swing.JLabel label) {
+                label.getAccessibleContext().setAccessibleName(
+                        org.nmox.studio.core.util.PlainText.words(label.getText()));
+            }
+            return c;
+        }
     }
 
     @Override

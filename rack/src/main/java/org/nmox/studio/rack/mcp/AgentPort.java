@@ -266,7 +266,10 @@ public final class AgentPort {
             lastRequestAt = System.currentTimeMillis();
             String body;
             try (InputStream in = exchange.getRequestBody()) {
-                HttpBodies.Capped capped = HttpBodies.readUtf8(in, MAX_REQUEST_BYTES);
+                // a client that sends headers and then stalls must not hold a
+                // server thread forever: ten seconds for a request body
+                HttpBodies.Capped capped = HttpBodies.readUtf8(in, MAX_REQUEST_BYTES,
+                        java.time.Duration.ofSeconds(10));
                 if (capped.truncated()) {
                     refuse(exchange, 413); // over-cap is refused, never clipped
                     return;

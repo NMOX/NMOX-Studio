@@ -135,10 +135,13 @@ public final class GitFacts {
     }
 
     /**
-     * The changed paths in {@code git status --porcelain=v2 --branch}
-     * output: every entry line ({@code 1 }, {@code 2 }, {@code u },
-     * {@code ? }) counts, the {@code # branch.*} header lines never do
-     * (3.2.0, the chip's one spawn now also answers ahead/behind).
+     * The ordinary changed paths in {@code git status --porcelain=v2
+     * --branch} output: changed ({@code 1 }), renamed ({@code 2 }) and
+     * untracked ({@code ? }) entries count, the {@code # branch.*} header
+     * lines never do (3.2.0, the chip's one spawn also answers
+     * ahead/behind). Unmerged ({@code u }) entries are NOT ordinary changes
+     * and are counted by {@link #conflictCountV2} instead: counted here, a
+     * conflicted merge read {@code ⎇ main ±2} like two edits (3.4).
      */
     public static int changeCountV2(String porcelainV2) {
         if (porcelainV2 == null) {
@@ -146,11 +149,104 @@ public final class GitFacts {
         }
         int n = 0;
         for (String line : porcelainV2.split("\n")) {
-            if (!line.isBlank() && !line.startsWith("#")) {
+            if (!line.isBlank() && !line.startsWith("#") && !line.startsWith("u ")) {
                 n++;
             }
         }
         return n;
+    }
+
+    /** The unmerged paths ({@code u } entries) in porcelain v2 output: git's conflicts. */
+    public static int conflictCountV2(String porcelainV2) {
+        if (porcelainV2 == null) {
+            return 0;
+        }
+        int n = 0;
+        for (String line : porcelainV2.split("\n")) {
+            if (line.startsWith("u ")) {
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** A git operation that stopped half-way and is waiting for the user. */
+    public enum Operation {
+        MERGE, REBASE, CHERRY_PICK, REVERT,
+        /** {@code git am} stopped on a patch ({@code rebase-apply/applying}). */
+        APPLYING_PATCHES,
+        /** {@code git bisect} is running ({@code BISECT_LOG}). */
+        BISECT
+    }
+
+    /**
+     * An operation in progress and, for a rebase, the branch being rebased
+     * (HEAD is detached while a rebase runs, so {@link #branch} answers a
+     * bare sha); null when git did not record one.
+     */
+    public record InProgress(Operation operation, String rebasedBranch) {
+    }
+
+    /**
+     * The operation git is in the middle of, read from the git dir with no
+     * process (3.4): {@code rebase-merge/} or {@code rebase-apply/} (a
+     * rebase; {@code rebase-apply/applying} is {@code git am}, not a
+     * rebase), {@code MERGE_HEAD}, {@code CHERRY_PICK_HEAD},
+     * {@code REVERT_HEAD}. A worktree's own git dir holds these, which is
+     * the dir the {@code gitdir:} pointer names. Null when none is in
+     * progress or the repository cannot be read.
+     */
+    public static InProgress inProgress(File repoRoot) {
+        if (repoRoot == null) {
+            return null;
+        }
+        File gitDir = resolveGitDir(new File(repoRoot, ".git"));
+        if (gitDir == null) {
+            return null;
+        }
+        for (String dir : new String[] {"rebase-merge", "rebase-apply"}) {
+            File state = new File(gitDir, dir);
+            if (state.isDirectory() && !new File(state, "applying").exists()) {
+                return new InProgress(Operation.REBASE,
+                        branchName(readFirstLine(new File(state, "head-name"))));
+            }
+        }
+        if (Files.isRegularFile(new File(gitDir, "MERGE_HEAD").toPath())) {
+            return new InProgress(Operation.MERGE, null);
+        }
+        if (Files.isRegularFile(new File(gitDir, "CHERRY_PICK_HEAD").toPath())) {
+            return new InProgress(Operation.CHERRY_PICK, null);
+        }
+        if (Files.isRegularFile(new File(gitDir, "REVERT_HEAD").toPath())) {
+            return new InProgress(Operation.REVERT, null);
+        }
+        // the rest of what stops half-way (the 3.4 review: the checkout
+        // guard said it refused ANY stopped operation and let these through)
+        if (new File(new File(gitDir, "rebase-apply"), "applying").exists()) {
+            return new InProgress(Operation.APPLYING_PATCHES, null);
+        }
+        File sequencer = new File(gitDir, "sequencer");
+        if (sequencer.isDirectory()) {
+            // a multi-commit cherry-pick or revert keeps its plan here after
+            // the current commit's HEAD file is gone; the plan's first word
+            // says which
+            String next = readFirstLine(new File(sequencer, "todo"));
+            return new InProgress(next != null && next.startsWith("revert")
+                    ? Operation.REVERT : Operation.CHERRY_PICK, null);
+        }
+        if (Files.isRegularFile(new File(gitDir, "BISECT_LOG").toPath())) {
+            return new InProgress(Operation.BISECT, null);
+        }
+        return null;
+    }
+
+    /** {@code refs/heads/feature} → {@code feature}; anything else (a detached rebase writes "detached HEAD") → null. */
+    private static String branchName(String headName) {
+        String prefix = "refs/heads/";
+        if (headName == null || !headName.startsWith(prefix) || headName.length() == prefix.length()) {
+            return null;
+        }
+        return headName.substring(prefix.length());
     }
 
     /**

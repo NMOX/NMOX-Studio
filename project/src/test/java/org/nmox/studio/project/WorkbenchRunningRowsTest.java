@@ -23,9 +23,17 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class WorkbenchRunningRowsTest {
 
+    @org.junit.jupiter.api.BeforeEach
+    void startEmpty() {
+        // "nothing running" is this test's first assertion; a sibling class
+        // in the same fork must not be able to leave a row behind for it
+        LiveRuns.clearForTest();
+    }
+
     @AfterEach
     void drain() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
         org.nmox.studio.rack.service.ServingRegistry.getDefault().deregister("ide-run:/tmp/shop#9");
     }
 
@@ -115,6 +123,11 @@ class WorkbenchRunningRowsTest {
                 .as("the serving row has a real Open button").hasSize(1);
         SwingUtilities.invokeAndWait(stop::doClick);
         assertThat(killed).as("the row's Stop ran THAT run's killer").isTrue();
+        // 3.4: the row stays, reading "stopping…", until the run has exited
+        assertThat(LiveRuns.isStopping("ide-run:/tmp/shop#9")).isTrue();
+        assertThat(WorkbenchRunning.subtitle(new WorkbenchRunning.Row("ide-run:/tmp/shop#9", "Run — shop", null)))
+                .isEqualTo("stopping…");
+        LiveRuns.remove("ide-run:/tmp/shop#9"); // the exit arrives
         assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id)
                 .as("only the pressed row's run is gone").containsExactly("npm-run:/tmp/shop#10");
         SwingUtilities.invokeAndWait(tc[0]::componentClosed);

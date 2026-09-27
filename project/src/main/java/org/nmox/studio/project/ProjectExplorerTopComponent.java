@@ -469,6 +469,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             if (r.stoppable() && sub != null && sub.getParent() instanceof JPanel rowPanel) {
                 javax.swing.JButton stop = flatButton(Bundle.ProjectExplorerTopComponent_stopButton(), Bundle.ProjectExplorerTopComponent_stopRun(r.title()));
+                // a run already asked to stop stays until it exits (3.4); a second Stop has nothing to do
+                stop.setEnabled(!LiveRuns.isStopping(r.runId()));
                 stop.addActionListener(e -> {
                     LiveRuns.stop(r.runId());
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(Bundle.ProjectExplorerTopComponent_stoppedStatus(r.title()));
@@ -803,6 +805,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         titleButton.setContentAreaFilled(false);
         titleButton.setBorder(BorderFactory.createEmptyBorder());
         titleButton.setFocusPainted(true);
+        // focus painting alone draws nothing under FlatLaf with no content
+        // area and an empty border (3.4): a ring shows where Tab landed
+        org.nmox.studio.core.util.KeyboardAccess.focusRing(titleButton);
         titleButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         titleButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         titleButton.getAccessibleContext().setAccessibleName(

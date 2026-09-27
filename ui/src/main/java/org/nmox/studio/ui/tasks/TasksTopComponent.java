@@ -114,6 +114,14 @@ import org.openide.windows.TopComponent;
     "TasksTopComponent_tooltip=Per-project task board (.nmoxtasks.json)",
     "TasksTopComponent_changedOutside={0} changed outside the IDE — reloaded; repeat your change",
     "TasksTopComponent_unreadable={0} could not be read — the board is read-only so nothing overwrites it",
+    "TasksTopComponent_conflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
+    "# {0} - the board file's name; {1} - the name the unreadable bytes were kept under",
+    "TasksTopComponent_rescued={0} is not a board this build can read — your file was kept as {1}, and the board starts fresh",
+    "TasksTopComponent_unrescued={0} is not a board this build can read and no copy of it could be kept — the board is read-only so nothing overwrites it",
+    "# {0} - the board file's name; {1} - the failure, as the file system said it",
+    "TasksTopComponent_saveFailed=Could not save {0}: {1}",
+    "# {0} - the board file's name; {1} - the file's format number; {2} - the format this build writes",
+    "TasksTopComponent_newer={0} was saved by a newer NMOX Studio (format {1}; this one writes {2}) \u2014 the board is shown read-only so nothing it added is lost",
     "TasksTopComponent_newCard=New Card…",
     "TasksTopComponent_newCardA11y=New card",
     "TasksTopComponent_newCardTip=Adds a card to the first column",
@@ -251,8 +259,16 @@ public final class TasksTopComponent extends TopComponent {
      * this project's board. Every mutation refuses while it is set — the
      * never-clobber law reaches the case where there is nothing to
      * compare against, because we hold none of the file's bytes.
+     *
+     * <p>Since 3.4 it is also set while the file holds git's unresolved
+     * merge conflict: those bytes are both people's boards, and the one
+     * correct answer is to write nothing over them until git's markers are
+     * gone. {@link #readOnlyReason} is what the header and the status line
+     * say about it.
      */
     private boolean readOnly;
+    /** Why the board is read-only, said on the header and on every refused gesture; null when writable. */
+    private String readOnlyReason;
     private boolean built;
     /** Newest-wins guard for async loads (the v1.100.0 idiom). */
     private volatile int loadSeq;
@@ -350,7 +366,7 @@ public final class TasksTopComponent extends TopComponent {
             // and mutate()'s foreign-edit guard then waved the first card
             // edit through onto a board nobody had seen. The stamp belongs
             // to a read that happened.
-            if (f.isFile() && !outcome.unreadable()) {
+            if (f.isFile() && !outcome.readOnly()) {
                 tracker.noteSync(f);
             }
             java.awt.EventQueue.invokeLater(() -> {
@@ -359,10 +375,16 @@ public final class TasksTopComponent extends TopComponent {
                 }
                 board = outcome.board();
                 boundDir = dir;
-                readOnly = outcome.unreadable();
+                readOnly = outcome.readOnly();
+                readOnlyReason = readOnlyReason(outcome);
                 rebuild();
                 if (readOnly) {
-                    status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
+                    status(readOnlyReason);
+                } else if (outcome.rescuedAs() != null) {
+                    // a starter replaced a malformed board: the copy is safe,
+                    // and the reader is told where it is instead of finding
+                    // three empty columns with the reason in a log file
+                    status(Bundle.TasksTopComponent_rescued(TasksIO.FILENAME, outcome.rescuedAs()));
                 }
                 // the pulse keeps watching: a file that becomes readable
                 // again (permissions fixed, an over-cap file trimmed) is a
@@ -399,7 +421,7 @@ public final class TasksTopComponent extends TopComponent {
             return false;
         }
         if (readOnly) {
-            status(Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME));
+            status(readOnlyReason);
             return false;
         }
         if (!mutation.getAsBoolean()) {
@@ -419,9 +441,37 @@ public final class TasksTopComponent extends TopComponent {
                 TasksIO.save(dir, snapshot, tracker);
             } catch (IOException ex) {
                 LOG.log(Level.WARNING, "Could not save " + TasksIO.FILENAME, ex);
+                // refusals speak: a full disk or a revoked permission used to
+                // leave the board on screen looking saved, with the only
+                // trace in a log file (3.4, the fault survey)
+                String why = ex.getMessage() == null ? ex.getClass().getSimpleName() : ex.getMessage();
+                java.awt.EventQueue.invokeLater(() ->
+                        status(Bundle.TasksTopComponent_saveFailed(TasksIO.FILENAME, why)));
             }
         });
         return true;
+    }
+
+    /**
+     * What a read-only board says, or null for a writable one. Pure so the
+     * sentence is pinned without a window: a conflicted file names git and
+     * the way out, an unreadable one says it could not be read.
+     */
+    static String readOnlyReason(TasksIO.LoadOutcome outcome) {
+        if (outcome.conflicted()) {
+            return Bundle.TasksTopComponent_conflicted(TasksIO.FILENAME);
+        }
+        if (outcome.unreadable()) {
+            return Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME);
+        }
+        if (outcome.newer()) {
+            return Bundle.TasksTopComponent_newer(TasksIO.FILENAME,
+                    String.valueOf(outcome.format()), String.valueOf(TaskBoard.FORMAT));
+        }
+        if (outcome.readOnly()) {
+            return Bundle.TasksTopComponent_unrescued(TasksIO.FILENAME);
+        }
+        return null;
     }
 
     /** One-line outcome report on the status line — every refused or
@@ -510,7 +560,12 @@ public final class TasksTopComponent extends TopComponent {
      *  30s ticker can refresh it WITHOUT rebuilding the strip (a rebuild
      *  would drop the list selection every tick). */
     private String headerText() {
-        String base = Bundle.TasksTopComponent_header(boundDir.getName(),
+        if (readOnly && readOnlyReason != null) {
+            // the placard: a stand-in board must never read as this
+            // project's board, and the status line forgets in seconds
+            return readOnlyReason;
+        }
+        String base =Bundle.TasksTopComponent_header(boundDir.getName(),
                 org.nmox.studio.core.util.Plural.of(board.cardCount(),
                         Bundle.TasksTopComponent_card(), Bundle.TasksTopComponent_cards()));
         TaskBoard.Card running = board.runningCard();
@@ -522,7 +577,7 @@ public final class TasksTopComponent extends TopComponent {
                 BoardStats.duration(System.currentTimeMillis() - since));
     }
 
-    private JPanel columnPanel(int index, TaskBoard.Column col) {
+    JPanel columnPanel(int index, TaskBoard.Column col) {
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setPreferredSize(new Dimension(230, 100));
         panel.setMaximumSize(new Dimension(230, Integer.MAX_VALUE));
@@ -544,6 +599,14 @@ public final class TasksTopComponent extends TopComponent {
                                 : Bundle.TasksTopComponent_cards(),
                         col.overLimit() ? Bundle.TasksTopComponent_overLimitSuffix() : ""));
         header.setComponentPopupMenu(columnMenu(index));
+        // the column's own menu (Rename, Move, WIP limit, Delete) lived on a
+        // label no key could reach (3.4): the header takes focus by Tab, shows
+        // it, and Shift+F10 / the menu key open the same menu. What makes a
+        // label a Tab stop is its WHEN_FOCUSED bindings (LayoutFocusTraversal-
+        // Policy skips a component with none); setFocusable only says so aloud
+        header.setFocusable(true);
+        org.nmox.studio.core.util.KeyboardAccess.focusRing(header);
+        org.nmox.studio.core.util.KeyboardAccess.componentMenuKeys(header);
         panel.add(header, BorderLayout.NORTH);
 
         DefaultListModel<TaskBoard.Card> model = new DefaultListModel<>();
@@ -623,6 +686,10 @@ public final class TasksTopComponent extends TopComponent {
             int width = list.getParent() instanceof javax.swing.JViewport v && v.getWidth() > 0
                     ? v.getWidth() : list.getWidth();
             setSize(width > 0 ? width : WRAP_FALLBACK, Short.MAX_VALUE);
+            // a text area has no accessible name, and VoiceOver read every
+            // card as an empty field (the 3.4 walk): a card is heard as the
+            // same words it paints
+            getAccessibleContext().setAccessibleName(getText());
             return this;
         }
 
@@ -666,8 +733,7 @@ public final class TasksTopComponent extends TopComponent {
         });
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_N, 0),
                 () -> newCardDialog(columnIndex));
-        int menuMask = java.awt.Toolkit.getDefaultToolkit()
-                .getMenuShortcutKeyMaskEx();
+        int menuMask = org.nmox.studio.core.util.KeyboardAccess.menuShortcutMask();
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, menuMask),
                 () -> moveSelected(list, columnIndex, -1, 0));
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, menuMask),
@@ -758,8 +824,12 @@ public final class TasksTopComponent extends TopComponent {
         // clicked card is claimed by popupTargetList's getPopupLocation
         list.setComponentPopupMenu(menu);
 
-        // drag & drop between and within columns
-        list.setDragEnabled(true);
+        // drag & drop between and within columns; a drag needs a display —
+        // JList refuses the flag headless, and the guard lets a column be
+        // built where its keyboard routes are tested (the InfraPalette idiom)
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            list.setDragEnabled(true);
+        }
         list.setDropMode(javax.swing.DropMode.INSERT);
         list.setTransferHandler(new CardTransfer(columnIndex));
     }

@@ -36,7 +36,9 @@ class CrudGesturesSpeakTest {
         for (String[] handler : new String[][]{
             {"private void addConnection()", "DbStudioTopComponent_addedConnection", "Added"},
             {"private void editSelected()", "DbStudioTopComponent_updatedConnection", "Updated"},
-            {"private void removeSelected()", "DbStudioTopComponent_removedConnection", "Removed"}}) {
+            // 3.4: the confirmed half of Remove is its own method (the
+            // password waits for the save that drops the connection)
+            {"private void removeConfirmed(", "DbStudioTopComponent_removedConnection", "Removed"}}) {
             int at = src.indexOf(handler[0]);
             assertThat(at).as(handler[0] + " exists").isPositive();
             String body = src.substring(at, src.indexOf("\n    private ", at + 10));

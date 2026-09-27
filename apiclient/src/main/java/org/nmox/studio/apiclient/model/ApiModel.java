@@ -78,6 +78,14 @@ public final class ApiModel {
         /** In-memory only — the real secret lives in the OS keychain via
          *  {@code ApiSecrets}, keyed by {@link #id}. Never written to disk. */
         public String authToken = "";  // bearer token, or "user:password" for basic
+        /**
+         * In-memory only (3.4): the auth type a NEWER NMOX Studio wrote for
+         * this request, which this version cannot model ({@link #authType}
+         * reads NONE meanwhile). Non-null means Send refuses — the request
+         * must not go out without the authentication its author chose — and
+         * the workspace is bound read-only, so no save turns it into NONE.
+         */
+        public String foreignAuthType;
         public final List<Assertion> tests = new ArrayList<>();
 
         /**
@@ -104,6 +112,7 @@ public final class ApiModel {
             }
             copy.body = src.body;
             copy.authType = src.authType;
+            copy.foreignAuthType = src.foreignAuthType;
             copy.authToken = src.authToken;
             for (Assertion a : src.tests) {
                 copy.tests.add(new Assertion(a.kind, a.target));

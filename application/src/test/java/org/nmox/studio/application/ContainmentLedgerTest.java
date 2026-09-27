@@ -123,6 +123,16 @@ class ContainmentLedgerTest {
                 + "path (to read each one's .gitignore), never a caller-supplied string. "
                 + "Containment's join-and-refuse would turn an outside file into a "
                 + "refusal where the query wants silence."),
+            Map.entry("SqlitePaths.java",
+                "A DIFFERENT QUESTION (3.4): it decides how a SQLite path the user CHOSE "
+                + "is written into the shared .nmoxdb.json — relative to the project when "
+                + "the file lies inside it, as chosen otherwise — and resolves a stored "
+                + "relative path against the project, so a teammate's clone opens the same "
+                + "file instead of one under the IDE's working directory. A path that "
+                + "climbs out of the project (../shared/dev.db, a database kept beside the "
+                + "repository) is the user's own choice of database and stays legal: "
+                + "refusing it is what Containment would do, and it would break those "
+                + "layouts. Nothing is written or run at the path here."),
             Map.entry("SymbolIndexProvider.java",
                 "A DIFFERENT QUESTION, measured (ledger 117, which swept its sibling "
                 + "McpSubscriptions and left this one): outline() must accept an "

@@ -266,4 +266,98 @@ class CommandExecutorTest {
             RackBus.unsubscribe(tap);
         }
     }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("Stop kills a child that ignores SIGTERM even after its shell has died (3.4: it outlived the UI's 'stopped')")
+    void stopKillsATermIgnoringOrphan() throws Exception {
+        CountDownLatch done = new CountDownLatch(1);
+        CommandExecutor.Handle h = CommandExecutor.run("term-orphan-" + System.nanoTime(), new File("."), Map.of(),
+                List.of("sh", "-c", "(trap '' TERM; exec sleep 1103) & wait"), l -> { }, code -> done.countDown());
+        ProcessHandle child = null;
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (child == null && System.currentTimeMillis() < deadline) {
+            child = sleeper("1103");
+            Thread.sleep(20);
+        }
+        assertThat(child).as("the TERM-ignoring child started").isNotNull();
+        try {
+            h.kill();
+            assertThat(done.await(10, TimeUnit.SECONDS)).as("the shell exits on TERM").isTrue();
+            deadline = System.currentTimeMillis() + 8_000;
+            while (child.isAlive() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertThat(child.isAlive()).as("the child that ignored SIGTERM is gone after the grace").isFalse();
+        } finally {
+            child.destroyForcibly();
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("a child that exits cleanly on SIGTERM keeps its grace after its shell has gone (not SIGKILLed at once)")
+    void stopGivesAGracefulChildItsGrace() throws Exception {
+        java.nio.file.Path marker = java.nio.file.Files.createTempFile("nmox-graceful", ".txt");
+        java.nio.file.Files.delete(marker);
+        CountDownLatch done = new CountDownLatch(1);
+        // the child takes a second to shut down on TERM, then writes its marker
+        String child = "trap 'sleep 1; echo clean > " + marker + "; exit 0' TERM; sleep 1104 & wait";
+        CommandExecutor.Handle h = CommandExecutor.run("graceful-" + System.nanoTime(), new File("."), Map.of(),
+                List.of("sh", "-c", "sh -c \"" + child + "\" & wait"), l -> { }, code -> done.countDown());
+        long deadline = System.currentTimeMillis() + 5_000;
+        // the real sleep, not a shell whose -c text mentions it: the sleep
+        // starts after the trap is installed, so the TERM finds the handler
+        while (sleeper("1104") == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(20);
+        }
+        try {
+            h.kill();
+            assertThat(done.await(10, TimeUnit.SECONDS)).isTrue();
+            deadline = System.currentTimeMillis() + 6_000;
+            while (!java.nio.file.Files.exists(marker) && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertThat(marker).as("the child finished its TERM handler instead of being SIGKILLed").exists();
+        } finally {
+            ProcessHandle stray = sleeper("1104");
+            if (stray != null) {
+                stray.destroyForcibly();
+            }
+            java.nio.file.Files.deleteIfExists(marker);
+        }
+    }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("Stop All and the panic give a graceful child its grace too (killAndWait; the 3.4 review)")
+    void stopAllGivesAGracefulChildItsGrace() throws Exception {
+        java.nio.file.Path marker = java.nio.file.Files.createTempFile("nmox-graceful-all", ".txt");
+        java.nio.file.Files.delete(marker);
+        String child = "trap 'sleep 0.5; echo clean > " + marker + "; exit 0' TERM; sleep 1105 & wait";
+        CommandExecutor.Handle h = CommandExecutor.run("graceful-all-" + System.nanoTime(), new File("."), Map.of(),
+                List.of("sh", "-c", "sh -c \"" + child + "\" & wait"), l -> { }, code -> { });
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (sleeper("1105") == null && System.currentTimeMillis() < deadline) {
+            Thread.sleep(20);
+        }
+        try {
+            h.killAndWait(3_000);
+            assertThat(marker).as("killAndWait waited out the child's TERM handler instead of SIGKILLing it").exists();
+        } finally {
+            ProcessHandle stray = sleeper("1105");
+            if (stray != null) {
+                stray.destroyForcibly();
+            }
+            java.nio.file.Files.deleteIfExists(marker);
+        }
+    }
+
+    /** The {@code sleep <seconds>} process itself — never a shell whose command text merely names it. */
+    private static ProcessHandle sleeper(String seconds) {
+        return ProcessHandle.allProcesses()
+                .filter(p -> p.info().command().map(c -> c.endsWith("/sleep")).orElse(false))
+                .filter(p -> p.info().arguments().map(a -> a.length == 1 && a[0].equals(seconds)).orElse(false))
+                .findFirst().orElse(null);
+    }
 }

@@ -62,8 +62,11 @@ public final class LanguageServers {
                 pb.directory(dir);
             }
             pb.environment().put("PATH", ToolLocator.augmentedPath());
-            pb.redirectError(ProcessBuilder.Redirect.DISCARD);
+            // stderr is drained into a bounded tail, never DISCARDed: a
+            // server that crashes says why in the log and on the status
+            // line (3.4) — see ServerStderr
             Process process = pb.start();
+            ServerStderr.watch(process, new File(command.get(0)).getName(), ServerStderr::toStatusLine);
             java.io.OutputStream serverIn = process.getOutputStream();
             if (initOptions != null) {
                 serverIn = new InitOptionsInjector(serverIn, initOptions);

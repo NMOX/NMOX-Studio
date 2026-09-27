@@ -31,7 +31,23 @@ import org.nmox.studio.rack.ui.controls.ToggleSwitch;
  * Swing component: it paints a hardware faceplate on the front and a
  * jack field on the back, and hosts its control-surface children
  * (knobs, buttons, switches...) when the rack faces forward.
+ *
+ * <p>To assistive technology a device is a named group (3.4): its name is
+ * the bus title a listener hears everywhere else ("SOLDER", "SOLDER ·2"),
+ * its description is the tagline followed by its cables in words, so a
+ * STOP button is heard as SOLDER's STOP and a patch is audible without
+ * flipping the rack.
  */
+@org.openide.util.NbBundle.Messages({
+    "# {0} - the device's tagline, {1} - its cables in words",
+    "RackDevice_a11yCabled={0}. Cables: {1}",
+    "# {0} - this device's output jack, {1} - the device at the other end, {2} - its input jack",
+    "RackDevice_a11yCableOut={0} → {1} {2}",
+    "# {0} - this device's input jack, {1} - the device at the other end, {2} - its output jack",
+    "RackDevice_a11yCableIn={0} ← {1} {2}",
+    "# between two cables in the list",
+    "RackDevice_a11yCableJoin=; "
+})
 public abstract class RackDevice extends JPanel {
 
     private final String typeId;
@@ -75,7 +91,10 @@ public abstract class RackDevice extends JPanel {
 
         @Override
         public void cablesChanged() {
-            onEdt(RackDevice.this::repaint);
+            onEdt(() -> {
+                repaint();
+                announceCables();
+            });
         }
     };
     private int inPortCount;
@@ -108,6 +127,25 @@ public abstract class RackDevice extends JPanel {
     }
 
     // ---- identity ----
+
+    /**
+     * This device's identity in a saved patch (3.4): minted once, written
+     * beside its type, and read back by {@link RackIO#fromJson} so a cable
+     * can name the DEVICE it was patched to rather than a slot or a type. Two
+     * PURITYs share a type and a title — only this tells them apart after a
+     * teammate's edit moves the slots under a cable.
+     */
+    private String uid = java.util.UUID.randomUUID().toString();
+
+    /** The identity {@link RackIO} saves for this device; never null. */
+    public String getUid() {
+        return uid;
+    }
+
+    /** Restores a saved identity; package-private because only a patch load may. */
+    void setUid(String uid) {
+        this.uid = uid;
+    }
 
     public String getTypeId() {
         return typeId;
@@ -152,6 +190,15 @@ public abstract class RackDevice extends JPanel {
     }
 
     private String busName;
+
+    /**
+     * The name this device is known by on the bus, in the flight recorder
+     * and to assistive technology: the title, or "TITLE ·2" for a later
+     * instance of the same device.
+     */
+    public final String getBusName() {
+        return busName();
+    }
 
     private String uniqueBusName() {
         java.util.Set<String> taken = new java.util.HashSet<>();
@@ -1053,6 +1100,93 @@ public abstract class RackDevice extends JPanel {
 
     /** Subclasses may paint extra back-panel decoration. */
     protected void paintBack(Graphics2D g, int w, int h) {
+    }
+
+    // ---- accessibility ----
+
+    /**
+     * This device's cables in words, from its own side: an output reads
+     * {@code OUT → MONITOR IN}, an input {@code IN ← SOLDER OUT}. Empty
+     * when nothing is patched. These are the words a screen reader hears
+     * for the rear of the rack, which otherwise shows its wiring only as
+     * paint.
+     */
+    public String cablesInWords() {
+        Rack r = rack;
+        if (r == null) {
+            return "";
+        }
+        List<String> parts = new ArrayList<>();
+        for (Cable c : r.getCables()) {
+            String words = cableInWords(c);
+            if (words != null) {
+                parts.add(words);
+            }
+        }
+        return String.join(Bundle.RackDevice_a11yCableJoin(), parts);
+    }
+
+    /**
+     * One cable in words from this device's side — {@code OUT → MONITOR IN}
+     * for an output, {@code IN ← SOLDER OUT} for an input — or null when the
+     * cable does not touch this device. The Unplug dialog lists cables in
+     * exactly these words, so what a listener hears is what they choose from.
+     */
+    public String cableInWords(Cable c) {
+        if (c.getFrom().getDevice() == this) {
+            return Bundle.RackDevice_a11yCableOut(c.getFrom().getLabel(),
+                    c.getTo().getDevice().getBusName(), c.getTo().getLabel());
+        }
+        if (c.getTo().getDevice() == this) {
+            return Bundle.RackDevice_a11yCableIn(c.getTo().getLabel(),
+                    c.getFrom().getDevice().getBusName(), c.getFrom().getLabel());
+        }
+        return null;
+    }
+
+    /** What the device is for, then what it is wired to. */
+    private String accessibleSummary() {
+        String role = tagline == null || tagline.isBlank() ? typeId : tagline;
+        String cables = cablesInWords();
+        return cables.isEmpty() ? role : Bundle.RackDevice_a11yCabled(role, cables);
+    }
+
+    /** Tells a listening screen reader that the wiring changed (EDT). */
+    private void announceCables() {
+        if (accessibleContext != null) {
+            accessibleContext.firePropertyChange(
+                    javax.accessibility.AccessibleContext.ACCESSIBLE_DESCRIPTION_PROPERTY,
+                    null, accessibleContext.getAccessibleDescription());
+        }
+    }
+
+    @Override
+    public javax.accessibility.AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleRackDevice();
+        }
+        return accessibleContext;
+    }
+
+    /**
+     * A device is a named group. Before 3.4 every faceplate reported
+     * {@code role=panel name=null}, so a listener on a STOP button could
+     * not tell whose STOP it was. A name set explicitly by a caller still
+     * wins, as it does everywhere in Swing.
+     */
+    private final class AccessibleRackDevice extends AccessibleJPanel {
+
+        @Override
+        public String getAccessibleName() {
+            String explicit = accessibleName;
+            return explicit != null ? explicit : busName();
+        }
+
+        @Override
+        public String getAccessibleDescription() {
+            String explicit = accessibleDescription;
+            return explicit != null ? explicit : accessibleSummary();
+        }
     }
 
     // ---- EDT helper ----

@@ -146,11 +146,23 @@ import org.openide.windows.TopComponent;
     "InfraDesigner_readFailedTitle=Couldn''t read {0} — starting empty",
     "InfraDesigner_readFailedDetail=The unreadable original was kept at {0}.",
     "InfraDesigner_designReadOnly={0} could not be read — the design is read-only so nothing overwrites it",
+    // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
+    "InfraDesigner_designConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
+    "InfraDesigner_designNewer={0} was written by a newer NMOX Studio — the design is read-only here so nothing it holds, and none of its links to the cloud, is lost",
+    // Refresh (3.4): a 404 means "not in the account these tokens reach", not "gone"
+    "InfraDesigner_notFoundTitle=Resources the cloud did not find",
+    // {0} the count, {1} the node labels; the choice keeps "1 resource" singular
+    "InfraDesigner_notFoundConfirm={0,choice,1#One deployed resource was|1<{0,number,0} deployed resources were} not found by the cloud account your tokens reach: {1}.",
+    "InfraDesigner_notFoundAdvice=If they were deleted, forget them. If a teammate’s account holds them, keep the links — forgetting them here forgets them in the shared design. Forget them?",
+    "InfraDesigner_notFoundKept=Kept the links — the design still points at resources your cloud account does not see.",
     "InfraDesigner_reloadedTitle=Reloaded {0}",
     "InfraDesigner_reloadedDetail=The file changed outside the designer — the canvas follows it.",
     "InfraDesigner_conflictTitle={0} changed on disk — Reload?",
     "InfraDesigner_conflictDetail=Click to reload; unsaved canvas edits are discarded. "
-        + "Keep editing to keep your version instead.",
+        + "They cannot be written over a version someone else wrote — the next save reloads it instead.",
+    "InfraDesigner_notWrittenReloaded={0} changed on disk, so your last canvas change was not written over it — the design was reloaded as it is now; make the change again",
+    "InfraDesigner_cloudLinkUnsaved={0} {1} ({2} id {3}) is not in the saved {4} and still exists in the cloud — find it there to keep or destroy it",
+    "InfraDesigner_cloudLinksUnsavedTitle={0,choice,1#A cloud resource is|1<{0,number,0} cloud resources are} not saved in {1}",
     "InfraDesigner_saveFailedTitle=Couldn''t save {0}",
     "InfraDesigner_saveFailedDetail=Changes are not being persisted: {0}"
 })
@@ -194,12 +206,32 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private final org.nmox.studio.infra.model.DesignSync designSync =
             new org.nmox.studio.infra.model.DesignSync();
     /**
+     * node id → doId as the bound design file is known to hold them: set by
+     * every read and by every write that lands. The canvas's links that are
+     * not in it are the ones a reload would lose (3.4). EDT-confined.
+     */
+    private java.util.Map<String, String> savedLinks = java.util.Map.of();
+    /** Counts reads, so a write's late news never overrules a read that came after it. */
+    private int loadSeq;
+    /** Links to live resources a refused save could not write — held, re-applied, said. */
+    private final org.nmox.studio.infra.model.PendingCloudLinks pendingLinks =
+            new org.nmox.studio.infra.model.PendingCloudLinks();
+    /** Deploy-log appends for links said from the EDT; never queued behind a cloud op on {@link #RP}. */
+    private static final org.openide.util.RequestProcessor LOG_RP =
+            new org.openide.util.RequestProcessor("Infra Designer deploy log", 1);
+    /**
      * The bound {@code .nmoxinfra.json} exists and could not be read, so
      * the canvas is a stand-in and every save would replace a design
      * nobody has seen. Unlike a foreign edit there is nothing to reload
      * TO, so writes are refused out loud until the file can be read.
      */
     private boolean designReadOnly;
+    /**
+     * Why {@link #designReadOnly} holds (3.4): null while the file could
+     * not be read (the original sentence and its title), else the one
+     * sentence that says it — git's merge conflict, or a newer version.
+     */
+    private String readOnlyText;
     /** One refusal balloon per read-only bind, not one per debounce tick. */
     private boolean readOnlyNotified;
     /** Polls the design file's stamp while the tab is open; never runs closed. */
@@ -242,7 +274,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
 
-        add(new InfraPalette(graph), BorderLayout.WEST);
+        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.WEST);
         add(canvas, BorderLayout.CENTER);
         add(properties, BorderLayout.EAST);
         add(buildToolbar(), BorderLayout.NORTH);
@@ -633,13 +665,46 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void refreshDrift() {
         runExclusive(refreshButton, () -> {
             try {
-                client.refreshDrift(graph, (node, status) ->
+                java.util.List<InfraNode> notFound = client.refreshDrift(graph, (node, status) ->
                         SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
-                SwingUtilities.invokeLater(this::save);
+                SwingUtilities.invokeLater(() -> {
+                    // 3.4: a 404 is "not in the account these tokens reach";
+                    // the links are forgotten only when the user says so
+                    if (!notFound.isEmpty() && confirm(notFoundQuestion(notFound),
+                            Bundle.InfraDesigner_notFoundTitle())) {
+                        forgetCloudLinks(notFound);
+                    } else if (!notFound.isEmpty()) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                org.nmox.studio.core.util.PlainStatus.text(
+                                        Bundle.InfraDesigner_notFoundKept()));
+                    }
+                    save();
+                });
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> error(Bundle.InfraDesigner_refreshFailed(ex.getMessage())));
             }
         });
+    }
+
+    /** The Refresh question (3.4): how many, which, and what forgetting means. Pure. */
+    static String notFoundQuestion(java.util.List<InfraNode> notFound) {
+        java.util.List<String> labels = new java.util.ArrayList<>();
+        for (InfraNode node : notFound) {
+            labels.add(node.label);
+        }
+        return Bundle.InfraDesigner_notFoundConfirm(notFound.size(), String.join(", ", labels))
+                + "\n\n" + Bundle.InfraDesigner_notFoundAdvice();
+    }
+
+    /**
+     * EDT, after the user said yes: the only place a Refresh severs a link
+     * to a live resource. Before 3.4 the drift check nulled every 404'd
+     * {@code doId} itself, and the designer saved it.
+     */
+    static void forgetCloudLinks(java.util.List<InfraNode> notFound) {
+        for (InfraNode node : notFound) {
+            node.doId = null;
+        }
     }
 
     /**
@@ -717,8 +782,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
     /** Appends a deploy run to .nmox/deploy-log beside the aimed project. */
     private void writeDeployLog(String entry) {
+        writeDeployLog(aimedDir(), entry);
+    }
+
+    /** Appends to {@code root}/.nmox/deploy-log; off the EDT, a courtesy that never throws. */
+    private static void writeDeployLog(java.io.File root, String entry) {
         try {
-            java.io.File root = aimedDir();
             if (root == null) {
                 return;
             }
@@ -774,8 +843,13 @@ public final class InfraDesignerTopComponent extends TopComponent {
             menu.add(ssh);
             menu.addSeparator();
         }
+        // the drag's wire, as a choice from the legal targets (3.4) — the
+        // keyboard's W reaches the same, and so does this row
+        JMenuItem wire = new JMenuItem(org.nmox.studio.core.util.PlainText.plain(FlowCanvas.wireToLabel()));
+        wire.addActionListener(e -> canvas.wireFrom(node));
+        menu.add(wire);
         JMenuItem remove = new JMenuItem(Bundle.InfraDesigner_removeFromDesign());
-        remove.addActionListener(e -> graph.removeNode(node));
+        remove.addActionListener(e -> canvas.removeNode(node)); // refused while a cloud op runs (53b)
         menu.add(remove);
         Point local = new Point(screenPoint);
         SwingUtilities.convertPointFromScreen(local, canvas);
@@ -835,6 +909,15 @@ public final class InfraDesignerTopComponent extends TopComponent {
         // bounce could otherwise read A's file before A's last save lands
         // (bounded ms drain; see SaveLane.flush)
         SAVES.flush(5, java.util.concurrent.TimeUnit.SECONDS);
+        // 3.4: the canvas about to be replaced may hold links to live cloud
+        // resources its file does not — a deploy's or a sync's doIds whose
+        // save was refused. They are held, never dropped with the canvas.
+        if (boundDesignFile != null) {
+            pendingLinks.add(org.nmox.studio.infra.model.PendingCloudLinks.unsaved(
+                    graph, savedLinks, boundDesignFile));
+        }
+        boolean carried = false;
+        loadSeq++;
         loading = true;
         try {
             File file = designFile();
@@ -850,7 +933,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the empty fallback, so the next autosave can't destroy the
                 // user's only copy
                 GraphIO.LoadOutcome outcome = GraphIO.loadGuarded(graph, file);
-                designReadOnly = outcome.unreadable();
+                designReadOnly = outcome.readOnly();
+                readOnlyText = outcome.conflicted()
+                        ? Bundle.InfraDesigner_designConflicted(GraphIO.DEFAULT_FILENAME)
+                        : outcome.newerFormat()
+                        ? Bundle.InfraDesigner_designNewer(GraphIO.DEFAULT_FILENAME)
+                        : null;
                 if (outcome.backup() != null) {
                     balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
                             Bundle.InfraDesigner_readFailedDetail(outcome.backup().getName()),
@@ -866,6 +954,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 graph.clear();
                 readOnlyNotified = false;
             }
+            savedLinks = org.nmox.studio.infra.model.PendingCloudLinks.linksOf(graph);
+            carried = reapplyCloudLinks(file);
             canvas.fit();
         } catch (RuntimeException unexpected) {
             // GraphIO.loadGuarded no longer throws, so this is the net for
@@ -877,6 +967,8 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     .log(java.util.logging.Level.WARNING, "Infra design load failed", unexpected);
             graph.clear();
             designReadOnly = designFile().isFile();
+            savedLinks = java.util.Map.of();
+            carried = reapplyCloudLinks(designFile());
         } finally {
             loading = false;
             refreshCost();
@@ -890,6 +982,59 @@ public final class InfraDesignerTopComponent extends TopComponent {
                         org.nmox.studio.infra.model.DesignSync.Stamp.of(designFile()));
             }
         }
+        if (carried) {
+            // the links went back onto their nodes: a write carries them, and
+            // they stay pending until it lands
+            save();
+        }
+    }
+
+    /**
+     * EDT, inside {@link #load}: every pending link of {@code file} goes back
+     * onto its node where it can, and every link that cannot is said — once,
+     * on the status line, in a notification and in the deploy log — with the
+     * resource's name and provider id and that it still exists in the cloud,
+     * so the user can find it there and keep it or destroy it. True when a
+     * link went back onto the canvas and so needs a write.
+     */
+    private boolean reapplyCloudLinks(File file) {
+        org.nmox.studio.infra.model.PendingCloudLinks.Reapplied result =
+                pendingLinks.reapply(graph, file, !designReadOnly);
+        if (!result.toSay().isEmpty()) {
+            sayUnsavedLinks(result.toSay());
+        }
+        return !result.applied().isEmpty();
+    }
+
+    private void sayUnsavedLinks(java.util.List<org.nmox.studio.infra.model.PendingCloudLinks.Link> links) {
+        java.util.List<String> sentences = new java.util.ArrayList<>();
+        for (var link : links) {
+            sentences.add(unsavedLinkSentence(link));
+        }
+        String all = String.join("\n", sentences);
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                org.nmox.studio.core.util.PlainStatus.text(String.join(" · ", sentences)));
+        balloon(Bundle.InfraDesigner_cloudLinksUnsavedTitle(links.size(), GraphIO.DEFAULT_FILENAME),
+                all, null);
+        // each link's own design directory: a link captured before a re-aim
+        // belongs to the project it was deployed from, not the one shown now
+        for (var link : links) {
+            File root = link.file().getAbsoluteFile().getParentFile();
+            String entry = "NMOX design " + java.time.LocalDateTime.now() + "\n  "
+                    + unsavedLinkSentence(link) + "\n";
+            LOG_RP.post(() -> writeDeployLog(root, entry));
+        }
+    }
+
+    /** One link, said: which resource, its provider id, and that it still exists. */
+    static String unsavedLinkSentence(org.nmox.studio.infra.model.PendingCloudLinks.Link link) {
+        return Bundle.InfraDesigner_cloudLinkUnsaved(link.kind(), link.label(), link.provider(),
+                link.doId(), link.file().getName());
+    }
+
+    /** Test seam: the deploy-log lane has written everything posted to it. */
+    static void awaitDeployLog() {
+        LOG_RP.post(() -> { }).waitFinished();
     }
 
     /**
@@ -902,6 +1047,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
             return;
         }
         readOnlyNotified = true;
+        if (readOnlyText != null) {
+            // git's merge conflict or a newer version (3.4): nothing was
+            // "started empty", so the unreadable title would be untrue
+            balloon(readOnlyText, null, null);
+            return;
+        }
         balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
                 Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME), null);
     }
@@ -932,7 +1083,26 @@ public final class InfraDesignerTopComponent extends TopComponent {
         // still hold the OLD project's edits (ledger 53c)
         File file = boundDesignFile != null ? boundDesignFile : designFile();
         String json = GraphIO.toJson(graph).toString(2);
-        SAVES.save(() -> writeSnapshot(file, json));
+        java.util.Map<String, String> links =
+                org.nmox.studio.infra.model.PendingCloudLinks.linksOf(graph);
+        int seq = loadSeq;
+        SAVES.save(() -> {
+            if (writeSnapshot(file, json)) {
+                SwingUtilities.invokeLater(() -> linksLanded(file, links, seq));
+            }
+        });
+    }
+
+    /**
+     * EDT, after a write of {@code file} carrying {@code links} landed: that
+     * is what the file holds now, and every pending link it carried is saved.
+     * A write for a file no longer bound still settles that file's links.
+     */
+    private void linksLanded(File file, java.util.Map<String, String> links, int seq) {
+        if (seq == loadSeq && file.equals(boundDesignFile)) {
+            savedLinks = links;
+        }
+        pendingLinks.landed(file, links.values());
     }
 
     /**
@@ -940,11 +1110,22 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * same atomic-rename write GraphIO.save performs), so a lane-ordered
      * external-edit stat can never see the write without the stamp.
      */
-    private void writeSnapshot(File file, String json) {
+    private boolean writeSnapshot(File file, String json) {
+        // 3.4: asked here, on the lane, immediately before the write. The
+        // load was the only check before, so a conflict landing after it —
+        // or a teammate's version the 2-second check had not seen yet — was
+        // replaced by this canvas, doId links to live resources included.
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = designSync.beforeWrite(
+                file, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return false;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
             designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(file));
             saveFailureNotified = false;
+            return true;
         } catch (Exception ex) {
             // a failed autosave never interrupts editing — but a chronically
             // failing one must not lose work silently: warn once per streak
@@ -962,6 +1143,31 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     // notifications unavailable (tests, stripped platform)
                 }
             }
+            return false;
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing (the
+     * Task Board's rule). The design is read again as it is — a conflicted
+     * one binds read-only and says so — and a merely changed one names the
+     * canvas change that could not be written, so it does not look saved.
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        // said BEFORE the reload: the reload may have something heavier to
+        // say — a live resource's link it could not keep on the canvas — and
+        // that sentence must be the one left on the status line
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            balloon(Bundle.InfraDesigner_notWrittenReloaded(GraphIO.DEFAULT_FILENAME), null, null);
+        }
+        if (opsInFlight > 0) {
+            // a cloud op is mutating this graph; the reload waits for it,
+            // exactly as a re-aim does (ledger 53b) — the refusal still speaks,
+            // and the reload captures every link the op wrote before it runs
+            pendingReaim = true;
+        } else {
+            saveDebounce.stop();
+            load(); // holds the canvas's unsaved cloud links first (3.4)
         }
     }
 
@@ -1002,8 +1208,23 @@ public final class InfraDesignerTopComponent extends TopComponent {
         if (!isOpened()) {
             return; // a closed tab reacts to nothing
         }
+        if (designReadOnly) {
+            // a read-only bind may save nothing, so canvas edits pending in
+            // the debounce are not the user's to lose (3.4): the file changed
+            // — a merge conflict resolved in git, a newer file replaced, a
+            // permission fixed — so follow it rather than ask to keep them
+            saveDebounce.stop();
+        }
         switch (designSync.check(onDisk, saveDebounce.isRunning())) {
             case RELOAD -> {
+                if (opsInFlight > 0) {
+                    // a cloud op is writing doIds onto THIS canvas — they are
+                    // set field by field, so the canvas reads clean while it
+                    // runs. Reloading now would hand the op nodes that are no
+                    // longer shown; the reload follows the op (ledger 53b).
+                    pendingReaim = true;
+                    return;
+                }
                 // clean canvas: follow the disk. load() raises `loading`, so
                 // the graphChanged it fires never schedules a spurious save
                 // (the v1.33.2 guard stays intact).
@@ -1026,17 +1247,27 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // Foreign edit vs unsaved canvas edits: NEVER clobber silently.
                 // Hold the pending debounced save so it can't overwrite the
                 // foreign version while the user decides. Clicking the balloon
-                // reloads (discarding the local edits); ignoring it means the
-                // NEXT canvas change restarts the debounce and that save wins —
-                // the pre-existing last-writer-wins behavior, unchanged.
+                // reloads (discarding the local edits). Ignoring it used to mean
+                // the NEXT canvas change's save won — over git's merge markers
+                // too, and over a teammate's doId links. Since 3.4 that save is
+                // refused by writeSnapshot's check and the design reloads.
                 saveDebounce.stop();
                 balloon(Bundle.InfraDesigner_conflictTitle(GraphIO.DEFAULT_FILENAME),
                         Bundle.InfraDesigner_conflictDetail(),
-                        e -> load());
+                        e -> reloadWhenIdle());
             }
             case NONE -> {
             }
         }
+    }
+
+    /** EDT: reads the design again now, or — while a cloud op runs — the moment it ends. */
+    private void reloadWhenIdle() {
+        if (opsInFlight > 0) {
+            pendingReaim = true;
+            return;
+        }
+        load();
     }
 
     /** Quiet corner notification — never a modal, never steals focus. */

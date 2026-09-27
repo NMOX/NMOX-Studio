@@ -111,6 +111,12 @@ class WorkspaceIORoundTripTest {
                 .containsExactly("201", "500", "id", "data.id", "Location");
 
         assertThat(back.environments).extracting(e -> e.name).containsExactly("Local", "Prod");
+        assertThat(back.activeEnvironment)
+                .as("3.4: the pick is one person's state — the shared file no longer carries it")
+                .isEmpty();
+        assertThat(json).doesNotContain("activeEnvironment").doesNotContain("\"history\"");
+
+        WorkspaceIO.applyPersonal(back, WorkspaceIO.personalJson(source));
         assertThat(back.activeEnvironment).isEqualTo("Prod");
         assertThat(back.active()).isNotNull();
         assertThat(back.active().variables)
@@ -128,7 +134,7 @@ class WorkspaceIORoundTripTest {
 
         Workspace back = WorkspaceIO.load(dir.toFile());
         assertThat(back).isNotNull();
-        assertThat(back.activeEnvironment).isEqualTo("Prod");
+        assertThat(back.environments).extracting(e -> e.name).containsExactly("Local", "Prod");
         assertThat(back.collections.get(0).requests.get(0).tests).hasSize(5);
     }
 
@@ -172,7 +178,8 @@ class WorkspaceIORoundTripTest {
         WorkspaceIO.save(dir.toFile(), richWorkspace());
         WorkspaceIO.LoadOutcome clean = WorkspaceIO.loadGuarded(dir.toFile());
         assertThat(clean.workspace()).isNotNull();
-        assertThat(clean.workspace().activeEnvironment).isEqualTo("Prod");
+        assertThat(clean.workspace().environments).hasSize(2);
+        assertThat(clean.readOnly()).isFalse();
         assertThat(clean.backup()).isNull();
         assertThat(dir.resolve(WorkspaceIO.FILENAME + ".bak")).doesNotExist();
     }
@@ -232,6 +239,7 @@ class WorkspaceIORoundTripTest {
         w.activeEnvironment = "Ghost";
 
         Workspace back = WorkspaceIO.fromJson(WorkspaceIO.toJson(w));
+        WorkspaceIO.applyPersonal(back, WorkspaceIO.personalJson(w));
 
         assertThat(back.activeEnvironment).isEqualTo("Ghost");
         assertThat(back.active()).isNull();

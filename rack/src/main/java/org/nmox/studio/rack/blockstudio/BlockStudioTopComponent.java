@@ -104,10 +104,22 @@ import org.openide.windows.TopComponent;
     "BlockStudioTopComponent_canvasBorder=Canvas",
     "BlockStudioTopComponent_codeBorder=Generated code — click a piece to locate it",
     "BlockStudioTopComponent_aimToCompose=Aim a project to start composing",
-    "BlockStudioTopComponent_keptCopy= (kept a copy at {0}.bak)",
+    "# {0} - the name the unreadable bytes were copied to",
+    "BlockStudioTopComponent_keptCopyAs= (kept a copy as {0})",
+    "# {0} - the workspace file's name",
+    "BlockStudioTopComponent_conflicted={0} has unresolved merge conflicts — resolve them in git; Block Studio won’t write it until then",
+    "# {0} - the workspace file's name; {1} - the piece kind this version does not know, as the file spells it",
+    "BlockStudioTopComponent_newerFormat={0} was written by a newer NMOX Studio (it uses a {1} piece this version does not have) — Block Studio leaves it untouched and won’t write it",
+    "# {0} - the workspace file's name",
+    "BlockStudioTopComponent_unreadable={0} could not be read — Block Studio won’t write over it",
+    "# {0} - the workspace file's name",
+    "BlockStudioTopComponent_unrescued={0} is not a workspace this version can read and no copy of it could be kept — Block Studio won’t write over it",
     "BlockStudioTopComponent_readFailed=Could not read {0}: {1}{2}",
     "BlockStudioTopComponent_saveFailed=Save failed: {0}",
-    "BlockStudioTopComponent_externalEditOverridden=External edit to {0} overridden by newer studio edits",
+    "# {0} - the workspace file's name",
+    "BlockStudioTopComponent_externalEditWins={0} changed on disk (a pull, a checkout or another tool), so Block Studio read it again \u2014 your latest edit was not written over it",
+    "# {0} - the workspace file's name; {1} - the file's format number; {2} - the format this build writes",
+    "BlockStudioTopComponent_newerVersion={0} was saved by a newer NMOX Studio (format {1}; this one writes {2}) \u2014 Block Studio leaves it untouched and won\u2019t write it",
     "BlockStudioTopComponent_reloaded=Reloaded — {0} changed on disk",
     "BlockStudioTopComponent_nothingToPreview=Fix the blocks first — nothing valid to preview",
     "BlockStudioTopComponent_stopPreview=Stop Preview",
@@ -473,6 +485,16 @@ public final class BlockStudioTopComponent extends TopComponent {
     // ---- load/save (IO on RP, apply on EDT) ----
 
     private void loadForAim() {
+        loadForAim(null);
+    }
+
+    /**
+     * Loads the aimed workspace; {@code note}, when given, is what the status
+     * line says once the load has landed — said after the regenerate that
+     * would otherwise paint over it (a sentence set before the load was gone
+     * the moment the reloaded component drew its own status).
+     */
+    private void loadForAim(String note) {
         // the OLD aim's debounced save must land before the doc is swapped
         // (the v1.35.1 API Studio law: force-save old, then load new)
         if (saver.isRunning()) {
@@ -488,6 +510,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         lastResult = null;
         org.nmox.studio.rack.blockstudio.search.BlockSearchProvider.clear();
         if (dir == null) {
+            lockedReason = null;
             workspace = null;
             refreshComponentCombo();
             canvas.setDoc(null);
@@ -497,54 +520,92 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
         loading = true;
         RP.post(() -> {
-            BlockWorkspace loaded;
-            try {
-                loaded = BlockIO.load(dir);
-            } catch (IOException | RuntimeException ex) {
-                loaded = null;
-                // keep the unreadable file as .bak BEFORE the fresh doc's
-                // first debounced save can overwrite it (the v1.39 house
-                // law, and this file's own javadoc promise)
-                String note = "";
-                try {
-                    File broken = BlockIO.workspaceFile(dir);
-                    java.nio.file.Files.copy(broken.toPath(),
-                            broken.toPath().resolveSibling(BlockIO.WORKSPACE_FILE + ".bak"),
-                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-                    note = Bundle.BlockStudioTopComponent_keptCopy(BlockIO.WORKSPACE_FILE);
-                } catch (IOException unbacked) {
-                    // best effort — the status still names the read failure
-                }
-                String suffix = note;
-                SwingUtilities.invokeLater(() -> setStatus(
-                        Bundle.BlockStudioTopComponent_readFailed(BlockIO.WORKSPACE_FILE, ex.getMessage(), suffix)));
+            // the stamp BEFORE the read: the bytes this session has now seen,
+            // and the only ones a save may go over (3.4); a change landing
+            // during the read stays foreign and the pulse reloads again
+            File wsFile = BlockIO.workspaceFile(dir);
+            long seenMtime = wsFile.isFile() ? wsFile.lastModified() : -1;
+            long seenSize = wsFile.isFile() ? wsFile.length() : -1;
+            BlockIO.Loaded result = BlockIO.loadForStudio(dir);
+            selfWrites.noteSync(seenMtime, seenSize);
+            BlockWorkspace ws = result.workspace();
+            if (ws != null) {
+                // the open component is this person's, not the file's (3.4)
+                BlockActiveMemory.apply(dir, ws);
             }
-            BlockWorkspace ws = loaded != null ? loaded : new BlockWorkspace();
             SwingUtilities.invokeLater(() -> {
                 undo.clear();
+                lockedReason = result.lockedReason();
                 workspace = ws;
-                canvas.setDoc(ws.activeDoc());
+                canvas.setDoc(ws == null ? null : ws.activeDoc());
                 refreshComponentCombo();
                 loading = false;
+                if (ws == null) {
+                    // read-only: nothing is on the canvas to edit, and the
+                    // status line says why and what the way out is
+                    codePane.setText("");
+                    setStatus(lockedReason);
+                    return;
+                }
                 regenerate();
+                String say = result.note() != null ? result.note() : note;
+                if (say != null) {
+                    setStatus(say);
+                }
             });
         });
+    }
+
+    /**
+     * Why this project's workspace may not be written, or null (3.4). Set
+     * when the file holds git's unresolved merge conflict, pieces from a
+     * newer NMOX Studio, bytes that could not be read, or a broken file no
+     * copy of could be kept; every save path refuses while it is set, and
+     * the file pulse reloads the studio the moment the file changes on disk.
+     * EDT-confined.
+     */
+    private String lockedReason;
+
+    /** Test seam: why the workspace is read-only, or null. */
+    String lockedReason() {
+        return lockedReason;
+    }
+
+    /** What a gesture with no workspace says: the lock's reason, else aim first. */
+    private String noWorkspaceReason() {
+        return lockedReason != null ? lockedReason : Bundle.BlockStudioTopComponent_aimFirst();
     }
 
     void persist() {
         File dir = projectDir;
         BlockWorkspace ws = workspace;
+        if (lockedReason != null && dir != null) {
+            setStatus(lockedReason);
+            return;
+        }
         if (dir == null || ws == null || loading) {
             return;
         }
         JSONObject json = ws.toJson();
+        String openTag = ws.activeDoc().root().param("tag");
         RP.post(() -> {
+            File target = BlockIO.workspaceFile(dir);
+            // asked on the lane immediately before the write (3.4): the lock
+            // is decided at LOAD, and a pull with the studio open changes the
+            // file after that — a save over it would replace the teammate's
+            // components (or git's conflict) with this session's
+            if (selfWrites.beforeWrite(target, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES)
+                    != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+                SwingUtilities.invokeLater(() -> readAgainOverPendingEdits(dir));
+                return;
+            }
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(
-                        BlockIO.workspaceFile(dir).toPath(), json.toString(2) + "\n");
+                        target.toPath(), json.toString(2) + "\n");
                 // stamp our own write so the pulse can tell it from a
                 // foreign edit (the v1.35 self-write-discrimination law)
                 selfWrites.noteSync(BlockIO.workspaceFile(dir));
+                BlockActiveMemory.remember(dir, openTag);
             } catch (IOException ex) {
                 SwingUtilities.invokeLater(() -> setStatus(Bundle.BlockStudioTopComponent_saveFailed(ex.getMessage())));
             }
@@ -599,13 +660,34 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private void onForeignEdit() {
         SwingUtilities.invokeLater(() -> {
+            // two guards on purpose: this branch cancels the pending save
+            // outright, and persist()'s beforeWrite refuses one that got
+            // here anyway (loadForAim force-saves). Either alone keeps the
+            // file — measured: removing this branch alone left every test
+            // green; removing it AND persist's check failed
+            // foreignEditCancelsThePendingSave by name (3.4)
             if (saver.isRunning()) {
-                setStatus(Bundle.BlockStudioTopComponent_externalEditOverridden(BlockIO.WORKSPACE_FILE));
+                readAgainOverPendingEdits(projectDir);
                 return;
             }
-            loadForAim();
-            setStatus(Bundle.BlockStudioTopComponent_reloaded(BlockIO.WORKSPACE_FILE));
+            loadForAim(Bundle.BlockStudioTopComponent_reloaded(BlockIO.WORKSPACE_FILE));
         });
+    }
+
+    /**
+     * The file on disk is not the one this session read, and an edit here
+     * was waiting to be saved over it (3.4). Until the review the pending
+     * save WON — "overridden by newer studio edits" — and replaced a pull's
+     * components, or git's conflict, with one person's. The file wins now:
+     * the pending save is cancelled, the workspace is read again (a conflict
+     * binds read-only there), and the loss of the unsaved edit is said. EDT.
+     */
+    void readAgainOverPendingEdits(File dir) {
+        if (dir == null || !dir.equals(projectDir)) {
+            return; // the aim moved: the new aim's load already owns the canvas
+        }
+        saver.stop(); // nothing of this session's is written over the file
+        loadForAim(Bundle.BlockStudioTopComponent_externalEditWins(BlockIO.WORKSPACE_FILE));
     }
 
     // ---- live preview (v1.80.0): in-memory serve + registry truth ----
@@ -663,10 +745,17 @@ public final class BlockStudioTopComponent extends TopComponent {
         if (workspace == null || !workspace.setActive(index)) {
             return;
         }
+        // pending edits in the component being left are saved — a switch is a
+        // patch boundary — but a switch alone writes nothing: which component
+        // is open is this person's, not the file's (3.4), and rewriting the
+        // committed file on every switch is what made two people conflict
         if (saver.isRunning()) {
             saver.stop();
+            persist();
         }
-        persist();
+        File dir = projectDir;
+        String openTag = workspace.activeDoc().root().param("tag");
+        RP.post(() -> BlockActiveMemory.remember(dir, openTag));
         undo.clear();
         canvas.setDoc(workspace.activeDoc());
         refreshComponentCombo();
@@ -675,7 +764,7 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     void addComponent() {
         if (workspace == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         BlockDoc fresh = workspace.add();
@@ -688,7 +777,7 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private void removeComponent() {
         if (workspace == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         String tag = workspace.activeDoc().root().param("tag");
@@ -938,7 +1027,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         BlockDoc doc = canvas.doc();
         File dir = projectDir;
         if (doc == null || dir == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         List<String> problems = BlockCodegen.validate(doc);
@@ -978,7 +1067,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         BlockWorkspace ws = workspace;
         File dir = projectDir;
         if (ws == null || dir == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         java.util.List<String[]> jobs = new java.util.ArrayList<>();
@@ -1033,7 +1122,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     private void openComponent() {
         File dir = projectDir;
         if (dir == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         File components = new File(dir, "src/components");
@@ -1081,7 +1170,7 @@ public final class BlockStudioTopComponent extends TopComponent {
      */
     void importParsed(BlockDoc parsed, String sourceName) {
         if (workspace == null) {
-            setStatus(Bundle.BlockStudioTopComponent_aimFirst());
+            setStatus(noWorkspaceReason());
             return;
         }
         String tag = parsed.root().param("tag");
@@ -1120,6 +1209,11 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private void setStatus(String s) {
         status.setText(PlainText.plain(s));
+    }
+
+    /** Test seam: what the status line says (EDT). */
+    String statusText() {
+        return status.getText().strip();
     }
 
     // ---- @ConvertAsProperties plumbing ----

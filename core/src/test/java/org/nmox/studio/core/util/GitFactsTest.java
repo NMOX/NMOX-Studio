@@ -264,14 +264,89 @@ class GitFactsTest {
     // ---- 3.2.0: porcelain v2, onBranch, regular files only ----
 
     @Test
-    @DisplayName("porcelain v2: entry lines count, # branch headers never do")
+    @DisplayName("porcelain v2: entry lines count, # branch headers never do, conflicts count apart")
     void changeCountV2() {
         String out = "# branch.oid abc\n# branch.head main\n# branch.ab +1 -0\n"
                 + "1 .M N... 100644 100644 100644 a b x.js\n2 R. N... 100644 100644 100644 a b R100 y.js\tz.js\n"
                 + "u UU N... 100644 100644 100644 100644 a b c w.js\n? new.txt\n\n";
-        assertThat(GitFacts.changeCountV2(out)).isEqualTo(4);
+        assertThat(GitFacts.changeCountV2(out))
+                .as("an unmerged path is a conflict, not an ordinary change (3.4)")
+                .isEqualTo(3);
+        assertThat(GitFacts.conflictCountV2(out)).isEqualTo(1);
+        assertThat(GitFacts.conflictCountV2(null)).isZero();
         assertThat(GitFacts.changeCountV2("# branch.head main\n")).isZero();
         assertThat(GitFacts.changeCountV2(null)).isZero();
+    }
+
+    // ---- 3.4: an operation in progress, read from disk ----
+
+    @Test
+    @DisplayName("inProgress names a merge, a cherry-pick and a revert from their HEAD files")
+    void inProgressReadsTheMarkerFiles() throws Exception {
+        File repo = repoWithHead("ref: refs/heads/main\n");
+        Path git = dir.resolve("repo/.git");
+        assertThat(GitFacts.inProgress(repo)).as("nothing in progress").isNull();
+        Files.writeString(git.resolve("REVERT_HEAD"), "abc\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.REVERT);
+        Files.writeString(git.resolve("CHERRY_PICK_HEAD"), "abc\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.CHERRY_PICK);
+        Files.writeString(git.resolve("MERGE_HEAD"), "abc\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.MERGE);
+    }
+
+    @Test
+    @DisplayName("inProgress names a rebase and the branch being rebased, both state-dir shapes")
+    void inProgressReadsARebase() throws Exception {
+        File repo = repoWithHead("0123456789abcdef0123456789abcdef01234567\n");
+        Path merge = dir.resolve("repo/.git/rebase-merge");
+        Files.createDirectories(merge);
+        Files.writeString(merge.resolve("head-name"), "refs/heads/feature/login\n");
+        GitFacts.InProgress p = GitFacts.inProgress(repo);
+        assertThat(p.operation()).isEqualTo(GitFacts.Operation.REBASE);
+        assertThat(p.rebasedBranch()).isEqualTo("feature/login");
+        assertThat(GitFacts.branch(repo)).as("HEAD is detached during a rebase").isEqualTo("0123456");
+
+        Files.writeString(merge.resolve("head-name"), "detached HEAD\n");
+        assertThat(GitFacts.inProgress(repo).rebasedBranch()).isNull();
+
+        Files.delete(merge.resolve("head-name"));
+        Files.delete(merge);
+        Path apply = dir.resolve("repo/.git/rebase-apply");
+        Files.createDirectories(apply);
+        Files.writeString(apply.resolve("head-name"), "refs/heads/main\n");
+        assertThat(GitFacts.inProgress(repo).rebasedBranch()).isEqualTo("main");
+        Files.writeString(apply.resolve("applying"), "");
+        assertThat(GitFacts.inProgress(repo).operation()).as("rebase-apply/applying is git am, not a rebase")
+                .isEqualTo(GitFacts.Operation.APPLYING_PATCHES);
+
+        // the rest of what stops half-way (the 3.4 review)
+        Files.delete(apply.resolve("applying"));
+        Files.delete(apply.resolve("head-name"));
+        Files.delete(apply);
+        Path sequencer = dir.resolve("repo/.git/sequencer");
+        Files.createDirectories(sequencer);
+        Files.writeString(sequencer.resolve("todo"), "pick 0123456 second commit\n");
+        assertThat(GitFacts.inProgress(repo).operation()).as("a multi-commit cherry-pick between commits")
+                .isEqualTo(GitFacts.Operation.CHERRY_PICK);
+        Files.writeString(sequencer.resolve("todo"), "revert 0123456 second commit\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.REVERT);
+        Files.delete(sequencer.resolve("todo"));
+        Files.delete(sequencer);
+        Files.writeString(dir.resolve("repo/.git/BISECT_LOG"), "git bisect start\n");
+        assertThat(GitFacts.inProgress(repo).operation()).isEqualTo(GitFacts.Operation.BISECT);
+    }
+
+    @Test
+    @DisplayName("inProgress follows a worktree's gitdir: pointer to its own merge state")
+    void inProgressInAWorktree() throws Exception {
+        Path main = dir.resolve("main-repo/.git/worktrees/wt");
+        Files.createDirectories(main);
+        Files.writeString(main.resolve("HEAD"), "ref: refs/heads/wt\n");
+        Files.writeString(main.resolve("MERGE_HEAD"), "abc\n");
+        Path worktree = dir.resolve("wt");
+        Files.createDirectories(worktree);
+        Files.writeString(worktree.resolve(".git"), "gitdir: ../main-repo/.git/worktrees/wt\n");
+        assertThat(GitFacts.inProgress(worktree.toFile()).operation()).isEqualTo(GitFacts.Operation.MERGE);
     }
 
     @Test

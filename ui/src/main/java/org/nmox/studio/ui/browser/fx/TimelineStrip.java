@@ -36,8 +36,12 @@ import org.nmox.studio.ui.browser.devtools.Keyframes;
  */
 @org.openide.util.NbBundle.Messages({
     "TimelineStrip_accessibleName=Animation timeline",
-    "TimelineStrip_accessibleDescription=Tracks of keyframes from 0 to 100 percent; drag diamonds to move,"
-        + " double-click to add, Delete removes the selected keyframe",
+    "TimelineStrip_accessibleDescription=Tracks of keyframes from 0 to 100 percent. Left and Right choose a keyframe,"
+        + " Up and Down a track, Shift with an arrow moves the keyframe, Enter edits it, Insert or + adds one at the"
+        + " playhead, [ and ] move the playhead, Delete removes the keyframe. With a mouse, drag a diamond to move"
+        + " it and double-click to add or edit.",
+    "# {0} the CSS property, {1} the percent, {2} the keyframe's value",
+    "TimelineStrip_accessibleNameSelected=Animation timeline: {0} at {1}%, {2}",
     "TimelineStrip_emptyHint=Add a property track to begin"
 })
 public final class TimelineStrip extends JPanel {
@@ -170,9 +174,141 @@ public final class TimelineStrip extends JPanel {
         registerKeyboardAction(e -> deleteSelected(),
                 javax.swing.KeyStroke.getKeyStroke("BACK_SPACE"),
                 javax.swing.JComponent.WHEN_FOCUSED);
+        // the keyboard's timeline (3.4): every gesture the mouse had — select,
+        // move, edit, add a stop, scrub — without one
+        key("LEFT", () -> step(-1));
+        key("RIGHT", () -> step(+1));
+        key("UP", () -> changeTrack(-1));
+        key("DOWN", () -> changeTrack(+1));
+        key("shift LEFT", () -> nudge(-1));
+        key("shift RIGHT", () -> nudge(+1));
+        key("ENTER", this::editSelected);
+        key("INSERT", this::addAtScrubber);
+        key("typed +", this::addAtScrubber);
+        key("OPEN_BRACKET", () -> scrubBy(-5));
+        key("CLOSE_BRACKET", () -> scrubBy(+5));
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
         getAccessibleContext().setAccessibleName(Bundle.TimelineStrip_accessibleName());
         getAccessibleContext().setAccessibleDescription(
                 Bundle.TimelineStrip_accessibleDescription());
+    }
+
+    private void key(String stroke, Runnable run) {
+        javax.swing.KeyStroke ks = javax.swing.KeyStroke.getKeyStroke(stroke);
+        String name = "nmox-timeline-" + stroke;
+        getInputMap(WHEN_FOCUSED).put(ks, name);
+        getActionMap().put(name, new javax.swing.AbstractAction(name) {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                run.run();
+            }
+        });
+    }
+
+    /** Selects a stop, repaints, and says which one to a screen reader. */
+    private void select(String property, int percent) {
+        selectedProperty = property;
+        selectedPercent = percent;
+        String value = property == null || percent < 0 ? null : model.stops(property).get(percent);
+        getAccessibleContext().setAccessibleName(value == null
+                ? Bundle.TimelineStrip_accessibleName()
+                : Bundle.TimelineStrip_accessibleNameSelected(property, String.valueOf(percent), value));
+        repaint();
+    }
+
+    /** The track the keyboard works on: the selected one, else the first. */
+    private String currentTrack() {
+        List<String> props = model.properties();
+        if (selectedProperty != null && props.contains(selectedProperty)) {
+            return selectedProperty;
+        }
+        return props.isEmpty() ? null : props.get(0);
+    }
+
+    /** Left/Right: the previous or next stop on the track (the first stop when none is selected). */
+    void step(int direction) {
+        String track = currentTrack();
+        if (track == null) {
+            return;
+        }
+        java.util.TreeMap<Integer, String> stops = new java.util.TreeMap<>(model.stops(track));
+        if (stops.isEmpty()) {
+            select(track, -1);
+            return;
+        }
+        Integer to;
+        if (!track.equals(selectedProperty) || selectedPercent < 0) {
+            to = direction > 0 ? stops.firstKey() : stops.lastKey();
+        } else {
+            to = direction > 0 ? stops.higherKey(selectedPercent) : stops.lowerKey(selectedPercent);
+        }
+        if (to != null) {
+            select(track, to);
+        }
+    }
+
+    /** Up/Down: the neighbouring track, on its stop nearest the current percent. */
+    void changeTrack(int direction) {
+        List<String> props = model.properties();
+        if (props.isEmpty()) {
+            return;
+        }
+        int at = props.indexOf(currentTrack());
+        int next = Math.max(0, Math.min(props.size() - 1, at + direction));
+        String track = props.get(next);
+        Integer near = nearestStop(track, selectedPercent < 0 ? scrubPercent : selectedPercent);
+        select(track, near == null ? -1 : near);
+    }
+
+    /** Shift+Left/Right: moves the selected stop one percent, clamped between its neighbours as a drag is. */
+    void nudge(int delta) {
+        if (selectedProperty == null || selectedPercent < 0) {
+            return;
+        }
+        int landed = model.moveStop(selectedProperty, selectedPercent, selectedPercent + delta);
+        if (landed >= 0) {
+            select(selectedProperty, landed);
+            onChange.run();
+        }
+    }
+
+    /** Enter: edits the selected stop's value, as a double-click on its diamond does. */
+    void editSelected() {
+        if (selectedProperty != null && selectedPercent >= 0) {
+            onEditStop.accept(selectedProperty, selectedPercent);
+        }
+    }
+
+    /** Insert or +: a stop on the current track at the scrubber, as a double-click on the track adds one. */
+    void addAtScrubber() {
+        String track = currentTrack();
+        if (track == null || model.stops(track).containsKey(scrubPercent)) {
+            return;
+        }
+        model.setStop(track, scrubPercent, seedValue(track, scrubPercent));
+        select(track, scrubPercent);
+        onChange.run();
+    }
+
+    /** [ and ]: the scrubber five percent back or on, as a drag in the ruler moves it. */
+    void scrubBy(int delta) {
+        scrubPercent = Math.max(0, Math.min(100, scrubPercent + delta));
+        onScrub.accept(scrubPercent);
+        repaint();
+    }
+
+    int scrubPercentForTest() {
+        return scrubPercent;
     }
 
     public Model model() {
@@ -197,7 +333,7 @@ public final class TimelineStrip extends JPanel {
     private void deleteSelected() {
         if (selectedProperty != null && selectedPercent >= 0) {
             model.removeStop(selectedProperty, selectedPercent);
-            selectedPercent = -1;
+            select(selectedProperty, -1);
             onChange.run();
             refresh();
         }
@@ -233,8 +369,7 @@ public final class TimelineStrip extends JPanel {
             int percent = percentAt(e.getX());
             Integer near = nearestStop(property, percent);
             if (near != null && Math.abs(xOf(near) - e.getX()) <= 6) {
-                selectedProperty = property;
-                selectedPercent = near;
+                select(property, near);
                 dragProperty = property;
                 dragPercent = near;
                 if (e.getClickCount() == 2) {
@@ -243,8 +378,7 @@ public final class TimelineStrip extends JPanel {
                 }
             } else if (e.getClickCount() == 2) {
                 model.setStop(property, percent, seedValue(property, percent));
-                selectedProperty = property;
-                selectedPercent = percent;
+                select(property, percent);
                 onChange.run();
             }
             repaint();
@@ -262,8 +396,7 @@ public final class TimelineStrip extends JPanel {
                 int landed = model.moveStop(dragProperty, dragPercent, percentAt(e.getX()));
                 if (landed >= 0) {
                     dragPercent = landed;
-                    selectedPercent = landed;
-                    repaint();
+                    select(dragProperty, landed);
                 }
             }
         }
@@ -343,6 +476,11 @@ public final class TimelineStrip extends JPanel {
         g.setStroke(new BasicStroke(1f));
         int sx = xOf(scrubPercent);
         g.drawLine(sx, 2, sx, getHeight() - 2);
+        // where the keyboard is (3.4): a ring while the strip holds focus
+        if (hasFocus()) {
+            g.setColor(org.nmox.studio.core.util.KeyboardAccess.focusColor());
+            g.drawRect(0, 0, getWidth() - 1, getHeight() - 1);
+        }
     }
 
 }

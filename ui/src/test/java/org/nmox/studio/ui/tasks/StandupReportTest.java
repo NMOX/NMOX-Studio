@@ -113,7 +113,10 @@ class StandupReportTest {
     @DisplayName("the header carries the sprint: day-of inside the window, name alone outside, nothing without one")
     void sprintHeader() {
         TaskBoard none = new TaskBoard();
-        assertThat(report(none, List.of())).doesNotContain("·");
+        // 3.4: the heading names whose clock it reports, and with no sprint
+        // that name is the last clause — no sprint clause follows it
+        assertThat(report(none, List.of()).lines().findFirst().orElseThrow())
+                .endsWith(" · " + TaskBoard.currentUser());
 
         TaskBoard inside = new TaskBoard();
         // NOON is day 3 of a window that started two days earlier

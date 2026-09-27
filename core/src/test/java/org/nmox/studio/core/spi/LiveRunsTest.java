@@ -13,7 +13,8 @@ class LiveRunsTest {
 
     @AfterEach
     void drain() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
     }
 
     @Test
@@ -36,7 +37,7 @@ class LiveRunsTest {
     }
 
     @Test
-    @DisplayName("stopAll kills EVERY live run through its killer and forgets them all — the ■ never leaves a survivor")
+    @DisplayName("stopAll kills EVERY live run once; each stays, stopping, until its exit removes it (3.4)")
     void stopAllKillsEveryone() {
         List<String> killed = new ArrayList<>();
         LiveRuns.add(new LiveRuns.Run("a", "Run — one", () -> killed.add("a")));
@@ -44,8 +45,15 @@ class LiveRunsTest {
         List<LiveRuns.Run> stopped = LiveRuns.stopAll();
         assertThat(killed).containsExactly("a", "b");
         assertThat(stopped).extracting(LiveRuns.Run::label).containsExactly("Run — one", "Run — two");
-        assertThat(LiveRuns.live()).as("nothing is live after a stop").isEmpty();
-        assertThat(LiveRuns.stopAll()).as("a second press stops nothing and says so").isEmpty();
+        assertThat(LiveRuns.live()).as("a stopped run that has not exited is still running")
+                .extracting(LiveRuns.Run::id).containsExactly("a", "b");
+        assertThat(LiveRuns.isStopping("a")).isTrue();
+        assertThat(LiveRuns.stopAll()).as("a second press kills nothing twice and says so").isEmpty();
+        assertThat(killed).containsExactly("a", "b");
+        LiveRuns.remove("a"); // the exit arrives
+        LiveRuns.remove("b");
+        assertThat(LiveRuns.live()).as("gone when they have exited").isEmpty();
+        assertThat(LiveRuns.isStopping("a")).isFalse();
     }
 
     @Test
@@ -146,7 +154,20 @@ class LiveRunsTest {
     }
 
     @Test
-    @DisplayName("stop(id) kills exactly one run, forgets it, and tells the listeners (v2.70.0)")
+    @org.junit.jupiter.api.DisplayName("a killer that throws leaves the run live and pressable, not 'stopping…' forever (the 3.4 review)")
+    void throwingKillerDoesNotPinTheRow() {
+        LiveRuns.add(new LiveRuns.Run("run:throws", "sudo thing", () -> {
+            throw new IllegalStateException("EPERM");
+        }));
+        assertThat(LiveRuns.stop("run:throws")).isNotNull();
+        assertThat(LiveRuns.isStopping("run:throws")).isFalse();
+        assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).contains("run:throws");
+        assertThat(LiveRuns.stopAll()).extracting(LiveRuns.Run::id).as("a second press tries again").contains("run:throws");
+        assertThat(LiveRuns.isStopping("run:throws")).isFalse();
+    }
+
+    @Test
+    @DisplayName("stop(id) kills exactly one run, keeps it stopping until its exit, and tells the listeners (v2.70.0, 3.4)")
     void stopOne() {
         java.util.List<String> killed = new java.util.ArrayList<>();
         java.util.concurrent.atomic.AtomicInteger notified = new java.util.concurrent.atomic.AtomicInteger();
@@ -158,10 +179,17 @@ class LiveRunsTest {
             int before = notified.get();
             assertThat(LiveRuns.stop("a")).isNotNull();
             assertThat(killed).containsExactly("a");
-            assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).containsExactly("b");
+            assertThat(LiveRuns.live()).as("still running until it exits")
+                    .extracting(LiveRuns.Run::id).containsExactly("a", "b");
+            assertThat(LiveRuns.isStopping("a")).isTrue();
+            assertThat(LiveRuns.isStopping("b")).isFalse();
             assertThat(notified.get()).isEqualTo(before + 1);
+            assertThat(LiveRuns.stop("a")).as("already stopping: nothing killed twice").isNull();
             assertThat(LiveRuns.stop("nope")).as("no such run: nothing killed, nobody told").isNull();
             assertThat(notified.get()).isEqualTo(before + 1);
+            LiveRuns.remove("a");
+            assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).containsExactly("b");
+            assertThat(notified.get()).as("the exit is news too").isEqualTo(before + 2);
         } finally {
             LiveRuns.removeListener(l);
         }

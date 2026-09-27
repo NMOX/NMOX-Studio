@@ -38,7 +38,17 @@ public class InfraPalette extends JPanel {
     private record Entry(NodeKind kind, String header) {
     }
 
+    /** A palette nothing locks (tests, and any host without a canvas lock). */
     public InfraPalette(InfraGraph graph) {
+        this(graph, () -> false);
+    }
+
+    /**
+     * @param refused asked before every add; true (having said why) while a
+     *        cloud operation holds the canvas — a palette drop was already
+     *        refused then (53b), and its double-click and Enter must be too
+     */
+    public InfraPalette(InfraGraph graph, java.util.function.BooleanSupplier refused) {
         super(new BorderLayout());
         setBackground(new Color(0x17, 0x17, 0x1B));
         setPreferredSize(new Dimension(190, 400));
@@ -76,16 +86,24 @@ public class InfraPalette extends JPanel {
                         : new StringSelection(entry.kind().name());
             }
         });
+        Runnable addSelected = () -> {
+            Entry entry = list.getSelectedValue();
+            if (entry != null && entry.kind() != null && !refused.getAsBoolean()) {
+                graph.addNode(entry.kind(), 120 + (int) (Math.random() * 80),
+                        80 + (int) (Math.random() * 120));
+            }
+        };
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Entry entry = list.getSelectedValue();
-                if (e.getClickCount() == 2 && entry != null && entry.kind() != null) {
-                    graph.addNode(entry.kind(), 120 + (int) (Math.random() * 80),
-                            80 + (int) (Math.random() * 120));
+                if (e.getClickCount() == 2) {
+                    addSelected.run();
                 }
             }
         });
+        // Enter places the selected resource, as the double-click does (3.4):
+        // with a drag the only other way, a keyboard could not add one at all
+        org.nmox.studio.core.util.KeyboardAccess.onEnter(list, addSelected);
 
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -106,6 +124,10 @@ public class InfraPalette extends JPanel {
             setPreferredSize(new Dimension(180, value.kind() == null ? 26 : 34));
             setToolTipText(PlainText.plain(value.kind() == null ? null
                     : Bundle.InfraPalette_entryTooltip(value.kind().getDisplayName())));
+            // a painted panel has no name of its own: a screen reader hears
+            // the heading or the resource exactly as it is painted (3.4)
+            getAccessibleContext().setAccessibleName(
+                    value.kind() == null ? value.header() : value.kind().getDisplayName());
             return this;
         }
 

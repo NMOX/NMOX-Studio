@@ -21,6 +21,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.TransferHandler;
+import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.rack.devices.DeviceCatalog;
 import org.nmox.studio.rack.model.Cable;
 import org.nmox.studio.rack.model.Port;
@@ -44,7 +45,26 @@ import org.openide.NotifyDescriptor;
     "RackPanel_openManifest=Open {0}",
     "RackPanel_removeDevice=Remove {0}",
     "RackPanel_rackEmpty=RACK EMPTY",
-    "RackPanel_rackEmptyHint=Drag a device in from the shelf — or load a preset from the toolbar"
+    "RackPanel_rackEmptyHint=Drag a device in from the shelf — or load a preset from the toolbar",
+    "RackPanel_patchCable=Patch Cable…",
+    "RackPanel_unplugCable=Unplug Cable…",
+    "RackPanel_moveUp=Move Up",
+    "RackPanel_moveDown=Move Down",
+    "# {0} - the device the cable starts from",
+    "RackPanel_patchTitle=Patch a Cable from {0}",
+    "RackPanel_patchOk=Patch",
+    "# {0} - the device",
+    "RackPanel_patchNone={0} has no jack another racked device can take",
+    "RackPanel_patchRefused=Not patched: that cable is already there, or it would make a loop",
+    "# {0} - the new cable in words, e.g. OUT → MONITOR IN",
+    "RackPanel_patched=Patched: {0}",
+    "# {0} - the device",
+    "RackPanel_unplugTitle=Unplug a Cable from {0}",
+    "RackPanel_unplugOk=Unplug",
+    "# {0} - the device",
+    "RackPanel_unplugNone={0} has no cables",
+    "# {0} - the removed cable in words",
+    "RackPanel_unplugged=Unplugged: {0}"
 })
 public class RackPanel extends JPanel implements Rack.Listener {
 
@@ -105,6 +125,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
         MouseAdapter background = new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
+                requestFocusInWindow();
                 setSelected(null);
                 if (patchGesture.press(null) == CablePatchGesture.Action.CANCEL) {
                     dragFrom = null;
@@ -138,6 +159,24 @@ public class RackPanel extends JPanel implements Rack.Listener {
                 }
             }
         });
+        // with the rack itself focused (after a click on a faceplate), the
+        // menu key opens the SELECTED device's menu — the device the
+        // highlight shows; on a focused control the device binding answers.
+        // The ANCESTOR map, not WHEN_FOCUSED: a focused-component binding
+        // makes the focus policy treat the panel as a Tab stop, and a Tab on
+        // the panel flips the rack — so Tab from the shelf landed here and
+        // never reached a faceplate (the 3.4 review). The ancestor map still
+        // answers when the panel itself holds focus.
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(javax.swing.KeyStroke.getKeyStroke("shift F10"), "selected-menu");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(javax.swing.KeyStroke.getKeyStroke("CONTEXT_MENU"), "selected-menu");
+        getActionMap().put("selected-menu", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (selected != null && rack.getDevices().contains(selected)) {
+                    openDeviceMenu(selected, null);
+                }
+            }
+        });
         rebuild();
     }
 
@@ -148,7 +187,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
         return selected;
     }
 
-    private void setSelected(RackDevice device) {
+    void setSelected(RackDevice device) {
         if (selected != device) {
             selected = device;
             repaint();
@@ -163,6 +202,58 @@ public class RackPanel extends JPanel implements Rack.Listener {
             rack.removeDevice(doomed);
         }
     }
+
+    /**
+     * The racked device that holds {@code c}, or null. A control's device is
+     * its nearest {@link RackDevice} ancestor that this rack still mounts.
+     */
+    RackDevice deviceOf(java.awt.Component c) {
+        for (java.awt.Component p = c; p != null && p != this; p = p.getParent()) {
+            if (p instanceof RackDevice d && rack.getDevices().contains(d)) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * The device a Delete keypress unracks with {@code focus} as the focus
+     * owner: the device holding the focused control when a control inside one
+     * has focus, else the selected one (3.4). Before, Delete took whatever was
+     * last selected WITH THE MOUSE — so a keyboard user standing on SOLDER's
+     * STOP, having clicked MONITOR a minute earlier, removed MONITOR.
+     */
+    public RackDevice removeTarget(java.awt.Component focus) {
+        RackDevice holding = deviceOf(focus);
+        return holding != null ? holding : selected;
+    }
+
+    /** Unracks {@link #removeTarget} for {@code focus}; the Delete key, routed by the window. */
+    public void removeFor(java.awt.Component focus) {
+        RackDevice doomed = removeTarget(focus);
+        if (doomed != null) {
+            if (doomed == selected) {
+                selected = null;
+            }
+            rack.removeDevice(doomed);
+        }
+    }
+
+    /**
+     * Selection follows keyboard focus: tabbing onto a device's control
+     * selects that device, so the highlight a sighted keyboard user sees is
+     * the device Delete and the device menu act on. Attached in addNotify,
+     * detached in removeNotify, like every other listener this panel holds.
+     */
+    private final java.beans.PropertyChangeListener focusFollower = e -> {
+        if (e.getNewValue() instanceof java.awt.Component c) {
+            RackDevice d = deviceOf(c);
+            if (d != null) {
+                setSelected(d);
+            }
+        }
+    };
+    private boolean focusFollowerAttached;
 
     public Rack getRack() {
         return rack;
@@ -181,6 +272,11 @@ public class RackPanel extends JPanel implements Rack.Listener {
             rack.addListener(this);
             listenerAttached = true;
         }
+        if (!focusFollowerAttached) {
+            java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                    .addPropertyChangeListener("permanentFocusOwner", focusFollower);
+            focusFollowerAttached = true;
+        }
         rebuild();
     }
 
@@ -190,6 +286,11 @@ public class RackPanel extends JPanel implements Rack.Listener {
         if (listenerAttached) {
             rack.removeListener(this);
             listenerAttached = false;
+        }
+        if (focusFollowerAttached) {
+            java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                    .removePropertyChangeListener("permanentFocusOwner", focusFollower);
+            focusFollowerAttached = false;
         }
         uninstallInteraction();
         flashTimer.stop();
@@ -275,6 +376,20 @@ public class RackPanel extends JPanel implements Rack.Listener {
     // ---- interaction ----
 
     private void installInteraction(RackDevice device) {
+        // the keyboard's route to the device menu (3.4): Shift+F10 or the
+        // context-menu key on any focused control inside the device. The
+        // binding lives on the DEVICE, in the ancestor-of-focused map, so it
+        // fires only when the focus is inside this device — the menu's target
+        // is the focused device by construction, the Popups law for a key.
+        // Installed before the once-per-panel check below: a second panel
+        // leaving the hierarchy takes its own action with it, and this one's
+        // must come back on the next rebuild.
+        var im = device.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        im.put(javax.swing.KeyStroke.getKeyStroke("shift F10"), DEVICE_MENU_KEY);
+        im.put(javax.swing.KeyStroke.getKeyStroke("CONTEXT_MENU"), DEVICE_MENU_KEY);
+        if (!(device.getActionMap().get(DEVICE_MENU_KEY) instanceof DeviceMenuKey k && k.owner() == this)) {
+            device.getActionMap().put(DEVICE_MENU_KEY, new DeviceMenuKey(device));
+        }
         // Install once per device PER PANEL. The devices are shared and outlive
         // this panel (componentClosed keeps the rack alive), so a bare
         // `instanceof DeviceMouse` guard would match a DIFFERENT panel's handler
@@ -291,6 +406,68 @@ public class RackPanel extends JPanel implements Rack.Listener {
         device.addMouseMotionListener(handler);
     }
 
+    /** The action-map key of the device menu's keyboard binding. */
+    static final String DEVICE_MENU_KEY = "nmox-device-menu";
+
+    /**
+     * Opens a device's menu from the keyboard, at the focused control. Owned
+     * by one panel, like {@link DeviceMouse}, so a second panel over the same
+     * rack replaces it and a panel leaving the hierarchy takes only its own.
+     */
+    private final class DeviceMenuKey extends javax.swing.AbstractAction {
+
+        private final RackDevice device;
+
+        DeviceMenuKey(RackDevice device) {
+            this.device = device;
+        }
+
+        RackPanel owner() {
+            return RackPanel.this;
+        }
+
+        @Override
+        public void actionPerformed(java.awt.event.ActionEvent e) {
+            // an ancestor-map binding reports the DEVICE as its source, not
+            // the control that holds focus (the 3.4 review's probe): anchor
+            // at the focus owner, which is what the keyboard user is on
+            openDeviceMenu(device, java.awt.KeyboardFocusManager
+                    .getCurrentKeyboardFocusManager().getFocusOwner());
+        }
+    }
+
+    /**
+     * Shows {@code device}'s menu from the keyboard, anchored under the
+     * focused control when there is one, else at the device's title.
+     */
+    void openDeviceMenu(RackDevice device, java.awt.Component at) {
+        setSelected(device);
+        java.awt.Point p = new java.awt.Point(RackStyle.EAR_WIDTH + 14, 24);
+        if (at != null && at != device && SwingUtilities.isDescendingFrom(at, device)) {
+            p = SwingUtilities.convertPoint(at, 0, at.getHeight(), device);
+        }
+        menuShower.show(buildMenu(device, null), device, p.x, p.y);
+    }
+
+    /** How a menu is shown; tests capture it, since a headless JVM shows none. */
+    interface MenuShower {
+        void show(JPopupMenu menu, java.awt.Component invoker, int x, int y);
+    }
+
+    MenuShower menuShower = JPopupMenu::show;
+
+    /**
+     * Where a dialog is shown. Production asks the platform; tests answer as
+     * the user would, since a headless JVM has no dialog to press a button in.
+     */
+    static java.util.function.Function<org.openide.DialogDescriptor, Object> dialogs =
+            d -> DialogDisplayer.getDefault().notify(d);
+
+    /** Puts {@link #dialogs} back to production; tests restore through here. */
+    static void resetDialogs() {
+        dialogs = d -> DialogDisplayer.getDefault().notify(d);
+    }
+
     /**
      * Detach this panel's mouse handlers from the shared devices. Symmetric with
      * {@link #installInteraction}: the devices survive the window, so a panel
@@ -304,6 +481,10 @@ public class RackPanel extends JPanel implements Rack.Listener {
                     device.removeMouseListener(dm);
                     device.removeMouseMotionListener(dm);
                 }
+            }
+            if (device.getActionMap().get(DEVICE_MENU_KEY) instanceof DeviceMenuKey k
+                    && k.owner() == this) {
+                device.getActionMap().remove(DEVICE_MENU_KEY);
             }
         }
     }
@@ -332,6 +513,10 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            // a click on a faceplate (not on one of its controls, which take
+            // focus themselves) leaves the keyboard on the rack: Tab flips it
+            // and Delete takes the device just selected, as before 3.4
+            RackPanel.this.requestFocusInWindow();
             if (e.isPopupTrigger()) {
                 showMenu(e);
                 return;
@@ -436,42 +621,170 @@ public class RackPanel extends JPanel implements Rack.Listener {
         }
 
         private void showMenu(MouseEvent e) {
-            JPopupMenu menu = new JPopupMenu();
-            if (!front) {
-                Port p = device.portAt(e.getPoint());
-                if (p != null && !rack.cablesAt(p).isEmpty()) {
-                    JMenuItem unplug = new JMenuItem(Bundle.RackPanel_unplug(p.getLabel()));
-                    unplug.addActionListener(a -> rack.disconnectAll(p));
-                    menu.add(unplug);
-                    menu.addSeparator();
+            Port p = front ? null : device.portAt(e.getPoint());
+            menuShower.show(buildMenu(device, p), device, e.getX(), e.getY());
+        }
+    }
+
+    /**
+     * A device's menu, the same one whether a right-click or the keyboard
+     * opened it. {@code jack} is the rear jack under a right-click, or null.
+     *
+     * <p>Since 3.4 it carries the keyboard-complete cable work — Patch Cable…,
+     * Unplug Cable… — and Move Up / Move Down, so everything the mouse does to
+     * a racked device (patch, unplug, reorder, remove) has a route that needs
+     * no pointer.
+     */
+    JPopupMenu buildMenu(RackDevice device, Port jack) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.getAccessibleContext().setAccessibleName(device.getBusName());
+        if (jack != null && !rack.cablesAt(jack).isEmpty()) {
+            JMenuItem unplug = new JMenuItem(PlainText.plain(Bundle.RackPanel_unplug(jack.getLabel())));
+            unplug.addActionListener(a -> rack.disconnectAll(jack));
+            menu.add(unplug);
+            menu.addSeparator();
+        }
+        DeviceCatalog.byId(device.getTypeId()).ifPresent(entry -> {
+            JMenuItem howTo = new JMenuItem(PlainText.plain(Bundle.RackPanel_howToUse(device.getTitle())));
+            howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                            org.nmox.studio.core.util.PlainDialogs.plain(Bundle.RackPanel_howToBody(entry.title(), entry.description(),
+                                    entry.usage().replace("\n", "\n\n")), "Message"),
+                            NotifyDescriptor.INFORMATION_MESSAGE)));
+            menu.add(howTo);
+            menu.addSeparator();
+        });
+        // manifest-backed devices open their configuration file straight
+        // from the faceplate: NPM-9000 → package.json, DYNAMO → its
+        // taskfile, ARTISAN → composer.json, GOVERNOR → .gas-snapshot
+        device.primaryManifest().ifPresent(manifest -> {
+            JMenuItem open = new JMenuItem(PlainText.plain(Bundle.RackPanel_openManifest(manifest.getName())));
+            open.addActionListener(a -> openInEditor(manifest));
+            menu.add(open);
+            menu.addSeparator();
+        });
+        JMenuItem patch = new JMenuItem(Bundle.RackPanel_patchCable());
+        patch.addActionListener(a -> patchCableFrom(device));
+        menu.add(patch);
+        JMenuItem unplugOne = new JMenuItem(Bundle.RackPanel_unplugCable());
+        unplugOne.setEnabled(!device.cablesInWords().isEmpty());
+        unplugOne.addActionListener(a -> unplugCableFrom(device));
+        menu.add(unplugOne);
+        menu.addSeparator();
+        int at = rack.indexOf(device);
+        JMenuItem up = new JMenuItem(Bundle.RackPanel_moveUp());
+        up.setEnabled(at > 0);
+        up.addActionListener(a -> moveBy(device, -1));
+        menu.add(up);
+        JMenuItem down = new JMenuItem(Bundle.RackPanel_moveDown());
+        down.setEnabled(at >= 0 && at < rack.getDevices().size() - 1);
+        down.addActionListener(a -> moveBy(device, 1));
+        menu.add(down);
+        menu.addSeparator();
+        JMenuItem remove = new JMenuItem(PlainText.plain(Bundle.RackPanel_removeDevice(device.getTitle())));
+        remove.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
+                java.awt.event.KeyEvent.VK_DELETE, 0));
+        remove.addActionListener(a -> rack.removeDevice(device));
+        menu.add(remove);
+        return menu;
+    }
+
+    /**
+     * Moves a device one slot up ({@code -1}) or down ({@code 1}) through
+     * {@link Rack#moveDevice}, the call the grip drag makes, so undo and the
+     * saved order are the drag's. The keyboard stays with the device: its
+     * first control is refocused after the rebuild the move triggers.
+     */
+    void moveBy(RackDevice device, int step) {
+        int at = rack.indexOf(device);
+        int to = at + step;
+        if (at < 0 || to < 0 || to >= rack.getDevices().size()) {
+            return;
+        }
+        rack.moveDevice(device, to);
+        setSelected(device);
+        // the move's rebuild is posted (structureChanged); removeAll moves
+        // focus off the device and the focus-follows-selection listener then
+        // selects whichever device caught it — so after the rebuild, the
+        // selection and the keyboard both go back to the moved device (the
+        // 3.4 review: the javadoc promised this and nothing did it)
+        SwingUtilities.invokeLater(() -> {
+            if (rack.getDevices().contains(device)) {
+                setSelected(device);
+                java.awt.Component first = firstFocusable(device);
+                if (first != null) {
+                    first.requestFocusInWindow();
                 }
             }
-            DeviceCatalog.byId(device.getTypeId()).ifPresent(entry -> {
-                JMenuItem howTo = new JMenuItem(Bundle.RackPanel_howToUse(device.getTitle()));
-                howTo.addActionListener(a -> DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(
-                                org.nmox.studio.core.util.PlainDialogs.plain(Bundle.RackPanel_howToBody(entry.title(), entry.description(),
-                                        entry.usage().replace("\n", "\n\n")), "Message"),
-                                NotifyDescriptor.INFORMATION_MESSAGE)));
-                menu.add(howTo);
-                menu.addSeparator();
-            });
-            // manifest-backed devices open their configuration file straight
-            // from the faceplate: NPM-9000 → package.json, DYNAMO → its
-            // taskfile, ARTISAN → composer.json, GOVERNOR → .gas-snapshot
-            device.primaryManifest().ifPresent(manifest -> {
-                JMenuItem open = new JMenuItem(Bundle.RackPanel_openManifest(manifest.getName()));
-                open.addActionListener(a -> openInEditor(manifest));
-                menu.add(open);
-                menu.addSeparator();
-            });
-            JMenuItem remove = new JMenuItem(Bundle.RackPanel_removeDevice(device.getTitle()));
-            remove.setAccelerator(javax.swing.KeyStroke.getKeyStroke(
-                    java.awt.event.KeyEvent.VK_DELETE, 0));
-            remove.addActionListener(a -> rack.removeDevice(device));
-            menu.add(remove);
-            menu.show(device, e.getX(), e.getY());
+        });
+    }
+
+    /** The first control under {@code c} that takes keyboard focus, in component order. */
+    static java.awt.Component firstFocusable(java.awt.Component c) {
+        if (c != null && c.isFocusable() && c.isEnabled() && !(c instanceof RackDevice)) {
+            return c;
         }
+        if (c instanceof java.awt.Container k) {
+            for (java.awt.Component child : k.getComponents()) {
+                java.awt.Component hit = firstFocusable(child);
+                if (hit != null) {
+                    return hit;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Patch Cable…: the dialog, then the drag's own {@link Rack#connect}, and a word on the status line either way. */
+    void patchCableFrom(RackDevice device) {
+        CableDialogs.PatchPanel panel = new CableDialogs.PatchPanel(rack, device);
+        if (panel.isEmpty()) {
+            status(Bundle.RackPanel_patchNone(device.getBusName()));
+            return;
+        }
+        String ok = Bundle.RackPanel_patchOk();
+        org.openide.DialogDescriptor d = new org.openide.DialogDescriptor(panel,
+                Bundle.RackPanel_patchTitle(device.getBusName()), true,
+                new Object[]{ok, org.openide.DialogDescriptor.CANCEL_OPTION}, ok,
+                org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
+        if (!ok.equals(dialogs.apply(d))) {
+            return;
+        }
+        Cable made = panel.apply();
+        status(made == null ? Bundle.RackPanel_patchRefused()
+                : Bundle.RackPanel_patched(device.cableInWords(made)));
+    }
+
+    /**
+     * Unplug Cable…: the device's cables by name, one removed through
+     * {@link Rack#disconnect} (undoable). Cancel is the default button, since
+     * the gesture takes something away (the v1.98.0 safe default).
+     */
+    void unplugCableFrom(RackDevice device) {
+        CableDialogs.UnplugPanel panel = new CableDialogs.UnplugPanel(rack, device);
+        if (panel.isEmpty()) {
+            status(Bundle.RackPanel_unplugNone(device.getBusName()));
+            return;
+        }
+        String ok = Bundle.RackPanel_unplugOk();
+        org.openide.DialogDescriptor d = new org.openide.DialogDescriptor(panel,
+                Bundle.RackPanel_unplugTitle(device.getBusName()), true,
+                new Object[]{ok, org.openide.DialogDescriptor.CANCEL_OPTION},
+                org.openide.DialogDescriptor.CANCEL_OPTION,
+                org.openide.DialogDescriptor.DEFAULT_ALIGN, null, null);
+        if (!ok.equals(dialogs.apply(d))) {
+            return;
+        }
+        Object chosen = panel.cable.getSelectedItem();
+        Cable gone = panel.apply();
+        if (gone != null) {
+            status(Bundle.RackPanel_unplugged(String.valueOf(chosen)));
+        }
+    }
+
+    private static void status(String text) {
+        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                org.nmox.studio.core.util.PlainStatus.text(text));
     }
 
     /** The Project Studio file tree's open-file idiom: DataObject → OpenCookie. */

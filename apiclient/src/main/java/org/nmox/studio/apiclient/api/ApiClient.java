@@ -110,8 +110,106 @@ public final class ApiClient {
      */
     public static final int MAX_BODY_BYTES = 8 * 1024 * 1024;
 
-    /** Sends the request and captures timing, size, headers, and body. */
+    /** Whether a request carries the credential its auth type needs (3.4). */
+    public enum Credential {
+        /** No auth, or auth with a token in hand. */
+        PRESENT,
+        /** Bearer or Basic with no token: this machine's keychain holds none. */
+        MISSING,
+        /** An auth type a newer NMOX Studio wrote, which this version cannot apply. */
+        UNKNOWN_TYPE,
+        /** A token that is there but resolves to nothing: a {{variable}} unset in the environment. */
+        EMPTY,
+        /** Basic credentials with no user:password colon once resolved: no header would go out. */
+        NO_COLON,
+        /** An Authorization header row that resolves to no credential ("Bearer " and nothing). */
+        HEADER_EMPTY
+    }
+
+    /**
+     * Before 3.4 a Bearer or Basic request whose token was not in this
+     * machine's keychain — a teammate's clone of the shared
+     * {@code .nmoxapi.json}, where every token stays on its author's
+     * machine — was SENT with no Authorization header and no warning, so
+     * the server's 401 read like the API's fault. The send path asks this
+     * first and refuses anything but {@link Credential#PRESENT}.
+     */
+    public static Credential credential(Request request) {
+        if (request.foreignAuthType != null) {
+            return Credential.UNKNOWN_TYPE;
+        }
+        boolean needsToken = request.authType == AuthType.BEARER
+                || request.authType == AuthType.BASIC;
+        if (needsToken && (request.authToken == null || request.authToken.isBlank())) {
+            return Credential.MISSING;
+        }
+        return Credential.PRESENT;
+    }
+
+    /**
+     * The whole-body deadline. The request's 30 s timeout ends when the
+     * headers arrive; a server that then stops sending held the send lane
+     * forever (3.4). A slow download gets a minute, then speaks.
+     */
+    static final Duration BODY_DEADLINE = Duration.ofSeconds(60);
+
+    /**
+     * Sends the request and captures timing, size, headers, and body. A
+     * request without the credential its auth type needs is refused here
+     * too, never sent (the UI refuses first, in words; this is the floor).
+     */
+    /**
+     * {@link #credential(Request)} with the variables resolved, the way the
+     * send will see them. A token of {@code {{token}}} with the variable unset
+     * used to go out as {@code Bearer } and nothing, and a Basic credential
+     * without its colon went out with no header at all — each a 401 that
+     * read like the server's fault. A hand-made {@code Authorization}
+     * header row is the user's own literal and goes out as written, unless
+     * it resolves to a bare scheme word or nothing.
+     */
+    public static Credential credential(Request request, Map<String, String> vars) {
+        Credential stored = credential(request);
+        if (stored != Credential.PRESENT) {
+            return stored;
+        }
+        Map<String, String> v = vars == null ? Map.of() : vars;
+        if (request.authType == AuthType.BEARER || request.authType == AuthType.BASIC) {
+            String resolved = Variables.resolve(request.authToken, v).trim();
+            if (noCredential(resolved)) {
+                return Credential.EMPTY;
+            }
+            if (request.authType == AuthType.BASIC && !resolved.contains(":")) {
+                return Credential.NO_COLON;
+            }
+        }
+        for (Pair h : request.headers) {
+            if (h == null || !h.enabled || h.name == null
+                    || !Variables.resolve(h.name, v).trim().equalsIgnoreCase("Authorization")) {
+                continue;
+            }
+            String value = Variables.resolve(h.value == null ? "" : h.value, v).trim();
+            String credentialPart = value.replaceFirst("(?i)^(bearer|basic|token|digest)\\b", "").trim();
+            if (noCredential(credentialPart)) {
+                return Credential.HEADER_EMPTY;
+            }
+        }
+        return Credential.PRESENT;
+    }
+
+    /**
+     * Nothing to authenticate with: an empty string, or one still holding a
+     * {@code {{variable}}} the environment does not define ({@link
+     * Variables#resolve} leaves those as written, so they went out literally).
+     */
+    private static boolean noCredential(String resolved) {
+        return resolved.isEmpty() || !Variables.referenced(resolved).isEmpty();
+    }
+
     public ApiResponse send(Request request, Map<String, String> vars) {
+        Credential credential = credential(request, vars);
+        if (credential != Credential.PRESENT) {
+            return ApiResponse.failure(0, "not sent: credential " + credential);
+        }
         long start = System.nanoTime();
         try {
             HttpResponse<java.io.InputStream> response = client.send(build(request, vars),
@@ -119,9 +217,17 @@ public final class ApiClient {
             org.nmox.studio.core.http.HttpBodies.Capped capped;
             try (java.io.InputStream in = response.body()) {
                 capped = org.nmox.studio.core.http.HttpBodies.read(in, MAX_BODY_BYTES,
-                        charsetOf(response.headers().firstValue("content-type").orElse("")));
+                        charsetOf(response.headers().firstValue("content-type").orElse("")),
+                        BODY_DEADLINE);
                 // closing the stream aborts the rest of the transfer —
                 // we never drain what we won't show
+            } catch (org.nmox.studio.core.http.HttpBodies.StalledException
+                    | org.nmox.studio.core.http.HttpBodies.BrokenBodyException bodyFailed) {
+                // the server answered; its body did not arrive whole. Say
+                // that — HttpBodies names the shortfall — not "No route — closed"
+                long ms = (System.nanoTime() - start) / 1_000_000;
+                return ApiResponse.bodyBroken(ms, response.statusCode(),
+                        new LinkedHashMap<>(response.headers().map()), bodyFailed.getMessage());
             }
             long ms = (System.nanoTime() - start) / 1_000_000;
             Map<String, java.util.List<String>> headers = new LinkedHashMap<>(response.headers().map());

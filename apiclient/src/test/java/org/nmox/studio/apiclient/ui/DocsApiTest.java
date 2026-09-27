@@ -31,6 +31,9 @@ class DocsApiTest {
         assertThat(staged.collections.get(0).requests.get(0).name)
                 .isEqualTo(starter.collections.get(0).requests.get(0).name);
         assertThat(staged.collections.get(0).requests.get(0).url).isEqualTo("{{base_url}}/health");
+        // 3.4: the active environment is one person's state, not the file's;
+        // the window adopts the first environment, the starter's own
+        ApiClientTopComponent.adoptDefaultEnvironment(staged);
         assertThat(staged.activeEnvironment).isEqualTo(starter.activeEnvironment);
         assertThat(staged.active().variables.get("base_url")).isEqualTo("http://localhost:3000");
     }

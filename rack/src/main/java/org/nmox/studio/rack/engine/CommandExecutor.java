@@ -129,6 +129,9 @@ public final class CommandExecutor {
      * @param onLine  called for every output line (worker thread!)
      * @param onExit  called once with the exit code, or -1 if launch failed
      */
+    /** How long a stopped run's processes get to exit on SIGTERM before SIGKILL. */
+    static final long KILL_GRACE_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+
     public static Handle run(String tabName, File dir, Map<String, String> env,
             List<String> command, Consumer<String> onLine, IntConsumer onExit) {
 
@@ -213,14 +216,38 @@ public final class CommandExecutor {
             @Override
             public void kill() {
                 stopped.set(true);
-                process.descendants().forEach(ProcessHandle::destroy);
+                // the tree as it is NOW (3.4): a child that ignores SIGTERM is
+                // reparented to init once its shell dies, and a later
+                // descendants() no longer finds it — the escalation used to
+                // re-read the tree after the grace, see only the dead root, and
+                // leave a dev server holding its port while the UI said stopped
+                java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
+                process.descendants().forEach(tree::add);
+                tree.forEach(ProcessHandle::destroy);
                 process.destroy();
-                // escalate if it ignores SIGTERM
+                long deadline = System.nanoTime() + KILL_GRACE_NANOS;
                 Threads.daemon(() -> {
                     try {
-                        if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
+                        if (!process.waitFor(KILL_GRACE_NANOS, java.util.concurrent.TimeUnit.NANOSECONDS)) {
                             process.descendants().forEach(ProcessHandle::destroyForcibly);
                             process.destroyForcibly();
+                        }
+                        // whatever of the snapshot outlives the SAME grace dies, root
+                        // dead or not — a server shutting down cleanly on TERM keeps
+                        // the rest of its grace after its shell has already gone
+                        for (ProcessHandle h : tree) {
+                            long left = deadline - System.nanoTime();
+                            if (left > 0 && h.isAlive()) {
+                                try {
+                                    h.onExit().get(left, java.util.concurrent.TimeUnit.NANOSECONDS);
+                                } catch (java.util.concurrent.TimeoutException
+                                        | java.util.concurrent.ExecutionException ignore) {
+                                    // still alive at the deadline: forced below
+                                }
+                            }
+                            if (h.isAlive()) {
+                                h.destroyForcibly();
+                            }
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
@@ -235,14 +262,30 @@ public final class CommandExecutor {
                 process.descendants().forEach(tree::add);
                 tree.forEach(ProcessHandle::destroy);
                 process.destroy();
+                // ONE deadline for the whole tree, as kill() keeps (3.4 review):
+                // a shell root that dies on TERM at once made waitFor return
+                // immediately, and the sweep then SIGKILLed children still
+                // inside their grace, shutting down cleanly
+                long deadline = System.nanoTime()
+                        + java.util.concurrent.TimeUnit.MILLISECONDS.toNanos(graceMillis);
                 try {
                     if (!process.waitFor(graceMillis, java.util.concurrent.TimeUnit.MILLISECONDS)) {
                         tree.forEach(ProcessHandle::destroyForcibly);
                         process.destroyForcibly();
                         process.waitFor(1, java.util.concurrent.TimeUnit.SECONDS);
                     }
-                    // descendants may outlive the parent's exit; sweep them
+                    // descendants may outlive the parent's exit; each gets what is
+                    // left of the grace, then the sweep
                     for (ProcessHandle h : tree) {
+                        long left = deadline - System.nanoTime();
+                        if (left > 0) {
+                            try {
+                                h.onExit().get(left, java.util.concurrent.TimeUnit.NANOSECONDS);
+                            } catch (java.util.concurrent.TimeoutException
+                                    | java.util.concurrent.ExecutionException notYet) {
+                                // still alive at the deadline: the sweep below
+                            }
+                        }
                         if (h.isAlive()) {
                             h.destroyForcibly();
                         }

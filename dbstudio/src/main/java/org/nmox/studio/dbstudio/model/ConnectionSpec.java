@@ -52,4 +52,9 @@ public record ConnectionSpec(
     public ConnectionSpec withId(String newId) {
         return new ConnectionSpec(newId, name, engine, host, port, database, user, filePath, secure);
     }
+
+    /** Same connection, its SQLite file named differently (3.4: project-relative paths). */
+    public ConnectionSpec withFilePath(String newFilePath) {
+        return new ConnectionSpec(id, name, engine, host, port, database, user, newFilePath, secure);
+    }
 }

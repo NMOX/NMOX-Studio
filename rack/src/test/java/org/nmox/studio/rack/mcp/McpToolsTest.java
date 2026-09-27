@@ -38,7 +38,8 @@ class McpToolsTest {
 
     @AfterEach
     void drainRuns() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
     }
 
     @Test

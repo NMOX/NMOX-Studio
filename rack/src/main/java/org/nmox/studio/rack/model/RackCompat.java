@@ -34,7 +34,7 @@ import org.nmox.studio.core.util.Versions;
 public final class RackCompat {
 
     /** The patch format this install reads and writes ({@code "version"} in the file). */
-    public static final int FORMAT = 1;
+    public static final int FORMAT = RackIO.FORMAT;
 
     private RackCompat() {
     }

@@ -28,7 +28,8 @@ class WorkbenchA11yContractTest {
 
     @AfterEach
     void drain() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
     }
 
     private static void collect(Container c, List<Component> out) {

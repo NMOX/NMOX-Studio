@@ -2,8 +2,6 @@ package org.nmox.studio.dbstudio.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,10 +21,15 @@ import org.nmox.studio.dbstudio.model.DbEngine;
  * {@link ConnectionSpec} has no password field, and passwords live only
  * in the OS keychain via
  * {@link org.nmox.studio.dbstudio.engine.Passwords} (mirroring the
- * ATMOS rule and {@code .nmoxapi.json}'s policy). The console
- * {@link HistoryEntry history} and {@link SavedQuery saved queries}
- * added in this schema are the user's own SQL text — shareable by the
- * same standard as the queries themselves.
+ * ATMOS rule and {@code .nmoxapi.json}'s policy). The {@link SavedQuery
+ * saved queries} are shared like the connections. The console
+ * {@link HistoryEntry history} is not, since 3.4: it is one person's
+ * record of what they ran, rewritten on every Run, and it lives in
+ * {@link #personalJson} outside the project; a pre-3.4 file's copy is
+ * read once so the first load migrates it.
+ *
+ * <p>A file holding git's unresolved merge conflict, or an engine a newer
+ * NMOX wrote, loads read-only through {@link #loadWorkspaceGuarded} (3.4).
  *
  * <p>The engine takes an explicit directory {@link File} rather than a
  * project object — the UI decides what "the project dir" is, keeping
@@ -37,12 +40,17 @@ import org.nmox.studio.dbstudio.model.DbEngine;
  * state", never an exception; keys this version doesn't know are
  * ignored (org.json's natural behavior), and files written before the
  * history/saved keys existed load with those lists empty. The
- * {@code version} stamp stays {@code 1} — the schema only ever grew
- * additively.
+ * {@code version} stamp stays {@link #FORMAT_VERSION} while the schema only
+ * grows additively; a file stamped HIGHER came from a newer NMOX Studio
+ * and binds read-only (3.4), because the keys it added are exactly what
+ * this version would drop on its next save.
  */
 public final class DbWorkspaceIO {
 
     public static final String FILENAME = ".nmoxdb.json";
+
+    /** The {@code version} this build writes; a higher one binds read-only (3.4). */
+    public static final int FORMAT_VERSION = 1;
 
     /** How many history entries the file keeps — the newest 50. */
     public static final int HISTORY_CAP = 50;
@@ -110,7 +118,7 @@ public final class DbWorkspaceIO {
      */
     public static String toJson(Workspace workspace) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT_VERSION);
         JSONArray connections = new JSONArray();
         for (ConnectionSpec spec : workspace.connections()) {
             JSONObject cj = new JSONObject();
@@ -126,16 +134,11 @@ public final class DbWorkspaceIO {
             connections.put(cj);
         }
         root.put("connections", connections);
-
-        JSONArray history = new JSONArray();
-        for (HistoryEntry entry : cappedHistory(workspace.history())) {
-            JSONObject hj = new JSONObject();
-            hj.put("text", nz(entry.text()));
-            hj.put("engine", nz(entry.engine()));
-            hj.put("at", entry.at());
-            history.put(hj);
-        }
-        root.put("history", history);
+        // 3.4: no "history" here any more. The console history is one
+        // person's — every query they ran, SQL text included — and it was
+        // rewritten on every Run, so two people sharing the project
+        // conflicted on every merge over it. It lives in personalJson,
+        // outside the project; a pre-3.4 file's copy is read once.
 
         JSONArray saved = new JSONArray();
         for (SavedQuery query : dedupedByName(workspace.saved())) {
@@ -148,6 +151,56 @@ public final class DbWorkspaceIO {
         root.put("saved", saved);
 
         return root.toString(2);
+    }
+
+    /** The studio key this workspace's per-person document is filed under. */
+    public static final String PERSONAL_STUDIO = "db";
+
+    /**
+     * One person's console history (3.4), newest first and capped at
+     * {@value #HISTORY_CAP} — written to {@code core.util.PersonalState},
+     * never into the committed file.
+     */
+    public static String personalJson(List<HistoryEntry> history) {
+        JSONObject root = new JSONObject();
+        root.put("version", 1);
+        JSONArray array = new JSONArray();
+        for (HistoryEntry entry : cappedHistory(history)) {
+            JSONObject hj = new JSONObject();
+            hj.put("text", nz(entry.text()));
+            hj.put("engine", nz(entry.engine()));
+            hj.put("at", entry.at());
+            array.put(hj);
+        }
+        root.put("history", array);
+        String doc = root.toString(2);
+        // the document must fit the cap PersonalState reads it back with; a
+        // run of pasted multi-megabyte queries would otherwise write a file
+        // the next load refuses — so the OLDEST runs go first
+        while (!org.nmox.studio.core.util.PersonalState.fits(doc) && array.length() > 0) {
+            array.remove(array.length() - 1);
+            doc = root.toString(2);
+        }
+        return doc;
+    }
+
+    /**
+     * The history a {@link #personalJson} document holds, or null when
+     * there is no document or it does not parse (the caller keeps a
+     * pre-3.4 file's legacy copy then).
+     */
+    public static List<HistoryEntry> personalHistory(String personal) {
+        if (personal == null || personal.isBlank()) {
+            return null;
+        }
+        try {
+            return new ArrayList<>(cappedHistory(history(
+                    new JSONObject(personal).optJSONArray("history"))));
+        } catch (RuntimeException malformed) {
+            LOG.log(Level.WARNING, "Ignoring an unreadable personal DB Studio history ({0})",
+                    malformed.getMessage());
+            return null;
+        }
     }
 
     /** Parses connections; malformed input yields an empty list, never throws. */
@@ -179,21 +232,81 @@ public final class DbWorkspaceIO {
 
     /** The parse itself — throws on malformed JSON so guarded callers can react. */
     private static Workspace parseStrict(String json) {
-        JSONObject root = new JSONObject(json);
-        return new Workspace(
-                connections(root.optJSONArray("connections")),
-                cappedHistory(history(root.optJSONArray("history"))),
-                dedupedByName(saved(root.optJSONArray("saved"))));
+        return parseStrict(json, new Heal());
     }
 
-    private static List<ConnectionSpec> connections(JSONArray array) {
+    /**
+     * What a parse had to note (3.4): values a newer NMOX Studio wrote that
+     * this one cannot model (the workspace must then be bound read-only),
+     * and saved queries renamed so a keep-both merge keeps both.
+     */
+    static final class Heal {
+        final List<String> newer = new ArrayList<>();
+        final List<String> renamed = new ArrayList<>();
+    }
+
+    private static Workspace parseStrict(String json, Heal heal) {
+        JSONObject root = new JSONObject(json);
+        int version = root.optInt("version", FORMAT_VERSION);
+        if (version > FORMAT_VERSION) {
+            // a newer NMOX Studio's file (3.4): what it added cannot be told
+            // from what it kept, so none of it is saved over
+            heal.newer.add("version " + version);
+        }
+        return new Workspace(
+                connections(root.optJSONArray("connections"), heal),
+                // legacy per-person field: read so a pre-3.4 file migrates
+                cappedHistory(history(root.optJSONArray("history"))),
+                healSaved(saved(root.optJSONArray("saved")), heal));
+    }
+
+    /**
+     * The parse-time heal for saved queries (3.4; the v2.9.0 law). Names
+     * are unique at runtime — saving under an existing name replaces it —
+     * but a keep-both git merge of {@code .nmoxdb.json} can leave two
+     * queries with one name, and until 3.4 the parse kept the LAST and
+     * dropped the first with no word to anyone. Now the first keeps its
+     * name and a later one with DIFFERENT text is renamed {@code "name
+     * (2)"} (the next free number), noted so the studio can say so; an
+     * exact copy — same text, same engine — is only a duplicate line, and
+     * collapses.
+     */
+    static List<SavedQuery> healSaved(List<SavedQuery> queries, Heal heal) {
+        java.util.Set<String> taken = new java.util.HashSet<>();
+        for (SavedQuery query : queries) {
+            taken.add(query.name());
+        }
+        Map<String, SavedQuery> firstByName = new LinkedHashMap<>();
+        List<SavedQuery> out = new ArrayList<>();
+        for (SavedQuery query : queries) {
+            SavedQuery first = firstByName.putIfAbsent(query.name(), query);
+            if (first == null) {
+                out.add(query);
+                continue;
+            }
+            if (first.text().equals(query.text()) && first.engine().equals(query.engine())) {
+                continue; // the same query twice: nothing to keep apart
+            }
+            String name = query.name();
+            String renamed = name;
+            for (int n = 2; taken.contains(renamed); n++) {
+                renamed = name + " (" + n + ")";
+            }
+            taken.add(renamed);
+            heal.renamed.add(name + " → " + renamed);
+            out.add(new SavedQuery(renamed, query.text(), query.engine()));
+        }
+        return out;
+    }
+
+    private static List<ConnectionSpec> connections(JSONArray array, Heal heal) {
         List<ConnectionSpec> specs = new ArrayList<>();
         java.util.Set<String> seenIds = new java.util.HashSet<>();
         if (array == null) {
             return specs;
         }
         for (int i = 0; i < array.length(); i++) {
-            ConnectionSpec spec = connection(array.getJSONObject(i));
+            ConnectionSpec spec = connection(array.getJSONObject(i), heal);
             if (spec != null) {
                 // the missing-id heal above has a twin: a keep-both git
                 // merge can DUPLICATE an id, and Passwords is keyed by it
@@ -243,12 +356,17 @@ public final class DbWorkspaceIO {
         return queries;
     }
 
-    private static ConnectionSpec connection(JSONObject cj) {
+    private static ConnectionSpec connection(JSONObject cj, Heal heal) {
         DbEngine engine;
+        String engineName = cj.optString("engine", "");
         try {
-            engine = DbEngine.valueOf(cj.optString("engine", ""));
+            engine = DbEngine.valueOf(engineName);
         } catch (IllegalArgumentException unknownEngine) {
-            // an engine from a newer NMOX: skip this connection, keep the rest
+            // an engine from a newer NMOX: this version cannot model the
+            // connection, so it is not shown — and it is NOTED, because the
+            // next save used to drop it for everyone who shares the file
+            // (3.4): a noted workspace is bound read-only instead
+            heal.newer.add("engine " + engineName);
             return null;
         }
         String id = cj.optString("id", "");
@@ -276,7 +394,14 @@ public final class DbWorkspaceIO {
      * must not wipe the user's query shelf.
      */
     public static void save(File dir, List<ConnectionSpec> specs) throws IOException {
-        Workspace existing = readWorkspace(new File(dir, FILENAME));
+        LoadOutcome guarded = loadWorkspaceGuarded(dir);
+        if (guarded.readOnly()) {
+            // conflicted, unreadable or newer (3.4): what "the existing
+            // saved queries" are cannot be known, so nothing is written
+            throw new IOException(FILENAME + " in " + dir
+                    + " must not be written (unreadable, conflicted or newer)");
+        }
+        Workspace existing = guarded.workspace();
         save(dir, new Workspace(specs, existing.history(), existing.saved()));
     }
 
@@ -326,7 +451,27 @@ public final class DbWorkspaceIO {
      * every saved query and the whole history, with no backup. Measured
      * on an over-cap file: 9,437,184 bytes became 71.
      */
-    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable,
+            boolean conflicted, boolean newerFormat, List<String> renamedSaved) {
+
+        public LoadOutcome {
+            renamedSaved = renamedSaved == null ? List.of() : List.copyOf(renamedSaved);
+        }
+
+        /** The pre-3.4 shape: no conflict, nothing from a newer version, no renames. */
+        public LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+            this(workspace, backup, unreadable, false, false, List.of());
+        }
+
+        /**
+         * True when the file exists and must not be written (3.4): it could
+         * not be read, it holds git's unresolved merge conflict, or it names
+         * an engine a newer NMOX Studio wrote, which the next save would
+         * drop for everyone.
+         */
+        public boolean readOnly() {
+            return unreadable || conflicted || newerFormat;
+        }
     }
 
     /**
@@ -359,8 +504,24 @@ public final class DbWorkspaceIO {
         if (json.isBlank()) {
             return new LoadOutcome(Workspace.empty(), null, false); // nothing to lose
         }
+        if (org.nmox.studio.core.util.MergeConflicts.hasMarkers(json)) {
+            // git's unresolved merge (3.4): both people's connections and
+            // queries are IN this file, so it is neither corrupt nor ours
+            // to repair — no .bak, no parse; the studio binds read-only and
+            // the watcher reloads it once git's conflict is resolved
+            LOG.log(Level.WARNING, "{0} has unresolved merge conflicts; read-only until resolved",
+                    file);
+            return new LoadOutcome(Workspace.empty(), null, false, true, false, List.of());
+        }
         try {
-            return new LoadOutcome(parseStrict(json), null, false);
+            Heal heal = new Heal();
+            Workspace parsed = parseStrict(json, heal);
+            if (!heal.newer.isEmpty()) {
+                LOG.log(Level.WARNING, "{0} holds values a newer NMOX Studio wrote ({1}); read-only",
+                        new Object[]{file, heal.newer});
+            }
+            return new LoadOutcome(parsed, null, false, false, !heal.newer.isEmpty(),
+                    heal.renamed);
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
@@ -368,13 +529,14 @@ public final class DbWorkspaceIO {
         }
     }
 
-    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    /**
+     * Copies the corrupt file aside — {@code <name>.bak}, or the first free
+     * numbered sibling when an earlier rescue holds that name (3.4: a
+     * second rescue used to overwrite the first); null when even that fails.
+     */
     private static File backupCorrupt(File file) {
-        File backup = new File(file.getParentFile(), file.getName() + ".bak");
         try {
-            Files.copy(file.toPath(), backup.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return backup;
+            return org.nmox.studio.core.util.Backups.copyAside(file);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Could not back up corrupt " + file, e);
             return null;

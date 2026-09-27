@@ -49,7 +49,8 @@ import javax.swing.JPanel;
     "OverviewPanel_flowSection=FLOW — cards finished per day, last {0} days",
     "OverviewPanel_blockersSection=BLOCKER REGISTER — every blocker has an owner and an unblock action",
     "OverviewPanel_noBlockers=No blocked cards — nothing is waiting on anyone.",
-    "OverviewPanel_timeSection=TIME — clocked today {0} · last 7 days {1}",
+    "# {0} - whose clock this is (the OS login); {1}, {2} - durations",
+    "OverviewPanel_timeSectionYours=YOUR TIME ({0}) — clocked today {1} · last 7 days {2}",
     "OverviewPanel_epicsSection=EPICS — labels in use, busiest first",
     "OverviewPanel_attentionSection=NEEDS ATTENTION — oldest unfinished cards",
     "OverviewPanel_nothingWaiting=Nothing waiting — the board is clear.",
@@ -192,7 +193,9 @@ final class OverviewPanel extends JPanel {
         add(Box.createVerticalStrut(10));
 
         if (!s.timeEntries().isEmpty()) {
-            add(sectionLabel(Bundle.OverviewPanel_timeSection(
+            // the current user's clock only (3.4): a teammate's sessions
+            // on this board are theirs, and the heading names whose these are
+            add(sectionLabel(Bundle.OverviewPanel_timeSectionYours(TaskBoard.currentUser(),
                     BoardStats.duration(s.trackedTodayMs()),
                     BoardStats.duration(s.trackedWeekMs()))));
             add(Box.createVerticalStrut(4));
