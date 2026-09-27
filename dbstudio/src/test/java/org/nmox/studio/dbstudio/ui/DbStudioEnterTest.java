@@ -86,7 +86,7 @@ class DbStudioEnterTest {
     @DisplayName("the double-click and Enter share the peek: a table node peeks on either")
     void peekIsShared() throws Exception {
         String src = Files.readString(Path.of("src/main/java/org/nmox/studio/dbstudio/ui/DbStudioTopComponent.java"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8).replace("\r\n", "\n");
         int at = src.indexOf("private void enterOnTree()");
         String body = src.substring(at, src.indexOf("\n    }\n", at));
         assertThat(body).contains("instanceof TableInfo info").contains("peek(info);");

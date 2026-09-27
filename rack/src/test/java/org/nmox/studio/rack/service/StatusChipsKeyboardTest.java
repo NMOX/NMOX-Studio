@@ -104,8 +104,9 @@ class StatusChipsKeyboardTest {
                     StandardCharsets.UTF_8);
             assertThat(src).as(action + " reuses the chip's gated path").contains("GitStatusLine.fromTeamMenu(");
         }
+        // a Windows checkout has CRLF line ends: the body search below is in LF
         String line = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
-                StandardCharsets.UTF_8);
+                StandardCharsets.UTF_8).replace("\r\n", "\n");
         int from = line.indexOf("static void fromTeamMenu(");
         String body = line.substring(from, line.indexOf("\n    }\n", from));
         assertThat(body).as("the boot guard precedes the chip's verbs")

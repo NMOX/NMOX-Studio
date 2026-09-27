@@ -77,9 +77,12 @@ class SessionSnapshotWriteTest {
         Files.createDirectories(sessions);
         File file = sessions.resolve("p.json").toFile();
         Files.writeString(file.toPath(), "{\"good\":true}");
-        // the directory refuses new files: an atomic write cannot even make its temp
+        // the directory refuses new files: an atomic write cannot even make its temp.
+        // Windows has no read-only directory (setWritable answers false there), so
+        // the case cannot be made on that lane
         RackService.snapshotFailing = false;
-        assertThat(sessions.toFile().setWritable(false)).isTrue();
+        org.junit.jupiter.api.Assumptions.assumeTrue(sessions.toFile().setWritable(false),
+                "this file system cannot make a directory read-only");
         try {
             RackService.writeSnapshot(file, "{\"good\":false}");
             // rewritten every few seconds while anything runs: a failing disk
@@ -115,7 +118,9 @@ class SessionSnapshotWriteTest {
     @Test
     @DisplayName("Gate: the snapshot is written through AtomicFiles, never a truncating writeString")
     void writeIsAtomic() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/service/RackService.java"));
+        // a Windows checkout has CRLF line ends: the body search below is in LF
+        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/service/RackService.java"))
+                .replace("\r\n", "\n");
         int start = src.indexOf("static void writeSnapshot(");
         String body = src.substring(start, src.indexOf("\n    }\n", start));
         assertThat(body).contains("AtomicFiles.writeString(").doesNotContain("nio.file.Files.writeString(");
