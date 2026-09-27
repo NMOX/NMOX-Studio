@@ -129,6 +129,9 @@ public final class CommandExecutor {
      * @param onLine  called for every output line (worker thread!)
      * @param onExit  called once with the exit code, or -1 if launch failed
      */
+    /** How long a stopped run's processes get to exit on SIGTERM before SIGKILL. */
+    static final long KILL_GRACE_NANOS = java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+
     public static Handle run(String tabName, File dir, Map<String, String> env,
             List<String> command, Consumer<String> onLine, IntConsumer onExit) {
 
@@ -222,14 +225,26 @@ public final class CommandExecutor {
                 process.descendants().forEach(tree::add);
                 tree.forEach(ProcessHandle::destroy);
                 process.destroy();
+                long deadline = System.nanoTime() + KILL_GRACE_NANOS;
                 Threads.daemon(() -> {
                     try {
-                        if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
+                        if (!process.waitFor(KILL_GRACE_NANOS, java.util.concurrent.TimeUnit.NANOSECONDS)) {
                             process.descendants().forEach(ProcessHandle::destroyForcibly);
                             process.destroyForcibly();
                         }
-                        // whatever of the snapshot outlived the grace, root dead or not
+                        // whatever of the snapshot outlives the SAME grace dies, root
+                        // dead or not — a server shutting down cleanly on TERM keeps
+                        // the rest of its grace after its shell has already gone
                         for (ProcessHandle h : tree) {
+                            long left = deadline - System.nanoTime();
+                            if (left > 0 && h.isAlive()) {
+                                try {
+                                    h.onExit().get(left, java.util.concurrent.TimeUnit.NANOSECONDS);
+                                } catch (java.util.concurrent.TimeoutException
+                                        | java.util.concurrent.ExecutionException ignore) {
+                                    // still alive at the deadline: forced below
+                                }
+                            }
                             if (h.isAlive()) {
                                 h.destroyForcibly();
                             }
