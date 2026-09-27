@@ -38,7 +38,7 @@ import org.openide.DialogDisplayer;
     "ChannelListDialog_showingFirst=Showing first {0} of {1} channels",
     "ChannelListDialog_count={0,choice,0#{0} channels|1#{0} channel|1<{0} channels}",
     "ChannelListDialog_filterLabel=Filter:",
-    "ChannelListDialog_title=Channels on {0} (double-click to join)",
+    "ChannelListDialog_title=Channels on {0} (double-click or press Enter to join)",
     "ChannelListDialog_colChannel=Channel",
     "ChannelListDialog_colUsers=Users",
     "ChannelListDialog_colTopic=Topic"
@@ -48,26 +48,12 @@ final class ChannelListDialog {
     private ChannelListDialog() {
     }
 
-    /** Opens the browser; {@code join} is called with a channel name on double-click. */
+    /** Opens the browser; {@code join} is called with a channel name on double-click or Enter. */
     static void show(String network, List<ChannelListCollector.Row> rows,
             int totalSeen, Consumer<String> join) {
-        Model model = new Model(rows);
-        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
-        table.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_channels());
-        TableRowSorter<Model> sorter = new TableRowSorter<>(model);
-        table.setRowSorter(sorter);
-        table.getColumnModel().getColumn(0).setPreferredWidth(180);
-        table.getColumnModel().getColumn(1).setPreferredWidth(60);
-        table.getColumnModel().getColumn(2).setPreferredWidth(420);
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 && table.getSelectedRow() >= 0) {
-                    int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
-                    join.accept(rows.get(modelRow).name());
-                }
-            }
-        });
+        JTable table = channelTable(rows, join);
+        @SuppressWarnings("unchecked")
+        TableRowSorter<Model> sorter = (TableRowSorter<Model>) table.getRowSorter();
 
         JTextField filter = new JTextField();
         filter.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_filterChannels());
@@ -122,6 +108,38 @@ final class ChannelListDialog {
         dd.setModal(false);
         dd.setOptions(new Object[] {DialogDescriptor.CLOSED_OPTION});
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+    }
+
+    /**
+     * The channel table (package-private for tests): sorted, plain-text, and
+     * joining the selected channel on a double-click or on Enter (3.4 — the
+     * double-click was the only way in, and the table's own Enter only moves
+     * down a row).
+     */
+    static JTable channelTable(List<ChannelListCollector.Row> rows, Consumer<String> join) {
+        Model model = new Model(rows);
+        JTable table = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable(model));
+        table.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_channels());
+        table.setRowSorter(new TableRowSorter<>(model));
+        table.getColumnModel().getColumn(0).setPreferredWidth(180);
+        table.getColumnModel().getColumn(1).setPreferredWidth(60);
+        table.getColumnModel().getColumn(2).setPreferredWidth(420);
+        Runnable joinSelected = () -> {
+            if (table.getSelectedRow() >= 0) {
+                int modelRow = table.convertRowIndexToModel(table.getSelectedRow());
+                join.accept(rows.get(modelRow).name());
+            }
+        };
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    joinSelected.run();
+                }
+            }
+        });
+        org.nmox.studio.core.util.KeyboardAccess.onEnter(table, joinSelected);
+        return table;
     }
 
     /** Three read-only columns over the collector's rows. */

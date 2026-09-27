@@ -161,7 +161,7 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_cancelTooltip=Best-effort cancel of the running statement",
     "DbStudioTopComponent_saveQueryTooltip=Save the console text as a named query (.nmoxdb.json)",
     "DbStudioTopComponent_savedComboTooltip=Saved queries — selecting one loads it into the console",
-    "DbStudioTopComponent_historyTooltip=Double-click an entry to load it back into the console",
+    "DbStudioTopComponent_historyTooltip=Double-click an entry, or press Enter, to load it back into the console",
     "DbStudioTopComponent_loadedFromHistory=Loaded from history",
     "DbStudioTopComponent_history=History",
     "DbStudioTopComponent_peekOtherDatabase=Console queries \"{0}\" — Edit the connection''s database to \"{1}\" to query it",
@@ -480,6 +480,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 }
             }
         });
+        // Enter does what the double-click does (3.4): peek a table, and on
+        // any other node open or close it, the tree's own gesture
+        org.nmox.studio.core.util.KeyboardAccess.onEnter(tree, this::enterOnTree);
         panel.add(new JScrollPane(tree), BorderLayout.CENTER);
 
         JPanel tools = new JPanel(new java.awt.GridLayout(2, 1));
@@ -598,11 +601,13 @@ public final class DbStudioTopComponent extends TopComponent {
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 int index = historyList.locationToIndex(e.getPoint());
                 if (e.getClickCount() == 2 && index >= 0) {
-                    console.setText(historyModel.get(index).text());
-                    status(Bundle.DbStudioTopComponent_loadedFromHistory(), Color.GRAY);
+                    loadHistory(index);
                 }
             }
         });
+        // Enter loads the selected entry, as the double-click does (3.4)
+        org.nmox.studio.core.util.KeyboardAccess.onEnter(historyList,
+                () -> loadHistory(historyList.getSelectedIndex()));
         // History stays the LAST tab; result tabs are inserted before it per run
         resultsTabs.addTab(Bundle.DbStudioTopComponent_history(), new JScrollPane(historyList));
         return resultsTabs;
@@ -616,6 +621,30 @@ public final class DbStudioTopComponent extends TopComponent {
      * that the spec isn't aimed at, fill the console but explain instead of
      * silently querying the wrong database.
      */
+    /** A history entry back into the console — the double-click's and Enter's one body. */
+    private void loadHistory(int index) {
+        if (index < 0 || index >= historyModel.size()) {
+            return;
+        }
+        console.setText(historyModel.get(index).text());
+        status(Bundle.DbStudioTopComponent_loadedFromHistory(), Color.GRAY);
+    }
+
+    /** Enter on the connection tree: a table peeks (the double-click), anything else opens or closes. */
+    private void enterOnTree() {
+        TreePath path = tree.getSelectionPath();
+        if (path == null) {
+            return;
+        }
+        if (((DefaultMutableTreeNode) path.getLastPathComponent()).getUserObject() instanceof TableInfo info) {
+            peek(info);
+        } else if (tree.isExpanded(path)) {
+            tree.collapsePath(path);
+        } else {
+            tree.expandPath(path);
+        }
+    }
+
     private void peek(TableInfo info) {
         ConnectionSpec spec = selectedConnection();
         if (spec == null || running) {
