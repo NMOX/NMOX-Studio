@@ -776,7 +776,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
         }
         // the drag's wire, as a choice from the legal targets (3.4) — the
         // keyboard's W reaches the same, and so does this row
-        JMenuItem wire = new JMenuItem(FlowCanvas.wireToLabel());
+        JMenuItem wire = new JMenuItem(org.nmox.studio.core.util.PlainText.plain(FlowCanvas.wireToLabel()));
         wire.addActionListener(e -> canvas.wireFrom(node));
         menu.add(wire);
         JMenuItem remove = new JMenuItem(Bundle.InfraDesigner_removeFromDesign());
