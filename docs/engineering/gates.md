@@ -116,6 +116,7 @@ Every control speaks its name; a screen reader hears the thing, not the role.
 - [`InputsNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/InputsNamedGateTest.java): Every text field, password field, combo and spinner is named or labelled (v2.85.0: 46 were not).
 - [`TextAreasNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/TextAreasNamedGateTest.java): Every text area carries an accessible name (v2.85.0).
 - [`CollectionsNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/CollectionsNamedGateTest.java): Every table, list and tree is named or labelled (v2.85.0).
+- [`RenderersNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/RenderersNamedGateTest.java): Every cell renderer not built on a label names itself with the words it paints, so a row is never read as blank (3.4.0: the Task Board's cards were empty text fields to VoiceOver).
 - [`A11yInputNamesGateTest`](../../application/src/test/java/org/nmox/studio/application/A11yInputNamesGateTest.java): No studio adds an input without also naming one (v2.38.0).
 - [`LabelNamesAreTheirTextGateTest`](../../ui/src/test/java/org/nmox/studio/ui/actions/LabelNamesAreTheirTextGateTest.java): A label with text is named by its text, not by a constant a screen reader would read instead (v2.85.0).
 
