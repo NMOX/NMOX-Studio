@@ -235,6 +235,8 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_reloaded=Reloaded {0}",
     "DbStudioTopComponent_reloadedDetail=The file changed outside DB Studio — connections, history and saved queries follow it.",
     "DbStudioTopComponent_notWrittenReloaded={0} changed on disk, so your last change was not written over it — the file was reloaded as it is now; make the change again",
+    "DbStudioTopComponent_connectionKept={0} changed on disk, so it was read again rather than written over — {1} is kept and written onto the version read",
+    "DbStudioTopComponent_connectionWaiting={0} is not saved in {1} yet — it is kept here and written as soon as the file can be; its password stays in the keychain",
     "DbStudioTopComponent_loading=Loading…",
     "DbStudioTopComponent_disconnected=Disconnected {0}",
     "DbStudioTopComponent_connectingTo=Connecting to {0}…",
@@ -1391,6 +1393,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         specs.add(spec);
+        holdUntilSaved(spec);
         saveWorkspace();
         rebuildTree();
         publishSearch();
@@ -1468,6 +1471,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         specs.add(spec);
+        holdUntilSaved(spec);
         saveWorkspace();
         rebuildTree();
         publishSearch();
@@ -2157,6 +2161,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         specs.add(spec);
+        holdUntilSaved(spec);
         saveWorkspace();
         rebuildTree();
         publishSearch();
@@ -2176,6 +2181,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         specs.replaceAll(s -> s.id().equals(spec.id()) ? updated : s);
+        holdUntilSaved(updated);
         // settings changed: the old backend and its container cache are stale
         DbBackend stale = backends.remove(spec.id());
         if (stale != null) {
@@ -2214,6 +2220,8 @@ public final class DbStudioTopComponent extends TopComponent {
             Passwords.delete(spec.id()); // keyring may block — off the EDT
         });
         specs.removeIf(s -> s.id().equals(spec.id()));
+        // removed before its save landed: it must not come back with a reload
+        heldConnections.removeIf(h -> h.spec().id().equals(spec.id()));
         containerCache.remove(spec.id());
         if (spec.id().equals(activeSpecId)) {
             activeSpecId = null;
@@ -2281,6 +2289,69 @@ public final class DbStudioTopComponent extends TopComponent {
 
     private File boundDir() {
         return boundDir != null ? boundDir : projectDir();
+    }
+
+    /** A connection confirmed in a dialog, and the workspace directory it was confirmed for. */
+    private record HeldConnection(File dir, ConnectionSpec spec) {
+    }
+
+    /**
+     * Connections confirmed in a dialog whose save has not landed yet (3.4).
+     * A save that finds somebody else's bytes on disk writes nothing and the
+     * workspace is read again — and before this list, the read replaced the
+     * connection the user had just confirmed while its password stayed in
+     * the keychain under an id no file named. It is held here instead,
+     * written onto the version on disk, and leaves only when a write that
+     * carries it lands. EDT-confined.
+     */
+    private final List<HeldConnection> heldConnections = new ArrayList<>();
+    /** Held connections already said as waiting — said once, not once per reload. */
+    private final java.util.Set<HeldConnection> heldSaid = new java.util.HashSet<>();
+
+    /** EDT: {@code spec} was just confirmed; it is held until a write carries it. */
+    private void holdUntilSaved(ConnectionSpec spec) {
+        File dir = boundDir();
+        heldConnections.removeIf(h -> h.dir().equals(dir) && h.spec().id().equals(spec.id()));
+        heldConnections.add(new HeldConnection(dir, spec));
+    }
+
+    /**
+     * EDT, inside {@link #applyReloadedWorkspace}: every connection held for
+     * {@code dir} goes onto the freshly read list when the file may be
+     * written — a new one added, an edited one replacing its older self —
+     * and a write carries them. On a read-only file — or for another
+     * project's workspace — they stay held, and the names not said before
+     * are returned to be said, with the promise that the password stays too.
+     */
+    private List<String> writeHeldConnectionsOnto(File dir, boolean readOnly) {
+        List<String> waiting = new ArrayList<>();
+        for (HeldConnection held : heldConnections) {
+            if (!readOnly && held.dir().equals(dir)) {
+                ConnectionSpec spec = held.spec();
+                specs.removeIf(s -> s.id().equals(spec.id()));
+                specs.add(spec);
+            } else if (heldSaid.add(held)) {
+                waiting.add(held.spec().name());
+            }
+        }
+        return waiting;
+    }
+
+    /** EDT: the held connections a read could not take, said — last, so the status line keeps it. */
+    private void sayHeldWaiting(List<String> waiting) {
+        if (waiting.isEmpty()) {
+            return;
+        }
+        String said = Bundle.DbStudioTopComponent_connectionWaiting(
+                String.join(", ", waiting), DbWorkspaceIO.FILENAME);
+        status(said, Color.GRAY);
+        balloon(said, null, false);
+    }
+
+    /** Save lane → EDT: a write of {@code dir} carrying these connections landed. */
+    private void heldConnectionsLanded(List<HeldConnection> carried) {
+        heldConnections.removeAll(carried);
+        heldSaid.removeAll(carried);
     }
 
     private File projectDir() {
@@ -2387,6 +2458,11 @@ public final class DbStudioTopComponent extends TopComponent {
             balloon(readOnlyTextFor(outcome), null, false);
         }
         specs.addAll(workspace.connections());
+        // 3.4: a connection confirmed in a dialog whose save was refused is
+        // not lost with the list it was added to — it goes onto this one
+        List<String> heldWaiting = writeHeldConnectionsOnto(dir, outcome.readOnly());
+        boolean carryHeld = !outcome.readOnly() && heldConnections.stream()
+                .anyMatch(h -> h.dir().equals(dir));
         // this person's own history (3.4); with none yet, a pre-3.4 file's
         // legacy rows, which the next save moves into this person's state
         persistedHistory = new ArrayList<>(personalHistory != null
@@ -2438,6 +2514,10 @@ public final class DbStudioTopComponent extends TopComponent {
                 offerDockerConnections();
             }
         }
+        sayHeldWaiting(heldWaiting);
+        if (carryHeld) {
+            saveWorkspace(); // the held connections, written onto the version read
+        }
     }
 
     /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
@@ -2467,7 +2547,14 @@ public final class DbStudioTopComponent extends TopComponent {
         // person's copy first is what moves a pre-3.4 file's rows over
         // before the shared write drops them
         savePersonal();
-        SAVES.save(() -> writeSnapshot(file, json));
+        File dir = boundDir();
+        List<HeldConnection> carried = new ArrayList<>();
+        for (HeldConnection held : heldConnections) {
+            if (held.dir().equals(dir)) {
+                carried.add(held);
+            }
+        }
+        SAVES.save(() -> writeSnapshot(file, json, carried));
     }
 
     /**
@@ -2475,14 +2562,14 @@ public final class DbStudioTopComponent extends TopComponent {
      * lane-ordered watcher verdict can never see the write without the
      * stamp.
      */
-    private void writeSnapshot(File file, String json) {
+    private void writeSnapshot(File file, String json, List<HeldConnection> carried) {
         // 3.4: asked here, on the lane, immediately before the write — the
         // load was the only check, so a conflict landing after it was
         // replaced by this window's pre-merge lists
         org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = externalEdits.beforeWrite(
                 file, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
         if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
-            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk, carried));
             return;
         }
         try {
@@ -2490,6 +2577,9 @@ public final class DbStudioTopComponent extends TopComponent {
             externalEdits.recordOwn(
                     org.nmox.studio.dbstudio.io.ExternalEdits.Stamp.of(file));
             saveFailureNotified = false;
+            if (!carried.isEmpty()) {
+                SwingUtilities.invokeLater(() -> heldConnectionsLanded(carried));
+            }
         } catch (Exception ex) {
             // a failed save never interrupts editing — but never lose work silently
             java.util.logging.Logger.getLogger(DbStudioTopComponent.class.getName())
@@ -2511,11 +2601,24 @@ public final class DbStudioTopComponent extends TopComponent {
      * binds read-only and says so itself — and a merely changed one names
      * the change that could not be written, so it does not look saved.
      */
-    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk,
+            List<HeldConnection> carried) {
         deferredExternalStamp = null;
-        reloadWorkspace();
+        reloadWorkspace(); // writes the held connections onto the version it reads (3.4)
         if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
-            String said = Bundle.DbStudioTopComponent_notWrittenReloaded(DbWorkspaceIO.FILENAME);
+            // "make the change again" would be untrue of a confirmed connection:
+            // that one is kept and written onto the version read, so say THAT
+            String said;
+            if (carried.isEmpty()) {
+                said = Bundle.DbStudioTopComponent_notWrittenReloaded(DbWorkspaceIO.FILENAME);
+            } else {
+                List<String> names = new ArrayList<>();
+                for (HeldConnection held : carried) {
+                    names.add(held.spec().name());
+                }
+                said = Bundle.DbStudioTopComponent_connectionKept(
+                        DbWorkspaceIO.FILENAME, String.join(", ", names));
+            }
             status(said, Color.GRAY);
             balloon(said, null, false);
         }
