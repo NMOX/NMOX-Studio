@@ -20,11 +20,23 @@ import org.openide.NotifyDescriptor;
 /**
  * A green-on-black LCD panel, one or more lines. Multi-line displays
  * scroll like a tiny console; single-line displays show a status string.
- * Optionally editable via double-click (used for URL entry and the like).
- * To assistive technology it is a read-only LABEL (never focusable):
- * the name says what the panel shows (explicit name, else the edit
- * prompt), the description is the text currently on the glass.
+ * Optionally editable (used for URL entry and the like).
+ * To assistive technology it is a LABEL: the name says what the panel
+ * shows (explicit name, else the edit prompt), the description is the
+ * text currently on the glass.
+ *
+ * <p>A read-only panel is status and stays out of the Tab order. An
+ * editable one is a control (3.4): before, editing was a double-click and
+ * nothing else, so a SOLDER command or a TAIL path could not be set
+ * without a mouse. It now takes focus, paints the rack's focus ring, opens
+ * the same editor on Enter or F2 as on a double-click, and offers that
+ * edit as its accessible action. One path, {@link #edit()}, serves all
+ * four, so no input channel can diverge from another.
  */
+@org.openide.util.NbBundle.Messages({
+    "LcdDisplay_editTip=Double-click, or press Enter, to edit",
+    "LcdDisplay_editAction=Edit"
+})
 public class LcdDisplay extends JComponent implements javax.accessibility.Accessible {
 
     /** One scrolled line and the color it glows in (null = panel default). */
@@ -49,23 +61,77 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (editable && e.getClickCount() == 2) {
-                    NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine(editPrompt, editPrompt);
-                    line.setInputText(text);
-                    if (DialogDisplayer.getDefault().notify(line) == NotifyDescriptor.OK_OPTION) {
-                        setText(line.getInputText().trim());
-                        for (Runnable r : new ArrayList<>(editListeners)) {
-                            r.run();
-                        }
-                    }
+                    edit();
                 }
             }
         });
+        // the focus ring is painted state, so focus changes must repaint
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
+        var im = getInputMap(WHEN_FOCUSED);
+        im.put(javax.swing.KeyStroke.getKeyStroke("ENTER"), "edit");
+        im.put(javax.swing.KeyStroke.getKeyStroke("F2"), "edit");
+        getActionMap().put("edit", new javax.swing.AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                edit();
+            }
+        });
+    }
+
+    /**
+     * Where the editor dialog is shown. Production asks the platform's
+     * {@link DialogDisplayer}; tests answer it, since a headless JVM has no
+     * dialog to type into.
+     */
+    static java.util.function.Function<NotifyDescriptor.InputLine, Object> prompter =
+            line -> DialogDisplayer.getDefault().notify(line);
+
+    /** Puts {@link #prompter} back to production; tests restore through here. */
+    static void resetPrompter() {
+        prompter = line -> DialogDisplayer.getDefault().notify(line);
+    }
+
+    /**
+     * Opens the editor, exactly as a double-click does: the one path every
+     * gesture (mouse, Enter, F2, the accessible action) takes. A read-only
+     * panel ignores it. Returns whether a new value was accepted.
+     */
+    public boolean edit() {
+        if (!editable) {
+            return false;
+        }
+        NotifyDescriptor.InputLine line = new NotifyDescriptor.InputLine(editPrompt, editPrompt);
+        line.setInputText(text);
+        if (prompter.apply(line) != NotifyDescriptor.OK_OPTION) {
+            return false;
+        }
+        setText(line.getInputText().trim());
+        for (Runnable r : new ArrayList<>(editListeners)) {
+            r.run();
+        }
+        return true;
+    }
+
+    public boolean isEditable() {
+        return editable;
     }
 
     public void setEditable(String prompt) {
         this.editable = true;
         this.editPrompt = prompt;
-        setToolTipText("Double-click to edit");
+        // an editable panel is a control: it joins the Tab order
+        setFocusable(true);
+        setToolTipText(Bundle.LcdDisplay_editTip());
     }
 
     public void addEditListener(Runnable r) {
@@ -250,7 +316,7 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
             }
         }
         if (cut) {
-            return editable ? full + "  (double-click to edit)" : full;
+            return editable ? full + "  (" + Bundle.LcdDisplay_editTip() + ")" : full;
         }
         return super.getToolTipText();
     }
@@ -307,6 +373,12 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
 
         g.setColor(new Color(255, 255, 255, 24));
         g.draw(bezel);
+        // keyboard focus ring, on the bezel: only an editable panel takes focus
+        if (isFocusOwner()) {
+            g.setColor(RackStyle.FOCUS_RING);
+            g.setStroke(RackStyle.focusStroke());
+            g.draw(new RoundRectangle2D.Float(1f, 1f, w - 3, h - 3, 6, 6));
+        }
         g.dispose();
     }
 
@@ -318,11 +390,51 @@ public class LcdDisplay extends JComponent implements javax.accessibility.Access
         return accessibleContext;
     }
 
-    private final class AccessibleLcdDisplay extends AccessibleJComponent {
+    private final class AccessibleLcdDisplay extends AccessibleJComponent
+            implements javax.accessibility.AccessibleAction {
 
         @Override
         public AccessibleRole getAccessibleRole() {
             return AccessibleRole.LABEL;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleStateSet getAccessibleStateSet() {
+            javax.accessibility.AccessibleStateSet states = super.getAccessibleStateSet();
+            if (editable) {
+                states.add(javax.accessibility.AccessibleState.EDITABLE);
+            }
+            return states;
+        }
+
+        @Override
+        public javax.accessibility.AccessibleAction getAccessibleAction() {
+            // a read-only panel offers nothing to do; an editable one, its editor
+            return editable ? this : null;
+        }
+
+        @Override
+        public int getAccessibleActionCount() {
+            return editable ? 1 : 0;
+        }
+
+        @Override
+        public String getAccessibleActionDescription(int i) {
+            return editable && i == 0 ? Bundle.LcdDisplay_editAction() : null;
+        }
+
+        @Override
+        public boolean doAccessibleAction(int i) {
+            if (!editable || i != 0) {
+                return false;
+            }
+            // an assistive client may call from any thread; the dialog is Swing's
+            if (SwingUtilities.isEventDispatchThread()) {
+                edit();
+            } else {
+                SwingUtilities.invokeLater(LcdDisplay.this::edit);
+            }
+            return true;
         }
 
         @Override
