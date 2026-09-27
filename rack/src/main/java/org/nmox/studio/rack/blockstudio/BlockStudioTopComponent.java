@@ -660,6 +660,12 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private void onForeignEdit() {
         SwingUtilities.invokeLater(() -> {
+            // two guards on purpose: this branch cancels the pending save
+            // outright, and persist()'s beforeWrite refuses one that got
+            // here anyway (loadForAim force-saves). Either alone keeps the
+            // file — measured: removing this branch alone left every test
+            // green; removing it AND persist's check failed
+            // foreignEditCancelsThePendingSave by name (3.4)
             if (saver.isRunning()) {
                 readAgainOverPendingEdits(projectDir);
                 return;
