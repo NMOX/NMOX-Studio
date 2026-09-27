@@ -18,6 +18,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * {@link #stopAll()} kills every live one through its killer; listeners
  * follow the count (any thread — the toolbar action marshals to the EDT
  * itself).
+ *
+ * <p><b>A stopped run stays until it has exited (3.4).</b> Stop used to
+ * remove the row before the kill ran, so the ■ and the Workbench said
+ * "stopped" for up to the kill's three-second grace while a root that
+ * traps SIGTERM was still alive — and forever for a child that escaped.
+ * Now a stop marks the run {@link #isStopping stopping}, runs its killer
+ * once, and the row leaves when the run's own exit handler calls
+ * {@link #remove} — the contract every registering site already keeps.
  */
 public final class LiveRuns {
 
@@ -56,6 +64,9 @@ public final class LiveRuns {
      * handler's {@link #wasStoppedByUser}; bounded like the tombstones.
      */
     private static final java.util.LinkedHashSet<String> STOPPED_BY_USER = new java.util.LinkedHashSet<>();
+
+    /** Live runs a stop has been asked of; they leave {@link #LIVE} at their exit (3.4). */
+    private static final java.util.Set<String> STOPPING = new java.util.HashSet<>();
 
     /** When each live run was registered (v2.73.0) — the Workbench row says "since 10:41". */
     private static final Map<String, Long> STARTED = new java.util.HashMap<>();
@@ -153,6 +164,7 @@ public final class LiveRuns {
         synchronized (LIVE) {
             removed = LIVE.remove(id) != null;
             STARTED.remove(id);
+            STOPPING.remove(id);
             if (!removed) {
                 WITHDRAWN.add(id);
                 if (WITHDRAWN.size() > TOMBSTONES) {
@@ -172,33 +184,40 @@ public final class LiveRuns {
         }
     }
 
-    /** Kills ONE live run and forgets it (the row's own Stop, v2.70.0); null when no such run. */
+    /**
+     * Stops ONE live run (the row's own Stop, v2.70.0): runs its killer
+     * and marks it stopping; the run stays live until its exit handler
+     * removes it (3.4). Null when there is no such run or a stop is
+     * already under way — a second press kills nothing twice.
+     */
     public static Run stop(String id) {
         Run r;
         synchronized (LIVE) {
-            r = LIVE.remove(id);
-            STARTED.remove(id);
-            if (r != null) {
-                markStopped(id);
+            r = LIVE.get(id);
+            if (r == null || !STOPPING.add(id)) {
+                return null;
             }
+            markStopped(id);
         }
-        if (r != null) {
-            r.killer().run();
-            notifyListeners();
-        }
+        r.killer().run();
+        notifyListeners();
         return r;
     }
 
-    /** Kills every live run and forgets it; returns what was stopped, in spawn order. */
+    /**
+     * Stops every live run not already stopping; returns what this press
+     * stopped, in spawn order. The runs stay live, marked stopping, until
+     * each one's exit removes it (3.4).
+     */
     public static List<Run> stopAll() {
-        List<Run> stopped;
+        List<Run> stopped = new ArrayList<>();
         synchronized (LIVE) {
-            stopped = new ArrayList<>(LIVE.values());
-            for (Run r : stopped) {
-                markStopped(r.id());
+            for (Run r : LIVE.values()) {
+                if (STOPPING.add(r.id())) {
+                    markStopped(r.id());
+                    stopped.add(r);
+                }
             }
-            LIVE.clear();
-            STARTED.clear();
         }
         for (Run r : stopped) {
             r.killer().run();
@@ -207,6 +226,28 @@ public final class LiveRuns {
             notifyListeners();
         }
         return stopped;
+    }
+
+    /** Whether a stop has been asked of this live run and it has not exited yet (3.4). */
+    public static boolean isStopping(String id) {
+        synchronized (LIVE) {
+            return STOPPING.contains(id) && LIVE.containsKey(id);
+        }
+    }
+
+    /**
+     * Forgets every run without killing anything. Tests only: a test's
+     * fixture killers are lambdas with no process behind them, so no exit
+     * handler will ever remove their runs.
+     */
+    public static void clearForTest() {
+        synchronized (LIVE) {
+            LIVE.clear();
+            STARTED.clear();
+            STOPPING.clear();
+            WITHDRAWN.clear();
+            STOPPED_BY_USER.clear();
+        }
     }
 
     // The ■'s tooltip and its status line USED to be assembled here, in

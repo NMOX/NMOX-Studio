@@ -50,7 +50,8 @@ class NpmRunLaneTest {
 
     @AfterEach
     void stopEverything() {
-        LiveRuns.stopAll();
+        LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
+        LiveRuns.clearForTest();
         try {
             // belt and braces: any shell that outlived the kill ends itself
             // on its next turn round the loop

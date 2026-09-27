@@ -67,6 +67,26 @@ final class StopRunText {
         return msg("StopRunText_stopped", sb.toString());
     }
 
+    /**
+     * A press that found every live run already stopping (3.4): they are
+     * still running, so "nothing is running" would be false.
+     */
+    static String alreadyStopping(List<LiveRuns.Run> live) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < live.size(); i++) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(live.get(i).label());
+        }
+        return msg("StopRunText_alreadyStopping", sb.toString());
+    }
+
+    /** The status line for one press of the ■: what it stopped, what is still stopping, or that nothing runs. */
+    static String afterPress(List<LiveRuns.Run> stoppedNow, List<LiveRuns.Run> stillLive) {
+        return stoppedNow.isEmpty() && !stillLive.isEmpty() ? alreadyStopping(stillLive) : stopped(stoppedNow);
+    }
+
     /** Each run's label, carrying its start time where it has one. */
     private static String named(List<LiveRuns.Run> runs) {
         StringBuilder sb = new StringBuilder();
@@ -75,6 +95,11 @@ final class StopRunText {
                 sb.append(", ");
             }
             LiveRuns.Run run = runs.get(i);
+            if (LiveRuns.isStopping(run.id())) {
+                // asked to stop and not exited yet (3.4): say so, not "since"
+                sb.append(msg("StopRunText_runStopping", run.label()));
+                continue;
+            }
             String at = LiveRuns.sinceTime(run.id());
             sb.append(at.isEmpty() ? run.label() : msg("StopRunText_runSince", run.label(), at));
         }

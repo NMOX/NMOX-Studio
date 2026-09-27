@@ -469,6 +469,8 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
             if (r.stoppable() && sub != null && sub.getParent() instanceof JPanel rowPanel) {
                 javax.swing.JButton stop = flatButton(Bundle.ProjectExplorerTopComponent_stopButton(), Bundle.ProjectExplorerTopComponent_stopRun(r.title()));
+                // a run already asked to stop stays until it exits (3.4); a second Stop has nothing to do
+                stop.setEnabled(!LiveRuns.isStopping(r.runId()));
                 stop.addActionListener(e -> {
                     LiveRuns.stop(r.runId());
                     org.openide.awt.StatusDisplayer.getDefault().setStatusText(Bundle.ProjectExplorerTopComponent_stoppedStatus(r.title()));
