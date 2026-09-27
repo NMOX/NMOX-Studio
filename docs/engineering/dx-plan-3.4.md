@@ -97,7 +97,48 @@ Trust is per path, so Bob is asked for himself.
 
 ### 2. When things go wrong
 
-*(the survey's report, when it lands)*
+Each fault ran against the real class or the assembled app; where a finding
+was only traced in code it says so. Writes that go through `AtomicFiles`
+never lost data — a killed save, a full disk and a corrupt file left every
+target intact.
+
+1. **Stop could leave a server running while every surface said stopped.**
+   A child that ignores SIGTERM is reparented once its shell dies, and the
+   escalation re-read the process tree after the grace, found only the dead
+   root, and sent nothing: the child kept its port, the ■ was grey, the
+   flight recorder read STOPPED. `LiveRuns` also removed the row before the
+   kill ran, and a child the script put in the background escaped Stop, quit
+   and the JVM reaper altogether.
+2. **A server that stalls mid-body hung every HTTP client forever.** The
+   request timeout ends at the headers and the capped body read had no
+   deadline: KVASIR's consult blocked the rack's shared background lane (and
+   seven devices' work behind it), CouchDB's Cancel did nothing, Contract
+   Studio's Watch stopped advancing while looking live.
+3. **An unreadable rack patch kept the previous project's rack** (a
+   permission error, binary bytes or a directory threw before the corrupt-file
+   branch), and Save Patch then overwrote the unreadable file with the old
+   project's devices. **Block Studio overwrote an unreadable workspace**, and
+   **the Task Board failed silently** — a malformed board or a failed save
+   only logged.
+4. **The git chip hid what git was doing.** A conflicted merge read
+   `⎇ main ±2`, a rebase a bare sha; the status poll took `index.lock`
+   without `--no-optional-locks`, and its timeout's SIGKILL left the lock on
+   disk, so the user's next `git add` failed; Checkout… ran mid-rebase.
+5. **A crashing language server left no trace**: its stderr was discarded,
+   and a server that always crashes went dark for a minute at a time with no
+   word to the user.
+6. **Smaller silences**: the session snapshot was not atomic and its failure
+   was swallowed (a full disk made it empty, and the crash-resume offer
+   vanished with it); API Studio called a body cut off mid-way "No route —
+   closed"; a killed save left its temp file forever, where `git add .`
+   would commit it and REFLEX would fire on it; each file kept one `.bak`,
+   overwritten by the next rescue.
+
+Clean: truncated, zero-byte, binary, 50 MB, directory and unreadable studio
+files each kept a copy and bound read-only (Task Board and Block Studio
+apart, above); drop-in readers never read a temp file; a silent server hits
+each client's timeout; bare, shallow, worktree and unborn repositories read
+correctly; a TERM-trapping root is SIGKILLed after three seconds.
 
 ### 3. Without a mouse or a screen
 
