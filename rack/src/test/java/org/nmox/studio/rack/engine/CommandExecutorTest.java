@@ -266,4 +266,33 @@ class CommandExecutorTest {
             RackBus.unsubscribe(tap);
         }
     }
+
+    @Test
+    @DisabledOnOs(OS.WINDOWS)
+    @DisplayName("Stop kills a child that ignores SIGTERM even after its shell has died (3.4: it outlived the UI's 'stopped')")
+    void stopKillsATermIgnoringOrphan() throws Exception {
+        CountDownLatch done = new CountDownLatch(1);
+        CommandExecutor.Handle h = CommandExecutor.run("term-orphan-" + System.nanoTime(), new File("."), Map.of(),
+                List.of("sh", "-c", "(trap '' TERM; exec sleep 1103) & wait"), l -> { }, code -> done.countDown());
+        ProcessHandle child = null;
+        long deadline = System.currentTimeMillis() + 5_000;
+        while (child == null && System.currentTimeMillis() < deadline) {
+            child = ProcessHandle.allProcesses()
+                    .filter(p -> p.info().commandLine().map(c -> c.contains("sleep 1103")).orElse(false))
+                    .findFirst().orElse(null);
+            Thread.sleep(20);
+        }
+        assertThat(child).as("the TERM-ignoring child started").isNotNull();
+        try {
+            h.kill();
+            assertThat(done.await(10, TimeUnit.SECONDS)).as("the shell exits on TERM").isTrue();
+            deadline = System.currentTimeMillis() + 8_000;
+            while (child.isAlive() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(50);
+            }
+            assertThat(child.isAlive()).as("the child that ignored SIGTERM is gone after the grace").isFalse();
+        } finally {
+            child.destroyForcibly();
+        }
+    }
 }

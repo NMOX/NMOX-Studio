@@ -213,14 +213,26 @@ public final class CommandExecutor {
             @Override
             public void kill() {
                 stopped.set(true);
-                process.descendants().forEach(ProcessHandle::destroy);
+                // the tree as it is NOW (3.4): a child that ignores SIGTERM is
+                // reparented to init once its shell dies, and a later
+                // descendants() no longer finds it — the escalation used to
+                // re-read the tree after the grace, see only the dead root, and
+                // leave a dev server holding its port while the UI said stopped
+                java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
+                process.descendants().forEach(tree::add);
+                tree.forEach(ProcessHandle::destroy);
                 process.destroy();
-                // escalate if it ignores SIGTERM
                 Threads.daemon(() -> {
                     try {
                         if (!process.waitFor(3, java.util.concurrent.TimeUnit.SECONDS)) {
                             process.descendants().forEach(ProcessHandle::destroyForcibly);
                             process.destroyForcibly();
+                        }
+                        // whatever of the snapshot outlived the grace, root dead or not
+                        for (ProcessHandle h : tree) {
+                            if (h.isAlive()) {
+                                h.destroyForcibly();
+                            }
                         }
                     } catch (InterruptedException ex) {
                         Thread.currentThread().interrupt();
