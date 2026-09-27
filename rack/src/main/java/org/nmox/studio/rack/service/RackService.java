@@ -276,20 +276,8 @@ public class RackService {
                 // offer survives another restart instead of being consumed
                 return;
             }
-            Runnable io = () -> {
-                try {
-                    if (live) {
-                        java.nio.file.Files.createDirectories(file.getParentFile().toPath());
-                        java.nio.file.Files.writeString(file.toPath(), state.toJson(),
-                                java.nio.charset.StandardCharsets.UTF_8);
-                    } else {
-                        // stopped after running: nothing to resume anymore
-                        java.nio.file.Files.deleteIfExists(file.toPath());
-                    }
-                } catch (Exception ignored) {
-                    // a failed snapshot must never disturb the rack
-                }
-            };
+            String json = live ? state.toJson() : null;
+            Runnable io = () -> writeSnapshot(file, json);
             if (pendingSnapshotIo.getAndSet(io) == null) {
                 SNAPSHOT_RP.post(() -> {
                     Runnable job = pendingSnapshotIo.getAndSet(null);
@@ -304,18 +292,63 @@ public class RackService {
         sessionSnapshotTimer = snap;
     }
 
+    /**
+     * One snapshot write, or its removal when {@code json} is null (3.4).
+     * It used to be a plain {@code Files.writeString} with the error
+     * swallowed: on a full 4 MB volume the snapshot went from 37 bytes to 0
+     * (the truncating open succeeded, the write did not), and the next
+     * launch's resume offer then failed to parse it — silently — so a crash
+     * lost the one thing this file exists to keep. The write is atomic now
+     * (a failed write leaves the last good snapshot), and a failure is
+     * logged at WARNING. It still never disturbs the rack.
+     */
+    /**
+     * The snapshot a resume offer is built from, or null. A snapshot that
+     * cannot be read or parsed used to vanish silently with the offer it
+     * carried; it is logged at WARNING now (3.4).
+     */
+    static SessionState readSnapshot(java.io.File file) {
+        java.util.logging.Logger log = java.util.logging.Logger.getLogger(RackService.class.getName());
+        try {
+            SessionState state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath(),
+                    java.nio.charset.StandardCharsets.UTF_8));
+            if (state == null) {
+                log.log(java.util.logging.Level.WARNING,
+                        "The session snapshot {0} is not a snapshot (empty or damaged), so no crash-resume offer can be made",
+                        file);
+            }
+            return state;
+        } catch (java.io.IOException | RuntimeException unreadable) {
+            log.log(java.util.logging.Level.WARNING,
+                    "The session snapshot " + file + " could not be read, so no crash-resume offer can be made",
+                    unreadable);
+            return null;
+        }
+    }
+
+    static void writeSnapshot(java.io.File file, String json) {
+        try {
+            if (json != null) {
+                java.nio.file.Files.createDirectories(file.getParentFile().toPath());
+                org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
+            } else {
+                // stopped after running: nothing to resume anymore
+                java.nio.file.Files.deleteIfExists(file.toPath());
+            }
+        } catch (java.io.IOException | RuntimeException failed) {
+            java.util.logging.Logger.getLogger(RackService.class.getName()).log(java.util.logging.Level.WARNING,
+                    "Could not " + (json != null ? "write" : "remove") + " the session snapshot " + file
+                    + " (the crash-resume offer depends on it)", failed);
+        }
+    }
+
     /** After aiming: if the last session here died with tools running, offer them back. */
     private void offerResume() {
         java.io.File file = sessionFile(rack.getProjectDir());
         if (file == null || !file.isFile()) {
             return;
         }
-        SessionState state;
-        try {
-            state = SessionState.fromJson(java.nio.file.Files.readString(file.toPath(), java.nio.charset.StandardCharsets.UTF_8));
-        } catch (Exception ex) {
-            return;
-        }
+        SessionState state = readSnapshot(file);
         if (state == null || !state.fresh()
                 || !state.project().equals(rack.getProjectDir().getAbsolutePath())) {
             return;

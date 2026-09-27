@@ -136,7 +136,7 @@ class BoundedReadLedgerTest {
             Map.entry("RackService.java",
                 "OUR OWN FILE: the session snapshot at netbeans.user/var/nmox/sessions, "
                 + "written by startSessionSnapshots every few seconds and disposable by "
-                + "design — a corrupt one is already shrugged off"),
+                + "design — a corrupt one is logged at WARNING and ignored (3.4)"),
             Map.entry("Experiments.java",
                 "OUR OWN FILE: the experiment marker this class writes at creation"),
             Map.entry("LearningSpace.java",
