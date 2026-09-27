@@ -110,8 +110,46 @@ public final class ApiClient {
      */
     public static final int MAX_BODY_BYTES = 8 * 1024 * 1024;
 
-    /** Sends the request and captures timing, size, headers, and body. */
+    /** Whether a request carries the credential its auth type needs (3.4). */
+    public enum Credential {
+        /** No auth, or auth with a token in hand. */
+        PRESENT,
+        /** Bearer or Basic with no token: this machine's keychain holds none. */
+        MISSING,
+        /** An auth type a newer NMOX Studio wrote, which this version cannot apply. */
+        UNKNOWN_TYPE
+    }
+
+    /**
+     * Before 3.4 a Bearer or Basic request whose token was not in this
+     * machine's keychain — a teammate's clone of the shared
+     * {@code .nmoxapi.json}, where every token stays on its author's
+     * machine — was SENT with no Authorization header and no warning, so
+     * the server's 401 read like the API's fault. The send path asks this
+     * first and refuses anything but {@link Credential#PRESENT}.
+     */
+    public static Credential credential(Request request) {
+        if (request.foreignAuthType != null) {
+            return Credential.UNKNOWN_TYPE;
+        }
+        boolean needsToken = request.authType == AuthType.BEARER
+                || request.authType == AuthType.BASIC;
+        if (needsToken && (request.authToken == null || request.authToken.isBlank())) {
+            return Credential.MISSING;
+        }
+        return Credential.PRESENT;
+    }
+
+    /**
+     * Sends the request and captures timing, size, headers, and body. A
+     * request without the credential its auth type needs is refused here
+     * too, never sent (the UI refuses first, in words; this is the floor).
+     */
     public ApiResponse send(Request request, Map<String, String> vars) {
+        Credential credential = credential(request);
+        if (credential != Credential.PRESENT) {
+            return ApiResponse.failure(0, "not sent: credential " + credential);
+        }
         long start = System.nanoTime();
         try {
             HttpResponse<java.io.InputStream> response = client.send(build(request, vars),

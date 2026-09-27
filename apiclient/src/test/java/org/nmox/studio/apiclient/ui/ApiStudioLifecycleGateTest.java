@@ -82,7 +82,7 @@ class ApiStudioLifecycleGateTest {
         String source = source();
 
         String apply = method(source,
-                "private void applyWorkspace(WorkspaceIO.LoadOutcome outcome, File dir)");
+                "private void applyWorkspace(Loaded loaded, File dir)");
         assertThat(apply)
                 .as("every re-aim must forget the previous project's response")
                 .contains("clearResponse()");

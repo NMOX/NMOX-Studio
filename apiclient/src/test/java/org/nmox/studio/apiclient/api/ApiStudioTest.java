@@ -129,6 +129,8 @@ class ApiStudioTest {
         Workspace back = WorkspaceIO.load(dir.toFile());
 
         assertThat(back).isNotNull();
+        // 3.4: the active environment rides this person's own state, not the file
+        WorkspaceIO.applyPersonal(back, WorkspaceIO.personalJson(w));
         assertThat(back.activeEnvironment).isEqualTo("Local");
         assertThat(back.active().variables).containsEntry("base_url", "http://localhost:3000");
         var req = back.collections.get(0).requests.get(0);

@@ -2,8 +2,8 @@ package org.nmox.studio.apiclient.api;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nmox.studio.apiclient.model.ApiModel.Assertion;
@@ -13,6 +13,7 @@ import org.nmox.studio.apiclient.model.ApiModel.Environment;
 import org.nmox.studio.apiclient.model.ApiModel.Pair;
 import org.nmox.studio.apiclient.model.ApiModel.Request;
 import org.nmox.studio.apiclient.model.ApiModel.Workspace;
+import org.nmox.studio.apiclient.model.SendHistory;
 import org.nmox.studio.core.util.AtomicFiles;
 
 /**
@@ -22,10 +23,18 @@ import org.nmox.studio.core.util.AtomicFiles;
  * are the developer's to keep in a git-ignored env file, mirroring the
  * rack's ATMOS rule. (Here we persist what the user typed; the UI warns
  * that secrets belong in variables kept out of source control.)
+ *
+ * <p>Since 3.4 the file holds only what a team means to share —
+ * collections and environments. One person's state (the send history and
+ * the active environment) is written by {@link #personalJson} into
+ * {@code core.util.PersonalState}, outside the project.
  */
 public final class WorkspaceIO {
 
     public static final String FILENAME = ".nmoxapi.json";
+
+    /** The studio key this workspace's per-person document is filed under. */
+    public static final String PERSONAL_STUDIO = "api";
 
     private static final java.util.logging.Logger LOG =
             java.util.logging.Logger.getLogger(WorkspaceIO.class.getName());
@@ -33,10 +42,19 @@ public final class WorkspaceIO {
     private WorkspaceIO() {
     }
 
+    /**
+     * The SHARED file: collections and environments, the things a team
+     * means to share. Since 3.4 it no longer carries the send history or
+     * the active environment — both are one person's state, both were
+     * rewritten on every Send and every pick, and so every merge of
+     * {@code .nmoxapi.json} between two people conflicted over state
+     * neither meant to share. They live in {@link #personalJson} now; a
+     * file written before 3.4 still has them and {@link #fromJson} still
+     * reads them once, so the first load migrates.
+     */
     public static String toJson(Workspace w) {
         JSONObject root = new JSONObject();
         root.put("version", 1);
-        root.put("activeEnvironment", w.activeEnvironment);
 
         JSONArray cols = new JSONArray();
         for (Collection c : w.collections) {
@@ -59,12 +77,52 @@ public final class WorkspaceIO {
             envs.put(ej);
         }
         root.put("environments", envs);
+        return root.toString(2);
+    }
 
-        // send history (v1.197.0): AUTHORED fields + outcome only. The
-        // Entry type has no token field, so the secrets law holds by
-        // construction — this loop cannot write what the model cannot hold.
+    /**
+     * One person's state about this workspace (3.4): the active environment
+     * and the send history. Written to {@code core.util.PersonalState},
+     * never into the committed file.
+     */
+    public static String personalJson(Workspace w) {
+        JSONObject root = new JSONObject();
+        root.put("version", 1);
+        root.put("activeEnvironment", w.activeEnvironment == null ? "" : w.activeEnvironment);
+        root.put("history", historyJson(w.history));
+        return root.toString(2);
+    }
+
+    /**
+     * Applies a {@link #personalJson} document over a loaded workspace: its
+     * active environment and history replace whatever the shared file
+     * carried (a pre-3.4 file's legacy copy). A document that does not
+     * parse changes nothing — it is ours, it is small, and the next save
+     * rewrites it.
+     */
+    public static void applyPersonal(Workspace w, String personal) {
+        if (w == null || personal == null || personal.isBlank()) {
+            return;
+        }
+        JSONObject root;
+        try {
+            root = new JSONObject(personal);
+        } catch (RuntimeException malformed) {
+            LOG.log(java.util.logging.Level.WARNING,
+                    "Ignoring an unreadable personal API Studio state ({0})", malformed.getMessage());
+            return;
+        }
+        w.activeEnvironment = root.optString("activeEnvironment", "");
+        w.history.clear();
+        readHistory(root.optJSONArray("history"), w.history);
+    }
+
+    // send history (v1.197.0): AUTHORED fields + outcome only. The Entry
+    // type has no token field, so the secrets law holds by construction —
+    // this loop cannot write what the model cannot hold.
+    private static JSONArray historyJson(List<SendHistory.Entry> history) {
         JSONArray hist = new JSONArray();
-        for (org.nmox.studio.apiclient.model.SendHistory.Entry e : w.history) {
+        for (SendHistory.Entry e : history) {
             JSONObject hj = new JSONObject();
             hj.put("timestamp", e.timestamp);
             hj.put("name", e.name);
@@ -78,8 +136,7 @@ public final class WorkspaceIO {
             hj.put("durationMs", e.durationMs);
             hist.put(hj);
         }
-        root.put("history", hist);
-        return root.toString(2);
+        return hist;
     }
 
     private static JSONObject requestJson(Request r) {
@@ -103,7 +160,7 @@ public final class WorkspaceIO {
         return rj;
     }
 
-    private static JSONArray pairsJson(java.util.List<Pair> pairs) {
+    private static JSONArray pairsJson(List<Pair> pairs) {
         JSONArray arr = new JSONArray();
         for (Pair p : pairs) {
             arr.put(new JSONObject().put("name", p.name == null ? "" : p.name)
@@ -114,13 +171,25 @@ public final class WorkspaceIO {
     }
 
     public static Workspace fromJson(String json) {
+        return parse(json, new ArrayList<>());
+    }
+
+    /**
+     * The parse, noting in {@code newer} every value this version does not
+     * know (an auth type or an assertion kind a newer NMOX Studio wrote).
+     * Each is kept in memory as best the model can, but a workspace with
+     * any at all must be bound read-only: the next save would drop them for
+     * everyone who shares the file (3.4).
+     */
+    static Workspace parse(String json, List<String> newer) {
         Workspace w = new Workspace();
         JSONObject root = new JSONObject(json);
+        // legacy per-person field: read so a pre-3.4 file migrates
         w.activeEnvironment = root.optString("activeEnvironment", "");
         JSONArray cols = root.optJSONArray("collections");
         if (cols != null) {
             for (int i = 0; i < cols.length(); i++) {
-                w.collections.add(collection(cols.getJSONObject(i)));
+                w.collections.add(collection(cols.getJSONObject(i), newer));
             }
         }
         JSONArray envs = root.optJSONArray("environments");
@@ -138,31 +207,37 @@ public final class WorkspaceIO {
                 w.environments.add(e);
             }
         }
-        JSONArray hist = root.optJSONArray("history");
-        if (hist != null) {
-            for (int i = 0; i < hist.length(); i++) {
-                JSONObject hj = hist.getJSONObject(i);
-                org.nmox.studio.apiclient.model.SendHistory.Entry e =
-                        new org.nmox.studio.apiclient.model.SendHistory.Entry();
-                e.timestamp = hj.optLong("timestamp", 0L);
-                e.name = hj.optString("name", "");
-                e.method = hj.optString("method", "GET");
-                e.url = hj.optString("url", "");
-                e.body = hj.optString("body", "");
-                try {
-                    e.authType = AuthType.valueOf(hj.optString("authType", "NONE"));
-                } catch (IllegalArgumentException ex) {
-                    e.authType = AuthType.NONE;
-                }
-                readPairs(hj.optJSONArray("params"), e.params);
-                readPairs(hj.optJSONArray("headers"), e.headers);
-                e.status = hj.optInt("status", 0);
-                e.durationMs = hj.optLong("durationMs", 0L);
-                w.history.add(e);
-            }
-        }
+        // legacy per-person field, as above
+        readHistory(root.optJSONArray("history"), w.history);
         healDuplicateIds(w);
         return w;
+    }
+
+    private static void readHistory(JSONArray hist, List<SendHistory.Entry> into) {
+        if (hist == null) {
+            return;
+        }
+        for (int i = 0; i < hist.length() && into.size() < SendHistory.CAP; i++) {
+            JSONObject hj = hist.getJSONObject(i);
+            SendHistory.Entry e = new SendHistory.Entry();
+            e.timestamp = hj.optLong("timestamp", 0L);
+            e.name = hj.optString("name", "");
+            e.method = hj.optString("method", "GET");
+            e.url = hj.optString("url", "");
+            e.body = hj.optString("body", "");
+            try {
+                e.authType = AuthType.valueOf(hj.optString("authType", "NONE"));
+            } catch (IllegalArgumentException ex) {
+                // a history row only restores a request's SHAPE; its auth
+                // type is re-chosen when the restored request is saved
+                e.authType = AuthType.NONE;
+            }
+            readPairs(hj.optJSONArray("params"), e.params);
+            readPairs(hj.optJSONArray("headers"), e.headers);
+            e.status = hj.optInt("status", 0);
+            e.durationMs = hj.optLong("durationMs", 0L);
+            into.add(e);
+        }
     }
 
     /**
@@ -177,7 +252,7 @@ public final class WorkspaceIO {
      * needing its auth re-entered, which is honest, recoverable, and
      * structurally sound.
      */
-    private static void healDuplicateIds(org.nmox.studio.apiclient.model.ApiModel.Workspace w) {
+    private static void healDuplicateIds(Workspace w) {
         java.util.Set<String> seen = new java.util.HashSet<>();
         for (var c : w.collections) {
             for (var r : c.requests) {
@@ -188,19 +263,19 @@ public final class WorkspaceIO {
         }
     }
 
-    private static Collection collection(JSONObject cj) {
+    private static Collection collection(JSONObject cj, List<String> newer) {
         Collection c = new Collection();
         c.name = cj.optString("name", "collection");
         JSONArray reqs = cj.optJSONArray("requests");
         if (reqs != null) {
             for (int i = 0; i < reqs.length(); i++) {
-                c.requests.add(request(reqs.getJSONObject(i)));
+                c.requests.add(request(reqs.getJSONObject(i), newer));
             }
         }
         return c;
     }
 
-    private static Request request(JSONObject rj) {
+    private static Request request(JSONObject rj, List<String> newer) {
         Request r = new Request();
         // Keep an existing id; mint one for a pre-v1.97.0 file so its
         // keychain slot is stable from now on.
@@ -212,10 +287,17 @@ public final class WorkspaceIO {
         r.method = rj.optString("method", "GET");
         r.url = rj.optString("url", "");
         r.body = rj.optString("body", "");
+        String authType = rj.optString("authType", "NONE");
         try {
-            r.authType = AuthType.valueOf(rj.optString("authType", "NONE"));
-        } catch (IllegalArgumentException ignored) {
+            r.authType = AuthType.valueOf(authType);
+        } catch (IllegalArgumentException fromNewerVersion) {
+            // a newer NMOX Studio's auth type (3.4): NONE in memory, but the
+            // name is kept so Send refuses rather than going out without it,
+            // and the workspace binds read-only so no save turns it into
+            // NONE for everyone who shares the file
             r.authType = AuthType.NONE;
+            r.foreignAuthType = authType;
+            newer.add("authType " + authType);
         }
         // A pre-v1.97.0 file may still carry a plaintext authToken; keep
         // it in memory as the migration carrier — the TopComponent moves
@@ -232,15 +314,18 @@ public final class WorkspaceIO {
                     r.tests.add(new Assertion(
                             Assertion.Kind.valueOf(tj.optString("kind", "STATUS_IS")),
                             tj.optString("target", "")));
-                } catch (IllegalArgumentException ignored) {
-                    // unknown assertion kind from a newer file: skip it
+                } catch (IllegalArgumentException fromNewerVersion) {
+                    // an assertion kind from a newer file: this version
+                    // cannot model it, so the workspace binds read-only and
+                    // no save can drop it (3.4)
+                    newer.add("assertion " + tj.optString("kind", ""));
                 }
             }
         }
         return r;
     }
 
-    private static void readPairs(JSONArray arr, java.util.List<Pair> into) {
+    private static void readPairs(JSONArray arr, List<Pair> into) {
         if (arr == null) {
             return;
         }
@@ -269,13 +354,16 @@ public final class WorkspaceIO {
 
     /**
      * A guarded load: {@code workspace} is null when the file is
-     * missing or unreadable (callers substitute the starter);
+     * missing, unreadable or conflicted (callers substitute a stand-in);
      * {@code backup} is non-null when the file EXISTED but failed to
      * parse and was copied aside first; {@code unreadable} is true when
-     * the file EXISTS and its bytes could not be read at all.
+     * the file EXISTS and its bytes could not be read at all;
+     * {@code conflicted} when it holds git's unresolved merge conflict;
+     * {@code newerFormat} when it parsed but carries values a newer NMOX
+     * Studio wrote (the workspace is handed back, to show, not to save).
      *
-     * <p>Those last two are different failures and were treated as one.
-     * A PARSE failure hands back bytes we have seen and kept as
+     * <p>Unreadable and malformed are different failures and were treated
+     * as one. A PARSE failure hands back bytes we have seen and kept as
      * {@code .bak}, so the starter workspace may replace them. A READ
      * failure — a permission error, a transient fault, or
      * {@link org.nmox.studio.core.util.BoundedReads.TooLarge}, which is
@@ -286,20 +374,41 @@ public final class WorkspaceIO {
      * own, and the next edit wrote a three-request starter over every
      * collection, environment and history row. Measured through the real
      * window on an over-cap file: 9,437,184 bytes became 550.
+     *
+     * <p>A conflicted file (3.4) was treated as a malformed one: copied to
+     * {@code .bak}, replaced by the starter, and written over by the next
+     * Send, so {@code git commit} recorded the starter as the merge.
      */
-    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable,
+            boolean conflicted, boolean newerFormat) {
+
+        /** The pre-3.4 shape: no conflict, nothing from a newer version. */
+        public LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+            this(workspace, backup, unreadable, false, false);
+        }
+
+        /**
+         * True when the file exists and must not be written: it could not
+         * be read, it holds git's unresolved merge conflict, or it carries
+         * values a newer NMOX Studio wrote. The studio binds read-only and
+         * says which.
+         */
+        public boolean readOnly() {
+            return unreadable || conflicted || newerFormat;
+        }
     }
 
     /**
      * Loads like {@link #load}, but guards the user's file against the
      * corrupt-load → empty-model → autosave-clobbers-original sequence:
      * when the file exists and fails to parse, the unreadable original
-     * is copied to {@code .nmoxapi.json.bak} BEFORE the empty outcome
-     * is returned, so the studio's next autosave can never destroy the
-     * only copy. A file that cannot be READ comes back marked
-     * {@link LoadOutcome#unreadable()} instead, because the caller must
-     * not treat a stand-in workspace as this project's. Missing and
-     * unreadable files make no backup. Never throws.
+     * is copied aside BEFORE the empty outcome is returned, so the
+     * studio's next autosave can never destroy the only copy. A file that
+     * cannot be READ comes back marked {@link LoadOutcome#unreadable()}
+     * instead, one holding git's merge conflict {@link
+     * LoadOutcome#conflicted()} and one a newer version wrote {@link
+     * LoadOutcome#newerFormat()}, because in all three the caller must
+     * not write the file. None of those make a backup. Never throws.
      */
     public static LoadOutcome loadGuarded(File dir) {
         File f = new File(dir, FILENAME);
@@ -321,8 +430,25 @@ public final class WorkspaceIO {
                     new Object[]{f, unreadable.getMessage()});
             return new LoadOutcome(null, null, true);
         }
+        if (org.nmox.studio.core.util.MergeConflicts.hasMarkers(text)) {
+            // git's unresolved merge (3.4): both people's work is IN this
+            // file, so it is neither corrupt nor ours to repair. Nothing is
+            // copied aside and nothing is parsed; the studio binds
+            // read-only until the file changes on disk (resolved in git),
+            // and the file pulse reloads it then.
+            LOG.log(java.util.logging.Level.WARNING,
+                    "{0} has unresolved merge conflicts; read-only until they are resolved", f);
+            return new LoadOutcome(null, null, false, true, false);
+        }
         try {
-            return new LoadOutcome(fromJson(text), null, false);
+            List<String> newer = new ArrayList<>();
+            Workspace parsed = parse(text, newer);
+            if (!newer.isEmpty()) {
+                LOG.log(java.util.logging.Level.WARNING,
+                        "{0} holds values a newer NMOX Studio wrote ({1}); read-only",
+                        new Object[]{f, newer});
+            }
+            return new LoadOutcome(parsed, null, false, false, !newer.isEmpty());
         } catch (RuntimeException malformed) {
             LOG.log(java.util.logging.Level.WARNING,
                     "Malformed {0}; keeping a .bak and starting empty ({1})",
@@ -331,13 +457,14 @@ public final class WorkspaceIO {
         }
     }
 
-    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    /**
+     * Copies the corrupt file aside — {@code <name>.bak}, or the first
+     * free numbered sibling when an earlier rescue holds that name (3.4: a
+     * second rescue used to overwrite the first); null when even that fails.
+     */
     private static File backupCorrupt(File file) {
-        File backup = new File(file.getParentFile(), file.getName() + ".bak");
         try {
-            Files.copy(file.toPath(), backup.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return backup;
+            return org.nmox.studio.core.util.KeptCopies.copyAside(file);
         } catch (IOException e) {
             LOG.log(java.util.logging.Level.SEVERE, "Could not back up corrupt " + file, e);
             return null;
