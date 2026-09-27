@@ -70,13 +70,13 @@ class TeamDbWindowTest {
                 PersonalState.read(dir, DbWorkspaceIO.PERSONAL_STUDIO));
         ExternalEdits.Stamp stamp = ExternalEdits.Stamp.of(new File(dir, DbWorkspaceIO.FILENAME));
         Method apply = DbStudioTopComponent.class.getDeclaredMethod("applyReloadedWorkspace",
-                DbWorkspaceIO.LoadOutcome.class, ExternalEdits.Stamp.class, List.class);
+                File.class, DbWorkspaceIO.LoadOutcome.class, ExternalEdits.Stamp.class, List.class);
         apply.setAccessible(true);
         final DbStudioTopComponent[] made = new DbStudioTopComponent[1];
         SwingUtilities.invokeAndWait(() -> {
             made[0] = new DbStudioTopComponent();
             try {
-                apply.invoke(made[0], outcome, stamp, mine);
+                apply.invoke(made[0], dir, outcome, stamp, mine);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

@@ -55,13 +55,13 @@ class DbWriteRecheckTest {
         DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(dir);
         ExternalEdits.Stamp stamp = ExternalEdits.Stamp.of(new File(dir, DbWorkspaceIO.FILENAME));
         Method apply = DbStudioTopComponent.class.getDeclaredMethod("applyReloadedWorkspace",
-                DbWorkspaceIO.LoadOutcome.class, ExternalEdits.Stamp.class, List.class);
+                File.class, DbWorkspaceIO.LoadOutcome.class, ExternalEdits.Stamp.class, List.class);
         apply.setAccessible(true);
         final DbStudioTopComponent[] w = new DbStudioTopComponent[1];
         SwingUtilities.invokeAndWait(() -> {
             w[0] = new DbStudioTopComponent();
             try {
-                apply.invoke(w[0], outcome, stamp, null);
+                apply.invoke(w[0], dir, outcome, stamp, null);
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }

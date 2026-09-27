@@ -2440,13 +2440,6 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
-    /** EDT: {@link #applyReloadedWorkspace(File, DbWorkspaceIO.LoadOutcome, ExternalEdits.Stamp, List)} for the live aim. */
-    private void applyReloadedWorkspace(DbWorkspaceIO.LoadOutcome outcome,
-            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp ownStamp,
-            List<DbWorkspaceIO.HistoryEntry> personalHistory) {
-        applyReloadedWorkspace(projectDir(), outcome, ownStamp, personalHistory);
-    }
-
     /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
