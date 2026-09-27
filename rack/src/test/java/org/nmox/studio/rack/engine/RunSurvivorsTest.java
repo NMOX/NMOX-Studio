@@ -39,7 +39,8 @@ class RunSurvivorsTest {
 
     private Optional<ProcessHandle> mine() {
         return ProcessHandle.allProcesses()
-                .filter(h -> h.info().commandLine().orElse("").contains(mark))
+                // the sleep itself, not a shell whose own command line names it
+                .filter(h -> h.info().commandLine().orElse("").endsWith("sleep " + mark))
                 .findFirst();
     }
 
