@@ -27,6 +27,9 @@ class WorkbenchFocusRingTest {
     @AfterEach
     void drain() {
         LiveRuns.stopAll();
+        // since 3.4 a stopped run stays "stopping…" until its process exits,
+        // and a fixture killer has no process: forget the row outright
+        LiveRuns.clearForTest();
     }
 
     private static void collect(Container c, List<Component> out) {

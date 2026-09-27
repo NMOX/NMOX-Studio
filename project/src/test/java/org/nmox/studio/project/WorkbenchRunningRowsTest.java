@@ -23,6 +23,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class WorkbenchRunningRowsTest {
 
+    @org.junit.jupiter.api.BeforeEach
+    void startEmpty() {
+        // "nothing running" is this test's first assertion; a sibling class
+        // in the same fork must not be able to leave a row behind for it
+        LiveRuns.clearForTest();
+    }
+
     @AfterEach
     void drain() {
         LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
