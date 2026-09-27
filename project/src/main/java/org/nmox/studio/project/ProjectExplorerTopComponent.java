@@ -803,6 +803,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         titleButton.setContentAreaFilled(false);
         titleButton.setBorder(BorderFactory.createEmptyBorder());
         titleButton.setFocusPainted(true);
+        // focus painting alone draws nothing under FlatLaf with no content
+        // area and an empty border (3.4): a ring shows where Tab landed
+        org.nmox.studio.core.util.KeyboardAccess.focusRing(titleButton);
         titleButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         titleButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         titleButton.getAccessibleContext().setAccessibleName(
