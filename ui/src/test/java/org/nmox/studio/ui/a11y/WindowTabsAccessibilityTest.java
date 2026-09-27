@@ -76,6 +76,13 @@ class WindowTabsAccessibilityTest {
         public Component host() {
             return host;
         }
+
+        Runnable changed = () -> { };
+
+        @Override
+        public void onChange(Runnable changed) {
+            this.changed = changed;
+        }
     }
 
     private static WindowTabsAccessibility.TabList list(FakeTabs tabs) {
@@ -179,6 +186,39 @@ class WindowTabsAccessibilityTest {
         assertThat(WindowTabsAccessibility.plain("a &amp; b")).isEqualTo("a & b");
         assertThat(WindowTabsAccessibility.plain("x &lt;y&gt;")).isEqualTo("x <y>");
         assertThat(WindowTabsAccessibility.plain(null)).isEmpty();
+    }
+
+    @Test
+    @DisplayName("a closed window is not kept alive by the tab it once had (the review's leak)")
+    void closedWindowIsCollectable() throws Exception {
+        FakeTabs tabs = new FakeTabs().add("keep", window("k"));
+        tabs.add("closed", window("c"));
+        AccessibleContext ctx = list(tabs);
+        ctx.getAccessibleChild(1).getAccessibleContext().getAccessibleChild(0); // a reader walked it
+        java.lang.ref.WeakReference<Component> closed = new java.lang.ref.WeakReference<>(tabs.contents.get(1));
+        tabs.titles.remove(1);
+        tabs.contents.remove(1);
+        for (int i = 0; i < 50 && closed.get() != null; i++) {
+            System.gc();
+            Thread.sleep(20);
+        }
+        assertThat(closed.get()).as("the closed window was collected").isNull();
+        assertThat(ctx.getAccessibleChildrenCount()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a switch is announced as JTabbedPane announces it: visible data, then the selected tab")
+    void switchIsAnnounced() {
+        FakeTabs tabs = new FakeTabs().add("A", window("a")).add("B", window("b"));
+        AccessibleContext ctx = list(tabs);
+        List<String> heard = new ArrayList<>();
+        ctx.addPropertyChangeListener(e -> heard.add(e.getPropertyName() + "=" + (e.getNewValue() instanceof Accessible a
+                ? a.getAccessibleContext().getAccessibleName() : e.getNewValue())));
+        tabs.selected = 1;
+        tabs.changed.run();
+        assertThat(heard).containsExactly(
+                AccessibleContext.ACCESSIBLE_VISIBLE_DATA_PROPERTY + "=true",
+                AccessibleContext.ACCESSIBLE_SELECTION_PROPERTY + "=B");
     }
 
     @Test

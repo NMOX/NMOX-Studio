@@ -149,6 +149,14 @@ public final class WindowTabsAccessibility implements Runnable {
         Rectangle bounds(int i);
 
         Component host();
+
+        /**
+         * Calls {@code changed} when the showing tab or the set of tabs
+         * changes, so the list can say so the way {@code JTabbedPane} does —
+         * a screen reader otherwise never hears a switch it did not make.
+         */
+        default void onChange(Runnable changed) {
+        }
     }
 
     /** The platform's container as {@link Tabs}. */
@@ -198,6 +206,13 @@ public final class WindowTabsAccessibility implements Runnable {
         public Component host() {
             return tc;
         }
+
+        @Override
+        public void onChange(Runnable changed) {
+            // both live exactly as long as the container that owns them
+            tc.getSelectionModel().addChangeListener(e -> changed.run());
+            tc.getModel().addChangeListener(e -> changed.run());
+        }
     }
 
     /**
@@ -241,6 +256,15 @@ public final class WindowTabsAccessibility implements Runnable {
             this.owner = owner;
             this.platform = platform;
             this.tabs = tabs;
+            tabs.onChange(this::announce);
+        }
+
+        /** What JTabbedPane fires on a switch: the visible content and the selection changed. */
+        void announce() {
+            firePropertyChange(ACCESSIBLE_VISIBLE_DATA_PROPERTY, Boolean.FALSE, Boolean.TRUE);
+            int i = tabs.selected();
+            firePropertyChange(ACCESSIBLE_SELECTION_PROPERTY, null,
+                    i >= 0 && i < tabs.count() ? page(i) : null);
         }
 
         Page page(int i) {
@@ -252,7 +276,8 @@ public final class WindowTabsAccessibility implements Runnable {
         int indexOf(Page p) {
             for (int i = 0; i < tabs.count(); i++) {
                 Component c = tabs.content(i);
-                if (p.content != null ? c == p.content : tabs.title(i).equals(p.fallbackTitle)) {
+                Component mine = p.content();
+                if (mine != null ? c == mine : tabs.title(i).equals(p.fallbackTitle)) {
                     return i;
                 }
             }
@@ -364,13 +389,18 @@ public final class WindowTabsAccessibility implements Runnable {
     static final class Page implements Accessible {
 
         private final TabList list;
-        final Component content;
+        /**
+         * Weakly: the cache is keyed weakly by the window, and a page that
+         * held its window strongly kept every closed editor — and its
+         * document — alive for the session (the 3.4 review's probe).
+         */
+        private final java.lang.ref.WeakReference<Component> content;
         final String fallbackTitle;
         private AccessibleContext context;
 
         Page(TabList list, Component content, String fallbackTitle) {
             this.list = list;
-            this.content = content;
+            this.content = new java.lang.ref.WeakReference<>(content);
             this.fallbackTitle = fallbackTitle;
         }
 
@@ -380,6 +410,10 @@ public final class WindowTabsAccessibility implements Runnable {
                 context = new PageContext();
             }
             return context;
+        }
+
+        Component content() {
+            return content.get();
         }
 
         private int index() {
@@ -428,12 +462,12 @@ public final class WindowTabsAccessibility implements Runnable {
 
             @Override
             public int getAccessibleChildrenCount() {
-                return content instanceof Accessible ? 1 : 0;
+                return content() instanceof Accessible ? 1 : 0;
             }
 
             @Override
             public Accessible getAccessibleChild(int i) {
-                if (i != 0 || !(content instanceof Accessible a)) {
+                if (i != 0 || !(content() instanceof Accessible a)) {
                     return null;
                 }
                 // the window's parent is this tab, as a JTabbedPane page's
