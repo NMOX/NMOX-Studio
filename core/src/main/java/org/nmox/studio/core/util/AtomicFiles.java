@@ -58,14 +58,21 @@ public final class AtomicFiles {
         return targetName.length() > EMBED_MAX ? targetName.substring(0, EMBED_MAX) : targetName;
     }
 
+    /** The fewest digits the pre-3.4 temp spelling is recognised with. */
+    static final int LEGACY_MIN_DIGITS = 10;
+
     /** Whether {@code name} is one of this class's temps for {@code targetName}, in either spelling. */
     static boolean isTempOf(String name, String targetName) {
         String current = TEMP_PREFIX + embedded(targetName) + ".";
         if (name.startsWith(current) && name.endsWith(TEMP_SUFFIX)) {
             return digits(name, current.length(), name.length() - TEMP_SUFFIX.length());
         }
-        // before 3.4: createTempFile(dir, "<target>", ".tmp")
-        if (name.startsWith(targetName) && name.endsWith(TEMP_SUFFIX)) {
+        // before 3.4: createTempFile(dir, "<target>", ".tmp"), whose suffix is
+        // a random unsigned long — almost always 18-20 digits. At least ten
+        // are required, so a user's own dump1.tmp or dump2026.tmp beside a
+        // target called dump is never taken for ours (the 3.4 review)
+        if (name.startsWith(targetName) && name.endsWith(TEMP_SUFFIX)
+                && name.length() - TEMP_SUFFIX.length() - targetName.length() >= LEGACY_MIN_DIGITS) {
             return digits(name, targetName.length(), name.length() - TEMP_SUFFIX.length());
         }
         return false;

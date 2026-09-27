@@ -96,4 +96,24 @@ class AtomicFilesTest {
                 .as("the pre-3.4 leftover of a workspace save").isTrue();
         assertThat(IdeWorkspaceFiles.isOwn(".nmoxrack.jsonx.tmp")).isFalse();
     }
+
+    @Test
+    @DisplayName("a user's own dump1.tmp or dump2026.tmp beside a file called dump is never taken for a leftover (the 3.4 review)")
+    void userTmpFilesAreNotOurs() {
+        assertThat(AtomicFiles.isTempOf("dump1.tmp", "dump")).isFalse();
+        assertThat(AtomicFiles.isTempOf("dump2026.tmp", "dump")).isFalse();
+        assertThat(AtomicFiles.isTempOf("dump8230947123456789012.tmp", "dump"))
+                .as("the pre-3.4 createTempFile spelling, a random unsigned long").isTrue();
+    }
+
+    @Test
+    @DisplayName("the sweep leaves a user's short-numbered .tmp alone, however old")
+    void sweepSparesUserTmp(@org.junit.jupiter.api.io.TempDir Path dir) throws Exception {
+        Path target = dir.resolve("dump");
+        Path mine = dir.resolve("dump2026.tmp");
+        Files.writeString(mine, "the user's");
+        Files.setLastModifiedTime(mine, java.nio.file.attribute.FileTime.fromMillis(System.currentTimeMillis() - 3_600_000));
+        AtomicFiles.writeString(target, "x");
+        assertThat(mine).exists();
+    }
 }
