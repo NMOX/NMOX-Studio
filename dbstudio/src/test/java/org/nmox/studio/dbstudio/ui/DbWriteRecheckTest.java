@@ -103,6 +103,26 @@ class DbWriteRecheckTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
+    void theWindowsOwnSavesStillLand(@TempDir File dir) throws Exception {
+        DbWorkspaceIO.save(dir, List.of(LOCAL));
+        DbStudioTopComponent w = boundTo(dir);
+        Field specs = DbStudioTopComponent.class.getDeclaredField("specs");
+        specs.setAccessible(true);
+        List<ConnectionSpec> list = (List<ConnectionSpec>) specs.get(w);
+
+        for (int n = 2; n <= 3; n++) {
+            ConnectionSpec added = new ConnectionSpec("c" + n, "db" + n, DbEngine.SQLITE,
+                    "", -1, "", "", "db" + n + ".db", false);
+            SwingUtilities.invokeAndWait(() -> list.add(added));
+            save(w);
+            assertThat(DbWorkspaceIO.fromJson(Files.readString(new File(dir, DbWorkspaceIO.FILENAME).toPath())))
+                    .as("save " + n + " lands: the window's last write is its own, not a foreign version")
+                    .hasSize(n);
+        }
+    }
+
+    @Test
     void aTeammatesChangeIsNotWrittenOver(@TempDir File dir) throws Exception {
         File f = new File(dir, DbWorkspaceIO.FILENAME);
         DbWorkspaceIO.save(dir, List.of(LOCAL));

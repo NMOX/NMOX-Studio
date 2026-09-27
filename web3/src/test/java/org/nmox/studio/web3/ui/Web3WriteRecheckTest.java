@@ -100,6 +100,23 @@ class Web3WriteRecheckTest {
     }
 
     @Test
+    @DisplayName("the window's own saves still land, one after another")
+    void ordinarySavesStillLand(@TempDir File dir) throws Exception {
+        Web3WorkspaceIO.save(dir, Web3WorkspaceIO.Workspace.empty());
+        Web3StudioTopComponent w = boundTo(dir);
+        for (int n = 1; n <= 2; n++) {
+            DeploymentRecord record = new DeploymentRecord("C" + n,
+                    "0x00000000000000000000000000000000000000b" + n, "anvil", "0xtx", n, n);
+            onEdt(w, "recordDeployment", new Class<?>[]{DeploymentRecord.class}, record);
+            flushSaveLane();
+            assertThat(Web3WorkspaceIO.load(dir).deployments()).as("save " + n + " lands").hasSize(n);
+        }
+        SwingUtilities.invokeAndWait(() -> { });
+        assertThat((List<?>) field(w, "pendingDeployments"))
+                .as("a deployment a write carried is no longer held").isEmpty();
+    }
+
+    @Test
     @DisplayName("a deployment made while the file is read-only stays in the address book and is said")
     void deploymentOnAReadOnlyFileIsKeptAndSaid(@TempDir File dir) throws Exception {
         File f = new File(dir, Web3WorkspaceIO.FILENAME);

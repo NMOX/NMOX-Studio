@@ -100,6 +100,25 @@ class InfraWriteRecheckTest {
     }
 
     @Test
+    @DisplayName("the designer's own edits still save: its last write is its own, not a foreign version")
+    void anOrdinarySaveStillLands(@TempDir File dir) throws Exception {
+        writeDesign(dir);
+        InfraDesignerTopComponent designer = loaded(dir);
+        InfraGraph graph = (InfraGraph) field(designer, "graph");
+        File f = new File(dir, GraphIO.DEFAULT_FILENAME);
+
+        for (int edit = 1; edit <= 2; edit++) {
+            final int x = edit * 100;
+            SwingUtilities.invokeAndWait(() -> graph.addNode(NodeKind.DROPLET, x, 0));
+            onEdt(designer, "save");
+            flushSaveLane();
+            InfraGraph onDisk = new InfraGraph();
+            GraphIO.loadGuarded(onDisk, f);
+            assertThat(onDisk.getNodes()).as("save " + edit + " lands").hasSize(1 + edit);
+        }
+    }
+
+    @Test
     @DisplayName("a teammate's clean change is reloaded, not written over")
     void aTeammatesChangeIsNotWrittenOver(@TempDir File dir) throws Exception {
         writeDesign(dir);

@@ -143,6 +143,29 @@ class WriteRecheckTest {
     }
 
     @Test
+    void theWindowsOwnSavesStillLand(@TempDir File dir) throws Exception {
+        File f = new File(dir, WorkspaceIO.FILENAME);
+        WorkspaceIO.save(dir, Workspace.starter("Payments", "List charges", "Staging"));
+        ApiClientTopComponent window = loaded(dir);
+        Workspace ws = (Workspace) field(window, "workspace");
+        for (int n = 1; n <= 2; n++) {
+            final String name = "Renamed " + n;
+            SwingUtilities.invokeAndWait(() -> ws.collections.get(0).name = name);
+            SwingUtilities.invokeAndWait(() -> {
+                try {
+                    call(window, "save", new Class<?>[0]);
+                } catch (Exception e) {
+                    throw new IllegalStateException(e);
+                }
+            });
+            flushSaveLane();
+            assertThat(WorkspaceIO.load(dir).collections.get(0).name)
+                    .as("save " + n + " lands: the window's last write is its own").isEqualTo(name);
+        }
+        assertThat(f).exists();
+    }
+
+    @Test
     void aTeammatesChangeLandingBeforeThePulseIsNotWrittenOver(@TempDir File dir) throws Exception {
         File f = new File(dir, WorkspaceIO.FILENAME);
         WorkspaceIO.save(dir, Workspace.starter("Payments", "List charges", "Staging"));
