@@ -135,14 +135,15 @@ class ClockOwnersTest {
     }
 
     @Test
-    @DisplayName("an owners array a merge put out of step with the sessions is ignored, never misattributed")
+    @DisplayName("an owners array a merge put out of step with the sessions is nobody's — never misattributed, not even to the reader")
     void misalignedOwnersAreIgnored() {
         TaskBoard b = boardWith(
                 new JSONArray[]{new JSONArray().put("alice")},
                 pairs(new long[]{NOON - 3 * HOUR, NOON - 2 * HOUR}, new long[]{NOON - HOUR, NOON}));
         TaskBoard.Card c = b.column(0).cards().get(0);
         assertThat(c.sessions("alice")).isEmpty();
-        assertThat(c.sessions("carol")).hasSize(2);
+        assertThat(c.sessions("carol")).as("the reader is not handed a merge's sessions (3.4 review)").isEmpty();
+        assertThat(c.allSessions()).as("still the team's time").hasSize(2);
     }
 
     @Test

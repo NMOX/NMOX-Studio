@@ -65,7 +65,16 @@ final class TasksIO {
      * {@link IOException}) was destroyed by the very cap that refused to
      * read it.
      */
-    record LoadOutcome(TaskBoard board, Refusal refusal, String rescuedAs) {
+    record LoadOutcome(TaskBoard board, Refusal refusal, String rescuedAs, int format) {
+
+        LoadOutcome(TaskBoard board, Refusal refusal, String rescuedAs) {
+            this(board, refusal, rescuedAs, TaskBoard.FORMAT);
+        }
+
+        /** The file came from a newer NMOX Studio: shown as read, and not written over (3.4). */
+        boolean newer() {
+            return refusal == Refusal.NEWER;
+        }
 
         /** The bytes exist and could not be read at all. */
         boolean unreadable() {
@@ -101,7 +110,15 @@ final class TasksIO {
         UNREADABLE,
         CONFLICTED,
         /** Malformed, and the copy aside failed: writing would lose the only copy. */
-        UNRESCUED
+        UNRESCUED,
+        /**
+         * Written by a newer NMOX Studio (its {@code version} is above
+         * {@link TaskBoard#FORMAT}) (3.4). Until the review {@code version}
+         * was written and never read, so the board loaded, a save dropped
+         * every field the newer build had added, and the next ordinary card
+         * edit committed the loss. The board is shown as read, read-only.
+         */
+        NEWER
     }
 
     /**
@@ -175,7 +192,13 @@ final class TasksIO {
             return new LoadOutcome(starterBoard(), Refusal.CONFLICTED, null);
         }
         try {
-            return new LoadOutcome(TaskBoard.fromJson(text), Refusal.NONE, null);
+            TaskBoard parsed = TaskBoard.fromJson(text);
+            if (parsed.readFormat() > TaskBoard.FORMAT) {
+                LOG.log(Level.INFO, "{0} is format {1}, newer than this build writes; the board is read-only",
+                        new Object[]{f, parsed.readFormat()});
+                return new LoadOutcome(parsed, Refusal.NEWER, null, parsed.readFormat());
+            }
+            return new LoadOutcome(parsed, Refusal.NONE, null);
         } catch (RuntimeException broken) {
             // never over an earlier rescue: a second corrupt load used to
             // replace the first .bak, and the older bytes were gone; the

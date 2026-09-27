@@ -120,6 +120,8 @@ import org.openide.windows.TopComponent;
     "TasksTopComponent_unrescued={0} is not a board this build can read and no copy of it could be kept — the board is read-only so nothing overwrites it",
     "# {0} - the board file's name; {1} - the failure, as the file system said it",
     "TasksTopComponent_saveFailed=Could not save {0}: {1}",
+    "# {0} - the board file's name; {1} - the file's format number; {2} - the format this build writes",
+    "TasksTopComponent_newer={0} was saved by a newer NMOX Studio (format {1}; this one writes {2}) \u2014 the board is shown read-only so nothing it added is lost",
     "TasksTopComponent_newCard=New Card…",
     "TasksTopComponent_newCardA11y=New card",
     "TasksTopComponent_newCardTip=Adds a card to the first column",
@@ -461,6 +463,10 @@ public final class TasksTopComponent extends TopComponent {
         }
         if (outcome.unreadable()) {
             return Bundle.TasksTopComponent_unreadable(TasksIO.FILENAME);
+        }
+        if (outcome.newer()) {
+            return Bundle.TasksTopComponent_newer(TasksIO.FILENAME,
+                    String.valueOf(outcome.format()), String.valueOf(TaskBoard.FORMAT));
         }
         if (outcome.readOnly()) {
             return Bundle.TasksTopComponent_unrescued(TasksIO.FILENAME);

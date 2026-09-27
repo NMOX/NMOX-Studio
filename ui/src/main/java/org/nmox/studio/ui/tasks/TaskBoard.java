@@ -58,6 +58,17 @@ public final class TaskBoard {
          *  owner on the whole board is open — clocking in anywhere clocks
          *  out whatever that same person had running, and nobody else. */
         private final List<Session> sessions = new ArrayList<>();
+        /**
+         * The owners array exactly as read, when it did not line up with the
+         * sessions (a merge grew one array and not the other), else null
+         * (3.4). The first {@link #readSessions} sessions are then UNOWNED —
+         * nobody's, never the reader's — and this array is written back as
+         * it was, followed by the owners of any session clocked since, so a
+         * save never throws away labels a person can still repair by hand.
+         */
+        private List<String> unmatchedOwners;
+        /** How many sessions the file held when {@link #unmatchedOwners} was read. */
+        private int readSessions;
 
         /**
          * Only the four REQUIRED fields ride the constructor; everything
@@ -178,6 +189,12 @@ public final class TaskBoard {
      * machine. It is a label, not an identity — nothing is secured by it,
      * and two people sharing one login share one clock, which is what a
      * shared login means.
+     *
+     * <p>An owner of {@code ""} is UNOWNED: the file carried labels for the
+     * card's sessions that did not line up with them, so no one can say
+     * whose each one is. Such a session is counted as the team's time and
+     * nobody's own, no gesture reaches it, and the parse-time heal leaves it
+     * alone — it is somebody's clock, only not one this reading can name.
      *
      * <p>{@code legacy} marks a session read from a file written before
      * owners existed. Such a session belongs to whoever is reading the
@@ -656,7 +673,7 @@ public final class TaskBoard {
 
     public String toJson() {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT);
         JSONArray cols = new JSONArray();
         for (Column col : columns) {
             JSONObject jc = new JSONObject();
@@ -704,7 +721,19 @@ public final class TaskBoard {
                     // two-element pairs, so [start, end, owner] would make
                     // an older NMOX Studio drop the sessions themselves on
                     // its next save — this way it drops only the labels
-                    if (anyOwned) {
+                    if (c.unmatchedOwners != null) {
+                        // labels this reading could not line up are written
+                        // back as they were read, never dropped (3.4, the
+                        // review): the next save used to erase them, and
+                        // every later reader then took the sessions as its own
+                        JSONArray kept = new JSONArray();
+                        c.unmatchedOwners.forEach(kept::put);
+                        for (int n = c.readSessions; n < c.sessions.size(); n++) {
+                            Session sn = c.sessions.get(n);
+                            kept.put(sn.legacy ? "" : sn.owner);
+                        }
+                        j.put(SESSION_OWNERS, kept);
+                    } else if (anyOwned) {
                         j.put(SESSION_OWNERS, owners);
                     }
                 }
@@ -764,6 +793,7 @@ public final class TaskBoard {
     static TaskBoard fromJson(String json, String viewer) {
         JSONObject root = new JSONObject(json);
         TaskBoard b = new TaskBoard();
+        b.readFormat = formatOf(root);
         b.retro = root.optString("retro", "");
         JSONObject sj = root.optJSONObject("sprint");
         if (sj != null) {
@@ -829,10 +859,19 @@ public final class TaskBoard {
                         // with the sessions one-for-one: a merge that grew
                         // one array and not the other cannot say which
                         // label belongs to which session, so every session
-                        // is read as unlabelled rather than misattributed
+                        // is read as UNOWNED — nobody's. Until the review
+                        // they were read as unlabelled, which hands every
+                        // one of them to the READER: Carol opened the
+                        // board and owned Alice's and Bob's running clocks,
+                        // the heal closed one of them at zero credit, and
+                        // the next save dropped the labels for good.
                         JSONArray owners = j.optJSONArray(SESSION_OWNERS);
-                        if (owners != null && owners.length() != sess.length()) {
-                            owners = null;
+                        boolean unmatched = owners != null && owners.length() != sess.length();
+                        if (unmatched) {
+                            card.unmatchedOwners = new ArrayList<>(owners.length());
+                            for (int m = 0; m < owners.length(); m++) {
+                                card.unmatchedOwners.add(owners.optString(m, ""));
+                            }
                         }
                         for (int m = 0; m < sess.length(); m++) {
                             JSONArray pair = sess.optJSONArray(m);
@@ -843,14 +882,19 @@ public final class TaskBoard {
                                 // whole board parses — healOpenSessions
                                 long start = pair.optLong(0, 0L);
                                 long end = pair.optLong(1, 0L);
+                                long closed = end != 0L && end < start ? start : end;
+                                if (unmatched) {
+                                    card.sessions.add(new Session(start, closed, UNOWNED, false));
+                                    continue;
+                                }
                                 String owner = owners == null ? "" : owners.optString(m, "").strip();
                                 boolean legacy = owner.isEmpty();
-                                card.sessions.add(new Session(start,
-                                        end != 0L && end < start ? start : end,
+                                card.sessions.add(new Session(start, closed,
                                         legacy ? viewer : owner, legacy));
                             }
                         }
                     }
+                    card.readSessions = card.sessions.size();
                     col.cards.add(card);
                 }
             }
@@ -865,6 +909,29 @@ public final class TaskBoard {
 
     /** The card key holding each session's owner, aligned with {@code sessions} (3.4). */
     static final String SESSION_OWNERS = "sessionOwners";
+
+    /** The format the file this board was read from says it is in; {@link #FORMAT} for a board made here. */
+    private int readFormat = FORMAT;
+
+    /** @see #readFormat */
+    int readFormat() {
+        return readFormat;
+    }
+
+    /** The owner of a session no reading can attribute (see {@link Session}). */
+    static final String UNOWNED = "";
+
+    /**
+     * The board format this build writes (3.4). A board whose
+     * {@code version} is higher came from a newer NMOX Studio: it is shown
+     * read-only, because a save here would drop whatever that build added.
+     */
+    static final int FORMAT = 1;
+
+    /** The format a board document says it is in; a missing or odd value reads as {@link #FORMAT}. */
+    static int formatOf(JSONObject root) {
+        return root.opt("version") instanceof Number n ? n.intValue() : FORMAT;
+    }
 
     /**
      * Enforces the two open-session invariants the runtime keeps by
@@ -891,8 +958,8 @@ public final class TaskBoard {
         for (Column col : b.columns) {
             for (Card c : col.cards) {
                 for (Session sn : c.sessions) {
-                    if (sn.end != 0L) {
-                        continue;
+                    if (sn.end != 0L || UNOWNED.equals(sn.owner)) {
+                        continue; // an unowned clock is somebody's: never healed shut
                     }
                     if (c.lastOf(sn.owner) != sn) {
                         sn.end = sn.start; // open, but not its owner's last here
@@ -908,7 +975,7 @@ public final class TaskBoard {
         for (Column col : b.columns) {
             for (Card c : col.cards) {
                 for (Session sn : c.sessions) {
-                    if (sn.end == 0L && latestOpen.get(sn.owner) != sn) {
+                    if (sn.end == 0L && !UNOWNED.equals(sn.owner) && latestOpen.get(sn.owner) != sn) {
                         sn.end = sn.start;
                     }
                 }
