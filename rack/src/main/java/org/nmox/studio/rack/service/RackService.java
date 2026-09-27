@@ -36,7 +36,19 @@ import org.openide.util.lookup.ServiceProvider;
     "# {0} - the patch file's name; {1} - its size in KiB; {2} - the cap in MiB",
     "RackService_patchTooLarge=Could not load this project\u2019s saved rack, so the rack is empty: {0} is {1} KiB, over the {2} MiB limit.",
     "# {0} - the patch file's name; {1} - the name it was kept under",
-    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}."
+    "RackService_patchCorrupt=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON. Your file was kept as {1}.",
+    "# {0} - the patch file's name",
+    "RackService_patchConflicted=Could not load this project\u2019s saved rack, so the rack is empty: {0} has unresolved merge conflicts. Resolve them in git \u2014 NMOX Studio won\u2019t write it until then.",
+    "# {0} - the patch file's name",
+    "RackService_patchUnreadable=Could not load this project\u2019s saved rack, so the rack is empty: {0} could not be read. NMOX Studio won\u2019t write over it.",
+    "# {0} - the patch file's name",
+    "RackService_patchCorruptUnkept=Could not load this project\u2019s saved rack, so the rack is empty: {0} is not valid JSON and no copy of it could be kept. NMOX Studio won\u2019t write over it.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedConflicted=Not saved: {0} has unresolved merge conflicts \u2014 resolve them in git first.",
+    "# {0} - the patch file's name",
+    "RackService_saveRefusedUnread=Not saved: {0} was not read in this session, and NMOX Studio does not write over a file it has not read.",
+    "# {0} - the patch file's name; {1} - how many cables followed their device; {2} - how many were dropped",
+    "RackService_cablesRestored={0}: cables that followed a moved device: {1} \u00b7 cables dropped: {2}"
 })
 public class RackService {
 
@@ -614,9 +626,18 @@ public class RackService {
             return Bundle.RackService_patchTooLarge(patch.getName(),
                     tooLarge.kib(), RackIO.PatchTooLargeException.capMib());
         }
+        if (failure instanceof RackIO.PatchConflictedException) {
+            return Bundle.RackService_patchConflicted(patch.getName());
+        }
+        if (failure instanceof RackIO.PatchUnreadableException) {
+            return Bundle.RackService_patchUnreadable(patch.getName());
+        }
         if (failure instanceof RackIO.CorruptPatchException corrupt) {
             // the parser's own complaint is already in the WARNING below; it is
             // English and untranslatable, so it never reaches the status line
+            if (corrupt.backupName() == null) {
+                return Bundle.RackService_patchCorruptUnkept(patch.getName());
+            }
             return Bundle.RackService_patchCorrupt(patch.getName(), corrupt.backupName());
         }
         String reason = failure.getMessage();
@@ -624,6 +645,93 @@ public class RackService {
             reason = failure.getClass().getSimpleName();
         }
         return Bundle.RackService_patchNotLoaded(patch.getName(), reason);
+    }
+
+    /** What a load says about cables that followed their device or were dropped (3.4). */
+    public static String cablesSentence(File patch, RackIO.CableReport cables) {
+        return Bundle.RackService_cablesRestored(patch.getName(),
+                String.valueOf(cables.followed()), String.valueOf(cables.dropped()));
+    }
+
+    // ---- a patch this session must not write (3.4) ----
+
+    /**
+     * The project's patch file while it may not be written: set when a load
+     * refused a file this build could not read, a conflict git is waiting on,
+     * or a broken file no copy of could be kept. {@code reason} is the
+     * sentence a refused Save says. Cleared by the next load of the project —
+     * which the pulse below runs by itself the moment the file changes on
+     * disk, so resolving a conflict in git reloads the rack with no gesture.
+     */
+    record PatchLock(File file, String reason) {
+    }
+
+    private volatile PatchLock patchLock;
+    private org.nmox.studio.core.util.FilePulse patchLockPulse;
+
+    private synchronized void bindPatchReadOnly(File patch, Exception refusal) {
+        patchLock = new PatchLock(patch, refusal instanceof RackIO.PatchConflictedException
+                ? Bundle.RackService_saveRefusedConflicted(patch.getName())
+                : Bundle.RackService_saveRefusedUnread(patch.getName()));
+        patchLockPulse = new org.nmox.studio.core.util.FilePulse(patch, (mtime, size) ->
+                java.awt.EventQueue.invokeLater(() -> reloadIfStillLocked(patch)));
+        patchLockPulse.tick(); // prime the baseline on the stamp we refused
+        patchLockPulse.start(org.nmox.studio.core.util.FilePulse.DEFAULT_INTERVAL_MS);
+    }
+
+    private synchronized void unbindPatch() {
+        patchLock = null;
+        if (patchLockPulse != null) {
+            patchLockPulse.stop();
+            patchLockPulse = null;
+        }
+    }
+
+    /**
+     * The file changed on disk while it was locked: read it again. A
+     * resolved conflict loads like any patch and lifts the lock; one still
+     * conflicted binds again. The file wins over the rack on screen, which
+     * is a stand-in no save could have kept (every save was refused).
+     */
+    void reloadIfStillLocked(File patch) {
+        PatchLock lock = patchLock;
+        if (lock == null || !lock.file().equals(patch)
+                || !patch.equals(new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME))) {
+            return;
+        }
+        autoLoadPatch();
+    }
+
+    /** Test seam: the pulse's tick, run synchronously. */
+    void tickPatchLock() {
+        org.nmox.studio.core.util.FilePulse pulse;
+        synchronized (this) {
+            pulse = patchLockPulse;
+        }
+        if (pulse != null) {
+            pulse.tick();
+        }
+    }
+
+    /**
+     * Why {@code target} may not be written by Save Patch, or null when it
+     * may. Every writer of the project's patch asks before writing.
+     */
+    public String saveRefusal(File target) {
+        PatchLock lock = patchLock;
+        return lock != null && lock.file().getAbsoluteFile().equals(target.getAbsoluteFile())
+                ? lock.reason() : null;
+    }
+
+    /**
+     * The project's patch was read by an explicit gesture (Load Patch): the
+     * lock a failed load set on it no longer describes the rack on screen.
+     */
+    public void patchLoaded(File patch) {
+        PatchLock lock = patchLock;
+        if (lock != null && lock.file().getAbsoluteFile().equals(patch.getAbsoluteFile())) {
+            unbindPatch();
+        }
     }
 
     /**
@@ -810,12 +918,25 @@ public class RackService {
 
     private void autoLoadPatch() {
         File patch = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
-        if (patch.isFile()) {
+        unbindPatch();
+        if (patch.exists()) {
             try {
-                RackIO.load(rack, patch);
+                RackIO.CableReport cables = RackIO.load(rack, patch);
+                if (!cables.quiet()) {
+                    // a teammate's device edits moved or removed what some
+                    // cables were patched to: said, not only logged (3.4)
+                    statusThatLingers(cablesSentence(patch, cables));
+                }
             } catch (Exception ex) {
                 java.util.logging.Logger.getLogger(RackService.class.getName())
                         .warning("Could not load rack patch " + patch + ": " + ex);
+                if (!RackIO.mayOverwrite(ex)) {
+                    // never write a file this build could not read: a conflict
+                    // git is waiting on, bytes it could not read, or a broken
+                    // file no copy of exists (3.4 — Save Patch used to replace
+                    // a mode-000 or conflicted patch with the rack on screen)
+                    bindPatchReadOnly(patch, ex);
+                }
                 // REFUSALS SPEAK (ledger 104): aiming a project whose patch is
                 // corrupt or over the cap left the reader looking at an empty
                 // rack with the reason in a log file they never open. The load

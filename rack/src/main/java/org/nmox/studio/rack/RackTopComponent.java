@@ -326,6 +326,14 @@ public final class RackTopComponent extends TopComponent {
         JButton save = new JButton(Bundle.RackTopComponent_savePatch());
         save.addActionListener(e -> {
             File target = new File(rack.getProjectDir(), RackIO.DEFAULT_FILENAME);
+            // a patch this session could not read, or one git has not finished
+            // merging, is never written over — the rack on screen is a
+            // stand-in for it, not its contents (3.4)
+            String refusal = org.nmox.studio.rack.service.RackService.getDefault().saveRefusal(target);
+            if (refusal != null) {
+                error(refusal);
+                return;
+            }
             // the JSON snapshot is taken here (synchronous, model-consistent);
             // only the disk write rides the lane — the one workspace writer
             // the v1.44 SaveLane sweep left on the EDT (v1.56 review, F3)
@@ -581,8 +589,14 @@ public final class RackTopComponent extends TopComponent {
             }
             java.awt.EventQueue.invokeLater(() -> {
                 try {
-                    RackIO.fromJson(rack, doc);
+                    RackIO.CableReport cables = RackIO.fromJson(rack, doc);
                     markPersisted();
+                    // the file was read and is now the rack on screen: a lock
+                    // a refused autoload set on it no longer applies
+                    org.nmox.studio.rack.service.RackService.getDefault().patchLoaded(file);
+                    if (!cables.quiet()) {
+                        info(org.nmox.studio.rack.service.RackService.cablesSentence(file, cables));
+                    }
                 } catch (RuntimeException ex) {
                     error(Bundle.RackTopComponent_loadFailed(ex.getMessage()));
                 }

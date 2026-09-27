@@ -7,6 +7,7 @@ import org.nmox.studio.rack.devices.DeviceType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 class RackIOTest {
 
@@ -126,7 +127,10 @@ class RackIOTest {
         java.io.File bak = new java.io.File(dir, RackIO.DEFAULT_FILENAME + ".bak");
         assertThat(bak).exists();
         assertThat(java.nio.file.Files.readString(bak.toPath())).isEqualTo(corruptBytes);
-        assertThat(file).doesNotExist();
+        assertThat(java.nio.file.Files.readString(file.toPath()))
+                .as("3.4: the rescue is a COPY — the file stays where the commit expects it,"
+                        + " so a commit -am never records its deletion")
+                .isEqualTo(corruptBytes);
     }
 
     @Test
@@ -151,11 +155,14 @@ class RackIOTest {
                 .as("no stale device from the previous project survives a corrupt load")
                 .isEmpty();
 
-        // the user's bytes are preserved as .bak, and the original is gone so
-        // the next save writes a fresh valid file instead of clobbering theirs
+        // the user's bytes are preserved as .bak — a COPY since 3.4, so the
+        // original stays in place and a commit never records its deletion;
+        // with the copy safe, the next save may write a fresh valid file
         java.io.File bak = new java.io.File(dir, RackIO.DEFAULT_FILENAME + ".bak");
         assertThat(bak).exists();
         assertThat(java.nio.file.Files.readString(bak.toPath())).isEqualTo(corruptBytes);
-        assertThat(file).doesNotExist();
+        assertThat(java.nio.file.Files.readString(file.toPath())).isEqualTo(corruptBytes);
+        assertThat(RackIO.mayOverwrite(catchThrowable(() -> RackIO.load(new Rack(), file))))
+                .as("a broken patch with its copy kept may be written over").isTrue();
     }
 }
