@@ -246,6 +246,23 @@ class TasksLawsGateTest {
     }
 
     @Test
+    @DisplayName("a rescued board and a failed save both SPEAK on the status line, not only in the log (3.4)")
+    void rescueAndSaveFailureSpeak() throws Exception {
+        String src = tc();
+        int reload = src.indexOf("private void reload()");
+        String body = src.substring(reload, src.indexOf("\n    }", reload));
+        assertThat(body).as("a starter that replaced a malformed board says where the copy went")
+                .contains("status(Bundle.TasksTopComponent_rescued(");
+        int m = src.indexOf("private boolean mutate(");
+        String mutate = src.substring(m, src.indexOf("\n    }", m));
+        int caught = mutate.indexOf("catch (IOException ex)");
+        assertThat(caught).isPositive();
+        assertThat(mutate.substring(caught))
+                .as("a full disk is told to the person looking at an unsaved board")
+                .contains("Bundle.TasksTopComponent_saveFailed(");
+    }
+
+    @Test
     @DisplayName("a moved card keeps focus so the keyboard gesture can repeat")
     void keyboardMoveKeepsSelection() throws Exception {
         // rebuild() discards every JList, so without this the first ⌘↓ moved

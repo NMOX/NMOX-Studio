@@ -45,8 +45,8 @@ import org.openide.util.NbBundle;
  * the PATH. Nothing here opens a window, runs a process or writes a file — a
  * user's corrupt
  * drop-in is skipped with its reason logged, not moved aside (listing a shelf
- * must not rename files on it; {@code RackIO.readDocument} does, which is why
- * it is not used here).
+ * must not write files beside it; {@code RackIO.readDocument} copies a broken
+ * file to a rescue sibling, which is why it is not used here).
  */
 @NbBundle.Messages({
     "RackGallery_starterPolyglotName=Run · Debug · Test",
