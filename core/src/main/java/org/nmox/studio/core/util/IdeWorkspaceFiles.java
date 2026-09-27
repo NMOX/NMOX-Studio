@@ -40,6 +40,23 @@ public final class IdeWorkspaceFiles {
     public static boolean isOwn(String fileName) {
         return fileName != null
                 && fileName.startsWith(PREFIX)
-                && fileName.endsWith(SUFFIX);
+                && (fileName.endsWith(SUFFIX) || isSaveTemp(fileName));
+    }
+
+    /**
+     * An {@link AtomicFiles} temp — {@code .nmox-save-<target>.<n>.tmp}, or
+     * the pre-3.4 {@code .nmox<name>.json<n>.tmp} a killed save of a
+     * workspace file left behind: the IDE saving, never the user editing,
+     * so REFLEX with FILTER all no longer fires on it (3.4).
+     */
+    static boolean isSaveTemp(String fileName) {
+        if (!fileName.endsWith(AtomicFiles.TEMP_SUFFIX)) {
+            return false;
+        }
+        if (fileName.startsWith(AtomicFiles.TEMP_PREFIX)) {
+            return true;
+        }
+        int json = fileName.indexOf(SUFFIX);
+        return json > PREFIX.length() && AtomicFiles.isTempOf(fileName, fileName.substring(0, json + SUFFIX.length()));
     }
 }
