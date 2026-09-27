@@ -215,6 +215,128 @@ class HttpBodiesTest {
     }
 
     /** Hands out its bytes, then blocks until closed — a server gone quiet. */
+    /** Delivers {@code total} bytes, one every {@code gapMs}; an IOException once closed. */
+    private static final class TrickleStream extends InputStream {
+        private final int total;
+        private final long gapMs;
+        private int sent;
+        private volatile boolean closed;
+
+        TrickleStream(int total, long gapMs) {
+            this.total = total;
+            this.gapMs = gapMs;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (sent >= total) {
+                return -1;
+            }
+            long until = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(gapMs);
+            while (System.nanoTime() < until) {
+                if (closed) {
+                    throw new IOException("closed");
+                }
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("interrupted");
+                }
+            }
+            sent++;
+            return 'x';
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            int c = read();
+            if (c < 0) {
+                return -1;
+            }
+            b[off] = (byte) c;
+            return 1;
+        }
+
+        @Override
+        public void close() {
+            closed = true;
+        }
+    }
+
+    @Test
+    @DisplayName("the deadline is idle time: a body still arriving is read whole, past the deadline in total (the 3.4 review)")
+    void slowButLiveBodyIsRead() throws IOException {
+        // 8 bytes, one every 60 ms: ~480 ms in all against a 200 ms deadline
+        HttpBodies.Capped c = HttpBodies.readUtf8(new TrickleStream(8, 60), 1024, Duration.ofMillis(200));
+        assertThat(c.text()).isEqualTo("xxxxxxxx");
+    }
+
+    @Test
+    @DisplayName("a server that trickles forever ends at the ceiling, said as too slow, not as stopped")
+    void tricklingForeverHitsTheCeiling() {
+        HttpBodies.StalledException e = assertTimeoutPreemptively(Duration.ofSeconds(10), () -> assertThrows(
+                HttpBodies.StalledException.class,
+                () -> HttpBodies.readUtf8(new TrickleStream(Integer.MAX_VALUE, 40), 1 << 20, Duration.ofMillis(150))));
+        assertThat(e.getMessage()).contains("still arriving").doesNotContain("stopped sending");
+    }
+
+    @Test
+    @DisplayName("a stream whose close blocks cannot stop every other deadline: the close is not the watchdog's")
+    void blockingCloseDoesNotStallTheWatchdog() throws Exception {
+        CountDownLatch release = new CountDownLatch(1);
+        InputStream stuck = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                try {
+                    release.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+                throw new IOException("released");
+            }
+
+            @Override
+            public void close() {
+                // the JDK server's request stream drains on close: it waits on the reader
+                try {
+                    release.await();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }
+        };
+        Thread first = org.nmox.studio.core.util.Threads.startDaemon(() -> {
+            try {
+                HttpBodies.readUtf8(stuck, 1024, Duration.ofMillis(50));
+            } catch (IOException expected) {
+                // released at the end
+            }
+        }, "stuck-reader");
+        try {
+            Thread.sleep(200); // its alarm has fired and its close is blocked
+            assertTimeoutPreemptively(Duration.ofSeconds(5), () -> assertThrows(HttpBodies.StalledException.class,
+                    () -> HttpBodies.readUtf8(new StallingStream(new byte[0]), 1024, Duration.ofMillis(100))));
+        } finally {
+            release.countDown();
+            first.join(2000);
+        }
+    }
+
+    @Test
+    @DisplayName("a Cancel mid-body is a cancel, not the server's broken body")
+    void interruptedReadIsCancelled() {
+        InputStream cut = new InputStream() {
+            @Override
+            public int read() throws IOException {
+                IOException e = new IOException("Interrupted");
+                e.initCause(new InterruptedException());
+                throw e;
+            }
+        };
+        assertThrows(java.io.InterruptedIOException.class, () -> HttpBodies.readUtf8(cut, 1024, T));
+    }
+
     private static final class StallingStream extends InputStream {
         private final byte[] head;
         private int pos;

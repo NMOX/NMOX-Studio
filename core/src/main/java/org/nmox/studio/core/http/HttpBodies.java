@@ -49,8 +49,13 @@ public final class HttpBodies {
 
     private static final Logger LOG = Logger.getLogger(HttpBodies.class.getName());
 
-    /** One daemon thread fires every deadline; an alarm is a close, which is
-     *  cheap and non-blocking on every stream the callers read. */
+    /**
+     * One daemon thread fires every deadline. It never closes a stream
+     * itself: closing the JDK web server's request stream DRAINS it, which
+     * waits on the very reader it means to free, and the one watchdog stuck
+     * there stopped every deadline in the IDE (the 3.4 review: a stalled
+     * Agent Port client). The close runs on a thread of its own.
+     */
     private static final ScheduledExecutorService WATCHDOG = watchdog();
 
     /** A cancelled alarm leaves the queue at once: a poller reading every two seconds must not pile up a minute of dead alarms, each holding its stream. */
@@ -83,7 +88,11 @@ public final class HttpBodies {
         private final transient Duration deadline;
 
         public StalledException(long bytesReceived, Duration deadline) {
-            super(message(bytesReceived, deadline));
+            this(bytesReceived, deadline, false);
+        }
+
+        StalledException(long bytesReceived, Duration deadline, boolean stillArriving) {
+            super(stillArriving ? tooSlowMessage(bytesReceived, deadline) : message(bytesReceived, deadline));
             this.bytesReceived = bytesReceived;
             this.deadline = deadline;
         }
@@ -101,6 +110,12 @@ public final class HttpBodies {
         private static String message(long bytes, Duration deadline) {
             return NbBundle.getMessage(HttpBodies.class, "HttpBodies.stalled",
                     bytes, Math.max(1, deadline.toSeconds()));
+        }
+
+        /** Bytes were still arriving when the ceiling ran out: the server did not stop, it was too slow. */
+        private static String tooSlowMessage(long bytes, Duration deadline) {
+            return NbBundle.getMessage(HttpBodies.class, "HttpBodies.tooSlow",
+                    bytes, Math.max(1, deadline.toSeconds() * CEILING_FACTOR));
         }
     }
 
@@ -175,9 +190,8 @@ public final class HttpBodies {
     public static Capped read(InputStream in, int capBytes, Charset charset, Duration deadline)
             throws IOException {
         Objects.requireNonNull(deadline, "every body read carries a deadline");
-        Watch watch = new Watch(in);
-        ScheduledFuture<?> alarm = WATCHDOG.schedule(watch::expire,
-                Math.max(1, deadline.toMillis()), TimeUnit.MILLISECONDS);
+        Watch watch = new Watch(in, Math.max(1, deadline.toMillis()));
+        watch.arm();
         try {
             byte[] buf = new byte[Math.min(Math.max(capBytes, 0), 8192)];
             int count = 0;
@@ -199,18 +213,26 @@ public final class HttpBodies {
                 // the alarm closed the stream: some streams answer a close
                 // with EOF rather than an exception, and a body cut short by
                 // our own close is not the body
-                throw new StalledException(count, deadline);
+                throw new StalledException(count, deadline, watch.tooSlow);
             }
             return new Capped(new String(buf, 0, count, charset), count, truncated);
         } catch (StalledException stalled) {
             throw stalled;
         } catch (IOException failed) {
             if (watch.expired) {
-                throw new StalledException(watch.received, deadline);
+                throw new StalledException(watch.received, deadline, watch.tooSlow);
+            }
+            if (Thread.currentThread().isInterrupted() || interrupted(failed)) {
+                // a Cancel interrupts the reading worker and the JDK's body
+                // stream answers with an IOException: that is the user's
+                // verdict, not the server's broken body (the 3.4 review)
+                java.io.InterruptedIOException cancelled = new java.io.InterruptedIOException("cancelled");
+                cancelled.initCause(failed);
+                throw cancelled;
             }
             throw BrokenBodyException.from(failed, watch.received);
         } finally {
-            alarm.cancel(false);
+            watch.disarm();
         }
     }
 
@@ -220,24 +242,88 @@ public final class HttpBodies {
         return read(in, capBytes, StandardCharsets.UTF_8, deadline);
     }
 
+    /**
+     * How many deadlines a body that keeps ARRIVING may take in all. The
+     * deadline is an idle bound: it re-arms whenever bytes arrive, so a slow
+     * but live download is not refused as "stopped" (the 3.4 review: at the
+     * old whole-body reading, an 8 MB answer over a slow link was thrown away
+     * with a sentence that said the server had gone quiet). A server that
+     * trickles a byte just inside every deadline still ends here.
+     */
+    static final int CEILING_FACTOR = 4;
+
+    private static boolean interrupted(Throwable failed) {
+        for (Throwable t = failed; t != null; t = t.getCause()) {
+            if (t instanceof InterruptedException || t instanceof java.io.InterruptedIOException) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** The alarm for one read: closing the stream is what frees the reader. */
     private static final class Watch {
 
         private final InputStream in;
+        private final long idleMillis;
+        private final long ceilingAt;
         volatile boolean expired;
+        volatile boolean tooSlow;
         volatile long received;
+        private long seenAtLastCheck;
+        private ScheduledFuture<?> alarm;
+        private boolean done;
 
-        Watch(InputStream in) {
+        Watch(InputStream in, long idleMillis) {
             this.in = in;
+            this.idleMillis = idleMillis;
+            this.ceilingAt = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(idleMillis * CEILING_FACTOR);
         }
 
-        void expire() {
-            expired = true;
-            try {
-                in.close();
-            } catch (IOException | RuntimeException closeFailed) {
-                LOG.log(Level.FINE, "closing a stalled HTTP body", closeFailed);
+        synchronized void arm() {
+            schedule(idleMillis);
+        }
+
+        private synchronized void schedule(long millis) {
+            if (!done) {
+                alarm = WATCHDOG.schedule(this::check, Math.max(1, millis), TimeUnit.MILLISECONDS);
             }
+        }
+
+        synchronized void disarm() {
+            done = true;
+            if (alarm != null) {
+                alarm.cancel(false);
+            }
+        }
+
+        /** On the watchdog: re-arm if bytes arrived since the last look, else expire. */
+        private synchronized void check() {
+            if (done) {
+                return;
+            }
+            long left = TimeUnit.NANOSECONDS.toMillis(ceilingAt - System.nanoTime());
+            long now = received;
+            if (now != seenAtLastCheck && left > 0) {
+                seenAtLastCheck = now;
+                schedule(Math.min(idleMillis, left));
+                return;
+            }
+            tooSlow = now != seenAtLastCheck;
+            expire();
+        }
+
+        private void expire() {
+            expired = true;
+            done = true;
+            // never on the watchdog: a close can block (see WATCHDOG)
+            Threads.startDaemon(() -> {
+                try {
+                    in.close();
+                } catch (IOException | RuntimeException closeFailed) {
+                    LOG.log(Level.FINE, "closing a stalled HTTP body", closeFailed);
+                }
+            }, "nmox-http-body-close");
         }
     }
 }
