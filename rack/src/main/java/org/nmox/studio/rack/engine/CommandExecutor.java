@@ -90,6 +90,13 @@ public final class CommandExecutor {
                 tree.add(p.toHandle());
             }
         }
+        // the survivors of runs whose root already exited (3.4): what a run
+        // starts, quitting the IDE ends
+        for (ProcessHandle orphan : RunSurvivors.orphans()) {
+            if (!tree.contains(orphan)) {
+                tree.add(orphan);
+            }
+        }
         tree.forEach(ProcessHandle::destroy);
         long deadline = System.currentTimeMillis() + 1_500;
         for (ProcessHandle h : tree) {
@@ -181,6 +188,11 @@ public final class CommandExecutor {
             };
         }
 
+        // the run's family, seen while its root lives (3.4): a child that
+        // outlives the root is invisible to descendants() afterwards — see RunSurvivors
+        RunSurvivors family = new RunSurvivors(process);
+        Threads.startDaemon(family::sample, "nmox-rack-family-" + tabName);
+
         OutputWriter err = io == null ? null : io.getErr();
         Thread errPump = Threads.daemon(
                 () -> pumpStream(process.getErrorStream(), err, true, tabName, dir, onLine),
@@ -203,6 +215,15 @@ public final class CommandExecutor {
                 Thread.currentThread().interrupt();
                 code = -1;
             }
+            // a Stop ends the whole family itself; a root that exited on its own
+            // may leave some of it running, and that is said, not hidden (3.4)
+            String survivors = stopped.get() ? null : family.rootExited(tabName);
+            if (survivors != null) {
+                if (out != null) {
+                    out.println(survivors);
+                }
+                RackBus.publish(tabName, survivors, false);
+            }
             String verdict = "[exit " + code + "]" + (stopped.get() ? " stopped" : "");
             if (out != null) {
                 out.println(verdict);
@@ -223,6 +244,14 @@ public final class CommandExecutor {
                 // leave a dev server holding its port while the UI said stopped
                 java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
                 process.descendants().forEach(tree::add);
+                // plus every descendant ever seen and still alive: one an
+                // intermediate shell orphaned is no longer a descendant (3.4)
+                family.sampleNow();
+                for (ProcessHandle h : family.alive()) {
+                    if (!tree.contains(h)) {
+                        tree.add(h);
+                    }
+                }
                 tree.forEach(ProcessHandle::destroy);
                 process.destroy();
                 long deadline = System.nanoTime() + KILL_GRACE_NANOS;
@@ -260,6 +289,12 @@ public final class CommandExecutor {
                 stopped.set(true);
                 java.util.List<ProcessHandle> tree = new java.util.ArrayList<>();
                 process.descendants().forEach(tree::add);
+                family.sampleNow();
+                for (ProcessHandle h : family.alive()) {
+                    if (!tree.contains(h)) {
+                        tree.add(h);
+                    }
+                }
                 tree.forEach(ProcessHandle::destroy);
                 process.destroy();
                 try {
