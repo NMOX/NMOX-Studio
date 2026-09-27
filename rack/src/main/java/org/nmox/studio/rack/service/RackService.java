@@ -326,6 +326,16 @@ public class RackService {
         }
     }
 
+    /** Whether the last snapshot write failed: a failing disk is said once, not every five seconds. */
+    static volatile boolean snapshotFailing;
+
+    /**
+     * Writes (or, given null, removes) the session snapshot, atomically. It
+     * is rewritten every few seconds while anything runs, so a failure is
+     * logged at WARNING once per failing streak and at FINE after that — a
+     * full disk used to add a stack trace to the log every five seconds (the
+     * 3.4 review) — and a success ends the streak.
+     */
     static void writeSnapshot(java.io.File file, String json) {
         try {
             if (json != null) {
@@ -335,8 +345,11 @@ public class RackService {
                 // stopped after running: nothing to resume anymore
                 java.nio.file.Files.deleteIfExists(file.toPath());
             }
+            snapshotFailing = false;
         } catch (java.io.IOException | RuntimeException failed) {
-            java.util.logging.Logger.getLogger(RackService.class.getName()).log(java.util.logging.Level.WARNING,
+            java.util.logging.Level level = snapshotFailing ? java.util.logging.Level.FINE : java.util.logging.Level.WARNING;
+            snapshotFailing = true;
+            java.util.logging.Logger.getLogger(RackService.class.getName()).log(level,
                     "Could not " + (json != null ? "write" : "remove") + " the session snapshot " + file
                     + " (the crash-resume offer depends on it)", failed);
         }

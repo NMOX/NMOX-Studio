@@ -199,9 +199,26 @@ public final class LiveRuns {
             }
             markStopped(id);
         }
-        r.killer().run();
+        kill(r);
         notifyListeners();
         return r;
+    }
+
+    /**
+     * Runs a stop's killer. One that throws leaves the run as it was — not
+     * "stopping…" forever with a second press answering "Already stopping"
+     * about a stop that never happened (the 3.4 review) — and says so.
+     */
+    private static void kill(Run r) {
+        try {
+            r.killer().run();
+        } catch (RuntimeException failed) {
+            synchronized (LIVE) {
+                STOPPING.remove(r.id());
+            }
+            java.util.logging.Logger.getLogger(LiveRuns.class.getName()).log(java.util.logging.Level.WARNING,
+                    "Stopping " + r.label() + " failed; it is still running", failed);
+        }
     }
 
     /**
@@ -220,7 +237,7 @@ public final class LiveRuns {
             }
         }
         for (Run r : stopped) {
-            r.killer().run();
+            kill(r);
         }
         if (!stopped.isEmpty()) {
             notifyListeners();

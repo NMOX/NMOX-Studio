@@ -78,15 +78,28 @@ class SessionSnapshotWriteTest {
         File file = sessions.resolve("p.json").toFile();
         Files.writeString(file.toPath(), "{\"good\":true}");
         // the directory refuses new files: an atomic write cannot even make its temp
+        RackService.snapshotFailing = false;
+        assertThat(sessions.toFile().setWritable(false)).isTrue();
+        try {
+            RackService.writeSnapshot(file, "{\"good\":false}");
+            // rewritten every few seconds while anything runs: a failing disk
+            // is said once, not with a stack trace every five seconds
+            RackService.writeSnapshot(file, "{\"good\":false}");
+            RackService.writeSnapshot(file, "{\"good\":false}");
+        } finally {
+            sessions.toFile().setWritable(true);
+        }
+        assertThat(Files.readString(file.toPath())).isEqualTo("{\"good\":true}");
+        assertThat(warnings).as("the failure is not swallowed, and said once per streak").hasSize(1);
+        assertThat(warnings.get(0).getMessage()).contains("session snapshot").contains("crash-resume");
+        RackService.writeSnapshot(file, "{\"good\":true}");
         assertThat(sessions.toFile().setWritable(false)).isTrue();
         try {
             RackService.writeSnapshot(file, "{\"good\":false}");
         } finally {
             sessions.toFile().setWritable(true);
         }
-        assertThat(Files.readString(file.toPath())).isEqualTo("{\"good\":true}");
-        assertThat(warnings).as("the failure is not swallowed").hasSize(1);
-        assertThat(warnings.get(0).getMessage()).contains("session snapshot").contains("crash-resume");
+        assertThat(warnings).as("a success ends the streak; the next failure speaks again").hasSize(2);
     }
 
     @Test

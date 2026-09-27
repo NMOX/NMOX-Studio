@@ -154,6 +154,19 @@ class LiveRunsTest {
     }
 
     @Test
+    @org.junit.jupiter.api.DisplayName("a killer that throws leaves the run live and pressable, not 'stopping…' forever (the 3.4 review)")
+    void throwingKillerDoesNotPinTheRow() {
+        LiveRuns.add(new LiveRuns.Run("run:throws", "sudo thing", () -> {
+            throw new IllegalStateException("EPERM");
+        }));
+        assertThat(LiveRuns.stop("run:throws")).isNotNull();
+        assertThat(LiveRuns.isStopping("run:throws")).isFalse();
+        assertThat(LiveRuns.live()).extracting(LiveRuns.Run::id).contains("run:throws");
+        assertThat(LiveRuns.stopAll()).extracting(LiveRuns.Run::id).as("a second press tries again").contains("run:throws");
+        assertThat(LiveRuns.isStopping("run:throws")).isFalse();
+    }
+
+    @Test
     @DisplayName("stop(id) kills exactly one run, keeps it stopping until its exit, and tells the listeners (v2.70.0, 3.4)")
     void stopOne() {
         java.util.List<String> killed = new java.util.ArrayList<>();
