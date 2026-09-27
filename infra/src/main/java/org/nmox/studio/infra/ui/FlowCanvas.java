@@ -42,7 +42,21 @@ import org.nmox.studio.core.util.PlainText;
     "FlowCanvas_liveStatus=live",
     "FlowCanvas_nodeTooltip=<html><b>{0}</b> {1}<br>${2}/mo{3}</html>",
     "FlowCanvas_tooltipLive=<br>live: {0}",
-    "FlowCanvas_tooltipDesignOnly=<br>design only"
+    "FlowCanvas_tooltipDesignOnly=<br>design only",
+    "FlowCanvas_a11yName=Infrastructure design",
+    "# {0} the resource kind, {1} its label",
+    "FlowCanvas_a11yNodeName=Infrastructure design: {0} {1}",
+    "FlowCanvas_a11yHelp=No resource selected. Arrow keys move between resources, Shift with an arrow moves"
+        + " the selected one, Enter opens its properties, W wires it to another resource, Shift+F10 opens its"
+        + " menu, Delete removes it.",
+    "# {0} and {1} lists of resources, each written as kind and label",
+    "FlowCanvas_a11yWires=Serves: {0}. Served by: {1}.",
+    "FlowCanvas_a11yNobody=nothing",
+    "FlowCanvas_a11yStatus=Status: {0}.",
+    "FlowCanvas_wireTo=Wire to…",
+    "FlowCanvas_wireTitle=Wire {0} to…",
+    "FlowCanvas_wireTargets=Resources {0} can serve",
+    "FlowCanvas_wireNone={0} has nothing left to serve in this design — a wire reads \"serves\""
 })
 public class FlowCanvas extends JPanel {
 
@@ -136,6 +150,273 @@ public class FlowCanvas extends JPanel {
         });
         setTransferHandler(new PaletteDrop());
         setToolTipText("");
+        installKeyboard();
+    }
+
+    // ---- the keyboard's canvas (3.4, question 3) ----
+
+    /**
+     * Everything the mouse does here, from the keyboard: arrows move the
+     * selection to the nearest resource that way, Shift+arrows move the
+     * selected resource on the grid, Enter opens its properties (the
+     * double-click), W wires it to a resource it can serve (the drag, through
+     * the same {@code graph.connect} and the same refusal), Shift+F10 and the
+     * menu key open its menu, Delete removes it. Tab keeps its meaning — the
+     * next control — so the canvas never traps the keyboard.
+     */
+    private void installKeyboard() {
+        key("LEFT", () -> moveSelection(-1, 0));
+        key("RIGHT", () -> moveSelection(1, 0));
+        key("UP", () -> moveSelection(0, -1));
+        key("DOWN", () -> moveSelection(0, 1));
+        key("shift LEFT", () -> nudgeSelected(-10, 0));
+        key("shift RIGHT", () -> nudgeSelected(10, 0));
+        key("shift UP", () -> nudgeSelected(0, -10));
+        key("shift DOWN", () -> nudgeSelected(0, 10));
+        key("ENTER", () -> {
+            if (selectedNode != null) {
+                callbacks.nodeDoubleClicked(selectedNode);
+            }
+        });
+        key("W", () -> wireFrom(selectedNode));
+        org.nmox.studio.core.util.KeyboardAccess.onMenuKey(this, () -> {
+            if (selectedNode != null) {
+                callbacks.nodeContextMenu(selectedNode, screenPointOf(selectedNode));
+            }
+        });
+        addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+
+            @Override
+            public void focusLost(java.awt.event.FocusEvent e) {
+                repaint();
+            }
+        });
+    }
+
+    private void key(String stroke, Runnable run) {
+        javax.swing.KeyStroke ks = javax.swing.KeyStroke.getKeyStroke(stroke);
+        String name = "nmox-canvas-" + stroke;
+        getInputMap(WHEN_FOCUSED).put(ks, name);
+        getActionMap().put(name, new javax.swing.AbstractAction(name) {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                run.run();
+            }
+        });
+    }
+
+    /**
+     * Arrow keys: the nearest resource in that direction from the selected
+     * one, the axis distance counting half as much as the sideways drift, so
+     * Right means "to the right", not "anywhere closer". With nothing
+     * selected, the first resource in reading order.
+     */
+    void moveSelection(int dx, int dy) {
+        java.util.List<InfraNode> nodes = graph.getNodes();
+        if (nodes.isEmpty()) {
+            return;
+        }
+        if (selectedNode == null || !nodes.contains(selectedNode)) {
+            InfraNode first = nodes.stream()
+                    .min(java.util.Comparator.<InfraNode>comparingInt(n -> n.y).thenComparingInt(n -> n.x))
+                    .orElseThrow();
+            select(first, null);
+            ensureVisible(first);
+            return;
+        }
+        InfraNode from = selectedNode;
+        InfraNode best = null;
+        double bestScore = Double.MAX_VALUE;
+        for (InfraNode n : nodes) {
+            if (n == from) {
+                continue;
+            }
+            int along = dx != 0 ? (n.x - from.x) * dx : (n.y - from.y) * dy;
+            int across = Math.abs(dx != 0 ? n.y - from.y : n.x - from.x);
+            if (along <= 0) {
+                continue;
+            }
+            double score = along + 2.0 * across;
+            if (score < bestScore) {
+                bestScore = score;
+                best = n;
+            }
+        }
+        if (best != null) {
+            select(best, null);
+            ensureVisible(best);
+        }
+    }
+
+    /** Shift+arrows: the selected resource one grid step that way, saved as a drag is. */
+    void nudgeSelected(int dx, int dy) {
+        if (selectedNode == null) {
+            return;
+        }
+        selectedNode.x += dx;
+        selectedNode.y += dy;
+        graph.touch();
+        ensureVisible(selectedNode);
+        repaint();
+    }
+
+    /** Pans just enough to show {@code node}; a canvas with no size yet is left alone. */
+    private void ensureVisible(InfraNode node) {
+        if (getWidth() <= 0 || getHeight() <= 0) {
+            return;
+        }
+        Point tl = toScreen(node.x, node.y);
+        Point br = toScreen(node.x + NODE_W, node.y + NODE_H);
+        int margin = 20;
+        if (tl.x < margin) {
+            panX += margin - tl.x;
+        } else if (br.x > getWidth() - margin) {
+            panX -= br.x - (getWidth() - margin);
+        }
+        if (tl.y < margin) {
+            panY += margin - tl.y;
+        } else if (br.y > getHeight() - margin) {
+            panY -= br.y - (getHeight() - margin);
+        }
+    }
+
+    /** Where a keyboard-opened node menu appears: the node's centre, on screen when the canvas shows. */
+    private Point screenPointOf(InfraNode node) {
+        Point p = toScreen(node.x + NODE_W / 2.0, node.y + NODE_H / 2.0);
+        if (isShowing()) {
+            javax.swing.SwingUtilities.convertPointToScreen(p, this);
+        }
+        return p;
+    }
+
+    /**
+     * Chooses the resource a keyboard wire goes to, among the legal ones;
+     * null cancels. Tests replace it; the product asks in a small dialog.
+     */
+    java.util.function.BiFunction<InfraNode, java.util.List<InfraNode>, InfraNode> wireChooser =
+            FlowCanvas::chooseWireTarget;
+
+    /** The node menu's and the W key's label for {@link #wireFrom}. */
+    public static String wireToLabel() {
+        return Bundle.FlowCanvas_wireTo();
+    }
+
+    /**
+     * Wires {@code from} to a resource it can serve, chosen from a list of
+     * exactly the legal, not-yet-wired targets (the drag's rule table, so a
+     * keyboard cannot make a wire the mouse could not). The wire is made by
+     * the same {@code graph.connect} the drag calls, and a refusal speaks
+     * through the same {@link Callbacks#wireRefused}. Refused while a cloud
+     * operation holds the canvas, as the drag is (53b), and out loud.
+     */
+    public void wireFrom(InfraNode from) {
+        if (from == null) {
+            return;
+        }
+        if (locked) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                    org.nmox.studio.core.util.PlainStatus.text(Bundle.FlowCanvas_lockedBanner()));
+            return;
+        }
+        java.util.List<InfraNode> targets = new java.util.ArrayList<>();
+        for (InfraNode n : graph.getNodes()) {
+            if (graph.canConnect(from, n) && !wired(from, n)) {
+                targets.add(n);
+            }
+        }
+        if (targets.isEmpty()) {
+            org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                    org.nmox.studio.core.util.PlainStatus.text(Bundle.FlowCanvas_wireNone(from.label)));
+            return;
+        }
+        InfraNode to = wireChooser.apply(from, targets);
+        if (to == null) {
+            return;
+        }
+        boolean duplicate = wired(from, to);
+        if (!graph.connect(from, to)) {
+            callbacks.wireRefused(from, to, duplicate);
+        }
+        repaint();
+    }
+
+    private boolean wired(InfraNode from, InfraNode to) {
+        return graph.getWires().stream().anyMatch(w -> w.fromId().equals(from.id) && w.toId().equals(to.id));
+    }
+
+    /** The product's chooser: a list of the legal targets in a dialog, the first one selected. */
+    private static InfraNode chooseWireTarget(InfraNode from, java.util.List<InfraNode> targets) {
+        javax.swing.DefaultListModel<String> names = new javax.swing.DefaultListModel<>();
+        for (InfraNode n : targets) {
+            names.addElement(n.kind.getDisplayName() + " " + n.label);
+        }
+        javax.swing.JList<String> list = new javax.swing.JList<>(names);
+        list.setCellRenderer(org.nmox.studio.core.util.PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
+        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        list.setSelectedIndex(0);
+        list.setVisibleRowCount(Math.min(10, targets.size()));
+        list.getAccessibleContext().setAccessibleName(Bundle.FlowCanvas_wireTargets(from.label));
+        org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
+                new javax.swing.JScrollPane(list), Bundle.FlowCanvas_wireTitle(from.label));
+        Object answer = org.openide.DialogDisplayer.getDefault().notify(dd);
+        int i = list.getSelectedIndex();
+        return org.openide.DialogDescriptor.OK_OPTION.equals(answer) && i >= 0 ? targets.get(i) : null;
+    }
+
+    // ---- what a screen reader hears ----
+
+    @Override
+    public javax.accessibility.AccessibleContext getAccessibleContext() {
+        if (accessibleContext == null) {
+            accessibleContext = new AccessibleCanvas();
+        }
+        return accessibleContext;
+    }
+
+    /**
+     * The canvas read aloud: its name is the selected resource (or the
+     * design itself), its description that resource's wires and status, or,
+     * with nothing selected, the keys that work here. Selection changes are
+     * announced as name changes, the event a screen reader speaks.
+     */
+    protected final class AccessibleCanvas extends AccessibleJPanel {
+
+        @Override
+        public javax.accessibility.AccessibleRole getAccessibleRole() {
+            return javax.accessibility.AccessibleRole.CANVAS;
+        }
+
+        @Override
+        public String getAccessibleName() {
+            InfraNode n = selectedNode;
+            return n == null ? Bundle.FlowCanvas_a11yName()
+                    : Bundle.FlowCanvas_a11yNodeName(n.kind.getDisplayName(), n.label);
+        }
+
+        @Override
+        public String getAccessibleDescription() {
+            InfraNode n = selectedNode;
+            if (n == null) {
+                return Bundle.FlowCanvas_a11yHelp();
+            }
+            String wires = Bundle.FlowCanvas_a11yWires(names(graph.getWires().stream()
+                            .filter(w -> w.fromId().equals(n.id)).map(w -> graph.node(w.toId()))),
+                    names(graph.getWires().stream()
+                            .filter(w -> w.toId().equals(n.id)).map(w -> graph.node(w.fromId()))));
+            return n.status == null || n.status.isBlank() ? wires
+                    : wires + " " + Bundle.FlowCanvas_a11yStatus(n.status);
+        }
+
+        private String names(java.util.stream.Stream<InfraNode> nodes) {
+            String joined = nodes.filter(java.util.Objects::nonNull)
+                    .map(x -> x.kind.getDisplayName() + " " + x.label)
+                    .collect(java.util.stream.Collectors.joining(", "));
+            return joined.isEmpty() ? Bundle.FlowCanvas_a11yNobody() : joined;
+        }
     }
 
     // ---- coordinate transforms ----
@@ -155,9 +436,16 @@ public class FlowCanvas extends JPanel {
     }
 
     private void select(InfraNode node, Wire wire) {
+        String oldName = accessibleContext == null ? null : accessibleContext.getAccessibleName();
         selectedNode = node;
         selectedWire = wire;
         callbacks.selectionChanged(node);
+        if (accessibleContext != null) {
+            // what a screen reader speaks on a selection change (3.4)
+            accessibleContext.firePropertyChange(
+                    javax.accessibility.AccessibleContext.ACCESSIBLE_NAME_PROPERTY,
+                    oldName, accessibleContext.getAccessibleName());
+        }
         repaint();
     }
 
@@ -470,6 +758,14 @@ public class FlowCanvas extends JPanel {
             banner.setFont(banner.getFont().deriveFont(Font.BOLD, 12f));
             banner.drawString(Bundle.FlowCanvas_lockedBanner(), 12, 18);
             banner.dispose();
+        }
+        if (hasFocus()) {
+            // where the keyboard is (3.4): a ring while the canvas holds focus
+            Graphics2D ring = (Graphics2D) gr.create();
+            ring.setColor(org.nmox.studio.core.util.KeyboardAccess.focusColor());
+            ring.setStroke(new BasicStroke(2f));
+            ring.drawRect(1, 1, getWidth() - 3, getHeight() - 3);
+            ring.dispose();
         }
         g.dispose();
     }

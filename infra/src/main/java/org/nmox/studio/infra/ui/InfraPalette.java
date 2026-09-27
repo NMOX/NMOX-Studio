@@ -76,16 +76,24 @@ public class InfraPalette extends JPanel {
                         : new StringSelection(entry.kind().name());
             }
         });
+        Runnable addSelected = () -> {
+            Entry entry = list.getSelectedValue();
+            if (entry != null && entry.kind() != null) {
+                graph.addNode(entry.kind(), 120 + (int) (Math.random() * 80),
+                        80 + (int) (Math.random() * 120));
+            }
+        };
         list.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                Entry entry = list.getSelectedValue();
-                if (e.getClickCount() == 2 && entry != null && entry.kind() != null) {
-                    graph.addNode(entry.kind(), 120 + (int) (Math.random() * 80),
-                            80 + (int) (Math.random() * 120));
+                if (e.getClickCount() == 2) {
+                    addSelected.run();
                 }
             }
         });
+        // Enter places the selected resource, as the double-click does (3.4):
+        // with a drag the only other way, a keyboard could not add one at all
+        org.nmox.studio.core.util.KeyboardAccess.onEnter(list, addSelected);
 
         JScrollPane scroll = new JScrollPane(list);
         scroll.setBorder(BorderFactory.createEmptyBorder());
