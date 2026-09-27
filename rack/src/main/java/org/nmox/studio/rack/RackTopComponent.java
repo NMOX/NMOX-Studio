@@ -723,12 +723,9 @@ public final class RackTopComponent extends TopComponent {
             return;
         }
         File target = picked.getName().endsWith(".json") ? picked : new File(picked.getPath() + ".nmoxrack.json");
-        if (RackIO.DEFAULT_FILENAME.equals(target.getName())) {
-            // a shared rack is a copy for somebody else (its home paths are
-            // ~, its header names a version): written over a project's own
-            // patch it would replace that rack, past every check Save asks —
-            // a lock, a conflict, a teammate's pull (3.4)
-            error(Bundle.RackTopComponent_shareNotThePatch(target.getName()));
+        String refused = shareRefusal(target);
+        if (refused != null) {
+            error(refused);
             return;
         }
         SAVE_RP.post(() -> {
@@ -739,6 +736,19 @@ public final class RackTopComponent extends TopComponent {
                 java.awt.EventQueue.invokeLater(() -> error(Bundle.RackTopComponent_shareFailed(ex.getMessage())));
             }
         });
+    }
+
+    /**
+     * Why Share may not write {@code target}, or null when it may (3.4). A
+     * shared rack is a copy for somebody else — its home paths are {@code ~},
+     * its header names a version — and written over a project's own patch it
+     * would replace that rack past every check Save asks: a lock, a
+     * conflict, a teammate's pull. Any file named like a project's patch is
+     * refused, in any folder.
+     */
+    static String shareRefusal(File target) {
+        return RackIO.DEFAULT_FILENAME.equals(target.getName())
+                ? Bundle.RackTopComponent_shareNotThePatch(target.getName()) : null;
     }
 
     /** EDT: a two-second word on the project label, then the label again. */
