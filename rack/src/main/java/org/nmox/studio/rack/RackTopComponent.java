@@ -70,9 +70,9 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_theSavedPatch=the saved patch",
     "RackTopComponent_noPatchInProject=No {0} in project.",
     "RackTopComponent_presetsButton=Presets ▾",
-    "RackTopComponent_presetsTooltip=Wire a ready-made pipeline into the rack — drop a saved patch into ~/.nmox/presets.d to add your own",
+    "RackTopComponent_presetsTooltip=Wire a ready-made pipeline into the rack \u2014 drop a saved patch into ~/.nmox/presets.d to add your own",
     "RackTopComponent_exportCi=Export CI…",
-    "RackTopComponent_exportCiTooltip=Compile this patch into .github/workflows/nmox-rack.yml — the same commands the rack runs, as a GitHub Actions pipeline",
+    "RackTopComponent_exportCiTooltip=Compile this patch into .github/workflows/nmox-rack.yml \u2014 the same commands the rack runs, as a GitHub Actions pipeline",
     "RackTopComponent_exported=Exported {0}",
     "RackTopComponent_exportFailed=Could not export the CI workflow: {0}",
     "RackTopComponent_stopAll=Stop All",
@@ -81,44 +81,46 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_stoppedMany=Stopped {0} tools",
     "RackTopComponent_stoppingOne=Stopping {0} tool…",
     "RackTopComponent_stoppingMany=Stopping {0} tools…",
-    "RackTopComponent_replaceConfirm=Replace the rack with {0}? This patch has unsaved changes, and loading cannot be undone — save it first if you want to keep it.",
+    "RackTopComponent_replaceConfirm=Replace the rack with {0}? This patch has unsaved changes, and loading cannot be undone \u2014 save it first if you want to keep it.",
     "RackTopComponent_replaceTitle=Replace Rack",
     "RackTopComponent_thePreset=the {0} preset",
     "RackTopComponent_presetFailed=Could not wire the preset: {0}",
     "RackTopComponent_yoursItem={0} · yours",
     "RackTopComponent_loadFailed=Could not load the patch: {0}",
     "RackTopComponent_shareRack=Share…",
-    "RackTopComponent_shareTooltip=Save this rack as a file another NMOX Studio user can import — commands and settings travel, your home directory does not",
+    "RackTopComponent_shareTooltip=Save this rack as a file another NMOX Studio user can import \u2014 commands and settings travel, your home directory does not",
     "RackTopComponent_shareTitle=Share Rack As",
     "RackTopComponent_shareFilter=Rack patch (*.nmoxrack.json)",
     "RackTopComponent_sharedLabel={0}  [shared]",
     "RackTopComponent_shareFailed=Could not share the rack: {0}",
+    "# {0} - the file name the sender chose",
+    "RackTopComponent_shareNotThePatch=Not shared: {0} is the name of a project\u2019s own rack. Share writes a copy for someone else \u2014 choose another name.",
     "RackTopComponent_copiedLabel={0}  [copied]",
     "RackTopComponent_keptLabel=[kept as {0}]",
-    "RackTopComponent_alreadyKept=My Racks already holds {0} — give this rack another name, or remove that one in the Rack Gallery first.",
+    "RackTopComponent_alreadyKept=My Racks already holds {0} \u2014 give this rack another name, or remove that one in the Rack Gallery first.",
     "# {0} - device count, {1} - cable count; both take plural branches",
     "RackTopComponent_leavingSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Settings that travel:",
     "# {0} - device count, {1} - cable count; both take plural branches",
-    "RackTopComponent_leavingNothing={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. No command, path or address travels in its settings — the devices work out their commands from the project they land in.",
-    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL — remove before sharing (shown masked here):",
-    "RackTopComponent_leavingPaths=Still names somebody’s home directory:",
+    "RackTopComponent_leavingNothing={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. No command, path or address travels in its settings \u2014 the devices work out their commands from the project they land in.",
+    "RackTopComponent_leavingSecrets=LOOKS LIKE A CREDENTIAL \u2014 remove before sharing (shown masked here):",
+    "RackTopComponent_leavingPaths=Still names somebody\u2019s home directory:",
     "RackTopComponent_importRack=Import…",
-    "RackTopComponent_importTooltip=Mount a rack someone shared as a file — you see what it holds before anything mounts, and nothing runs until you press GO",
+    "RackTopComponent_importTooltip=Mount a rack someone shared as a file \u2014 you see what it holds before anything mounts, and nothing runs until you press GO",
     "RackTopComponent_importTitle=Import Rack",
     "# {0} - device count, {1} - cable count; both take plural branches",
     "RackTopComponent_importSummary={0,choice,0#{0} devices|1#{0} device|1<{0} devices}, {1,choice,0#{1} cables|1#{1} cable|1<{1} cables}. Nothing runs on import.",
     "# {0} - how many devices were saved with a self-starting switch on; never shown for none",
     "RackTopComponent_importAtRest={0,choice,1#One device was saved with a switch on; it arrives at rest.|1<{0} devices were saved with a switch on; they arrive at rest.}",
     "RackTopComponent_importUnknown=Not in this install (they mount as placeholders that keep their cables): {0}",
-    "RackTopComponent_importSettings=Settings this rack carries — read them before mounting:",
+    "RackTopComponent_importSettings=Settings this rack carries \u2014 read them before mounting:",
     "RackTopComponent_importMount=Mount",
     "RackTopComponent_importFailed=Could not import the rack: {0}",
     "RackTopComponent_theSharedRack=the shared rack",
     "RackTopComponent_importSharedBy=Shared by {0}",
-    "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install — update to get everything it uses.",
+    "RackTopComponent_importMadeWithNewer=Made with NMOX Studio {0}, newer than this install \u2014 update to get everything it uses.",
     "RackTopComponent_importCarriesWhole=Every cable and setting it uses exists in this install.",
-    "RackTopComponent_importLostCables=Cables this install cannot connect — it will mount WITHOUT them:",
-    "RackTopComponent_importLostSettings=Settings this install’s devices do not have — ignored:",
+    "RackTopComponent_importLostCables=Cables this install cannot connect \u2014 it will mount WITHOUT them:",
+    "RackTopComponent_importLostSettings=Settings this install\u2019s devices do not have \u2014 ignored:",
     "RackTopComponent_importTooNew=This rack file is in format {0}; this install reads format {1}. Update NMOX Studio to import it.",
     "RackTopComponent_importClipboard=Import Rack from Clipboard",
     "RackTopComponent_gallery=Rack Gallery…",
@@ -129,10 +131,10 @@ import org.openide.windows.TopComponent;
     "RackTopComponent_theRack=the {0} rack",
     "RackTopComponent_clipboardEmpty=The clipboard holds no text.",
     "RackTopComponent_clipboardTooLarge=The clipboard text is too large to be a rack.",
-    "RackTopComponent_clipboardNotJson=The clipboard text is not a rack — copy the whole file, from its first brace to its last.",
+    "RackTopComponent_clipboardNotJson=The clipboard text is not a rack \u2014 copy the whole file, from its first brace to its last.",
     "RackTopComponent_clipboardNoDevices=The clipboard holds JSON, but not a rack: it has no devices.",
-    "RackTopComponent_importAimMoved=The project changed while the manifest was open — nothing was mounted. Import again.",
-    "RackTopComponent_galleryAimMoved=The project changed while the gallery was open — nothing was mounted. Choose the rack again."
+    "RackTopComponent_importAimMoved=The project changed while the manifest was open \u2014 nothing was mounted. Import again.",
+    "RackTopComponent_galleryAimMoved=The project changed while the gallery was open \u2014 nothing was mounted. Choose the rack again."
 })
 public final class RackTopComponent extends TopComponent {
 
@@ -372,8 +374,10 @@ public final class RackTopComponent extends TopComponent {
             String projectName = rack.getProjectDir().getName();
             SAVE_RP.post(() -> {
                 try {
-                    org.nmox.studio.core.util.AtomicFiles.writeString(
-                            target.toPath(), snapshot.toString(2));
+                    // the disk is asked again on the lane, immediately before
+                    // the write: a pull or a checkout since the patch was read
+                    // refuses it, whatever the lock said a moment ago (3.4)
+                    org.nmox.studio.rack.service.RackService.getDefault().writePatch(target, snapshot);
                     java.awt.EventQueue.invokeLater(() -> {
                         markPersisted(); // saved work is no longer at risk
                         // momentary confirmation, then back to the plain name -
@@ -384,6 +388,8 @@ public final class RackTopComponent extends TopComponent {
                         revert.setRepeats(false);
                         revert.start();
                     });
+                } catch (org.nmox.studio.rack.service.RackService.PatchWriteRefusedException refused) {
+                    java.awt.EventQueue.invokeLater(() -> error(refused.getMessage()));
                 } catch (IOException ex) {
                     java.awt.EventQueue.invokeLater(() ->
                             error(Bundle.RackTopComponent_saveFailed(ex.getMessage())));
@@ -611,6 +617,8 @@ public final class RackTopComponent extends TopComponent {
         // needs but load() (called from off-EDT autoload) doesn't.
         SAVE_RP.post(() -> {
             org.json.JSONObject doc;
+            // taken BEFORE the read: a change landing during it stays foreign
+            long[] stamp = org.nmox.studio.rack.service.RackService.stampBeforeRead(file);
             try {
                 doc = RackIO.readDocument(file);
             } catch (IOException | RuntimeException ex) {
@@ -624,7 +632,7 @@ public final class RackTopComponent extends TopComponent {
                     markPersisted();
                     // the file was read and is now the rack on screen: a lock
                     // a refused autoload set on it no longer applies
-                    org.nmox.studio.rack.service.RackService.getDefault().patchLoaded(file);
+                    org.nmox.studio.rack.service.RackService.getDefault().patchLoaded(file, cables, stamp);
                     if (!cables.quiet()) {
                         info(org.nmox.studio.rack.service.RackService.cablesSentence(file, cables));
                     }
@@ -715,6 +723,14 @@ public final class RackTopComponent extends TopComponent {
             return;
         }
         File target = picked.getName().endsWith(".json") ? picked : new File(picked.getPath() + ".nmoxrack.json");
+        if (RackIO.DEFAULT_FILENAME.equals(target.getName())) {
+            // a shared rack is a copy for somebody else (its home paths are
+            // ~, its header names a version): written over a project's own
+            // patch it would replace that rack, past every check Save asks —
+            // a lock, a conflict, a teammate's pull (3.4)
+            error(Bundle.RackTopComponent_shareNotThePatch(target.getName()));
+            return;
+        }
         SAVE_RP.post(() -> {
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), shared.toString(2));

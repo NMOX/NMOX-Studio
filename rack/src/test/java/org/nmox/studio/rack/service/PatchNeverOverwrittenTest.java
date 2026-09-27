@@ -212,9 +212,19 @@ class PatchNeverOverwrittenTest {
         int save = src.indexOf("Bundle.RackTopComponent_savePatch()");
         assertThat(save).isPositive();
         String listener = src.substring(save, src.indexOf("bar.add(save)", save));
-        assertThat(listener).contains("saveRefusal(target)").contains("AtomicFiles.writeString(");
+        assertThat(listener).contains("saveRefusal(target)").contains("writePatch(target, snapshot)")
+                .as("the listener writes through the service, never around it").doesNotContain("AtomicFiles.writeString(");
         assertThat(listener.indexOf("saveRefusal(target)"))
-                .isLessThan(listener.indexOf("AtomicFiles.writeString("));
+                .isLessThan(listener.indexOf("writePatch(target, snapshot)"));
+        // and the write itself asks the DISK first (3.4): the lock alone
+        // could not see a pull that happened after a clean load
+        String service = org.nmox.studio.rack.GateSources.stripComments(Files.readString(Path.of("src", "main", "java",
+                "org", "nmox", "studio", "rack", "service", "RackService.java"), StandardCharsets.UTF_8));
+        int write = service.indexOf("public void writePatch(");
+        assertThat(write).isPositive();
+        String body = service.substring(write, service.indexOf("public void patchLoaded(", write));
+        assertThat(body.indexOf("beforeWrite(")).as("the disk is asked").isPositive()
+                .isLessThan(body.indexOf("AtomicFiles.writeString("));
     }
 
     private static Exception catchRead(File f) {

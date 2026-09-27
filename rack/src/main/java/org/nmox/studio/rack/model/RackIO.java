@@ -55,6 +55,33 @@ public final class RackIO {
     public static final String FROM_TITLE = "fromTitle";
     public static final String TO_TYPE = "toType";
     public static final String TO_TITLE = "toTitle";
+    /**
+     * A device slot's identity ({@link RackDevice#getUid}), and each cable
+     * end's (3.4). Type and title cannot tell two PURITYs apart: Bob saved
+     * {@code [cmd, reflex, lintA, lintB]} with {@code reflex → lintA}, Alice
+     * removed {@code cmd}, git merged cleanly, and the old index 2 named
+     * lintB — the same type, the same title, so the cable was trusted and
+     * landed on the wrong device with nothing said. With the id a cable
+     * follows the DEVICE. Additive: a build that does not read these keys
+     * loads the patch by index exactly as before (org.json ignores a key
+     * nobody asks for), and a patch without them loads by the rules below.
+     */
+    public static final String ID = "id";
+    public static final String FROM_ID = "fromId";
+    public static final String TO_ID = "toId";
+
+    /**
+     * The patch format this build writes (3.4). A patch whose {@link #VERSION}
+     * is higher came from a newer NMOX Studio: it loads, but it is never
+     * written over, because a save here would drop whatever that build added
+     * and this one does not know.
+     */
+    public static final int FORMAT = 1;
+
+    /** The format a patch document says it is in; a missing or odd value reads as {@link #FORMAT}. */
+    public static int formatOf(JSONObject root) {
+        return root.opt(VERSION) instanceof Number n ? n.intValue() : FORMAT;
+    }
 
     /**
      * What the patch format holds, declared where it is WRITTEN. The
@@ -69,10 +96,10 @@ public final class RackIO {
      */
     public static final Set<String> TOP_LEVEL_KEYS = Set.of(VERSION, DEVICES, CABLES);
     /** @see #TOP_LEVEL_KEYS */
-    public static final Set<String> DEVICE_KEYS = Set.of(TYPE, STATE);
+    public static final Set<String> DEVICE_KEYS = Set.of(TYPE, STATE, ID);
     /** @see #TOP_LEVEL_KEYS */
     public static final Set<String> CABLE_KEYS = Set.of(FROM_DEVICE, FROM_PORT, TO_DEVICE, TO_PORT,
-            FROM_TYPE, FROM_TITLE, TO_TYPE, TO_TITLE);
+            FROM_TYPE, FROM_TITLE, TO_TYPE, TO_TITLE, FROM_ID, TO_ID);
 
     /**
      * Port ids a saved patch may still name, keyed {@code <typeId>.<oldId>}
@@ -103,13 +130,14 @@ public final class RackIO {
 
     public static JSONObject toJson(Rack rack) {
         JSONObject root = new JSONObject();
-        root.put(VERSION, 1);
+        root.put(VERSION, FORMAT);
 
         List<RackDevice> devices = rack.getDevices();
         JSONArray deviceArr = new JSONArray();
         for (RackDevice d : devices) {
             JSONObject dj = new JSONObject();
             dj.put(TYPE, d.getTypeId());
+            dj.put(ID, d.getUid());
             dj.put(STATE, new JSONObject(d.getState()));
             deviceArr.put(dj);
         }
@@ -124,10 +152,12 @@ public final class RackIO {
             cj.put(FROM_PORT, c.getFrom().getId());
             cj.put(FROM_TYPE, from.getTypeId());
             cj.put(FROM_TITLE, from.getTitle());
+            cj.put(FROM_ID, from.getUid());
             cj.put(TO_DEVICE, devices.indexOf(to));
             cj.put(TO_PORT, c.getTo().getId());
             cj.put(TO_TYPE, to.getTypeId());
             cj.put(TO_TITLE, to.getTitle());
+            cj.put(TO_ID, to.getUid());
             cableArr.put(cj);
         }
         root.put(CABLES, cableArr);
@@ -139,7 +169,21 @@ public final class RackIO {
      * (3.4): cables that followed their device to a new slot, and cables
      * that could not be connected at all. Both used to be log lines only.
      */
-    public record CableReport(int followed, int dropped) {
+    public record CableReport(int followed, int dropped, int format) {
+
+        /** A report about a patch in this build's own format. */
+        public CableReport(int followed, int dropped) {
+            this(followed, dropped, FORMAT);
+        }
+
+        /**
+         * The patch came from a newer NMOX Studio (3.4): it loaded, and it
+         * must not be written over — a save here would drop what that
+         * build added. Not part of {@link #quiet()}: the cables are fine.
+         */
+        public boolean newerFormat() {
+            return format > FORMAT;
+        }
 
         /** Nothing to say: every cable landed where the file put it. */
         public boolean quiet() {
@@ -148,38 +192,61 @@ public final class RackIO {
     }
 
     /**
-     * Resolves one cable end to a device. The saved INDEX is trusted while
-     * the device there is the one the cable was patched to — its type and
-     * title as recorded; a patch written before 3.4 records neither and is
-     * trusted by index, exactly as before. Otherwise the end follows its
-     * device when exactly one device of that type and title exists; with
-     * none, or several it cannot tell apart, the answer is null — a wrong
-     * guess would rewire the patch silently, which is the defect this exists
-     * to end.
+     * Resolves one cable end to a device.
+     *
+     * <ol>
+     *   <li>An end that names its device's ID (3.4, written by every save
+     *       since) resolves to that device wherever it now sits, and to
+     *       nothing when no device carries the id — the teammate removed it.
+     *       The index is not consulted at all: it is the thing a merge
+     *       moves.</li>
+     *   <li>An end with a type and title but no id (the first 3.4 format)
+     *       trusts its index only while EXACTLY ONE device carries that type
+     *       and title. With two, a matching slot proves nothing — Bob's lint A
+     *       and lint B are both "lint / PURITY", and the old index lands on
+     *       whichever now sits there — so the cable is dropped and counted
+     *       rather than guessed onto one of them. With one, the end follows
+     *       that device.</li>
+     *   <li>An end with neither (a patch written before 3.4) is trusted by
+     *       index, exactly as it always was: it carries nothing to check
+     *       against, and dropping every such cable would punish every patch
+     *       ever saved.</li>
+     * </ol>
      */
-    static RackDevice resolveEnd(List<RackDevice> devices, int index, String type, String title,
+    static RackDevice resolveEnd(List<RackDevice> devices, int index, String id, String type, String title,
             boolean[] followed) {
         RackDevice atIndex = index >= 0 && index < devices.size() ? devices.get(index) : null;
+        if (id != null) {
+            for (RackDevice d : devices) {
+                if (id.equals(d.getUid())) {
+                    if (d != atIndex) {
+                        followed[0] = true;
+                    }
+                    return d;
+                }
+            }
+            return null; // the device it was patched to is gone
+        }
         if (type == null) {
             return atIndex; // pre-3.4 patch: position is all it knows
-        }
-        if (atIndex != null && sameDevice(atIndex, type, title)) {
-            return atIndex;
         }
         RackDevice only = null;
         for (RackDevice d : devices) {
             if (sameDevice(d, type, title)) {
                 if (only != null) {
-                    return null; // two candidates: refusing beats guessing
+                    return null; // two candidates: a matching slot proves nothing, refusing beats guessing
                 }
                 only = d;
             }
         }
-        if (only != null) {
+        if (only != null && only != atIndex) {
             followed[0] = true;
         }
         return only;
     }
+
+    /** The longest saved device id taken as one; a UUID is 36. */
+    static final int MAX_ID_CHARS = 64;
 
     private static boolean sameDevice(RackDevice d, String type, String title) {
         return type.equals(d.getTypeId()) && (title == null || title.equals(d.getTitle()));
@@ -195,10 +262,13 @@ public final class RackIO {
         for (RackDevice d : rack.getDevices()) {
             rack.removeDevice(d);
         }
+        int format = formatOf(root);
         JSONArray deviceArr = root.optJSONArray(DEVICES);
         if (deviceArr == null) {
-            return new CableReport(0, 0);
+            rack.clearUndoHistory();
+            return new CableReport(0, 0, format);
         }
+        java.util.Set<String> seenIds = new java.util.HashSet<>();
         for (int i = 0; i < deviceArr.length(); i++) {
             JSONObject dj = deviceArr.getJSONObject(i);
             String typeId = dj.getString(TYPE);
@@ -209,6 +279,17 @@ public final class RackIO {
             RackDevice device = DeviceCatalog.byId(typeId)
                     .map(DeviceCatalog.Entry::create)
                     .orElseGet(() -> new MissingDevice(typeId));
+            // the saved identity, healed at parse (a keep-both merge can
+            // duplicate a device entry, id and all): the first holder keeps
+            // it — cables naming it reach that one — and a repeat or a
+            // missing id gets a fresh one. Never trusted as anything but a
+            // string of bounded length: it is a stranger's text in a shared rack.
+            String uid = optText(dj, ID);
+            if (uid != null && uid.length() <= MAX_ID_CHARS && seenIds.add(uid)) {
+                device.setUid(uid);
+            } else {
+                seenIds.add(device.getUid());
+            }
             rack.addDevice(device);
             JSONObject state = dj.optJSONObject(STATE);
             if (state != null) {
@@ -241,8 +322,10 @@ public final class RackIO {
                 }
                 int fi = cj.optInt(FROM_DEVICE, -1), ti = cj.optInt(TO_DEVICE, -1);
                 boolean[] moved = new boolean[1];
-                RackDevice fd = resolveEnd(devices, fi, optText(cj, FROM_TYPE), optText(cj, FROM_TITLE), moved);
-                RackDevice td = resolveEnd(devices, ti, optText(cj, TO_TYPE), optText(cj, TO_TITLE), moved);
+                RackDevice fd = resolveEnd(devices, fi, optText(cj, FROM_ID), optText(cj, FROM_TYPE),
+                        optText(cj, FROM_TITLE), moved);
+                RackDevice td = resolveEnd(devices, ti, optText(cj, TO_ID), optText(cj, TO_TYPE),
+                        optText(cj, TO_TITLE), moved);
                 if (fd == null || td == null) {
                     LOG.log(java.util.logging.Level.WARNING,
                             "rack patch cable #{0} dropped: the device it was patched to is not in this"
@@ -298,7 +381,7 @@ public final class RackIO {
         // so clearing here covers them all. RackService also clears after a
         // project switch with no patch file, a case that never reaches here.
         rack.clearUndoHistory();
-        return new CableReport(followed, dropped);
+        return new CableReport(followed, dropped, format);
     }
 
     public static void save(Rack rack, File file) throws IOException {
@@ -444,7 +527,7 @@ public final class RackIO {
      * machine — the bounded-read law (every outside read capped) reached the
      * one text read in this class on the 2026-09-17 arc review.
      */
-    static final long MAX_PATCH_BYTES = 8L * 1024 * 1024;
+    public static final long MAX_PATCH_BYTES = 8L * 1024 * 1024;
 
     /**
      * A patch over {@link #MAX_PATCH_BYTES}: refused before a byte is read, and

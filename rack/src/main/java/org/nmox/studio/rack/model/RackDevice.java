@@ -128,6 +128,25 @@ public abstract class RackDevice extends JPanel {
 
     // ---- identity ----
 
+    /**
+     * This device's identity in a saved patch (3.4): minted once, written
+     * beside its type, and read back by {@link RackIO#fromJson} so a cable
+     * can name the DEVICE it was patched to rather than a slot or a type. Two
+     * PURITYs share a type and a title — only this tells them apart after a
+     * teammate's edit moves the slots under a cable.
+     */
+    private String uid = java.util.UUID.randomUUID().toString();
+
+    /** The identity {@link RackIO} saves for this device; never null. */
+    public String getUid() {
+        return uid;
+    }
+
+    /** Restores a saved identity; package-private because only a patch load may. */
+    void setUid(String uid) {
+        this.uid = uid;
+    }
+
     public String getTypeId() {
         return typeId;
     }
