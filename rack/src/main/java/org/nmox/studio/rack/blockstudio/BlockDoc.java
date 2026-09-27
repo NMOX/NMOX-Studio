@@ -149,9 +149,12 @@ public final class BlockDoc {
 
     // ---- persistence ----
 
+    /** The doc format this build writes; a higher {@code version} came from a newer NMOX Studio (3.4). */
+    public static final int FORMAT = 1;
+
     public JSONObject toJson() {
         JSONObject o = new JSONObject();
-        o.put("version", 1);
+        o.put("version", FORMAT);
         o.put("nextId", nextId);
         o.put("root", blockJson(root));
         return o;
@@ -179,6 +182,10 @@ public final class BlockDoc {
      * smuggle an illegal nesting past the canvas.
      */
     public static BlockDoc fromJson(JSONObject o) {
+        int version = o.optInt("version", FORMAT);
+        if (version > FORMAT) {
+            throw new BlockWorkspace.NewerFormatException(version, FORMAT);
+        }
         BlockDoc doc = new BlockDoc();
         doc.nextId = Math.max(1, o.optInt("nextId", 1));
         Block loaded = blockFrom(o.getJSONObject("root"));

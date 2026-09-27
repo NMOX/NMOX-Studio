@@ -96,14 +96,32 @@ final class BlockActiveMemory {
     }
 
     static String key(File projectDir) {
+        String path = canonical(projectDir);
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
-                    .digest(projectDir.getAbsolutePath().getBytes(StandardCharsets.UTF_8));
+                    .digest(path.getBytes(StandardCharsets.UTF_8));
             return "active." + HexFormat.of().formatHex(digest, 0, 16);
         } catch (NoSuchAlgorithmException impossible) {
             // every JDK ships SHA-256; a truncated path is the honest fallback
-            String p = projectDir.getAbsolutePath();
-            return "active." + p.substring(Math.max(0, p.length() - 60));
+            return "active." + path.substring(Math.max(0, path.length() - 60));
+        }
+    }
+
+    /**
+     * The project's canonical path (3.4): the same checkout reached through
+     * a symlink, a {@code ..} or a relative path is one project, and one
+     * person's open component follows it. Until the review the key was the
+     * ABSOLUTE path, so opening {@code ~/work/app} through a linked
+     * {@code ~/app} forgot the component every time. (Workspace Trust keys
+     * on the absolute path on purpose — a grant must not silently widen to
+     * every link; a remembered tab carries no such risk.) An unresolvable
+     * path keeps its absolute form.
+     */
+    private static String canonical(File projectDir) {
+        try {
+            return projectDir.getCanonicalPath();
+        } catch (java.io.IOException | SecurityException unresolvable) {
+            return projectDir.getAbsolutePath();
         }
     }
 

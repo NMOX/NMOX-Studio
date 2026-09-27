@@ -88,6 +88,9 @@ public final class BlockIO {
             return new Loaded(ws != null ? ws : new BlockWorkspace(), null, null);
         } catch (ConflictedException conflicted) {
             return new Loaded(null, Bundle.BlockStudioTopComponent_conflicted(WORKSPACE_FILE), null);
+        } catch (BlockWorkspace.NewerFormatException newer) {
+            return new Loaded(null, Bundle.BlockStudioTopComponent_newerVersion(WORKSPACE_FILE,
+                    String.valueOf(newer.version()), String.valueOf(newer.writes())), null);
         } catch (BlockDoc.UnknownKindException newer) {
             return new Loaded(null, Bundle.BlockStudioTopComponent_newerFormat(WORKSPACE_FILE, newer.kind()), null);
         } catch (IOException unreadable) {

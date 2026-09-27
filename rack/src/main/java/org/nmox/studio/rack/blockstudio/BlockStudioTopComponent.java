@@ -116,7 +116,10 @@ import org.openide.windows.TopComponent;
     "BlockStudioTopComponent_unrescued={0} is not a workspace this version can read and no copy of it could be kept — Block Studio won’t write over it",
     "BlockStudioTopComponent_readFailed=Could not read {0}: {1}{2}",
     "BlockStudioTopComponent_saveFailed=Save failed: {0}",
-    "BlockStudioTopComponent_externalEditOverridden=External edit to {0} overridden by newer studio edits",
+    "# {0} - the workspace file's name",
+    "BlockStudioTopComponent_externalEditWins={0} changed on disk (a pull, a checkout or another tool), so Block Studio read it again \u2014 your latest edit was not written over it",
+    "# {0} - the workspace file's name; {1} - the file's format number; {2} - the format this build writes",
+    "BlockStudioTopComponent_newerVersion={0} was saved by a newer NMOX Studio (format {1}; this one writes {2}) \u2014 Block Studio leaves it untouched and won\u2019t write it",
     "BlockStudioTopComponent_reloaded=Reloaded — {0} changed on disk",
     "BlockStudioTopComponent_nothingToPreview=Fix the blocks first — nothing valid to preview",
     "BlockStudioTopComponent_stopPreview=Stop Preview",
@@ -482,6 +485,16 @@ public final class BlockStudioTopComponent extends TopComponent {
     // ---- load/save (IO on RP, apply on EDT) ----
 
     private void loadForAim() {
+        loadForAim(null);
+    }
+
+    /**
+     * Loads the aimed workspace; {@code note}, when given, is what the status
+     * line says once the load has landed — said after the regenerate that
+     * would otherwise paint over it (a sentence set before the load was gone
+     * the moment the reloaded component drew its own status).
+     */
+    private void loadForAim(String note) {
         // the OLD aim's debounced save must land before the doc is swapped
         // (the v1.35.1 API Studio law: force-save old, then load new)
         if (saver.isRunning()) {
@@ -507,7 +520,14 @@ public final class BlockStudioTopComponent extends TopComponent {
         }
         loading = true;
         RP.post(() -> {
+            // the stamp BEFORE the read: the bytes this session has now seen,
+            // and the only ones a save may go over (3.4); a change landing
+            // during the read stays foreign and the pulse reloads again
+            File wsFile = BlockIO.workspaceFile(dir);
+            long seenMtime = wsFile.isFile() ? wsFile.lastModified() : -1;
+            long seenSize = wsFile.isFile() ? wsFile.length() : -1;
             BlockIO.Loaded result = BlockIO.loadForStudio(dir);
+            selfWrites.noteSync(seenMtime, seenSize);
             BlockWorkspace ws = result.workspace();
             if (ws != null) {
                 // the open component is this person's, not the file's (3.4)
@@ -528,8 +548,9 @@ public final class BlockStudioTopComponent extends TopComponent {
                     return;
                 }
                 regenerate();
-                if (result.note() != null) {
-                    setStatus(result.note());
+                String say = result.note() != null ? result.note() : note;
+                if (say != null) {
+                    setStatus(say);
                 }
             });
         });
@@ -568,9 +589,19 @@ public final class BlockStudioTopComponent extends TopComponent {
         JSONObject json = ws.toJson();
         String openTag = ws.activeDoc().root().param("tag");
         RP.post(() -> {
+            File target = BlockIO.workspaceFile(dir);
+            // asked on the lane immediately before the write (3.4): the lock
+            // is decided at LOAD, and a pull with the studio open changes the
+            // file after that — a save over it would replace the teammate's
+            // components (or git's conflict) with this session's
+            if (selfWrites.beforeWrite(target, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES)
+                    != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+                SwingUtilities.invokeLater(() -> readAgainOverPendingEdits(dir));
+                return;
+            }
             try {
                 org.nmox.studio.core.util.AtomicFiles.writeString(
-                        BlockIO.workspaceFile(dir).toPath(), json.toString(2) + "\n");
+                        target.toPath(), json.toString(2) + "\n");
                 // stamp our own write so the pulse can tell it from a
                 // foreign edit (the v1.35 self-write-discrimination law)
                 selfWrites.noteSync(BlockIO.workspaceFile(dir));
@@ -630,12 +661,27 @@ public final class BlockStudioTopComponent extends TopComponent {
     private void onForeignEdit() {
         SwingUtilities.invokeLater(() -> {
             if (saver.isRunning()) {
-                setStatus(Bundle.BlockStudioTopComponent_externalEditOverridden(BlockIO.WORKSPACE_FILE));
+                readAgainOverPendingEdits(projectDir);
                 return;
             }
-            loadForAim();
-            setStatus(Bundle.BlockStudioTopComponent_reloaded(BlockIO.WORKSPACE_FILE));
+            loadForAim(Bundle.BlockStudioTopComponent_reloaded(BlockIO.WORKSPACE_FILE));
         });
+    }
+
+    /**
+     * The file on disk is not the one this session read, and an edit here
+     * was waiting to be saved over it (3.4). Until the review the pending
+     * save WON — "overridden by newer studio edits" — and replaced a pull's
+     * components, or git's conflict, with one person's. The file wins now:
+     * the pending save is cancelled, the workspace is read again (a conflict
+     * binds read-only there), and the loss of the unsaved edit is said. EDT.
+     */
+    void readAgainOverPendingEdits(File dir) {
+        if (dir == null || !dir.equals(projectDir)) {
+            return; // the aim moved: the new aim's load already owns the canvas
+        }
+        saver.stop(); // nothing of this session's is written over the file
+        loadForAim(Bundle.BlockStudioTopComponent_externalEditWins(BlockIO.WORKSPACE_FILE));
     }
 
     // ---- live preview (v1.80.0): in-memory serve + registry truth ----
@@ -693,10 +739,17 @@ public final class BlockStudioTopComponent extends TopComponent {
         if (workspace == null || !workspace.setActive(index)) {
             return;
         }
+        // pending edits in the component being left are saved — a switch is a
+        // patch boundary — but a switch alone writes nothing: which component
+        // is open is this person's, not the file's (3.4), and rewriting the
+        // committed file on every switch is what made two people conflict
         if (saver.isRunning()) {
             saver.stop();
+            persist();
         }
-        persist();
+        File dir = projectDir;
+        String openTag = workspace.activeDoc().root().param("tag");
+        RP.post(() -> BlockActiveMemory.remember(dir, openTag));
         undo.clear();
         canvas.setDoc(workspace.activeDoc());
         refreshComponentCombo();
@@ -1150,6 +1203,11 @@ public final class BlockStudioTopComponent extends TopComponent {
 
     private void setStatus(String s) {
         status.setText(PlainText.plain(s));
+    }
+
+    /** Test seam: what the status line says (EDT). */
+    String statusText() {
+        return status.getText().strip();
     }
 
     // ---- @ConvertAsProperties plumbing ----
