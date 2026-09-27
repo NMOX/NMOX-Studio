@@ -546,7 +546,9 @@ public final class TasksTopComponent extends TopComponent {
         header.setComponentPopupMenu(columnMenu(index));
         // the column's own menu (Rename, Move, WIP limit, Delete) lived on a
         // label no key could reach (3.4): the header takes focus by Tab, shows
-        // it, and Shift+F10 / the menu key open the same menu
+        // it, and Shift+F10 / the menu key open the same menu. What makes a
+        // label a Tab stop is its WHEN_FOCUSED bindings (LayoutFocusTraversal-
+        // Policy skips a component with none); setFocusable only says so aloud
         header.setFocusable(true);
         org.nmox.studio.core.util.KeyboardAccess.focusRing(header);
         org.nmox.studio.core.util.KeyboardAccess.componentMenuKeys(header);

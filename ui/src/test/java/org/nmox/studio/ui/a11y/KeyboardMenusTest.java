@@ -3,6 +3,7 @@ package org.nmox.studio.ui.a11y;
 import java.awt.Component;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -46,6 +47,9 @@ class KeyboardMenusTest {
         JPanel column = TasksKeyboardProbe.firstColumn();
         JLabel header = (JLabel) column.getComponent(0);
         assertThat(header.isFocusable()).isTrue();
+        // the Tab-stop criterion Swing's LayoutFocusTraversalPolicy applies to
+        // a label: bindings of its own in the WHEN_FOCUSED map
+        assertThat(header.getInputMap(JComponent.WHEN_FOCUSED).allKeys()).isNotEmpty();
         assertThat(header.getBorder()).isInstanceOf(KeyboardAccess.FocusRingBorder.class);
         assertThat(header.getComponentPopupMenu()).isNotNull();
         assertThat(KeyboardAccess.perform(header, KeyboardAccess.SHIFT_F10)).isTrue();
