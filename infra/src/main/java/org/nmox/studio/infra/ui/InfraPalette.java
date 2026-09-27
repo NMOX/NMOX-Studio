@@ -124,6 +124,10 @@ public class InfraPalette extends JPanel {
             setPreferredSize(new Dimension(180, value.kind() == null ? 26 : 34));
             setToolTipText(PlainText.plain(value.kind() == null ? null
                     : Bundle.InfraPalette_entryTooltip(value.kind().getDisplayName())));
+            // a painted panel has no name of its own: a screen reader hears
+            // the heading or the resource exactly as it is painted (3.4)
+            getAccessibleContext().setAccessibleName(
+                    value.kind() == null ? value.header() : value.kind().getDisplayName());
             return this;
         }
 

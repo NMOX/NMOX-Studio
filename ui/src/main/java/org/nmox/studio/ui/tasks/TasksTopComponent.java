@@ -680,6 +680,10 @@ public final class TasksTopComponent extends TopComponent {
             int width = list.getParent() instanceof javax.swing.JViewport v && v.getWidth() > 0
                     ? v.getWidth() : list.getWidth();
             setSize(width > 0 ? width : WRAP_FALLBACK, Short.MAX_VALUE);
+            // a text area has no accessible name, and VoiceOver read every
+            // card as an empty field (the 3.4 walk): a card is heard as the
+            // same words it paints
+            getAccessibleContext().setAccessibleName(getText());
             return this;
         }
 
