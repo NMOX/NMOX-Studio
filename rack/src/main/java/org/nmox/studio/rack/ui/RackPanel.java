@@ -428,7 +428,11 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
         @Override
         public void actionPerformed(java.awt.event.ActionEvent e) {
-            openDeviceMenu(device, e.getSource() instanceof java.awt.Component c ? c : null);
+            // an ancestor-map binding reports the DEVICE as its source, not
+            // the control that holds focus (the 3.4 review's probe): anchor
+            // at the focus owner, which is what the keyboard user is on
+            openDeviceMenu(device, java.awt.KeyboardFocusManager
+                    .getCurrentKeyboardFocusManager().getFocusOwner());
         }
     }
 
