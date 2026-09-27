@@ -70,6 +70,10 @@ class RemovalKeepsPasswordTest {
 
     private static DbStudioTopComponent boundTo(File dir) throws Exception {
         System.setProperty("user.home", dir.getAbsolutePath());
+        // the reload after a refused write reads the AIM, and the rack is on this
+        // test path: an aim left at a directory that still exists (a Windows
+        // @TempDir whose delete a locked file blocked) makes it read elsewhere
+        org.nmox.studio.rack.service.RackService.getDefault().getRack().setProjectDir(dir);
         DbWorkspaceIO.LoadOutcome outcome = DbWorkspaceIO.loadWorkspaceGuarded(dir);
         ExternalEdits.Stamp stamp = ExternalEdits.Stamp.of(new File(dir, DbWorkspaceIO.FILENAME));
         Method apply = DbStudioTopComponent.class.getDeclaredMethod("applyReloadedWorkspace",
