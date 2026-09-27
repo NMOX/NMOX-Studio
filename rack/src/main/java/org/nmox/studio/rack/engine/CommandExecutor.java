@@ -152,6 +152,7 @@ public final class CommandExecutor {
         RackBus.publish(tabName, "$ " + String.join(" ", command), false);
 
         Process process;
+        RunSurvivors family;
         try {
             // shared hardening (PATH augment, empty stdin, no-color/non-interactive
             // env); see ProcessSupport. Per-launch env overrides go on top.
@@ -163,7 +164,14 @@ public final class CommandExecutor {
             // the set shrinks even for lanes that never call waitFor
             LIVE.add(process);
             Process spawned = process;
-            process.onExit().thenRun(() -> LIVE.remove(spawned));
+            family = new RunSurvivors(process);
+            RunSurvivors seen = family;
+            // the root leaves the reaper's set at its exit; whatever of its family
+            // is still alive takes its place there at the same moment (3.4)
+            process.onExit().thenRun(() -> {
+                LIVE.remove(spawned);
+                seen.rootGone();
+            });
         } catch (IOException ex) {
             String msg = friendlyLaunchFailure(command, ex);
             if (out != null) {
@@ -190,8 +198,8 @@ public final class CommandExecutor {
 
         // the run's family, seen while its root lives (3.4): a child that
         // outlives the root is invisible to descendants() afterwards — see RunSurvivors
-        RunSurvivors family = new RunSurvivors(process);
-        Threads.startDaemon(family::sample, "nmox-rack-family-" + tabName);
+        RunSurvivors runFamily = family;
+        Threads.startDaemon(runFamily::sample, "nmox-rack-family-" + tabName);
 
         OutputWriter err = io == null ? null : io.getErr();
         Thread errPump = Threads.daemon(

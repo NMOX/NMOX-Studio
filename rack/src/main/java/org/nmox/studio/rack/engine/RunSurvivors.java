@@ -104,7 +104,24 @@ final class RunSurvivors {
     }
 
     /**
-     * The root exited on its own. Survivors get a short settle (a child
+     * The root is gone (the JDK's process reaper calls this at the exit):
+     * every family member still alive is handed to the JVM-exit reaper at
+     * once. Whether the run's OUTPUT ends here is not ours to decide: a
+     * survivor that inherited the run's stdout can hold the pump open, and
+     * then the run is simply not over — its own Stop ends the family, which
+     * closes the pipe (measured: which of the two happens depends on whether
+     * the pump was already blocked in a read when the root died).
+     */
+    void rootGone() {
+        for (ProcessHandle h : alive()) {
+            if (ORPHANS.add(h)) {
+                h.onExit().thenRun(() -> ORPHANS.remove(h));
+            }
+        }
+    }
+
+    /**
+     * The root exited on its own and the run's output has ended. Survivors get a short settle (a child
      * finishing a write a few milliseconds after its parent is not a
      * background process), then a row of their own and a line in the
      * Output tab. Returns the line to print, or null when nothing survived.
@@ -136,8 +153,9 @@ final class RunSurvivors {
                 pids.append(", ");
             }
             pids.append(h.pid());
-            ORPHANS.add(h);
-            h.onExit().thenRun(() -> ORPHANS.remove(h));
+            if (ORPHANS.add(h)) {
+                h.onExit().thenRun(() -> ORPHANS.remove(h));
+            }
         }
         String id = "background:" + tabName + "#" + root.pid();
         LiveRuns.add(new LiveRuns.Run(id, Bundle.RunSurvivors_row(tabName, pids.toString()),

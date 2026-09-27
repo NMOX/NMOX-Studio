@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
@@ -52,9 +51,15 @@ public final class HttpBodies {
 
     /** One daemon thread fires every deadline; an alarm is a close, which is
      *  cheap and non-blocking on every stream the callers read. */
-    private static final ScheduledExecutorService WATCHDOG =
-            Executors.newSingleThreadScheduledExecutor(
-                    r -> Threads.daemon(r, "nmox-http-body-deadline"));
+    private static final ScheduledExecutorService WATCHDOG = watchdog();
+
+    /** A cancelled alarm leaves the queue at once: a poller reading every two seconds must not pile up a minute of dead alarms, each holding its stream. */
+    private static ScheduledExecutorService watchdog() {
+        java.util.concurrent.ScheduledThreadPoolExecutor ex = new java.util.concurrent.ScheduledThreadPoolExecutor(1,
+                r -> Threads.daemon(r, "nmox-http-body-deadline"));
+        ex.setRemoveOnCancelPolicy(true);
+        return ex;
+    }
 
     private HttpBodies() {
     }

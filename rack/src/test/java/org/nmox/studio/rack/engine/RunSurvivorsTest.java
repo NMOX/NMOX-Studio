@@ -20,10 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * 3.4, "when something goes wrong": {@code sh -c "sleep 1105 & echo bg"} —
- * the root exits at once, the run reports its exit and leaves every
- * registry, and the background child outlived Stop, quitting the IDE and
- * the JVM-exit reaper. The survivor now gets a row of its own that Stop
- * ends, a line in the Output tab, and a place in the reaper's sweep.
+ * the root exits at once, the run leaves every registry, and the background
+ * child outlived Stop, quitting the IDE and the JVM-exit reaper. Two shapes,
+ * both covered: a survivor that let go of the run's output (the run ends; the
+ * survivor gets a row of its own that Stop ends) and one that still holds it
+ * (the run is not over; its own Stop ends the whole family). Either way the
+ * JVM-exit reaper ends them.
  */
 @DisabledOnOs(OS.WINDOWS) // POSIX shells and reparenting: the Windows PID chain is ledger 38
 class RunSurvivorsTest {
@@ -44,22 +46,31 @@ class RunSurvivorsTest {
                 .findFirst();
     }
 
-    private CompletableFuture<Integer> runDetaching(List<String> lines) {
-        CompletableFuture<Integer> exit = new CompletableFuture<>();
-        // the root lives long enough to be sampled on any runner, then exits
-        // leaving its background child behind (the survey's shape, made
-        // deterministic: the bare "& echo" form is sampled best-effort)
-        CommandExecutor.run("survivors", new File("."), Map.of(),
-                List.of("sh", "-c", "sleep " + mark + " & sleep 0.3; echo started"),
+    /** Runs {@code script}, whose root lives long enough to be sampled on any runner. */
+    private CommandExecutor.Handle run(String tab, String script, List<String> lines,
+            CompletableFuture<Integer> exit) {
+        return CommandExecutor.run(tab, new File("."), Map.of(), List.of("sh", "-c", script),
                 lines::add, exit::complete);
-        return exit;
+    }
+
+    /** Waits until the run printed "started" and its root has had time to exit. */
+    private ProcessHandle survivorOnceRootIsGone(List<String> lines) throws Exception {
+        long deadline = System.nanoTime() + Duration.ofSeconds(15).toNanos();
+        while (System.nanoTime() < deadline && !lines.contains("started")) {
+            Thread.sleep(20);
+        }
+        assertThat(lines).contains("started");
+        Thread.sleep(800); // the root exits right after its echo
+        return mine().orElseThrow(() -> new AssertionError("the background sleep is running"));
     }
 
     @Test
-    @DisplayName("A child that outlives its root gets a row Stop ends, and the Output says so")
+    @DisplayName("A child that let go of the output outlives the run: it gets a row Stop ends")
     void survivorIsListedAndStopEndsIt() throws Exception {
         List<String> lines = new CopyOnWriteArrayList<>();
-        int code = runDetaching(lines).get(20, TimeUnit.SECONDS);
+        CompletableFuture<Integer> exit = new CompletableFuture<>();
+        run("survivors", "sleep " + mark + " >/dev/null 2>&1 & sleep 0.3; echo started", lines, exit);
+        int code = exit.get(20, TimeUnit.SECONDS);
         assertThat(code).as("the run itself ends when its root does").isZero();
 
         ProcessHandle child = mine().orElseThrow(() -> new AssertionError("the background sleep is running"));
@@ -86,10 +97,24 @@ class RunSurvivorsTest {
     }
 
     @Test
+    @DisplayName("A child that still holds the output: the run's own Stop ends it, and the run then ends")
+    void heldOutputStopEndsTheFamily() throws Exception {
+        List<String> lines = new CopyOnWriteArrayList<>();
+        CompletableFuture<Integer> exit = new CompletableFuture<>();
+        CommandExecutor.Handle h = run("survivors-held", "sleep " + mark + " & sleep 0.3; echo started", lines, exit);
+        ProcessHandle child = survivorOnceRootIsGone(lines);
+        h.kill();
+        child.onExit().get(15, TimeUnit.SECONDS);
+        assertThat(child.isAlive()).as("a Stop ends everything the run started").isFalse();
+        exit.get(15, TimeUnit.SECONDS);
+    }
+
+    @Test
     @DisplayName("Quitting the IDE ends a survivor whose root is long gone")
     void reaperEndsSurvivors() throws Exception {
-        runDetaching(new CopyOnWriteArrayList<>()).get(20, TimeUnit.SECONDS);
-        ProcessHandle child = mine().orElseThrow(() -> new AssertionError("the background sleep is running"));
+        List<String> lines = new CopyOnWriteArrayList<>();
+        run("survivors-reap", "sleep " + mark + " & sleep 0.3; echo started", lines, new CompletableFuture<>());
+        ProcessHandle child = survivorOnceRootIsGone(lines);
         CommandExecutor.reapLiveNow();
         child.onExit().get(10, TimeUnit.SECONDS);
         assertThat(child.isAlive()).isFalse();
