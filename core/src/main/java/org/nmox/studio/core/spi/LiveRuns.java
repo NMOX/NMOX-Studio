@@ -217,7 +217,8 @@ public final class LiveRuns {
                 STOPPING.remove(r.id());
             }
             java.util.logging.Logger.getLogger(LiveRuns.class.getName()).log(java.util.logging.Level.WARNING,
-                    "Stopping " + r.label() + " failed; it is still running", failed);
+                    // a log token, not prose: core.spi carries no sentence (SpiHoldsNoProseTest)
+                    "stop-failed:" + r.id() + " [" + r.label() + "]", failed);
         }
     }
 
