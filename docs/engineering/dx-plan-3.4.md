@@ -52,7 +52,87 @@ one of those assumptions each.*
 
 ## What the surveys found
 
-*(to be written from the surveys)*
+### 1. A second developer
+
+Every probe ran against the real parsers and writers, with real `git merge`
+runs in scratch repositories.
+
+1. **A merge conflict in a studio file was treated as corruption, and git
+   then committed the loss — in all seven studios.** Nothing looked for
+   git's markers. The studio kept a `.bak`, fell back to an empty or starter
+   workspace and said it could not read the file; the next ordinary action
+   (a Send in API Studio, a query Run in DB Studio, any edit elsewhere) saved
+   that over the conflicted file, and `git add -A && git commit` made the
+   starter the merge result. The rack *moved* the file to `.bak`, so
+   `git commit -am` recorded the merge as a deletion.
+2. **A teammate on a newer version lost data on the next save.** Values a
+   build does not know were dropped at parse: a DB connection with an unknown
+   engine, an infra node of an unknown kind (with the `doId` of a live,
+   billed resource and its wires), an API request's unknown auth type turned
+   into none; Block Studio refused the whole file, fell back and overwrote.
+3. **Rack cables named devices by position**, so a clean merge rewired them
+   silently: Alice deleted a device, Bob wired to the one after it, and the
+   patch loaded wired to a different device.
+4. **Secrets are per machine, and Bob was not told.** An API request whose
+   token lives in Alice's keychain went out with no `Authorization` header
+   and no warning; a DB connection with no stored password showed the
+   driver's raw error; a SQLite file chosen with the chooser was committed as
+   an absolute path, which on Bob's machine either failed with
+   `SQLITE_CANTOPEN` or silently created an empty database.
+5. **Per-person state lived in the committed files** — DB query history with
+   its SQL text, API send history, the active environment, the open Block
+   Studio component — rewritten on every Run, Send and pick: the likeliest
+   source of the conflicts in 1.
+6. **Keeping both sides of a conflict lost entries silently** (DB saved
+   queries and web3 imported contracts with the same name; duplicate Block
+   Studio piece ids unhealed), **the Task Board had one clock for the whole
+   team** (Bob clocking in clocked Alice out), and **Infra node ids came
+   from a counter**, so two people adding a droplet both made `droplet-3`;
+   Refresh with a teammate's token for another account would sever the
+   design's links to live resources.
+
+Clean: load → save → save produced identical bytes for all seven writers;
+the duplicate-id heals held; no secret was ever written to a file; Workspace
+Trust is per path, so Bob is asked for himself.
+
+### 2. When things go wrong
+
+*(the survey's report, when it lands)*
+
+### 3. Without a mouse or a screen
+
+1. **A screen reader could navigate into no window at all.** Measured live
+   on the accessibility tree VoiceOver walks: the window system's tab
+   containers exposed zero children, so the main window read as its toolbar
+   and status line — 33 elements — and every studio's content was reachable
+   only by pointing. The platform's container reports a tab list with no
+   tabs, and macOS builds a tab group's children from its tabs.
+2. **No toolbar button in any studio could be reached with Tab** (FlatLaf's
+   `ToolBar.focusableButtons = false`): 58 buttons across 9 windows, among
+   them DB Studio's RUN and EXPLAIN and the Infra Designer's DEPLOY, most
+   with no other key.
+3. **The rack was anonymous and half mouse-only**: devices had no accessible
+   name (a listener heard "STOP" without knowing whose), editable LCD fields
+   opened only on a double-click, the device shelf mounted only by drag or
+   double-click and read its cards as raw markup, Tab in the shelf flipped
+   the rack instead of moving focus, and cables could be neither patched,
+   unplugged nor heard without a mouse.
+4. **Popups a keyboard could not open**: the Infra node menu, the IRC
+   network menu (the only way to add a network), the Task Board column menu,
+   the git chip's Pull Requests and Draft Commit Message — all shown from
+   mouse listeners on components that take no focus.
+5. **Double-click-only actions** (DB Studio's table peek and history reload,
+   joining an IRC channel from the list, the Motion timeline's stops), **an
+   Infra canvas operable only by mouse** apart from Delete, **no visible
+   focus** on the Welcome's links, and **status chips named by their
+   glyphs**.
+6. **Nothing is announced when a result arrives.** JDK 25 has no
+   announcement API (checked in the runtime image), and refusals speak on a
+   status line VoiceOver does not read aloud.
+
+Clean: the rack widgets expose their state and fire their events; the Task
+Board's WIP and blocked states are in words; the security grade is text, not
+colour; no validation is a red border alone.
 
 ## The plan
 
