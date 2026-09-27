@@ -170,8 +170,8 @@ class PatchNeverOverwrittenTest {
         Files.writeString(patch.toPath(), "{ second");
         catchLoad(patch);
         assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".bak")).hasContent("{ first");
-        assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".bak.1")).hasContent("{ second");
-        assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".bak.2")).doesNotExist();
+        assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".2.bak")).hasContent("{ second");
+        assertThat(tmp.resolve(RackIO.DEFAULT_FILENAME + ".3.bak")).doesNotExist();
     }
 
     private static void catchLoad(File patch) {

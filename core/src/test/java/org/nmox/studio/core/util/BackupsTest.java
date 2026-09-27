@@ -20,13 +20,13 @@ class BackupsTest {
     }
 
     @Test
-    @DisplayName("a second rescue takes .bak.1 and a third .bak.2 — the earlier bytes survive")
+    @DisplayName("a second rescue takes .2.bak and a third .3.bak — the earlier bytes survive")
     void laterRescuesAreNumbered(@TempDir Path dir) throws Exception {
         Path f = dir.resolve(".nmoxrack.json");
         Files.writeString(dir.resolve(".nmoxrack.json.bak"), "first");
-        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxrack.json.bak.1"));
-        Files.writeString(dir.resolve(".nmoxrack.json.bak.1"), "second");
-        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxrack.json.bak.2"));
+        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxrack.json.2.bak"));
+        Files.writeString(dir.resolve(".nmoxrack.json.2.bak"), "second");
+        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxrack.json.3.bak"));
         assertThat(Files.readString(dir.resolve(".nmoxrack.json.bak"))).isEqualTo("first");
     }
 
@@ -39,6 +39,53 @@ class BackupsTest {
         } catch (UnsupportedOperationException | java.io.IOException noLinks) {
             return; // a filesystem without links cannot hold this case
         }
-        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxblocks.json.bak.1"));
+        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxblocks.json.2.bak"));
+    }
+
+    @Test
+    @DisplayName("copyAside: a second and third rescue take .2.bak and .3.bak, each keeping its own bytes")
+    void copyAsideNeverOverwrites(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve(".nmoxdb.json");
+        Files.writeString(f, "first");
+        java.io.File one = Backups.copyAside(f.toFile());
+        Files.writeString(f, "second");
+        java.io.File two = Backups.copyAside(f.toFile());
+        Files.writeString(f, "third");
+        java.io.File three = Backups.copyAside(f.toFile());
+        assertThat(one.getName()).isEqualTo(".nmoxdb.json.bak");
+        assertThat(two.getName()).isEqualTo(".nmoxdb.json.2.bak");
+        assertThat(three.getName()).isEqualTo(".nmoxdb.json.3.bak");
+        assertThat(Files.readString(one.toPath())).as("the first rescue keeps the bytes it rescued").isEqualTo("first");
+        assertThat(Files.readString(two.toPath())).isEqualTo("second");
+        assertThat(Files.readString(three.toPath())).isEqualTo("third");
+    }
+
+    @Test
+    @DisplayName("the same broken bytes, rescued again (a re-aim, a search), reuse their copy: no pile of .N.bak")
+    void sameBytesReuseTheirCopy(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve(".nmoxinfra.json");
+        Files.writeString(f, "{ broken");
+        java.io.File first = Backups.copyAside(f.toFile());
+        assertThat(Backups.copyAside(f.toFile())).isEqualTo(first);
+        assertThat(Backups.keep(f, Files.readAllBytes(f)).toFile()).isEqualTo(first);
+        assertThat(dir.resolve(".nmoxinfra.json.2.bak")).doesNotExist();
+    }
+
+    @Test
+    @DisplayName("a gap is reused: the first FREE name, not the next number")
+    void firstFreeName(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve(".nmoxinfra.json");
+        Files.writeString(dir.resolve(".nmoxinfra.json.bak"), "old");
+        Files.writeString(dir.resolve(".nmoxinfra.json.3.bak"), "older");
+        assertThat(Backups.freeSibling(f)).isEqualTo(dir.resolve(".nmoxinfra.json.2.bak"));
+    }
+
+    @Test
+    @DisplayName("a directory squatting on .bak is never touched; the copy takes the next name")
+    void squatterIsSkipped(@TempDir Path dir) throws Exception {
+        Path f = dir.resolve(".nmoxweb3.json");
+        Files.writeString(f, "{ x");
+        Files.createDirectory(dir.resolve(".nmoxweb3.json.bak"));
+        assertThat(Backups.copyAside(f.toFile()).getName()).isEqualTo(".nmoxweb3.json.2.bak");
     }
 }

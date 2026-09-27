@@ -109,10 +109,10 @@ class BlockMergeTest {
         BlockIO.loadForStudio(dir.toFile()); // the same bytes again reuse their copy
         Files.writeString(f, "{ second");
         BlockIO.Loaded two = BlockIO.loadForStudio(dir.toFile());
-        assertThat(two.note()).contains(BlockIO.WORKSPACE_FILE + ".bak.1");
+        assertThat(two.note()).contains(BlockIO.WORKSPACE_FILE + ".2.bak");
         assertThat(dir.resolve(BlockIO.WORKSPACE_FILE + ".bak")).hasContent("{ first");
-        assertThat(dir.resolve(BlockIO.WORKSPACE_FILE + ".bak.1")).hasContent("{ second");
-        assertThat(dir.resolve(BlockIO.WORKSPACE_FILE + ".bak.2")).doesNotExist();
+        assertThat(dir.resolve(BlockIO.WORKSPACE_FILE + ".2.bak")).hasContent("{ second");
+        assertThat(dir.resolve(BlockIO.WORKSPACE_FILE + ".3.bak")).doesNotExist();
     }
 
     @Test

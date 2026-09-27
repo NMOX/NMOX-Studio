@@ -464,7 +464,7 @@ public final class WorkspaceIO {
      */
     private static File backupCorrupt(File file) {
         try {
-            return org.nmox.studio.core.util.KeptCopies.copyAside(file);
+            return org.nmox.studio.core.util.Backups.copyAside(file);
         } catch (IOException e) {
             LOG.log(java.util.logging.Level.SEVERE, "Could not back up corrupt " + file, e);
             return null;

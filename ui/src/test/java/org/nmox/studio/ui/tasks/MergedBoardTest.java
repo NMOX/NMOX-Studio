@@ -103,10 +103,10 @@ class MergedBoardTest {
         TasksIO.load(dir); // a re-aim or a search reads the same bytes again
         Files.writeString(f, "{ second");
         TasksIO.LoadOutcome two = TasksIO.load(dir);
-        assertThat(two.rescuedAs()).isEqualTo(TasksIO.FILENAME + ".bak.1");
+        assertThat(two.rescuedAs()).isEqualTo(TasksIO.FILENAME + ".2.bak");
         assertThat(new File(dir, TasksIO.FILENAME + ".bak")).hasContent("{ first");
-        assertThat(new File(dir, TasksIO.FILENAME + ".bak.1")).hasContent("{ second");
-        assertThat(new File(dir, TasksIO.FILENAME + ".bak.2")).doesNotExist();
+        assertThat(new File(dir, TasksIO.FILENAME + ".2.bak")).hasContent("{ second");
+        assertThat(new File(dir, TasksIO.FILENAME + ".3.bak")).doesNotExist();
     }
 
     @Test
