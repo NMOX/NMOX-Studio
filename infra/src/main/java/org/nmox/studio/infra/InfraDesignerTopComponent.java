@@ -148,7 +148,7 @@ import org.openide.windows.TopComponent;
     "InfraDesigner_designReadOnly={0} could not be read — the design is read-only so nothing overwrites it",
     // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
     "InfraDesigner_designConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
-    "InfraDesigner_designNewer=In {0}, a newer NMOX Studio added resources this version does not know — the design is read-only here so none of them, and none of their links to the cloud, is lost",
+    "InfraDesigner_designNewer={0} was written by a newer NMOX Studio — the design is read-only here so nothing it holds, and none of its links to the cloud, is lost",
     // Refresh (3.4): a 404 means "not in the account these tokens reach", not "gone"
     "InfraDesigner_notFoundTitle=Resources the cloud did not find",
     // {0} the count, {1} the node labels; the choice keeps "1 resource" singular
@@ -159,7 +159,8 @@ import org.openide.windows.TopComponent;
     "InfraDesigner_reloadedDetail=The file changed outside the designer — the canvas follows it.",
     "InfraDesigner_conflictTitle={0} changed on disk — Reload?",
     "InfraDesigner_conflictDetail=Click to reload; unsaved canvas edits are discarded. "
-        + "Keep editing to keep your version instead.",
+        + "They cannot be written over a version someone else wrote — the next save reloads it instead.",
+    "InfraDesigner_notWrittenReloaded={0} changed on disk, so your last canvas change was not written over it — the design was reloaded as it is now; make the change again",
     "InfraDesigner_saveFailedTitle=Couldn''t save {0}",
     "InfraDesigner_saveFailedDetail=Changes are not being persisted: {0}"
 })
@@ -1005,6 +1006,16 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * external-edit stat can never see the write without the stamp.
      */
     private void writeSnapshot(File file, String json) {
+        // 3.4: asked here, on the lane, immediately before the write. The
+        // load was the only check before, so a conflict landing after it —
+        // or a teammate's version the 2-second check had not seen yet — was
+        // replaced by this canvas, doId links to live resources included.
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = designSync.beforeWrite(
+                file, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
             designSync.recordOwn(org.nmox.studio.infra.model.DesignSync.Stamp.of(file));
@@ -1026,6 +1037,26 @@ public final class InfraDesignerTopComponent extends TopComponent {
                     // notifications unavailable (tests, stripped platform)
                 }
             }
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing (the
+     * Task Board's rule). The design is read again as it is — a conflicted
+     * one binds read-only and says so — and a merely changed one names the
+     * canvas change that could not be written, so it does not look saved.
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        if (opsInFlight > 0) {
+            // a cloud op is mutating this graph; the reload waits for it,
+            // exactly as a re-aim does (ledger 53b) — the refusal still speaks
+            pendingReaim = true;
+        } else {
+            saveDebounce.stop();
+            load();
+        }
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            balloon(Bundle.InfraDesigner_notWrittenReloaded(GraphIO.DEFAULT_FILENAME), null, null);
         }
     }
 
@@ -1097,9 +1128,10 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // Foreign edit vs unsaved canvas edits: NEVER clobber silently.
                 // Hold the pending debounced save so it can't overwrite the
                 // foreign version while the user decides. Clicking the balloon
-                // reloads (discarding the local edits); ignoring it means the
-                // NEXT canvas change restarts the debounce and that save wins —
-                // the pre-existing last-writer-wins behavior, unchanged.
+                // reloads (discarding the local edits). Ignoring it used to mean
+                // the NEXT canvas change's save won — over git's merge markers
+                // too, and over a teammate's doId links. Since 3.4 that save is
+                // refused by writeSnapshot's check and the design reloads.
                 saveDebounce.stop();
                 balloon(Bundle.InfraDesigner_conflictTitle(GraphIO.DEFAULT_FILENAME),
                         Bundle.InfraDesigner_conflictDetail(),

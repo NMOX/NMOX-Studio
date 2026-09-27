@@ -54,6 +54,30 @@ public final class DesignSync {
      */
     public synchronized void recordOwn(Stamp stamp) {
         known = stamp;
+        if (stamp == null) {
+            own.noteSync(-1, -1);
+        } else {
+            own.noteSync(stamp.mtime(), stamp.size());
+        }
+    }
+
+    /**
+     * The bytes the designer last READ or WROTE — moved only by {@link
+     * #recordOwn}, never by a {@link #check} that merely consumed a foreign
+     * version, so {@link #beforeWrite} still sees a version not yet reloaded.
+     */
+    private final org.nmox.studio.core.util.SelfWriteTracker own =
+            new org.nmox.studio.core.util.SelfWriteTracker();
+
+    /**
+     * Asked on the save lane immediately before a write (3.4). The matrix
+     * below decides when to reload; this decides whether a save may land at
+     * all. The CONFLICT verdict used to hold the pending save only until the
+     * next canvas edit, whose save then wrote over git's markers — and over
+     * the teammate's {@code doId} links to live billed resources.
+     */
+    public org.nmox.studio.core.util.SelfWriteTracker.OnDisk beforeWrite(File file, long maxBytes) {
+        return own.beforeWrite(file, maxBytes);
     }
 
     /**

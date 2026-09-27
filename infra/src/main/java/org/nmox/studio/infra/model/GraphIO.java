@@ -17,12 +17,20 @@ public final class GraphIO {
     private static final java.util.logging.Logger LOG =
             java.util.logging.Logger.getLogger(GraphIO.class.getName());
 
+    /**
+     * The {@code version} this build writes. A design stamped HIGHER came
+     * from a newer NMOX Studio and binds read-only (3.4): what it added — a
+     * field on a node, a link — is exactly what this version's next save
+     * would drop, taking a teammate's cloud linkage with it.
+     */
+    public static final int FORMAT_VERSION = 1;
+
     private GraphIO() {
     }
 
     public static JSONObject toJson(InfraGraph graph) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT_VERSION);
         JSONArray nodeArr = new JSONArray();
         for (InfraGraph.InfraNode node : graph.getNodes()) {
             JSONObject nj = new JSONObject();
@@ -204,10 +212,15 @@ public final class GraphIO {
         }
         try {
             java.util.List<String> newer = new java.util.ArrayList<>();
-            fromJson(graph, new JSONObject(text), newer);
+            JSONObject root = new JSONObject(text);
+            int version = root.optInt("version", FORMAT_VERSION);
+            if (version > FORMAT_VERSION) {
+                newer.add("version " + version);
+            }
+            fromJson(graph, root, newer);
             if (!newer.isEmpty()) {
                 LOG.log(java.util.logging.Level.WARNING,
-                        "{0} holds node kinds a newer NMOX Studio wrote ({1}); read-only",
+                        "{0} holds what a newer NMOX Studio wrote ({1}); read-only",
                         new Object[]{file, newer});
             }
             return new LoadOutcome(null, false, false, !newer.isEmpty());
