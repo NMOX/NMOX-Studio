@@ -83,6 +83,20 @@ public final class KeyboardAccess {
     private KeyboardAccess() {
     }
 
+    /**
+     * The platform's menu-shortcut modifier (⌘ on macOS, Ctrl elsewhere), and
+     * Ctrl where there is no display — so a window that binds a ⌘ chord can
+     * still be constructed headless, where its keyboard routes are tested
+     * (the ApiClient/Rack/Block Studio idiom, given one home in 3.4).
+     */
+    public static int menuShortcutMask() {
+        try {
+            return java.awt.Toolkit.getDefaultToolkit().getMenuShortcutKeyMaskEx();
+        } catch (java.awt.HeadlessException headless) {
+            return java.awt.event.InputEvent.CTRL_DOWN_MASK;
+        }
+    }
+
     /** Shift+F10 and the context-menu key run {@code show} while {@code c} has focus. */
     public static void onMenuKey(JComponent c, Runnable show) {
         bind(c, SHIFT_F10, MENU_ACTION, show);

@@ -110,4 +110,22 @@ final class GitChip {
         }
         return b.toString();
     }
+
+    /**
+     * What a screen reader says for the chip (3.4): the label's facts in
+     * words — "Git: branch main, 2 changed, 2 ahead, 1 behind" — where the
+     * label is read as its glyphs ("branch sign main plus-minus 2 up arrow
+     * 2"). The same clauses appear and disappear as the label's do. Null =
+     * hidden.
+     */
+    String spokenName() {
+        if (!visible()) {
+            return null;
+        }
+        int[] ab = aheadBehind;
+        return Bundle.GitStatusLine_a11yName(branch,
+                changeCount != UNKNOWN ? Bundle.GitStatusLine_a11yChanged(String.valueOf(changeCount)) : "",
+                ab != null && ab[0] > 0 ? Bundle.GitStatusLine_a11yAhead(String.valueOf(ab[0])) : "",
+                ab != null && ab[1] > 0 ? Bundle.GitStatusLine_a11yBehind(String.valueOf(ab[1])) : "");
+    }
 }

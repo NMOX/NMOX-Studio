@@ -522,7 +522,7 @@ public final class TasksTopComponent extends TopComponent {
                 BoardStats.duration(System.currentTimeMillis() - since));
     }
 
-    private JPanel columnPanel(int index, TaskBoard.Column col) {
+    JPanel columnPanel(int index, TaskBoard.Column col) {
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setPreferredSize(new Dimension(230, 100));
         panel.setMaximumSize(new Dimension(230, Integer.MAX_VALUE));
@@ -544,6 +544,12 @@ public final class TasksTopComponent extends TopComponent {
                                 : Bundle.TasksTopComponent_cards(),
                         col.overLimit() ? Bundle.TasksTopComponent_overLimitSuffix() : ""));
         header.setComponentPopupMenu(columnMenu(index));
+        // the column's own menu (Rename, Move, WIP limit, Delete) lived on a
+        // label no key could reach (3.4): the header takes focus by Tab, shows
+        // it, and Shift+F10 / the menu key open the same menu
+        header.setFocusable(true);
+        org.nmox.studio.core.util.KeyboardAccess.focusRing(header);
+        org.nmox.studio.core.util.KeyboardAccess.componentMenuKeys(header);
         panel.add(header, BorderLayout.NORTH);
 
         DefaultListModel<TaskBoard.Card> model = new DefaultListModel<>();
@@ -666,8 +672,7 @@ public final class TasksTopComponent extends TopComponent {
         });
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_N, 0),
                 () -> newCardDialog(columnIndex));
-        int menuMask = java.awt.Toolkit.getDefaultToolkit()
-                .getMenuShortcutKeyMaskEx();
+        int menuMask = org.nmox.studio.core.util.KeyboardAccess.menuShortcutMask();
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_LEFT, menuMask),
                 () -> moveSelected(list, columnIndex, -1, 0));
         InputBind.bind(list, KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT, menuMask),
@@ -758,8 +763,12 @@ public final class TasksTopComponent extends TopComponent {
         // clicked card is claimed by popupTargetList's getPopupLocation
         list.setComponentPopupMenu(menu);
 
-        // drag & drop between and within columns
-        list.setDragEnabled(true);
+        // drag & drop between and within columns; a drag needs a display —
+        // JList refuses the flag headless, and the guard lets a column be
+        // built where its keyboard routes are tested (the InfraPalette idiom)
+        if (!java.awt.GraphicsEnvironment.isHeadless()) {
+            list.setDragEnabled(true);
+        }
         list.setDropMode(javax.swing.DropMode.INSERT);
         list.setTransferHandler(new CardTransfer(columnIndex));
     }

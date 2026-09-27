@@ -104,6 +104,11 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_whyRejectedContext=git rejected this context",
     "GitStatusLine_verbUnavailable={0} unavailable ({1}) — use the Team menu",
     "GitStatusLine_noRepository=Git: no repository",
+    "# {0} the branch; {1}, {2}, {3} the optional clauses below, each carrying its own leading separator",
+    "GitStatusLine_a11yName=Git: branch {0}{1}{2}{3}",
+    "GitStatusLine_a11yChanged=, {0} changed",
+    "GitStatusLine_a11yAhead=, {0} ahead",
+    "GitStatusLine_a11yBehind=, {0} behind",
     "GitStatusLine_historyUnavailable=Git history unavailable: {0}"
 })
 public class GitStatusLine implements StatusLineElementProvider {
@@ -136,13 +141,50 @@ public class GitStatusLine implements StatusLineElementProvider {
                 Bundle.GitStatusLine_annotate(), file);
     }
 
+    /**
+     * Team ▸ Pull Requests… and Team ▸ Draft Commit Message with KVASIR… (3.4):
+     * the chip's own gated paths, reached from the menu bar — the chip is a
+     * status-line label outside every window's focus cycle, so these two had
+     * no keyboard door at all. A strip that is never added to the status bar
+     * reads the aimed repository's facts and runs exactly what the chip's
+     * menu runs, behind the same boot guard; a project that is not a
+     * repository says so instead of doing nothing.
+     */
+    static void fromTeamMenu(boolean pullRequests) {
+        File dir;
+        try {
+            dir = RackService.getDefault().getRack().getProjectDir();
+        } catch (RuntimeException noRack) {
+            dir = null;
+        }
+        if (dir == null) {
+            GitStrip.status(Bundle.GitStatusLine_aimFirst());
+            return;
+        }
+        File aimed = dir;
+        GitStrip strip = new GitStrip();
+        GitStrip.RP.post(() -> {
+            strip.chip.aim(aimed);
+            if (!strip.chip.mayRunProcess()) {
+                GitStrip.status(Bundle.GitStatusLine_noRepository());
+                return;
+            }
+            java.awt.EventQueue.invokeLater(pullRequests ? strip::showPullRequests : strip::draftCommitMessage);
+        });
+    }
+
     /** Listens and polls only while it is actually in the status bar. */
     private static final class GitStrip extends javax.swing.JPanel {
 
         /** One lane: branch reads and git-status runs never pile up. */
         private static final RequestProcessor RP = new RequestProcessor("Git Chip", 1);
 
-        private final JLabel chipLabel = new JLabel();
+        /**
+         * A chip a keyboard and a screen reader can press (3.4): Enter, Space,
+         * Shift+F10 and the accessible action open the same menu the mouse
+         * does, and it is named in words rather than by its glyphs.
+         */
+        private final JLabel chipLabel = new org.nmox.studio.core.util.KeyboardAccess.Chip(this::showChipMenu);
         private final GitChip chip = new GitChip();
         /**
          * Re-arms only while the chip is visible (see publish); a tick is
@@ -235,9 +277,12 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** Marshal the chip's current answer onto the EDT; arm/disarm the poll. */
         private void publish() {
             String label = chip.label();
+            String spoken = chip.spokenName();
             File root = chip.repoRoot();
             javax.swing.SwingUtilities.invokeLater(() -> {
                 chipLabel.setText(PlainText.plain(label == null ? "" : label));
+                chipLabel.getAccessibleContext().setAccessibleName(spoken);
+                chipLabel.setFocusable(label != null);
                 // the tooltip MEANS its <br>; the repo path is the one external piece and rides
                 // PLAIN-TOOLTIP-EXEMPT: PlainText.escape (a directory can be named <img src=…>)
                 chipLabel.setToolTipText(label == null ? null
