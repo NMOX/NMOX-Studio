@@ -55,6 +55,14 @@ class ServerStderrTest {
     }
 
     @Test
+    @DisplayName("On Windows the platform's stop is TerminateProcess, exit 1: a stop, not a crash")
+    void windowsStopIsNotACrash() {
+        assertThat(ServerStderr.unexpected(1, true)).isFalse();
+        assertThat(ServerStderr.unexpected(1, false)).as("elsewhere 1 is a crash").isTrue();
+        assertThat(ServerStderr.unexpected(2, true)).isTrue();
+    }
+
+    @Test
     @DisplayName("A crash with nothing on stderr still speaks, without a colon to nowhere")
     void silentCrashStillSpeaks() {
         List<String> said = new ArrayList<>();

@@ -117,10 +117,19 @@ final class ServerStderr {
     /**
      * A clean exit (0) is the client shutting the server down; 143 is a
      * SIGTERM someone sent on purpose (the platform stopping a hung
-     * server, the IDE quitting). Anything else is a crash worth a word.
+     * server, the IDE quitting). On Windows the platform's stop is
+     * {@code Process.destroy()}, which is TerminateProcess with exit code 1,
+     * so 1 there is a stop too — otherwise every ordinary stop would put a
+     * crash on the status line (the 3.4 review, read from LSPBindings). The
+     * cost is written here: a Windows server that crashes with exit 1 is not
+     * announced. Anything else is a crash worth a word.
      */
     static boolean unexpected(int exitCode) {
-        return exitCode != 0 && exitCode != 143;
+        return unexpected(exitCode, org.openide.util.BaseUtilities.isWindows());
+    }
+
+    static boolean unexpected(int exitCode, boolean windows) {
+        return exitCode != 0 && exitCode != 143 && !(windows && exitCode == 1);
     }
 
     void exited(int exitCode, Consumer<String> status) {
