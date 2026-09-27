@@ -31,7 +31,10 @@ class WorkspaceSaveWiringTest {
     @DisplayName("saveWorkspace() snapshots on the EDT and queues the write on the lane")
     void saveQueuesOnTheLane() throws Exception {
         String src = source();
-        assertThat(src).contains("SAVES.save(() -> writeSnapshot(");
+        // the lane task writes (and, since 3.4, reports whether it wrote, so
+        // a deployment a refused save carried stays held until one lands)
+        assertThat(src.replaceAll("\\s+", " ")).containsPattern(
+                "SAVES\\.save\\(\\(\\) -> (\\{ if \\()?writeSnapshot\\(");
         assertThat(src)
                 .as("no synchronous EDT write may remain — the lane is the only writer")
                 .doesNotContain("Web3WorkspaceIO.save(");
@@ -41,13 +44,17 @@ class WorkspaceSaveWiringTest {
     @DisplayName("the write and its self-write stamp are one lane task")
     void writeAndStampAreOneTask() throws Exception {
         String src = source();
-        int start = src.indexOf("private void writeSnapshot");
+        int start = src.indexOf("private boolean writeSnapshot");
         assertThat(start).as("writeSnapshot exists").isPositive();
         String body = src.substring(start, src.indexOf("\n    private", start + 1));
         assertThat(body).contains("AtomicFiles.writeString(");
         assertThat(body)
                 .as("the stamp must be taken by the SAME task that writes")
                 .contains("selfWrites.noteSync(");
+        assertThat(body.indexOf("selfWrites.beforeWrite("))
+                .as("3.4: the disk is re-checked on the lane BEFORE the write")
+                .isPositive()
+                .isLessThan(body.indexOf("AtomicFiles.writeString("));
     }
 
     @Test

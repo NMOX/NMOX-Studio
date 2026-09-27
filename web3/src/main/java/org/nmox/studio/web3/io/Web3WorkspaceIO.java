@@ -22,14 +22,19 @@ import org.nmox.studio.web3.model.Network;
  * {@link RpcSecrets}. The mirror of {@code .nmoxdb.json}'s policy.
  *
  * <p>Loading is tolerant in both directions (the DbWorkspaceIO idiom):
- * a missing file, malformed JSON, unknown keys from a newer NMOX, or a
- * version stamp from the future all degrade to "less state", never an
- * exception. Deployments are capped at {@value #DEPLOYMENT_CAP},
+ * a missing file, malformed JSON, or unknown keys degrade to "less state",
+ * never an exception. A version stamp above {@link #FORMAT_VERSION} is the
+ * one exception to that tolerance (3.4): a newer NMOX Studio's file loads,
+ * but read-only, because the keys it added are what this version would
+ * drop on its next save. Deployments are capped at {@value #DEPLOYMENT_CAP},
  * newest-first, on both write and load.
  */
 public final class Web3WorkspaceIO {
 
     public static final String FILENAME = ".nmoxweb3.json";
+
+    /** The {@code version} this build writes; a higher one binds read-only (3.4). */
+    public static final int FORMAT_VERSION = 1;
 
     /** How many deployment records the file keeps — the newest 200. */
     public static final int DEPLOYMENT_CAP = 200;
@@ -69,7 +74,7 @@ public final class Web3WorkspaceIO {
      */
     public static String toJson(Workspace workspace) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT_VERSION);
 
         JSONArray networks = new JSONArray();
         for (Network network : workspace.networks()) {
@@ -182,23 +187,24 @@ public final class Web3WorkspaceIO {
      * file: 9,437,184 bytes became 75.
      */
     public record LoadOutcome(Workspace workspace, File backup, boolean unreadable,
-            boolean conflicted, List<String> renamedImported) {
+            boolean conflicted, boolean newerFormat, List<String> renamedImported) {
 
         public LoadOutcome {
             renamedImported = renamedImported == null ? List.of() : List.copyOf(renamedImported);
         }
 
-        /** The pre-3.4 shape: no conflict, no renames. */
+        /** The pre-3.4 shape: no conflict, nothing newer, no renames. */
         public LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
-            this(workspace, backup, unreadable, false, List.of());
+            this(workspace, backup, unreadable, false, false, List.of());
         }
 
         /**
          * True when the file exists and must not be written: it could not
-         * be read, or it holds git's unresolved merge conflict (3.4).
+         * be read, it holds git's unresolved merge conflict, or a newer
+         * NMOX Studio wrote it (3.4).
          */
         public boolean readOnly() {
-            return unreadable || conflicted;
+            return unreadable || conflicted || newerFormat;
         }
     }
 
@@ -241,12 +247,18 @@ public final class Web3WorkspaceIO {
             // is resolved, when the pulse reloads it.
             LOG.log(Level.WARNING, "{0} has unresolved merge conflicts; read-only until resolved",
                     file);
-            return new LoadOutcome(Workspace.empty(), null, false, true, List.of());
+            return new LoadOutcome(Workspace.empty(), null, false, true, false, List.of());
         }
         try {
             List<String> renamed = new ArrayList<>();
-            return new LoadOutcome(parse(new JSONObject(json), renamed), null, false, false,
-                    renamed);
+            JSONObject root = new JSONObject(json);
+            int version = root.optInt("version", FORMAT_VERSION);
+            boolean newer = version > FORMAT_VERSION;
+            if (newer) {
+                LOG.log(Level.WARNING, "{0} was written by a newer NMOX Studio (version {1}); read-only",
+                        new Object[]{file, version});
+            }
+            return new LoadOutcome(parse(root, renamed), null, false, false, newer, renamed);
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});

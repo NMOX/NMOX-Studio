@@ -292,6 +292,10 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_workspaceConflicted={0} has unresolved merge conflicts \u2014 resolve them in git; NMOX Studio won\u2019t write it until then",
     // {0} lists the renames, each "old \u2192 new"
     "Web3StudioTopComponent_importedRenamed=Imported contracts that shared a name after a merge were renamed so both are kept: {0}",
+    "Web3StudioTopComponent_workspaceNewer={0} was written by a newer NMOX Studio \u2014 it is read-only here so nothing it holds is lost",
+    "Web3StudioTopComponent_notWrittenReloaded={0} changed on disk, so your last change was not written over it \u2014 the file was reloaded as it is now; make the change again",
+    "# {0} contract name, {1} its address, {2} the workspace file name",
+    "Web3StudioTopComponent_deploymentUnsaved=Deployed {0} at {1}, but {2} cannot be written now \u2014 the address book keeps it in this window, and it is saved as soon as the file can be",
     "Web3StudioTopComponent_workspaceBackupKept=The unreadable original was kept at {0}.",
     "Web3StudioTopComponent_contractNameA11y=Contract name",
     "Web3StudioTopComponent_deployedAddressA11y=Deployed address, optional",
@@ -427,6 +431,31 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final List<Network> networks = new ArrayList<>();
     /** The address book, newest first — mirrors .nmoxweb3.json. */
     private final List<DeploymentRecord> deployments = new ArrayList<>();
+
+    /**
+     * EDT-confined (3.4): deployments that have happened on a chain but are
+     * not yet in {@code .nmoxweb3.json}, because the save was refused — the
+     * file is read-only, or a teammate's version landed first. A deployment
+     * is a fact about the world (a contract that exists, gas that was
+     * spent), so a refused save must not lose its address: these are shown,
+     * re-applied over every reload of the directory they belong to, and
+     * dropped only once a write that carried them has landed.
+     */
+    private final List<DeploymentRecord> pendingDeployments = new ArrayList<>();
+
+    /** The directory {@link #pendingDeployments} belong to. */
+    private File pendingDir;
+
+    /**
+     * The directory the loaded workspace came from — where its saves go
+     * (3.4: saves targeted the LIVE aim, so a save racing a re-aim wrote one
+     * project's address book into the other's file). Null until a load.
+     */
+    private File boundDir;
+
+    private File boundDir() {
+        return boundDir != null ? boundDir : workspaceDir();
+    }
     private List<ContractArtifact> artifacts = List.of();
     /** Imported-ABI contracts (v2.45.0) — survive rescans by design. */
     private List<org.nmox.studio.web3.model.ImportedContract> importedContracts = List.of();
@@ -1037,18 +1066,12 @@ public final class Web3StudioTopComponent extends TopComponent {
             DeploymentRecord record = new DeploymentRecord(s.artifact().name(),
                     address, network.name(), txHash, receipt.blockNumber(),
                     System.currentTimeMillis());
-            deployments.add(0, record);
-            saveWorkspace();
-            rebuildDeploymentsBranch();
-            deploymentsModel.refresh();
-            refreshWatchFilter();
-            updateWatchAddresses();
-            publishSearch();
             String headline = Bundle.Web3StudioTopComponent_deployedHeadline(s.artifact().name(),
                     DisplayValues.shortAddress(address),
                     String.valueOf(receipt.blockNumber()));
             status(headline, OK_GREEN);
             balloon(headline, address, true);
+            recordDeployment(record);
             openInteractFor(s.attachedTo(address));
         } else {
             setResult(result, outcome.decision().message(), FAIL_RED);
@@ -2175,6 +2198,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     /** EDT: swaps the studio onto a freshly read workspace. */
     private void applyReloadedWorkspace(File dir, Web3WorkspaceIO.LoadOutcome outcome) {
+        boundDir = dir;
         Network previous = selectedNetwork();
         stopWatch();
         session = null;
@@ -2196,6 +2220,11 @@ public final class Web3StudioTopComponent extends TopComponent {
         }
         networks.addAll(workspace.networks());
         deployments.addAll(workspace.deployments());
+        // deployments a refused save could not write come back over the
+        // file's own (3.4), newest first, unless the file already has them
+        List<DeploymentRecord> unwritten = dir.equals(pendingDir)
+                ? unwrittenOver(workspace.deployments()) : List.of();
+        deployments.addAll(0, unwritten);
         applyImported(workspace.imported());
         // A file we never read is never ours. Stamping it here unconditionally
         // was half of the loss; the other half is that saveWorkspace() writes
@@ -2203,11 +2232,14 @@ public final class Web3StudioTopComponent extends TopComponent {
         // read-only bind rather than a comparison it cannot make — we hold
         // none of the file's bytes to compare.
         workspaceReadOnly = outcome.readOnly();
-        // 3.4: git's unresolved merge conflict is its own reason, and says so
+        // 3.4: git's unresolved merge conflict is its own reason, and says
+        // so; so is a file a newer NMOX Studio wrote
         readOnlyText = outcome.conflicted()
                 ? Bundle.Web3StudioTopComponent_workspaceConflicted(Web3WorkspaceIO.FILENAME)
+                : outcome.newerFormat()
+                ? Bundle.Web3StudioTopComponent_workspaceNewer(Web3WorkspaceIO.FILENAME)
                 : Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME);
-        if (outcome.conflicted()) {
+        if (outcome.conflicted() || outcome.newerFormat()) {
             balloon(readOnlyText, null, false);
         }
         if (!outcome.renamedImported().isEmpty()) {
@@ -2241,7 +2273,63 @@ public final class Web3StudioTopComponent extends TopComponent {
         if (workspaceReadOnly) {
             // said last so the rescan's own status does not bury it
             status(readOnlyText, FAIL_RED);
+            if (!unwritten.isEmpty()) {
+                sayDeploymentUnsaved(unwritten.get(0));
+            }
+        } else if (!unwritten.isEmpty()) {
+            // the file changed under a deployment that could not be written:
+            // it is written now, onto the version that is there
+            saveWorkspace();
         }
+    }
+
+    /**
+     * EDT: a contract now exists on a chain — put it in the address book and
+     * save. The record is held in {@link #pendingDeployments} until a write
+     * carries it (3.4): a refused save (a read-only file, a teammate's
+     * version first) must not lose a live contract's address, and while the
+     * file cannot be written the address is said, not only listed.
+     */
+    private void recordDeployment(DeploymentRecord record) {
+        deployments.add(0, record);
+        if (!java.util.Objects.equals(pendingDir, boundDir())) {
+            pendingDeployments.clear();
+        }
+        pendingDir = boundDir();
+        pendingDeployments.add(0, record);
+        saveWorkspace();
+        rebuildDeploymentsBranch();
+        deploymentsModel.refresh();
+        refreshWatchFilter();
+        updateWatchAddresses();
+        publishSearch();
+        if (workspaceReadOnly) {
+            sayDeploymentUnsaved(record);
+        }
+    }
+
+    /** The {@link #pendingDeployments} the file {@code onDisk} does not already hold. */
+    private List<DeploymentRecord> unwrittenOver(List<DeploymentRecord> onDisk) {
+        List<DeploymentRecord> missing = new ArrayList<>();
+        for (DeploymentRecord pending : pendingDeployments) {
+            boolean there = false;
+            for (DeploymentRecord record : onDisk) {
+                there |= record.address().equalsIgnoreCase(pending.address())
+                        && record.networkName().equals(pending.networkName());
+            }
+            if (!there) {
+                missing.add(pending);
+            }
+        }
+        return missing;
+    }
+
+    /** Says the one thing a refused save must not lose: where the contract lives. */
+    private void sayDeploymentUnsaved(DeploymentRecord record) {
+        String said = Bundle.Web3StudioTopComponent_deploymentUnsaved(record.contractName(),
+                record.address(), Web3WorkspaceIO.FILENAME);
+        status(said, FAIL_RED);
+        balloon(said, record.address(), false);
     }
 
     /** What the status line says while {@link #workspaceReadOnly} holds (3.4: which reason). */
@@ -2401,10 +2489,15 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(readOnlyText, FAIL_RED);
             return;
         }
-        File file = new File(workspaceDir(), Web3WorkspaceIO.FILENAME);
+        File file = new File(boundDir(), Web3WorkspaceIO.FILENAME);
         String json = Web3WorkspaceIO.toJson(
                 new Web3WorkspaceIO.Workspace(networks, deployments, importedContracts));
-        SAVES.save(() -> writeSnapshot(file, json));
+        List<DeploymentRecord> carried = List.copyOf(pendingDeployments);
+        SAVES.save(() -> {
+            if (writeSnapshot(file, json) && !carried.isEmpty()) {
+                SwingUtilities.invokeLater(() -> pendingDeployments.removeAll(carried));
+            }
+        });
     }
 
     /**
@@ -2412,11 +2505,21 @@ public final class Web3StudioTopComponent extends TopComponent {
      * lane-ordered pulse verdict can never see the write without the
      * stamp.
      */
-    private void writeSnapshot(File file, String json) {
+    private boolean writeSnapshot(File file, String json) {
+        // 3.4: asked here, on the lane, immediately before the write — the
+        // load was the only check, so a conflict landing after it was
+        // replaced by this window's pre-merge address book
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = selfWrites.beforeWrite(
+                file, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return false;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
             selfWrites.noteSync(file);
             saveFailureNotified = false;
+            return true;
         } catch (Exception ex) {
             java.util.logging.Logger.getLogger(Web3StudioTopComponent.class.getName())
                     .log(java.util.logging.Level.WARNING, "Web3 workspace save failed", ex);
@@ -2428,6 +2531,25 @@ public final class Web3StudioTopComponent extends TopComponent {
                         Bundle.Web3StudioTopComponent_saveFailedDetail(ex.getMessage()),
                         null);
             }
+            return false;
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing (the
+     * Task Board's rule). The file is read again as it is: a conflicted one
+     * binds read-only and says so; a merely changed one names the change
+     * that could not be written. A deployment that could not be written is
+     * the exception — it is carried over the reload and written onto the
+     * version that is there (or kept on screen, with its address said,
+     * while the file cannot be written).
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        reloadWorkspace();
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            String said = Bundle.Web3StudioTopComponent_notWrittenReloaded(Web3WorkspaceIO.FILENAME);
+            status(said, FAIL_RED);
+            balloon(said, null, false);
         }
     }
 
