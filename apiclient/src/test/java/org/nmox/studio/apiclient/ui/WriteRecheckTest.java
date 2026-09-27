@@ -79,7 +79,7 @@ class WriteRecheckTest {
     }
 
     @Test
-    void conflictLandingBeforeThePulseTicksIsOverwrittenByTheNextEdit(@TempDir File dir) throws Exception {
+    void conflictLandingBeforeThePulseSurvivesTheNextSave(@TempDir File dir) throws Exception {
         File f = new File(dir, WorkspaceIO.FILENAME);
         WorkspaceIO.save(dir, Workspace.starter("Payments", "List charges", "Staging"));
         ApiClientTopComponent window = loaded(dir);
@@ -105,7 +105,7 @@ class WriteRecheckTest {
     }
 
     @Test
-    void pendingEditStillSavesAfterTheForeignConflictWasDetected(@TempDir File dir) throws Exception {
+    void pendingSaveStopsWhenAForeignConflictArrives(@TempDir File dir) throws Exception {
         File f = new File(dir, WorkspaceIO.FILENAME);
         WorkspaceIO.save(dir, Workspace.starter("Payments", "List charges", "Staging"));
         ApiClientTopComponent window = loaded(dir);
