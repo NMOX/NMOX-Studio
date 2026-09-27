@@ -55,6 +55,31 @@ public final class ExternalEdits {
      */
     public synchronized void recordOwn(Stamp stamp) {
         known = stamp;
+        if (stamp == null) {
+            own.noteSync(-1, -1);
+        } else {
+            own.noteSync(stamp.mtime(), stamp.size());
+        }
+    }
+
+    /**
+     * The bytes this studio last READ or WROTE — moved only by {@link
+     * #recordOwn}, never by a verdict that merely consumed a foreign stamp,
+     * so {@link #beforeWrite} still sees a foreign version the studio has
+     * not yet reloaded.
+     */
+    private final org.nmox.studio.core.util.SelfWriteTracker own =
+            new org.nmox.studio.core.util.SelfWriteTracker();
+
+    /**
+     * Asked on the save lane immediately before a write (3.4): what is on
+     * disk now, against the version this studio last read or wrote. The
+     * verdicts below decide when to RELOAD; this one decides whether a
+     * save may land at all — a connection dialog confirmed after a
+     * {@code git pull} brought a conflict used to write over it.
+     */
+    public org.nmox.studio.core.util.SelfWriteTracker.OnDisk beforeWrite(File file, long maxBytes) {
+        return own.beforeWrite(file, maxBytes);
     }
 
     /**

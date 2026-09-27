@@ -42,12 +42,43 @@ public final class SqlitePaths {
             Path root = projectDir.getAbsoluteFile().toPath().normalize();
             Path normalized = file.normalize();
             if (!normalized.startsWith(root) || normalized.equals(root)) {
-                return path;
+                // the same test on REAL paths: a project reached through a
+                // symlink (macOS's /var is one, to /private/var) and a
+                // chooser answering with the other spelling are still one
+                // project, and the file inside it must not be stored as an
+                // absolute path that means nothing on a teammate's clone
+                root = real(root);
+                normalized = real(normalized);
+                if (!normalized.startsWith(root) || normalized.equals(root)) {
+                    return path;
+                }
             }
             return root.relativize(normalized).toString().replace(File.separatorChar, '/');
         } catch (InvalidPathException notAPath) {
             return path;
         }
+    }
+
+    /**
+     * The real path of {@code p}, or of its nearest existing ancestor with
+     * the rest appended (a database the chooser names before it exists);
+     * {@code p} itself when nothing resolves.
+     */
+    private static Path real(Path p) {
+        Path missing = null;
+        for (Path at = p; at != null; at = at.getParent()) {
+            try {
+                Path resolved = at.toRealPath();
+                return missing == null ? resolved : resolved.resolve(missing);
+            } catch (java.io.IOException | SecurityException notThere) {
+                Path name = at.getFileName();
+                if (name == null) {
+                    return p;
+                }
+                missing = missing == null ? name : name.resolve(missing);
+            }
+        }
+        return p;
     }
 
     /**

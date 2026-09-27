@@ -141,7 +141,7 @@ class TeamDbWindowTest {
                 .isEqualTo(created);
         assertThat(dialog).contains("SqlitePaths.forStoring(project, spec)")
                 .contains("SqlitePaths.forOpening(project,");
-        assertThat(window).contains("ConnectionDialog.currentProject = projectDir();");
+        assertThat(window).contains("ConnectionDialog.currentProject = boundDir();");
     }
 
     @Test

@@ -40,12 +40,17 @@ import org.nmox.studio.dbstudio.model.DbEngine;
  * state", never an exception; keys this version doesn't know are
  * ignored (org.json's natural behavior), and files written before the
  * history/saved keys existed load with those lists empty. The
- * {@code version} stamp stays {@code 1} — the schema only ever grew
- * additively.
+ * {@code version} stamp stays {@link #FORMAT_VERSION} while the schema only
+ * grows additively; a file stamped HIGHER came from a newer NMOX Studio
+ * and binds read-only (3.4), because the keys it added are exactly what
+ * this version would drop on its next save.
  */
 public final class DbWorkspaceIO {
 
     public static final String FILENAME = ".nmoxdb.json";
+
+    /** The {@code version} this build writes; a higher one binds read-only (3.4). */
+    public static final int FORMAT_VERSION = 1;
 
     /** How many history entries the file keeps — the newest 50. */
     public static final int HISTORY_CAP = 50;
@@ -113,7 +118,7 @@ public final class DbWorkspaceIO {
      */
     public static String toJson(Workspace workspace) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT_VERSION);
         JSONArray connections = new JSONArray();
         for (ConnectionSpec spec : workspace.connections()) {
             JSONObject cj = new JSONObject();
@@ -168,7 +173,15 @@ public final class DbWorkspaceIO {
             array.put(hj);
         }
         root.put("history", array);
-        return root.toString(2);
+        String doc = root.toString(2);
+        // the document must fit the cap PersonalState reads it back with; a
+        // run of pasted multi-megabyte queries would otherwise write a file
+        // the next load refuses — so the OLDEST runs go first
+        while (!org.nmox.studio.core.util.PersonalState.fits(doc) && array.length() > 0) {
+            array.remove(array.length() - 1);
+            doc = root.toString(2);
+        }
+        return doc;
     }
 
     /**
@@ -234,6 +247,12 @@ public final class DbWorkspaceIO {
 
     private static Workspace parseStrict(String json, Heal heal) {
         JSONObject root = new JSONObject(json);
+        int version = root.optInt("version", FORMAT_VERSION);
+        if (version > FORMAT_VERSION) {
+            // a newer NMOX Studio's file (3.4): what it added cannot be told
+            // from what it kept, so none of it is saved over
+            heal.newer.add("version " + version);
+        }
         return new Workspace(
                 connections(root.optJSONArray("connections"), heal),
                 // legacy per-person field: read so a pre-3.4 file migrates

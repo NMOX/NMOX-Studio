@@ -234,6 +234,7 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_addedFromDocker=Added {0} from Docker",
     "DbStudioTopComponent_reloaded=Reloaded {0}",
     "DbStudioTopComponent_reloadedDetail=The file changed outside DB Studio — connections, history and saved queries follow it.",
+    "DbStudioTopComponent_notWrittenReloaded={0} changed on disk, so your last change was not written over it — the file was reloaded as it is now; make the change again",
     "DbStudioTopComponent_loading=Loading…",
     "DbStudioTopComponent_disconnected=Disconnected {0}",
     "DbStudioTopComponent_connectingTo=Connecting to {0}…",
@@ -1138,7 +1139,7 @@ public final class DbStudioTopComponent extends TopComponent {
      * is read-only: it is not that file.
      */
     private void savePersonal() {
-        File dir = projectDir();
+        File dir = boundDir();
         String json = DbWorkspaceIO.personalJson(persistedHistory);
         SAVES.save(() -> {
             try {
@@ -1540,7 +1541,7 @@ public final class DbStudioTopComponent extends TopComponent {
      */
     private void restartWorkspaceWatcher() {
         stopWorkspaceWatcher();
-        File dir = projectDir();
+        File dir = boundDir();
         File workspaceFile = new File(dir, org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
         org.nmox.studio.core.util.FilePulse watcher = new org.nmox.studio.core.util.FilePulse(workspaceFile,
                 (mtime, size) -> {
@@ -1602,7 +1603,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return;
         }
         deferredExternalStamp = null;
-        File workspaceFile = new File(projectDir(),
+        File workspaceFile = new File(boundDir(),
                 org.nmox.studio.dbstudio.io.DbWorkspaceIO.FILENAME);
         // same lane as the watcher's stat: ordered behind our own writes,
         // so the just-completed save this re-check anticipates has landed
@@ -1618,17 +1619,18 @@ public final class DbStudioTopComponent extends TopComponent {
      * Runs one of the modal connection dialogs with the busy flag held,
      * so an external .nmoxdb.json reload can never yank the tree out
      * from under an open dialog; any deferred version is re-checked as
-     * soon as the dialog closes. Note the deliberate ordering when the
-     * dialog is confirmed: the caller's save runs first, making our
-     * version the newest — a foreign edit made WHILE the dialog was
-     * open loses to the user's explicit confirmation (last writer
-     * wins, exactly like the rest of the studio's persistence).
+     * soon as the dialog closes. When the dialog is confirmed the
+     * caller's save runs first — and since 3.4 that save re-checks the
+     * disk before it writes: a foreign version that landed WHILE the
+     * dialog was open (a {@code git pull}, a conflict) is no longer
+     * written over ("last writer wins" replaced both people's work with
+     * this window's); the save is refused, said, and the file reloaded.
      */
     private ConnectionSpec showConnectionDialog(
             java.util.function.Supplier<ConnectionSpec> dialog) {
         connectionDialogOpen = true;
         // the dialog stores a SQLite path inside the project relative to it (3.4)
-        ConnectionDialog.currentProject = projectDir();
+        ConnectionDialog.currentProject = boundDir();
         try {
             return dialog.get();
         } finally {
@@ -1778,7 +1780,7 @@ public final class DbStudioTopComponent extends TopComponent {
             return; // Services entries: Test is disabled, NetBeans owns the probe
         }
         status(Bundle.DbStudioTopComponent_testing(spec.name()), Color.GRAY);
-        File project = projectDir();
+        File project = boundDir();
         RP.post(() -> {
             char[] password = Passwords.read(spec.id());
             DbBackend backend = DbBackend.create(
@@ -1815,7 +1817,7 @@ public final class DbStudioTopComponent extends TopComponent {
             try {
                 // a stored SQLite path may be project-relative (3.4)
                 return DbBackend.create(org.nmox.studio.dbstudio.model.SqlitePaths.forOpening(
-                        projectDir(), spec), password); // the backend copies the array
+                        boundDir(), spec), password); // the backend copies the array
             } finally {
                 if (password != null) {
                     Arrays.fill(password, '\0');
@@ -2269,6 +2271,18 @@ public final class DbStudioTopComponent extends TopComponent {
 
     // ---- persistence (RackService idiom, same as apiclient/infra) ----
 
+    /**
+     * The directory the loaded workspace came from — where its saves go.
+     * Saves used to target the LIVE aim, so a save queued while a re-aim was
+     * reading project B wrote project A's connections into B's file. Null
+     * until the first load binds it (then the live aim is all there is).
+     */
+    private File boundDir;
+
+    private File boundDir() {
+        return boundDir != null ? boundDir : projectDir();
+    }
+
     private File projectDir() {
         // soft dependency by lookup (ledger 30): a null provider means the
         // rack is absent (plain tests) and home is the honest fallback
@@ -2333,15 +2347,16 @@ public final class DbStudioTopComponent extends TopComponent {
                 if (seq != reloadSeq) {
                     return; // a newer reload superseded this read
                 }
-                applyReloadedWorkspace(outcome, ownStamp, personal);
+                applyReloadedWorkspace(dir, outcome, ownStamp, personal);
             });
         });
     }
 
-    /** EDT: swaps the studio onto a freshly read workspace. */
-    private void applyReloadedWorkspace(DbWorkspaceIO.LoadOutcome outcome,
+    /** EDT: swaps the studio onto a freshly read workspace, read from {@code dir}. */
+    private void applyReloadedWorkspace(File dir, DbWorkspaceIO.LoadOutcome outcome,
             org.nmox.studio.dbstudio.io.ExternalEdits.Stamp ownStamp,
             List<DbWorkspaceIO.HistoryEntry> personalHistory) {
+        boundDir = dir;
         closeAllBackends();
         containerCache.clear();
         connecting.clear();
@@ -2425,6 +2440,13 @@ public final class DbStudioTopComponent extends TopComponent {
         }
     }
 
+    /** EDT: {@link #applyReloadedWorkspace(File, DbWorkspaceIO.LoadOutcome, ExternalEdits.Stamp, List)} for the live aim. */
+    private void applyReloadedWorkspace(DbWorkspaceIO.LoadOutcome outcome,
+            org.nmox.studio.dbstudio.io.ExternalEdits.Stamp ownStamp,
+            List<DbWorkspaceIO.HistoryEntry> personalHistory) {
+        applyReloadedWorkspace(projectDir(), outcome, ownStamp, personalHistory);
+    }
+
     /** Save-lane-thread confined — only {@link #writeSnapshot} touches it. */
     private boolean saveFailureNotified;
 
@@ -2445,7 +2467,7 @@ public final class DbStudioTopComponent extends TopComponent {
             status(readOnlyText, Color.GRAY);
             return;
         }
-        File file = new File(projectDir(), DbWorkspaceIO.FILENAME);
+        File file = new File(boundDir(), DbWorkspaceIO.FILENAME);
         String json = DbWorkspaceIO.toJson(new DbWorkspaceIO.Workspace(
                 specs, persistedHistory, savedQueries));
         // the shared file no longer carries the history (3.4); writing this
@@ -2461,6 +2483,15 @@ public final class DbStudioTopComponent extends TopComponent {
      * stamp.
      */
     private void writeSnapshot(File file, String json) {
+        // 3.4: asked here, on the lane, immediately before the write — the
+        // load was the only check, so a conflict landing after it was
+        // replaced by this window's pre-merge lists
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = externalEdits.beforeWrite(
+                file, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(file.toPath(), json);
             externalEdits.recordOwn(
@@ -2478,6 +2509,22 @@ public final class DbStudioTopComponent extends TopComponent {
                         Bundle.DbStudioTopComponent_notPersisted(ex.getMessage()),
                         null);
             }
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing (the
+     * Task Board's rule). The file is read again as it is — a conflicted one
+     * binds read-only and says so itself — and a merely changed one names
+     * the change that could not be written, so it does not look saved.
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        deferredExternalStamp = null;
+        reloadWorkspace();
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            String said = Bundle.DbStudioTopComponent_notWrittenReloaded(DbWorkspaceIO.FILENAME);
+            status(said, Color.GRAY);
+            balloon(said, null, false);
         }
     }
 

@@ -24,6 +24,24 @@ class SqlitePathsTest {
     }
 
     @Test
+    @DisplayName("a project reached through a symlink still stores the file relative to it")
+    void symlinkedProjectIsStillInside(@TempDir java.nio.file.Path dirs) throws Exception {
+        java.nio.file.Path real = java.nio.file.Files.createDirectories(dirs.resolve("shop"));
+        java.nio.file.Path link = dirs.resolve("shop-link");
+        try {
+            java.nio.file.Files.createSymbolicLink(link, real);
+        } catch (UnsupportedOperationException | java.io.IOException noLinks) {
+            org.junit.jupiter.api.Assumptions.abort("this filesystem makes no symlinks");
+        }
+        java.nio.file.Files.createDirectories(real.resolve("data"));
+        // the aim spells the project one way, the chooser answers the other
+        String chosen = real.resolve("data").resolve("dev.db").toString();
+        assertThat(SqlitePaths.stored(link.toFile(), chosen)).isEqualTo("data/dev.db");
+        String viaLink = link.resolve("data").resolve("dev.db").toString();
+        assertThat(SqlitePaths.stored(real.toFile(), viaLink)).isEqualTo("data/dev.db");
+    }
+
+    @Test
     @DisplayName("a file outside the project, and a relative one, are stored as chosen")
     void outsideIsStoredAsIs(@TempDir File project, @TempDir File elsewhere) {
         String outside = new File(elsewhere, "shared.db").getAbsolutePath();
