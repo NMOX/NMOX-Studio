@@ -670,10 +670,33 @@ public final class DigitalOceanClient {
      * exists. A resource deleted behind the designer's back stops
      * claiming "live" - it reports drifted instead. Kinds without a
      * read endpoint are labeled honestly, never guessed.
+     *
+     * <p>A resource the cloud answers 404 for is RETURNED, not forgotten
+     * (3.4). Until then Refresh set its {@code doId} to null on the spot
+     * and the designer saved — and a 404 means only "not in the account
+     * these tokens reach": with a teammate's token for a different
+     * account, every link from the shared design to a live billed resource
+     * was severed silently and the loss committed. The caller asks the
+     * user, and forgets only on a yes.
+     *
+     * @return the deployed nodes the cloud did not find, in design order
      */
-    public void refreshDrift(InfraGraph graph,
+    public java.util.List<InfraNode> refreshDrift(InfraGraph graph,
             java.util.function.BiConsumer<InfraNode, String> onStatus)
             throws IOException, InterruptedException {
+        return refreshDrift(graph, onStatus,
+                (node, path) -> send(node.kind.provider(), "GET", path, ""));
+    }
+
+    /** The one GET a drift check makes — a seam so a test can answer 404 without a cloud. */
+    interface ResourceReader {
+        JSONObject read(InfraNode node, String path) throws IOException, InterruptedException;
+    }
+
+    java.util.List<InfraNode> refreshDrift(InfraGraph graph,
+            java.util.function.BiConsumer<InfraNode, String> onStatus, ResourceReader reader)
+            throws IOException, InterruptedException {
+        java.util.List<InfraNode> notFound = new java.util.ArrayList<>();
         for (InfraNode node : graph.getNodes()) {
             if (node.doId == null) {
                 continue;
@@ -684,7 +707,7 @@ public final class DigitalOceanClient {
                 continue;
             }
             try {
-                JSONObject response = send(node.kind.provider(), "GET", path, "");
+                JSONObject response = reader.read(node, path);
                 String ip = extractPublicIp(node.kind, response);
                 if (ip != null) {
                     // ssh parity: the context menu offers root@ip
@@ -694,7 +717,9 @@ public final class DigitalOceanClient {
             } catch (IOException ex) {
                 String msg = ex.getMessage() == null ? "" : ex.getMessage();
                 if (deletedInCloud(msg)) {
-                    onModel(() -> node.doId = null); // the cloud is the truth: it is gone
+                    // not found in THIS account — the link is kept until the
+                    // user says it is gone (3.4); a teammate's account may hold it
+                    notFound.add(node);
                     onStatus.accept(node, Bundle.DigitalOceanClient_statusDrifted());
                 } else {
                     onStatus.accept(node, Bundle.DigitalOceanClient_statusCheckFailed(
@@ -702,6 +727,7 @@ public final class DigitalOceanClient {
                 }
             }
         }
+        return notFound;
     }
 
     /**

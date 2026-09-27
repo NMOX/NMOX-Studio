@@ -146,6 +146,15 @@ import org.openide.windows.TopComponent;
     "InfraDesigner_readFailedTitle=Couldn''t read {0} — starting empty",
     "InfraDesigner_readFailedDetail=The unreadable original was kept at {0}.",
     "InfraDesigner_designReadOnly={0} could not be read — the design is read-only so nothing overwrites it",
+    // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
+    "InfraDesigner_designConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
+    "InfraDesigner_designNewer={0} holds resources a newer NMOX Studio added — the design is read-only here so none of them, and none of their links to the cloud, is lost",
+    // Refresh (3.4): a 404 means "not in the account these tokens reach", not "gone"
+    "InfraDesigner_notFoundTitle=Resources the cloud did not find",
+    // {0} the count, {1} the node labels; the choice keeps "1 resource" singular
+    "InfraDesigner_notFoundConfirm={0,choice,1#One deployed resource was|1<{0,number,0} deployed resources were} not found by the cloud account your tokens reach: {1}.",
+    "InfraDesigner_notFoundAdvice=If they were deleted, forget them. If a teammate’s account holds them, keep the links — forgetting them here forgets them in the shared design. Forget them?",
+    "InfraDesigner_notFoundKept=Kept the links — the design still points at resources your cloud account does not see.",
     "InfraDesigner_reloadedTitle=Reloaded {0}",
     "InfraDesigner_reloadedDetail=The file changed outside the designer — the canvas follows it.",
     "InfraDesigner_conflictTitle={0} changed on disk — Reload?",
@@ -200,6 +209,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
      * TO, so writes are refused out loud until the file can be read.
      */
     private boolean designReadOnly;
+    /**
+     * Why {@link #designReadOnly} holds (3.4): null while the file could
+     * not be read (the original sentence and its title), else the one
+     * sentence that says it — git's merge conflict, or a newer version.
+     */
+    private String readOnlyText;
     /** One refusal balloon per read-only bind, not one per debounce tick. */
     private boolean readOnlyNotified;
     /** Polls the design file's stamp while the tab is open; never runs closed. */
@@ -633,13 +648,46 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void refreshDrift() {
         runExclusive(refreshButton, () -> {
             try {
-                client.refreshDrift(graph, (node, status) ->
+                java.util.List<InfraNode> notFound = client.refreshDrift(graph, (node, status) ->
                         SwingUtilities.invokeLater(() -> graph.setStatus(node, status)));
-                SwingUtilities.invokeLater(this::save);
+                SwingUtilities.invokeLater(() -> {
+                    // 3.4: a 404 is "not in the account these tokens reach";
+                    // the links are forgotten only when the user says so
+                    if (!notFound.isEmpty() && confirm(notFoundQuestion(notFound),
+                            Bundle.InfraDesigner_notFoundTitle())) {
+                        forgetCloudLinks(notFound);
+                    } else if (!notFound.isEmpty()) {
+                        org.openide.awt.StatusDisplayer.getDefault().setStatusText(
+                                org.nmox.studio.core.util.PlainStatus.text(
+                                        Bundle.InfraDesigner_notFoundKept()));
+                    }
+                    save();
+                });
             } catch (Exception ex) {
                 SwingUtilities.invokeLater(() -> error(Bundle.InfraDesigner_refreshFailed(ex.getMessage())));
             }
         });
+    }
+
+    /** The Refresh question (3.4): how many, which, and what forgetting means. Pure. */
+    static String notFoundQuestion(java.util.List<InfraNode> notFound) {
+        java.util.List<String> labels = new java.util.ArrayList<>();
+        for (InfraNode node : notFound) {
+            labels.add(node.label);
+        }
+        return Bundle.InfraDesigner_notFoundConfirm(notFound.size(), String.join(", ", labels))
+                + "\n\n" + Bundle.InfraDesigner_notFoundAdvice();
+    }
+
+    /**
+     * EDT, after the user said yes: the only place a Refresh severs a link
+     * to a live resource. Before 3.4 the drift check nulled every 404'd
+     * {@code doId} itself, and the designer saved it.
+     */
+    static void forgetCloudLinks(java.util.List<InfraNode> notFound) {
+        for (InfraNode node : notFound) {
+            node.doId = null;
+        }
     }
 
     /**
@@ -855,7 +903,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
                 // the empty fallback, so the next autosave can't destroy the
                 // user's only copy
                 GraphIO.LoadOutcome outcome = GraphIO.loadGuarded(graph, file);
-                designReadOnly = outcome.unreadable();
+                designReadOnly = outcome.readOnly();
+                readOnlyText = outcome.conflicted()
+                        ? Bundle.InfraDesigner_designConflicted(GraphIO.DEFAULT_FILENAME)
+                        : outcome.newerFormat()
+                        ? Bundle.InfraDesigner_designNewer(GraphIO.DEFAULT_FILENAME)
+                        : null;
                 if (outcome.backup() != null) {
                     balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
                             Bundle.InfraDesigner_readFailedDetail(outcome.backup().getName()),
@@ -907,6 +960,12 @@ public final class InfraDesignerTopComponent extends TopComponent {
             return;
         }
         readOnlyNotified = true;
+        if (readOnlyText != null) {
+            // git's merge conflict or a newer version (3.4): nothing was
+            // "started empty", so the unreadable title would be untrue
+            balloon(readOnlyText, null, null);
+            return;
+        }
         balloon(Bundle.InfraDesigner_readFailedTitle(GraphIO.DEFAULT_FILENAME),
                 Bundle.InfraDesigner_designReadOnly(GraphIO.DEFAULT_FILENAME), null);
     }

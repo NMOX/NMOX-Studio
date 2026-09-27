@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The design: nodes placed on the canvas and the wires between them.
@@ -58,10 +57,26 @@ public final class InfraGraph {
     private final Map<String, InfraNode> nodes = new LinkedHashMap<>();
     private final List<Wire> wires = new ArrayList<>();
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
-    private final AtomicLong sequence = new AtomicLong();
 
+    /**
+     * Places a new node under a fresh id: the kind and six random hex
+     * digits ({@code droplet-3f9a2c}), never taken in this graph.
+     *
+     * <p>Until 3.4 the id was the kind and a counter ({@code droplet-3}),
+     * which is unique on one machine and not between two: Alice and Bob
+     * each adding a droplet to the same committed design both made
+     * {@code droplet-3}, the keep-both merge's parse-time heal renamed one,
+     * and Bob's WIRE — which named {@code droplet-3} — resolved to Alice's
+     * node. Ids already in a file are kept exactly as they are.
+     */
     public synchronized InfraNode addNode(NodeKind kind, int x, int y) {
-        String id = kind.name().toLowerCase(java.util.Locale.ROOT) + "-" + sequence.incrementAndGet();
+        String prefix = kind.name().toLowerCase(java.util.Locale.ROOT) + "-";
+        String id;
+        do {
+            // UUID's generator is SecureRandom: unguessable is not the point,
+            // but two machines must not draw the same six digits by design
+            id = prefix + java.util.UUID.randomUUID().toString().substring(0, 6);
+        } while (nodes.containsKey(id));
         InfraNode node = new InfraNode(id, kind, x, y);
         nodes.put(id, node);
         fireChanged();
@@ -72,18 +87,7 @@ public final class InfraGraph {
     public synchronized InfraNode restoreNode(String id, NodeKind kind, int x, int y) {
         InfraNode node = new InfraNode(id, kind, x, y);
         nodes.put(id, node);
-        long numeric = extractSequence(id);
-        sequence.updateAndGet(current -> Math.max(current, numeric));
         return node;
-    }
-
-    private static long extractSequence(String id) {
-        int dash = id.lastIndexOf('-');
-        try {
-            return Long.parseLong(id.substring(dash + 1));
-        } catch (RuntimeException ex) {
-            return 0;
-        }
     }
 
     public synchronized void removeNode(InfraNode node) {

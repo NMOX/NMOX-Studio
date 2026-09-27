@@ -31,11 +31,15 @@ class GraphIORoundTripTest {
     @Test
     @DisplayName("Nodes round-trip with kind, position, label, props, doId and ip intact")
     void fullRoundTrip() {
+        InfraGraph design = deployedDesign();
+        // ids are random since 3.4, so read them back from the design itself
+        String vpcId = design.getNodes().get(0).id;
+        String dropletId = design.getNodes().get(1).id;
         InfraGraph restored = new InfraGraph();
-        GraphIO.fromJson(restored, GraphIO.toJson(deployedDesign()));
+        GraphIO.fromJson(restored, GraphIO.toJson(design));
 
         assertThat(restored.getNodes()).hasSize(2);
-        var droplet = restored.node("droplet-2");
+        var droplet = restored.node(dropletId);
         assertThat(droplet).isNotNull();
         assertThat(droplet.kind).isEqualTo(NodeKind.DROPLET);
         assertThat(droplet.x).isEqualTo(240);
@@ -45,7 +49,7 @@ class GraphIORoundTripTest {
         assertThat(droplet.doId).isEqualTo("999");
         assertThat(droplet.ip).isEqualTo("203.0.113.7");
         assertThat(restored.getWires())
-                .containsExactly(new InfraGraph.Wire("vpc-1", "droplet-2"));
+                .containsExactly(new InfraGraph.Wire(vpcId, dropletId));
     }
 
     @Test
@@ -76,7 +80,7 @@ class GraphIORoundTripTest {
         GraphIO.load(restored, file);
 
         assertThat(restored.getNodes()).hasSize(2);
-        assertThat(restored.node("droplet-2").ip).isEqualTo("203.0.113.7");
+        assertThat(restored.getNodes().get(1).ip).isEqualTo("203.0.113.7");
         assertThat(restored.getWires()).hasSize(1);
     }
 
@@ -178,14 +182,14 @@ class GraphIORoundTripTest {
     }
 
     @Test
-    @DisplayName("Sequencing continues past restored ids, so a loaded design never collides")
-    void sequencingSurvivesALoad() {
+    @DisplayName("A node added to a loaded design never collides with a loaded id")
+    void newIdsNeverCollideWithALoad() {
         InfraGraph restored = new InfraGraph();
         GraphIO.fromJson(restored, GraphIO.toJson(deployedDesign()));
 
         var next = restored.addNode(NodeKind.DOMAIN, 0, 0);
 
-        assertThat(next.id).isEqualTo("domain-3");
+        assertThat(next.id).startsWith("domain-");
         assertThat(restored.getNodes()).extracting(n -> n.id).doesNotHaveDuplicates();
     }
     @org.junit.jupiter.api.Test

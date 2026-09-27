@@ -2,9 +2,6 @@ package org.nmox.studio.infra.model;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.AtomicFiles;
@@ -53,6 +50,17 @@ public final class GraphIO {
     }
 
     public static void fromJson(InfraGraph graph, JSONObject root) {
+        fromJson(graph, root, new java.util.ArrayList<>());
+    }
+
+    /**
+     * The parse, noting in {@code newer} every node kind this version does
+     * not know. Such a node cannot be shown — and until 3.4 the next save
+     * dropped it for everyone who shares the design, with its {@code doId}
+     * (the link to a live billed resource) and its wires. A noted design is
+     * bound read-only instead.
+     */
+    static void fromJson(InfraGraph graph, JSONObject root, java.util.List<String> newer) {
         graph.clear();
         JSONArray nodeArr = root.optJSONArray("nodes");
         if (nodeArr == null) {
@@ -65,7 +73,10 @@ public final class GraphIO {
             try {
                 kind = NodeKind.valueOf(nj.getString("kind"));
             } catch (IllegalArgumentException ex) {
-                continue; // kind from a future version; skip rather than fail
+                // a kind from a newer version: not shown, and NOTED so the
+                // design binds read-only rather than a save deleting it
+                newer.add(nj.optString("kind", ""));
+                continue;
             }
             // restoreNode is a map put — a duplicated id (a keep-both git
             // merge of .nmoxinfra.json) silently REPLACED the first node,
@@ -137,7 +148,22 @@ public final class GraphIO {
      * empty design over it. Measured through the real designer on an
      * over-cap file: 9,437,184 bytes became 48.
      */
-    public record LoadOutcome(File backup, boolean unreadable) {
+    public record LoadOutcome(File backup, boolean unreadable, boolean conflicted,
+            boolean newerFormat) {
+
+        /** The pre-3.4 shape: no conflict, nothing from a newer version. */
+        public LoadOutcome(File backup, boolean unreadable) {
+            this(backup, unreadable, false, false);
+        }
+
+        /**
+         * True when the design file must not be written (3.4): it could not
+         * be read, it holds git's unresolved merge conflict, or it carries a
+         * node kind a newer NMOX Studio wrote.
+         */
+        public boolean readOnly() {
+            return unreadable || conflicted || newerFormat;
+        }
     }
 
     /**
@@ -165,9 +191,26 @@ public final class GraphIO {
             graph.clear();
             return new LoadOutcome(null, true);
         }
+        if (org.nmox.studio.core.util.MergeConflicts.hasMarkers(text)) {
+            // git's unresolved merge (3.4): both people's designs — and
+            // their links to live billed resources — are IN this file, so it
+            // is neither corrupt nor ours to repair. No .bak, no parse; the
+            // design is read-only until the conflict is resolved in git, and
+            // the external-edit check reloads it then.
+            LOG.log(java.util.logging.Level.WARNING,
+                    "{0} has unresolved merge conflicts; read-only until resolved", file);
+            graph.clear();
+            return new LoadOutcome(null, false, true, false);
+        }
         try {
-            fromJson(graph, new JSONObject(text));
-            return new LoadOutcome(null, false);
+            java.util.List<String> newer = new java.util.ArrayList<>();
+            fromJson(graph, new JSONObject(text), newer);
+            if (!newer.isEmpty()) {
+                LOG.log(java.util.logging.Level.WARNING,
+                        "{0} holds node kinds a newer NMOX Studio wrote ({1}); read-only",
+                        new Object[]{file, newer});
+            }
+            return new LoadOutcome(null, false, false, !newer.isEmpty());
         } catch (RuntimeException malformed) {
             LOG.log(java.util.logging.Level.WARNING,
                     "Malformed {0}; keeping a .bak and starting empty ({1})",
@@ -177,12 +220,14 @@ public final class GraphIO {
         }
     }
 
-    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    /**
+     * Copies the corrupt file aside — {@code <name>.bak}, or the first free
+     * numbered sibling when an earlier rescue holds that name (3.4: a
+     * second rescue used to overwrite the first); null when even that fails.
+     */
     private static File backupCorrupt(File file) {
-        File backup = new File(file.getParentFile(), file.getName() + ".bak");
         try {
-            Files.copy(file.toPath(), backup.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            return backup;
+            return org.nmox.studio.core.util.KeptCopies.copyAside(file);
         } catch (IOException e) {
             LOG.log(java.util.logging.Level.SEVERE, "Could not back up corrupt " + file, e);
             return null;
