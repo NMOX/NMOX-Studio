@@ -296,21 +296,42 @@ class Web3WorkspaceIOTest {
     }
 
     @Test
-    @DisplayName("when even the corrupt-file backup fails, the load still degrades gracefully")
-    void unbackupableCorruptFile(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+    @DisplayName("something squatting on the .bak name no longer defeats the rescue (3.4)")
+    void squattedBakTakesTheNextName(@org.junit.jupiter.api.io.TempDir java.io.File dir)
             throws Exception {
         java.nio.file.Files.writeString(
                 new java.io.File(dir, Web3WorkspaceIO.FILENAME).toPath(), "{not json");
-        // a NON-EMPTY directory squatting on the .bak name makes the backup
-        // copy fail (an empty one would be silently replaced)
+        // before 3.4 a NON-EMPTY directory on the .bak name made the backup
+        // copy fail; a kept copy now takes the first free numbered name
         java.io.File bakDir = new java.io.File(dir, Web3WorkspaceIO.FILENAME + ".bak");
         assertThat(bakDir.mkdir()).isTrue();
         java.nio.file.Files.writeString(new java.io.File(bakDir, "occupant").toPath(), "x");
 
         Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
         assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
-        assertThat(outcome.backup())
-                .as("no backup could be made, and the outcome says so").isNull();
+        assertThat(outcome.backup().getName()).isEqualTo(Web3WorkspaceIO.FILENAME + ".2.bak");
+        assertThat(new java.io.File(bakDir, "occupant")).as("the squatter is untouched").exists();
+    }
+
+    @Test
+    @DisplayName("when even the corrupt-file backup fails, the load still degrades gracefully")
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
+    void unbackupableCorruptFile(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.nio.file.Files.writeString(
+                new java.io.File(dir, Web3WorkspaceIO.FILENAME).toPath(), "{not json");
+        // a directory nobody may create a file in: no copy can land
+        java.nio.file.Files.setPosixFilePermissions(dir.toPath(),
+                java.nio.file.attribute.PosixFilePermissions.fromString("r-x------"));
+        try {
+            Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+            assertThat(outcome.workspace()).isEqualTo(Web3WorkspaceIO.Workspace.empty());
+            assertThat(outcome.backup())
+                    .as("no backup could be made, and the outcome says so").isNull();
+        } finally {
+            java.nio.file.Files.setPosixFilePermissions(dir.toPath(),
+                    java.nio.file.attribute.PosixFilePermissions.fromString("rwx------"));
+        }
     }
 
     @Test

@@ -2,8 +2,6 @@ package org.nmox.studio.web3.io;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -183,7 +181,25 @@ public final class Web3WorkspaceIO {
      * and every deployment, with no backup. Measured on an over-cap
      * file: 9,437,184 bytes became 75.
      */
-    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+    public record LoadOutcome(Workspace workspace, File backup, boolean unreadable,
+            boolean conflicted, List<String> renamedImported) {
+
+        public LoadOutcome {
+            renamedImported = renamedImported == null ? List.of() : List.copyOf(renamedImported);
+        }
+
+        /** The pre-3.4 shape: no conflict, no renames. */
+        public LoadOutcome(Workspace workspace, File backup, boolean unreadable) {
+            this(workspace, backup, unreadable, false, List.of());
+        }
+
+        /**
+         * True when the file exists and must not be written: it could not
+         * be read, or it holds git's unresolved merge conflict (3.4).
+         */
+        public boolean readOnly() {
+            return unreadable || conflicted;
+        }
     }
 
     /**
@@ -217,8 +233,20 @@ public final class Web3WorkspaceIO {
         if (json.isBlank()) {
             return new LoadOutcome(Workspace.empty(), null, false); // nothing to lose
         }
+        if (org.nmox.studio.core.util.MergeConflicts.hasMarkers(json)) {
+            // git's unresolved merge (3.4): both people's networks and
+            // deployment records are IN this file — the address book of
+            // contracts they deployed — so it is neither corrupt nor ours
+            // to repair. No .bak, no parse; read-only until git's conflict
+            // is resolved, when the pulse reloads it.
+            LOG.log(Level.WARNING, "{0} has unresolved merge conflicts; read-only until resolved",
+                    file);
+            return new LoadOutcome(Workspace.empty(), null, false, true, List.of());
+        }
         try {
-            return new LoadOutcome(parse(new JSONObject(json)), null, false);
+            List<String> renamed = new ArrayList<>();
+            return new LoadOutcome(parse(new JSONObject(json), renamed), null, false, false,
+                    renamed);
         } catch (RuntimeException malformed) {
             LOG.log(Level.WARNING, "Malformed {0}; keeping a .bak and starting empty ({1})",
                     new Object[]{FILENAME, malformed.getMessage()});
@@ -226,13 +254,14 @@ public final class Web3WorkspaceIO {
         }
     }
 
-    /** Copies the corrupt file to {@code <name>.bak}; null when even that fails. */
+    /**
+     * Copies the corrupt file aside — {@code <name>.bak}, or the first free
+     * numbered sibling when an earlier rescue holds that name (3.4: a
+     * second rescue used to overwrite the first); null when even that fails.
+     */
     private static File backupCorrupt(File file) {
-        File backup = new File(file.getParentFile(), file.getName() + ".bak");
         try {
-            Files.copy(file.toPath(), backup.toPath(),
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return backup;
+            return org.nmox.studio.core.util.KeptCopies.copyAside(file);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "Could not back up corrupt " + file, e);
             return null;
@@ -317,25 +346,41 @@ public final class Web3WorkspaceIO {
      * HERE or nowhere.
      */
     private static Workspace parse(JSONObject root) {
+        return parse(root, new ArrayList<>());
+    }
+
+    private static Workspace parse(JSONObject root, List<String> renamed) {
         return new Workspace(
                 networks(root.optJSONArray("networks")),
                 cappedDeployments(deployments(root.optJSONArray("deployments"))),
-                cappedImported(imported(root.optJSONArray("imported"))));
+                cappedImported(imported(root.optJSONArray("imported"), renamed)));
     }
 
     /**
      * Imported contracts (v2.45.0). PARSE-TIME HEAL (the v2.36.2 law):
      * the studio keys sessions by contract name, so a keep-both merge
-     * that duplicates a name would make gestures ambiguous — the FIRST
-     * occurrence keeps the name, later duplicates are dropped with a
-     * log line. Entries without a name or ABI are skipped.
+     * that duplicates a name would make gestures ambiguous. Until 3.4 the
+     * FIRST occurrence kept the name and every later one was DROPPED with
+     * only a log line — two teammates each importing a different ABI as
+     * "Token" lost one of them on the next save. Now the first keeps its
+     * name and a later one that differs is renamed {@code "Token (2)"}
+     * (the next free number) and noted in {@code renamed}, so the studio
+     * says so; an exact copy (same ABI, same address) only collapses.
+     * Entries without a name or ABI are skipped.
      */
     private static List<org.nmox.studio.web3.model.ImportedContract> imported(
-            JSONArray array) {
+            JSONArray array, List<String> renamed) {
         List<org.nmox.studio.web3.model.ImportedContract> out = new ArrayList<>();
-        java.util.Set<String> seen = new java.util.HashSet<>();
+        java.util.Map<String, JSONObject> firstByName = new java.util.HashMap<>();
+        java.util.Set<String> taken = new java.util.HashSet<>();
         if (array == null) {
             return out;
+        }
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject entry = array.optJSONObject(i);
+            if (entry != null) {
+                taken.add(entry.optString("name", ""));
+            }
         }
         for (int i = 0; i < array.length(); i++) {
             JSONObject entry = array.optJSONObject(i);
@@ -347,11 +392,21 @@ public final class Web3WorkspaceIO {
             if (name.isBlank() || abi.isBlank()) {
                 continue;
             }
-            if (!seen.add(name)) {
-                LOG.log(Level.WARNING,
-                        "Duplicate imported contract \"{0}\" in {1} — keeping the first",
-                        new Object[]{name, FILENAME});
-                continue;
+            JSONObject first = firstByName.putIfAbsent(name, entry);
+            if (first != null) {
+                if (first.optString("abi", "").equals(abi)
+                        && first.optString("address", "").equals(entry.optString("address", ""))) {
+                    continue; // the same import twice: nothing to keep apart
+                }
+                String fresh = name;
+                for (int n = 2; taken.contains(fresh); n++) {
+                    fresh = name + " (" + n + ")";
+                }
+                taken.add(fresh);
+                renamed.add(name + " → " + fresh);
+                LOG.log(Level.INFO, "Duplicate imported contract \"{0}\" in {1} kept as \"{2}\"",
+                        new Object[]{name, FILENAME, fresh});
+                name = fresh;
             }
             try {
                 out.add(new org.nmox.studio.web3.model.ImportedContract(

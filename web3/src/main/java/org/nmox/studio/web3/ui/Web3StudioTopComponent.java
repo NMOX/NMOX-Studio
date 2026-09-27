@@ -288,6 +288,10 @@ import org.openide.windows.TopComponent;
     "Web3StudioTopComponent_removedNetwork=Removed network {0}",
     "Web3StudioTopComponent_workspaceUnreadable=Couldn''t read {0} \u2014 starting empty",
     "Web3StudioTopComponent_workspaceReadOnly={0} could not be read \u2014 the workspace is read-only so nothing overwrites it",
+    // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
+    "Web3StudioTopComponent_workspaceConflicted={0} has unresolved merge conflicts \u2014 resolve them in git; NMOX Studio won\u2019t write it until then",
+    // {0} lists the renames, each "old \u2192 new"
+    "Web3StudioTopComponent_importedRenamed=Imported contracts that shared a name after a merge were renamed so both are kept: {0}",
     "Web3StudioTopComponent_workspaceBackupKept=The unreadable original was kept at {0}.",
     "Web3StudioTopComponent_contractNameA11y=Contract name",
     "Web3StudioTopComponent_deployedAddressA11y=Deployed address, optional",
@@ -2198,7 +2202,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         // without consulting the stamp at all, so the studio needs an explicit
         // read-only bind rather than a comparison it cannot make — we hold
         // none of the file's bytes to compare.
-        workspaceReadOnly = outcome.unreadable();
+        workspaceReadOnly = outcome.readOnly();
+        // 3.4: git's unresolved merge conflict is its own reason, and says so
+        readOnlyText = outcome.conflicted()
+                ? Bundle.Web3StudioTopComponent_workspaceConflicted(Web3WorkspaceIO.FILENAME)
+                : Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME);
+        if (outcome.conflicted()) {
+            notifyWarning(readOnlyText);
+        }
+        if (!outcome.renamedImported().isEmpty()) {
+            // a keep-both merge left two imports with one name: both are
+            // kept, and the rename is said, never only logged (3.4)
+            notifyWarning(Bundle.Web3StudioTopComponent_importedRenamed(
+                    String.join(", ", outcome.renamedImported())));
+        }
         if (!workspaceReadOnly) {
             selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
         }
@@ -2223,8 +2240,20 @@ public final class Web3StudioTopComponent extends TopComponent {
         restartPulseIfOpen();
         if (workspaceReadOnly) {
             // said last so the rescan's own status does not bury it
-            status(Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME),
-                    FAIL_RED);
+            status(readOnlyText, FAIL_RED);
+        }
+    }
+
+    /** What the status line says while {@link #workspaceReadOnly} holds (3.4: which reason). */
+    private String readOnlyText = "";
+
+    /** A corner notice that never steals focus; silent where notifications are absent. */
+    private static void notifyWarning(String title) {
+        try {
+            org.openide.awt.NotificationDisplayer.getDefault().notify(
+                    title, javax.swing.UIManager.getIcon("OptionPane.warningIcon"), "", null);
+        } catch (RuntimeException | LinkageError ignored) {
+            // notifications unavailable (tests, stripped platform)
         }
     }
 
@@ -2376,9 +2405,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             // the bound .nmoxweb3.json exists and could not be read, so the
             // lists above are a stand-in: writing them would replace every
             // network and the whole deployment address book with nothing.
-            // The refusal speaks rather than failing silently.
-            status(Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME),
-                    FAIL_RED);
+            // The refusal speaks rather than failing silently. (3.4: so does
+            // a file holding git's merge conflict, in its own words.)
+            status(readOnlyText, FAIL_RED);
             return;
         }
         File file = new File(workspaceDir(), Web3WorkspaceIO.FILENAME);

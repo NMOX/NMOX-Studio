@@ -52,7 +52,7 @@ class ImportedContractsIoTest {
     }
 
     @Test
-    @DisplayName("duplicate names heal at parse: the first occurrence keeps the name")
+    @DisplayName("duplicate names heal at parse: the first keeps the name, the later one is KEPT renamed")
     void duplicateHeal() {
         String json = Web3WorkspaceIO.toJson(new Web3WorkspaceIO.Workspace(
                 List.of(), List.of(), List.of(
@@ -62,10 +62,30 @@ class ImportedContractsIoTest {
         String merged = json.replace("\"imported\": [",
                 "\"imported\": [{\"name\":\"Token\",\"abi\":\"[9]\",\"address\":\"0x99\"},");
         Web3WorkspaceIO.Workspace back = Web3WorkspaceIO.fromJson(merged);
-        assertThat(back.imported()).hasSize(2);
+        // 3.4: until then the later "Token" was dropped with only a log line
+        assertThat(back.imported()).extracting(ImportedContract::name)
+                .containsExactly("Token", "Token (2)", "Other");
         assertThat(back.imported().get(0).abiJson())
                 .as("first occurrence keeps the name").isEqualTo("[9]");
-        assertThat(back.imported().get(1).name()).isEqualTo("Other");
+        assertThat(back.imported().get(1).abiJson())
+                .as("and the teammate's import survives under a visible name").isEqualTo("[1]");
+    }
+
+    @Test
+    @DisplayName("an exact copy of an import collapses; the rename is reported for the studio to say")
+    void exactCopyCollapsesAndRenamesAreReported(@org.junit.jupiter.api.io.TempDir java.io.File dir)
+            throws Exception {
+        java.nio.file.Files.writeString(new java.io.File(dir, Web3WorkspaceIO.FILENAME).toPath(), """
+            {"version": 1, "networks": [], "deployments": [], "imported": [
+              {"name": "Token", "abi": "[1]", "address": "0x01"},
+              {"name": "Token", "abi": "[1]", "address": "0x01"},
+              {"name": "Token (2)", "abi": "[2]", "address": ""},
+              {"name": "Token", "abi": "[3]", "address": "0x03"}]}
+            """);
+        Web3WorkspaceIO.LoadOutcome outcome = Web3WorkspaceIO.loadGuarded(dir);
+        assertThat(outcome.workspace().imported()).extracting(ImportedContract::name)
+                .containsExactly("Token", "Token (2)", "Token (3)");
+        assertThat(outcome.renamedImported()).containsExactly("Token → Token (3)");
     }
 
     @Test

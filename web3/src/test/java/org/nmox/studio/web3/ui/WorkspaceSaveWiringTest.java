@@ -70,8 +70,8 @@ class WorkspaceSaveWiringTest {
         String applyBody = src.substring(apply, src.indexOf("\n    }", apply));
         assertThat(applyBody)
                 .as("ownership is recorded for a read that HAPPENED")
-                .contains("workspaceReadOnly = outcome.unreadable()");
-        assertThat(applyBody.indexOf("workspaceReadOnly = outcome.unreadable()"))
+                .contains("workspaceReadOnly = outcome.readOnly()");
+        assertThat(applyBody.indexOf("workspaceReadOnly = outcome.readOnly()"))
                 .as("the verdict is taken before the stamp it guards")
                 .isLessThan(applyBody.indexOf("selfWrites.noteSync("));
 
@@ -84,7 +84,7 @@ class WorkspaceSaveWiringTest {
                         + " network and the whole deployment address book"
                         + " with nothing (9,437,184 bytes → 75, measured)")
                 .contains("if (workspaceReadOnly) {")
-                .contains("Bundle.Web3StudioTopComponent_workspaceReadOnly(");
+                .contains("status(readOnlyText");
         assertThat(saveBody.indexOf("if (workspaceReadOnly) {"))
                 .as("the refusal comes before the snapshot is even taken")
                 .isLessThan(saveBody.indexOf("SAVES.save("));
