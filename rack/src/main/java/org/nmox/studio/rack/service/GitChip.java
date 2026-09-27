@@ -3,6 +3,7 @@ package org.nmox.studio.rack.service;
 import java.io.File;
 import java.util.Objects;
 import org.nmox.studio.core.util.GitFacts;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * The git status chip's decisions, separated from its Swing half so
@@ -17,6 +18,15 @@ import org.nmox.studio.core.util.GitFacts;
  * the dirty count arrives from outside via {@link #porcelain} because
  * only the panel — after the guard — is allowed to spawn.
  */
+@Messages({
+    "# the chip names an operation git stopped in the middle of (3.4)",
+    "GitChip_merging=merging",
+    "GitChip_cherryPicking=cherry-picking",
+    "GitChip_reverting=reverting",
+    "# {0} = the branch being rebased, or a short commit id",
+    "GitChip_rebasing=rebasing {0}",
+    "GitChip_conflicts={0,choice,1#{0} conflict|1<{0} conflicts}"
+})
 final class GitChip {
 
     /** The dirty count starts UNKNOWN — the label never shows a fake ±0. */
@@ -30,6 +40,10 @@ final class GitChip {
     private volatile int changeCount = UNKNOWN;
     /** Commits to push and to pull, or null: no upstream, or not known yet. */
     private volatile int[] aheadBehind;
+    /** The operation git stopped in the middle of, or null (3.4). */
+    private volatile GitFacts.InProgress inProgress;
+    /** Unmerged paths from the last status, 0 until one arrives. */
+    private volatile int conflicts;
 
     /**
      * An aim event landed. Equality-guarded: the same directory again
@@ -46,8 +60,10 @@ final class GitChip {
         aimedDir = dir;
         repoRoot = dir == null ? null : GitFacts.repoRoot(dir);
         branch = repoRoot == null ? null : GitFacts.branch(repoRoot);
+        inProgress = repoRoot == null ? null : GitFacts.inProgress(repoRoot);
         changeCount = UNKNOWN;
         aheadBehind = null;
+        conflicts = 0;
         return true;
     }
 
@@ -55,6 +71,7 @@ final class GitChip {
     void refreshBranch() {
         if (repoRoot != null) {
             branch = GitFacts.branch(repoRoot);
+            inProgress = GitFacts.inProgress(repoRoot); // a merge started in a terminal
         }
     }
 
@@ -77,6 +94,11 @@ final class GitChip {
         return repoRoot;
     }
 
+    /** The operation in progress, or null — for the checkout guard (3.4). */
+    GitFacts.InProgress inProgress() {
+        return inProgress;
+    }
+
     /**
      * {@code git status --porcelain=v2 --branch} arrived: the dirty count
      * is known (0 is honest here), and so is where the branch stands
@@ -84,6 +106,7 @@ final class GitChip {
      */
     void porcelain(String porcelainV2Output) {
         changeCount = GitFacts.changeCountV2(porcelainV2Output);
+        conflicts = GitFacts.conflictCountV2(porcelainV2Output);
         aheadBehind = GitFacts.aheadBehind(porcelainV2Output);
     }
 
@@ -92,14 +115,36 @@ final class GitChip {
      * commits to push and to pull (3.2.0; VS Code's status bar sync
      * counts) — each only when not zero, so an up-to-date branch reads as
      * before. Null = hidden.
+     *
+     * <p>An operation git stopped in the middle of leads (3.4): a
+     * conflicted merge used to read "⎇ main ±2", like two edits, and a
+     * rebase as a bare commit id. Now "⎇ main · merging · 2 conflicts" and
+     * "⎇ rebasing feature · 1 conflict"; the ordinary count shows during an
+     * operation only when there is one to show.
      */
     String label() {
         if (!visible()) {
             return null;
         }
-        StringBuilder b = new StringBuilder("⎇ ").append(branch);
-        if (changeCount != UNKNOWN) {
+        GitFacts.InProgress op = inProgress;
+        StringBuilder b = new StringBuilder("⎇ ");
+        if (op != null && op.operation() == GitFacts.Operation.REBASE) {
+            b.append(Bundle.GitChip_rebasing(op.rebasedBranch() == null ? branch : op.rebasedBranch()));
+        } else {
+            b.append(branch);
+        }
+        if (changeCount != UNKNOWN && (op == null || changeCount > 0)) {
             b.append(" ±").append(changeCount);
+        }
+        if (op != null && op.operation() != GitFacts.Operation.REBASE) {
+            b.append(" · ").append(switch (op.operation()) {
+                case MERGE -> Bundle.GitChip_merging();
+                case CHERRY_PICK -> Bundle.GitChip_cherryPicking();
+                default -> Bundle.GitChip_reverting();
+            });
+        }
+        if (conflicts > 0) {
+            b.append(" · ").append(Bundle.GitChip_conflicts(conflicts));
         }
         int[] ab = aheadBehind;
         if (ab != null && ab[0] > 0) {

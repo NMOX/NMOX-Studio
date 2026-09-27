@@ -35,7 +35,7 @@ public final class PreflightPlan {
 
         if (new File(dir, ".git").isDirectory()) {
             checks.add(new Check("GIT CLEAN",
-                    List.of("git", "status", "--porcelain"), Pass.EMPTY_OUTPUT, false));
+                    List.of("git", "--no-optional-locks", "status", "--porcelain"), Pass.EMPTY_OUTPUT, false));
         }
 
         ProjectInspector.ProjectKind kind = ProjectInspector.detectKind(dir);

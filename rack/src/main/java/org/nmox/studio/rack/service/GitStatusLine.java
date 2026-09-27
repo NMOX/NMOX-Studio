@@ -261,7 +261,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             try {
                 // v2 with --branch: the same one spawn also answers ahead/behind
                 ProcessSupport.BoundedResult r = ProcessSupport.runBounded(
-                        List.of("git", "status", "--porcelain=v2", "--branch"),
+                        List.of("git", "--no-optional-locks", "status", "--porcelain=v2", "--branch"),
                         chip.repoRoot(), Duration.ofSeconds(5));
                 if (r.ok()) {
                     chip.porcelain(r.stdout());
@@ -511,7 +511,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                 org.nmox.studio.core.process.ProcessSupport.BoundedResult st;
                 try {
                     st = org.nmox.studio.core.process.ProcessSupport.runBounded(
-                            java.util.List.of("git", "status", "--porcelain"),
+                            java.util.List.of("git", "--no-optional-locks", "status", "--porcelain"),
                             dir, java.time.Duration.ofSeconds(10));
                 } catch (java.io.IOException ex) {
                     status(Bundle.GitStatusLine_gitNotFoundCheckout());
@@ -522,7 +522,9 @@ public class GitStatusLine implements StatusLineElementProvider {
                     return;
                 }
                 org.nmox.studio.rack.engine.GitCheckoutGuard.Verdict verdict =
-                        org.nmox.studio.rack.engine.GitCheckoutGuard.judge(st.stdout());
+                        org.nmox.studio.rack.engine.GitCheckoutGuard.judge(st.stdout(),
+                                org.nmox.studio.core.util.GitFacts.inProgress(
+                                        org.nmox.studio.core.util.GitFacts.repoRoot(dir)));
                 if (!verdict.allowed()) {
                     status(Bundle.GitStatusLine_checkoutRefused(verdict.reason()));
                     return;
@@ -656,7 +658,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             try {
                 org.nmox.studio.core.process.ProcessSupport.BoundedResult r =
                         org.nmox.studio.core.process.ProcessSupport.runBounded(
-                                java.util.List.of("git", "status", "--porcelain"),
+                                java.util.List.of("git", "--no-optional-locks", "status", "--porcelain"),
                                 dir, java.time.Duration.ofSeconds(10));
                 return r.exitCode() == 0 && r.stdout() != null ? r.stdout() : "";
             } catch (java.io.IOException ex) {

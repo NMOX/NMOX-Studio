@@ -52,6 +52,48 @@ class GitChipTest {
     }
 
     @Test
+    @DisplayName("a conflicted merge names the merge and its conflicts, not ±2 (3.4)")
+    void mergeInProgressIsNamed() throws Exception {
+        Path repo = repo("proj", "ref: refs/heads/main\n");
+        Files.writeString(repo.resolve(".git/MERGE_HEAD"), "0123456789abcdef0123456789abcdef01234567\n");
+        GitChip chip = new GitChip();
+        chip.aim(repo.toFile());
+        chip.porcelain("# branch.head main\n"
+                + "u UU N... 100644 100644 100644 100644 a b c x.js\n"
+                + "u AA N... 100644 100644 100644 100644 a b c y.js\n");
+        assertThat(chip.label()).isEqualTo("⎇ main · merging · 2 conflicts");
+        chip.porcelain("# branch.head main\n1 M. N... 100644 100644 100644 a b z.js\n");
+        assertThat(chip.label()).as("resolved and staged, the merge still waits for its commit")
+                .isEqualTo("⎇ main ±1 · merging");
+    }
+
+    @Test
+    @DisplayName("a rebase names the branch being rebased, not the detached commit (3.4)")
+    void rebaseInProgressIsNamed() throws Exception {
+        Path repo = repo("proj", "0123456789abcdef0123456789abcdef01234567\n");
+        Path state = repo.resolve(".git/rebase-merge");
+        Files.createDirectories(state);
+        Files.writeString(state.resolve("head-name"), "refs/heads/feature\n");
+        GitChip chip = new GitChip();
+        chip.aim(repo.toFile());
+        chip.porcelain("u UU N... 100644 100644 100644 100644 a b c x.js\n");
+        assertThat(chip.label()).isEqualTo("⎇ rebasing feature · 1 conflict");
+        assertThat(chip.inProgress().operation())
+                .isEqualTo(org.nmox.studio.core.util.GitFacts.Operation.REBASE);
+    }
+
+    @Test
+    @DisplayName("an operation started in a terminal shows on the next refresh")
+    void operationAppearsOnRefresh() throws Exception {
+        Path repo = repo("proj", "ref: refs/heads/main\n");
+        GitChip chip = new GitChip();
+        chip.aim(repo.toFile());
+        Files.writeString(repo.resolve(".git/CHERRY_PICK_HEAD"), "abc\n");
+        chip.refreshBranch();
+        assertThat(chip.label()).isEqualTo("⎇ main · cherry-picking");
+    }
+
+    @Test
     @DisplayName("porcelain output appends ±N; a clean tree earns an honest ±0")
     void countFormatting() throws Exception {
         GitChip chip = new GitChip();

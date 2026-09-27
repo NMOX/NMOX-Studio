@@ -96,4 +96,18 @@ class GitReviewsAndCheckoutTest {
         assertThat(untracked.allowed()).isTrue();
         assertThat(untracked.reason()).isEqualTo("2 untracked files stay in place.");
     }
+
+    @Test
+    @DisplayName("A checkout mid-rebase is refused by name even on a clean tree (3.4)")
+    void checkoutRefusedMidOperation() {
+        org.nmox.studio.core.util.GitFacts.InProgress rebase = new org.nmox.studio.core.util.GitFacts
+                .InProgress(org.nmox.studio.core.util.GitFacts.Operation.REBASE, "feature");
+        Verdict v = GitCheckoutGuard.judge("", rebase);
+        assertThat(v.allowed()).as("a rebase stopped at an edit step has a clean tree").isFalse();
+        assertThat(v.reason()).contains("rebase is in progress").contains("git rebase --abort");
+        assertThat(GitCheckoutGuard.judge("", new org.nmox.studio.core.util.GitFacts.InProgress(
+                org.nmox.studio.core.util.GitFacts.Operation.MERGE, null)).reason())
+                .contains("merge is in progress");
+        assertThat(GitCheckoutGuard.judge("", null)).isEqualTo(new Verdict(true, ""));
+    }
 }

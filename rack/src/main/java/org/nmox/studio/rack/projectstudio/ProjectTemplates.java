@@ -1780,7 +1780,7 @@ public enum ProjectTemplates {
         if (remotes == null || !remotes.isBlank()) {
             return false; // could have been pushed
         }
-        var status = capture(dir, "git", "status", "--porcelain");
+        var status = capture(dir, "git", "--no-optional-locks", "status", "--porcelain");
         if (status == null || status.isBlank()) {
             return false;
         }

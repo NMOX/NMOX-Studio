@@ -1,5 +1,8 @@
 package org.nmox.studio.rack.engine;
 
+import org.nmox.studio.core.util.GitFacts;
+import org.openide.util.NbBundle.Messages;
+
 /**
  * Whether a pull-request checkout may proceed, decided from
  * {@code git status --porcelain}: a tree with modified or staged files
@@ -8,6 +11,12 @@ package org.nmox.studio.rack.engine;
  * allowed — git itself leaves them in place. The verdict speaks its
  * reason so the refusal is never silent.
  */
+@Messages({
+    "GitCheckoutGuard_midMerge=a merge is in progress \u2014 finish it or abort it first (git merge --continue, or git merge --abort)",
+    "GitCheckoutGuard_midRebase=a rebase is in progress \u2014 finish it or abort it first (git rebase --continue, or git rebase --abort)",
+    "GitCheckoutGuard_midCherryPick=a cherry-pick is in progress \u2014 finish it or abort it first (git cherry-pick --continue, or git cherry-pick --abort)",
+    "GitCheckoutGuard_midRevert=a revert is in progress \u2014 finish it or abort it first (git revert --continue, or git revert --abort)"
+})
 public final class GitCheckoutGuard {
 
     /** The decision and the sentence the user sees. */
@@ -39,6 +48,24 @@ public final class GitCheckoutGuard {
             }
         }
         return n;
+    }
+
+    /**
+     * Judges the tree AND what git is in the middle of (3.4). A rebase
+     * stopped at an edit step has a clean tree and passed the porcelain
+     * check, so a checkout ran through the middle of it; a checkout during
+     * any stopped operation is refused by name before the tree is read.
+     */
+    public static Verdict judge(String porcelain, GitFacts.InProgress inProgress) {
+        if (inProgress != null) {
+            return new Verdict(false, switch (inProgress.operation()) {
+                case MERGE -> Bundle.GitCheckoutGuard_midMerge();
+                case REBASE -> Bundle.GitCheckoutGuard_midRebase();
+                case CHERRY_PICK -> Bundle.GitCheckoutGuard_midCherryPick();
+                case REVERT -> Bundle.GitCheckoutGuard_midRevert();
+            });
+        }
+        return judge(porcelain);
     }
 
     /** Judges porcelain output; null or blank is a clean tree. */
