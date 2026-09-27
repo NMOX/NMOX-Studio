@@ -32,7 +32,12 @@ reads — and the findings are in
   only when it loaded, so a `git pull` with the IDE open still left it
   writable over the new bytes. `SelfWriteTracker.beforeWrite` is asked on
   every studio's save lane just before the write: anything but the bytes
-  it last read or wrote is reloaded, never overwritten.
+  it last read or wrote is reloaded, never overwritten. What the refused
+  save carried is not lost with it. The Infra Designer holds the cloud
+  links a deploy just wrote, re-applies them to the reloaded design, and
+  names every one it cannot place, so no billed resource is orphaned
+  unseen. Contract Studio holds a deployment's address the same way, and
+  DB Studio a connection the user had just confirmed.
 - **A teammate on a newer version no longer loses data on your next
   save.** Unknown engines, node kinds, auth types, piece kinds and newer
   format versions open read-only instead of being dropped at parse.
@@ -109,6 +114,9 @@ reads — and the findings are in
 - **Rows are heard as the words they paint**: a Task Board card was an
   empty text field to VoiceOver; `RenderersNamedGateTest` now fails the
   build on any cell renderer that is not a label and does not name itself.
+  Project Studio's file tree named every git-annotated row as the platform
+  renderer's markup (`<font color="#ff6464">a.txt</font>…`); it now reads
+  `a.txt [UU]`.
 - **Focus rings** on the Welcome's and the Workbench's links.
 
 ### Found by reviewing the night's own code
@@ -147,10 +155,15 @@ that would close it: a process group per run.
 - Every fix carries a test and a mutant killed by name, with full verdict
   lines. Full `mvn clean verify` green on the branch head: every module,
   SpotBugs/find-sec-bugs, JaCoCo floors, the packaged-app gates.
-- Walked in the assembled app: a real `git merge` conflict in the Task
-  Board (the reason on screen, the bytes untouched, the board reloading
-  once resolved in git), and the accessibility tree VoiceOver reads (33
-  elements before, every window's content reachable after).
+- Walked in the assembled app:
+  - A real `git merge` conflict in the Task Board: the reason on screen,
+    the bytes untouched, the board reloading once resolved in git.
+  - The accessibility tree VoiceOver reads: 33 elements before, every
+    window's content reachable after.
+  - A repository mid-merge: the git chip heard as "Git: branch main,
+    merging, 1 conflict", no `index.lock` left behind, and the file tree's
+    rows read as words. That last one was the walk's own find, fixed and
+    re-walked.
 
 ## [3.3.0] - 2026-09-25
 
