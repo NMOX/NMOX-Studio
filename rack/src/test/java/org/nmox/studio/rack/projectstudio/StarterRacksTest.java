@@ -122,8 +122,25 @@ class StarterRacksTest {
         // a listed starter serializes to the very patch forKind's twin does: one wiring, two doors
         StarterRacks.Starter polyglot = StarterRacks.all().stream().filter(s -> s.id().equals("polyglot"))
                 .findFirst().orElseThrow();
-        assertThat(polyglot.buildPatch().toString())
-                .isEqualTo(StarterRacks.forKind(ProjectKind.RUST, tmp.toFile()).orElseThrow().buildPatch().toString());
+        assertThat(wiring(polyglot.buildPatch()))
+                .isEqualTo(wiring(StarterRacks.forKind(ProjectKind.RUST, tmp.toFile()).orElseThrow().buildPatch()));
+    }
+
+    /**
+     * A patch with its device ids taken out (3.4): every device is minted a
+     * fresh id when it is built, so two builds of one wiring differ in
+     * exactly those and in nothing a wiring is made of.
+     */
+    private static String wiring(org.json.JSONObject patch) {
+        org.json.JSONObject copy = new org.json.JSONObject(patch.toString());
+        for (Object d : copy.optJSONArray("devices")) {
+            ((org.json.JSONObject) d).remove("id");
+        }
+        for (Object c : copy.optJSONArray("cables")) {
+            ((org.json.JSONObject) c).remove("fromId");
+            ((org.json.JSONObject) c).remove("toId");
+        }
+        return copy.toString();
     }
 
     @Test
