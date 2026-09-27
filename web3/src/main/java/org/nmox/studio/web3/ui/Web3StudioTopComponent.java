@@ -2208,13 +2208,13 @@ public final class Web3StudioTopComponent extends TopComponent {
                 ? Bundle.Web3StudioTopComponent_workspaceConflicted(Web3WorkspaceIO.FILENAME)
                 : Bundle.Web3StudioTopComponent_workspaceReadOnly(Web3WorkspaceIO.FILENAME);
         if (outcome.conflicted()) {
-            notifyWarning(readOnlyText);
+            balloon(readOnlyText, null, false);
         }
         if (!outcome.renamedImported().isEmpty()) {
             // a keep-both merge left two imports with one name: both are
             // kept, and the rename is said, never only logged (3.4)
-            notifyWarning(Bundle.Web3StudioTopComponent_importedRenamed(
-                    String.join(", ", outcome.renamedImported())));
+            balloon(Bundle.Web3StudioTopComponent_importedRenamed(
+                    String.join(", ", outcome.renamedImported())), null, false);
         }
         if (!workspaceReadOnly) {
             selfWrites.noteSync(new File(dir, Web3WorkspaceIO.FILENAME));
@@ -2247,15 +2247,6 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** What the status line says while {@link #workspaceReadOnly} holds (3.4: which reason). */
     private String readOnlyText = "";
 
-    /** A corner notice that never steals focus; silent where notifications are absent. */
-    private static void notifyWarning(String title) {
-        try {
-            org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    title, javax.swing.UIManager.getIcon("OptionPane.warningIcon"), "", null);
-        } catch (RuntimeException | LinkageError ignored) {
-            // notifications unavailable (tests, stripped platform)
-        }
-    }
 
     /**
      * Rebuilds the imported-artifact list from the workspace records. A

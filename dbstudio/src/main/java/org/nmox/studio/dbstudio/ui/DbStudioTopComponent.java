@@ -1162,15 +1162,6 @@ public final class DbStudioTopComponent extends TopComponent {
         return Bundle.DbStudioTopComponent_workspaceReadOnly(DbWorkspaceIO.FILENAME);
     }
 
-    /** A corner notice that never steals focus; silent where notifications are absent. */
-    private static void notifyWarning(String title, String detail) {
-        try {
-            org.openide.awt.NotificationDisplayer.getDefault().notify(
-                    title, javax.swing.UIManager.getIcon("OptionPane.warningIcon"), detail, null);
-        } catch (RuntimeException | LinkageError ignored) {
-            // notifications unavailable (tests, stripped platform)
-        }
-    }
 
     /** "Save query…": name prompt (default = the text's first 30 chars), replace-by-name. */
     private void saveCurrentQuery() {
@@ -2378,7 +2369,7 @@ public final class DbStudioTopComponent extends TopComponent {
             }
         }
         if (outcome.conflicted() || outcome.newerFormat()) {
-            notifyWarning(readOnlyTextFor(outcome), "");
+            balloon(readOnlyTextFor(outcome), null, false);
         }
         specs.addAll(workspace.connections());
         // this person's own history (3.4); with none yet, a pre-3.4 file's
@@ -2412,7 +2403,7 @@ public final class DbStudioTopComponent extends TopComponent {
             String renamed = Bundle.DbStudioTopComponent_savedRenamed(
                     String.join(", ", outcome.renamedSaved()));
             status(renamed, Color.GRAY);
-            notifyWarning(renamed, "");
+            balloon(renamed, null, false);
         }
         if (workspaceReadOnly) {
             status(readOnlyText, Color.GRAY);
