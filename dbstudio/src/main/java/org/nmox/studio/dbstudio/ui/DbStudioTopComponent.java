@@ -2212,16 +2212,23 @@ public final class DbStudioTopComponent extends TopComponent {
         if (DialogDisplayer.getDefault().notify(confirm) != NotifyDescriptor.OK_OPTION) {
             return;
         }
+        removeConfirmed(spec);
+    }
+
+    /** EDT: the removal the user confirmed — the dialog's other half, reachable by tests. */
+    private void removeConfirmed(ConnectionSpec spec) {
         DbBackend backend = backends.remove(spec.id());
-        RP.post(() -> {
-            if (backend != null) {
-                backend.close();
-            }
-            Passwords.delete(spec.id()); // keyring may block — off the EDT
-        });
+        if (backend != null) {
+            RP.post(backend::close);
+        }
         specs.removeIf(s -> s.id().equals(spec.id()));
         // removed before its save landed: it must not come back with a reload
         heldConnections.removeIf(h -> h.spec().id().equals(spec.id()));
+        // 3.4: the password goes when the save that drops the connection
+        // LANDS, not before. A refused save reloads the file, the file still
+        // names the connection, and it came back without its password.
+        removalsPending.removeIf(h -> h.spec().id().equals(spec.id()));
+        removalsPending.add(new HeldConnection(boundDir(), spec));
         containerCache.remove(spec.id());
         if (spec.id().equals(activeSpecId)) {
             activeSpecId = null;
@@ -2348,6 +2355,45 @@ public final class DbStudioTopComponent extends TopComponent {
         balloon(said, null, false);
     }
 
+    /**
+     * Connections removed whose save has not landed yet: their keychain
+     * passwords are deleted only once a write without them lands, or a read
+     * shows the file no longer names them. EDT-confined.
+     */
+    private final List<HeldConnection> removalsPending = new ArrayList<>();
+
+    /**
+     * EDT, inside {@link #applyReloadedWorkspace}: a removal whose save was
+     * refused is settled by what the file says. Named again, the connection
+     * is back and keeps its password — the refusal already said the change
+     * was not written; not named, nothing needs the password and it goes.
+     * A read-only file settles nothing: it may be a stand-in.
+     */
+    private void settleRemovals(File dir, boolean readOnly) {
+        if (readOnly) {
+            return;
+        }
+        for (HeldConnection removal : new ArrayList<>(removalsPending)) {
+            if (!removal.dir().equals(dir)) {
+                continue;
+            }
+            removalsPending.remove(removal);
+            String id = removal.spec().id();
+            if (specs.stream().noneMatch(s -> s.id().equals(id))) {
+                RP.post(() -> Passwords.delete(id)); // keyring may block — off the EDT
+            }
+        }
+    }
+
+    /** Save lane → EDT: a write without these connections landed; their passwords go now. */
+    private void removalsLanded(List<HeldConnection> removed) {
+        removalsPending.removeAll(removed);
+        for (HeldConnection removal : removed) {
+            String id = removal.spec().id();
+            RP.post(() -> Passwords.delete(id)); // keyring may block — off the EDT
+        }
+    }
+
     /** Save lane → EDT: a write of {@code dir} carrying these connections landed. */
     private void heldConnectionsLanded(List<HeldConnection> carried) {
         heldConnections.removeAll(carried);
@@ -2458,6 +2504,7 @@ public final class DbStudioTopComponent extends TopComponent {
             balloon(readOnlyTextFor(outcome), null, false);
         }
         specs.addAll(workspace.connections());
+        settleRemovals(dir, outcome.readOnly());
         // 3.4: a connection confirmed in a dialog whose save was refused is
         // not lost with the list it was added to — it goes onto this one
         List<String> heldWaiting = writeHeldConnectionsOnto(dir, outcome.readOnly());
@@ -2554,7 +2601,13 @@ public final class DbStudioTopComponent extends TopComponent {
                 carried.add(held);
             }
         }
-        SAVES.save(() -> writeSnapshot(file, json, carried));
+        List<HeldConnection> removed = new ArrayList<>();
+        for (HeldConnection removal : removalsPending) {
+            if (removal.dir().equals(dir)) {
+                removed.add(removal);
+            }
+        }
+        SAVES.save(() -> writeSnapshot(file, json, carried, removed));
     }
 
     /**
@@ -2562,7 +2615,8 @@ public final class DbStudioTopComponent extends TopComponent {
      * lane-ordered watcher verdict can never see the write without the
      * stamp.
      */
-    private void writeSnapshot(File file, String json, List<HeldConnection> carried) {
+    private void writeSnapshot(File file, String json, List<HeldConnection> carried,
+            List<HeldConnection> removed) {
         // 3.4: asked here, on the lane, immediately before the write — the
         // load was the only check, so a conflict landing after it was
         // replaced by this window's pre-merge lists
@@ -2579,6 +2633,9 @@ public final class DbStudioTopComponent extends TopComponent {
             saveFailureNotified = false;
             if (!carried.isEmpty()) {
                 SwingUtilities.invokeLater(() -> heldConnectionsLanded(carried));
+            }
+            if (!removed.isEmpty()) {
+                SwingUtilities.invokeLater(() -> removalsLanded(removed));
             }
         } catch (Exception ex) {
             // a failed save never interrupts editing — but never lose work silently
