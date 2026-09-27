@@ -158,6 +158,26 @@ class TeamDesignTest {
         assertThat(body).doesNotContain("doId = null");
     }
 
+    /**
+     * A read-only bind may save nothing, so a resolution in git must be
+     * FOLLOWED, not met with "keep your unsaved canvas edits?" — edits the
+     * designer could never have written. (The check reacts only in an open
+     * tab, which a headless test cannot give it; the order is pinned here.)
+     */
+    @Test
+    @DisplayName("a read-only design follows the file when it changes, pending edits or not")
+    void readOnlyFollowsTheFile() throws Exception {
+        String src = Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/infra/InfraDesignerTopComponent.java"),
+                StandardCharsets.UTF_8).replaceAll("\\s+", " ");
+        int start = src.indexOf("private void handleExternalStamp(");
+        String body = src.substring(start, src.indexOf("switch (designSync.check(", start));
+        assertThat(body).contains("if (designReadOnly) {");
+        assertThat(body.indexOf("saveDebounce.stop();"))
+                .as("the pending edits are dropped before the check decides")
+                .isGreaterThan(body.indexOf("if (designReadOnly) {"));
+    }
+
     @Test
     @DisplayName("the forget question says how many, which, and that it is shared")
     void forgetQuestionSpeaks() {

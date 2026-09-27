@@ -148,7 +148,7 @@ import org.openide.windows.TopComponent;
     "InfraDesigner_designReadOnly={0} could not be read — the design is read-only so nothing overwrites it",
     // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
     "InfraDesigner_designConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
-    "InfraDesigner_designNewer={0} holds resources a newer NMOX Studio added — the design is read-only here so none of them, and none of their links to the cloud, is lost",
+    "InfraDesigner_designNewer=In {0}, a newer NMOX Studio added resources this version does not know — the design is read-only here so none of them, and none of their links to the cloud, is lost",
     // Refresh (3.4): a 404 means "not in the account these tokens reach", not "gone"
     "InfraDesigner_notFoundTitle=Resources the cloud did not find",
     // {0} the count, {1} the node labels; the choice keeps "1 resource" singular
@@ -1065,6 +1065,13 @@ public final class InfraDesignerTopComponent extends TopComponent {
     private void handleExternalStamp(org.nmox.studio.infra.model.DesignSync.Stamp onDisk) {
         if (!isOpened()) {
             return; // a closed tab reacts to nothing
+        }
+        if (designReadOnly) {
+            // a read-only bind may save nothing, so canvas edits pending in
+            // the debounce are not the user's to lose (3.4): the file changed
+            // — a merge conflict resolved in git, a newer file replaced, a
+            // permission fixed — so follow it rather than ask to keep them
+            saveDebounce.stop();
         }
         switch (designSync.check(onDisk, saveDebounce.isRunning())) {
             case RELOAD -> {

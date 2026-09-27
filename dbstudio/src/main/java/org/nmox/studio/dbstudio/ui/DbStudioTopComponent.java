@@ -268,7 +268,7 @@ import org.openide.windows.TopComponent;
     "DbStudioTopComponent_workspaceReadOnly={0} could not be read — connections are read-only so nothing overwrites it",
     // 3.4: a teammate's merge left git's markers in the file; nothing is written until it is resolved
     "DbStudioTopComponent_workspaceConflicted={0} has unresolved merge conflicts — resolve them in git; NMOX Studio won’t write it until then",
-    "DbStudioTopComponent_workspaceNewer={0} names a database engine a newer NMOX Studio added — connections are read-only here so none of them is lost",
+    "DbStudioTopComponent_workspaceNewer=In {0}, a newer NMOX Studio added a database engine this version does not know — connections are read-only here so none of them is lost",
     // {0} lists the renames, each "old → new"
     "DbStudioTopComponent_savedRenamed=Saved queries that shared a name after a merge were renamed so both are kept: {0}",
     "DbStudioTopComponent_backupKept=The unreadable original was kept at {0}.",
