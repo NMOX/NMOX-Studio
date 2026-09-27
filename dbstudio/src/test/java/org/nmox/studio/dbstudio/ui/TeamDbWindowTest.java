@@ -120,6 +120,30 @@ class TeamDbWindowTest {
                 .contains("SELECT 1;");
     }
 
+    /**
+     * The other half of the two-proof law (v1.321.0): {@code SqlitePathsTest}
+     * proves the seam; this proves the window and the dialog call it — a
+     * relative path opened raw resolves against the IDE's working directory,
+     * and a chosen path stored raw carries this person's home to the team.
+     */
+    @Test
+    @DisplayName("every SQLite open resolves against the project and the dialog stores relative")
+    void sqlitePathsAreWired() throws Exception {
+        String window = Files.readString(Path.of("src/main/java/org/nmox/studio/dbstudio/ui/"
+                + "DbStudioTopComponent.java"), StandardCharsets.UTF_8).replaceAll("\\s+", " ");
+        String dialog = Files.readString(Path.of("src/main/java/org/nmox/studio/dbstudio/ui/"
+                + "ConnectionDialog.java"), StandardCharsets.UTF_8).replaceAll("\\s+", " ");
+        int created = window.split("DbBackend\\.create\\(", -1).length - 1;
+        int resolved = window.split("DbBackend\\.create\\( ?org\\.nmox\\.studio\\.dbstudio"
+                + "\\.model\\.SqlitePaths\\.forOpening\\(", -1).length - 1;
+        assertThat(created).as("the window's test and connect paths").isGreaterThanOrEqualTo(2);
+        assertThat(resolved).as("every backend the window creates opens a resolved path")
+                .isEqualTo(created);
+        assertThat(dialog).contains("SqlitePaths.forStoring(project, spec)")
+                .contains("SqlitePaths.forOpening(project,");
+        assertThat(window).contains("ConnectionDialog.currentProject = projectDir();");
+    }
+
     @Test
     @DisplayName("a query Run never rewrites the shared file; its SQL stays this person's")
     void runStaysPersonal(@TempDir File dir) throws Exception {
