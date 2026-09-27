@@ -80,4 +80,51 @@ class RackTabFocusTest {
                     .as("focus outside the window: Tab flips, as before").isTrue();
         });
     }
+
+    @Test
+    @DisplayName("keys pressed in a dialog the rack opened are the dialog's: no flip, no unrack (the 3.4 review)")
+    void dialogKeysAreTheDialogs() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            RackTopComponent tc = new RackTopComponent();
+            RackPanel rackPanel = find(tc, RackPanel.class);
+            assertThat(RackTopComponent.keysAreTheRacks(new JPanel(), tc))
+                    .as("focus in another window (a Patch Cable… dialog)").isFalse();
+            assertThat(RackTopComponent.keysAreTheRacks(rackPanel, tc)).isTrue();
+            assertThat(RackTopComponent.keysAreTheRacks(null, tc)).isTrue();
+        });
+    }
+
+    @Test
+    @DisplayName("the rack's key interceptor asks both questions before acting")
+    void interceptorIsWired() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/rack/RackTopComponent.java"));
+        int at = src.indexOf("private final java.awt.KeyEventDispatcher tabFlipDispatcher");
+        String body = src.substring(at, src.indexOf("};", at));
+        assertThat(body).contains("if (!keysAreTheRacks(owner, RackTopComponent.this))")
+                .contains("boolean inText = isText(owner);");
+    }
+
+    @Test
+    @DisplayName("an editable LCD is text: Backspace there edits, it never unracks the device")
+    void editableLcdIsText() {
+        org.nmox.studio.rack.ui.controls.LcdDisplay lcd = new org.nmox.studio.rack.ui.controls.LcdDisplay(120, 1);
+        assertThat(RackTopComponent.isText(lcd)).as("a read-only display").isFalse();
+        lcd.setEditable("URL");
+        assertThat(RackTopComponent.isText(lcd)).isTrue();
+        assertThat(RackTopComponent.isText(new JTextField())).isTrue();
+    }
+
+    @Test
+    @DisplayName("the rack panel is not a Tab stop: no focused-component bindings, so Tab reaches the faceplates")
+    void rackPanelIsNotATabStop() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            RackPanel rackPanel = find(new RackTopComponent(), RackPanel.class);
+            javax.swing.InputMap focused = rackPanel.getInputMap(javax.swing.JComponent.WHEN_FOCUSED);
+            assertThat(focused.allKeys() == null ? 0 : focused.allKeys().length)
+                    .as("a WHEN_FOCUSED binding makes the focus policy stop on the panel, where Tab flips").isZero();
+            assertThat(rackPanel.getInputMap(javax.swing.JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .get(javax.swing.KeyStroke.getKeyStroke("shift F10"))).isEqualTo("selected-menu");
+        });
+    }
 }

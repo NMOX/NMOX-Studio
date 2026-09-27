@@ -169,4 +169,19 @@ class RackTest {
         // Connect sink2 -> src2 (feedback loop)
         assertThat(rack.connect(sink2.getPort("trig_out"), src2.getPort("trig_in"))).isNull();
     }
+
+    @Test
+    @DisplayName("a cable to a device that has left the rack is refused, never saved as device -1 (the 3.4 review)")
+    void connectRefusesAnUnrackedDevice() {
+        Rack rack = new Rack();
+        SourceDevice src = new SourceDevice();
+        SinkDevice sink = new SinkDevice();
+        rack.addDevice(src);
+        rack.addDevice(sink);
+        rack.removeDevice(src);
+        assertThat(rack.connect(src.getPort("trig"), sink.getPort("trig"))).isNull();
+        assertThat(rack.getCables()).isEmpty();
+        SinkDevice never = new SinkDevice();
+        assertThat(rack.connect(sink.getPort("trig"), never.getPort("trig"))).isNull();
+    }
 }

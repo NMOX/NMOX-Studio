@@ -95,6 +95,21 @@ class ToolbarKeyboardAccessTest {
     }
 
     @Test
+    @DisplayName("a button that asks to stay out of the Tab order keeps its choice (the rack's rear flip, which Tab itself does)")
+    void skipIsKept() {
+        StudioLike studio = new StudioLike();
+        JToolBar bar = toolbar("RUN");
+        JToggleButton flip = new JToggleButton("REAR");
+        flip.setFocusable(false);
+        flip.putClientProperty(ToolbarKeyboardAccess.SKIP, Boolean.TRUE);
+        bar.add(flip);
+        studio.add(bar);
+        ToolbarKeyboardAccess.installUnder(studio);
+        assertThat(bar.getComponent(0).isFocusable()).isTrue();
+        assertThat(flip.isFocusable()).isFalse();
+    }
+
+    @Test
     @DisplayName("a toolbar that joins an NMOX window after it opened is found by the add")
     void lateToolbarIsFound() {
         StudioLike studio = new StudioLike();

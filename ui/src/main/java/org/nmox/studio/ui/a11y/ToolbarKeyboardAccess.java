@@ -134,7 +134,15 @@ public final class ToolbarKeyboardAccess implements Runnable {
         }
     }
 
+    /** A button that asks to stay out of the Tab order keeps its own choice. */
+    static final String SKIP = "nmox.keyboard.skip";
+
     private static void button(Component c) {
+        if (c instanceof AbstractButton skip && Boolean.TRUE.equals(skip.getClientProperty(SKIP))) {
+            // the toolbar style above turns every button focusable, this one too
+            skip.setFocusable(false);
+            return;
+        }
         if (c instanceof AbstractButton b) {
             b.setFocusable(true);
             b.setRequestFocusEnabled(false);

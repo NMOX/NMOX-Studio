@@ -161,9 +161,14 @@ public class RackPanel extends JPanel implements Rack.Listener {
         });
         // with the rack itself focused (after a click on a faceplate), the
         // menu key opens the SELECTED device's menu — the device the
-        // highlight shows; on a focused control the device binding answers
-        getInputMap(WHEN_FOCUSED).put(javax.swing.KeyStroke.getKeyStroke("shift F10"), "selected-menu");
-        getInputMap(WHEN_FOCUSED).put(javax.swing.KeyStroke.getKeyStroke("CONTEXT_MENU"), "selected-menu");
+        // highlight shows; on a focused control the device binding answers.
+        // The ANCESTOR map, not WHEN_FOCUSED: a focused-component binding
+        // makes the focus policy treat the panel as a Tab stop, and a Tab on
+        // the panel flips the rack — so Tab from the shelf landed here and
+        // never reached a faceplate (the 3.4 review). The ancestor map still
+        // answers when the panel itself holds focus.
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(javax.swing.KeyStroke.getKeyStroke("shift F10"), "selected-menu");
+        getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(javax.swing.KeyStroke.getKeyStroke("CONTEXT_MENU"), "selected-menu");
         getActionMap().put("selected-menu", new javax.swing.AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {

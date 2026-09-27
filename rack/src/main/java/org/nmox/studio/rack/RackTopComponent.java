@@ -168,8 +168,14 @@ public final class RackTopComponent extends TopComponent {
                 || TopComponent.getRegistry().getActivated() != RackTopComponent.this) {
             return false;
         }
-        boolean inText = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
-                .getFocusOwner() instanceof javax.swing.text.JTextComponent;
+        java.awt.Component owner = java.awt.KeyboardFocusManager.getCurrentKeyboardFocusManager()
+                .getFocusOwner();
+        // a modal dialog opened from the rack (Patch Cable…, an LCD edit)
+        // leaves the rack the activated window: its keys are the dialog's
+        if (!keysAreTheRacks(owner, RackTopComponent.this)) {
+            return false;
+        }
+        boolean inText = isText(owner);
         // ⌘Z undo / ⇧⌘Z redo — the biggest missing safety net on the rack
         if (e.getKeyCode() == KeyEvent.VK_Z && (e.getModifiersEx() & MENU_MASK) != 0 && !inText) {
             boolean shift = (e.getModifiersEx() & KeyEvent.SHIFT_DOWN_MASK) != 0;
@@ -220,6 +226,28 @@ public final class RackTopComponent extends TopComponent {
             return true;
         }
         return !javax.swing.SwingUtilities.isDescendingFrom(focus, window);
+    }
+
+    /**
+     * Whether the rack's own keys (Tab flips, Delete unracks, ⌘Z undoes)
+     * apply to a key pressed with {@code focus} holding focus: no focus at
+     * all, or focus inside the rack window. Focus in a dialog the rack
+     * opened is the dialog's — before 3.4's review, Tab there flipped the
+     * rack behind it and Delete on a combo unracked the dialog's own device.
+     */
+    static boolean keysAreTheRacks(java.awt.Component focus, java.awt.Component window) {
+        return focus == null || focus == window
+                || javax.swing.SwingUtilities.isDescendingFrom(focus, window);
+    }
+
+    /**
+     * Whether a key belongs to the text under focus: a text field, or an
+     * LCD the user can edit (it reads like input, so Backspace there must
+     * never unrack its device and stop what it runs — the 3.4 review).
+     */
+    static boolean isText(java.awt.Component focus) {
+        return focus instanceof javax.swing.text.JTextComponent
+                || focus instanceof org.nmox.studio.rack.ui.controls.LcdDisplay lcd && lcd.isEditable();
     }
 
     public RackTopComponent() {
@@ -316,6 +344,9 @@ public final class RackTopComponent extends TopComponent {
         flipToggle = new JToggleButton(Bundle.RackTopComponent_rearToggle());
         flipToggle.setToolTipText(Bundle.RackTopComponent_flipTooltip());
         flipToggle.setFocusable(false);
+        // Tab itself flips the rack, so the toggle stays out of the Tab
+        // order even where toolbars are made keyboard-reachable (3.4)
+        flipToggle.putClientProperty("nmox.keyboard.skip", Boolean.TRUE);
         flipToggle.addActionListener(e -> {
             rackPanel.setFront(!flipToggle.isSelected());
             flipToggle.setText(PlainText.plain(flipToggle.isSelected() ? Bundle.RackTopComponent_frontToggle() : Bundle.RackTopComponent_rearToggle()));
