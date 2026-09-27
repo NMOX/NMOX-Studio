@@ -36,6 +36,16 @@ public final class WorkspaceIO {
     /** The studio key this workspace's per-person document is filed under. */
     public static final String PERSONAL_STUDIO = "api";
 
+    /**
+     * The {@code version} this build writes. A file whose version is higher
+     * came from a newer NMOX Studio and binds read-only (3.4): a newer
+     * version may add a FIELD this one does not know, and the parse keeps
+     * only what it knows, so the next save would drop that field for
+     * everyone who shares the file — a teammate's request descriptions and
+     * retry counts, gone on a Send.
+     */
+    public static final int FORMAT_VERSION = 1;
+
     private static final java.util.logging.Logger LOG =
             java.util.logging.Logger.getLogger(WorkspaceIO.class.getName());
 
@@ -54,7 +64,7 @@ public final class WorkspaceIO {
      */
     public static String toJson(Workspace w) {
         JSONObject root = new JSONObject();
-        root.put("version", 1);
+        root.put("version", FORMAT_VERSION);
 
         JSONArray cols = new JSONArray();
         for (Collection c : w.collections) {
@@ -89,8 +99,19 @@ public final class WorkspaceIO {
         JSONObject root = new JSONObject();
         root.put("version", 1);
         root.put("activeEnvironment", w.activeEnvironment == null ? "" : w.activeEnvironment);
-        root.put("history", historyJson(w.history));
-        return root.toString(2);
+        JSONArray history = historyJson(w.history);
+        root.put("history", history);
+        String doc = root.toString(2);
+        // The document must fit the cap it is read back with
+        // (PersonalState.MAX_BYTES): fifty sends with a 24 KB body made 1.2 MB,
+        // the next load read nothing and the next save made the loss
+        // permanent. The OLDEST rows go first (the list is newest-first); a
+        // row too large to fit even alone is not kept at all.
+        while (!org.nmox.studio.core.util.PersonalState.fits(doc) && history.length() > 0) {
+            history.remove(history.length() - 1);
+            doc = root.toString(2);
+        }
+        return doc;
     }
 
     /**
@@ -184,6 +205,12 @@ public final class WorkspaceIO {
     static Workspace parse(String json, List<String> newer) {
         Workspace w = new Workspace();
         JSONObject root = new JSONObject(json);
+        int version = root.optInt("version", FORMAT_VERSION);
+        if (version > FORMAT_VERSION) {
+            // a newer NMOX Studio wrote this file (3.4): what it added cannot
+            // be told from what it kept, so none of it is saved over
+            newer.add("version " + version);
+        }
         // legacy per-person field: read so a pre-3.4 file migrates
         w.activeEnvironment = root.optString("activeEnvironment", "");
         JSONArray cols = root.optJSONArray("collections");

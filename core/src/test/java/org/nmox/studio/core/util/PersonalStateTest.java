@@ -46,6 +46,37 @@ class PersonalStateTest {
     }
 
     @Test
+    @DisplayName("a project reached through a symlink is the same project")
+    void symlinkedProjectIsOneKey(@TempDir Path base, @TempDir Path dirs) throws Exception {
+        PersonalState.setBaseForTest(base);
+        Path real = java.nio.file.Files.createDirectory(dirs.resolve("shop"));
+        Path link = dirs.resolve("shop-link");
+        try {
+            java.nio.file.Files.createSymbolicLink(link, real);
+        } catch (UnsupportedOperationException | java.io.IOException noLinks) {
+            org.junit.jupiter.api.Assumptions.abort("this filesystem makes no symlinks");
+        }
+        PersonalState.write(real.toFile(), "api", "{\"history\":[1]}");
+
+        assertThat(PersonalState.read(link.toFile(), "api"))
+                .as("the history written through one spelling is read through the other")
+                .isEqualTo("{\"history\":[1]}");
+    }
+
+    @Test
+    @DisplayName("a document the read would refuse is never written, and the one on disk stays")
+    void overCapIsRefusedBeforeWriting(@TempDir Path base, @TempDir File project) throws Exception {
+        PersonalState.setBaseForTest(base);
+        PersonalState.write(project, "api", "{\"kept\":true}");
+        String huge = "{\"x\":\"" + "y".repeat((int) PersonalState.MAX_BYTES) + "\"}";
+        assertThat(PersonalState.fits(huge)).isFalse();
+
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> PersonalState.write(project, "api", huge))
+                .isInstanceOf(java.io.IOException.class);
+        assertThat(PersonalState.read(project, "api")).isEqualTo("{\"kept\":true}");
+    }
+
+    @Test
     @DisplayName("without a platform user directory, tests never write into real IDE state")
     void defaultBaseOutsidePlatformIsTemp() {
         PersonalState.setBaseForTest(null);

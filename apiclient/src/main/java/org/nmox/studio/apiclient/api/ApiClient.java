@@ -117,7 +117,13 @@ public final class ApiClient {
         /** Bearer or Basic with no token: this machine's keychain holds none. */
         MISSING,
         /** An auth type a newer NMOX Studio wrote, which this version cannot apply. */
-        UNKNOWN_TYPE
+        UNKNOWN_TYPE,
+        /** A token that is there but resolves to nothing: a {{variable}} unset in the environment. */
+        EMPTY,
+        /** Basic credentials with no user:password colon once resolved: no header would go out. */
+        NO_COLON,
+        /** An Authorization header row that resolves to no credential ("Bearer " and nothing). */
+        HEADER_EMPTY
     }
 
     /**
@@ -152,8 +158,55 @@ public final class ApiClient {
      * request without the credential its auth type needs is refused here
      * too, never sent (the UI refuses first, in words; this is the floor).
      */
+    /**
+     * {@link #credential(Request)} with the variables resolved, the way the
+     * send will see them. A token of {@code {{token}}} with the variable unset
+     * used to go out as {@code Bearer } and nothing, and a Basic credential
+     * without its colon went out with no header at all — each a 401 that
+     * read like the server's fault. A hand-made {@code Authorization}
+     * header row is the user's own literal and goes out as written, unless
+     * it resolves to a bare scheme word or nothing.
+     */
+    public static Credential credential(Request request, Map<String, String> vars) {
+        Credential stored = credential(request);
+        if (stored != Credential.PRESENT) {
+            return stored;
+        }
+        Map<String, String> v = vars == null ? Map.of() : vars;
+        if (request.authType == AuthType.BEARER || request.authType == AuthType.BASIC) {
+            String resolved = Variables.resolve(request.authToken, v).trim();
+            if (noCredential(resolved)) {
+                return Credential.EMPTY;
+            }
+            if (request.authType == AuthType.BASIC && !resolved.contains(":")) {
+                return Credential.NO_COLON;
+            }
+        }
+        for (Pair h : request.headers) {
+            if (h == null || !h.enabled || h.name == null
+                    || !Variables.resolve(h.name, v).trim().equalsIgnoreCase("Authorization")) {
+                continue;
+            }
+            String value = Variables.resolve(h.value == null ? "" : h.value, v).trim();
+            String credentialPart = value.replaceFirst("(?i)^(bearer|basic|token|digest)\\b", "").trim();
+            if (noCredential(credentialPart)) {
+                return Credential.HEADER_EMPTY;
+            }
+        }
+        return Credential.PRESENT;
+    }
+
+    /**
+     * Nothing to authenticate with: an empty string, or one still holding a
+     * {@code {{variable}}} the environment does not define ({@link
+     * Variables#resolve} leaves those as written, so they went out literally).
+     */
+    private static boolean noCredential(String resolved) {
+        return resolved.isEmpty() || !Variables.referenced(resolved).isEmpty();
+    }
+
     public ApiResponse send(Request request, Map<String, String> vars) {
-        Credential credential = credential(request);
+        Credential credential = credential(request, vars);
         if (credential != Credential.PRESENT) {
             return ApiResponse.failure(0, "not sent: credential " + credential);
         }

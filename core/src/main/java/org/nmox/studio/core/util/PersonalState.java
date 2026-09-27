@@ -71,9 +71,22 @@ public final class PersonalState {
         return base().resolve(studio).resolve(key(projectDir) + ".json");
     }
 
-    /** A stable key for a project: the first 16 hex digits of its absolute path's SHA-256. */
+    /**
+     * A stable key for a project: the first 16 hex digits of the SHA-256 of
+     * its REAL path. The absolute path was the first key, and a project
+     * reached through a symlink (macOS's {@code /var} is one, to
+     * {@code /private/var}) then kept two personal files, each spelling
+     * losing what the other had written. A directory that cannot be
+     * resolved (it does not exist yet) keys on its normalized absolute path.
+     */
     static String key(File projectDir) {
-        String path = projectDir.getAbsoluteFile().toPath().normalize().toString();
+        Path absolute = projectDir.getAbsoluteFile().toPath().normalize();
+        String path;
+        try {
+            path = absolute.toRealPath().toString();
+        } catch (IOException | SecurityException unresolvable) {
+            path = absolute.toString();
+        }
         try {
             byte[] digest = MessageDigest.getInstance("SHA-256")
                     .digest(path.getBytes(StandardCharsets.UTF_8));
@@ -107,8 +120,26 @@ public final class PersonalState {
         }
     }
 
-    /** Writes the studio's document for this project, atomically. */
+    /** True when {@code document} is small enough for {@link #read} to read it back. */
+    public static boolean fits(String document) {
+        return document.getBytes(StandardCharsets.UTF_8).length <= MAX_BYTES;
+    }
+
+    /**
+     * Writes the studio's document for this project, atomically. A document
+     * {@link #read} would refuse is refused HERE, before anything is written:
+     * the write had no cap while the read had one, so fifty sends with a
+     * 24 KB body wrote a 1.2 MB file that the next load could not read — the
+     * history came back empty and the next save made that permanent. The
+     * file already on disk (which fits) stays; a studio trims its document
+     * with {@link #fits} before it gets here.
+     */
     public static void write(File projectDir, String studio, String document) throws IOException {
+        if (!fits(document)) {
+            throw new IOException("A personal " + studio + " document of "
+                    + document.getBytes(StandardCharsets.UTF_8).length
+                    + " bytes is over the " + MAX_BYTES + "-byte limit it is read with; not written");
+        }
         Path file = fileFor(projectDir, studio);
         Files.createDirectories(file.getParent());
         AtomicFiles.writeString(file, document);

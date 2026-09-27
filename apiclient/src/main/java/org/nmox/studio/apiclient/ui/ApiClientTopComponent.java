@@ -245,7 +245,12 @@ import org.openide.windows.TopComponent;
     "ApiClientTopComponent_changedOnDisk={0} changed on disk — Reload?",
     "ApiClientTopComponent_unsavedEditsReload=You have unsaved edits; click to reload from disk and discard them",
     "ApiClientTopComponent_reloaded=Reloaded {0}",
-    "ApiClientTopComponent_pickedUpChanges=Picked up changes made outside the studio"
+    "ApiClientTopComponent_pickedUpChanges=Picked up changes made outside the studio",
+    "ApiClientTopComponent_notWrittenReloaded=Your last change was not written over it — the file was reloaded as it is now",
+    "# {0} is the authentication scheme, Bearer or Basic",
+    "ApiClientTopComponent_tokenEmpty=Not sent — this request’s {0} credential resolves to nothing: a variable it names is unset or empty in the active environment.",
+    "ApiClientTopComponent_basicNoColon=Not sent — this request’s Basic credential has no user:password colon once its variables resolve, so there is no header to send.",
+    "ApiClientTopComponent_authHeaderEmpty=Not sent — the Authorization header resolves to no credential: a variable it names is unset or empty in the active environment."
 })
 public final class ApiClientTopComponent extends TopComponent {
 
@@ -1629,7 +1634,7 @@ public final class ApiClientTopComponent extends TopComponent {
                 // already off the EDT — a first use of this request's
                 // auth loads its token here, right where it's needed
                 hydrateAuthNow(request);
-                String refusal = credentialRefusal(request);
+                String refusal = credentialRefusal(request, vars);
                 if (refusal != null) {
                     // 3.4: a teammate's clone has none of this person's
                     // tokens; sending anyway went out with no Authorization
@@ -1681,10 +1686,18 @@ public final class ApiClientTopComponent extends TopComponent {
      * words are tested without a window.
      */
     static String credentialRefusal(Request request) {
-        return switch (ApiClient.credential(request)) {
+        return credentialRefusal(request, Map.of());
+    }
+
+    /** The same, with the active environment's variables resolved (3.4). */
+    static String credentialRefusal(Request request, Map<String, String> vars) {
+        String scheme = request.authType == AuthType.BASIC ? "Basic" : "Bearer";
+        return switch (ApiClient.credential(request, vars)) {
             case PRESENT -> null;
-            case MISSING -> Bundle.ApiClientTopComponent_tokenMissing(
-                    request.authType == AuthType.BASIC ? "Basic" : "Bearer");
+            case MISSING -> Bundle.ApiClientTopComponent_tokenMissing(scheme);
+            case EMPTY -> Bundle.ApiClientTopComponent_tokenEmpty(scheme);
+            case NO_COLON -> Bundle.ApiClientTopComponent_basicNoColon();
+            case HEADER_EMPTY -> Bundle.ApiClientTopComponent_authHeaderEmpty();
             case UNKNOWN_TYPE -> Bundle.ApiClientTopComponent_authUnknown(request.foreignAuthType);
         };
     }
@@ -2480,6 +2493,16 @@ public final class ApiClientTopComponent extends TopComponent {
      * never observe the write without the stamp.
      */
     private void writeSnapshot(File target, String json) {
+        // 3.4: the load checked the file; nothing checked it again before a
+        // write, so a `git pull` landing a conflict after the bind was
+        // replaced by this window's pre-merge copy on the next edit or
+        // Send. Asked here, on the lane, immediately before the write.
+        org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk = selfWrites.beforeWrite(
+                target, org.nmox.studio.core.util.BoundedReads.DEFAULT_MAX_BYTES);
+        if (onDisk != org.nmox.studio.core.util.SelfWriteTracker.OnDisk.OURS) {
+            SwingUtilities.invokeLater(() -> writeRefused(onDisk));
+            return;
+        }
         try {
             org.nmox.studio.core.util.AtomicFiles.writeString(target.toPath(), json);
             selfWrites.noteSync(target);
@@ -2497,6 +2520,24 @@ public final class ApiClientTopComponent extends TopComponent {
                         Bundle.ApiClientTopComponent_notPersisted(ex.getMessage()),
                         null);
             }
+        }
+    }
+
+    /**
+     * EDT: a save found somebody else's bytes on disk and wrote nothing. The
+     * Task Board's rule: say so and read the file as it is now — a
+     * conflicted one binds read-only (its own balloon and strip say why),
+     * a merely changed one comes back writable, and the edit that could
+     * not be written is named as lost rather than left to look saved.
+     */
+    private void writeRefused(org.nmox.studio.core.util.SelfWriteTracker.OnDisk onDisk) {
+        saveDebounce.stop();
+        loadWorkspace();
+        if (onDisk == org.nmox.studio.core.util.SelfWriteTracker.OnDisk.CHANGED) {
+            String detail = Bundle.ApiClientTopComponent_notWrittenReloaded();
+            verdict(detail, Color.GRAY);
+            balloon(Bundle.ApiClientTopComponent_changedOnDisk(WorkspaceIO.FILENAME),
+                    detail, false, null);
         }
     }
 
@@ -2784,6 +2825,11 @@ public final class ApiClientTopComponent extends TopComponent {
                         Bundle.ApiClientTopComponent_pickedUpChanges(), true, null);
             }
         } else if (saveDebounce.isRunning()) {
+            // the pending save must not land on the file that just changed
+            // (3.4: it did, on a conflicted one): stop it; the edits stay on
+            // screen until the user reloads, and a further edit's save is
+            // refused by writeSnapshot's check rather than written over it
+            saveDebounce.stop();
             balloon(Bundle.ApiClientTopComponent_changedOnDisk(WorkspaceIO.FILENAME),
                     Bundle.ApiClientTopComponent_unsavedEditsReload(),
                     false, e -> {
