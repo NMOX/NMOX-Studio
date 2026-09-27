@@ -4,6 +4,154 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.4.0] - 2026-09-26
+
+**Three questions every release before this one assumed away. 3.1 asked
+how long the first hour takes, 3.2 what a developer who stayed does all
+day, 3.3 what happens when the project is big — and each imagined one
+person, at a keyboard and a screen, on a day where nothing broke. 3.4
+asks what happens when a second developer joins, what happens when
+something goes wrong, and whether someone can use the IDE without a
+mouse or without seeing it.** Each was surveyed before anything was built
+— real `git merge` runs over every studio's committed file, fault
+injection against the real classes, and the accessibility tree VoiceOver
+reads — and the findings are in
+[docs/engineering/dx-plan-3.4.md](docs/engineering/dx-plan-3.4.md).
+
+### A second developer
+
+- **A merge conflict in a studio file was treated as corruption, and git
+  then committed the loss — in all seven studios.** The studio kept a
+  `.bak`, fell back to an empty or starter workspace, and the next
+  ordinary Send, Run or edit saved that over the conflicted file; the
+  rack *moved* its patch aside, so `git commit -am` recorded the merge as
+  a deletion. Now `core.util.MergeConflicts` recognises git's markers and
+  every studio opens a conflicted file read-only, writes nothing over it,
+  says to resolve it in git, and reloads when it is resolved.
+- **A write re-checks the disk first.** A studio checked for conflicts
+  only when it loaded, so a `git pull` with the IDE open still left it
+  writable over the new bytes. `SelfWriteTracker.beforeWrite` is asked on
+  every studio's save lane just before the write: anything but the bytes
+  it last read or wrote is reloaded, never overwritten.
+- **A teammate on a newer version no longer loses data on your next
+  save.** Unknown engines, node kinds, auth types, piece kinds and newer
+  format versions open read-only instead of being dropped at parse.
+- **Rack cables name their devices.** A cable stored positions, so a clean
+  merge — Alice removes a device, Bob wires to the one after it — rewired
+  the patch silently. Every device now carries a stable id and cables
+  resolve by it; an old cable that could match two devices is dropped and
+  counted, never guessed.
+- **One person's state leaves the shared files.** DB query history (with
+  its SQL), API send history, the active environment and Block Studio's
+  open component moved to `core.util.PersonalState` in the userdir,
+  bounded so it always fits its own read. The Task Board's clocks have
+  owners: Bob clocking in no longer clocks Alice out, and a merge that
+  puts the owners out of step leaves the sessions nobody's rather than
+  the reader's.
+- **Keep-both merges keep both**: duplicate saved queries and imported
+  contracts are renamed and said, Block Studio's duplicate piece ids heal,
+  Infra node ids are random rather than a counter both people incremented,
+  and Refresh forgets a resource the cloud answered 404 for only behind a
+  question whose default is No.
+- **Secrets are per machine, and the second developer is told.** A request
+  whose token lives in someone else's keychain (or whose `{{var}}` resolves
+  to nothing) is refused before sending, by name; a missing DB password
+  leads the driver's error; a SQLite file inside the project is stored as
+  a relative path.
+- **A rescue never overwrites a rescue.** `core.util.Backups` keeps the
+  first as `.bak` and later ones as `.2.bak`, `.3.bak` (a `*.bak` ignore
+  rule covers them all), reusing a copy that already holds the same bytes.
+
+### When something goes wrong
+
+- **Stop could leave a server running while every surface said stopped.**
+  A child that ignores SIGTERM is reparented once its shell dies, and the
+  escalation re-read the tree after the grace and found only the dead
+  root. Stop, Stop All and the shutdown panic now snapshot the tree at the
+  kill and spend one deadline across it, so a child shutting down cleanly
+  keeps its grace. A run's row reads *stopping…* until it has really
+  exited, and a killer that throws leaves the run pressable.
+- **A server that stalls mid-body no longer hangs every HTTP client.**
+  `HttpBodies` takes an idle deadline from every caller — re-armed while
+  bytes arrive, with a ceiling — and refuses by name: "the server stopped
+  sending after N bytes", "the connection closed after 500 of 1,000
+  bytes", or too slow to wait for. KVASIR has its own lane, CouchDB's
+  Cancel stops the request, and a Cancel in API Studio reads as cancelled.
+- **The git chip says what git is doing**: `⎇ main · merging · 2
+  conflicts`, a rebase, a cherry-pick, `git am` or a bisect, in its label
+  and in its spoken name. Every `git status` runs with
+  `--no-optional-locks`, so the chip never strands `index.lock`, and
+  Checkout… refuses during any stopped operation.
+- **A language server that crashes says why**, in the log and on the
+  status line, from a bounded tail of its stderr.
+- **A killed save leaves nothing behind**: temps are hidden, marked as the
+  IDE's own, and swept on the next write — never a user's `dump1.tmp`. The
+  session snapshot is written atomically and a failing disk is said once.
+
+### Without a mouse, or without seeing it
+
+- **A screen reader could navigate into no window at all.** The window
+  system's tab containers exposed a tab list with no tabs, so the main
+  window read as its toolbar and status line. `WindowTabsAccessibility`
+  gives each container its tabs, each tab its window, announces a switch
+  the way `JTabbedPane` does, and never keeps a closed window alive.
+- **Every toolbar button is a Tab stop** (58 across 9 windows were not,
+  RUN and DEPLOY among them), every double-click has an Enter, every
+  popup opens from Shift+F10 or the menu key, status chips are pressable
+  and named in words, and the git chip's doors are also in the Team menu.
+- **The Task Rack without a mouse**: devices are heard as themselves with
+  their cables, the shelf mounts with Enter, Delete unracks, and the
+  device menu carries Patch Cable…, Unplug Cable…, Move Up and Move Down
+  through the drag's own calls. An editable LCD opens with Enter.
+- **The Infra Designer's canvas from the keyboard, read aloud**: arrows
+  select, Enter opens properties, W wires through the drag's own rule
+  table, and a screen reader hears the selection and its wires.
+- **Rows are heard as the words they paint**: a Task Board card was an
+  empty text field to VoiceOver; `RenderersNamedGateTest` now fails the
+  build on any cell renderer that is not a label and does not name itself.
+- **Focus rings** on the Welcome's and the Workbench's links.
+
+### Found by reviewing the night's own code
+
+Three hostile reviews of the fresh code confirmed twenty-three defects, all fixed but one taken out:
+- **Keyboard and screen reader.** A window leak (a tab held its closed
+  editor strongly). The rack panel became a Tab stop that trapped Tab. The
+  rack's keys acted inside dialogs it opened, and Backspace on an editable
+  LCD unracked its device. A cable could be patched to a device that had
+  left the rack. An Infra selection survived a reload and acted on the
+  next design. A keyboard move left focus on the wrong device. The Infra
+  palette and Remove from design ignored the canvas lock during a live
+  cloud operation.
+- **Teammate merges.** The write re-check above, and the cable identity.
+- **Failure paths.**
+  - One stalled Agent Port client blocked the single deadline thread, so
+    every HTTP deadline in the IDE stopped firing: the close now runs off
+    the watchdog.
+  - Stop All SIGKILLed a child mid-shutdown.
+  - The temp sweep could delete a user's own `.tmp` file.
+  - A Cancel read as a broken body.
+  - The checkout guard let `git am`, a bisect and a sequencer through.
+- **The fold itself**, where two builders could not see each other: two
+  helpers for one rescue copy became one, and the git chip's spoken name
+  missed the merge its label showed.
+
+**Taken back out, and why:** a sampler that gave a run's surviving
+background children a row of their own. The review measured it tracking
+the common `server &` shape in 0 of 8 runs, and it could also reach what a
+run starts on purpose to outlive it (a browser opened by `--open`,
+`gpg-agent`, an ssh master). Ledger 125 records the gap and the design
+that would close it: a process group per run.
+
+### Proof
+
+- Every fix carries a test and a mutant killed by name, with full verdict
+  lines. Full `mvn clean verify` green on the branch head: every module,
+  SpotBugs/find-sec-bugs, JaCoCo floors, the packaged-app gates.
+- Walked in the assembled app: a real `git merge` conflict in the Task
+  Board (the reason on screen, the bytes untouched, the board reloading
+  once resolved in git), and the accessibility tree VoiceOver reads (33
+  elements before, every window's content reachable after).
+
 ## [3.3.0] - 2026-09-25
 
 **The big-project release. 3.1 asked how long the first hour takes; 3.2
@@ -24487,6 +24635,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.1...v3.2.0
 [3.1.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.0...v3.1.1

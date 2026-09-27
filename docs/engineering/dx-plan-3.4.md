@@ -1,4 +1,4 @@
-# The 3.4 developer-experience plan (draft)
+# The 3.4 developer-experience plan
 
 *Started 2026-09-26. 3.1 asked how long the first hour takes; 3.2 asked
 what a developer who stayed does all day; 3.3 asked what happens when the
@@ -175,11 +175,32 @@ Clean: the rack widgets expose their state and fire their events; the Task
 Board's WIP and blocked states are in words; the security grade is text, not
 colour; no validation is a red border alone.
 
-## The plan
+## The plan, as shipped in 3.4.0
 
 | # | Question | Unit | Proof |
 |---|----------|------|-------|
+| 1 | Second developer | `core.util.MergeConflicts`; every studio opens a conflicted file read-only and writes nothing over it | a real `git merge` conflict walked in the assembled Task Board; per-studio conflict tests, mutants by name |
+| 2 | Second developer | `SelfWriteTracker.beforeWrite` on every studio's save lane | the review's pull-under-the-IDE tests, turned into `WriteRecheckTest`, `PatchPulledUnderTheIdeTest` and siblings |
+| 3 | Second developer | newer versions and unknown kinds open read-only | `NewerVersionReadOnlyTest` and per-studio siblings |
+| 4 | Second developer | rack cables resolve by a stable device id | `CableIdentityTest`, `CableSameTypeTest` |
+| 5 | Second developer | per-person state in `core.util.PersonalState`; Task Board clock owners | `PersonalStateTest`, `PersonalHistoryCapTest`, `ClockOwnersTest`, `SessionOwnersMismatchTest` |
+| 6 | Second developer | keep-both heals; random Infra ids; Refresh forgets only behind a No-default question | `TeamDbWorkspaceTest`, `TeamDesignTest`, `DriftNeverSeversTest` |
+| 7 | Second developer | missing credentials refused before sending; relative SQLite paths | `ResolvedCredentialTest`, `MissingPasswordTest`, `SqlitePathsTest` |
+| 8 | Second developer | `core.util.Backups`: a rescue never overwrites a rescue | `BackupsTest` |
+| 9 | Things going wrong | Stop, Stop All and the panic snapshot the tree and share one grace | `CommandExecutorTest` (three process tests) |
+| 10 | Things going wrong | `HttpBodies` idle deadline with a ceiling, the close off the watchdog, cancel as cancel | `HttpBodiesTest`, `CouchCancelTest`, `ApiBodyBrokeTest`, `KvasirConsultLaneTest` |
+| 11 | Things going wrong | the git chip names every stopped operation; `--no-optional-locks`; the checkout guard | `GitFactsTest`, `GitChipTest`, `GitStatusNoLocksGateTest` |
+| 12 | Things going wrong | language-server stderr tail; *stopping…* rows; atomic snapshot; hidden, swept temps | `ServerStderrTest`, `LiveRunsTest`, `SessionSnapshotWriteTest`, `AtomicFilesTest` |
+| 13 | No mouse, no screen | `WindowTabsAccessibility`: every window reachable, switches announced, no leak | `WindowTabsAccessibilityTest`; the AX tree read live (33 elements before) |
+| 14 | No mouse, no screen | toolbar Tab stops, keyboard menus, Enter for double-clicks, named chips, Team-menu doors | `ToolbarKeyboardAccessTest`, `KeyboardMenusTest`, `StatusChipsKeyboardTest`, `DbStudioEnterTest`, `ChannelListEnterTest` |
+| 15 | No mouse, no screen | the rack without a mouse; the Infra canvas from the keyboard | `DeviceAccessibilityTest`, `ShelfKeyboardTest`, `RackKeyboardCablesTest`, `RackTabFocusTest`, `FlowCanvasKeyboardTest` |
+| 16 | No mouse, no screen | cell renderers name themselves | `RenderersNamedGateTest`, found by reading a Task Board card through the AX tree |
 
-## Already on the branch
+Not shipped: tracking a background child that outlives its script (the
+sampler was built, measured by review at 0 of 8 on the common shape, and
+taken out; ledger 125 names the process-group design). No announcement
+API exists in JDK 25, so a result arriving is still not spoken aloud.
+
+## Already on the branch before the plan
 
 - The 3.3 big-project fixture is a script (`scripts/big-fixture.sh`).

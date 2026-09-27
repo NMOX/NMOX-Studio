@@ -1244,6 +1244,26 @@ area, text field, combo, spinner, table, list and tree in the product
 speaks its own name (taken from the label beside it), three build gates
 holding it.
 
+The whole IDE works the same way. A screen reader can navigate into
+every window: each window is a tab it can select, holding that window's
+content. Before this, the window system's tab containers exposed nothing,
+so the main window read as its toolbar and status line. Every toolbar
+button is a **Tab** stop. Every list, tree and table row is read as the
+words it paints; a Task Board card was an empty field until a build gate
+started checking renderers. A double-click always has a key: **Enter** peeks a table in DB
+Studio, joins a channel from the IRC list, reloads a history entry, adds
+the selected resource from the Infra palette. Menus open from the
+keyboard (**Shift+F10** or the menu key) wherever the mouse opens them,
+including the git chip's Pull Requests and Draft Commit Message (also
+under the **Team** menu). On the rack, Enter on a shelf card mounts it,
+Delete unracks the focused device, and the device menu carries **Patch
+Cable…**, **Unplug Cable…**, **Move Up** and **Move Down**, each doing
+exactly what the drag does. An editable LCD opens with Enter. On the
+Infra Designer canvas the arrow keys select resources, Enter opens their
+properties, **W** wires the selection to a resource it can serve, and
+Shift with the arrows moves a node. A screen reader hears the selected
+resource and what it is wired to.
+
 ![Keyboard focus on the rack: a focus ring on DYNAMO's GO button after tabbing from the RUNNER knob](images/a11y-knob-focus.png)
 
 ### Git, on the status line
@@ -1947,7 +1967,13 @@ own Switch to Editor, because a user who picked Eclipse expects it.
   restart exactly the session you lost, one click.
 - **The orphan guarantee.** Quitting the IDE kills every process it
   started — dev servers, REPLs, chains, watchers — TERM first, KILL if
-  they resist, descendants included.
+  they resist, descendants included. **Stop** does the same for one run:
+  its row reads *stopping…* until the process has really exited, a child
+  that ignores TERM is killed after three seconds even when its shell has
+  already died, and a child that exits cleanly is given those three
+  seconds. One shape is not covered: a script that starts a server with
+  `&` and then ends leaves that server behind, because nothing links it
+  to the run once the script has exited.
 - **BLACKBOX** (add it to your rack) is a flight recorder: every launch
   and exit, durations, trends, and "what changed since the last green
   build" when something breaks. A run you stopped yourself reads
@@ -1955,11 +1981,29 @@ own Switch to Editor, because a user who picked Eclipse expects it.
   is asked to explain.
 - **SONAR** shows who owns your ports, cross-referenced with Docker, with
   a one-click kill for the squatter on 3000.
-- **Never-clobber files.** All four studio workspace files
-  (`.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`, `.nmoxinfra.json`)
-  reload when edited outside the IDE — but if you have unsaved changes,
-  you're asked, never overwritten. A corrupt file is set aside as `.bak`
-  and reported, never silently replaced.
+- **Never-clobber files.** Every studio workspace file
+  (`.nmoxrack.json`, `.nmoxapi.json`, `.nmoxdb.json`, `.nmoxweb3.json`,
+  `.nmoxinfra.json`, `.nmoxtasks.json`, `.nmoxblocks.json`) reloads when
+  edited outside the IDE — and before every write the studio checks
+  the file is still the one it last read. So a `git pull` with the IDE
+  open can never have its result overwritten by your next click.
+  A corrupt file is set aside as `.bak` (a second one as `.2.bak`, never
+  over the first) and reported, never silently replaced.
+- **A teammate's merge is left alone.** When git leaves conflict markers
+  in a studio file, the studio opens it read-only and says so. It writes
+  nothing over it until you resolve the conflict in git, then reloads on
+  its own. A file written by a newer NMOX Studio opens read-only too,
+  because an older build would drop the fields it does not know. Your
+  own history, your active API environment and the Block Studio component
+  you had open are kept outside the project, so they are not what two
+  people conflict over. A clock on the Task Board belongs to the person who
+  started it.
+- **What went wrong says so.** A server that sends its headers and then
+  stops sending is refused with how many bytes arrived. A body still
+  arriving slowly is read to the end, not called stopped. A language
+  server that crashes puts its last line on the status line. The git
+  chip names a merge, rebase, cherry-pick, `git am` or bisect in
+  progress, and Checkout… refuses during any of them.
 - **TypeScript without a build** — a project whose entry is `index.ts`,
   `main.ts` or `src/index.ts` runs from IGNITION (and the node lane) with
   Node's own type stripping (`--experimental-strip-types`, Node 22.6+; the
@@ -2128,11 +2172,15 @@ project root, designed to be shared with your team:
 | `.nmoxtasks.json` | The Task Board: columns, cards, WIP limits | **Yes** — the team shares one board; leave it ignored to keep it personal |
 | `.gas-snapshot` | Foundry per-test gas baselines (GOVERNOR gates on it) | **Yes** — that's how gas regressions get caught in review |
 | `.env` | Your environment variables | **No** — that's the whole point of `.env` |
-| `*.bak` | A workspace file that failed to parse, kept for you | No — recover what you need, then delete |
+| `.nmoxrack.json`, `.nmoxblocks.json` | The rack patch; Block Studio's components | **Yes** — cables name their devices, so a merge cannot rewire them |
+| `*.bak`, `*.2.bak` | A workspace file that failed to parse, kept for you | No — recover what you need, then delete |
 
-Edit any of the four `.nmox*.json` files outside the IDE (or pull a
+Edit any of the `.nmox*.json` files outside the IDE (or pull a
 teammate's changes) and the matching studio reloads on its own — unless
-you have unsaved changes there, in which case it asks first.
+you have unsaved changes there, in which case it asks first. A file git
+left conflicted is opened read-only until you resolve it. What is only
+yours — query and send history, the active environment, the component
+you had open — lives in the userdir, never in these files.
 
 Outside the project: `~/NMOX` is the default workspace, experiments live
 in `~/.nmox/experiments`, Learning Spaces in `~/.nmox/learn`, and the

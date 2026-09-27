@@ -24,7 +24,7 @@ Every document here is current; the v0.x-era papers were removed in
 - **[dx-plan-3.3.md](./dx-plan-3.3.md)** — the plan for 3.3, shipped as 3.3.0: what
   a big repository costs, measured on a 50,000-file fixture, and the units
   already written after 3.2.0.
-- **[dx-plan-3.4.md](./dx-plan-3.4.md)** — the draft plan for 3.4: what
+- **[dx-plan-3.4.md](./dx-plan-3.4.md)** — the plan for 3.4, shipped as 3.4.0: what
   happens when a second developer joins, when something goes wrong, and
   when the IDE is used without a mouse or a screen.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
