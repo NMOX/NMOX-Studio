@@ -20,6 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class BlockReviewFixesTest {
 
+    @org.junit.jupiter.api.BeforeAll
+    static void noRealPreferences() {
+        BlockActiveMemory.useMemoryStoreForTests(); // the open component is kept per user (3.4)
+    }
+
     private static void drain() throws Exception {
         BlockStudioTopComponent.drainIoLane();
         SwingUtilities.invokeAndWait(() -> { });

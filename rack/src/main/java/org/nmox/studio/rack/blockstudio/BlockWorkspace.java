@@ -160,10 +160,18 @@ public final class BlockWorkspace {
 
     // ---- persistence ----
 
+    /**
+     * The committed shape: the version and the components — and NOT which
+     * component is open (3.4). That is one person's state, and it used to be
+     * rewritten into the checked-in file on every switch, so two people
+     * working in different components conflicted on a line neither of them
+     * cared about. The open component is kept per user, per project
+     * ({@link BlockActiveMemory}); {@link #fromJson} still reads a legacy
+     * {@code active} once, so an old file opens where its author left it.
+     */
     public JSONObject toJson() {
         JSONObject o = new JSONObject();
         o.put("version", 2);
-        o.put("active", active);
         JSONArray arr = new JSONArray();
         for (BlockDoc d : components) {
             arr.put(d.toJson());

@@ -186,11 +186,85 @@ public final class BlockDoc {
             throw new IllegalArgumentException("root must be a COMPONENT block");
         }
         doc.root = loaded;
+        doc.healIds();
         return doc;
     }
 
+    /**
+     * A piece kind this build does not know (3.4): the file was written by a
+     * newer NMOX Studio. Refused like every illegal shape, but typed, because
+     * the answer is not "corrupt, start fresh" — it is "leave this file alone":
+     * a fresh workspace saved over it would delete the newer build's pieces.
+     */
+    public static final class UnknownKindException extends IllegalArgumentException {
+
+        private static final long serialVersionUID = 1L;
+        private final String kind;
+
+        UnknownKindException(String kind) {
+            super("unknown piece kind " + kind);
+            this.kind = kind;
+        }
+
+        /** The kind the file named, as written. */
+        public String kind() {
+            return kind;
+        }
+    }
+
+    /**
+     * Gives every piece a distinct id (3.4, the parse-time-heal law). Every
+     * gesture allocates ids from one counter, but the file is checked in: two
+     * people who each added a piece both wrote {@code b3}, and a keep-both
+     * merge hands us both. Two pieces on one id collide in the generated
+     * code (one {@code data-b} anchor, one {@code const}) and a click on
+     * either selects the first. The FIRST occurrence in reading order keeps
+     * its id — it is the one the code already names — and every later one
+     * gets a fresh id no piece in the file carries; the counter then starts
+     * past every id in the file, so the next gesture cannot mint a third.
+     */
+    private void healIds() {
+        java.util.Set<String> all = new java.util.HashSet<>();
+        int highest = 0;
+        for (Block b : preorder()) {
+            all.add(b.id());
+            if (b.id().matches("b\\d{1,9}")) {
+                highest = Math.max(highest, Integer.parseInt(b.id().substring(1)));
+            }
+        }
+        nextId = Math.max(nextId, highest + 1);
+        heal(root, new java.util.HashSet<>(), all);
+    }
+
+    private void heal(Block parent, java.util.Set<String> seen, java.util.Set<String> all) {
+        seen.add(parent.id());
+        List<Block> kids = parent.children();
+        for (int i = 0; i < kids.size(); i++) {
+            Block child = kids.get(i);
+            if (seen.contains(child.id())) {
+                String fresh = allocId();
+                while (all.contains(fresh)) {
+                    fresh = allocId();
+                }
+                all.add(fresh);
+                Block renamed = new Block(fresh, child.kind());
+                renamed.params().putAll(child.params());
+                renamed.children().addAll(child.children());
+                kids.set(i, renamed);
+                child = renamed;
+            }
+            heal(child, seen, all);
+        }
+    }
+
     private static Block blockFrom(JSONObject o) {
-        BlockKind kind = BlockKind.valueOf(o.getString("kind"));
+        String kindName = o.getString("kind");
+        BlockKind kind;
+        try {
+            kind = BlockKind.valueOf(kindName);
+        } catch (IllegalArgumentException unknown) {
+            throw new UnknownKindException(kindName);
+        }
         Block b = new Block(o.getString("id"), kind);
         JSONObject params = o.optJSONObject("params");
         if (params != null) {

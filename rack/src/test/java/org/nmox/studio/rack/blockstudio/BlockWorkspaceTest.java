@@ -49,7 +49,10 @@ class BlockWorkspaceTest {
         assertThat(json.getInt("version")).isEqualTo(2);
         BlockWorkspace back = BlockWorkspace.fromJson(json);
         assertThat(back.tags()).containsExactly("first-one", "second-one", "third-one");
-        assertThat(back.active()).isEqualTo(1);
+        // 3.4: which component is open is one person's state and no longer
+        // rides the committed file (BlockActiveMemory keeps it per user)
+        assertThat(json.has("active")).isFalse();
+        assertThat(back.active()).isZero();
         assertThat(back.toJson().toString()).isEqualTo(json.toString());
     }
 
