@@ -91,14 +91,14 @@ public final class RackGalleryDialog {
             }
         }));
 
-        JTextArea detailArea = new JTextArea(Bundle.RackGalleryDialog_loading(), 18, 44);
+        JTextArea detailArea = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(Bundle.RackGalleryDialog_loading(), 18, 44));
         detailArea.getAccessibleContext().setAccessibleName(Bundle.RackGalleryDialog_detailName());
         detailArea.setEditable(false);
         detailArea.setLineWrap(true);
         detailArea.setWrapStyleWord(true);
         detailArea.setBorder(BorderFactory.createEmptyBorder(8, 10, 8, 10));
 
-        JTextField searchField = new JTextField(24);
+        JTextField searchField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(24));
         searchField.setToolTipText(PlainText.plain(Bundle.RackGalleryDialog_searchHint()));
         JLabel searchLabel = new JLabel(Bundle.RackGalleryDialog_search());
         searchLabel.setLabelFor(searchField);

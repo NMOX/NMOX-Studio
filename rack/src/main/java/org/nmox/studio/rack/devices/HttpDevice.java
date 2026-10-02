@@ -265,7 +265,7 @@ public class HttpDevice extends RackDevice {
                 return super.getListCellRendererComponent(l, label, i, s, f);
             }
         });
-        javax.swing.JTextArea detail = new javax.swing.JTextArea();
+        javax.swing.JTextArea detail = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea());
         detail.setEditable(false);
         detail.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
         list.addListSelectionListener(e -> {

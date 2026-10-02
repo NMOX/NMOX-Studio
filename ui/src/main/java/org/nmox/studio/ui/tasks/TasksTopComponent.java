@@ -950,9 +950,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void newCardDialog(int preferredColumn) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
-        JTextField title = new JTextField(28);
+        JTextField title = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(28));
         title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
-        JTextArea notes = new JTextArea(5, 28);
+        JTextArea notes = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(5, 28));
         notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
@@ -970,9 +970,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void editCardDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
-        JTextField title = new JTextField(card.title(), 28);
+        JTextField title = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.title(), 28));
         title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
-        JTextArea notes = new JTextArea(card.notes(), 5, 28);
+        JTextArea notes = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(card.notes(), 5, 28));
         notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
@@ -1104,7 +1104,7 @@ public final class TasksTopComponent extends TopComponent {
                 String md = StandupReport.build(board, commits,
                         System.currentTimeMillis(),
                         java.time.ZoneId.systemDefault());
-                JTextArea text = new JTextArea(md, 18, 52);
+                JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(md, 18, 52));
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_standupReportA11y());
                 text.setEditable(false);
                 text.setCaretPosition(0);
@@ -1154,23 +1154,23 @@ public final class TasksTopComponent extends TopComponent {
     /** Non-null prefills override the defaults — the roll-over's seam. */
     private void editSprint(String prefillName, java.time.LocalDate prefillStart,
             java.time.LocalDate prefillEnd) {
-        javax.swing.JTextField name = new javax.swing.JTextField(prefillName != null
+        javax.swing.JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new javax.swing.JTextField(prefillName != null
                 ? prefillName
-                : board.hasSprint() ? board.sprintName() : "", 18);
+                : board.hasSprint() ? board.sprintName() : "", 18));
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
-        javax.swing.JTextField start = new javax.swing.JTextField(prefillStart != null
+        javax.swing.JTextField start = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextField(prefillStart != null
                 ? prefillStart.toString()
                 : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintStart()), zone).toString()
-                : today.toString(), 10);
-        javax.swing.JTextField end = new javax.swing.JTextField(prefillEnd != null
+                : today.toString(), 10));
+        javax.swing.JTextField end = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextField(prefillEnd != null
                 ? prefillEnd.toString()
                 : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintEnd()), zone).toString()
-                : today.plusDays(13).toString(), 10);
+                : today.plusDays(13).toString(), 10));
         javax.swing.JPanel panel = new javax.swing.JPanel(
                 new java.awt.GridLayout(0, 2, 6, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -1225,7 +1225,7 @@ public final class TasksTopComponent extends TopComponent {
         if (md.isEmpty()) {
             return;
         }
-        JTextArea text = new JTextArea(md, 18, 52);
+        JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(md, 18, 52));
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_sprintReportA11y());
         text.setEditable(false);
         text.setCaretPosition(0);
@@ -1291,7 +1291,7 @@ public final class TasksTopComponent extends TopComponent {
 
     /** Board-level retro notes (v2.5.0) — the overview's Edit Retro…. */
     private void editRetroDialog() {
-        JTextArea text = new JTextArea(board.retro(), 10, 44);
+        JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(board.retro(), 10, 44));
         text.setLineWrap(true);
         text.setWrapStyleWord(true);
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_retroNotesA11y());
@@ -1315,9 +1315,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void blockDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
-        JTextField owner = new JTextField(card.blockOwner(), 28);
+        JTextField owner = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.blockOwner(), 28));
         owner.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_blockerOwnerA11y());
-        JTextField action = new JTextField(card.blockAction(), 28);
+        JTextField action = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.blockAction(), 28));
         action.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_unblockActionA11y());
         form.add(new JLabel(Bundle.TasksTopComponent_ownerLabel()));
         form.add(owner);

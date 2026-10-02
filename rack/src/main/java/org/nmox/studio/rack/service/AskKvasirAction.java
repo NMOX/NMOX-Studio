@@ -60,7 +60,7 @@ public final class AskKvasirAction implements ActionListener {
         CodeQuestion preview = new CodeQuestion(
                 fileName(doc), language(doc), selection, "");
 
-        JTextField question = new JTextField();
+        JTextField question = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         question.getAccessibleContext().setAccessibleName(Bundle.AskKvasirAction_questionField());
         javax.swing.JComboBox<String> model =
                 new javax.swing.JComboBox<>(AskKvasirModel.labels());

@@ -82,9 +82,9 @@ final class NetworkDialog extends JPanel {
     record Result(Network network, char[] secretUrl) {
     }
 
-    private final JTextField nameField = new JTextField(22);
-    private final JTextField urlField = new JTextField("http://127.0.0.1:8545", 22);
-    private final JTextField chainIdField = new JTextField(8);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(22));
+    private final JTextField urlField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("http://127.0.0.1:8545", 22));
+    private final JTextField chainIdField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(8));
     private final JButton detectButton = new JButton(Bundle.NetworkDialog_detect());
     private final JCheckBox secretCheck =
             new JCheckBox(Bundle.NetworkDialog_secretCheck());

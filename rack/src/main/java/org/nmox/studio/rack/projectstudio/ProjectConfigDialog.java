@@ -88,10 +88,10 @@ public class ProjectConfigDialog extends JDialog {
     private final File projectDir;
     private PackageJsonFile pkg;
 
-    private final JTextField nameField = new JTextField(24);
-    private final JTextField versionField = new JTextField(10);
-    private final JTextField descriptionField = new JTextField(32);
-    private final JTextField licenseField = new JTextField(10);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
+    private final JTextField versionField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
+    private final JTextField descriptionField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(32));
+    private final JTextField licenseField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[]{"commonjs", "module"});
     {
         // the form's labels also setLabelFor these (below); the explicit
@@ -214,7 +214,7 @@ public class ProjectConfigDialog extends JDialog {
         JButton addBtn = new JButton(Bundle.ProjectConfigDialog_addEllipsis());
         addBtn.setToolTipText(Bundle.ProjectConfigDialog_addTooltip());
         addBtn.addActionListener(e -> {
-            JTextField pkgField = new JTextField(20);
+            JTextField pkgField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(20));
             pkgField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_packageField());
             JComboBox<String> scope = new JComboBox<>(new String[]{Bundle.ProjectConfigDialog_scopeDependency(), Bundle.ProjectConfigDialog_scopeDevDependency()});
             scope.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_scopeField());

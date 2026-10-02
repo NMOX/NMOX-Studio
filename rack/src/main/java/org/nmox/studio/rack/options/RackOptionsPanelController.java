@@ -187,9 +187,9 @@ public class RackOptionsPanelController extends OptionsPanelController {
         kvasirProvider = new javax.swing.JComboBox<>(providerLabels);
         kvasirProvider.getAccessibleContext().setAccessibleName(Bundle.RackOptionsPanelController_providerCombo());
         kvasirProvider.addActionListener(e -> changed());
-        doToken = new JPasswordField(28);
-        hetznerToken = new JPasswordField(28);
-        cloudflareToken = new JPasswordField(28);
+        doToken = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(28));
+        hetznerToken = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(28));
+        cloudflareToken = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(28));
         // Every control tells the dialog, not just the two that happened to
         // be wired: picking a KVASIR provider or pasting a cloud token moved
         // a setting, and a user who did only that and found Apply still grey

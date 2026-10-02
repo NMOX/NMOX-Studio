@@ -373,7 +373,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private static JTextArea preview(String accessibleName) {
-        JTextArea a = new JTextArea();
+        JTextArea a = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         a.getAccessibleContext().setAccessibleName(accessibleName);
         a.setEditable(false);
         a.setFont(MONO);
@@ -623,7 +623,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         p.add(wrap(imagesTable), BorderLayout.CENTER);
         JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
-        JTextField pullField = new JTextField(22);
+        JTextField pullField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(22));
         pullField.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_pullFieldName());
         pullField.setToolTipText(Bundle.DockerPanelTopComponent_pullFieldTooltip());
         actions.add(pullField);
@@ -666,11 +666,11 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     /** A run dialog with the three things you always need: name, ports, env. */
     private void quickRun(ImageInfo img) {
-        JTextField name = new JTextField(16);
+        JTextField name = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(16));
         name.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_containerNameField());
-        JTextField ports = new JTextField("8080:80", 16);
+        JTextField ports = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("8080:80", 16));
         ports.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_portsField());
-        JTextField env = new JTextField(16);
+        JTextField env = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(16));
         env.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_envField());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();

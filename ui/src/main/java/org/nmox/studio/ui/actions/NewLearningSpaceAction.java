@@ -156,7 +156,7 @@ public final class NewLearningSpaceAction implements ActionListener {
             }
         });
 
-        JTextField search = new JTextField();
+        JTextField search = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
 
         search.getAccessibleContext().setAccessibleName(Bundle.NewLearningSpaceAction_searchName());
         search.setToolTipText(Bundle.NewLearningSpaceAction_searchTip());

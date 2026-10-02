@@ -96,7 +96,7 @@ public class ReplDevice extends RackDevice {
                 : "<html><code>$ " + PlainText.escape(installLcd.getText()) + "</code></html>");
         runLed = place(new Led("LIVE", RackStyle.GO), left + 648, 46);
 
-        screen = new JTextArea();
+        screen = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         // a faceplate stays English by the v2.97.0 decision — this package
         // ships no translated bundles, which is the decision written down
         screen.getAccessibleContext().setAccessibleName("REPL session");
@@ -116,7 +116,7 @@ public class ReplDevice extends RackDevice {
         scroll.setPreferredSize(new Dimension(fullW, 5 * RackStyle.UNIT - 178));
         place(scroll, left, 122);
 
-        input = new JTextField();
+        input = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         input.getAccessibleContext().setAccessibleName("REPL input");
         input.setBackground(new Color(12, 22, 12));
         input.setForeground(RackStyle.LCD_TEXT);

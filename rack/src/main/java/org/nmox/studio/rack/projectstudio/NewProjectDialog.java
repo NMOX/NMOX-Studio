@@ -70,8 +70,8 @@ public class NewProjectDialog extends JDialog {
     private static final org.openide.util.RequestProcessor CREATE_RP =
             new org.openide.util.RequestProcessor("nmox-new-project", 1, true);
 
-    private final JTextField nameField = new JTextField("my-app", 20);
-    private final JTextField locationField = new JTextField(28);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("my-app", 20));
+    private final JTextField locationField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(28));
     {
         // the beginner's first two fields speak their names to assistive
         // technology (v2.85.0 census: 46 inputs product-wide had neither a

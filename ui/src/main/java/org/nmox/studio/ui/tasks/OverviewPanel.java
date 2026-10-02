@@ -251,7 +251,7 @@ final class OverviewPanel extends JPanel {
             none.setForeground(DIM);
             add(none);
         } else {
-            javax.swing.JTextArea text = new javax.swing.JTextArea(retro);
+            javax.swing.JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new javax.swing.JTextArea(retro));
             text.setEditable(false);
             text.setLineWrap(true);
             text.setWrapStyleWord(true);

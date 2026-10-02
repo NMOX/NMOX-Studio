@@ -85,14 +85,14 @@ final class ConnectionDialog extends JPanel {
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
 
-    private final JTextField nameField = new JTextField(24);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(24));
     private final JComboBox<DbEngine> engineCombo = new JComboBox<>(DbEngine.values());
-    private final JTextField hostField = new JTextField("localhost", 18);
-    private final JTextField portField = new JTextField(6);
-    private final JTextField databaseField = new JTextField(18);
-    private final JTextField userField = new JTextField(18);
-    private final JPasswordField passwordField = new JPasswordField(18);
-    private final JTextField fileField = new JTextField(24);
+    private final JTextField hostField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("localhost", 18));
+    private final JTextField portField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(6));
+    private final JTextField databaseField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
+    private final JTextField userField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
+    private final JPasswordField passwordField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(18));
+    private final JTextField fileField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
     /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
     private final javax.swing.JCheckBox secureBox =
             new javax.swing.JCheckBox(Bundle.ConnectionDialog_useTls());

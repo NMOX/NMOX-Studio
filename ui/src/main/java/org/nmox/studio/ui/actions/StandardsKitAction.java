@@ -126,11 +126,11 @@ public final class StandardsKitAction implements ActionListener {
             return;
         }
 
-        JTextField url = new JTextField("https://example.com");
+        JTextField url = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("https://example.com"));
         url.getAccessibleContext().setAccessibleName(Bundle.StandardsKitAction_urlField());
-        JTextField name = new JTextField(project.getName());
+        JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(project.getName()));
         name.getAccessibleContext().setAccessibleName(Bundle.StandardsKitAction_nameField());
-        JTextField contact = new JTextField("security@example.com");
+        JTextField contact = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("security@example.com"));
         contact.getAccessibleContext().setAccessibleName(Bundle.StandardsKitAction_contactField());
         JCheckBox robots = new JCheckBox(Bundle.StandardsKitAction_robotsBox(), true);
         JCheckBox sitemap = new JCheckBox(Bundle.StandardsKitAction_sitemapBox(), true);

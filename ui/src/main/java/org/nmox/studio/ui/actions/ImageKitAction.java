@@ -189,7 +189,7 @@ public final class ImageKitAction implements ActionListener {
                     mb(saved), ImagePress.pictureSnippet("example.jpg"));
             String body = summary + report;
             java.awt.EventQueue.invokeLater(() -> {
-                JTextArea area = new JTextArea(body, 24, 78);
+                JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(body, 24, 78));
                 area.getAccessibleContext().setAccessibleName(Bundle.ImageKitAction_reportName());
                 area.setEditable(false);
                 area.setCaretPosition(0);

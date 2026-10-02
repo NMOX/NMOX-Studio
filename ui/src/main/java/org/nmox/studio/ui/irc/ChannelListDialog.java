@@ -55,7 +55,7 @@ final class ChannelListDialog {
         @SuppressWarnings("unchecked")
         TableRowSorter<Model> sorter = (TableRowSorter<Model>) table.getRowSorter();
 
-        JTextField filter = new JTextField();
+        JTextField filter = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         filter.getAccessibleContext().setAccessibleName(Bundle.ChannelListDialog_filterChannels());
         filter.getDocument().addDocumentListener(new DocumentListener() {
             private void refilter() {

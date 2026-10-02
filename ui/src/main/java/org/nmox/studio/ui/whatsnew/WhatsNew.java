@@ -124,7 +124,7 @@ public final class WhatsNew {
 
     /** {@code markdown} is the shown entries as Markdown for the Copy option, or null when nothing is shown. */
     private static void dialog(String title, String text, String markdown) {
-        JTextArea area = new JTextArea(text, 28, 88);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(text, 28, 88));
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);

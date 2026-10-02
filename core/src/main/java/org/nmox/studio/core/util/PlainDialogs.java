@@ -27,7 +27,7 @@ public final class PlainDialogs {
 
     /** A read-only, wrapping, named text area sized like a message label. */
     public static JTextArea plain(String text, String accessibleName) {
-        JTextArea area = new JTextArea(text == null ? "" : text);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(text == null ? "" : text));
         area.setEditable(false);
         // never a focus stop: a confirmation's keyboard flow belongs to its
         // safe-default button (the v1.98.0 law — Enter answers No), and a

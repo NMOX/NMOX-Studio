@@ -44,8 +44,8 @@ public final class AskKvasirDialog {
 
     private final KvasirConversation convo;
     private final AskKvasirEngine engine;
-    private final JTextArea transcript = new JTextArea(22, 76);
-    private final JTextField input = new JTextField();
+    private final JTextArea transcript = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(22, 76));
+    private final JTextField input = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
     private final JButton ask = new JButton(Bundle.AskKvasirDialog_ask());
 
     private final String model;

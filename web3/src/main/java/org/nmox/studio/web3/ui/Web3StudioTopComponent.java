@@ -539,7 +539,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final DeploymentsModel deploymentsModel = new DeploymentsModel();
     private final JButton gasButton = new JButton(Bundle.Web3StudioTopComponent_runGasReport());
 
-    private final JTextArea logArea = new JTextArea(5, 40);
+    private final JTextArea logArea = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(5, 40));
 
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
@@ -812,7 +812,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         List<JTextField> argFields = new ArrayList<>();
         for (AbiParam param : s.constructorParams()) {
-            JTextField field = new JTextField(24);
+            JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(paramLabel(param));
             field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
@@ -827,7 +827,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         JTextField valueField = null;
         if (s.constructorPayable()) {
-            valueField = new JTextField(10);
+            valueField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
             valueField.setFont(MONO);
             valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
             valueField.setToolTipText(Bundle.Web3StudioTopComponent_valueEthTip());
@@ -928,7 +928,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JLabel label = new JLabel(PlainText.plain(paramLabel(param)));
             label.setForeground(Color.GRAY);
             rowPanel.add(label);
-            JTextField field = new JTextField(10);
+            JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(label.getText());
             field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
@@ -941,7 +941,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JLabel valueLabel = new JLabel(Bundle.Web3StudioTopComponent_valueEthInline());
             valueLabel.setForeground(Color.GRAY);
             rowPanel.add(valueLabel);
-            valueField = new JTextField(6);
+            valueField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(6));
             valueField.setFont(MONO);
             valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
             rowPanel.add(valueField);
@@ -2368,12 +2368,12 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     /** Import ABI… — any deployed contract becomes interactable (v2.45.0). */
     private void importAbi() {
-        JTextField nameField = new JTextField(24);
+        JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(24));
         nameField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractNameA11y());
-        JTextField addressField = new JTextField(44);
+        JTextField addressField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(44));
         addressField.getAccessibleContext().setAccessibleName(
                 Bundle.Web3StudioTopComponent_deployedAddressA11y());
-        javax.swing.JTextArea abiArea = new javax.swing.JTextArea(12, 48);
+        javax.swing.JTextArea abiArea = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(12, 48));
         abiArea.setFont(MONO);
         abiArea.setLineWrap(true);
         abiArea.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_abiJsonA11y());
@@ -3097,14 +3097,14 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NOT_CONNECTED, FAIL_RED);
             return;
         }
-        JTextField addressField = new JTextField(44);
+        JTextField addressField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(44));
         if (session != null && session.address() != null) {
             addressField.setText(session.address());
         }
         addressField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractAddressA11y());
-        JTextField fromField = new JTextField(10);
+        JTextField fromField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
         fromField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_fromBlockA11y());
-        JTextField toField = new JTextField(10);
+        JTextField toField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
         toField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_toBlockA11y());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
@@ -3171,8 +3171,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             text.append(Bundle.Web3StudioTopComponent_noEventsFor(address,
                     String.valueOf(range.from()), String.valueOf(range.to())));
         }
-        javax.swing.JTextArea area = new javax.swing.JTextArea(
-                text.toString(), 16, 80);
+        javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(
+                text.toString(), 16, 80));
         area.setEditable(false);
         area.setFont(MONO);
         area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_historyAreaA11y());
@@ -3249,8 +3249,8 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void showInspection(String hash, TxInspection.Report report) {
-        javax.swing.JTextArea area = new javax.swing.JTextArea(
-                String.join("\n", report.lines()), 14, 78);
+        javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(
+                String.join("\n", report.lines()), 14, 78));
         area.setEditable(false);
         area.setFont(MONO);
         area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_inspectionA11y());

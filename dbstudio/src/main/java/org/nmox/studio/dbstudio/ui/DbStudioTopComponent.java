@@ -874,9 +874,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 panel.add(readOnlyStrip(result, reason), BorderLayout.SOUTH);
             }
         } else {
-            JTextArea message = new JTextArea(result.isError()
+            JTextArea message = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(result.isError()
                     ? result.error()
-                    : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount()));
+                    : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount())));
             if (result.isError()) {
                 // the driver's message is its own English, not our prose
                 org.nmox.studio.core.util.TextDirection.keepLeftToRight(message);

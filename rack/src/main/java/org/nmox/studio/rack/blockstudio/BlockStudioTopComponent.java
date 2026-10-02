@@ -188,7 +188,7 @@ public final class BlockStudioTopComponent extends TopComponent {
     private BlockDoc canvasDoc() {
         return canvas.doc();
     }
-    private final JEditorPane codePane = new JEditorPane();
+    private final JEditorPane codePane = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JEditorPane());
     private final JLabel status = new JLabel(" ");
     private final Deque<String> undo = new ArrayDeque<>();
     private final Timer regen = new Timer(DEBOUNCE_MS, e -> regenerate());
@@ -963,7 +963,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         java.util.Map<String, JTextField> fields = new java.util.LinkedHashMap<>();
         for (BlockKind.Param p : block.kind().params()) {
             form.add(new JLabel(PlainText.plain(p.key())));
-            JTextField field = new JTextField(block.param(p.key()), 18);
+            JTextField field = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(block.param(p.key()), 18));
             field.getAccessibleContext().setAccessibleName(Bundle.BlockStudioTopComponent_paramFieldName(BlockText.of(block.kind()), p.key()));
             fields.put(p.key(), field);
             form.add(field);

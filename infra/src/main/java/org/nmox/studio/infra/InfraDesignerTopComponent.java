@@ -349,7 +349,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             javax.swing.JPanel panel = new javax.swing.JPanel(
                     new java.awt.GridLayout(providers.length * 2, 1, 0, 2));
             for (int i = 0; i < providers.length; i++) {
-                fields[i] = new JPasswordField(32);
+                fields[i] = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(32));
                 fields[i].getAccessibleContext().setAccessibleName(
                         Bundle.InfraDesigner_tokenFieldName(providers[i].displayName()));
                 String row = providers[i].hasToken()
@@ -536,7 +536,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             text.insert(0, Bundle.InfraDesigner_missingTokens(names) + "\n\n");
         }
 
-        JTextArea area = new JTextArea(text.toString(), 18, 64);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(text.toString(), 18, 64));
         area.getAccessibleContext().setAccessibleName(Bundle.InfraDesigner_deployLogName());
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));

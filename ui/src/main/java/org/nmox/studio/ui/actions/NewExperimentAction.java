@@ -81,7 +81,7 @@ public final class NewExperimentAction implements ActionListener {
             }
         });
         template.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_templateA11y());
-        JTextField name = new JTextField();
+        JTextField name = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         name.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_nameA11y());
         JCheckBox installBox = new JCheckBox(
                 Bundle.NewExperimentAction_installBox(), true);
