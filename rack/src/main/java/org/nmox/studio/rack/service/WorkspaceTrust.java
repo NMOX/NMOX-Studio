@@ -177,13 +177,46 @@ public final class WorkspaceTrust {
         return false;
     }
 
-    /** Adds the directory to the trusted list and persists it. */
-    public static synchronized void trust(File dir) {
-        if (dir != null) {
+    /** Adds the directory to the trusted list and persists it, then tells whoever was waiting. */
+    public static void trust(File dir) {
+        if (dir == null) {
+            return;
+        }
+        synchronized (WorkspaceTrust.class) {
             remember(dir.getAbsolutePath());
             flush(store());
         }
+        // outside the lock: a listener asks isTrusted, and may start a process
+        for (java.util.function.Consumer<File> listener : GRANT_LISTENERS) {
+            try {
+                listener.accept(dir);
+            } catch (RuntimeException | LinkageError ex) {
+                java.util.logging.Logger.getLogger(WorkspaceTrust.class.getName()).log(
+                        java.util.logging.Level.INFO, "a trust listener failed for " + dir, ex);
+            }
+        }
     }
+
+    /**
+     * What waits for trust hears of a grant here (3.5.10), from whichever
+     * door it came through: the Run prompt, the git chip's menu, a
+     * notification's click. Before this each door refreshed only its own
+     * surface: trusting a folder at the Run prompt left the git chip without
+     * its count until the next poll and the language servers off until the
+     * file was reopened. The folder handed over is the one that was trusted;
+     * its subfolders are trusted with it. Called on the thread that granted,
+     * which may be the event thread: a listener posts its work.
+     */
+    public static void addGrantListener(java.util.function.Consumer<File> listener) {
+        GRANT_LISTENERS.add(listener);
+    }
+
+    public static void removeGrantListener(java.util.function.Consumer<File> listener) {
+        GRANT_LISTENERS.remove(listener);
+    }
+
+    private static final java.util.List<java.util.function.Consumer<File>> GRANT_LISTENERS =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
 
     /** Prompts the user to trust the workspace folder (blocking Swing Dialog). */
     public static boolean requestTrust(File dir) {

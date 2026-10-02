@@ -43,6 +43,9 @@ import org.openide.util.NbBundle;
  * <p>A refused server says so once per project in a notification, and the
  * click is the trust question itself. A file that belongs to no project has
  * no project to trust: for it, only the servers that READ start.
+ *
+ * <p>When the project is trusted, through any door, the servers that were
+ * refused start for the files already open (3.5.10): see {@link #granted}.
  */
 final class ServerTrust {
 
@@ -119,7 +122,6 @@ final class ServerTrust {
         runs(m, "astro-ls", "loads TypeScript and Astro packages from the project's node_modules");
         runs(m, "nomicfoundation-solidity-language-server", "loads hardhat.config through the project's own Hardhat");
         runs(m, "phpactor", "includes the project's Composer autoloader");
-        runs(m, "pyright-langserver", "runs the interpreter of the environment a pyrightconfig.json or pyproject.toml names");
         runs(m, "deno", "runs the lint plugins deno.json names");
         runs(m, "vscode-eslint-language-server", "evaluates the project's ESLint configuration (its own gate since v1.216.0)");
         runs(m, "stylelint-lsp", "evaluates the project's stylelint configuration (its own gate since v1.232.0)");
@@ -142,6 +144,9 @@ final class ServerTrust {
         reads(m, "clangd", "runs no compiler a compile_commands.json names unless started with --query-driver, which this product never passes");
         reads(m, "gopls", "drives the user's own go list; Go has no build scripts, and cgo flags are held to an allowlist by the toolchain");
         reads(m, "intelephense", "a static analyser; includes nothing from the project");
+        reads(m, "pyright-langserver", "runs the user's own interpreter on a script of its own, with the working directory"
+                + " taken off the import path; a configuration file names a venv to read, not an interpreter to run,"
+                + " and this client never names one (measured, 3.5.10: scripts/probes/pyright-trust)");
         reads(m, "fortls", "a parser for Fortran sources");
         reads(m, "ada_language_server", "reads project files, which cannot name a command");
         reads(m, "ols", "a parser for Odin sources");
@@ -223,6 +228,9 @@ final class ServerTrust {
             return false;
         }
         REFUSED.set(Boolean.TRUE);
+        if (verdict == Verdict.UNTRUSTED) {
+            WAITING.putIfAbsent(projectDir, binaryOf(command));
+        }
         speak(binaryOf(command), projectDir, verdict);
         return true;
     }
@@ -247,17 +255,79 @@ final class ServerTrust {
                     NbBundle.getMessage(ServerTrust.class, "ServerTrust_noProject", binary), null);
             return;
         }
+        if (!noticeFirst.test(projectDir)) {
+            // the git chip already said this folder, or one above it, is waiting, and its
+            // click is the same question: one decision gets one notice (3.5.10)
+            return;
+        }
         NotificationDisplayer.getDefault().notify(title, icon(),
                 NbBundle.getMessage(ServerTrust.class, "ServerTrust_detail", binary, projectDir.getName()),
-                e -> ask(binary, projectDir));
+                e -> ask(projectDir));
     }
 
-    /** The click: the trust question itself, and what to do next. */
-    private static void ask(String binary, File projectDir) {
-        if (org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir)) {
-            StatusDisplayer.getDefault().setStatusText(
-                    NbBundle.getMessage(ServerTrust.class, "ServerTrust_reopen", binary));
+    /** Whether a folder's notice is the first this session, across git and the servers. Swapped by tests. */
+    static Predicate<File> noticeFirst = org.nmox.studio.rack.service.TrustNotices::firstFor;
+
+    /** The click: the trust question itself. What follows a yes is {@link #granted}, as for any other door. */
+    private static void ask(File projectDir) {
+        org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectDir);
+    }
+
+    /** The projects a server was refused for, and one of the servers, for the message if a restart cannot be done. */
+    private static final Map<File, String> WAITING = new ConcurrentHashMap<>();
+
+    /** Re-opens every open editor in its servers; false when it could not. Swapped by tests. */
+    static java.util.function.BooleanSupplier restart = ServerRestart::reopenEditorsInServers;
+
+    /** Where the restart runs: it starts processes. Swapped by tests. */
+    static java.util.function.Consumer<Runnable> lane =
+            new org.openide.util.RequestProcessor("Language server trust", 1)::post;
+
+    /** What the status line is told. Swapped by tests. */
+    static java.util.function.Consumer<String> status = text -> StatusDisplayer.getDefault().setStatusText(text);
+
+    /**
+     * A folder was trusted. If a server was waiting for it, or for a
+     * project inside it, the servers start now for the files already open.
+     *
+     * <p>3.5.6 said "reopen the file": the platform's client opens a
+     * document in a server once, when its editor appears, so a server
+     * started later knew none of the open files. The client has its own
+     * way to send them again, the one it uses when a server is connected
+     * by hand, and this asks for it ({@link ServerRestart}). When that way
+     * is not there, the old sentence is said instead, so nothing is
+     * promised that did not happen.
+     *
+     * @return whether anything was waiting under the folder
+     */
+    static boolean granted(File trustedDir) {
+        if (trustedDir == null) {
+            return false;
         }
+        String root = trustedDir.getAbsolutePath();
+        String binary = null;
+        for (java.util.Iterator<Map.Entry<File, String>> it = WAITING.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<File, String> waiting = it.next();
+            String path = waiting.getKey().getAbsolutePath();
+            if (path.equals(root) || path.startsWith(root + File.separator)) {
+                binary = waiting.getValue();
+                it.remove();
+                // a later refusal for this project, should trust be withdrawn by hand, speaks again
+                SPOKEN.remove(path);
+            }
+        }
+        if (binary == null) {
+            return false;
+        }
+        String waited = binary;
+        lane.accept(() -> status.accept(restart.getAsBoolean()
+                ? NbBundle.getMessage(ServerTrust.class, "ServerTrust_started")
+                : NbBundle.getMessage(ServerTrust.class, "ServerTrust_reopen", waited)));
+        return true;
+    }
+
+    static {
+        org.nmox.studio.rack.service.WorkspaceTrust.addGrantListener(ServerTrust::granted);
     }
 
     private static javax.swing.Icon icon() {
@@ -280,5 +350,6 @@ final class ServerTrust {
 
     static void forgetForTest() {
         SPOKEN.clear();
+        WAITING.clear();
     }
 }
