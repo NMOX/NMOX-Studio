@@ -24,7 +24,9 @@ import org.openide.util.NbBundle.Messages;
 @ActionID(category = "Tools", id = "org.nmox.studio.apiclient.ui.OpenInApiStudioAction")
 @ActionRegistration(displayName = "#CTL_OpenInApiStudio", lazy = true)
 @ActionReferences({
-    @ActionReference(path = "Editors/text/x-http-request/Popup", position = 1950),
+    // 1935, not 1950: this popup is merged with Editors/Popup, where Ask KVASIR
+    // sits at 1950 behind its separator at 1940 (3.5.5)
+    @ActionReference(path = "Editors/text/x-http-request/Popup", position = 1935),
     @ActionReference(path = "Loaders/text/x-http-request/Actions", position = 250)
 })
 @Messages("CTL_OpenInApiStudio=Open in API Studio")

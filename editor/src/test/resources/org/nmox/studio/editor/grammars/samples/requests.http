@@ -1,0 +1,14 @@
+@host = http://localhost:3000
+
+### List the items
+GET {{host}}/items?limit=10
+Accept: application/json
+
+### Create one
+POST {{host}}/items
+Content-Type: application/json
+
+{
+  "name": "kettle",
+  "litres": 1.5
+}

@@ -1,0 +1,15 @@
+@use "sass:math";
+$brand: #3a7bd5;
+$sizes: (small: 4px, large: 16px);
+
+@mixin rounded($r: 4px) { border-radius: $r; }
+
+.card {
+  @include rounded(8px);
+  padding: math.div(24px, 2);
+  color: darken($brand, 10%);
+  &:hover { background: rgba($brand, 0.2); }
+  @each $name, $size in $sizes {
+    &--#{$name} { margin: $size; }
+  }
+}

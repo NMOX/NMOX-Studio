@@ -1,0 +1,12 @@
+@brand: #3a7bd5;
+@pad: 12px;
+
+.rounded(@r: 4px) { border-radius: @r; }
+
+.card {
+  .rounded(8px);
+  padding: @pad (@pad * 2);
+  color: darken(@brand, 10%);
+  &:hover { background: fade(@brand, 20%); }
+  @media (max-width: 600px) { padding: (@pad / 2); }
+}

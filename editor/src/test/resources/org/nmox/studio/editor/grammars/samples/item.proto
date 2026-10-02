@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package shop.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// An item in the shop.
+message Item {
+  string id = 1;
+  string name = 2;
+  repeated string tags = 3;
+  google.protobuf.Timestamp added = 4;
+  enum Kind {
+    KIND_UNSPECIFIED = 0;
+    KIND_KETTLE = 1;
+  }
+  Kind kind = 5;
+}
+
+service Shop {
+  rpc GetItem (GetItemRequest) returns (Item);
+}
+
+message GetItemRequest { string id = 1; }

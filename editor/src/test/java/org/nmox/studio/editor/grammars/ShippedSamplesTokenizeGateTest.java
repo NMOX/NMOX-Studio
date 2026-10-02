@@ -41,6 +41,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * engine. A grammar that throws, or that cannot finish a line in the time
  * the editor allows, fails here with the file and the line.
  *
+ * <p>Fifty-three of the grammars bound to an extension have a sample in the
+ * catalogue. The other twenty-three (SCSS, Less, Dart, Zig, OCaml, F#,
+ * Groovy, GraphQL, nginx, protobuf and more) each have a small real file
+ * under this package's test resources, and a grammar bound to an extension
+ * with no sample at all fails here until one is written.
+ *
  * <p>A sample exercises the rules its text needs and no others: restoring
  * the Svelte pattern 3.5.4 rewrote does not fail here, because no sample has
  * an {@code {#if}} block, and restoring Elixir's does, on line 1 of
@@ -56,6 +62,9 @@ class ShippedSamplesTokenizeGateTest {
 
     private static final Path CATALOGUE = Path.of(
             "../rack/src/main/resources/org/nmox/studio/rack/projectstudio/learn-catalog.json");
+
+    /** One small real file for each grammar the catalogue has no sample of. */
+    private static final Path OWN_SAMPLES = Path.of("src/test/resources/org/nmox/studio/editor/grammars/samples");
 
     /** Extension to MIME type, and MIME type to grammar scope, as the generated layer registers them. */
     private record Bindings(Map<String, String> mimeOfExtension, Map<String, String> scopeOfMime) {
@@ -136,6 +145,17 @@ class ShippedSamplesTokenizeGateTest {
         return all;
     }
 
+    private static List<Sample> ownSamples() throws Exception {
+        List<Sample> own = new ArrayList<>();
+        try (java.util.stream.Stream<Path> files = Files.list(OWN_SAMPLES)) {
+            for (Path file : files.sorted().toList()) {
+                own.add(new Sample("samples", file.getFileName().toString(),
+                        Files.readString(file, StandardCharsets.UTF_8)));
+            }
+        }
+        return own;
+    }
+
     /** What went wrong tokenizing the text with the grammar, or null. */
     private static String tokenize(IGrammar grammar, String text) {
         IStateStack state = null;
@@ -166,6 +186,8 @@ class ShippedSamplesTokenizeGateTest {
         TreeSet<String> unbound = new TreeSet<>();
         List<String> broken = new ArrayList<>();
         List<Sample> all = samples();
+        int catalogued = all.size();
+        all.addAll(ownSamples());
         for (Sample sample : all) {
             String name = sample.path().substring(sample.path().lastIndexOf('/') + 1);
             String scope = bindings.scopeFor(name);
@@ -180,12 +202,23 @@ class ShippedSamplesTokenizeGateTest {
             }
             tokenizedBy.merge(scope, 1, Integer::sum);
         }
-        assertThat(all.size()).as("sample files in the catalogue").isGreaterThan(150);
-        assertThat(tokenizedBy.size())
-                .as("grammars exercised by a real file; the rest of the catalogue's extensions are " + unbound)
-                .isGreaterThan(40);
+        assertThat(catalogued).as("sample files in the catalogue").isGreaterThan(150);
         assertThat(tokenizedBy).as("the three 3.5.4 found broken are among them")
                 .containsKeys("source.elixir", "source.hx", "source.svelte");
+
+        // every grammar a file's extension can reach has real code run through it
+        TreeSet<String> never = new TreeSet<>();
+        bindings.mimeOfExtension().forEach((extension, mime) -> {
+            String scope = bindings.scopeOfMime().get(mime);
+            if (scope != null && !tokenizedBy.containsKey(scope)) {
+                never.add(scope + " (." + extension + ")");
+            }
+        });
+        assertThat(tokenizedBy.size()).as("grammars bound to an extension").isGreaterThan(70);
+        assertThat(never)
+                .as("grammars bound to an extension that no sample exercises: add a small real file to "
+                        + OWN_SAMPLES + " (the catalogue's other extensions, opened by other lexers, are " + unbound + ")")
+                .isEmpty();
         assertThat(broken).as("a learner's own first file, not coloured or not opened").isEmpty();
 
         // the platform matches an extension by case on macOS and Linux: hello.R is not hello.r

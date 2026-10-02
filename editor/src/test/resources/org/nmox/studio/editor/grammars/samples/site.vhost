@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+    ServerName example.test
+    DocumentRoot "/var/www/site"
+    <Directory "/var/www/site">
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    RewriteEngine On
+    RewriteRule ^/old/(.*)$ /new/$1 [R=301,L]
+</VirtualHost>

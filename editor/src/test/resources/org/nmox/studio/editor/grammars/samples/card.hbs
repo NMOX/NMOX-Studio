@@ -1,0 +1,12 @@
+<article class="card {{#if featured}}card--featured{{/if}}">
+  <h2>{{title}}</h2>
+  {{! a comment }}
+  <ul>
+    {{#each tags as |tag|}}
+      <li>{{tag}}</li>
+    {{else}}
+      <li>no tags</li>
+    {{/each}}
+  </ul>
+  {{> footer year=2026}}
+</article>

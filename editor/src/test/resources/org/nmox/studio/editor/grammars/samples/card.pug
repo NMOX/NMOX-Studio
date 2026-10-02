@@ -1,0 +1,13 @@
+- const tags = ['a', 'b']
+article.card(class=featured ? 'card--featured' : '')
+  h2= title
+  //- a comment
+  ul
+    each tag in tags
+      li= tag
+    else
+      li no tags
+  script.
+    console.log('ready');
+  style.
+    .card { padding: 12px; }

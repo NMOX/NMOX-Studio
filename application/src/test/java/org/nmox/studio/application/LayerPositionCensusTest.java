@@ -236,6 +236,52 @@ class LayerPositionCensusTest {
         assertThat(dups).as("same position, same folder — the platform picks an order and warns").isEmpty();
     }
 
+    /**
+     * A language's editor popup is its own folder MERGED with the one every
+     * language inherits ({@code Editors/Popup}), and the platform orders the
+     * merged list. Two rows that each look alone in their folder collide
+     * there: API Studio's row in an {@code .http} file's popup and Ask KVASIR
+     * in the inherited one both sat at 1950, and opening an {@code .http}
+     * file logged the warning (3.5.5, found by opening one file of every
+     * kind). The folder-by-folder census above cannot see it.
+     */
+    @Test
+    @DisplayName("No NMOX row in a language's editor popup shares a position with a row every language inherits")
+    void noDuplicatePositionsAcrossTheInheritedPopup() throws Exception {
+        Map<String, Map<String, Integer>> census = census();
+        String inheritedKey = census.keySet().stream()
+                .filter(k -> k.equals("Editors/Popup/")).findFirst().orElseThrow();
+        Map<String, Integer> inherited = census.get(inheritedKey);
+        assertThat(inherited).as("the popup every language inherits").isNotEmpty();
+
+        List<String> dups = new ArrayList<>();
+        int languages = 0;
+        for (var f : census.entrySet()) {
+            String folder = f.getKey();
+            if (!folder.startsWith("Editors/") || !folder.endsWith("/Popup/") || folder.equals(inheritedKey)) {
+                continue;
+            }
+            languages++;
+            for (var own : f.getValue().entrySet()) {
+                if (own.getValue() == null) {
+                    continue;
+                }
+                for (var shared : inherited.entrySet()) {
+                    if (!own.getValue().equals(shared.getValue()) || rowName(own.getKey()).equals(rowName(shared.getKey()))) {
+                        continue;
+                    }
+                    if (!own.getKey().contains("(org-nmox-") && !shared.getKey().contains("(org-nmox-")) {
+                        continue;
+                    }
+                    dups.add(folder + " @" + own.getValue() + ": " + own.getKey() + " vs inherited " + shared.getKey());
+                }
+            }
+        }
+        assertThat(languages).as("language popups read").isGreaterThan(20);
+        assertThat(dups).as("same position once the inherited popup is merged in — the platform warns when the file opens")
+                .isEmpty();
+    }
+
     @Test
     @DisplayName("no platform row sits between the Tools menu's NMOX rows — a family split by drift is the v2.118.0 class")
     void toolsMenuRowsAreNotSplit() throws Exception {
