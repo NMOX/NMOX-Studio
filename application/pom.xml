@@ -267,6 +267,7 @@
                                 <exclude>**/ShippedLibraryVersionGateTest.java</exclude>
                                 <exclude>**/OnePostgresDriverGateTest.java</exclude>
                                 <exclude>**/WindowIconBrandingGateTest.java</exclude>
+                                <exclude>**/MacChordsReachOnlyMacsGateTest.java</exclude>
                                 <exclude>**/PackagedLicenseGateTest.java</exclude>
                                 <exclude>**/PackagedSiteGateTest.java</exclude>
                                 <exclude>**/LocaleBundleParityTest.java</exclude>
@@ -321,6 +322,7 @@
                                 <include>**/ShippedLibraryVersionGateTest.java</include>
                                 <include>**/OnePostgresDriverGateTest.java</include>
                                 <include>**/WindowIconBrandingGateTest.java</include>
+                                <include>**/MacChordsReachOnlyMacsGateTest.java</include>
                                 <include>**/PackagedLicenseGateTest.java</include>
                                 <include>**/PackagedSiteGateTest.java</include>
                                 <include>**/LocaleBundleParityTest.java</include>

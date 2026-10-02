@@ -49,7 +49,7 @@ class ExperimentGuideParityTest {
         assertThat(md)
                 .as("the catalog pointer names the real gesture and count")
                 .contains("File ▸ New Learning Space…")
-                .contains("92 guided tutorials");
+                .contains(LearningCatalog.builtIns().size() + " guided tutorials");
         assertThat(md).contains(t.getDisplayName());
     }
 }

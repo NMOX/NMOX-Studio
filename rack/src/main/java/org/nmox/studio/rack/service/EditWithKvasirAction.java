@@ -228,7 +228,7 @@ public final class EditWithKvasirAction implements ActionListener {
         }
         if (applied[0]) {
             StatusDisplayer.getDefault().setStatusText(
-                    Bundle.EditWithKvasirAction_applied());
+                    org.nmox.studio.core.util.Chords.forThisOs(Bundle.EditWithKvasirAction_applied()));
         } else {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     Bundle.EditWithKvasirAction_fileChanged()));

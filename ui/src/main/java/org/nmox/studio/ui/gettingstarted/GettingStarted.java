@@ -57,15 +57,15 @@ public final class GettingStarted {
 
     /** The five, in the order a first session naturally takes them. */
     public static final List<Step> STEPS = List.of(
-            new Step("project", Bundle.GettingStarted_projectLabel(), Bundle.GettingStarted_projectGesture(),
+            new Step("project", Bundle.GettingStarted_projectLabel(), org.nmox.studio.core.util.Chords.forThisOs(Bundle.GettingStarted_projectGesture()),
                     Target.action("File", "org.nmox.studio.ui.actions.OpenFolderAction")),
-            new Step("run", Bundle.GettingStarted_runLabel(), Bundle.GettingStarted_runGesture(),
+            new Step("run", Bundle.GettingStarted_runLabel(), org.nmox.studio.core.util.Chords.forThisOs(Bundle.GettingStarted_runGesture()),
                     Target.window("RackTopComponent")),
             new Step("serve", Bundle.GettingStarted_serveLabel(), Bundle.GettingStarted_serveGesture(),
                     Target.window("RackTopComponent")),
             new Step("kvasir", Bundle.GettingStarted_kvasirLabel(), Bundle.GettingStarted_kvasirGesture(),
                     Target.guide("#kvasir--explain-the-last-failure")),
-            new Step("learn", Bundle.GettingStarted_learnLabel(), Bundle.GettingStarted_learnGesture(),
+            new Step("learn", Bundle.GettingStarted_learnLabel(), org.nmox.studio.core.util.Chords.forThisOs(Bundle.GettingStarted_learnGesture()),
                     Target.action("File", "org.nmox.studio.ui.actions.NewLearningSpaceAction")),
             // v2.84.0: the Agent Port had eight releases and no place on the
             // first-run checklist; the door is this module's thin action over

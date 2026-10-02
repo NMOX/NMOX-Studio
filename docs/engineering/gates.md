@@ -120,6 +120,7 @@ Every control speaks its name; a screen reader hears the thing, not the role.
 - [`RenderersNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/RenderersNamedGateTest.java): Every cell renderer not built on a label names itself with the words it paints, so a row is never read as blank (3.4.0: the Task Board's cards were empty text fields to VoiceOver).
 - [`A11yInputNamesGateTest`](../../application/src/test/java/org/nmox/studio/application/A11yInputNamesGateTest.java): No studio adds an input without also naming one (v2.38.0).
 - [`LabelNamesAreTheirTextGateTest`](../../ui/src/test/java/org/nmox/studio/ui/actions/LabelNamesAreTheirTextGateTest.java): A label with text is named by its text, not by a constant a screen reader would read instead (v2.85.0).
+- [`MacChordsReachOnlyMacsGateTest`](../../application/src/test/java/org/nmox/studio/application/MacChordsReachOnlyMacsGateTest.java): A string that names a chord in Mac notation is shown through `Chords.forThisOs`, so Windows and Linux read their own keys; the population is every shipped bundle value and source literal carrying ⌘ ⌥ ⇧ ⌃ (3.5.0).
 
 ## Localization
 
