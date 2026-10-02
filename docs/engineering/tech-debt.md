@@ -42,24 +42,39 @@ three on a live switch back, and repainting the Hebrew and Arabic pictures.
 None of it is hard; it should be decided by a right-to-left reader looking
 at both layouts, not by a patch release of the runtime.
 
-### 128. AltGr and the Ctrl+Alt chords, on a keyboard nobody here has
+### 128. ~~AltGr and the Ctrl+Alt chords, on a keyboard nobody here has~~ — CLOSED by 3.5.1, by measurement
 
 Most window chords are Ctrl+Alt+digit on Windows and Linux. On German,
 French, Polish and other layouts AltGr+digit types `{ [ ] }` and friends,
-and Windows has historically reported AltGr as Ctrl+Alt. Java is understood
-to add an AltGraph modifier to such a key event since version 11. The
-platform's half is read from its bytecode: `ShortcutAndMenuKeyEventProcessor
-.processShortcut` builds the stroke with `KeyStroke.getKeyStrokeForEvent`
-and asks the keymap for exactly that stroke, so a stroke carrying AltGraph
-is not the Ctrl+Alt+7 the keymap holds, and AltGr+7 should type `{` and not
-open DB Studio. That is a reading of how the pieces fit, not a measurement. Show Keystrokes was taught the same rule in
-3.5.0 (an AltGr combination is typing and is never shown).
+and Windows presents AltGr as Left Ctrl + Right Alt. 3.5.0 recorded the
+worry and a reading of the code; 3.5.1 measured it.
 
-**Unverified:** the walks ran on runners with a US layout, and nothing here
-can press AltGr on a German one. It needs a person with such a keyboard, or
-a runner with the layout loaded and `java.awt.Robot` pressing
-`VK_ALT_GRAPH`. If the chords do fire, the fix is a keymap for those layouts
-that moves the window chords off the digits.
+`scripts/probes/AltGrProbe.java`, run by the **Keyboard probe** workflow on
+a Windows runner (Windows Server 2025, Java 25.0.4): a text field binds an
+action to Ctrl+Alt+7 the way a keymap does, and a robot presses the keys.
+With the runner's US layout as the control, then with the German layout
+loaded (confirmed by the probe: the field's input locale reads `de_DE` and
+Shift+7 types `/`):
+
+| Keys | Stroke Swing derives | Bound Ctrl+Alt+7 action | Typed |
+| --- | --- | --- | --- |
+| Ctrl+Alt+7 | `ctrl alt pressed 7` | ran once | `{` |
+| AltGr+7 | `ctrl alt altGraph pressed 7` | did not run | `{` |
+
+So AltGr carries its own modifier, the stroke is not the chord's, and a
+German keyboard types its brace. The platform matches the same way
+(`ShortcutAndMenuKeyEventProcessor.processShortcut` asks the keymap for
+exactly `KeyStroke.getKeyStrokeForEvent`, read from its bytecode). On Linux
+AltGr is a level-3 shift and never arrives as Ctrl+Alt at all.
+
+**One thing the table shows that nobody asked:** on that layout the chord
+itself, pressed with the real Ctrl and Alt keys, also produces a typed `{`,
+because Windows composes the character from Ctrl+Alt whichever keys made it.
+The probe's bare text field inserted it. The platform's processor has a
+`skipNextTyped` flag for exactly this, so in the product the character
+should be swallowed after the chord runs; that half is read, not measured.
+If someone on such a keyboard sees a stray `{` after Ctrl+Alt+7, that is
+where to look.
 
 ### 129. What the 3.5 walks saw and did not change
 

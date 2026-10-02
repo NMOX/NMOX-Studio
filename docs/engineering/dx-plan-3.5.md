@@ -94,7 +94,7 @@ restores children by identity for that reason.
 Ledger 127 (should a horizontal split mirror for a right-to-left reader:
 3.5.0 keeps every pane as authored, which is what the documentation's
 pictures show), 128 (AltGr against the Ctrl+Alt window chords, unverified
-for want of the keyboard) and 129 (Linux without a Secret Service; the
+when 3.5.0 shipped and measured the same night, below) and 129 (Linux without a Secret Service; the
 unresolved includes that upstream grammars carry; the Workbench's
 38-character subtitles; what a CI runner cannot show). Ledger 125 and 126
 from 3.4 are unchanged.
@@ -130,6 +130,9 @@ been run, found four more things.
   geometry, drawn in the system's font. Fixed type.
 - **Ledger 126**, the platform's tree rows spoken as markup, closed for
   every tree with a global wrapper and a walk with a control.
+- **Ledger 128, measured.** A probe on a Windows runner with a German
+  layout loaded: AltGr+7 carries its own modifier, does not fire the
+  Ctrl+Alt+7 chord, and types `{`.
 
 The mutant for the spoken rows survived at first, in both the new test and
 the one 3.4.0 shipped: an `<html>` label names itself in words, so a fixture

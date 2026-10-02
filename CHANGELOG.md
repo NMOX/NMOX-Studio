@@ -39,6 +39,13 @@ after it shipped.**
   uses the portable zip, which carries no runtime. First run, against
   v3.4.1: all three boot (12 to 15 s) on their own Zulu 25.0.4, zero SEVERE,
   no native-access warnings.
+- **AltGr does not fire the Ctrl+Alt chords**, measured (ledger 128). Most
+  window chords are Ctrl+Alt+digit off a Mac, and on German, French or
+  Polish keyboards AltGr+digit types brackets and braces. The **Keyboard
+  probe** workflow loads a German layout on a Windows runner and asks the
+  real toolkit: AltGr+7 arrives as `ctrl alt altGraph 7`, the action bound
+  to Ctrl+Alt+7 does not run, and `{` is typed. 3.5.0 had recorded this as
+  unverified.
 - `scripts/boot-smoke-test.sh` says which runtime the app ran on and can be
   told which one to insist on. It also passed a JDK path as a plain string,
   so a runtime under `NMOX Studio.app` or `Program Files` was split at the
