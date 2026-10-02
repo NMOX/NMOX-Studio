@@ -104,6 +104,12 @@
             <artifactId>org-netbeans-modules-db</artifactId>
             <version>${netbeans.version}</version>
         </dependency>
+        <!-- owns the PostgreSQL driver entry this module's layer replaces -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-db-drivers</artifactId>
+            <version>${netbeans.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.json</groupId>
@@ -168,6 +174,18 @@
                 <configuration>
                     <!-- no public packages since v2.63.0: nothing outside this module imports it (the senior-RCP pass census); friends and Lookup-published services need no export -->
                     <publicPackages/>
+                    <!-- the layer hides the platform's PostgreSQL driver entry
+                         (3.4.1); a hide is only ordered above the file it hides
+                         when this module depends on the module that owns it.
+                         db.drivers exports no packages, so the dependency is
+                         named here and nothing is compiled against it. -->
+                    <moduleDependencies>
+                        <dependency>
+                            <id>org.netbeans.modules:org-netbeans-modules-db-drivers</id>
+                            <type>spec</type>
+                            <explicitValue>org.netbeans.modules.db.drivers</explicitValue>
+                        </dependency>
+                    </moduleDependencies>
                 </configuration>
             </plugin>
             <plugin>

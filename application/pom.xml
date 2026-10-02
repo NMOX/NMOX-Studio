@@ -264,6 +264,8 @@
                                  exist until package: runs below instead -->
                             <excludes>
                                 <exclude>**/PackagedConfGateTest.java</exclude>
+                                <exclude>**/ShippedLibraryVersionGateTest.java</exclude>
+                                <exclude>**/OnePostgresDriverGateTest.java</exclude>
                                 <exclude>**/PackagedLicenseGateTest.java</exclude>
                                 <exclude>**/PackagedSiteGateTest.java</exclude>
                                 <exclude>**/LocaleBundleParityTest.java</exclude>
@@ -315,6 +317,8 @@
                         <configuration>
                             <includes>
                                 <include>**/PackagedConfGateTest.java</include>
+                                <include>**/ShippedLibraryVersionGateTest.java</include>
+                                <include>**/OnePostgresDriverGateTest.java</include>
                                 <include>**/PackagedLicenseGateTest.java</include>
                                 <include>**/PackagedSiteGateTest.java</include>
                                 <include>**/LocaleBundleParityTest.java</include>
@@ -364,6 +368,41 @@
                  from packaging/icons/nmox-studio.iconset via iconutil) to
                  target/, the exact spot the launcher resolves. Plain file
                  copy: inert on Linux/Windows builds. -->
+            <!-- One PostgreSQL driver in the product (3.4.1). The platform's
+                 db.drivers module carries pgJDBC 42.5.4, which two advisories
+                 name; DB Studio's layer hides the entry that loaded it and
+                 registers the driver DB Studio bundles, so nothing reads this
+                 jar any more - and a jar nothing reads is still a jar a
+                 scanner finds. Declared after the nbm plugin, so within the
+                 package phase it runs AFTER cluster-app has built the dir.
+                 The portable zip is made before this runs; release.yml drops
+                 the same file from it. An install that updates itself in-app
+                 keeps the file (the platform cluster is not updated) and
+                 loads nothing from it. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>drop-superseded-platform-driver</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}/nmoxstudio/ide/modules/ext</directory>
+                                    <includes>
+                                        <include>postgresql-*.jar</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>

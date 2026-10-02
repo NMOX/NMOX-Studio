@@ -1,0 +1,24 @@
+<?xml version='1.0'?>
+<!--
+  The PostgreSQL driver the platform's Database Explorer offers (Window >
+  Services > Databases > Drivers), pointed at the driver this module bundles.
+
+  The platform registers its own entry against a pgJDBC jar it carries,
+  42.5.4 in RELEASE310, which two advisories name: CVE-2024-1597 and
+  CVE-2026-42198 (a server can ask the client for unbounded SCRAM work). DB
+  Studio moved its own driver past both in v1.35.1, and the Services window
+  went on loading the old one. This entry replaces the platform's (the layer
+  hides that one), so there is one PostgreSQL driver in the product.
+
+  The name stays 'Postgres': a connection saved under the platform's entry
+  finds its driver by this name and the class.
+-->
+<!DOCTYPE driver PUBLIC '-//NetBeans//DTD JDBC Driver 1.1//EN' 'http://www.netbeans.org/dtds/jdbc-driver-1_1.dtd'>
+<driver>
+  <name value='Postgres'/>
+  <display-name value='PostgreSQL'/>
+  <class value='org.postgresql.Driver'/>
+  <urls>
+    <url value="nbinst://org.nmox.NMOX.Studio.dbstudio/modules/ext/org.nmox.NMOX-Studio-dbstudio/org-postgresql/postgresql.jar"/>
+  </urls>
+</driver>

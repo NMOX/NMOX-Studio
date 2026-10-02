@@ -2,6 +2,24 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN"
         "https://netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
+    <!-- One PostgreSQL driver in the product (3.4.1). The platform's
+         db.drivers module registers its own entry against the pgJDBC jar it
+         carries, an older one two advisories name; these lines hide that
+         entry and the Java-project library beside it, and register this
+         module's bundled driver under the same name. Hiding another
+         module's file needs a dependency on that module, which the pom
+         declares, so this layer sits above the platform's. -->
+    <folder name="Databases">
+        <folder name="JDBCDrivers">
+            <file name="postgresql.xml_hidden"/>
+            <file name="nmox-postgresql.xml" url="postgresql-driver.xml"/>
+        </folder>
+    </folder>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="PostgreSQLDriver.xml_hidden"/>
+        </folder>
+    </folder>
     <!-- Quick Search (Cmd+I) over the database workspace: connection
          names, engines, hosts, and already-discovered tables; Enter
          jumps to the hit in DB Studio. Window-system entries ride
