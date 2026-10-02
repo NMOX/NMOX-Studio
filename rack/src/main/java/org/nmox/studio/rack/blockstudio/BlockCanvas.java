@@ -525,6 +525,21 @@ final class BlockCanvas extends JComponent {
         };
     }
 
+    /**
+     * A row is {@link BlockLayout#ROW_H} pixels on every system and its two
+     * lines sit at fixed baselines, so the type is a fixed size too. Drawn in
+     * the look and feel's default font, the lines overlapped wherever that
+     * font is taller than a Mac's (the 3.5 Linux walk).
+     */
+    static java.awt.Font kindFont(java.awt.Font base) {
+        return base.deriveFont(java.awt.Font.BOLD, 12f);
+    }
+
+    /** The piece's face: one size under its kind, in the same family. */
+    static java.awt.Font faceFont(java.awt.Font base) {
+        return base.deriveFont(java.awt.Font.PLAIN, 11f);
+    }
+
     @Override
     protected void paintComponent(Graphics g0) {
         Graphics2D g = (Graphics2D) g0.create();
@@ -537,6 +552,8 @@ final class BlockCanvas extends JComponent {
             g.dispose();
             return;
         }
+        // the family the system gave this component; the sizes are the canvas's own
+        java.awt.Font base = g.getFont();
         for (BlockLayout.Row row : layout.rows()) {
             Block b = row.block();
             int x = row.x();
@@ -552,8 +569,10 @@ final class BlockCanvas extends JComponent {
                 g.drawRoundRect(x - 1, row.y() + 1, w + 2, row.h() - 4, 12, 12);
             }
             g.setColor(Color.WHITE);
+            g.setFont(kindFont(base));
             g.drawString(BlockText.of(b.kind()), x + 10, row.y() + 15);
             g.setColor(new Color(255, 255, 255, 200));
+            g.setFont(faceFont(base));
             g.drawString(BlockText.face(b), x + 10, row.y() + 27);
         }
         if (dropPreview != null) {
