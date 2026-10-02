@@ -1,6 +1,6 @@
 cask "nmox-studio" do
-  version "3.5.10"
-  sha256 "bb04df8529f20ba18fbc2f58befc876a4df6110bc61359cfd74dc46669440276"
+  version "3.5.11"
+  sha256 "f061a7248513b729ccf03129539934469d94397f60e5afbf60ae052579cecc2f"
 
   url "https://github.com/NMOX/NMOX-Studio/releases/download/v#{version}/NMOX-Studio-#{version}-macos.dmg"
   name "NMOX Studio"
