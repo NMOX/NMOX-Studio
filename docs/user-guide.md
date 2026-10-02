@@ -1507,8 +1507,11 @@ touching anything. EXPLAIN is a button. Export any grid to CSV or JSON.
 A MongoDB query reads past the driver's first batch up to the row limit and
 says when more remained, and **Cancel** stops the command on the server, so
 the connection is ready for the next one.
-NetBeans Database Explorer connections (Kvasir, Derby, anything with a
-JDBC driver) appear in the tree too and run in the same console.
+NetBeans Database Explorer connections (Oracle, Derby, anything with a
+JDBC driver) appear in the tree too and run in the same console. The
+PostgreSQL driver that explorer offers (**Window ▸ Services ▸ Databases ▸
+Drivers**) is the one DB Studio bundles and keeps current, so a connection
+made in either place uses the same driver.
 
 A failed statement grows an **Explain…** button under its error
 message: KVASIR gets the SQL you ran (including its literal values —

@@ -22,6 +22,21 @@ guess. These are decisions.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
+### 126. The Services window's rows are spoken with their markup
+
+Seen in the 3.4.1 walk, through the accessibility tree VoiceOver reads: a
+connection row in **Window ▸ Services ▸ Databases** has the accessible name
+`<b>jdbc:postgresql://127.0.0.1:55001/postgres [postgres on public]</b>`.
+The node's HTML display name reaches the row unrendered. 3.4.0 fixed exactly
+this in Project Studio's file tree (`SpokenRows`, a renderer wrapper that
+gives the row its words), and that fix lives in our own panel. The Services
+window is the platform's, and so is every other explorer view it opens.
+
+Deferred, with the design: one seam that wraps the renderer of every
+explorer tree the JVM shows, the way `WindowTabsAccessibility` reaches every
+tab container, and a census of platform tree views to prove what it reached.
+It belongs with the Windows and Linux walk, which will read the same trees.
+
 ### 125. A background child that outlives its script is not stopped
 
 A run is a process tree, and Stop ends the tree it can see: the root and,

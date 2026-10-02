@@ -4,6 +4,98 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.4.1] - 2026-10-01
+
+**Three dependency bumps from Dependabot, and what handling them found: the
+product shipped two PostgreSQL drivers, and the older one was the one the
+Services window loaded.**
+
+### Security
+
+- **One PostgreSQL driver in the product.** DB Studio bundles pgJDBC and has
+  kept it past every advisory since v1.35.1 (42.7.13 today). The platform's
+  own Database Explorer carries a pgJDBC of its own, 42.5.4, and registers it
+  as the PostgreSQL driver of **Window ▸ Services ▸ Databases**. So a
+  connection made there, and every query DB Studio then ran over it through
+  its Services branch, loaded the old jar. Two advisories name it:
+  CVE-2024-1597 (SQL injection, only with the non-default
+  `preferQueryMode=simple`) and CVE-2026-42198 (a server can ask the client
+  for unbounded SCRAM work, a CPU-exhaustion denial of service when you
+  connect to a hostile server). Nothing in this repository names that jar,
+  which is why no bump and no alert ever reached it.
+- DB Studio's layer now hides the platform's entry and registers the bundled
+  driver under the same name and class, so saved connections keep working.
+  The old jar is dropped from the assembled app, and from the portable zip in
+  the release workflow (the zip is made before the app directory is trimmed;
+  `zip -d` fails the release if a platform bump renames the file).
+- **An install that updates in-app gets the fix too.** The update center
+  replaces modules and not the platform cluster, so the old jar stays on that
+  disk, and nothing loads it.
+
+Walked in the assembled app against PostgreSQL 16 in a throwaway container,
+with JVM class-load logging to say which jar `org.postgresql.Driver` came
+from. Three shapes:
+
+| Shape | PostgreSQL rows under Drivers | Driver class loaded from |
+| --- | --- | --- |
+| 3.4.0 behaviour (control) | 1 | the platform's `postgresql-42.5.4.jar` |
+| updated in-app (old jar still on disk) | 1 | DB Studio's bundled jar |
+| fresh install (old jar gone) | 1 | DB Studio's bundled jar |
+
+All three connected and logged zero SEVERE. The first attempt at this proof
+read `lsof` and was wrong: it showed no PostgreSQL jar open in the control
+either, so it could not have told the three apart. *A check that cannot see
+the failure in the control cannot vouch for the fix.*
+
+### Fixed
+
+- **A stalled-body verdict that depended on timing.** An HTTP body that keeps
+  trickling ends at a ceiling, said as *too slow*; one that goes quiet is
+  said to have *stopped sending*. 3.4.0 decided between them by asking
+  whether the byte count had moved since the watchdog's last look, and the
+  last look before the ceiling can be a short one, so a steadily trickling
+  server was sometimes told it had stopped. The decision now asks when the
+  last byte arrived (`HttpBodies.look`, a pure function). A silence is also
+  noticed after one idle period; before, it could take nearly two. Found as
+  a one-off failure of 3.4.0's own test on a loaded macOS runner; four
+  mutants by name.
+- **The toolbar keyboard test ran under the wrong look and feel.** 3.4.0
+  added FlatLaf 3.2.5 to the ui module's tests to prove a repair "under the
+  look and feel the product runs", while the product ships FlatLaf 3.7.2.
+  The test now takes FlatLaf from the platform module that ships it, so the
+  version has one home.
+- The user guide named "Kvasir" as a database. The v2.95.0 rename of the AI
+  device had swept up the one sentence that meant the Oracle database.
+
+### Changed
+
+- MongoDB driver 5.12.0 → 5.13.0, checked the 3.1.1 way. The two tags
+  diverge only by 5.12.0's own version-bump commit, and the files the 5.11.1
+  CVE fixes introduced are byte-identical in both. The dependency lists are
+  identical apart from the version, the four jars carry no native library,
+  and the live cursor-paging and server-side Cancel tests pass against
+  MongoDB 7.0.43.
+- Mockito 5.23.0 → 5.24.0 (tests only).
+
+### Gates
+
+- `ShippedLibraryVersionGateTest`: a module pom may name a library the
+  product ships only at the version it ships. Its population is the
+  assembled cluster's third-party jars. Its first run found the PostgreSQL
+  pair; one difference is blessed in writing (slf4j-api, the v2.21.6 pin).
+- `OnePostgresDriverGateTest`: no platform cluster carries a pgJDBC jar, DB
+  Studio's layer hides the platform's entry and depends on the module that
+  owns it, the entry it registers names a jar that exists, and the release
+  workflow drops the jar from the portable zip.
+
+### Not shipped
+
+- The Services window's rows are read to a screen reader with their markup
+  (`<b>jdbc:postgresql://…</b>`). It is the platform's window; 3.4.0 fixed
+  the same thing in the file tree. Ledger 126.
+
+Absorbed from Dependabot #831 through our own gate.
+
 ## [3.4.0] - 2026-09-26
 
 **Three questions every release before this one assumed away. 3.1 asked
@@ -24648,6 +24740,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.4.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.0...v3.4.1
 [3.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.2.0...v3.3.0
 [3.2.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.1.1...v3.2.0
