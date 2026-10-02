@@ -180,6 +180,29 @@ class ShippedSamplesTokenizeGateTest {
         assertThat(tokenizedBy).as("the three 3.5.4 found broken are among them")
                 .containsKeys("source.elixir", "source.hx", "source.svelte");
         assertThat(broken).as("a learner's own first file, not coloured or not opened").isEmpty();
+
+        // the platform matches an extension by case on macOS and Linux: hello.R is not hello.r
+        List<String> differsOnlyInCase = new ArrayList<>();
+        for (String extension : unbound) {
+            for (String registered : bindings.mimeOfExtension().keySet()) {
+                if (extension.equalsIgnoreCase("." + registered) && !extension.equals("." + registered)) {
+                    differsOnlyInCase.add(extension + " is registered only as ." + registered);
+                }
+            }
+        }
+        assertThat(differsOnlyInCase)
+                .as("sample files that open as plain text because their extension is registered in another case")
+                .isEmpty();
+    }
+
+    @Test
+    @DisplayName("extensions written in capitals by their language's own convention are registered that way too")
+    void conventionalCapitals() throws Exception {
+        Bindings bindings = bindings();
+        assertThat(bindings.scopeFor("hello.R")).isEqualTo(bindings.scopeFor("hello.r")).isEqualTo("source.r");
+        assertThat(bindings.scopeFor("solver.F90")).isEqualTo(bindings.scopeFor("solver.f90")).isNotNull();
+        assertThat(bindings.scopeFor("PAYROLL.CBL")).isEqualTo(bindings.scopeFor("payroll.cbl")).isNotNull();
+        assertThat(bindings.scopeFor("PAYROLL.CPY")).isNotNull();
     }
 
     @Test
