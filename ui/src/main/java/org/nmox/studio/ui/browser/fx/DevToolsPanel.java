@@ -252,7 +252,7 @@ public final class DevToolsPanel extends JPanel {
 
     // Motion tab (v2.12.0 — the DHTML keyframe timeline)
     private final JLabel motionStatus = new JLabel(" ");
-    private final JTextField motionName = new JTextField("my-motion", 10);
+    private final JTextField motionName = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("my-motion", 10));
     private final javax.swing.JSpinner motionDuration = new javax.swing.JSpinner(
             new javax.swing.SpinnerNumberModel(1500, 100, 600_000, 100));
     private final javax.swing.JComboBox<String> motionEasing = new javax.swing.JComboBox<>(
@@ -318,14 +318,14 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel consoleTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JList<ConsoleModel.Entry> list = new JList<>(consoleList);
+        JList<ConsoleModel.Entry> list = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JList<>(consoleList));
         list.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleOutputName());
         list.setCellRenderer(new ConsoleRenderer());
         panel.add(consoleDropped, BorderLayout.NORTH);
         consoleDropped.setVisible(false);
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel south = new JPanel(new BorderLayout(4, 0));
-        JTextField repl = new JTextField();
+        JTextField repl = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         repl.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleInputName());
         repl.putClientProperty("JTextField.placeholderText", Bundle.DevToolsPanel_consolePlaceholder());
         repl.addActionListener(e -> {
@@ -443,7 +443,7 @@ public final class DevToolsPanel extends JPanel {
     private static JTree safeTree(javax.swing.tree.TreeModel model) {
         // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
         // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
-        JTree tree = new JTree(model);
+        JTree tree = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTree(model));
         tree.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_domTreeName());
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);
@@ -456,7 +456,7 @@ public final class DevToolsPanel extends JPanel {
         // PLAIN-TABLE-EXEMPT: this pane predates core.util.PlainTables and
         // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
         // (v1.206.0). The safety is identical (html.disable on the renderer).
-        JTable table = new JTable(model);
+        JTable table = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTable(model));
         table.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_networkTableName());
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
@@ -598,7 +598,7 @@ public final class DevToolsPanel extends JPanel {
         javax.swing.JComboBox<String> prop = new javax.swing.JComboBox<>(
                 StyleSummary.KEYS.toArray(String[]::new));
         prop.setEditable(true);
-        JTextField value = new JTextField(18);
+        JTextField value = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
         value.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_valueName());
         JPanel form = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         form.add(new JLabel(Bundle.DevToolsPanel_propertyLabel()));
@@ -957,7 +957,7 @@ public final class DevToolsPanel extends JPanel {
     /** Double-click on a diamond: edit that stop's value. */
     private void editStopValue(String property, Integer percent) {
         String current = motionStrip.model().stops(property).get(percent);
-        JTextField field = new JTextField(current == null ? "" : current, 18);
+        JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(current == null ? "" : current, 18));
         field.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_keyframeValueName());
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
                 field, Bundle.DevToolsPanel_stopDialogTitle(property, String.valueOf(percent)));
@@ -1531,7 +1531,9 @@ public final class DevToolsPanel extends JPanel {
     }
 
     private static JTextArea readOnlyArea(String accessibleName) {
-        JTextArea area = new JTextArea();
+        // what DevTools shows is the page's own code, values and addresses:
+        // left to right in every language, like the editor beside it (3.5.3)
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         area.getAccessibleContext().setAccessibleName(accessibleName);
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
