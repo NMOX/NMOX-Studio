@@ -132,8 +132,12 @@ public final class DocsDebug implements DocsScene {
         return text.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${").replace("\n", " ");
     }
 
+    /** The phase whose wait was last reported, so each is said once. */
+    private int reported = -1;
+
     @Override
     public void arrange() {
+        reported = -1;
         phase = 0;
         phaseAt = System.currentTimeMillis();
         if (script != null) {
@@ -152,6 +156,18 @@ public final class DocsDebug implements DocsScene {
             return false;
         }
         long now = System.currentTimeMillis();
+        if (phase < 4 && now - phaseAt > 20_000 && reported != phase) {
+            // a scene that is skipped says only that it never became ready;
+            // this says which step it was waiting on (the Linux walk, 3.5.2)
+            reported = phase;
+            java.util.logging.Logger.getLogger(DocsDebug.class.getName()).warning(
+                    "the breakpoint scene has waited 20 s for " + switch (phase) {
+                        case 0 -> "the script's editor to show";
+                        case 1 -> "focus to reach the editor";
+                        case 2 -> "the breakpoint to be set (Toggle Breakpoint acts on the focused editor)";
+                        default -> "a debug session to start";
+                    });
+        }
         switch (phase) {
             case 0 -> {
                 JEditorPane pane = pane();

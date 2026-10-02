@@ -66,7 +66,8 @@ public class WebProject implements Project {
             new WebProjectActionProvider(this),
             new WebProjectOpenedHook(this),
             new WebProjectRecommendedTemplates(),
-            new WebProjectSharability(projectDir)
+            new WebProjectSharability(projectDir),
+            new WebProjectAuxiliary(projectDir)
         });
     }
 

@@ -53,7 +53,47 @@ class OpenProjectsBridgeTest {
                 .isEqualTo(1);
         assertThat(service.getRecentProjects())
                 .as("addRecent not doubled by the echo")
-                .containsOnlyOnce(a.toFile());
+                .containsOnlyOnce(RackService.platformSpelling(a.toFile()));
+        service.getRack().shutdown();
+    }
+
+    @Test
+    @DisplayName("(a) a folder aimed under another spelling is still recognised as its own echo")
+    void anotherSpellingIsTheSameProject(@TempDir Path root) throws Exception {
+        // The platform hands the hook its own spelling of the folder, the
+        // normalized one. Aim the same folder under a spelling normalization
+        // changes on every system, and let the hook echo the platform's.
+        File project = Files.createDirectories(root.resolve("proj")).toFile();
+        Files.createDirectories(root.resolve("other"));
+        File roundabout = new File(root.toFile(), "other" + File.separator + ".." + File.separator + "proj");
+        File platforms = org.openide.filesystems.FileUtil.normalizeFile(roundabout);
+        assertThat(roundabout).as("two spellings of one folder").isNotEqualTo(platforms);
+        assertThat(platforms.getName()).isEqualTo(project.getName());
+
+        RackService service = new RackService();
+        service.switchConfirmer = message -> true;
+        List<File> published = new CopyOnWriteArrayList<>();
+        service.bridgeHook = dir -> {
+            published.add(dir);
+            service.openProject(org.openide.filesystems.FileUtil.normalizeFile(dir));
+        };
+        AtomicInteger aims = new AtomicInteger();
+        service.getRack().addListener(new org.nmox.studio.rack.model.Rack.Listener() {
+            @Override
+            public void projectChanged() {
+                aims.incrementAndGet();
+            }
+        });
+        int before = aims.get();
+        service.openProject(roundabout);
+        service.awaitBridgeIdle();
+        service.awaitBridgeIdle();
+
+        assertThat(published).as("published once, under the platform's spelling").containsExactly(platforms);
+        assertThat(service.getRecentProjects().stream().filter(f -> f.getName().equals("proj")))
+                .as("recorded once").containsExactly(platforms);
+        assertThat(service.getRack().getProjectDir()).isEqualTo(platforms);
+        assertThat(aims.get() - before).as("the rack was aimed once, not once per spelling").isEqualTo(1);
         service.getRack().shutdown();
     }
 
@@ -78,7 +118,8 @@ class OpenProjectsBridgeTest {
         service.switchConfirmer = message -> true;
         service.openProject(b.toFile());
         service.awaitBridgeIdle();
-        assertThat(published).containsExactly(b.toFile());
+        assertThat(published).as("under the platform's spelling of the folder")
+                .containsExactly(RackService.platformSpelling(b.toFile()));
         service.getRack().shutdown();
     }
 
@@ -117,7 +158,7 @@ class OpenProjectsBridgeTest {
 
         assertThat(service.getRack().getProjectDir())
                 .as("the rack aims anywhere; the platform only at projects")
-                .isEqualTo(plain.toFile());
+                .isEqualTo(RackService.platformSpelling(plain.toFile()));
         service.getRack().shutdown();
     }
 

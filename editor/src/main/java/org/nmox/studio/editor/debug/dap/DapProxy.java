@@ -220,9 +220,14 @@ public final class DapProxy {
                 }
             }
             case "event" -> {
-                forwardToClient(frame, null);
                 if ("terminated".equals(frame.optString("event"))) {
+                    // the launcher's end is the session's: whatever the
+                    // target's end was waiting for has been said
+                    heldEnd.set(null);
+                    forwardToClient(frame, null);
                     endSession();
+                } else {
+                    forwardToClient(frame, null);
                 }
             }
             case "request" -> onReverseRequest(Link.PARENT, frame);
@@ -249,11 +254,10 @@ public final class DapProxy {
                     // the client already ran its configuration phase against
                     // the parent — replay its outcome, never the event
                     replayConfiguration();
+                } else if ("terminated".equals(event)) {
+                    holdEnd(frame);
                 } else {
                     forwardToClient(frame, null);
-                    if ("terminated".equals(event)) {
-                        endSession();
-                    }
                 }
             }
             case "request" -> onReverseRequest(Link.CHILD, frame);
@@ -695,6 +699,15 @@ public final class DapProxy {
         if (!sessionEnded.compareAndSet(false, true)) {
             return;
         }
+        JSONObject held = heldEnd.getAndSet(null);
+        if (held != null) {
+            // the launcher never said its own: the client still hears the end
+            try {
+                forwardToClient(held, null);
+            } catch (IOException ex) {
+                LOG.log(Level.FINE, "the held end did not reach the client", ex);
+            }
+        }
         try {
             proxySideClient.shutdownOutput();
         } catch (IOException ex) {
@@ -705,6 +718,58 @@ public final class DapProxy {
         relays.forEach(ChildRelay::close);
         stopAdapter();
     }
+
+    /**
+     * The target says it has ended. Its end is HELD, not delivered: the
+     * launcher may still be speaking.
+     *
+     * <p>js-debug speaks on two sockets. The launcher (the parent link)
+     * reports what the program printed and, last of all, its own
+     * {@code terminated}; the target (this link) reports its threads and
+     * its end. Two sockets have no order between them. For a program that
+     * prints and exits, the target's {@code terminated} can be read before
+     * the launcher's {@code output}, and ending the session on it closed the
+     * parent link with the program's words unread: Debug File on a short
+     * script showed its command line and nothing else, some of the time.
+     * The macOS runner did it twice running on Node 24 (3.5.2), which is
+     * how a race that had been there since the child session was spliced
+     * came to be read.
+     *
+     * <p>So the session ends when the LAUNCHER says so, and the client
+     * hears one {@code terminated}, after everything else. A launcher that
+     * says nothing more is waited for {@link #END_GRACE_MILLIS}; a launcher
+     * whose link drops releases the held end at once ({@link #endSession}).
+     * The client is told nothing in the meantime, because a client that has
+     * heard {@code terminated} stops listening.
+     */
+    private void holdEnd(JSONObject terminated) {
+        if (sessionEnded.get() || !heldEnd.compareAndSet(null, terminated)) {
+            return;
+        }
+        long grace = endGraceMillis;
+        Threads.startDaemon(() -> {
+            try {
+                Thread.sleep(grace);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+            endSession();
+        }, "nmox-dap-end-grace");
+    }
+
+    /** How long a target's end waits for the launcher's: its output is a socket away, not a second. */
+    static final long END_GRACE_MILLIS = 1_500;
+
+    /** Test seam: how long a target's end waits for the launcher's. */
+    void endGraceMillisForTest(long millis) {
+        endGraceMillis = millis;
+    }
+
+    private volatile long endGraceMillis = END_GRACE_MILLIS;
+
+    /** A target's {@code terminated}, held until the launcher's or the grace. */
+    private final java.util.concurrent.atomic.AtomicReference<JSONObject> heldEnd =
+            new java.util.concurrent.atomic.AtomicReference<>();
 
     /** Idempotent; closes every socket and fires onClosed exactly once. */
     public void close() {

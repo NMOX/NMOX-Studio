@@ -400,6 +400,70 @@ class DapProxyTest {
     }
 
     @Test
+    @DisplayName("what the program printed still arrives when the target's end overtakes it on the other link")
+    void outputBehindTheTargetsEndStillArrives() throws Exception {
+        // js-debug speaks on two sockets. The launcher (the parent link)
+        // reports what the program printed; the target (the child link)
+        // reports its threads and its end. Two sockets have no order between
+        // them, and for a program that prints and exits the target's
+        // `terminated` can be read first. The proxy used to end the session
+        // on it, closing the parent link with the program's output unread:
+        // Debug on a short script showed nothing, some of the time (3.5.2;
+        // the macOS runner lost it twice running, on Node 24).
+        spliceChild();
+        adapter.eventChild("terminated", new JSONObject());
+        adapter.event(1, "output", new JSONObject().put("category", "stdout").put("output", "ARGS=--port|3000\n"));
+        adapter.event(1, "terminated", new JSONObject());
+
+        assertThat(client.awaitEvent("output").getJSONObject("body").getString("output"))
+                .as("the program's output, behind the target's end").startsWith("ARGS=");
+        assertThat(client.awaitEvent("terminated")).as("then the end, from the launcher").isNotNull();
+        assertThat(client.awaitEof(5_000)).as("and a clean EOF").isTrue();
+        assertThat(client.eventCount("terminated")).as("the session ends once").isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("a target's end waits for the launcher only so long")
+    void theTargetsEndWaitsOnlySoLong() throws Exception {
+        proxy.endGraceMillisForTest(150);
+        spliceChild();
+        long sent = System.nanoTime();
+        adapter.eventChild("terminated", new JSONObject());
+
+        assertThat(client.awaitEvent("terminated")).isNotNull();
+        long waited = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - sent);
+        assertThat(waited).as("held for the launcher's last words, then delivered").isGreaterThanOrEqualTo(100);
+        assertThat(client.awaitEof(5_000)).isTrue();
+        assertThat(closedCallback.await(10, TimeUnit.SECONDS)).isTrue();
+    }
+
+    @Test
+    @DisplayName("the launcher's end is the session's end, at once")
+    void theLaunchersEndIsImmediate() throws Exception {
+        proxy.endGraceMillisForTest(60_000); // a wait this long would fail the test
+        spliceChild();
+        adapter.event(1, "terminated", new JSONObject());
+
+        assertThat(client.awaitEvent("terminated")).isNotNull();
+        assertThat(client.awaitEof(5_000)).isTrue();
+    }
+
+    @Test
+    @DisplayName("a held end is delivered when the launcher's link drops instead of speaking")
+    void aDroppedLauncherReleasesTheHeldEnd() throws Exception {
+        proxy.endGraceMillisForTest(60_000);
+        spliceChild();
+        adapter.eventChild("terminated", new JSONObject());
+        Thread.sleep(150); // the end is held: nothing has reached the client
+        assertThat(client.eventCount("terminated")).isZero();
+
+        adapter.close(); // the adapter process is gone
+
+        assertThat(client.awaitEvent("terminated")).as("the client still hears the end").isNotNull();
+        assertThat(client.awaitEof(5_000)).isTrue();
+    }
+
+    @Test
     @DisplayName("once the client closes its socket, the loopback pair is reaped — no FD leak per session")
     void shouldReapClientPairAfterClientCloses() throws Exception {
         // ledger 55 M1: production never calls close() (the proxy is a local
@@ -479,6 +543,8 @@ class DapProxyTest {
         private final OutputStream out;
         private final BlockingQueue<JSONObject> responses = new LinkedBlockingQueue<>();
         private final BlockingQueue<JSONObject> events = new LinkedBlockingQueue<>();
+        /** Every event ever read, by name; the queue above forgets what an await passed over. */
+        private final List<String> eventNames = new java.util.concurrent.CopyOnWriteArrayList<>();
         private final BlockingQueue<JSONObject> requests = new LinkedBlockingQueue<>();
         private final List<String> allCommands = new CopyOnWriteArrayList<>();
         private final java.util.Map<String, Integer> sentSeqs = new java.util.concurrent.ConcurrentHashMap<>();
@@ -495,7 +561,10 @@ class DapProxyTest {
                         allCommands.add(frame.optString("command", frame.optString("event")));
                         switch (frame.optString("type")) {
                             case "response" -> responses.add(frame);
-                            case "event" -> events.add(frame);
+                            case "event" -> {
+                                eventNames.add(frame.optString("event"));
+                                events.add(frame);
+                            }
                             case "request" -> requests.add(frame);
                             default -> { }
                         }
@@ -525,6 +594,11 @@ class DapProxyTest {
 
         boolean awaitEof(long millis) throws InterruptedException {
             return eof.await(millis, TimeUnit.MILLISECONDS);
+        }
+
+        /** How many events of this name have been read so far. */
+        long eventCount(String event) {
+            return eventNames.stream().filter(event::equals).count();
         }
 
         void request(String command, JSONObject arguments) throws IOException {

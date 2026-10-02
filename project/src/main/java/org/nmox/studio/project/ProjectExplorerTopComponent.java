@@ -1,5 +1,6 @@
 package org.nmox.studio.project;
 
+import org.nmox.studio.core.util.FitLabel;
 import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
@@ -124,7 +125,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private static final Font TINY = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
     private static final Font CHIP_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 
-    private final JPanel content = new JPanel();
+    private final JPanel content = new Page();
     private final JPanel header = new JPanel();
     /**
      * Toolchain detection (File.list-heavy) runs here, never on the EDT.
@@ -452,7 +453,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             Runnable open = r.openable()
                     ? () -> org.nmox.studio.rack.service.ServingLinks.open(r.url())
                     : () -> { };
-            JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), Sub.PROSE, false, ACCENT,
+            FitLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), Sub.PROSE, false, ACCENT,
                     r.openable() ? r.url() + "  " + Bundle.ProjectExplorerTopComponent_clickToOpen() : Bundle.ProjectExplorerTopComponent_runningStopEnds(),
                     open);
             if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
@@ -602,7 +603,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             boolean aimed = dir.equals(current);
             // subtitle starts as the parent path; toolchain detection (which
             // walks the directory) resolves off the EDT and refines it
-            JLabel sub = row(dir.getName(), dir.getParent(), Sub.PATH,
+            FitLabel sub = row(dir.getName(), dir.getParent(), Sub.PATH,
                     aimed, aimed ? ACCENT : null,
                     dir.getAbsolutePath() + "  " + (aimed ? Bundle.ProjectExplorerTopComponent_aimed() : Bundle.ProjectExplorerTopComponent_clickToAim()),
                     () -> aimAt(dir),
@@ -619,16 +620,21 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                         SwingUtilities.invokeLater(refreshCoalescer::request);
                     }));
             if (sub != null) {
-                WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
-                    String kinds = shortenList(names, 38);
-                    // idempotent: skip the setText (and the layout it triggers)
-                    // when the subtitle already shows this value
-                    if (!kinds.isEmpty() && sub.getParent() != null
-                            && !kinds.equals(sub.getText())) {
-                        sub.setText(PlainText.plain(kinds));
-                    }
-                });
+                WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> showKinds(sub, names));
             }
+        }
+    }
+
+    /**
+     * Replaces a project row's subtitle, the folder's path, with what the
+     * folder holds. Idempotent: the same value again changes nothing, and so
+     * triggers no layout. A list keeps its beginning and loses whole names,
+     * never half of one, where the path it replaces kept its ends.
+     */
+    static void showKinds(FitLabel sub, List<String> names) {
+        String kinds = shortenList(names, 38);
+        if (!kinds.isEmpty() && sub.getParent() != null && !kinds.equals(sub.getFull())) {
+            sub.setFull(kinds, FitLabel.Cut.END);
         }
     }
 
@@ -747,7 +753,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private void emptyRow(String hint) {
-        JLabel label = new JLabel(PlainText.plain(hint));
+        // asks for its whole width, as it always has, and when the dock is
+        // narrower it ends on a word with the rest on its tooltip
+        FitLabel label = new FitLabel(FitLabel.Cut.END, Integer.MAX_VALUE, false);
+        label.setFull(hint);
         label.setFont(ROW_FONT);
         label.setForeground(TEXT_DIM);
         label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
@@ -760,7 +769,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * subtitle label (or null when there is none) so a caller can refine it
      * later — e.g. after off-EDT toolchain detection.
      */
-    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
+    private FitLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick) {
         return row(title, subtitle, kind, bold, dot, tooltip, onClick, null, null);
     }
@@ -777,7 +786,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * construction (no shared selection, the v1.270.0 hazard shape
      * cannot arise).
      */
-    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
+    private FitLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick, String forgetLabel, Runnable onForget) {
         JPanel rowPanel = new JPanel();
         rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
@@ -814,26 +823,22 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 subtitle != null && !subtitle.isBlank() ? title + " — " + subtitle : title);
         titleButton.addActionListener(e -> onClick.run());
         rowPanel.add(titleButton);
-        JLabel sub = null;
+        FitLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            String shown = kind == Sub.PATH
-                    ? shortenPath(subtitle, 38) : shortenProse(subtitle, 38);
-            sub = new JLabel(PlainText.plain(shown));
-            if (!shown.equals(subtitle)) {
-                // cut text always has somewhere to be read in full, and the
-                // label SAYS it was cut rather than leaving a reader — or a
-                // gate — to infer it from a trailing ellipsis. "detecting…"
-                // ends in one too and was never shortened; the Windows lane
-                // caught the first version of this gate believing otherwise.
-                sub.putClientProperty(SHORTENED, subtitle);
-                sub.setToolTipText(PlainText.plain(subtitle));
-            }
-            sub.setFont(TINY);
-            sub.setForeground(TEXT_DIM);
-            sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
+            // as much of the subtitle as the row has room for (3.5.2). It
+            // asks for no more than the old 38-character budget did, so a
+            // fresh layout is no wider than before, and it takes whatever
+            // the row has left over: the 3.5 walks photographed "Tab flip…"
+            // and "Cloudflare f…" beside empty space on all three systems.
+            // A path keeps its ends and a sentence its beginning (v2.119.0);
+            // what is cut is on the tooltip, and the label says it was cut
+            // (FitLabel.isCut) so that nobody has to infer it from a
+            // trailing ellipsis: "detecting…" ends in one and is whole.
+            sub = subtitleLabel(subtitle, kind);
             rowPanel.add(sub);
+        } else {
+            rowPanel.add(Box.createHorizontalGlue());
         }
-        rowPanel.add(Box.createHorizontalGlue());
 
         if (onForget != null) {
             // POPUP-PER-ROW: this menu belongs to ONE row panel and its verb
@@ -855,7 +860,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
         }
 
-        rowPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+        java.awt.event.MouseAdapter hover = new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 rowPanel.setBackground(HOVER);
@@ -865,14 +870,27 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             public void mouseExited(java.awt.event.MouseEvent e) {
                 rowPanel.setBackground(BG);
             }
-
+        };
+        java.awt.event.MouseAdapter click = new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     onClick.run();
                 }
             }
-        });
+        };
+        rowPanel.addMouseListener(hover);
+        rowPanel.addMouseListener(click);
+        // the row is one target wherever the pointer is on it. A mouse event
+        // goes to the deepest component that listens for any, and stops
+        // there: the title button listens, and so does a subtitle the moment
+        // it has a tooltip, which is whenever it is cut. So the row lost its
+        // highlight over both, and a click on a cut subtitle opened nothing.
+        titleButton.addMouseListener(hover);
+        if (sub != null) {
+            sub.addMouseListener(hover);
+            sub.addMouseListener(click);
+        }
         content.add(rowPanel);
         return sub;
     }
@@ -887,11 +905,65 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * this was most rows in most languages, not an edge.
      */
     /**
-     * Marks a subtitle this window had to shorten, carrying the whole text.
-     * The population is stated, not guessed: a trailing "…" is a glyph that
-     * unshortened labels use too.
+     * The page under the header: as wide as the dock, down to what cannot
+     * shrink, and scrolling sideways only below that (3.5.2).
+     *
+     * <p>A plain panel in a scroll pane keeps its preferred width, so a dock
+     * narrower than its longest row grew a horizontal scrollbar and the rows'
+     * ends, a RUNNING row's Stop among them, sat out of sight to the right.
+     * The subtitles and the hints can shorten themselves now; this is what
+     * lets them. The titles and the buttons cannot, and when the dock is
+     * narrower than they are the scrollbar is still the way to reach them.
      */
-    static final String SHORTENED = "nmox.subtitle.full";
+    static final class Page extends JPanel implements javax.swing.Scrollable {
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return orientation == javax.swing.SwingConstants.VERTICAL ? visible.height : visible.width;
+        }
+
+        /**
+         * The page's minimum is its widest row's: a dot, a title and its
+         * buttons. Subtitles and hints ask for nothing at their narrowest,
+         * which is why they are fitted labels and not plain ones.
+         */
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return getParent() instanceof javax.swing.JViewport v && v.getWidth() >= getMinimumSize().width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return getParent() instanceof javax.swing.JViewport v && v.getHeight() > getPreferredSize().height;
+        }
+    }
+
+    /** A row's subtitle: fitted to the row, cut as its kind is cut. */
+    static FitLabel subtitleLabel(String subtitle, Sub kind) {
+        FitLabel sub = new FitLabel(kind == Sub.PATH ? FitLabel.Cut.MIDDLE : FitLabel.Cut.END,
+                new JLabel().getFontMetrics(TINY).stringWidth("n".repeat(SUBTITLE_ASKS_FOR)), true);
+        sub.setFont(TINY);
+        sub.setForeground(TEXT_DIM);
+        sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
+        sub.setFull(subtitle);
+        return sub;
+    }
+
+    /**
+     * How many characters' width a subtitle asks the dock for. It is given
+     * more whenever the row has it, and shows less when squeezed.
+     */
+    static final int SUBTITLE_ASKS_FOR = 38;
 
     enum Sub {
         /** An absolute path: the ENDS tell you where it is. */
@@ -916,28 +988,6 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         path.setAlignmentX(LEFT_ALIGNMENT);
         path.setPath(dir.getAbsolutePath());
         return path;
-    }
-
-    /** Middle-ellipsis so deep paths keep their telling ends. */
-    static String shortenPath(String s, int max) {
-        if (s.length() <= max) {
-            return s;
-        }
-        int keep = (max - 1) / 2;
-        return s.substring(0, keep) + "…" + s.substring(s.length() - keep);
-    }
-
-    /**
-     * Head-first, because a sentence cut through the middle is not a
-     * shorter sentence — it is gibberish. The whole text stays reachable:
-     * the row's title button carries it as its accessible name, and a cut
-     * subtitle carries it as a tooltip (the v1.282.0 law, one surface over).
-     */
-    static String shortenProse(String s, int max) {
-        if (s.length() <= max) {
-            return s;
-        }
-        return s.substring(0, Math.max(1, max - 1)).stripTrailing() + "…";
     }
 
     /**

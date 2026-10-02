@@ -139,6 +139,74 @@ the one 3.4.0 shipped: an `<html>` label names itself in words, so a fixture
 painted that way cannot tell whether the code under test ran. *A fixture
 that is kinder than the thing it stands for proves the kindness.*
 
+## After 3.5.1 shipped (3.5.2)
+
+The walks so far photographed windows as a first launch leaves them. The
+documentation's staged scenes (a racked project, a debugger stopped on a
+breakpoint, DevTools on a served page) had only ever run on the Mac that
+paints the guide. `NMOX_WALK_STAGED=1` runs them in the walk, and the
+workflow runs that on Windows and Linux.
+
+- **The paused line.** The first Windows picture of the debugger showed its
+  current line as light text on pale green. It is the same on every system
+  and had been since the dark look shipped: annotation colours are pushed
+  onto the annotation types by the Options dialog, and this product selects
+  its profile without the dialog. `editor.theme.ProfileAnnotationColors`
+  reads the profile in use and gives the types its colours.
+- **Given, not set.** The first cut called the types' setters. Each one
+  saves the type's file in the user directory, in place, and the platform
+  re-reads that folder on another thread: the next walk logged a SEVERE from
+  a half-written file. `putProp` stores the value without the announcement.
+  *That the platform's own dialog calls a setter is not evidence the setter
+  is safe to call for every type at once, at startup.*
+- **Every recent project listed twice**, on Windows only, because the
+  runner's temp directory is an 8.3 short path and the platform echoes an
+  aim under the long one. `RackService.platformSpelling`.
+- **Linux skipped the breakpoint scene** until the walk ran under a window
+  manager: no focus, no focused editor, no breakpoint.
+- **Seven WARNINGs a session** from the platform's folder ordering, about
+  the attributes it keeps a project's bookmarks under. `WebProject` answers
+  `AuxiliaryConfiguration` itself; 27 warnings in a staged walk became 17.
+- **Ledger 129's Workbench subtitles**, closed: `core.util.FitLabel`. The
+  proof found the rest of it. In a narrow dock the page kept its own width
+  and scrolled sideways, so nothing was ever asked to shorten; and a cut
+  subtitle, having a tooltip, took the pointer from its row.
+- **A squeezed label stayed squeezed.** Found by reading the new label, not
+  by a test: its test passed. A plain label's maximum is the width of the
+  text it shows now, a column gives a child no more than its maximum, and so
+  a label that had cut its text could never be given the room to undo it.
+  The header's path had behaved that way since 3.1.0. The test passed
+  because a panel that was never shown keeps the sizes it first computed
+  (an invalid parent is not invalidated again), and a shown window does
+  not. The headless layout tests now clear that memory before each layout.
+  *A test that lays out a window which was never shown is testing a window
+  that never forgets.*
+
+**What the pictures could not say.** The spelling fix was proven by a
+picture: one row where there had been two. The pull request's Windows lane
+then failed ten tests that compare an aimed folder with the temp path they
+gave it, because the runner's temp path is an 8.3 short name and the aim is
+now its long one. The walk workflow runs no tests. The class is reproducible
+on a Mac, whose disk forgives letter case and whose platform repairs it:
+`JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/PRIVATE/TMP/… mvn clean test` gives
+every test a temp directory the platform spells differently. Exactly those
+ten failed. *A change walked on a system is not a change tested on it.*
+
+**The lane that failed twice was telling the truth.** The pull request's
+macOS lane failed one debugger test, `argsAndEnvReachTheProgram`, on a
+branch that had not touched the debugger, and failed it again. Its
+transcript ended `thread exited`, `terminated`, with the program's output
+nowhere. Printing each frame's connection showed why: the output comes from
+the launcher's connection and the end from the target's, and
+`DapProxy.endSession` ran on the first `terminated` from either. A fake
+adapter that sends the target's end before the launcher's output reproduces
+it every time. *A test that fails twice on a branch that did not touch it
+is describing the product, not the branch.*
+
+What remains in a staged session's log is the platform's (`Invalid
+shortcut: Actions/Help/master-help.xml`, two deprecation notices) and the
+upstream grammars' (ledger 129).
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -155,3 +223,9 @@ and seen to fail by name.
 | Contract Studio's toolbar | the one-row layout | `ToolbarFitsItsWidthTest`, failing before the change |
 | Grammars | a rule-local repository | `RuleLocalRepositoriesGateTest`, failing before the hoist |
 | Counts and scale | the typed count; an adjective before the noun; the walk's scale ignored; AltGr shown | `ExperimentGuideParityTest`, `UiCountLiteralGateTest`, `DocsShotsTest`, `KeystrokeHudTest` |
+| Annotation colours (3.5.2) | the setter again; a colour the profile does not give stays on; the user's file unread; found by folder name only, or display name only; alpha hex refused; text never inherited again; an underline stays | `ProfileAnnotationColorsTest` (two lived until the fixture's filesystem displayed a name and a type started with its own text colour) |
+| A project's records (3.5.2) | the namespace raw in the name; shared and private under one name; any stored element is the answer; namespace not compared; no ceiling; a DOCTYPE accepted; no namespace accepted; the project does not answer | `WebProjectAuxiliaryTest` |
+| `FitLabel` (3.5.2) | cut at the letter; separators kept; no word end means an ellipsis alone; a mark parted from its letter; no tooltip when cut; a tooltip when whole; never grows; asks for its whole text; a new kind keeps the old cut; not said to be cut; a maximum of what is shown now | `FitLabelTest`, `PathLabelTest` |
+| Workbench rows (3.5.2) | no spare width taken; four times the budget; the click and the hover not on the subtitle; a list cut as a path; the character cut again; a plain page; a page that follows however narrow; a plain hint; every subtitle one kind | `WorkbenchA11yContractTest` (four lived until a subtitle longer than the budget was tested) |
+| One spelling (3.5.2) | the aim compared as given | `OpenProjectsBridgeTest` |
+| The session's end (3.5.2) | the target's end ends it at once; a held end waits for ever; an ending session drops the held end; the launcher's end leaves the target's held | `DapProxyTest` |
