@@ -40,6 +40,9 @@ class RightToLeftWiringTest {
                 .contains("PROP_TC_OPENED");
         assertThat(src).as("content a window builds after it opened: a sweep only sees what exists (3.5.3)")
                 .contains("AWTEvent.CONTAINER_EVENT_MASK");
+        assertThat(src.split("listenForChildren\\(\\);", -1).length - 1)
+                .as("asked at startup AND on a live language switch: the direction can change either way")
+                .isGreaterThanOrEqualTo(2);
         assertThat(src).as("orientation changes layout, so the tree is laid out again")
                 .contains("revalidate()");
         assertThat(src).as("the live language switch can change direction too")

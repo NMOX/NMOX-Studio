@@ -37,6 +37,9 @@ digits kept Latin; every gate below derives its population from
 | Typing what the product now names | accent-folded search at the one tokenizing point |
 | The user guide, the website, the installers, the desktop entry | `TranslatedGuideGateTest`, `SiteShipsTest`, and their siblings |
 | Right-to-left layout of every window and dialog (Hebrew, v2.151.0) | `RightToLeftWiringTest` — one toolkit seam, nothing else orients |
+| Layouts that name the reader's sides, so that orientation has something to turn (3.5.3) | `ReaderSidesGateTest` — no `FlowLayout.LEFT`, `BorderLayout.WEST`, `BoxLayout.X_AXIS`, screen-side anchor or lopsided margin in any module; 107 layouts and ten margins had them |
+| Content built after its window opened (3.5.3) | `RightToLeftApplyTest` — while the interface runs right-to-left, a component takes the direction of the container it is added to; the listener is absent otherwise |
+| Machine text inside a mirrored window (3.5.3) | `TextInputsChooseADirectionTest` — every text input marked prose or machine text at its constructor, population derived; `DevToolsReadsLeftToRightTest` |
 | Arabic numbers in Western digits (`ar-u-nu-latn`, v2.152.0) | `UiLocaleTest.arabicFormatsLatinDigits`, `readableDigitsLeavesLatinLanguagesAlone` |
 | Each module named as itself, never with another module's words | `ModuleDescriptorsSpeakTest.everyModuleHasItsOwnName`, every language |
 | Surfaces that paint themselves: geometry kept, text mirrored by hand | `PaintedSurfaceLedgerTest`, population derived from the source; a mirrored surface names no absolute side |

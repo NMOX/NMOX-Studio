@@ -4,6 +4,71 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.3] - 2026-10-02
+
+**The window runs the way a Hebrew or Arabic reader reads, in the places
+where it had not.** The text and the menus have mirrored since 2.151.0. A
+walk of the English build with its direction forced right-to-left, and then
+of the Hebrew one, showed what had stayed where English put it.
+
+### Fixed
+
+- **Toolbars, sidebars and rows named sides of the screen.** Swing has two
+  vocabularies for one idea: `FlowLayout.LEFT`, `BorderLayout.WEST` and
+  `BoxLayout.X_AXIS` name the screen and stay there when a window mirrors;
+  `LEADING`, `LINE_START` and `LINE_AXIS` name where the reader's line
+  starts. 107 layouts in 36 files used the first kind, and ten margins were
+  written as four numbers with a different left and right. So a toolbar's
+  buttons reversed their order and stayed against the left edge, the Infra
+  Designer's palette and the Browser's navigation stayed on the left, and
+  the Workbench put each title on the left with its subtitle after it under
+  a heading aligned right. All of them name the reader's sides now, and
+  nothing changes for a left-to-right reader.
+- **Content a window built after it opened went back to left-to-right.** A
+  component takes no direction from the container it is added to, and the
+  product orients a window when it opens. The Workbench rebuilds its rows
+  on every refresh; each refresh undid it until the next window opened.
+  While the interface runs right-to-left, a component now takes the
+  direction of what it is added to.
+- **Addresses, paths and code were mirrored like prose.** The Browser showed
+  `http://127.0.0.1:3000/` as `/http://127.0.0.1:3000`, and DevTools showed
+  computed styles right-aligned under `:Computed style`. Every text input in
+  the product, 118 of them, is now marked as what it holds: a host, a port,
+  a path, an address, a command, a colour, an ABI or a log reads left to
+  right in every language; a card's title, a note, a question, a message
+  follows the reader. DevTools is the page's own code throughout.
+- **Back pointed at Forward.** The Browser's Back button points to where the
+  reader's line starts: left for English, right for Hebrew and Arabic, as
+  in every browser those readers use.
+- **The Task Board's Overview was an empty panel in fourteen languages'
+  tutorials.** The documentation forge selected the Overview toggle and
+  showed the card behind it without building it: a toggle selected from
+  code runs no listener, and the overview is built when asked for. Only the
+  English picture, made by hand, had anything on it. Noticed in the Hebrew
+  walk and taken for a mirroring defect until the German picture turned out
+  to be empty too. All fourteen are repainted.
+
+### Engineering
+
+- `ReaderSidesGateTest`: no layout in any module names a side of the screen;
+  a line that must says why. `TextInputsChooseADirectionTest`: every text
+  field, area, pane and password field is marked at its constructor as
+  prose (`TextDirection.followsReader`) or machine text
+  (`TextDirection.keepLeftToRight`); the population is derived, the decision
+  is a person's. `core.util.LeadingBorder`: a margin whose sides are named
+  for the reader.
+- The listener that hands a direction to new components is installed only
+  while the interface runs right-to-left. The toolkit builds a container
+  event for every `add` in the JVM only while somebody listens, and a
+  left-to-right build has nothing to hand on.
+- `NMOX_WALK_ARGS` gives the walk more launcher arguments: a language, or
+  `-J-Dnmox.rtl=true`, which mirrors the English build and so asks whether
+  the layout mirrors without also asking whether the words are right.
+- The Hebrew and Arabic pictures in the guide and the tutorials are
+  repainted from this build.
+- 22 mutants, each killed by name. One lived at first: with either arrow's
+  listener removed the other's still turned both.
+
 ## [3.5.2] - 2026-10-02
 
 **The documentation's staged scenes run on Windows and Linux, and what they
@@ -24999,6 +25064,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.3]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.2...v3.5.3
 [3.5.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.1...v3.5.0
