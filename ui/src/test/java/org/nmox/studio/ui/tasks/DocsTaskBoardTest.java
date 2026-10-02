@@ -79,4 +79,22 @@ class DocsTaskBoardTest {
         assertThat(board.sprintStart()).isLessThan(now);
         assertThat(board.sprintEnd()).isGreaterThan(now);
     }
+
+    @Test
+    @DisplayName("the forge's Overview is built, not only switched to")
+    void theOverviewTheForgeShowsHasSomethingOnIt() throws Exception {
+        // v2.163.0 to 3.5.2: the forge selected the toggle and flipped the card,
+        // and a toggle selected from code runs no listener. Fourteen languages'
+        // pictures of the Overview were its empty ground.
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            TasksTopComponent window = new TasksTopComponent();
+            window.componentShowing(); // the window builds itself on its first show
+            assertThat(window.overviewComponentCountForTest()).as("nothing built until it is asked for").isZero();
+
+            window.docsShowOverview();
+
+            assertThat(window.overviewComponentCountForTest())
+                    .as("a heading, the tiles, the columns, the flow strip at least").isGreaterThan(5);
+        });
+    }
 }

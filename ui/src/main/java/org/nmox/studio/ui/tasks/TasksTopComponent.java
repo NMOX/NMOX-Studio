@@ -499,10 +499,7 @@ public final class TasksTopComponent extends TopComponent {
                 Bundle.TasksTopComponent_overviewA11y());
         overviewToggle.setToolTipText(
                 Bundle.TasksTopComponent_overviewTip());
-        overviewToggle.addActionListener(e -> {
-            faces.show(center, overviewToggle.isSelected() ? "overview" : "board");
-            rebuild();
-        });
+        overviewToggle.addActionListener(e -> showFace(overviewToggle.isSelected()));
         JButton standup = new JButton(Bundle.TasksTopComponent_standup());
         standup.getAccessibleContext().setAccessibleName(
                 Bundle.TasksTopComponent_standupA11y());
@@ -1048,7 +1045,27 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         overviewToggle.setSelected(true);
-        faces.show(center, "overview");
+        showFace(true);
+    }
+
+    /**
+     * Shows the board or its overview, and BUILDS what it shows. One method
+     * for the toggle and for anything that sets the toggle from code: a
+     * programmatic {@code setSelected} runs no action listener, and the
+     * overview is built only when asked for. The forge selected the toggle
+     * and flipped the card itself, so from v2.163.0 to 3.5.2 the Overview
+     * picture in fourteen languages was the panel's empty ground. The Hebrew
+     * one was noticed first, in a right-to-left walk, and taken for a
+     * mirroring defect until the German one turned out to be empty too.
+     */
+    private void showFace(boolean overview) {
+        faces.show(center, overview ? "overview" : "board");
+        rebuild();
+    }
+
+    /** How many components the overview holds; the forge's picture must not be an empty one. */
+    int overviewComponentCountForTest() {
+        return overviewPanel.getComponentCount();
     }
 
     private void showStandup() {
