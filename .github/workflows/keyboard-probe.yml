@@ -1,0 +1,43 @@
+name: Keyboard probe
+
+# Ledger 128, measured: on a keyboard where AltGr types brackets and braces,
+# does AltGr+7 fire the product's Ctrl+Alt+7 chord? Loads a German layout on
+# a Windows runner and asks the real toolkit (scripts/probes/AltGrProbe.java).
+# On demand, or on a push to a probe/** branch. The output is the result.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['probe/**']
+
+permissions:
+  contents: read
+
+jobs:
+  altgr:
+    name: AltGr on a German layout (Windows)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 25
+
+      - name: With the runner's own layout (the control)
+        shell: pwsh
+        run: java scripts/probes/AltGrProbe.java
+
+      - name: Load the German layout for this user
+        shell: pwsh
+        run: |
+          $list = New-WinUserLanguageList de-DE
+          Set-WinUserLanguageList $list -Force
+          Set-WinDefaultInputMethodOverride -InputTip "0407:00000407"
+          Get-WinUserLanguageList | Format-List LanguageTag, InputMethodTips
+          Get-WinDefaultInputMethodOverride
+
+      - name: With the German layout
+        shell: pwsh
+        run: java scripts/probes/AltGrProbe.java
