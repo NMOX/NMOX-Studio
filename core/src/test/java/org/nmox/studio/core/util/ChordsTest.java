@@ -63,6 +63,8 @@ class ChordsTest {
         assertThat(Chords.forOs("(⌥-wheel fine-tunes)", false)).isEqualTo("(Alt-wheel fine-tunes)");
         assertThat(Chords.forOs("hold ⌥, then drag", false)).isEqualTo("hold Alt, then drag");
         assertThat(Chords.forOs("hold ⇧", false)).isEqualTo("hold Shift");
+        assertThat(Chords.forOs("hold ⌥ while dragging", false)).as("a space ends the chord: no key follows")
+                .isEqualTo("hold Alt while dragging");
         assertThat(Chords.forOs("按 ⌘。", false)).as("a full stop in another script ends the clause too")
                 .isEqualTo("按 Ctrl。");
     }
