@@ -109,25 +109,65 @@ fi
 # with a real keyring never reaches the fallback and is unaffected.
 echo "platform-walk: $OS, launcher $LAUNCHER"
 START=$(date +%s)
-# timeout(1) is GNU: a stock Mac has none, Homebrew's is gtimeout. With
-# neither, the walk runs unleashed and the job's own timeout is the leash.
+# The leash. timeout(1) is GNU: a stock Mac has none, and Homebrew's is
+# gtimeout. Without either the walk used to run unleashed, "and the job's
+# own timeout is the leash": the first time it mattered, the installed 3.5.2
+# app stopped at its Browser tab on a macOS runner, the job was cancelled at
+# 25 minutes, and what came back was nine pictures and no log (3.5.4). So
+# without timeout(1) the script keeps time itself, and whichever leash it
+# is, a walk that outlives it is asked for its threads before it is stopped:
+# a JVM answers QUIT with a thread dump on its output, which is kept.
+every_pid_under() {
+  echo "$1"
+  for child in $(pgrep -P "$1" 2>/dev/null); do
+    every_pid_under "$child"
+  done
+}
+run_leashed() {
+  "$@" > "$OUT_ABS/launcher-output.txt" 2>&1 &
+  leashed=$!
+  waited=0
+  while kill -0 "$leashed" 2>/dev/null; do
+    if [ "$waited" -ge "$TIMEOUT" ]; then
+      echo "platform-walk: still running after ${TIMEOUT}s; asking for its threads, then stopping it"
+      pids="$(every_pid_under "$leashed")"
+      for pid in $pids; do
+        case "$(ps -o comm= -p "$pid" 2>/dev/null)" in
+          *java*) kill -QUIT "$pid" 2>/dev/null ;;
+        esac
+      done
+      sleep 3
+      for pid in $pids; do kill -TERM "$pid" 2>/dev/null; done
+      sleep 5
+      for pid in $pids; do kill -KILL "$pid" 2>/dev/null; done
+      wait "$leashed" 2>/dev/null
+      return 124
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  wait "$leashed"
+}
 LEASH="$(command -v timeout || command -v gtimeout || true)"
-if [ -n "$LEASH" ]; then
-  set -- "$LEASH" --kill-after=30 "$TIMEOUT" "$LAUNCHER" --nosplash "$@"
-else
-  echo "platform-walk: no timeout(1) here; running without a leash"
-  set -- "$LAUNCHER" --nosplash "$@"
-fi
-"$@" \
+[ "${NMOX_WALK_OWN_LEASH:-0}" = 1 ] && LEASH=""
+set -- "$LAUNCHER" --nosplash "$@" \
   --userdir "$(native "$UD")" --cachedir "$(native "$CD")" \
   -J-Duser.home="$(native "$HOME_DIR")" \
   -J-Dnmox.shots.dir="$(native "$OUT_ABS")" \
   -J-Dnmox.shots.scale="$SCALE" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dnmox.update.check=false \
-  -J-Dnetbeans.keyring.no.master=true \
-  > "$OUT_ABS/launcher-output.txt" 2>&1
-RC=$?
+  -J-Dnetbeans.keyring.no.master=true
+if [ -n "$LEASH" ]; then
+  # QUIT first, for the thread dump; KILL thirty seconds later if it is still there
+  "$LEASH" --signal=QUIT --kill-after=10 "$TIMEOUT" "$@" > "$OUT_ABS/launcher-output.txt" 2>&1
+  RC=$?
+  # timeout(1) answers 137 when it had to KILL, which after a QUIT it always does
+  [ "$RC" = 137 ] && RC=124
+else
+  run_leashed "$@"
+  RC=$?
+fi
 END=$(date +%s)
 [ -n "$FIXTURE_PID" ] && kill "$FIXTURE_PID" 2>/dev/null
 
