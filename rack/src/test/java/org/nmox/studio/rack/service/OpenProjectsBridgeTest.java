@@ -58,6 +58,46 @@ class OpenProjectsBridgeTest {
     }
 
     @Test
+    @DisplayName("(a) a folder aimed under another spelling is still recognised as its own echo")
+    void anotherSpellingIsTheSameProject(@TempDir Path root) throws Exception {
+        // The platform hands the hook its own spelling of the folder, the
+        // normalized one. Aim the same folder under a spelling normalization
+        // changes on every system, and let the hook echo the platform's.
+        File project = Files.createDirectories(root.resolve("proj")).toFile();
+        Files.createDirectories(root.resolve("other"));
+        File roundabout = new File(root.toFile(), "other" + File.separator + ".." + File.separator + "proj");
+        File platforms = org.openide.filesystems.FileUtil.normalizeFile(roundabout);
+        assertThat(roundabout).as("two spellings of one folder").isNotEqualTo(platforms);
+        assertThat(platforms.getName()).isEqualTo(project.getName());
+
+        RackService service = new RackService();
+        service.switchConfirmer = message -> true;
+        List<File> published = new CopyOnWriteArrayList<>();
+        service.bridgeHook = dir -> {
+            published.add(dir);
+            service.openProject(org.openide.filesystems.FileUtil.normalizeFile(dir));
+        };
+        AtomicInteger aims = new AtomicInteger();
+        service.getRack().addListener(new org.nmox.studio.rack.model.Rack.Listener() {
+            @Override
+            public void projectChanged() {
+                aims.incrementAndGet();
+            }
+        });
+        int before = aims.get();
+        service.openProject(roundabout);
+        service.awaitBridgeIdle();
+        service.awaitBridgeIdle();
+
+        assertThat(published).as("published once, under the platform's spelling").containsExactly(platforms);
+        assertThat(service.getRecentProjects().stream().filter(f -> f.getName().equals("proj")))
+                .as("recorded once").containsExactly(platforms);
+        assertThat(service.getRack().getProjectDir()).isEqualTo(platforms);
+        assertThat(aims.get() - before).as("the rack was aimed once, not once per spelling").isEqualTo(1);
+        service.getRack().shutdown();
+    }
+
+    @Test
     @DisplayName("(b) passive aims never invoke the bridge; the next explicit aim still does")
     void passiveAimsNeverTouchThePlatform(@TempDir Path a, @TempDir Path b) {
         RackService service = new RackService();

@@ -446,6 +446,33 @@ public class RackService {
     }
 
     /**
+     * One directory, one spelling: the platform's.
+     *
+     * <p>The platform names a folder by its normalized path, which on
+     * Windows expands an 8.3 short name and on a Mac repairs the letter
+     * case, and it hands that spelling back when it echoes an aim through
+     * the project-opened hook. The echo check below compares by equality, so
+     * a folder aimed under any other spelling was not recognised as its own
+     * echo: the project was aimed a second time (every studio reloading its
+     * workspace again) and recorded a second time. The first staged walk on
+     * Windows photographed it, every recent project listed twice, the
+     * runner's temp directory being a short path. `nmox ~/code/App` on a
+     * Mac whose folder is `app` takes the same route.
+     *
+     * <p>So an aim takes the platform's spelling before anything compares
+     * or records it. One {@code normalizeFile}, the same call the bridge
+     * makes; the explicit aim already asks the disk whether this is a
+     * directory.
+     */
+    static File platformSpelling(File dir) {
+        try {
+            return org.openide.filesystems.FileUtil.normalizeFile(dir);
+        } catch (RuntimeException | LinkageError ex) {
+            return dir.getAbsoluteFile(); // filesystems API unavailable: plain tests
+        }
+    }
+
+    /**
      * Aims the rack at a project directory: records it in the recent
      * list and lets the project's saved patch (if any) mount itself.
      * If the current project still has processes running (a dev server,
@@ -456,7 +483,8 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
-        if (dir.equals(bridgePublishing)) {
+        File at = platformSpelling(dir);
+        if (at.equals(bridgePublishing)) {
             // the platform echoing our own publication back: OpenProjects.open
             // fires WebProjectOpenedHook, whose job is to aim the rack when the
             // PLATFORM opened a project — but this open originated here, and
@@ -464,11 +492,11 @@ public class RackService {
             // until only OpenProjects' idempotence stopped it (ledger 29)
             return;
         }
-        guardedSwitch(dir, () -> {
+        guardedSwitch(at, () -> {
             aimed = true;
-            addRecentProject(dir);
-            getRack().setProjectDir(dir);
-            publishToOpenProjects(dir);
+            addRecentProject(at);
+            getRack().setProjectDir(at);
+            publishToOpenProjects(at);
         });
     }
 
@@ -481,9 +509,10 @@ public class RackService {
         if (dir == null || !dir.isDirectory()) {
             return;
         }
-        guardedSwitch(dir, () -> {
+        File at = platformSpelling(dir);
+        guardedSwitch(at, () -> {
             aimed = true;
-            getRack().setProjectDir(dir);
+            getRack().setProjectDir(at);
             // deliberately NOT bridged to OpenProjects: experiments are
             // throwaway, and the platform persists its open-projects list —
             // a bridged experiment would resurrect at next boot (and resolve
