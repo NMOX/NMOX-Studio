@@ -68,8 +68,10 @@ fi
 # task board, design a small stack. On Windows and Linux none of that had
 # been run. The fixtures are the forge's own (docs/i18n/forge-fixtures.json),
 # written under the walk's throwaway home. KVASIR's scene needs a key and is
-# skipped without one; the Docker, chain and DevTools scenes need services
-# this script does not start, and say so in the log.
+# skipped without one; the Docker Panel's needs a labelled container and
+# Contract Studio's needs forge and anvil, which this script does not start,
+# and each says so in the log. The page the DevTools scene inspects is served
+# below.
 STAGED="${NMOX_WALK_STAGED:-0}"
 FIXTURE_PID=""
 if [ "$STAGED" = 1 ]; then
