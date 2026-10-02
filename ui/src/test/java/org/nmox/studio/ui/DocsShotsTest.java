@@ -104,4 +104,37 @@ class DocsShotsTest {
         assertThat(DocsShots.findText("p.png#tab=3")).isNull();
         assertThat(DocsShots.shotFile("p.png#tab=3#find=NMOX")).isEqualTo("p.png");
     }
+
+    @Test
+    @DisplayName("the forge closes a dialog by its close box; a bare dispose() accepts it")
+    void dialogsAreClosedNotAccepted() throws java.io.IOException {
+        // A NotifyDescriptor starts out holding its initial value, OK for a
+        // dialog with an OK button, and only a button or WINDOW_CLOSING
+        // changes that. The forge disposed its dialogs for 230 releases and
+        // so accepted every one it photographed (3.5.1). The executed proof
+        // is scripts/platform-walk.sh, which fails when a photographed dialog
+        // left something behind; this holds the shape between walks. Nothing
+        // here can open a dialog: the suite runs headless.
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src", "main", "java", "org", "nmox", "studio", "ui", "DocsShots.java"),
+                java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n");
+        String code = src.replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("(?m)//.*$", "");
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("\\b(\\w+)\\.dispose\\(\\)").matcher(code);
+        java.util.List<String> disposed = new java.util.ArrayList<>();
+        while (m.find()) {
+            disposed.add(m.group(1));
+        }
+        assertThat(disposed).as("what the forge disposes: a Graphics, and one window after its close box")
+                .containsExactlyInAnyOrder("g", "w");
+        int closing = code.indexOf("WindowEvent.WINDOW_CLOSING");
+        int dispose = code.indexOf("w.dispose()");
+        assertThat(closing).as("the close box is sent").isPositive();
+        assertThat(dispose).as("and the window is disposed only after it, as a fallback")
+                .isGreaterThan(closing);
+        String closeAll = code.substring(code.indexOf("private static void closeAllDialogs()"));
+        closeAll = closeAll.substring(0, closeAll.indexOf("static void closeAsItsCloseBoxDoes"));
+        assertThat(closeAll).as("every dialog goes through the close box")
+                .contains("closeAsItsCloseBoxDoes(d)");
+    }
 }

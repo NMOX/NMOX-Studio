@@ -42,31 +42,54 @@ three on a live switch back, and repainting the Hebrew and Arabic pictures.
 None of it is hard; it should be decided by a right-to-left reader looking
 at both layouts, not by a patch release of the runtime.
 
-### 128. AltGr and the Ctrl+Alt chords, on a keyboard nobody here has
+### 128. ~~AltGr and the Ctrl+Alt chords, on a keyboard nobody here has~~ — CLOSED by 3.5.1, by measurement
 
 Most window chords are Ctrl+Alt+digit on Windows and Linux. On German,
 French, Polish and other layouts AltGr+digit types `{ [ ] }` and friends,
-and Windows has historically reported AltGr as Ctrl+Alt. Java is understood
-to add an AltGraph modifier to such a key event since version 11, and both
-Swing and the platform's keymap match a chord by its exact modifier set, so
-AltGr+7 should type `{` and not open DB Studio. That is a reading of how the
-pieces fit, not a measurement. Show Keystrokes was taught the same rule in
-3.5.0 (an AltGr combination is typing and is never shown).
+and Windows presents AltGr as Left Ctrl + Right Alt. 3.5.0 recorded the
+worry and a reading of the code; 3.5.1 measured it.
 
-**Unverified:** the walks ran on runners with a US layout, and nothing here
-can press AltGr on a German one. It needs a person with such a keyboard, or
-a runner with the layout loaded and `java.awt.Robot` pressing
-`VK_ALT_GRAPH`. If the chords do fire, the fix is a keymap for those layouts
-that moves the window chords off the digits.
+`scripts/probes/AltGrProbe.java`, run by the **Keyboard probe** workflow on
+a Windows runner (Windows Server 2025, Java 25.0.4): a text field binds an
+action to Ctrl+Alt+7 the way a keymap does, and a robot presses the keys.
+With the runner's US layout as the control, then with the German layout
+loaded (confirmed by the probe: the field's input locale reads `de_DE` and
+Shift+7 types `/`):
+
+| Keys | Stroke Swing derives | Bound Ctrl+Alt+7 action | Typed |
+| --- | --- | --- | --- |
+| Ctrl+Alt+7 | `ctrl alt pressed 7` | ran once | `{` |
+| AltGr+7 | `ctrl alt altGraph pressed 7` | did not run | `{` |
+
+So AltGr carries its own modifier, the stroke is not the chord's, and a
+German keyboard types its brace. The platform matches the same way
+(`ShortcutAndMenuKeyEventProcessor.processShortcut` asks the keymap for
+exactly `KeyStroke.getKeyStrokeForEvent`, read from its bytecode). On Linux
+AltGr is a level-3 shift and never arrives as Ctrl+Alt at all.
+
+**One thing the table shows that nobody asked:** on that layout the chord
+itself, pressed with the real Ctrl and Alt keys, also produces a typed `{`,
+because Windows composes the character from Ctrl+Alt whichever keys made it.
+The probe's bare text field inserted it. The platform's processor has a
+`skipNextTyped` flag for exactly this, so in the product the character
+should be swallowed after the chord runs; that half is read, not measured.
+If someone on such a keyboard sees a stray `{` after Ctrl+Alt+7, that is
+where to look.
 
 ### 129. What the 3.5 walks saw and did not change
 
 - **Linux without a Secret Service.** On the runner the platform's keyring
-  fell back to master-password encryption, and the Infra Designer's token
-  indicator stayed blank for the whole walk: its first read waits on that
-  prompt. A desktop with GNOME Keyring or KWallet does not take this path.
-  Whether the prompt explains itself well enough on a machine without either
-  needs that machine.
+  fell back to master-password encryption, and the first window that reads
+  a secret raised the platform's Master Password dialog: the walk
+  photographed it where the learning-space picker should have been, and the
+  Infra Designer's token indicator stayed blank behind it, because its
+  first read waits on that prompt. Nothing at boot asks the keyring; a
+  first launch's three tabs do not meet the dialog, and opening the Infra
+  Designer, connecting DB Studio or giving KVASIR a key does. A desktop
+  with GNOME Keyring or KWallet does not take this path at all. Whether
+  "choose a master password" is an acceptable answer to "open the Infra
+  Designer" on a machine without either is a question for someone using
+  one.
 - **Unresolved includes in vendored grammars.** 3.5.0 fixed the class TM4E
   could not resolve at all (rule-local repositories; the boot log went from
   114 warnings to 13). What remains names rules that the upstream grammar
@@ -89,7 +112,28 @@ that moves the window chords off the digits.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
-### 126. The Services window's rows are spoken with their markup
+### 126. ~~The Services window's rows are spoken with their markup~~ — CLOSED by 3.5.1, for trees
+
+**Closed** the way the entry proposed. `ui.a11y.SpokenTreeRows` meets every
+window as it opens or comes forward and wraps the renderer of each tree
+still using the platform's own node renderer; the wrapper paints nothing
+differently and names the row with its words. Walked with a control: a git
+project with one modified and one new file, the platform's Files window
+open, the accessibility tree read by process id. The 3.5.0 build names three
+rows `<b>demo</b>`, `<font color="#1ab8ff">a.txt</font>…`,
+`<font color="#49d249">b.txt</font>…`; the 3.5.1 build names them `demo`,
+`a.txt [-/M]`, `b.txt [-/A]`.
+
+The unit test for this, and the one 3.4.0 wrote for Project Studio's tree,
+both painted their fixture as `<html>…`. Swing names an `<html>` label in
+words by itself, so both tests passed with the wrapper naming nothing; the
+mutant said so. The platform's renderer paints markup with no `<html>`
+prefix, and both fixtures do now.
+
+**Still open:** the explorer's table-shaped views (`OutlineView`,
+`TreeTableView`) and `ListView` paint through other renderers and were not
+read. The entry as written:
+
 
 Seen in the 3.4.1 walk, through the accessibility tree VoiceOver reads: a
 connection row in **Window ▸ Services ▸ Databases** has the accessible name

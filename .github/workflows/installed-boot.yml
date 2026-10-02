@@ -1,0 +1,192 @@
+name: Installed boot
+
+# What each installer leaves on a machine boots, on the runtime that installer
+# put beside it.
+#
+# The release builds five installers. Until 3.5.1 the only one whose RESULT
+# had ever been started was the macOS DMG, by hand, after each release; the
+# update gauntlet starts the portable zip, which carries no runtime at all.
+# The Windows setup program and the Debian package were built, signed off by
+# their checksums, and never run. This downloads a release's own assets,
+# installs each the way a user does, and boots what is installed with no JDK
+# of the runner's in reach: the boot fails unless the app reports the bundled
+# runtime as its Java home.
+#
+# Runs after every Release, on demand for any tag, and on a push to an
+# installed/** branch (a workflow_dispatch needs the file on the default
+# branch first). Informational, like the update gauntlet: a red run names a
+# broken installer within minutes of the tag and never blocks one.
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release to install (vX.Y.Z); default = the latest release"
+        required: false
+        default: ""
+  push:
+    branches: ['installed/**']
+
+permissions:
+  contents: read
+
+jobs:
+  boot:
+    name: installed boot (${{ matrix.os }})
+    if: ${{ github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push') }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    steps:
+      # the scripts only: nothing here is built, and no JDK is set up on purpose
+      - uses: actions/checkout@v7
+
+      - name: Pick the release
+        id: pick
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release list --repo "$GITHUB_REPOSITORY" --limit 1 --json tagName -q '.[0].tagName')
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "installed boot: $TAG"
+
+      - name: Download the installer (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ steps.pick.outputs.tag }}" --repo "$GITHUB_REPOSITORY" -p '*windows-setup.exe' -D dl
+
+      - name: Install, silently, for this user (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $setup = Get-ChildItem dl\NMOX-Studio-*-windows-setup.exe
+          Start-Process -FilePath $setup.FullName -Wait -ArgumentList `
+            '/VERYSILENT','/SUPPRESSMSGBOXES','/CURRENTUSER','/NORESTART'
+          $app = "$env:LOCALAPPDATA\Programs\NMOX Studio"
+          if (-not (Test-Path "$app\bin\nmoxstudio64.exe")) { throw "the installer left no launcher in $app" }
+          if (-not (Test-Path "$app\jre\bin\java.exe")) { throw "the installer left no bundled runtime in $app\jre" }
+
+      - name: Boot what was installed (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          APP="$(cygpath -u "$LOCALAPPDATA")/Programs/NMOX Studio"
+          env -u JAVA_HOME BOOT_SMOKE_EXPECT_RUNTIME="$APP/jre" BOOT_SMOKE_KEEP_LOG="$PWD/messages.log" \
+            scripts/boot-smoke-test.sh "$APP"
+
+      - name: Download the package (Linux)
+        if: runner.os == 'Linux'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ steps.pick.outputs.tag }}" --repo "$GITHUB_REPOSITORY" -p '*_amd64.deb' -D dl
+
+      - name: Install the package (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          sudo apt-get install -y ./dl/nmox-studio_*_amd64.deb
+          test -x /opt/nmox-studio/bin/nmoxstudio
+          test -x /opt/nmox-studio/jre/bin/java
+          test -x /usr/bin/nmox-studio
+
+      # What the desktop sees of the package: the version the package manager
+      # records is the release's, the terminal command resolves, and the menu
+      # entry is one a desktop will accept (a malformed entry is dropped from
+      # the menu without a word).
+      - name: Check the package's own claims (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -eu
+          TAG="${{ steps.pick.outputs.tag }}"
+          INSTALLED="$(dpkg-query -W -f='${Version}' nmox-studio)"
+          echo "package version: $INSTALLED (release $TAG)"
+          [ "v$INSTALLED" = "$TAG" ] || { echo "the package says $INSTALLED, the release is $TAG"; exit 1; }
+          [ "$(readlink -f /usr/bin/nmox)" = /opt/nmox-studio/bin/nmox ] || { echo "/usr/bin/nmox does not reach the installed command"; exit 1; }
+          sudo apt-get install -y desktop-file-utils
+          desktop-file-validate /usr/share/applications/nmox-studio.desktop
+          test -f /usr/share/icons/hicolor/512x512/apps/nmox-studio.png
+
+      - name: Boot what was installed (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          env -u JAVA_HOME BOOT_SMOKE_EXPECT_RUNTIME=/opt/nmox-studio/jre BOOT_SMOKE_KEEP_LOG="$PWD/messages.log" \
+            xvfb-run -a scripts/boot-smoke-test.sh /opt/nmox-studio
+
+      - name: Download the disk image (macOS)
+        if: runner.os == 'macOS'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "${{ steps.pick.outputs.tag }}" --repo "$GITHUB_REPOSITORY" -p '*-macos.dmg' -D dl
+
+      # dragged out of the mounted image, as a user drags it: the app must run
+      # from a copy, on its own runtime, with its signature intact
+      - name: Copy the app out of the image (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          set -eu
+          hdiutil attach dl/NMOX-Studio-*-macos.dmg -nobrowse -mountpoint "$RUNNER_TEMP/dmg"
+          mkdir -p "$RUNNER_TEMP/Applications"
+          cp -R "$RUNNER_TEMP/dmg/NMOX Studio.app" "$RUNNER_TEMP/Applications/"
+          hdiutil detach "$RUNNER_TEMP/dmg"
+          codesign --verify --deep --strict "$RUNNER_TEMP/Applications/NMOX Studio.app"
+          spctl --assess --type execute -v "$RUNNER_TEMP/Applications/NMOX Studio.app"
+
+      - name: Boot what was installed (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          APP="$RUNNER_TEMP/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio"
+          env -u JAVA_HOME BOOT_SMOKE_EXPECT_RUNTIME="$APP/jre" BOOT_SMOKE_KEEP_LOG="$PWD/messages.log" \
+            scripts/boot-smoke-test.sh "$APP"
+
+      # Then photograph it. The boot above proves the module system on the
+      # bundled runtime; this opens every window on it, the Browser included,
+      # so the bundled JavaFX is exercised on each system too. The pictures
+      # are uploaded to be read.
+      - name: Give the Windows desktop a real screen size
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-DisplayResolution -Width 1920 -Height 1080 -Force
+
+      - name: Walk what was installed (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          APP="$(cygpath -u "$LOCALAPPDATA")/Programs/NMOX Studio"
+          env -u JAVA_HOME NMOX_WALK_APP="$APP" scripts/platform-walk.sh walk-out
+
+      - name: Walk what was installed (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          env -u JAVA_HOME NMOX_WALK_APP=/opt/nmox-studio \
+            xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out
+
+      - name: Walk what was installed (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          APP="$RUNNER_TEMP/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio"
+          env -u JAVA_HOME NMOX_WALK_APP="$APP" scripts/platform-walk.sh walk-out
+
+      - name: Keep the log and the pictures
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: installed-boot-${{ matrix.os }}
+          path: |
+            messages.log
+            walk-out/
+          if-no-files-found: warn

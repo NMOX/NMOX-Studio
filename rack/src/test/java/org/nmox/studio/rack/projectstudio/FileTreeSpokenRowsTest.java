@@ -21,7 +21,10 @@ class FileTreeSpokenRowsTest {
     @Test
     @DisplayName("a row painted in markup is named with its words")
     void markupRowIsNamedInWords() {
-        JLabel painted = new JLabel("<html><font color=\"#ff6464\">a.txt</font><font color=\"#ffffff\"> [UU]</font>");
+        // as the platform paints it, with NO <html> prefix: with one, Swing names
+        // the label in words by itself and this test passed with the wrapper
+        // naming nothing (found in 3.5.1 by running that mutant)
+        JLabel painted = new JLabel("<font color=\"#ff6464\">a.txt</font><font color=\"#ffffff\"> [UU]</font>");
         FileTreePanel.SpokenRows rows = new FileTreePanel.SpokenRows((t, v, s, e, l, r, f) -> painted);
         Component c = rows.getTreeCellRendererComponent(new JTree(), "x", false, false, true, 0, false);
         assertThat(c).isSameAs(painted);

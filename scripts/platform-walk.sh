@@ -48,22 +48,44 @@ SCALE="${NMOX_WALK_SCALE:-1}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/nmox-walk.XXXXXX")"
 UD="$WORK/userdir"
 CD="$WORK/cachedir"
-mkdir -p "$UD" "$CD"
+# A home of its own (3.5.1). A first launch is what a walk is for, and the
+# walker's own workspace hides first-launch defects: real connection names
+# made DB Studio's reset tree look the designed width for three weeks. It
+# also lets the walk say afterwards whether its dialog pictures created
+# anything, which in a real home nobody could tell.
+HOME_DIR="$WORK/home"
+mkdir -p "$UD" "$CD" "$HOME_DIR"
 
 set --
 if [ -n "${JAVA_HOME:-}" ]; then
   set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
 
+# netbeans.keyring.no.master (below): a Linux runner has no Secret Service,
+# so the platform's keyring falls back to asking for a master password, and
+# its dialog was photographed where the learning-space picker should have
+# been (the third walk). The walk photographs the product's windows; with
+# the fallback off the keyring is an in-memory one for the run. A machine
+# with a real keyring never reaches the fallback and is unaffected.
 echo "platform-walk: $OS, launcher $LAUNCHER"
 START=$(date +%s)
-timeout --kill-after=30 "$TIMEOUT" \
-  "$LAUNCHER" --nosplash "$@" \
+# timeout(1) is GNU: a stock Mac has none, Homebrew's is gtimeout. With
+# neither, the walk runs unleashed and the job's own timeout is the leash.
+LEASH="$(command -v timeout || command -v gtimeout || true)"
+if [ -n "$LEASH" ]; then
+  set -- "$LEASH" --kill-after=30 "$TIMEOUT" "$LAUNCHER" --nosplash "$@"
+else
+  echo "platform-walk: no timeout(1) here; running without a leash"
+  set -- "$LAUNCHER" --nosplash "$@"
+fi
+"$@" \
   --userdir "$(native "$UD")" --cachedir "$(native "$CD")" \
+  -J-Duser.home="$(native "$HOME_DIR")" \
   -J-Dnmox.shots.dir="$(native "$OUT_ABS")" \
   -J-Dnmox.shots.scale="$SCALE" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dnmox.update.check=false \
+  -J-Dnetbeans.keyring.no.master=true \
   > "$OUT_ABS/launcher-output.txt" 2>&1
 RC=$?
 END=$(date +%s)
@@ -71,12 +93,25 @@ END=$(date +%s)
 LOG="$UD/var/log/messages.log"
 [ -f "$LOG" ] && cp "$LOG" "$OUT_ABS/messages.log"
 SHOTS=$(find "$OUT_ABS" -name '*.png' | wc -l | tr -d ' ')
+# What the dialog pictures left behind. Each dialog is photographed and then
+# closed the way its close box closes it; a learning space on disk, or the
+# Standards Kit's files in the workspace, means a dialog was ACCEPTED.
+ACCEPTED=""
+if [ -d "$HOME_DIR/.nmox/learn" ]; then
+  for made in "$HOME_DIR/.nmox/learn"/*; do
+    [ -e "$made" ] && ACCEPTED="$ACCEPTED learning-space:$(basename "$made")"
+  done
+fi
+for made in robots.txt sitemap.xml site.webmanifest humans.txt .well-known; do
+  [ -e "$HOME_DIR/NMOX/$made" ] && ACCEPTED="$ACCEPTED standards-kit:$made"
+done
 {
   echo "os: $OS ($(uname -a))"
   echo "launcher: $LAUNCHER"
   echo "exit code: $RC (124 = the walk's own timeout)"
   echo "seconds: $((END - START))"
   echo "pictures: $SHOTS (painted at ${SCALE}x)"
+  echo "created by the dialog pictures:${ACCEPTED:- nothing}"
   if [ -f "$LOG" ]; then
     echo "SEVERE lines: $(grep -c 'SEVERE' "$LOG")"
     echo "WARNING lines: $(grep -c 'WARNING' "$LOG")"
@@ -92,3 +127,9 @@ rm -rf "$WORK"
 # a walk that produced no picture did not happen
 [ "$SHOTS" -gt 0 ] || { echo "platform-walk: FAIL — no pictures"; exit 1; }
 [ "$RC" = 0 ] || { echo "platform-walk: FAIL — the app exited $RC"; exit 1; }
+# (NMOX_WALK_ACCEPTED_OK=1 turns that into a note, for walking a release
+# older than 3.5.1, whose forge still accepted its dialogs.)
+if [ -n "$ACCEPTED" ] && [ "${NMOX_WALK_ACCEPTED_OK:-0}" != 1 ]; then
+  echo "platform-walk: FAIL — a photographed dialog was accepted:$ACCEPTED"
+  exit 1
+fi
