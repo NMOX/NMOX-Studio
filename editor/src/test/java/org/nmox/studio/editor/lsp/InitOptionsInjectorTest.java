@@ -167,7 +167,7 @@ class InitOptionsInjectorTest {
         assertThat(body)
                 .as("the tsdk + local server are repo code run on file-open"
                         + " — the trust gate must precede the spawn")
-                .contains("WorkspaceTrust.isTrusted(dir)");
+                .contains("ServerTrust.refuses(\"vue-language-server\", dir)");
         assertThat(body)
                 .as("a local 3.x pin declines honestly (the un-bridgeable"
                         + " line publishes nothing to a generic client)")

@@ -53,6 +53,11 @@ public final class LanguageServers {
             List<String> command, org.json.JSONObject initOptions) {
         try {
             File dir = projectDir(lookup);
+            // nothing a project controls runs before the project is trusted:
+            // most servers build, expand or load what they analyse (3.5.6)
+            if (ServerTrust.refuses(command.get(0), dir)) {
+                return null;
+            }
             List<String> resolved = ToolLocator.resolveCommand(command);
             if (refusesCommand(resolved.get(0), command.get(0))) {
                 return null;
@@ -99,7 +104,8 @@ public final class LanguageServers {
     /** Notifies (once per session) how to install {@code primaryBinary} when the server didn't start. */
     static LanguageServerProvider.LanguageServerDescription reported(
             LanguageServerProvider.LanguageServerDescription result, String primaryBinary) {
-        if (result == null) {
+        // a server waiting for trust is installed: it is not reported as missing
+        if (result == null && !ServerTrust.tookRefusal()) {
             LanguageServerHealth.reportMissing(primaryBinary);
         }
         return result;
@@ -708,7 +714,8 @@ public final class LanguageServers {
             // v1.102.0 RCE class with the payload one level down from the
             // binary. Same silent gate as launchNpm; there is no safe
             // global fallback because the probe dirs ARE the point.
-            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+            if (ServerTrust.refuses("ngserver", dir)) {
+                ServerTrust.tookRefusal(); // spoken; nothing here goes on to report it missing
                 ngProbe("decline: workspace not trusted");
                 return null;
             }
@@ -1404,8 +1411,9 @@ public final class LanguageServers {
             }
             // the tsdk and the local server are repo-committed code
             // executed on file-open — the v1.102.0 RCE class; same
-            // silent gate as launchNpm
-            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+            // gate as launchNpm, spoken once per project (3.5.6)
+            if (ServerTrust.refuses("vue-language-server", dir)) {
+                ServerTrust.tookRefusal(); // spoken; nothing here goes on to report it missing
                 return null;
             }
             File tsdk = vueTsdk(dir);
