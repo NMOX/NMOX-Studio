@@ -143,7 +143,7 @@ class WorkbenchA11yContractTest {
         });
         List<org.nmox.studio.core.util.FitLabel> subtitles = new ArrayList<>();
         for (Component c : all) {
-            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+            if (isSubtitle(c) && c instanceof org.nmox.studio.core.util.FitLabel l) {
                 subtitles.add(l);
             }
         }
@@ -166,7 +166,7 @@ class WorkbenchA11yContractTest {
         List<Component> all = new ArrayList<>();
         SwingUtilities.invokeAndWait(() -> collect(tc[0], all));
         for (Component c : all) {
-            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+            if (isSubtitle(c) && c instanceof org.nmox.studio.core.util.FitLabel l) {
                 int budget = l.getFontMetrics(l.getFont())
                         .stringWidth("n".repeat(ProjectExplorerTopComponent.SUBTITLE_ASKS_FOR));
                 assertThat(l.getPreferredSize().width).as(l.getFull()).isLessThanOrEqualTo(budget);
@@ -188,7 +188,7 @@ class WorkbenchA11yContractTest {
         });
         int subtitles = 0;
         for (Component c : all) {
-            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+            if (isSubtitle(c) && c instanceof org.nmox.studio.core.util.FitLabel l) {
                 subtitles++;
                 java.awt.Container row = l.getParent();
                 // a label with a tooltip is the pointer's target, and events
@@ -213,6 +213,31 @@ class WorkbenchA11yContractTest {
     }
 
     @Test
+    @DisplayName("the page follows the dock's width down to what cannot shrink, and scrolls only below that")
+    void thePageFollowsTheDock() throws Exception {
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        SwingUtilities.invokeAndWait(() -> {
+            List<Component> all = new ArrayList<>();
+            layOut(tc[0], 230, 900);
+            collect(tc[0], all);
+            ProjectExplorerTopComponent.Page page = (ProjectExplorerTopComponent.Page) all.stream()
+                    .filter(c -> c instanceof ProjectExplorerTopComponent.Page).findFirst().orElseThrow();
+            javax.swing.JViewport viewport = (javax.swing.JViewport) page.getParent();
+            assertThat(page.getPreferredSize().width).as("the rows ask for more than this dock has")
+                    .isGreaterThan(viewport.getWidth());
+            assertThat(page.getScrollableTracksViewportWidth()).isTrue();
+            assertThat(page.getWidth()).as("and are given the dock's width, not their own")
+                    .isEqualTo(viewport.getWidth());
+
+            layOut(tc[0], 40, 900);
+            assertThat(page.getScrollableTracksViewportWidth())
+                    .as("narrower than the titles: nothing left to shorten, so it scrolls").isFalse();
+        });
+    }
+
+    @Test
     @DisplayName("a project row's subtitle becomes what the folder holds, cut as a list and not as the path it replaces")
     void kindsAreAList() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
@@ -233,6 +258,13 @@ class WorkbenchA11yContractTest {
             ProjectExplorerTopComponent.showKinds(sub, List.of());
             assertThat(sub.getFull()).as("nothing detected leaves what was there").isEqualTo("node · typescript · docker");
         });
+    }
+
+    /** A row's subtitle: a fitted label inside a row, which the header's path and an empty section's hint are not. */
+    private static boolean isSubtitle(Component c) {
+        return c instanceof org.nmox.studio.core.util.FitLabel
+                && !(c instanceof org.nmox.studio.core.util.PathLabel)
+                && !(c.getParent() instanceof ProjectExplorerTopComponent.Page);
     }
 
     /** Gives the window a size and lays out everything in it; a window never shown lays out nothing by itself. */

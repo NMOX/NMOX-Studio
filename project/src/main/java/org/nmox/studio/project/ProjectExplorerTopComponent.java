@@ -125,7 +125,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private static final Font TINY = new Font(Font.SANS_SERIF, Font.PLAIN, 10);
     private static final Font CHIP_FONT = new Font(Font.MONOSPACED, Font.PLAIN, 10);
 
-    private final JPanel content = new JPanel();
+    private final JPanel content = new Page();
     private final JPanel header = new JPanel();
     /**
      * Toolchain detection (File.list-heavy) runs here, never on the EDT.
@@ -753,7 +753,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     }
 
     private void emptyRow(String hint) {
-        JLabel label = new JLabel(PlainText.plain(hint));
+        // asks for its whole width, as it always has, and when the dock is
+        // narrower it ends on a word with the rest on its tooltip
+        FitLabel label = new FitLabel(FitLabel.Cut.END, Integer.MAX_VALUE, false);
+        label.setFull(hint);
         label.setFont(ROW_FONT);
         label.setForeground(TEXT_DIM);
         label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
@@ -906,6 +909,60 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * across English and the twelve translations were over the budget, so
      * this was most rows in most languages, not an edge.
      */
+    /**
+     * The page under the header: as wide as the dock, down to what cannot
+     * shrink, and scrolling sideways only below that (3.5.2).
+     *
+     * <p>A plain panel in a scroll pane keeps its preferred width, so a dock
+     * narrower than its longest row grew a horizontal scrollbar and the rows'
+     * ends, a RUNNING row's Stop among them, sat out of sight to the right.
+     * The subtitles and the hints can shorten themselves now; this is what
+     * lets them. The titles and the buttons cannot, and when the dock is
+     * narrower than they are the scrollbar is still the way to reach them.
+     */
+    static final class Page extends JPanel implements javax.swing.Scrollable {
+
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(java.awt.Rectangle visible, int orientation, int direction) {
+            return orientation == javax.swing.SwingConstants.VERTICAL ? visible.height : visible.width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            return getParent() instanceof javax.swing.JViewport v && v.getWidth() >= cannotShrinkBelow();
+        }
+
+        /**
+         * The widest row's minimum: its dot, its title and its buttons. A
+         * label on the page (a section's name, an empty section's hint) is
+         * not counted, because a label shortens itself.
+         */
+        int cannotShrinkBelow() {
+            int widest = 0;
+            for (java.awt.Component c : getComponents()) {
+                if (!(c instanceof JLabel)) {
+                    widest = Math.max(widest, c.getMinimumSize().width);
+                }
+            }
+            return widest;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            return getParent() instanceof javax.swing.JViewport v && v.getHeight() > getPreferredSize().height;
+        }
+    }
+
     /**
      * How many characters' width a subtitle asks the dock for. It is given
      * more whenever the row has it, and shows less when squeezed.
