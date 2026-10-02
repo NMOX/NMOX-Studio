@@ -192,6 +192,14 @@ a project.
 Shortcuts, worth learning on day one (they're also all listed right on
 the Welcome tab):
 
+This guide writes shortcuts the way a Mac keyboard prints them. On
+Windows and Linux the product shows each one in your own keys, on the
+Welcome tab, in its hints and in the tutorials it writes: ⌘ is Ctrl, ⌥ is
+Alt and ⇧ is Shift, so ⌥⌘7 reads Ctrl+Alt+7 and ⇧⌘N reads Ctrl+Shift+N. ⌃
+on its own is Ctrl everywhere; ⌃ together with ⌘ is Alt, so ⌃⇧⌘J reads
+Ctrl+Alt+Shift+J. **Help ▸ Keyboard Shortcuts…** lists every chord as
+your keyboard has it.
+
 | Shortcut | Opens |
 |---|---|
 | **⌘I** | Quick Search — reaches everything (see §9) |

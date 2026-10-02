@@ -27,6 +27,9 @@ Every document here is current; the v0.x-era papers were removed in
 - **[dx-plan-3.4.md](./dx-plan-3.4.md)** — the plan for 3.4, shipped as 3.4.0: what
   happens when a second developer joins, when something goes wrong, and
   when the IDE is used without a mouse or a screen.
+- **[dx-plan-3.5.md](./dx-plan-3.5.md)** — the plan for 3.5, shipped as 3.5.0: what
+  someone who installs the Windows or the Linux build sees, measured by
+  booting and photographing the assembled app on both.
 - **[tech-debt.md](./tech-debt.md)** — the current debt ledger: open
   items with their deferral reasons, closed items by version.
 - **[gates.md](./gates.md)** — every build-failing law test, grouped by
