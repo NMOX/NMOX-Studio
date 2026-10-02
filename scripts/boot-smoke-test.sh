@@ -77,9 +77,12 @@ trap cleanup EXIT INT TERM
 
 # Prefer JAVA_HOME so the check does not lean on the launcher's own JDK
 # fallback (the very logic the launcher fix hardened).
-JDK_ARGS=""
+# (As positional parameters, so a runtime under "NMOX Studio.app" or
+# "Program Files" stays one argument: as a plain string it was split at the
+# space and the launcher answered "Cannot find java".)
+set --
 if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
-    JDK_ARGS="--jdkhome $(native "$JAVA_HOME")"
+    set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
 
 echo "boot-smoke: booting $LAUNCHER"
@@ -87,11 +90,10 @@ echo "boot-smoke: userdir  $USERDIR (fresh, removed on exit)"
 
 BOOT_START=$(date +%s)
 
-# shellcheck disable=SC2086
 "$LAUNCHER" \
     --userdir "$(native "$USERDIR")" \
     --cachedir "$(native "$CACHEDIR")" \
-    $JDK_ARGS \
+    "$@" \
     --nosplash \
     -J-Dnetbeans.close=true \
     > "$WORK/stdout.log" 2>&1 &
@@ -138,6 +140,27 @@ grep -q "Turning on modules" "$LOG" || fail_with_log "module system never starte
 [ "$APP_EXIT" -eq 0 ] || fail_with_log "launcher exited $APP_EXIT (expected a clean shutdown)"
 
 BOOT_SECONDS=$(( $(date +%s) - BOOT_START ))
+# Which runtime the app ran on, in the platform's own words. An installed
+# app must run on the runtime its installer put beside it, and a check that
+# quietly used the runner's JDK would prove nothing about that: so when
+# BOOT_SMOKE_EXPECT_RUNTIME names a directory, a boot on any other fails.
+# BOOT_SMOKE_KEEP_LOG=<file> keeps messages.log before the userdir goes.
+JAVA_HOME_LINE="$(grep -m1 'Java Home' "$LOG" | sed 's/^ *//' || true)"
+echo "boot-smoke: ${JAVA_HOME_LINE:-no Java Home line in the log}"
+echo "boot-smoke: $(grep -m1 'Java; VM; Vendor' "$LOG" | sed 's/^ *//' || true)"
+if [ -n "${BOOT_SMOKE_KEEP_LOG:-}" ]; then
+    cp "$LOG" "$BOOT_SMOKE_KEEP_LOG" 2>/dev/null || true
+fi
+if [ -n "${BOOT_SMOKE_EXPECT_RUNTIME:-}" ]; then
+    # compared without regard to slash direction or letter case: Windows
+    # prints C:\Users\..., Git Bash hands this script /c/Users/...
+    want="$(printf '%s' "$(native "$BOOT_SMOKE_EXPECT_RUNTIME")" | tr 'A-Z\\' 'a-z/')"
+    got="$(printf '%s' "$JAVA_HOME_LINE" | tr 'A-Z\\' 'a-z/')"
+    case "$got" in
+        *"$want"*) echo "boot-smoke: ran on the expected runtime ($BOOT_SMOKE_EXPECT_RUNTIME)" ;;
+        *) fail_with_log "the app did not run on $BOOT_SMOKE_EXPECT_RUNTIME" ;;
+    esac
+fi
 echo "boot-smoke: OK — module system came up and quit cleanly (exit 0)"
 echo "boot-smoke: no install/enable failures in the module log"
 # a trend line CI can watch: boot-to-clean-exit, whole seconds
