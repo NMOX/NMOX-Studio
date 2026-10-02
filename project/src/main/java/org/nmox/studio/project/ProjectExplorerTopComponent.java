@@ -620,18 +620,21 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                         SwingUtilities.invokeLater(refreshCoalescer::request);
                     }));
             if (sub != null) {
-                WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> {
-                    String kinds = shortenList(names, 38);
-                    // idempotent: skip the setText (and the layout it triggers)
-                    // when the subtitle already shows this value
-                    if (!kinds.isEmpty() && sub.getParent() != null
-                            && !kinds.equals(sub.getFull())) {
-                        // a list now, where the folder's path was: it keeps
-                        // its beginning and loses whole names, never half of one
-                        sub.setFull(kinds, FitLabel.Cut.END);
-                    }
-                });
+                WorkbenchDetect.detectAsync(detector, dir, this::detectKindNames, names -> showKinds(sub, names));
             }
+        }
+    }
+
+    /**
+     * Replaces a project row's subtitle, the folder's path, with what the
+     * folder holds. Idempotent: the same value again changes nothing, and so
+     * triggers no layout. A list keeps its beginning and loses whole names,
+     * never half of one, where the path it replaces kept its ends.
+     */
+    static void showKinds(FitLabel sub, List<String> names) {
+        String kinds = shortenList(names, 38);
+        if (!kinds.isEmpty() && sub.getParent() != null && !kinds.equals(sub.getFull())) {
+            sub.setFull(kinds, FitLabel.Cut.END);
         }
     }
 

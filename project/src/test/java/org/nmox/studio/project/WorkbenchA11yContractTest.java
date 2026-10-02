@@ -212,6 +212,29 @@ class WorkbenchA11yContractTest {
         assertThat(subtitles).isPositive();
     }
 
+    @Test
+    @DisplayName("a project row's subtitle becomes what the folder holds, cut as a list and not as the path it replaces")
+    void kindsAreAList() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            org.nmox.studio.core.util.FitLabel sub = new org.nmox.studio.core.util.FitLabel(
+                    org.nmox.studio.core.util.FitLabel.Cut.MIDDLE, 200, true);
+            javax.swing.JPanel row = new javax.swing.JPanel();
+            row.add(sub);
+            sub.setFull("/Users/someone/code");
+            sub.setBounds(0, 0, 90, 16);
+            sub.dispatchEvent(new java.awt.event.ComponentEvent(sub, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+
+            ProjectExplorerTopComponent.showKinds(sub, List.of("node", "typescript", "docker"));
+
+            assertThat(sub.getFull()).isEqualTo("node · typescript · docker");
+            assertThat(sub.getText()).as("too narrow for all three: the beginning stays, whole names only")
+                    .startsWith("node").endsWith("…").doesNotContain("docker");
+
+            ProjectExplorerTopComponent.showKinds(sub, List.of());
+            assertThat(sub.getFull()).as("nothing detected leaves what was there").isEqualTo("node · typescript · docker");
+        });
+    }
+
     /** Gives the window a size and lays out everything in it; a window never shown lays out nothing by itself. */
     private static void layOut(Container root, int width, int height) {
         root.setSize(width, height);
