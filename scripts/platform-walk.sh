@@ -60,6 +60,13 @@ set --
 if [ -n "${JAVA_HOME:-}" ]; then
   set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
+# NMOX_WALK_ARGS: more launcher arguments, separated by spaces. A language
+# ("--locale he"), or a direction forced onto the English build
+# ("-J-Dnmox.rtl=true"), which asks whether the layout mirrors without also
+# asking whether the words are right.
+for extra in ${NMOX_WALK_ARGS:-}; do
+  set -- "$@" "$extra"
+done
 
 # NMOX_WALK_STAGED=1: the documentation's staged scenes as well (3.5.2). The
 # plain walk photographs a first launch, where every window is empty. The
