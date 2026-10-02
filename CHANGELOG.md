@@ -9,9 +9,9 @@ All notable changes to NMOX Studio are documented here. The format follows
 **The window could freeze, for good, the first time the Browser tab was
 shown.** The check that walks an installed release had hung twice on a
 macOS runner with nothing to read. 3.5.4 gave the walk a leash that takes a
-thread dump first; the next hang, on a Linux runner an hour later, carried
-it. The rest of this release came from opening one file of every kind the
-product has a grammar for, which no walk had done.
+thread dump first; the next two hangs, on a Windows and a Linux runner an
+hour later, carried it. The rest of this release came from opening one file
+of every kind the product has a grammar for, which no walk had done.
 
 ### Fixed
 

@@ -174,8 +174,9 @@ the controller needs a preferences seam and the test its own node.
 
 ### 132. ~~What hangs the installed app on a macOS runner is not known~~ — CLOSED by 3.5.5
 
-**Closed.** The third hang, on a Linux runner an hour after 3.5.4 gave the
-walk a leash and a thread dump, carried the answer: a class-initialization
+**Closed.** The third and fourth hangs, on a Windows and a Linux runner an
+hour after 3.5.4 gave the walk a leash and a thread dump, carried the
+answer: a class-initialization
 deadlock between the event thread (`JFXPanel.addNotify`, which begins with
 `NodeHelper`) and the JavaFX thread (`FxBrowserPanel.initFx`, which begins
 with `javafx.scene.Node`). The two classes initialize each other. On the

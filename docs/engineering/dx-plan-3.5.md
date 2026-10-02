@@ -275,16 +275,18 @@ now stops itself and takes a thread dump first, so the next one will say.
 
 ## After 3.5.4 shipped (3.5.5)
 
-**The hang, explained.** The staged walk of this branch stopped on the
-Linux runner after nine pictures and the leash 3.5.4 added ended it at 900
-seconds with a thread dump. Two threads, both RUNNABLE, each "waiting on the
+**The hang, explained.** The staged walk of this branch stopped after nine
+pictures on the Windows runner, and on the next push on the Linux one, and
+the leash 3.5.4 added ended each at 900 seconds with a thread dump. The two
+dumps agree. Two threads, both RUNNABLE, each "waiting on the
 Class initialization monitor": the event thread inside
 `JFXPanel.addNotify` wanting `javafx.scene.Node`, the JavaFX thread inside
 `FxBrowserPanel.initFx` wanting `NodeHelper`. The two classes initialize
 each other, and the Browser began them from two threads. This is the hang
 the installed-boot check met on a macOS runner after 3.5.2 and 3.5.3
-(ledger 132), and it is what a person would meet as a frozen window on the
-first click of the Browser tab. Two reruns had "passed" it. *A hang that
+(ledger 132), so all three systems have shown it, and it is what a person
+would meet as a frozen window on the first click of the Browser tab. Two
+reruns had "passed" it. *A hang that
 passes when run again is a race.*
 
 
