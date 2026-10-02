@@ -105,6 +105,66 @@ public final class LanguageServers {
         return result;
     }
 
+    /**
+     * Servers that are a package inside an interpreter: Perl's, R's,
+     * Julia's, Racket's.
+     *
+     * <p>The interpreter being on PATH says nothing about the package.
+     * Without it the "server" starts, prints that it cannot find the
+     * package, and exits; the LSP client then fails its handshake on a
+     * closed stream and tries again for the next feature that asks. A
+     * machine with Racket and no {@code racket-langserver} did that five
+     * times for one opened file, wrote each failure to the log, and never
+     * showed the notification that says what to install, because the
+     * launch itself had succeeded (3.5.5; the rust-analyzer proxy was
+     * the same shape, v1.351.0).
+     *
+     * <p>The rule is one-sided on purpose. A probe that runs to its end
+     * and exits non-zero is a definite no. Anything else (no such
+     * interpreter, a probe still running at the limit) is "not known",
+     * and the launch goes ahead as it always did: a slow machine must
+     * not lose a server that works.
+     */
+    static final class Hosted {
+
+        private static final Set<String> PRESENT = java.util.concurrent.ConcurrentHashMap.newKeySet();
+        private static final java.time.Duration LIMIT = java.time.Duration.ofSeconds(6);
+
+        private Hosted() {
+        }
+
+        /**
+         * True when the probe says the package is not there. A package
+         * once seen is not asked for again this session; an absent one
+         * is asked for every time, so installing it needs no restart.
+         */
+        static boolean absent(String server, List<String> probe) {
+            if (PRESENT.contains(server)) {
+                return false;
+            }
+            if (saysNo(probe, LIMIT)) {
+                return true;
+            }
+            PRESENT.add(server);
+            return false;
+        }
+
+        static boolean saysNo(List<String> probe, java.time.Duration limit) {
+            try {
+                List<String> resolved = ToolLocator.resolveCommand(probe);
+                org.nmox.studio.core.process.ProcessSupport.BoundedResult result =
+                        org.nmox.studio.core.process.ProcessSupport.runBounded(resolved, null, limit);
+                return !result.timedOut() && result.exitCode() != 0;
+            } catch (Exception notRunnable) {
+                return false; // no interpreter at all: launch() refuses that and says so
+            }
+        }
+
+        static void forgetForTest() {
+            PRESENT.clear();
+        }
+    }
+
     /** The first candidate that launches wins; null when none can. */
     @SafeVarargs
     static LanguageServerProvider.LanguageServerDescription launchFirst(
@@ -1047,6 +1107,11 @@ public final class LanguageServers {
     public static final class RacketServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            // (collection-path …) raises when the collection is not installed, and loads nothing
+            if (Hosted.absent("racket-langserver",
+                    List.of("racket", "-e", "(collection-path \"racket-langserver\")"))) {
+                return reported(null, "racket");
+            }
             return provide(lookup, List.of("racket", "-l", "racket-langserver"));
         }
     }
@@ -1155,6 +1220,11 @@ public final class LanguageServers {
     public static final class JuliaServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            // find_package looks the package up without loading it: loading takes seconds
+            if (Hosted.absent("LanguageServer.jl", List.of("julia", "--startup-file=no", "--history-file=no",
+                    "-e", "exit(Base.find_package(\"LanguageServer\") === nothing ? 1 : 0)"))) {
+                return reported(null, "julia");
+            }
             return provide(lookup, List.of("julia", "--startup-file=no", "--history-file=no",
                     "-e", "using LanguageServer; runserver()"));
         }
@@ -1165,6 +1235,10 @@ public final class LanguageServers {
     public static final class RServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            // non-interactive R halts with status 1 when library() fails
+            if (Hosted.absent("languageserver", List.of("R", "--no-echo", "-e", "library(languageserver)"))) {
+                return reported(null, "R");
+            }
             return provide(lookup, List.of("R", "--no-echo", "-e", "languageserver::run()"));
         }
     }
@@ -1174,6 +1248,10 @@ public final class LanguageServers {
     public static final class PerlServer implements LanguageServerProvider {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
+            // -M loads the module and -e 1 does nothing: exit 2 when it cannot be located
+            if (Hosted.absent("Perl::LanguageServer", List.of("perl", "-MPerl::LanguageServer", "-e", "1"))) {
+                return reported(launchFirst(lookup, List.of("pls")), "pls");
+            }
             return reported(launchFirst(lookup,
                     List.of("pls"),
                     List.of("perl", "-MPerl::LanguageServer", "-e", "Perl::LanguageServer::run")), "pls");
