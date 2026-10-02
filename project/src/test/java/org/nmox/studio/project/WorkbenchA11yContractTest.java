@@ -96,29 +96,140 @@ class WorkbenchA11yContractTest {
         SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
         SwingUtilities.invokeAndWait(tc[0]::componentOpened);
         List<Component> all = new ArrayList<>();
-        SwingUtilities.invokeAndWait(() -> collect(tc[0], all));
+        // a dock narrower than its longest subtitle: what is cut depends on
+        // the width since 3.5.2, so the page is given one and laid out
+        SwingUtilities.invokeAndWait(() -> {
+            layOut(tc[0], 230, 900);
+            collect(tc[0], all);
+        });
         List<String> silent = new ArrayList<>();
         int cut = 0;
         for (Component c : all) {
-            // the POPULATION is what the window says it shortened, not what
+            // the POPULATION is what the label says it shortened, not what
             // happens to end in an ellipsis: "detecting…" is a progress
             // label that was never cut, and the first cut of this gate
             // failed the Windows lane for exactly that reason
-            if (c instanceof javax.swing.JLabel l
-                    && l.getClientProperty(ProjectExplorerTopComponent.SHORTENED) != null) {
+            if (c instanceof org.nmox.studio.core.util.FitLabel l && l.isCut()) {
                 cut++;
                 String full = l.getToolTipText();
-                if (full == null || full.isBlank()) {
+                if (full == null || !full.strip().equals(l.getFull())) {
                     silent.add("'" + l.getText() + "'");
                 }
+                assertThat(l.getText()).as("what is shown is shorter and says so").contains("…");
             }
         }
         assertThat(silent)
                 .as("a row that shows an ellipsis and offers no way to read the rest "
                         + "has simply lost the text")
                 .isEmpty();
-        assertThat(cut).as("the fresh Workbench paints at least one shortened subtitle "
-                + "(English's own longest is 51 characters against a 38 budget), "
+        assertThat(cut).as("a narrow Workbench paints at least one shortened subtitle "
+                + "(English's own longest is 51 characters), "
                 + "or this gate is measuring nothing").isPositive();
+    }
+
+    @Test
+    @DisplayName("a subtitle is whole when the row has room for it, however long it is")
+    void roomIsUsed() throws Exception {
+        // the 3.5 walks, all three systems: "devices, cables, pipelines - Tab
+        // flip…" and "DigitalOcean · Hetzner · Cloudflare f…" beside empty
+        // space, because the cut was a count of characters
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        List<Component> all = new ArrayList<>();
+        SwingUtilities.invokeAndWait(() -> {
+            layOut(tc[0], 900, 900);
+            collect(tc[0], all);
+        });
+        List<org.nmox.studio.core.util.FitLabel> subtitles = new ArrayList<>();
+        for (Component c : all) {
+            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+                subtitles.add(l);
+            }
+        }
+        assertThat(subtitles).as("the tooling rows have subtitles").hasSizeGreaterThanOrEqualTo(4);
+        assertThat(subtitles).as("at least one is longer than the old 38-character cut")
+                .anyMatch(l -> l.getFull().length() > 38);
+        assertThat(subtitles).allSatisfy(l -> {
+            assertThat(l.isCut()).as(l.getFull()).isFalse();
+            assertThat(l.getText().strip()).isEqualTo(l.getFull());
+            assertThat(l.getToolTipText()).as("nothing cut, nothing to say: the row's own tooltip shows").isNull();
+        });
+    }
+
+    @Test
+    @DisplayName("a wide subtitle never widens the dock: it asks for no more than the old budget")
+    void theDockIsNoWider() throws Exception {
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        List<Component> all = new ArrayList<>();
+        SwingUtilities.invokeAndWait(() -> collect(tc[0], all));
+        for (Component c : all) {
+            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+                int budget = l.getFontMetrics(l.getFont())
+                        .stringWidth("n".repeat(ProjectExplorerTopComponent.SUBTITLE_ASKS_FOR));
+                assertThat(l.getPreferredSize().width).as(l.getFull()).isLessThanOrEqualTo(budget);
+                assertThat(l.getMinimumSize().width).isZero();
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("a row is one target: its subtitle opens it too, cut or whole")
+    void theSubtitleOpensTheRow() throws Exception {
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        List<Component> all = new ArrayList<>();
+        SwingUtilities.invokeAndWait(() -> {
+            layOut(tc[0], 230, 900);
+            collect(tc[0], all);
+        });
+        int subtitles = 0;
+        for (Component c : all) {
+            if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)) {
+                subtitles++;
+                java.awt.Container row = l.getParent();
+                // a label with a tooltip is the pointer's target, and events
+                // do not travel on to its parent: whatever the row hears, the
+                // subtitle must hear (the tooltip manager aside, which listens
+                // wherever there is a tooltip and is not the row's)
+                List<java.awt.event.MouseListener> rows = new ArrayList<>(java.util.Arrays.asList(row.getMouseListeners()));
+                rows.removeIf(m -> m instanceof javax.swing.ToolTipManager);
+                assertThat(rows).as("the row listens for the pointer and for a click").hasSizeGreaterThanOrEqualTo(2);
+                assertThat(l.getMouseListeners()).as(l.getFull()).containsAll(rows);
+                // and the row lights up under the pointer wherever on it the pointer is
+                java.awt.Color resting = row.getBackground();
+                l.dispatchEvent(new java.awt.event.MouseEvent(l, java.awt.event.MouseEvent.MOUSE_ENTERED,
+                        System.currentTimeMillis(), 0, 2, 2, 0, false));
+                assertThat(row.getBackground()).as("lit under the subtitle").isNotEqualTo(resting);
+                l.dispatchEvent(new java.awt.event.MouseEvent(l, java.awt.event.MouseEvent.MOUSE_EXITED,
+                        System.currentTimeMillis(), 0, 2, 2, 0, false));
+                assertThat(row.getBackground()).isEqualTo(resting);
+            }
+        }
+        assertThat(subtitles).isPositive();
+    }
+
+    /** Gives the window a size and lays out everything in it; a window never shown lays out nothing by itself. */
+    private static void layOut(Container root, int width, int height) {
+        root.setSize(width, height);
+        // twice: a label re-cuts its text when it learns its width, which changes what its row asks for
+        for (int pass = 0; pass < 2; pass++) {
+            layOutTree(root);
+        }
+    }
+
+    private static void layOutTree(Container c) {
+        c.doLayout();
+        for (Component child : c.getComponents()) {
+            if (child instanceof org.nmox.studio.core.util.FitLabel l) {
+                l.dispatchEvent(new java.awt.event.ComponentEvent(l, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            }
+            if (child instanceof Container cc) {
+                layOutTree(cc);
+            }
+        }
     }
 }

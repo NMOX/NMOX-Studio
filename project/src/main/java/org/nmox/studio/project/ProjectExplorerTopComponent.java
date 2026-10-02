@@ -1,5 +1,6 @@
 package org.nmox.studio.project;
 
+import org.nmox.studio.core.util.FitLabel;
 import org.nmox.studio.core.util.PlainText;
 import org.nmox.studio.core.spi.LiveRuns;
 import java.awt.BorderLayout;
@@ -452,7 +453,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             Runnable open = r.openable()
                     ? () -> org.nmox.studio.rack.service.ServingLinks.open(r.url())
                     : () -> { };
-            JLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), Sub.PROSE, false, ACCENT,
+            FitLabel sub = row(r.title(), WorkbenchRunning.subtitle(r), Sub.PROSE, false, ACCENT,
                     r.openable() ? r.url() + "  " + Bundle.ProjectExplorerTopComponent_clickToOpen() : Bundle.ProjectExplorerTopComponent_runningStopEnds(),
                     open);
             if (sub != null && sub.getParent() instanceof JPanel rowPanel) {
@@ -602,7 +603,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             boolean aimed = dir.equals(current);
             // subtitle starts as the parent path; toolchain detection (which
             // walks the directory) resolves off the EDT and refines it
-            JLabel sub = row(dir.getName(), dir.getParent(), Sub.PATH,
+            FitLabel sub = row(dir.getName(), dir.getParent(), Sub.PATH,
                     aimed, aimed ? ACCENT : null,
                     dir.getAbsolutePath() + "  " + (aimed ? Bundle.ProjectExplorerTopComponent_aimed() : Bundle.ProjectExplorerTopComponent_clickToAim()),
                     () -> aimAt(dir),
@@ -624,8 +625,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                     // idempotent: skip the setText (and the layout it triggers)
                     // when the subtitle already shows this value
                     if (!kinds.isEmpty() && sub.getParent() != null
-                            && !kinds.equals(sub.getText())) {
-                        sub.setText(PlainText.plain(kinds));
+                            && !kinds.equals(sub.getFull())) {
+                        // a list now, where the folder's path was: it keeps
+                        // its beginning and loses whole names, never half of one
+                        sub.setFull(kinds, FitLabel.Cut.END);
                     }
                 });
             }
@@ -760,7 +763,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * subtitle label (or null when there is none) so a caller can refine it
      * later — e.g. after off-EDT toolchain detection.
      */
-    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
+    private FitLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick) {
         return row(title, subtitle, kind, bold, dot, tooltip, onClick, null, null);
     }
@@ -777,7 +780,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * construction (no shared selection, the v1.270.0 hazard shape
      * cannot arise).
      */
-    private JLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
+    private FitLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick, String forgetLabel, Runnable onForget) {
         JPanel rowPanel = new JPanel();
         rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
@@ -814,26 +817,27 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 subtitle != null && !subtitle.isBlank() ? title + " — " + subtitle : title);
         titleButton.addActionListener(e -> onClick.run());
         rowPanel.add(titleButton);
-        JLabel sub = null;
+        FitLabel sub = null;
         if (subtitle != null && !subtitle.isBlank()) {
-            String shown = kind == Sub.PATH
-                    ? shortenPath(subtitle, 38) : shortenProse(subtitle, 38);
-            sub = new JLabel(PlainText.plain(shown));
-            if (!shown.equals(subtitle)) {
-                // cut text always has somewhere to be read in full, and the
-                // label SAYS it was cut rather than leaving a reader — or a
-                // gate — to infer it from a trailing ellipsis. "detecting…"
-                // ends in one too and was never shortened; the Windows lane
-                // caught the first version of this gate believing otherwise.
-                sub.putClientProperty(SHORTENED, subtitle);
-                sub.setToolTipText(PlainText.plain(subtitle));
-            }
+            // as much of the subtitle as the row has room for (3.5.2). It
+            // asks for no more than the old 38-character budget did, so a
+            // fresh layout is no wider than before, and it takes whatever
+            // the row has left over: the 3.5 walks photographed "Tab flip…"
+            // and "Cloudflare f…" beside empty space on all three systems.
+            // A path keeps its ends and a sentence its beginning (v2.119.0);
+            // what is cut is on the tooltip, and the label says it was cut
+            // (FitLabel.isCut) so that nobody has to infer it from a
+            // trailing ellipsis: "detecting…" ends in one and is whole.
+            sub = new FitLabel(kind == Sub.PATH ? FitLabel.Cut.MIDDLE : FitLabel.Cut.END,
+                    getFontMetrics(TINY).stringWidth("n".repeat(SUBTITLE_ASKS_FOR)), true);
             sub.setFont(TINY);
             sub.setForeground(TEXT_DIM);
             sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
+            sub.setFull(subtitle);
             rowPanel.add(sub);
+        } else {
+            rowPanel.add(Box.createHorizontalGlue());
         }
-        rowPanel.add(Box.createHorizontalGlue());
 
         if (onForget != null) {
             // POPUP-PER-ROW: this menu belongs to ONE row panel and its verb
@@ -855,7 +859,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             }
         }
 
-        rowPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+        java.awt.event.MouseAdapter hover = new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 rowPanel.setBackground(HOVER);
@@ -865,14 +869,27 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             public void mouseExited(java.awt.event.MouseEvent e) {
                 rowPanel.setBackground(BG);
             }
-
+        };
+        java.awt.event.MouseAdapter click = new java.awt.event.MouseAdapter() {
             @Override
             public void mouseClicked(java.awt.event.MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     onClick.run();
                 }
             }
-        });
+        };
+        rowPanel.addMouseListener(hover);
+        rowPanel.addMouseListener(click);
+        // the row is one target wherever the pointer is on it. A mouse event
+        // goes to the deepest component that listens for any, and stops
+        // there: the title button listens, and so does a subtitle the moment
+        // it has a tooltip, which is whenever it is cut. So the row lost its
+        // highlight over both, and a click on a cut subtitle opened nothing.
+        titleButton.addMouseListener(hover);
+        if (sub != null) {
+            sub.addMouseListener(hover);
+            sub.addMouseListener(click);
+        }
         content.add(rowPanel);
         return sub;
     }
@@ -887,11 +904,10 @@ public final class ProjectExplorerTopComponent extends TopComponent {
      * this was most rows in most languages, not an edge.
      */
     /**
-     * Marks a subtitle this window had to shorten, carrying the whole text.
-     * The population is stated, not guessed: a trailing "…" is a glyph that
-     * unshortened labels use too.
+     * How many characters' width a subtitle asks the dock for. It is given
+     * more whenever the row has it, and shows less when squeezed.
      */
-    static final String SHORTENED = "nmox.subtitle.full";
+    static final int SUBTITLE_ASKS_FOR = 38;
 
     enum Sub {
         /** An absolute path: the ENDS tell you where it is. */
@@ -916,28 +932,6 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         path.setAlignmentX(LEFT_ALIGNMENT);
         path.setPath(dir.getAbsolutePath());
         return path;
-    }
-
-    /** Middle-ellipsis so deep paths keep their telling ends. */
-    static String shortenPath(String s, int max) {
-        if (s.length() <= max) {
-            return s;
-        }
-        int keep = (max - 1) / 2;
-        return s.substring(0, keep) + "…" + s.substring(s.length() - keep);
-    }
-
-    /**
-     * Head-first, because a sentence cut through the middle is not a
-     * shorter sentence — it is gibberish. The whole text stays reachable:
-     * the row's title button carries it as its accessible name, and a cut
-     * subtitle carries it as a tooltip (the v1.282.0 law, one surface over).
-     */
-    static String shortenProse(String s, int max) {
-        if (s.length() <= max) {
-            return s;
-        }
-        return s.substring(0, Math.max(1, max - 1)).stripTrailing() + "…";
     }
 
     /**
