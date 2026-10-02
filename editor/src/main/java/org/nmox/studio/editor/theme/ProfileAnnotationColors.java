@@ -60,7 +60,8 @@ import org.xml.sax.SAXException;
  * type's file in the user directory in place, while its folder watcher
  * re-reads the folder on another thread, and the walk logged a SEVERE
  * "Premature end of file" from a file caught half-written, on a first
- * launch, eighty saves in a row. So the colours are stored on the type
+ * launch, one save per setter for every type the profile names. So the
+ * colours are stored on the type
  * without the announcement ({@code putProp}): nothing is written, nothing
  * races, and the same few dozen values are given again at the next start.
  * The cost is stated: a type already painted in an editor that was open

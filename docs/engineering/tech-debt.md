@@ -101,11 +101,21 @@ where to look.
   least one such include. Each is a rule that matches nothing, in a place its
   author stopped maintaining; repairing them is a per-language reading of
   the upstream history, not a sweep.
-- **The Workbench's tooling subtitles are cut at 38 characters** whatever the
-  panel's width, so at the default size they end mid-word with room to
-  spare (`Tab flip…`, `Cloudflare f…`). The whole text is in the tooltip and
-  the accessible name. A width-aware label, the way `PathLabel` fits a path,
-  is the fix.
+- ~~**The Workbench's tooling subtitles are cut at 38 characters** whatever
+  the panel's width.~~ **Closed by 3.5.2**: `core.util.FitLabel`, and the
+  page now follows a narrow dock's width so that there is something to fit
+  to. The same label cuts an empty section's hint.
+- **What a staged walk leaves in the log** (3.5.2: 17 warnings, none ours to
+  fix): the unresolved grammar includes above; the platform's `Invalid
+  shortcut: …Actions/Help/master-help.xml` and two module deprecation
+  notices; and three scenes a runner cannot stage, each saying so (KVASIR
+  has no key, the Docker Panel no labelled container, Contract Studio no
+  `forge`).
+- **An annotation already painted keeps its pastel colour** in an editor
+  that was open before `ProfileAnnotationColors` ran, until that editor is
+  reopened. It runs when the main window shows, so this is a file restored
+  from the last session and annotated within the first second. Nothing has
+  shown it; the setters that would repaint also rewrite files (3.5.2).
 - **What a runner cannot show:** a HiDPI screen, ClearType on a real panel,
   the fonts a user has installed, a tiling window manager, Wayland. The
   walks ran on the runners' stock fonts at 1920×1080.

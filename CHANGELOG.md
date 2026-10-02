@@ -4,6 +4,82 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.2] - 2026-10-02
+
+**The documentation's staged scenes run on Windows and Linux, and what they
+showed there was true on every system.**
+
+### Fixed
+
+- **A paused debugger's current line was light text on pale green.** The
+  editor's annotations (the current line, a breakpoint, a bookmark) are
+  defined with pastel backgrounds meant for a white editor. The platform's
+  dark colour profile has its own set, but an annotation does not look its
+  colours up: the Options dialog pushes them onto it when a person changes
+  the profile there, and this product selects the dark profile without that
+  dialog. So tokens came out dark and annotations stayed pastel, and the
+  line a debugger stops on was the least readable line on the screen. The
+  annotations now take the colours of the profile in use, the profile's
+  defaults and then whatever the Options dialog saved, once the main window
+  shows. Photographed on all three systems: the paused line is dark green
+  under ordinary syntax colours.
+- **A folder aimed under another spelling of its path was aimed twice and
+  listed twice.** The platform names a folder by its normalized path, which
+  on Windows expands an 8.3 short name and on a Mac repairs the letter case,
+  and hands that spelling back when it echoes an aim. The echo was compared
+  by equality, so it was not recognised: every studio reloaded its workspace
+  a second time and the project appeared twice under Recent. An aim takes
+  the platform's spelling before anything compares or records it.
+- **The Workbench cut its subtitles at 38 characters whatever its width**, so
+  at the default size they ended mid-word beside empty space (`Tab flip…`,
+  `Cloudflare f…`; ledger 129). A subtitle now shows as much as its row has
+  room for: a sentence ends at the end of a word, a path keeps its ends, a
+  list loses whole names. It asks the dock for no more than the old budget
+  did, so a fresh layout is no wider. In a dock narrower than its rows the
+  page follows the dock's width and the text shortens, where it used to grow
+  a horizontal scrollbar; below the width of the titles and buttons, which
+  cannot shorten, it still scrolls. What is cut is on the tooltip.
+- **A Workbench row was three targets.** A mouse event goes to the deepest
+  component that listens for any, and stops there. The title listens, and
+  so does a subtitle once it has a tooltip, which was whenever it was cut:
+  the row lost its highlight over both, and a click on a cut subtitle
+  opened nothing. The whole row lights up and opens.
+- **Seven warnings in every session's log about a "relative ordering
+  attribute".** The platform keeps a project's bookmarks and its list of
+  open files as attributes of the project folder, named after a namespace
+  URL; its folder ordering reads any attribute name holding a slash as an
+  ordering instruction and warns that the value is not a boolean, quoting
+  the whole record. A web project now keeps those records itself, in the
+  same store, under names without a slash. Nothing is written into the
+  project, and the platform moves an old record the next time it saves one.
+
+### Engineering
+
+- **The staged walk.** `NMOX_WALK_STAGED=1 scripts/platform-walk.sh` stages
+  what the documentation's pictures stage (a racked project, the editor, an
+  experiment, the debugger stopped on a breakpoint, DevTools on a served
+  page) in the walk's throwaway home, and the Platform walk workflow runs it
+  on Windows and Linux after the plain walk. 25 pictures on each. A runner
+  cannot stage three scenes and the walk says which: KVASIR has no key, the
+  Docker Panel no container, Contract Studio no `forge`.
+- The Linux walk runs under a window manager. A bare virtual screen grants
+  no keyboard focus, and the breakpoint scene sets its breakpoint through
+  the platform's own action, which acts on the focused editor. A scene that
+  waits more than twenty seconds now says which step it is waiting on.
+- The colours are stored on the annotation types without the announcement a
+  setter makes. The first cut used the setters, as the Options dialog does;
+  a setter also rewrites the type's file in the user directory, in place,
+  while the platform's folder watcher re-reads it, and the walk logged a
+  SEVERE `Premature end of file` from a file caught half-written.
+- `core.util.FitLabel`: a label that cuts its text to its width, a path in
+  the middle and a sentence at a word end, never splitting a letter from its
+  mark. `PathLabel` is the path-shaped one built on it.
+- The Workbench's picture in the user guide, in all fifteen languages, is
+  repainted: the English one was painted for v2.118.0.
+- 38 mutants, each killed by name. Six lived at first, and each time the
+  fixture was the reason: a memory filesystem that decorates no names, and
+  English subtitles that all fit the budget they were meant to exceed.
+
 ## [3.5.1] - 2026-10-02
 
 **What each installer leaves on a machine is installed and booted, on all
@@ -24899,6 +24975,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.1...v3.5.0
 [3.4.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.0...v3.4.1
