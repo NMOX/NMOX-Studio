@@ -4,6 +4,47 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.12] - 2026-10-02
+
+**Split panes change sides for a right-to-left reader.** Ledger 127 asked
+whether they should, and 3.5.11 put both layouts in front of two readers,
+one of Hebrew and one of Arabic. Both chose the mirrored one, for both
+studios, for the same reasons; this release does what they asked.
+
+### Changed
+
+- **In Hebrew and Arabic a horizontal split pane puts its first side on
+  the right.** DB Studio's connection tree, API Studio's collections,
+  Contract Studio's artifact tree and Block Studio's palette now sit where
+  a right-to-left line begins, with the work area to their left and the
+  divider measured from the right edge. The width each author gave a
+  sidebar is kept; which side grows when the window does follows the
+  sides. Switching back to a left-to-right language puts everything back.
+  Vertical splits do not move. The window system's own docking at the
+  window's left edge stays where it is; both readers weighed that and
+  preferred the studios mirrored anyway.
+- **The documentation's Hebrew and Arabic pictures show the new layout**,
+  repainted by the forge.
+
+### Fixed
+
+- **The documentation forge photographed the developer's own home.** The
+  plain run, the one that paints the tab pictures for the README and
+  fifteen languages, booted in the developer's real home: every Project
+  Studio picture since v2.161.0 showed their `~/NMOX`, its files by name.
+  Every run now boots in a throwaway home, as the staged run already did,
+  and every tab picture in every language is repainted from one.
+  (`DocsForgeDockerViewGateTest` reads the home the dry run names.)
+
+### Decided
+
+- **Ledger 129** (Linux without a Secret Service): the platform's
+  master-password dialog stays as it is.
+- **Ledger 125** (a background child that outlives its run): not built; the
+  gap is written down with what would reopen it.
+- **Ledger 86b** (Windows Authenticode): not purchased now; what would
+  reopen it is written down.
+
 ## [3.5.11] - 2026-10-02
 
 No change to the product.
@@ -25479,6 +25520,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.12]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.11...v3.5.12
 [3.5.11]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.10...v3.5.11
 [3.5.10]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.9...v3.5.10
 [3.5.9]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.8...v3.5.9

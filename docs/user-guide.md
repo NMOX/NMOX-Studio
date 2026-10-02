@@ -2029,7 +2029,9 @@ own Switch to Editor, because a user who picked Eclipse expects it.
 - **Your language** — NMOX Studio speaks fifteen languages: English,
   Español, Français, Deutsch, Русский, Українська, Polski, Português
   (Brasil), Bahasa Indonesia, Filipino, Tiếng Việt, 简体中文, हिन्दी, עברית and
-  العربية (both mirror the whole window, right to left). Pick
+  العربية (both mirror the whole window, right to left: toolbars, the
+  studios' sidebars and split panes included; the IDE's own docking at the
+  window's edge stays where the window system puts it). Pick
   one in **Options ▸ General ▸ Language** (each listed in its own name, so
   you can always find yours) — though you may never need to, because a
   fresh install already speaks your system's language, and does so from a
