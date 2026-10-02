@@ -1,0 +1,41 @@
+diff --git a/ui/src/main/java/org/nmox/studio/ui/rtl/SplitShapes.java b/ui/src/main/java/org/nmox/studio/ui/rtl/SplitShapes.java
+index 7b5bc6570..ffeb3cc0d 100644
+--- a/ui/src/main/java/org/nmox/studio/ui/rtl/SplitShapes.java
++++ b/ui/src/main/java/org/nmox/studio/ui/rtl/SplitShapes.java
+@@ -80,6 +80,36 @@ final class SplitShapes {
+     static void restore(List<Shape> shapes) {
+         for (Shape s : shapes) {
+             JSplitPane split = s.split();
++            if (Boolean.getBoolean("nmox.rtl.splits.mirror")
++                    && split.getOrientation() == JSplitPane.HORIZONTAL_SPLIT
++                    && !split.getComponentOrientation().isLeftToRight()) {
++                // EXPERIMENT for ledger 127, not shipped: the pane's sides exchanged, the divider mirrored
++                if (s.left() != null) {
++                    split.remove(s.left());
++                }
++                if (s.right() != null) {
++                    split.remove(s.right());
++                }
++                split.setLeftComponent(s.right());
++                split.setRightComponent(s.left());
++                split.setResizeWeight(1 - split.getResizeWeight());
++                int d = s.divider();
++                if (d >= 0) {
++                    Runnable place = () -> split.setDividerLocation(
++                            Math.max(0, split.getWidth() - split.getDividerSize() - d));
++                    if (split.getWidth() > 0) {
++                        place.run();
++                    }
++                    split.addComponentListener(new java.awt.event.ComponentAdapter() {
++                        @Override
++                        public void componentResized(java.awt.event.ComponentEvent e) {
++                            split.removeComponentListener(this);
++                            place.run();
++                        }
++                    });
++                }
++                continue;
++            }
+             if (split.getLeftComponent() != s.left() || split.getRightComponent() != s.right()) {
+                 // Out first, then in, and out BY IDENTITY. Adding a component
+                 // that is still a child of the pane makes Swing remove it from

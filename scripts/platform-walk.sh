@@ -148,6 +148,16 @@ run_leashed() {
   done
   wait "$leashed"
 }
+# The walk's home is its own, and so is its Docker (3.5.11). On a developer's
+# machine the app reached the developer's daemon, and DB Studio's "a database
+# container is running" balloon named one of their containers in the walk's
+# picture: the defect the docs forge had until 3.5.0, in the one script that
+# was not given the cure. A walk is a first launch on a machine with nothing
+# on it, so the app gets an address nothing listens on. A walk that is about
+# Docker names its own with NMOX_WALK_DOCKER_HOST (the forge's filtered view,
+# never the daemon).
+DOCKER_HOST="${NMOX_WALK_DOCKER_HOST:-tcp://127.0.0.1:9}"
+export DOCKER_HOST
 LEASH="$(command -v timeout || command -v gtimeout || true)"
 [ "${NMOX_WALK_OWN_LEASH:-0}" = 1 ] && LEASH=""
 set -- "$LAUNCHER" --nosplash "$@" \

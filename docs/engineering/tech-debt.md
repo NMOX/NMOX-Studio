@@ -48,6 +48,40 @@ three on a live switch back, and repainting the Hebrew and Arabic pictures.
 None of it is hard; it should be decided by a right-to-left reader looking
 at both layouts, not by a patch release of the runtime.
 
+**Both layouts, to look at (3.5.11).** The Hebrew build, photographed twice
+by `scripts/platform-walk.sh` in a throwaway home: as shipped, and with
+`scripts/probes/split-rtl/mirror-horizontal-splits.patch` applied and
+switched on (`-J-Dnmox.rtl.splits.mirror=true`). The patch is the
+experiment, forty lines in `SplitShapes.restore`, and is not in the
+product: it exchanges a horizontal split's two sides, mirrors the divider
+and flips the resize weight, and does nothing for a live switch back to a
+left-to-right language.
+
+DB Studio. As shipped, the connection tree is left of the console:
+
+![DB Studio in Hebrew as shipped: the connection tree on the left of the console](../images/engineering/split-rtl-db-studio-shipped.png)
+
+Mirrored, it is on the right, where a right-to-left line begins:
+
+![DB Studio in Hebrew with horizontal splits mirrored: the connection tree on the right](../images/engineering/split-rtl-db-studio-mirrored.png)
+
+API Studio, as shipped and mirrored (the collections list changes sides):
+
+![API Studio in Hebrew as shipped: collections on the left of the request](../images/engineering/split-rtl-api-studio-shipped.png)
+
+![API Studio in Hebrew with horizontal splits mirrored: collections on the right](../images/engineering/split-rtl-api-studio-mirrored.png)
+
+What the pictures also show, and a reader should weigh: the platform's own
+docking (Project Studio, the Workbench and NPM Explorer on the left edge)
+stays on the left in both, because the window system places its modes
+itself. Mirroring the studios' splits puts their sidebars on the far right
+while the platform's sits on the far left. Mirroring that too is a
+different and larger piece of work (the window system's layout, not a
+split pane).
+
+To see it live rather than in a picture: `git apply` the patch, build, and
+start with `--locale he -J-Dnmox.rtl.splits.mirror=true`.
+
 ### 128. ~~AltGr and the Ctrl+Alt chords, on a keyboard nobody here has~~ — CLOSED by 3.5.1, by measurement
 
 Most window chords are Ctrl+Alt+digit on Windows and Linux. On German,
