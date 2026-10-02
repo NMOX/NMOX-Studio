@@ -148,16 +148,19 @@ registered and gated both. What is recorded here is what was not fixed.
   of indentation. `await` and `using` must be one character apart. Haxe's
   fallback return-type rule is off. A formatter writes none of the shapes
   that lose.
-- **joni's notices.** Compiling every registered pattern logs 86 notices
+- **joni's notices.** Compiling every registered pattern logs 86 remarks
   that are not failures: an unescaped `]` or `-` in a character class, a
   nested repeat joni simplifies (`(?:\s+)?` in C++, 25 times), `\N` and
-  `\R` in Less. A session logs the ones whose rules it compiles. Each
-  pattern means what its author meant; escaping them is 86 edits to
-  vendored files for a quieter log.
-- **Only registered grammars are measured, with one line each.** The gate
-  that tokenizes compiles the rules reachable from a grammar's first
-  scanner. A pattern joni accepts and matches differently from Oniguruma
-  would pass every gate here.
+  `\R` in Less. A session logged one per compile, 1,088 lines for one C++
+  file. **3.5.5** starts that logger at SEVERE (`EngineNotices`); the
+  patterns are unchanged, and
+  `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
+  brings the remarks back for someone bumping a grammar.
+- **What is tokenized is one line per grammar and the catalogue's
+  samples.** 3.5.5 runs the learning catalogue's 187 files through 52
+  grammars. A pattern joni accepts and matches differently from Oniguruma
+  passes every gate here unless a sample shows it, and the grammars no
+  sample reaches are compiled, not run.
 
 ### 131. A test of the real preferences store failed once (3.5.3)
 
@@ -182,6 +185,26 @@ starting on a runner whose graphics differ, and it is only a guess.
 3.5.4 it stops itself and takes a thread dump of the Java process first,
 so the next hang carries its own evidence. Read that dump before anything
 else is tried.
+
+### 133. A language server's error for a file in no project is logged SEVERE (3.5.5)
+
+Seen in the seventy-file walk, with the servers this machine happens to
+have: `file not found` (rust-analyzer, for a `.rs` beside no `Cargo.toml`),
+`trying to compute folding ranges for non-added document`, `No language
+service for 'file:///…'`, each thrown out of the platform's
+`FoldManagerImpl` through `Utils.handleBindings` to
+`Exceptions.printStackTrace`, and one `UnsupportedOperationException` from
+`LanguageClient.registerCapability` (ledger 45). The files were loose
+samples in a scratch folder; inside a project of their kind the same files
+are served. A person who opens a single source file from a download folder
+gets the same. The catch is the platform's. What this product could do is
+decline to start a server for a file that has no project, and that would
+take away the servers that do answer for a loose file (gopls does).
+Not decided.
+
+Also seen and left: R and Julia take the 3.5.5 probe on the strength of
+their documented exit codes, with neither installed on the machine that
+wrote it.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 

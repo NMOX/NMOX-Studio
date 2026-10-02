@@ -4,6 +4,66 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.5] - 2026-10-02
+
+**One file of every kind the product hands a learner, opened.** 3.5.4 found
+that an Elixir file opened empty and that no walk had ever opened one. The
+learning catalogue ships real code in seventy kinds of file; this release
+opened one of each in the built product and read the window and the log.
+
+### Fixed
+
+- **The R learning space's own `hello.R` opened as plain text.** The
+  platform matches a file's extension by case on macOS and Linux, R's
+  convention is the capital, and only `r` was registered. `R` is registered
+  now, with the capital spellings Fortran uses for sources that go through
+  the preprocessor (`F90`, `F95`, `F03`, `F08`) and the ones COBOL sources
+  from a mainframe arrive with (`COB`, `CBL`, `CPY`).
+- **Opening a C++ file wrote 1,088 warnings to the log.** The regex engine
+  remarks on the style of a pattern it compiles (an unescaped `]`, a nested
+  repeat it simplifies), TM4E logs each remark as a warning, and a grammar's
+  patterns are compiled again for every rule that reaches them. None is a
+  failure and none is anything a person can act on, and the log they buried
+  is the one Report a Problem attaches. That logger now starts at SEVERE; a
+  pattern the engine refuses is thrown, not logged, and the build compiles
+  every pattern. Seventy files of seventy kinds now open with four warning
+  lines, all the platform's. Start the IDE with
+  `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
+  to read the remarks when bumping a grammar.
+- **A language server that is a package inside an interpreter was started
+  whether or not the package was there.** With Racket installed and
+  `racket-langserver` not, or Perl without `Perl::LanguageServer`, the
+  "server" started, printed that it could not find its package and exited;
+  the client failed its handshake on a closed stream and tried again for
+  the next feature that asked, five times for one Perl file, and the
+  notification that says what to install never appeared because the launch
+  had succeeded. Racket, Perl, R and Julia now ask the interpreter whether
+  the package is there first. Only a definite no stops the launch: no
+  interpreter, or a probe still running after six seconds, starts the
+  server as before. Racket and Perl were walked on a machine in that state;
+  R and Julia follow the same rule and were not, there being neither here.
+
+### Added
+
+- `ShippedSamplesTokenizeGateTest`: each of the catalogue's 187 sample
+  files is run whole through the grammar its extension is bound to, in the
+  real engine, with the bindings read from the layer the editor module
+  generates. Fifty-two grammars are exercised by real code that way. A
+  grammar that throws or cannot finish a line fails with the file and the
+  line, and so does a sample whose extension is registered only in another
+  case.
+
+### Measured
+
+Restoring Elixir's pattern as 3.5.3 shipped it fails the new gate on line 1
+of `hello.exs`. Restoring one of Svelte's does not, because no sample has an
+`{#if}` block: a sample exercises the rules its text needs, and the gate
+that compiles every pattern is the one that reads the rest. Twelve mutants,
+each killed by name.
+
+Not fixed: with language servers installed, opening a source file that
+belongs to no project logs the server's error answer as SEVERE (ledger 133).
+
 ## [3.5.4] - 2026-10-02
 
 **An Elixir file opened as an empty tab.** No text, no editor toolbar: the
@@ -25154,6 +25214,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.5]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.4...v3.5.5
 [3.5.4]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.3...v3.5.4
 [3.5.3]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.2...v3.5.3
 [3.5.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.1...v3.5.2
