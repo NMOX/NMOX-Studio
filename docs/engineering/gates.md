@@ -108,6 +108,8 @@ The NetBeans Platform's own mechanisms, used the way the platform reads them.
 - [`MotionGuardWiringGateTest`](../../ui/src/test/java/org/nmox/studio/ui/browser/fx/MotionGuardWiringGateTest.java): Play, Scrub and Stop in the Motion pane all consult the target guard (v2.16.0).
 - [`ProbedPortWiringGateTest`](../../rack/src/test/java/org/nmox/studio/rack/devices/ProbedPortWiringGateTest.java): The static lanes probe a free port at the spawn and announce the port the server's banner names (v1.320.0–v1.321.0).
 - [`SeamRestoreGateTest`](../../rack/src/test/java/org/nmox/studio/rack/model/SeamRestoreGateTest.java): A test that swaps a production seam restores it through the seam's own reset (v2.184.0: a test invented its own "production" lane).
+- [`RuleLocalRepositoriesGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/RuleLocalRepositoriesGateTest.java): No shipped TextMate grammar keeps a repository inside a rule, which TM4E cannot resolve; Ruby's percent literals are tokenized through the real engine (3.5.0).
+
 
 ## Accessibility
 

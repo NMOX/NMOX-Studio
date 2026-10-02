@@ -184,3 +184,20 @@ them TM4E logged "No grammar source for scope" 235 times per boot and
 pruned every including rule; with them the include resolves, the region
 reads as plain text, and the log is quiet. They are written here, carry
 no license, and are not counted among the vendored grammars.
+
+## Rule-local repositories, hoisted (3.5)
+
+Four vendored grammars are shipped in a modified shape: `ruby`, `crystal`,
+`html` and `clarity`. Upstream keeps some definitions in a `repository`
+inside a rule, which VS Code's engine resolves and TM4E does not (it looks
+only at the grammar's top level, and removes the rule that asked). In Ruby
+that was every percent literal and the braces inside a string
+interpolation. `scripts/hoist-grammar-repositories.py` moves each such
+definition to the top-level repository under a name of its own
+(`parens__2`) and rewrites the includes that could see it; nothing else
+changes, and the files' meaning is the upstream's. The Clarity row's
+sha256 above is the upstream file's; the hoisted file's is
+`3e73bde43c11a5fcea22f9a561ac0976ee536aef9eb37295ffc6767b1efe68ba`.
+Re-run the script when one of these grammars is bumped;
+`RuleLocalRepositoriesGateTest` fails the build while a shipped grammar
+still carries a rule-local repository.
