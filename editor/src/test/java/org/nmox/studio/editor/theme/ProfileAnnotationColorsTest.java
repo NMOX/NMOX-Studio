@@ -120,6 +120,23 @@ class ProfileAnnotationColorsTest {
     }
 
     @Test
+    @DisplayName("a type the profile names without a text colour inherits the editor's again")
+    void aTextColourTheProfileDoesNotGiveIsInherited() {
+        AnnotationType blackOnPastel = type("Breakpoint", PASTEL_GREEN);
+        blackOnPastel.setForegroundColor(Color.BLACK);
+        blackOnPastel.setInheritForegroundColor(false);
+        blackOnPastel.setWaveUnderlineColor(Color.BLUE);
+        blackOnPastel.setUseWaveUnderlineColor(true);
+
+        ProfileAnnotationColors.apply(Map.of("Breakpoint", new Colors(DARK_GREEN, null, null)),
+                Map.of("Breakpoint", blackOnPastel)::get);
+
+        // black text kept from a light default is unreadable on the dark background just given
+        assertThat(blackOnPastel.isInheritForegroundColor()).isTrue();
+        assertThat(blackOnPastel.isUseWaveUnderlineColor()).isFalse();
+    }
+
+    @Test
     @DisplayName("text and underline colours follow the same rules; an unknown or unnamed type is left alone")
     void foregroundAndWaveAndStrangers() {
         AnnotationType todo = type("todo", null);
@@ -147,7 +164,25 @@ class ProfileAnnotationColorsTest {
     @Test
     @DisplayName("a profile is found by its display name, and the user's own file wins over its defaults")
     void theProfileFolderAndTheUsersFile() throws Exception {
-        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        // the platform's configuration filesystem shows "FlatLaf Dark" for the
+        // folder FlatLafDark (a localizing bundle named in the layer); a plain
+        // memory filesystem decorates nothing, so this one says the same
+        FileObject root = new org.openide.filesystems.MultiFileSystem(FileUtil.createMemoryFileSystem()) {
+            @Override
+            public org.openide.filesystems.StatusDecorator getDecorator() {
+                return new org.openide.filesystems.StatusDecorator() {
+                    @Override
+                    public String annotateName(String name, java.util.Set<? extends FileObject> files) {
+                        return "FlatLafDark".equals(name) ? "FlatLaf Dark" : name;
+                    }
+
+                    @Override
+                    public String annotateNameHtml(String name, java.util.Set<? extends FileObject> files) {
+                        return null;
+                    }
+                };
+            }
+        }.getRoot();
         FileObject dark = FileUtil.createFolder(root, "FontsColors/FlatLafDark");
         FileObject defaults = FileUtil.createFolder(dark, "Defaults");
         write(defaults.createData("platform-annotations", "xml"), PLATFORMS_FILE)
@@ -158,7 +193,10 @@ class ProfileAnnotationColorsTest {
         FileUtil.createFolder(root, "FontsColors/NetBeans");
 
         FileObject fontsColors = root.getFileObject("FontsColors");
-        assertThat(ProfileAnnotationColors.profileFolder(fontsColors, "FlatLafDark")).isEqualTo(dark);
+        assertThat(ProfileAnnotationColors.profileFolder(fontsColors, "FlatLaf Dark"))
+                .as("by the name the Options dialog shows").isEqualTo(dark);
+        assertThat(ProfileAnnotationColors.profileFolder(fontsColors, "FlatLafDark"))
+                .as("and by the folder's own").isEqualTo(dark);
         assertThat(ProfileAnnotationColors.profileFolder(fontsColors, "No Such Profile")).isNull();
 
         Map<String, Colors> colors = ProfileAnnotationColors.read(dark);
