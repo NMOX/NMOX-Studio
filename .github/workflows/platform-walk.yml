@@ -40,13 +40,16 @@ jobs:
       - name: Build application
         run: mvn -B clean package -DskipTests
 
-      - name: Install Xvfb (Linux headless display)
+      # A display, and a window manager on it. Without one nothing grants
+      # keyboard focus, and whatever acts on "the focused editor" does nothing:
+      # the staged walk's breakpoint was never set on a bare Xvfb.
+      - name: Install Xvfb and a window manager (Linux headless display)
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y xvfb
+        run: sudo apt-get update && sudo apt-get install -y xvfb openbox
 
       - name: Walk (Linux)
         if: runner.os == 'Linux'
-        run: xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out
+        run: xvfb-run -a --server-args="-screen 0 1920x1200x24" sh -c 'openbox & sleep 2; scripts/platform-walk.sh walk-out'
 
       # the runner's desktop starts at 1024x768, smaller than any screen
       # the product is used on; a walk of that is a walk of the wrong thing
@@ -67,7 +70,7 @@ jobs:
       # need a service this job does not start are skipped by name in the log.
       - name: Staged walk (Linux)
         if: runner.os == 'Linux'
-        run: NMOX_WALK_STAGED=1 xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out/staged
+        run: xvfb-run -a --server-args="-screen 0 1920x1200x24" sh -c 'openbox & sleep 2; NMOX_WALK_STAGED=1 scripts/platform-walk.sh walk-out/staged'
 
       - name: Staged walk (Windows)
         if: runner.os == 'Windows'
