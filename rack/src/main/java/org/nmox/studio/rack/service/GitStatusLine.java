@@ -201,9 +201,9 @@ public class GitStatusLine implements StatusLineElementProvider {
         };
 
         GitStrip() {
-            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 0, 0));
             setOpaque(false);
-            chipLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            chipLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             chipLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             chipLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override
@@ -474,7 +474,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                         + (truncated ? "\n\n" + Bundle.GitStatusLine_showingFirstComments(
                                 String.valueOf(org.nmox.studio.rack.engine.GitReviews.LIMIT)) : "");
                 java.awt.EventQueue.invokeLater(() -> {
-                    javax.swing.JTextArea area = new javax.swing.JTextArea(text, 24, 80);
+                    javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(text, 24, 80));
                     area.setEditable(false);
                     area.setLineWrap(true);
                     area.setWrapStyleWord(true);
@@ -675,7 +675,7 @@ public class GitStatusLine implements StatusLineElementProvider {
 
         /** The editable draft — Copy puts it on the clipboard; never commits. */
         private void showDraft(String message) {
-            javax.swing.JTextArea area = new javax.swing.JTextArea(message, 12, 72);
+            javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.followsReader(new javax.swing.JTextArea(message, 12, 72));
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
             area.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,

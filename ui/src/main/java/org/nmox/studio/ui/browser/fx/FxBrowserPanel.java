@@ -98,7 +98,8 @@ public final class FxBrowserPanel extends JPanel {
     private final JsBridge bridge = new JsBridge(SwingUtilities::invokeLater, console, network);
     private final DevToolsPanel devTools;
     private final JSplitPane split;
-    private final JTextField urlField = new JTextField();
+    /** An address reads left to right in every language: mirrored, its last slash led the line. */
+    private final JTextField urlField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
     {
         urlField.getAccessibleContext().setAccessibleName(Bundle.FxBrowserPanel_addressField());
     }
@@ -158,12 +159,16 @@ public final class FxBrowserPanel extends JPanel {
     /** EDT. The Swing toolbar row. */
     private JPanel toolbar() {
         JPanel bar = new JPanel(new BorderLayout(4, 0));
-        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
-        left.add(navButton("←", Bundle.FxBrowserPanel_backTip(), () -> history(-1)));
-        left.add(navButton("→", Bundle.FxBrowserPanel_forwardTip(), () -> history(+1)));
+        JPanel left = new JPanel(new FlowLayout(FlowLayout.LEADING, 2, 2));
+        JButton back = navButton("←", Bundle.FxBrowserPanel_backTip(), () -> history(-1));
+        JButton forward = navButton("→", Bundle.FxBrowserPanel_forwardTip(), () -> history(+1));
+        // Back points to where the reader's line starts, and turns with the window
+        org.nmox.studio.ui.browser.NavArrows.follow(back, forward);
+        left.add(back);
+        left.add(forward);
         left.add(navButton("⟳", Bundle.FxBrowserPanel_reloadTip(), () -> onFx(() -> engine.reload())));
         left.add(navButton("✕", Bundle.FxBrowserPanel_stopTip(), () -> onFx(() -> engine.getLoadWorker().cancel())));
-        bar.add(left, BorderLayout.WEST);
+        bar.add(left, BorderLayout.LINE_START);
 
         urlField.addActionListener(e -> {
             String url = BrowserUrls.normalize(urlField.getText());
@@ -173,7 +178,7 @@ public final class FxBrowserPanel extends JPanel {
         });
         bar.add(urlField, BorderLayout.CENTER);
 
-        JPanel right = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 2));
+        JPanel right = new JPanel(new FlowLayout(FlowLayout.LEADING, 2, 2));
         progress.setPreferredSize(new Dimension(70, 14));
         progress.setVisible(false);
         right.add(progress);
@@ -198,7 +203,7 @@ public final class FxBrowserPanel extends JPanel {
         devToolsToggle.setToolTipText(Bundle.FxBrowserPanel_devToolsTip());
         devToolsToggle.addActionListener(e -> setDevToolsVisible(devToolsToggle.isSelected()));
         right.add(devToolsToggle);
-        bar.add(right, BorderLayout.EAST);
+        bar.add(right, BorderLayout.LINE_END);
         return bar;
     }
 

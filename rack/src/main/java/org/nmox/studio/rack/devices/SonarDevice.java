@@ -193,7 +193,7 @@ public class SonarDevice extends RackDevice {
         };
         fill.run();
 
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEADING));
         JButton rescan = new JButton("Sweep again");
         rescan.addActionListener(e -> {
             sweep();

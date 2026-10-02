@@ -88,10 +88,10 @@ public class ProjectConfigDialog extends JDialog {
     private final File projectDir;
     private PackageJsonFile pkg;
 
-    private final JTextField nameField = new JTextField(24);
-    private final JTextField versionField = new JTextField(10);
-    private final JTextField descriptionField = new JTextField(32);
-    private final JTextField licenseField = new JTextField(10);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
+    private final JTextField versionField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
+    private final JTextField descriptionField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(32));
+    private final JTextField licenseField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[]{"commonjs", "module"});
     {
         // the form's labels also setLabelFor these (below); the explicit
@@ -130,7 +130,7 @@ public class ProjectConfigDialog extends JDialog {
         });
         JButton cancel = new JButton(Bundle.ProjectConfigDialog_cancel());
         cancel.addActionListener(e -> dispose());
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.TRAILING));
         buttons.add(cancel);
         buttons.add(save);
 
@@ -148,7 +148,7 @@ public class ProjectConfigDialog extends JDialog {
         panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 4, 4, 4);
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.LINE_START;
         int row = 0;
         for (Object[] pair : new Object[][]{
             {Bundle.ProjectConfigDialog_nameLabel(), nameField}, {Bundle.ProjectConfigDialog_versionLabel(), versionField},
@@ -196,7 +196,7 @@ public class ProjectConfigDialog extends JDialog {
                 scriptsModel.removeRow(row);
             }
         });
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING));
         buttons.add(addBtn);
         buttons.add(removeBtn);
         panel.add(buttons, BorderLayout.SOUTH);
@@ -214,7 +214,7 @@ public class ProjectConfigDialog extends JDialog {
         JButton addBtn = new JButton(Bundle.ProjectConfigDialog_addEllipsis());
         addBtn.setToolTipText(Bundle.ProjectConfigDialog_addTooltip());
         addBtn.addActionListener(e -> {
-            JTextField pkgField = new JTextField(20);
+            JTextField pkgField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(20));
             pkgField.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_packageField());
             JComboBox<String> scope = new JComboBox<>(new String[]{Bundle.ProjectConfigDialog_scopeDependency(), Bundle.ProjectConfigDialog_scopeDevDependency()});
             scope.getAccessibleContext().setAccessibleName(Bundle.ProjectConfigDialog_scopeField());
@@ -275,7 +275,7 @@ public class ProjectConfigDialog extends JDialog {
             }
         });
 
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING));
         buttons.add(addBtn);
         buttons.add(removeBtn);
         buttons.add(new JLabel(Bundle.ProjectConfigDialog_changesNote()));

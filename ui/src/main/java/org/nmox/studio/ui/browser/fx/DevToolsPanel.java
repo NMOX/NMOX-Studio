@@ -252,7 +252,7 @@ public final class DevToolsPanel extends JPanel {
 
     // Motion tab (v2.12.0 — the DHTML keyframe timeline)
     private final JLabel motionStatus = new JLabel(" ");
-    private final JTextField motionName = new JTextField("my-motion", 10);
+    private final JTextField motionName = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("my-motion", 10));
     private final javax.swing.JSpinner motionDuration = new javax.swing.JSpinner(
             new javax.swing.SpinnerNumberModel(1500, 100, 600_000, 100));
     private final javax.swing.JComboBox<String> motionEasing = new javax.swing.JComboBox<>(
@@ -318,14 +318,14 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel consoleTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JList<ConsoleModel.Entry> list = new JList<>(consoleList);
+        JList<ConsoleModel.Entry> list = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JList<>(consoleList));
         list.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleOutputName());
         list.setCellRenderer(new ConsoleRenderer());
         panel.add(consoleDropped, BorderLayout.NORTH);
         consoleDropped.setVisible(false);
         panel.add(new JScrollPane(list), BorderLayout.CENTER);
         JPanel south = new JPanel(new BorderLayout(4, 0));
-        JTextField repl = new JTextField();
+        JTextField repl = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         repl.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_consoleInputName());
         repl.putClientProperty("JTextField.placeholderText", Bundle.DevToolsPanel_consolePlaceholder());
         repl.addActionListener(e -> {
@@ -362,11 +362,11 @@ public final class DevToolsPanel extends JPanel {
         explain.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_explainName());
         explain.addActionListener(e -> explainLastError());
         javax.swing.JPanel east = new javax.swing.JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+                new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 4, 0));
         east.add(explain);
         east.add(clear);
         south.add(repl, BorderLayout.CENTER);
-        south.add(east, BorderLayout.EAST);
+        south.add(east, BorderLayout.LINE_END);
         panel.add(south, BorderLayout.SOUTH);
         return panel;
     }
@@ -443,7 +443,7 @@ public final class DevToolsPanel extends JPanel {
     private static JTree safeTree(javax.swing.tree.TreeModel model) {
         // PLAIN-TABLE-EXEMPT: the DOM pane's renderer carries its own
         // html-disable idiom, gated by DevToolsHtmlSafetyTest (v1.208.0)
-        JTree tree = new JTree(model);
+        JTree tree = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTree(model));
         tree.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_domTreeName());
         if (tree.getCellRenderer() instanceof JComponent c) {
             disableHtmlRendering(c);
@@ -456,7 +456,7 @@ public final class DevToolsPanel extends JPanel {
         // PLAIN-TABLE-EXEMPT: this pane predates core.util.PlainTables and
         // carries its own disableHtmlRendering + DevToolsHtmlSafetyTest gate
         // (v1.206.0). The safety is identical (html.disable on the renderer).
-        JTable table = new JTable(model);
+        JTable table = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTable(model));
         table.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_networkTableName());
         DefaultTableCellRenderer plain = new DefaultTableCellRenderer();
         disableHtmlRendering(plain);
@@ -507,7 +507,7 @@ public final class DevToolsPanel extends JPanel {
         javax.swing.JToggleButton pick = new javax.swing.JToggleButton(Bundle.DevToolsPanel_pickElement());
         JButton openSource = new JButton(Bundle.DevToolsPanel_openSource());
         JButton editStyle = new JButton(Bundle.DevToolsPanel_editStyle());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(pick);
         bar.add(openSource);
@@ -598,9 +598,9 @@ public final class DevToolsPanel extends JPanel {
         javax.swing.JComboBox<String> prop = new javax.swing.JComboBox<>(
                 StyleSummary.KEYS.toArray(String[]::new));
         prop.setEditable(true);
-        JTextField value = new JTextField(18);
+        JTextField value = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
         value.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_valueName());
-        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         form.add(new JLabel(Bundle.DevToolsPanel_propertyLabel()));
         form.add(prop);
         form.add(new JLabel(Bundle.DevToolsPanel_valueLabel()));
@@ -813,7 +813,7 @@ public final class DevToolsPanel extends JPanel {
         apply.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_applyName());
         apply.addActionListener(e -> motionApply());
 
-        JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         barTop.add(new JLabel(Bundle.DevToolsPanel_presetLabel()));
         barTop.add(presets);
         barTop.add(load);
@@ -825,7 +825,7 @@ public final class DevToolsPanel extends JPanel {
         barTop.add(motionEasing);
         barTop.add(new JLabel(Bundle.DevToolsPanel_runsLabel()));
         barTop.add(motionIterations);
-        JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         barTracks.add(new JLabel(Bundle.DevToolsPanel_trackLabel()));
         barTracks.add(trackProp);
         barTracks.add(addTrack);
@@ -835,7 +835,7 @@ public final class DevToolsPanel extends JPanel {
         north.add(barTracks);
         panel.add(north, BorderLayout.NORTH);
         panel.add(new JScrollPane(motionStrip), BorderLayout.CENTER);
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         south.add(play);
         south.add(stop);
         south.add(apply);
@@ -957,7 +957,7 @@ public final class DevToolsPanel extends JPanel {
     /** Double-click on a diamond: edit that stop's value. */
     private void editStopValue(String property, Integer percent) {
         String current = motionStrip.model().stops(property).get(percent);
-        JTextField field = new JTextField(current == null ? "" : current, 18);
+        JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(current == null ? "" : current, 18));
         field.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_keyframeValueName());
         org.openide.DialogDescriptor dd = new org.openide.DialogDescriptor(
                 field, Bundle.DevToolsPanel_stopDialogTitle(property, String.valueOf(percent)));
@@ -1213,7 +1213,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel networkTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         JButton clear = new JButton(Bundle.DevToolsPanel_clear());
         clear.addActionListener(e -> network.clear());
         bar.add(clear);
@@ -1244,7 +1244,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel storageTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshStorage());
         bar.add(refresh);
@@ -1276,7 +1276,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshVue());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(vueStatus);
         panel.add(bar, BorderLayout.NORTH);
@@ -1357,7 +1357,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshSvelte());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(svelteStatus);
         panel.add(bar, BorderLayout.NORTH);
@@ -1433,7 +1433,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshAngular());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(ngStatus);
         panel.add(bar, BorderLayout.NORTH);
@@ -1531,7 +1531,9 @@ public final class DevToolsPanel extends JPanel {
     }
 
     private static JTextArea readOnlyArea(String accessibleName) {
-        JTextArea area = new JTextArea();
+        // what DevTools shows is the page's own code, values and addresses:
+        // left to right in every language, like the editor beside it (3.5.3)
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         area.getAccessibleContext().setAccessibleName(accessibleName);
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));

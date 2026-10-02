@@ -340,7 +340,7 @@ public final class AgentPortAction implements ActionListener {
                     .setContents(new java.awt.datatransfer.StringSelection(command), null);
             StatusDisplayer.getDefault().setStatusText(Bundle.AgentPortAction_claudeCopied());
         });
-        JPanel buttons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        JPanel buttons = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING));
         buttons.add(copy);
         buttons.add(copyClaude);
 
@@ -378,7 +378,7 @@ public final class AgentPortAction implements ActionListener {
             LANE.post(() -> keep.setAutostart(on));
         });
         JPanel south = new JPanel();
-        south.setLayout(new javax.swing.BoxLayout(south, javax.swing.BoxLayout.Y_AXIS));
+        south.setLayout(new javax.swing.BoxLayout(south, javax.swing.BoxLayout.PAGE_AXIS));
         for (javax.swing.JComponent c : new javax.swing.JComponent[]{buttons, keepBox, autostartBox, note}) {
             c.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
             south.add(c);

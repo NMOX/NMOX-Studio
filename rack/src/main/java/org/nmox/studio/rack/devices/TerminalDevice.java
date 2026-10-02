@@ -31,7 +31,7 @@ public class TerminalDevice extends RackDevice {
     public TerminalDevice() {
         super("terminal", "PHOSPHOR", "SCROLLBACK TERMINAL", new Color(57, 255, 20), 5);
 
-        screen = new JTextArea();
+        screen = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         // the scroll pane below was named and the text area inside it was not,
         // so the thing a screen reader actually lands in announced its role
         screen.getAccessibleContext().setAccessibleName("terminal scrollback");

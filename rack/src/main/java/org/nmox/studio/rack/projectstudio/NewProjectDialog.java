@@ -70,8 +70,8 @@ public class NewProjectDialog extends JDialog {
     private static final org.openide.util.RequestProcessor CREATE_RP =
             new org.openide.util.RequestProcessor("nmox-new-project", 1, true);
 
-    private final JTextField nameField = new JTextField("my-app", 20);
-    private final JTextField locationField = new JTextField(28);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("my-app", 20));
+    private final JTextField locationField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(28));
     {
         // the beginner's first two fields speak their names to assistive
         // technology (v2.85.0 census: 46 inputs product-wide had neither a
@@ -186,7 +186,7 @@ public class NewProjectDialog extends JDialog {
         form.setBorder(BorderFactory.createEmptyBorder(12, 12, 4, 12));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 4, 4, 4);
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.LINE_START;
 
         c.gridx = 0;
         c.gridy = 0;
@@ -233,7 +233,7 @@ public class NewProjectDialog extends JDialog {
 
         createButton.addActionListener(e -> createProject());
         cancelButton.addActionListener(e -> dispose());
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.TRAILING));
         buttons.add(cancelButton);
         buttons.add(createButton);
         getRootPane().setDefaultButton(createButton);

@@ -485,7 +485,7 @@ public final class TasksTopComponent extends TopComponent {
 
     private void buildUi() {
         setLayout(new BorderLayout());
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEADING, 8, 4));
         JButton addCard = new JButton(Bundle.TasksTopComponent_newCard());
         addCard.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_newCardA11y());
         addCard.setToolTipText(Bundle.TasksTopComponent_newCardTip());
@@ -499,10 +499,7 @@ public final class TasksTopComponent extends TopComponent {
                 Bundle.TasksTopComponent_overviewA11y());
         overviewToggle.setToolTipText(
                 Bundle.TasksTopComponent_overviewTip());
-        overviewToggle.addActionListener(e -> {
-            faces.show(center, overviewToggle.isSelected() ? "overview" : "board");
-            rebuild();
-        });
+        overviewToggle.addActionListener(e -> showFace(overviewToggle.isSelected()));
         JButton standup = new JButton(Bundle.TasksTopComponent_standup());
         standup.getAccessibleContext().setAccessibleName(
                 Bundle.TasksTopComponent_standupA11y());
@@ -520,7 +517,7 @@ public final class TasksTopComponent extends TopComponent {
         top.add(boardLabel);
         add(top, BorderLayout.NORTH);
 
-        columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.X_AXIS));
+        columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.LINE_AXIS));
         JScrollPane scroll = new JScrollPane(columnsPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -953,9 +950,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void newCardDialog(int preferredColumn) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
-        JTextField title = new JTextField(28);
+        JTextField title = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(28));
         title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
-        JTextArea notes = new JTextArea(5, 28);
+        JTextArea notes = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(5, 28));
         notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
@@ -973,9 +970,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void editCardDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new BorderLayout(0, 6));
-        JTextField title = new JTextField(card.title(), 28);
+        JTextField title = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.title(), 28));
         title.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardTitleA11y());
-        JTextArea notes = new JTextArea(card.notes(), 5, 28);
+        JTextArea notes = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(card.notes(), 5, 28));
         notes.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_cardNotesA11y());
         form.add(title, BorderLayout.NORTH);
         form.add(new JScrollPane(notes), BorderLayout.CENTER);
@@ -1048,7 +1045,27 @@ public final class TasksTopComponent extends TopComponent {
             return;
         }
         overviewToggle.setSelected(true);
-        faces.show(center, "overview");
+        showFace(true);
+    }
+
+    /**
+     * Shows the board or its overview, and BUILDS what it shows. One method
+     * for the toggle and for anything that sets the toggle from code: a
+     * programmatic {@code setSelected} runs no action listener, and the
+     * overview is built only when asked for. The forge selected the toggle
+     * and flipped the card itself, so from v2.163.0 to 3.5.2 the Overview
+     * picture in fourteen languages was the panel's empty ground. The Hebrew
+     * one was noticed first, in a right-to-left walk, and taken for a
+     * mirroring defect until the German one turned out to be empty too.
+     */
+    private void showFace(boolean overview) {
+        faces.show(center, overview ? "overview" : "board");
+        rebuild();
+    }
+
+    /** How many components the overview holds; the forge's picture must not be an empty one. */
+    int overviewComponentCountForTest() {
+        return overviewPanel.getComponentCount();
     }
 
     private void showStandup() {
@@ -1087,7 +1104,7 @@ public final class TasksTopComponent extends TopComponent {
                 String md = StandupReport.build(board, commits,
                         System.currentTimeMillis(),
                         java.time.ZoneId.systemDefault());
-                JTextArea text = new JTextArea(md, 18, 52);
+                JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(md, 18, 52));
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_standupReportA11y());
                 text.setEditable(false);
                 text.setCaretPosition(0);
@@ -1137,23 +1154,23 @@ public final class TasksTopComponent extends TopComponent {
     /** Non-null prefills override the defaults — the roll-over's seam. */
     private void editSprint(String prefillName, java.time.LocalDate prefillStart,
             java.time.LocalDate prefillEnd) {
-        javax.swing.JTextField name = new javax.swing.JTextField(prefillName != null
+        javax.swing.JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new javax.swing.JTextField(prefillName != null
                 ? prefillName
-                : board.hasSprint() ? board.sprintName() : "", 18);
+                : board.hasSprint() ? board.sprintName() : "", 18));
         java.time.LocalDate today = java.time.LocalDate.now();
         java.time.ZoneId zone = java.time.ZoneId.systemDefault();
-        javax.swing.JTextField start = new javax.swing.JTextField(prefillStart != null
+        javax.swing.JTextField start = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextField(prefillStart != null
                 ? prefillStart.toString()
                 : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintStart()), zone).toString()
-                : today.toString(), 10);
-        javax.swing.JTextField end = new javax.swing.JTextField(prefillEnd != null
+                : today.toString(), 10));
+        javax.swing.JTextField end = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextField(prefillEnd != null
                 ? prefillEnd.toString()
                 : board.hasSprint()
                 ? java.time.LocalDate.ofInstant(java.time.Instant
                         .ofEpochMilli(board.sprintEnd()), zone).toString()
-                : today.plusDays(13).toString(), 10);
+                : today.plusDays(13).toString(), 10));
         javax.swing.JPanel panel = new javax.swing.JPanel(
                 new java.awt.GridLayout(0, 2, 6, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -1208,7 +1225,7 @@ public final class TasksTopComponent extends TopComponent {
         if (md.isEmpty()) {
             return;
         }
-        JTextArea text = new JTextArea(md, 18, 52);
+        JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(md, 18, 52));
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_sprintReportA11y());
         text.setEditable(false);
         text.setCaretPosition(0);
@@ -1274,7 +1291,7 @@ public final class TasksTopComponent extends TopComponent {
 
     /** Board-level retro notes (v2.5.0) — the overview's Edit Retro…. */
     private void editRetroDialog() {
-        JTextArea text = new JTextArea(board.retro(), 10, 44);
+        JTextArea text = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(board.retro(), 10, 44));
         text.setLineWrap(true);
         text.setWrapStyleWord(true);
         text.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_retroNotesA11y());
@@ -1298,9 +1315,9 @@ public final class TasksTopComponent extends TopComponent {
 
     private void blockDialog(TaskBoard.Card card) {
         JPanel form = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));
-        JTextField owner = new JTextField(card.blockOwner(), 28);
+        JTextField owner = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.blockOwner(), 28));
         owner.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_blockerOwnerA11y());
-        JTextField action = new JTextField(card.blockAction(), 28);
+        JTextField action = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(card.blockAction(), 28));
         action.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_unblockActionA11y());
         form.add(new JLabel(Bundle.TasksTopComponent_ownerLabel()));
         form.add(owner);

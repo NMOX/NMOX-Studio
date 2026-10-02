@@ -65,17 +65,17 @@ public final class ExportLearningSpaceAction implements ActionListener {
                     Bundle.ExportLearningSpaceAction_aimFirst()));
             return;
         }
-        JTextField name = new JTextField(project.getName());
+        JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(project.getName()));
         name.getAccessibleContext().setAccessibleName(Bundle.ExportLearningSpaceAction_nameField());
-        JTextField blurb = new JTextField();
+        JTextField blurb = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         blurb.getAccessibleContext().setAccessibleName(Bundle.ExportLearningSpaceAction_blurbField());
         JComboBox<LearningCatalog.Category> category =
                 new JComboBox<>(LearningCatalog.Category.values());
         category.getAccessibleContext().setAccessibleName(Bundle.ExportLearningSpaceAction_categoryField());
-        JTextField family = new JTextField("Web");
+        JTextField family = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField("Web"));
         family.getAccessibleContext().setAccessibleName(Bundle.ExportLearningSpaceAction_familyField());
-        JTextField command = new JTextField(
-                new File(project, "package.json").isFile() ? "npm run dev" : "");
+        JTextField command = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(
+                new File(project, "package.json").isFile() ? "npm run dev" : ""));
         command.getAccessibleContext().setAccessibleName(Bundle.ExportLearningSpaceAction_commandField());
 
         JPanel rows = new JPanel(new java.awt.GridLayout(0, 1, 0, 4));

@@ -71,20 +71,20 @@ final class NetworkEditorDialog {
      * on cancel/invalid. Pass {@code existing == null} for Add.
      */
     static String show(IrcConfig config, IrcConfig.Network existing) {
-        JTextField name = new JTextField(existing == null ? "" : existing.name(), 18);
+        JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(existing == null ? "" : existing.name(), 18));
         name.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_networkName());
         name.setEditable(existing == null); // the name is the store key
-        JTextField host = new JTextField(existing == null ? "" : existing.host(), 18);
+        JTextField host = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(existing == null ? "" : existing.host(), 18));
         host.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_serverHost());
-        JTextField port = new JTextField(
-                existing == null ? "6697" : Integer.toString(existing.port()), 6);
+        JTextField port = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(
+                existing == null ? "6697" : Integer.toString(existing.port()), 6));
         port.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_port());
         JCheckBox tls = new JCheckBox(Bundle.NetworkEditorDialog_tls(), existing == null || existing.tls());
-        JTextField nick = new JTextField(existing == null ? "nmox-user" : existing.nick(), 18);
+        JTextField nick = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(existing == null ? "nmox-user" : existing.nick(), 18));
         nick.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_nickname());
-        JTextField sasl = new JTextField(existing == null ? "" : existing.saslAccount(), 18);
+        JTextField sasl = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(existing == null ? "" : existing.saslAccount(), 18));
         sasl.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_saslAccount());
-        JPasswordField password = new JPasswordField(18);
+        JPasswordField password = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(18));
         password.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_password());
         if (existing != null) {
             // the keyring may block on OS calls — probe it OFF the EDT and
@@ -101,15 +101,15 @@ final class NetworkEditorDialog {
                 }
             });
         }
-        JTextField autojoin = new JTextField(existing == null
-                ? "" : String.join(", ", existing.autojoin()), 18);
+        JTextField autojoin = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(existing == null
+                ? "" : String.join(", ", existing.autojoin()), 18));
         autojoin.getAccessibleContext().setAccessibleName(Bundle.NetworkEditorDialog_autojoinChannels());
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(3, 4, 3, 4);
-        gc.anchor = GridBagConstraints.WEST;
+        gc.anchor = GridBagConstraints.LINE_START;
         int row = 0;
         row = addRow(form, gc, row, Bundle.NetworkEditorDialog_nameLabel(), name);
         row = addRow(form, gc, row, Bundle.NetworkEditorDialog_hostLabel(), host);

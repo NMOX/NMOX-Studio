@@ -34,6 +34,12 @@ split panes out of that code's hands (`SplitShapes`): every pane keeps the
 children and the divider its author gave it, in every language, which is
 also what the Hebrew and Arabic pictures in the documentation show.
 
+**Sharper since 3.5.3.** Everything else in a window now mirrors: toolbars
+hug the reader's edge, and a sidebar placed by a border layout (the Infra
+Designer's palette, the Browser's navigation) changes sides. A sidebar
+placed by a split pane does not, so in Hebrew the Infra Designer's palette
+is on the right and DB Studio's connection tree is still on the left.
+
 **Open, as a design question:** in a mirrored window the connection tree
 arguably belongs on the right. Doing that deliberately means exchanging the
 children of HORIZONTAL splits only, mirroring the divider

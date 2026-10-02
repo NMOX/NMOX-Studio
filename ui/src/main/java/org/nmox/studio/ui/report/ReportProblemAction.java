@@ -127,7 +127,7 @@ public final class ReportProblemAction implements ActionListener {
 
     private static void dialog(String title, String body) {
         StatusDisplayer.getDefault().setStatusText("");
-        JTextArea area = new JTextArea(body, 26, 88);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(body, 26, 88));
         area.setLineWrap(true);
         area.setWrapStyleWord(true);
         area.setCaretPosition(0);

@@ -51,6 +51,20 @@ public final class TextDirection {
         return c;
     }
 
+    /**
+     * Says that {@code c} holds PROSE: words a person wrote, which run the
+     * way that person reads. It changes nothing. It is the decision, written
+     * where the next reader looks, and it is what
+     * {@code TextInputsChooseADirectionTest} asks every text input for:
+     * this, or {@link #keepLeftToRight}. A host name, a path, an address, a
+     * command or a line of code is not prose, and mirrored it reads wrong:
+     * the right-to-left walk photographed the Browser's address as
+     * {@code /http://127.0.0.1:3000}, its last slash leading the line (3.5.3).
+     */
+    public static <T extends javax.swing.JComponent> T followsReader(T c) {
+        return c;
+    }
+
     /** Does the interface run right-to-left for this locale? */
     public static boolean isRightToLeft(Locale locale) {
         String forced = System.getProperty(FORCE);

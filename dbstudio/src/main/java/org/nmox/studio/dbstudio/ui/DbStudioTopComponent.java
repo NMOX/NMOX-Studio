@@ -529,7 +529,7 @@ public final class DbStudioTopComponent extends TopComponent {
         // reachable — no menu consolidation, RUN/EXPLAIN/Cancel keep
         // their one-click place.
         bar.setLayout(new org.nmox.studio.core.util.WrapLayout(
-                java.awt.FlowLayout.LEFT, 4, 2));
+                java.awt.FlowLayout.LEADING, 4, 2));
         runButton.setForeground(ACCENT);
         runButton.setToolTipText(Bundle.DbStudioTopComponent_runTooltip());
         runButton.addActionListener(e -> run());
@@ -874,9 +874,9 @@ public final class DbStudioTopComponent extends TopComponent {
                 panel.add(readOnlyStrip(result, reason), BorderLayout.SOUTH);
             }
         } else {
-            JTextArea message = new JTextArea(result.isError()
+            JTextArea message = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(result.isError()
                     ? result.error()
-                    : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount()));
+                    : Bundle.DbStudioTopComponent_rowsAffected(result.updateCount())));
             if (result.isError()) {
                 // the driver's message is its own English, not our prose
                 org.nmox.studio.core.util.TextDirection.keepLeftToRight(message);
@@ -1299,7 +1299,7 @@ public final class DbStudioTopComponent extends TopComponent {
             syncButtons.run();
             status(Bundle.DbStudioTopComponent_deleted(q.name()), Color.GRAY);
         });
-        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING));
         south.add(rename);
         south.add(delete);
         JPanel panel = new JPanel(new BorderLayout(0, 6));
@@ -2690,7 +2690,7 @@ public final class DbStudioTopComponent extends TopComponent {
      * its keychain password never appear.
      */
     private JComponent explainStrip(ConnectionSpec spec, QueryResult result) {
-        JPanel strip = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 8, 4));
+        JPanel strip = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 8, 4));
         JButton explain = new JButton(Bundle.DbStudioTopComponent_explain());
         explain.setToolTipText(Bundle.DbStudioTopComponent_explainErrorTooltip());
         explain.addActionListener(e -> {

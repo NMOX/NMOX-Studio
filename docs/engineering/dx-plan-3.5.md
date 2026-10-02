@@ -207,6 +207,36 @@ What remains in a staged session's log is the platform's (`Invalid
 shortcut: Actions/Help/master-help.xml`, two deprecation notices) and the
 upstream grammars' (ledger 129).
 
+## After 3.5.2 shipped (3.5.3)
+
+The Workbench's picture was repainted in fifteen languages for 3.5.2, and
+the Arabic one showed its rows as English lays them out: title on the left,
+subtitle after it. The walk that followed is the one this plan had not
+taken: the staged scenes with the direction forced right-to-left on the
+English build (`NMOX_WALK_ARGS=-J-Dnmox.rtl=true`), before and after, and
+then the Hebrew build itself.
+
+- **Screen sides.** `BoxLayout.X_AXIS` does not reverse for a right-to-left
+  container; `LINE_AXIS` does. The same holds for `FlowLayout.LEFT` against
+  `LEADING` and `BorderLayout.WEST` against `LINE_START`. A census counted
+  107 of the first kind in 36 files and ten lopsided margins; a script
+  replaced them and `ReaderSidesGateTest` keeps them out. Left-to-right
+  builds are unchanged by construction: each pair means the same thing
+  there.
+- **A sweep sees what exists.** Rows built after the sweep had no direction.
+  The fix is in the one seam: a container listener, installed only while
+  the direction is right-to-left.
+- **Machine text.** 118 text inputs were classified by hand, prose or
+  machine text, with the decision written at each constructor so that a
+  gate can require one of every new input.
+- **The empty Overview.** The Hebrew Overview picture was blank and so was
+  the committed one, and the German one. The forge had never built it. *A
+  defect found while looking for another is first described as an instance
+  of the one being looked for.*
+
+Not done: a split pane's sides (ledger 127), which now stand out against
+everything else in the window.
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -229,3 +259,8 @@ and seen to fail by name.
 | Workbench rows (3.5.2) | no spare width taken; four times the budget; the click and the hover not on the subtitle; a list cut as a path; the character cut again; a plain page; a page that follows however narrow; a plain hint; every subtitle one kind | `WorkbenchA11yContractTest` (four lived until a subtitle longer than the budget was tested) |
 | One spelling (3.5.2) | the aim compared as given | `OpenProjectsBridgeTest` |
 | The session's end (3.5.2) | the target's end ends it at once; a held end waits for ever; an ending session drops the held end; the launcher's end leaves the target's held | `DapProxyTest` |
+| New children (3.5.3) | a left-to-right container hands on; never installed; never removed; marked text mirrored; a late split left to the runtime; a pass from inside a pass; installed whatever the direction; not re-asked on a language switch | `RightToLeftApplyTest`, `SplitShapesTest`, `RightToLeftWiringTest` |
+| The reader's sides (3.5.3) | a margin on the screen's left; a row along the screen; a gap as a left margin; a hint indented on the screen's left; one window naming WEST again; the margin rule dropped; a blessing ignored | `LeadingBorderTest`, `WorkbenchA11yContractTest`, `ReaderSidesGateTest` |
+| Machine text (3.5.3) | a DevTools field as prose; a field undecided; a wrapped constructor waved through | `DevToolsReadsLeftToRightTest`, `TextInputsChooseADirectionTest` |
+| Back and Forward (3.5.3) | Back points left whoever reads; either arrow not turning with its window | `NavArrowsTest` (one lived until each arrow was asked alone) |
+| The forge's Overview (3.5.3) | the card flipped and nothing built | `DocsTaskBoardTest` |

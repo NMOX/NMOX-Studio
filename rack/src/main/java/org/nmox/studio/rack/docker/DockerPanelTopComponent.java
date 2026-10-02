@@ -309,7 +309,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     // ---- header ----
 
     private JPanel buildHeader() {
-        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 6));
+        JPanel header = new JPanel(new FlowLayout(FlowLayout.LEADING, 10, 6));
         header.setBackground(BG);
         engineLabel.setForeground(TEXT);
         engineLabel.setFont(engineLabel.getFont().deriveFont(Font.BOLD));
@@ -373,7 +373,7 @@ public final class DockerPanelTopComponent extends TopComponent {
     }
 
     private static JTextArea preview(String accessibleName) {
-        JTextArea a = new JTextArea();
+        JTextArea a = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
         a.getAccessibleContext().setAccessibleName(accessibleName);
         a.setEditable(false);
         a.setFont(MONO);
@@ -449,7 +449,7 @@ public final class DockerPanelTopComponent extends TopComponent {
             enginePanel.setBackground(BG);
             GridBagConstraints g = new GridBagConstraints();
             g.insets = new java.awt.Insets(6, 12, 6, 12);
-            g.anchor = GridBagConstraints.WEST;
+            g.anchor = GridBagConstraints.LINE_START;
             g.gridy = 0;
             for (String h : new String[]{Bundle.DockerPanelTopComponent_colCategory(), Bundle.DockerPanelTopComponent_colCount(), Bundle.DockerPanelTopComponent_colActive(), Bundle.DockerPanelTopComponent_colSize(), Bundle.DockerPanelTopComponent_colReclaimable(), ""}) {
                 g.gridx = enginePanel.getComponentCount() % 6;
@@ -534,7 +534,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(BG);
         p.add(wrap(containersTable), BorderLayout.CENTER);
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
         actions.add(btn(Bundle.DockerPanelTopComponent_start(), () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("start", c.id()), Bundle.DockerPanelTopComponent_verbStart(c.name())))));
         actions.add(btn(Bundle.DockerPanelTopComponent_stop(), () -> eachSelectedContainer(c -> verbThenRefresh(client.lifecycle("stop", c.id()), Bundle.DockerPanelTopComponent_verbStop(c.name())))));
@@ -621,9 +621,9 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(BG);
         p.add(wrap(imagesTable), BorderLayout.CENTER);
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
-        JTextField pullField = new JTextField(22);
+        JTextField pullField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(22));
         pullField.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_pullFieldName());
         pullField.setToolTipText(Bundle.DockerPanelTopComponent_pullFieldTooltip());
         actions.add(pullField);
@@ -666,16 +666,16 @@ public final class DockerPanelTopComponent extends TopComponent {
 
     /** A run dialog with the three things you always need: name, ports, env. */
     private void quickRun(ImageInfo img) {
-        JTextField name = new JTextField(16);
+        JTextField name = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(16));
         name.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_containerNameField());
-        JTextField ports = new JTextField("8080:80", 16);
+        JTextField ports = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("8080:80", 16));
         ports.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_portsField());
-        JTextField env = new JTextField(16);
+        JTextField env = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(16));
         env.getAccessibleContext().setAccessibleName(Bundle.DockerPanelTopComponent_envField());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new java.awt.Insets(4, 4, 4, 4);
-        g.anchor = GridBagConstraints.WEST;
+        g.anchor = GridBagConstraints.LINE_START;
         g.gridy = 0;
         g.gridx = 0;
         form.add(new JLabel(Bundle.DockerPanelTopComponent_containerNameLabel()), g);
@@ -741,7 +741,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(BG);
         p.add(wrap(volumesTable), BorderLayout.CENTER);
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
         actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
             if (confirm(Bundle.DockerPanelTopComponent_confirmRemoveVolumes())) {
@@ -765,7 +765,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         JPanel p = new JPanel(new BorderLayout());
         p.setBackground(BG);
         p.add(wrap(networksTable), BorderLayout.CENTER);
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
         actions.add(btn(Bundle.DockerPanelTopComponent_remove(), () -> {
             for (int row : networksTable.getSelectedRows()) {
@@ -812,10 +812,10 @@ public final class DockerPanelTopComponent extends TopComponent {
         // <html>-led one as markup, so the combo html-disables its renderer
         recipeCombo.setRenderer(PlainTables.plain(new javax.swing.DefaultListCellRenderer()));
         recipeCombo.addActionListener(e -> regenerateDockerize());
-        JPanel comboHolder = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        JPanel comboHolder = new JPanel(new FlowLayout(FlowLayout.TRAILING, 6, 4));
         comboHolder.setBackground(BG);
         comboHolder.add(recipeCombo);
-        north.add(comboHolder, BorderLayout.EAST);
+        north.add(comboHolder, BorderLayout.LINE_END);
         p.add(north, BorderLayout.NORTH);
 
         JTabbedPane previews = new JTabbedPane();
@@ -824,7 +824,7 @@ public final class DockerPanelTopComponent extends TopComponent {
         previews.addTab("compose.yaml", wrap(composePreview));
         p.add(previews, BorderLayout.CENTER);
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         actions.setBackground(BG);
         actions.add(btn(Bundle.DockerPanelTopComponent_regenerate(), this::regenerateDockerize));
         actions.add(btn(Bundle.DockerPanelTopComponent_writeFiles(), this::writeDockerizeFiles));

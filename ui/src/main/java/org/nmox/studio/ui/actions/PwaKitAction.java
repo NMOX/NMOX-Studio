@@ -89,19 +89,19 @@ public final class PwaKitAction implements ActionListener {
         }
 
         String projectName = project.getName();
-        JTextField name = new JTextField(projectName);
+        JTextField name = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(projectName));
         name.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_appNameField());
-        JTextField shortName = new JTextField(projectName.length() > 12
-                ? projectName.substring(0, 12) : projectName);
+        JTextField shortName = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(projectName.length() > 12
+                ? projectName.substring(0, 12) : projectName));
         shortName.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_shortNameField());
-        JTextField theme = new JTextField("#1a1a1e");
+        JTextField theme = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("#1a1a1e"));
         theme.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_themeField());
-        JTextField background = new JTextField("#1a1a1e");
+        JTextField background = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("#1a1a1e"));
         background.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_backgroundField());
-        JTextField monogram = new JTextField(projectName.isEmpty() ? "A"
-                : projectName.substring(0, 1).toUpperCase(Locale.ROOT));
+        JTextField monogram = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(projectName.isEmpty() ? "A"
+                : projectName.substring(0, 1).toUpperCase(Locale.ROOT)));
         monogram.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_monogramField());
-        JTextField artwork = new JTextField();
+        JTextField artwork = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         artwork.getAccessibleContext().setAccessibleName(Bundle.PwaKitAction_artworkField());
         JButton browse = new JButton(Bundle.PwaKitAction_browse());
         browse.addActionListener(ev -> {
@@ -135,7 +135,7 @@ public final class PwaKitAction implements ActionListener {
         rows.add(monogram);
         JPanel art = new JPanel(new BorderLayout(6, 0));
         art.add(artwork, BorderLayout.CENTER);
-        art.add(browse, BorderLayout.EAST);
+        art.add(browse, BorderLayout.LINE_END);
         rows.add(art);
         rows.add(new JLabel(Bundle.PwaKitAction_strategyLabel()));
         rows.add(strategy);

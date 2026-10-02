@@ -182,7 +182,7 @@ public final class BlameStatusLine implements StatusLineElementProvider {
             this.debounce = new Timer(DEBOUNCE_MS, e -> update());
             debounce.setRepeats(false);
             putClientProperty("html.disable", Boolean.TRUE);
-            setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             getAccessibleContext().setAccessibleName(Bundle.BlameStatusLine_name());
             addMouseListener(new java.awt.event.MouseAdapter() {

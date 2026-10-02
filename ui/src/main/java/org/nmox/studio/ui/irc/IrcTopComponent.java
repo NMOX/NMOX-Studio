@@ -445,7 +445,7 @@ public final class IrcTopComponent extends TopComponent {
                 treeMenuShower.accept(treeMenu(),
                         org.nmox.studio.core.util.KeyboardAccess.menuAnchor(tree)));
 
-        transcript = new JTextPane();
+        transcript = org.nmox.studio.core.util.TextDirection.followsReader(new JTextPane());
         transcript.setEditable(false);
         transcript.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
         transcript.addMouseListener(new MouseAdapter() {
@@ -478,7 +478,7 @@ public final class IrcTopComponent extends TopComponent {
         org.nmox.studio.core.util.PlainTables.plain(topicLabel);
         topicLabel.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 
-        input = new JTextField();
+        input = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         input.getAccessibleContext().setAccessibleName(Bundle.IrcTopComponent_inputA11y());
         input.addActionListener(e -> onInput());
         installInputKeys();
@@ -488,7 +488,7 @@ public final class IrcTopComponent extends TopComponent {
         JPanel bottom = new JPanel(new BorderLayout(4, 0));
         bottom.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         bottom.add(input, BorderLayout.CENTER);
-        bottom.add(connectButton, BorderLayout.EAST);
+        bottom.add(connectButton, BorderLayout.LINE_END);
 
         buildFindBar();
         JPanel north = new JPanel(new BorderLayout());
@@ -1056,15 +1056,15 @@ public final class IrcTopComponent extends TopComponent {
     private void buildFindBar() {
         findBar = new JPanel(new BorderLayout(6, 0));
         findBar.setBorder(BorderFactory.createEmptyBorder(2, 8, 2, 8));
-        findField = new JTextField();
+        findField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         findCount = new JLabel(" ");
         // the bar's own label names the field: Swing hands a field with no
         // explicit name the labelling label's text, already translated
         JLabel findLabel = new JLabel(Bundle.IrcTopComponent_findLabel());
         findLabel.setLabelFor(findField);
-        findBar.add(findLabel, BorderLayout.WEST);
+        findBar.add(findLabel, BorderLayout.LINE_START);
         findBar.add(findField, BorderLayout.CENTER);
-        findBar.add(findCount, BorderLayout.EAST);
+        findBar.add(findCount, BorderLayout.LINE_END);
         findBar.setVisible(false);
         findField.addActionListener(e -> findNext());
         findField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {

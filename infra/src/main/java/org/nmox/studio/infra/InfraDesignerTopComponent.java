@@ -274,9 +274,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
 
-        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.WEST);
+        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.LINE_START);
         add(canvas, BorderLayout.CENTER);
-        add(properties, BorderLayout.EAST);
+        add(properties, BorderLayout.LINE_END);
         add(buildToolbar(), BorderLayout.NORTH);
 
         saveDebounce = new Timer(1000, e -> save());
@@ -349,7 +349,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             javax.swing.JPanel panel = new javax.swing.JPanel(
                     new java.awt.GridLayout(providers.length * 2, 1, 0, 2));
             for (int i = 0; i < providers.length; i++) {
-                fields[i] = new JPasswordField(32);
+                fields[i] = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(32));
                 fields[i].getAccessibleContext().setAccessibleName(
                         Bundle.InfraDesigner_tokenFieldName(providers[i].displayName()));
                 String row = providers[i].hasToken()
@@ -378,7 +378,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
         bar.add(token);
-        tokenLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
+        tokenLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 12));
         bar.add(tokenLabel);
 
         // tooltip is kept current by refreshToken(): it names the providers with tokens
@@ -413,7 +413,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
         costLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
         costLabel.setForeground(new Color(0x4E, 0xC9, 0x8B));
-        costLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
+        costLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 12));
         bar.add(costLabel);
 
         // THE button, Node-RED red
@@ -536,7 +536,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             text.insert(0, Bundle.InfraDesigner_missingTokens(names) + "\n\n");
         }
 
-        JTextArea area = new JTextArea(text.toString(), 18, 64);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(text.toString(), 18, 64));
         area.getAccessibleContext().setAccessibleName(Bundle.InfraDesigner_deployLogName());
         area.setEditable(false);
         area.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));

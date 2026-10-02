@@ -434,7 +434,7 @@ public class KvasirDevice extends RackDevice {
         javax.swing.JComboBox<String> provider = new javax.swing.JComboBox<>(labels);
         provider.setSelectedIndex(KvasirProvider.configured().ordinal());
         provider.getAccessibleContext().setAccessibleName("AI provider");
-        javax.swing.JPasswordField field = new javax.swing.JPasswordField(28);
+        javax.swing.JPasswordField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JPasswordField(28));
         field.getAccessibleContext().setAccessibleName("API key");
         javax.swing.JCheckBox forget = new javax.swing.JCheckBox(
                 "Forget the stored key for this provider");
@@ -515,9 +515,9 @@ public class KvasirDevice extends RackDevice {
                 (java.awt.Frame) SwingUtilities.getWindowAncestor(this),
                 "KVASIR — explanation", false);
         dialog.setLayout(new BorderLayout());
-        JTextArea area = new JTextArea(
+        JTextArea area = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(
                 text == null || text.isBlank()
-                        ? "No explanation yet — press EXPLAIN on a failed run." : text);
+                        ? "No explanation yet — press EXPLAIN on a failed run." : text));
         area.setEditable(false);
         area.setLineWrap(true);
         area.setWrapStyleWord(true);

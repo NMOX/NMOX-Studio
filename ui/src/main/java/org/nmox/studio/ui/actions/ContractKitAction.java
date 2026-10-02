@@ -88,7 +88,7 @@ public final class ContractKitAction implements ActionListener {
                         v instanceof ContractKit.Chain c ? ChainText.label(c) : v, i, sel, focus);
             }
         });
-        JTextField name = new JTextField("MyContract");
+        JTextField name = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("MyContract"));
         name.getAccessibleContext().setAccessibleName(Bundle.ContractKitAction_contractNameName());
         name.selectAll();
 

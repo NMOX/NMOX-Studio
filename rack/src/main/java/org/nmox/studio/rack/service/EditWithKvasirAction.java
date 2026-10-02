@@ -99,7 +99,7 @@ public final class EditWithKvasirAction implements ActionListener {
         String fileName = AskKvasirAction.fileName(doc);
         String language = AskKvasirAction.language(doc);
 
-        JTextField instruction = new JTextField();
+        JTextField instruction = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
         javax.swing.JComboBox<String> model =
                 new javax.swing.JComboBox<>(AskKvasirModel.labels());
         model.setSelectedIndex(AskKvasirModel.chosenIndex());
@@ -108,7 +108,7 @@ public final class EditWithKvasirAction implements ActionListener {
         JPanel south = new JPanel(new BorderLayout(8, 0));
         south.add(new JLabel(Bundle.EditWithKvasirAction_sendsNote()),
                 BorderLayout.CENTER);
-        south.add(model, BorderLayout.EAST);
+        south.add(model, BorderLayout.LINE_END);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
@@ -190,7 +190,7 @@ public final class EditWithKvasirAction implements ActionListener {
     }
 
     private static JScrollPane titled(String title, String text) {
-        JTextArea area = new JTextArea(text);
+        JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(text));
         area.setEditable(false);
         area.setFont(new java.awt.Font(java.awt.Font.MONOSPACED,
                 java.awt.Font.PLAIN, 12));

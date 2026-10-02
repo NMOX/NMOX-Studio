@@ -539,7 +539,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     private final DeploymentsModel deploymentsModel = new DeploymentsModel();
     private final JButton gasButton = new JButton(Bundle.Web3StudioTopComponent_runGasReport());
 
-    private final JTextArea logArea = new JTextArea(5, 40);
+    private final JTextArea logArea = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea(5, 40));
 
     private final org.nmox.studio.core.spi.ProjectAim.Listener rackListener;
     private boolean rackListenerAttached;
@@ -611,7 +611,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         // WrapLayout reports the WRAPPED height, so a narrower window gives
         // the bar a second row and every control stays reachable — ledger
         // 75's answer for DB Studio's console bar, here for the same reason.
-        bar.setLayout(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEFT, 4, 2));
+        bar.setLayout(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEADING, 4, 2));
         networkCombo.setRenderer(new NetworkRenderer());
         networkCombo.setToolTipText(Bundle.Web3StudioTopComponent_networkComboTip());
         networkCombo.setMaximumSize(new java.awt.Dimension(240, 60));
@@ -812,7 +812,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         List<JTextField> argFields = new ArrayList<>();
         for (AbiParam param : s.constructorParams()) {
-            JTextField field = new JTextField(24);
+            JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(paramLabel(param));
             field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
@@ -827,7 +827,7 @@ public final class Web3StudioTopComponent extends TopComponent {
 
         JTextField valueField = null;
         if (s.constructorPayable()) {
-            valueField = new JTextField(10);
+            valueField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
             valueField.setFont(MONO);
             valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
             valueField.setToolTipText(Bundle.Web3StudioTopComponent_valueEthTip());
@@ -845,7 +845,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         JButton attachButton = new JButton(Bundle.Web3StudioTopComponent_attachToAddress());
         attachButton.setToolTipText(Bundle.Web3StudioTopComponent_attachTip());
         JLabel result = new JLabel(" ");
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 0));
         buttons.add(deployButton);
         buttons.add(attachButton);
         addFormRow(form, row++, buttons);
@@ -863,7 +863,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** The function list for an attached instance. */
     private JComponent buildFunctionList(InteractSession s) {
         JPanel list = new JPanel();
-        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        list.setLayout(new BoxLayout(list, BoxLayout.PAGE_AXIS));
         list.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         JLabel title = new JLabel(PlainText.plain(s.artifact().name() + " @ "
@@ -877,7 +877,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             why.setForeground(AMBER);
             list.add(leftAligned(why));
         } else if (!s.writeFunctions().isEmpty()) {
-            JPanel fromRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+            JPanel fromRow = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 0));
             fromRow.add(new JLabel(Bundle.Web3StudioTopComponent_fromRow()));
             fromRow.add(fromCombo); // single-parented: only one form shows at a time
             list.add(leftAligned(fromRow));
@@ -917,7 +917,7 @@ public final class Web3StudioTopComponent extends TopComponent {
     /** One function's row: marker + name, arg fields, CALL/SEND, result label. */
     private JPanel functionRow(InteractSession s, AbiEntry function, String sendReason) {
         boolean read = function.readOnly();
-        JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 2));
+        JPanel rowPanel = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 2));
         JLabel name = new JLabel(PlainText.plain((read ? "ƒ " : "✎ ") + function.name()));
         name.setFont(MONO.deriveFont(Font.BOLD));
         name.setToolTipText(PlainText.plain(function.signature() + " · " + function.stateMutability()));
@@ -928,7 +928,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JLabel label = new JLabel(PlainText.plain(paramLabel(param)));
             label.setForeground(Color.GRAY);
             rowPanel.add(label);
-            JTextField field = new JTextField(10);
+            JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
             field.setFont(MONO);
             field.getAccessibleContext().setAccessibleName(label.getText());
             field.setToolTipText(PlainText.plain(AbiCodec.inputShape(param)));
@@ -941,7 +941,7 @@ public final class Web3StudioTopComponent extends TopComponent {
             JLabel valueLabel = new JLabel(Bundle.Web3StudioTopComponent_valueEthInline());
             valueLabel.setForeground(Color.GRAY);
             rowPanel.add(valueLabel);
-            valueField = new JTextField(6);
+            valueField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(6));
             valueField.setFont(MONO);
             valueField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_valueEthA11y());
             rowPanel.add(valueField);
@@ -2368,19 +2368,19 @@ public final class Web3StudioTopComponent extends TopComponent {
 
     /** Import ABI… — any deployed contract becomes interactable (v2.45.0). */
     private void importAbi() {
-        JTextField nameField = new JTextField(24);
+        JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(24));
         nameField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractNameA11y());
-        JTextField addressField = new JTextField(44);
+        JTextField addressField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(44));
         addressField.getAccessibleContext().setAccessibleName(
                 Bundle.Web3StudioTopComponent_deployedAddressA11y());
-        javax.swing.JTextArea abiArea = new javax.swing.JTextArea(12, 48);
+        javax.swing.JTextArea abiArea = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(12, 48));
         abiArea.setFont(MONO);
         abiArea.setLineWrap(true);
         abiArea.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_abiJsonA11y());
         JPanel form = new JPanel(new BorderLayout(0, 6));
         JPanel top = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
-        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
+        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.LINE_START;
         gc.insets = new java.awt.Insets(2, 2, 2, 6);
         top.add(new JLabel(Bundle.Web3StudioTopComponent_nameRow()), gc);
         gc.gridx = 1;
@@ -2861,9 +2861,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             ownerButton.getAccessibleContext().setAccessibleName(
                     Bundle.Web3StudioTopComponent_ownerOfA11y());
             ownerButton.addActionListener(e -> lookupTokenOwner(s));
-            JPanel east721 = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+            JPanel east721 = new JPanel(new FlowLayout(FlowLayout.TRAILING, 4, 2));
             east721.add(ownerButton);
-            panel.add(east721, BorderLayout.EAST);
+            panel.add(east721, BorderLayout.LINE_END);
             readNftMetadata(s, strip);
         }
         if (standard == ErcStandards.Standard.ERC20) {
@@ -2872,9 +2872,9 @@ public final class Web3StudioTopComponent extends TopComponent {
             balanceButton.getAccessibleContext().setAccessibleName(
                     Bundle.Web3StudioTopComponent_balanceOfA11y());
             balanceButton.addActionListener(e -> lookupTokenBalance(s));
-            JPanel east = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 2));
+            JPanel east = new JPanel(new FlowLayout(FlowLayout.TRAILING, 4, 2));
             east.add(balanceButton);
-            panel.add(east, BorderLayout.EAST);
+            panel.add(east, BorderLayout.LINE_END);
             readTokenMetadata(s, strip);
         }
         return panel;
@@ -3097,18 +3097,18 @@ public final class Web3StudioTopComponent extends TopComponent {
             status(NOT_CONNECTED, FAIL_RED);
             return;
         }
-        JTextField addressField = new JTextField(44);
+        JTextField addressField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(44));
         if (session != null && session.address() != null) {
             addressField.setText(session.address());
         }
         addressField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_contractAddressA11y());
-        JTextField fromField = new JTextField(10);
+        JTextField fromField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
         fromField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_fromBlockA11y());
-        JTextField toField = new JTextField(10);
+        JTextField toField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(10));
         toField.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_toBlockA11y());
         JPanel form = new JPanel(new GridBagLayout());
         GridBagConstraints gc = new GridBagConstraints();
-        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.WEST;
+        gc.gridx = 0; gc.gridy = 0; gc.anchor = GridBagConstraints.LINE_START;
         gc.insets = new java.awt.Insets(2, 2, 2, 6);
         form.add(new JLabel(Bundle.Web3StudioTopComponent_addressRow()), gc);
         gc.gridx = 1;
@@ -3116,7 +3116,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         gc.gridx = 0; gc.gridy = 1;
         form.add(new JLabel(Bundle.Web3StudioTopComponent_blocksRow()), gc);
         gc.gridx = 1;
-        JPanel rangeRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+        JPanel rangeRow = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 0));
         rangeRow.add(fromField);
         rangeRow.add(new JLabel(Bundle.Web3StudioTopComponent_blockRangeTo()));
         rangeRow.add(toField);
@@ -3171,8 +3171,8 @@ public final class Web3StudioTopComponent extends TopComponent {
             text.append(Bundle.Web3StudioTopComponent_noEventsFor(address,
                     String.valueOf(range.from()), String.valueOf(range.to())));
         }
-        javax.swing.JTextArea area = new javax.swing.JTextArea(
-                text.toString(), 16, 80);
+        javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(
+                text.toString(), 16, 80));
         area.setEditable(false);
         area.setFont(MONO);
         area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_historyAreaA11y());
@@ -3205,7 +3205,7 @@ public final class Web3StudioTopComponent extends TopComponent {
                 false);
         dialog.setLayout(new BorderLayout(0, 4));
         dialog.add(new JScrollPane(area), BorderLayout.CENTER);
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.TRAILING, 6, 4));
         south.add(save);
         dialog.add(south, BorderLayout.SOUTH);
         dialog.pack();
@@ -3249,8 +3249,8 @@ public final class Web3StudioTopComponent extends TopComponent {
     }
 
     private void showInspection(String hash, TxInspection.Report report) {
-        javax.swing.JTextArea area = new javax.swing.JTextArea(
-                String.join("\n", report.lines()), 14, 78);
+        javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(
+                String.join("\n", report.lines()), 14, 78));
         area.setEditable(false);
         area.setFont(MONO);
         area.getAccessibleContext().setAccessibleName(Bundle.Web3StudioTopComponent_inspectionA11y());
@@ -3298,7 +3298,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         c.gridx = 0;
         c.gridy = row;
         c.gridwidth = 2;
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.LINE_START;
         c.insets = new Insets(3, 0, 3, 0);
         form.add(component, c);
     }
@@ -3308,13 +3308,13 @@ public final class Web3StudioTopComponent extends TopComponent {
         GridBagConstraints l = new GridBagConstraints();
         l.gridx = 0;
         l.gridy = row;
-        l.anchor = GridBagConstraints.EAST;
+        l.anchor = GridBagConstraints.LINE_END;
         l.insets = new Insets(3, 0, 3, 8);
         form.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
-        f.anchor = GridBagConstraints.WEST;
+        f.anchor = GridBagConstraints.LINE_START;
         f.insets = new Insets(3, 0, 3, 0);
         form.add(field, f);
     }

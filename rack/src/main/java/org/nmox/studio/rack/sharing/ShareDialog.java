@@ -68,21 +68,21 @@ public final class ShareDialog {
      */
     public static Optional<Result> ask(String suggestedName, String detectedKind,
             List<String> suggestedRequires, String leavingText) {
-        JTextField nameField = new JTextField(suggestedName == null ? "" : suggestedName, 32);
-        JTextArea descriptionArea = new JTextArea(3, 32);
+        JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(suggestedName == null ? "" : suggestedName, 32));
+        JTextArea descriptionArea = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(3, 32));
         descriptionArea.getAccessibleContext().setAccessibleName(Bundle.ShareDialog_descriptionName());
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
-        JTextField authorField = new JTextField("", 32);
+        JTextField authorField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField("", 32));
         authorField.setToolTipText(PlainText.plain(Bundle.ShareDialog_authorHint()));
-        JTextField requiresField = new JTextField(String.join(", ", suggestedRequires), 32);
+        JTextField requiresField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(String.join(", ", suggestedRequires), 32));
         requiresField.setToolTipText(PlainText.plain(Bundle.ShareDialog_requiresHint()));
         boolean hasKind = detectedKind != null && !detectedKind.isBlank();
         // the label's text is decided first, then guarded whole: the button gate
         // reads the constructor's HEAD, and a ternary there is not a guard
         String fitsText = hasKind ? Bundle.ShareDialog_fits(detectedKind) : "";
         JCheckBox fitsBox = new JCheckBox(PlainText.plain(fitsText), hasKind);
-        JTextArea leavingArea = new JTextArea(leavingText == null ? "" : leavingText, 9, 32);
+        JTextArea leavingArea = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(leavingText == null ? "" : leavingText, 9, 32));
         leavingArea.setEditable(false);
         leavingArea.setLineWrap(false);
         leavingArea.setCaretPosition(0);

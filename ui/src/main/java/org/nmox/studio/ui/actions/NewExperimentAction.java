@@ -81,7 +81,7 @@ public final class NewExperimentAction implements ActionListener {
             }
         });
         template.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_templateA11y());
-        JTextField name = new JTextField();
+        JTextField name = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
         name.getAccessibleContext().setAccessibleName(Bundle.NewExperimentAction_nameA11y());
         JCheckBox installBox = new JCheckBox(
                 Bundle.NewExperimentAction_installBox(), true);
@@ -107,7 +107,7 @@ public final class NewExperimentAction implements ActionListener {
                     spaces.setText(Bundle.NewExperimentAction_browseSpacesCounted(String.valueOf(n))));
         });
         spaces.setToolTipText(Bundle.NewExperimentAction_browseSpacesTip());
-        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 0, 0));
         south.add(spaces);
         panel.add(rows, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);

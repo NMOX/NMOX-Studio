@@ -346,7 +346,7 @@ public final class ApiClientTopComponent extends TopComponent {
     // a URL, a request body, a response and its headers are machine text that
     // runs left to right in every language (v2.151.0, the first Hebrew walk)
     private final JTextField urlField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
-    private final JTextField nameField = new JTextField();
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
     private final JButton sendButton = new JButton(Bundle.ApiClientTopComponent_send());
     // send history (v1.197.0)
     private final javax.swing.DefaultListModel<org.nmox.studio.apiclient.model.SendHistory.Entry>
@@ -361,7 +361,7 @@ public final class ApiClientTopComponent extends TopComponent {
     // A JPasswordField, not a plaintext JTextField (v1.97.0): the token
     // is a secret, so it neither echoes on screen nor is written to the
     // committable .nmoxapi.json — it lives in the OS keychain.
-    private final javax.swing.JPasswordField authField = new javax.swing.JPasswordField();
+    private final javax.swing.JPasswordField authField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JPasswordField());
     private final JTable testsTable = org.nmox.studio.core.util.PlainTables.disableHtml(new JTable());
     {
         tree.getAccessibleContext().setAccessibleName(Bundle.ApiClientTopComponent_treeA11y());
@@ -378,7 +378,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private String lastUrl;
     private final JTextArea responseBody = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
     // response pack (v1.198.0)
-    private final JTextField responseFind = new JTextField();
+    private final JTextField responseFind = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField());
     private final JLabel findCount = new JLabel(" ");
     private final JTextArea responseHeaders = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextArea());
     private final JPanel testResults = new JPanel();
@@ -1114,7 +1114,7 @@ public final class ApiClientTopComponent extends TopComponent {
 
     /** Paste a curl command, get a saved request — the reverse of Copy curl. */
     private void importCurl() {
-        javax.swing.JTextArea area = new javax.swing.JTextArea(8, 60);
+        javax.swing.JTextArea area = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new javax.swing.JTextArea(8, 60));
         area.setLineWrap(true);
         javax.swing.JPanel panel = new javax.swing.JPanel(new BorderLayout(0, 6));
         panel.add(new JLabel(Bundle.ApiClientTopComponent_pasteCurl()), BorderLayout.NORTH);
@@ -1363,7 +1363,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private JSplitPane buildEditorAndResponse() {
         JPanel editor = new JPanel(new BorderLayout());
         JPanel top = new JPanel();
-        top.setLayout(new BoxLayout(top, BoxLayout.X_AXIS));
+        top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
         top.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
         top.add(new JLabel(Bundle.ApiClientTopComponent_nameLabel()));
         nameField.getDocument().addDocumentListener(new SimpleDoc(() -> {
@@ -1410,10 +1410,10 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private JPanel buildAuthPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel row = new JPanel();
-        row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+        row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
         row.add(new JLabel(Bundle.ApiClientTopComponent_typeLabel()));
         authCombo.addActionListener(e -> {
             if (!loading && current != null) {
@@ -1451,7 +1451,7 @@ public final class ApiClientTopComponent extends TopComponent {
             explainButton.setToolTipText(Bundle.ApiClientTopComponent_explainTooltip());
             explainButton.setEnabled(false);
             explainButton.addActionListener(e -> explainResponse());
-            north.add(explainButton, BorderLayout.EAST);
+            north.add(explainButton, BorderLayout.LINE_END);
         }
         panel.add(north, BorderLayout.NORTH);
         JTabbedPane tabs = new JTabbedPane();
@@ -1461,9 +1461,9 @@ public final class ApiClientTopComponent extends TopComponent {
         responseHeaders.setEditable(false);
         responseHeaders.setFont(MONO);
         tabs.addTab(Bundle.ApiClientTopComponent_headers(), new JScrollPane(responseHeaders));
-        testResults.setLayout(new BoxLayout(testResults, BoxLayout.Y_AXIS));
+        testResults.setLayout(new BoxLayout(testResults, BoxLayout.PAGE_AXIS));
         tabs.addTab(Bundle.ApiClientTopComponent_tests(), new JScrollPane(testResults));
-        standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.Y_AXIS));
+        standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.PAGE_AXIS));
         tabs.addTab(Bundle.ApiClientTopComponent_standards(), new JScrollPane(standardsPanel));
         panel.add(tabs, BorderLayout.CENTER);
         return panel;
@@ -1478,15 +1478,15 @@ public final class ApiClientTopComponent extends TopComponent {
 
         JPanel bar = new JPanel(new BorderLayout(6, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
-        bar.add(new JLabel(Bundle.ApiClientTopComponent_findLabel()), BorderLayout.WEST);
+        bar.add(new JLabel(Bundle.ApiClientTopComponent_findLabel()), BorderLayout.LINE_START);
         bar.add(responseFind, BorderLayout.CENTER);
-        JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 0));
+        JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 6, 0));
         east.add(findCount);
         JButton saveBody = new JButton(Bundle.ApiClientTopComponent_saveBody());
         saveBody.setToolTipText(Bundle.ApiClientTopComponent_saveBodyTooltip());
         saveBody.addActionListener(e -> saveResponseBody());
         east.add(saveBody);
-        bar.add(east, BorderLayout.EAST);
+        bar.add(east, BorderLayout.LINE_END);
         body.add(bar, BorderLayout.SOUTH);
 
         responseFind.getDocument().addDocumentListener(new SimpleDoc(this::refindInBody));

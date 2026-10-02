@@ -44,8 +44,8 @@ public final class AskKvasirDialog {
 
     private final KvasirConversation convo;
     private final AskKvasirEngine engine;
-    private final JTextArea transcript = new JTextArea(22, 76);
-    private final JTextField input = new JTextField();
+    private final JTextArea transcript = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(22, 76));
+    private final JTextField input = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField());
     private final JButton ask = new JButton(Bundle.AskKvasirDialog_ask());
 
     private final String model;
@@ -76,7 +76,7 @@ public final class AskKvasirDialog {
     public JDialog open(String firstQuestion) {
         JPanel south = new JPanel(new BorderLayout(6, 0));
         south.add(input, BorderLayout.CENTER);
-        south.add(ask, BorderLayout.EAST);
+        south.add(ask, BorderLayout.LINE_END);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));

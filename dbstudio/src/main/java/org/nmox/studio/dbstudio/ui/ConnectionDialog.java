@@ -85,14 +85,14 @@ final class ConnectionDialog extends JPanel {
     private static final Color OK_GREEN = new Color(0x4E, 0xC9, 0x8B);
     private static final Color FAIL_RED = new Color(0xE2, 0x4B, 0x4A);
 
-    private final JTextField nameField = new JTextField(24);
+    private final JTextField nameField = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(24));
     private final JComboBox<DbEngine> engineCombo = new JComboBox<>(DbEngine.values());
-    private final JTextField hostField = new JTextField("localhost", 18);
-    private final JTextField portField = new JTextField(6);
-    private final JTextField databaseField = new JTextField(18);
-    private final JTextField userField = new JTextField(18);
-    private final JPasswordField passwordField = new JPasswordField(18);
-    private final JTextField fileField = new JTextField(24);
+    private final JTextField hostField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField("localhost", 18));
+    private final JTextField portField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(6));
+    private final JTextField databaseField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
+    private final JTextField userField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(18));
+    private final JPasswordField passwordField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JPasswordField(18));
+    private final JTextField fileField = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(24));
     /** TLS opt-in for CouchDB's HTTP transport (ledger 54 L2). */
     private final javax.swing.JCheckBox secureBox =
             new javax.swing.JCheckBox(Bundle.ConnectionDialog_useTls());
@@ -131,8 +131,8 @@ final class ConnectionDialog extends JPanel {
         JButton testButton = new JButton(Bundle.ConnectionDialog_test());
         testButton.setToolTipText(Bundle.ConnectionDialog_testTooltip());
         testButton.addActionListener(e -> testConnection());
-        south.add(testButton, BorderLayout.WEST);
-        testLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        south.add(testButton, BorderLayout.LINE_START);
+        testLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
         south.add(testLabel, BorderLayout.CENTER);
         add(south, BorderLayout.SOUTH);
 
@@ -164,13 +164,13 @@ final class ConnectionDialog extends JPanel {
         GridBagConstraints l = new GridBagConstraints();
         l.gridx = 0;
         l.gridy = row;
-        l.anchor = GridBagConstraints.EAST;
+        l.anchor = GridBagConstraints.LINE_END;
         l.insets = new Insets(3, 0, 3, 8);
         panel.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
-        f.anchor = GridBagConstraints.WEST;
+        f.anchor = GridBagConstraints.LINE_START;
         f.fill = GridBagConstraints.HORIZONTAL;
         f.weightx = 1;
         f.insets = new Insets(3, 0, 3, 0);
@@ -208,7 +208,7 @@ final class ConnectionDialog extends JPanel {
                 fileField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
         });
-        row.add(browse, BorderLayout.EAST);
+        row.add(browse, BorderLayout.LINE_END);
         addRow(panel, 0, Bundle.ConnectionDialog_fileLabel(), row);
         addRow(panel, 1, "", new JLabel(Bundle.ConnectionDialog_fileHint()));
         return panel;

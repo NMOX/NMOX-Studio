@@ -114,7 +114,7 @@ public class PropertyPanel extends JPanel {
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridx = 0;
             gc.gridy = 0;
-            gc.anchor = GridBagConstraints.WEST;
+            gc.anchor = GridBagConstraints.LINE_START;
             gc.fill = GridBagConstraints.HORIZONTAL;
             gc.insets = new Insets(3, 12, 3, 12);
 
@@ -147,7 +147,7 @@ public class PropertyPanel extends JPanel {
     }
 
     private JTextField labelField(InfraNode node) {
-        JTextField field = new JTextField(node.label);
+        JTextField field = org.nmox.studio.core.util.TextDirection.followsReader(new JTextField(node.label));
         field.getAccessibleContext().setAccessibleName(Bundle.PropertyPanel_labelFieldName());
         field.getDocument().addDocumentListener(new SimpleDocListener(() -> {
             node.label = field.getText().trim();
@@ -181,7 +181,7 @@ public class PropertyPanel extends JPanel {
                 return box;
             }
             default -> {
-                JTextField field = new JTextField(value);
+                JTextField field = org.nmox.studio.core.util.TextDirection.keepLeftToRight(new JTextField(value));
                 field.getAccessibleContext().setAccessibleName(prop.label());
                 field.getDocument().addDocumentListener(new SimpleDocListener(() -> {
                     node.props.put(prop.key(), field.getText());

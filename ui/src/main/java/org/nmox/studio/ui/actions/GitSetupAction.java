@@ -113,9 +113,9 @@ public final class GitSetupAction implements ActionListener {
         JPanel panel = new JPanel(new BorderLayout(0, 8));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
         boolean done = git && alreadySet(current);
-        JTextArea intro = new JTextArea(!git ? Bundle.GitSetupAction_noGit()
+        JTextArea intro = org.nmox.studio.core.util.TextDirection.followsReader(new JTextArea(!git ? Bundle.GitSetupAction_noGit()
                 : Bundle.GitSetupAction_intro() + (done ? "\n\n" + Bundle.GitSetupAction_alreadySet()
-                        : nmox ? "" : "\n\n" + Bundle.GitSetupAction_notOnPath()));
+                        : nmox ? "" : "\n\n" + Bundle.GitSetupAction_notOnPath())));
         intro.setEditable(false);
         intro.setLineWrap(true);
         intro.setWrapStyleWord(true);

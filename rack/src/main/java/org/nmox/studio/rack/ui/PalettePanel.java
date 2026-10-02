@@ -51,7 +51,7 @@ public class PalettePanel extends JPanel {
         header.setFont(RackStyle.LABEL_FONT);
         header.setBorder(BorderFactory.createEmptyBorder(8, 10, 4, 10));
 
-        javax.swing.JTextField search = new javax.swing.JTextField();
+        javax.swing.JTextField search = org.nmox.studio.core.util.TextDirection.followsReader(new javax.swing.JTextField());
         search.setToolTipText(Bundle.PalettePanel_searchTooltip());
         search.putClientProperty("JTextField.placeholderText", Bundle.PalettePanel_searchPlaceholder());
         search.setBackground(new java.awt.Color(34, 34, 38));
