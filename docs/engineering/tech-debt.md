@@ -172,20 +172,21 @@ and on the rerun. The test writes `NbPreferences.root().node("nmox/ui")`,
 whose flush is asynchronous. Not reproduced, not fixed; if it fails again
 the controller needs a preferences seam and the test its own node.
 
-### 132. What hangs the installed app on a macOS runner is not known (3.5.4)
+### 132. ~~What hangs the installed app on a macOS runner is not known~~ — CLOSED by 3.5.5
 
-The `Installed boot` job hung on the macOS runner for 3.5.2 and again for
-3.5.3: the walk of the installed app stopped (for 3.5.2, with the Browser
-tab in front) and ran until the job was cancelled or timed out, with
-nothing to read. Both times the Windows and Linux jobs passed, the same
-job passed when run again, and the published app walked clean on a Mac
-(47 s, 13 pictures). Twice in two releases on the first run is not an
-accident, and the runners are not all one machine: a guess is JavaFX
-starting on a runner whose graphics differ, and it is only a guess.
-`platform-walk.sh` had no leash on a machine without `timeout(1)`; from
-3.5.4 it stops itself and takes a thread dump of the Java process first,
-so the next hang carries its own evidence. Read that dump before anything
-else is tried.
+**Closed.** The third hang, on a Linux runner an hour after 3.5.4 gave the
+walk a leash and a thread dump, carried the answer: a class-initialization
+deadlock between the event thread (`JFXPanel.addNotify`, which begins with
+`NodeHelper`) and the JavaFX thread (`FxBrowserPanel.initFx`, which begins
+with `javafx.scene.Node`). The two classes initialize each other. On the
+bundled runtime the pair deadlocks in 40 of 40 fresh JVMs when begun from
+two threads at once and in none when Node is initialized first, which is
+what `FxClassOrder.nodeFirst()` now does before the Browser queues
+anything. The entry's guess, "a runner whose graphics differ", was wrong;
+it was written as a guess.
+
+What stays true: the installed-boot job for 3.5.2 and 3.5.3 was green on
+its rerun both times, and a green rerun of a hang proved nothing.
 
 ### 133. A language server's error for a file in no project is logged SEVERE (3.5.5)
 

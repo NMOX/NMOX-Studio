@@ -6,15 +6,28 @@ All notable changes to NMOX Studio are documented here. The format follows
 
 ## [3.5.5] - 2026-10-02
 
-**One file of every kind the product hands a learner, opened.** 3.5.4 found
-that an Elixir file opened empty and that no walk had ever opened one. The
-learning catalogue ships real code in seventy kinds of file; this release
-opened one of each in the built product and read the window and the log,
-and then did the same for the twenty-three grammars the catalogue has no
-sample of.
+**The window could freeze, for good, the first time the Browser tab was
+shown.** The check that walks an installed release had hung twice on a
+macOS runner with nothing to read. 3.5.4 gave the walk a leash that takes a
+thread dump first; the next hang, on a Linux runner an hour later, carried
+it. The rest of this release came from opening one file of every kind the
+product has a grammar for, which no walk had done.
 
 ### Fixed
 
+- **A deadlock between the event thread and the JavaFX thread when the
+  Browser is first built.** `javafx.scene.Node` and its helper class
+  initialize each other. The Browser queued its engine's construction on the
+  JavaFX thread, which begins with one of them, and went on to add itself to
+  the window on the event thread, which begins with the other. When the two
+  met, each held one class and waited for the other, and the event thread
+  never came back: no repaint, no menu, no way out but to kill the process.
+  It depended on timing, which is why it showed on some launches of some
+  machines; the Browser is one of the three tabs of a first launch. Begun
+  from two threads at once, the real pair deadlocks in 40 of 40 fresh JVMs
+  on the bundled runtime; with the fix's order, in none. The Browser now
+  initializes both on the event thread before it queues anything
+  (`ui.browser.fx.FxClassOrder`).
 - **The R learning space's own `hello.R` opened as plain text.** The
   platform matches a file's extension by case on macOS and Linux, R's
   convention is the capital, and only `r` was registered. `R` is registered
@@ -52,6 +65,9 @@ sample of.
 
 ### Added
 
+- `FxClassOrderTest` reproduces the deadlock on a pair of fixture classes
+  that initialize each other, as a control, and shows the same two threads
+  finishing once one thread has initialized the pair first.
 - `ShippedSamplesTokenizeGateTest`: each of the catalogue's 187 sample
   files is run whole through the grammar its extension is bound to, in the
   real engine, with the bindings read from the layer the editor module
@@ -69,7 +85,7 @@ sample of.
 Restoring Elixir's pattern as 3.5.3 shipped it fails the new gate on line 1
 of `hello.exs`. Restoring one of Svelte's does not, because no sample has an
 `{#if}` block: a sample exercises the rules its text needs, and the gate
-that compiles every pattern is the one that reads the rest. Fourteen
+that compiles every pattern is the one that reads the rest. Eighteen
 mutants, each killed by name.
 
 Not fixed: with language servers installed, opening a source file that
