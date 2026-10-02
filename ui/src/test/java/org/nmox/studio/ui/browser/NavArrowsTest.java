@@ -30,6 +30,8 @@ class NavArrowsTest {
         assertThat(forward.getText()).isEqualTo("→");
 
         back.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+        assertThat(back.getText()).as("each button answers for itself, as soon as it is turned").isEqualTo("→");
+        assertThat(forward.getText()).as("and only for itself").isEqualTo("→");
         forward.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
         assertThat(back.getText()).isEqualTo("→");
         assertThat(forward.getText()).isEqualTo("←");
