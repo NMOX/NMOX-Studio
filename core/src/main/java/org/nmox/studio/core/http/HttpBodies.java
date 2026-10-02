@@ -206,7 +206,7 @@ public final class HttpBodies {
                     break;
                 }
                 count += n;
-                watch.received = count;
+                watch.arrived(count);
             }
             boolean truncated = !eof && count == capBytes && in.read() != -1;
             if (watch.expired) {
@@ -261,32 +261,75 @@ public final class HttpBodies {
         return false;
     }
 
+    /** What the watchdog decides at one look at a read. */
+    enum Look { WAIT, STOPPED, TOO_SLOW }
+
+    /** One look's verdict; {@code waitNanos} is how long until the next look, for {@link Look#WAIT}. */
+    record Verdict(Look look, long waitNanos) {
+    }
+
+    /**
+     * The watchdog's whole decision, pure: no bytes for an idle period is
+     * STOPPED, whichever side of the ceiling it happens on; bytes within
+     * the idle period but the ceiling passed is TOO_SLOW; otherwise the next
+     * look is when the first of the two could become true.
+     *
+     * <p>3.4.0 asked "did the byte count move since my last look?" instead
+     * of "when did the last byte arrive?". The last look before the ceiling
+     * can be a short one (the wait is clipped to the time left, and a late
+     * timer shortens it further), and a body trickling steadily had usually
+     * delivered nothing inside that sliver - so a server that was too slow
+     * was said to have "stopped sending". Found as a one-in-many failure on
+     * a loaded CI runner (3.4.1). The same question also let a silence run
+     * to nearly two idle periods before it was noticed.
+     */
+    static Verdict look(long now, long lastByteAt, long ceilingAt, long idleNanos) {
+        long idleFor = now - lastByteAt;
+        if (idleFor >= idleNanos) {
+            return new Verdict(Look.STOPPED, 0);
+        }
+        if (now >= ceilingAt) {
+            return new Verdict(Look.TOO_SLOW, 0);
+        }
+        return new Verdict(Look.WAIT, Math.min(idleNanos - idleFor, ceilingAt - now));
+    }
+
     /** The alarm for one read: closing the stream is what frees the reader. */
     private static final class Watch {
 
         private final InputStream in;
-        private final long idleMillis;
+        private final long idleNanos;
         private final long ceilingAt;
         volatile boolean expired;
         volatile boolean tooSlow;
         volatile long received;
-        private long seenAtLastCheck;
+        private volatile long lastByteAt;
         private ScheduledFuture<?> alarm;
         private boolean done;
 
         Watch(InputStream in, long idleMillis) {
             this.in = in;
-            this.idleMillis = idleMillis;
-            this.ceilingAt = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(idleMillis * CEILING_FACTOR);
+            this.idleNanos = TimeUnit.MILLISECONDS.toNanos(idleMillis);
+            this.lastByteAt = System.nanoTime();
+            this.ceilingAt = lastByteAt + idleNanos * CEILING_FACTOR;
+        }
+
+        /** The reader: {@code count} bytes are in, the last of them just now. */
+        void arrived(long count) {
+            received = count;
+            lastByteAt = System.nanoTime();
         }
 
         synchronized void arm() {
-            schedule(idleMillis);
+            schedule(idleNanos);
         }
 
-        private synchronized void schedule(long millis) {
+        private synchronized void schedule(long nanos) {
             if (!done) {
-                alarm = WATCHDOG.schedule(this::check, Math.max(1, millis), TimeUnit.MILLISECONDS);
+                // rounded UP: a look that fires a fraction early finds the
+                // idle period not quite over and has to look again
+                long millis = Math.max(1, TimeUnit.NANOSECONDS.toMillis(nanos + 999_999));
+                alarm = WATCHDOG.schedule(this::check, millis, TimeUnit.MILLISECONDS);
             }
         }
 
@@ -297,19 +340,17 @@ public final class HttpBodies {
             }
         }
 
-        /** On the watchdog: re-arm if bytes arrived since the last look, else expire. */
+        /** On the watchdog: look again later while bytes keep arriving inside the ceiling, else expire. */
         private synchronized void check() {
             if (done) {
                 return;
             }
-            long left = TimeUnit.NANOSECONDS.toMillis(ceilingAt - System.nanoTime());
-            long now = received;
-            if (now != seenAtLastCheck && left > 0) {
-                seenAtLastCheck = now;
-                schedule(Math.min(idleMillis, left));
+            Verdict verdict = look(System.nanoTime(), lastByteAt, ceilingAt, idleNanos);
+            if (verdict.look() == Look.WAIT) {
+                schedule(verdict.waitNanos());
                 return;
             }
-            tooSlow = now != seenAtLastCheck;
+            tooSlow = verdict.look() == Look.TOO_SLOW;
             expire();
         }
 

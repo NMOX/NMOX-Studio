@@ -267,8 +267,10 @@ class HttpBodiesTest {
     @Test
     @DisplayName("the deadline is idle time: a body still arriving is read whole, past the deadline in total (the 3.4 review)")
     void slowButLiveBodyIsRead() throws IOException {
-        // 8 bytes, one every 60 ms: ~480 ms in all against a 200 ms deadline
-        HttpBodies.Capped c = HttpBodies.readUtf8(new TrickleStream(8, 60), 1024, Duration.ofMillis(200));
+        // 8 bytes, one every 100 ms: ~800 ms in all against a 500 ms deadline.
+        // The gap is a fifth of the deadline so that a runner pausing this
+        // thread for a few hundred ms cannot make a live body look stopped.
+        HttpBodies.Capped c = HttpBodies.readUtf8(new TrickleStream(8, 100), 1024, Duration.ofMillis(500));
         assertThat(c.text()).isEqualTo("xxxxxxxx");
     }
 
@@ -277,8 +279,45 @@ class HttpBodiesTest {
     void tricklingForeverHitsTheCeiling() {
         HttpBodies.StalledException e = assertTimeoutPreemptively(Duration.ofSeconds(10), () -> assertThrows(
                 HttpBodies.StalledException.class,
-                () -> HttpBodies.readUtf8(new TrickleStream(Integer.MAX_VALUE, 40), 1 << 20, Duration.ofMillis(150))));
+                // a byte every 10 ms against a 500 ms idle deadline (ceiling 2 s):
+                // only a 500 ms pause of this thread could read as a silence
+                () -> HttpBodies.readUtf8(new TrickleStream(Integer.MAX_VALUE, 10), 1 << 20, Duration.ofMillis(500))));
         assertThat(e.getMessage()).contains("still arriving").doesNotContain("stopped sending");
+    }
+
+    private static final long MS = 1_000_000L;
+
+    @Test
+    @DisplayName("at the ceiling, a body whose last byte is recent is too slow, however short the last look was")
+    void ceilingAfterAShortLastLookIsTooSlow() {
+        // idle 150 ms, ceiling at 600 ms. The look before came late, at 599 ms,
+        // so this one is 1 ms after it; the last byte arrived at 560 ms.
+        HttpBodies.Verdict v = HttpBodies.look(600 * MS, 560 * MS, 600 * MS, 150 * MS);
+        assertThat(v.look()).as("no byte in the last millisecond is not a silence").isEqualTo(HttpBodies.Look.TOO_SLOW);
+    }
+
+    @Test
+    @DisplayName("a silence of one idle period is stopped, before the ceiling and at it")
+    void aFullIdlePeriodIsStopped() {
+        assertThat(HttpBodies.look(400 * MS, 250 * MS, 600 * MS, 150 * MS).look())
+                .isEqualTo(HttpBodies.Look.STOPPED);
+        assertThat(HttpBodies.look(600 * MS, 450 * MS, 600 * MS, 150 * MS).look())
+                .as("at the ceiling a server gone quiet is still said as stopped")
+                .isEqualTo(HttpBodies.Look.STOPPED);
+        assertThat(HttpBodies.look(400 * MS, 251 * MS, 600 * MS, 150 * MS).look())
+                .as("one millisecond short of the idle period is not a silence")
+                .isEqualTo(HttpBodies.Look.WAIT);
+    }
+
+    @Test
+    @DisplayName("the next look is when the silence or the ceiling could first be true")
+    void theNextLookIsTheEarlierOfTheTwo() {
+        // last byte at 300 ms: silence possible at 450 ms, ceiling at 600 ms
+        assertThat(HttpBodies.look(310 * MS, 300 * MS, 600 * MS, 150 * MS))
+                .isEqualTo(new HttpBodies.Verdict(HttpBodies.Look.WAIT, 140 * MS));
+        // last byte at 580 ms: the ceiling comes first
+        assertThat(HttpBodies.look(585 * MS, 580 * MS, 600 * MS, 150 * MS))
+                .isEqualTo(new HttpBodies.Verdict(HttpBodies.Look.WAIT, 15 * MS));
     }
 
     @Test
