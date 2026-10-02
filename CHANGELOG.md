@@ -4,6 +4,45 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.7] - 2026-10-02
+
+**Aiming a repository ran what its `.git/config` named.** The same law as
+3.5.6, one tool over. `git status` is not only a read: a repository's own
+configuration can name programs for git to run.
+
+### Fixed
+
+- **The git chip, line blame and the Standup run git only in a trusted
+  folder.** A clone does not bring a `.git/config`; an archive of a working
+  copy does, and so does a folder someone else prepared. Measured with
+  plain git: a scratch repository whose config sets `core.fsmonitor` to a
+  command, and `git status --porcelain=v2 --branch`, which is the status
+  line chip's own command, ran it. The chip ran that command as soon as
+  such a folder was aimed, line blame ran `git blame` on the first caret
+  move in one of its files, and the Standup ran `git log`, where a config
+  can name a `gpg.program`. The spawn ledger had blessed all three with
+  "fixed argv" and, for blame, "the config git honours is the user's". It
+  is also the repository's.
+- **The chip still shows the branch, and says what it is waiting for.** The
+  branch name is read from `HEAD` without git. In a repository whose
+  folder is not trusted the chip shows it with no change count, its tooltip
+  says why, and the first row of its menu is **Trust Workspace…**; after a
+  yes the count appears. Pull Requests, Draft Commit Message and the other
+  rows that run git or `gh` say "Git: waiting for a trusted workspace"
+  instead of doing nothing. Line blame is absent until then, and the
+  Standup goes without its Commits section, as it does where there is no
+  repository. In fifteen languages. The Team menu's verbs are the
+  platform's and do not go through the git command.
+
+### Measured
+
+The scratch repository aimed in this build: the chip reads `⎇ main`, and
+the configured program did not run in seventy seconds, a polling tick
+included. With the folder trusted, it ran, which is git doing what its
+config says in a folder the user has vouched for. The menu's first row
+was not driven: a popup menu cannot be opened by the tools available. Seven
+mutants, each killed by name.
+
 ## [3.5.6] - 2026-10-02
 
 **Opening a file ran the project's code.** The editor starts a language
@@ -25307,6 +25346,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.7]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.6...v3.5.7
 [3.5.6]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.5...v3.5.6
 [3.5.5]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.4...v3.5.5
 [3.5.4]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.3...v3.5.4

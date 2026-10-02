@@ -1278,9 +1278,12 @@ resource and what it is wired to.
 
 Aim at any project inside a git repository and the status line grows a
 **⎇ branch chip** — `⎇ main ±3` means you're on `main` with three changed
-files. The branch is read from `.git/HEAD` directly (no git process runs
-until you interact); the count refreshes on aim, on click, and every 30
-seconds while visible.
+files. The branch is read from `.git/HEAD` directly, with no git process;
+the count comes from `git status`, on aim, on click, and every 30 seconds
+while visible. Git runs the programs a repository's own configuration
+names, so in a repository whose folder you have not trusted the chip
+shows the branch alone, its tooltip says why, and the first row of its
+menu is **Trust Workspace…**. Line blame waits the same way.
 `↑2 ↓1` after it are the commits your branch has that its upstream has
 not (to push) and the other way round (to pull), shown only when not
 zero and only for a branch with an upstream.
