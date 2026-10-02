@@ -41,6 +41,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * engine. A grammar that throws, or that cannot finish a line in the time
  * the editor allows, fails here with the file and the line.
  *
+ * <p>A sample exercises the rules its text needs and no others: restoring
+ * the Svelte pattern 3.5.4 rewrote does not fail here, because no sample has
+ * an {@code {#if}} block, and restoring Elixir's does, on line 1 of
+ * {@code hello.exs}. {@code GrammarRegexesCompileGateTest} reads the
+ * patterns no sample reaches. This one is for what a pattern that compiles
+ * can still do to a real file.
+ *
  * <p>Kinds of file the platform's own lexers or this product's JavaScript
  * lexer open (HTML, CSS, JSON, XML, Java, PHP, JS, TS) have no TextMate
  * grammar bound to their extension and are not this gate's.
