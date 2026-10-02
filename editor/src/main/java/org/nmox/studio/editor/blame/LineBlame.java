@@ -69,6 +69,9 @@ public final class LineBlame {
     record Key(String path, long length, long modified, String head) {
     }
 
+    /** Whether a repository's folder is trusted: the silent check. Swapped by tests. */
+    static java.util.function.Predicate<File> trusted = org.nmox.studio.rack.service.WorkspaceTrust::isTrusted;
+
     private final Runner runner;
     private final RequestProcessor lane;
     private final AtomicLong generation = new AtomicLong();
@@ -140,6 +143,12 @@ public final class LineBlame {
         File root = GitFacts.repoRoot(dir);
         if (root == null) {
             return null; // not in a repository: decided on disk, no process
+        }
+        if (!trusted.test(root)) {
+            // git reads the repository's own config, which can name programs
+            // to run; nothing is spawned in a folder nobody has trusted (3.5.7).
+            // Silent: the status line's git chip says why and offers the question.
+            return null;
         }
         Key key = new Key(file.getAbsolutePath(), length, file.lastModified(), GitFacts.headStamp(root));
         BlamePorcelain.Blame blame;

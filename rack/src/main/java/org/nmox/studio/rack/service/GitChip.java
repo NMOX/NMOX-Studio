@@ -83,13 +83,36 @@ final class GitChip {
     }
 
     /**
-     * THE boot guard: a {@code git status} spawn is legal only once an
-     * aim event landed on a visible repo. Identical to {@link #visible()}
-     * today, but named for what it gates so the source-gate test and the
-     * panel say what they mean.
+     * THE spawn guard: a {@code git status} spawn is legal only once an
+     * aim event landed on a visible repo (the boot law, v1.38.0) whose
+     * folder is trusted (3.5.7). Named for what it gates so the
+     * source-gate test and the panel say what they mean.
      */
     boolean mayRunProcess() {
-        return visible();
+        return visible() && trusted.test(repoRoot);
+    }
+
+    /**
+     * Whether a folder is trusted: the silent check, never the prompt.
+     * Swapped by tests.
+     *
+     * <p>3.5.7. {@code git status} is not a read. A repository's own
+     * {@code .git/config} can name programs for git to run: an fsmonitor
+     * for {@code status}, an external diff, a {@code gpg.program} for a
+     * signed log. A clone does not bring that file; an archive of a
+     * working copy does, and so does a folder someone else prepared.
+     * Measured with plain git: a scratch repository whose config sets
+     * {@code core.fsmonitor} to a command, and {@code git status
+     * --porcelain=v2 --branch}, the chip's own command, ran it. The chip
+     * ran that command as soon as such a folder was aimed. The branch
+     * name is read from {@code HEAD} without git and still shows; every
+     * spawn waits until the repository's folder is trusted.
+     */
+    static java.util.function.Predicate<File> trusted = WorkspaceTrust::isTrusted;
+
+    /** A repository is aimed and nothing may be spawned in it yet: the chip says so and offers the question. */
+    boolean waitsForTrust() {
+        return visible() && !trusted.test(repoRoot);
     }
 
     File repoRoot() {
