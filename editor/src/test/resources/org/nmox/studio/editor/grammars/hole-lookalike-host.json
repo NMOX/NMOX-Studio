@@ -1,0 +1,7 @@
+{
+  "scopeName": "fixture.lookalike.host",
+  "patterns": [
+    { "include": "fixture.lookalike.first" },
+    { "include": "fixture.lookalike.second" }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "scopeName": "fixture.lookalike.first",
+  "patterns": [ { "include": "#comments" } ],
+  "repository": {
+    "comments": { "match": "#.*", "name": "comment.first" }
+  }
+}

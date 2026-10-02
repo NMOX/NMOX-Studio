@@ -31,8 +31,10 @@ class NgTemplateGrammarsTest {
     private static final Map<String, String> PINS = Map.of(
             "ng-template.tmLanguage.json",
             "123875ebd14c7057aa9e5228e6ce9d173c4abc449a884e0e1d8993a881ded901",
+            // upstream's is ea3d34fe…8c3e; the shipped file adds two stub rules upstream
+            // includes and defines nowhere (scripts/stub-dangling-grammar-includes.py, 3.5.4)
             "ng-expression.tmLanguage.json",
-            "ea3d34fe734715305fc5a04e4f2bc0f6188871f13b84aff0f9f8fc149f7d8c3e",
+            "26cac48add8db2b3473589774e2bf94229f8326edb337619ace8bdeae94fbcb9",
             "ng-template-blocks.tmLanguage.json",
             "69d05ab37f883d7c265a0149044f3ea949cbfe336a7c48a74cf720f7ad90ce1e",
             "ng-let-declaration.tmLanguage.json",

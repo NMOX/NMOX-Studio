@@ -96,27 +96,26 @@ where to look.
   "choose a master password" is an acceptable answer to "open the Infra
   Designer" on a machine without either is a question for someone using
   one.
-- **Unresolved includes in vendored grammars.** 3.5.0 fixed the class TM4E
-  could not resolve at all (rule-local repositories; the boot log went from
-  114 warnings to 13). What remains names rules that the upstream grammar
-  itself no longer defines: `#arithmetic_dollar` (shell),
-  `#preprocessor_number_literal` and `#string_escaped_char` (C++),
-  `#at-viewport` (Less), `#constraint` and `#member-references` (Swift),
-  `source.cpp#root_context` (Julia's embedded C++) and a javadoc grammar
-  Java's asks for. A census of every shipped grammar counts sixteen with at
-  least one such include. Each is a rule that matches nothing, in a place its
-  author stopped maintaining; repairing them is a per-language reading of
-  the upstream history, not a sweep.
+- ~~**Unresolved includes in vendored grammars.**~~ **Closed by 3.5.4.**
+  This entry called them "a per-language reading of the upstream history,
+  not a sweep". They were a sweep: a rule that is included and defined
+  nowhere matches nothing, so a stub that matches nothing changes nothing
+  but the warning. Thirty-two names in sixteen grammars
+  (`scripts/stub-dangling-grammar-includes.py`, `DanglingIncludesGateTest`).
+  The javadoc line was a different defect, the engine's (ledger 130).
 - ~~**The Workbench's tooling subtitles are cut at 38 characters** whatever
   the panel's width.~~ **Closed by 3.5.2**: `core.util.FitLabel`, and the
   page now follows a narrow dock's width so that there is something to fit
   to. The same label cuts an empty section's hint.
-- **What a staged walk leaves in the log** (3.5.2: 17 warnings, none ours to
-  fix): the unresolved grammar includes above; the platform's `Invalid
-  shortcut: …Actions/Help/master-help.xml` and two module deprecation
-  notices; and three scenes a runner cannot stage, each saying so (KVASIR
-  has no key, the Docker Panel no labelled container, Contract Studio no
-  `forge`).
+- **What a staged walk leaves in the log** (3.5.4: 8 warning lines, down
+  from 17, no SEVERE): the platform's `Invalid shortcut:
+  …Actions/Help/master-help.xml` and two module deprecation notices; joni's
+  `character class has ']' without escape` for three patterns, one in the
+  platform's Markdown grammar and two in vendored ones, each of which means
+  what it says; and three scenes a runner cannot stage, each saying so
+  (KVASIR has no key, the Docker Panel no labelled container, Contract
+  Studio no `forge`). 3.5.2 wrote "none ours to fix" under the seventeen.
+  Nine were.
 - **An annotation already painted keeps its pastel colour** in an editor
   that was open before `ProfileAnnotationColors` ran, until that editor is
   reopened. It runs when the main window shows, so this is a file restored
@@ -125,6 +124,64 @@ where to look.
 - **What a runner cannot show:** a HiDPI screen, ClearType on a real panel,
   the fonts a user has installed, a tiling window manager, Wayland. The
   walks ran on the runners' stock fonts at 1920×1080.
+
+### 130. The text engine is not the one the grammars were written for (3.5.4)
+
+The grammars are VS Code's; the engine is TM4E 0.14.1 over joni 2.2.6, as
+the platform ships it. 3.5.4 measured two differences over everything
+registered and gated both. What is recorded here is what was not fixed.
+
+- **TM4E's dependency walk is wrong upstream, and nothing was filed.**
+  `ScopeDependencyProcessor$ExternalReferenceCollector.visitedRule` is a
+  `HashSet<IRawRule>` and `RawRule` extends a `HashMap`, so rules are
+  compared by content: a relative include (`#comments`, `$self`) in one
+  grammar is skipped when another grammar walked in the same round has a
+  rule that reads the same. `vscode-textmate` uses a `Set` of object
+  identities. The fixture in `GrammarDependenciesLoadGateTest` is a
+  five-file reproduction that could go into a report as it stands. The
+  other hole, includes inside `captures`, is the upstream design in both
+  engines.
+- **The rewrites are bounded where the originals were not.** A function
+  piped into behind five or more spaces is coloured as a name, not a call
+  (Elixir); the same bound holds for PureScript's constructors, and
+  Haskell's foreign names allow two characters behind a keyword and eight
+  of indentation. `await` and `using` must be one character apart. Haxe's
+  fallback return-type rule is off. A formatter writes none of the shapes
+  that lose.
+- **joni's notices.** Compiling every registered pattern logs 86 notices
+  that are not failures: an unescaped `]` or `-` in a character class, a
+  nested repeat joni simplifies (`(?:\s+)?` in C++, 25 times), `\N` and
+  `\R` in Less. A session logs the ones whose rules it compiles. Each
+  pattern means what its author meant; escaping them is 86 edits to
+  vendored files for a quieter log.
+- **Only registered grammars are measured, with one line each.** The gate
+  that tokenizes compiles the rules reachable from a grammar's first
+  scanner. A pattern joni accepts and matches differently from Oniguruma
+  would pass every gate here.
+
+### 131. A test of the real preferences store failed once (3.5.3)
+
+`GeneralOptionsPanelControllerTest.updateLoadsStoredValue` failed once in a
+full verify of the 3.5.3 branch: after `remove("updateCheck")` the toggle
+read the stored `false` instead of the default. It passed alone three times
+and on the rerun. The test writes `NbPreferences.root().node("nmox/ui")`,
+whose flush is asynchronous. Not reproduced, not fixed; if it fails again
+the controller needs a preferences seam and the test its own node.
+
+### 132. What hangs the installed app on a macOS runner is not known (3.5.4)
+
+The `Installed boot` job hung on the macOS runner for 3.5.2 and again for
+3.5.3: the walk of the installed app stopped (for 3.5.2, with the Browser
+tab in front) and ran until the job was cancelled or timed out, with
+nothing to read. Both times the Windows and Linux jobs passed, the same
+job passed when run again, and the published app walked clean on a Mac
+(47 s, 13 pictures). Twice in two releases on the first run is not an
+accident, and the runners are not all one machine: a guess is JavaFX
+starting on a runner whose graphics differ, and it is only a guess.
+`platform-walk.sh` had no leash on a machine without `timeout(1)`; from
+3.5.4 it stops itself and takes a thread dump of the Java process first,
+so the next hang carries its own evidence. Read that dump before anything
+else is tried.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 

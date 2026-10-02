@@ -1,0 +1,11 @@
+{
+  "scopeName": "fixture.captures.host",
+  "patterns": [
+    {
+      "match": "(run) (.*)",
+      "captures": {
+        "2": { "patterns": [ { "include": "fixture.guest" } ] }
+      }
+    }
+  ]
+}

@@ -260,6 +260,15 @@
             <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- GrammarDependenciesLoadGateTest: the platform's Markdown grammar,
+             whose fenced blocks include most of the grammars this module
+             ships. Read as a resource; nothing in it is called. -->
+        <dependency>
+            <groupId>org.netbeans.modules</groupId>
+            <artifactId>org-netbeans-modules-markdown</artifactId>
+            <version>${netbeans.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

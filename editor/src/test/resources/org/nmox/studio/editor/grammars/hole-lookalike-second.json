@@ -1,0 +1,7 @@
+{
+  "scopeName": "fixture.lookalike.second",
+  "patterns": [ { "include": "#comments" } ],
+  "repository": {
+    "comments": { "patterns": [ { "include": "fixture.guest" } ] }
+  }
+}

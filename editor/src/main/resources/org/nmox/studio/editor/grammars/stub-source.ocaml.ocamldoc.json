@@ -2,5 +2,11 @@
   "name": "source.ocaml.ocamldoc (NMOX stub)",
   "scopeName": "source.ocaml.ocamldoc",
   "comment": "An in-house STUB, not a vendored grammar (v2.85.0): registers the scope so TM4E resolves the include instead of pruning the including rule and warning on every boot; the embedded region tokenizes as plain text.",
-  "patterns": []
+  "patterns": [],
+  "repository": {
+    "markup": {
+      "comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).",
+      "patterns": []
+    }
+  }
 }

@@ -97,6 +97,9 @@
 		}
 	],
 	"repository": {
+		"preprocessor_number_literal": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+		"root_context": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+		"string_escaped_char": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
 		"access_control_keywords": {
 			"match": "((?:((?:\\s*+\\/\\*(?:[^\\*]++|\\*+(?!\\/))*+\\*\\/\\s*+)+)|(?:\\s++)|(?<=\\W)|(?=\\W)|^|(?:\\n?$)|\\A|\\Z))(((?:(?:protected)|(?:private)|(?:public)))(?:\\s+)?(:))",
 			"captures": {

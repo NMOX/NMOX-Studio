@@ -468,7 +468,7 @@
               "include": "#comments"
             },
             {
-              "match": "(?<=(\\||=)\\s*)([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)",
+              "match": "(?<=([|=])|[|=]\\s|[|=]\\s{2}|[|=]\\s{3}|[|=]\\s{4})([\\p{Lu}\\p{Lt}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Nd}']*)",
               "captures": {
                 "2": {
                   "patterns": [

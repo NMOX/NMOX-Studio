@@ -8,6 +8,7 @@
 	"name": "Git Rebase Message",
 	"scopeName": "text.git-rebase",
 	"patterns": [
+		{"comment": "NMOX loader for text.git-rebase: this rule never matches. It names grammars this one includes, or the ones it includes do, where the engine's dependency walk does not find them, so that they are loaded (scripts/name-grammar-dependencies.py).", "begin": "(?!)", "end": "(?!)", "patterns": [{"include": "source.shell"}]},
 		{
 			"captures": {
 				"1": {
