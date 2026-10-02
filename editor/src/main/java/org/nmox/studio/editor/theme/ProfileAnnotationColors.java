@@ -50,10 +50,21 @@ import org.xml.sax.SAXException;
  * <p>Once the main window shows, this does what the dialog would have done:
  * it reads the annotation colours of the profile in use, the profile's
  * defaults and then the user's own changes from the Options dialog, and
- * sets them on the annotation types, with the dialog's own rules. A type
+ * gives them to the annotation types, with the dialog's own rules. A type
  * the profile does not name is left alone. The settings storage's API is
  * for the platform's friends, so the two files are read where the platform
  * registers them.
+ *
+ * <p><b>Given, not set.</b> The first cut called the types' setters, as the
+ * dialog does. A setter also SAVES the type: the platform rewrites that
+ * type's file in the user directory in place, while its folder watcher
+ * re-reads the folder on another thread, and the walk logged a SEVERE
+ * "Premature end of file" from a file caught half-written, on a first
+ * launch, eighty saves in a row. So the colours are stored on the type
+ * without the announcement ({@code putProp}): nothing is written, nothing
+ * races, and the same few dozen values are given again at the next start.
+ * The cost is stated: a type already painted in an editor that was open
+ * before this ran keeps its old colour in that editor until it is reopened.
  */
 @OnShowing
 public final class ProfileAnnotationColors implements Runnable {
@@ -74,9 +85,15 @@ public final class ProfileAnnotationColors implements Runnable {
                     return;
                 }
                 AnnotationTypes types = AnnotationTypes.getTypes();
-                types.getAnnotationTypeNames(); // the folder is read here, off the paint thread
+                // the folder is read here, off the paint thread; and a type
+                // is only asked for by a name the folder has, because asking
+                // for any other logs a stack trace
+                java.util.Set<String> known = new java.util.HashSet<>();
+                for (java.util.Iterator<String> it = types.getAnnotationTypeNames(); it.hasNext();) {
+                    known.add(it.next());
+                }
                 EventQueue.invokeLater(() -> {
-                    int changed = apply(colors, types::getType);
+                    int changed = apply(colors, name -> known.contains(name) ? types.getType(name) : null);
                     LOG.log(Level.FINE, "annotation colours of the profile in use: {0} types set", changed);
                 });
             } catch (RuntimeException | LinkageError ex) {
@@ -215,10 +232,10 @@ public final class ProfileAnnotationColors implements Runnable {
     }
 
     /**
-     * Sets each named type's colours, by the Options dialog's rules: a colour
-     * the profile gives is used; one it does not give is switched off, so a
-     * pastel default does not survive into a dark editor. Returns how many
-     * types changed.
+     * Gives each named type its colours, by the Options dialog's rules: a
+     * colour the profile gives is used; one it does not give is switched
+     * off, so a pastel default does not survive into a dark editor. Returns
+     * how many types changed.
      */
     static int apply(Map<String, Colors> colors, Function<String, AnnotationType> types) {
         int changed = 0;
@@ -229,35 +246,38 @@ public final class ProfileAnnotationColors implements Runnable {
             }
             Colors c = e.getValue();
             boolean touched = false;
-            if (type.isUseHighlightColor() != (c.background() != null)) {
-                type.setUseHighlightColor(c.background() != null);
-                touched = true;
-            }
-            if (c.background() != null && !c.background().equals(type.getHighlight())) {
-                type.setHighlight(c.background());
-                touched = true;
-            }
-            if (type.isInheritForegroundColor() != (c.foreground() == null)) {
-                type.setInheritForegroundColor(c.foreground() == null);
-                touched = true;
-            }
-            if (c.foreground() != null && !c.foreground().equals(type.getForegroundColor())) {
-                type.setForegroundColor(c.foreground());
-                touched = true;
-            }
-            if (type.isUseWaveUnderlineColor() != (c.wave() != null)) {
-                type.setUseWaveUnderlineColor(c.wave() != null);
-                touched = true;
-            }
-            if (c.wave() != null && !c.wave().equals(type.getWaveUnderlineColor())) {
-                type.setWaveUnderlineColor(c.wave());
-                touched = true;
-            }
+            touched |= give(type, AnnotationType.PROP_USE_HIGHLIGHT_COLOR, type.isUseHighlightColor(),
+                    c.background() != null);
+            touched |= give(type, AnnotationType.PROP_HIGHLIGHT_COLOR, type.getHighlight(), c.background());
+            touched |= give(type, AnnotationType.PROP_INHERIT_FOREGROUND_COLOR, type.isInheritForegroundColor(),
+                    c.foreground() == null);
+            touched |= give(type, AnnotationType.PROP_FOREGROUND_COLOR, type.getForegroundColor(), c.foreground());
+            touched |= give(type, AnnotationType.PROP_USE_WAVEUNDERLINE_COLOR, type.isUseWaveUnderlineColor(),
+                    c.wave() != null);
+            touched |= give(type, AnnotationType.PROP_WAVEUNDERLINE_COLOR, type.getWaveUnderlineColor(), c.wave());
             if (touched) {
                 changed++;
             }
         }
         return changed;
+    }
+
+    /** Stores a flag where the type keeps it, quietly; true when it changed. */
+    private static boolean give(AnnotationType type, String property, boolean now, boolean wanted) {
+        if (now == wanted) {
+            return false;
+        }
+        type.putProp(property, wanted ? Boolean.TRUE : Boolean.FALSE);
+        return true;
+    }
+
+    /** Stores a colour the profile gives; a colour it does not give is left as it is, switched off by its flag. */
+    private static boolean give(AnnotationType type, String property, Color now, Color wanted) {
+        if (wanted == null || wanted.equals(now)) {
+            return false;
+        }
+        type.putProp(property, wanted);
+        return true;
     }
 
     /** The platform instantiates this through {@code @OnShowing}. */
