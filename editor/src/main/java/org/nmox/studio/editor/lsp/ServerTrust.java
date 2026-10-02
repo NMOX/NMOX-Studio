@@ -284,7 +284,8 @@ final class ServerTrust {
             new org.openide.util.RequestProcessor("Language server trust", 1)::post;
 
     /** What the status line is told. Swapped by tests. */
-    static java.util.function.Consumer<String> status = text -> StatusDisplayer.getDefault().setStatusText(text);
+    static java.util.function.Consumer<String> status = text ->
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(text));
 
     /**
      * A folder was trusted. If a server was waiting for it, or for a
