@@ -156,7 +156,9 @@ public class FitLabel extends JLabel {
         cutNow = !shown.equals(full);
         super.setText(PlainText.plain(shown));
         String tip = tooltipFor(full, cutNow);
-        setToolTipText(tip == null || tip.isEmpty() ? null : PlainText.plain(tip));
+        // the guard wraps the whole choice (plain(null) is null), so that the
+        // gate reading this line can see every text that reaches the tooltip
+        setToolTipText(PlainText.plain(tip == null || tip.isEmpty() ? null : tip));
     }
 
     /**
