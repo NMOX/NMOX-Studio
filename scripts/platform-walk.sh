@@ -48,7 +48,13 @@ SCALE="${NMOX_WALK_SCALE:-1}"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/nmox-walk.XXXXXX")"
 UD="$WORK/userdir"
 CD="$WORK/cachedir"
-mkdir -p "$UD" "$CD"
+# A home of its own (3.5.1). A first launch is what a walk is for, and the
+# walker's own workspace hides first-launch defects: real connection names
+# made DB Studio's reset tree look the designed width for three weeks. It
+# also lets the walk say afterwards whether its dialog pictures created
+# anything, which in a real home nobody could tell.
+HOME_DIR="$WORK/home"
+mkdir -p "$UD" "$CD" "$HOME_DIR"
 
 set --
 if [ -n "${JAVA_HOME:-}" ]; then
@@ -60,6 +66,7 @@ START=$(date +%s)
 timeout --kill-after=30 "$TIMEOUT" \
   "$LAUNCHER" --nosplash "$@" \
   --userdir "$(native "$UD")" --cachedir "$(native "$CD")" \
+  -J-Duser.home="$(native "$HOME_DIR")" \
   -J-Dnmox.shots.dir="$(native "$OUT_ABS")" \
   -J-Dnmox.shots.scale="$SCALE" \
   -J-Dplugin.manager.check.updates=false \
@@ -71,12 +78,25 @@ END=$(date +%s)
 LOG="$UD/var/log/messages.log"
 [ -f "$LOG" ] && cp "$LOG" "$OUT_ABS/messages.log"
 SHOTS=$(find "$OUT_ABS" -name '*.png' | wc -l | tr -d ' ')
+# What the dialog pictures left behind. Each dialog is photographed and then
+# closed the way its close box closes it; a learning space on disk, or the
+# Standards Kit's files in the workspace, means a dialog was ACCEPTED.
+ACCEPTED=""
+if [ -d "$HOME_DIR/.nmox/learn" ]; then
+  for made in "$HOME_DIR/.nmox/learn"/*; do
+    [ -e "$made" ] && ACCEPTED="$ACCEPTED learning-space:$(basename "$made")"
+  done
+fi
+for made in robots.txt sitemap.xml site.webmanifest humans.txt .well-known; do
+  [ -e "$HOME_DIR/NMOX/$made" ] && ACCEPTED="$ACCEPTED standards-kit:$made"
+done
 {
   echo "os: $OS ($(uname -a))"
   echo "launcher: $LAUNCHER"
   echo "exit code: $RC (124 = the walk's own timeout)"
   echo "seconds: $((END - START))"
   echo "pictures: $SHOTS (painted at ${SCALE}x)"
+  echo "created by the dialog pictures:${ACCEPTED:- nothing}"
   if [ -f "$LOG" ]; then
     echo "SEVERE lines: $(grep -c 'SEVERE' "$LOG")"
     echo "WARNING lines: $(grep -c 'WARNING' "$LOG")"
@@ -92,3 +112,4 @@ rm -rf "$WORK"
 # a walk that produced no picture did not happen
 [ "$SHOTS" -gt 0 ] || { echo "platform-walk: FAIL — no pictures"; exit 1; }
 [ "$RC" = 0 ] || { echo "platform-walk: FAIL — the app exited $RC"; exit 1; }
+[ -z "$ACCEPTED" ] || { echo "platform-walk: FAIL — a photographed dialog was accepted:$ACCEPTED"; exit 1; }

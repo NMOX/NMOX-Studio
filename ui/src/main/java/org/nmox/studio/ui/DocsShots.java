@@ -70,8 +70,9 @@ public class DocsShots implements Runnable {
      * Forge v2: dialog shots. "Category/action-id" → image name; the action
      * is invoked exactly as a menu click would, the dialog it shows (modal
      * dialogs pump a secondary event loop, so timers keep firing) is painted,
-     * then disposed — the blocked action returns with a CLOSED verdict and
-     * nothing is created.
+     * then closed by its close box ({@code closeAsItsCloseBoxDoes}), so the
+     * blocked action returns with a CLOSED verdict and nothing is created.
+     * {@code scripts/platform-walk.sh} checks that nothing was.
      */
     static final Map<String, String> DIALOG_SHOTS = new LinkedHashMap<>();
 
@@ -907,8 +908,37 @@ public class DocsShots implements Runnable {
         private static void closeAllDialogs() {
             for (java.awt.Window w : java.awt.Window.getWindows()) {
                 if (w instanceof java.awt.Dialog d && d.isShowing()) {
-                    d.dispose();
+                    closeAsItsCloseBoxDoes(d);
                 }
+            }
+        }
+
+        /**
+         * Close a dialog the way a person who changed their mind closes it.
+         *
+         * <p>Until 3.5.1 this was {@code dispose()}, under a comment saying
+         * the blocked action then "returns with a CLOSED verdict and nothing
+         * is created". It does not. A {@code NotifyDescriptor} is born
+         * holding its INITIAL value (read from the platform's bytecode:
+         * the constructor assigns the same argument to {@code value} and
+         * {@code defaultValue}), which for a dialog with an OK button is OK,
+         * and only a button press or a WINDOW_CLOSING event changes it. A
+         * bare {@code dispose()} is neither, so every dialog the forge
+         * photographed was ACCEPTED: each run created the learning space the
+         * picker had selected, and ran the Standards Kit against whatever
+         * its fields held. The Agent Port picture then showed the kit's
+         * warning instead of the Agent Port.
+         *
+         * <p>The close box sends WINDOW_CLOSING, the platform's presenter
+         * answers it with CLOSED_OPTION, and the action behind the dialog
+         * stops where a user's would.
+         */
+        static void closeAsItsCloseBoxDoes(java.awt.Window w) {
+            w.dispatchEvent(new java.awt.event.WindowEvent(w, java.awt.event.WindowEvent.WINDOW_CLOSING));
+            if (w.isShowing()) {
+                // a window that ignores its close box still has to go, or the
+                // modal action never returns and the forge never exits
+                w.dispose();
             }
         }
     }
