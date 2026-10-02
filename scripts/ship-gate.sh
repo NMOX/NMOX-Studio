@@ -6,6 +6,10 @@
 # (the docs-landed check derives from TAG). Run detached:
 #   nohup scripts/ship-gate.sh <pr> <vX.Y.Z> > gate.log 2>&1 &
 set -u
+# where THIS copy of the gate lives, read before the cd below: a gate run
+# from a release's own worktree must find the scripts that release adds
+# (the main checkout only receives them after that release is published).
+HERE=$(cd "$(dirname "$0")" && pwd)
 cd /Users/david/vcs/git/github/nmox/NMOX-Studio
 PR=${1:?usage: ship-gate.sh <pr-number> <vX.Y.Z>}; TAG=${2:?usage: ship-gate.sh <pr-number> <vX.Y.Z>}
 PUSH='git -c url.git@github.com:.insteadOf=ssh-bypass: push ssh-bypass:NMOX/NMOX-Studio.git'
@@ -32,7 +36,14 @@ for i in $(seq 1 60); do
   [[ "$STATE" == *pass* && "$STATE" != *pending* ]] && break
   sleep 30
 done
-gh pr merge $PR --squash 2>&1 | /usr/bin/tail -1
+# the squash commit is named by the PULL REQUEST, stated here (v3.5.9):
+# left to GitHub's default, a one-commit request is named after that
+# commit instead, and v3.5.8 reached main as "wip: … (#842)". The
+# subject is decided by scripts/squash-subject.sh, which refuses an
+# empty or working-note title — so the gate stops BEFORE the merge.
+PRTITLE=$(gh pr view $PR --json title --jq '.title')
+SUBJECT=$("$HERE/squash-subject.sh" "$PRTITLE" "$PR") || { echo "SQUASH-SUBJECT-REFUSED"; exit 1; }
+gh pr merge $PR --squash --subject "$SUBJECT" 2>&1 | /usr/bin/tail -1
 # fetch only — NEVER checkout: a gate that switches the working tree
 # to main while a unit is mid-flight silently reroutes the developer's
 # commits onto local main (bit hard on 2026-08-25, PR 583 shipped

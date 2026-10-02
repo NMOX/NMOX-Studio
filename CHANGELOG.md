@@ -4,6 +4,43 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.9] - 2026-10-02
+
+No change to the product. Two things in the project's own machinery, both
+found by reading the record of the two releases before this one.
+
+### Fixed
+
+- **A test that failed about once in ten thousand runs, and failed the
+  build of 3.5.7's merge on Windows.** `SearchResultsSplitTest` resized a
+  split from the test's thread and then called the resize listener itself.
+  Once a split has a resize listener, resizing it also posts a resize event
+  to the event thread, so two threads went through the same once-per-split
+  check: the event thread claimed it, the test's thread returned early and
+  read the divider before it had been moved (14 where 250 was expected).
+  Reproduced here before it was changed, 2 runs in 20,000; with the test on
+  the event thread, where the product runs this code, 0 in 20,000. The
+  product was not affected: every caller of that code is already on the
+  event thread. The published 3.5.7 is the tree its pull request verified
+  on all three systems; the failed run was the same tree built again after
+  the merge.
+- **A release's commit on `main` is named by its pull request.** GitHub
+  names a squash merge after the pull request only when the request holds
+  more than one commit; with exactly one it uses that commit's message. So
+  3.5.8, a one-commit request, is on `main` as `wip: maven-clean-plugin
+  3.5.0 (#842)`. A published commit is not rewritten, and that one stays.
+  The release gate now states the subject itself, decided by
+  `scripts/squash-subject.sh` (the title and the number; an empty title or
+  a working note is refused before the merge), and the gate finds that
+  script beside its own copy, since the main checkout only receives a new
+  script after the release that adds it is published.
+
+### Tests
+
+- `ShipScriptsGateTest` runs the new script and holds the gate's merge line
+  to it; `SearchResultsSplitTest` still fails when a later results tab is
+  not followed. Six mutants, each named by the test that kills it.
+
 ## [3.5.8] - 2026-10-02
 
 Dependency housekeeping, the usual way: the Dependabot change is applied by
@@ -25360,6 +25397,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.9]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.8...v3.5.9
 [3.5.8]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.7...v3.5.8
 [3.5.7]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.6...v3.5.7
 [3.5.6]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.5...v3.5.6
