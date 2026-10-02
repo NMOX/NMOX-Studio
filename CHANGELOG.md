@@ -4,6 +4,30 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.11] - 2026-10-02
+
+No change to the product.
+
+### Fixed
+
+- **A walk does not see the machine's Docker.** `scripts/platform-walk.sh`
+  boots the app in a throwaway home so the walker's own data cannot reach
+  a picture, and the daemon was left out of that: on a developer's machine
+  DB Studio's "a database container is running" balloon named one of
+  their containers in the walk's picture. The docs forge had this until
+  3.5.0 and was given a filtered view or a dead address; the walk script
+  now starts the app with an address nothing listens on
+  (`WalkSeesNoDockerGateTest`). No such picture was published: it was read
+  before it went anywhere.
+
+### Added
+
+- **Both split-pane layouts for a right-to-left reader to judge (ledger
+  127).** The Hebrew build photographed as shipped and with horizontal
+  splits mirrored, DB Studio and API Studio, in the ledger entry; the
+  forty-line experiment that produced the second pair is kept as a patch
+  under `scripts/probes/split-rtl/`, not in the product.
+
 ## [3.5.10] - 2026-10-02
 
 **Trust, asked where you are and heard everywhere.** 3.5.6 and 3.5.7 made
@@ -25455,6 +25479,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.11]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.10...v3.5.11
 [3.5.10]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.9...v3.5.10
 [3.5.9]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.8...v3.5.9
 [3.5.8]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.7...v3.5.8
