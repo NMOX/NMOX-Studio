@@ -269,69 +269,17 @@
 							"match": "\\G([&*]?)(?:([_a-zA-Z]\\w*(:))|([_a-zA-Z]\\w*))"
 						},
 						{
-							"include": "#parens"
+							"include": "#parens__2"
 						},
 						{
-							"include": "#braces"
-						},
-						{
-							"include": "$self"
-						}
-					]
-				}
-			],
-			"repository": {
-				"braces": {
-					"begin": "\\{",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.section.function.begin.ruby"
-						}
-					},
-					"end": "\\}",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.section.function.end.ruby"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#parens"
-						},
-						{
-							"include": "#braces"
-						},
-						{
-							"include": "$self"
-						}
-					]
-				},
-				"parens": {
-					"begin": "\\(",
-					"beginCaptures": {
-						"0": {
-							"name": "punctuation.section.function.begin.ruby"
-						}
-					},
-					"end": "\\)",
-					"endCaptures": {
-						"0": {
-							"name": "punctuation.section.function.end.ruby"
-						}
-					},
-					"patterns": [
-						{
-							"include": "#parens"
-						},
-						{
-							"include": "#braces"
+							"include": "#braces__1"
 						},
 						{
 							"include": "$self"
 						}
 					]
 				}
-			}
+			]
 		},
 		{
 			"begin": "(?x)\n\t\t\t         (?=def\\b)                                                      # an optimization to help Oniguruma fail fast\n\t\t\t         (?<=^|\\s)(def)\\s+                                              # the def keyword\n\t\t\t         ( (?>[a-zA-Z_]\\w*(?>\\.|::))?                                   # a method name prefix\n\t\t\t           (?>[a-zA-Z_]\\w*(?>[?!]|=(?!>))?                              # the method name\n\t\t\t           |===?|!=|!~|>[>=]?|<=>|<[<=]?|[%&`/\\|^]|\\*\\*?|=?~|[-+]@?|\\[\\]=?) )  # …or an operator method\n\t\t\t         [ \\t]                                                          # the space separating the arguments\n\t\t\t         (?=[ \\t]*[^\\s#;])                                              # make sure arguments and not a comment follow\n\t\t\t        ",
@@ -1214,35 +1162,12 @@
 					"name": "meta.embedded.line.ruby",
 					"patterns": [
 						{
-							"include": "#nest_curly_and_self"
+							"include": "#nest_curly_and_self__3"
 						},
 						{
 							"include": "$self"
 						}
-					],
-					"repository": {
-						"nest_curly_and_self": {
-							"patterns": [
-								{
-									"begin": "\\{",
-									"captures": {
-										"0": {
-											"name": "punctuation.section.scope.ruby"
-										}
-									},
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#nest_curly_and_self"
-										}
-									]
-								},
-								{
-									"include": "$self"
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"captures": {
@@ -1295,10 +1220,10 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__7"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__8"
 								}
 							]
 						},
@@ -1307,10 +1232,10 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__6"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__8"
 								}
 							]
 						},
@@ -1319,10 +1244,10 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__5"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__8"
 								}
 							]
 						},
@@ -1331,156 +1256,17 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__4"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__8"
 								}
 							]
 						},
 						{
-							"include": "#symbol"
+							"include": "#symbol__8"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\<|\\\\>",
-									"name": "constant.other.symbol.ruby"
-								},
-								{
-									"begin": "<",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\{|\\\\\\}",
-									"name": "constant.other.symbol.ruby"
-								},
-								{
-									"begin": "\\{",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\[|\\\\\\]",
-									"name": "constant.other.symbol.ruby"
-								},
-								{
-									"begin": "\\[",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\(|\\\\\\)",
-									"name": "constant.other.symbol.ruby"
-								},
-								{
-									"begin": "\\(",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"symbol": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\\\|\\\\[ ]",
-									"name": "constant.other.symbol.ruby"
-								},
-								{
-									"match": "\\S\\w*",
-									"name": "constant.other.symbol.ruby"
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%I(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -1502,10 +1288,10 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__12"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__13"
 								}
 							]
 						},
@@ -1514,10 +1300,10 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__11"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__13"
 								}
 							]
 						},
@@ -1526,10 +1312,10 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__10"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__13"
 								}
 							]
 						},
@@ -1538,124 +1324,17 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__9"
 								},
 								{
-									"include": "#symbol"
+									"include": "#symbol__13"
 								}
 							]
 						},
 						{
-							"include": "#symbol"
+							"include": "#symbol__13"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"begin": "<",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"begin": "\\{",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"begin": "\\[",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"begin": "\\(",
-									"captures": {
-										"0": {
-											"name": "constant.other.symbol.ruby"
-										}
-									},
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										},
-										{
-											"include": "#symbol"
-										}
-									]
-								}
-							]
-						},
-						"symbol": {
-							"patterns": [
-								{
-									"begin": "(?=\\\\|#\\{)",
-									"end": "(?!\\G)",
-									"name": "constant.other.symbol.ruby",
-									"patterns": [
-										{
-											"include": "#escaped_char"
-										},
-										{
-											"include": "#interpolated_ruby"
-										}
-									]
-								},
-								{
-									"match": "\\S\\w*",
-									"name": "constant.other.symbol.ruby"
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%q(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -1677,7 +1356,7 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__17"
 								}
 							]
 						},
@@ -1686,7 +1365,7 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__16"
 								}
 							]
 						},
@@ -1695,7 +1374,7 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__15"
 								}
 							]
 						},
@@ -1704,81 +1383,11 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__14"
 								}
 							]
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"match": "\\\\<|\\\\>|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "<",
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"match": "\\\\\\{|\\\\\\}|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\{",
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"match": "\\\\\\[|\\\\\\]|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\[",
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"match": "\\\\\\(|\\\\\\)|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\(",
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										}
-									]
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%Q?(?:([(\\[{<])|([^\\w\\s=]|_))",
@@ -1800,7 +1409,7 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__21"
 								}
 							]
 						},
@@ -1809,7 +1418,7 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__20"
 								}
 							]
 						},
@@ -1818,7 +1427,7 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__19"
 								}
 							]
 						},
@@ -1827,7 +1436,7 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__18"
 								}
 							]
 						},
@@ -1837,85 +1446,7 @@
 						{
 							"include": "#interpolated_ruby"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "<",
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\{",
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\[",
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\(",
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										}
-									]
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%r(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -1937,7 +1468,7 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__25"
 								}
 							]
 						},
@@ -1946,7 +1477,7 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__24"
 								}
 							]
 						},
@@ -1955,7 +1486,7 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__23"
 								}
 							]
 						},
@@ -1964,80 +1495,14 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__22"
 								}
 							]
 						},
 						{
 							"include": "#regex_sub"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"include": "#regex_sub"
-								},
-								{
-									"begin": "<",
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"include": "#regex_sub"
-								},
-								{
-									"begin": "\\{",
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"include": "#regex_sub"
-								},
-								{
-									"begin": "\\[",
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"include": "#regex_sub"
-								},
-								{
-									"begin": "\\(",
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										}
-									]
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%s(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -2059,7 +1524,7 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__29"
 								}
 							]
 						},
@@ -2068,7 +1533,7 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__28"
 								}
 							]
 						},
@@ -2077,7 +1542,7 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__27"
 								}
 							]
 						},
@@ -2086,81 +1551,11 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__26"
 								}
 							]
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"match": "\\\\<|\\\\>|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "<",
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"match": "\\\\\\{|\\\\\\}|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\{",
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"match": "\\\\\\[|\\\\\\]|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\[",
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"match": "\\\\\\(|\\\\\\)|\\\\\\\\",
-									"name": "constant.character.escape.ruby"
-								},
-								{
-									"begin": "\\(",
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										}
-									]
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%w(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -2182,10 +1577,10 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__33"
 								},
 								{
-									"include": "#string"
+									"include": "#string__34"
 								}
 							]
 						},
@@ -2194,10 +1589,10 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__32"
 								},
 								{
-									"include": "#string"
+									"include": "#string__34"
 								}
 							]
 						},
@@ -2206,10 +1601,10 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__31"
 								},
 								{
-									"include": "#string"
+									"include": "#string__34"
 								}
 							]
 						},
@@ -2218,156 +1613,17 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__30"
 								},
 								{
-									"include": "#string"
+									"include": "#string__34"
 								}
 							]
 						},
 						{
-							"include": "#string"
+							"include": "#string__34"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\<|\\\\>",
-									"name": "string.other.ruby"
-								},
-								{
-									"begin": "<",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\{|\\\\\\}",
-									"name": "string.other.ruby"
-								},
-								{
-									"begin": "\\{",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\[|\\\\\\]",
-									"name": "string.other.ruby"
-								},
-								{
-									"begin": "\\[",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\(|\\\\\\)",
-									"name": "string.other.ruby"
-								},
-								{
-									"begin": "\\(",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"string": {
-							"patterns": [
-								{
-									"captures": {
-										"0": {
-											"name": "constant.character.escape.ruby"
-										}
-									},
-									"match": "\\\\\\\\|\\\\[ ]",
-									"name": "string.other.ruby"
-								},
-								{
-									"match": "\\S\\w*",
-									"name": "string.other.ruby"
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%W(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -2389,10 +1645,10 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__38"
 								},
 								{
-									"include": "#string"
+									"include": "#string__39"
 								}
 							]
 						},
@@ -2401,10 +1657,10 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__37"
 								},
 								{
-									"include": "#string"
+									"include": "#string__39"
 								}
 							]
 						},
@@ -2413,10 +1669,10 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__36"
 								},
 								{
-									"include": "#string"
+									"include": "#string__39"
 								}
 							]
 						},
@@ -2425,124 +1681,17 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__35"
 								},
 								{
-									"include": "#string"
+									"include": "#string__39"
 								}
 							]
 						},
 						{
-							"include": "#string"
+							"include": "#string__39"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"begin": "<",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"begin": "\\{",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"begin": "\\[",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"begin": "\\(",
-									"captures": {
-										"0": {
-											"name": "string.other.ruby"
-										}
-									},
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										},
-										{
-											"include": "#string"
-										}
-									]
-								}
-							]
-						},
-						"string": {
-							"patterns": [
-								{
-									"begin": "(?=\\\\|#\\{)",
-									"end": "(?!\\G)",
-									"name": "string.other.ruby",
-									"patterns": [
-										{
-											"include": "#escaped_char"
-										},
-										{
-											"include": "#interpolated_ruby"
-										}
-									]
-								},
-								{
-									"match": "\\S\\w*",
-									"name": "string.other.ruby"
-								}
-							]
-						}
-					}
+					]
 				},
 				{
 					"begin": "%x(?:([(\\[{<])|([^\\w\\s]|_))",
@@ -2564,7 +1713,7 @@
 							"end": "(?=\\))",
 							"patterns": [
 								{
-									"include": "#parens"
+									"include": "#parens__43"
 								}
 							]
 						},
@@ -2573,7 +1722,7 @@
 							"end": "(?=\\])",
 							"patterns": [
 								{
-									"include": "#brackets"
+									"include": "#brackets__42"
 								}
 							]
 						},
@@ -2582,7 +1731,7 @@
 							"end": "(?=\\})",
 							"patterns": [
 								{
-									"include": "#braces"
+									"include": "#braces__41"
 								}
 							]
 						},
@@ -2591,7 +1740,7 @@
 							"end": "(?=>)",
 							"patterns": [
 								{
-									"include": "#angles"
+									"include": "#angles__40"
 								}
 							]
 						},
@@ -2601,85 +1750,7 @@
 						{
 							"include": "#interpolated_ruby"
 						}
-					],
-					"repository": {
-						"angles": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "<",
-									"end": ">",
-									"patterns": [
-										{
-											"include": "#angles"
-										}
-									]
-								}
-							]
-						},
-						"braces": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\{",
-									"end": "\\}",
-									"patterns": [
-										{
-											"include": "#braces"
-										}
-									]
-								}
-							]
-						},
-						"brackets": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\[",
-									"end": "\\]",
-									"patterns": [
-										{
-											"include": "#brackets"
-										}
-									]
-								}
-							]
-						},
-						"parens": {
-							"patterns": [
-								{
-									"include": "#escaped_char"
-								},
-								{
-									"include": "#interpolated_ruby"
-								},
-								{
-									"begin": "\\(",
-									"end": "\\)",
-									"patterns": [
-										{
-											"include": "#parens"
-										}
-									]
-								}
-							]
-						}
-					}
+					]
 				}
 			]
 		},
@@ -2768,6 +1839,913 @@
 					"comment": "We are restrictive in what we allow to go after the comment character to avoid false positives, since the availability of comments depend on regexp flags.",
 					"end": "$\\n?",
 					"name": "comment.line.number-sign.ruby"
+				}
+			]
+		},
+		"braces__1": {
+			"begin": "\\{",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.function.begin.ruby"
+				}
+			},
+			"end": "\\}",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.function.end.ruby"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#parens__2"
+				},
+				{
+					"include": "#braces__1"
+				},
+				{
+					"include": "$self"
+				}
+			]
+		},
+		"parens__2": {
+			"begin": "\\(",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.section.function.begin.ruby"
+				}
+			},
+			"end": "\\)",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.section.function.end.ruby"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#parens__2"
+				},
+				{
+					"include": "#braces__1"
+				},
+				{
+					"include": "$self"
+				}
+			]
+		},
+		"nest_curly_and_self__3": {
+			"patterns": [
+				{
+					"begin": "\\{",
+					"captures": {
+						"0": {
+							"name": "punctuation.section.scope.ruby"
+						}
+					},
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#nest_curly_and_self__3"
+						}
+					]
+				},
+				{
+					"include": "$self"
+				}
+			]
+		},
+		"angles__4": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\<|\\\\>",
+					"name": "constant.other.symbol.ruby"
+				},
+				{
+					"begin": "<",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__4"
+						},
+						{
+							"include": "#symbol__8"
+						}
+					]
+				}
+			]
+		},
+		"braces__5": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\{|\\\\\\}",
+					"name": "constant.other.symbol.ruby"
+				},
+				{
+					"begin": "\\{",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__5"
+						},
+						{
+							"include": "#symbol__8"
+						}
+					]
+				}
+			]
+		},
+		"brackets__6": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\[|\\\\\\]",
+					"name": "constant.other.symbol.ruby"
+				},
+				{
+					"begin": "\\[",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__6"
+						},
+						{
+							"include": "#symbol__8"
+						}
+					]
+				}
+			]
+		},
+		"parens__7": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\(|\\\\\\)",
+					"name": "constant.other.symbol.ruby"
+				},
+				{
+					"begin": "\\(",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__7"
+						},
+						{
+							"include": "#symbol__8"
+						}
+					]
+				}
+			]
+		},
+		"symbol__8": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\\\|\\\\[ ]",
+					"name": "constant.other.symbol.ruby"
+				},
+				{
+					"match": "\\S\\w*",
+					"name": "constant.other.symbol.ruby"
+				}
+			]
+		},
+		"angles__9": {
+			"patterns": [
+				{
+					"begin": "<",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__9"
+						},
+						{
+							"include": "#symbol__13"
+						}
+					]
+				}
+			]
+		},
+		"braces__10": {
+			"patterns": [
+				{
+					"begin": "\\{",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__10"
+						},
+						{
+							"include": "#symbol__13"
+						}
+					]
+				}
+			]
+		},
+		"brackets__11": {
+			"patterns": [
+				{
+					"begin": "\\[",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__11"
+						},
+						{
+							"include": "#symbol__13"
+						}
+					]
+				}
+			]
+		},
+		"parens__12": {
+			"patterns": [
+				{
+					"begin": "\\(",
+					"captures": {
+						"0": {
+							"name": "constant.other.symbol.ruby"
+						}
+					},
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__12"
+						},
+						{
+							"include": "#symbol__13"
+						}
+					]
+				}
+			]
+		},
+		"symbol__13": {
+			"patterns": [
+				{
+					"begin": "(?=\\\\|#\\{)",
+					"end": "(?!\\G)",
+					"name": "constant.other.symbol.ruby",
+					"patterns": [
+						{
+							"include": "#escaped_char"
+						},
+						{
+							"include": "#interpolated_ruby"
+						}
+					]
+				},
+				{
+					"match": "\\S\\w*",
+					"name": "constant.other.symbol.ruby"
+				}
+			]
+		},
+		"angles__14": {
+			"patterns": [
+				{
+					"match": "\\\\<|\\\\>|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__14"
+						}
+					]
+				}
+			]
+		},
+		"braces__15": {
+			"patterns": [
+				{
+					"match": "\\\\\\{|\\\\\\}|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__15"
+						}
+					]
+				}
+			]
+		},
+		"brackets__16": {
+			"patterns": [
+				{
+					"match": "\\\\\\[|\\\\\\]|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__16"
+						}
+					]
+				}
+			]
+		},
+		"parens__17": {
+			"patterns": [
+				{
+					"match": "\\\\\\(|\\\\\\)|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__17"
+						}
+					]
+				}
+			]
+		},
+		"angles__18": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__18"
+						}
+					]
+				}
+			]
+		},
+		"braces__19": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__19"
+						}
+					]
+				}
+			]
+		},
+		"brackets__20": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__20"
+						}
+					]
+				}
+			]
+		},
+		"parens__21": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__21"
+						}
+					]
+				}
+			]
+		},
+		"angles__22": {
+			"patterns": [
+				{
+					"include": "#regex_sub"
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__22"
+						}
+					]
+				}
+			]
+		},
+		"braces__23": {
+			"patterns": [
+				{
+					"include": "#regex_sub"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__23"
+						}
+					]
+				}
+			]
+		},
+		"brackets__24": {
+			"patterns": [
+				{
+					"include": "#regex_sub"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__24"
+						}
+					]
+				}
+			]
+		},
+		"parens__25": {
+			"patterns": [
+				{
+					"include": "#regex_sub"
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__25"
+						}
+					]
+				}
+			]
+		},
+		"angles__26": {
+			"patterns": [
+				{
+					"match": "\\\\<|\\\\>|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__26"
+						}
+					]
+				}
+			]
+		},
+		"braces__27": {
+			"patterns": [
+				{
+					"match": "\\\\\\{|\\\\\\}|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__27"
+						}
+					]
+				}
+			]
+		},
+		"brackets__28": {
+			"patterns": [
+				{
+					"match": "\\\\\\[|\\\\\\]|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__28"
+						}
+					]
+				}
+			]
+		},
+		"parens__29": {
+			"patterns": [
+				{
+					"match": "\\\\\\(|\\\\\\)|\\\\\\\\",
+					"name": "constant.character.escape.ruby"
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__29"
+						}
+					]
+				}
+			]
+		},
+		"angles__30": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\<|\\\\>",
+					"name": "string.other.ruby"
+				},
+				{
+					"begin": "<",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__30"
+						},
+						{
+							"include": "#string__34"
+						}
+					]
+				}
+			]
+		},
+		"braces__31": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\{|\\\\\\}",
+					"name": "string.other.ruby"
+				},
+				{
+					"begin": "\\{",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__31"
+						},
+						{
+							"include": "#string__34"
+						}
+					]
+				}
+			]
+		},
+		"brackets__32": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\[|\\\\\\]",
+					"name": "string.other.ruby"
+				},
+				{
+					"begin": "\\[",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__32"
+						},
+						{
+							"include": "#string__34"
+						}
+					]
+				}
+			]
+		},
+		"parens__33": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\(|\\\\\\)",
+					"name": "string.other.ruby"
+				},
+				{
+					"begin": "\\(",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__33"
+						},
+						{
+							"include": "#string__34"
+						}
+					]
+				}
+			]
+		},
+		"string__34": {
+			"patterns": [
+				{
+					"captures": {
+						"0": {
+							"name": "constant.character.escape.ruby"
+						}
+					},
+					"match": "\\\\\\\\|\\\\[ ]",
+					"name": "string.other.ruby"
+				},
+				{
+					"match": "\\S\\w*",
+					"name": "string.other.ruby"
+				}
+			]
+		},
+		"angles__35": {
+			"patterns": [
+				{
+					"begin": "<",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__35"
+						},
+						{
+							"include": "#string__39"
+						}
+					]
+				}
+			]
+		},
+		"braces__36": {
+			"patterns": [
+				{
+					"begin": "\\{",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__36"
+						},
+						{
+							"include": "#string__39"
+						}
+					]
+				}
+			]
+		},
+		"brackets__37": {
+			"patterns": [
+				{
+					"begin": "\\[",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__37"
+						},
+						{
+							"include": "#string__39"
+						}
+					]
+				}
+			]
+		},
+		"parens__38": {
+			"patterns": [
+				{
+					"begin": "\\(",
+					"captures": {
+						"0": {
+							"name": "string.other.ruby"
+						}
+					},
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__38"
+						},
+						{
+							"include": "#string__39"
+						}
+					]
+				}
+			]
+		},
+		"string__39": {
+			"patterns": [
+				{
+					"begin": "(?=\\\\|#\\{)",
+					"end": "(?!\\G)",
+					"name": "string.other.ruby",
+					"patterns": [
+						{
+							"include": "#escaped_char"
+						},
+						{
+							"include": "#interpolated_ruby"
+						}
+					]
+				},
+				{
+					"match": "\\S\\w*",
+					"name": "string.other.ruby"
+				}
+			]
+		},
+		"angles__40": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "<",
+					"end": ">",
+					"patterns": [
+						{
+							"include": "#angles__40"
+						}
+					]
+				}
+			]
+		},
+		"braces__41": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\{",
+					"end": "\\}",
+					"patterns": [
+						{
+							"include": "#braces__41"
+						}
+					]
+				}
+			]
+		},
+		"brackets__42": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\[",
+					"end": "\\]",
+					"patterns": [
+						{
+							"include": "#brackets__42"
+						}
+					]
+				}
+			]
+		},
+		"parens__43": {
+			"patterns": [
+				{
+					"include": "#escaped_char"
+				},
+				{
+					"include": "#interpolated_ruby"
+				},
+				{
+					"begin": "\\(",
+					"end": "\\)",
+					"patterns": [
+						{
+							"include": "#parens__43"
+						}
+					]
 				}
 			]
 		}

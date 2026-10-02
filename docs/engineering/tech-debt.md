@@ -20,6 +20,73 @@ was read again rather than recalled. A deferral you can defend after
 re-reading the code is a decision; one you only remember making is a
 guess. These are decisions.
 
+## Open — added by 3.5.0 (the Windows and Linux release)
+
+### 127. Should a horizontal split mirror for a right-to-left reader?
+
+The runtime the product bundles (JDK 25.0.4) answers yes on its own:
+`JSplitPane.setComponentOrientation` exchanges the two children when the
+direction becomes right-to-left. It does so for vertical splits as well,
+which puts DB Studio's results above its console; it leaves
+`getLeftComponent()` answering null for a component that is in the pane; and
+a switch back to a left-to-right language does not undo it. 3.5.0 takes
+split panes out of that code's hands (`SplitShapes`): every pane keeps the
+children and the divider its author gave it, in every language, which is
+also what the Hebrew and Arabic pictures in the documentation show.
+
+**Open, as a design question:** in a mirrored window the connection tree
+arguably belongs on the right. Doing that deliberately means exchanging the
+children of HORIZONTAL splits only, mirroring the divider
+(`width - location - dividerSize`), flipping the resize weight, undoing all
+three on a live switch back, and repainting the Hebrew and Arabic pictures.
+None of it is hard; it should be decided by a right-to-left reader looking
+at both layouts, not by a patch release of the runtime.
+
+### 128. AltGr and the Ctrl+Alt chords, on a keyboard nobody here has
+
+Most window chords are Ctrl+Alt+digit on Windows and Linux. On German,
+French, Polish and other layouts AltGr+digit types `{ [ ] }` and friends,
+and Windows has historically reported AltGr as Ctrl+Alt. Java is understood
+to add an AltGraph modifier to such a key event since version 11, and both
+Swing and the platform's keymap match a chord by its exact modifier set, so
+AltGr+7 should type `{` and not open DB Studio. That is a reading of how the
+pieces fit, not a measurement. Show Keystrokes was taught the same rule in
+3.5.0 (an AltGr combination is typing and is never shown).
+
+**Unverified:** the walks ran on runners with a US layout, and nothing here
+can press AltGr on a German one. It needs a person with such a keyboard, or
+a runner with the layout loaded and `java.awt.Robot` pressing
+`VK_ALT_GRAPH`. If the chords do fire, the fix is a keymap for those layouts
+that moves the window chords off the digits.
+
+### 129. What the 3.5 walks saw and did not change
+
+- **Linux without a Secret Service.** On the runner the platform's keyring
+  fell back to master-password encryption, and the Infra Designer's token
+  indicator stayed blank for the whole walk: its first read waits on that
+  prompt. A desktop with GNOME Keyring or KWallet does not take this path.
+  Whether the prompt explains itself well enough on a machine without either
+  needs that machine.
+- **Unresolved includes in vendored grammars.** 3.5.0 fixed the class TM4E
+  could not resolve at all (rule-local repositories; the boot log went from
+  114 warnings to 13). What remains names rules that the upstream grammar
+  itself no longer defines: `#arithmetic_dollar` (shell),
+  `#preprocessor_number_literal` and `#string_escaped_char` (C++),
+  `#at-viewport` (Less), `#constraint` and `#member-references` (Swift),
+  `source.cpp#root_context` (Julia's embedded C++) and a javadoc grammar
+  Java's asks for. A census of every shipped grammar counts sixteen with at
+  least one such include. Each is a rule that matches nothing, in a place its
+  author stopped maintaining; repairing them is a per-language reading of
+  the upstream history, not a sweep.
+- **The Workbench's tooling subtitles are cut at 38 characters** whatever the
+  panel's width, so at the default size they end mid-word with room to
+  spare (`Tab flip…`, `Cloudflare f…`). The whole text is in the tooltip and
+  the accessible name. A width-aware label, the way `PathLabel` fits a path,
+  is the fix.
+- **What a runner cannot show:** a HiDPI screen, ClearType on a real panel,
+  the fonts a user has installed, a tiling window manager, Wayland. The
+  walks ran on the runners' stock fonts at 1920×1080.
+
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
 ### 126. The Services window's rows are spoken with their markup
@@ -3416,7 +3483,15 @@ the honest split: mac/Linux prove disconnect-alone; every OS proves Stop.
 
 ## Open — deferred deliberately, with reasons (added v1.42.0)
 
-### 37. Windows runs the tests, not the assembled-app probes
+### 37. ~~Windows runs the tests, not the assembled-app probes~~ — CLOSED by 3.5.0 (the boot half)
+**Closed for the boot smoke test.** `scripts/boot-smoke-test.sh` drives
+`nmoxstudio64.exe` under Git Bash and the Windows lane of `build-and-test`
+runs it on every pull request; the walk workflow ran it first (exit 0, no
+install or enable failures in the module log, boot to exit in 10 s). The
+rendering probe stays on Linux and macOS: what it guards, the editor's
+resolved colours, is the same Java code on every OS, and the 3.5 walks'
+pictures show the dark scheme on Windows. The entry as written:
+
 The boot smoke test and rendering probe run on Linux (xvfb) and macOS
 only. Windows would need the .exe launcher path in boot-smoke-test.sh
 (it drives bin/nmoxstudio, a POSIX script) and an answer for the

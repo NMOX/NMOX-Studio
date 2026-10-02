@@ -54,7 +54,10 @@
 # cachedir so every run captures the same first-launch state and never
 # contends with a running installed app's caches.
 set -e
-cd "$(dirname "$0")/.."
+# resolved ONCE, before the cd: "$0" may be relative to wherever the caller
+# stood, and every later use of it would otherwise resolve against the root
+SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPTS/.."
 
 OUT="${1:-docs/images/tabs}"
 LOCALE="${2:-}"
@@ -82,6 +85,65 @@ WORK="$(mktemp -d)"
 UD="$WORK/shots-userdir"
 CD="$WORK/shots-cachedir"
 STAGED_OPTS=""
+SERVICES=""
+DOCS_CONTAINER=""
+cleanup() {
+  # shellcheck disable=SC2086 — a list of pids
+  [ -n "$SERVICES" ] && kill $SERVICES 2>/dev/null || true
+  [ -n "$DOCS_CONTAINER" ] && docker rm -fv "$DOCS_CONTAINER" >/dev/null 2>&1
+  return 0
+}
+trap cleanup EXIT
+# 3.5: NO run of the forge sees the developer's Docker daemon. Until 3.5 only
+# the staged run was pointed at the filtered view; the plain run (the one that
+# paints docs/images/tabs, the README's own pictures) talked to the daemon
+# directly, and DB Studio's "a database container is running" offer put the
+# name of a container on the developer's machine into two published pictures.
+# The app's DOCKER_HOST is now ALWAYS one of two things: the read-only view
+# that shows only containers labelled org.nmox.docs=1, or an address nothing
+# listens on. There is no third case, and no way to ask for one.
+DOCKER_DEAD="tcp://127.0.0.1:9"
+DOCKER_VIEW="$DOCKER_DEAD"
+DOCKER_SOCK="$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null | sed -n 's#^unix://##p')"
+# Whether a daemon answers, asked on a leash: with Docker Desktop quit its
+# socket file stays, and the CLI waits a full minute on it before saying no.
+# (Written out rather than through timeout(1), which a stock Mac does not have.)
+docker_answers() {
+  docker version --format '{{.Server.Version}}' >/dev/null 2>&1 &
+  asked=$!
+  waited=0
+  while kill -0 "$asked" 2>/dev/null; do
+    if [ "$waited" -ge 60 ]; then
+      kill "$asked" 2>/dev/null
+      return 1
+    fi
+    /bin/sleep 0.25
+    waited=$((waited + 1))
+  done
+  wait "$asked"
+}
+if [ -n "$DOCKER_SOCK" ] && [ -S "$DOCKER_SOCK" ] && docker_answers; then
+  python3 "$SCRIPTS/docs-docker-proxy.py" 23750 "$DOCKER_SOCK" >/dev/null 2>&1 &
+  VIEW_PID=$!
+  SERVICES="$SERVICES $VIEW_PID"
+  # the view must be answering before the app asks it anything: a view that
+  # never comes up leaves the dead address in place, never the daemon
+  # (a cold interpreter can take tens of seconds to start; the wait ends the
+  # moment the view answers or its process is gone)
+  tries=0
+  while [ "$tries" -lt 240 ]; do
+    if curl -fs -o /dev/null --max-time 2 http://127.0.0.1:23750/_ping; then
+      DOCKER_VIEW="tcp://127.0.0.1:23750"
+      break
+    fi
+    kill -0 "$VIEW_PID" 2>/dev/null || break
+    /bin/sleep 0.25
+    tries=$((tries + 1))
+  done
+else
+  DOCKER_SOCK=""
+fi
+[ "$DOCKER_VIEW" = "$DOCKER_DEAD" ] && echo "  (no Docker view: the app will find no Docker at all)"
 if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   # a short, readable home: the Project Studio footer and the Workbench
   # print the aimed path, and a /var/folders/... temp path reads as noise in
@@ -104,23 +166,14 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   printf 'kvasir.external.consent=true\nkvasir.provider=anthropic\n' > "$PREFS/rack.properties"
   # the scenes' own content, in the language being painted (v2.163.0): the
   # cards on the board, the rows in the grid, the labels on the canvas
-  FIXTURES="$(cd "$(dirname "$0")/.." && pwd)/docs/i18n/forge-fixtures.json"
+  FIXTURES="$(cd "$SCRIPTS/.." && pwd)/docs/i18n/forge-fixtures.json"
   [ -f "$FIXTURES" ] || { echo "no forge fixtures at $FIXTURES"; exit 1; }
   # API Studio's picture is a response, so something must answer the starter
   # request's /health on loopback for the length of the run
   # (v2.164.0: and the shop front the DevTools picture picks from, which the
   # forge's own scene writes under the demo shop during the run)
-  python3 "$(dirname "$0")/docs-fixture-server.py" 3000 "$HOME_DIR/NMOX/storefront/site" >/dev/null 2>&1 &
-  FIXTURE_SERVER=$!
-  SERVICES="$FIXTURE_SERVER"
-  DOCS_CONTAINER=""
-  cleanup() {
-    # shellcheck disable=SC2086 — a list of pids
-    kill $SERVICES 2>/dev/null || true
-    [ -n "$DOCS_CONTAINER" ] && docker rm -fv "$DOCS_CONTAINER" >/dev/null 2>&1
-    return 0
-  }
-  trap cleanup EXIT
+  python3 "$SCRIPTS/docs-fixture-server.py" 3000 "$HOME_DIR/NMOX/storefront/site" >/dev/null 2>&1 &
+  SERVICES="$SERVICES $!"
   # v2.164.0: Contract Studio's picture is connected to a chain — a local
   # anvil for the length of the run, when this machine has one and 8545 is free
   if command -v anvil >/dev/null 2>&1 && ! lsof -nP -iTCP:8545 -sTCP:LISTEN >/dev/null 2>&1; then
@@ -130,12 +183,8 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
     echo "  (no anvil, or 8545 is taken: contract-studio will be skipped)"
   fi
   # v2.164.0: the Docker Panel's picture holds one real container — and ONLY
-  # that one. The app never sees the daemon directly: it talks to a read-only
-  # proxy that shows only containers labelled org.nmox.docs=1, so the
-  # developer's own containers can never reach a docs picture. Nothing is
+  # that one (the view itself is set up below, for every run). Nothing is
   # pulled: without postgres:16-alpine already present the scene is skipped.
-  DOCKER_VIEW=""
-  DOCKER_SOCK="$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null | sed -n 's#^unix://##p')"
   if [ -n "$DOCKER_SOCK" ] && docker image inspect postgres:16-alpine >/dev/null 2>&1; then
     DOCS_CONTAINER=storefront-db
     if docker container inspect "$DOCS_CONTAINER" >/dev/null 2>&1; then
@@ -146,12 +195,8 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
         DOCS_CONTAINER=""
       fi
     fi
-    if [ -n "$DOCS_CONTAINER" ] && docker run -d --label org.nmox.docs=1 --name "$DOCS_CONTAINER" \
+    if [ -n "$DOCS_CONTAINER" ] && ! docker run -d --label org.nmox.docs=1 --name "$DOCS_CONTAINER" \
         -e POSTGRES_PASSWORD=docs-only -p 127.0.0.1::5432 postgres:16-alpine >/dev/null; then
-      python3 "$(dirname "$0")/docs-docker-proxy.py" 23750 "$DOCKER_SOCK" >/dev/null 2>&1 &
-      SERVICES="$SERVICES $!"
-      DOCKER_VIEW="tcp://127.0.0.1:23750"
-    else
       DOCS_CONTAINER=""
     fi
   else
@@ -177,8 +222,21 @@ if [ -z "${NMOX_SHOTS_JDKHOME:-}" ] && [ -f "$BUNDLED_JRE/lib/javafx.properties"
 fi
 set --
 [ -n "${NMOX_SHOTS_JDKHOME:-}" ] && set -- --jdkhome "$NMOX_SHOTS_JDKHOME"
-# shellcheck disable=SC2086 — one NAME=value word or none
-env ${DOCKER_VIEW:+DOCKER_HOST=$DOCKER_VIEW} \
+# Everything the forge starts goes through here, so the Docker address is
+# set in ONE place for the real run and the dry one alike.
+with_docs_docker() {
+  env DOCKER_HOST="$DOCKER_VIEW" "$@"
+}
+# NMOX_SHOTS_DRY=1 stops here: instead of the app, a child that prints the
+# DOCKER_HOST it was handed. DocsForgeDockerViewGateTest runs it, so the
+# rule above is executed rather than read.
+if [ "${NMOX_SHOTS_DRY:-0}" = "1" ]; then
+  with_docs_docker sh -c 'echo "DOCKER_HOST=$DOCKER_HOST"'
+  rm -rf "$WORK" 2>/dev/null || true
+  [ -n "${HOME_DIR:-}" ] && [ -f "$HOME_DIR/.nmox-docs-home" ] && rm -rf "$HOME_DIR"
+  exit 0
+fi
+with_docs_docker \
 timeout --kill-after=30 "$FORGE_TIMEOUT" \
 zsh -ilc 'exec "$@"' nmox-forge \
   "$APP" --nosplash "$@" --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \

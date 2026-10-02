@@ -28,7 +28,19 @@
 set -eu
 
 APP_DIR="${1:-application/target/nmoxstudio}"
-LAUNCHER="$APP_DIR/bin/nmoxstudio"
+# Windows (3.5, ledger 37): the same test under Git Bash, driving the .exe
+# launcher the installer ships. The JVM is handed Windows paths — Git Bash
+# would otherwise pass /d/a/... and the launcher would look for a drive "d".
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+        LAUNCHER="$APP_DIR/bin/nmoxstudio64.exe"
+        native() { cygpath -m "$1"; }
+        ;;
+    *)
+        LAUNCHER="$APP_DIR/bin/nmoxstudio"
+        native() { printf '%s' "$1"; }
+        ;;
+esac
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-180}"
 
 # Authoritative failure signals from the NetBeans module system. These are
@@ -50,7 +62,7 @@ BOOT_TIMEOUT="${BOOT_TIMEOUT:-180}"
 # "install" do not trip it.
 FAILURE_RE='could not install|could not be found, ignoring|Turning off modules|state remains INSTALLED|the following modules could not be|cannot be installed|was needed and not found|could not be installed due to'
 
-if [ ! -x "$LAUNCHER" ]; then
+if [ ! -x "$LAUNCHER" ] && [ ! -f "$LAUNCHER" ]; then
     echo "boot-smoke: launcher not found at $LAUNCHER — build the app first" >&2
     echo "  (mvn -B -DskipTests package)" >&2
     exit 2
@@ -67,7 +79,7 @@ trap cleanup EXIT INT TERM
 # fallback (the very logic the launcher fix hardened).
 JDK_ARGS=""
 if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
-    JDK_ARGS="--jdkhome $JAVA_HOME"
+    JDK_ARGS="--jdkhome $(native "$JAVA_HOME")"
 fi
 
 echo "boot-smoke: booting $LAUNCHER"
@@ -77,8 +89,8 @@ BOOT_START=$(date +%s)
 
 # shellcheck disable=SC2086
 "$LAUNCHER" \
-    --userdir "$USERDIR" \
-    --cachedir "$CACHEDIR" \
+    --userdir "$(native "$USERDIR")" \
+    --cachedir "$(native "$CACHEDIR")" \
     $JDK_ARGS \
     --nosplash \
     -J-Dnetbeans.close=true \

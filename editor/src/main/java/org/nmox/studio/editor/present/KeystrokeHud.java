@@ -25,7 +25,8 @@ import org.openide.util.Utilities;
  * like Presentation Mode — a presentation is temporary.
  */
 @org.openide.util.NbBundle.Messages({
-    "KeystrokeHud_on=Show Keystrokes on — chords with ⌘, ⌃ or ⌥ and function keys appear at the bottom of the window; plain typing never does",
+    "# {0} - the modifier keys of this keyboard, e.g. Ctrl, Alt",
+    "KeystrokeHud_on=Show Keystrokes on — chords with {0} and function keys appear at the bottom of the window; plain typing never does",
     "KeystrokeHud_off=Show Keystrokes off"
 })
 public final class KeystrokeHud {
@@ -54,7 +55,7 @@ public final class KeystrokeHud {
         if (enable) {
             overlay = new KeystrokeOverlay(); // built here on the EDT, never lazily on the event path (SpotBugs LI_LAZY_INIT_STATIC, verify #9)
             Toolkit.getDefaultToolkit().addAWTEventListener(LISTENER, AWTEvent.KEY_EVENT_MASK);
-            StatusDisplayer.getDefault().setStatusText(Bundle.KeystrokeHud_on());
+            StatusDisplayer.getDefault().setStatusText(Bundle.KeystrokeHud_on(modifierNames(org.openide.util.BaseUtilities.isMac())));
         } else {
             Toolkit.getDefaultToolkit().removeAWTEventListener(LISTENER);
             if (overlay != null) {
@@ -84,7 +85,18 @@ public final class KeystrokeHud {
      * function key / Escape on its own. A bare modifier press shows nothing;
      * plain and ⇧-only keys are typing and never show.
      */
+    /** The modifiers a chord can carry on this keyboard, as the status line names them when the display turns on. */
+    static String modifierNames(boolean mac) {
+        return mac ? "\u2318, \u2303, \u2325" : "Ctrl, Alt";
+    }
+
     public static boolean shows(int modifiersEx, int keyCode) {
+        // AltGr is how half of Europe types { [ ] } @ and \ on Windows and
+        // Linux, and it arrives as Ctrl+Alt with this bit beside them: that
+        // is typing, and typing never reaches the projector (3.5)
+        if ((modifiersEx & KeyEvent.ALT_GRAPH_DOWN_MASK) != 0) {
+            return false;
+        }
         switch (keyCode) {
             case KeyEvent.VK_META, KeyEvent.VK_CONTROL, KeyEvent.VK_ALT, KeyEvent.VK_ALT_GRAPH, KeyEvent.VK_SHIFT,
                  KeyEvent.VK_UNDEFINED -> {

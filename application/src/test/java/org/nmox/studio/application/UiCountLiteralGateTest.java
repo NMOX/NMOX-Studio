@@ -28,7 +28,10 @@ class UiCountLiteralGateTest {
 
     private static final Pattern STRING = Pattern.compile("\"(?:[^\"\\\\\\n]|\\\\.)*\"");
     private static final Pattern CLAIM = Pattern.compile(
-            "\\b\\d{2,3}[- ](learning spaces|Learning Spaces|tutorials|spaces|grammars|devices"
+            // up to two words may stand between the numeral and the noun: "92 guided
+            // tutorials" sat in every experiment's walkthrough for thirty releases while
+            // the pattern asked for the noun to follow the numeral directly (3.5)
+            "\\b\\d{2,3}[- ](?:[a-z][a-z-]* ){0,2}(learning spaces|Learning Spaces|tutorials|spaces|grammars|devices"
             + "|manifests|templates|languages|frameworks|libraries)\\b");
 
     @Test

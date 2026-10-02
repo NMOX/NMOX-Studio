@@ -158,13 +158,13 @@ public final class MainWindow extends TopComponent {
             JPanel start = column(Bundle.MainWindow_columnStart());
             // the experiment leads (v2.36.0, David's framing: the FIRST
             // tool for trying a stack — zero ceremony, born teaching)
-            start.add(actionLink(Bundle.MainWindow_newExperiment(), "File",
+            start.add(actionLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_newExperiment()), "File",
                     "org.nmox.studio.ui.actions.NewExperimentAction"));
-            start.add(actionLink(Bundle.MainWindow_newProject(), "File",
+            start.add(actionLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_newProject()), "File",
                     "org.nmox.studio.ui.actions.NewProjectAction"));
-            start.add(actionLink(Bundle.MainWindow_newLearningSpace(), "File",
+            start.add(actionLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_newLearningSpace()), "File",
                     "org.nmox.studio.ui.actions.NewLearningSpaceAction"));
-            start.add(actionLink(Bundle.MainWindow_openFolder(), "File",
+            start.add(actionLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_openFolder()), "File",
                     "org.nmox.studio.ui.actions.OpenFolderAction"));
             // 3.1.0: a first hour that starts from a repository URL had no
             // door here - the platform's Team > Git > Clone... is the one;
@@ -178,20 +178,20 @@ public final class MainWindow extends TopComponent {
             // Properties, Palette), so advertising them was advertising the
             // wrong window. The studios live on ⌥⌘, which nothing claims.
             JPanel windows = column(Bundle.MainWindow_columnTooling());
-            windows.add(windowLink(Bundle.MainWindow_taskRack(), "RackTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_workbench(), "ProjectExplorerTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_taskRack()), "RackTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_workbench()), "ProjectExplorerTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_projectStudio(), "ProjectStudioTopComponent"));
             windows.add(windowLink(Bundle.MainWindow_npmExplorer(), "NpmExplorerTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_browser(), "WebBrowserTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_irc(), "IrcTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_tasks(), "TasksTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_tests(), "TestsExplorerTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_blockStudio(), "BlockStudioTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_dbStudio(), "DbStudioTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_contractStudio(), "Web3StudioTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_apiStudio(), "ApiClientTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_infraDesigner(), "InfraDesignerTopComponent"));
-            windows.add(windowLink(Bundle.MainWindow_dockerPanel(), "DockerPanelTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_browser()), "WebBrowserTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_irc()), "IrcTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_tasks()), "TasksTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_tests()), "TestsExplorerTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_blockStudio()), "BlockStudioTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_dbStudio()), "DbStudioTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_contractStudio()), "Web3StudioTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_apiStudio()), "ApiClientTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_infraDesigner()), "InfraDesignerTopComponent"));
+            windows.add(windowLink(org.nmox.studio.core.util.Chords.forThisOs(Bundle.MainWindow_dockerPanel()), "DockerPanelTopComponent"));
 
             JPanel columns = new JPanel(new java.awt.GridLayout(1, 4, 36, 0));
             columns.setOpaque(false);

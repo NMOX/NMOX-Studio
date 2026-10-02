@@ -37,6 +37,17 @@ class DocsShotsTest {
     }
 
     @Test
+    @DisplayName("a shot is painted at 2x for the docs, and at the scale a walk names")
+    void theScaleIsTwoUnlessNamed() {
+        assertThat(DocsShots.Session.shotScale(null)).as("the docs' default").isEqualTo(2);
+        assertThat(DocsShots.Session.shotScale("1")).as("a walk on a 1x screen").isEqualTo(1);
+        assertThat(DocsShots.Session.shotScale(" 3 ")).isEqualTo(3);
+        assertThat(DocsShots.Session.shotScale("0")).as("nothing paints at zero").isEqualTo(2);
+        assertThat(DocsShots.Session.shotScale("40")).as("nor at a size that exhausts the heap").isEqualTo(2);
+        assertThat(DocsShots.Session.shotScale("two")).isEqualTo(2);
+    }
+
+    @Test
     @DisplayName("Without the property, the boot hook does nothing")
     void gateHoldsWithoutProperty() {
         // the zero-boot-cost law: no property → return before any window

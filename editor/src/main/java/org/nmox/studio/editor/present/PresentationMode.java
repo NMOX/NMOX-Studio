@@ -76,8 +76,8 @@ public final class PresentationMode {
             // overwritten (the walk's find); PlainStatus.text because the note is runtime text
             if (enable) {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(
-                        Bundle.PresentationMode_on(String.valueOf(DELTA_POINTS),
-                                String.valueOf(Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100)))
+                        org.nmox.studio.core.util.Chords.forThisOs(Bundle.PresentationMode_on(String.valueOf(DELTA_POINTS),
+                                String.valueOf(Math.round(org.nmox.studio.core.util.Presentation.BROWSER_ZOOM * 100))))
                         + (outputNote == null ? "" : "; " + outputNote)));
             } else {
                 StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.PlainStatus.text(

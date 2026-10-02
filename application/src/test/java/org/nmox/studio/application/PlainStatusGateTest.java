@@ -68,7 +68,7 @@ class PlainStatusGateTest {
 
     /**
      * Whether the head of whatever string this expression produces is one
-     * the product wrote. Three accepted heads: our own literal, a bundle
+     * the product wrote. Accepted heads: our own literal, a bundle
      * value (v2.97.0, the l10n arc — an authored sentence that merely
      * moved into a .properties file), and {@code PlainStatus.text}, which
      * guards anything else.
@@ -89,6 +89,14 @@ class PlainStatusGateTest {
                 || a.startsWith("Bundle.") || a.startsWith("NbBundle.")
                 || a.startsWith("org.openide.util.NbBundle.")) {
             return true;
+        }
+        // Chords.forThisOs(x) rewrites Mac modifier glyphs and nothing else
+        // (3.5), so its head is ours exactly when x's is: no glyph it turns
+        // into "Ctrl" can make a head read as markup
+        for (String convert : new String[] {"Chords.forThisOs(", "org.nmox.studio.core.util.Chords.forThisOs("}) {
+            if (a.startsWith(convert) && closingParen(a, convert.length()) == a.length() - 1) {
+                return headIsOurs(a.substring(convert.length(), a.length() - 1));
+            }
         }
         int q = topLevel(a, 0, '?');
         if (q < 0) {

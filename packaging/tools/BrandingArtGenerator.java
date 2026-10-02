@@ -30,7 +30,8 @@ import javax.imageio.ImageIO;
  * Outputs:
  *   branding/.../core/core.jar/org/netbeans/core/startup/splash.gif
  *   branding/.../core/core.jar/org/netbeans/core/startup/about.png (About dialog logo)
- *   branding/.../core/core.jar/org/netbeans/core/startup/frame.gif (+32/48)
+ *   branding/.../core/core.jar/org/netbeans/core/startup/frame.gif (+32/48,
+ *       each with a _dark twin, and frame256/512/1024.png), splash_dark.gif
  *   packaging/icons/nmox-studio-{16..1024}.png
  *   packaging/icons/nmox-studio.iconset/   (feed to iconutil on macOS)
  *   packaging/icons/nmox-studio.ico        (Windows shortcuts/installer/exe)
@@ -63,7 +64,22 @@ public final class BrandingArtGenerator {
         String[] frameNames = {"frame.gif", "frame32.gif", "frame48.gif"};
         for (int i = 0; i < frameSizes.length; i++) {
             ImageIO.write(icon(frameSizes[i]), "gif", new File(startup, frameNames[i]));
+            // Under a dark look and feel the platform asks for the _dark
+            // twin FIRST, and its own core.jar carries one: without a
+            // branded twin the window, the taskbar and Alt-Tab wore the
+            // NetBeans cube on Windows and Linux (3.5; macOS draws no icon
+            // in a title bar, so no walk taken on a Mac could see it).
+            ImageIO.write(icon(frameSizes[i]), "gif",
+                    new File(startup, frameNames[i].replace(".gif", "_dark.gif")));
         }
+        // the platform also hands the window three large icons, which a
+        // taskbar or a switcher picks over the small ones
+        for (int size : new int[]{256, 512, 1024}) {
+            ImageIO.write(icon(size), "png", new File(startup, "frame" + size + ".png"));
+        }
+        // and a dark twin of the splash, asked for wherever the splash is
+        // shown after the look and feel is installed
+        ImageIO.write(splash(500, 300), "gif", new File(startup, "splash_dark.gif"));
 
         for (int size : new int[]{16, 32, 48, 64, 128, 256, 512, 1024}) {
             ImageIO.write(icon(size), "png",

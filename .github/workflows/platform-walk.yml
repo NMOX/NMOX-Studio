@@ -1,0 +1,78 @@
+name: Platform walk
+
+# Boots the assembled app on Windows and Linux and photographs every window
+# (scripts/platform-walk.sh). The pictures and the log are uploaded to be
+# READ: a walk is evidence for a person, so this workflow gates only that the
+# app booted, painted and exited cleanly.
+#
+# Runs on demand, and on a push to a walk/** branch — a workflow_dispatch can
+# only be started for a workflow file the default branch already has, and a
+# walk is most useful before its branch merges.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['walk/**']
+
+permissions:
+  contents: read
+
+jobs:
+  walk:
+    name: walk (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    steps:
+      - uses: actions/checkout@v7
+      # a JDK that carries JavaFX, so the Browser tab has an engine to paint
+      # with — the release bundles a runtime with JavaFX on every platform
+      - uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 25
+          java-package: jdk+fx
+          cache: maven
+
+      - name: Build application
+        run: mvn -B clean package -DskipTests
+
+      - name: Install Xvfb (Linux headless display)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb
+
+      - name: Walk (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out
+
+      # the runner's desktop starts at 1024x768, smaller than any screen
+      # the product is used on; a walk of that is a walk of the wrong thing
+      - name: Give the Windows desktop a real screen size
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-DisplayResolution -Width 1920 -Height 1080 -Force
+          Get-DisplayResolution
+
+      - name: Walk (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: scripts/platform-walk.sh walk-out
+
+      # The CI lane's own boot gate, run here as well so a walk branch shows
+      # whether it passes on Windows before a pull request has to find out.
+      - name: Boot smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: ./scripts/boot-smoke-test.sh
+
+      - name: Upload the walk
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: walk-${{ matrix.os }}
+          path: walk-out/
+          if-no-files-found: warn

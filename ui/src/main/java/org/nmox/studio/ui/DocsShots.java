@@ -287,17 +287,42 @@ public class DocsShots implements Runnable {
             captureComponent(WindowManager.getDefault().getMainWindow(), filename);
         }
 
+        /**
+         * How much larger than the window a shot is painted: 2 unless
+         * {@code nmox.shots.scale} names 1, 2 or 3.
+         *
+         * <p>The docs want 2. A WALK wants the scale the screen has, because
+         * painting at twice the layout's scale is only faithful where glyph
+         * widths scale exactly — which they do on macOS and do not where
+         * text is hinted. The first Windows and Linux walks (3.5) were
+         * painted at 2 on screens laid out at 1, and every label lost its
+         * last letter: text drawn wider than the room its layout had
+         * measured. That was the picture's defect and not the product's,
+         * and a walk that cannot tell the two apart is not evidence.
+         */
+        static int shotScale(String property) {
+            if (property == null) {
+                return 2;
+            }
+            return switch (property.trim()) {
+                case "1" -> 1;
+                case "3" -> 3;
+                default -> 2;
+            };
+        }
+
         private void captureComponent(java.awt.Component window, String filename) {
             try {
                 int w = window.getWidth(), h = window.getHeight();
                 if (w <= 0 || h <= 0) {
                     return; // never NPE the run on a hidden window
                 }
-                // 2x supersample: crisp text in the rendered docs
-                BufferedImage img = new BufferedImage(w * 2, h * 2,
+                // 2x supersample by default: crisp text in the rendered docs
+                int scale = shotScale(System.getProperty("nmox.shots.scale"));
+                BufferedImage img = new BufferedImage(w * scale, h * scale,
                         BufferedImage.TYPE_INT_RGB);
                 Graphics2D g = img.createGraphics();
-                g.scale(2, 2);
+                g.scale(scale, scale);
                 window.paint(g);
                 g.dispose();
                 ImageIO.write(img, "png", new File(dir, filename));

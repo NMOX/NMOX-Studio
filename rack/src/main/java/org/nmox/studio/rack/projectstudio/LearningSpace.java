@@ -99,8 +99,10 @@ public final class LearningSpace {
                 Files.writeString(target.toPath(), f.content(), StandardCharsets.UTF_8);
             }
         }
+        // a tutorial names chords the way a Mac writes them; the file lands
+        // on the learner's machine in the keys that keyboard has (3.5)
         Files.writeString(new File(dir, "TUTORIAL.md").toPath(),
-                tutorialWithInstall(space), StandardCharsets.UTF_8);
+                org.nmox.studio.core.util.Chords.forThisOs(tutorialWithInstall(space)), StandardCharsets.UTF_8);
         writeRack(dir, space);
         return dir;
     }

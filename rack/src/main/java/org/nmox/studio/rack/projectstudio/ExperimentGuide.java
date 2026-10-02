@@ -181,9 +181,13 @@ public final class ExperimentGuide {
         b.append("anything running here and deletes the tree. Experiments are meant\n");
         b.append("to be discarded — that is what makes them safe to start.\n\n");
         b.append("## Keep learning\n\n");
-        b.append("**File ▸ New Learning Space…** holds 92 guided tutorials — languages,\n");
+        // counted from the catalog: this line read "92" while the catalog held 93 (3.5)
+        b.append("**File ▸ New Learning Space…** holds ").append(LearningCatalog.builtIns().size())
+                .append(" guided tutorials — languages,\n");
         b.append("frameworks, and libraries — each with sample code, a walkthrough,\n");
         b.append("and a rack wired with a live REPL.\n");
-        return b.toString();
+        // the walkthrough names chords the way a Mac writes them; the file
+        // lands on the reader's own machine, in the reader's own keys (3.5)
+        return org.nmox.studio.core.util.Chords.forThisOs(b.toString());
     }
 }

@@ -4,6 +4,94 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.0] - 2026-10-01
+
+**The Windows and Linux release: the first time the product was started and
+looked at on either.** Every walk and every picture until now came from one
+Mac. A new workflow boots the assembled app on a Windows and a Linux runner
+and photographs every window; three walks were taken, each after the fixes
+the last one asked for. The plan and the full findings are in
+[docs/engineering/dx-plan-3.5.md](docs/engineering/dx-plan-3.5.md).
+
+### Fixed
+
+- **DB Studio opened with its SQL console one line tall and its connection
+  tree 129 pixels wide.** The code says 240 and 280. Every other split pane
+  in the product was reset the same way, with less to show for it. The runtime the product bundles
+  (JDK 25.0.4) re-adds a split pane's children whenever its orientation
+  object changes, which makes the pane's layout fall back to preferred
+  sizes, and the first orientation sweep over any newly opened window is
+  such a change, in English as much as in Hebrew. It happened on every
+  operating system. It went unseen on the one machine the product was
+  looked at because a workspace with real connections in it has names long
+  enough to make the preferred width look like the designed one. Every
+  split pane now keeps its children and its divider through the sweep
+  (`SplitShapes`), including one the user has dragged.
+- **In Hebrew and Arabic the same runtime exchanged the two halves of every
+  split pane**, vertical ones included, so DB Studio's results sat above its
+  console. Panes stay as authored in every language, which is what the
+  Hebrew and Arabic pictures in the documentation show. Whether a horizontal
+  split should mirror for a right-to-left reader is ledger 127.
+- **On Windows and Linux the Welcome told the reader to press `⌥⌘7`.** The
+  product's own strings name chords the way a Mac keyboard prints them, in
+  fifteen languages. They are now shown in the reader's keys wherever they
+  appear: the Welcome's three columns, First Steps, status-line hints, the
+  Keyboard Shortcuts sheet, the experiment walkthrough and every learning
+  space's tutorial (`Ctrl+Alt+7`, `Ctrl+Shift+N`, `Ctrl-click`). On a Mac
+  nothing changes.
+- **The window icon on Windows was the NetBeans cube.** Under a dark look and
+  feel the platform asks for a dark variant of the frame icon first, and only
+  the light ones were branded. Every icon and splash the platform ships now
+  has an NMOX twin, the large sizes included.
+- **One SEVERE in the Windows boot log**, from JavaFX: a Browser scene hidden
+  while a scale update for it was still queued. That one exception,
+  recognised by its frames, is absorbed and noted; anything else is passed
+  on as before.
+- **Contract Studio's toolbar ran past the window on Linux**: Rescan was cut
+  in half and the artifact count was not painted. It was one row that fitted
+  a Mac's font at the default size. It wraps now, as DB Studio's has since
+  v1.273.0.
+- **Ruby's `%w[]`, `%i[]` and string interpolation were not highlighted**, and
+  three other grammars had the same fault: they keep rule repositories
+  inside rules, which the editor's TextMate engine cannot resolve. The
+  repositories are hoisted by a script that is kept beside the grammars; the
+  boot log's warnings went from 114 to 13.
+- **Show Keystrokes showed AltGr combinations.** On most European keyboards
+  AltGr types brackets and braces; that is typing, and typing is never shown.
+- The experiment walkthrough promised "92 guided tutorials" beside a
+  catalogue of 93. The number is derived from the catalogue.
+
+### Documentation
+
+- **Two pictures in the README named a database container on the
+  developer's machine**, in a notification DB Studio raised while the
+  picture was taken. Both are repainted from a throwaway home. The
+  screenshot forge had been given a filtered view of Docker for its staged
+  runs only (v2.164.0); every run now gets that view, or an address nothing
+  listens on. Every committed picture was then read by OCR for the same
+  class; those two were the only ones. Earlier commits still hold the old
+  pictures.
+- The user guide says how its shortcuts read on Windows and Linux.
+
+### Engineering
+
+- `scripts/platform-walk.sh` and the **Platform walk** workflow: boot,
+  photograph and summarise the assembled app on Windows and Linux, on demand
+  or on a push to a `walk/**` branch. The forge takes its paint scale from
+  `nmox.shots.scale`; painting 2x over a 1x layout had clipped label ends in
+  the picture only.
+- **The Windows CI lane boots the product** (ledger 37, open since v1.42.0):
+  `scripts/boot-smoke-test.sh` drives the `.exe` launcher under Git Bash.
+- New gates and tests, each seen to fail on its mutant by name:
+  `MacChordsReachOnlyMacsGateTest`, `WindowIconBrandingGateTest`,
+  `RuleLocalRepositoriesGateTest`, `DocsForgeDockerViewGateTest` (runs the
+  forge's dry run), `SplitShapesTest`, `DisposedSceneRaceTest`,
+  `ToolbarFitsItsWidthTest`. `UiCountLiteralGateTest` reads past an
+  adjective between a number and its noun.
+- Ledger 127 to 129 record what the walks left open: mirrored splits as a
+  design question, AltGr against the Ctrl+Alt chords on keyboards nobody
+  here has, and what a CI runner cannot show.
+
 ## [3.4.1] - 2026-10-01
 
 **Three dependency bumps from Dependabot, and what handling them found: the
@@ -24740,6 +24828,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.1...v3.5.0
 [3.4.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.0...v3.4.1
 [3.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.3.0...v3.4.0
 [3.3.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.2.0...v3.3.0

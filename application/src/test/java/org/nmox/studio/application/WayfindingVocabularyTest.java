@@ -351,8 +351,12 @@ class WayfindingVocabularyTest {
         Map<String, String> out = new LinkedHashMap<>();
         String welcome = read(Path.of("..", "ui", "src", "main", "java", "org", "nmox",
                 "studio", "ui", "MainWindow.java"));
+        // the label may be handed over as written, or through Chords.forThisOs(…),
+        // which rewrites its Mac chord for the reader's keyboard (3.5) and leaves
+        // the window's name alone
         Matcher m = Pattern.compile(
-                "windowLink\\(Bundle\\.(\\w+)\\(\\),\\s*\"(\\w+TopComponent)\"").matcher(welcome);
+                "windowLink\\((?:(?:org\\.nmox\\.studio\\.core\\.util\\.)?Chords\\.forThisOs\\()?"
+                        + "Bundle\\.(\\w+)\\(\\)\\)?,\\s*\"(\\w+TopComponent)\"").matcher(welcome);
         while (m.find()) {
             out.put(m.group(1), m.group(2));
         }

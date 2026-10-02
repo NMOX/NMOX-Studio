@@ -94,8 +94,13 @@ public final class RightToLeft implements Runnable {
         }
         ComponentOrientation o = TextDirection.orientation(Locale.getDefault());
         try {
+            // a split pane loses its divider (and, right-to-left, the order
+            // of its children) to the runtime's own setComponentOrientation:
+            // record the ones about to be disturbed, put them back after
+            java.util.List<SplitShapes.Shape> splits = SplitShapes.disturbedBy(c, o);
             c.applyComponentOrientation(o);
             PaintedSurfaces.keepAuthoredDirection(c);
+            SplitShapes.restore(splits);
             // orientation changes the LAYOUT, so the tree must be laid out
             // again — a repaint alone draws the old geometry in new colours
             if (c instanceof javax.swing.JComponent j) {

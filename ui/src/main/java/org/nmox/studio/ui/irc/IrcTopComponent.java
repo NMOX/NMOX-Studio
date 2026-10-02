@@ -2308,7 +2308,7 @@ public final class IrcTopComponent extends TopComponent {
             "  /raw LINE — send a raw IRC line   /quit [message] — disconnect for good",
             "Tab completes nicks · Up/Down recall input · Ctrl+U clears the line",
             "Ctrl+J jumps to the next mention, then the next unread buffer",
-            "⌘F finds in the transcript (⌘F again closes)"
+            org.nmox.studio.core.util.Chords.forThisOs("⌘F finds in the transcript (⌘F again closes)")
         };
         for (String line : lines) {
             appendStatus(statusKey, line);

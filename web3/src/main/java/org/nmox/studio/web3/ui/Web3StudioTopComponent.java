@@ -605,6 +605,13 @@ public final class Web3StudioTopComponent extends TopComponent {
     private JToolBar buildToolbar() {
         JToolBar bar = new JToolBar();
         bar.setFloatable(false);
+        // One row fitted a Mac's font at the default window size and nothing
+        // else: on Linux the same row ran past the window, Rescan was cut in
+        // half and the artifact count was not painted at all (the 3.5 walk).
+        // WrapLayout reports the WRAPPED height, so a narrower window gives
+        // the bar a second row and every control stays reachable — ledger
+        // 75's answer for DB Studio's console bar, here for the same reason.
+        bar.setLayout(new org.nmox.studio.core.util.WrapLayout(FlowLayout.LEFT, 4, 2));
         networkCombo.setRenderer(new NetworkRenderer());
         networkCombo.setToolTipText(Bundle.Web3StudioTopComponent_networkComboTip());
         networkCombo.setMaximumSize(new java.awt.Dimension(240, 60));
@@ -638,7 +645,7 @@ public final class Web3StudioTopComponent extends TopComponent {
         chipLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         chipLabel.setForeground(Color.GRAY);
         bar.add(chipLabel);
-        bar.add(Box.createHorizontalGlue());
+        bar.addSeparator();
         compileButton.setForeground(ACCENT);
         compileButton.addActionListener(e -> compile());
         bar.add(compileButton);

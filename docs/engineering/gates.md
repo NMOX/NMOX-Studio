@@ -108,6 +108,8 @@ The NetBeans Platform's own mechanisms, used the way the platform reads them.
 - [`MotionGuardWiringGateTest`](../../ui/src/test/java/org/nmox/studio/ui/browser/fx/MotionGuardWiringGateTest.java): Play, Scrub and Stop in the Motion pane all consult the target guard (v2.16.0).
 - [`ProbedPortWiringGateTest`](../../rack/src/test/java/org/nmox/studio/rack/devices/ProbedPortWiringGateTest.java): The static lanes probe a free port at the spawn and announce the port the server's banner names (v1.320.0–v1.321.0).
 - [`SeamRestoreGateTest`](../../rack/src/test/java/org/nmox/studio/rack/model/SeamRestoreGateTest.java): A test that swaps a production seam restores it through the seam's own reset (v2.184.0: a test invented its own "production" lane).
+- [`RuleLocalRepositoriesGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/RuleLocalRepositoriesGateTest.java): No shipped TextMate grammar keeps a repository inside a rule, which TM4E cannot resolve; Ruby's percent literals are tokenized through the real engine (3.5.0).
+
 
 ## Accessibility
 
@@ -120,6 +122,7 @@ Every control speaks its name; a screen reader hears the thing, not the role.
 - [`RenderersNamedGateTest`](../../application/src/test/java/org/nmox/studio/application/RenderersNamedGateTest.java): Every cell renderer not built on a label names itself with the words it paints, so a row is never read as blank (3.4.0: the Task Board's cards were empty text fields to VoiceOver).
 - [`A11yInputNamesGateTest`](../../application/src/test/java/org/nmox/studio/application/A11yInputNamesGateTest.java): No studio adds an input without also naming one (v2.38.0).
 - [`LabelNamesAreTheirTextGateTest`](../../ui/src/test/java/org/nmox/studio/ui/actions/LabelNamesAreTheirTextGateTest.java): A label with text is named by its text, not by a constant a screen reader would read instead (v2.85.0).
+- [`MacChordsReachOnlyMacsGateTest`](../../application/src/test/java/org/nmox/studio/application/MacChordsReachOnlyMacsGateTest.java): A string that names a chord in Mac notation is shown through `Chords.forThisOs`, so Windows and Linux read their own keys; the population is every shipped bundle value and source literal carrying ⌘ ⌥ ⇧ ⌃ (3.5.0).
 
 ## Localization
 
@@ -163,6 +166,7 @@ A number, a link or a picture in the docs is a claim, so it has a test.
 - [`DocsIndexGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsIndexGateTest.java): Every document beside an index is linked from it, including every live engineering document (v2.90.0).
 - [`DocsContentsGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsContentsGateTest.java): The long documents' contents blocks are derived from their own headings (v2.89.0).
 - [`DocsDockerViewGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsDockerViewGateTest.java): The screenshot forge's Docker view shows only the docs container and forwards no write (v2.164.0).
+- [`DocsForgeDockerViewGateTest`](../../application/src/test/java/org/nmox/studio/application/DocsForgeDockerViewGateTest.java): Every run of the screenshot forge, plain or staged, hands the app that filtered view or an address nothing listens on, never the developer's daemon; the gate runs the script's dry run (3.5, after a container's name reached two README pictures).
 - [`JuniorDocsGateTest`](../../application/src/test/java/org/nmox/studio/application/JuniorDocsGateTest.java): Every public type has a class javadoc and the onboarding packages keep their `package-info` maps (v2.7.1).
 - [`ConflictMarkerGateTest`](../../application/src/test/java/org/nmox/studio/application/ConflictMarkerGateTest.java): No tracked file carries a VCS conflict marker (v1.314.0: one rode CHANGELOG.md for six releases).
 - [`CheckpointParityTest`](../../rack/src/test/java/org/nmox/studio/rack/projectstudio/CheckpointParityTest.java): A learning space's Check My Work claims name files and tools the space really ships, and a task fails on the untouched seed (v2.39.1, v2.85.0).
@@ -180,6 +184,7 @@ What ships is what was built, and every version has one home.
 - [`OrgJsonVersionGateTest`](../../application/src/test/java/org/nmox/studio/application/OrgJsonVersionGateTest.java): org.json's version lives in one root property across every module copy (v1.50.0).
 - [`ShippedLibraryVersionGateTest`](../../application/src/test/java/org/nmox/studio/application/ShippedLibraryVersionGateTest.java): A module pom names a library the product ships only at the version it ships; the population is the assembled cluster's third-party jars (3.4.1).
 - [`OnePostgresDriverGateTest`](../../application/src/test/java/org/nmox/studio/application/OnePostgresDriverGateTest.java): The product carries one PostgreSQL driver, the one DB Studio keeps current, and the Services window is offered that one (3.4.1).
+- [`WindowIconBrandingGateTest`](../../application/src/test/java/org/nmox/studio/application/WindowIconBrandingGateTest.java): Every frame icon and splash in the platform's `core.jar`, dark twins and large sizes included, has an NMOX twin in the branding jar (3.5.0).
 - [`CaskGeneratorParityTest`](../../application/src/test/java/org/nmox/studio/application/CaskGeneratorParityTest.java): The checked-in Homebrew cask is byte-identical to what the release workflow regenerates, with no deprecated stanza (v2.149.0).
 - [`BundledRuntimeGateTest`](../../application/src/test/java/org/nmox/studio/application/BundledRuntimeGateTest.java): Every jlink site pins OpenJFX by hash and gates `javafx.web` into the image (v1.199.0).
 - [`PackagedConfGateTest`](../../application/src/test/java/org/nmox/studio/application/PackagedConfGateTest.java): The assembled app's conf opens every module the platform reflects into and grants native access, on one `default_options` line (v1.195.1, v1.256.0).

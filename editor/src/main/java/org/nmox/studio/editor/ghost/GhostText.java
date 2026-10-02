@@ -124,7 +124,7 @@ public final class GhostText {
             insertNow(at, text);
             component.select(at, at + text.length());
             StatusDisplayer.getDefault().setStatusText(
-                    Bundle.GhostText_insertedAtEnd());
+                    org.nmox.studio.core.util.Chords.forThisOs(Bundle.GhostText_insertedAtEnd()));
             return;
         }
         this.insertion = text;
@@ -151,7 +151,7 @@ public final class GhostText {
         detach();
         if (text != null && at >= 0) {
             insertNow(at, text);
-            StatusDisplayer.getDefault().setStatusText(Bundle.GhostText_inserted());
+            StatusDisplayer.getDefault().setStatusText(org.nmox.studio.core.util.Chords.forThisOs(Bundle.GhostText_inserted()));
         }
     }
 

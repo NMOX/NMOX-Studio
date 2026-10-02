@@ -136,7 +136,7 @@ public final class KeyboardShortcutsAction implements ActionListener {
         table.getColumnModel().getColumn(0).setPreferredWidth(110);
         table.getColumnModel().getColumn(1).setPreferredWidth(420);
         JPanel panel = new JPanel(new java.awt.BorderLayout(0, 6));
-        panel.add(new JLabel(PlainText.plain(Bundle.KeyboardShortcutsAction_summary(String.valueOf(rows.size()), profile))),
+        panel.add(new JLabel(PlainText.plain(org.nmox.studio.core.util.Chords.forThisOs(Bundle.KeyboardShortcutsAction_summary(String.valueOf(rows.size()), profile)))),
                 java.awt.BorderLayout.NORTH);
         JScrollPane scroll = new JScrollPane(table);
         scroll.setPreferredSize(new java.awt.Dimension(560, 380));
