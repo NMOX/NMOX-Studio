@@ -107,7 +107,7 @@ public final class NewExperimentAction implements ActionListener {
                     spaces.setText(Bundle.NewExperimentAction_browseSpacesCounted(String.valueOf(n))));
         });
         spaces.setToolTipText(Bundle.NewExperimentAction_browseSpacesTip());
-        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        JPanel south = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 0, 0));
         south.add(spaces);
         panel.add(rows, BorderLayout.CENTER);
         panel.add(south, BorderLayout.SOUTH);

@@ -201,9 +201,9 @@ public class GitStatusLine implements StatusLineElementProvider {
         };
 
         GitStrip() {
-            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 0, 0));
             setOpaque(false);
-            chipLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            chipLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             chipLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             chipLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override

@@ -96,9 +96,9 @@ final class ChannelListDialog {
         JPanel panel = new JPanel(new BorderLayout(0, 4));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel top = new JPanel(new BorderLayout(8, 0));
-        top.add(new JLabel(Bundle.ChannelListDialog_filterLabel()), BorderLayout.WEST);
+        top.add(new JLabel(Bundle.ChannelListDialog_filterLabel()), BorderLayout.LINE_START);
         top.add(filter, BorderLayout.CENTER);
-        top.add(new JLabel(PlainText.plain(count)), BorderLayout.EAST);
+        top.add(new JLabel(PlainText.plain(count)), BorderLayout.LINE_END);
         panel.add(top, BorderLayout.NORTH);
         panel.add(new JScrollPane(table), BorderLayout.CENTER);
         panel.setPreferredSize(new Dimension(720, 420));

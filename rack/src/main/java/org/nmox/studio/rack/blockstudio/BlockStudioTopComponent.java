@@ -402,7 +402,7 @@ public final class BlockStudioTopComponent extends TopComponent {
         removeComponentBtn.getAccessibleContext().setAccessibleName(Bundle.BlockStudioTopComponent_removeComponentName());
         removeComponentBtn.setToolTipText(Bundle.BlockStudioTopComponent_removeComponentTooltip());
 
-        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEADING, 8, 4));
         toolbar.add(componentCombo);
         toolbar.add(addComponentBtn);
         toolbar.add(removeComponentBtn);

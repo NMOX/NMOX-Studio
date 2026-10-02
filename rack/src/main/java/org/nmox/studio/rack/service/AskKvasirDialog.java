@@ -76,7 +76,7 @@ public final class AskKvasirDialog {
     public JDialog open(String firstQuestion) {
         JPanel south = new JPanel(new BorderLayout(6, 0));
         south.add(input, BorderLayout.CENTER);
-        south.add(ask, BorderLayout.EAST);
+        south.add(ask, BorderLayout.LINE_END);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));

@@ -293,7 +293,7 @@ public class HttpDevice extends RackDevice {
             }
         });
         javax.swing.JPanel south = new javax.swing.JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+                new java.awt.FlowLayout(java.awt.FlowLayout.LEADING));
         south.add(replay);
         if (model.isEmpty()) {
             south.add(new javax.swing.JLabel("No exchanges yet — SEND a request."));

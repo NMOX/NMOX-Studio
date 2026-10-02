@@ -362,11 +362,11 @@ public final class DevToolsPanel extends JPanel {
         explain.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_explainName());
         explain.addActionListener(e -> explainLastError());
         javax.swing.JPanel east = new javax.swing.JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 4, 0));
+                new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 4, 0));
         east.add(explain);
         east.add(clear);
         south.add(repl, BorderLayout.CENTER);
-        south.add(east, BorderLayout.EAST);
+        south.add(east, BorderLayout.LINE_END);
         panel.add(south, BorderLayout.SOUTH);
         return panel;
     }
@@ -507,7 +507,7 @@ public final class DevToolsPanel extends JPanel {
         javax.swing.JToggleButton pick = new javax.swing.JToggleButton(Bundle.DevToolsPanel_pickElement());
         JButton openSource = new JButton(Bundle.DevToolsPanel_openSource());
         JButton editStyle = new JButton(Bundle.DevToolsPanel_editStyle());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(pick);
         bar.add(openSource);
@@ -600,7 +600,7 @@ public final class DevToolsPanel extends JPanel {
         prop.setEditable(true);
         JTextField value = new JTextField(18);
         value.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_valueName());
-        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
+        JPanel form = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 4));
         form.add(new JLabel(Bundle.DevToolsPanel_propertyLabel()));
         form.add(prop);
         form.add(new JLabel(Bundle.DevToolsPanel_valueLabel()));
@@ -813,7 +813,7 @@ public final class DevToolsPanel extends JPanel {
         apply.getAccessibleContext().setAccessibleName(Bundle.DevToolsPanel_applyName());
         apply.addActionListener(e -> motionApply());
 
-        JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel barTop = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         barTop.add(new JLabel(Bundle.DevToolsPanel_presetLabel()));
         barTop.add(presets);
         barTop.add(load);
@@ -825,7 +825,7 @@ public final class DevToolsPanel extends JPanel {
         barTop.add(motionEasing);
         barTop.add(new JLabel(Bundle.DevToolsPanel_runsLabel()));
         barTop.add(motionIterations);
-        JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel barTracks = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         barTracks.add(new JLabel(Bundle.DevToolsPanel_trackLabel()));
         barTracks.add(trackProp);
         barTracks.add(addTrack);
@@ -835,7 +835,7 @@ public final class DevToolsPanel extends JPanel {
         north.add(barTracks);
         panel.add(north, BorderLayout.NORTH);
         panel.add(new JScrollPane(motionStrip), BorderLayout.CENTER);
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         south.add(play);
         south.add(stop);
         south.add(apply);
@@ -1213,7 +1213,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel networkTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         JButton clear = new JButton(Bundle.DevToolsPanel_clear());
         clear.addActionListener(e -> network.clear());
         bar.add(clear);
@@ -1244,7 +1244,7 @@ public final class DevToolsPanel extends JPanel {
 
     private JPanel storageTab() {
         JPanel panel = new JPanel(new BorderLayout());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshStorage());
         bar.add(refresh);
@@ -1276,7 +1276,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshVue());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(vueStatus);
         panel.add(bar, BorderLayout.NORTH);
@@ -1357,7 +1357,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshSvelte());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(svelteStatus);
         panel.add(bar, BorderLayout.NORTH);
@@ -1433,7 +1433,7 @@ public final class DevToolsPanel extends JPanel {
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         JButton refresh = new JButton(Bundle.DevToolsPanel_refresh());
         refresh.addActionListener(e -> refreshAngular());
-        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel bar = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         bar.add(refresh);
         bar.add(ngStatus);
         panel.add(bar, BorderLayout.NORTH);

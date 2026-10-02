@@ -131,8 +131,8 @@ final class ConnectionDialog extends JPanel {
         JButton testButton = new JButton(Bundle.ConnectionDialog_test());
         testButton.setToolTipText(Bundle.ConnectionDialog_testTooltip());
         testButton.addActionListener(e -> testConnection());
-        south.add(testButton, BorderLayout.WEST);
-        testLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+        south.add(testButton, BorderLayout.LINE_START);
+        testLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
         south.add(testLabel, BorderLayout.CENTER);
         add(south, BorderLayout.SOUTH);
 
@@ -164,13 +164,13 @@ final class ConnectionDialog extends JPanel {
         GridBagConstraints l = new GridBagConstraints();
         l.gridx = 0;
         l.gridy = row;
-        l.anchor = GridBagConstraints.EAST;
+        l.anchor = GridBagConstraints.LINE_END;
         l.insets = new Insets(3, 0, 3, 8);
         panel.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
-        f.anchor = GridBagConstraints.WEST;
+        f.anchor = GridBagConstraints.LINE_START;
         f.fill = GridBagConstraints.HORIZONTAL;
         f.weightx = 1;
         f.insets = new Insets(3, 0, 3, 0);
@@ -208,7 +208,7 @@ final class ConnectionDialog extends JPanel {
                 fileField.setText(chooser.getSelectedFile().getAbsolutePath());
             }
         });
-        row.add(browse, BorderLayout.EAST);
+        row.add(browse, BorderLayout.LINE_END);
         addRow(panel, 0, Bundle.ConnectionDialog_fileLabel(), row);
         addRow(panel, 1, "", new JLabel(Bundle.ConnectionDialog_fileHint()));
         return panel;

@@ -109,7 +109,7 @@ final class NetworkEditorDialog {
         form.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(3, 4, 3, 4);
-        gc.anchor = GridBagConstraints.WEST;
+        gc.anchor = GridBagConstraints.LINE_START;
         int row = 0;
         row = addRow(form, gc, row, Bundle.NetworkEditorDialog_nameLabel(), name);
         row = addRow(form, gc, row, Bundle.NetworkEditorDialog_hostLabel(), host);

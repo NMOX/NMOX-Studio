@@ -204,7 +204,7 @@ public class BlackboxDevice extends RackDevice {
         errorsOnly.addActionListener(e -> fill.run());
         fill.run();
 
-        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel south = new JPanel(new FlowLayout(FlowLayout.LEADING));
         south.add(errorsOnly);
         JButton refresh = new JButton("Refresh");
         refresh.addActionListener(e -> fill.run());
@@ -225,7 +225,7 @@ public class BlackboxDevice extends RackDevice {
             }
         });
         south.add(export);
-        JPanel stats = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel stats = new JPanel(new FlowLayout(FlowLayout.LEADING));
         for (Map.Entry<String, FlightRecorder.Stats> e
                 : FlightRecorder.getDefault().statistics().entrySet()) {
             JLabel l = new JLabel(PlainText.plain(e.getKey() + " avg " + (e.getValue().averageMs() / 1000.0)
@@ -246,7 +246,7 @@ public class BlackboxDevice extends RackDevice {
                 java.util.List<java.io.File> changed = org.nmox.studio.rack.engine.ChangedSince
                         .scan(projectDir(), since);
                 if (!changed.isEmpty()) {
-                    JPanel blame = new JPanel(new FlowLayout(FlowLayout.LEFT));
+                    JPanel blame = new JPanel(new FlowLayout(FlowLayout.LEADING));
                     JLabel head = new JLabel("Changed since " + latest.device()
                             + " last went green: ");
                     head.setForeground(new Color(230, 150, 40));

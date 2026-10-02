@@ -274,9 +274,9 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
 
-        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.WEST);
+        add(new InfraPalette(graph, canvas::refusedWhileLocked), BorderLayout.LINE_START);
         add(canvas, BorderLayout.CENTER);
-        add(properties, BorderLayout.EAST);
+        add(properties, BorderLayout.LINE_END);
         add(buildToolbar(), BorderLayout.NORTH);
 
         saveDebounce = new Timer(1000, e -> save());
@@ -378,7 +378,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
             }
         });
         bar.add(token);
-        tokenLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
+        tokenLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 12));
         bar.add(tokenLabel);
 
         // tooltip is kept current by refreshToken(): it names the providers with tokens
@@ -413,7 +413,7 @@ public final class InfraDesignerTopComponent extends TopComponent {
 
         costLabel.setFont(new Font(Font.MONOSPACED, Font.BOLD, 12));
         costLabel.setForeground(new Color(0x4E, 0xC9, 0x8B));
-        costLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 12));
+        costLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 12));
         bar.add(costLabel);
 
         // THE button, Node-RED red

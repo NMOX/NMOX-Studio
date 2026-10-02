@@ -186,7 +186,7 @@ public class NewProjectDialog extends JDialog {
         form.setBorder(BorderFactory.createEmptyBorder(12, 12, 4, 12));
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 4, 4, 4);
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.LINE_START;
 
         c.gridx = 0;
         c.gridy = 0;
@@ -233,7 +233,7 @@ public class NewProjectDialog extends JDialog {
 
         createButton.addActionListener(e -> createProject());
         cancelButton.addActionListener(e -> dispose());
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.TRAILING));
         buttons.add(cancelButton);
         buttons.add(createButton);
         getRootPane().setDefaultButton(createButton);

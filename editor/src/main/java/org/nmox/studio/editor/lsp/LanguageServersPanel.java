@@ -54,7 +54,7 @@ public final class LanguageServersPanel extends JPanel {
         add(header, BorderLayout.NORTH);
 
         JPanel list = new JPanel();
-        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        list.setLayout(new BoxLayout(list, BoxLayout.PAGE_AXIS));
         for (Server s : LanguageServerCatalog.all()) {
             Row r = new Row(s);
             rows.add(r);
@@ -72,10 +72,10 @@ public final class LanguageServersPanel extends JPanel {
         bar.setVisible(false);
 
         JPanel footer = new JPanel(new BorderLayout(8, 4));
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEADING, 8, 0));
         buttons.add(all);
         buttons.add(cancelBtn);
-        footer.add(buttons, BorderLayout.WEST);
+        footer.add(buttons, BorderLayout.LINE_START);
         JPanel progress = new JPanel(new BorderLayout(6, 0));
         progress.add(bar, BorderLayout.CENTER);
         progress.add(status, BorderLayout.SOUTH);
@@ -211,16 +211,16 @@ public final class LanguageServersPanel extends JPanel {
             setAlignmentX(Component.LEFT_ALIGNMENT);
 
             statusLabel.setPreferredSize(new Dimension(18, 18));
-            add(statusLabel, BorderLayout.WEST);
+            add(statusLabel, BorderLayout.LINE_START);
 
             JLabel name = new JLabel("<html><b>" + server.language() + "</b>&nbsp;&nbsp;"
                     + "<span style='color:#888'><code>" + server.binary() + "</code></span></html>");
             add(name, BorderLayout.CENTER);
 
             button.addActionListener(e -> install(this, false));
-            JPanel east = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+            JPanel east = new JPanel(new FlowLayout(FlowLayout.TRAILING, 0, 0));
             east.add(button);
-            add(east, BorderLayout.EAST);
+            add(east, BorderLayout.LINE_END);
 
             refresh();
         }

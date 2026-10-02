@@ -101,7 +101,7 @@ final class OverviewPanel extends JPanel {
 
     OverviewPanel(Runnable editRetro) {
         this.editRetro = editRetro;
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         setBackground(GROUND);
         setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
         getAccessibleContext().setAccessibleName(Bundle.OverviewPanel_a11y());
@@ -157,7 +157,7 @@ final class OverviewPanel extends JPanel {
         add(sectionLabel(Bundle.OverviewPanel_columnsSection()));
         add(Box.createVerticalStrut(4));
         JPanel cols = new JPanel();
-        cols.setLayout(new BoxLayout(cols, BoxLayout.Y_AXIS));
+        cols.setLayout(new BoxLayout(cols, BoxLayout.PAGE_AXIS));
         cols.setOpaque(false);
         cols.setAlignmentX(LEFT_ALIGNMENT);
         int max = 1;

@@ -81,7 +81,7 @@ public class FormatOnSaveOptionsController extends OptionsPanelController {
                 pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, null, isChanged()));
         JLabel detail = new JLabel(Bundle.FormatOnSave_detail());
         JPanel column = new JPanel();
-        column.setLayout(new BoxLayout(column, BoxLayout.Y_AXIS));
+        column.setLayout(new BoxLayout(column, BoxLayout.PAGE_AXIS));
         enabled.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         detail.setAlignmentX(JComponent.LEFT_ALIGNMENT);
         column.add(enabled);

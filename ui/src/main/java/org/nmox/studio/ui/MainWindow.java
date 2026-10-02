@@ -328,7 +328,7 @@ public final class MainWindow extends TopComponent {
         private static JPanel column(String heading) {
             JPanel col = new JPanel();
             col.setOpaque(false);
-            col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
+            col.setLayout(new BoxLayout(col, BoxLayout.PAGE_AXIS));
             col.add(columnHeading(heading));
             return col;
         }
@@ -337,7 +337,7 @@ public final class MainWindow extends TopComponent {
             JLabel label = new JLabel(PlainText.plain(text));
             label.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 11));
             label.setForeground(HEADING);
-            label.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 2, 6, 0));
+            label.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 2, 6, 0));
             label.setAlignmentX(Component.LEFT_ALIGNMENT);
             return label;
         }

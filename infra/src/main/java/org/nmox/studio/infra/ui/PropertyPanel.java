@@ -114,7 +114,7 @@ public class PropertyPanel extends JPanel {
             GridBagConstraints gc = new GridBagConstraints();
             gc.gridx = 0;
             gc.gridy = 0;
-            gc.anchor = GridBagConstraints.WEST;
+            gc.anchor = GridBagConstraints.LINE_START;
             gc.fill = GridBagConstraints.HORIZONTAL;
             gc.insets = new Insets(3, 12, 3, 12);
 

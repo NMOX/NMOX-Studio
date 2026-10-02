@@ -135,7 +135,7 @@ public final class PwaKitAction implements ActionListener {
         rows.add(monogram);
         JPanel art = new JPanel(new BorderLayout(6, 0));
         art.add(artwork, BorderLayout.CENTER);
-        art.add(browse, BorderLayout.EAST);
+        art.add(browse, BorderLayout.LINE_END);
         rows.add(art);
         rows.add(new JLabel(Bundle.PwaKitAction_strategyLabel()));
         rows.add(strategy);

@@ -261,7 +261,7 @@ public class TestDevice extends CommandDevice {
                 snapshot.toArray(new String[0]));
         list.setFont(new java.awt.Font(java.awt.Font.MONOSPACED, java.awt.Font.PLAIN, 12));
         javax.swing.JPanel south = new javax.swing.JPanel(
-                new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+                new java.awt.FlowLayout(java.awt.FlowLayout.LEADING));
         javax.swing.JButton rerun = new javax.swing.JButton(
                 "Re-run failed (" + snapshot.size() + ")");
         rerun.setEnabled(rerunFailedCommand(effectiveFramework(), snapshot) != null);

@@ -488,7 +488,7 @@ public final class IrcTopComponent extends TopComponent {
         JPanel bottom = new JPanel(new BorderLayout(4, 0));
         bottom.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
         bottom.add(input, BorderLayout.CENTER);
-        bottom.add(connectButton, BorderLayout.EAST);
+        bottom.add(connectButton, BorderLayout.LINE_END);
 
         buildFindBar();
         JPanel north = new JPanel(new BorderLayout());
@@ -1062,9 +1062,9 @@ public final class IrcTopComponent extends TopComponent {
         // explicit name the labelling label's text, already translated
         JLabel findLabel = new JLabel(Bundle.IrcTopComponent_findLabel());
         findLabel.setLabelFor(findField);
-        findBar.add(findLabel, BorderLayout.WEST);
+        findBar.add(findLabel, BorderLayout.LINE_START);
         findBar.add(findField, BorderLayout.CENTER);
-        findBar.add(findCount, BorderLayout.EAST);
+        findBar.add(findCount, BorderLayout.LINE_END);
         findBar.setVisible(false);
         findField.addActionListener(e -> findNext());
         findField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {

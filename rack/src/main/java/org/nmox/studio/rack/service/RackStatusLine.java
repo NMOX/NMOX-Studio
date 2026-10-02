@@ -162,10 +162,10 @@ public class RackStatusLine implements StatusLineElementProvider {
                 () -> javax.swing.SwingUtilities.invokeLater(this::refresh);
 
         RackStrip() {
-            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+            setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEADING, 0, 0));
             setOpaque(false);
-            liveLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
-            servingLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            liveLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
+            servingLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             envLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
             servingLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             servingLabel.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -174,7 +174,7 @@ public class RackStatusLine implements StatusLineElementProvider {
                     showServingMenu();
                 }
             });
-            agentLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            agentLabel.setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             agentLabel.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             agentLabel.addMouseListener(new java.awt.event.MouseAdapter() {
                 @Override

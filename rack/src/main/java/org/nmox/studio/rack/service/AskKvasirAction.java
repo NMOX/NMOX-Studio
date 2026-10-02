@@ -69,7 +69,7 @@ public final class AskKvasirAction implements ActionListener {
         JPanel south = new JPanel(new BorderLayout(8, 0));
         south.add(new JLabel(Bundle.AskKvasirAction_sendsNote()),
                 BorderLayout.CENTER);
-        south.add(model, BorderLayout.EAST);
+        south.add(model, BorderLayout.LINE_END);
 
         JPanel panel = new JPanel(new BorderLayout(0, 6));
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));

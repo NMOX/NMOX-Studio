@@ -81,7 +81,7 @@ public final class ProblemsStatusLine implements StatusLineElementProvider {
         private boolean scheduled;
 
         Chip() {
-            setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 0));
+            setBorder(new org.nmox.studio.core.util.LeadingBorder(0, 8, 0, 0));
             setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
             getAccessibleContext().setAccessibleName(Bundle.ProblemsStatusLine_name());
             addMouseListener(new java.awt.event.MouseAdapter() {

@@ -147,7 +147,7 @@ final class NetworkDialog extends JPanel {
         chainRow.add(chainIdField, BorderLayout.CENTER);
         detectButton.setToolTipText(Bundle.NetworkDialog_detectTip());
         detectButton.addActionListener(e -> detect());
-        chainRow.add(detectButton, BorderLayout.EAST);
+        chainRow.add(detectButton, BorderLayout.LINE_END);
         addRow(grid, 3, Bundle.NetworkDialog_rowChainId(), chainRow);
         secretCheck.setToolTipText(Bundle.NetworkDialog_secretTip());
         addRow(grid, 4, "", secretCheck);
@@ -274,13 +274,13 @@ final class NetworkDialog extends JPanel {
         GridBagConstraints l = new GridBagConstraints();
         l.gridx = 0;
         l.gridy = row;
-        l.anchor = GridBagConstraints.EAST;
+        l.anchor = GridBagConstraints.LINE_END;
         l.insets = new Insets(3, 0, 3, 8);
         panel.add(new JLabel(PlainText.plain(label)), l);
         GridBagConstraints f = new GridBagConstraints();
         f.gridx = 1;
         f.gridy = row;
-        f.anchor = GridBagConstraints.WEST;
+        f.anchor = GridBagConstraints.LINE_START;
         f.fill = GridBagConstraints.HORIZONTAL;
         f.weightx = 1;
         f.insets = new Insets(3, 0, 3, 0);

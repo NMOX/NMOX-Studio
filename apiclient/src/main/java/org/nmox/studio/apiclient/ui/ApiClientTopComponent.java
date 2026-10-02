@@ -1363,7 +1363,7 @@ public final class ApiClientTopComponent extends TopComponent {
     private JSplitPane buildEditorAndResponse() {
         JPanel editor = new JPanel(new BorderLayout());
         JPanel top = new JPanel();
-        top.setLayout(new BoxLayout(top, BoxLayout.X_AXIS));
+        top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
         top.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
         top.add(new JLabel(Bundle.ApiClientTopComponent_nameLabel()));
         nameField.getDocument().addDocumentListener(new SimpleDoc(() -> {
@@ -1410,10 +1410,10 @@ public final class ApiClientTopComponent extends TopComponent {
 
     private JPanel buildAuthPanel() {
         JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
         panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         JPanel row = new JPanel();
-        row.setLayout(new BoxLayout(row, BoxLayout.X_AXIS));
+        row.setLayout(new BoxLayout(row, BoxLayout.LINE_AXIS));
         row.add(new JLabel(Bundle.ApiClientTopComponent_typeLabel()));
         authCombo.addActionListener(e -> {
             if (!loading && current != null) {
@@ -1451,7 +1451,7 @@ public final class ApiClientTopComponent extends TopComponent {
             explainButton.setToolTipText(Bundle.ApiClientTopComponent_explainTooltip());
             explainButton.setEnabled(false);
             explainButton.addActionListener(e -> explainResponse());
-            north.add(explainButton, BorderLayout.EAST);
+            north.add(explainButton, BorderLayout.LINE_END);
         }
         panel.add(north, BorderLayout.NORTH);
         JTabbedPane tabs = new JTabbedPane();
@@ -1461,9 +1461,9 @@ public final class ApiClientTopComponent extends TopComponent {
         responseHeaders.setEditable(false);
         responseHeaders.setFont(MONO);
         tabs.addTab(Bundle.ApiClientTopComponent_headers(), new JScrollPane(responseHeaders));
-        testResults.setLayout(new BoxLayout(testResults, BoxLayout.Y_AXIS));
+        testResults.setLayout(new BoxLayout(testResults, BoxLayout.PAGE_AXIS));
         tabs.addTab(Bundle.ApiClientTopComponent_tests(), new JScrollPane(testResults));
-        standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.Y_AXIS));
+        standardsPanel.setLayout(new BoxLayout(standardsPanel, BoxLayout.PAGE_AXIS));
         tabs.addTab(Bundle.ApiClientTopComponent_standards(), new JScrollPane(standardsPanel));
         panel.add(tabs, BorderLayout.CENTER);
         return panel;
@@ -1478,15 +1478,15 @@ public final class ApiClientTopComponent extends TopComponent {
 
         JPanel bar = new JPanel(new BorderLayout(6, 0));
         bar.setBorder(BorderFactory.createEmptyBorder(2, 6, 2, 6));
-        bar.add(new JLabel(Bundle.ApiClientTopComponent_findLabel()), BorderLayout.WEST);
+        bar.add(new JLabel(Bundle.ApiClientTopComponent_findLabel()), BorderLayout.LINE_START);
         bar.add(responseFind, BorderLayout.CENTER);
-        JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 0));
+        JPanel east = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING, 6, 0));
         east.add(findCount);
         JButton saveBody = new JButton(Bundle.ApiClientTopComponent_saveBody());
         saveBody.setToolTipText(Bundle.ApiClientTopComponent_saveBodyTooltip());
         saveBody.addActionListener(e -> saveResponseBody());
         east.add(saveBody);
-        bar.add(east, BorderLayout.EAST);
+        bar.add(east, BorderLayout.LINE_END);
         body.add(bar, BorderLayout.SOUTH);
 
         responseFind.getDocument().addDocumentListener(new SimpleDoc(this::refindInBody));

@@ -167,7 +167,7 @@ public class RackOptionsPanelController extends OptionsPanelController {
         panel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
         c.insets = new Insets(4, 8, 4, 8);
-        c.anchor = GridBagConstraints.WEST;
+        c.anchor = GridBagConstraints.LINE_START;
         c.gridx = 0;
         c.gridy = 0;
 

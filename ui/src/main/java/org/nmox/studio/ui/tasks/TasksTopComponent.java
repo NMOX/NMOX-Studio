@@ -485,7 +485,7 @@ public final class TasksTopComponent extends TopComponent {
 
     private void buildUi() {
         setLayout(new BorderLayout());
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEADING, 8, 4));
         JButton addCard = new JButton(Bundle.TasksTopComponent_newCard());
         addCard.getAccessibleContext().setAccessibleName(Bundle.TasksTopComponent_newCardA11y());
         addCard.setToolTipText(Bundle.TasksTopComponent_newCardTip());
@@ -520,7 +520,7 @@ public final class TasksTopComponent extends TopComponent {
         top.add(boardLabel);
         add(top, BorderLayout.NORTH);
 
-        columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.X_AXIS));
+        columnsPanel.setLayout(new BoxLayout(columnsPanel, BoxLayout.LINE_AXIS));
         JScrollPane scroll = new JScrollPane(columnsPanel,
                 JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);

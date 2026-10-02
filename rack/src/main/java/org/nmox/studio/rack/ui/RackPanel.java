@@ -111,7 +111,7 @@ public class RackPanel extends JPanel implements Rack.Listener {
 
     public RackPanel(Rack rack) {
         this.rack = rack;
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         setBackground(RackStyle.RACK_BG);
         setFocusTraversalKeysEnabled(false);
         // the rack listener attaches in addNotify, NOT here (ledger item
