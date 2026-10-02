@@ -6,7 +6,7 @@
 # holds more than one commit. With exactly one, it takes that commit's own
 # message — so v3.5.8, a one-commit request whose branch commit was a
 # working note, landed on main as "wip: maven-clean-plugin 3.5.0 (#842)"
-# beside thirty releases that read as their headline. A published commit
+# where every other release reads as its headline. A published commit
 # on main is never rewritten, so the gate now states the subject itself
 # instead of leaving it to a default that depends on a commit count.
 #
