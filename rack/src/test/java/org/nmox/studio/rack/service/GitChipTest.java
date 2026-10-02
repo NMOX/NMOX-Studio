@@ -22,6 +22,11 @@ class GitChipTest {
     @TempDir
     Path dir;
 
+    @org.junit.jupiter.api.AfterEach
+    void theRealQuestionAgain() {
+        GitChip.trusted = WorkspaceTrust::isTrusted;
+    }
+
     private Path repo(String name, String headContent) throws Exception {
         Path gitDir = dir.resolve(name).resolve(".git");
         Files.createDirectories(gitDir);
@@ -159,8 +164,67 @@ class GitChipTest {
         assertThat(chip.mayRunProcess()).as("~/NMOX is not a repo — boot stays processless")
                 .isFalse();
 
+        GitChip.trusted = folder -> true;
         chip.aim(repo("real", "ref: refs/heads/main\n").toFile());
         assertThat(chip.mayRunProcess()).as("only a repo aim arms the process path").isTrue();
+    }
+
+    @Test
+    @DisplayName("an untrusted repository shows its branch and runs nothing; trusted, it may count (3.5.7)")
+    void aRepositoryWaitsForTrust() throws Exception {
+        Path stranger = repo("downloaded", "ref: refs/heads/main\n");
+        GitChip.trusted = folder -> false;
+        GitChip chip = new GitChip();
+        chip.aim(stranger.toFile());
+
+        assertThat(chip.visible()).as("the branch is a file read: HEAD, no git").isTrue();
+        assertThat(chip.label()).isEqualTo("⎇ main");
+        assertThat(chip.mayRunProcess())
+                .as("git status runs the programs a repository's own config names").isFalse();
+        assertThat(chip.waitsForTrust()).isTrue();
+
+        java.util.List<java.io.File> asked = new java.util.ArrayList<>();
+        GitChip.trusted = folder -> {
+            asked.add(folder);
+            return true;
+        };
+        assertThat(chip.mayRunProcess()).isTrue();
+        assertThat(chip.waitsForTrust()).isFalse();
+        assertThat(asked).as("the folder asked about is the repository's root, where its config is")
+                .isNotEmpty().allMatch(folder -> folder.equals(chip.repoRoot()));
+    }
+
+    @Test
+    @DisplayName("a folder that is no repository waits for nothing")
+    void noRepositoryNoQuestion() throws Exception {
+        Path plain = dir.resolve("plain");
+        Files.createDirectories(plain);
+        GitChip.trusted = folder -> false;
+        GitChip chip = new GitChip();
+        chip.aim(plain.toFile());
+        assertThat(chip.waitsForTrust()).isFalse();
+        assertThat(chip.mayRunProcess()).isFalse();
+    }
+
+    @Test
+    @DisplayName("the chip says it is waiting, offers the question first, and counts after a yes")
+    void theChipOffersTheQuestion() throws Exception {
+        String strip = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
+                StandardCharsets.UTF_8).replace("\r\n", "\n");
+        int menu = strip.indexOf("private void showChipMenu()");
+        String menuBody = strip.substring(menu, strip.indexOf("\n        }\n", menu));
+        int offered = menuBody.indexOf("if (chip.waitsForTrust()) {");
+        assertThat(offered).as("the menu knows the repository is waiting").isPositive();
+        assertThat(menuBody.indexOf("askTrust()")).as("and its first row is the question")
+                .isBetween(offered, menuBody.indexOf("Bundle.GitStatusLine_switchBranch()"));
+
+        int ask = strip.indexOf("private void askTrust()");
+        String askBody = strip.substring(ask, strip.indexOf("\n        }\n", ask));
+        assertThat(askBody).contains("WorkspaceTrust.requestTrust(root)").contains("RP.post(this::refreshCount)");
+        assertThat(strip).as("the tooltip says why there is no count")
+                .contains("waiting ? Bundle.GitStatusLine_chipTooltipWaiting(");
+        assertThat(strip.split("saysWhyNot\\(\\);", -1).length - 1)
+                .as("each verb that needs git says why it did nothing").isGreaterThanOrEqualTo(4);
     }
 
     @Test

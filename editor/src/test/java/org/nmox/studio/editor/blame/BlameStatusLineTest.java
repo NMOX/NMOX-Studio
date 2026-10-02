@@ -28,6 +28,12 @@ class BlameStatusLineTest {
         BlamePrefs.setEnabled(true);
         BlameStatusLine.gestureSeen = false;
         BlameStatusLine.GESTURE_WATCH.set(false);
+        LineBlame.trusted = org.nmox.studio.rack.service.WorkspaceTrust::isTrusted;
+    }
+
+    @org.junit.jupiter.api.BeforeEach
+    void theseRepositoriesAreTrusted() {
+        LineBlame.trusted = folder -> true; // the trust gate has its own test in LineBlameTest
     }
 
     private static BlamePorcelain.Line line(String author, long secondsAgo, String summary) {

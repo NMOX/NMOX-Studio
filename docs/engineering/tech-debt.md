@@ -253,6 +253,29 @@ Decided in 3.5.6 and written here so that each can be decided again.
 - **After the click, the file has to be reopened.** The status line says
   so. Nothing restarts the server for the editors already open.
 
+### 135. Git and trust: what 3.5.7 gated and what it left (3.5.7)
+
+- **Gated:** the status-line chip's nine spawns (`git status`, `gh`), line
+  blame, the Standup's `git log`. Each runs only when the repository's
+  root folder is trusted.
+- **Not gated, by what they are:** the GIT rack device (a GO is already
+  behind Workspace Trust), `GitSetup` (the user's global config, at a
+  gesture, outside any repository), the New Project wizard's `git init`
+  and commit (in a folder it just wrote).
+- **Not ours:** the platform's git module (Team menu, the Favorites
+  annotation `[main]`) is JGit, which runs no fsmonitor and no external
+  programs for status. Not measured here beyond that the scratch
+  repository's marker was never written while only the platform's
+  annotation was showing.
+- **A user's own repository waits too** until it is trusted once: the
+  count, ahead and behind, and blame are absent in a repository opened
+  from disk and never run. The chip's menu is where to say yes. Whether
+  to ask at aim time instead, the way VS Code does when a folder is
+  opened, is a larger change and was not made.
+- **The menu row and the tooltip were not driven** in the walk (a popup
+  menu and a hover are out of reach of the tools available); both are
+  held by source gates.
+
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
 ### 126. ~~The Services window's rows are spoken with their markup~~ — CLOSED by 3.5.1, for trees

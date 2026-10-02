@@ -49,11 +49,34 @@ class LineBlameTest {
         Files.createDirectories(repo.resolve("src"));
         file = repo.resolve("src/app.js");
         Files.writeString(file, "one\ntwo\n");
+        LineBlame.trusted = folder -> true;
     }
 
     @AfterEach
     void tearDown() {
         lane.shutdown();
+        LineBlame.trusted = org.nmox.studio.rack.service.WorkspaceTrust::isTrusted;
+    }
+
+    @org.junit.jupiter.api.Test
+    @org.junit.jupiter.api.DisplayName("in a repository nobody has trusted, git is not run at all (3.5.7)")
+    void anUntrustedRepositoryIsNotBlamed() {
+        List<File> asked = new CopyOnWriteArrayList<>();
+        LineBlame.trusted = folder -> {
+            asked.add(folder);
+            return false;
+        };
+        LineBlame blame = blameAnswering(twoLines());
+
+        org.assertj.core.api.Assertions.assertThat(blame.lookup(file.toFile(), 1)).isNull();
+        org.assertj.core.api.Assertions.assertThat(spawns.get())
+                .as("git reads the repository's config, which can name programs to run").isZero();
+        org.assertj.core.api.Assertions.assertThat(asked)
+                .as("the folder asked about is the repository's root").containsExactly(repo.toFile());
+
+        LineBlame.trusted = folder -> true;
+        org.assertj.core.api.Assertions.assertThat(blame.lookup(file.toFile(), 1)).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(spawns.get()).isEqualTo(1);
     }
 
     private LineBlame blameAnswering(String porcelain) {

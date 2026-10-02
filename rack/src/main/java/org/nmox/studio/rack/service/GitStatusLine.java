@@ -104,6 +104,8 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_whyRejectedContext=git rejected this context",
     "GitStatusLine_verbUnavailable={0} unavailable ({1}) — use the Team menu",
     "GitStatusLine_noRepository=Git: no repository",
+    "GitStatusLine_waitsForTrust=Git: waiting for a trusted workspace",
+    "GitStatusLine_chipTooltipWaiting=<html>git — {0}<br>changes are not counted until this workspace is trusted: git runs the programs a repository\u2019s configuration names<br>click for the menu</html>",
     "# {0} the branch; {1}, {2}, {3} the optional clauses below, each carrying its own leading separator",
     "GitStatusLine_a11yName=Git: branch {0}{1}{2}{3}",
     "GitStatusLine_a11yChanged=, {0} changed",
@@ -168,7 +170,8 @@ public class GitStatusLine implements StatusLineElementProvider {
         GitStrip.RP.post(() -> {
             strip.chip.aim(aimed);
             if (!strip.chip.mayRunProcess()) {
-                GitStrip.status(Bundle.GitStatusLine_noRepository());
+                GitStrip.status(strip.chip.waitsForTrust()
+                        ? Bundle.GitStatusLine_waitsForTrust() : Bundle.GitStatusLine_noRepository());
                 return;
             }
             java.awt.EventQueue.invokeLater(pullRequests ? strip::showPullRequests : strip::draftCommitMessage);
@@ -276,11 +279,27 @@ public class GitStatusLine implements StatusLineElementProvider {
             publish();
         }
 
+        /** A verb that needs git was asked for and git may not run here: say so when the reason is trust. */
+        private void saysWhyNot() {
+            if (chip.waitsForTrust()) {
+                status(Bundle.GitStatusLine_waitsForTrust());
+            }
+        }
+
+        /** The menu's first row in an untrusted repository: the Workspace Trust question, then the count. */
+        private void askTrust() {
+            File root = chip.repoRoot();
+            if (root != null && WorkspaceTrust.requestTrust(root)) {
+                RP.post(this::refreshCount);
+            }
+        }
+
         /** Marshal the chip's current answer onto the EDT; arm/disarm the poll. */
         private void publish() {
             String label = chip.label();
             String spoken = chip.spokenName();
             File root = chip.repoRoot();
+            boolean waiting = chip.waitsForTrust();
             javax.swing.SwingUtilities.invokeLater(() -> {
                 chipLabel.setText(PlainText.plain(label == null ? "" : label));
                 chipLabel.getAccessibleContext().setAccessibleName(spoken);
@@ -288,6 +307,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                 // the tooltip MEANS its <br>; the repo path is the one external piece and rides
                 // PLAIN-TOOLTIP-EXEMPT: PlainText.escape (a directory can be named <img src=…>)
                 chipLabel.setToolTipText(label == null ? null
+                        : waiting ? Bundle.GitStatusLine_chipTooltipWaiting(PlainText.escape(String.valueOf(root)))
                         : Bundle.GitStatusLine_chipTooltip(PlainText.escape(String.valueOf(root))));
                 if (label != null && isDisplayable()) {
                     if (!poll.isRunning()) {
@@ -331,6 +351,7 @@ public class GitStatusLine implements StatusLineElementProvider {
          */
         private void showPullRequests() {
             if (!chip.mayRunProcess()) {
+                saysWhyNot();
                 return;
             }
             File dir = RackService.getDefault().getRack().getProjectDir();
@@ -434,6 +455,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         private void showReviewThreads(org.nmox.studio.rack.engine.GitPulls.Pull pull) {
             // the v1.40.0 boot law, stated structurally at every spawn
             if (!chip.mayRunProcess()) {
+                saysWhyNot();
                 return;
             }
             java.io.File dir = RackService.getDefault().getRack().getProjectDir();
@@ -502,6 +524,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         private void checkoutPull(org.nmox.studio.rack.engine.GitPulls.Pull pull) {
             // the v1.40.0 boot law, stated structurally at every spawn
             if (!chip.mayRunProcess()) {
+                saysWhyNot();
                 return;
             }
             java.io.File dir = RackService.getDefault().getRack().getProjectDir();
@@ -604,6 +627,7 @@ public class GitStatusLine implements StatusLineElementProvider {
             // requires a visible chip, but the gate reads guards, not
             // reachability)
             if (!chip.mayRunProcess()) {
+                saysWhyNot();
                 return;
             }
             File dir = RackService.getDefault().getRack().getProjectDir();
@@ -708,6 +732,13 @@ public class GitStatusLine implements StatusLineElementProvider {
                 return;
             }
             JPopupMenu menu = new JPopupMenu();
+            if (chip.waitsForTrust()) {
+                // nothing here has run git in this folder; the first row is the question (3.5.7)
+                JMenuItem trust = new JMenuItem(Bundle.WorkspaceTrust_trustWorkspace() + "\u2026");
+                trust.addActionListener(e -> askTrust());
+                menu.add(trust);
+                menu.addSeparator();
+            }
             // Context-aware verbs (v1.45.0, ledger 29): with the studios now
             // publishing the aimed DataFolder node as the global selection,
             // the git NodeActions finally have real context — the chip hands

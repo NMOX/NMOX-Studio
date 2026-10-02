@@ -1076,12 +1076,17 @@ public final class TasksTopComponent extends TopComponent {
         IO_RP.post(() -> {
             List<StandupReport.Commit> commits = new ArrayList<>();
             try {
+                // git log reads the repository's own config, which can name a
+                // program to run (gpg.program with log.showSignature): in a
+                // folder nobody has trusted the report goes without its
+                // Commits section, as it does where there is no repository (3.5.7)
                 org.nmox.studio.core.process.ProcessSupport.BoundedResult r =
-                        org.nmox.studio.core.process.ProcessSupport.runBounded(
+                        !org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir) ? null
+                        : org.nmox.studio.core.process.ProcessSupport.runBounded(
                                 List.of("git", "log", "--since=yesterday.midnight",
                                         "--format=%ct%x09%h %s"),
                                 dir, java.time.Duration.ofSeconds(5));
-                if (r.exitCode() == 0) {
+                if (r != null && r.exitCode() == 0) {
                     for (String line : r.stdout().split("\n")) {
                         int tab = line.indexOf('\t');
                         if (tab > 0) {

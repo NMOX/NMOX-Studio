@@ -334,6 +334,20 @@ Two decisions were made that cost something, and both are in the ledger
 (134): a file in no project gets only the servers that read, and
 TypeScript's server is decided by what it would load, not by its name.
 
+## After 3.5.6 shipped (3.5.7)
+
+3.5.6 asked which language servers run what they are pointed at. The same
+question about the other tool the product starts without being asked, git,
+had been answered in the spawn ledger in 3.2.0: fixed argv, the user's own
+config. The second half was wrong. Git reads the repository's `.git/config`
+as well, and that file can name a program for `status`, for a diff, for a
+signed log. A scratch repository with `core.fsmonitor` set to a command
+settled it in one run of the chip's own command.
+
+The chip had one guard in front of all nine of its spawns, written for the
+boot law, so the fix is one more condition in it and a chip that says what
+it is waiting for. Line blame and the Standup's log take the same check.
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -371,3 +385,4 @@ and seen to fail by name.
 | Hosted servers (3.5.5) | a probe out of time is a no; no interpreter is a no; a package seen is asked for again; Perl does not ask; a no is not believed | `HostedServerProbeTest` |
 | The Browser's class order (3.5.5) | not ordered; ordered after the engine is queued; loaded and not initialized; a runtime without JavaFX throws | `FxClassOrderTest` (its control leaves two threads deadlocked on fixture classes, on purpose) |
 | Server trust (3.5.6) | the launch does not ask; an unlisted server only reads; trust not asked; a file in no project starts anything; TypeScript always waits; TypeScript never waits; a waiting server reported missing; rust-analyzer unlisted; a refusal not remembered for the caller; a resolved path not known by its name | `ServerTrustLedgerTest` (the last lived until a reading server was asked for by a path) |
+| Git and trust (3.5.7) | the chip may spawn in any repository; the chip never says it is waiting; the menu row does nothing; a yes does not count; blame runs in any repository; blame asks about the file's folder; the Standup's log runs anywhere | `GitChipTest`, `LineBlameTest`, `StandupWaitsForTrustTest` |

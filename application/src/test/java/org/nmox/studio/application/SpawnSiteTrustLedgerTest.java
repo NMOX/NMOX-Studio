@@ -166,10 +166,13 @@ class SpawnSiteTrustLedgerTest {
                 + "from GitSetup's constant table (3.2.0) — reads with --get, writes only on "
                 + "Apply, Close the default button; nothing a project controls is executed"),
             Map.entry("GitStatusLine.java",
-                "BLESSED: fixed `git`/`gh` argv on the aim — porcelain (v1.40.0), gh pr list / gh api "
+                "GATED: fixed `git`/`gh` argv on the aim — porcelain (v1.40.0), gh pr list / gh api "
                 + "review comments (read-only, v2.51.0/v2.62.0), and gh pr checkout behind the "
-                + "GitCheckoutGuard clean-tree refusal + a safe-default confirm (v2.62.0); "
-                + "no project-controlled tokens, every spawn behind mayRunProcess"),
+                + "GitCheckoutGuard clean-tree refusal + a safe-default confirm (v2.62.0). The argv "
+                + "is fixed and that was never the whole question: git honours the repository's own "
+                + ".git/config, which can name programs to run (core.fsmonitor for status, measured "
+                + "3.5.7). Every spawn is behind GitChip.mayRunProcess, which since 3.5.7 also "
+                + "requires the repository's folder to be trusted"),
             Map.entry("DocsContract.java",
                 "BLESSED: the docs forge's fixed `forge build` in a throwaway fixture project the "
                 + "scene itself just wrote, only when -Dnmox.shots.staged runs the forge (v2.164.0)"),
@@ -185,12 +188,15 @@ class SpawnSiteTrustLedgerTest {
                 + "fixed words with the file's name after `--` so it cannot read as an "
                 + "option (3.2.0, line blame). Nothing the repository controls runs: "
                 + "blame reads objects and the working file, and --no-textconv refuses the "
-                + "one door a checked-in .gitattributes has to a converter program; the "
-                + "config git honours is the user's, as for the chip's `git status`. "
+                + "one door a checked-in .gitattributes has to a converter program. This "
+                + "entry said until 3.5.7 that the config git honours is the user's: it is "
+                + "also the repository's own .git/config, so the spawn is GATED on the "
+                + "repository's folder being trusted (LineBlame.lookup). "
                 + "Bounded (10 s, capped capture, a truncated answer discarded), on its own "
                 + "lane, never at boot, never for a file outside a repository"),
             Map.entry("TasksTopComponent.java",
-                "BLESSED: the Standup's bounded fixed-argv `git log` (v2.8.0)"),
+                "GATED: the Standup's bounded fixed-argv `git log` (v2.8.0), run only in a "
+                + "trusted folder since 3.5.7 (a repository's config can name a gpg.program)"),
             Map.entry("ProjectTemplates.java",
                 "BLESSED: fixed `git` argv in the directory the wizard itself just wrote — "
                 + "init/add/commit for the scaffold (v1.62.0) and the lockfile fold's "
