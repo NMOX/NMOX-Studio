@@ -171,6 +171,16 @@ workflow runs that on Windows and Linux.
   proof found the rest of it. In a narrow dock the page kept its own width
   and scrolled sideways, so nothing was ever asked to shorten; and a cut
   subtitle, having a tooltip, took the pointer from its row.
+- **A squeezed label stayed squeezed.** Found by reading the new label, not
+  by a test: its test passed. A plain label's maximum is the width of the
+  text it shows now, a column gives a child no more than its maximum, and so
+  a label that had cut its text could never be given the room to undo it.
+  The header's path had behaved that way since 3.1.0. The test passed
+  because a panel that was never shown keeps the sizes it first computed
+  (an invalid parent is not invalidated again), and a shown window does
+  not. The headless layout tests now clear that memory before each layout.
+  *A test that lays out a window which was never shown is testing a window
+  that never forgets.*
 
 What remains in a staged session's log is the platform's (`Invalid
 shortcut: Actions/Help/master-help.xml`, two deprecation notices) and the
@@ -194,6 +204,6 @@ and seen to fail by name.
 | Counts and scale | the typed count; an adjective before the noun; the walk's scale ignored; AltGr shown | `ExperimentGuideParityTest`, `UiCountLiteralGateTest`, `DocsShotsTest`, `KeystrokeHudTest` |
 | Annotation colours (3.5.2) | the setter again; a colour the profile does not give stays on; the user's file unread; found by folder name only, or display name only; alpha hex refused; text never inherited again; an underline stays | `ProfileAnnotationColorsTest` (two lived until the fixture's filesystem displayed a name and a type started with its own text colour) |
 | A project's records (3.5.2) | the namespace raw in the name; shared and private under one name; any stored element is the answer; namespace not compared; no ceiling; a DOCTYPE accepted; no namespace accepted; the project does not answer | `WebProjectAuxiliaryTest` |
-| `FitLabel` (3.5.2) | cut at the letter; separators kept; no word end means an ellipsis alone; a mark parted from its letter; no tooltip when cut; a tooltip when whole; never grows; asks for its whole text; a new kind keeps the old cut; not said to be cut | `FitLabelTest`, `PathLabelTest` |
+| `FitLabel` (3.5.2) | cut at the letter; separators kept; no word end means an ellipsis alone; a mark parted from its letter; no tooltip when cut; a tooltip when whole; never grows; asks for its whole text; a new kind keeps the old cut; not said to be cut; a maximum of what is shown now | `FitLabelTest`, `PathLabelTest` |
 | Workbench rows (3.5.2) | no spare width taken; four times the budget; the click and the hover not on the subtitle; a list cut as a path; the character cut again; a plain page; a page that follows however narrow; a plain hint; every subtitle one kind | `WorkbenchA11yContractTest` (four lived until a subtitle longer than the budget was tested) |
 | One spelling (3.5.2) | the aim compared as given | `OpenProjectsBridgeTest` |

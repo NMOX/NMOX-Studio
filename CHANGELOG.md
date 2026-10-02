@@ -39,6 +39,11 @@ showed there was true on every system.**
   page follows the dock's width and the text shortens, where it used to grow
   a horizontal scrollbar; below the width of the titles and buttons, which
   cannot shorten, it still scrolls. What is cut is on the tooltip.
+- **A shortened path stayed shortened after its window widened again.** The
+  Workbench header's path (since 3.1.0) was held to the width of its own cut
+  text: a plain label's maximum width is the width of what it shows now, and
+  a column gives a child no more than its maximum. A fitted label's maximum
+  is its whole text's.
 - **A Workbench row was three targets.** A mouse event goes to the deepest
   component that listens for any, and stops there. The title listens, and
   so does a subtitle once it has a tooltip, which was whenever it was cut:
@@ -76,9 +81,12 @@ showed there was true on every system.**
   mark. `PathLabel` is the path-shaped one built on it.
 - The Workbench's picture in the user guide, in all fifteen languages, is
   repainted: the English one was painted for v2.118.0.
-- 38 mutants, each killed by name. Six lived at first, and each time the
+- 39 mutants, each killed by name. Six lived at first, and each time the
   fixture was the reason: a memory filesystem that decorates no names, and
-  English subtitles that all fit the budget they were meant to exceed.
+  English subtitles that all fit the budget they were meant to exceed. One
+  defect hid the same way: a panel that is never shown remembers its
+  children's sizes, so the test for a label coming back whole passed while a
+  shown window would have kept it cut.
 
 ## [3.5.1] - 2026-10-02
 
