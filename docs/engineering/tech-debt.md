@@ -79,11 +79,17 @@ where to look.
 ### 129. What the 3.5 walks saw and did not change
 
 - **Linux without a Secret Service.** On the runner the platform's keyring
-  fell back to master-password encryption, and the Infra Designer's token
-  indicator stayed blank for the whole walk: its first read waits on that
-  prompt. A desktop with GNOME Keyring or KWallet does not take this path.
-  Whether the prompt explains itself well enough on a machine without either
-  needs that machine.
+  fell back to master-password encryption, and the first window that reads
+  a secret raised the platform's Master Password dialog: the walk
+  photographed it where the learning-space picker should have been, and the
+  Infra Designer's token indicator stayed blank behind it, because its
+  first read waits on that prompt. Nothing at boot asks the keyring; a
+  first launch's three tabs do not meet the dialog, and opening the Infra
+  Designer, connecting DB Studio or giving KVASIR a key does. A desktop
+  with GNOME Keyring or KWallet does not take this path at all. Whether
+  "choose a master password" is an acceptable answer to "open the Infra
+  Designer" on a machine without either is a question for someone using
+  one.
 - **Unresolved includes in vendored grammars.** 3.5.0 fixed the class TM4E
   could not resolve at all (rule-local repositories; the boot log went from
   114 warnings to 13). What remains names rules that the upstream grammar
