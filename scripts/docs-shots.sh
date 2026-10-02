@@ -105,7 +105,24 @@ trap cleanup EXIT
 DOCKER_DEAD="tcp://127.0.0.1:9"
 DOCKER_VIEW="$DOCKER_DEAD"
 DOCKER_SOCK="$(docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null | sed -n 's#^unix://##p')"
-if [ -n "$DOCKER_SOCK" ] && [ -S "$DOCKER_SOCK" ] && docker version --format '{{.Server.Version}}' >/dev/null 2>&1; then
+# Whether a daemon answers, asked on a leash: with Docker Desktop quit its
+# socket file stays, and the CLI waits a full minute on it before saying no.
+# (Written out rather than through timeout(1), which a stock Mac does not have.)
+docker_answers() {
+  docker version --format '{{.Server.Version}}' >/dev/null 2>&1 &
+  asked=$!
+  waited=0
+  while kill -0 "$asked" 2>/dev/null; do
+    if [ "$waited" -ge 60 ]; then
+      kill "$asked" 2>/dev/null
+      return 1
+    fi
+    /bin/sleep 0.25
+    waited=$((waited + 1))
+  done
+  wait "$asked"
+}
+if [ -n "$DOCKER_SOCK" ] && [ -S "$DOCKER_SOCK" ] && docker_answers; then
   python3 "$SCRIPTS/docs-docker-proxy.py" 23750 "$DOCKER_SOCK" >/dev/null 2>&1 &
   VIEW_PID=$!
   SERVICES="$SERVICES $VIEW_PID"
