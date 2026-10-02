@@ -47,10 +47,12 @@ at both layouts, not by a patch release of the runtime.
 Most window chords are Ctrl+Alt+digit on Windows and Linux. On German,
 French, Polish and other layouts AltGr+digit types `{ [ ] }` and friends,
 and Windows has historically reported AltGr as Ctrl+Alt. Java is understood
-to add an AltGraph modifier to such a key event since version 11, and both
-Swing and the platform's keymap match a chord by its exact modifier set, so
-AltGr+7 should type `{` and not open DB Studio. That is a reading of how the
-pieces fit, not a measurement. Show Keystrokes was taught the same rule in
+to add an AltGraph modifier to such a key event since version 11. The
+platform's half is read from its bytecode: `ShortcutAndMenuKeyEventProcessor
+.processShortcut` builds the stroke with `KeyStroke.getKeyStrokeForEvent`
+and asks the keymap for exactly that stroke, so a stroke carrying AltGraph
+is not the Ctrl+Alt+7 the keymap holds, and AltGr+7 should type `{` and not
+open DB Studio. That is a reading of how the pieces fit, not a measurement. Show Keystrokes was taught the same rule in
 3.5.0 (an AltGr combination is typing and is never shown).
 
 **Unverified:** the walks ran on runners with a US layout, and nothing here
@@ -89,7 +91,28 @@ that moves the window chords off the digits.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
-### 126. The Services window's rows are spoken with their markup
+### 126. ~~The Services window's rows are spoken with their markup~~ — CLOSED by 3.5.1, for trees
+
+**Closed** the way the entry proposed. `ui.a11y.SpokenTreeRows` meets every
+window as it opens or comes forward and wraps the renderer of each tree
+still using the platform's own node renderer; the wrapper paints nothing
+differently and names the row with its words. Walked with a control: a git
+project with one modified and one new file, the platform's Files window
+open, the accessibility tree read by process id. The 3.5.0 build names three
+rows `<b>demo</b>`, `<font color="#1ab8ff">a.txt</font>…`,
+`<font color="#49d249">b.txt</font>…`; the 3.5.1 build names them `demo`,
+`a.txt [-/M]`, `b.txt [-/A]`.
+
+The unit test for this, and the one 3.4.0 wrote for Project Studio's tree,
+both painted their fixture as `<html>…`. Swing names an `<html>` label in
+words by itself, so both tests passed with the wrapper naming nothing; the
+mutant said so. The platform's renderer paints markup with no `<html>`
+prefix, and both fixtures do now.
+
+**Still open:** the explorer's table-shaped views (`OutlineView`,
+`TreeTableView`) and `ListView` paint through other renderers and were not
+read. The entry as written:
+
 
 Seen in the 3.4.1 walk, through the accessibility tree VoiceOver reads: a
 connection row in **Window ▸ Services ▸ Databases** has the accessible name

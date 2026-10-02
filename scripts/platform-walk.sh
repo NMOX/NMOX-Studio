@@ -63,8 +63,16 @@ fi
 
 echo "platform-walk: $OS, launcher $LAUNCHER"
 START=$(date +%s)
-timeout --kill-after=30 "$TIMEOUT" \
-  "$LAUNCHER" --nosplash "$@" \
+# timeout(1) is GNU: a stock Mac has none, Homebrew's is gtimeout. With
+# neither, the walk runs unleashed and the job's own timeout is the leash.
+LEASH="$(command -v timeout || command -v gtimeout || true)"
+if [ -n "$LEASH" ]; then
+  set -- "$LEASH" --kill-after=30 "$TIMEOUT" "$LAUNCHER" --nosplash "$@"
+else
+  echo "platform-walk: no timeout(1) here; running without a leash"
+  set -- "$LAUNCHER" --nosplash "$@"
+fi
+"$@" \
   --userdir "$(native "$UD")" --cachedir "$(native "$CD")" \
   -J-Duser.home="$(native "$HOME_DIR")" \
   -J-Dnmox.shots.dir="$(native "$OUT_ABS")" \
@@ -112,4 +120,9 @@ rm -rf "$WORK"
 # a walk that produced no picture did not happen
 [ "$SHOTS" -gt 0 ] || { echo "platform-walk: FAIL — no pictures"; exit 1; }
 [ "$RC" = 0 ] || { echo "platform-walk: FAIL — the app exited $RC"; exit 1; }
-[ -z "$ACCEPTED" ] || { echo "platform-walk: FAIL — a photographed dialog was accepted:$ACCEPTED"; exit 1; }
+# (NMOX_WALK_ACCEPTED_OK=1 turns that into a note, for walking a release
+# older than 3.5.1, whose forge still accepted its dialogs.)
+if [ -n "$ACCEPTED" ] && [ "${NMOX_WALK_ACCEPTED_OK:-0}" != 1 ]; then
+  echo "platform-walk: FAIL — a photographed dialog was accepted:$ACCEPTED"
+  exit 1
+fi

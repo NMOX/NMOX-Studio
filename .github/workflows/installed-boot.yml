@@ -135,10 +135,41 @@ jobs:
           env -u JAVA_HOME BOOT_SMOKE_EXPECT_RUNTIME="$APP/jre" BOOT_SMOKE_KEEP_LOG="$PWD/messages.log" \
             scripts/boot-smoke-test.sh "$APP"
 
-      - name: Keep the log
+      # Then photograph it. The boot above proves the module system on the
+      # bundled runtime; this opens every window on it, the Browser included,
+      # so the bundled JavaFX is exercised on each system too. The pictures
+      # are uploaded to be read.
+      - name: Give the Windows desktop a real screen size
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-DisplayResolution -Width 1920 -Height 1080 -Force
+
+      - name: Walk what was installed (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          APP="$(cygpath -u "$LOCALAPPDATA")/Programs/NMOX Studio"
+          env -u JAVA_HOME NMOX_WALK_APP="$APP" scripts/platform-walk.sh walk-out
+
+      - name: Walk what was installed (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          env -u JAVA_HOME NMOX_WALK_APP=/opt/nmox-studio \
+            xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out
+
+      - name: Walk what was installed (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          APP="$RUNNER_TEMP/Applications/NMOX Studio.app/Contents/Resources/nmoxstudio"
+          env -u JAVA_HOME NMOX_WALK_APP="$APP" scripts/platform-walk.sh walk-out
+
+      - name: Keep the log and the pictures
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: installed-boot-${{ matrix.os }}
-          path: messages.log
+          path: |
+            messages.log
+            walk-out/
           if-no-files-found: warn
