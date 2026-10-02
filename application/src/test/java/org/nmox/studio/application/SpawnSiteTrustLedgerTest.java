@@ -196,10 +196,13 @@ class SpawnSiteTrustLedgerTest {
                 + "init/add/commit for the scaffold (v1.62.0) and the lockfile fold's "
                 + "log/remote/status/add/amend (v2.85.0); never project-controlled"),
             Map.entry("LanguageServers.java",
-                "BLESSED: the rust-analyzer `--version` liveness probe — the user's own PATH "
-                + "tool via ToolLocator, fixed argv, no working dir (v1.351.0); the servers "
-                + "themselves launch through the platform client behind the isTrusted "
-                + "project-local rule (v1.102.0). Invisible to the substring scan until v2.85.0"));
+                "BLESSED: the rust-analyzer `--version` liveness probe and the 3.5.5 probes that "
+                + "ask an interpreter whether a server package is installed — the user's own PATH "
+                + "tool via ToolLocator, fixed argv, no working dir (v1.351.0). The servers "
+                + "themselves are GATED at launch(): a server that runs the project's code waits "
+                + "for trust, every binary classified in ServerTrust and held by "
+                + "ServerTrustLedgerTest (3.5.6); a project-local server binary was already "
+                + "behind isTrusted (v1.102.0). Invisible to the substring scan until v2.85.0"));
 
     /** A builder()/runBounded() call however the formatter broke the line. */
     private static final java.util.regex.Pattern BUILDER_CALL = java.util.regex.Pattern.compile(

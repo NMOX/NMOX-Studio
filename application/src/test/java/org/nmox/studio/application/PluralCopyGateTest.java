@@ -120,6 +120,10 @@ class PluralCopyGateTest {
                 "VERB: {0} is the server's package name — it installs into the project");
         m.put("LanguageServersPanel_needsProject",
                 "VERB: {0} is the server's package name — it installs into the project");
+        m.put("ServerTrust_detail",
+                "VERB: {0} is the server's binary — that server runs code from the project");
+        m.put("ServerTrust_noProject",
+                "VERB: {0} is the server's binary — that server runs code from the project");
         m.put("RenameClassAction_nowhere",
                 "VERB: {0} is the class name — that class appears nowhere");
         m.put("DockerPanelTopComponent_noHostPorts",

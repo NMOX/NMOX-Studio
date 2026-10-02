@@ -25,7 +25,7 @@ import org.openide.util.NbBundle;
 public final class LanguageServerHealth {
 
     private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();
-    private static final Icon ICON = dot();
+    static final Icon ICON = dot();
 
     /**
      * Languages whose missing LSP is NOT worth a notification (David's

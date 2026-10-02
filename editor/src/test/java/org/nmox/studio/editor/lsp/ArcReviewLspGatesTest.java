@@ -43,7 +43,9 @@ class ArcReviewLspGatesTest {
         String b = body(source(), "class AngularServer", "static File angularProbeDir");
         // the gate must sit before the launch in the SAME method — the
         // probe locations are repo code ngserver executes
-        int gate = b.indexOf("WorkspaceTrust.isTrusted");
+        // (3.5.6: the gate is ServerTrust's, which asks the same silent
+        // question and says once per project why the server is waiting)
+        int gate = b.indexOf("ServerTrust.refuses(\"ngserver\", dir)");
         int launch = b.indexOf("launch(lookup");
         assertThat(gate).as("trust gate present").isGreaterThan(0);
         assertThat(launch).as("launch present").isGreaterThan(0);
