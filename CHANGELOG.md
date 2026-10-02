@@ -4,6 +4,64 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.10] - 2026-10-02
+
+**Trust, asked where you are and heard everywhere.** 3.5.6 and 3.5.7 made
+language servers and git wait for Workspace Trust. Both were right to wait,
+and both waited quietly: the question sat in a menu, and an answer given at
+one door did not reach the others.
+
+### Changed
+
+- **Opening a repository you have not trusted says so.** One notification
+  per repository per session; clicking it asks the Workspace Trust
+  question for that repository. Before, the git chip showed a branch with
+  no count and no line author, and the only place to answer was the chip's
+  own menu. A notification, not a dialog: a dialog on every folder teaches
+  the hand to press Trust. In a git repository this one notice also stands
+  for the language servers that wait, since one answer covers both.
+- **Trusting a folder starts what was waiting, without reopening
+  anything.** The git chip takes its count at once, whichever door the
+  answer came through (the Run prompt, the chip's menu, the notification),
+  and the language servers start for the files already open. 3.5.6 said
+  "reopen the file"; the platform's client has its own way to send open
+  files to a server again, and the product now asks for it. Walked on a
+  scratch Cargo project: a Rust file open, trust given at the Run prompt,
+  rust-analyzer running under the IDE with the tab never closed.
+- **Python intelligence no longer waits for trust, and a lone Python
+  script gets it again.** pyright was listed among the servers that run
+  the project's code. Measured, it does not: it runs your own interpreter
+  on a script of its own, with the project's folder taken off the import
+  path, and a configuration file can name a venv to read but not an
+  interpreter to run. The measurement is kept as
+  `scripts/probes/pyright-trust/run.sh`, with a control that shows it can
+  see an interpreter being run.
+
+### Fixed
+
+- **Pressing Run while a language server was still loading lit the red
+  error mark.** A server may answer that a request was overtaken
+  (`ContentModified`, `RequestCancelled`, `ServerCancelled`); the
+  protocol says not to show that to anyone, and the platform logged it as
+  a SEVERE error. Found in this release's own walk and reproduced without
+  its changes: open a Rust file in a new Cargo project and press Run.
+  Those three answers are no longer shown; every other error a server
+  reports still is.
+
+### Reported upstream
+
+- The grammar engine's dependency walk skips a rule that looks like one
+  it has already visited in another grammar (3.5.4 works around it):
+  [eclipse-tm4e/tm4e#1068](https://github.com/eclipse-tm4e/tm4e/issues/1068).
+
+### Not changed, on purpose
+
+- A language server's refusal for a file in no project is still logged as
+  the platform logs it (ledger 133): hiding it would hide a server that
+  does not serve the file.
+- Split panes keep their sides in Hebrew and Arabic (ledger 127). That is
+  for a right-to-left reader to decide.
+
 ## [3.5.9] - 2026-10-02
 
 No change to the product. Two things in the project's own machinery, both
@@ -25397,6 +25455,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.10]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.9...v3.5.10
 [3.5.9]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.8...v3.5.9
 [3.5.8]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.7...v3.5.8
 [3.5.7]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.6...v3.5.7

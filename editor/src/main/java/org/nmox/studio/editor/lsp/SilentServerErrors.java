@@ -79,7 +79,9 @@ public final class SilentServerErrors implements Runnable {
         public boolean isLoggable(LogRecord record) {
             Integer code = overtaken(record.getThrown());
             if (code != null) {
-                LOG.log(Level.FINE, "a language server answered {0} (the request was overtaken); not shown", code);
+                // as text: a message format would write the code with a thousands separator
+                LOG.log(Level.FINE, "a language server answered {0} (the request was overtaken); not shown",
+                        String.valueOf(code));
                 return false;
             }
             return before == null || before.isLoggable(record);

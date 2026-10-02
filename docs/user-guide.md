@@ -1283,7 +1283,10 @@ the count comes from `git status`, on aim, on click, and every 30 seconds
 while visible. Git runs the programs a repository's own configuration
 names, so in a repository whose folder you have not trusted the chip
 shows the branch alone, its tooltip says why, and the first row of its
-menu is **Trust Workspace…**. Line blame waits the same way.
+menu is **Trust Workspace…**. Line blame waits the same way. Opening such
+a repository says so once in a notification, and clicking the
+notification asks the trust question; say yes there, at the Run button
+or in the chip's menu, and the count appears without another click.
 `↑2 ↓1` after it are the commits your branch has that its upstream has
 not (to push) and the other way round (to pull), shown only when not
 zero and only for a branch with an upstream.
@@ -2165,12 +2168,14 @@ six are done, or when you press **Hide this list**.
   checks syntax by running `perl -c`. So in a folder you have not trusted,
   a server of that kind does not start when you open a file. The
   notification says which one, and clicking it asks the Workspace Trust
-  question; answer **Trust Workspace**, reopen the file, and the server
-  starts. Projects you created here, experiments and learning spaces are
+  question; answer **Trust Workspace** and the server starts for the
+  files you already have open. In a git repository the notification is
+  the git chip's, which waits for the same answer: one question covers
+  both. Projects you created here, experiments and learning spaces are
   trusted from the start. Servers that only read (JSON, HTML, CSS, YAML,
-  shell, Go, C and C++) start anywhere, and so does TypeScript and
-  JavaScript intelligence unless the folder brings its own TypeScript in
-  `node_modules`. A lone file that belongs to no project gets only the
+  shell, Go, C and C++, Python) start anywhere, and so does TypeScript
+  and JavaScript intelligence unless the folder brings its own TypeScript
+  in `node_modules`. A lone file that belongs to no project gets only the
   servers that read.
 - **Port already in use**: the error names the process squatting on it
   (SONAR will kill it).
