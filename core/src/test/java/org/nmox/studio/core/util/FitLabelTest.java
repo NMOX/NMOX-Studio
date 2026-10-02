@@ -110,6 +110,50 @@ class FitLabelTest {
     }
 
     @Test
+    @DisplayName("squeezed and then given room again, the text comes back whole")
+    void comesBack() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            // a column, as the Workbench's page and its header are: a column
+            // gives each child the lesser of its own maximum and the width
+            // there is, and a plain label's maximum is the width of whatever
+            // it shows NOW. A label that had cut its text would have been
+            // held to the width of the cut for good.
+            javax.swing.JPanel column = new javax.swing.JPanel();
+            column.setLayout(new javax.swing.BoxLayout(column, javax.swing.BoxLayout.Y_AXIS));
+            FitLabel hint = new FitLabel(FitLabel.Cut.END, Integer.MAX_VALUE, false);
+            hint.setFull(RACK);
+            PathLabel path = new PathLabel();
+            path.setPath("/Users/someone/code/a/deep/folder/of/projects/shop");
+            column.add(hint);
+            column.add(path);
+
+            layOut(column, 90, hint, path);
+            assertThat(hint.isCut()).isTrue();
+            assertThat(path.isCut()).isTrue();
+
+            layOut(column, 1200, hint, path);
+            assertThat(hint.getText()).as("room again").isEqualTo(RACK);
+            assertThat(path.getText()).isEqualTo("/Users/someone/code/a/deep/folder/of/projects/shop");
+        });
+    }
+
+    private static void layOut(javax.swing.JPanel column, int width, FitLabel... labels) {
+        column.setSize(width, 60);
+        for (int pass = 0; pass < 2; pass++) {
+            // a shown window forgets its children's sizes whenever one of them
+            // changes its text; a panel that was never shown does not, and
+            // with the old sizes remembered this test passed against the
+            // defect it is here for
+            ((javax.swing.BoxLayout) column.getLayout()).invalidateLayout(column);
+            column.doLayout();
+            for (FitLabel label : labels) {
+                label.dispatchEvent(new java.awt.event.ComponentEvent(label,
+                        java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            }
+        }
+    }
+
+    @Test
     @DisplayName("the same label can hold a list where a path was, and cuts it as a list")
     void anotherKind() throws Exception {
         SwingUtilities.invokeAndWait(() -> {

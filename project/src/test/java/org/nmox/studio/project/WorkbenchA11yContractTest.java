@@ -236,6 +236,16 @@ class WorkbenchA11yContractTest {
             layOut(tc[0], 40, 900);
             assertThat(page.getScrollableTracksViewportWidth())
                     .as("narrower than the titles: nothing left to shorten, so it scrolls").isFalse();
+
+            // and wide again, everything that was cut is whole again
+            layOut(tc[0], 1200, 900);
+            List<Component> wide = new ArrayList<>();
+            collect(tc[0], wide);
+            assertThat(wide).filteredOn(c -> c instanceof org.nmox.studio.core.util.FitLabel
+                            && !(c instanceof org.nmox.studio.core.util.PathLabel))
+                    .isNotEmpty()
+                    .allSatisfy(c -> assertThat(((org.nmox.studio.core.util.FitLabel) c).isCut())
+                            .as(((org.nmox.studio.core.util.FitLabel) c).getFull()).isFalse());
         });
     }
 
@@ -307,6 +317,11 @@ class WorkbenchA11yContractTest {
     }
 
     private static void layOutTree(Container c) {
+        // a shown window forgets its children's sizes when one of them changes
+        // its text; a window never shown does not, so it is told to
+        if (c.getLayout() instanceof java.awt.LayoutManager2 lm) {
+            lm.invalidateLayout(c);
+        }
         c.doLayout();
         for (Component child : c.getComponents()) {
             if (child instanceof org.nmox.studio.core.util.FitLabel l) {

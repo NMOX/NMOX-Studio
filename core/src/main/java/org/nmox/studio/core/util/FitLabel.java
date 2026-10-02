@@ -99,7 +99,7 @@ public class FitLabel extends JLabel {
         Dimension d = super.getPreferredSize();
         FontMetrics fm = getFontMetrics(getFont());
         Insets in = getInsets();
-        d.width = Math.min(fm.stringWidth(PlainText.plain(full)) + in.left + in.right, cap);
+        d.width = Math.min(fm.stringWidth(PlainText.plain(whole())) + in.left + in.right, cap);
         return d;
     }
 
@@ -110,13 +110,29 @@ public class FitLabel extends JLabel {
         return d;
     }
 
+    /**
+     * As wide as the whole text at most, or wider when it grows; never the
+     * width of what is shown now. A plain label's maximum is its current
+     * text's width, and a column gives a child the lesser of its maximum
+     * and the room: a label that had cut its text was held to the width of
+     * the cut after the window widened again, and stayed cut. The header's
+     * path had done that since 3.1.0.
+     */
     @Override
     public Dimension getMaximumSize() {
         Dimension d = super.getMaximumSize();
         if (grows) {
             d.width = Short.MAX_VALUE;
+        } else {
+            Insets in = getInsets();
+            d.width = getFontMetrics(getFont()).stringWidth(PlainText.plain(whole())) + in.left + in.right;
         }
         return d;
+    }
+
+    /** The whole text; empty while the label is still being constructed. */
+    private String whole() {
+        return full == null ? "" : full;
     }
 
     /**
