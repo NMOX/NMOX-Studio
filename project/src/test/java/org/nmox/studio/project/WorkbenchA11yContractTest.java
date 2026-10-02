@@ -99,7 +99,7 @@ class WorkbenchA11yContractTest {
         // a dock narrower than its longest subtitle: what is cut depends on
         // the width since 3.5.2, so the page is given one and laid out
         SwingUtilities.invokeAndWait(() -> {
-            layOut(tc[0], 230, 900);
+            layOutNarrow(tc[0]);
             collect(tc[0], all);
         });
         List<String> silent = new ArrayList<>();
@@ -185,7 +185,7 @@ class WorkbenchA11yContractTest {
         SwingUtilities.invokeAndWait(tc[0]::componentOpened);
         List<Component> all = new ArrayList<>();
         SwingUtilities.invokeAndWait(() -> {
-            layOut(tc[0], 230, 900);
+            layOutNarrow(tc[0]);
             collect(tc[0], all);
         });
         int subtitles = 0;
@@ -221,19 +221,18 @@ class WorkbenchA11yContractTest {
         SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
         SwingUtilities.invokeAndWait(tc[0]::componentOpened);
         SwingUtilities.invokeAndWait(() -> {
-            List<Component> all = new ArrayList<>();
-            layOut(tc[0], 230, 900);
-            collect(tc[0], all);
-            ProjectExplorerTopComponent.Page page = (ProjectExplorerTopComponent.Page) all.stream()
-                    .filter(c -> c instanceof ProjectExplorerTopComponent.Page).findFirst().orElseThrow();
+            int floor = layOutNarrow(tc[0]);
+            ProjectExplorerTopComponent.Page page = page(tc[0]);
             javax.swing.JViewport viewport = (javax.swing.JViewport) page.getParent();
+            assertThat(viewport.getWidth()).as("the dock is just wider than what cannot shrink")
+                    .isGreaterThanOrEqualTo(floor);
             assertThat(page.getPreferredSize().width).as("the rows ask for more than this dock has")
                     .isGreaterThan(viewport.getWidth());
             assertThat(page.getScrollableTracksViewportWidth()).isTrue();
             assertThat(page.getWidth()).as("and are given the dock's width, not their own")
                     .isEqualTo(viewport.getWidth());
 
-            layOut(tc[0], 40, 900);
+            layOut(tc[0], floor - 20, 900);
             assertThat(page.getScrollableTracksViewportWidth())
                     .as("narrower than the titles: nothing left to shorten, so it scrolls").isFalse();
 
@@ -305,6 +304,29 @@ class WorkbenchA11yContractTest {
         return c instanceof org.nmox.studio.core.util.FitLabel
                 && !(c instanceof org.nmox.studio.core.util.PathLabel)
                 && !(c.getParent() instanceof ProjectExplorerTopComponent.Page);
+    }
+
+    private static ProjectExplorerTopComponent.Page page(Container root) {
+        List<Component> all = new ArrayList<>();
+        collect(root, all);
+        return (ProjectExplorerTopComponent.Page) all.stream()
+                .filter(c -> c instanceof ProjectExplorerTopComponent.Page).findFirst().orElseThrow();
+    }
+
+    /**
+     * A dock just wider than what cannot shrink, so that the page follows it
+     * and the subtitles have to give way. The width is read from the page:
+     * its rows are whatever projects earlier tests left in the recents, and a
+     * number chosen here was narrower than one of their names in the full
+     * build and wider than all of them when this class ran alone. Returns the
+     * page's minimum width.
+     */
+    private static int layOutNarrow(Container root) {
+        layOut(root, 2400, 900);
+        int floor = page(root).getMinimumSize().width;
+        // the floor, a vertical scroll bar's width, and a little a subtitle cannot fit in
+        layOut(root, floor + 60, 900);
+        return floor;
     }
 
     /** Gives the window a size and lays out everything in it; a window never shown lays out nothing by itself. */
