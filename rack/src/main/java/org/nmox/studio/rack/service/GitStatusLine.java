@@ -105,6 +105,10 @@ import org.openide.windows.TopComponent;
     "GitStatusLine_verbUnavailable={0} unavailable ({1}) — use the Team menu",
     "GitStatusLine_noRepository=Git: no repository",
     "GitStatusLine_waitsForTrust=Git: waiting for a trusted workspace",
+    "# the notice when a repository nobody has trusted is opened (3.5.10); its click is the trust question",
+    "GitStatusLine_trustNoticeTitle=Git is waiting for a trusted workspace",
+    "# {0} = the repository folder's name",
+    "GitStatusLine_trustNoticeDetail=Nothing is run in {0} until it is trusted: no change count, no line author, and language servers that run its code stay off. Click to decide.",
     "GitStatusLine_chipTooltipWaiting=<html>git — {0}<br>changes are not counted until this workspace is trusted: git runs the programs a repository\u2019s configuration names<br>click for the menu</html>",
     "# {0} the branch; {1}, {2}, {3} the optional clauses below, each carrying its own leading separator",
     "GitStatusLine_a11yName=Git: branch {0}{1}{2}{3}",
@@ -178,6 +182,57 @@ public class GitStatusLine implements StatusLineElementProvider {
         });
     }
 
+    /**
+     * A repository nobody has trusted was just aimed: say so once, where it
+     * can be answered (3.5.10).
+     *
+     * <p>3.5.7 made git wait for Workspace Trust and left the question in the
+     * chip's menu, behind a tooltip. A person who opens their own repository
+     * for the first time sees a branch name with no count and no blame, and
+     * nothing on screen says the product is waiting for them. VS Code asks
+     * with a dialog when a folder is opened; a dialog on every open teaches
+     * the hand to press Trust, so this is a notification: it does not
+     * interrupt, it stays in the notifications list, and its click is the
+     * same question the Run button asks.
+     *
+     * <p>Once per repository per session ({@link TrustNotices}), and never
+     * in a documentation run, whose pictures show the product and not this
+     * machine's trust store. Nothing is spawned and nothing is read beyond
+     * what the chip already read to find the repository.
+     *
+     * @param out shows the notice for a repository root; the runnable is its click
+     * @param ask the trust question for a root
+     * @return whether a notice was shown
+     */
+    static boolean announceWaiting(GitChip chip, java.util.function.BiConsumer<File, Runnable> out,
+            java.util.function.Consumer<File> ask) {
+        File root = chip.repoRoot();
+        if (!chip.waitsForTrust() || root == null || System.getProperty("nmox.shots.dir") != null) {
+            return false;
+        }
+        if (!TrustNotices.firstFor(root)) {
+            return false;
+        }
+        java.util.logging.Logger.getLogger(GitStatusLine.class.getName()).info(
+                "git is waiting for Workspace Trust in " + root);
+        out.accept(root, () -> ask.accept(root));
+        return true;
+    }
+
+    /** The notification itself; the folder's name is not at the head of either string, so it paints as text. */
+    private static final java.util.function.BiConsumer<File, Runnable> NOTICE = (root, click) ->
+            javax.swing.SwingUtilities.invokeLater(() -> {
+                try {
+                    org.openide.awt.NotificationDisplayer.getDefault().notify(
+                            Bundle.GitStatusLine_trustNoticeTitle(),
+                            javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
+                            Bundle.GitStatusLine_trustNoticeDetail(root.getName()),
+                            e -> click.run());
+                } catch (RuntimeException | LinkageError ignored) {
+                    // notifications unavailable (tests, stripped platform): the chip's menu still asks
+                }
+            });
+
     /** Listens and polls only while it is actually in the status bar. */
     private static final class GitStrip extends javax.swing.JPanel {
 
@@ -221,6 +276,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         public void addNotify() {
             super.addNotify();
             RackService.getDefault().getRack().addListener(rackListener);
+            WorkspaceTrust.addGrantListener(onGrant);
             // pick up whatever is already aimed; GitChip's equality guard
             // makes the inevitable overlap with projectChanged events free
             onAim();
@@ -230,6 +286,7 @@ public class GitStatusLine implements StatusLineElementProvider {
         public void removeNotify() {
             poll.stop();
             RackService.getDefault().getRack().removeListener(rackListener);
+            WorkspaceTrust.removeGrantListener(onGrant);
             super.removeNotify();
         }
 
@@ -240,10 +297,17 @@ public class GitStatusLine implements StatusLineElementProvider {
                 boolean changed = chip.aim(dir);
                 publish();
                 if (changed) {
+                    announceWaiting(chip, NOTICE, GitStrip::askTrust);
                     refreshCount();
                 }
             });
         }
+
+        /** A grant, through any door: the count this chip was waiting to take. */
+        private final java.util.function.Consumer<File> onGrant = dir -> RP.post(() -> {
+            publish(); // the tooltip stops saying it waits
+            refreshCount();
+        });
 
         /** Timer ticks poll only while the IDE window is actually active. */
         private void tick() {
@@ -292,6 +356,16 @@ public class GitStatusLine implements StatusLineElementProvider {
             if (root != null && WorkspaceTrust.requestTrust(root)) {
                 RP.post(this::refreshCount);
             }
+        }
+
+        /**
+         * The notice's click: the question about the repository the notice
+         * NAMED, which need not be the one aimed by the time it is clicked.
+         * A yes reaches the chip, and everything else that waits, through
+         * the grant listeners.
+         */
+        private static void askTrust(File root) {
+            WorkspaceTrust.requestTrust(root);
         }
 
         /** Marshal the chip's current answer onto the EDT; arm/disarm the poll. */

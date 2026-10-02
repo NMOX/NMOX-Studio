@@ -131,7 +131,12 @@ The grammars are VS Code's; the engine is TM4E 0.14.1 over joni 2.2.6, as
 the platform ships it. 3.5.4 measured two differences over everything
 registered and gated both. What is recorded here is what was not fixed.
 
-- **TM4E's dependency walk is wrong upstream, and nothing was filed.**
+- **TM4E's dependency walk is wrong upstream.** Filed on 2026-10-02 as
+  [eclipse-tm4e/tm4e#1068](https://github.com/eclipse-tm4e/tm4e/issues/1068),
+  with a four-grammar reproduction; the code on their `main` read the same
+  that day. When a platform release carries the fix,
+  `GrammarDependenciesLoadGateTest.theHoleInLookalikeRules` fails and says
+  which loader rules can go.
   `ScopeDependencyProcessor$ExternalReferenceCollector.visitedRule` is a
   `HashSet<IRawRule>` and `RawRule` extends a `HashMap`, so rules are
   compared by content: a relative include (`#comments`, `$self`) in one
@@ -205,6 +210,22 @@ decline to start a server for a file that has no project, and that would
 take away the servers that do answer for a loose file (gopls does).
 Not decided.
 
+**Decided in 3.5.10: left.** Declining to start a server for a file in no
+project would take gopls and the other reading servers away from a lone
+file to quiet a log line, and these answers are real refusals: a server
+saying it does not serve this file.
+
+**One kind was not a refusal, and is fixed (3.5.10).** The protocol has three
+answers that mean a request was overtaken: `ContentModified`,
+`RequestCancelled`, `ServerCancelled`. The platform logged those at SEVERE
+too, with the red mark on the status line. Measured on a scratch Cargo
+project, inside a project and with nothing wrong: open a Rust file, press
+Run while rust-analyzer is loading, and `cargo run` writing `Cargo.lock`
+makes the server answer `content modified` to a request in flight. A
+filter on the logger `Exceptions` writes to drops exactly those three codes
+(`SilentServerErrors`); walked with the filter's note switched on, the
+same steps logged the note and no SEVERE.
+
 **Narrower since 3.5.6:** a server that runs project code no longer starts
 for a file in no project, so `file not found` from rust-analyzer is gone
 with it. gopls and the other reading servers still answer a lone file,
@@ -218,6 +239,10 @@ wrote it.
 
 Decided in 3.5.6 and written here so that each can be decided again.
 
+- **Changed in 3.5.10:** pyright is READS, by measurement (below); a grant
+  starts the servers for the files already open, so nothing has to be
+  reopened; and in a git repository the notice is the git chip's, once,
+  for both (ledger 135).
 - **A file in no project gets only the servers that read.** There is no
   folder to trust, the launch is not told which file it is for (the
   platform hands a provider the project and nothing else), and a server
@@ -228,12 +253,23 @@ Decided in 3.5.6 and written here so that each can be decided again.
   way TypeScript's was, by asking what the server would actually load
   for a file with no workspace; that needs each server measured, and none
   was.
-- **pyright is listed as RUNS** because it runs the interpreter of an
-  environment that `pyrightconfig.json` or `pyproject.toml` can name. A
-  Python project with neither waits for trust all the same. A predicate
-  like TypeScript's (`runsHere`) is the obvious refinement.
-- **One mechanism of forty-five was measured** (rust-analyzer and
-  `build.rs`). The rest are from each server's documentation and from how
+- ~~**pyright is listed as RUNS** because it runs the interpreter of an
+  environment that `pyrightconfig.json` or `pyproject.toml` can name.~~
+  **Measured in 3.5.10, and that reading was wrong.** A configuration file
+  names a venv for pyright to READ; the interpreter it runs is the one the
+  CLIENT names, or the user's own from `PATH`, on a script of pyright's own
+  that takes the working directory off the import path first. The
+  platform's client answers every configuration request with null.
+  `scripts/probes/pyright-trust/run.sh` builds four projects full of files
+  that write a marker if anything runs them (`sitecustomize.py`, a
+  `json.py`, `.venv/bin/python`, a `.pth`), with and without a
+  configuration and as a lone file: no marker. Its control names the
+  `.venv` interpreter the way only a client can, and the marker appears,
+  so the empty results are results. pyright 1.1.414, Python 3.10.4. A lone
+  Python script gets its server again. *The predicate this entry proposed
+  would have gated a server that needed no gate: measure before narrowing.*
+- **One mechanism of forty-four was measured** (rust-analyzer and
+  `build.rs`), and one server was measured out of the list (pyright). The rest are from each server's documentation and from how
   its language builds. A server listed as READS that in fact runs
   something is a hole this gate does not close: gopls and clangd are the
   two whose READS rests on an argument (cgo's flag allowlist, no
@@ -250,8 +286,18 @@ Decided in 3.5.6 and written here so that each can be decided again.
   untrusted project without the notification, because announcing a linter
   to a project that does not use it is noise, and the project's main
   server says it for the folder.
-- **After the click, the file has to be reopened.** The status line says
-  so. Nothing restarts the server for the editors already open.
+- ~~**After the click, the file has to be reopened.**~~ **Closed by
+  3.5.10.** The platform's client keeps a method that sends every open
+  editor to its servers again
+  (`TextDocumentSyncServerCapabilityHandler.refreshOpenedFilesInServers`,
+  which it calls when a server is connected by hand), and a provider that
+  returned no server is not counted as a failed start. `ServerTrust.granted`
+  calls it when a folder is trusted, whichever door the grant came through.
+  Walked: Rust file open in an untrusted project, trust granted at the Run
+  prompt, rust-analyzer running under the IDE thirty seconds later with the
+  file never reopened. The class is reached by name; a test fails the build
+  if a platform bump moves it, and at run time a miss falls back to the old
+  sentence.
 
 ### 135. Git and trust: what 3.5.7 gated and what it left (3.5.7)
 
@@ -269,12 +315,21 @@ Decided in 3.5.6 and written here so that each can be decided again.
   annotation was showing.
 - **A user's own repository waits too** until it is trusted once: the
   count, ahead and behind, and blame are absent in a repository opened
-  from disk and never run. The chip's menu is where to say yes. Whether
-  to ask at aim time instead, the way VS Code does when a folder is
-  opened, is a larger change and was not made.
-- **The menu row and the tooltip were not driven** in the walk (a popup
-  menu and a hover are out of reach of the tools available); both are
-  held by source gates.
+  from disk and never run. **Since 3.5.10 it says so when it is opened**:
+  one notification per repository per session, whose click is the trust
+  question for that repository. A notification and not VS Code's dialog,
+  decided: a dialog on every folder teaches the hand to press Trust. The
+  cost: it is shown again in each session for a repository deliberately
+  left untrusted, and at start-up when the last project was one.
+- **A grant reaches everything that waits** (3.5.10): `WorkspaceTrust`
+  tells its listeners, so trusting at the Run prompt gives the chip its
+  count at once, where it used to wait for the next poll.
+- **The menu row, the tooltip and the notification's click were not
+  driven** in the walks (a popup menu, a hover and a row of the
+  Notifications list are out of reach of the tools available). The 3.5.10
+  walk saw the notification in the list, and answered the same question
+  at the Run prompt; the click's handler is one line and is read, not
+  walked.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
