@@ -273,6 +273,43 @@ read afterwards. The same app walked clean on a Mac and each job passed
 when run again, so what hangs is not known (ledger 132). The walk script
 now stops itself and takes a thread dump first, so the next one will say.
 
+## After 3.5.4 shipped (3.5.5)
+
+**The hang, explained.** The staged walk of this branch stopped after nine
+pictures on the Windows runner, and on the next push on the Linux one, and
+the leash 3.5.4 added ended each at 900 seconds with a thread dump. The two
+dumps agree. Two threads, both RUNNABLE, each "waiting on the
+Class initialization monitor": the event thread inside
+`JFXPanel.addNotify` wanting `javafx.scene.Node`, the JavaFX thread inside
+`FxBrowserPanel.initFx` wanting `NodeHelper`. The two classes initialize
+each other, and the Browser began them from two threads. This is the hang
+the installed-boot check met on a macOS runner after 3.5.2 and 3.5.3
+(ledger 132), so all three systems have shown it, and it is what a person
+would meet as a frozen window on the first click of the Browser tab. Two
+reruns had "passed" it. *A hang that
+passes when run again is a race.*
+
+
+"A walk is true of the files it opened" was written under 3.5.4, and the
+walk it asks for had still not been taken. The learning catalogue is a
+corpus the product already ships: 187 sample files in seventy kinds. One of
+each was written to a scratch folder and opened in one launch
+(`nmoxstudio --open` takes a list), and the log and three windows were read.
+
+| Seen | Cause | Shipped |
+| --- | --- | --- |
+| 1,088 warning lines | joni's remarks on pattern style, one per compile, logged by TM4E; a C++ file compiles its grammar's patterns hundreds of times | That logger starts at SEVERE; an explicit level stands |
+| `hello.R` in one colour | Extensions match by case off Windows; only `r` was registered | `R`, and the capital spellings of Fortran and COBOL |
+| "Language server racket exited with 1", and Perl's five times | The interpreter is on PATH and the server package is not | The four interpreter-hosted servers ask first; only a definite no stops a launch |
+| Five SEVERE records from language servers | A server answers a folding request for a file in no project with an error; the platform's client logs it | Not changed (ledger 133) |
+
+| `Found same position 1,950` on opening an `.http` file | A language's editor menu is merged with the inherited one; one NMOX row in each sat at 1950 | A position of its own; the cluster census reads the merged view |
+
+No tokenizer exception in seventy files, nor in the twenty-three written
+for the grammars the catalogue does not cover. The gate that came out of
+it runs all of them through their grammars on every build, and asks for a
+sample of any grammar added later.
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -304,3 +341,8 @@ and seen to fail by name.
 | Included rules (3.5.4) | three mutants: an include of the grammar's own missing rule, of another grammar's, and a stub that matches something | `DanglingIncludesGateTest` |
 | Loaded grammars (3.5.4) | CoffeeScript's naming rule removed; Groovy's removed; the comparison blind to captures; the comparison taking look-alike rules for visited | `GrammarDependenciesLoadGateTest` (the last two lived until each hole had a fixture grammar of its own) |
 | Compiled patterns (3.5.4) | Elixir's look-behind as upstream wrote it; its bound one character shorter; one Svelte mode restored; `begin` patterns not compiled; back-references compiled raw | `GrammarRegexesCompileGateTest` (the fourth lived until the gate was given a grammar with a bad pattern under each key) |
+| Engine remarks (3.5.5) | the level never set; an explicit level overwritten; the logger a local; not run at start | `EngineNoticesTest` |
+| Shipped samples (3.5.5) | a throwing grammar not reported; Elixir's pattern as 3.5.3 shipped it; Fortran's capitals unregistered; the Zig sample removed (one Svelte pattern restored does NOT fail, and the test says why) | `ShippedSamplesTokenizeGateTest` |
+| The inherited popup (3.5.5) | API Studio's row back at 1950 | `LayerPositionCensusTest`, failing before the move |
+| Hosted servers (3.5.5) | a probe out of time is a no; no interpreter is a no; a package seen is asked for again; Perl does not ask; a no is not believed | `HostedServerProbeTest` |
+| The Browser's class order (3.5.5) | not ordered; ordered after the engine is queued; loaded and not initialized; a runtime without JavaFX throws | `FxClassOrderTest` (its control leaves two threads deadlocked on fixture classes, on purpose) |

@@ -153,6 +153,10 @@ public final class FxBrowserPanel extends JPanel {
         devTools.setVisible(false);
         add(split, BorderLayout.CENTER);
 
+        // before anything is queued on the JavaFX thread: Node and NodeHelper
+        // initialize each other, and begun from two threads at once they
+        // deadlock with the event thread as one of the two (FxClassOrder)
+        FxClassOrder.nodeFirst();
         Platform.runLater(this::initFx);
     }
 

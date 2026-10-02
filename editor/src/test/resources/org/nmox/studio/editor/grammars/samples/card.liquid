@@ -1,0 +1,12 @@
+{% assign featured = product.tags contains "featured" %}
+<article class="card{% if featured %} card--featured{% endif %}">
+  <h2>{{ product.title | upcase }}</h2>
+  {% comment %} a comment {% endcomment %}
+  <ul>
+    {% for tag in product.tags limit: 3 %}
+      <li>{{ tag }}</li>
+    {% else %}
+      <li>no tags</li>
+    {% endfor %}
+  </ul>
+</article>

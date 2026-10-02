@@ -148,16 +148,20 @@ registered and gated both. What is recorded here is what was not fixed.
   of indentation. `await` and `using` must be one character apart. Haxe's
   fallback return-type rule is off. A formatter writes none of the shapes
   that lose.
-- **joni's notices.** Compiling every registered pattern logs 86 notices
+- **joni's notices.** Compiling every registered pattern logs 86 remarks
   that are not failures: an unescaped `]` or `-` in a character class, a
   nested repeat joni simplifies (`(?:\s+)?` in C++, 25 times), `\N` and
-  `\R` in Less. A session logs the ones whose rules it compiles. Each
-  pattern means what its author meant; escaping them is 86 edits to
-  vendored files for a quieter log.
-- **Only registered grammars are measured, with one line each.** The gate
-  that tokenizes compiles the rules reachable from a grammar's first
-  scanner. A pattern joni accepts and matches differently from Oniguruma
-  would pass every gate here.
+  `\R` in Less. A session logged one per compile, 1,088 lines for one C++
+  file. **3.5.5** starts that logger at SEVERE (`EngineNotices`); the
+  patterns are unchanged, and
+  `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
+  brings the remarks back for someone bumping a grammar.
+- **What is tokenized is one line per grammar and a sample of each.** 3.5.5
+  runs 210 files (the learning catalogue's 187 and 23 written for the
+  purpose) through all 76 grammars a file's extension can reach. A pattern
+  joni accepts and matches differently from Oniguruma passes every gate
+  here unless a sample shows it; the samples are small, and the embed-only
+  grammars are compiled, not run.
 
 ### 131. A test of the real preferences store failed once (3.5.3)
 
@@ -168,20 +172,42 @@ and on the rerun. The test writes `NbPreferences.root().node("nmox/ui")`,
 whose flush is asynchronous. Not reproduced, not fixed; if it fails again
 the controller needs a preferences seam and the test its own node.
 
-### 132. What hangs the installed app on a macOS runner is not known (3.5.4)
+### 132. ~~What hangs the installed app on a macOS runner is not known~~ — CLOSED by 3.5.5
 
-The `Installed boot` job hung on the macOS runner for 3.5.2 and again for
-3.5.3: the walk of the installed app stopped (for 3.5.2, with the Browser
-tab in front) and ran until the job was cancelled or timed out, with
-nothing to read. Both times the Windows and Linux jobs passed, the same
-job passed when run again, and the published app walked clean on a Mac
-(47 s, 13 pictures). Twice in two releases on the first run is not an
-accident, and the runners are not all one machine: a guess is JavaFX
-starting on a runner whose graphics differ, and it is only a guess.
-`platform-walk.sh` had no leash on a machine without `timeout(1)`; from
-3.5.4 it stops itself and takes a thread dump of the Java process first,
-so the next hang carries its own evidence. Read that dump before anything
-else is tried.
+**Closed.** The third and fourth hangs, on a Windows and a Linux runner an
+hour after 3.5.4 gave the walk a leash and a thread dump, carried the
+answer: a class-initialization
+deadlock between the event thread (`JFXPanel.addNotify`, which begins with
+`NodeHelper`) and the JavaFX thread (`FxBrowserPanel.initFx`, which begins
+with `javafx.scene.Node`). The two classes initialize each other. On the
+bundled runtime the pair deadlocks in 40 of 40 fresh JVMs when begun from
+two threads at once and in none when Node is initialized first, which is
+what `FxClassOrder.nodeFirst()` now does before the Browser queues
+anything. The entry's guess, "a runner whose graphics differ", was wrong;
+it was written as a guess.
+
+What stays true: the installed-boot job for 3.5.2 and 3.5.3 was green on
+its rerun both times, and a green rerun of a hang proved nothing.
+
+### 133. A language server's error for a file in no project is logged SEVERE (3.5.5)
+
+Seen in the seventy-file walk, with the servers this machine happens to
+have: `file not found` (rust-analyzer, for a `.rs` beside no `Cargo.toml`),
+`trying to compute folding ranges for non-added document`, `No language
+service for 'file:///…'`, each thrown out of the platform's
+`FoldManagerImpl` through `Utils.handleBindings` to
+`Exceptions.printStackTrace`, and one `UnsupportedOperationException` from
+`LanguageClient.registerCapability` (ledger 45). The files were loose
+samples in a scratch folder; inside a project of their kind the same files
+are served. A person who opens a single source file from a download folder
+gets the same. The catch is the platform's. What this product could do is
+decline to start a server for a file that has no project, and that would
+take away the servers that do answer for a loose file (gopls does).
+Not decided.
+
+Also seen and left: R and Julia take the 3.5.5 probe on the strength of
+their documented exit codes, with neither installed on the machine that
+wrote it.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 

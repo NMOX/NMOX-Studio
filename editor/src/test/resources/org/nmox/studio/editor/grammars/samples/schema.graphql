@@ -1,0 +1,22 @@
+"""A person who writes."""
+type Author {
+  id: ID!
+  name: String!
+  books(first: Int = 10): [Book!]!
+}
+
+type Book {
+  title: String!
+  author: Author!
+}
+
+type Query {
+  author(id: ID!): Author
+}
+
+query AuthorBooks($id: ID!) {
+  author(id: $id) {
+    name
+    books(first: 3) { title }
+  }
+}

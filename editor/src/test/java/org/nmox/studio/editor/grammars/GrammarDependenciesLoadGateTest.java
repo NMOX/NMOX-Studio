@@ -226,6 +226,19 @@ class GrammarDependenciesLoadGateTest {
         });
     }
 
+    /** Loads a grammar of the set by scope, the way the platform does; shared with the gates beside this one. */
+    static java.util.function.Function<String, IGrammar> loader(Registered set) {
+        Registry registry = registry(set, new HashSet<>());
+        return registry::loadGrammar;
+    }
+
+    /** A set made of fixture grammars under this package's test resources: scope to file name. */
+    static Registered fixtures(Map<String, String> files) {
+        Map<String, String> resources = new TreeMap<>();
+        files.forEach((scope, file) -> resources.put(scope, "/org/nmox/studio/editor/grammars/" + file));
+        return new Registered(resources, Map.of());
+    }
+
     /** The scopes the engine asks its registry for when {@code top} is loaded the way the platform loads it. */
     static Set<String> loads(String top, Registered set) {
         Set<String> asked = new HashSet<>();

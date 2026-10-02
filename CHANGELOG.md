@@ -4,6 +4,93 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.5] - 2026-10-02
+
+**The window could freeze, for good, the first time the Browser tab was
+shown.** The check that walks an installed release had hung twice on a
+macOS runner with nothing to read. 3.5.4 gave the walk a leash that takes a
+thread dump first; the next two hangs, on a Windows and a Linux runner an
+hour later, carried it. The rest of this release came from opening one file
+of every kind the product has a grammar for, which no walk had done.
+
+### Fixed
+
+- **A deadlock between the event thread and the JavaFX thread when the
+  Browser is first built.** `javafx.scene.Node` and its helper class
+  initialize each other. The Browser queued its engine's construction on the
+  JavaFX thread, which begins with one of them, and went on to add itself to
+  the window on the event thread, which begins with the other. When the two
+  met, each held one class and waited for the other, and the event thread
+  never came back: no repaint, no menu, no way out but to kill the process.
+  It depended on timing, which is why it showed on some launches of some
+  machines; the Browser is one of the three tabs of a first launch. Begun
+  from two threads at once, the real pair deadlocks in 40 of 40 fresh JVMs
+  on the bundled runtime; with the fix's order, in none. The Browser now
+  initializes both on the event thread before it queues anything
+  (`ui.browser.fx.FxClassOrder`).
+- **The R learning space's own `hello.R` opened as plain text.** The
+  platform matches a file's extension by case on macOS and Linux, R's
+  convention is the capital, and only `r` was registered. `R` is registered
+  now, with the capital spellings Fortran uses for sources that go through
+  the preprocessor (`F90`, `F95`, `F03`, `F08`) and the ones COBOL sources
+  from a mainframe arrive with (`COB`, `CBL`, `CPY`).
+- **Opening a C++ file wrote 1,088 warnings to the log.** The regex engine
+  remarks on the style of a pattern it compiles (an unescaped `]`, a nested
+  repeat it simplifies), TM4E logs each remark as a warning, and a grammar's
+  patterns are compiled again for every rule that reaches them. None is a
+  failure and none is anything a person can act on, and the log they buried
+  is the one Report a Problem attaches. That logger now starts at SEVERE; a
+  pattern the engine refuses is thrown, not logged, and the build compiles
+  every pattern. Seventy files of seventy kinds now open with four warning
+  lines, none of them the text engine's. Start the IDE with
+  `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
+  to read the remarks when bumping a grammar.
+- **A language server that is a package inside an interpreter was started
+  whether or not the package was there.** With Racket installed and
+  `racket-langserver` not, or Perl without `Perl::LanguageServer`, the
+  "server" started, printed that it could not find its package and exited;
+  the client failed its handshake on a closed stream and tried again for
+  the next feature that asked, five times for one Perl file, and the
+  notification that says what to install never appeared because the launch
+  had succeeded. Racket, Perl, R and Julia now ask the interpreter whether
+  the package is there first. Only a definite no stops the launch: no
+  interpreter, or a probe still running after six seconds, starts the
+  server as before. Racket and Perl were walked on a machine in that state;
+  R and Julia follow the same rule and were not, there being neither here.
+
+- **Opening an `.http` file logged an ordering warning.** A language's
+  editor menu is its own rows merged with the rows every language
+  inherits, and API Studio's row in the first sat at the position Ask
+  KVASIR has in the second. It has a position of its own now.
+
+### Added
+
+- `FxClassOrderTest` reproduces the deadlock on a pair of fixture classes
+  that initialize each other, as a control, and shows the same two threads
+  finishing once one thread has initialized the pair first.
+- `ShippedSamplesTokenizeGateTest`: each of the catalogue's 187 sample
+  files is run whole through the grammar its extension is bound to, in the
+  real engine, with the bindings read from the layer the editor module
+  generates. Twenty-three small real files cover the grammars the catalogue
+  does not, so all seventy-six grammars a file's extension can reach have
+  code run through them on every build, and a grammar added without a
+  sample fails until one is written. A grammar that throws or cannot finish
+  a line fails with the file and the line, and so does a sample whose
+  extension is registered only in another case.
+- `LayerPositionCensusTest` reads each language's editor menu together with
+  the inherited one, across every module in the assembled product.
+
+### Measured
+
+Restoring Elixir's pattern as 3.5.3 shipped it fails the new gate on line 1
+of `hello.exs`. Restoring one of Svelte's does not, because no sample has an
+`{#if}` block: a sample exercises the rules its text needs, and the gate
+that compiles every pattern is the one that reads the rest. Eighteen
+mutants, each killed by name.
+
+Not fixed: with language servers installed, opening a source file that
+belongs to no project logs the server's error answer as SEVERE (ledger 133).
+
 ## [3.5.4] - 2026-10-02
 
 **An Elixir file opened as an empty tab.** No text, no editor toolbar: the
@@ -25154,6 +25241,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.5]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.4...v3.5.5
 [3.5.4]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.3...v3.5.4
 [3.5.3]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.2...v3.5.3
 [3.5.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.1...v3.5.2
