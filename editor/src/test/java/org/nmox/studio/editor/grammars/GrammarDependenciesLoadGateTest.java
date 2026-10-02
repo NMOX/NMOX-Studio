@@ -234,7 +234,7 @@ class GrammarDependenciesLoadGateTest {
     }
 
     /** Each line's tokens as "text → scopes", the state carried from line to line. */
-    private static List<String> tokenize(Registered set, String top, String... lines) {
+    static List<String> tokenize(Registered set, String top, String... lines) {
         IGrammar grammar = registry(set, new HashSet<>()).loadGrammar(top);
         List<String> out = new ArrayList<>();
         IStateStack state = null;
@@ -371,11 +371,7 @@ class GrammarDependenciesLoadGateTest {
             for (String top : set.resources().keySet()) {
                 reported.clear();
                 // one line is enough: the first tokenized line compiles every rule the grammar reaches
-                try {
-                    tokenize(set, top, "x");
-                } catch (RuntimeException e) {
-                    System.out.println("THROWS " + top + " : " + e.getMessage());
-                }
+                tokenize(set, top, "x");
                 for (String line : reported) {
                     int at = line.indexOf("CANNOT find grammar for scopeName [");
                     if (at < 0) {

@@ -2439,7 +2439,7 @@
      }
     },
     {
-     "begin": "(?<=((^|foreign|import|export|ccall|cplusplus|dotnet|jvm|stdcall|prim|capi|safe|unsafe|interruptible)\\s*))((?=\")|(?=\\b(?<!')([\\p{Ll}_\\p{Lm}\\p{Lo}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nd}']*)\\b(?!')))",
+     "begin": "(?<=^|^\\s{1}|^\\s{2}|^\\s{3}|^\\s{4}|^\\s{5}|^\\s{6}|^\\s{7}|^\\s{8}|foreign|foreign\\s|foreign\\s{2}|import|import\\s|import\\s{2}|export|export\\s|export\\s{2}|ccall|ccall\\s|ccall\\s{2}|cplusplus|cplusplus\\s|cplusplus\\s{2}|dotnet|dotnet\\s|dotnet\\s{2}|jvm|jvm\\s|jvm\\s{2}|stdcall|stdcall\\s|stdcall\\s{2}|prim|prim\\s|prim\\s{2}|capi|capi\\s|capi\\s{2}|safe|safe\\s|safe\\s{2}|unsafe|unsafe\\s|unsafe\\s{2}|interruptible|interruptible\\s|interruptible\\s{2})((?=\")|(?=\\b(?<!')([\\p{Ll}_\\p{Lm}\\p{Lo}][\\p{Ll}_\\p{Lu}\\p{Lt}\\p{Lm}\\p{Lo}\\p{Nd}']*)\\b(?!')))",
      "end": "(?=(::|\u2237)(?![\\p{S}\\p{P}&&[^(),;\\[\\]`{}_\"']]))",
      "patterns": [
       {

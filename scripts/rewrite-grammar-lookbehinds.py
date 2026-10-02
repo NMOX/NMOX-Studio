@@ -62,6 +62,15 @@ REWRITES = {
         ("(?<=(let|class|style):).*$", "(?<=let:|class:|style:).*$"),
     ],
 }
+# Haskell's FFI name: after a keyword and up to two characters of whitespace,
+# or at the start of a line indented by up to eight
+FFI_WORDS = ("foreign|import|export|ccall|cplusplus|dotnet|jvm|stdcall|prim|capi|"
+             "safe|unsafe|interruptible").split("|")
+REWRITES["haskell.tmLanguage.json"] = [
+    ("(?<=((^|" + "|".join(FFI_WORDS) + ")\\s*))",
+     "(?<=" + "|".join(["^"] + ["^\\s{%d}" % n for n in range(1, 9)]
+                       + [w + s for w in FFI_WORDS for s in ("", "\\s", "\\s{2}")]) + ")"),
+]
 # `await using`: one whitespace character between the words, as it is written
 USING = ("^await\\s+using|[^\\._$[:alnum:]]await\\s+using)",
          "^await\\susing|[^\\._$[:alnum:]]await\\susing)")
