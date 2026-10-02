@@ -61,6 +61,12 @@ if [ -n "${JAVA_HOME:-}" ]; then
   set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
 
+# netbeans.keyring.no.master (below): a Linux runner has no Secret Service,
+# so the platform's keyring falls back to asking for a master password, and
+# its dialog was photographed where the learning-space picker should have
+# been (the third walk). The walk photographs the product's windows; with
+# the fallback off the keyring is an in-memory one for the run. A machine
+# with a real keyring never reaches the fallback and is unaffected.
 echo "platform-walk: $OS, launcher $LAUNCHER"
 START=$(date +%s)
 # timeout(1) is GNU: a stock Mac has none, Homebrew's is gtimeout. With
@@ -79,6 +85,7 @@ fi
   -J-Dnmox.shots.scale="$SCALE" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dnmox.update.check=false \
+  -J-Dnetbeans.keyring.no.master=true \
   > "$OUT_ABS/launcher-output.txt" 2>&1
 RC=$?
 END=$(date +%s)
