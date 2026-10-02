@@ -62,6 +62,13 @@ jobs:
         shell: bash
         run: scripts/platform-walk.sh walk-out
 
+      # The CI lane's own boot gate, run here as well so a walk branch shows
+      # whether it passes on Windows before a pull request has to find out.
+      - name: Boot smoke test (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: ./scripts/boot-smoke-test.sh
+
       - name: Upload the walk
         if: always()
         uses: actions/upload-artifact@v7
