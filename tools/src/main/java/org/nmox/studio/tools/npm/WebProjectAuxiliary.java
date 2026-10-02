@@ -129,7 +129,14 @@ final class WebProjectAuxiliary implements AuxiliaryConfiguration {
 
     /** The fragment as text, without a declaration, as the platform's fallback writes it. */
     static String serialize(Element fragment) {
-        Document doc = builder().newDocument();
+        Document doc;
+        try {
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            doc = factory.newDocumentBuilder().newDocument(); // nothing is parsed here
+        } catch (ParserConfigurationException ex) {
+            throw new IllegalStateException(ex);
+        }
         doc.appendChild(doc.importNode(fragment, true));
         DOMImplementationLS ls = (DOMImplementationLS) doc.getImplementation().getFeature("LS", "3.0");
         LSSerializer serializer = ls.createLSSerializer();
@@ -137,20 +144,13 @@ final class WebProjectAuxiliary implements AuxiliaryConfiguration {
         return serializer.writeToString(doc);
     }
 
-    /** The stored text as an element, or null when it is not one; nothing outside the text is ever fetched. */
+    /**
+     * The stored text as an element, or null when it is not one. Nothing
+     * outside the text is ever fetched: no DOCTYPE, no external entity. The
+     * factory is configured in this method and not a helper because the
+     * build's XXE check reads one method at a time.
+     */
     static Element parse(String text) {
-        try {
-            DocumentBuilder builder = builder();
-            builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
-            builder.setErrorHandler(null);
-            return builder.parse(new InputSource(new StringReader(text))).getDocumentElement();
-        } catch (SAXException | IOException ex) {
-            LOG.log(Level.FINE, "a stored fragment did not parse", ex);
-            return null;
-        }
-    }
-
-    private static DocumentBuilder builder() {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -160,9 +160,13 @@ final class WebProjectAuxiliary implements AuxiliaryConfiguration {
             factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
             factory.setXIncludeAware(false);
             factory.setExpandEntityReferences(false);
-            return factory.newDocumentBuilder();
-        } catch (ParserConfigurationException ex) {
-            throw new IllegalStateException(ex);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setEntityResolver((publicId, systemId) -> new InputSource(new StringReader("")));
+            builder.setErrorHandler(null);
+            return builder.parse(new InputSource(new StringReader(text))).getDocumentElement();
+        } catch (SAXException | IOException | ParserConfigurationException ex) {
+            LOG.log(Level.FINE, "a stored fragment did not parse", ex);
+            return null;
         }
     }
 }
