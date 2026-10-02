@@ -27,7 +27,7 @@ opened one of each in the built product and read the window and the log.
   is the one Report a Problem attaches. That logger now starts at SEVERE; a
   pattern the engine refuses is thrown, not logged, and the build compiles
   every pattern. Seventy files of seventy kinds now open with four warning
-  lines, all the platform's. Start the IDE with
+  lines, none of them the text engine's. Start the IDE with
   `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
   to read the remarks when bumping a grammar.
 - **A language server that is a package inside an interpreter was started
