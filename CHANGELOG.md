@@ -4,6 +4,72 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.6] - 2026-10-02
+
+**Opening a file ran the project's code.** The editor starts a language
+server when a file is opened, and most language servers do more than read
+what they analyse. Found by reviewing 3.5.5, which made R's server start
+for `.R` files: R starts in the project directory and sources its
+`.Rprofile`. The question that followed was which of the others do the
+same.
+
+### Fixed
+
+- **A language server that runs a project's code now waits until the
+  project is trusted.** Measured first, in 3.5.5: a scratch Cargo project
+  whose `build.rs` writes a marker file, in a folder nobody had trusted.
+  Opening `src/main.rs` started rust-analyzer, rust-analyzer built the
+  project, and the marker was there within a minute, with no question
+  asked. The product's law is that nothing a project controls runs before
+  the project is trusted; it had been applied to a server binary inside a
+  project (v1.102.0) and to two servers whose configuration is code
+  (v1.216.0), and not to servers that build, expand macros or load plugins
+  to do their work. Every server the editor can launch, sixty-three of
+  them, is now written down as one that RUNS the project's code (forty-five,
+  each with the mechanism: `build.rs`, `mix.exs`, `perl -c`, `.Rprofile`,
+  `svelte.config.js`, Template Haskell, a Gradle import), one that only
+  READS (fifteen: JSON, HTML, CSS, YAML, TOML, Dockerfile, shell, Go, C and
+  C++ among them), or one HELD because nobody has established that it runs
+  nothing (three). A server that is not written down is held. The decision
+  is made in the one method every server is launched by, before the command
+  is resolved.
+- **TypeScript's server waits only where the folder brings its own
+  TypeScript.** typescript-language-server loads `node_modules/typescript`
+  from the workspace when there is one, and otherwise the user's own. A
+  clone before `npm install` keeps its TypeScript and JavaScript
+  intelligence; a folder that arrives with a `node_modules` waits.
+- **The refusal speaks, once per project, and the click is the question.**
+  "Rust intelligence is waiting for a trusted workspace", with what the
+  server would run; clicking it opens the Workspace Trust prompt, and
+  afterwards the status line says to reopen the file. Angular's and Vue's
+  servers, which had waited for trust silently since v1.216.0 and v2.14.0,
+  say so through the same notification. A server waiting for trust is no
+  longer reported as missing with an install command. In fifteen
+  languages.
+
+### Changed
+
+- **A lone file that belongs to no project gets only the servers that
+  read.** There is no project to trust, and a server that runs code would
+  run the file's own (a Perl `BEGIN` block, a Racket macro) or whatever
+  configuration sits above it. A Python script in a folder with no project
+  file gets no language server from this release on; one beside a
+  `pyproject.toml`, `requirements.txt` or `setup.py` is a project and
+  asks for trust once. Projects created here, experiments and learning
+  spaces were already trusted and are unaffected.
+
+### Measured
+
+The same scratch project in the 3.5.6 build: no marker file, no
+rust-analyzer process, the notification in the list. With the folder
+trusted: the server starts and the marker is written. The notification's
+click was not driven, because nothing available here can press a row of
+that list; its handler is the trust prompt and one status message. Of the
+forty-five mechanisms, one was measured (rust-analyzer) and the rest are
+each server's documented way of working. Eleven mutants, each killed by
+name; one lived until a server that only reads was asked for by a resolved
+path.
+
 ## [3.5.5] - 2026-10-02
 
 **The window could freeze, for good, the first time the Browser tab was
@@ -25241,6 +25307,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.6]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.5...v3.5.6
 [3.5.5]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.4...v3.5.5
 [3.5.4]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.3...v3.5.4
 [3.5.3]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.2...v3.5.3

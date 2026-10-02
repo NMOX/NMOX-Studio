@@ -2156,6 +2156,19 @@ six are done, or when you press **Hide this list**.
   so if the typescript the language server finds is 7, the editor says
   so once and offers `npm install -g typescript@5` — the install the
   IDE runs for you pins 5 for the same reason.
+- **"… intelligence is waiting for a trusted workspace"**: most language
+  servers do more than read. rust-analyzer builds the project, and a build
+  runs its `build.rs`; R sources the project's `.Rprofile`; a Perl server
+  checks syntax by running `perl -c`. So in a folder you have not trusted,
+  a server of that kind does not start when you open a file. The
+  notification says which one, and clicking it asks the Workspace Trust
+  question; answer **Trust Workspace**, reopen the file, and the server
+  starts. Projects you created here, experiments and learning spaces are
+  trusted from the start. Servers that only read (JSON, HTML, CSS, YAML,
+  shell, Go, C and C++) start anywhere, and so does TypeScript and
+  JavaScript intelligence unless the folder brings its own TypeScript in
+  `node_modules`. A lone file that belongs to no project gets only the
+  servers that read.
 - **Port already in use**: the error names the process squatting on it
   (SONAR will kill it).
 - **A device's GO does nothing**: check its LCD — devices explain

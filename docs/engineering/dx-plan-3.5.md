@@ -310,6 +310,30 @@ for the grammars the catalogue does not cover. The gate that came out of
 it runs all of them through their grammars on every build, and asks for a
 sample of any grammar added later.
 
+## After 3.5.5 shipped (3.5.6)
+
+The review of 3.5.5 asked what registering `.R` had switched on. It had
+switched on R's language server for those files, and R, started in a
+project's directory, sources that project's `.Rprofile`. The trust law was
+in the launch path for a server binary inside the project and for two
+servers whose configuration is a program. It was not there for a server
+that runs the project in order to analyse it, which is most of them.
+
+A scratch Cargo project with a `build.rs` that writes a file settled
+whether this was a reading of documentation or a fact: opened in an
+untrusted folder in the 3.5.5 build, the file was written. The fix is one
+question in the one method that launches a server, and a table that says,
+for each of sixty-three binaries, whether it runs the project's code and
+how. The table is the part that needed care. One mechanism in it was
+measured; the others are what each server's own documentation says it
+does; three could not be established either way and are held. A wrong
+READS leaves the hole open for that server, and a wrong RUNS costs one
+click, so doubt goes to RUNS.
+
+Two decisions were made that cost something, and both are in the ledger
+(134): a file in no project gets only the servers that read, and
+TypeScript's server is decided by what it would load, not by its name.
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -346,3 +370,4 @@ and seen to fail by name.
 | The inherited popup (3.5.5) | API Studio's row back at 1950 | `LayerPositionCensusTest`, failing before the move |
 | Hosted servers (3.5.5) | a probe out of time is a no; no interpreter is a no; a package seen is asked for again; Perl does not ask; a no is not believed | `HostedServerProbeTest` |
 | The Browser's class order (3.5.5) | not ordered; ordered after the engine is queued; loaded and not initialized; a runtime without JavaFX throws | `FxClassOrderTest` (its control leaves two threads deadlocked on fixture classes, on purpose) |
+| Server trust (3.5.6) | the launch does not ask; an unlisted server only reads; trust not asked; a file in no project starts anything; TypeScript always waits; TypeScript never waits; a waiting server reported missing; rust-analyzer unlisted; a refusal not remembered for the caller; a resolved path not known by its name | `ServerTrustLedgerTest` (the last lived until a reading server was asked for by a path) |

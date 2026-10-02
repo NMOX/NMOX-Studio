@@ -205,9 +205,53 @@ decline to start a server for a file that has no project, and that would
 take away the servers that do answer for a loose file (gopls does).
 Not decided.
 
+**Narrower since 3.5.6:** a server that runs project code no longer starts
+for a file in no project, so `file not found` from rust-analyzer is gone
+with it. gopls and the other reading servers still answer a lone file,
+and their errors are still logged this way.
+
 Also seen and left: R and Julia take the 3.5.5 probe on the strength of
 their documented exit codes, with neither installed on the machine that
 wrote it.
+
+### 134. What the language-server trust gate costs, and what it rests on (3.5.6)
+
+Decided in 3.5.6 and written here so that each can be decided again.
+
+- **A file in no project gets only the servers that read.** There is no
+  folder to trust, the launch is not told which file it is for (the
+  platform hands a provider the project and nothing else), and a server
+  that runs code would run the file's own compile-time code or whatever
+  configuration it finds above the file. So a lone Python script gets no
+  pyright, a lone Ruby script no ruby-lsp. This is the v1.234.0 decision
+  for ESLint, made for everything. It could be narrowed per server the
+  way TypeScript's was, by asking what the server would actually load
+  for a file with no workspace; that needs each server measured, and none
+  was.
+- **pyright is listed as RUNS** because it runs the interpreter of an
+  environment that `pyrightconfig.json` or `pyproject.toml` can name. A
+  Python project with neither waits for trust all the same. A predicate
+  like TypeScript's (`runsHere`) is the obvious refinement.
+- **One mechanism of forty-five was measured** (rust-analyzer and
+  `build.rs`). The rest are from each server's documentation and from how
+  its language builds. A server listed as READS that in fact runs
+  something is a hole this gate does not close: gopls and clangd are the
+  two whose READS rests on an argument (cgo's flag allowlist, no
+  `--query-driver`) and not on a measurement.
+- **Three are HELD** (gleam, serve-d, prisma-language-server) and wait for
+  trust like the ones that run. Establishing any of them as READS frees
+  it.
+- **The notification's click was not driven.** The untrusted and trusted
+  states were both walked; the row in the Notifications list that opens
+  the prompt cannot be pressed by the tools available, and its handler
+  (`ServerTrust.ask`: the prompt, then one status message) is read, not
+  walked.
+- **ESLint's and stylelint's own gates stay silent.** They decline for an
+  untrusted project without the notification, because announcing a linter
+  to a project that does not use it is noise, and the project's main
+  server says it for the folder.
+- **After the click, the file has to be reopened.** The status line says
+  so. Nothing restarts the server for the editors already open.
 
 ## Open — added by 3.4.0 (the second developer, things going wrong, no mouse)
 
