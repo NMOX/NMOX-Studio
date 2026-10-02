@@ -37,6 +37,12 @@ case "$(uname -s)" in
     native() { printf '%s' "$1"; }
     ;;
 esac
+# Paint at the scale the screen has. The forge's 2x is faithful only where
+# glyph widths scale exactly (macOS); on Windows and Linux text is hinted, and
+# a 2x paint over a 1x layout cuts the last letter off every label — a defect
+# of the picture, which the first walk here took for one of the product.
+SCALE="${NMOX_WALK_SCALE:-1}"
+[ "$OS" = darwin ] && SCALE="${NMOX_WALK_SCALE:-2}"
 [ -x "$LAUNCHER" ] || [ -f "$LAUNCHER" ] || { echo "platform-walk: no launcher at $LAUNCHER — build the app first"; exit 2; }
 
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/nmox-walk.XXXXXX")"
@@ -55,6 +61,7 @@ timeout --kill-after=30 "$TIMEOUT" \
   "$LAUNCHER" --nosplash "$@" \
   --userdir "$(native "$UD")" --cachedir "$(native "$CD")" \
   -J-Dnmox.shots.dir="$(native "$OUT_ABS")" \
+  -J-Dnmox.shots.scale="$SCALE" \
   -J-Dplugin.manager.check.updates=false \
   -J-Dnmox.update.check=false \
   > "$OUT_ABS/launcher-output.txt" 2>&1
@@ -69,7 +76,7 @@ SHOTS=$(find "$OUT_ABS" -name '*.png' | wc -l | tr -d ' ')
   echo "launcher: $LAUNCHER"
   echo "exit code: $RC (124 = the walk's own timeout)"
   echo "seconds: $((END - START))"
-  echo "pictures: $SHOTS"
+  echo "pictures: $SHOTS (painted at ${SCALE}x)"
   if [ -f "$LOG" ]; then
     echo "SEVERE lines: $(grep -c 'SEVERE' "$LOG")"
     echo "WARNING lines: $(grep -c 'WARNING' "$LOG")"

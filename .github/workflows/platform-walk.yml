@@ -48,6 +48,15 @@ jobs:
         if: runner.os == 'Linux'
         run: xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out
 
+      # the runner's desktop starts at 1024x768, smaller than any screen
+      # the product is used on; a walk of that is a walk of the wrong thing
+      - name: Give the Windows desktop a real screen size
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Set-DisplayResolution -Width 1920 -Height 1080 -Force
+          Get-DisplayResolution
+
       - name: Walk (Windows)
         if: runner.os == 'Windows'
         shell: bash

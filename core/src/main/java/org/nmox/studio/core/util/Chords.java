@@ -82,4 +82,97 @@ public final class Chords {
         parts.add(keyText);
         return String.join("+", parts);
     }
+
+    /** {@link #forOs} for the machine this is running on. */
+    public static String forThisOs(String text) {
+        return forOs(text, org.openide.util.BaseUtilities.isMac());
+    }
+
+    /**
+     * A sentence that names its chords the way a Mac writes them, read on
+     * {@code mac ? this : any other} keyboard: {@code ⌥⌘K} becomes
+     * {@code Ctrl+Alt+K}, {@code ⌘-click} becomes {@code Ctrl-click}, and a
+     * modifier named on its own becomes its name.
+     *
+     * <p>The product's strings are written once, in fifteen languages, in
+     * the Mac notation — compact, and the one the chord vocabulary above
+     * already speaks. Every walk before 3.5 was taken on a Mac, so nobody
+     * saw that the Welcome told a Windows user to press ⌥⌘7 on a keyboard
+     * that has neither key. The first Windows and Linux walks photographed
+     * it. The strings stay as written; whoever shows one passes it through
+     * here, and {@code MacChordsReachOnlyMacsGateTest} holds every consumer
+     * to that.
+     *
+     * <p>The mapping is the notation law read backwards: ⌘ is the default
+     * modifier (Ctrl elsewhere), ⌥ is Alt, ⇧ is Shift. ⌃ alone is Ctrl on
+     * every keyboard; ⌃ beside ⌘ is the platform's other modifier, which is
+     * Alt off a Mac, so {@code ⌃⌘G} reads {@code Ctrl+Alt+G}.
+     * What follows the run decides its shape: a hyphen keeps the hyphen
+     * ({@code Ctrl-click}); sentence punctuation, a space or the end leaves
+     * a bare modifier name; anything else is the key ({@code Ctrl+Z}).
+     */
+    public static String forOs(String text, boolean mac) {
+        if (mac || text == null || !hasMacGlyph(text)) {
+            return text;
+        }
+        StringBuilder out = new StringBuilder(text.length() + 16);
+        int i = 0;
+        while (i < text.length()) {
+            char c = text.charAt(i);
+            if (!isMacGlyph(c)) {
+                out.append(c);
+                i++;
+                continue;
+            }
+            boolean command = false;
+            boolean control = false;
+            boolean alt = false;
+            boolean shift = false;
+            while (i < text.length() && isMacGlyph(text.charAt(i))) {
+                switch (text.charAt(i)) {
+                    case '\u2318' -> command = true;
+                    case '\u2303' -> control = true;
+                    case '\u2325' -> alt = true;
+                    default -> shift = true;
+                }
+                i++;
+            }
+            // ⌃ beside ⌘ is the platform's OTHER modifier (O), which is Alt
+            // off a Mac; ⌃ alone is Ctrl on every keyboard
+            boolean ctrl = command || control;
+            alt = alt || (command && control);
+            List<String> parts = new ArrayList<>(3);
+            if (ctrl) { parts.add("Ctrl"); }
+            if (alt) { parts.add("Alt"); }
+            if (shift) { parts.add("Shift"); }
+            out.append(String.join("+", parts));
+            if (i < text.length() && isKeyStart(text.charAt(i))) {
+                out.append('+');
+            }
+        }
+        return out.toString();
+    }
+
+    /** ⌘ ⌥ ⇧ ⌃ — the four modifier glyphs a Mac keyboard prints. */
+    private static boolean isMacGlyph(char c) {
+        return c == '\u2318' || c == '\u2325' || c == '\u21E7' || c == '\u2303';
+    }
+
+    private static boolean hasMacGlyph(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (isMacGlyph(text.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Whether the character after a run of modifiers is the chord's key, rather than the sentence going on. */
+    private static boolean isKeyStart(char c) {
+        if (Character.isWhitespace(c) || Character.isSpaceChar(c)) {
+            return false;
+        }
+        // a hyphen keeps its own shape; these end a clause in the scripts the product ships
+        return "-,.;:!?)]\u3001\u3002\uFF0C\uFF09\u060C\u061B\u061F\u200E\u200F\u202C".indexOf(c) < 0;
+    }
 }
