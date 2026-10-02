@@ -4,6 +4,20 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.8] - 2026-10-02
+
+Dependency housekeeping, the usual way: the Dependabot change is applied by
+hand and goes through the same verify and the same three systems as any
+other.
+
+### Changed
+
+- `maven-clean-plugin` 3.2.0 to 3.5.0. It does one thing here besides
+  deleting `target/`: when the application is assembled it removes the
+  platform's superseded PostgreSQL driver jar from the cluster (3.4.1), so
+  the assembled product was checked for that jar after a build with the
+  new version. It is not there.
+
 ## [3.5.7] - 2026-10-02
 
 **Aiming a repository ran what its `.git/config` named.** The same law as
@@ -25346,6 +25360,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.8]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.7...v3.5.8
 [3.5.7]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.6...v3.5.7
 [3.5.6]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.5...v3.5.6
 [3.5.5]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.4...v3.5.5
