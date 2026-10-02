@@ -201,8 +201,10 @@ class MacChordsReachOnlyMacsGateTest {
                         if (!MAC_GLYPH.matcher(literal).find()) {
                             continue;
                         }
-                        // "Key=value" and "# comment" are @Messages entries: the bundle's, judged above
-                        if (literal.matches("\"(?:[A-Za-z0-9_.]+=|# ).*")) {
+                        // anything inside @Messages(…) is a bundle entry — its key, a
+                        // "# comment", or the rest of a value written across several
+                        // literals: the bundle's, judged above
+                        if (insideMessages(body, s.start())) {
                             continue;
                         }
                         if (isArgumentOfConvert(body, s.start())) {
@@ -217,6 +219,50 @@ class MacChordsReachOnlyMacsGateTest {
         assertThat(undecided)
                 .as("a literal naming a Mac chord: wrap it in Chords.forThisOs(…), or move it to a bundle")
                 .isEmpty();
+    }
+
+    /** Whether {@code at} lies inside the parentheses of an {@code @Messages} annotation. */
+    private static boolean insideMessages(String body, int at) {
+        int open = -1;
+        int from = 0;
+        while (true) {
+            int found = body.indexOf("Messages(", from);
+            if (found < 0 || found > at) {
+                break;
+            }
+            // @Messages(, @NbBundle.Messages( or the fully qualified form:
+            // back over the dotted name to the @ that makes it an annotation
+            int head = found - 1;
+            while (head >= 0 && (Character.isJavaIdentifierPart(body.charAt(head)) || body.charAt(head) == '.')) {
+                head--;
+            }
+            if (head >= 0 && body.charAt(head) == '@') {
+                open = found + "Messages(".length();
+            }
+            from = found + 1;
+        }
+        if (open < 0) {
+            return false;
+        }
+        // walk from the opening parenthesis to its match, skipping string literals
+        int depth = 1;
+        for (int i = open; i < body.length(); i++) {
+            char c = body.charAt(i);
+            if (c == '"') {
+                i++;
+                while (i < body.length() && body.charAt(i) != '"') {
+                    if (body.charAt(i) == '\\') {
+                        i++;
+                    }
+                    i++;
+                }
+            } else if (c == '(') {
+                depth++;
+            } else if (c == ')' && --depth == 0) {
+                return at < i;
+            }
+        }
+        return false;
     }
 
     @Test

@@ -211,6 +211,8 @@ public final class FxBrowserPanel extends JPanel {
 
     /** FX thread. One-time engine construction (first queued FX task). */
     private void initFx() {
+        // first on this thread, before anything can be queued behind it (3.5)
+        DisposedSceneRace.installOnThisThread();
         webView = new WebView();
         engine = webView.getEngine();
         engine.titleProperty().addListener((obs, old, title)

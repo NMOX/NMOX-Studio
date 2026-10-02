@@ -74,6 +74,23 @@ class KeystrokeHudTest {
     }
 
     @Test
+    @DisplayName("AltGr is typing: Ctrl+Alt with the AltGraph bit is how { [ ] } @ are typed on many keyboards, and never shows")
+    void altGrIsTyping() {
+        int altGr = KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK | KeyEvent.ALT_GRAPH_DOWN_MASK;
+        assertThat(KeystrokeHud.shows(altGr, KeyEvent.VK_7)).as("AltGr+7 types { on a German keyboard").isFalse();
+        assertThat(KeystrokeHud.shows(altGr, KeyEvent.VK_Q)).as("AltGr+Q types @").isFalse();
+        assertThat(KeystrokeHud.shows(KeyEvent.CTRL_DOWN_MASK | KeyEvent.ALT_DOWN_MASK, KeyEvent.VK_7))
+                .as("the chord Ctrl+Alt+7, without the AltGraph bit, still shows").isTrue();
+    }
+
+    @Test
+    @DisplayName("the status line names the modifiers this keyboard has")
+    void modifierNamesFollowTheKeyboard() {
+        assertThat(KeystrokeHud.modifierNames(true)).isEqualTo("⌘, ⌃, ⌥");
+        assertThat(KeystrokeHud.modifierNames(false)).isEqualTo("Ctrl, Alt");
+    }
+
+    @Test
     @DisplayName("the label is the product's one chord vocabulary, on both platforms")
     void labels() {
         assertThat(KeystrokeHud.label(KeyEvent.META_DOWN_MASK | KeyEvent.ALT_DOWN_MASK, KeyEvent.VK_G, true)).isEqualTo("⌥⌘G");

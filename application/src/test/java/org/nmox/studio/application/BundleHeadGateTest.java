@@ -101,7 +101,9 @@ class BundleHeadGateTest {
      * v2.97.0. A hand-kept map only ever gates the rows someone remembered.
      */
     private static final Pattern WINDOW_LINK = Pattern.compile(
-            "windowLink\\(Bundle\\.(MainWindow_\\w+)\\(\\),\\s*\"(\\w+)\"");
+            // the label rides Chords.forThisOs since 3.5 (its chord is shown in the reader's keys)
+            "windowLink\\((?:org\\.nmox\\.studio\\.core\\.util\\.Chords\\.forThisOs\\()?"
+            + "Bundle\\.(MainWindow_\\w+)\\(\\)\\)?,\\s*\"(\\w+)\"");
 
     private static Map<String, String> welcomeLinks() throws IOException {
         String src = Files.readString(Path.of("..", "ui", "src", "main", "java",

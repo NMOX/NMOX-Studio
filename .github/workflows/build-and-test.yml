@@ -98,6 +98,13 @@ jobs:
       - name: Boot smoke test (macOS)
         if: runner.os == 'macOS' && steps.paths.outputs.docs_only != 'true'
         run: ./scripts/boot-smoke-test.sh
+      # Windows (3.5, ledger 37): until now this lane ran the tests and never
+      # started the product. The runner has a desktop; the script drives the
+      # .exe launcher under Git Bash.
+      - name: Boot smoke test (Windows)
+        if: runner.os == 'Windows' && steps.paths.outputs.docs_only != 'true'
+        shell: bash
+        run: ./scripts/boot-smoke-test.sh
 
       # Boot once more with the color probe on and assert the editor's
       # RESOLVED colors are the dark scheme — the v1.10.1 white-editor
