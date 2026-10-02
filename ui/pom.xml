@@ -236,11 +236,15 @@
         <!-- FlatLaf is the look and feel the product runs under, and the one
              that turns toolbar buttons unfocusable (ToolBar.focusableButtons
              = false); ToolbarKeyboardAccessTest proves the repair under it
-             (3.4). At runtime the platform's libs-flatlaf module provides it -->
+             (3.4). The version has ONE home, the platform: this is the
+             platform's own libs-flatlaf module, which brings the FlatLaf jar
+             the product ships. 3.4.0 pinned com.formdev:flatlaf 3.2.5 here
+             while the cluster carried 3.7.2, so the test proved the repair
+             under a look and feel no user runs (3.4.1). -->
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>3.2.5</version>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-libs-flatlaf</artifactId>
+            <version>${netbeans.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
