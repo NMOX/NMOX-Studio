@@ -224,3 +224,53 @@ file's; the shipped `ng-expression` file's, which a test pins, is
 Re-run the script when one of these grammars is bumped;
 `DanglingIncludesGateTest` fails the build while a shipped grammar includes
 a rule that is defined nowhere.
+
+## Grammars named so that the engine loads them (3.5.4)
+
+TM4E loads the grammars a grammar includes by walking its rules, and the
+walk misses two kinds of include: one inside `captures`, and one behind a
+rule that reads the same as a rule already visited in another grammar (it
+keeps visited rules in a hash set, and `{"include": "#comments"}` is equal
+to every other `{"include": "#comments"}`). Four vendored grammars lost a
+dependency that way: `coffeescript` (JavaScript between backticks, a
+capture), `gitrebase` (the shell command of an `exec` line, a capture),
+`groovy` (its javadoc stub, behind `#comments`) and `nim` (the grammars the
+platform's Markdown grammar includes for fenced blocks, which is not this
+product's file to change). `scripts/name-grammar-dependencies.py` adds one
+line to each, first in its top-level patterns: a rule that begins with
+`(?!)`, so it matches nowhere, and whose patterns include the grammars to
+load. Nothing else in the files changes and nothing they tokenize changes,
+except that the includes they already had now resolve.
+`GrammarDependenciesLoadGateTest` loads every registered grammar through
+the real engine and fails, with the command to run, while one reaches a
+grammar the engine did not load; two of its tests pin each hole on fixture
+grammars and will fail when a later TM4E closes it.
+
+## Look-behinds rewritten for joni (3.5.4)
+
+TM4E runs joni, which compiles a look-behind only when every alternative at
+its top level has a fixed length. Eighteen patterns in nine vendored
+grammars use more than that, and joni refused each one at the moment its
+rule was first needed: `elixir` (one, in the top-level patterns, so every
+file: it opened as an empty editor), `haxe` (one, likewise), `svelte` (nine), `haskell` (one),
+`purescript` (one), and one each in `javascript`, `javascriptreact`,
+`typescript` and `typescriptreact`. `scripts/rewrite-grammar-lookbehinds.py`
+holds the table of rewrites and applies it; each is the nearest pattern joni
+compiles:
+
+- "any whitespace" behind a token becomes none to four characters of it
+  (Elixir's pipe, PureScript's constructors), none to two behind a keyword
+  and up to eight of indentation (Haskell's foreign names), exactly one
+  between `await` and `using`;
+- Svelte's block modes begin at `\G`, which is the end of the keyword's own
+  match, so `(?<=if.*?)\G` becomes `(?<=if)\G`; its directive rules list
+  `use:|transition:|…` at the top level instead of inside a group;
+- Haxe's fallback return-type rule asks whether `function` appears anywhere
+  earlier on the line, which no bounded pattern can; it is switched off
+  (`(?!)`), and the method rule's own return-type rule colours the type.
+
+Only those patterns change. Re-run the script when one of these grammars is
+bumped; it stops if it finds neither the upstream pattern nor its rewrite.
+`GrammarRegexesCompileGateTest` compiles every pattern of every registered
+grammar with the editor's engine and fails, naming the pattern, while one
+does not compile.

@@ -21,11 +21,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * joni, a Java port that compiles a look-behind only when each alternative
  * at its top level has a fixed length; recent Oniguruma takes more, and
  * upstream grammars use it. joni refuses such a pattern when the rule is
- * first needed, the platform's lexer does not catch the exception, and the
- * file stops being coloured there: every Elixir and every Haxe file on its
- * first line, a Svelte file on its first {@code {#if}}. Seventeen patterns
- * in eight grammars, found by this gate's first run and confirmed by opening
- * the three files in the assembled product.
+ * first needed and the platform's lexer does not catch the exception. For
+ * Elixir and Haxe the pattern is among the first rules: in the published
+ * 3.5.3 an Elixir file opened as an empty tab, with no text in it. A Svelte
+ * file showed its text and lost its colour at the first {@code {#if}}.
+ * Eighteen patterns in nine grammars, found by the test beside this one
+ * tokenizing a single line of each grammar, and photographed in the product.
  *
  * <p>{@code scripts/rewrite-grammar-lookbehinds.py} holds the rewrites. This
  * gate compiles all of them, the fifteen thousand that never needed one
@@ -126,7 +127,7 @@ class GrammarRegexesCompileGateTest {
         assertThat(all.size()).as("patterns read").isGreaterThan(10_000);
 
         assertThat(refused(all))
-                .as("patterns the editor's regex engine refuses; the file stops being coloured where one is needed "
+                .as("patterns the editor's regex engine refuses; the editor throws where one is needed "
                         + "(scripts/rewrite-grammar-lookbehinds.py holds the rewrites)")
                 .isEmpty();
     }

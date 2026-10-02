@@ -10,10 +10,10 @@ Oniguruma takes more, upstream grammars use it, and joni answers "invalid
 pattern in look-behind" at the moment the rule is first needed. The platform's
 lexer does not catch that. Until 3.5.4 every Elixir file and every Haxe file
 threw on its first line, a Svelte file on its first `{#if}`, a PureScript file
-on its first `data` declaration, and JavaScript or TypeScript read through
-these grammars (a fenced block in Markdown, a Vue or Svelte script) on its
-first `using` declaration: an exception in the log for each repaint and no
-colour after it.
+on its first `data` declaration, a Haskell file on its first `foreign import`,
+and JavaScript or TypeScript read through these grammars (a fenced block in
+Markdown, a Vue or Svelte script) on its first `using` declaration. An Elixir
+file opened as an empty tab; a Svelte file lost its colour at the block.
 
 Each rewrite below is the nearest pattern joni compiles. Where the original
 looked back over "any whitespace", the rewrite looks back over none to four

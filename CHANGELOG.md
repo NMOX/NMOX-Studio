@@ -4,6 +4,96 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.4] - 2026-10-02
+
+**An Elixir file opened as an empty tab.** No text, no editor toolbar: the
+tokenizer threw on the file's first line, and it did the same for every
+Haxe file. Found by a test written for something smaller, the last grammar
+warning in the log of a session, and then photographed in the published
+3.5.3. The engine that colours the text
+reads the same grammars VS Code does, with a different regex library and a
+different way of loading the grammars a grammar includes, and this release
+measures both against everything the product registers.
+
+### Fixed
+
+- **Elixir, Haxe, Svelte, PureScript and Haskell files broke where one
+  pattern could not compile.** The grammars are written
+  for Oniguruma. The editor's engine runs joni, which compiles a look-behind
+  only when each alternative has a fixed length; recent Oniguruma takes
+  more, and eighteen patterns in nine vendored grammars use it. joni refuses
+  such a pattern when its rule is first needed and the platform's lexer does
+  not catch the exception. For Elixir and Haxe the pattern is among the
+  first rules, so every file threw on its first line; a Svelte file on its
+  first `{#if}`, `{#each}` or `use:` directive; PureScript on a `data`
+  declaration; Haskell on a `foreign import`; JavaScript and TypeScript read
+  through these grammars (a fenced block in Markdown, a Vue or Svelte
+  script) on a `using` declaration. In the published 3.5.3 a seven-line
+  Elixir file opens as an empty editor; a Svelte file shows its text,
+  loses its colour at the first `{#if}`, and logs the exception on each
+  pass; one file of each of the three wrote thirteen SEVERE lines before
+  the log stopped repeating them. Each pattern is rewritten to the nearest one
+  joni compiles (`scripts/rewrite-grammar-lookbehinds.py`): "any whitespace"
+  behind a token becomes none to four characters of it, Svelte's block modes
+  look at the keyword that is directly behind them, and one Haxe fallback
+  rule that no bounded pattern can express is switched off in favour of the
+  rule that already coloured a method's return type. Those three files,
+  with a PureScript, a Haskell, a Markdown, a CoffeeScript and a Nim file
+  and a rebase todo, now open coloured and with no SEVERE line.
+- **The shell command of an `exec` line in a rebase todo, and JavaScript
+  between backticks in CoffeeScript, were never coloured.** Before it
+  tokenizes, the engine loads the grammars a grammar includes by walking its
+  rules. The walk does not look inside `captures`, and it keeps the rules it
+  has visited in a hash set, where a rule that reads the same as one in
+  another grammar counts as visited: `{"include": "#comments"}` in Groovy
+  was taken for the one in the grammar walked before it. An include of a
+  grammar that was not loaded resolves to nothing, and the engine drops the
+  rule and logs a warning. Four grammars lost a dependency that way; a Nim
+  file's Markdown doc comments lost every fenced language, and Markdown
+  logged a warning for Groovy's javadoc in every session that opened a
+  Markdown file. Each of the four now names what it needs in a rule the
+  walk cannot miss and the tokenizer cannot match
+  (`scripts/name-grammar-dependencies.py`).
+- **Thirty-two includes of rules that no grammar defines.** Upstream
+  grammars rename and delete rules and leave the includes behind, in
+  sixteen of the grammars shipped here. The engine logged a warning for each
+  whenever the including rule was compiled: seven lines in every session
+  that opened a Markdown file, which is every session that opens an
+  experiment. Each name now has a rule that matches nothing, which is what
+  the unresolved include already was
+  (`scripts/stub-dangling-grammar-includes.py`).
+- **A walk that outlived its limit ran until the job was cancelled.**
+  `scripts/platform-walk.sh` leaned on `timeout(1)`, which a stock Mac does
+  not have. After 3.5.2 shipped, the installed app hung on the macOS runner
+  with the Browser tab in front, and the job came back hours later with no
+  log (the same app walked clean on a Mac, and the job passed when run
+  again). Where there is no `timeout`, the script now keeps the time itself:
+  a thread dump from the Java process first, so that a hang says where,
+  then the whole process tree stopped.
+
+### Added
+
+- Three build gates over the registered grammars, each using the engine the
+  editor runs: `GrammarRegexesCompileGateTest` compiles every pattern,
+  about fifteen thousand; `GrammarDependenciesLoadGateTest` loads each
+  grammar the way the platform does and compares what the engine asked for
+  with what the grammar reaches, with the command to run when they differ;
+  `DanglingIncludesGateTest` reads every include. The second one pins both
+  holes in the engine's walk on small fixture grammars, so the release of
+  the engine that closes one will say so.
+- `WalkKeepsItsOwnTimeGateTest` runs the walk's own leash against a process
+  tree that ignores the first signal.
+
+### Measured
+
+The log of a staged walk, 25 pictures: 17 WARNING lines in 3.5.2, 8 now, no
+SEVERE. What is left is the platform's (two module deprecation notices, one
+shortcut it cannot read, joni's notice about an unescaped `]` in three
+patterns that mean what they say) and three scenes this machine cannot
+stage, each saying so. Fifteen mutants, each killed by name; two survived
+first, because the gates' own comparisons had no controls, and have them
+now.
+
 ## [3.5.3] - 2026-10-02
 
 **The window runs the way a Hebrew or Arabic reader reads, in the places
@@ -25064,6 +25154,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.4]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.3...v3.5.4
 [3.5.3]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.2...v3.5.3
 [3.5.2]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.1...v3.5.2
 [3.5.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.0...v3.5.1

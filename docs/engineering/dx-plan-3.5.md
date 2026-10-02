@@ -237,6 +237,43 @@ then the Hebrew build itself.
 Not done: a split pane's sides (ledger 127), which now stand out against
 everything else in the window.
 
+## After 3.5.3 shipped (3.5.4)
+
+3.5.2 left "what a staged walk leaves in the log" in the ledger as
+seventeen warnings, none ours to fix. That was wrong about nine of them,
+and following the last one found the largest defect of this plan.
+
+- **Seven were includes of rules nobody defines.** Upstream grammars rename
+  rules and leave includes behind. Thirty-two such names in sixteen
+  grammars now have a rule that matches nothing.
+- **One was a grammar the engine never loaded.** Markdown's fenced blocks
+  include Groovy, Groovy includes a javadoc grammar this product registers
+  a stub for, and the engine reported it missing. A probe outside the IDE
+  loaded it without complaint with three grammars and lost it with all of
+  them: TM4E keeps the rules its dependency walk has visited in a hash set,
+  and a rule is a hash map, so Groovy's `{"include": "#comments"}` was
+  taken for the same-reading rule of a grammar walked before it. The walk
+  also never looks inside captures. Measured over every registered grammar
+  as the top one, eight lost a dependency; four one-line rules close all
+  eight.
+- **The gate for that tokenizes one line with each grammar, and two threw.**
+  Elixir and Haxe each carry, among their first rules, a look-behind joni
+  cannot compile. Compiling every pattern of every grammar found eighteen in
+  nine files. The published 3.5.3 was then opened on a seven-line Elixir
+  file: an empty tab.
+
+The Mac walks never opened an Elixir, a Haxe or a Svelte file, and neither
+did the forge. The Phoenix console, the Svelte template and the Haxe
+learning space were each walked through their run buttons. *A walk is true
+of the files it opened.*
+
+The installed-boot check after 3.5.2 hung on the macOS runner with the
+Browser tab in front and no leash (a stock Mac has no `timeout`); the job
+was cancelled hours later with nothing to read. The same app walked clean
+on a Mac and the job passed when run again, so what hung is not known. The
+walk script now stops itself and takes a thread dump first, so the next
+one will say.
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
@@ -264,3 +301,7 @@ and seen to fail by name.
 | Machine text (3.5.3) | a DevTools field as prose; a field undecided; a wrapped constructor waved through | `DevToolsReadsLeftToRightTest`, `TextInputsChooseADirectionTest` |
 | Back and Forward (3.5.3) | Back points left whoever reads; either arrow not turning with its window | `NavArrowsTest` (one lived until each arrow was asked alone) |
 | The forge's Overview (3.5.3) | the card flipped and nothing built | `DocsTaskBoardTest` |
+| The walk's leash (3.5.4) | three mutants of the script's own leash, against a stand-in app that never exits and ignores the first signal | `WalkKeepsItsOwnTimeGateTest` |
+| Included rules (3.5.4) | three mutants: an include of the grammar's own missing rule, of another grammar's, and a stub that matches something | `DanglingIncludesGateTest` |
+| Loaded grammars (3.5.4) | CoffeeScript's naming rule removed; Groovy's removed; the comparison blind to captures; the comparison taking look-alike rules for visited | `GrammarDependenciesLoadGateTest` (the last two lived until each hole had a fixture grammar of its own) |
+| Compiled patterns (3.5.4) | Elixir's look-behind as upstream wrote it; its bound one character shorter; one Svelte mode restored; `begin` patterns not compiled; back-references compiled raw | `GrammarRegexesCompileGateTest` (the fourth lived until the gate was given a grammar with a bad pattern under each key) |

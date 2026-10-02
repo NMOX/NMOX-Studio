@@ -109,6 +109,9 @@ The NetBeans Platform's own mechanisms, used the way the platform reads them.
 - [`ProbedPortWiringGateTest`](../../rack/src/test/java/org/nmox/studio/rack/devices/ProbedPortWiringGateTest.java): The static lanes probe a free port at the spawn and announce the port the server's banner names (v1.320.0–v1.321.0).
 - [`SeamRestoreGateTest`](../../rack/src/test/java/org/nmox/studio/rack/model/SeamRestoreGateTest.java): A test that swaps a production seam restores it through the seam's own reset (v2.184.0: a test invented its own "production" lane).
 - [`RuleLocalRepositoriesGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/RuleLocalRepositoriesGateTest.java): No shipped TextMate grammar keeps a repository inside a rule, which TM4E cannot resolve; Ruby's percent literals are tokenized through the real engine (3.5.0).
+- [`DanglingIncludesGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/DanglingIncludesGateTest.java): every rule a shipped grammar includes is defined somewhere. Upstream grammars rename rules and leave the includes behind; the engine logged a warning for each, seven in every session that opened a Markdown file (3.5.4).
+- [`GrammarDependenciesLoadGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/GrammarDependenciesLoadGateTest.java): the engine loads every registered grammar a registered grammar reaches. TM4E's dependency walk skips includes inside captures and behind a rule that reads the same as one in another grammar; an `exec` line's shell and CoffeeScript's embedded JavaScript were never coloured (3.5.4).
+- [`GrammarRegexesCompileGateTest`](../../editor/src/test/java/org/nmox/studio/editor/grammars/GrammarRegexesCompileGateTest.java): every pattern of every registered grammar compiles in joni. Eighteen look-behinds did not, and every Elixir and Haxe file threw on its first line (3.5.4).
 
 
 ## Accessibility
