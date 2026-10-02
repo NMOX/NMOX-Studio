@@ -309,17 +309,44 @@ class GrammarDependenciesLoadGateTest {
                 .isEmpty();
     }
 
+    /** Five small grammars under test resources, each hole in the engine's walk on its own. */
+    private static Registered holes() {
+        String here = "/org/nmox/studio/editor/grammars/";
+        Map<String, String> resources = new TreeMap<>();
+        resources.put("fixture.captures.host", here + "hole-captures-host.json");
+        resources.put("fixture.guest", here + "hole-guest.json");
+        resources.put("fixture.lookalike.host", here + "hole-lookalike-host.json");
+        resources.put("fixture.lookalike.first", here + "hole-lookalike-first.json");
+        resources.put("fixture.lookalike.second", here + "hole-lookalike-second.json");
+        return new Registered(resources, Map.of());
+    }
+
     @Test
-    @DisplayName("the walk this gate compares against sees an include inside a capture")
-    void theComparisonReachesIntoCaptures() throws Exception {
-        Registered set = registered();
-        assertThat(reaches("text.git-rebase", set, new HashMap<>()))
-                .as("exec's command is a capture that includes the shell grammar")
-                .contains("source.shell");
-        assertThat(reaches("source.coffee", set, new HashMap<>())).contains("source.js");
-        assertThat(Collections.max(List.of(reaches("source.nim", set, new HashMap<>()).size(),
-                reaches("text.html.markdown", set, new HashMap<>()).size())))
-                .as("Markdown's fenced blocks reach most of the set").isGreaterThan(50);
+    @DisplayName("the engine does not load a grammar included only from a capture; the comparison sees it")
+    void theHoleInCaptures() throws Exception {
+        Registered set = holes();
+        assertThat(reaches("fixture.captures.host", set, new HashMap<>()))
+                .as("what the gate compares against").contains("fixture.guest");
+        // if this fails the engine has learned to look inside captures:
+        // the loader rules written for that (CoffeeScript, the rebase todo) can go
+        assertThat(loads("fixture.captures.host", set))
+                .as("TM4E's dependency walk, as shipped with the platform").doesNotContain("fixture.guest");
+    }
+
+    @Test
+    @DisplayName("the engine takes a rule for visited when another grammar has one that reads the same")
+    void theHoleInLookalikeRules() throws Exception {
+        Registered set = holes();
+        // both grammars say {"include": "#comments"}; only the second one's leads to another grammar
+        assertThat(reaches("fixture.lookalike.host", set, new HashMap<>()))
+                .as("what the gate compares against").contains("fixture.guest");
+        // if this fails the engine compares rules by identity now:
+        // the loader rules written for that (Groovy, Nim) can go
+        assertThat(loads("fixture.lookalike.host", set))
+                .as("TM4E's dependency walk, as shipped with the platform")
+                .contains("fixture.lookalike.second").doesNotContain("fixture.guest");
+        assertThat(loads("fixture.lookalike.second", set))
+                .as("alone, the same grammar's include is followed").contains("fixture.guest");
     }
 
     @Test

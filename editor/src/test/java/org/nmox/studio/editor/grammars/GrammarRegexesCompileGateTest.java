@@ -63,6 +63,48 @@ class GrammarRegexesCompileGateTest {
         return referring ? p.source().replaceAll("\\\\(\\d+)", "x") : p.source();
     }
 
+    private static List<String> refused(List<Pattern> all) {
+        List<String> refused = new ArrayList<>();
+        for (Pattern p : all) {
+            try {
+                new OnigRegExp(asCompiled(p));
+            } catch (RuntimeException e) {
+                String why = String.valueOf(e.getMessage());
+                int at = why.lastIndexOf("failed with");
+                refused.add(p.grammar() + " " + p.where() + "/" + p.key() + ": " + p.source()
+                        + " — " + (at < 0 ? why : why.substring(at)));
+            }
+        }
+        return refused;
+    }
+
+    @Test
+    @DisplayName("the gate reads match, begin, end and while, wherever a rule can be")
+    void theGateReadsEveryPattern() {
+        String unbounded = "(?<=a\\\\s*)b";
+        JSONObject grammar = new JSONObject("""
+                {"scopeName": "fixture",
+                 "patterns": [{"match": "%1$s"}, {"begin": "%1$s", "end": "ok"}],
+                 "injections": {"L:x": {"patterns": [{"begin": "ok", "end": "%1$s"}]}},
+                 "repository": {"r": {"begin": "ok", "while": "%1$s",
+                     "beginCaptures": {"1": {"patterns": [{"match": "%1$s"}]}}},
+                   "refers": {"begin": "(a)", "end": "\\\\1"}}}
+                """.formatted(unbounded));
+        List<Pattern> all = new ArrayList<>();
+        patterns(grammar, "fixture.json", "", all);
+
+        List<String> refused = refused(all);
+        assertThat(refused).as("one under each key, and one inside a capture").hasSize(5)
+                .allMatch(line -> line.contains("invalid pattern in look-behind"));
+        assertThat(refused).anyMatch(line -> line.contains("/match:"))
+                .anyMatch(line -> line.contains("/begin:"))
+                .anyMatch(line -> line.contains("/end:"))
+                .anyMatch(line -> line.contains("/while:"))
+                .anyMatch(line -> line.contains("beginCaptures"));
+        assertThat(refused).as("an end that refers to its begin's capture is not a refusal")
+                .noneMatch(line -> line.contains("refers"));
+    }
+
     @Test
     @DisplayName("every pattern of every grammar this module registers compiles")
     void everyPatternCompiles() throws Exception {
@@ -83,18 +125,7 @@ class GrammarRegexesCompileGateTest {
         assertThat(grammars).as("grammars read").isGreaterThan(120);
         assertThat(all.size()).as("patterns read").isGreaterThan(10_000);
 
-        List<String> refused = new ArrayList<>();
-        for (Pattern p : all) {
-            try {
-                new OnigRegExp(asCompiled(p));
-            } catch (RuntimeException e) {
-                String why = String.valueOf(e.getMessage());
-                int at = why.lastIndexOf("failed with");
-                refused.add(p.grammar() + " " + p.where() + "/" + p.key() + ": " + p.source()
-                        + " — " + (at < 0 ? why : why.substring(at)));
-            }
-        }
-        assertThat(refused)
+        assertThat(refused(all))
                 .as("patterns the editor's regex engine refuses; the file stops being coloured where one is needed "
                         + "(scripts/rewrite-grammar-lookbehinds.py holds the rewrites)")
                 .isEmpty();

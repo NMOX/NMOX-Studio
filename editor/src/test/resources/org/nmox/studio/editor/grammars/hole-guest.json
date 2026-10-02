@@ -1,0 +1,4 @@
+{
+  "scopeName": "fixture.guest",
+  "patterns": [ { "match": "\\w+", "name": "guest.word" } ]
+}
