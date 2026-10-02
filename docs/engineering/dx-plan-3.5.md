@@ -267,12 +267,11 @@ did the forge. The Phoenix console, the Svelte template and the Haxe
 learning space were each walked through their run buttons. *A walk is true
 of the files it opened.*
 
-The installed-boot check after 3.5.2 hung on the macOS runner with the
-Browser tab in front and no leash (a stock Mac has no `timeout`); the job
-was cancelled hours later with nothing to read. The same app walked clean
-on a Mac and the job passed when run again, so what hung is not known. The
-walk script now stops itself and takes a thread dump first, so the next
-one will say.
+The installed-boot check hung on the macOS runner after 3.5.2 and again
+after 3.5.3, with no leash (a stock Mac has no `timeout`) and nothing to
+read afterwards. The same app walked clean on a Mac and each job passed
+when run again, so what hangs is not known (ledger 132). The walk script
+now stops itself and takes a thread dump first, so the next one will say.
 
 ## The proofs
 

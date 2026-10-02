@@ -64,10 +64,10 @@ measures both against everything the product registers.
   (`scripts/stub-dangling-grammar-includes.py`).
 - **A walk that outlived its limit ran until the job was cancelled.**
   `scripts/platform-walk.sh` leaned on `timeout(1)`, which a stock Mac does
-  not have. After 3.5.2 shipped, the installed app hung on the macOS runner
-  with the Browser tab in front, and the job came back hours later with no
-  log (the same app walked clean on a Mac, and the job passed when run
-  again). Where there is no `timeout`, the script now keeps the time itself:
+  not have. After 3.5.2 shipped, and again after 3.5.3, the walk of the
+  installed app hung on the macOS runner and the job came back with no log
+  (the same app walked clean on a Mac, and each job passed when run again).
+  Where there is no `timeout`, the script now keeps the time itself:
   a thread dump from the Java process first, so that a hang says where,
   then the whole process tree stopped.
 
