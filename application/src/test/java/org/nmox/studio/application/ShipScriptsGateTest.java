@@ -153,6 +153,43 @@ class ShipScriptsGateTest {
     }
 
     @Test
+    @DisplayName("a release's squash commit is named by its pull request: the title and the number, never a working note (v3.5.9)")
+    void squashSubjectIsThePullRequestsTitle() throws Exception {
+        assertThat(subject("v3.5.9: a headline; with `marks` and $HOME", "843"))
+                .as("the title verbatim, nothing expanded, and the number GitHub's own default appends")
+                .isEqualTo("v3.5.9: a headline; with `marks` and $HOME (#843)");
+        String script = SCRIPTS.resolve("squash-subject.sh").toString();
+        assertThat(run("bash", script, "wip: maven-clean-plugin 3.5.0", "842"))
+                .as("the subject v3.5.8 reached main with is refused before a merge").isEqualTo(3);
+        assertThat(run("bash", script, "WIP docs", "842")).isEqualTo(3);
+        assertThat(run("bash", script, "", "842")).as("an unreadable title is not a subject").isEqualTo(2);
+        assertThat(run("bash", script, "v3.5.9: a headline", "84x")).as("a number that is not one").isEqualTo(2);
+        assertThat(run("bash", script, "v3.5.9: a headline")).isEqualTo(2);
+        assertThat(run("bash", script, "wipe the cache on aim", "9"))
+                .as("a word that only begins with those letters is a title like any other").isZero();
+    }
+
+    @Test
+    @DisplayName("ship-gate.sh states the squash subject itself — GitHub's default names a one-commit request after its commit")
+    void shipGateNamesTheSquashItself() throws Exception {
+        List<String> code = Files.readString(SCRIPTS.resolve("ship-gate.sh")).lines()
+                .filter(l -> !l.stripLeading().startsWith("#")).toList();
+        List<String> merges = code.stream().filter(l -> l.contains("gh pr merge")).toList();
+        assertThat(merges).as("one merge, and it is the one that carries the subject").hasSize(1);
+        assertThat(merges.get(0)).contains("--squash").contains("--subject \"$SUBJECT\"");
+        List<String> decided = code.stream().filter(l -> l.stripLeading().startsWith("SUBJECT=")).toList();
+        assertThat(decided).as("the subject is decided in one place").hasSize(1);
+        assertThat(decided.get(0)).as("by the script that can be run, beside this copy of the gate")
+                .contains("\"$HERE/squash-subject.sh\" \"$PRTITLE\" \"$PR\"")
+                .as("and a refusal stops the gate before the merge").contains("|| {").contains("exit 1");
+        assertThat(code.indexOf(decided.get(0))).isLessThan(code.indexOf(merges.get(0)));
+        assertThat(code).as("the gate's own directory is read before it changes directory")
+                .anySatisfy(l -> assertThat(l).startsWith("HERE=$(cd \"$(dirname \"$0\")\" && pwd)"));
+        assertThat(code.indexOf("HERE=$(cd \"$(dirname \"$0\")\" && pwd)"))
+                .isLessThan(code.indexOf("cd /Users/david/vcs/git/github/nmox/NMOX-Studio"));
+    }
+
+    @Test
     @DisplayName("post-ship.sh refuses to run without a tag")
     void postShipDemandsItsTag() throws Exception {
         assertThat(run("bash", SCRIPTS.resolve("post-ship.sh").toString()))
@@ -177,6 +214,16 @@ class ShipScriptsGateTest {
         System.arraycopy(args, 0, argv, 2, args.length);
         Process p = new ProcessBuilder(argv).redirectErrorStream(true).redirectOutput(out.toFile()).start();
         assertThat(p.waitFor(30, TimeUnit.SECONDS)).as("the verdict is a pure function — it exits at once").isTrue();
+        return Files.readString(out).trim();
+    }
+
+    /** The squash subject the script prints for a title and a number. */
+    private static String subject(String title, String pr) throws IOException, InterruptedException {
+        Path out = Path.of(System.getProperty("java.io.tmpdir"), "squash-subject.out");
+        Process p = new ProcessBuilder("bash", SCRIPTS.resolve("squash-subject.sh").toString(), title, pr)
+                .redirectErrorStream(true).redirectOutput(out.toFile()).start();
+        assertThat(p.waitFor(30, TimeUnit.SECONDS)).as("a pure function — it exits at once").isTrue();
+        assertThat(p.exitValue()).isZero();
         return Files.readString(out).trim();
     }
 

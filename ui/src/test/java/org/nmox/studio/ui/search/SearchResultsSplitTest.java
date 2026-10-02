@@ -4,6 +4,7 @@ import java.awt.ComponentOrientation;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.netbeans.modules.search.ui.BasicStandInResultsPanel;
@@ -77,7 +78,21 @@ class SearchResultsSplitTest {
 
     @Test
     @DisplayName("watching the window finds a results split added later, and heals it when it gets its width")
-    void watchFollowsLaterTabs() {
+    void watchFollowsLaterTabs() throws Exception {
+        // On the event thread, where the product runs it. Once the split
+        // has a resize listener, setSize also POSTS a resize event, so a
+        // test thread calling the listener itself raced the event thread
+        // through heal(): the event thread claimed the once-per-split
+        // check, this thread returned early and read the divider before
+        // it was set (14 for 250, on the Windows lane; 2 runs in 20,000
+        // here). On the event thread the posted event waits its turn.
+        int[] divider = new int[1];
+        SwingUtilities.invokeAndWait(() -> divider[0] = laterTabHealed());
+        assertThat(divider[0]).isEqualTo(250);
+    }
+
+    /** A later search adds its tab, the tab gets its width: where the divider is then. */
+    private static int laterTabHealed() {
         JPanel window = new JPanel();
         SearchResultsSplit.watch(window);
         BasicStandInResultsPanel results = new BasicStandInResultsPanel();
@@ -88,7 +103,7 @@ class SearchResultsSplitTest {
         for (java.awt.event.ComponentListener l : s.getComponentListeners()) {
             l.componentResized(new java.awt.event.ComponentEvent(s, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
         }
-        assertThat(s.getDividerLocation()).isEqualTo(250);
+        return s.getDividerLocation();
     }
 
     @Test
