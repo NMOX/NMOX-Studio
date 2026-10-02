@@ -103,6 +103,8 @@ class ServerTrustLedgerTest {
                 .as("a resolved path is known by its file name").isEqualTo(Verdict.UNTRUSTED);
         assertThat(ServerTrust.decide("typescript-language-server.cmd", dir))
                 .as("npm's Windows shim is the same server").isEqualTo(Verdict.START);
+        assertThat(ServerTrust.decide("/usr/local/lib/node_modules/.bin/vscode-json-language-server", dir))
+                .as("and one that only reads is known by its file name too").isEqualTo(Verdict.START);
 
         ServerTrust.trusted = d -> d.equals(dir);
         assertThat(ServerTrust.decide("rust-analyzer", dir)).isEqualTo(Verdict.START);
