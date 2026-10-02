@@ -9,7 +9,9 @@ All notable changes to NMOX Studio are documented here. The format follows
 **One file of every kind the product hands a learner, opened.** 3.5.4 found
 that an Elixir file opened empty and that no walk had ever opened one. The
 learning catalogue ships real code in seventy kinds of file; this release
-opened one of each in the built product and read the window and the log.
+opened one of each in the built product and read the window and the log,
+and then did the same for the twenty-three grammars the catalogue has no
+sample of.
 
 ### Fixed
 
@@ -43,23 +45,32 @@ opened one of each in the built product and read the window and the log.
   server as before. Racket and Perl were walked on a machine in that state;
   R and Julia follow the same rule and were not, there being neither here.
 
+- **Opening an `.http` file logged an ordering warning.** A language's
+  editor menu is its own rows merged with the rows every language
+  inherits, and API Studio's row in the first sat at the position Ask
+  KVASIR has in the second. It has a position of its own now.
+
 ### Added
 
 - `ShippedSamplesTokenizeGateTest`: each of the catalogue's 187 sample
   files is run whole through the grammar its extension is bound to, in the
   real engine, with the bindings read from the layer the editor module
-  generates. Fifty-two grammars are exercised by real code that way. A
-  grammar that throws or cannot finish a line fails with the file and the
-  line, and so does a sample whose extension is registered only in another
-  case.
+  generates. Twenty-three small real files cover the grammars the catalogue
+  does not, so all seventy-six grammars a file's extension can reach have
+  code run through them on every build, and a grammar added without a
+  sample fails until one is written. A grammar that throws or cannot finish
+  a line fails with the file and the line, and so does a sample whose
+  extension is registered only in another case.
+- `LayerPositionCensusTest` reads each language's editor menu together with
+  the inherited one, across every module in the assembled product.
 
 ### Measured
 
 Restoring Elixir's pattern as 3.5.3 shipped it fails the new gate on line 1
 of `hello.exs`. Restoring one of Svelte's does not, because no sample has an
 `{#if}` block: a sample exercises the rules its text needs, and the gate
-that compiles every pattern is the one that reads the rest. Twelve mutants,
-each killed by name.
+that compiles every pattern is the one that reads the rest. Fourteen
+mutants, each killed by name.
 
 Not fixed: with language servers installed, opening a source file that
 belongs to no project logs the server's error answer as SEVERE (ledger 133).

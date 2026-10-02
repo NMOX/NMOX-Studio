@@ -156,11 +156,12 @@ registered and gated both. What is recorded here is what was not fixed.
   patterns are unchanged, and
   `-J-Dorg.eclipse.tm4e.core.internal.oniguruma.OnigRegExp.level=WARNING`
   brings the remarks back for someone bumping a grammar.
-- **What is tokenized is one line per grammar and the catalogue's
-  samples.** 3.5.5 runs the learning catalogue's 187 files through 52
-  grammars. A pattern joni accepts and matches differently from Oniguruma
-  passes every gate here unless a sample shows it, and the grammars no
-  sample reaches are compiled, not run.
+- **What is tokenized is one line per grammar and a sample of each.** 3.5.5
+  runs 210 files (the learning catalogue's 187 and 23 written for the
+  purpose) through all 76 grammars a file's extension can reach. A pattern
+  joni accepts and matches differently from Oniguruma passes every gate
+  here unless a sample shows it; the samples are small, and the embed-only
+  grammars are compiled, not run.
 
 ### 131. A test of the real preferences store failed once (3.5.3)
 

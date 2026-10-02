@@ -288,8 +288,12 @@ each was written to a scratch folder and opened in one launch
 | "Language server racket exited with 1", and Perl's five times | The interpreter is on PATH and the server package is not | The four interpreter-hosted servers ask first; only a definite no stops a launch |
 | Five SEVERE records from language servers | A server answers a folding request for a file in no project with an error; the platform's client logs it | Not changed (ledger 133) |
 
-No tokenizer exception in seventy files. The gate that came out of it runs
-every sample through its grammar on every build.
+| `Found same position 1,950` on opening an `.http` file | A language's editor menu is merged with the inherited one; one NMOX row in each sat at 1950 | A position of its own; the cluster census reads the merged view |
+
+No tokenizer exception in seventy files, nor in the twenty-three written
+for the grammars the catalogue does not cover. The gate that came out of
+it runs all of them through their grammars on every build, and asks for a
+sample of any grammar added later.
 
 ## The proofs
 
@@ -323,5 +327,6 @@ and seen to fail by name.
 | Loaded grammars (3.5.4) | CoffeeScript's naming rule removed; Groovy's removed; the comparison blind to captures; the comparison taking look-alike rules for visited | `GrammarDependenciesLoadGateTest` (the last two lived until each hole had a fixture grammar of its own) |
 | Compiled patterns (3.5.4) | Elixir's look-behind as upstream wrote it; its bound one character shorter; one Svelte mode restored; `begin` patterns not compiled; back-references compiled raw | `GrammarRegexesCompileGateTest` (the fourth lived until the gate was given a grammar with a bad pattern under each key) |
 | Engine remarks (3.5.5) | the level never set; an explicit level overwritten; the logger a local; not run at start | `EngineNoticesTest` |
-| Shipped samples (3.5.5) | a throwing grammar not reported; Elixir's pattern as 3.5.3 shipped it; Fortran's capitals unregistered (one Svelte pattern restored does NOT fail, and the test says why) | `ShippedSamplesTokenizeGateTest` |
+| Shipped samples (3.5.5) | a throwing grammar not reported; Elixir's pattern as 3.5.3 shipped it; Fortran's capitals unregistered; the Zig sample removed (one Svelte pattern restored does NOT fail, and the test says why) | `ShippedSamplesTokenizeGateTest` |
+| The inherited popup (3.5.5) | API Studio's row back at 1950 | `LayerPositionCensusTest`, failing before the move |
 | Hosted servers (3.5.5) | a probe out of time is a no; no interpreter is a no; a package seen is asked for again; Perl does not ask; a no is not believed | `HostedServerProbeTest` |
