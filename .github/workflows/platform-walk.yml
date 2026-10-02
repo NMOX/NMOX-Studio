@@ -21,7 +21,7 @@ jobs:
   walk:
     name: walk (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 40
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -61,6 +61,18 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash
         run: scripts/platform-walk.sh walk-out
+
+      # The staged scenes (3.5.2): the same walk with the documentation's
+      # fixtures, so the windows are photographed doing something. Scenes that
+      # need a service this job does not start are skipped by name in the log.
+      - name: Staged walk (Linux)
+        if: runner.os == 'Linux'
+        run: NMOX_WALK_STAGED=1 xvfb-run -a --server-args="-screen 0 1920x1200x24" scripts/platform-walk.sh walk-out/staged
+
+      - name: Staged walk (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: NMOX_WALK_STAGED=1 scripts/platform-walk.sh walk-out/staged
 
       # The CI lane's own boot gate, run here as well so a walk branch shows
       # whether it passes on Windows before a pull request has to find out.

@@ -61,6 +61,35 @@ if [ -n "${JAVA_HOME:-}" ]; then
   set -- --jdkhome "$(native "$JAVA_HOME")"
 fi
 
+# NMOX_WALK_STAGED=1: the documentation's staged scenes as well (3.5.2). The
+# plain walk photographs a first launch, where every window is empty. The
+# staged scenes do things: rack a preset, open a source file in the editor,
+# run a query against SQLite, send a request to a loopback endpoint, fill a
+# task board, design a small stack. On Windows and Linux none of that had
+# been run. The fixtures are the forge's own (docs/i18n/forge-fixtures.json),
+# written under the walk's throwaway home. KVASIR's scene needs a key and is
+# skipped without one; the Docker, chain and DevTools scenes need services
+# this script does not start, and say so in the log.
+STAGED="${NMOX_WALK_STAGED:-0}"
+FIXTURE_PID=""
+if [ "$STAGED" = 1 ]; then
+  FIXTURES="$(pwd)/docs/i18n/forge-fixtures.json"
+  [ -f "$FIXTURES" ] || { echo "platform-walk: no forge fixtures at $FIXTURES"; exit 2; }
+  set -- "$@" -J-Dnmox.shots.staged=1 \
+    "-J-Dnmox.shots.fixtures=$(native "$FIXTURES")" -J-Dnmox.shots.lang=en \
+    -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png
+  # API Studio's picture is a response: something must answer /health on
+  # loopback for the length of the run
+  PY="$(command -v python3 || command -v python || true)"
+  if [ -n "$PY" ]; then
+    "$PY" scripts/docs-fixture-server.py 3000 >/dev/null 2>&1 &
+    FIXTURE_PID=$!
+  else
+    echo "platform-walk: no python here; API Studio's request will find nothing listening"
+  fi
+  TIMEOUT="${NMOX_WALK_TIMEOUT:-900}"
+fi
+
 # netbeans.keyring.no.master (below): a Linux runner has no Secret Service,
 # so the platform's keyring falls back to asking for a master password, and
 # its dialog was photographed where the learning-space picker should have
@@ -89,6 +118,7 @@ fi
   > "$OUT_ABS/launcher-output.txt" 2>&1
 RC=$?
 END=$(date +%s)
+[ -n "$FIXTURE_PID" ] && kill "$FIXTURE_PID" 2>/dev/null
 
 LOG="$UD/var/log/messages.log"
 [ -f "$LOG" ] && cp "$LOG" "$OUT_ABS/messages.log"
@@ -97,20 +127,22 @@ SHOTS=$(find "$OUT_ABS" -name '*.png' | wc -l | tr -d ' ')
 # closed the way its close box closes it; a learning space on disk, or the
 # Standards Kit's files in the workspace, means a dialog was ACCEPTED.
 ACCEPTED=""
-if [ -d "$HOME_DIR/.nmox/learn" ]; then
+# (a staged walk seeds its own shelf of learning spaces and its scenes write
+# their projects into the workspace, so there the check has nothing to say)
+if [ "$STAGED" != 1 ] && [ -d "$HOME_DIR/.nmox/learn" ]; then
   for made in "$HOME_DIR/.nmox/learn"/*; do
     [ -e "$made" ] && ACCEPTED="$ACCEPTED learning-space:$(basename "$made")"
   done
 fi
 for made in robots.txt sitemap.xml site.webmanifest humans.txt .well-known; do
-  [ -e "$HOME_DIR/NMOX/$made" ] && ACCEPTED="$ACCEPTED standards-kit:$made"
+  [ "$STAGED" != 1 ] && [ -e "$HOME_DIR/NMOX/$made" ] && ACCEPTED="$ACCEPTED standards-kit:$made"
 done
 {
   echo "os: $OS ($(uname -a))"
   echo "launcher: $LAUNCHER"
   echo "exit code: $RC (124 = the walk's own timeout)"
   echo "seconds: $((END - START))"
-  echo "pictures: $SHOTS (painted at ${SCALE}x)"
+  echo "pictures: $SHOTS (painted at ${SCALE}x)$([ "$STAGED" = 1 ] && echo ', staged scenes included')"
   echo "created by the dialog pictures:${ACCEPTED:- nothing}"
   if [ -f "$LOG" ]; then
     echo "SEVERE lines: $(grep -c 'SEVERE' "$LOG")"
