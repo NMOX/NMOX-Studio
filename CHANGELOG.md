@@ -4,6 +4,70 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.5.1] - 2026-10-02
+
+**What each installer leaves on a machine is installed and booted, on all
+three systems, for the first time; and three things 3.5.0's walks showed
+after it shipped.**
+
+### Fixed
+
+- **Rows in the platform's own trees were read to a screen reader as their
+  markup.** A changed file in the Files, Projects or Favorites window was
+  named `<font color="#1ab8ff">a.txt</font>…`, a database connection in the
+  Services window `<b>jdbc:…</b>` (ledger 126). 3.4.0 repaired this in
+  Project Studio's tree, which the product builds itself; the others are
+  the platform's. Every tree using the platform's node renderer is now met
+  as its window opens and named with the words it paints. Walked with a
+  control, reading the accessibility tree by process id: three rows named
+  in markup before, `demo`, `a.txt [-/M]` and `b.txt [-/A]` after.
+- **Block Studio printed a piece's two lines on top of each other on Linux.**
+  A row is 34 pixels tall on every system and its text was drawn in the
+  system's default font, which is taller there. The canvas draws its pieces
+  in fixed sizes, as every rack faceplate does.
+
+### Engineering
+
+- **Installed boot**, a workflow that runs after every release, on demand for
+  any tag, and on a push to an `installed/**` branch. It downloads the
+  release's own Windows setup program, Debian package and macOS disk image,
+  installs each the way a user does, and boots what is installed with no JDK
+  of the runner's in reach: the boot fails unless the app reports the
+  runtime its installer bundled as its Java home. Then it photographs the
+  installed app, which opens the Browser on the bundled JavaFX. Until now
+  only the disk image had ever been started, by hand; the update gauntlet
+  uses the portable zip, which carries no runtime. First run, against
+  v3.4.1: all three boot (12 to 15 s) on their own Zulu 25.0.4, zero SEVERE,
+  no native-access warnings.
+- `scripts/boot-smoke-test.sh` says which runtime the app ran on and can be
+  told which one to insist on. It also passed a JDK path as a plain string,
+  so a runtime under `NMOX Studio.app` or `Program Files` was split at the
+  space and the launcher answered "Cannot find java".
+- **The screenshot forge accepted every dialog it photographed.** It closed
+  each one with `dispose()`, under a comment saying the action behind it
+  then returns "with a CLOSED verdict and nothing is created". A dialog's
+  descriptor starts out holding its initial value, which for a dialog with
+  an OK button is OK, and only a button or the close box changes that. So
+  every forge run created the learning space the picker had selected, ran
+  the Standards Kit against whatever its fields held, and photographed the
+  kit's warning where the Agent Port dialog should have been. The forge now
+  closes a dialog by its close box. `scripts/platform-walk.sh` walks in a
+  home of its own and fails if a photographed dialog left anything behind;
+  it failed on the old behaviour and passes on the new.
+- Two tests proved nothing and say so now. The spoken-rows test written for
+  3.4.0, and the one first written for this release, painted their fixture
+  as `<html>…`. Swing names an `<html>` label in words by itself, so both
+  passed with the code under test deleted. The platform paints markup with
+  no `<html>` prefix; both fixtures do too, and both kill that mutant.
+- `scripts/platform-walk.sh` no longer needs GNU `timeout`, which a stock
+  Mac does not have.
+
+### Documentation
+
+- The English picture of the Agent Port dialog is repainted. The old one
+  showed the dialog's markup as text, a defect fixed in v2.128.0 that the
+  picture had outlived.
+
 ## [3.5.0] - 2026-10-01
 
 **The Windows and Linux release: the first time the product was started and
@@ -24828,6 +24892,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.5.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.0...v3.5.1
 [3.5.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.1...v3.5.0
 [3.4.1]: https://github.com/NMOX/NMOX-Studio/compare/v3.4.0...v3.4.1
 [3.4.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.3.0...v3.4.0

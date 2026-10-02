@@ -103,6 +103,39 @@ A walk on a runner is a picture of stock fonts on a virtual screen. It
 found six defects and it is not a substitute for someone using the Windows
 build for a week.
 
+## After 3.5.0 shipped (3.5.1)
+
+Reading the third walk's remaining pictures, and asking what else had never
+been run, found four more things.
+
+- **The installers' results had never been started.** The walk boots the
+  assembled build. The release then wraps that build in a Windows setup
+  program, a Debian package and a disk image, each with a runtime of its
+  own, and only the disk image was ever opened, by hand. The `Installed
+  boot` workflow downloads a release's own assets, installs each the way a
+  user does and boots the result with the runner's JDK out of reach,
+  failing unless the app reports the bundled runtime as its Java home. Then
+  it photographs the installed app, Browser included. Its first run, against
+  v3.4.1, passed on all three systems.
+- **The forge accepted every dialog it photographed.** The Agent Port
+  picture on all three systems showed the Standards Kit's "that is the
+  example site" warning. The forge closed its dialogs with `dispose()`; a
+  `NotifyDescriptor` holds its initial value, OK, until a button or the
+  close box says otherwise; so each run accepted the learning-space picker
+  (a space was created) and the Standards Kit (its warning was raised and
+  photographed as the next dialog). The forge sends the close box now, and
+  the walk, which runs in a home of its own, fails when a photographed
+  dialog leaves anything behind.
+- **Block Studio's pieces overlapped their own text on Linux**: fixed
+  geometry, drawn in the system's font. Fixed type.
+- **Ledger 126**, the platform's tree rows spoken as markup, closed for
+  every tree with a global wrapper and a walk with a control.
+
+The mutant for the spoken rows survived at first, in both the new test and
+the one 3.4.0 shipped: an `<html>` label names itself in words, so a fixture
+painted that way cannot tell whether the code under test ran. *A fixture
+that is kinder than the thing it stands for proves the kindness.*
+
 ## The proofs
 
 Every unit below was committed, broken the way its test exists to catch,
