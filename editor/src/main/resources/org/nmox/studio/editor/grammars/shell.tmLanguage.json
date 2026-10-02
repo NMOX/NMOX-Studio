@@ -13,6 +13,8 @@
 		}
 	],
 	"repository": {
+		"arithmetic_dollar": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+		"line_continuation_character": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
 		"alias_statement": {
 			"begin": "(?:(?:[ \\t]*+)(alias)(?:[ \\t]*+)((?:(?:((?<!\\w)-\\w+\\b)(?:[ \\t]*+))*))(?:(?:[ \\t]*+)(?:((?<!\\w)(?:[a-zA-Z_0-9-]+)(?!\\w))(?:(?:(\\[)((?:(?:(?:(?:\\$?)(?:(?<!\\w)(?:[a-zA-Z_0-9-]+)(?!\\w))|@)|\\*)|(-?\\d+)))(\\]))?))(?:(?:(\\=)|(\\+\\=))|(\\-\\=))))",
 			"end": "(?:(?= |\\t|$)|(?:(?:(?:(;)|(&&))|(\\|\\|))|(&)))",

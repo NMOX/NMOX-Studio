@@ -14,6 +14,8 @@
 		}
 	],
 	"repository": {
+		"constraint": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+		"member-references": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
 		"async-throws": {
 			"match": "\\b(?:(throws\\s+async|rethrows\\s+async)|(throws|rethrows)|(async))\\b",
 			"captures": {

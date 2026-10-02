@@ -15,6 +15,9 @@
   }
  ],
  "repository": {
+  "tcl-interp": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+  "tcl-ns-commands": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
+  "tcl-oo-brackets": {"comment": "NMOX stub: upstream includes this rule and defines it nowhere. It matches nothing, as the unresolved include did; it exists so that the engine has something to resolve (scripts/stub-dangling-grammar-includes.py).", "patterns": []},
   "root": {
    "patterns": [
     {

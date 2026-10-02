@@ -201,3 +201,26 @@ sha256 above is the upstream file's; the hoisted file's is
 Re-run the script when one of these grammars is bumped;
 `RuleLocalRepositoriesGateTest` fails the build while a shipped grammar
 still carries a rule-local repository.
+
+## Rules included and defined nowhere, stubbed (3.5.4)
+
+Fourteen vendored grammars include rules by names their own repositories no
+longer define, and one is asked for a rule by another grammar: `c`
+(`string_context`), `cairo` (`lifetimes`), `cpp`
+(`preprocessor_number_literal`, `string_escaped_char`, and `root_context`,
+which `julia` asks it for), `d` (seven), `fortran` (two), `graphql` (two),
+`haxe` (two), `kotlin` (`type-constraint`), `less` (`at-viewport`),
+`ng-expression` (two), `shell` (`arithmetic_dollar`,
+`line_continuation_character`), `swift` (`constraint`,
+`member-references`), `tcl` (three) and `vlang` (`escaped-fix`). VS Code's
+engine passes over an include it cannot resolve; TM4E passes over it and
+logs a warning each time. `scripts/stub-dangling-grammar-includes.py` adds,
+first in each grammar's repository, a rule of that name that matches
+nothing, with a comment saying what it is. Nothing else in the files
+changes: the lines are inserted, the files are not re-serialized, and their
+meaning is the upstream's. The sha256 in a row above is the upstream
+file's; the shipped `ng-expression` file's, which a test pins, is
+`26cac48add8db2b3473589774e2bf94229f8326edb337619ace8bdeae94fbcb9`.
+Re-run the script when one of these grammars is bumped;
+`DanglingIncludesGateTest` fails the build while a shipped grammar includes
+a rule that is defined nowhere.
