@@ -82,7 +82,9 @@ if [ "$STAGED" = 1 ]; then
   # loopback for the length of the run
   PY="$(command -v python3 || command -v python || true)"
   if [ -n "$PY" ]; then
-    "$PY" scripts/docs-fixture-server.py 3000 >/dev/null 2>&1 &
+    # (its second argument is the shop front the DevTools scene picks from,
+    # which that scene writes under the walk's home during the run)
+    "$PY" scripts/docs-fixture-server.py 3000 "$(native "$HOME_DIR/NMOX/storefront/site")" >/dev/null 2>&1 &
     FIXTURE_PID=$!
   else
     echo "platform-walk: no python here; API Studio's request will find nothing listening"
