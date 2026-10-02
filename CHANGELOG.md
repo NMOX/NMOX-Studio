@@ -23,6 +23,15 @@ showed there was true on every system.**
   defaults and then whatever the Options dialog saved, once the main window
   shows. Photographed on all three systems: the paused line is dark green
   under ordinary syntax colours.
+- **Under the debugger, a script that printed and exited could show
+  nothing.** The JavaScript debug adapter speaks on two connections: one
+  reports what the program printed, the other its threads and its end. Two
+  connections have no order between them, and the proxy ended the session
+  on the first `terminated` it read, closing the other with the program's
+  output still on it. The session now ends when the launcher says so; a
+  target's end waits for it, for at most a second and a half, and is
+  delivered once, last. Found because the macOS test lane lost the output
+  twice running; the product could lose it on any machine.
 - **A folder aimed under another spelling of its path was aimed twice and
   listed twice.** The platform names a folder by its normalized path, which
   on Windows expands an 8.3 short name and on a Mac repairs the letter case,
@@ -88,7 +97,7 @@ showed there was true on every system.**
   lane. The class reproduces on a Mac by giving every test JVM a temp
   directory in another letter case:
   `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/PRIVATE/TMP/… mvn clean test`.
-- 39 mutants, each killed by name. Six lived at first, and each time the
+- 43 mutants, each killed by name. Six lived at first, and each time the
   fixture was the reason: a memory filesystem that decorates no names, and
   English subtitles that all fit the budget they were meant to exceed. One
   defect hid the same way: a panel that is never shown remembers its

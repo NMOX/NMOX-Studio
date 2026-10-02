@@ -192,6 +192,17 @@ on a Mac, whose disk forgives letter case and whose platform repairs it:
 every test a temp directory the platform spells differently. Exactly those
 ten failed. *A change walked on a system is not a change tested on it.*
 
+**The lane that failed twice was telling the truth.** The pull request's
+macOS lane failed one debugger test, `argsAndEnvReachTheProgram`, on a
+branch that had not touched the debugger, and failed it again. Its
+transcript ended `thread exited`, `terminated`, with the program's output
+nowhere. Printing each frame's connection showed why: the output comes from
+the launcher's connection and the end from the target's, and
+`DapProxy.endSession` ran on the first `terminated` from either. A fake
+adapter that sends the target's end before the launcher's output reproduces
+it every time. *A test that fails twice on a branch that did not touch it
+is describing the product, not the branch.*
+
 What remains in a staged session's log is the platform's (`Invalid
 shortcut: Actions/Help/master-help.xml`, two deprecation notices) and the
 upstream grammars' (ledger 129).
@@ -217,3 +228,4 @@ and seen to fail by name.
 | `FitLabel` (3.5.2) | cut at the letter; separators kept; no word end means an ellipsis alone; a mark parted from its letter; no tooltip when cut; a tooltip when whole; never grows; asks for its whole text; a new kind keeps the old cut; not said to be cut; a maximum of what is shown now | `FitLabelTest`, `PathLabelTest` |
 | Workbench rows (3.5.2) | no spare width taken; four times the budget; the click and the hover not on the subtitle; a list cut as a path; the character cut again; a plain page; a page that follows however narrow; a plain hint; every subtitle one kind | `WorkbenchA11yContractTest` (four lived until a subtitle longer than the budget was tested) |
 | One spelling (3.5.2) | the aim compared as given | `OpenProjectsBridgeTest` |
+| The session's end (3.5.2) | the target's end ends it at once; a held end waits for ever; an ending session drops the held end; the launcher's end leaves the target's held | `DapProxyTest` |
