@@ -53,7 +53,7 @@ class OpenProjectsBridgeTest {
                 .isEqualTo(1);
         assertThat(service.getRecentProjects())
                 .as("addRecent not doubled by the echo")
-                .containsOnlyOnce(a.toFile());
+                .containsOnlyOnce(RackService.platformSpelling(a.toFile()));
         service.getRack().shutdown();
     }
 
@@ -118,7 +118,8 @@ class OpenProjectsBridgeTest {
         service.switchConfirmer = message -> true;
         service.openProject(b.toFile());
         service.awaitBridgeIdle();
-        assertThat(published).containsExactly(b.toFile());
+        assertThat(published).as("under the platform's spelling of the folder")
+                .containsExactly(RackService.platformSpelling(b.toFile()));
         service.getRack().shutdown();
     }
 
@@ -157,7 +158,7 @@ class OpenProjectsBridgeTest {
 
         assertThat(service.getRack().getProjectDir())
                 .as("the rack aims anywhere; the platform only at projects")
-                .isEqualTo(plain.toFile());
+                .isEqualTo(RackService.platformSpelling(plain.toFile()));
         service.getRack().shutdown();
     }
 

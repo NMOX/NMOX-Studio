@@ -182,6 +182,16 @@ workflow runs that on Windows and Linux.
   *A test that lays out a window which was never shown is testing a window
   that never forgets.*
 
+**What the pictures could not say.** The spelling fix was proven by a
+picture: one row where there had been two. The pull request's Windows lane
+then failed ten tests that compare an aimed folder with the temp path they
+gave it, because the runner's temp path is an 8.3 short name and the aim is
+now its long one. The walk workflow runs no tests. The class is reproducible
+on a Mac, whose disk forgives letter case and whose platform repairs it:
+`JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/PRIVATE/TMP/… mvn clean test` gives
+every test a temp directory the platform spells differently. Exactly those
+ten failed. *A change walked on a system is not a change tested on it.*
+
 What remains in a staged session's log is the platform's (`Invalid
 shortcut: Actions/Help/master-help.xml`, two deprecation notices) and the
 upstream grammars' (ledger 129).

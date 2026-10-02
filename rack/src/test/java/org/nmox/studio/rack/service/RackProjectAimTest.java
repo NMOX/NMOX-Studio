@@ -44,9 +44,11 @@ class RackProjectAimTest {
             File second = tmp.resolve("second").toFile();
             assertThat(second.mkdir()).isTrue();
             aim.aim(second);
-            assertThat(service.getRack().getProjectDir()).isEqualTo(second);
+            // an aim takes the platform's spelling of the folder (3.5.2)
+            File spelled = RackService.platformSpelling(second);
+            assertThat(service.getRack().getProjectDir()).isEqualTo(spelled);
             // aim() is openProject: the recent list follows, same as before
-            assertThat(aim.recentProjects()).contains(second);
+            assertThat(aim.recentProjects()).contains(spelled);
         } finally {
             service.awaitBridgeIdle();
             service.getRack().shutdown();

@@ -59,7 +59,8 @@ class DefaultWorkspaceTest {
         // then explicitly aims — the explicit aim must win.
         service.openProject(project);
         assertThat(service.isAimed()).isTrue();
-        assertThat(service.getRack().getProjectDir()).isEqualTo(project);
+        // (under the platform's spelling of it, 3.5.2)
+        assertThat(service.getRack().getProjectDir()).isEqualTo(RackService.platformSpelling(project));
         service.getRack().shutdown();
     }
 

@@ -81,6 +81,13 @@ showed there was true on every system.**
   mark. `PathLabel` is the path-shaped one built on it.
 - The Workbench's picture in the user guide, in all fifteen languages, is
   repainted: the English one was painted for v2.118.0.
+- Ten tests compared an aimed folder with the temp path they had given it,
+  which the Windows runner hands out in its 8.3 short form; they now expect
+  the platform's spelling. The walk workflow photographs and does not run
+  tests, so the first the build heard of it was the pull request's Windows
+  lane. The class reproduces on a Mac by giving every test JVM a temp
+  directory in another letter case:
+  `JAVA_TOOL_OPTIONS=-Djava.io.tmpdir=/PRIVATE/TMP/… mvn clean test`.
 - 39 mutants, each killed by name. Six lived at first, and each time the
   fixture was the reason: a memory filesystem that decorates no names, and
   English subtitles that all fit the budget they were meant to exceed. One

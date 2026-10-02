@@ -26,8 +26,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ProjectSwitchGuardTest {
 
-    /** Polls until the rack aims at {@code dir} — the async swap landing. */
-    private static void awaitAim(Rack rack, File dir) throws InterruptedException {
+    /**
+     * Polls until the rack aims at {@code given} — the async swap landing.
+     * An aim takes the platform's spelling of its folder (3.5.2), so that is
+     * what the rack is asked for.
+     */
+    private static void awaitAim(Rack rack, File given) throws InterruptedException {
+        File dir = RackService.platformSpelling(given);
         long deadline = System.currentTimeMillis() + 10_000;
         while (System.currentTimeMillis() < deadline && !rack.getProjectDir().equals(dir)) {
             Thread.sleep(25);
@@ -121,7 +126,7 @@ class ProjectSwitchGuardTest {
         // a patch mounting over a dying dev server is the race this pins
         Thread.sleep(150); // generous window for a gun-jumping implementation
         assertThat(rack.getProjectDir())
-                .as("the aim must hold until the stop completes").isEqualTo(a.toFile());
+                .as("the aim must hold until the stop completes").isEqualTo(RackService.platformSpelling(a.toFile()));
 
         releaseStop.countDown();
         awaitAim(rack, b.toFile());
@@ -144,7 +149,7 @@ class ProjectSwitchGuardTest {
         service.openProject(b.toFile());
 
         assertThat(device.panicked).isFalse();
-        assertThat(rack.getProjectDir()).isEqualTo(a.toFile());
+        assertThat(rack.getProjectDir()).isEqualTo(RackService.platformSpelling(a.toFile()));
         rack.shutdown();
     }
 

@@ -25,7 +25,10 @@ class AimPriorityTest {
         service.openProject(projectA);
 
         assertThat(service.isAimed()).isTrue();
-        assertThat(service.getRack().getProjectDir()).isEqualTo(projectA);
+        // an explicit aim takes the platform's spelling of the folder (3.5.2):
+        // a temp directory given as an 8.3 short path on Windows, or in another
+        // letter case on a Mac, is aimed under its real name
+        assertThat(service.getRack().getProjectDir()).isEqualTo(RackService.platformSpelling(projectA));
         service.getRack().shutdown();
     }
 
@@ -47,7 +50,7 @@ class AimPriorityTest {
         service.openProject(projectA);
         service.openProjectPassively(projectB);
         assertThat(service.getRack().getProjectDir())
-                .as("passive must not clobber explicit").isEqualTo(projectA);
+                .as("passive must not clobber explicit").isEqualTo(RackService.platformSpelling(projectA));
         service.getRack().shutdown();
     }
 }
