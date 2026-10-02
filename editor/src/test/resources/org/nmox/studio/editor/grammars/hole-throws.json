@@ -1,0 +1,7 @@
+{
+  "scopeName": "fixture.throws",
+  "patterns": [
+    { "begin": "\\|>", "end": "$", "patterns": [ { "match": "(?<=\\|>\\s*)\\w+", "name": "call" } ] },
+    { "match": "\\w+", "name": "word" }
+  ]
+}
