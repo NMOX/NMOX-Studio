@@ -119,6 +119,34 @@ class RightToLeftApplyTest {
     }
 
     @Test
+    @DisplayName("what a tree adds while it is being oriented is left to that pass")
+    void noSecondPassFromInside() {
+        System.setProperty(TextDirection.FORCE, "true");
+        JPanel window = new JPanel();
+        RightToLeft.apply(window);
+        JLabel late = new JLabel("late");
+        boolean[] adoptedFromInside = new boolean[1];
+        // a container that adds a child when it is told its direction, as the
+        // runtime's split pane re-adds both of its own
+        JPanel readds = new JPanel() {
+            @Override
+            public void setComponentOrientation(java.awt.ComponentOrientation o) {
+                super.setComponentOrientation(o);
+                if (!o.isLeftToRight() && late.getParent() == null) {
+                    add(late);
+                    adoptedFromInside[0] = RightToLeft.adopt(this, late);
+                }
+            }
+        };
+        window.add(readds);
+
+        assertThat(RightToLeft.adopt(window, readds)).isTrue();
+
+        assertThat(adoptedFromInside[0]).as("the pass in progress reaches it; a second one is not started").isFalse();
+        assertThat(late.getComponentOrientation().isLeftToRight()).as("and it does reach it").isFalse();
+    }
+
+    @Test
     @DisplayName("the toolkit is asked for container events only while the interface runs right-to-left, and then an add is enough")
     void listensOnlyWhenRightToLeft() {
         java.awt.Toolkit toolkit = java.awt.Toolkit.getDefaultToolkit();
