@@ -150,6 +150,8 @@ class WorkbenchA11yContractTest {
         assertThat(subtitles).as("the tooling rows have subtitles").hasSizeGreaterThanOrEqualTo(4);
         assertThat(subtitles).as("at least one is longer than the old 38-character cut")
                 .anyMatch(l -> l.getFull().length() > 38);
+        assertThat(subtitles).as("a tooling row's subtitle is given the row's spare width, not only what it asked for")
+                .anyMatch(l -> l.getWidth() > l.getPreferredSize().width * 2);
         assertThat(subtitles).allSatisfy(l -> {
             assertThat(l.isCut()).as(l.getFull()).isFalse();
             assertThat(l.getText().strip()).isEqualTo(l.getFull());
@@ -257,6 +259,34 @@ class WorkbenchA11yContractTest {
 
             ProjectExplorerTopComponent.showKinds(sub, List.of());
             assertThat(sub.getFull()).as("nothing detected leaves what was there").isEqualTo("node · typescript · docker");
+        });
+    }
+
+    @Test
+    @DisplayName("a subtitle longer than its budget asks for the budget, takes more when there is more, and is cut as its kind")
+    void aLongSubtitle() throws Exception {
+        SwingUtilities.invokeAndWait(() -> {
+            String sentence = "Container, Images, Speicherplatz zurückgewinnen, als Docker-Image verpacken und starten";
+            org.nmox.studio.core.util.FitLabel prose = ProjectExplorerTopComponent.subtitleLabel(
+                    sentence, ProjectExplorerTopComponent.Sub.PROSE);
+            int budget = prose.getFontMetrics(prose.getFont())
+                    .stringWidth("n".repeat(ProjectExplorerTopComponent.SUBTITLE_ASKS_FOR));
+            int whole = prose.getFontMetrics(prose.getFont()).stringWidth(sentence);
+            assertThat(whole).as("the fixture is wider than the budget").isGreaterThan(budget);
+            assertThat(prose.getPreferredSize().width).as("asks the dock for the old budget and no more")
+                    .isLessThanOrEqualTo(budget).isGreaterThan(budget / 2);
+            assertThat(prose.getMaximumSize().width).as("takes the row's spare width").isGreaterThan(whole);
+
+            prose.setBounds(0, 0, budget, 16);
+            prose.dispatchEvent(new java.awt.event.ComponentEvent(prose, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            assertThat(prose.getText()).as("a sentence keeps its beginning").startsWith("Container, Images").endsWith("…");
+
+            org.nmox.studio.core.util.FitLabel path = ProjectExplorerTopComponent.subtitleLabel(
+                    "/Users/someone/a/very/deep/folder/of/many/projects/and/their/checkouts/shop",
+                    ProjectExplorerTopComponent.Sub.PATH);
+            path.setBounds(0, 0, 150, 16);
+            path.dispatchEvent(new java.awt.event.ComponentEvent(path, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            assertThat(path.getText()).as("a path keeps its ends").startsWith("/Users").endsWith("shop").contains("…");
         });
     }
 

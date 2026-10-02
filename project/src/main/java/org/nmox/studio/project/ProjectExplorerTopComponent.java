@@ -834,12 +834,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // what is cut is on the tooltip, and the label says it was cut
             // (FitLabel.isCut) so that nobody has to infer it from a
             // trailing ellipsis: "detecting…" ends in one and is whole.
-            sub = new FitLabel(kind == Sub.PATH ? FitLabel.Cut.MIDDLE : FitLabel.Cut.END,
-                    getFontMetrics(TINY).stringWidth("n".repeat(SUBTITLE_ASKS_FOR)), true);
-            sub.setFont(TINY);
-            sub.setForeground(TEXT_DIM);
-            sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
-            sub.setFull(subtitle);
+            sub = subtitleLabel(subtitle, kind);
             rowPanel.add(sub);
         } else {
             rowPanel.add(Box.createHorizontalGlue());
@@ -937,30 +932,31 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             return orientation == javax.swing.SwingConstants.VERTICAL ? visible.height : visible.width;
         }
 
+        /**
+         * The page's minimum is its widest row's: a dot, a title and its
+         * buttons. Subtitles and hints ask for nothing at their narrowest,
+         * which is why they are fitted labels and not plain ones.
+         */
         @Override
         public boolean getScrollableTracksViewportWidth() {
-            return getParent() instanceof javax.swing.JViewport v && v.getWidth() >= cannotShrinkBelow();
-        }
-
-        /**
-         * The widest row's minimum: its dot, its title and its buttons. A
-         * label on the page (a section's name, an empty section's hint) is
-         * not counted, because a label shortens itself.
-         */
-        int cannotShrinkBelow() {
-            int widest = 0;
-            for (java.awt.Component c : getComponents()) {
-                if (!(c instanceof JLabel)) {
-                    widest = Math.max(widest, c.getMinimumSize().width);
-                }
-            }
-            return widest;
+            return getParent() instanceof javax.swing.JViewport v && v.getWidth() >= getMinimumSize().width;
         }
 
         @Override
         public boolean getScrollableTracksViewportHeight() {
             return getParent() instanceof javax.swing.JViewport v && v.getHeight() > getPreferredSize().height;
         }
+    }
+
+    /** A row's subtitle: fitted to the row, cut as its kind is cut. */
+    static FitLabel subtitleLabel(String subtitle, Sub kind) {
+        FitLabel sub = new FitLabel(kind == Sub.PATH ? FitLabel.Cut.MIDDLE : FitLabel.Cut.END,
+                new JLabel().getFontMetrics(TINY).stringWidth("n".repeat(SUBTITLE_ASKS_FOR)), true);
+        sub.setFont(TINY);
+        sub.setForeground(TEXT_DIM);
+        sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
+        sub.setFull(subtitle);
+        return sub;
     }
 
     /**
