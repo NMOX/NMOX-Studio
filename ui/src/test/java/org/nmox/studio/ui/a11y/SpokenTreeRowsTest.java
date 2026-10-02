@@ -42,8 +42,12 @@ class SpokenTreeRowsTest {
     void thePlatformsTreeIsSpoken() throws Exception {
         javax.swing.SwingUtilities.invokeAndWait(() -> {
             JTree tree = new JTree();
+            // As the platform paints it: markup with NO <html> prefix (its own
+            // HTML renderer draws it). With the prefix, Swing strips the tags
+            // from a label's accessible name by itself, and this test passed
+            // with the wrapper naming nothing: its first cut did.
             tree.setCellRenderer(new PaintsMarkup(
-                    "<html><b>jdbc:postgresql://127.0.0.1:55001/postgres [postgres on public]</b>"));
+                    "<b>jdbc:postgresql://127.0.0.1:55001/postgres [postgres on public]</b>"));
 
             assertThat(SpokenTreeRows.speak(tree)).as("the first meeting wraps").isTrue();
             assertThat(SpokenTreeRows.speak(tree)).as("the second finds nothing to do").isFalse();
@@ -51,7 +55,7 @@ class SpokenTreeRowsTest {
             Component row = tree.getCellRenderer().getTreeCellRendererComponent(tree, "x", false, false, true, 0, false);
             assertThat(row.getAccessibleContext().getAccessibleName())
                     .isEqualTo("jdbc:postgresql://127.0.0.1:55001/postgres [postgres on public]");
-            assertThat(((JLabel) row).getText()).as("what is painted is untouched").startsWith("<html><b>");
+            assertThat(((JLabel) row).getText()).as("what is painted is untouched").startsWith("<b>jdbc");
         });
     }
 
