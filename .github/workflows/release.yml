@@ -143,6 +143,13 @@ jobs:
           cp LICENSE NOTICE zipstage/nmoxstudio/
           (cd zipstage && zip -ur "$GITHUB_WORKSPACE/NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip" nmoxstudio)
           rm -rf zipstage
+          # One PostgreSQL driver in the product (3.4.1): the application
+          # build drops the platform's older pgJDBC from the assembled app,
+          # and the nbm plugin zips before that runs too. zip -d exits
+          # non-zero when the pattern matches nothing, so a platform bump
+          # that renames or removes the jar fails here instead of passing
+          # quietly.
+          zip -d "NMOX-Studio-${{ needs.version.outputs.version }}-portable.zip" 'nmoxstudio/ide/modules/ext/postgresql-*.jar'
       - name: Cache the jlinked runtime image
         # v2.38.9: the image is a pure function of the JDK build + the
         # FX pins inside bundle-jre.sh — hashing that script (and this
