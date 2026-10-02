@@ -249,6 +249,58 @@ class WorkbenchA11yContractTest {
     }
 
     @Test
+    @DisplayName("for a right-to-left reader a row starts at the right: its title, a gap, its subtitle; and a hint is indented where its line starts")
+    void aRowMirrors() throws Exception {
+        ProjectExplorerTopComponent[] tc = new ProjectExplorerTopComponent[1];
+        SwingUtilities.invokeAndWait(() -> tc[0] = new ProjectExplorerTopComponent());
+        SwingUtilities.invokeAndWait(tc[0]::componentOpened);
+        SwingUtilities.invokeAndWait(() -> {
+            // what the product's orientation sweep does to a window
+            tc[0].applyComponentOrientation(java.awt.ComponentOrientation.RIGHT_TO_LEFT);
+            layOut(tc[0], 900, 900);
+            List<Component> all = new ArrayList<>();
+            collect(tc[0], all);
+            int rows = 0;
+            for (Component c : all) {
+                if (!isSubtitle(c)) {
+                    continue;
+                }
+                Container row = c.getParent();
+                AbstractButton title = null;
+                for (Component sibling : row.getComponents()) {
+                    if (sibling instanceof AbstractButton b && title == null) {
+                        title = b;
+                    }
+                }
+                if (title == null) {
+                    continue;
+                }
+                rows++;
+                int subtitleEnd = c.getX() + c.getWidth();
+                assertThat(title.getX()).as(title.getText() + ": the title is to the right of its subtitle")
+                        .isGreaterThanOrEqualTo(subtitleEnd);
+                assertThat(title.getX() - subtitleEnd).as(title.getText() + ": with the gap between them, not beyond them")
+                        .isGreaterThanOrEqualTo(5);
+                assertThat(row.getWidth() - (title.getX() + title.getWidth()))
+                        .as(title.getText() + ": and the title sits at the row's right, where the line starts")
+                        .isLessThan(40);
+            }
+            assertThat(rows).as("the tooling rows at least").isGreaterThanOrEqualTo(4);
+
+            // an empty section's hint: its 18-pixel indent is on the right now
+            int hints = 0;
+            for (Component c : all) {
+                if (c instanceof org.nmox.studio.core.util.FitLabel l && !(c instanceof org.nmox.studio.core.util.PathLabel)
+                        && c.getParent() instanceof ProjectExplorerTopComponent.Page) {
+                    hints++;
+                    assertThat(l.getInsets().right).as(l.getFull()).isGreaterThan(l.getInsets().left);
+                }
+            }
+            assertThat(hints).as("a Workbench with nothing open has hints").isPositive();
+        });
+    }
+
+    @Test
     @DisplayName("a project row's subtitle becomes what the folder holds, cut as a list and not as the path it replaces")
     void kindsAreAList() throws Exception {
         SwingUtilities.invokeAndWait(() -> {

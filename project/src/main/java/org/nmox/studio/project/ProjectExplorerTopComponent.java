@@ -222,12 +222,12 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         setLayout(new BorderLayout());
         setBackground(BG);
 
-        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setLayout(new BoxLayout(header, BoxLayout.PAGE_AXIS));
         header.setBackground(BG);
         header.setBorder(BorderFactory.createEmptyBorder(10, 12, 8, 12));
         add(header, BorderLayout.NORTH);
 
-        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
+        content.setLayout(new BoxLayout(content, BoxLayout.PAGE_AXIS));
         content.setBackground(BG);
         JScrollPane scroll = new JScrollPane(content);
         scroll.setBorder(BorderFactory.createEmptyBorder());
@@ -350,7 +350,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         name.setAlignmentX(LEFT_ALIGNMENT);
         header.add(name);
 
-        JPanel chips = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel chips = new JPanel(new FlowLayout(FlowLayout.LEADING, 4, 2));
         chips.setBackground(BG);
         chips.setAlignmentX(LEFT_ALIGNMENT);
         chips.add(chip(Bundle.ProjectExplorerTopComponent_detecting(), TEXT_DIM));
@@ -364,7 +364,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         header.add(headerPath(dir));
         header.add(Box.createVerticalStrut(8));
 
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEADING, 6, 0));
         actions.setBackground(BG);
         actions.setAlignmentX(LEFT_ALIGNMENT);
         JButton fresh = new JButton(Bundle.ProjectExplorerTopComponent_newProject());
@@ -759,7 +759,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         label.setFull(hint);
         label.setFont(ROW_FONT);
         label.setForeground(TEXT_DIM);
-        label.setBorder(BorderFactory.createEmptyBorder(2, 18, 2, 12));
+        label.setBorder(new org.nmox.studio.core.util.LeadingBorder(2, 18, 2, 12));
         label.setAlignmentX(LEFT_ALIGNMENT);
         content.add(label);
     }
@@ -789,9 +789,9 @@ public final class ProjectExplorerTopComponent extends TopComponent {
     private FitLabel row(String title, String subtitle, Sub kind, boolean bold, Color dot,
             String tooltip, Runnable onClick, String forgetLabel, Runnable onForget) {
         JPanel rowPanel = new JPanel();
-        rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.X_AXIS));
+        rowPanel.setLayout(new BoxLayout(rowPanel, BoxLayout.LINE_AXIS));
         rowPanel.setBackground(BG);
-        rowPanel.setBorder(BorderFactory.createEmptyBorder(3, 14, 3, 12));
+        rowPanel.setBorder(new org.nmox.studio.core.util.LeadingBorder(3, 14, 3, 12));
         rowPanel.setAlignmentX(LEFT_ALIGNMENT);
         rowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
         rowPanel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -801,8 +801,11 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             JLabel dotLabel = new JLabel("●");
             dotLabel.setFont(TINY);
             dotLabel.setForeground(dot);
-            dotLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
             rowPanel.add(dotLabel);
+            // the gaps in a row are struts, not margins on one named side:
+            // a row's order reverses for a right-to-left reader and a strut
+            // goes with it, where a margin stays on the screen's left
+            rowPanel.add(Box.createHorizontalStrut(5));
         }
         // the title is a real BUTTON (v2.74.0 — the v2.69.9 lesson one window
         // over: a painted row with a mouse listener is a door only a mouse
@@ -817,7 +820,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
         // focus painting alone draws nothing under FlatLaf with no content
         // area and an empty border (3.4): a ring shows where Tab landed
         org.nmox.studio.core.util.KeyboardAccess.focusRing(titleButton);
-        titleButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        titleButton.setHorizontalAlignment(javax.swing.SwingConstants.LEADING);
         titleButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         titleButton.getAccessibleContext().setAccessibleName(
                 subtitle != null && !subtitle.isBlank() ? title + " — " + subtitle : title);
@@ -835,6 +838,7 @@ public final class ProjectExplorerTopComponent extends TopComponent {
             // (FitLabel.isCut) so that nobody has to infer it from a
             // trailing ellipsis: "detecting…" ends in one and is whole.
             sub = subtitleLabel(subtitle, kind);
+            rowPanel.add(Box.createHorizontalStrut(7));
             rowPanel.add(sub);
         } else {
             rowPanel.add(Box.createHorizontalGlue());
@@ -954,7 +958,6 @@ public final class ProjectExplorerTopComponent extends TopComponent {
                 new JLabel().getFontMetrics(TINY).stringWidth("n".repeat(SUBTITLE_ASKS_FOR)), true);
         sub.setFont(TINY);
         sub.setForeground(TEXT_DIM);
-        sub.setBorder(BorderFactory.createEmptyBorder(0, 7, 0, 0));
         sub.setFull(subtitle);
         return sub;
     }
