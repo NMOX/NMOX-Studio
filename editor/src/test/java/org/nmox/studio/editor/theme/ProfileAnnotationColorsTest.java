@@ -89,6 +89,25 @@ class ProfileAnnotationColorsTest {
     }
 
     @Test
+    @DisplayName("the colours are given without the announcement that makes the platform save the type")
+    void nothingIsAnnounced() {
+        AnnotationType pc = type("CurrentPC", PASTEL_GREEN);
+        java.util.List<String> announced = new java.util.ArrayList<>();
+        pc.addPropertyChangeListener(e -> announced.add(e.getPropertyName()));
+
+        ProfileAnnotationColors.apply(Map.of("CurrentPC", new Colors(DARK_GREEN, Color.WHITE, Color.RED)),
+                Map.of("CurrentPC", pc)::get);
+
+        // a setter announces, and the announcement is what rewrites the type's
+        // file in the user directory while the platform's watcher re-reads it:
+        // the staged walk's SEVERE "Premature end of file" (3.5.2)
+        assertThat(announced).isEmpty();
+        assertThat(pc.getHighlight()).isEqualTo(DARK_GREEN);
+        assertThat(pc.getForegroundColor()).isEqualTo(Color.WHITE);
+        assertThat(pc.getWaveUnderlineColor()).isEqualTo(Color.RED);
+    }
+
+    @Test
     @DisplayName("a type the profile names without a background loses its pastel one")
     void aColourTheProfileDoesNotGiveIsSwitchedOff() {
         AnnotationType classBreakpoint = type("ClassBreakpoint", new Color(0xFC9D9F));
