@@ -103,6 +103,23 @@ jobs:
           test -x /opt/nmox-studio/jre/bin/java
           test -x /usr/bin/nmox-studio
 
+      # What the desktop sees of the package: the version the package manager
+      # records is the release's, the terminal command resolves, and the menu
+      # entry is one a desktop will accept (a malformed entry is dropped from
+      # the menu without a word).
+      - name: Check the package's own claims (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          set -eu
+          TAG="${{ steps.pick.outputs.tag }}"
+          INSTALLED="$(dpkg-query -W -f='${Version}' nmox-studio)"
+          echo "package version: $INSTALLED (release $TAG)"
+          [ "v$INSTALLED" = "$TAG" ] || { echo "the package says $INSTALLED, the release is $TAG"; exit 1; }
+          [ "$(readlink -f /usr/bin/nmox)" = /opt/nmox-studio/bin/nmox ] || { echo "/usr/bin/nmox does not reach the installed command"; exit 1; }
+          sudo apt-get install -y desktop-file-utils
+          desktop-file-validate /usr/share/applications/nmox-studio.desktop
+          test -f /usr/share/icons/hicolor/512x512/apps/nmox-studio.png
+
       - name: Boot what was installed (Linux)
         if: runner.os == 'Linux'
         run: |
