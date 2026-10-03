@@ -209,7 +209,7 @@ class VsCodeTaskProblemsTest {
         feed(missing, "gone.ts(1,1): error TS1: a", "gone.ts(2,1): error TS1: b", "here.ts(1,1): error TS1: c");
         missing.exited(1);
         assertThat(said).containsExactly("Task \"other\": 3 problems found in its output. "
-                + "2 name a file that is not on disk; the matcher’s fileLocation may not fit this project.");
+                + "2 of them name a file that is not on disk; the matcher’s fileLocation may not fit this project.");
     }
 
     /* ------------------------------------------------------- what is not applied */
