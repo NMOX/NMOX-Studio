@@ -182,7 +182,7 @@ shows the one-line link.
 | **Explorer** | **Project Studio** (⇧⌘E) — the file tree (right-click a file for Copy Path, Copy Relative Path and Reveal in Finder), templates, and the project's `package.json` editor. The **Workbench** (⌥⌘0) is the home base: open files, recent files, recent projects, and everything running. |
 | **Command Palette** | **Quick Search** (⇧⌘P or ⌘I) — actions, files, recent projects, rack devices, live servers, API Studio requests, symbols. VS Code's own command names work too: *Format Document*, *Toggle Terminal*, *Git: Commit* or *Open Settings* lists the action that does the same thing here, under **VS Code commands**, with its own name and chord. |
 | **Extensions** | **Tools ▸ Plugins** installs and updates modules, NMOX's own updates included. Much of what an extension adds in VS Code is a **rack device** here — and you can write one as a JSON file in `~/.nmox/devices.d` ([device files](device-files.md)). |
-| **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
+| **`tasks.json`** | Your repository's `.vscode/tasks.json` is read: type a task's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Run task: build — make all* runs it, with Workspace Trust asking first on a project you have not trusted, its output in the Output window and the toolbar ■ to stop it. The tasks it `dependsOn` run first, `${file}` is the file open in the editor, and `${input:…}` asks you before anything starts. Beside it, the project's own scripts run the way they are written: the toolbar's Run / Build / Test (F6, F11, ⌃F6), **Run Script** on a `package.json` scripts line, the **NPM Explorer**, and the **Task Rack** (⌘9), where tasks are devices you wire together. |
 | **`launch.json`** | Your repository's `.vscode/launch.json` is read: type a configuration's name into Quick Search (⇧⌘P or ⌘I) and Enter on *Debug: Launch Program — ${workspaceFolder}/server.js* starts the breakpoint debugger on that program, with Workspace Trust asking first. Node (`node`, `pwa-node`) and Python (`python`, `debugpy`) configurations debug their `program` in their `cwd`, with their `args` and `env`; Chrome (`chrome`, `pwa-chrome`) configurations open their `url` (or `file`) with their `webRoot`. Without a `launch.json`, **Debug File** (⇧⌘F5) and the toolbar's debug button work out what to launch from the project itself — the `start` script's entry, `main`, `index.js` — and the **INSPECTOR** rack device launches a debugger as a step in a pipeline. |
 | **Integrated terminal** | The **Terminal** window (⌃\`): the first press starts a shell in the project folder, later presses bring it back. |
 | **`settings.json`** | Tools ▸ Options (on macOS, NMOX Studio ▸ Settings…). A repository's `.vscode/settings.json` is read too: `editor.tabSize`, `editor.insertSpaces` and `editor.indentSize` set its indentation as you type, `files.trimTrailingWhitespace` and `files.insertFinalNewline` (when `true`) apply when you save, and a language block such as `"[typescript]"` overrides them for its language. Where the repository also has an `.editorconfig`, the `.editorconfig` wins wherever both speak. |
@@ -228,14 +228,22 @@ it lives; click it for Quick Search. It says so once per project.
   accepted and not applied; the program's output goes to the Output
   window.
 - **`tasks.json` is read, and what cannot run as written is refused.**
-  A task that uses a value only VS Code can supply (`${input:…}`,
-  `${file}`, `${config:…}`, `${command:…}`) or that `dependsOn` another
-  task is listed but not run:
-  Enter says which variable or which task on the status line. Running it
-  with the value left blank, or without the task it depends on, would run
-  something other than what the file says. So would a task type an
-  extension provides (`gulp`, `typescript`), and a working folder outside
-  the project.
+  A task runs with the tasks it `dependsOn` first (together, or one
+  after another with `"dependsOrder": "sequence"`), with `${file}`,
+  `${relativeFile}`, `${lineNumber}`, `${selectedText}` and the rest of
+  that family filled from the file open in the editor, and with its
+  `${input:…}` questions (`promptString`, `pickString`) asked before
+  anything starts. The whole run is decided first: if one task of it
+  cannot run as written, nothing runs, and Enter says which task and why
+  on the status line. That covers a `dependsOn` label the file does not
+  define, a dependency that is a background task (problem matchers are
+  not read, so nothing says when it is ready), `${file}` with no file
+  open, and a question you cancel. A dependency that fails stops the run
+  there. Still refused by name: a value only VS Code can supply
+  (`${config:…}`, `${command:…}`, an input of `"type": "command"`), a
+  dependency written as an object (`{"type": "npm", …}`) instead of a
+  label, a task type an extension provides (`gulp`, `typescript`), and a
+  working folder outside the project.
 - **A `"type": "shell"` task runs in the shell VS Code would use.** On
   macOS and Linux that is your `$SHELL` with `-c` (a macOS zsh, bash or
   fish starts as a login shell, `-l`, as VS Code's default profiles do);
