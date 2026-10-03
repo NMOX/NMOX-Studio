@@ -176,9 +176,16 @@ final class RecommendedExtensionsSheet {
                 }
             });
             aim.addListener(reaimed);
+            // off on either way out: a closing option disposes the dialog,
+            // and the title bar's close button may only hide it
             dialog.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
+                    aim.removeListener(reaimed);
+                }
+
+                @Override
+                public void windowClosing(WindowEvent e) {
                     aim.removeListener(reaimed);
                 }
             });
