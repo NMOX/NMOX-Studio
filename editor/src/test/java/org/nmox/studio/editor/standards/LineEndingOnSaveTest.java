@@ -121,4 +121,13 @@ class LineEndingOnSaveTest {
         Files.writeString(tmp.resolve(".editorconfig"), "root = true\n[*]\nend_of_line = lf\n");
         assertThat(EditorConfig.lineSeparator(ProjectFormatting.propertiesFor(file))).isEqualTo("\n");
     }
+
+    @Test
+    @DisplayName("the save task hands the project's ending to the document: wired where the save happens")
+    void theSaveTaskIsWired() throws Exception {
+        String src = Files.readString(Path.of(
+                "src/main/java/org/nmox/studio/editor/standards/EditorConfigOnSave.java"));
+        String task = src.substring(src.indexOf("public void performTask()"), src.indexOf("static final String END_OF_LINE"));
+        assertThat(task).contains("writeWith(doc, EditorConfig.lineSeparator(props))");
+    }
 }
