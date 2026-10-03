@@ -65,7 +65,8 @@ import org.openide.util.RequestProcessor;
     "FormatWithPrettierAction_alreadyFormatted=Already formatted.",
     "FormatWithPrettierAction_tooLarge=File too large for Prettier — saved size limit applies here too.",
     "FormatWithPrettierAction_noPrettier=Prettier not found — install it in the project or globally on PATH.",
-    "FormatWithPrettierAction_failed=Prettier could not format this file (syntax error?)."
+    "FormatWithPrettierAction_failed=Prettier could not format this file (syntax error?).",
+    "FormatWithPrettierAction_untrusted=Nothing was formatted: this project\u2019s own Prettier was not run, because the workspace is not trusted."
 })
 public final class FormatWithPrettierAction implements ActionListener {
 
@@ -127,6 +128,7 @@ public final class FormatWithPrettierAction implements ActionListener {
             case TOO_LARGE -> say.accept(Bundle.FormatWithPrettierAction_tooLarge());
             case NO_PRETTIER -> say.accept(Bundle.FormatWithPrettierAction_noPrettier());
             case FAILED -> say.accept(Bundle.FormatWithPrettierAction_failed());
+            case UNTRUSTED -> say.accept(Bundle.FormatWithPrettierAction_untrusted());
         }
     }
 
