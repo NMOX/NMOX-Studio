@@ -127,6 +127,7 @@ public final class ExtensionEquivalents {
     static final String N_KEYMAP = "VsCodeExtensions_noteKeymap";
     static final String N_VIM = "VsCodeExtensions_noteVim";
     static final String N_TAILWIND = "VsCodeExtensions_noteTailwind";
+    static final String N_CLAUDE_CODE = "VsCodeExtensions_noteClaudeCode";
 
     /**
      * What covers one extension.
@@ -255,8 +256,6 @@ public final class ExtensionEquivalents {
         // RunFocusedTestAction.java runs jest and vitest
         rows(t, window(Door.TESTS), "orta.vscode-jest", "vitest.explorer", "firsttris.vscode-jest-runner",
                 "hbenl.vscode-test-explorer");
-        // rack/mcp/AgentPortAction.java: a read-only MCP endpoint an agent connects to
-        rows(t, window(Door.AGENT_PORT), "anthropic.claude-code");
 
         // ---- a rack device --------------------------------------------------
         // rack/devices/SpecterDevice.java (DeviceType.E2E): Playwright run, report, codegen
@@ -351,6 +350,12 @@ public final class ExtensionEquivalents {
         rows(t, NONE, "ms-vscode-remote.remote-containers", "ms-vscode-remote.remote-ssh",
                 "ms-vscode-remote.remote-wsl", "ms-vscode-remote.vscode-remote-extensionpack",
                 "ms-vsliveshare.vsliveshare", "ms-toolsai.jupyter");
+        // nothing here is a coding agent. rack/mcp/AgentPortAction.java opens a
+        // read-only MCP endpoint (McpReadOnlyLedgerTest: no tool writes or spawns)
+        // that Claude Code, running in its own terminal, can connect to and read
+        // the IDE through; it cannot edit, run or decide anything there
+        rows(t, new Equivalent(Kind.NO_EQUIVALENT, N_CLAUDE_CODE, Door.AGENT_PORT, null, List.of()),
+                "anthropic.claude-code");
         return List.copyOf(t);
     }
 
@@ -382,7 +387,10 @@ public final class ExtensionEquivalents {
     static String sentence(Equivalent e, Facts facts) {
         String doorName = e.door() == null ? null : facts.doorNames().get(e.door());
         return switch (e.kind()) {
-            case UNKNOWN, NO_EQUIVALENT, SYNTAX, AI, NOT_APPLICABLE, NOT_AVAILABLE -> message(e.key());
+            case UNKNOWN, SYNTAX, AI, NOT_APPLICABLE, NOT_AVAILABLE -> message(e.key());
+            // a row may name the nearest thing there is; without it the row is plainly "no equivalent"
+            case NO_EQUIVALENT -> e.door() == null ? message(e.key())
+                    : doorName == null ? message(K_NO_EQUIVALENT) : message(e.key(), doorName);
             case BUILT_IN -> e.door() == null ? message(e.key())
                     : doorName == null ? message(K_ABSENT) : message(e.key(), doorName);
             case WINDOW -> doorName == null ? message(K_ABSENT) : message(e.key(), doorName);
