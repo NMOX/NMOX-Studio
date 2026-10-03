@@ -14,6 +14,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.nmox.studio.core.util.BoundedReads;
 import org.nmox.studio.core.util.Jsonc;
+import org.nmox.studio.core.util.VsCodeSettingsFile;
 import org.nmox.studio.editor.lsp.LspLanguageIds;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -63,10 +64,7 @@ public final class VsCodeSettings {
     private static final Logger LOG = Logger.getLogger(VsCodeSettings.class.getName());
 
     /** A settings file larger than this is not a settings file. */
-    static final long MAX_BYTES = 1024L * 1024;
-
-    /** Folders walked above the edited file. */
-    static final int MAX_DEPTH = 16;
+    static final long MAX_BYTES = VsCodeSettingsFile.MAX_BYTES;
 
     /** Parsed files kept; past it the map starts over rather than grow. */
     static final int CACHE_CAP = 256;
@@ -95,20 +93,13 @@ public final class VsCodeSettings {
 
     /**
      * The nearest {@code .vscode/settings.json} above {@code file} inside
-     * its repository, or null. Only a file under a repository's root (the
-     * folder holding {@code .git}) is read: walking on towards the
-     * filesystem root would apply a {@code /tmp/.vscode} anyone on the
-     * machine can write (the 3.1.0 review). The nearest wins, as opening
-     * that folder in VS Code would.
+     * its repository, or null. The rule - never above the repository's
+     * root, never the home folder's - has one home, shared with the
+     * readers of {@code files.exclude} and {@code search.exclude}:
+     * {@link VsCodeSettingsFile#nearest(File)}.
      */
     static File settingsFor(File file) {
-        for (File dir : directoriesToRepositoryRoot(file)) {
-            File candidate = new File(new File(dir, ".vscode"), "settings.json");
-            if (candidate.isFile()) {
-                return candidate;
-            }
-        }
-        return null;
+        return VsCodeSettingsFile.nearest(file);
     }
 
     /**
