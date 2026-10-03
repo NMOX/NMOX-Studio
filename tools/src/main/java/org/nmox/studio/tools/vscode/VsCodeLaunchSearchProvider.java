@@ -10,16 +10,13 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-import javax.swing.text.JTextComponent;
 
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.nmox.studio.core.search.SearchTerms;
 import org.nmox.studio.core.spi.DebugLauncher;
 import org.nmox.studio.core.spi.ProjectAim;
-import org.nmox.studio.core.util.EditedFile;
 import org.nmox.studio.core.util.PlainStatus;
 import org.nmox.studio.rack.service.WorkspaceTrust;
 import org.nmox.studio.tools.npm.search.NpmScriptSearchProvider;
@@ -29,9 +26,10 @@ import org.nmox.studio.tools.vscode.VsCodeLaunch.DebugFile;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.DebugPage;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Refused;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Resolved;
+import org.nmox.studio.tools.vscode.VsCodeTaskSearchProvider.RunEnd;
+import org.nmox.studio.tools.vscode.VsCodeTasks.EditorContext;
+import org.nmox.studio.tools.vscode.VsCodeTasks.TaskDef;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -56,8 +54,17 @@ import org.openide.util.RequestProcessor;
  * <p><b>The file being looked at.</b> {@code ${file}} and its siblings
  * mean the file the editor shows, and the editor's state is read when
  * Enter is pressed — on the calling thread, before the lane — because that
- * is the moment the user means by "this file". It reaches the resolver as
- * one value (a path or null) through {@link #editorFile}.
+ * is the moment the user means by "this file". It is read by the rule a
+ * task's variables use ({@link VsCodeTaskEditor}), through {@link
+ * #editorProbe}.
+ *
+ * <p><b>{@code preLaunchTask}.</b> A configuration that names a task of
+ * {@code .vscode/tasks.json} has it run first, as Enter on that task would
+ * run it — its dependencies, its questions, its Output tab — and the
+ * debugger starts when the task has exited zero. A task that fails, is
+ * stopped or is refused starts no debugger, and a background task is
+ * refused by name: VS Code waits for its problem matcher, which nothing
+ * here reads.
  *
  * <p><b>Refusals speak.</b> A configuration the debugger cannot start as
  * written — a field it cannot pass on, an attach to another machine, a
@@ -87,15 +94,25 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
     /** Where refusals and progress are said, as a seam. */
     static volatile Consumer<String> statusSink = VsCodeLaunchSearchProvider::status;
 
-    /** The file the editor shows (or null), as a seam: {@code ${file}} is that file and no other. */
-    static volatile Supplier<Path> editorFile = VsCodeLaunchSearchProvider::focusedEditorFile;
+    /**
+     * The editor when Enter is pressed, as a seam: {@code ${file}} is its
+     * file and no other, and a {@code preLaunchTask} is handed the same
+     * editor a task run from Quick Search would be. One rule for which
+     * editor that is ({@link VsCodeTaskEditor}), so a task and a launch
+     * configuration never name different files.
+     */
+    static volatile Supplier<EditorContext> editorProbe = VsCodeTaskEditor::snapshot;
 
     /**
-     * Whether this provider runs a configuration's {@code preLaunchTask}
-     * before handing it on. It does not, so the resolver refuses the field
-     * by name; the constant is the one place that changes when it does.
+     * Runs a configuration's {@code preLaunchTask} and reports how it ended
+     * (a seam; the real one is the task provider's own Enter, with its
+     * refusals, its trust question and its Output tab).
      */
-    static final boolean RUNS_PRE_LAUNCH_TASKS = false;
+    interface TaskRunner {
+        void run(File project, TaskDef task, EditorContext editor, Consumer<RunEnd> then);
+    }
+
+    static volatile TaskRunner taskRunner = VsCodeTaskSearchProvider::executeThen;
 
     /** One listed configuration: its definition, the project it belongs to, and the label shown. */
     record Item(Config config, File project, String label) {
@@ -159,28 +176,29 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
      * keypress, not whenever the lane gets to it.
      */
     static RequestProcessor.Task run(File project, Config config) {
-        Path file = editorFile.get();
-        return RP.post(() -> execute(project, config, file));
+        EditorContext editor = editorProbe.get();
+        return RP.post(() -> execute(project, config, editor));
     }
 
     /**
-     * The file of the editor that last had focus, or null when no editor is
-     * open (or it shows something that is not a file on disk). In-memory
-     * questions only — the editor registry and a document's properties,
-     * through {@link EditedFile}, the one rule for which file a document
-     * holds — so it is safe where {@link #run} asks it.
+     * The body of Enter, on the lane: resolve, refuse out loud, or
+     * trust-gate, run the configuration's {@code preLaunchTask} when it
+     * names one, and hand to the debugger.
+     *
+     * <p><b>A program the task builds.</b> {@code "program":
+     * "${workspaceFolder}/dist/server.js"} with {@code "preLaunchTask":
+     * "build"} names a file that may not exist until the task has run, so
+     * with a task to run a missing path is not a refusal yet: the
+     * configuration is resolved again once the task has ended, and what is
+     * handed on is what that second look found.
      */
-    static Path focusedEditorFile() {
-        JTextComponent editor = EditorRegistry.lastFocusedComponent();
-        FileObject fo = editor == null ? null : EditedFile.of(editor.getDocument());
-        File file = fo == null ? null : FileUtil.toFile(fo);
-        return file == null ? null : file.toPath();
-    }
-
-    /** The body of Enter, on the lane: resolve, refuse out loud, or trust-gate then hand to the debugger. */
-    static void execute(File project, Config config, Path file) {
-        Resolved resolved = VsCodeLaunch.resolve(config, project, System::getenv, file, RUNS_PRE_LAUNCH_TASKS);
-        if (resolved instanceof Refused refused) {
+    static void execute(File project, Config config, EditorContext editor) {
+        Path file = editor.file();
+        Resolved resolved = VsCodeLaunch.resolve(config, project, System::getenv, file, true);
+        String preLaunch = VsCodeLaunch.preLaunchTask(config);
+        boolean builtLater = preLaunch != null && resolved instanceof Refused refused
+                && refused.reason() == VsCodeLaunch.Reason.MISSING;
+        if (resolved instanceof Refused refused && !builtLater) {
             statusSink.accept(refusal(config.name(), refused));
             return;
         }
@@ -190,12 +208,59 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
             statusSink.accept(message("VsCodeLaunchSearchProvider_noDebugger", config.name()));
             return;
         }
-        // Workspace Trust BEFORE the hand-off: the program is the
+        TaskDef task = null;
+        if (preLaunch != null) {
+            List<TaskDef> named = VsCodeTasks.readFile(project).tasks().stream()
+                    .filter(t -> t.label().equals(preLaunch)).toList();
+            if (named.size() != 1) {
+                statusSink.accept(message(named.isEmpty()
+                        ? "VsCodeLaunchSearchProvider_refusePreLaunchMissing"
+                        : "VsCodeLaunchSearchProvider_refusePreLaunchAmbiguous", config.name(), preLaunch));
+                return;
+            }
+            task = named.get(0);
+            if (task.background()) {
+                // VS Code waits for a background task's problem matcher to
+                // say "ready"; nothing here reads one, and waiting for the
+                // task to EXIT would wait for a watcher forever
+                statusSink.accept(message("VsCodeLaunchSearchProvider_refusePreLaunchBackground",
+                        config.name(), preLaunch));
+                return;
+            }
+        }
+        // Workspace Trust BEFORE the task and the hand-off: both are the
         // repository's own code. Keep Safe starts nothing and says nothing
         // more — the user just answered the question themselves.
         if (!trustCheck.test(project)) {
             return;
         }
+        if (task == null) {
+            handOver(project, config, resolved, debugger);
+            return;
+        }
+        statusSink.accept(message("VsCodeLaunchSearchProvider_preLaunchRunning", config.name(), preLaunch));
+        taskRunner.run(project, task, editor, end -> {
+            switch (end) {
+                case DONE -> {
+                    Resolved built = VsCodeLaunch.resolve(config, project, System::getenv, file, true);
+                    if (built instanceof Refused refused) {
+                        statusSink.accept(refusal(config.name(), refused));
+                    } else {
+                        handOver(project, config, built, debugger);
+                    }
+                }
+                case FAILED -> statusSink.accept(message("VsCodeLaunchSearchProvider_preLaunchFailed",
+                        config.name(), preLaunch));
+                case STOPPED -> statusSink.accept(message("VsCodeLaunchSearchProvider_preLaunchStopped",
+                        config.name(), preLaunch));
+                case NOT_STARTED -> {
+                    // the task's own refusal is on the status line (or Keep Safe was answered): nothing to add
+                }
+            }
+        });
+    }
+
+    private static void handOver(File project, Config config, Resolved resolved, DebugLauncher debugger) {
         boolean started;
         if (resolved instanceof DebugFile program) {
             started = debugger.debug(new DebugLauncher.Launch(

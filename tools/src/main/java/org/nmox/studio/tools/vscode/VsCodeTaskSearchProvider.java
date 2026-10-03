@@ -219,10 +219,35 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      * loud, or trust-gate, ask, and start.
      */
     static void execute(File project, TaskDef task, EditorContext editor) {
+        executeThen(project, task, editor, null);
+    }
+
+    /** How a run made on a caller's behalf ended. */
+    enum RunEnd {
+        /** Every task started and exited zero. */
+        DONE,
+        /** A task could not be started or exited non-zero. */
+        FAILED,
+        /** The user stopped it (the toolbar ■, the run's own row or its Cancel). */
+        STOPPED,
+        /** Nothing was spawned: the task was refused out loud, or Keep Safe was answered. */
+        NOT_STARTED
+    }
+
+    /**
+     * {@link #execute} for a caller that waits for the task: a launch
+     * configuration's {@code preLaunchTask} (3.6.0). The same checks, the
+     * same refusals and the same trust question; {@code then} hears, on
+     * the lane, how the run ended — once, whichever way it ended. With a
+     * null {@code then} this IS Enter on the task, whose own exit nobody
+     * waits for.
+     */
+    static void executeThen(File project, TaskDef task, EditorContext editor, Consumer<RunEnd> then) {
         Outcome outcome = VsCodeTaskPlan.check(task, VsCodeTasks.readFile(project), project, host,
                 editor, System.getProperty("user.home", ""));
         if (outcome instanceof Refusal refusal) {
             statusSink.accept(refusal(task.label(), refusal));
+            tell(then, RunEnd.NOT_STARTED);
             return;
         }
         Checked checked = (Checked) outcome;
@@ -231,6 +256,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             prepared = VsCodeTaskPlan.finish(checked, Map.of());
             if (prepared instanceof Refusal refusal) {
                 statusSink.accept(refusal(task.label(), refusal));
+                tell(then, RunEnd.NOT_STARTED);
                 return;
             }
             // Workspace Trust BEFORE the first spawn, once for the whole
@@ -239,6 +265,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             // answered the question themselves.
             for (File folder : trustFolders(project, (Ready) prepared)) {
                 if (!trustCheck.test(folder)) {
+                    tell(then, RunEnd.NOT_STARTED);
                     return;
                 }
             }
@@ -247,6 +274,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             // an answer may be a password: trust first, so a workspace
             // nobody trusted never asks for one
             if (!trustCheck.test(project)) {
+                tell(then, RunEnd.NOT_STARTED);
                 return;
             }
             Map<String, String> answers = new LinkedHashMap<>();
@@ -260,10 +288,17 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
             prepared = VsCodeTaskPlan.finish(checked, answers);
             if (prepared instanceof Refusal refusal) {
                 statusSink.accept(refusal(task.label(), refusal));
+                tell(then, RunEnd.NOT_STARTED);
                 return;
             }
         }
-        new Chain(task.label(), project, (Ready) prepared).start();
+        new Chain(task.label(), project, (Ready) prepared, then).start();
+    }
+
+    private static void tell(Consumer<RunEnd> then, RunEnd end) {
+        if (then != null) {
+            then.accept(end);
+        }
     }
 
     /**
@@ -299,12 +334,18 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         private final String runId;
         /** Set by the toolbar ■ (or the run's own row): no further stage starts. */
         private final AtomicBoolean stopped = new AtomicBoolean();
+        /** Who waits for the whole run, the root task included; null when nobody does. */
+        private final Consumer<RunEnd> then;
 
-        Chain(String root, File project, Ready ready) {
+        Chain(String root, File project, Ready ready, Consumer<RunEnd> then) {
+            this.then = then;
             this.root = root;
             this.project = project;
             this.stages = ready.stages();
-            this.runId = ready.running() > 1
+            // a run somebody waits for is a chain even with one task: the
+            // ■ must reach the waiter, or a task that exits zero on its
+            // TERM would be followed by what was waiting for it
+            this.runId = ready.running() > 1 || then != null
                     ? "vscode-task-chain:" + project.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet()
                     : null;
         }
@@ -323,7 +364,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
 
         private void stage(int index) {
             if (index >= stages.size()) {
-                end();
+                end(RunEnd.DONE);
                 return;
             }
             List<Step> steps = stages.get(index);
@@ -356,8 +397,9 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         }
 
         private void after(int index, List<Step> steps, List<CompletableFuture<Exit>> exits) {
-            if (index == stages.size() - 1) {
-                end(); // the task itself: nothing waits for it, and its own exit is in its Output tab
+            boolean last = index == stages.size() - 1;
+            if (last && then == null) {
+                end(RunEnd.DONE); // the task itself: nothing waits for it, and its own exit is in its Output tab
                 return;
             }
             String failed = null;
@@ -372,24 +414,36 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                 }
             }
             if (userStopped) {
-                statusSink.accept(message("VsCodeTaskSearchProvider_chainStopped", root));
-            } else if (failed == null) {
-                stage(index + 1);
+                if (!last) {
+                    statusSink.accept(message("VsCodeTaskSearchProvider_chainStopped", root));
+                }
+                end(RunEnd.STOPPED);
                 return;
-            } else if (code == -1) {
+            }
+            if (failed == null) {
+                if (last) {
+                    end(RunEnd.DONE);
+                } else {
+                    stage(index + 1);
+                }
+                return;
+            }
+            // the root task's own failure is the waiter's to say: it knows what was waiting
+            if (!last && code == -1) {
                 statusSink.accept(message("VsCodeTaskSearchProvider_chainNotStarted", root, failed));
-            } else if (code != NpmLaneRun.NOT_RUN) {
+            } else if (!last && code != NpmLaneRun.NOT_RUN) {
                 // (NOT_RUN: the npm lane refused the script and said why itself)
                 statusSink.accept(message("VsCodeTaskSearchProvider_chainFailed", root, failed,
                         String.valueOf(code)));
             }
-            end();
+            end(RunEnd.FAILED);
         }
 
-        private void end() {
+        private void end(RunEnd how) {
             if (runId != null) {
                 LiveRuns.remove(runId);
             }
+            tell(then, how);
         }
     }
 

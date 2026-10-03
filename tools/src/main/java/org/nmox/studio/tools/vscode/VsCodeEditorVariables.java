@@ -11,7 +11,8 @@ import java.util.regex.Pattern;
  * The {@code ${…}} variables VS Code fills from its ACTIVE EDITOR, filled
  * here from the file the caller says is being looked at: {@code ${file}},
  * {@code ${fileBasename}}, {@code ${fileBasenameNoExtension}}, {@code
- * ${fileDirname}} and {@code ${relativeFile}}. Pure: the editor's state
+ * ${fileExtname}}, {@code ${fileDirname}}, {@code ${fileDirnameBasename}},
+ * {@code ${relativeFile}} and {@code ${relativeFileDirname}}. Pure: the editor's state
  * arrives as one value, a path or null, so every rule here is a unit test
  * and nothing here knows what an editor is.
  *
@@ -42,9 +43,13 @@ import java.util.regex.Pattern;
  */
 final class VsCodeEditorVariables {
 
-    /** The variables this class fills. */
-    static final Set<String> NAMES = Set.of("file", "fileBasename", "fileBasenameNoExtension",
-            "fileDirname", "relativeFile");
+    /**
+     * The variables this class fills: the ones that name the file, and
+     * the same set a task is given ({@link VsCodeTasks#FILE_VARIABLES}) —
+     * one list, so a launch configuration and a task never disagree about
+     * which variables an editor can answer.
+     */
+    static final Set<String> NAMES = VsCodeTasks.FILE_VARIABLES;
 
     /** {@code ${…}}: VS Code's variable syntax, the body everything up to the first '}'. */
     private static final Pattern VARIABLE = Pattern.compile("\\$\\{([^}]*)\\}");
@@ -110,26 +115,16 @@ final class VsCodeEditorVariables {
         return out.toString();
     }
 
+    /**
+     * The value, by the one definition of these variables ({@link
+     * VsCodeTasks#editorValue}): a task's {@code ${fileBasenameNoExtension}}
+     * and a launch configuration's are the same string.
+     */
     private static String value(String name, File project, Path file) {
-        Path leaf = file.getFileName();
-        String base = leaf == null ? "" : leaf.toString();
-        return switch (name) {
-            case "file" -> file.toString();
-            case "fileBasename" -> base;
-            case "fileBasenameNoExtension" -> {
-                int dot = base.lastIndexOf('.');
-                yield dot > 0 ? base.substring(0, dot) : base;
-            }
-            case "fileDirname" -> file.getParent() == null ? file.toString() : file.getParent().toString();
-            case "relativeFile" -> {
-                Path root = project.getAbsoluteFile().toPath().normalize();
-                try {
-                    yield root.relativize(file).toString();
-                } catch (IllegalArgumentException otherRoot) {
-                    yield file.toString();
-                }
-            }
-            default -> throw new IllegalStateException(name);
-        };
+        String value = VsCodeTasks.editorValue(name, project, new VsCodeTasks.EditorContext(file, 0, 0, null));
+        if (value == null) {
+            throw new IllegalStateException(name);
+        }
+        return value;
     }
 }

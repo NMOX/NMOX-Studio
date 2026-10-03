@@ -129,8 +129,8 @@ public final class VsCodeTasks {
      */
     static final int MAX_SELECTED_TEXT = 10_000;
 
-    /** The variables that name the file open in the editor. */
-    private static final java.util.Set<String> FILE_VARIABLES = java.util.Set.of(
+    /** The variables that name the file open in the editor (a launch configuration's too: {@link VsCodeEditorVariables}). */
+    static final java.util.Set<String> FILE_VARIABLES = java.util.Set.of(
             "file", "relativeFile", "relativeFileDirname", "fileBasename",
             "fileBasenameNoExtension", "fileDirname", "fileDirnameBasename", "fileExtname");
 
@@ -782,9 +782,9 @@ public final class VsCodeTasks {
         names.add(task.path());
         names.add(task.shell() == null ? null : task.shell().executable());
         for (String name : names) {
-            String password = name == null ? null : passwordVariable(name, vars);
-            if (password != null) {
-                return new Refused(Reason.PASSWORD_SHOWN, password);
+            String wouldShow = name == null ? null : passwordVariable(name, vars);
+            if (wouldShow != null) {
+                return new Refused(Reason.PASSWORD_SHOWN, wouldShow);
             }
         }
         UnaryOperator<String> sub = s -> substitute(s, project, env, vars, false);

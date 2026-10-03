@@ -322,10 +322,15 @@ class VsCodeTaskSearchProviderTest {
         String code = src.replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("//[^\n]*", "");
         assertThat(code).contains("trustCheck = dir -> WorkspaceTrust.requestTrust(dir)")
                 .contains("spawner = VsCodeTaskSearchProvider::launch");
-        int m = code.indexOf("static void execute(");
+        // Enter and a caller that waits (a preLaunchTask) are one body: execute() only delegates
+        int e = code.indexOf("static void execute(");
+        assertThat(code.substring(e, code.indexOf("\n    }\n", e))).contains("executeThen(project, task, editor, null)")
+                .doesNotContain("new Chain(");
+        assertThat(code.split("new Chain\\(", -1)).as("one place a run is started").hasSize(2);
+        int m = code.indexOf("static void executeThen(");
         String body = code.substring(m, code.indexOf("\n    }\n", m));
         int start = body.indexOf("new Chain(");
-        assertThat(start).as("execute() starts the run").isPositive();
+        assertThat(start).as("executeThen() starts the run").isPositive();
         assertThat(body.substring(0, start)).as("and every way to that start passes the trust gate")
                 .contains("trustCheck.test(folder)").contains("trustCheck.test(project)");
         assertThat(body.lastIndexOf("instanceof Refusal")).as("a refusal ends execute() before the start")

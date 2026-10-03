@@ -220,7 +220,7 @@ class VsCodeLaunchTest {
     @DisplayName("a variable only VS Code can fill is refused naming the variable; env and workspace variables substitute")
     void variables() throws Exception {
         for (String only : new String[] {"${input:port}", "${command:pickPort}", "${config:app.port}",
-                "${lineNumber}", "${selectedText}", "${fileExtname}", "${unterminated"}) {
+                "${lineNumber}", "${selectedText}", "${unterminated"}) {
             Refused r = refused(resolve("{\"type\":\"node\",\"request\":\"launch\",\"name\":\"n\","
                     + "\"program\":\"server.js\",\"args\":[\"" + only + "\"]}"));
             assertThat(r.reason()).as(only).isEqualTo(Reason.VARIABLE);

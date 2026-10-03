@@ -24,6 +24,7 @@ import org.nmox.studio.core.spi.LiveRuns;
 import org.nmox.studio.rack.engine.RackBus;
 import org.nmox.studio.tools.npm.NpmLaneRun;
 import org.nmox.studio.tools.vscode.VsCodeTaskSearchProvider.Exit;
+import org.nmox.studio.tools.vscode.VsCodeTaskSearchProvider.RunEnd;
 import org.nmox.studio.tools.vscode.VsCodeTasks.EditorContext;
 import org.nmox.studio.tools.vscode.VsCodeTasks.InputDef;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Launch;
@@ -425,5 +426,78 @@ class VsCodeTaskRunTest {
                     .noneMatch(l -> l.contains("hunter2"));
         }
         assertThat(said()).noneMatch(s -> s.contains("hunter2"));
+    }
+    /* --------------------------------------------- a run somebody waits for */
+
+    private RunEnd waited(String label) throws InterruptedException {
+        java.util.concurrent.atomic.AtomicReference<RunEnd> end = new java.util.concurrent.atomic.AtomicReference<>();
+        java.util.concurrent.atomic.AtomicInteger told = new java.util.concurrent.atomic.AtomicInteger();
+        VsCodeTaskSearchProvider.executeThen(project.toFile(), task(label), EditorContext.NONE, how -> {
+            end.set(how);
+            told.incrementAndGet();
+        });
+        await("the waiter hears how \"" + label + "\" ended", () -> end.get() != null);
+        Thread.sleep(100);
+        assertThat(told.get()).as("told once").isEqualTo(1);
+        assertThat(chainIsLive()).as("the run has left the live runs by the time its waiter hears").isFalse();
+        return end.get();
+    }
+
+    @Test
+    @DisplayName("a waiter hears DONE only after the task itself exited zero, dependencies first")
+    void aWaiterHearsTheEnd() throws Exception {
+        CompletableFuture<Exit> gen = new CompletableFuture<>();
+        exits.put("gen", gen);
+        java.util.concurrent.atomic.AtomicReference<RunEnd> end = new java.util.concurrent.atomic.AtomicReference<>();
+        VsCodeTaskSearchProvider.executeThen(project.toFile(), task("gen"), EditorContext.NONE, end::set);
+        await("the task starts", () -> started().contains("gen"));
+        Thread.sleep(100);
+        assertThat(end.get()).as("nobody is told while the task runs").isNull();
+        assertThat(chainIsLive()).as("a run somebody waits for is in the live runs, so the \u25a0 reaches its waiter").isTrue();
+        gen.complete(new Exit(0, false));
+        await("told when it ends", () -> end.get() == RunEnd.DONE);
+
+        exits.clear();
+        assertThat(waited("build")).isEqualTo(RunEnd.DONE);
+        assertThat(started()).containsExactly("gen", "gen", "build");
+    }
+
+    @Test
+    @DisplayName("a waiter hears FAILED for the task's own non-zero exit, a dependency's, and a task that did not start")
+    void aWaiterHearsFailure() throws Exception {
+        exits.put("build", CompletableFuture.completedFuture(new Exit(3, false)));
+        assertThat(waited("build")).as("the task itself").isEqualTo(RunEnd.FAILED);
+        assertThat(waited("release")).as("its dependency").isEqualTo(RunEnd.FAILED);
+        exits.put("gen", CompletableFuture.completedFuture(new Exit(-1, false)));
+        assertThat(waited("gen")).as("never started").isEqualTo(RunEnd.FAILED);
+        assertThat(started()).doesNotContain("release");
+    }
+
+    @Test
+    @DisplayName("a waiter hears STOPPED when the user stopped the task, even one that exits zero on its TERM")
+    void aWaiterHearsStopped() throws Exception {
+        exits.put("gen", CompletableFuture.completedFuture(new Exit(0, true)));
+        assertThat(waited("gen")).isEqualTo(RunEnd.STOPPED);
+
+        CompletableFuture<Exit> slow = new CompletableFuture<>();
+        exits.put("gen", slow);
+        java.util.concurrent.atomic.AtomicReference<RunEnd> end = new java.util.concurrent.atomic.AtomicReference<>();
+        VsCodeTaskSearchProvider.executeThen(project.toFile(), task("gen"), EditorContext.NONE, end::set);
+        await("the task starts", () -> started().size() == 2);
+        LiveRuns.stopAll();
+        slow.complete(new Exit(0, false)); // a process that answers its TERM with a clean exit
+        await("the waiter is told", () -> end.get() != null);
+        assertThat(end.get()).isEqualTo(RunEnd.STOPPED);
+    }
+
+    @Test
+    @DisplayName("a waiter hears NOT_STARTED for a refusal and for Keep Safe, and nothing was spawned")
+    void aWaiterHearsNotStarted() throws Exception {
+        assertThat(waited("loop")).isEqualTo(RunEnd.NOT_STARTED);
+        assertThat(waited("broken")).isEqualTo(RunEnd.NOT_STARTED);
+        VsCodeTaskSearchProvider.trustCheck = dir -> false;
+        assertThat(waited("gen")).isEqualTo(RunEnd.NOT_STARTED);
+        assertThat(waited("deploy")).as("Keep Safe before the file's questions").isEqualTo(RunEnd.NOT_STARTED);
+        assertThat(started()).isEmpty();
     }
 }

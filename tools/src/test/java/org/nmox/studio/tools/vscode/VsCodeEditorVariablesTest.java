@@ -72,11 +72,15 @@ class VsCodeEditorVariablesTest {
     void questions() {
         assertThat(VsCodeEditorVariables.first("run ${workspaceFolder} ${relativeFile} ${file}")).isEqualTo("${relativeFile}");
         assertThat(VsCodeEditorVariables.first("${workspaceFolder}/server.js")).isNull();
-        assertThat(VsCodeEditorVariables.first("${fileExtname}")).as("not one this class fills").isNull();
+        assertThat(VsCodeEditorVariables.first("${fileExtname}")).as("a task's file variables are a launch's too")
+                .isEqualTo("${fileExtname}");
+        assertThat(VsCodeEditorVariables.first("${lineNumber}")).as("the caret is not a file").isNull();
 
         assertThat(VsCodeEditorVariables.unsupported("${file} ${workspaceFolder} ${env:X}")).isNull();
         assertThat(VsCodeEditorVariables.unsupported("${file} ${input:port}")).isEqualTo("${input:port}");
-        assertThat(VsCodeEditorVariables.unsupported("${fileExtname}")).isEqualTo("${fileExtname}");
+        assertThat(VsCodeEditorVariables.unsupported("${fileExtname}")).isNull();
+        assertThat(VsCodeEditorVariables.unsupported("${lineNumber}")).isEqualTo("${lineNumber}");
+        assertThat(VsCodeEditorVariables.NAMES).as("one list, the task resolver's").isSameAs(VsCodeTasks.FILE_VARIABLES);
         assertThat(VsCodeEditorVariables.unsupported("${file} ${oops")).isEqualTo("${oops");
         assertThat(VsCodeEditorVariables.unsupported("$${file}{input:x}"))
                 .as("what stands either side of an editor variable does not close up into a new one").isNull();

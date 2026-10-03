@@ -21,6 +21,8 @@ import org.junit.jupiter.api.io.TempDir;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.nmox.studio.core.spi.DebugLauncher;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Config;
+import org.nmox.studio.tools.vscode.VsCodeTaskSearchProvider.RunEnd;
+import org.nmox.studio.tools.vscode.VsCodeTasks.EditorContext;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -68,7 +70,12 @@ class VsCodeLaunchSearchProviderTest {
     private final Predicate<File> realTrust = VsCodeLaunchSearchProvider.trustCheck;
     private final Supplier<DebugLauncher> realLauncher = VsCodeLaunchSearchProvider.launcher;
     private final Consumer<String> realStatus = VsCodeLaunchSearchProvider.statusSink;
-    private final Supplier<Path> realEditorFile = VsCodeLaunchSearchProvider.editorFile;
+    private final Supplier<EditorContext> realEditor = VsCodeLaunchSearchProvider.editorProbe;
+    private final VsCodeLaunchSearchProvider.TaskRunner realTasks = VsCodeLaunchSearchProvider.taskRunner;
+    /** What the fake task runner was asked to run, and how it answers. */
+    private final List<String> tasksRun = Collections.synchronizedList(new ArrayList<>());
+    private volatile RunEnd taskEnds = RunEnd.DONE;
+    private volatile Runnable duringTask = () -> { };
 
     private final List<String> said = Collections.synchronizedList(new ArrayList<>());
     private final List<String> asked = Collections.synchronizedList(new ArrayList<>());
@@ -138,7 +145,12 @@ class VsCodeLaunchSearchProviderTest {
         };
         FakeLauncher fake = new FakeLauncher();
         VsCodeLaunchSearchProvider.launcher = () -> fake;
-        VsCodeLaunchSearchProvider.editorFile = () -> null;
+        VsCodeLaunchSearchProvider.editorProbe = () -> EditorContext.NONE;
+        VsCodeLaunchSearchProvider.taskRunner = (dir, task, editor, then) -> {
+            tasksRun.add(task.label());
+            duringTask.run();
+            then.accept(taskEnds);
+        };
     }
 
     @AfterEach
@@ -146,7 +158,8 @@ class VsCodeLaunchSearchProviderTest {
         VsCodeLaunchSearchProvider.trustCheck = realTrust;
         VsCodeLaunchSearchProvider.launcher = realLauncher;
         VsCodeLaunchSearchProvider.statusSink = realStatus;
-        VsCodeLaunchSearchProvider.editorFile = realEditorFile;
+        VsCodeLaunchSearchProvider.editorProbe = realEditor;
+        VsCodeLaunchSearchProvider.taskRunner = realTasks;
     }
 
     private Config config(String name) {
@@ -249,7 +262,6 @@ class VsCodeLaunchSearchProviderTest {
     @Test
     @DisplayName("refusals speak on the status line, hand over nothing and ask nothing")
     void refusalsSpeak() {
-        enter("Launch after a build");
         enter("Attach to the build box");
         enter("Current File");
         enter("npm run dev");
@@ -257,16 +269,104 @@ class VsCodeLaunchSearchProviderTest {
         assertThat(handed).isEmpty();
         assertThat(asked).as("a refusal asks no trust question").isEmpty();
         assertThat(said).containsExactly(
-                "Configuration \"Launch after a build\" sets preLaunchTask, which the NMOX Studio debugger cannot pass on; "
-                        + "it would debug something other than what the file says.",
                 "Configuration \"Attach to the build box\" attaches to 10.0.0.5; the NMOX Studio debugger attaches "
                         + "only to a process on this machine (localhost).",
                 "Configuration \"Current File\" uses ${file}, and no file is open in the editor; "
                         + "open the file to debug and try again.",
                 "Configuration \"npm run dev\" points at ${workspaceFolder}/.env, which is not there.",
                 "Compound \"Full stack\" starts several sessions at once; the NMOX Studio debugger starts one at a time.");
-        assertThat(VsCodeLaunchSearchProvider.RUNS_PRE_LAUNCH_TASKS)
-                .as("the day this provider runs the task first, the first refusal above goes with it").isFalse();
+    }
+
+    /* ------------------------------------------------------- preLaunchTask */
+
+    private void tasks(String json) throws Exception {
+        VsCodeTasks.clearCache(); // the cache is keyed on a modification time a test can rewrite inside
+        Files.writeString(project.resolve(".vscode/tasks.json"), json);
+    }
+
+    @Test
+    @DisplayName("a preLaunchTask runs first, after the trust question, and the debugger starts when it ended well")
+    void preLaunchTaskRunsFirst() throws Exception {
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        duringTask = () -> {
+            assertThat(asked).as("trust before the task").hasSize(1);
+            assertThat(handed).as("nothing debugged while the task runs").isEmpty();
+        };
+        enter("Launch after a build");
+        assertThat(tasksRun).containsExactly("build");
+        assertThat(handed).hasSize(1);
+        assertThat(said).containsExactly(
+                "Running task \"build\" before debugging \"Launch after a build\"\u2026",
+                "Starting the debugger for \"Launch after a build\"\u2026");
+    }
+
+    @Test
+    @DisplayName("a preLaunchTask that failed, was stopped or was refused starts no debugger, and says which")
+    void preLaunchTaskThatDidNotEndWell() throws Exception {
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        taskEnds = RunEnd.FAILED;
+        enter("Launch after a build");
+        taskEnds = RunEnd.STOPPED;
+        enter("Launch after a build");
+        taskEnds = RunEnd.NOT_STARTED;
+        enter("Launch after a build");
+        assertThat(tasksRun).hasSize(3);
+        assertThat(handed).isEmpty();
+        assertThat(said).containsExactly(
+                "Running task \"build\" before debugging \"Launch after a build\"\u2026",
+                "Configuration \"Launch after a build\" was not started: its preLaunchTask \"build\" did not succeed. "
+                        + "The task\u2019s Output tab says why.",
+                "Running task \"build\" before debugging \"Launch after a build\"\u2026",
+                "Configuration \"Launch after a build\" was not started: its preLaunchTask \"build\" was stopped.",
+                "Running task \"build\" before debugging \"Launch after a build\"\u2026");
+    }
+
+    @Test
+    @DisplayName("a preLaunchTask nobody defined, defined twice, or that never ends is refused by name before any question")
+    void preLaunchTaskRefusals() throws Exception {
+        enter("Launch after a build"); // no tasks.json at all
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"a\"},"
+                + "{\"label\":\"build\",\"type\":\"shell\",\"command\":\"b\"}]}");
+        enter("Launch after a build");
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"tsc -w\",\"isBackground\":true}]}");
+        enter("Launch after a build");
+        assertThat(tasksRun).isEmpty();
+        assertThat(handed).isEmpty();
+        assertThat(asked).as("a refusal asks no trust question").isEmpty();
+        assertThat(said).containsExactly(
+                "Configuration \"Launch after a build\" names the preLaunchTask \"build\", which .vscode/tasks.json "
+                        + "does not define. Nothing was started.",
+                "Configuration \"Launch after a build\" names the preLaunchTask \"build\", a label more than one task "
+                        + "in .vscode/tasks.json carries. Nothing was started.",
+                "Configuration \"Launch after a build\" names the background task \"build\" as its preLaunchTask. "
+                        + "VS Code waits for such a task to report that it is ready, which NMOX Studio cannot read; "
+                        + "nothing was started.");
+    }
+
+    @Test
+    @DisplayName("a program the preLaunchTask builds is looked for again after the task; still missing is still a refusal")
+    void theTaskBuildsTheProgram() throws Exception {
+        tasks("{\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        Files.delete(project.resolve("server.js"));
+        duringTask = () -> {
+            try {
+                Files.writeString(project.resolve("server.js"), "1;\n");
+            } catch (java.io.IOException e) {
+                throw new java.io.UncheckedIOException(e);
+            }
+        };
+        enter("Launch after a build");
+        assertThat(handed).as("the file the task made is debugged").hasSize(1);
+
+        Files.delete(project.resolve("server.js"));
+        duringTask = () -> { };
+        enter("Launch after a build");
+        assertThat(handed).as("a task that built nothing starts nothing").hasSize(1);
+        assertThat(said.get(said.size() - 1))
+                .isEqualTo("Configuration \"Launch after a build\" points at server.js, which is not there.");
+
+        enter("Launch Program"); // no task to build it: refused at once, no question
+        assertThat(asked).hasSize(2);
     }
 
     @Test
@@ -315,9 +415,9 @@ class VsCodeLaunchSearchProviderTest {
     void currentFileComesFromTheEditor() throws Exception {
         Path shown = Files.writeString(project.resolve("worker.js"), "1;\n");
         AtomicReference<String> readOn = new AtomicReference<>();
-        VsCodeLaunchSearchProvider.editorFile = () -> {
+        VsCodeLaunchSearchProvider.editorProbe = () -> {
             readOn.set(Thread.currentThread().getName());
-            return shown;
+            return new EditorContext(shown, 1, 1, null);
         };
         enter("Current File");
 
@@ -414,17 +514,23 @@ class VsCodeLaunchSearchProviderTest {
         String body = code.substring(m, code.indexOf("\n    }\n", m));
         int refuse = body.indexOf("instanceof Refused");
         int gate = body.indexOf("trustCheck.test(project)");
-        int handFile = body.indexOf("debugger.debug(");
-        int handAttach = body.indexOf("debugger.attachNode(");
-        int handPage = body.indexOf("debugger.debugPage(");
         assertThat(refuse).isPositive();
         assertThat(gate).as("the trust gate is present").isGreaterThan(refuse);
-        assertThat(handFile).as("the file hand-off comes after the gate").isGreaterThan(gate);
-        assertThat(handAttach).as("the attach hand-off comes after the gate").isGreaterThan(gate);
-        assertThat(handPage).as("the page hand-off comes after the gate").isGreaterThan(gate);
-        assertThat(body.split("debugger\\.(debug|attachNode|debugPage)\\(", -1))
-                .as("three hand-offs, and no fourth before the gate").hasSize(4);
-        assertThat(code).contains("RP.post(() -> execute(project, config, file))");
+        assertThat(body.indexOf("handOver(")).as("the hand-off comes after the gate").isGreaterThan(gate);
+        assertThat(body.indexOf("taskRunner.run(")).as("the preLaunchTask runs after the gate").isGreaterThan(gate);
+        assertThat(body).as("execute() itself hands nothing to the debugger")
+                .doesNotContain("debugger.debug(").doesNotContain("debugger.attachNode(")
+                .doesNotContain("debugger.debugPage(");
+        // the three hand-offs live in handOver(), which only execute() calls
+        int h = code.indexOf("private static void handOver(");
+        String hand = code.substring(h, code.indexOf("\n    }\n", h));
+        assertThat(hand.split("debugger\\.(debug|attachNode|debugPage)\\(", -1)).as("three hand-offs").hasSize(4);
+        assertThat(code.split("debugger\\.(debug|attachNode|debugPage)\\(", -1))
+                .as("and no fourth anywhere else").hasSize(4);
+        assertThat(code.split("[^d ]handOver\\(|[(> ]handOver\\(", -1).length - 1)
+                .as("handOver is its declaration and the two calls in execute()").isEqualTo(3);
+        assertThat(body.split("handOver\\(", -1)).as("both calls are in execute()").hasSize(3);
+        assertThat(code).contains("RP.post(() -> execute(project, config, editor))");
     }
 
     @Test
