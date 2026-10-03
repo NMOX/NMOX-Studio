@@ -5,6 +5,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import javax.swing.JPanel;
+import org.nmox.studio.core.util.VsCodeHidden;
 import org.nmox.studio.rack.engine.FileWatcher;
 import javax.swing.SwingUtilities;
 import org.openide.explorer.ExplorerManager;
@@ -41,6 +42,15 @@ import org.openide.nodes.Node;
  * to drive a full rebuild now drives {@link FileUtil#refreshFor}, so
  * files written by builds appear without an expansion dance.</li>
  * </ul>
+ *
+ * <p><b>What the project hides stays hidden</b> (3.5.13): the tree's
+ * folders are listed through {@link VsCodeHidden}, the platform's own
+ * folder filter over the {@code files.exclude} of the project's
+ * {@code .vscode/settings.json}. Hidden from this view only - the file
+ * still opens by name and is still committed. The settings are read where
+ * the root is resolved (off the EDT) and asked again every
+ * {@link #HIDDEN_RECHECK_MS} while the tree watches its folder, so an edit
+ * to them redraws the rows in place: no re-root, the expansion kept.
  */
 @org.openide.util.NbBundle.Messages({
     "FileTreePanel_noProject=No project",
@@ -63,13 +73,20 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         Node resolve(File dir);
     }
 
-    private static final RootResolver REAL_RESOLVER = dir -> {
+    static final RootResolver REAL_RESOLVER = dir -> {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
         if (fo == null || !fo.isFolder()) {
             return null;
         }
-        return new HeavyAwareFilterNode(DataFolder.findFolder(fo).getNodeDelegate(), true);
+        // this lane is off the EDT by the law above, so the project's
+        // settings are read here; every row after that is judged from memory
+        VsCodeHidden hidden = new VsCodeHidden(fo);
+        hidden.refresh();
+        return new HeavyAwareFilterNode(hidden.nodeFor(DataFolder.findFolder(fo)), true, hidden);
     };
+
+    /** How often a watched tree asks whether the project's files.exclude changed. */
+    static final int HIDDEN_RECHECK_MS = 2_000;
 
     private final ExplorerManager manager = new ExplorerManager();
     private final SpokenTreeView view = new SpokenTreeView();
@@ -78,6 +95,11 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     private final org.openide.util.RequestProcessor scanner =
             new org.openide.util.RequestProcessor("nmox-filetree-scan", 1, true);
     private final PropertyChangeListener selectionRelay = this::relaySelection;
+    /** The files.exclude filter of the tree in place, or null (no project, a test's resolver). */
+    private volatile VsCodeHidden hidden;
+    /** Whether the tree is watching its folder; the recheck below runs only while it is. */
+    private volatile boolean watching;
+    private final org.openide.util.RequestProcessor.Task hiddenRecheck = scanner.create(this::recheckHidden);
 
     private File root;
     private FileWatcher watcher;
@@ -208,6 +230,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
         this.root = dir;
         restartWatcher();
         if (dir == null) {
+            hidden = null;
             onEdt(() -> manager.setRootContext(placeholder(Bundle.FileTreePanel_noProject())));
             return;
         }
@@ -219,6 +242,7 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
                 if (!java.util.Objects.equals(root, dir)) {
                     return; // aim changed while we resolved; the newer scan owns the tree
                 }
+                hidden = node instanceof HeavyAwareFilterNode real ? real.hidden() : null;
                 manager.setRootContext(node != null ? node
                         : placeholder(Bundle.FileTreePanel_unreadable(dir.getName())));
             });
@@ -258,6 +282,8 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
     // ---- external-change refresh ----
 
     private void restartWatcher() {
+        watching = false;
+        hiddenRecheck.cancel();
         if (watcher != null) {
             watcher.stop();
             watcher = null;
@@ -273,7 +299,30 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
             watcher = new FileWatcher(watched, 1500, null,
                     changed -> scanner.post(() -> FileUtil.refreshFor(watched))).contentEvery(10);
             watcher.start();
+            watching = true;
+            hiddenRecheck.schedule(HIDDEN_RECHECK_MS);
         }
+    }
+
+    /**
+     * Asks the project's settings again, on the scanner lane: a few stats,
+     * and a parse only when the file's time or size moved. When what they
+     * hide changed, the filter tells the platform's folder children and the
+     * rows are listed again in place.
+     */
+    void recheckHidden() {
+        VsCodeHidden filter = hidden;
+        if (filter != null) {
+            filter.refresh();
+        }
+        if (watching) {
+            hiddenRecheck.schedule(HIDDEN_RECHECK_MS);
+        }
+    }
+
+    /** For the tests: wait until the scanner lane has run everything posted so far. */
+    void awaitScanner() {
+        scanner.post(() -> { }).waitFinished();
     }
 
     /**
@@ -289,6 +338,8 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
      * are safe to keep across the panel's whole lifetime.
      */
     public void dispose() {
+        watching = false;
+        hiddenRecheck.cancel();
         if (watcher != null) {
             watcher.stop();
             watcher = null;
@@ -322,14 +373,25 @@ public class FileTreePanel extends JPanel implements ExplorerManager.Provider {
 
         /** True only for the project root the tree is aimed at. */
         private final boolean root;
+        /** On the root only: the files.exclude filter its folders are listed through. */
+        private final VsCodeHidden hidden;
 
         HeavyAwareFilterNode(Node original) {
             this(original, false);
         }
 
         HeavyAwareFilterNode(Node original, boolean root) {
+            this(original, root, null);
+        }
+
+        HeavyAwareFilterNode(Node original, boolean root, VsCodeHidden hidden) {
             super(original, original.isLeaf() ? Children.LEAF : new HeavyChildren(original));
             this.root = root;
+            this.hidden = hidden;
+        }
+
+        VsCodeHidden hidden() {
+            return hidden;
         }
 
         /**
