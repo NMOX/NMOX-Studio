@@ -141,7 +141,10 @@ Emacs, Ctrl+L continua sendo ali o *recenter* do próprio Emacs.
 
 Uma linguagem sem comentário de bloco, como o Python, diz isso na barra
 de status. Num arquivo HTML, Vue ou Svelte, um bloco `<script>` ou
-`<style>` é comentado na linguagem dele. Sem seleção, o atalho comenta ou
+`<style>` é comentado na linguagem dele, e o frontmatter de um componente
+Astro também; uma seleção que levaria um comentário para dentro ou para
+fora de um bloco desses é recusada pelo nome em vez de quebrar o arquivo.
+Sem seleção, o atalho comenta ou
 descomenta a linha; ele não procura um comentário que apenas esteja em
 volta do cursor, então, para remover um comentário de várias linhas,
 selecione-o.
@@ -150,6 +153,52 @@ Na Pesquisa rápida, os símbolos do arquivo são a categoria **Símbolos
 deste arquivo**. Digitar só `@` os lista a partir do começo do arquivo;
 `m name` (a letra, um espaço e depois o nome) pesquisa nessa categoria e
 em nenhuma outra.
+
+### O perfil de teclado do VS Code
+
+As tabelas acima são o perfil padrão, em que um atalho do qual os usuários
+do NetBeans dependem mantém o seu significado. Se as suas mãos preferem o
+mapa de teclado do VS Code inteiro, troque o perfil: digite *Usar o mapa
+de teclado do VS Code* na Pesquisa rápida (⇧⌘P ou ⌘I; a linha é
+*Preferences: Use the VS Code Keymap*), ou escolha **VS Code** em
+Ferramentas ▸ Opções ▸ Atalhos de teclado ▸ Profile (no macOS,
+NMOX Studio ▸ Settings… ▸ Atalhos de teclado ▸ Profile). A barra de status
+diz em que perfil você está e como voltar; nada jamais o troca por você.
+
+Nesse perfil, os atalhos padrão do VS Code fazem o que fazem no VS Code,
+no macOS e também no Windows e no Linux, onde quer que este produto tenha
+a ação: ⌥↑ / ⌥↓ movem a linha, ⇧⌘K a apaga, ⌘L expande a seleção de
+linha, ⇧⌘L seleciona todas as ocorrências, ⌘[ / ⌘] tiram e aumentam o
+recuo, ⌘↩ insere uma linha abaixo, ⇧⌘\\ salta para o colchete
+correspondente, ⌥⌘[ / ⌥⌘] dobram e desdobram, ⌘K ⌘0 / ⌘K ⌘J dobram e
+desdobram tudo, ⌘K ⌘X remove os espaços em branco do fim das linhas, ⌘J
+mostra a janela Output, ⌘\\ divide o editor, ⌘T e ⇧⌘O vão para um símbolo
+do projeto e do arquivo, ⇧⌘M mostra os Itens de ação, ⇧⌘D a janela do
+depurador, ⌘K ⌘S a lista de Atalhos de teclado, ⌘K ⌘W fecha todos os
+editores, ⌘K ⌘O abre uma pasta, ⌃R abre um projeto recente, ⇧⌘B
+constrói, F1 é a paleta de comandos, e as teclas do depurador são as do
+VS Code: F5 começa a depurar o projeto ou continua um que está pausado,
+⇧F5 para, ⌃F5 executa sem depurar, F9 liga e desliga um ponto de
+interrupção, F10, F11 e ⇧F11 passam por cima, entram e saem. Todo atalho
+do produto que o VS Code não reivindica (as janelas ⌥⌘, o ⌥⌘E do Emmet, o
+⌥⌘G) fica onde está.
+
+O que ainda é diferente no perfil VS Code, pelo nome:
+
+- **Nenhum atalho**, porque nada aqui é essa ação: ⌘B (*Toggle
+  Primary Side Bar*), ⇧⌘W (*Close Window*), ⇧⌘F5 (*Restart* da
+  depuração), F8 / ⇧F8 (*Go to Next / Previous Problem in Files*), ⌥F12
+  (*Peek Definition*), ⇧⌘↩ (*Insert Line Above*) e ⌘U (*Cursor Undo*). As
+  teclas não fazem nada, em vez de fazer outra coisa.
+- **Salvar tudo não tem atalho no Windows e no Linux** (o Ctrl+K S do
+  VS Code); no macOS é ⌥⌘S.
+- **O que os atalhos do VS Code tiraram do NetBeans.** F1 não abre mais a
+  ajuda, ⌘B não vai mais para a declaração (F12 vai), as conversões de
+  maiúsculas e minúsculas do ⌘U, a completação de palavras de ⌘K / ⇧⌘K, a
+  troca de letras de ⌘T e o histórico da área de transferência de ⇧⌘D não
+  têm atalho neste perfil, e também não têm Depurar o arquivo, Alternar o
+  marcador, Mostrar só o editor e Abrir projeto. A lista completa, para
+  todos os sistemas, é `scripts/vscode-keymap/displaced.txt` no código-fonte.
 
 
 <a id="from-the-terminal"></a>
@@ -210,10 +259,10 @@ uma linha.
 | **Explorer** (Explorador) | **Estúdio de projeto** (⇧⌘E) — a árvore de arquivos (clique com o botão direito num arquivo para Copiar caminho, Copiar caminho relativo e Mostrar no Finder), os modelos e o editor do `package.json` do projeto. A **Bancada** (⌥⌘0) é a base: arquivos abertos, arquivos recentes, projetos recentes e tudo que está rodando. |
 | **Command Palette** (Paleta de Comandos) | **Pesquisa rápida** (⇧⌘P ou ⌘I) — ações, arquivos, projetos recentes, dispositivos do rack, servidores ativos, requisições do Estúdio de API, símbolos. Os nomes dos comandos do próprio VS Code também funcionam: *Format Document*, *Toggle Terminal*, *Git: Commit* ou *Open Settings* listam a ação que faz a mesma coisa aqui, em **Comandos do VS Code**, com o próprio nome e o próprio atalho. |
 | **Extensions** (Extensões) | **Ferramentas ▸ Plugins** instala e atualiza módulos, incluindo as atualizações do próprio NMOX. As extensões do VS Code não se instalam aqui, então **Ferramentas ▸ Extensões recomendadas do VS Code…** responde à pergunta que o `.vscode/extensions.json` de um repositório levanta: para cada extensão que ele recomenda, o que faz esse trabalho no NMOX Studio — um recurso integrado, uma janela que dá para abrir dali, um dispositivo do rack, um servidor de linguagem (e se esse servidor está instalado), ou nada — e uma extensão que ele não conhece é dita desconhecida em vez de adivinhada. Muito do que uma extensão acrescenta no VS Code é um **dispositivo do rack** aqui — e você pode escrever um como um arquivo JSON em `~/.nmox/devices.d` ([arquivos de dispositivo](device-files.md)). |
-| **`tasks.json`** | O `.vscode/tasks.json` do seu repositório é lido: digite o nome de uma tarefa na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Executar tarefa: build — make all* a executa — ou escolha-a na lista que **Executar ▸ Executar tarefa…** mostra — com a Confiança no espaço de trabalho perguntando antes num projeto em que você ainda não confiou, a saída dela na janela Output e o ■ da barra de ferramentas para pará-la. As tarefas das quais ela depende (`dependsOn`) rodam primeiro, `${file}` é o arquivo aberto no editor, e `${input:…}` pergunta a você antes de qualquer coisa começar. Ao lado, os scripts do próprio projeto rodam como estão escritos: o Executar / Construir / Testar da barra de ferramentas (F6, F11, ⌃F6), **Executar script** numa linha de scripts do `package.json`, o **Explorador NPM** e o **Rack de tarefas** (⌘9), onde as tarefas são dispositivos que você liga uns aos outros. |
+| **`tasks.json`** | O `.vscode/tasks.json` do seu repositório é lido: digite o nome de uma tarefa na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Executar tarefa: build — make all* a executa — ou escolha-a na lista que **Executar ▸ Executar tarefa…** mostra — com a Confiança no espaço de trabalho perguntando antes num projeto em que você ainda não confiou, a saída dela na janela Output e o ■ da barra de ferramentas para pará-la. As tarefas das quais ela depende (`dependsOn`) rodam primeiro, `${file}` é o arquivo aberto no editor, e `${input:…}` pergunta a você antes de qualquer coisa começar. O `problemMatcher` de uma tarefa transforma a saída dela em problemas nos Itens de ação e em sublinhados ondulados no editor (`$tsc`, `$eslint-stylish` e os outros matchers integrados do VS Code pelo nome, ou um escrito no próprio arquivo), e um observador em segundo plano como o `tsc -w` é aguardado até que o matcher dele diga que um ciclo terminou. Ao lado, os scripts do próprio projeto rodam como estão escritos: o Executar / Construir / Testar da barra de ferramentas (F6, F11, ⌃F6), **Executar script** numa linha de scripts do `package.json`, o **Explorador NPM** e o **Rack de tarefas** (⌘9), onde as tarefas são dispositivos que você liga uns aos outros. |
 | **`launch.json`** | O `.vscode/launch.json` do seu repositório é lido: digite o nome de uma configuração na Pesquisa rápida (⇧⌘P ou ⌘I) e Enter em *Depurar: Launch Program — ${workspaceFolder}/server.js* inicia o depurador de pontos de interrupção nesse programa — **Depurar ▸ Iniciar depuração…** lista as mesmas configurações — com a Confiança no espaço de trabalho perguntando antes. As configurações de Node (`node`, `pwa-node`) depuram o `program` delas no `cwd` delas, com os `args`, o `env` e o `envFile` delas, sob o `runtimeExecutable` e os `runtimeArgs` delas — então uma configuração de `npm run dev`, de `tsx` ou de `--experimental-strip-types` inicia como está escrita — e um `"request": "attach"` de Node se anexa a um processo `node --inspect` nesta máquina. As configurações de Python (`python`, `debugpy`) depuram o `program` delas com `args`, `env`, `envFile` e o interpretador que o `python` delas indica; as de Chrome (`chrome`, `pwa-chrome`) abrem a `url` (ou o `file`) delas com o `webRoot` delas. `"program": "${file}"` depura o arquivo que o seu editor mostra, e uma `preLaunchTask` que indica uma tarefa do seu `tasks.json` roda primeiro: o depurador inicia quando a tarefa teve sucesso. Sem um `launch.json`, **Depurar o arquivo** (⇧⌘F5) e o botão de depurar da barra de ferramentas descobrem o que iniciar a partir do próprio projeto — a entrada do script `start`, o `main`, o `index.js` — e o dispositivo **INSPECTOR** do rack inicia um depurador como uma etapa de um pipeline. |
 | **Integrated terminal** (Terminal integrado) | A janela **Terminal** (⌃\`): a primeira vez que você aperta, ela inicia um shell na pasta do projeto; as seguintes a trazem de volta. |
-| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.vscode/settings.json` de um repositório também é lido: `editor.tabSize`, `editor.insertSpaces` e `editor.indentSize` definem a indentação dele enquanto você digita, `files.trimTrailingWhitespace` e `files.insertFinalNewline` (quando `true`) se aplicam quando você salva, `files.eol` é o fim de linha com que os arquivos são gravados, `"editor.formatOnSave": false` impede que salvar reformate o arquivo, e um bloco de linguagem como `"[typescript]"` os substitui para aquela linguagem. Onde o repositório também tem um `.editorconfig`, o `.editorconfig` vence onde quer que os dois digam algo. |
+| **`settings.json`** | Ferramentas ▸ Opções (no macOS, NMOX Studio ▸ Settings…). O `.vscode/settings.json` de um repositório também é lido: `editor.tabSize`, `editor.insertSpaces` e `editor.indentSize` definem a indentação dele enquanto você digita, `files.trimTrailingWhitespace` e `files.insertFinalNewline` (quando `true`) se aplicam quando você salva, `files.eol` é o fim de linha com que os arquivos são gravados, `"editor.formatOnSave": false` impede que salvar reformate o arquivo, o primeiro dos `editor.rulers` é onde o editor desenha a linha da margem direita (uma lista vazia não desenha nenhuma), `editor.wordWrap` `"on"` ou `"off"` quebra as linhas dos arquivos desse projeto ou as mantém sem quebra, `files.exclude` esconde das árvores do projeto o que ele indica, e **Localizar nos projetos** pula o que `files.exclude` e `search.exclude` indicam; um bloco de linguagem como `"[typescript]"` os substitui para aquela linguagem. Onde o repositório também tem um `.editorconfig`, o `.editorconfig` vence onde quer que os dois digam algo. As suas próprias configurações do VS Code vêm uma vez, quando você pede: **Ferramentas ▸ Importar configurações do VS Code…** |
 | **Problems panel** (Problemas) | **Itens de ação** (⌘6), ou clique na contagem **✕ ⚠** da barra de status: os erros e avisos dos servidores de linguagem e os achados de lint e de tipos dos dispositivos PURITY e TYPEGUARD do rack. Como no VS Code, alguns servidores informam só sobre os arquivos que você tem abertos; o gopls informa sobre o pacote inteiro. |
 | **Search view** (Pesquisa) (`search.useIgnoreFiles`) | **Localizar nos projetos** (⇧⌘F). Como no VS Code, a pesquisa pula o que os arquivos `.gitignore` do repositório e `.git/info/exclude` ignoram, então `node_modules` e `dist/` ficam fora dos resultados quando o `.gitignore` os lista; fora de um repositório, ela pula pelo nome `node_modules`, `dist`, `build` e as outras pastas de build. Marque **Pesquisar em fontes geradas** na caixa de diálogo dela para pesquisar nelas também. Seu arquivo global de exclusões do git não é lido. |
 | **Outline** (Estrutura de tópicos) | O **Navegador** (⌘7). |
@@ -224,7 +273,7 @@ uma linha.
 | **Breadcrumbs** (Trilhas) | **Exibir ▸ Mostrar a trilha de navegação**. |
 | **Source Control** (Controle do código-fonte) | O selo do git na barra de status (ramo e mudanças, um clique até o histórico) e o menu **Equipe**. |
 | **Workspace Trust** (Confiança do workspace) | A mesma ideia, aplicada antes de qualquer coisa que um repositório escolheu ser executada: abrir um projeto clonado não roda nada até você confiar nele. |
-| **Keyboard Shortcuts editor** (Editor de atalhos de teclado) | Ferramentas ▸ Opções ▸ Atalhos de teclado (no macOS, Settings… ▸ Atalhos de teclado) — edite qualquer atalho, ou troque o perfil inteiro para Eclipse, Emacs ou IntelliJ. |
+| **Keyboard Shortcuts editor** (Editor de atalhos de teclado) | Ferramentas ▸ Opções ▸ Atalhos de teclado (no macOS, Settings… ▸ Atalhos de teclado) — edite qualquer atalho, ou troque o perfil inteiro para VS Code, Eclipse, Emacs ou IntelliJ. |
 
 Na primeira vez que você abre um repositório que traz `.vscode/tasks.json`,
 `launch.json`, `settings.json` ou `extensions.json`, um aviso diz o que
@@ -276,10 +325,13 @@ isso uma vez por projeto.
     configuração não foi iniciada. Um `program` que a tarefa constrói
     (`dist/server.js`) é procurado depois da tarefa, não antes. Um rótulo
     que o `tasks.json` não define, um rótulo que duas tarefas
-    compartilham, a forma de objeto
-    (`{"type": "npm", "script": "build"}`) e uma tarefa em segundo plano
-    (`"isBackground": true`, um observador que nunca termina) são
-    recusados pelo nome antes que qualquer coisa rode.
+    compartilham e a forma de objeto
+    (`{"type": "npm", "script": "build"}`) são recusados pelo nome antes
+    que qualquer coisa rode. Uma tarefa em segundo plano
+    (`"isBackground": true`, um observador que nunca termina) é aguardada
+    até que o matcher de problemas dela informe um ciclo terminado, depois
+    continua rodando, e apertar Depurar de novo a reaproveita; uma sem
+    matcher que possa dizer quando ela está pronta é recusada pelo nome.
   - **Um `envFile` que não existe é recusado**, onde o VS Code inicia o
     programa sem ele. As variáveis dele são acrescentadas ao ambiente e
     uma entrada de `env` vence o arquivo, como no VS Code. O arquivo é
@@ -320,8 +372,8 @@ isso uma vez por projeto.
   dela não pode rodar como está escrita, nada roda, e Enter diz qual
   tarefa e por quê na barra de status. Isso vale para um rótulo de
   `dependsOn` que o arquivo não define, uma dependência que é uma tarefa
-  em segundo plano (os problem matchers não são lidos, então nada diz
-  quando ela está pronta), `${file}` sem nenhum arquivo aberto, e uma
+  em segundo plano sem um matcher de problemas que possa dizer quando ela
+  está pronta, `${file}` sem nenhum arquivo aberto, e uma
   pergunta que você cancela. Uma dependência que falha para a execução
   ali. Continuam recusados pelo nome: um valor que só o VS Code pode
   fornecer (`${config:…}`, `${command:…}`, uma entrada com
@@ -338,7 +390,46 @@ isso uma vez por projeto.
   fim) fica de fora e é nomeado no log em vez de ser inserido pela
   metade. Digitar um prefixo não abre a lista sozinho: ⌃Space abre.
   Snippets sem `prefix`, snippets de usuário e `isFileTemplate` não são
-  lidos.
+  lidos. Os arquivos de snippets só são lidos para arquivos dentro do
+  repositório que os contém, e um snippet que inseriria mais de um milhão
+  de caracteres não é inserido.
+- **O `problemMatcher` de uma tarefa é lido.** Cada execução substitui os
+  problemas anteriores daquela tarefa, e uma execução limpa os apaga. Os
+  matchers integrados do VS Code funcionam pelo nome (`$tsc`, `$tsc-watch`,
+  `$tsgo-watch`, `$eslint-stylish`, `$eslint-compact`, `$jshint`,
+  `$jshint-stylish`, `$msCompile`, `$lessCompile`, `$gulp-tsc`, `$go`,
+  `$lessc`), assim como `$gcc` e `$rustc`, das extensões C/C++ e
+  rust-analyzer; matchers escritos no próprio arquivo e
+  `{"base": "$tsc", …}` também funcionam, incluindo padrões de várias
+  linhas com `loop`, com todo `fileLocation` menos `"search"`. Um matcher
+  que esta IDE não tem, ou cuja expressão regular significa outra coisa
+  aqui, não impede a tarefa: ela roda, e a barra de status nomeia, uma
+  vez, o matcher que não foi aplicado.
+- **Formatar formata JavaScript e TypeScript com o Prettier do projeto.**
+  Código-fonte ▸ Formatar (⇧⌥F) executa o Prettier que o seu projeto
+  configura, pedindo primeiro a Confiança no espaço de trabalho quando
+  esse Prettier é o do próprio projeto; um projeto sem configuração do
+  Prettier diz isso na barra de status, em vez de deixar o arquivo como
+  estava sem dizer nada.
+- **As suas próprias configurações vêm uma vez, quando você pede.**
+  **Ferramentas ▸ Importar configurações do VS Code…** (ou *import vs code
+  settings* na Pesquisa rápida) lê o `settings.json` pessoal do seu
+  VS Code — do VS Code, do Insiders ou do VSCodium — e lista cada
+  configuração que reconhece com o que ela vira aqui: tamanho da tabulação
+  e espaços, quebra automática de linha, réguas, exibição de espaços em
+  branco, remoção ao salvar, Formatar ao salvar, o minimapa, a Rolagem
+  fixa e o salvamento automático. As configurações que significam
+  exatamente o mesmo aqui começam marcadas; as parecidas dizem em que
+  diferem e começam desmarcadas. Aplicar grava as marcadas e elas valem
+  na hora; Cancelar não grava nada. A fonte do editor é definida nas
+  configurações de Fontes e cores, e os atalhos de teclado são os perfis
+  de teclado. Todo o resto do seu arquivo — tokens, caminhos,
+  configurações de extensões — é só contado, nunca mostrado nem copiado.
+- **O `files.associations` não é lido.** A plataforma decide o tipo de um
+  arquivo uma vez e o mantém, então um mapeamento no `settings.json` não
+  poderia ser respeitado com exatidão; uma exclusão condicional
+  (`"when"`), as réguas depois da primeira e as cores delas, e a quebra
+  numa coluna também não são lidas.
 - **Uma tarefa `"type": "shell"` roda no shell que o VS Code usaria.** No
   macOS e no Linux é o seu `$SHELL` com `-c` (um zsh, bash ou fish do
   macOS inicia como shell de login, `-l`, como fazem os perfis padrão do
@@ -348,10 +439,18 @@ isso uma vez por projeto.
   de `"args": ["-c"]`. No Windows só são executados o PowerShell (args
   terminando em `-Command`) e o `cmd.exe` (args terminando em `/c`);
   qualquer outro shell ali é recusado pelo nome em vez de receber uma
-  linha de comando com aspas postas no chute.
-- **Não existe um perfil de teclado “VS Code”.** Os atalhos acima vêm no
-  perfil padrão e nos outros quatro. Uma exceção proposital: no perfil do
-  **Eclipse**, ⇧⌘E continua sendo o *Switch to Editor* do próprio Eclipse,
+  linha de comando com aspas postas no chute. Um nome de arquivo, a
+  seleção ou a resposta a uma entrada no `command` de uma tarefa de shell
+  recebe as aspas daquele shell, então `"command": "python ${file}"`
+  funciona com qualquer nome de arquivo, inclusive com um espaço ou um `$`;
+  no `cmd.exe`, um valor que contém `%`, `!`, aspas duplas ou uma quebra
+  de linha é recusado pelo nome, porque nenhuma forma de pôr aspas os
+  torna inofensivos ali.
+- **As tabelas acima descrevem o perfil de teclado padrão.** No perfil
+  **VS Code** (veja *O perfil de teclado do VS Code* acima), os próprios
+  atalhos do VS Code vencem onde quer que este produto tenha a ação. Os
+  quatro primeiros atalhos vêm em todos os perfis. Uma exceção
+  proposital: no perfil do **Eclipse**, ⇧⌘E continua sendo o *Switch to Editor* do próprio Eclipse,
   e dentro do editor ⇧⌘P e ⇧⌘X mantêm os significados do Eclipse (a chave
   correspondente, maiúsculas) — quem escolheu o Eclipse espera o Eclipse.
 - **No Linux, Ctrl+\` abre o Terminal, não um seletor de janelas.** O
