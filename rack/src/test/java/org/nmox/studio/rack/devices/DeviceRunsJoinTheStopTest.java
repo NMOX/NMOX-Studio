@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 import org.nmox.studio.core.spi.LiveRuns;
 import org.nmox.studio.rack.model.Rack;
 
@@ -29,8 +29,25 @@ class DeviceRunsJoinTheStopTest {
     /** See {@link Sleeper#keepalive}. */
     private static final String KEEPALIVE = "keepalive";
 
-    @TempDir
+    /**
+     * Self-managed rather than {@code @TempDir}: JUnit deletes a
+     * {@code @TempDir} the instant the method's teardown returns, and on
+     * Windows under Git Bash the fixture's REAL shell is a grandchild the
+     * tree kill cannot reach (ledger 38), which ends itself only on its
+     * next turn round the loop after the keepalive below is gone — a few
+     * milliseconds in which it still holds this directory as its working
+     * directory, and Windows refuses to delete a directory a process sits
+     * in. The main lane failed exactly so on the 3.5.12 commit after the
+     * same tree passed on the pull request: a race, so the delete waits
+     * (bounded) for the handle to be released, the v1.57.0
+     * {@code JsDebugServerTest} idiom.
+     */
     Path projectDir;
+
+    @BeforeEach
+    void makeDir() throws java.io.IOException {
+        projectDir = Files.createTempDirectory("nmox-device-stop-test");
+    }
 
     @AfterEach
     void drain() {
@@ -38,11 +55,41 @@ class DeviceRunsJoinTheStopTest {
         LiveRuns.clearForTest();
         try {
             // belt and braces: a shell that outlived the kill ends itself on
-            // its next turn round the loop, so nothing holds the @TempDir
-            // when JUnit deletes it
+            // its next turn round the loop, so nothing holds the directory
+            // for long
             Files.deleteIfExists(projectDir.resolve(KEEPALIVE));
         } catch (java.io.IOException ignored) {
             // the directory is on its way out anyway
+        }
+        removeDirWithRetry(projectDir);
+    }
+
+    /** Deletes the tree, waiting up to ~2 s for a still-releasing Windows handle. */
+    static void removeDirWithRetry(Path dir) {
+        if (dir == null) {
+            return;
+        }
+        for (int attempt = 0; attempt < 20; attempt++) {
+            try {
+                if (!Files.exists(dir)) {
+                    return;
+                }
+                try (java.util.stream.Stream<Path> walk = Files.walk(dir)) {
+                    walk.sorted(java.util.Comparator.reverseOrder())
+                            .forEach(p -> p.toFile().delete());
+                }
+                if (!Files.exists(dir)) {
+                    return;
+                }
+            } catch (java.io.IOException retryable) {
+                // a still-releasing Windows handle — wait and try again
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                return;
+            }
         }
     }
 
@@ -57,7 +104,7 @@ class DeviceRunsJoinTheStopTest {
          * parent-PID chain is broken — Git Bash on Windows, ledger 38 — the
          * tree kill cannot see it: it holds the pump's pipe open (which is
          * why the exit half below is POSIX-only) AND it holds this
-         * {@code @TempDir} as its working directory, which Windows then
+         * project directory as its working directory, which Windows then
          * refuses to delete, failing the method on JUnit's cleanup. A shell
          * looping on a builtin spawns nothing, so the kill always reaches
          * it; the teardown drops the file as belt and braces.
@@ -143,7 +190,7 @@ class DeviceRunsJoinTheStopTest {
      * The law the fixture has to keep: the run is ONE process. A child of the
      * script is a grandchild of the JVM, and where the PID chain is broken
      * (Git Bash, ledger 38) the tree kill never reaches it — it holds the
-     * pump's pipe open AND holds the @TempDir as its cwd, which Windows then
+     * pump's pipe open AND holds the project directory as its cwd, which Windows then
      * refuses to delete, failing the method on JUnit's cleanup.
      */
     private static void assertOneProcess(Path marker) throws Exception {
@@ -196,9 +243,9 @@ class DeviceRunsJoinTheStopTest {
             // assertions below; the join, the marker and the stop above are
             // asserted everywhere. The abort itself is now SAFE: the fixture
             // spawns nothing that could outlive the kill and hold the
-            // @TempDir open (see Sleeper#keepalive), and the bounded
-            // killAndWait inside rack.shutdown() reaps the shell before
-            // JUnit's cleanup runs.
+            // project directory open (see Sleeper#keepalive), and the bounded
+            // killAndWait inside rack.shutdown() reaps the shell before the
+            // teardown's retrying delete runs.
             org.junit.jupiter.api.Assumptions.assumeFalse(
                     System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win"),
                     "tree-kill exit is POSIX-only (ledger 38)");
