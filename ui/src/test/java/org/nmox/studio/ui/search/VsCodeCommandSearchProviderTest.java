@@ -48,7 +48,10 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("cherry pick", ALL)).containsExactly("Git: Cherry Pick...");
         assertThat(titles("line blame", ALL)).containsExactly("GitLens: Toggle Line Blame");
         assertThat(titles("file history", ALL)).containsExactly("Git: View File History");
-        assertThat(titles("settings", ALL)).containsExactly("Preferences: Open Settings");
+        assertThat(titles("settings", ALL)).containsExactly("Preferences: Open Settings",
+                "Preferences: Import VS Code Settings");
+        assertThat(titles("import vs code settings", ALL)).as("bringing a switcher's own settings.json across")
+                .containsExactly("Preferences: Import VS Code Settings");
         assertThat(titles("keyboard shortcuts", ALL)).containsExactly("Preferences: Open Keyboard Shortcuts");
         assertThat(titles("problems", ALL)).containsExactly("View: Toggle Problems");
         assertThat(titles("install extensions", ALL)).containsExactly("Extensions: Install Extensions");

@@ -79,7 +79,7 @@ public final class ToggleWordWrapAction extends AbstractAction implements Presen
      * Options dialog does after Apply: the view listens to its document's
      * {@code text-line-wrap} property, not to the preference behind it.
      */
-    static void refreshEditors() {
+    public static void refreshEditors() {
         for (JTextComponent editor : editors.get()) {
             Document doc = editor.getDocument();
             if (doc != null && doc.getProperty(WordWrap.KEY) != null) {

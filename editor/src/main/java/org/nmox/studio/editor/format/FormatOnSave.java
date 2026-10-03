@@ -99,7 +99,12 @@ public final class FormatOnSave implements OnSaveTask {
         return NbPreferences.forModule(FormatOnSave.class).getBoolean(PREF_ENABLED, true);
     }
 
-    static void setEnabled(boolean enabled) {
+    /**
+     * The one write of the IDE-wide toggle: Options ▸ Editor ▸ Format on
+     * Save and Tools ▸ Import VS Code Settings… both come here. Read at
+     * every save, so it takes effect at once.
+     */
+    public static void setEnabled(boolean enabled) {
         NbPreferences.forModule(FormatOnSave.class).putBoolean(PREF_ENABLED, enabled);
     }
 
