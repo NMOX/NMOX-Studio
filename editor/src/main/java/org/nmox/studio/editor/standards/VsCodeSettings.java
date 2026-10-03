@@ -2,7 +2,9 @@ package org.nmox.studio.editor.standards;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -100,22 +102,42 @@ public final class VsCodeSettings {
      * that folder in VS Code would.
      */
     static File settingsFor(File file) {
-        String home = System.getProperty("user.home");
-        File found = null;
-        File dir = file.getParentFile();
-        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
-            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
-                return null; // reached home with no repository around the file
-            }
+        for (File dir : directoriesToRepositoryRoot(file)) {
             File candidate = new File(new File(dir, ".vscode"), "settings.json");
-            if (found == null && candidate.isFile()) {
-                found = candidate;
-            }
-            if (new File(dir, ".git").exists()) {
-                return found; // the repository's root: settings above it are somebody else's
+            if (candidate.isFile()) {
+                return candidate;
             }
         }
         return null;
+    }
+
+    /**
+     * The folders whose {@code .vscode} speaks for {@code file}: its own
+     * folder and each one above it, nearest first, ending with its
+     * repository's root (the folder holding {@code .git}). Empty when no
+     * repository is around the file within {@link #MAX_DEPTH} levels, or
+     * the home folder comes first: a {@code .vscode} that is not inside
+     * a repository is nobody's project configuration.
+     *
+     * <p>One walk for every reader of a repository's {@code .vscode}:
+     * the settings above and the project's snippets
+     * ({@code editor.snippets.ProjectSnippets}), which would otherwise
+     * have grown its own answer to "how far up".
+     */
+    public static List<File> directoriesToRepositoryRoot(File file) {
+        String home = System.getProperty("user.home");
+        List<File> dirs = new ArrayList<>();
+        File dir = file.getParentFile();
+        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
+            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
+                return List.of(); // reached home with no repository around the file
+            }
+            dirs.add(dir);
+            if (new File(dir, ".git").exists()) {
+                return dirs; // the repository's root: a .vscode above it is somebody else's
+            }
+        }
+        return List.of();
     }
 
     private static JSONObject parse(File settings) {
@@ -141,16 +163,33 @@ public final class VsCodeSettings {
     }
 
     /** VS Code's language id for {@code file}: its own names for JSX and TSX, else the LSP rule. */
-    static String languageId(File file) {
-        String name = file.getName().toLowerCase(Locale.ROOT);
+    public static String languageId(File file) {
+        String byName = languageId(file.getName(), null);
+        if (byName != null) {
+            return byName;
+        }
+        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+        return fo == null ? null : LspLanguageIds.forMime(fo.getMIMEType());
+    }
+
+    /**
+     * VS Code's language id for a file of this name whose editor is of
+     * this mime type: the two names VS Code keeps apart and this product's
+     * mime types do not ({@code .jsx} and {@code .tsx} open as JavaScript
+     * and TypeScript here), else {@link LspLanguageIds}' answer for the
+     * mime; null when neither says. The one place a VS Code language id
+     * is decided: a {@code "[typescript]"} settings block and a snippet's
+     * {@code "scope": "typescript"} must name the same files.
+     */
+    public static String languageId(String fileName, String mime) {
+        String name = fileName == null ? "" : fileName.toLowerCase(Locale.ROOT);
         if (name.endsWith(".jsx")) {
             return "javascriptreact";
         }
         if (name.endsWith(".tsx")) {
             return "typescriptreact";
         }
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        return fo == null ? null : LspLanguageIds.forMime(fo.getMIMEType());
+        return LspLanguageIds.forMime(mime);
     }
 
     /**

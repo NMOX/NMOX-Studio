@@ -108,7 +108,54 @@ public final class LanguageComments {
             // is configured via NgTemplateLanguage.getCommentHandler()
             Map.entry("text/x-vue", new BlockComment("<!--", "-->")));
 
+    // The block pair of languages that ALSO have a line comment, which the
+    // toggle above never needs and a snippet's BLOCK_COMMENT_START does.
+    // Only the languages whose pair is certain: a language absent here has
+    // no block comment as far as a snippet is told, and VS Code's rule for
+    // that (the variable's default, or nothing) is the honest outcome. Not
+    // "every // language": Gleam, Prisma and Cairo have no block comment
+    // at all, and F# and Pascal write theirs differently.
+    private static final BlockComment C_BLOCK = new BlockComment("/*", "*/");
+    private static final BlockComment MARKUP_BLOCK = new BlockComment("<!--", "-->");
+    private static final Map<String, BlockComment> BLOCK_PAIR = Map.ofEntries(
+            Map.entry("text/javascript", C_BLOCK),
+            Map.entry("text/typescript", C_BLOCK),
+            Map.entry("text/x-java", C_BLOCK),
+            Map.entry("text/x-c", C_BLOCK),
+            Map.entry("text/x-cpp", C_BLOCK),
+            Map.entry("text/x-rust", C_BLOCK),
+            Map.entry("text/x-php5", C_BLOCK),
+            Map.entry("text/x-go", C_BLOCK),
+            Map.entry("text/x-swift", C_BLOCK),
+            Map.entry("text/x-kotlin", C_BLOCK),
+            Map.entry("text/x-csharp", C_BLOCK),
+            Map.entry("text/x-groovy", C_BLOCK),
+            Map.entry("text/x-dart", C_BLOCK),
+            Map.entry("text/x-scala", C_BLOCK),
+            Map.entry("text/x-solidity", C_BLOCK),
+            Map.entry("text/css", C_BLOCK),
+            Map.entry("text/scss", C_BLOCK),
+            Map.entry("text/less", C_BLOCK),
+            Map.entry("text/x-scss", C_BLOCK),
+            Map.entry("text/x-less", C_BLOCK),
+            Map.entry("text/html", MARKUP_BLOCK),
+            Map.entry("text/xhtml", MARKUP_BLOCK),
+            Map.entry("text/xml", MARKUP_BLOCK),
+            Map.entry("text/x-ng-template", MARKUP_BLOCK));
+
     private LanguageComments() {
+    }
+
+    /**
+     * The block-comment pair of a mime, whether or not the language also
+     * has a line comment; null when it has none this table is sure of.
+     */
+    public static BlockComment blockPairFor(String mimeType) {
+        if (mimeType == null) {
+            return null;
+        }
+        BlockComment only = BLOCK_COMMENT.get(mimeType);
+        return only != null ? only : BLOCK_PAIR.get(mimeType);
     }
 
     /** The line-comment prefix for a mime, or null when unknown. */

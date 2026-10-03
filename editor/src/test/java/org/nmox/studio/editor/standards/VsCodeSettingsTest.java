@@ -178,4 +178,40 @@ class VsCodeSettingsTest {
                 "{ // the team formats in a commit hook\n \"editor.formatOnSave\": false }");
         assertThat(VsCodeSettings.formatOnSave(file)).contains(false);
     }
+
+    @Test
+    @DisplayName("a language id is decided by the file's name where VS Code splits a mime, else by the editor's mime")
+    void languageIdByNameAndMime() {
+        assertThat(VsCodeSettings.languageId("App.TSX", "text/typescript")).isEqualTo("typescriptreact");
+        assertThat(VsCodeSettings.languageId("app.ts", "text/typescript")).isEqualTo("typescript");
+        assertThat(VsCodeSettings.languageId("a.component.html", "text/x-ng-template")).isEqualTo("html");
+        assertThat(VsCodeSettings.languageId("run.sh", "text/sh")).isEqualTo("shellscript");
+        assertThat(VsCodeSettings.languageId(null, "text/x-python")).isEqualTo("python");
+        assertThat(VsCodeSettings.languageId("notes", null)).isNull();
+    }
+
+    @Test
+    @DisplayName("the folders whose .vscode speaks for a file: its own up to the repository's root, nearest first")
+    void directoriesToTheRepositoryRoot() throws Exception {
+        Path repo = Files.createDirectories(tmp.resolve("mono"));
+        Files.createDirectories(repo.resolve(".git"));
+        Path file = Files.createDirectories(repo.resolve("packages/web/src")).resolve("main.ts");
+        Files.writeString(file, "x");
+        assertThat(VsCodeSettings.directoriesToRepositoryRoot(file.toFile()))
+                .extracting(File::getName).containsExactly("src", "web", "packages", "mono");
+
+        Path loose = Files.createDirectories(tmp.resolve("loose/dir")).resolve("a.js");
+        Files.writeString(loose, "x");
+        assertThat(VsCodeSettings.directoriesToRepositoryRoot(loose.toFile()))
+                .as("no repository around the file: no folder speaks for it").isEmpty();
+
+        String home = System.getProperty("user.home");
+        try {
+            System.setProperty("user.home", repo.resolve("packages").toFile().getAbsolutePath());
+            assertThat(VsCodeSettings.directoriesToRepositoryRoot(file.toFile()))
+                    .as("the home folder is reached before any repository root: nothing").isEmpty();
+        } finally {
+            System.setProperty("user.home", home);
+        }
+    }
 }

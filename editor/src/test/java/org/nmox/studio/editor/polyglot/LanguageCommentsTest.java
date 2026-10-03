@@ -64,6 +64,28 @@ class LanguageCommentsTest {
     }
 
     @Test
+    @DisplayName("The block pair of a language that also has a line comment is answered separately, only where it is certain")
+    void blockPairOfLineCommentLanguages() {
+        for (String mime : new String[]{"text/javascript", "text/typescript", "text/x-java", "text/css", "text/x-scss"}) {
+            LanguageComments.BlockComment block = LanguageComments.blockPairFor(mime);
+            assertThat(block).as(mime).isNotNull();
+            assertThat(block.open()).as(mime).isEqualTo("/*");
+            assertThat(block.close()).as(mime).isEqualTo("*/");
+        }
+        for (String mime : new String[]{"text/html", "text/x-ng-template", "text/x-vue", "text/x-svelte"}) {
+            assertThat(LanguageComments.blockPairFor(mime).open()).as(mime).isEqualTo("<!--");
+            assertThat(LanguageComments.blockPairFor(mime).close()).as(mime).isEqualTo("-->");
+        }
+        // a line comment does not imply the C pair: these have none, or another
+        for (String mime : new String[]{"text/x-python", "text/x-gleam", "text/x-prisma", "text/x-fsharp",
+            "text/x-pascal", "text/x-nonesuch", null}) {
+            assertThat(LanguageComments.blockPairFor(mime)).as(String.valueOf(mime)).isNull();
+        }
+        assertThat(LanguageComments.blockCommentFor("text/javascript"))
+                .as("the toggle's table is untouched: a line-comment language still toggles by line").isNull();
+    }
+
+    @Test
     @DisplayName("An unknown or null mime has no block pair either")
     void unknownHasNoBlockPair() {
         assertThat(LanguageComments.blockCommentFor("text/x-nonesuch")).isNull();
