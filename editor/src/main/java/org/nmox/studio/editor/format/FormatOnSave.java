@@ -91,8 +91,8 @@ public final class FormatOnSave implements OnSaveTask {
      * opts a project in. Format on demand (⇧⌥F) is a gesture and does not
      * ask.
      */
-    static boolean refusedByProject(Boolean projectSays) {
-        return Boolean.FALSE.equals(projectSays);
+    static boolean refusedByProject(java.util.Optional<Boolean> projectSays) {
+        return projectSays.isPresent() && !projectSays.get();
     }
 
     static boolean isEnabled() {

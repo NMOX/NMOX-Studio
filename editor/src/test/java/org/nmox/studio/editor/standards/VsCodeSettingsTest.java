@@ -154,15 +154,15 @@ class VsCodeSettingsTest {
     @Test
     @DisplayName("editor.formatOnSave is answered as TRUE, FALSE or nothing; a language block overrides the top level")
     void formatOnSave() {
-        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": false}"), "typescript")).isFalse();
-        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": true}"), null)).isTrue();
-        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{}"), "typescript")).isNull();
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": false}"), "typescript")).contains(false);
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": true}"), null)).contains(true);
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{}"), "typescript")).isEmpty();
         assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": \"no\"}"), null))
-                .as("not a boolean: says nothing").isNull();
+                .as("not a boolean: says nothing").isEmpty();
         JSONObject perLanguage = new JSONObject(
                 "{\"editor.formatOnSave\": true, \"[markdown]\": {\"editor.formatOnSave\": false}}");
-        assertThat(VsCodeSettings.formatOnSave(perLanguage, "markdown")).isFalse();
-        assertThat(VsCodeSettings.formatOnSave(perLanguage, "typescript")).isTrue();
+        assertThat(VsCodeSettings.formatOnSave(perLanguage, "markdown")).contains(false);
+        assertThat(VsCodeSettings.formatOnSave(perLanguage, "typescript")).contains(true);
     }
 
     @Test
@@ -173,9 +173,9 @@ class VsCodeSettingsTest {
         File file = tmp.resolve("src/app.txt").toFile();
         Files.createDirectories(file.getParentFile().toPath());
         Files.writeString(file.toPath(), "x");
-        assertThat(VsCodeSettings.formatOnSave(file)).as("no settings.json: nothing said").isNull();
+        assertThat(VsCodeSettings.formatOnSave(file)).as("no settings.json: nothing said").isEmpty();
         Files.writeString(tmp.resolve(".vscode/settings.json"),
                 "{ // the team formats in a commit hook\n \"editor.formatOnSave\": false }");
-        assertThat(VsCodeSettings.formatOnSave(file)).isFalse();
+        assertThat(VsCodeSettings.formatOnSave(file)).contains(false);
     }
 }

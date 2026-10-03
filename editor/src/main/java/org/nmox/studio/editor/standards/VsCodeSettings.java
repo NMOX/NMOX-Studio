@@ -218,21 +218,22 @@ public final class VsCodeSettings {
     /**
      * What {@code file}'s project says about formatting on save
      * ({@code editor.formatOnSave}, top level or in the file's language
-     * block): TRUE, FALSE, or null when it says nothing or says something
+     * block): true, false, or empty when it says nothing or says something
      * that is not a boolean (3.5.13).
      */
-    public static Boolean formatOnSave(File file) {
+    public static java.util.Optional<Boolean> formatOnSave(File file) {
         File settings = settingsFor(file);
         if (settings == null) {
-            return null;
+            return java.util.Optional.empty();
         }
         JSONObject json = parse(settings);
-        return json == null ? null : formatOnSave(json, languageId(file));
+        return json == null ? java.util.Optional.empty() : formatOnSave(json, languageId(file));
     }
 
     /** {@link #formatOnSave(File)} over parsed settings. Pure. */
-    static Boolean formatOnSave(JSONObject settings, String languageId) {
-        return effective(settings, languageId).get("editor.formatOnSave") instanceof Boolean b ? b : null;
+    static java.util.Optional<Boolean> formatOnSave(JSONObject settings, String languageId) {
+        return effective(settings, languageId).get("editor.formatOnSave") instanceof Boolean b
+                ? java.util.Optional.of(b) : java.util.Optional.empty();
     }
 
     /** Whether a {@code [a][b]} language-block key names {@code languageId}. */

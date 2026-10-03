@@ -166,9 +166,9 @@ class FormatOnSaveTest {
     @Test
     @DisplayName("only a project's explicit false refuses the save-time format; true and silence leave the Prettier config deciding")
     void aProjectsFalseRefuses() {
-        assertThat(FormatOnSave.refusedByProject(Boolean.FALSE)).isTrue();
-        assertThat(FormatOnSave.refusedByProject(Boolean.TRUE)).isFalse();
-        assertThat(FormatOnSave.refusedByProject(null)).isFalse();
+        assertThat(FormatOnSave.refusedByProject(java.util.Optional.of(false))).isTrue();
+        assertThat(FormatOnSave.refusedByProject(java.util.Optional.of(true))).isFalse();
+        assertThat(FormatOnSave.refusedByProject(java.util.Optional.empty())).isFalse();
     }
 
     @Test
