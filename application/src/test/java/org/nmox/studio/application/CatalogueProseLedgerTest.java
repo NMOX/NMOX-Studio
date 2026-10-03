@@ -84,6 +84,10 @@ class CatalogueProseLedgerTest {
                 + "and canvas.");
         LEDGER.put("ContractKit.java#Chain",
                 "TRANSLATED through ChainText, rendered by ContractKitAction's combo.");
+        LEDGER.put("VsCodeUserSettings.java#Build",
+                "MACHINE — the editors' own product names (VS Code, VS Code Insiders, "
+                + "VSCodium) beside the folder each keeps its settings in. A product name "
+                + "is the same word in every language.");
         LEDGER.put("DbEngine.java#DbEngine",
                 "MACHINE — the engines' own names (MySQL, PostgreSQL). A product name "
                 + "is the same word in every language.");

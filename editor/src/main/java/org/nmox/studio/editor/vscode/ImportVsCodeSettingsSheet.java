@@ -31,6 +31,7 @@ import org.nmox.studio.editor.vscode.VsCodeUserSettings.Row;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  * The import sheet: one row per setting the file holds that this product
@@ -255,8 +256,8 @@ final class ImportVsCodeSettingsSheet {
         panel.add(scroll, BorderLayout.CENTER);
         panel.add(foot, BorderLayout.PAGE_END);
 
-        JButton apply = new JButton(ImportVsCodeSettingsAction.message("ImportVsCode_apply"));
-        JButton cancel = new JButton(ImportVsCodeSettingsAction.message("ImportVsCode_cancel"));
+        JButton apply = new JButton(NbBundle.getMessage(ImportVsCodeSettingsAction.class, "ImportVsCode_apply"));
+        JButton cancel = new JButton(NbBundle.getMessage(ImportVsCodeSettingsAction.class, "ImportVsCode_cancel"));
         DialogDescriptor descriptor = new DialogDescriptor(panel, title, true, new Object[] {apply, cancel}, cancel,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);
         descriptor.setClosingOptions(new Object[] {apply, cancel});
