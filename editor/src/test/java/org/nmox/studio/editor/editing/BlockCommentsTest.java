@@ -264,6 +264,10 @@ class BlockCommentsTest {
         // stopping inside the opening tag itself is refused too
         String tag = "<p>x</p>\n<script src=\"a.js\"></script>\n";
         assertThat(inDocument("text/html", tag, 0, tag.indexOf("src"))).isEqualTo(new Refusal("<script>"));
+        // starting inside the opening tag and ending in the script: only the state at the end can tell
+        String attrs = "<script src=\"a.js\">\nlet a;\n</script>\n";
+        assertThat(inDocument("text/html", attrs, attrs.indexOf("a.js"), attrs.indexOf("let a") + 3))
+                .isEqualTo(new Refusal("<script>"));
         // a whole script element is markup, and <!-- --> around it is sound
         Outcome whole = inDocument("text/html", tag, tag.indexOf("<script"), tag.indexOf("<script"));
         assertThat(((Edit) whole).applyTo(tag.substring(tag.indexOf("<script"))))
