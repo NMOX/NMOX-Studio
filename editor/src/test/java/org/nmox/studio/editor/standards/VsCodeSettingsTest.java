@@ -150,4 +150,32 @@ class VsCodeSettingsTest {
         assertThat(VsCodeSettings.languageId(new File("App.jsx"))).isEqualTo("javascriptreact");
         assertThat(VsCodeSettings.languageId(new File("App.tsx"))).isEqualTo("typescriptreact");
     }
+
+    @Test
+    @DisplayName("editor.formatOnSave is answered as TRUE, FALSE or nothing; a language block overrides the top level")
+    void formatOnSave() {
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": false}"), "typescript")).isFalse();
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": true}"), null)).isTrue();
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{}"), "typescript")).isNull();
+        assertThat(VsCodeSettings.formatOnSave(new JSONObject("{\"editor.formatOnSave\": \"no\"}"), null))
+                .as("not a boolean: says nothing").isNull();
+        JSONObject perLanguage = new JSONObject(
+                "{\"editor.formatOnSave\": true, \"[markdown]\": {\"editor.formatOnSave\": false}}");
+        assertThat(VsCodeSettings.formatOnSave(perLanguage, "markdown")).isFalse();
+        assertThat(VsCodeSettings.formatOnSave(perLanguage, "typescript")).isTrue();
+    }
+
+    @Test
+    @DisplayName("the project's formatOnSave is read from the nearest settings.json inside the repository")
+    void formatOnSaveFromDisk() throws Exception {
+        Files.createDirectories(tmp.resolve(".git"));
+        Files.createDirectories(tmp.resolve(".vscode"));
+        File file = tmp.resolve("src/app.txt").toFile();
+        Files.createDirectories(file.getParentFile().toPath());
+        Files.writeString(file.toPath(), "x");
+        assertThat(VsCodeSettings.formatOnSave(file)).as("no settings.json: nothing said").isNull();
+        Files.writeString(tmp.resolve(".vscode/settings.json"),
+                "{ // the team formats in a commit hook\n \"editor.formatOnSave\": false }");
+        assertThat(VsCodeSettings.formatOnSave(file)).isFalse();
+    }
 }

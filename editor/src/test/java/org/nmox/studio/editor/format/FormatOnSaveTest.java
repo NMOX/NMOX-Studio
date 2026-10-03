@@ -162,4 +162,23 @@ class FormatOnSaveTest {
             }
         }
     }
+
+    @Test
+    @DisplayName("only a project's explicit false refuses the save-time format; true and silence leave the Prettier config deciding")
+    void aProjectsFalseRefuses() {
+        assertThat(FormatOnSave.refusedByProject(Boolean.FALSE)).isTrue();
+        assertThat(FormatOnSave.refusedByProject(Boolean.TRUE)).isFalse();
+        assertThat(FormatOnSave.refusedByProject(null)).isFalse();
+    }
+
+    @Test
+    @DisplayName("the save task asks the project before it formats: the refusal is wired where the bytes are decided")
+    void theRefusalIsWired() throws Exception {
+        String src = java.nio.file.Files.readString(java.nio.file.Path.of(
+                "src/main/java/org/nmox/studio/editor/format/FormatOnSave.java"));
+        String task = src.substring(src.indexOf("public void performTask()"), src.indexOf("public void runLocked"));
+        assertThat(task.indexOf("refusedByProject(")).as("asked in the save task").isPositive();
+        assertThat(task.indexOf("refusedByProject("))
+                .as("and before the formatter runs").isLessThan(task.indexOf("new PrettierFormatter()"));
+    }
 }

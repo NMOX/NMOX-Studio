@@ -175,6 +175,26 @@ public final class EditorConfig {
     }
 
     /**
+     * The line terminator {@code end_of_line} names ({@code lf},
+     * {@code crlf}, {@code cr}, in any case), or null when the property
+     * is absent or says anything else. The document's text always holds
+     * {@code \n}; this is what each of them becomes when the file is
+     * written (3.5.13).
+     */
+    public static String lineSeparator(Map<String, String> props) {
+        String eol = props.get("end_of_line");
+        if (eol == null) {
+            return null;
+        }
+        return switch (eol.strip().toLowerCase(java.util.Locale.ROOT)) {
+            case "lf" -> "\n";
+            case "crlf" -> "\r\n";
+            case "cr" -> "\r";
+            default -> null;
+        };
+    }
+
+    /**
      * Applies the save-safe text standards from a property set:
      * {@code trim_trailing_whitespace} and {@code insert_final_newline}
      * (both directions - {@code false} means the file must NOT end

@@ -17,7 +17,9 @@ import org.openide.util.NbPreferences;
  * the project's own Prettier over the buffer before the bytes hit disk.
  * Strictly opt-in twice over — the IDE-wide toggle (Options → Editor →
  * Format on Save, default on) and the project's own Prettier config;
- * a project that never chose Prettier never gets rewritten.
+ * a project that never chose Prettier never gets rewritten, and neither
+ * does one whose {@code .vscode/settings.json} says
+ * {@code "editor.formatOnSave": false}.
  *
  * The replacement is the minimal edit between old and new text (common
  * prefix and suffix stripped), so the caret and the scroll position
@@ -47,6 +49,9 @@ public final class FormatOnSave implements OnSaveTask {
         if (file == null) {
             return; // in-memory or virtual documents save as-is
         }
+        if (refusedByProject(org.nmox.studio.editor.standards.VsCodeSettings.formatOnSave(file))) {
+            return;
+        }
         String text;
         try {
             text = doc.getText(0, doc.getLength());
@@ -73,6 +78,21 @@ public final class FormatOnSave implements OnSaveTask {
     public boolean cancel() {
         cancelled = true;
         return true;
+    }
+
+    /**
+     * Whether the project itself turned formatting on save off (3.5.13):
+     * its {@code .vscode/settings.json} says
+     * {@code "editor.formatOnSave": false}, at the top level or for this
+     * file's language. A team that carries a Prettier configuration and
+     * formats in a commit hook, or by hand, says so with exactly that
+     * line, and saving a file here rewrote it anyway. {@code true} and
+     * silence change nothing: the Prettier configuration is still what
+     * opts a project in. Format on demand (⇧⌥F) is a gesture and does not
+     * ask.
+     */
+    static boolean refusedByProject(Boolean projectSays) {
+        return Boolean.FALSE.equals(projectSays);
     }
 
     static boolean isEnabled() {
