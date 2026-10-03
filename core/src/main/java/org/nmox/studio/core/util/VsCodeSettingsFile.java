@@ -1,6 +1,8 @@
 package org.nmox.studio.core.util;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,22 +64,37 @@ public final class VsCodeSettingsFile {
     }
 
     private static File walk(File from) {
-        String home = System.getProperty("user.home");
-        File found = null;
-        File dir = from;
-        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
-            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
-                return null; // reached home with no repository around the place
-            }
+        for (File dir : foldersToRepositoryRoot(from)) {
             File candidate = new File(new File(dir, ".vscode"), "settings.json");
-            if (found == null && candidate.isFile()) {
-                found = candidate;
-            }
-            if (new File(dir, ".git").exists()) {
-                return found; // the repository's root: settings above it are somebody else's
+            if (candidate.isFile()) {
+                return candidate;
             }
         }
         return null;
+    }
+
+    /**
+     * {@code from} and each folder above it, nearest first, ending with its
+     * repository's root (the folder holding {@code .git}); empty when no
+     * repository is around it within {@link #MAX_DEPTH} levels, or the home
+     * folder comes first. The one answer to "whose {@code .vscode} speaks
+     * here" for every reader of it: the settings, the excludes, and the
+     * project's snippets.
+     */
+    public static List<File> foldersToRepositoryRoot(File from) {
+        String home = System.getProperty("user.home");
+        List<File> dirs = new ArrayList<>();
+        File dir = from;
+        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
+            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
+                return List.of(); // reached home with no repository around the place
+            }
+            dirs.add(dir);
+            if (new File(dir, ".git").exists()) {
+                return dirs; // the repository's root: a .vscode above it is somebody else's
+            }
+        }
+        return List.of();
     }
 
     /**

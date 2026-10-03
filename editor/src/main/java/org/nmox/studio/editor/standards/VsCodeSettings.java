@@ -122,7 +122,7 @@ public final class VsCodeSettings {
      * The folders whose {@code .vscode} speaks for {@code file}: its own
      * folder and each one above it, nearest first, ending with its
      * repository's root (the folder holding {@code .git}). Empty when no
-     * repository is around the file within {@link #MAX_DEPTH} levels, or
+     * repository is around the file within {@link VsCodeSettingsFile#MAX_DEPTH} levels, or
      * the home folder comes first: a {@code .vscode} that is not inside
      * a repository is nobody's project configuration.
      *
@@ -132,19 +132,8 @@ public final class VsCodeSettings {
      * have grown its own answer to "how far up".
      */
     public static List<File> directoriesToRepositoryRoot(File file) {
-        String home = System.getProperty("user.home");
-        List<File> dirs = new ArrayList<>();
-        File dir = file.getParentFile();
-        for (int depth = 0; dir != null && depth < MAX_DEPTH; depth++, dir = dir.getParentFile()) {
-            if (home != null && dir.getAbsolutePath().equals(new File(home).getAbsolutePath())) {
-                return List.of(); // reached home with no repository around the file
-            }
-            dirs.add(dir);
-            if (new File(dir, ".git").exists()) {
-                return dirs; // the repository's root: a .vscode above it is somebody else's
-            }
-        }
-        return List.of();
+        File parent = file.getParentFile();
+        return parent == null ? List.of() : VsCodeSettingsFile.foldersToRepositoryRoot(parent);
     }
 
     private static JSONObject parse(File settings) {
