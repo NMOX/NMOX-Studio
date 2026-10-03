@@ -18,9 +18,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * The first orientation sweep over a window must not cost a split pane its
- * divider, and a right-to-left sweep must not exchange its children: the
- * bundled runtime's {@code JSplitPane.setComponentOrientation} does both
- * (3.5; see {@link SplitShapes}).
+ * divider (3.5), and a right-to-left sweep exchanges a HORIZONTAL split's
+ * sides, mirrors its divider and flips its resize weight, undone by a sweep
+ * back (3.5.12, ledger 127 decided by two right-to-left readers); the
+ * bundled runtime's {@code JSplitPane.setComponentOrientation} gets each of
+ * these wrong on its own (see {@link SplitShapes}).
  */
 class SplitShapesTest {
 
@@ -110,24 +112,101 @@ class SplitShapesTest {
     }
 
     @Test
-    @DisplayName("a right-to-left sweep leaves a horizontal split's children and divider as authored")
-    void aHorizontalSplitKeepsItsShapeRightToLeft() {
+    @DisplayName("a right-to-left sweep puts a horizontal split's first side on the right, as wide as its author made it")
+    void aHorizontalSplitMirrorsRightToLeft() {
         System.setProperty(TextDirection.FORCE, "true");
         JPanel tree = sized(129, 400);
         JPanel work = sized(600, 400);
         JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tree, work);
         split.setDividerLocation(280);
+        split.setResizeWeight(0); // the list keeps its width; the work area takes the rest
         JPanel root = holding(split);
         show(root);
         int authored = tree.getWidth();
+        assertThat(authored).isBetween(275, 280);
 
         RightToLeft.apply(root);
         layOut(root);
 
         assertThat(split.getComponentOrientation().isLeftToRight()).as("the pane itself is oriented").isFalse();
+        assertThat(split.getLeftComponent()).as("the work area is now on the left").isSameAs(work);
+        assertThat(split.getRightComponent()).as("and the list on the right").isSameAs(tree);
+        assertThat(tree.getWidth()).as("as wide as before").isEqualTo(authored);
+        assertThat(tree.getX()).as("at the right edge").isGreaterThan(work.getX());
+        assertThat(split.getResizeWeight()).as("the work area, now on the left, is the side that grows").isEqualTo(1.0);
+        assertThat(split.getClientProperty(SplitShapes.MIRRORED)).isNotNull();
+    }
+
+    @Test
+    @DisplayName("a sweep back to left-to-right undoes the exchange, the divider and the weight")
+    void aSweepBackUndoesIt() {
+        System.setProperty(TextDirection.FORCE, "true");
+        JPanel tree = sized(129, 400);
+        JPanel work = sized(600, 400);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tree, work);
+        split.setDividerLocation(280);
+        split.setResizeWeight(0);
+        JPanel root = holding(split);
+        show(root);
+        RightToLeft.apply(root);
+        layOut(root);
+        assertThat(split.getRightComponent()).isSameAs(tree);
+
+        System.setProperty(TextDirection.FORCE, "false");
+        RightToLeft.apply(root);
+        layOut(root);
+
+        assertThat(split.getComponentOrientation().isLeftToRight()).isTrue();
         assertThat(split.getLeftComponent()).isSameAs(tree);
         assertThat(split.getRightComponent()).isSameAs(work);
-        assertThat(tree.getWidth()).isEqualTo(authored);
+        assertThat(tree.getWidth()).isBetween(275, 280);
+        assertThat(split.getResizeWeight()).isEqualTo(0.0);
+        assertThat(split.getClientProperty(SplitShapes.MIRRORED)).isNull();
+    }
+
+    @Test
+    @DisplayName("a pane oriented before it has a width takes its mirrored divider when it is first sized")
+    void anUnsizedPaneMirrorsWhenSized() throws Exception {
+        System.setProperty(TextDirection.FORCE, "true");
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            JPanel tree = sized(129, 400);
+            JPanel work = sized(600, 400);
+            JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tree, work);
+            split.setDividerLocation(280);
+            JPanel root = holding(split);
+            // never shown: no width yet
+            RightToLeft.apply(root);
+            assertThat(split.getRightComponent()).isSameAs(tree);
+            assertThat(split.getDividerLocation()).as("until it has a width, the author's value stands").isEqualTo(280);
+
+            show(root); // the window opens: the pane is sized, and its resize listener runs
+            for (java.awt.event.ComponentListener l : split.getComponentListeners()) {
+                l.componentResized(new java.awt.event.ComponentEvent(split, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            }
+            layOut(root);
+            assertThat(tree.getWidth()).as("the list's width, measured from the right").isBetween(275, 280);
+            assertThat(tree.getX()).isGreaterThan(work.getX());
+            assertThat(split.getComponentListeners()).as("the listener was for once").isEmpty();
+        });
+    }
+
+    @Test
+    @DisplayName("a divider the user dragged is mirrored where it was dragged to")
+    void aDraggedDividerMirrors() {
+        System.setProperty(TextDirection.FORCE, "true");
+        JPanel tree = sized(129, 400);
+        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, tree, sized(600, 400));
+        split.setDividerLocation(280);
+        JPanel root = holding(split);
+        show(root);
+        split.setDividerLocation(412);
+        layOut(root);
+        int dragged = tree.getWidth();
+
+        RightToLeft.apply(root);
+        layOut(root);
+        assertThat(tree.getWidth()).isEqualTo(dragged);
+        assertThat(split.getRightComponent()).isSameAs(tree);
     }
 
     @Test

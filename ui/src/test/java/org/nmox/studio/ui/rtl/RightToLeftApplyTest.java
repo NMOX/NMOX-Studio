@@ -98,7 +98,7 @@ class RightToLeftApplyTest {
     }
 
     @Test
-    @DisplayName("a split pane arriving later keeps its children in their places and its divider")
+    @DisplayName("a split pane arriving later is mirrored like one that was there: first side on the right, divider mirrored")
     void aSplitArrivingLaterKeepsItsShape() {
         System.setProperty(TextDirection.FORCE, "true");
         JPanel window = new JPanel();
@@ -113,9 +113,10 @@ class RightToLeftApplyTest {
         RightToLeft.adopt(window, split);
 
         assertThat(split.getComponentOrientation().isLeftToRight()).isFalse();
-        assertThat(split.getLeftComponent()).isSameAs(tree);
-        assertThat(split.getRightComponent()).isSameAs(editor);
-        assertThat(split.getDividerLocation()).isEqualTo(180);
+        assertThat(split.getLeftComponent()).isSameAs(editor);
+        assertThat(split.getRightComponent()).isSameAs(tree);
+        assertThat(split.getDividerLocation()).as("180 from the right: 600 − divider − 180")
+                .isEqualTo(600 - split.getDividerSize() - 180);
     }
 
     @Test

@@ -153,6 +153,23 @@ class DocsForgeDockerViewGateTest {
     }
 
     @Test
+    @DisplayName("every run boots in a throwaway home, never the developer's: the plain run too (3.5.12)")
+    void everyRunHasItsOwnHome() throws Exception {
+        for (boolean staged : new boolean[] {false, true}) {
+            List<String> lines = dryRun(dockerSaying(sock.toString(), true), staged, null);
+            List<String> home = lines.stream().filter(l -> l.startsWith("USER_HOME=")).toList();
+            assertThat(home).as("staged=%s: the forge says once which home the app gets: %s", staged, lines).hasSize(1);
+            String given = home.get(0).substring("USER_HOME=".length());
+            assertThat(given).as("staged=%s", staged).isEqualTo(dir.resolve("home").toString())
+                    .isNotEqualTo(System.getProperty("user.home"));
+        }
+        String src = Files.readString(Path.of("..", "scripts", "docs-shots.sh"), StandardCharsets.UTF_8);
+        assertThat(src.lines().filter(l -> l.contains("-J-Duser.home=")).toList())
+                .as("the home reaches the app on the one launch line, for every run")
+                .hasSize(1).first().asString().contains("-J-Duser.home=\"$HOME_DIR\"");
+    }
+
+    @Test
     @DisplayName("the plain run, the one that paints the README's pictures, is given the filtered view")
     void thePlainRunGetsTheView() throws Exception {
         assertThat(dockerHostOf(dryRun(dockerSaying(sock.toString(), true), false, null))).isEqualTo(VIEW);

@@ -144,18 +144,24 @@ else
   DOCKER_SOCK=""
 fi
 [ "$DOCKER_VIEW" = "$DOCKER_DEAD" ] && echo "  (no Docker view: the app will find no Docker at all)"
+# EVERY run of the forge boots in a throwaway home (3.5.12). Until 3.5.12
+# only the staged run did; the plain run, the one that paints the tab
+# pictures for the README and fifteen languages, booted in the developer's
+# own home and photographed their ~/NMOX: its file names, in every language's
+# Project Studio picture, since v2.161.0. The Docker half of this law was
+# written in 3.5.0 (above); this is the other half. A short, readable home:
+# the Project Studio footer and the Workbench print the aimed path, and a
+# /var/folders/... temp path reads as noise in a docs picture. Deleted only
+# when it carries this script's own marker.
+HOME_DIR="${NMOX_SHOTS_HOME:-/tmp/nmox}"
+if [ -e "$HOME_DIR" ] && [ ! -f "$HOME_DIR/.nmox-docs-home" ]; then
+  echo "refusing: $HOME_DIR exists and is not a docs-shots home (no .nmox-docs-home marker)"
+  exit 1
+fi
+rm -rf "$HOME_DIR"
+mkdir -p "$HOME_DIR"
+: > "$HOME_DIR/.nmox-docs-home"
 if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
-  # a short, readable home: the Project Studio footer and the Workbench
-  # print the aimed path, and a /var/folders/... temp path reads as noise in
-  # a docs picture. Deleted only when it carries this script's own marker.
-  HOME_DIR="${NMOX_SHOTS_HOME:-/tmp/nmox}"
-  if [ -e "$HOME_DIR" ] && [ ! -f "$HOME_DIR/.nmox-docs-home" ]; then
-    echo "refusing: $HOME_DIR exists and is not a docs-shots home (no .nmox-docs-home marker)"
-    exit 1
-  fi
-  rm -rf "$HOME_DIR"
-  mkdir -p "$HOME_DIR"
-  : > "$HOME_DIR/.nmox-docs-home"
   # KVASIR's consent lives in the userdir (v2.63.0); a fresh one has none
   PREFS="$UD/config/Preferences/org/nmox/NMOX/Studio"
   mkdir -p "$PREFS"
@@ -202,7 +208,7 @@ if [ "${NMOX_SHOTS_STAGED:-0}" = "1" ]; then
   else
     echo "  (no Docker daemon or no postgres:16-alpine image: docker-panel will be skipped)"
   fi
-  STAGED_OPTS="-J-Duser.home=$HOME_DIR -J-Dnmox.shots.staged=1 -J-Dnmox.shots.fixtures=$FIXTURES -J-Dnmox.shots.lang=${LOCALE:-en} -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
+  STAGED_OPTS="-J-Dnmox.shots.staged=1 -J-Dnmox.shots.fixtures=$FIXTURES -J-Dnmox.shots.lang=${LOCALE:-en} -J-Dnmox.shots.dialogs=File/org.nmox.studio.ui.actions.ManageLearningSpacesAction=spaces-shelf.png"
   : "${NMOX_SHOTS_KEEP:=task-rack rack-rear editor experiment-walkthrough kvasir-explain spaces-shelf task-board sprint-overview standup infra-designer db-studio api-studio presentation-mode editor-screenshot-2x docker-panel contract-studio story-06-devtools-pick debug-javascript}"
 fi
 echo "== booting with nmox.shots.dir=$OUT_ABS${LOCALE:+ --locale $LOCALE} (throwaway userdir + cachedir) =="
@@ -232,6 +238,7 @@ with_docs_docker() {
 # rule above is executed rather than read.
 if [ "${NMOX_SHOTS_DRY:-0}" = "1" ]; then
   with_docs_docker sh -c 'echo "DOCKER_HOST=$DOCKER_HOST"'
+  echo "USER_HOME=$HOME_DIR"
   rm -rf "$WORK" 2>/dev/null || true
   [ -n "${HOME_DIR:-}" ] && [ -f "$HOME_DIR/.nmox-docs-home" ] && rm -rf "$HOME_DIR"
   exit 0
@@ -240,6 +247,7 @@ with_docs_docker \
 timeout --kill-after=30 "$FORGE_TIMEOUT" \
 zsh -ilc 'exec "$@"' nmox-forge \
   "$APP" --nosplash "$@" --userdir "$UD" --cachedir "$CD" $LOCALE_OPT $STAGED_OPTS \
+  -J-Duser.home="$HOME_DIR" \
   -J-Dnmox.shots.dir="$OUT_ABS" \
   -J-Dnmox.shots.fakerun="Run — meridian|http://localhost:3000/" \
   -J-Dplugin.manager.check.updates=false \

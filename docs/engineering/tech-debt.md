@@ -22,7 +22,7 @@ guess. These are decisions.
 
 ## Open — added by 3.5.0 (the Windows and Linux release)
 
-### 127. Should a horizontal split mirror for a right-to-left reader?
+### 127. ~~Should a horizontal split mirror for a right-to-left reader?~~ — DECIDED and CLOSED by 3.5.12: yes
 
 The runtime the product bundles (JDK 25.0.4) answers yes on its own:
 `JSplitPane.setComponentOrientation` exchanges the two children when the
@@ -49,15 +49,12 @@ None of it is hard; it should be decided by a right-to-left reader looking
 at both layouts, not by a patch release of the runtime.
 
 **Both layouts, to look at (3.5.11).** The Hebrew build, photographed twice
-by `scripts/platform-walk.sh` in a throwaway home: as shipped, and with
-`scripts/probes/split-rtl/mirror-horizontal-splits.patch` applied and
-switched on (`-J-Dnmox.rtl.splits.mirror=true`). The patch is the
-experiment, forty lines in `SplitShapes.restore`, and is not in the
-product: it exchanges a horizontal split's two sides, mirrors the divider
-and flips the resize weight, and does nothing for a live switch back to a
-left-to-right language.
+by `scripts/platform-walk.sh` in a throwaway home: as shipped in 3.5.11,
+and with an experimental patch applied (`SplitShapes.restore` exchanging a
+horizontal split's two sides, mirroring the divider and flipping the
+resize weight). That patch became the product in 3.5.12, below.
 
-DB Studio. As shipped, the connection tree is left of the console:
+DB Studio. As shipped until 3.5.11, the connection tree is left of the console:
 
 ![DB Studio in Hebrew as shipped: the connection tree on the left of the console](../images/engineering/split-rtl-db-studio-shipped.png)
 
@@ -65,7 +62,7 @@ Mirrored, it is on the right, where a right-to-left line begins:
 
 ![DB Studio in Hebrew with horizontal splits mirrored: the connection tree on the right](../images/engineering/split-rtl-db-studio-mirrored.png)
 
-API Studio, as shipped and mirrored (the collections list changes sides):
+API Studio, as shipped until 3.5.11 and mirrored (the collections list changes sides):
 
 ![API Studio in Hebrew as shipped: collections on the left of the request](../images/engineering/split-rtl-api-studio-shipped.png)
 
@@ -79,8 +76,30 @@ while the platform's sits on the far left. Mirroring that too is a
 different and larger piece of work (the window system's layout, not a
 split pane).
 
-To see it live rather than in a picture: `git apply` the patch, build, and
-start with `--locale he -J-Dnmox.rtl.splits.mirror=true`.
+**Decided, 3.5.12: mirrored.** Two readers were asked independently, one
+of Hebrew and one of Arabic, each shown the four pictures with no hint of
+a preferred answer. Both preferred the mirrored layout for both studios,
+and for the same reasons: the tabs, toolbars and labels already start at
+the right edge, so the list a person starts from belongs there; and as
+shipped, the platform's file tree and the studio's own list stood side by
+side on the left "as one crowded sidebar, with the work squeezed to the
+right". Both would like the platform's docking mirrored too, both knew it
+could not be, and both called the mirrored studio the lesser evil beside
+an unmirrored dock. Both said they would notice within a minute and
+mention it in a review, and neither would leave over it.
+
+So `SplitShapes.restore` now exchanges a horizontal split's sides for a
+right-to-left orientation, mirrors its divider (from the other edge, the
+author's width kept) and flips its resize weight, and undoes all three on
+a sweep back to a left-to-right language; a pane oriented before it has a
+width takes its mirrored divider when it is first sized. Vertical splits
+are never touched. Walked in Hebrew and Arabic (DB Studio, API Studio,
+Contract Studio, Block Studio's three panes in reading order) and the
+documentation's pictures in both languages repainted. The experiment's
+patch is gone; the pictures above stay as the record of what was chosen
+between. What is still not mirrored is the window system's own docking,
+the explorer modes on the window's left edge: a different and larger
+piece of work, and a separate question.
 
 ### 128. ~~AltGr and the Ctrl+Alt chords, on a keyboard nobody here has~~ — CLOSED by 3.5.1, by measurement
 
@@ -118,6 +137,15 @@ where to look.
 
 ### 129. What the 3.5 walks saw and did not change
 
+- **Linux without a Secret Service** — **decided, 3.5.12: left as it is.**
+  The master-password dialog is the platform's honest answer on a desktop
+  with no keyring service, it protects the tokens it guards, and it
+  appears exactly when the product first touches the secret store, which
+  for the Infra Designer is when it opens, because which clouds have a
+  token is the first thing its toolbar says. Reading the tokens later
+  instead would hide an indicator from every user to spare one desktop a
+  dialog it would meet on its first deploy anyway. The original note
+  follows.
 - **Linux without a Secret Service.** On the runner the platform's keyring
   fell back to master-password encryption, and the first window that reads
   a secret raised the platform's Master Password dialog: the walk
@@ -434,6 +462,15 @@ group, so it needs a spawn wrapper per platform — `setsid` exists on Linux,
 macOS has no such command — and the wrapper must never put the IDE's own
 group in reach. Deferred for that reason: it is a spawn-path change under
 every lane, and it needs walking on all three systems.
+
+**Decided, 3.5.12: not built; the gap stays and is written here.** The
+only correct design needs a native spawn wrapper per platform (macOS ships
+no `setsid` command; Windows needs a job object), under every lane the
+product has, and the sampler that was tried killed the user's browser. A
+`server &` at the end of a script is a shape the product's own templates
+and devices never write, and no report of an orphaned server has reached
+the project. What reopens this is such a report, or a wrapper that can be
+proven on all three systems in a walk.
 
 ## Open — added by 3.2.0 (the second-week release)
 
@@ -2132,7 +2169,17 @@ and `codesign --verify` **exit 1**; read-only → 0 inside, 955 jars in the
 USERDIR, boot RC=0 at 2.187.1 while the bundle stayed 2.187.0, `codesign`
 **exit 0**. The signed path now drops write permission after sealing.
 
-### 86b. Windows Authenticode — still a purchase, still open (David's decision)
+### 86b. Windows Authenticode — a purchase; decided 3.5.12: not now
+
+**Decided (2026-10-02): not purchased now.** The lane is written, gated and
+inert without its secrets. Authenticode buys less than notarization did
+(SmartScreen softens with reputation; it does not refuse the way Gatekeeper
+did), no Windows user has reported the warning as a blocker, and the
+individual path needs a US or Canadian legal identity on an Azure billing
+account — a purchase and an identity, as 86 said. What reopens this is a
+Windows user blocked by SmartScreen, or a budget that names it. The
+original notes follow.
+
 
 Microsoft **renamed Trusted Signing to Artifact Signing**
 (<https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart>). Before
