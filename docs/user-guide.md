@@ -1073,10 +1073,15 @@ rather than a program keeps the button disabled — use Debug File on
 the file you mean. A repository that carries `.vscode/launch.json` has
 a third door: type a configuration's name into Quick Search and Enter
 starts that configuration's Node or Python `program` in its `cwd`, with
-its `args` and `env`, or opens a Chrome configuration's `url` with its
-`webRoot`; a configuration that sets `envFile`, `runtimeExecutable` or
-anything else the debugger cannot pass on is refused by name on the
-status line instead of started without it.
+its `args`, its `env` and `envFile` and the runtime it names
+(`runtimeExecutable` and `runtimeArgs`, so an `npm run dev` or a `tsx`
+configuration starts as written), attaches to a `node --inspect`
+process on this machine, or opens a Chrome configuration's `url` with
+its `webRoot`. `"program": "${file}"` is the file the editor shows, and
+a `preLaunchTask` naming a task of `.vscode/tasks.json` runs first: the
+debugger starts when the task has succeeded. A configuration that sets
+anything the debugger cannot pass on is refused by name on the status
+line instead of started without it.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 
