@@ -146,6 +146,49 @@ In Quick Search the file's symbols are the category **Symbols in This
 File**. Typing `@` alone lists them from the top of the file; `m name`
 (the letter, a space, then the name) searches that category and no other.
 
+### The VS Code keymap profile
+
+The tables above are the default profile, where a chord NetBeans users
+rely on keeps its meaning. If your hands would rather have VS Code's
+keymap whole, switch the profile: type *Use the VS Code Keymap* into
+Quick Search (⇧⌘P or ⌘I; the row is *Preferences: Use the VS Code
+Keymap*), or choose **VS Code** under Tools ▸ Options ▸ Keymap ▸ Profile
+(on macOS, NMOX Studio ▸ Settings… ▸ Keymap ▸ Profile). The status line
+says which profile you are in and the way back; nothing ever switches it
+for you.
+
+In that profile VS Code's default chords do what they do in VS Code, on
+macOS and on Windows and Linux alike, wherever this product has the
+action: ⌥↑ / ⌥↓ move the line, ⇧⌘K deletes it, ⌘L expands the line
+selection, ⇧⌘L selects every occurrence, ⌘[ / ⌘] outdent and indent,
+⌘↩ inserts a line below, ⇧⌘\\ jumps to the bracket, ⌥⌘[ / ⌥⌘] fold and
+unfold, ⌘K ⌘0 / ⌘K ⌘J fold and unfold everything, ⌘K ⌘X trims trailing
+whitespace, ⌘J shows the Output window, ⌘\\ splits the editor, ⌘T and
+⇧⌘O go to a symbol in the project and in the file, ⇧⌘M shows Action
+Items, ⇧⌘D the debugger's window, ⌘K ⌘S the Keyboard Shortcuts sheet,
+⌘K ⌘W closes every editor, ⌘K ⌘O opens a folder, ⌃R opens a recent
+project, ⇧⌘B builds, F1 is the command palette, and the debugger's keys
+are VS Code's: F5 starts debugging the project or continues a paused
+one, ⇧F5 stops, ⌃F5 runs without debugging, F9 toggles a breakpoint, F10,
+F11 and ⇧F11 step over, into and out. Every product chord VS Code does not
+claim (the ⌥⌘ windows, Emmet's ⌥⌘E, ⌥⌘G) stays where it is.
+
+What is still different in the VS Code profile, by name:
+
+- **No chord at all**, because nothing here is that action: ⌘B (*Toggle
+  Primary Side Bar*), ⇧⌘W (*Close Window*), ⇧⌘F5 (*Restart* debugging),
+  F8 / ⇧F8 (*Go to Next / Previous Problem in Files*), ⌥F12 (*Peek
+  Definition*), ⇧⌘↩ (*Insert Line Above*) and ⌘U (*Cursor Undo*). The
+  keys do nothing rather than something else.
+- **Save All has no chord on Windows and Linux** (VS Code's Ctrl+K S);
+  on macOS it is ⌥⌘S.
+- **What VS Code's chords took from NetBeans.** F1 no longer opens help,
+  ⌘B no longer goes to the declaration (F12 does), ⌘U's case conversions,
+  ⌘K / ⇧⌘K word completion, ⌘T transpose and ⇧⌘D clipboard history have
+  no chord in this profile, and neither have Debug File, Toggle Bookmark,
+  Show Editor Only and Open Project. The complete list, every OS, is
+  `scripts/vscode-keymap/displaced.txt` in the source.
+
 
 ## From the terminal
 
@@ -218,7 +261,7 @@ shows the one-line link.
 | **Breadcrumbs** | **View ▸ Show Breadcrumbs**. |
 | **Source Control** | The git chip on the status line (branch and changes, one click to history) and the **Team** menu. |
 | **Workspace Trust** | The same idea, enforced before anything a repository chose is run: opening a cloned project runs nothing until you trust it. |
-| **Keyboard Shortcuts editor** | Tools ▸ Options ▸ Keymap (on macOS, Settings… ▸ Keymap) — edit any chord, or switch the whole profile to Eclipse, Emacs or IntelliJ. |
+| **Keyboard Shortcuts editor** | Tools ▸ Options ▸ Keymap (on macOS, Settings… ▸ Keymap) — edit any chord, or switch the whole profile to VS Code, Eclipse, Emacs or IntelliJ. |
 
 The first time you open a repository that carries `.vscode/tasks.json`,
 `launch.json`, `settings.json` or `extensions.json`, a notice says what
@@ -331,8 +374,10 @@ once per project.
   Windows only PowerShell (args ending in `-Command`) and `cmd.exe`
   (args ending in `/c`) are run; any other shell there is refused by
   name rather than handed a command line quoted by guesswork.
-- **There is no "VS Code" keymap profile.** The chords above ride the
-  default profile and the other four. One deliberate exception: in the
+- **The tables above describe the default keymap profile.** In the
+  **VS Code** profile (see *The VS Code keymap profile* above) VS Code's
+  own chords win wherever this product has the action. The four first
+  chords ride every profile. One deliberate exception: in the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and
   inside the editor ⇧⌘P and ⇧⌘X keep Eclipse's meanings (matching
   brace, upper case) — someone who picked Eclipse expects Eclipse.

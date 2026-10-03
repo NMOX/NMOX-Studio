@@ -282,4 +282,99 @@ class KeymapProfileParityTest {
         Element tasks = folder(root, "Tasks");
         assertThat(tasks).as("Tasks provider under root QuickSearch").isNotNull();
     }
+
+    // ---- the sixth profile, VS Code ----------------------------------------
+    //
+    // The five laws above hold the product's chords to the platform's five
+    // profiles, each registered by hand. The VS Code profile is not a sixth
+    // hand-kept copy: it is GENERATED from the default profile with VS Code's
+    // chords laid over it (scripts/generate-vscode-keymap.sh), so a product
+    // chord reaches it by being in the NetBeans profile. What parity means
+    // there is therefore different, and is held here: every action the
+    // product binds in the NetBeans profile still has a chord in the VS Code
+    // profile - on its own key where VS Code does not claim it, on VS Code's
+    // key where it does - except where VS Code's own chord for something else
+    // took its only key, and those are listed below with the reason.
+
+    /**
+     * Product actions the VS Code profile leaves without any chord, each
+     * because VS Code's default keymap gives its only key to something else.
+     * Empty today: every product chord either survives on its own key or is
+     * VS Code's own action on VS Code's key.
+     */
+    private static final Map<String, String> VSCODE_TOOK = Map.of();
+
+    private static final String VSCODE = "VSCode";
+    private static final String VSCODE_FILES = "src/main/resources/org/nmox/studio/ui/keymap";
+
+    @Test
+    @DisplayName("Every product action bound in the NetBeans profile keeps a chord in the generated VS Code profile")
+    void productGlobalChordsReachTheVsCodeProfile() throws Exception {
+        Element keymaps = folder(parse("src/main/resources/org/nmox/studio/ui/layer.xml").getDocumentElement(), "Keymaps");
+        Element vscode = folder(keymaps, VSCODE);
+        assertThat(vscode).as("the generated Keymaps/VSCode folder in the ui layer").isNotNull();
+        Set<String> targets = new TreeSet<>();
+        for (String entry : fileSet(vscode)) {
+            targets.add(entry.split("\\|", -1)[1]);
+        }
+        assertThat(targets).as("the VS Code profile carries the platform's own chords too, not only the product's")
+                .hasSizeGreaterThan(60);
+        List<String> lost = new ArrayList<>();
+        for (Map.Entry<String, String> layer : KEYMAP_LAYERS.entrySet()) {
+            Element pf = folder(folder(parse(layer.getValue()).getDocumentElement(), "Keymaps"), "NetBeans");
+            for (String entry : fileSet(pf)) {
+                String[] f = entry.split("\\|", -1);
+                if (f[0].endsWith(".shadow") && !targets.contains(f[1]) && !VSCODE_TOOK.containsKey(f[1])) {
+                    lost.add(layer.getKey() + ": " + f[0] + " -> " + f[1]);
+                }
+            }
+        }
+        assertThat(lost).as("product chords with no key in the VS Code profile - regenerate it, or list the action "
+                + "in VSCODE_TOOK with the VS Code chord that took its key").isEmpty();
+    }
+
+    @Test
+    @DisplayName("Every product editor action bound in the NetBeans profile keeps a chord in the VS Code profile's files")
+    void productEditorChordsReachTheVsCodeProfile() throws Exception {
+        Set<String> vscodeActions = new TreeSet<>();
+        try (var files = Files.list(Path.of(VSCODE_FILES))) {
+            for (Path p : files.filter(p -> p.toString().endsWith(".xml")).toList()) {
+                vscodeActions.addAll(boundActions(p));
+            }
+        }
+        assertThat(vscodeActions).as("the generated VS Code keybinding files were read").hasSizeGreaterThan(100);
+        Document editor = parse("../editor/src/main/resources/org/nmox/studio/editor/layer.xml");
+        List<String> lost = new ArrayList<>();
+        NodeList folders = editor.getElementsByTagName("folder");
+        for (int i = 0; i < folders.getLength(); i++) {
+            Element e = (Element) folders.item(i);
+            if (!"Keybindings".equals(e.getAttribute("name")) || folder(e, "NetBeans") == null) {
+                continue;
+            }
+            for (String entry : fileSet(folder(e, "NetBeans"))) {
+                String url = entry.split("\\|", -1)[2];
+                if (url.isEmpty()) {
+                    continue;
+                }
+                for (String action : boundActions(Path.of("../editor/src/main/resources/org/nmox/studio/editor", url))) {
+                    if (!vscodeActions.contains(action) && !VSCODE_TOOK.containsKey(action)) {
+                        lost.add(url + ": " + action);
+                    }
+                }
+            }
+        }
+        assertThat(lost).as("product editor actions with no key in the VS Code profile").isEmpty();
+    }
+
+    private static Set<String> boundActions(Path keybindings) throws Exception {
+        Set<String> out = new TreeSet<>();
+        NodeList binds = parse(keybindings.toString()).getElementsByTagName("bind");
+        for (int i = 0; i < binds.getLength(); i++) {
+            Element b = (Element) binds.item(i);
+            if (b.hasAttribute("actionName") && !"true".equals(b.getAttribute("remove"))) {
+                out.add(b.getAttribute("actionName"));
+            }
+        }
+        return out;
+    }
 }

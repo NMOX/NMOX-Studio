@@ -73,6 +73,8 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Preferences: Open Keyboard Shortcuts", "Help", "org.nmox.studio.ui.shortcuts.KeyboardShortcutsAction"),
             // not a VS Code command: the title a switcher would type for bringing their own settings.json across
             cmd("Preferences: Import VS Code Settings", "Tools", "org.nmox.studio.editor.vscode.ImportVsCodeSettingsAction"),
+            // not a VS Code title: the door to the sixth keymap profile, worded as VS Code words a preference
+            cmd("Preferences: Use the VS Code Keymap", "Tools", "org.nmox.studio.ui.keymap.UseVsCodeKeymapAction"),
             cmd("Extensions: Install Extensions", "System", "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction"),
             // what the repository's .vscode/extensions.json recommends, and what covers each here
             cmd("Extensions: Show Recommended Extensions", "Tools", "org.nmox.studio.tools.vscode.RecommendedExtensionsAction"),

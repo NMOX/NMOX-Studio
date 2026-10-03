@@ -1,0 +1,146 @@
+# The VS Code keymap profile's chord table: the one input a person edits.
+#
+# scripts/generate-vscode-keymap.sh lays these chords over the default
+# (NetBeans) profile of the assembled cluster and writes the VS Code profile:
+# the Keymaps/VSCode and Editors/**/Keybindings/VSCode regions of the ui
+# module's layer, the keybinding files beside it, and displaced.txt here.
+# VsCodeKeymapProfileGateTest fails the build when the committed files are not
+# what this table and the cluster's default profile produce, and
+# VsCodeKeymapResolutionTest resolves every row through the assembled cluster.
+#
+# One row per VS Code default keybinding:
+#
+#   scope | macOS | Windows | Linux | target | VS Code command [| mime=action ...]
+#
+# scope   editor  the chord fires an action of the focused editor's kit
+#                 (VS Code: "when": "editorTextFocus"); outside an editor the
+#                 chord keeps whatever the default profile gives it
+#         global  the chord fires an action from the Actions folder, wherever
+#                 the focus is; no editor binding may sit on it
+# chords  the platform's notation with EXPLICIT modifiers only: S Shift,
+#         C Ctrl, A Alt (Option), M Meta (Cmd). No D and no O: a row says what
+#         each OS presses, and the generator works out the portable spelling.
+#         A two-stroke chord is two strokes with a space between them.
+#         "-" in a column: VS Code binds nothing on that OS.
+#         "=" in the Linux column: the same as Windows.
+# target  editor rows: the kit action's name. global rows: the action's layer
+#         path. "none": this product has no honest equivalent; the chord is
+#         VS Code's, so it fires NOTHING here (whatever the default profile had
+#         on it is displaced, and displaced.txt says what that was).
+# mime=action  (editor rows) a language whose kit answers the chord with its
+#         own flavour of the same action.
+#
+# What a Keymaps shadow cannot say: "only on Windows and Linux". A global row
+# is therefore either the same keys on every OS, the Cmd/Ctrl twin (M on
+# macOS, C elsewhere), or macOS only (spelled with M, a modifier a PC keyboard
+# does not send). A Windows-only global chord is refused by the generator;
+# such chords are listed, unbound, in docs/coming-from-vscode.md.
+
+# ---- the workbench ---------------------------------------------------------
+global | SM-P        | SC-P        | = | Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance | Show Command Palette
+global | F1          | F1          | = | Actions/Edit/org-netbeans-modules-quicksearch-QuickSearchAction.instance | Show Command Palette (F1)
+global | M-P         | C-P         | = | Actions/Tools/org-netbeans-modules-jumpto-file-FileSearchAction.instance | Go to File...
+global | M-T         | C-T         | = | Actions/Edit/org-netbeans-modules-jumpto-symbol-GoToSymbol.instance | Go to Symbol in Workspace...
+global | SM-O        | SC-O        | = | Actions/Edit/org-nmox-studio-editor-symbols-search-GoToSymbolInFileAction.instance | Go to Symbol in Editor...
+global | C-G         | C-G         | = | Actions/Edit/org-openide-actions-GotoAction.instance | Go to Line/Column...
+global | M-COMMA     | C-COMMA     | = | Actions/Window/org-netbeans-modules-options-OptionsWindowAction.instance | Preferences: Open Settings
+global | M-K M-S     | C-K C-S     | = | Actions/Help/org-nmox-studio-ui-shortcuts-KeyboardShortcutsAction.instance | Preferences: Open Keyboard Shortcuts
+global | SM-E        | SC-E        | = | Actions/Window/org-nmox-studio-rack-projectstudio-ProjectStudioTopComponent.instance | View: Show Explorer
+global | SM-F        | SC-F        | = | Actions/Edit/org-netbeans-modules-search-FindInFilesAction.instance | Search: Find in Files
+global | SM-H        | SC-H        | = | Actions/Edit/org-netbeans-modules-search-ReplaceInFilesAction.instance | Search: Replace in Files
+global | SM-X        | SC-X        | = | Actions/System/org-netbeans-modules-autoupdate-ui-actions-PluginManagerAction.instance | View: Show Extensions
+global | SM-D        | SC-D        | = | Actions/Window/Debug/org-netbeans-modules-debugger-ui-actions-DebuggingViewAction.instance | View: Show Run and Debug
+global | SM-M        | SC-M        | = | Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance | View: Toggle Problems
+global | M-J         | C-J         | = | Actions/Window/org-netbeans-core-io-ui-IOWindowAction.instance | View: Toggle Panel
+global | M-B         | C-B         | = | none | View: Toggle Primary Side Bar Visibility
+global | C-BACK_QUOTE  | C-BACK_QUOTE  | = | Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalAction.instance | View: Toggle Terminal
+global | SC-BACK_QUOTE | SC-BACK_QUOTE | = | Actions/Window/org-nmox-studio-rack-projectstudio-ProjectTerminalNewAction.instance | Terminal: Create New Terminal
+
+# ---- files and editor tabs -------------------------------------------------
+global | M-N         | C-N         | = | Actions/Project/org-netbeans-modules-project-ui-NewFile.instance | File: New File
+global | M-O         | C-O         | = | Actions/File/org-nmox-studio-ui-actions-OpenFileAction.instance | File: Open File...
+global | M-K M-O     | C-K C-O     | = | Actions/File/org-nmox-studio-ui-actions-OpenFolderAction.instance | File: Open Folder...
+global | C-R         | C-R         | = | Actions/File/org-nmox-studio-ui-actions-SwitchProjectAction.instance | File: Open Recent...
+global | M-S         | C-S         | = | Actions/System/org-openide-actions-SaveAction.instance | File: Save
+global | SM-S        | SC-S        | = | Actions/System/org-openide-actions-SaveAsAction.instance | File: Save As...
+global | AM-S        | -           | - | Actions/System/org-openide-actions-SaveAllAction.instance | File: Save All
+global | M-W         | C-W         | = | Actions/Window/org-netbeans-core-windows-actions-CloseWindowAction.instance | View: Close Editor
+global | M-K M-W     | C-K C-W     | = | Actions/Window/org-netbeans-core-windows-actions-CloseAllDocumentsAction.instance | View: Close All Editors
+global | SM-W        | SC-W        | = | none | Close Window
+global | SM-T        | SC-T        | = | Actions/System/org-netbeans-modules-openfile-RecentFileAction.instance | View: Reopen Closed Editor
+global | M-BACK_SLASH | C-BACK_SLASH | = | Actions/Window/org-netbeans-core-multiview-SplitDocumentVerticallyAction.instance | View: Split Editor
+global | AM-RIGHT    | -           | - | Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance | View: Open Next Editor
+global | AM-LEFT     | -           | - | Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance | View: Open Previous Editor
+global | SM-CLOSE_BRACKET | -      | - | Actions/Window/org-netbeans-core-windows-actions-NextTabAction.instance | View: Open Next Editor
+global | SM-OPEN_BRACKET  | -      | - | Actions/Window/org-netbeans-core-windows-actions-PreviousTabAction.instance | View: Open Previous Editor
+global | M-K P       | C-K P       | = | Actions/Edit/org-nmox-studio-editor-share-CopyFilePathAction-Absolute.instance | File: Copy Path of Active File
+
+# ---- debugging -------------------------------------------------------------
+global | F5          | F5          | = | Actions/Debug/org-nmox-studio-ui-keymap-StartOrContinueDebuggingAction.instance | Debug: Start Debugging / Continue
+global | S-F5        | S-F5        | = | Actions/Debug/org-netbeans-modules-debugger-ui-actions-KillAction.instance | Debug: Stop
+global | SM-F5       | SC-F5       | = | none | Debug: Restart
+global | C-F5        | C-F5        | = | Actions/Project/org-netbeans-modules-project-ui-RunMainProject.instance | Debug: Start Without Debugging
+global | SM-B        | SC-B        | = | Actions/Project/org-netbeans-modules-project-ui-BuildMainProject.instance | Tasks: Run Build Task
+global | F9          | F9          | = | Actions/Debug/org-netbeans-modules-debugger-ui-actions-ToggleBreakpointAction.instance | Debug: Toggle Breakpoint
+global | F10         | F10         | = | Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOverAction.instance | Debug: Step Over
+global | F11         | F11         | = | Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepIntoAction.instance | Debug: Step Into
+global | S-F11       | S-F11       | = | Actions/Debug/org-netbeans-modules-debugger-ui-actions-StepOutAction.instance | Debug: Step Out
+global | F8          | F8          | = | none | Go to Next Problem in Files
+global | S-F8        | S-F8        | = | none | Go to Previous Problem in Files
+global | F7          | F7          | = | none | Go to Next Symbol Highlight (outside an editor)
+global | S-F7        | S-F7        | = | none | Go to Previous Symbol Highlight (outside an editor)
+
+# ---- languages -------------------------------------------------------------
+editor | F12         | F12         | = | goto-declaration | Go to Definition | text/x-ng-template=ng-goto-declaration
+editor | A-F12       | A-F12       | SC-F10 | none | Peek Definition
+global | S-F12       | S-F12       | = | Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance | Go to References
+editor | F2          | F2          | = | in-place-refactoring | Rename Symbol
+global | M-PERIOD    | C-PERIOD    | = | Actions/Source/org-netbeans-modules-editor-hints-FixAction.instance | Quick Fix...
+editor | C-SPACE     | C-SPACE     | = | completion-show | Trigger Suggest
+editor | SA-F        | -           | - | nmox-format-on-option-chord | Format Document
+editor | -           | SA-F        | SC-I | format | Format Document
+editor | F7          | F7          | = | next-marked-occurrence | Go to Next Symbol Highlight
+editor | S-F7        | S-F7        | = | prev-marked-occurrence | Go to Previous Symbol Highlight
+
+# ---- editing ---------------------------------------------------------------
+editor | A-DOWN      | A-DOWN      | = | move-selection-else-line-down | Move Line Down
+editor | A-UP        | A-UP        | = | move-selection-else-line-up | Move Line Up
+editor | SA-DOWN     | SA-DOWN     | SCA-DOWN | copy-selection-else-line-down | Copy Line Down
+editor | SA-UP       | SA-UP       | SCA-UP | copy-selection-else-line-up | Copy Line Up
+editor | SM-K        | SC-K        | = | remove-line | Delete Line
+editor | M-ENTER     | C-ENTER     | = | start-new-line | Insert Line Below
+editor | SM-ENTER    | SC-ENTER    | = | none | Insert Line Above
+global | SM-ENTER    | SC-ENTER    | = | none | Insert Line Above (outside an editor)
+editor | SM-BACK_SLASH | SC-BACK_SLASH | = | match-brace | Go to Bracket
+editor | M-CLOSE_BRACKET | C-CLOSE_BRACKET | = | shift-line-right | Indent Line
+editor | M-OPEN_BRACKET  | C-OPEN_BRACKET  | = | shift-line-left | Outdent Line
+editor | M-SLASH     | C-SLASH     | = | toggle-comment | Toggle Line Comment
+editor | SA-A        | SA-A        | SC-A | nmox-toggle-block-comment | Toggle Block Comment
+editor | A-Z         | A-Z         | = | nmox-toggle-word-wrap | View: Toggle Word Wrap
+editor | M-K M-X     | C-K C-X     | = | remove-trailing-spaces | Trim Trailing Whitespace
+editor | M-UP        | C-HOME      | = | caret-begin | Go to Beginning of File
+editor | M-DOWN      | C-END       | = | caret-end | Go to End of File
+
+# ---- folding ---------------------------------------------------------------
+editor | AM-OPEN_BRACKET  | SC-OPEN_BRACKET  | = | collapse-fold | Fold
+editor | AM-CLOSE_BRACKET | SC-CLOSE_BRACKET | = | expand-fold | Unfold
+editor | M-K M-0     | C-K C-0     | = | collapse-all-folds | Fold All
+editor | M-K M-J     | C-K C-J     | = | expand-all-folds | Unfold All
+
+# ---- selections and cursors ------------------------------------------------
+editor | M-L         | C-L         | = | nmox-expand-line-selection | Expand Line Selection
+editor | M-D         | C-D         | = | addCaretSelectNext | Add Selection To Next Find Match
+editor | SM-L        | SC-L        | = | addCaretSelectAll | Select All Occurrences of Find Match
+editor | M-F2        | C-F2        | = | addCaretSelectAll | Change All Occurrences
+editor | AM-UP       | CA-UP       | SA-UP | add-caret-up | Add Cursor Above
+editor | AM-DOWN     | CA-DOWN     | SA-DOWN | add-caret-down | Add Cursor Below
+editor | M-U         | C-U         | = | none | Cursor Undo
+editor | SCM-RIGHT   | SA-RIGHT    | = | select-element-next | Expand Selection
+editor | SCM-LEFT    | SA-LEFT     | = | select-element-previous | Shrink Selection
+
+# ---- find and history ------------------------------------------------------
+editor | M-G         | F3          | = | find-next | Find Next
+editor | SM-G        | S-F3        | = | find-previous | Find Previous
+editor | AM-F        | C-H         | = | replace | Replace
+editor | C-MINUS     | A-LEFT      | CA-MINUS | jump-list-prev | Go Back
+editor | SC-MINUS    | A-RIGHT     | SC-MINUS | jump-list-next | Go Forward
