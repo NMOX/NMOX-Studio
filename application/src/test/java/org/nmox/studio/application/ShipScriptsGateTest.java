@@ -145,7 +145,7 @@ class ShipScriptsGateTest {
     void shipGateActsOnTheVerdict() throws Exception {
         String s = Files.readString(SCRIPTS.resolve("ship-gate.sh"));
         assertThat(s).as("the gate asks the seam rather than re-deciding inline")
-                .contains("scripts/release-run-verdict.sh");
+                .contains("\"$HERE/release-run-verdict.sh\"");
         assertThat(s).as("complete → the existing happy exit").contains("RELEASE-COMPLETE: 21 assets");
         assertThat(s).as("rerun → GitHub's own re-run-failed-jobs, which also revives the skipped homebrew job")
                 .contains("gh run rerun").contains("--failed");
@@ -167,6 +167,42 @@ class ShipScriptsGateTest {
         assertThat(run("bash", script, "v3.5.9: a headline")).isEqualTo(2);
         assertThat(run("bash", script, "wipe the cache on aim", "9"))
                 .as("a word that only begins with those letters is a title like any other").isZero();
+        // 3.5.13, a review's find: the note in its other spellings walked through
+        assertThat(run("bash", script, "wip", "9")).as("the bare word").isEqualTo(3);
+        assertThat(run("bash", script, "Wip: half of it", "9")).as("any case").isEqualTo(3);
+        assertThat(run("bash", script, "[wip] half of it", "9")).as("the bracketed form").isEqualTo(3);
+        assertThat(run("bash", script, "[WIP] half of it", "9")).isEqualTo(3);
+    }
+
+    @Test
+    @DisplayName("ship-gate.sh merges only after its checks loop ENDED on a pass, and reads the merge back (3.5.13)")
+    void shipGateNeverFallsThroughToTheMerge() throws Exception {
+        List<String> code = Files.readString(SCRIPTS.resolve("ship-gate.sh")).lines()
+                .filter(l -> !l.stripLeading().startsWith("#")).toList();
+        int merge = indexOfLine(code, "gh pr merge");
+        int raised = indexOfLine(code, "GREEN=1; break;");
+        int refused = indexOfLine(code, "[ \"$GREEN\" = 1 ] || {");
+        assertThat(raised).as("the flag is raised where the checks read as passed").isPositive();
+        assertThat(code.get(raised)).contains("*pass*").contains("!= *pending*");
+        assertThat(code.stream().filter(l -> l.contains("GREEN=1")).count())
+                .as("and nowhere else").isEqualTo(1);
+        assertThat(refused).as("a loop that ran out is refused by name").isGreaterThan(raised);
+        assertThat(code.get(refused)).contains("CHECKS-TIMEOUT").contains("exit 1");
+        assertThat(refused).as("before the merge").isLessThan(merge);
+        int readBack = indexOfLine(code, "[ \"$MERGED\" = MERGED ] || {");
+        assertThat(readBack).as("the merge is read back, not assumed from a pipe's exit").isGreaterThan(merge);
+        assertThat(code.get(readBack)).contains("MERGE-FAILED").contains("exit 1");
+        assertThat(readBack).as("before anything is fetched or tagged")
+                .isLessThan(indexOfLine(code, "mergeCommit.oid"));
+    }
+
+    private static int indexOfLine(List<String> code, String fragment) {
+        for (int i = 0; i < code.size(); i++) {
+            if (code.get(i).contains(fragment)) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Test
