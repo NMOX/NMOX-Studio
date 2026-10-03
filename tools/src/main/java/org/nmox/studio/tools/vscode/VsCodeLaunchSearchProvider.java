@@ -176,7 +176,11 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
      * keypress, not whenever the lane gets to it.
      */
     static RequestProcessor.Task run(File project, Config config) {
-        EditorContext editor = editorProbe.get();
+        return run(project, config, editorProbe.get());
+    }
+
+    /** {@link #run(File, Config)} for a caller that read the editor itself, before its own dialog took the focus. */
+    static RequestProcessor.Task run(File project, Config config, EditorContext editor) {
         return RP.post(() -> execute(project, config, editor));
     }
 

@@ -210,7 +210,11 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      * file's own questions, the spawn — rides the lane, never the EDT.
      */
     static RequestProcessor.Task run(File project, TaskDef task) {
-        EditorContext editor = editorProbe.get();
+        return run(project, task, editorProbe.get());
+    }
+
+    /** {@link #run(File, TaskDef)} for a caller that read the editor itself, before its own dialog took the focus. */
+    static RequestProcessor.Task run(File project, TaskDef task, EditorContext editor) {
         return RP.post(() -> execute(project, task, editor));
     }
 
