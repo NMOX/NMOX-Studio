@@ -147,11 +147,12 @@ public final class RightToLeft implements Runnable {
             // a split pane loses its divider (and, right-to-left, the order
             // of its children) to the runtime's own setComponentOrientation:
             // record the ones about to be disturbed, put them back after —
-            // mirrored, for a horizontal pane under a right-to-left reader (3.5.12)
+            // with their sides exchanged for a right-to-left reader where the
+            // product marked the pane to follow its reader (3.5.12, 3.5.13)
             java.util.List<SplitShapes.Shape> splits = SplitShapes.disturbedBy(c, o);
             c.applyComponentOrientation(o);
             PaintedSurfaces.keepAuthoredDirection(c);
-            SplitShapes.restore(splits, o);
+            SplitShapes.restore(splits);
         } catch (RuntimeException e) {
             // a component that refuses orientation keeps the one it had; this
             // sits inside the toolkit's own dispatch and never throws into

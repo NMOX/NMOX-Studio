@@ -39,7 +39,7 @@ class GitTrustNoticeTest {
 
     @AfterEach
     void theRealQuestionAgain() {
-        GitChip.trusted = WorkspaceTrust::isTrusted;
+        GitChip.trusted = WorkspaceTrust::gitMayRun;
         System.clearProperty("nmox.shots.dir");
     }
 
@@ -118,8 +118,11 @@ class GitTrustNoticeTest {
     @Test
     @DisplayName("wiring: an aim that changed announces before the count, and the chip hears a grant only while it is in the status bar")
     void wiring() throws Exception {
-        String src = Files.readString(Path.of("src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
-                StandardCharsets.UTF_8).replace("\r\n", "\n");
+        // comments stripped (3.5.13): each line below could be commented out and
+        // still be found in the file, and a review named four mutants that lived so
+        String src = org.nmox.studio.rack.GateSources.stripComments(Files.readString(
+                Path.of("src/main/java/org/nmox/studio/rack/service/GitStatusLine.java"),
+                StandardCharsets.UTF_8).replace("\r\n", "\n"));
         int onAim = src.indexOf("private void onAim() {");
         String body = src.substring(onAim, src.indexOf("\n        }\n", onAim));
         int announce = body.indexOf("announceWaiting(chip, NOTICE, GitStrip::askTrust);");
@@ -133,5 +136,16 @@ class GitTrustNoticeTest {
         assertThat(src.substring(remove, src.indexOf("\n        }\n", remove)))
                 .as("added and removed with the component: a status bar rebuilt does not leave a listener behind")
                 .contains("WorkspaceTrust.removeGrantListener(onGrant);");
+
+        assertThat(src).as("the folder's name reaches the notice as one line of ordinary characters")
+                .contains("org.nmox.studio.core.util.PlainText.oneLine(root.getName(), 80)");
+        int grant = src.indexOf("onGrant = dir -> RP.post(() -> {");
+        assertThat(grant).as("a grant is acted on").isPositive();
+        assertThat(src.substring(grant, src.indexOf("});", grant)))
+                .as("it takes the count the chip was waiting for").contains("refreshCount();");
+        int ask = src.indexOf("private void askTrust() {");
+        assertThat(src.substring(ask, src.indexOf("\n        }\n", ask)))
+                .as("the menu's row only asks: the count is the grant listener's, once (it ran git status twice)")
+                .contains("WorkspaceTrust.requestTrust(root);").doesNotContain("refreshCount");
     }
 }

@@ -420,8 +420,8 @@ public final class ApiClientTopComponent extends TopComponent {
         saveDebounce.setRepeats(false);
 
         add(buildToolbar(), BorderLayout.NORTH);
-        JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                buildTree(), buildEditorAndResponse());
+        JSplitPane center = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                buildTree(), buildEditorAndResponse()));
         center.setDividerLocation(240);
         add(center, BorderLayout.CENTER);
 

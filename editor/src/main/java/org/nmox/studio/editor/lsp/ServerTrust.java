@@ -146,7 +146,8 @@ final class ServerTrust {
         reads(m, "intelephense", "a static analyser; includes nothing from the project");
         reads(m, "pyright-langserver", "runs the user's own interpreter on a script of its own, with the working directory"
                 + " taken off the import path; a configuration file names a venv to read, not an interpreter to run,"
-                + " and this client never names one (measured, 3.5.10: scripts/probes/pyright-trust)");
+                + " and this client never names one (measured on macOS, 3.5.10: scripts/probes/pyright-trust;"
+                + " not measured on Windows, where a bare 'python' is looked for in the working directory first)");
         reads(m, "fortls", "a parser for Fortran sources");
         reads(m, "ada_language_server", "reads project files, which cannot name a command");
         reads(m, "ols", "a parser for Odin sources");
@@ -260,9 +261,16 @@ final class ServerTrust {
             // click is the same question: one decision gets one notice (3.5.10)
             return;
         }
-        NotificationDisplayer.getDefault().notify(title, icon(),
-                NbBundle.getMessage(ServerTrust.class, "ServerTrust_detail", binary, projectDir.getName()),
-                e -> ask(projectDir));
+        try {
+            NotificationDisplayer.getDefault().notify(title, icon(),
+                    NbBundle.getMessage(ServerTrust.class, "ServerTrust_detail", binary,
+                            org.nmox.studio.core.util.PlainText.oneLine(projectDir.getName(), 80)),
+                    e -> ask(projectDir));
+        } catch (RuntimeException ex) {
+            // the refusal is in the log above; a notice that cannot be built must
+            // not become an error on the thread that opened the file
+            LOG.log(java.util.logging.Level.INFO, "the trust notice for " + projectDir + " could not be shown", ex);
+        }
     }
 
     /** Whether a folder's notice is the first this session, across git and the servers. Swapped by tests. */
@@ -313,7 +321,9 @@ final class ServerTrust {
             if (path.equals(root) || path.startsWith(root + File.separator)) {
                 binary = waiting.getValue();
                 it.remove();
-                // a later refusal for this project, should trust be withdrawn by hand, speaks again
+                // the log line for this project may be written again, should it be
+                // refused again; the notice is once per session whatever happens
+                // (TrustNotices never forgets), and nothing withdraws trust in one
                 SPOKEN.remove(path);
             }
         }

@@ -258,4 +258,49 @@ public final class WorkspaceTrust {
         }
         return false;
     }
+
+    /**
+     * Whether git may be spawned for a folder without asking (3.5.13): the
+     * one question the git chip, line blame and the Standup ask.
+     *
+     * <p>The anchor is the REPOSITORY's root, the folder holding
+     * {@code .git}, because that is where the configuration git honours
+     * lives (3.5.7): a trusted sub-folder of a repository nobody trusted
+     * does not make its {@code .git/config} trustworthy. The Standup had
+     * asked about the board's own folder, so a trusted project inside an
+     * untrusted repository still ran {@code git log} under that
+     * repository's configuration.
+     *
+     * <p>A repository rooted at the user's home folder, or above it, is the
+     * user's own: its configuration is as much theirs as
+     * {@code ~/.gitconfig}, which git reads for every command anyway, and
+     * nobody else can write there. People who keep their dotfiles in git
+     * have exactly this. Without the rule every folder under home that is
+     * not a repository of its own resolved to that root, the notice asked
+     * for trust in the whole home folder on every start, and granting it
+     * would have trusted every clone beneath it.
+     *
+     * @param folder any folder; false when it is in no repository
+     */
+    public static boolean gitMayRun(File folder) {
+        return gitMayRun(folder, System.getProperty("user.home"), WorkspaceTrust::isTrusted);
+    }
+
+    static boolean gitMayRun(File folder, String home, java.util.function.Predicate<File> trusted) {
+        File root = org.nmox.studio.core.util.GitFacts.repoRoot(folder);
+        if (root == null) {
+            return false;
+        }
+        return holdsHome(root, home) || trusted.test(root);
+    }
+
+    /** Whether {@code root} is the home folder or one above it, on a path boundary. */
+    static boolean holdsHome(File root, String home) {
+        if (home == null || home.isBlank()) {
+            return false;
+        }
+        String h = new File(home).getAbsolutePath();
+        String r = root.getAbsolutePath();
+        return h.equals(r) || h.startsWith(r.endsWith(File.separator) ? r : r + File.separator);
+    }
 }

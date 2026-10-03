@@ -21,6 +21,12 @@ PUSH='git -c url.git@github.com:.insteadOf=ssh-bypass: push ssh-bypass:NMOX/NMOX
 # re-read after 20s and only die when the fail persists with nothing
 # pending behind it.
 FAILS=0
+# GREEN is the gate's own statement that the loop ENDED on a pass
+# (3.5.13). The loop used to fall through after its sixty rounds: a
+# queue that kept the checks pending for half an hour walked into the
+# merge below with nothing verified, and the tree-identity fast path
+# then called that head "green" and tagged it.
+GREEN=0
 for i in $(seq 1 60); do
   STATE=$(gh pr checks $PR 2>/dev/null | /usr/bin/awk -F'	' '{print $2}' | sort -u | tr '\n' ' ')
   echo "checks: $STATE"
@@ -33,9 +39,10 @@ for i in $(seq 1 60); do
       sleep 20; continue;;
   esac
   FAILS=0
-  [[ "$STATE" == *pass* && "$STATE" != *pending* ]] && break
+  if [[ "$STATE" == *pass* && "$STATE" != *pending* ]]; then GREEN=1; break; fi
   sleep 30
 done
+[ "$GREEN" = 1 ] || { echo "CHECKS-TIMEOUT: the checks never read as passed ($STATE)"; exit 1; }
 # the squash commit is named by the PULL REQUEST, stated here (v3.5.9):
 # left to GitHub's default, a one-commit request is named after that
 # commit instead, and v3.5.8 reached main as "wip: … (#842)". The
@@ -44,6 +51,15 @@ done
 PRTITLE=$(gh pr view $PR --json title --jq '.title')
 SUBJECT=$("$HERE/squash-subject.sh" "$PRTITLE" "$PR") || { echo "SQUASH-SUBJECT-REFUSED"; exit 1; }
 gh pr merge $PR --squash --subject "$SUBJECT" 2>&1 | /usr/bin/tail -1
+# the pipe above reports tail's exit, so the merge is READ BACK (3.5.13):
+# GitHub can take a moment to say MERGED, hence the three looks
+MERGED=""
+for i in 1 2 3; do
+  MERGED=$(gh pr view $PR --json state --jq '.state' 2>/dev/null)
+  [ "$MERGED" = MERGED ] && break
+  sleep 5
+done
+[ "$MERGED" = MERGED ] || { echo "MERGE-FAILED: the pull request reads '$MERGED'"; exit 1; }
 # fetch only — NEVER checkout: a gate that switches the working tree
 # to main while a unit is mid-flight silently reroutes the developer's
 # commits onto local main (bit hard on 2026-08-25, PR 583 shipped
@@ -111,7 +127,7 @@ for i in $(seq 1 90); do
           --jq '.[0] | (.status)+":"+(.conclusion // "")+":"+(.databaseId|tostring)' 2>/dev/null)
   # the re-run has registered the moment the run reads as running again
   [[ "${RUN:-}" != completed:* ]] && [ "$RERAN" = 1 ] && RERUN_SEEN=1
-  case "$(scripts/release-run-verdict.sh "$N" "${RUN:-}" "$RERAN" "$RERUN_SEEN")" in
+  case "$("$HERE/release-run-verdict.sh" "$N" "${RUN:-}" "$RERAN" "$RERUN_SEEN")" in
     complete)
       echo "RELEASE-COMPLETE: 21 assets"
       # nudge the canonical tap's self-sync so brew users get the bump

@@ -49,8 +49,14 @@ class StylelintServerTest {
         String body = src.substring(at, src.indexOf("static boolean hasStylelintConfig", at));
         // a stylelint config is executable JS resolved from the project's
         // node_modules — the v1.216.0 payload law, not just the binary gate
-        assertThat(body).contains("WorkspaceTrust.isTrusted");
-        assertThat(body).contains("hasStylelintConfig");
+        // (3.5.13: the gate is ServerTrust's, the same silent question, so the
+        // server is among the waiters a grant starts; asked after the config
+        // check, since a project with no configuration has nothing waiting)
+        int config = body.indexOf("if (!hasStylelintConfig(dir))");
+        int gate = body.indexOf("ServerTrust.refuses(\"stylelint-lsp\", dir)");
+        assertThat(config).isPositive();
+        assertThat(gate).as("the trust gate, after the config check").isGreaterThan(config);
+        assertThat(gate).as("and before the launch").isLessThan(body.indexOf("launchNpm("));
         assertThat(body).contains("launchNpm(");
         assertThat(body).contains("stylelint-lsp");
     }

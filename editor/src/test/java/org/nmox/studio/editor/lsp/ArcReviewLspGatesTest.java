@@ -56,9 +56,13 @@ class ArcReviewLspGatesTest {
     @DisplayName("EslintServer gates on workspace trust — configs are executable JS")
     void eslintTrustGate() throws IOException {
         String b = body(source(), "class EslintServer", "static boolean hasEslintConfig");
-        assertThat(b).contains("WorkspaceTrust.isTrusted");
-        // and only starts where eslint is actually configured
-        assertThat(b).contains("hasEslintConfig(dir)");
+        // and only starts where eslint is actually configured (3.5.13: the gate is
+        // ServerTrust's, asked after the config check, so a grant starts the linter)
+        int config = b.indexOf("if (!hasEslintConfig(dir))");
+        int gate = b.indexOf("ServerTrust.refuses(\"vscode-eslint-language-server\", dir)");
+        assertThat(config).isPositive();
+        assertThat(gate).as("the trust gate, after the config check").isGreaterThan(config);
+        assertThat(gate).as("and before the launch").isLessThan(b.indexOf("launchNpm("));
     }
 
     @Test

@@ -34,6 +34,17 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.ui.resources.Bundle"/>
                 <attr name="position" intvalue="130"/>
             </folder>
+            <!-- 3.5.13: File > Autosave, where a VS Code user looks for
+                 "Auto Save". The platform's autosave module ships the toggle
+                 (a BooleanStateAction, so the row is a checkbox) and its
+                 Options > Editor > Autosave panel, and hangs the toggle on no
+                 menu, no toolbar and no chord: the feature existed and nobody
+                 could find it. One row after Save All (1700), before the
+                 separator (1800). -->
+            <file name="org-netbeans-modules-editor-autosave-ToggleAutoSaveAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-autosave-ToggleAutoSaveAction.instance"/>
+                <attr name="position" intvalue="1750"/>
+            </file>
         </folder>
         <folder name="Window">
             <!-- v2.118.0, the coherence pass, measured live in the shipped

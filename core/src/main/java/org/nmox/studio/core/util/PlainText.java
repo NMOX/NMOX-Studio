@@ -81,4 +81,34 @@ public final class PlainText {
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 .replace("\"", "&quot;").replace("'", "&#39;");
     }
+
+    /**
+     * A file or folder name as one line of ordinary characters, for a
+     * sink that takes names from disk: control characters become a space
+     * and a very long name is cut at {@code max} code points with an
+     * ellipsis (3.5.13).
+     *
+     * <p>A notification's text is built into markup by the platform
+     * ({@code XMLUtil.toElementContent}), which THROWS for a character
+     * below U+0020 other than tab and the line ends. A repository whose
+     * folder name held one made its trust notice vanish: the exception was
+     * swallowed where the notice was posted, after the notice had been
+     * counted as shown.
+     */
+    public static String oneLine(String name, int max) {
+        if (name == null) {
+            return "";
+        }
+        StringBuilder out = new StringBuilder();
+        int[] points = name.codePoints().toArray();
+        int limit = Math.max(1, max);
+        for (int i = 0; i < points.length && i < limit; i++) {
+            int cp = points[i];
+            out.appendCodePoint(Character.isISOControl(cp) || cp == 0x2028 || cp == 0x2029 ? ' ' : cp);
+        }
+        if (points.length > limit) {
+            out.append('\u2026');
+        }
+        return out.toString();
+    }
 }

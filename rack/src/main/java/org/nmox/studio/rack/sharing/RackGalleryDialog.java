@@ -177,7 +177,7 @@ public final class RackGalleryDialog {
         left.setPreferredSize(new Dimension(330, 440));
         JScrollPane detailScroll = new JScrollPane(detailArea);
         detailScroll.setPreferredSize(new Dimension(470, 440));
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, detailScroll);
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, left, detailScroll));
         split.setResizeWeight(0.4);
         split.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 

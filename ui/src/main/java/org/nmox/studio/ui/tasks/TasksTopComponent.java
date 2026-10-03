@@ -1079,9 +1079,11 @@ public final class TasksTopComponent extends TopComponent {
                 // git log reads the repository's own config, which can name a
                 // program to run (gpg.program with log.showSignature): in a
                 // folder nobody has trusted the report goes without its
-                // Commits section, as it does where there is no repository (3.5.7)
+                // Commits section, as it does where there is no repository (3.5.7).
+                // The question is about the REPOSITORY's root, where that config
+                // is, not about the board's own folder (3.5.13)
                 org.nmox.studio.core.process.ProcessSupport.BoundedResult r =
-                        !org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir) ? null
+                        !org.nmox.studio.rack.service.WorkspaceTrust.gitMayRun(dir) ? null
                         : org.nmox.studio.core.process.ProcessSupport.runBounded(
                                 List.of("git", "log", "--since=yesterday.midnight",
                                         "--format=%ct%x09%h %s"),

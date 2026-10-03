@@ -514,8 +514,8 @@ public final class DevToolsPanel extends JPanel {
         bar.add(editStyle);
         bar.add(domStatus);
         panel.add(bar, BorderLayout.NORTH);
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(tree), new JScrollPane(domDetails));
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(domDetails)));
         split.setResizeWeight(0.6);
         panel.add(split, BorderLayout.CENTER);
         tree.addTreeSelectionListener(e -> {
@@ -1280,8 +1280,8 @@ public final class DevToolsPanel extends JPanel {
         bar.add(refresh);
         bar.add(vueStatus);
         panel.add(bar, BorderLayout.NORTH);
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(tree), new JScrollPane(safeTable(vueDetails)));
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(safeTable(vueDetails))));
         split.setResizeWeight(0.5);
         panel.add(split, BorderLayout.CENTER);
         tree.addTreeSelectionListener(e -> {
@@ -1361,8 +1361,8 @@ public final class DevToolsPanel extends JPanel {
         bar.add(refresh);
         bar.add(svelteStatus);
         panel.add(bar, BorderLayout.NORTH);
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(tree), new JScrollPane(svelteDetails));
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(svelteDetails)));
         split.setResizeWeight(0.5);
         panel.add(split, BorderLayout.CENTER);
         tree.addTreeSelectionListener(e -> {
@@ -1437,8 +1437,8 @@ public final class DevToolsPanel extends JPanel {
         bar.add(refresh);
         bar.add(ngStatus);
         panel.add(bar, BorderLayout.NORTH);
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new JScrollPane(tree), new JScrollPane(safeTable(ngDetails)));
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new JScrollPane(tree), new JScrollPane(safeTable(ngDetails))));
         split.setResizeWeight(0.5);
         panel.add(split, BorderLayout.CENTER);
         tree.addTreeSelectionListener(e -> {

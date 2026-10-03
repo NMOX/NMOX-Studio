@@ -24,8 +24,10 @@ fi
 case "$PR" in
   ''|*[!0-9]*) echo "squash-subject: '$PR' is not a pull request number" >&2; exit 2;;
 esac
-case "$TITLE" in
-  wip:*|wip\ *|WIP:*|WIP\ *)
+# a working note in any spelling: "wip", "WIP: x", "Wip x", "[wip] x" (3.5.13)
+LOWER=$(printf '%s' "$TITLE" | tr '[:upper:]' '[:lower:]')
+case "$LOWER" in
+  wip|wip:*|wip\ *|\[wip\]*)
     echo "squash-subject: the pull request's title is a working note ('$TITLE'): retitle it before the gate" >&2; exit 3;;
 esac
 case "$TITLE" in

@@ -108,7 +108,7 @@ final class GitChip {
      * name is read from {@code HEAD} without git and still shows; every
      * spawn waits until the repository's folder is trusted.
      */
-    static java.util.function.Predicate<File> trusted = WorkspaceTrust::isTrusted;
+    static java.util.function.Predicate<File> trusted = WorkspaceTrust::gitMayRun;
 
     /** A repository is aimed and nothing may be spawned in it yet: the chip says so and offers the question. */
     boolean waitsForTrust() {

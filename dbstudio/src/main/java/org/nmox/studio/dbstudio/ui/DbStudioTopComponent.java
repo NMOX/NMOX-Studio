@@ -421,8 +421,8 @@ public final class DbStudioTopComponent extends TopComponent {
         JSplitPane right = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
                 buildConsolePanel(), buildResultsPanel());
         right.setDividerLocation(240);
-        JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                buildConnectionsPanel(), right);
+        JSplitPane center = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                buildConnectionsPanel(), right));
         center.setDividerLocation(280);
         add(center, BorderLayout.CENTER);
 

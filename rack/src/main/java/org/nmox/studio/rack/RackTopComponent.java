@@ -265,8 +265,8 @@ public final class RackTopComponent extends TopComponent {
         scroll.getVerticalScrollBar().setUnitIncrement(24);
         scroll.getViewport().setBackground(RackStyle.RACK_BG);
 
-        JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                new PalettePanel(rack), scroll);
+        JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                new PalettePanel(rack), scroll));
         split.setDividerLocation(230);
         split.setBorder(BorderFactory.createEmptyBorder());
         add(split, BorderLayout.CENTER);

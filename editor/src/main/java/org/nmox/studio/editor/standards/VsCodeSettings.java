@@ -22,9 +22,9 @@ import org.openide.filesystems.FileUtil;
  * rather than in an {@code .editorconfig}; a switcher opening one here
  * got the editor's defaults instead.
  *
- * <p>Four settings are read, and translated into the EditorConfig
+ * <p>These settings are read, and translated into the EditorConfig
  * properties the editor already honours ({@link EditorConfigIndentation},
- * {@link EditorConfig#applyOnSave}):
+ * {@link EditorConfig#applyOnSave}, {@link EditorConfig#lineSeparator}):
  * <ul>
  * <li>{@code editor.tabSize} (a number) is the tab width and the
  *     indentation width, as VS Code uses it unless
@@ -34,8 +34,15 @@ import org.openide.filesystems.FileUtil;
  *     {@code files.insertFinalNewline}, when {@code true}. VS Code's
  *     {@code false} means "leave it alone", while EditorConfig's
  *     {@code false} for a final newline means "strip it", so a false is
- *     never translated.</li>
+ *     never translated;</li>
+ * <li>{@code files.eol}, when it is {@code "\n"} or {@code "\r\n"}, is
+ *     the line ending files are written with ({@code "auto"} says
+ *     nothing).</li>
  * </ul>
+ * One more is answered as a question rather than translated:
+ * {@code editor.formatOnSave} ({@link #formatOnSave(File)}). A project
+ * that says {@code false} is not reformatted when its files are saved,
+ * whatever formatter configuration it carries.
  * A language block ({@code "[javascript]": {...}}, or several ids at
  * once, {@code "[javascript][typescript]"}) overrides the top level for
  * files of that VS Code language id. VS Code's
@@ -152,21 +159,7 @@ public final class VsCodeSettings {
      * Pure.
      */
     static Map<String, String> translate(JSONObject settings, String languageId) {
-        Map<String, Object> values = new LinkedHashMap<>();
-        for (String k : settings.keySet()) {
-            if (!k.startsWith("[")) {
-                values.put(k, settings.opt(k));
-            }
-        }
-        if (languageId != null) {
-            for (String k : settings.keySet()) {
-                if (k.startsWith("[") && names(k, languageId) && settings.opt(k) instanceof JSONObject block) {
-                    for (String inner : block.keySet()) {
-                        values.put(inner, block.opt(inner));
-                    }
-                }
-            }
-        }
+        Map<String, Object> values = effective(settings, languageId);
         Map<String, String> out = new LinkedHashMap<>();
         Integer tab = width(values.get("editor.tabSize"));
         Integer indent = width(values.get("editor.indentSize"));
@@ -188,7 +181,59 @@ public final class VsCodeSettings {
         if (Boolean.TRUE.equals(values.get("files.insertFinalNewline"))) {
             out.put("insert_final_newline", "true");
         }
+        // "auto" (the operating system's own) and anything else say nothing
+        Object eol = values.get("files.eol");
+        if ("\n".equals(eol)) {
+            out.put("end_of_line", "lf");
+        } else if ("\r\n".equals(eol)) {
+            out.put("end_of_line", "crlf");
+        }
         return out;
+    }
+
+    /**
+     * The settings in force for a file of VS Code language
+     * {@code languageId}: the top level, with every language block that
+     * names it laid over. Pure.
+     */
+    static Map<String, Object> effective(JSONObject settings, String languageId) {
+        Map<String, Object> values = new LinkedHashMap<>();
+        for (String k : settings.keySet()) {
+            if (!k.startsWith("[")) {
+                values.put(k, settings.opt(k));
+            }
+        }
+        if (languageId != null) {
+            for (String k : settings.keySet()) {
+                if (k.startsWith("[") && names(k, languageId) && settings.opt(k) instanceof JSONObject block) {
+                    for (String inner : block.keySet()) {
+                        values.put(inner, block.opt(inner));
+                    }
+                }
+            }
+        }
+        return values;
+    }
+
+    /**
+     * What {@code file}'s project says about formatting on save
+     * ({@code editor.formatOnSave}, top level or in the file's language
+     * block): true, false, or empty when it says nothing or says something
+     * that is not a boolean (3.5.13).
+     */
+    public static java.util.Optional<Boolean> formatOnSave(File file) {
+        File settings = settingsFor(file);
+        if (settings == null) {
+            return java.util.Optional.empty();
+        }
+        JSONObject json = parse(settings);
+        return json == null ? java.util.Optional.empty() : formatOnSave(json, languageId(file));
+    }
+
+    /** {@link #formatOnSave(File)} over parsed settings. Pure. */
+    static java.util.Optional<Boolean> formatOnSave(JSONObject settings, String languageId) {
+        return effective(settings, languageId).get("editor.formatOnSave") instanceof Boolean b
+                ? java.util.Optional.of(b) : java.util.Optional.empty();
     }
 
     /** Whether a {@code [a][b]} language-block key names {@code languageId}. */

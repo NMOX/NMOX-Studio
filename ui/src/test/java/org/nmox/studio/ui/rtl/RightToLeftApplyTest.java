@@ -98,8 +98,35 @@ class RightToLeftApplyTest {
     }
 
     @Test
-    @DisplayName("a split pane arriving later is mirrored like one that was there: first side on the right, divider mirrored")
-    void aSplitArrivingLaterKeepsItsShape() {
+    @DisplayName("a marked split pane arriving later is mirrored like one that was there, once it has a width")
+    void aSplitArrivingLaterIsMirrored() throws Exception {
+        System.setProperty(TextDirection.FORCE, "true");
+        javax.swing.SwingUtilities.invokeAndWait(() -> {
+            JPanel window = new JPanel(new java.awt.BorderLayout());
+            RightToLeft.apply(window);
+            JLabel tree = new JLabel("tree");
+            JLabel editor = new JLabel("editor");
+            javax.swing.JSplitPane split = TextDirection.sidesFollowReader(
+                    new javax.swing.JSplitPane(javax.swing.JSplitPane.HORIZONTAL_SPLIT, tree, editor));
+            split.setDividerLocation(180);
+            window.add(split, java.awt.BorderLayout.CENTER); // it arrives with no width, as a real one does
+
+            RightToLeft.adopt(window, split);
+
+            assertThat(split.getComponentOrientation().isLeftToRight()).isFalse();
+            assertThat(split.getLeftComponent()).isSameAs(editor);
+            assertThat(split.getRightComponent()).isSameAs(tree);
+
+            split.setSize(600, 300);
+            split.dispatchEvent(new java.awt.event.ComponentEvent(split, java.awt.event.ComponentEvent.COMPONENT_RESIZED));
+            assertThat(split.getDividerLocation()).as("180 from the right: 600 − divider − 180")
+                    .isEqualTo(600 - split.getDividerSize() - 180);
+        });
+    }
+
+    @Test
+    @DisplayName("an unmarked split pane arriving later keeps its shape: sides in their slots, divider where it was")
+    void anUnmarkedSplitArrivingLaterKeepsItsShape() {
         System.setProperty(TextDirection.FORCE, "true");
         JPanel window = new JPanel();
         RightToLeft.apply(window);
@@ -113,10 +140,9 @@ class RightToLeftApplyTest {
         RightToLeft.adopt(window, split);
 
         assertThat(split.getComponentOrientation().isLeftToRight()).isFalse();
-        assertThat(split.getLeftComponent()).isSameAs(editor);
-        assertThat(split.getRightComponent()).isSameAs(tree);
-        assertThat(split.getDividerLocation()).as("180 from the right: 600 − divider − 180")
-                .isEqualTo(600 - split.getDividerSize() - 180);
+        assertThat(split.getLeftComponent()).isSameAs(tree);
+        assertThat(split.getRightComponent()).isSameAs(editor);
+        assertThat(split.getDividerLocation()).isEqualTo(180);
     }
 
     @Test

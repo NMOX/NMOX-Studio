@@ -299,10 +299,10 @@ public class HttpDevice extends RackDevice {
             south.add(new javax.swing.JLabel("No exchanges yet — SEND a request."));
         }
 
-        javax.swing.JSplitPane split = new javax.swing.JSplitPane(
+        javax.swing.JSplitPane split = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new javax.swing.JSplitPane(
                 javax.swing.JSplitPane.HORIZONTAL_SPLIT,
                 new javax.swing.JScrollPane(list),
-                new javax.swing.JScrollPane(detail));
+                new javax.swing.JScrollPane(detail)));
         split.setDividerLocation(320);
         dialog.add(split, BorderLayout.CENTER);
         dialog.add(south, BorderLayout.SOUTH);
