@@ -71,7 +71,7 @@ public final class ToggleWordWrapAction extends AbstractAction implements Presen
         WordWrap.Result result = WordWrap.toggle(mime, () -> doc.getProperty(WordWrap.KEY), prefs,
                 ToggleWordWrapAction::refreshEditors);
         String key = !result.took() ? "WordWrap_unchanged" : result.on() ? "WordWrap_on" : "WordWrap_off";
-        status.accept(NbBundle.getMessage(ToggleWordWrapAction.class, key, mime));
+        status.accept(NbBundle.getMessage(ToggleWordWrapAction.class, key, languageName(mime)));
     }
 
     /**
@@ -106,5 +106,15 @@ public final class ToggleWordWrapAction extends AbstractAction implements Presen
         item.setToolTipText(NbBundle.getMessage(ToggleWordWrapAction.class, "WordWrap_tip"));
         item.setSelected(wrapsNow(EditorRegistry.lastFocusedComponent()));
         return item;
+    }
+
+    /**
+     * The language as the status line names it: the id VS Code gives it
+     * ({@code typescript}), which is the word a switcher's settings use,
+     * and the MIME type only for a language with no such id.
+     */
+    static String languageName(String mime) {
+        String id = org.nmox.studio.editor.lsp.LspLanguageIds.forMime(mime);
+        return id == null || id.isBlank() ? mime : id;
     }
 }

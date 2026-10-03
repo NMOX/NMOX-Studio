@@ -704,8 +704,8 @@
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
-                    <file name="vscode-word-wrap-keybindings.xml"
-                          url="vscode-word-wrap-keybindings.xml">
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
                         <attr name="position" intvalue="9990"/>
                     </file>
                     <file name="nmox-keybindings.xml"
@@ -754,8 +754,8 @@
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
-                    <file name="vscode-word-wrap-keybindings.xml"
-                          url="vscode-word-wrap-keybindings.xml">
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
                         <attr name="position" intvalue="9990"/>
                     </file>
                     <file name="nmox-keybindings.xml"
@@ -790,8 +790,8 @@
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
-                    <file name="vscode-word-wrap-keybindings.xml"
-                          url="vscode-word-wrap-keybindings.xml">
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
                         <attr name="position" intvalue="9990"/>
                     </file>
                     <!-- macOS: Cmd+L = expand line selection; on Windows and Linux Ctrl+L is Emacs's own recenter -->
@@ -835,8 +835,8 @@
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
-                    <file name="vscode-word-wrap-keybindings.xml"
-                          url="vscode-word-wrap-keybindings.xml">
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
                         <attr name="position" intvalue="9990"/>
                     </file>
                     <!-- Cmd+L (Ctrl+L) = expand line selection; Idea and (on macOS) Emacs leave the chord free -->
@@ -891,8 +891,8 @@
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
                     <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
-                    <file name="vscode-word-wrap-keybindings.xml"
-                          url="vscode-word-wrap-keybindings.xml">
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
                         <attr name="position" intvalue="9990"/>
                     </file>
                     <file name="nmox-keybindings.xml"

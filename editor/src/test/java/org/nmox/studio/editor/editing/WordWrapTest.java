@@ -213,11 +213,11 @@ class WordWrapTest {
         assertThat(md.pokes).isEqualTo(1);
         // a document nothing reads the setting from is left alone
         assertThat(plain.getDocument().getProperty(WordWrap.KEY)).isNull();
-        assertThat(said).containsExactly("Word wrap is on for every text/typescript editor");
+        assertThat(said).containsExactly("Word wrap is on for every typescript editor");
 
         ToggleWordWrapAction.press(tsEditor);
         assertThat(ToggleWordWrapAction.wrapsNow(tsEditor)).isFalse();
-        assertThat(said).last().isEqualTo("Word wrap is off for every text/typescript editor");
+        assertThat(said).last().isEqualTo("Word wrap is off for every typescript editor");
     }
 
     @Test
@@ -232,7 +232,7 @@ class WordWrapTest {
                 ToggleWordWrapKeyAction.NAME, java.awt.event.ActionEvent.ALT_MASK), editor);
         assertThat(ToggleWordWrapAction.wrapsNow(editor)).isTrue();
         assertThat(editor.getKeyListeners()).hasSize(before + 1);
-        assertThat(said).containsExactly("Word wrap is on for every text/typescript editor");
+        assertThat(said).containsExactly("Word wrap is on for every typescript editor");
         key.actionPerformed(null, null);
         assertThat(said).hasSize(1);
     }

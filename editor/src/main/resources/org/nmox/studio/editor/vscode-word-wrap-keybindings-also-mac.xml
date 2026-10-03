@@ -14,6 +14,14 @@
     echo swallowed (editing/TypedEcho). A global shortcut would toggle the
     wrap and leave the character in the file.
 -->
+<!--
+    The file's name ends in "-mac.xml" on purpose. The platform's keymap
+    reader (KeyMapsStorage) logs a WARNING at every start for an Alt chord
+    in the default profile ("may not work correctly on Mac") unless the
+    file's name ends so: that suffix is how a file says its Alt was
+    written with the Mac in mind. This one was: Opt+Z is the chord wanted
+    there, and Alt+Z on Windows and Linux; the file applies on all three.
+-->
 <bindings>
     <bind actionName="nmox-toggle-word-wrap" key="A-Z"/>
 </bindings>

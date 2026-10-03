@@ -16,6 +16,12 @@
     macOS the Eclipse and NetBeans 5.5 profiles bind it, as O-S-A; this
     file is not read there.)
 -->
+<!--
+    The modifiers are written Shift first: the platform's keymap reader
+    logs a WARNING at every start for a key that BEGINS with A or C in
+    the default profile, and the order of the modifier letters means
+    nothing to the key itself.
+-->
 <bindings>
-    <bind actionName="nmox-toggle-block-comment" key="CS-A"/>
+    <bind actionName="nmox-toggle-block-comment" key="SC-A"/>
 </bindings>

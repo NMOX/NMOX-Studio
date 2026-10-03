@@ -20,6 +20,12 @@
     character, and only a press the editor's own keymap consumed can have
     that typed echo swallowed (editing/TypedEcho).
 -->
+<!--
+    The modifiers are written Shift first: the platform's keymap reader
+    logs a WARNING at every start for a key that BEGINS with A or C in
+    the default profile, and the order of the modifier letters means
+    nothing to the key itself.
+-->
 <bindings>
-    <bind actionName="nmox-toggle-block-comment" key="AS-A"/>
+    <bind actionName="nmox-toggle-block-comment" key="SA-A"/>
 </bindings>

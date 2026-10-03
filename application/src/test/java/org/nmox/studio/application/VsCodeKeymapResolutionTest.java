@@ -494,7 +494,9 @@ class VsCodeKeymapResolutionTest {
                     on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
             new Chord("OS-MINUS", Where.EDITOR, "jump-list-next", "",
                     on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
-            new Chord("AS-F", Where.EDITOR, "format", "",
+            // bound to the product's own action since 3.6.0: Shift+Opt+F also TYPES on macOS,
+            // and editing/FormatChordAction swallows that character before running "format"
+            new Chord("AS-F", Where.EDITOR, "nmox-format-on-option-chord", "",
                     on(MAC_ONLY, "NetBeans", "Eclipse", "Emacs", "NetBeans55")),
             // the editing gestures the product added (editor module, editing package).
             // Shift+Alt+A: Eclipse and NetBeans55 bind O-S-A, which is Alt+Shift+A

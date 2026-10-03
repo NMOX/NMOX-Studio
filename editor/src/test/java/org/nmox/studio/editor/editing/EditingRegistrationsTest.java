@@ -81,10 +81,10 @@ class EditingRegistrationsTest {
     private static final List<String> ACTIONS = new ArrayList<>();
     static {
         ACTIONS.add(ToggleBlockCommentAction.NAME);
-        BINDS.put("vscode-block-comment-keybindings.xml", "AS-A -> " + ToggleBlockCommentAction.NAME);
+        BINDS.put("vscode-block-comment-keybindings.xml", "SA-A -> " + ToggleBlockCommentAction.NAME);
         WHERE.put("vscode-block-comment-keybindings.xml", Map.of(
                 "NetBeans", "", "Emacs", "", "Idea", "", "Eclipse", "OS_MAC", "NetBeans55", "OS_MAC"));
-        BINDS.put("vscode-block-comment-keybindings-linux.xml", "CS-A -> " + ToggleBlockCommentAction.NAME);
+        BINDS.put("vscode-block-comment-keybindings-linux.xml", "SC-A -> " + ToggleBlockCommentAction.NAME);
         WHERE.put("vscode-block-comment-keybindings-linux.xml", Map.of(
                 "NetBeans", "OS_LINUX", "Emacs", "OS_LINUX", "Idea", "OS_LINUX",
                 "Eclipse", "OS_LINUX", "NetBeans55", "OS_LINUX"));
@@ -92,8 +92,8 @@ class EditingRegistrationsTest {
         BINDS.put("vscode-line-keybindings.xml", "D-L -> " + ExpandLineSelectionAction.NAME);
         WHERE.put("vscode-line-keybindings.xml", Map.of("Idea", "", "Emacs", "OS_MAC"));
         ACTIONS.add(ToggleWordWrapKeyAction.NAME);
-        BINDS.put("vscode-word-wrap-keybindings.xml", "A-Z -> " + ToggleWordWrapKeyAction.NAME);
-        WHERE.put("vscode-word-wrap-keybindings.xml", Map.of(
+        BINDS.put("vscode-word-wrap-keybindings-also-mac.xml", "A-Z -> " + ToggleWordWrapKeyAction.NAME);
+        WHERE.put("vscode-word-wrap-keybindings-also-mac.xml", Map.of(
                 "NetBeans", "", "Emacs", "", "Idea", "", "Eclipse", "", "NetBeans55", ""));
     }
 
