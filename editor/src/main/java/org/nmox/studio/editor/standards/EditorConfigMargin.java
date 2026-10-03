@@ -29,12 +29,26 @@ import java.util.Map;
  * </ul>
  * Whether the line is drawn at all stays the user's own preference
  * ({@code text-limit-line-visible}): a project moves the line, it does
- * not switch it back on for someone who turned it off. Pure.
+ * not switch it back on for someone who turned it off.
+ *
+ * <p>The same seam carries whether lines WRAP: an editor document's
+ * {@code text-line-wrap} property is read from the code-style
+ * preferences too ({@code NbEditorDocument}), so
+ * {@code "editor.wordWrap": "on"} wraps that project's files at the edge
+ * of the editor, at a word ({@code words}), {@code "off"} never wraps
+ * them ({@code none}), and the user's own setting - and View's own
+ * switch over it - is neither read nor written. One thing outranks the
+ * document: an editor pane's own {@code text-line-wrap} client property
+ * ({@code DocumentViewOp.updateLineWrapType} reads it first), which is
+ * where a per-editor switch belongs. Pure.
  */
 public final class EditorConfigMargin {
 
     /** The editor's preference key (SimpleValueNames.TEXT_LIMIT_WIDTH spells the same string). */
     public static final String TEXT_LIMIT_WIDTH = "text-limit-width";
+
+    /** The editor's preference key for wrapping (SimpleValueNames.TEXT_LINE_WRAP spells the same string). */
+    public static final String TEXT_LINE_WRAP = "text-line-wrap";
 
     /** Wider than any real line limit, narrow enough that a typo cannot make one. */
     static final int MAX_COLUMN = 1_000;
@@ -43,8 +57,9 @@ public final class EditorConfigMargin {
     }
 
     /**
-     * The editor preference a set of EditorConfig properties overrides.
-     * Empty when the properties say nothing about the line length.
+     * The editor preferences a set of EditorConfig properties overrides.
+     * Empty when the properties say nothing about the line length or
+     * about wrapping.
      *
      * @param props lowercase keys and values, as {@link ProjectFormatting#propertiesFor} returns them
      */
@@ -58,6 +73,12 @@ public final class EditorConfigMargin {
             if (column != null) {
                 out.put(TEXT_LIMIT_WIDTH, Integer.toString(column));
             }
+        }
+        String wrap = props.get(VsCodeSettings.WORD_WRAP);
+        if ("on".equals(wrap)) {
+            out.put(TEXT_LINE_WRAP, "words");
+        } else if ("off".equals(wrap)) {
+            out.put(TEXT_LINE_WRAP, "none");
         }
         return out;
     }

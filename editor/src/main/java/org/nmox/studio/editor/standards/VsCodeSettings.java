@@ -48,7 +48,15 @@ import org.openide.filesystems.FileUtil;
  *     read); an empty list is the project saying "no ruler", and the line
  *     is not drawn. Later rulers are not drawn: the platform has one line.
  *     A first ruler that is anything else says nothing, rather than
- *     promoting the second.</li>
+ *     promoting the second;</li>
+ * <li>{@code editor.wordWrap}, when it is {@code "on"} or {@code "off"}:
+ *     whether the file's lines wrap at the edge of the editor
+ *     ({@link EditorConfigMargin}). VS Code's two other values wrap at a
+ *     COLUMN ({@code "wordWrapColumn"}, {@code "bounded"}), which the
+ *     platform editor cannot do, so they say nothing. EditorConfig has no
+ *     word for this, and the key is handed on under VS Code's own name
+ *     ({@link #WORD_WRAP}), which an {@code .editorconfig} - whose keys
+ *     are read in lower case - can never spell.</li>
  * </ul>
  * One more is answered as a question rather than translated:
  * {@code editor.formatOnSave} ({@link #formatOnSave(File)}). A project
@@ -230,8 +238,15 @@ public final class VsCodeSettings {
         if (ruler != null) {
             out.put("max_line_length", ruler);
         }
+        Object wrap = values.get(WORD_WRAP);
+        if ("on".equals(wrap) || "off".equals(wrap)) {
+            out.put(WORD_WRAP, (String) wrap);
+        }
         return out;
     }
+
+    /** VS Code's word-wrap setting, and the key its {@code on}/{@code off} is handed on under. */
+    static final String WORD_WRAP = "editor.wordWrap";
 
     /**
      * The first of {@code editor.rulers} as an EditorConfig

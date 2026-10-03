@@ -281,7 +281,11 @@ class ProjectRulerTest {
         Path repo = repo("fire", "{ \"editor.rulers\": [100] }");
         NbEditorDocument doc = documentFor(repo.resolve("a.txt"));
         List<String> events = new ArrayList<>();
-        PropertyChangeListener view = evt -> events.add(evt.getPropertyName() + "=" + doc.getProperty(evt.getPropertyName()));
+        PropertyChangeListener view = evt -> {
+            if (WIDTH.equals(evt.getPropertyName())) { // the margin's own announcement; wrapping has its test
+                events.add(evt.getPropertyName() + "=" + doc.getProperty(evt.getPropertyName()));
+            }
+        };
         DocumentUtilities.addPropertyChangeListener(doc, view);
 
         EditorConfigCodeStyle.retell(doc);

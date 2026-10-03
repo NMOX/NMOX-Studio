@@ -25,8 +25,9 @@ import org.openide.util.lookup.ServiceProvider;
  * says: {@code indent_style}, {@code indent_size} and {@code tab_width},
  * the settings people write the file for - and draw its right-margin line
  * where the project states one ({@code max_line_length}, or the first of
- * {@code .vscode/settings.json}'s {@code editor.rulers};
- * {@link EditorConfigMargin}).
+ * {@code .vscode/settings.json}'s {@code editor.rulers}), and wrap its
+ * lines when the project says to ({@code editor.wordWrap};
+ * {@link EditorConfigMargin} for both).
  *
  * <p>The platform asks every registered
  * {@link CodeStylePreferences.Provider} in lookup order and takes the
@@ -128,7 +129,7 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
         return new OverlayPreferences(base, over);
     }
 
-    /** What the properties say that an editor's VIEW reads once: the right margin. */
+    /** What the properties say that an editor's VIEW reads once: the right margin, and whether lines wrap. */
     static Map<String, String> view(Map<String, String> props) {
         return EditorConfigMargin.overrides(props);
     }
@@ -221,7 +222,8 @@ public final class EditorConfigCodeStyle implements CodeStylePreferences.Provide
     }
 
     /** The document properties an editor's view reads once and then only on a change. */
-    static final java.util.List<String> VIEW_PROPERTIES = java.util.List.of(EditorConfigMargin.TEXT_LIMIT_WIDTH);
+    static final java.util.List<String> VIEW_PROPERTIES =
+            java.util.List.of(EditorConfigMargin.TEXT_LIMIT_WIDTH, EditorConfigMargin.TEXT_LINE_WRAP);
 
     private static final java.util.concurrent.atomic.AtomicBoolean WATCHING_FOCUS =
             new java.util.concurrent.atomic.AtomicBoolean();
