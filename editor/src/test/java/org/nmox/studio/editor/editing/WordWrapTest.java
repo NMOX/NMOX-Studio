@@ -272,6 +272,15 @@ class WordWrapTest {
         ToggleWordWrapAction.editors = List::of;
         ToggleWordWrapAction.press(new JTextArea(owned));
         assertThat(said).hasSize(1);
-        assertThat(said.get(0)).startsWith("Word wrap did not change").contains("text/typescript");
+        assertThat(said.get(0)).startsWith("Word wrap did not change").contains("the typescript editor settings")
+                .doesNotContain("text/typescript");
+    }
+
+    @Test
+    @DisplayName("the status line names a language by its VS Code id, and by its MIME type only where it has none")
+    void theLanguageIsNamed() {
+        assertThat(ToggleWordWrapAction.languageName("text/typescript")).isEqualTo("typescript");
+        assertThat(ToggleWordWrapAction.languageName("text/x-python")).isEqualTo("python");
+        assertThat(ToggleWordWrapAction.languageName("plain")).as("no id: the mime as it is").isEqualTo("plain");
     }
 }
