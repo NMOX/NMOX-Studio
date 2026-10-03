@@ -420,8 +420,8 @@ once per project.
   because no quoting makes those inert there.
 - **The tables above describe the default keymap profile.** In the
   **VS Code** profile (see *The VS Code keymap profile* above) VS Code's
-  own chords win wherever this product has the action. The four first
-  chords ride every profile. One deliberate exception: in the
+  own chords win wherever this product has the action. The four chords
+  at the top of this page (⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\`) work in every profile. One deliberate exception: in the
   **Eclipse** profile ⇧⌘E stays Eclipse's own *Switch to Editor*, and
   inside the editor ⇧⌘P and ⇧⌘X keep Eclipse's meanings (matching
   brace, upper case) — someone who picked Eclipse expects Eclipse.
