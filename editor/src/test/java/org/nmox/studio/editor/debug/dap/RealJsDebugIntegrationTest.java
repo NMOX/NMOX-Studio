@@ -418,7 +418,14 @@ class RealJsDebugIntegrationTest {
             // ending the session ends the SESSION: the program was the
             // user's before the debugger came and is still theirs after
             nb.request("disconnect", new JSONObject());
-            nb.awaitEvent("terminated");
+            // js-debug ends a detached session with "terminated" here; on the macOS
+            // runner (Node 24.20) it said only that the thread exited (PR 848). Either
+            // is the end of the SESSION; the law is what happens to the program
+            nb.await(f -> "event".equals(f.optString("type"))
+                    && ("terminated".equals(f.optString("event"))
+                        || "thread".equals(f.optString("event"))
+                            && "exited".equals(f.optJSONObject("body") == null ? null
+                                    : f.optJSONObject("body").optString("reason"))));
             proxy.close();
             server.stop();
             assertThat(node.isAlive()).as("an attached program outlives the debugger that attached to it").isTrue();
