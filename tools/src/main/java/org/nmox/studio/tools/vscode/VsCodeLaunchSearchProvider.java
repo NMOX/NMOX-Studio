@@ -2,6 +2,7 @@ package org.nmox.studio.tools.vscode;
 
 import java.awt.EventQueue;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -9,21 +10,28 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import javax.swing.text.JTextComponent;
+
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
 import org.nmox.studio.core.search.SearchTerms;
 import org.nmox.studio.core.spi.DebugLauncher;
 import org.nmox.studio.core.spi.ProjectAim;
+import org.nmox.studio.core.util.EditedFile;
 import org.nmox.studio.core.util.PlainStatus;
 import org.nmox.studio.rack.service.WorkspaceTrust;
 import org.nmox.studio.tools.npm.search.NpmScriptSearchProvider;
+import org.nmox.studio.tools.vscode.VsCodeLaunch.AttachNode;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Config;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.DebugFile;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.DebugPage;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Refused;
 import org.nmox.studio.tools.vscode.VsCodeLaunch.Resolved;
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -45,11 +53,19 @@ import org.openide.util.RequestProcessor;
  * step rides this provider's lane, because the platform runs a result's
  * action on the EDT.
  *
+ * <p><b>The file being looked at.</b> {@code ${file}} and its siblings
+ * mean the file the editor shows, and the editor's state is read when
+ * Enter is pressed — on the calling thread, before the lane — because that
+ * is the moment the user means by "this file". It reaches the resolver as
+ * one value (a path or null) through {@link #editorFile}.
+ *
  * <p><b>Refusals speak.</b> A configuration the debugger cannot start as
- * written — a field it cannot pass on, an attach, a type it has no adapter
- * for, a compound, a VS Code-only variable, a path outside the project —
- * is still LISTED and on Enter says why on the status line, starting
- * nothing and asking nothing.
+ * written — a field it cannot pass on, an attach to another machine, a
+ * type it has no adapter for, a compound, a VS Code-only variable, a path
+ * outside the project, an env file that is missing — is still LISTED and
+ * on Enter says why on the status line, starting nothing and asking
+ * nothing. A refusal about an env file names the file and a line number;
+ * no variable's value is ever said.
  */
 public class VsCodeLaunchSearchProvider implements SearchProvider {
 
@@ -70,6 +86,16 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
 
     /** Where refusals and progress are said, as a seam. */
     static volatile Consumer<String> statusSink = VsCodeLaunchSearchProvider::status;
+
+    /** The file the editor shows (or null), as a seam: {@code ${file}} is that file and no other. */
+    static volatile Supplier<Path> editorFile = VsCodeLaunchSearchProvider::focusedEditorFile;
+
+    /**
+     * Whether this provider runs a configuration's {@code preLaunchTask}
+     * before handing it on. It does not, so the resolver refuses the field
+     * by name; the constant is the one place that changes when it does.
+     */
+    static final boolean RUNS_PRE_LAUNCH_TASKS = false;
 
     /** One listed configuration: its definition, the project it belongs to, and the label shown. */
     record Item(Config config, File project, String label) {
@@ -126,14 +152,34 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
                         NpmScriptSearchProvider.escape(shown));
     }
 
-    /** Enter: resolving, the trust question and the hand-off all ride the lane, never the EDT. */
+    /**
+     * Enter: resolving, the trust question and the hand-off all ride the
+     * lane, never the EDT. The one thing read here, on the caller's thread,
+     * is which file the editor shows — the answer at the moment of the
+     * keypress, not whenever the lane gets to it.
+     */
     static RequestProcessor.Task run(File project, Config config) {
-        return RP.post(() -> execute(project, config));
+        Path file = editorFile.get();
+        return RP.post(() -> execute(project, config, file));
+    }
+
+    /**
+     * The file of the editor that last had focus, or null when no editor is
+     * open (or it shows something that is not a file on disk). In-memory
+     * questions only — the editor registry and a document's properties,
+     * through {@link EditedFile}, the one rule for which file a document
+     * holds — so it is safe where {@link #run} asks it.
+     */
+    static Path focusedEditorFile() {
+        JTextComponent editor = EditorRegistry.lastFocusedComponent();
+        FileObject fo = editor == null ? null : EditedFile.of(editor.getDocument());
+        File file = fo == null ? null : FileUtil.toFile(fo);
+        return file == null ? null : file.toPath();
     }
 
     /** The body of Enter, on the lane: resolve, refuse out loud, or trust-gate then hand to the debugger. */
-    static void execute(File project, Config config) {
-        Resolved resolved = VsCodeLaunch.resolve(config, project, System::getenv);
+    static void execute(File project, Config config, Path file) {
+        Resolved resolved = VsCodeLaunch.resolve(config, project, System::getenv, file, RUNS_PRE_LAUNCH_TASKS);
         if (resolved instanceof Refused refused) {
             statusSink.accept(refusal(config.name(), refused));
             return;
@@ -150,11 +196,22 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
         if (!trustCheck.test(project)) {
             return;
         }
-        boolean started = resolved instanceof DebugFile file
-                ? debugger.debug(file.program(), file.cwd(), file.args(), file.env())
-                : debugger.debugPage(((DebugPage) resolved).url(), ((DebugPage) resolved).webRoot());
+        boolean started;
+        if (resolved instanceof DebugFile program) {
+            started = debugger.debug(new DebugLauncher.Launch(
+                    program.kind() == VsCodeLaunch.Kind.PYTHON
+                            ? DebugLauncher.Language.PYTHON : DebugLauncher.Language.NODE,
+                    config.name(), program.program(), program.cwd(), project,
+                    program.args(), program.env(), program.runtime(), program.runtimeArgs()));
+        } else if (resolved instanceof AttachNode node) {
+            started = debugger.attachNode(config.name(), node.address(), node.port(), project);
+        } else {
+            started = debugger.debugPage(((DebugPage) resolved).url(), ((DebugPage) resolved).webRoot());
+        }
         statusSink.accept(started
-                ? message("VsCodeLaunchSearchProvider_starting", config.name())
+                ? message(resolved instanceof AttachNode
+                        ? "VsCodeLaunchSearchProvider_attaching" : "VsCodeLaunchSearchProvider_starting",
+                        config.name())
                 : message("VsCodeLaunchSearchProvider_noDebugger", config.name()));
     }
 
@@ -165,6 +222,10 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
             case REQUEST -> message("VsCodeLaunchSearchProvider_refuseRequest", name, refused.detail());
             case FIELDS -> message("VsCodeLaunchSearchProvider_refuseFields", name, refused.detail());
             case VARIABLE -> message("VsCodeLaunchSearchProvider_refuseVariable", name, refused.detail());
+            case NO_FILE -> message("VsCodeLaunchSearchProvider_refuseNoFile", name, refused.detail());
+            case UNREADABLE -> message("VsCodeLaunchSearchProvider_refuseUnreadable", name, refused.detail());
+            case ENV_LINE -> message("VsCodeLaunchSearchProvider_refuseEnvLine", name, refused.detail());
+            case ADDRESS -> message("VsCodeLaunchSearchProvider_refuseAddress", name, refused.detail());
             case COMPOUND -> message("VsCodeLaunchSearchProvider_refuseCompound", name);
             case NO_TARGET -> message("VsCodeLaunchSearchProvider_refuseNoTarget", name);
             case OUTSIDE -> message("VsCodeLaunchSearchProvider_refuseOutside", name, refused.detail());
