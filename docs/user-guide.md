@@ -812,7 +812,21 @@ official client.
   Where the project also has an `.editorconfig`, the `.editorconfig`
   wins wherever both say something. VS Code's
   `editor.detectIndentation`, which lets a file's own indentation win,
-  has no counterpart here.
+  has no counterpart here. The first of its `editor.rulers` is where the
+  editor draws its right-margin line, `editor.wordWrap` `"on"` or
+  `"off"` wraps that project's files or keeps them unwrapped,
+  `files.exclude` hides what it names from the project trees (a hidden
+  file still opens by name and is still committed), and **Find in
+  Projects** skips what `files.exclude` and `search.exclude` name.
+- **Your own VS Code settings** come across once, when you ask:
+  **Tools ▸ Import VS Code Settings…** reads your personal VS Code
+  `settings.json` (VS Code, Insiders or VSCodium) and lists each setting
+  it recognises with what it becomes here — indentation, word wrap,
+  rulers, whitespace display, trimming on save, Format on Save, the
+  minimap, Sticky Scroll and autosave. Settings that mean exactly the
+  same here start checked, the near ones say how they differ, and Apply
+  writes only the checked ones; anything else in the file is counted,
+  never shown or copied.
 - **The extensions a repository recommends** — VS Code extensions do
   not install here, so **Tools ▸ Recommended VS Code Extensions…**
   answers the question a `.vscode/extensions.json` raises: for each
@@ -1963,7 +1977,12 @@ shell on macOS; PowerShell on Windows) or the one its `options.shell`
 names; the tasks it `dependsOn` run first, `${file}` is the file in the
 editor and an `${input:…}` question is asked before anything starts; a
 task that needs a value only VS Code can supply says so on the status
-line instead of running. The repository's `.vscode/launch.json` lists
+line instead of running. A task's `problemMatcher` turns its output into
+problems in Action Items and squiggles in the editor, and a task or
+debug configuration that depends on a background watcher (`tsc -w`)
+starts as soon as the watcher's matcher says a cycle has finished. A
+file name, the selection or an answer in a shell task's command line is
+quoted for that shell. The repository's `.vscode/launch.json` lists
 its configurations beside them — *Debug: Launch Program —
 ${workspaceFolder}/server.js* — and Enter starts the breakpoint debugger
 on that configuration after the same trust question. Both lists are in
@@ -2018,6 +2037,13 @@ File, Emmet's ⌥⌘E, the VS Code chords) is registered in all five
 profiles, so switching keymaps never costs you the studio chords. One
 exception is deliberate: in the Eclipse profile ⇧⌘E stays Eclipse's
 own Switch to Editor, because a user who picked Eclipse expects it.
+
+**The VS Code keymap profile:** choose **VS Code** under the same
+Keymap ▸ Profile, or type *Use the VS Code Keymap* into Quick Search, and
+VS Code's own chords win wherever this product has the action: F5
+starts or continues debugging and ⌘P opens a file, while a chord with
+nothing here to match, ⌘B for one, is left unbound. Every NMOX action
+keeps a chord in that profile too.
 
 ## 10. The safety nets (things you don't have to do anything for)
 
