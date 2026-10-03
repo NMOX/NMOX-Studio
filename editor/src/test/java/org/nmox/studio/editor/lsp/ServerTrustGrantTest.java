@@ -198,6 +198,9 @@ class ServerTrustGrantTest {
 
     @Test
     @DisplayName("a folder whose name holds a control character still gets its notice, and nothing is thrown at the caller")
+    // Windows refuses such a name outright (InvalidPathException before any
+    // folder exists), so there is no folder of that name to aim there
+    @org.junit.jupiter.api.condition.DisabledOnOs(org.junit.jupiter.api.condition.OS.WINDOWS)
     void aHostileNameDoesNotThrow(@TempDir Path parent) throws Exception {
         System.clearProperty("nmox.shots.dir"); // the notification IS under test here
         File dir = java.nio.file.Files.createDirectories(parent.resolve("re\u0007po")).toFile();
