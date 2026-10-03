@@ -952,7 +952,8 @@ public final class VsCodeTasks {
             if (def.problem() != null) {
                 return new Refused(Reason.INPUT_INCOMPLETE, id, def.problem());
             }
-            return vars.answers() != null && !vars.answers().containsKey(id)
+            // no answer is never a blank: an input nobody answered refuses
+            return vars.answers() != null && vars.answers().get(id) == null
                     ? new Refused(Reason.INPUT_UNANSWERED, id) : null;
         }
         return new Refused(Reason.VARIABLE, asWritten);

@@ -302,15 +302,15 @@ final class VsCodeTaskPlan {
      * cannot give one; a seam could).
      */
     static Prepared finish(Checked checked, Map<String, String> answers) {
+        Map<String, String> given = new LinkedHashMap<>();
         for (InputDef question : checked.questions()) {
             String answer = answers.get(question.id());
             if (answer == null || (question.pick()
                     && question.options().stream().map(InputOption::value).noneMatch(answer::equals))) {
                 return new Refusal(checked.root().label(), new Refused(Reason.INPUT_UNANSWERED, question.id()));
             }
+            given.put(question.id(), answer);
         }
-        Map<String, String> given = new LinkedHashMap<>();
-        checked.questions().forEach(q -> given.put(q.id(), answers.get(q.id())));
         Vars vars = new Vars(checked.editor(), checked.userHome(), checked.file().inputs(), given);
         List<List<Step>> stages = new ArrayList<>();
         for (List<TaskDef> stage : checked.stages()) {
