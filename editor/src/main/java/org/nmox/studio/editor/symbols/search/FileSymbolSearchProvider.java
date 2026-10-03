@@ -58,17 +58,39 @@ public class FileSymbolSearchProvider implements SearchProvider {
 
     @Override
     public void evaluate(SearchRequest request, SearchResponse response) {
-        JTextComponent editor = activeEditor.get();
-        Document doc = editor == null ? null : editor.getDocument();
-        if (doc == null) {
+        Hits hits = hits(request.getText());
+        if (hits == null) {
             return;
         }
-        for (OutlineModel.Item item : FileSymbols.matching(request.getText(), outlineOf(doc))) {
-            if (!response.addResult(() -> EventQueue.invokeLater(() -> jump(editor, doc, item)),
+        for (OutlineModel.Item item : hits.items()) {
+            if (!response.addResult(() -> EventQueue.invokeLater(() -> jump(hits.editor(), hits.doc(), item)),
                     PlainText.escape(label(item)))) {
                 return;
             }
         }
+    }
+
+    /** What one search found, in the editor it searched. */
+    record Hits(JTextComponent editor, Document doc, List<OutlineModel.Item> items) {
+    }
+
+    /**
+     * The symbols {@code typed} finds in the editor last typed in, or null
+     * when there is nothing to search. Quick Search asks every category
+     * on every keystroke: a query this category would answer with nothing
+     * ({@link FileSymbols#asks}) is turned away before the editor is asked
+     * for, and so before a document is copied or parsed.
+     */
+    static Hits hits(String typed) {
+        if (!FileSymbols.asks(typed)) {
+            return null;
+        }
+        JTextComponent editor = activeEditor.get();
+        Document doc = editor == null ? null : editor.getDocument();
+        if (doc == null) {
+            return null;
+        }
+        return new Hits(editor, doc, FileSymbols.matching(typed, outlineOf(doc)));
     }
 
     /** The outline of what {@code doc} holds now, read under its lock and bounded. */
