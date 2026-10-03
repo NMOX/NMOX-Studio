@@ -388,12 +388,13 @@ public final class SnippetTemplates {
 
         /**
          * Counts {@code chars} more built; refuses the snippet once what it
-         * inserts, or everything built for it, is past its bound.
+         * inserts, or everything built for it, is past its bound. The one
+         * check for both: the template is the plain text with its dollars
+         * doubled and its parameters named, so it is bounded by the two.
          */
         private void spend(long chars) throws TooLarge {
             built += chars;
-            if (plain.length() > MAX_INSERTED_CHARS || template.length() > 2L * MAX_INSERTED_CHARS
-                    || built > MAX_BUILT_CHARS) {
+            if (plain.length() > MAX_INSERTED_CHARS || built > MAX_BUILT_CHARS) {
                 throw new TooLarge();
             }
         }
@@ -432,10 +433,7 @@ public final class SnippetTemplates {
                     continue;
                 }
                 b.append(piece);
-                built += piece.length();
-                if (b.length() > MAX_INSERTED_CHARS || built > MAX_BUILT_CHARS) {
-                    throw new TooLarge();
-                }
+                spend(piece.length());
             }
             return b.toString();
         }

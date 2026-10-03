@@ -78,6 +78,16 @@ class SnippetBoundsTest {
     }
 
     @Test
+    @DisplayName("defaults that name one another four times but say nothing are each read once, and the snippet is kept")
+    void silentDefaultsAreReadOnce() throws Refused {
+        // no ring and nothing to insert: no size bound can stop this, only reading each default once
+        SnippetBody body = SnippetBody.parse(fourFold(16, ""));
+        CodeTemplateText text = assertTimeoutPreemptively(CLOCK,
+                () -> SnippetTemplates.toCodeTemplate(body, ctx(), Long.MAX_VALUE / 4));
+        assertThat(text.plain()).isEmpty();
+    }
+
+    @Test
     @DisplayName("defaults in a ring with nothing to insert are refused by their steps, not read four billion times")
     void ringOfEmptyDefaultsRefused() throws Refused {
         // the leaf names the first stop: every reading is cut short, so none can be kept
@@ -86,6 +96,11 @@ class SnippetBoundsTest {
                 () -> SnippetTemplates.toCodeTemplate(body, ctx(), Long.MAX_VALUE / 4)))
                 .isInstanceOf(Refused.class)
                 .hasMessageContaining("name one another more than");
+        // and on the translation's own clock, which runs out first
+        assertThatThrownBy(() -> assertTimeoutPreemptively(CLOCK,
+                () -> SnippetTemplates.toCodeTemplate(body, ctx(), 1_000L)))
+                .isInstanceOf(Refused.class)
+                .hasMessageContaining("its placeholders were not read within");
     }
 
     @Test
