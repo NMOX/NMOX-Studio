@@ -229,11 +229,35 @@ public class DapDebugAction extends BaseAction {
         } catch (java.net.UnknownHostException unknown) {
             return null;
         }
+        return answeringAddress(address, port, candidates);
+    }
+
+    /** {@link #answeringAddress(String, int)} for {@code address} resolved to {@code candidates}: the seam a test replays a resolver through. */
+    static String answeringAddress(String address, int port, InetAddress[] candidates) {
         boolean literal = address.indexOf(':') >= 0 || address.chars().allMatch(c -> c == '.' || Character.isDigit(c));
+        // a NAME for this machine may resolve to one loopback only (the macOS
+        // runner gave localhost as ::1 alone), while the inspector listens
+        // on the other: both are this machine, so both are asked, the
+        // IPv4 one first because that is where Node listens by default
+        java.util.List<InetAddress> asked = new java.util.ArrayList<>();
         for (InetAddress candidate : candidates) {
-            if (!candidate.isLoopbackAddress()) {
-                continue;
+            if (candidate.isLoopbackAddress() && !asked.contains(candidate)) {
+                asked.add(candidate);
             }
+        }
+        if (!literal && !asked.isEmpty()) {
+            for (String other : new String[] {"127.0.0.1", "::1"}) {
+                try {
+                    InetAddress loopback = InetAddress.getByName(other);
+                    if (!asked.contains(loopback)) {
+                        asked.add(other.indexOf(':') < 0 ? 0 : asked.size(), loopback);
+                    }
+                } catch (java.net.UnknownHostException impossible) {
+                    // a literal never needs a lookup
+                }
+            }
+        }
+        for (InetAddress candidate : asked) {
             try (Socket probe = new Socket()) {
                 probe.connect(new InetSocketAddress(candidate, port), 1_000);
                 return !literal && candidate instanceof java.net.Inet4Address

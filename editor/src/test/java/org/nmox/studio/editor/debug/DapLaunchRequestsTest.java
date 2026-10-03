@@ -106,13 +106,22 @@ class DapLaunchRequestsTest {
     @Test
     @DisplayName("an attach to localhost names the IPv4 loopback when that is the one listening; a literal passes as written")
     void attachNamesTheLoopbackThatAnswered() throws Exception {
-        try (java.net.ServerSocket v4 = new java.net.ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+        try (java.net.ServerSocket v4 = new java.net.ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"))) {
             int port = v4.getLocalPort();
             // node's inspector listens here; the adapter's Node may resolve localhost to ::1 first
             assertThat(DapDebugAction.answeringAddress("localhost", port)).isEqualTo("127.0.0.1");
             assertThat(DapDebugAction.answeringAddress("127.0.0.1", port)).isEqualTo("127.0.0.1");
         }
-        try (java.net.ServerSocket closed = new java.net.ServerSocket(0, 1, InetAddress.getByName("127.0.0.1"))) {
+        try (java.net.ServerSocket v4 = new java.net.ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"))) {
+            int port = v4.getLocalPort();
+            // the macOS runner's resolver: localhost is ::1 and nothing else
+            InetAddress[] v6Only = {InetAddress.getByName("::1")};
+            assertThat(DapDebugAction.answeringAddress("localhost", port, v6Only))
+                    .as("both loopbacks are this machine; the one listening is named").isEqualTo("127.0.0.1");
+            assertThat(DapDebugAction.answeringAddress("::1", port, v6Only))
+                    .as("a literal is asked as written, and nothing else").isNull();
+        }
+        try (java.net.ServerSocket closed = new java.net.ServerSocket(0, 50, InetAddress.getByName("127.0.0.1"))) {
             int port = closed.getLocalPort();
             closed.close();
             assertThat(DapDebugAction.answeringAddress("localhost", port)).as("nobody listening").isNull();
