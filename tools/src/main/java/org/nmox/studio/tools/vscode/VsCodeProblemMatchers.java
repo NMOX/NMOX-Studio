@@ -531,10 +531,12 @@ final class VsCodeProblemMatchers {
 
         private static void fill() throws Unusable {
             // --- VS Code's own registry (problemMatcher.ts: ProblemPatternRegistry, ProblemMatcherRegistry)
+            // checked against microsoft/vscode main on 2026-10-03: the location is optional
+            // and a category word may stand before the severity (group 3, not read)
             PATTERNS.put("msCompile", List.of(line(
-                    "^(?:\\s*\\d+>)?(\\S.*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\)\\s*:\\s+"
-                    + "((?:fatal +)?error|warning|info)\\s+(\\w+\\d+)\\s*:\\s*(.*)$",
-                    1, 2, NO, NO, 3, 4, 5, false)));
+                    "^\\s*(?:\\s*\\d+>)?(\\S.*?)(?:\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\))?\\s*:\\s+"
+                    + "(?:(\\S+)\\s+)?((?:fatal +)?error|warning|info)\\s+(\\w+\\d+)?\\s*:\\s*(.*)$",
+                    1, 2, NO, NO, 4, 5, 6, false)));
             PATTERNS.put("gulp-tsc", List.of(line(
                     "^([^\\s].*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(\\d+)\\s+(.*)$",
                     1, 2, NO, NO, NO, 3, 4, false)));
@@ -590,6 +592,9 @@ final class VsCodeProblemMatchers {
                             + "File change detected\\. Starting incremental compilation)\\.\\.\\."),
                     compile("^\\s*(?:message TS6042:|" + clock + ") (?:Compilation complete\\.|"
                             + "Found \\d+ errors?\\.) Watching for file changes\\.")));
+            // tsgo, the TypeScript 7 compiler's watch mode
+            matcher("tsgo-watch", "typescript", "ts", null, FileLocation.RELATIVE, "${cwd}", "tsc", new Watch(true,
+                    compile("^build starting at .*$"), compile("^build finished in .*$")));
             // less (package.json: problemMatchers)
             PATTERNS.put("lessc", List.of(line(
                     "(.*)\\sin\\s(.*)\\son line\\s(\\d+),\\scolumn\\s(\\d+)",

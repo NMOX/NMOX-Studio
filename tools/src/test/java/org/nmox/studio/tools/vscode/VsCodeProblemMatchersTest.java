@@ -97,7 +97,7 @@ class VsCodeProblemMatchersTest {
     void builtInNames() {
         assertThat(VsCodeProblemMatchers.builtIns().keySet()).containsExactlyInAnyOrder(
                 "msCompile", "lessCompile", "gulp-tsc", "jshint", "jshint-stylish", "eslint-compact",
-                "eslint-stylish", "go", "tsc", "tsc-watch", "lessc", "gcc", "rustc");
+                "eslint-stylish", "go", "tsc", "tsc-watch", "tsgo-watch", "lessc", "gcc", "rustc");
     }
 
     @Test
@@ -237,6 +237,31 @@ class VsCodeProblemMatchersTest {
                                 "'total': undeclared identifier"),
                         org.assertj.core.groups.Tuple.tuple("util.cpp", 7, 0, Severity.WARNING, "C4101",
                                 "'y': unreferenced local variable"));
+    }
+
+    @Test
+    @DisplayName("$msCompile as VS Code reads it today: a category word before the severity, and a code that may be absent")
+    void msCompileCategoryAndNoCode() {
+        List<Finding> found = found("$msCompile",
+                "C:\\src\\shop\\app.ts(3,7): Build error TS1005: ';' expected.\n"
+                + "C:\\src\\shop\\main.cpp(9): error : the build stopped\n");
+        assertThat(found).extracting(Finding::line, Finding::column, Finding::severity, Finding::code, Finding::message)
+                .containsExactly(
+                        org.assertj.core.groups.Tuple.tuple(3, 7, Severity.ERROR, "TS1005", "';' expected."),
+                        org.assertj.core.groups.Tuple.tuple(9, 0, Severity.ERROR, null, "the build stopped"));
+    }
+
+    @Test
+    @DisplayName("$tsgo-watch: TypeScript 7's watch mode begins and ends its cycles on its own two lines")
+    void tsgoWatchCycles() {
+        Session session = new Session(applied("$tsgo-watch", true));
+        assertThat(signals(session, "build starting at 10:40:00\n"
+                + "src/app.ts(2,1): error TS2304: Cannot find name 'x'.\n"
+                + "build finished in 120ms\n")).containsExactly(Signal.ENDED);
+        assertThat(session.report().findings()).extracting(Finding::code).containsExactly("2304");
+        assertThat(signals(session, "build starting at 10:40:05\nbuild finished in 90ms\n"))
+                .containsExactly(Signal.BEGAN, Signal.ENDED);
+        assertThat(session.report().findings()).as("a clean cycle clears").isEmpty();
     }
 
     @Test
