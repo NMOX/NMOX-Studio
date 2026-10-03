@@ -504,9 +504,9 @@ public final class IrcTopComponent extends TopComponent {
         JScrollPane nickScroll = new JScrollPane(nickList);
         nickScroll.setMinimumSize(new Dimension(120, 0));
 
-        JSplitPane right = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, center, nickScroll);
+        JSplitPane right = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, center, nickScroll));
         right.setResizeWeight(1.0);
-        JSplitPane main = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroll, right);
+        JSplitPane main = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, treeScroll, right));
         main.setResizeWeight(0.0);
         main.setDividerLocation(180);
 

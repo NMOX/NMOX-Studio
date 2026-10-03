@@ -422,9 +422,9 @@ public final class BlockStudioTopComponent extends TopComponent {
         JScrollPane codeScroll = new JScrollPane(codePane);
         codeScroll.setBorder(BorderFactory.createTitledBorder(Bundle.BlockStudioTopComponent_codeBorder()));
 
-        JSplitPane right = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvasScroll, codeScroll);
+        JSplitPane right = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, canvasScroll, codeScroll));
         right.setResizeWeight(0.45);
-        JSplitPane main = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, paletteScroll, right);
+        JSplitPane main = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, paletteScroll, right));
         main.setResizeWeight(0);
         add(toolbar, BorderLayout.NORTH);
         add(main, BorderLayout.CENTER);

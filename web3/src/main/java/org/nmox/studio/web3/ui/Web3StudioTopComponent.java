@@ -584,8 +584,8 @@ public final class Web3StudioTopComponent extends TopComponent {
         rightSplit.setResizeWeight(1.0);
         rightSplit.setDividerLocation(430);
 
-        JSplitPane center = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
-                buildTreePanel(), rightSplit);
+        JSplitPane center = org.nmox.studio.core.util.TextDirection.sidesFollowReader(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
+                buildTreePanel(), rightSplit));
         center.setDividerLocation(260);
         add(center, BorderLayout.CENTER);
 

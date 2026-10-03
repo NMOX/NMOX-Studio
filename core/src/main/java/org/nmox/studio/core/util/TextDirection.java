@@ -65,6 +65,37 @@ public final class TextDirection {
         return c;
     }
 
+    /**
+     * Client property that marks a horizontal split pane whose two sides
+     * change places for a right-to-left reader (3.5.13).
+     */
+    public static final String SIDES_FOLLOW_READER = "nmox.split.sidesFollowReader";
+
+    /**
+     * Marks a horizontal split pane of the product's own as one whose sides
+     * follow the reader: under Hebrew or Arabic its first side (a list, a
+     * tree, a palette) stands on the right, where the line begins.
+     *
+     * <p>It is a mark and not the default, and 3.5.12 is why: that release
+     * exchanged the sides of EVERY horizontal split pane in the JVM, the
+     * platform's own included, and the platform addresses a side by its
+     * slot. Find in Projects turns its preview off with
+     * {@code setRightComponent(null)}, which removed the results tree; the
+     * refactoring preview replaced the list of usages; the diff view drew
+     * its connectors against the wrong sides; and a divider the platform
+     * saves and applies again flipped on every use. Only a pane whose
+     * author built it knowing its sides may be exchanged is exchanged, and
+     * a gate reads every split pane the product builds so that each one is
+     * marked or says why it stays ({@code SplitSidesDecidedGateTest}).
+     *
+     * <p>A marked pane must be complete (both sides set) before it is added
+     * to a window, and must not address its sides by slot afterwards.
+     */
+    public static <T extends javax.swing.JSplitPane> T sidesFollowReader(T split) {
+        split.putClientProperty(SIDES_FOLLOW_READER, Boolean.TRUE);
+        return split;
+    }
+
     /** Does the interface run right-to-left for this locale? */
     public static boolean isRightToLeft(Locale locale) {
         String forced = System.getProperty(FORCE);
