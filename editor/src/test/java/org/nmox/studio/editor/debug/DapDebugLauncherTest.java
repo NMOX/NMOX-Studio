@@ -3,6 +3,8 @@ package org.nmox.studio.editor.debug;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -93,5 +95,69 @@ class DapDebugLauncherTest {
         };
         assertThat(bare.debug(new File("a.js"), new File("."))).isFalse();
         assertThat(bare.debugPage("http://localhost:1", new File("."))).isFalse();
+        File here = new File(".");
+        assertThat(bare.debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", new File("a.js"), here, here,
+                List.of(), Map.of(), "tsx", List.of()))).as("a runtime it was never taught").isFalse();
+        assertThat(bare.debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", new File("a.js"), here, here,
+                List.of(), Map.of(), null, List.of("--inspect")))).isFalse();
+        assertThat(bare.debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", null, here, here,
+                List.of(), Map.of(), "npm", List.of("run", "dev")))).isFalse();
+        assertThat(bare.attachNode("a", "localhost", 9229, here, here)).isFalse();
+    }
+
+    @Test
+    @DisplayName("a launch that names a runtime is refused, having started nothing, when it is not one this launcher can start exactly")
+    void runtimeLaunchesItCannotStartExactly(@TempDir Path tmp) throws Exception {
+        DapDebugLauncher launcher = new DapDebugLauncher();
+        File dir = tmp.toFile();
+        File py = Files.writeString(tmp.resolve("main.py"), "1").toFile();
+        File js = Files.writeString(tmp.resolve("a.js"), "1").toFile();
+        assertThat(launcher.debug((DebugLauncher.Launch) null)).isFalse();
+        assertThat(launcher.debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", py, dir, dir,
+                List.of(), Map.of(), "tsx", List.of()))).as("a Node runtime does not run a .py").isFalse();
+        assertThat(launcher.debug(new DebugLauncher.Launch(DebugLauncher.Language.PYTHON, "p", js, dir, dir,
+                List.of(), Map.of(), "python3.12", List.of()))).as("an interpreter does not run a .js").isFalse();
+        assertThat(launcher.debug(new DebugLauncher.Launch(DebugLauncher.Language.PYTHON, "p", py, dir, dir,
+                List.of(), Map.of(), "python3.12", List.of("-X", "dev"))))
+                .as("interpreter arguments are not passed on, so the launch is not started without them").isFalse();
+        assertThat(launcher.debug(new DebugLauncher.Launch(DebugLauncher.Language.PYTHON, "p", null, dir, dir,
+                List.of(), Map.of(), "python3.12", List.of()))).as("Python needs its program").isFalse();
+    }
+
+    @Test
+    @DisplayName("an attach is to this machine or to nothing: the launcher refuses what the reader should already have refused")
+    void attachOnlyToLoopback(@TempDir Path tmp) {
+        DapDebugLauncher launcher = new DapDebugLauncher();
+        File dir = tmp.toFile();
+        // literal addresses only: a host NAME here would be looked up on the network the day this guard broke
+        for (String address : new String[] {"10.0.0.5", "192.168.1.20", "0.0.0.0", "", "127.0.0.2", null}) {
+            assertThat(launcher.attachNode("a", address, 9229, dir, dir)).as(String.valueOf(address)).isFalse();
+        }
+        assertThat(launcher.attachNode("a", "localhost", 0, dir, dir)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 65536, dir, dir)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 9229, dir, null)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 9229, null, dir)).isFalse();
+        assertThat(launcher.attachNode(null, "localhost", 9229, dir, dir)).isFalse();
+
+        assertThat(DebugLauncher.isLoopback("localhost")).isTrue();
+        assertThat(DebugLauncher.isLoopback("LOCALHOST")).isTrue();
+        assertThat(DebugLauncher.isLoopback("127.0.0.1")).isTrue();
+        assertThat(DebugLauncher.isLoopback("::1")).isTrue();
+        assertThat(DebugLauncher.isLoopback("localhost.evil.example")).isFalse();
+    }
+
+    @Test
+    @DisplayName("a Launch copies what it is given, calls a launch with no runtime plain, and prints no variable's value")
+    void launchValue() {
+        File here = new File(".");
+        java.util.List<String> args = new java.util.ArrayList<>(List.of("--port", "3000"));
+        DebugLauncher.Launch launch = new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", new File("a.js"),
+                here, here, args, Map.of("API_TOKEN", "hunter2"), null, List.of());
+        args.add("later");
+        assertThat(launch.args()).containsExactly("--port", "3000");
+        assertThat(launch.plain()).isTrue();
+        assertThat(launch.toString()).contains("API_TOKEN").doesNotContain("hunter2");
+        assertThat(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", new File("a.js"), here, here,
+                List.of(), Map.of(), null, List.of("--inspect")).plain()).isFalse();
     }
 }

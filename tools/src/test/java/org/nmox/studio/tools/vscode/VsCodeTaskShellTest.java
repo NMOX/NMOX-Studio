@@ -156,8 +156,8 @@ class VsCodeTaskShellTest {
         Host linux = host(Os.LINUX, Map.of("MYSH", "/opt/sh"), List.of("/opt/sh"), Map.of());
         assertThat(argv("{\"shell\": {\"executable\": \"${env:MYSH}\", \"args\": [\"-c\"]}}", linux))
                 .containsExactly("/opt/sh", "-c", LINE);
-        assertThat(resolve("{\"shell\": {\"executable\": \"/opt/sh\", \"args\": [\"${input:flag}\"]}}", linux))
-                .isEqualTo(new Refused(Reason.VARIABLE, "${input:flag}"));
+        assertThat(resolve("{\"shell\": {\"executable\": \"/opt/sh\", \"args\": [\"${config:flag}\"]}}", linux))
+                .isEqualTo(new Refused(Reason.VARIABLE, "${config:flag}"));
     }
 
     @Test

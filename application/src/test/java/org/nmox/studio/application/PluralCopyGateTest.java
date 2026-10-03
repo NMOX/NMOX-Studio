@@ -148,6 +148,8 @@ class PluralCopyGateTest {
 
         // CONSTANT / OVER A CAP — the number is a fixed ceiling or is past
         // one by construction, so it can never read "1".
+        m.put("SnippetInsertion_tooLarge",
+                "CONSTANT: {1} is SnippetTemplates.MAX_INSERTED_CHARS, 1,000,000 — a fixed ceiling, never one");
         m.put("NmoxSymbolProvider_truncated",
                 "CONSTANT: {0} is ProjectSymbols.MAX_FILES (2,000)");
         m.put("CheckMarkdownLinksAction_partial",

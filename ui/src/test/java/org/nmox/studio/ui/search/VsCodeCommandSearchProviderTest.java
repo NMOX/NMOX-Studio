@@ -52,6 +52,8 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("keyboard shortcuts", ALL)).containsExactly("Preferences: Open Keyboard Shortcuts");
         assertThat(titles("problems", ALL)).containsExactly("View: Toggle Problems");
         assertThat(titles("install extensions", ALL)).containsExactly("Extensions: Install Extensions");
+        assertThat(titles("recommended extensions", ALL)).as("VS Code's own title for the workspace's recommendations")
+                .containsExactly("Extensions: Show Recommended Extensions");
         assertThat(titles("screencast", ALL)).containsExactly("Developer: Toggle Screencast Mode");
         assertThat(titles("terminal", ALL)).contains("View: Toggle Terminal", "Terminal: Create New Terminal");
         assertThat(titles(">toggle terminal", ALL)).as("VS Code's > command prefix, typed from habit")
@@ -151,6 +153,68 @@ class VsCodeCommandSearchProviderTest {
         assertThat(titles("format document", (c, id) -> VsCodeCommandSearchProvider.EDITOR_KIT.equals(c)
                 && "format".equals(id) ? named("Format", true) : null)).containsExactly("Format Document");
         assertThat(titles("format document", (c, id) -> null)).as("no editor, no row").isEmpty();
+    }
+
+    /** The row VS Code's {@code title} names. */
+    private static VsCodeCommandSearchProvider.Cmd row(String title) {
+        return VsCodeCommandSearchProvider.COMMANDS.stream().filter(c -> c.title().equals(title)).findFirst().orElseThrow();
+    }
+
+    @Test
+    @DisplayName("Toggle Block Comment answers to VS Code's title, as an action of the focused editor's own kit")
+    void blockCommentRow() {
+        assertThat(titles("block comment", ALL)).containsExactly("Toggle Block Comment");
+        assertThat(row("Toggle Block Comment").category()).isEqualTo(VsCodeCommandSearchProvider.EDITOR_KIT);
+        assertThat(row("Toggle Block Comment").id()).isEqualTo("nmox-toggle-block-comment");
+    }
+
+    @Test
+    @DisplayName("Expand Line Selection answers to VS Code's title, as an action of the focused editor's own kit")
+    void lineSelectionRow() {
+        assertThat(titles("expand line selection", ALL)).containsExactly("Expand Line Selection");
+        assertThat(row("Expand Line Selection").category()).isEqualTo(VsCodeCommandSearchProvider.EDITOR_KIT);
+        assertThat(row("Expand Line Selection").id()).isEqualTo("nmox-expand-line-selection");
+    }
+
+    @Test
+    @DisplayName("View: Toggle Word Wrap answers to VS Code's title, on the View menu's own action")
+    void wordWrapRow() {
+        assertThat(titles("word wrap", ALL)).containsExactly("View: Toggle Word Wrap");
+        assertThat(row("View: Toggle Word Wrap").id()).endsWith(".editing.ToggleWordWrapAction");
+    }
+
+    @Test
+    @DisplayName("Go to Symbol in Editor... answers to VS Code's title, on the action that opens Quick Search at the file's symbols")
+    void symbolInEditorRow() {
+        assertThat(titles("symbol in editor", ALL)).containsExactly("Go to Symbol in Editor...");
+        assertThat(row("Go to Symbol in Editor...").id()).endsWith(".symbols.search.GoToSymbolInFileAction");
+        // the project-wide twin keeps its own row
+        assertThat(titles("go to symbol", ALL)).containsExactly("Go to Symbol in Workspace...", "Go to Symbol in Editor...");
+    }
+
+    @Test
+    @DisplayName("an editor row that names one of the product's own kit actions names one the editor module registers")
+    void ownKitActionsExist() throws Exception {
+        // the platform's kit actions (format, goto) are its own; ours are named nmox-… and live in the editor
+        // module, which this module does not depend on: read its sources, as the keymap parity test reads its layer
+        StringBuilder editor = new StringBuilder();
+        try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(
+                java.nio.file.Path.of("../editor/src/main/java"))) {
+            for (java.nio.file.Path p : walk.filter(f -> f.toString().endsWith(".java")).toList()) {
+                editor.append(java.nio.file.Files.readString(p));
+            }
+        }
+        int own = 0;
+        for (VsCodeCommandSearchProvider.Cmd c : VsCodeCommandSearchProvider.COMMANDS) {
+            if (VsCodeCommandSearchProvider.EDITOR_KIT.equals(c.category()) && c.id().startsWith("nmox-")) {
+                own++;
+                assertThat(editor.toString())
+                        .as("%s names the kit action %s, which no @EditorActionRegistration declares", c.title(), c.id())
+                        .containsPattern("@EditorActionRegistration\\(name = \\w+\\.NAME\\)\\s+public class \\w+ extends BaseAction \\{"
+                                + "[^}]*?NAME = \"" + java.util.regex.Pattern.quote(c.id()) + "\"");
+            }
+        }
+        assertThat(own).as("the product's own kit rows were checked").isPositive();
     }
 
     @Test

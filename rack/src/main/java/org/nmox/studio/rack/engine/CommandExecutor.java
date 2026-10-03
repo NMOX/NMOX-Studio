@@ -134,15 +134,32 @@ public final class CommandExecutor {
 
     public static Handle run(String tabName, File dir, Map<String, String> env,
             List<String> command, Consumer<String> onLine, IntConsumer onExit) {
+        return run(tabName, dir, env, command, null, onLine, onExit);
+    }
 
+    /**
+     * {@link #run(String, File, Map, List, Consumer, IntConsumer)} with the
+     * launch line WRITTEN for the reader instead of joined from the argv.
+     * The "$ …" header goes to the Output window and onto the bus, and
+     * the bus is the flight recorder's journal on disk, the Agent Port's
+     * {@code run_history} and what KVASIR is sent about a failure.
+     * A caller whose argv carries something that must reach the process
+     * and nothing else — a password a VS Code task asked for — passes the
+     * line it wants read, with the secret left as it was written
+     * ({@code ${input:token}}). {@code shown} null means the argv itself.
+     */
+    public static Handle run(String tabName, File dir, Map<String, String> env,
+            List<String> command, String shown, Consumer<String> onLine, IntConsumer onExit) {
+
+        String header = "$ " + (shown == null ? String.join(" ", command) : shown);
         InputOutput io = getIO(tabName);
         OutputWriter out = io == null ? null : io.getOut();
         if (out != null) {
-            out.println("$ " + String.join(" ", command));
+            out.println(header);
         }
         // lifecycle markers travel the bus too, so the flight recorder
         // (and an all-tap MONITOR) sees launches, not just output
-        RackBus.publish(tabName, "$ " + String.join(" ", command), false);
+        RackBus.publish(tabName, header, false);
 
         Process process;
         try {

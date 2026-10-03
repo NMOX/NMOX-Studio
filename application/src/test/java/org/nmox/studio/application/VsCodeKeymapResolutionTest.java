@@ -402,9 +402,12 @@ class VsCodeKeymapResolutionTest {
      * editor settings storage reads it: {@code SettingsType$DefaultLocator}
      * skips a file whose {@code nbeditor-settings-targetOS} attribute names
      * another OS (a {@code BaseUtilities} field such as {@code OS_MAC},
-     * read from the bytecode). The {@code -mac.xml} suffix is only the
-     * platform's naming habit; the attribute is the switch. A value this
-     * replay does not model fails the census rather than being guessed.
+     * read from the bytecode: the file loads when that field's bits meet
+     * {@code getOperatingSystem()}). The {@code -mac.xml} suffix is only the
+     * platform's naming habit; the attribute is the switch. {@code OS_MAC}
+     * and {@code OS_LINUX} are modelled, each one bit and one family here; a
+     * value this replay does not model fails the census rather than being
+     * guessed.
      */
     static boolean appliesOn(String targetOs, Os os) {
         if (targetOs == null || targetOs.isEmpty()) {
@@ -412,6 +415,11 @@ class VsCodeKeymapResolutionTest {
         }
         if ("OS_MAC".equals(targetOs)) {
             return os == Os.MAC;
+        }
+        if ("OS_LINUX".equals(targetOs)) {
+            // BaseUtilities.OS_LINUX is one bit, and getOperatingSystem() answers
+            // it on Linux alone (Windows and macOS have their own)
+            return os == Os.LINUX;
         }
         throw new AssertionError("a keybinding file targets " + targetOs
                 + ", which this replay does not model - teach appliesOn before trusting the census");
@@ -422,6 +430,7 @@ class VsCodeKeymapResolutionTest {
     private static final Set<String> ALL_PROFILES = Set.copyOf(PROFILES);
     private static final Set<Os> EVERY_OS = Set.of(Os.MAC, Os.WINDOWS, Os.LINUX);
     private static final Set<Os> MAC_ONLY = Set.of(Os.MAC);
+    private static final Set<Os> LINUX_ONLY = Set.of(Os.LINUX);
 
     /**
      * One VS Code chord this product binds: where it lives (a global
@@ -485,8 +494,22 @@ class VsCodeKeymapResolutionTest {
                     on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
             new Chord("OS-MINUS", Where.EDITOR, "jump-list-next", "",
                     on(MAC_ONLY, "NetBeans", "Eclipse", "NetBeans55")),
-            new Chord("AS-F", Where.EDITOR, "format", "",
+            // bound to the product's own action since 3.6.0: Shift+Opt+F also TYPES on macOS,
+            // and editing/FormatChordAction swallows that character before running "format"
+            new Chord("AS-F", Where.EDITOR, "nmox-format-on-option-chord", "",
                     on(MAC_ONLY, "NetBeans", "Eclipse", "Emacs", "NetBeans55")),
+            // the editing gestures the product added (editor module, editing package).
+            // Shift+Alt+A: Eclipse and NetBeans55 bind O-S-A, which is Alt+Shift+A
+            // off macOS, so there the file rides macOS only
+            new Chord("SA-A", Where.EDITOR, "nmox-toggle-block-comment", "",
+                    plus(on(EVERY_OS, "NetBeans", "Emacs", "Idea"), on(MAC_ONLY, "Eclipse", "NetBeans55"))),
+            // VS Code's Linux chord for the same action, in a file the layer targets at Linux
+            new Chord("SC-A", Where.EDITOR, "nmox-toggle-block-comment", "", on(LINUX_ONLY, ALL_PROFILES)),
+            new Chord("A-Z", Where.EDITOR, "nmox-toggle-word-wrap", "", on(EVERY_OS, ALL_PROFILES)),
+            // Cmd+L / Ctrl+L: select-identifier in NetBeans, goto in Eclipse,
+            // word-match-next in NetBeans55, adjust-caret-center in Emacs off macOS
+            new Chord("D-L", Where.EDITOR, "nmox-expand-line-selection", "",
+                    plus(on(EVERY_OS, "Idea"), on(MAC_ONLY, "Emacs"))),
             new Chord("S-F12", Where.GLOBAL,
                     "Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance", "",
                     on(EVERY_OS, "NetBeans", "Eclipse", "Idea")),
