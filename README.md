@@ -84,11 +84,15 @@ the exercises for real and offers a tutor when they fail. An 11-chain
 **Contract Kit** scaffolds starters proven against their real toolchains.
 
 **Your VS Code habits come along.** ⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\` and ⌘D do what
-your hands expect; `nmox .` and `nmox src/app.js:42` work from a terminal;
+your hands expect, and the **VS Code** keymap profile brings the rest of
+VS Code's chords; Tools ▸ Import VS Code Settings… brings your own
+`settings.json` across once, when you ask; `nmox .` and
+`nmox src/app.js:42` work from a terminal;
 Quick Search answers to VS Code's command names; and your repository's
 `.vscode/tasks.json`, `launch.json`, `settings.json`, `extensions.json`
 and `*.code-snippets` are read as they are — tasks with their
-`dependsOn` and inputs, launch configurations with their `preLaunchTask`,
+`dependsOn`, inputs and problem matchers, launch configurations with
+their `preLaunchTask`,
 your team's snippets in completion — with whatever cannot run as written
 refused by name
 ([coming from VS Code](docs/coming-from-vscode.md)).

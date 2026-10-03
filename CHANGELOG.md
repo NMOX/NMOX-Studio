@@ -4,6 +4,82 @@ All notable changes to NMOX Studio are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/); versions follow
 [Semantic Versioning](https://semver.org/).
 
+## [3.7.0] - 2026-10-03
+
+**The rest of what a VS Code switcher brings: their own settings, their
+own keyboard, and a repository whose tasks report problems.** 3.6.0 made
+a repository's `.vscode` folder run as its team left it; this release
+brings the person across too, and answers the reviews of 3.6.0 that ran
+while it shipped.
+
+### Added
+- **Tools ▸ Import VS Code Settings…** reads your own VS Code
+  `settings.json` (VS Code, Insiders or VSCodium) once, when you ask, and
+  lists each setting it recognises with what it becomes here:
+  indentation, word wrap, rulers, whitespace display, trimming on save,
+  Format on Save, the minimap, Sticky Scroll and autosave. Exact
+  equivalents start checked, near ones say how they differ, Apply writes
+  the checked rows through each preference's own home and they take
+  effect at once. Fonts, themes, terminal settings and keybindings are
+  answered with a reason. Anything else in the file — tokens, proxy
+  passwords, extension settings — is counted, never shown, logged or
+  copied (walked with a planted token and password: neither reached the
+  sheet, the log or the userdir).
+- **A VS Code keymap profile.** Keymap ▸ Profile offers **VS Code**, and
+  Quick Search's *Use the VS Code Keymap* switches to it. It is generated
+  from the NetBeans profile plus about 110 VS Code commands with their
+  macOS, Windows and Linux chords (`scripts/vscode-keymap/chords.txt`);
+  what a VS Code chord displaced is listed beside it, every NMOX action
+  keeps a chord, and F5 starts or continues debugging.
+  `VsCodeKeymapProfileGateTest` holds the committed profile to the
+  generator's output.
+- **A task's `problemMatcher` is read.** Output becomes problems in Action
+  Items and squiggles in the editor, each run replacing that task's last
+  answer. VS Code's built-in matchers work by name (checked against VS
+  Code's own source, the TypeScript and Less extensions, and the C/C++ and
+  rust-analyzer extensions for `$gcc` and `$rustc`), inline matchers and
+  `{"base": …}` too; a matcher that cannot run here is named on the
+  status line and the task runs without it. A background watcher
+  (`tsc -w`) named by `dependsOn` or `preLaunchTask` is waited for until
+  its matcher reports a finished cycle, and kept running.
+- **More of a repository's `settings.json`:** the first of
+  `editor.rulers` is the right-margin line, `editor.wordWrap` wraps that
+  project's files, `files.exclude` hides what it names from the project
+  trees, and Find in Projects skips `files.exclude` and `search.exclude`
+  — each per project, never written to your own preferences.
+  `files.associations` is declined with a reason (the platform decides a
+  file's type once and keeps it).
+- **Format formats JavaScript and TypeScript.** Source ▸ Format did
+  nothing for them (no formatter was registered); it runs the project's
+  Prettier, asking for Workspace Trust first when that Prettier is the
+  project's own, and says so when the project configures none.
+
+### Fixed — the reviews of 3.6.0
+- **A shell task's command line quotes what nobody in the file chose.**
+  A file name, the selection or an input answer substituted into a
+  `shell` task's `command` reached the shell as written, so a file named
+  `x$(touch PWNED).js` ran code; it is quoted for the shell that reads the
+  line, so `python ${file}` works for any file name, and `cmd.exe`
+  refuses by name the four characters quotes cannot make inert there.
+- `${env:…}` values no longer reach the Output header, the flight
+  recorder or the Agent Port's run history; stopping a task chain stops
+  its running step, and a stop landing between steps starts nothing; an
+  environment entry no process can take is a failed launch that says so;
+  a preLaunch configuration is checked whole before its task runs, and a
+  refused task asks no trust question; a stopped npm step reads stopped;
+  a symlinked project's own paths are no longer refused as outside; the
+  task list re-reads `tasks.json` when you pick from it, and refuses when
+  the project changed under the list.
+- Toggle Block Comment no longer breaks markup: a range ending inside a
+  `<script>`, Astro frontmatter and a commented-out `<script>` are each
+  answered soundly. Symbols in This File no longer reads the document for
+  a query it cannot answer; the extensions sheet believes rust-analyzer
+  only when it runs, follows no link out of the project, and no longer
+  calls the Agent Port an equivalent of Claude Code; the typed-echo guard
+  is armed only by its chord's own key press.
+- The NMOX Studio Options category has a position, ending an Ordering
+  warning whenever the Options folder was read.
+
 ## [3.6.0] - 2026-10-03
 
 **A repository that was set up for VS Code works here as its team left
@@ -25713,6 +25789,7 @@ Initial release. (Earlier in its life this project's entire UI displayed
   (tar.gz/deb), plus a portable zip — built and published by a
   tag-triggered release workflow.
 
+[3.7.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.6.0...v3.7.0
 [3.6.0]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.13...v3.6.0
 [3.5.13]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.12...v3.5.13
 [3.5.12]: https://github.com/NMOX/NMOX-Studio/compare/v3.5.11...v3.5.12
