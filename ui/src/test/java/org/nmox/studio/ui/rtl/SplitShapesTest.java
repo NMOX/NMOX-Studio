@@ -363,6 +363,50 @@ class SplitShapesTest {
     }
 
     @Test
+    @DisplayName("a divider nobody set, in a pane mirrored before it was ever laid out: the leading side still gets its preferred width")
+    void anUnsetDividerNeverLaidOut() throws Exception {
+        System.setProperty(TextDirection.FORCE, "true");
+        onEdt(x -> {
+            JPanel tree = sized(129, 400);
+            JPanel work = sized(600, 400);
+            JSplitPane split = following(tree, work);
+            split.setResizeWeight(0);
+            JPanel root = holding(split);
+            assertThat(split.getDividerLocation()).as("the fixture: never set, never laid out").isEqualTo(-1);
+
+            RightToLeft.apply(root);
+            show(root);
+            resize(root, split, 1000);
+
+            assertThat(split.getRightComponent()).isSameAs(tree);
+            assertThat(tree.getWidth()).isBetween(125, 133);
+        });
+    }
+
+    @Test
+    @DisplayName("the share of new space is worked out here when the split-pane UI does not: a pane resized before its first paint")
+    void theShareBeforeTheFirstPaint() throws Exception {
+        System.setProperty(TextDirection.FORCE, "true");
+        onEdt(x -> {
+            JPanel tree = sized(129, 400);
+            JSplitPane split = following(tree, sized(600, 400));
+            split.setDividerLocation(280);
+            split.setResizeWeight(0.4);
+            JPanel root = holding(split);
+            root.setSize(700, 600);
+            layOut(root); // laid out, never painted: the UI keeps absolute locations
+            RightToLeft.apply(root);
+            layOut(root);
+            int before = tree.getWidth();
+            assertThat(before).isBetween(275, 281);
+
+            resize(root, split, 1200); // 500 wider
+
+            assertThat(tree.getWidth()).as("two fifths of 500, as its author shared it").isBetween(before + 195, before + 205);
+        });
+    }
+
+    @Test
     @DisplayName("a divider the user dragged is mirrored where it was dragged to, and a drag while mirrored is kept on the way back")
     void aDraggedDividerMirrors() throws Exception {
         System.setProperty(TextDirection.FORCE, "true");
