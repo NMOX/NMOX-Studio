@@ -121,36 +121,71 @@ public final class VsCodeFilesNotice implements Runnable {
             return;
         }
         shown.put(key, dir.getAbsolutePath());
-        sink.tell(NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_title", dir.getName()),
+        sink.tell(title(dir),
                 detail(found, Utilities.isMac()), found.extensions() > 0 ? dir : null);
     }
+
+    /**
+     * The balloon's title. A folder's name is somebody else's text, and the
+     * platform builds a notification into markup with a builder that throws
+     * on a control character (3.5.13), so the name is one line of ordinary
+     * characters, and a long one is cut.
+     */
+    static String title(File dir) {
+        return NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_title",
+                PlainText.oneLine(dir.getName(), NAME_MAX));
+    }
+
+    /** The most of a folder's name the title shows. */
+    static final int NAME_MAX = 80;
 
     /** What {@code dir}'s .vscode folder holds that the IDE reads. */
     static Found found(File dir) {
         int tasks = VsCodeTasks.read(dir).size();
         int configurations = VsCodeLaunch.read(dir).size();
-        return new Found(tasks, configurations, setsIndentation(new File(new File(dir, ".vscode"), "settings.json")),
+        return new Found(tasks, configurations, setsSomethingRead(new File(new File(dir, ".vscode"), "settings.json")),
                 VsCodeExtensions.read(dir).total());
     }
 
-    /** The settings the editor reads for indentation (editor.standards.VsCodeSettings). */
-    static final java.util.List<String> INDENTATION_KEYS =
-            java.util.List.of("\"editor.tabSize\"", "\"editor.insertSpaces\"", "\"editor.indentSize\"");
+    /**
+     * Every setting a project's settings.json is read for: the editor's
+     * ({@code editor.standards.VsCodeSettings}: indentation, trimming,
+     * the final newline, line endings, the ruler, word wrap, format on
+     * save) and the trees' and search's ({@code core.util.VsCodeExcludes}).
+     * {@code VsCodeFilesNoticeTest} reads both files and fails when one
+     * reads a key this list lacks.
+     */
+    static final java.util.Set<String> SETTINGS_KEYS = java.util.Set.of(
+            "editor.tabSize", "editor.insertSpaces", "editor.indentSize",
+            "files.trimTrailingWhitespace", "files.insertFinalNewline", "files.eol",
+            "editor.rulers", "editor.wordWrap", "editor.formatOnSave",
+            "files.exclude", "search.exclude");
 
     /**
-     * Whether {@code settings} names an indentation setting: the notice
-     * says the file "sets the indentation" only then, not for the common
-     * settings.json that only excludes folders from search (the 3.1.0
-     * review). Read bounded; a file that cannot be read says nothing.
+     * Whether {@code settings} holds a setting this IDE reads, at the top
+     * level or in a language block: the notice says the file applies only
+     * then, not for a settings.json of colour themes and fonts. Read
+     * bounded and parsed as JSONC, so a commented-out line is not a
+     * setting; a file that cannot be read or parsed says nothing.
      */
-    static boolean setsIndentation(File settings) {
+    static boolean setsSomethingRead(File settings) {
         if (!settings.isFile()) {
             return false;
         }
         try {
             String text = org.nmox.studio.core.util.BoundedReads.read(settings, VsCodeTasks.MAX_BYTES);
-            return INDENTATION_KEYS.stream().anyMatch(text::contains);
-        } catch (java.io.IOException unreadable) {
+            org.json.JSONObject json = new org.json.JSONObject(org.nmox.studio.core.util.Jsonc.strip(text));
+            for (String key : json.keySet()) {
+                if (SETTINGS_KEYS.contains(key)) {
+                    return true;
+                }
+                if (key.startsWith("[") && json.opt(key) instanceof org.json.JSONObject block
+                        && block.keySet().stream().anyMatch(SETTINGS_KEYS::contains)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (java.io.IOException | org.json.JSONException | StackOverflowError unreadable) {
             return false;
         }
     }
@@ -185,8 +220,8 @@ public final class VsCodeFilesNotice implements Runnable {
     }
 
     private static void balloon(String title, String detail, File extensionsOf) {
-        // a folder's name is somebody else's text: guarded, like every sink
-        // Swing could render as markup
+        // a folder's name is somebody else's text: one line already (title),
+        // and guarded, like every sink Swing could render as markup
         EventQueue.invokeLater(() -> NotificationDisplayer.getDefault().notify(PlainText.plain(title),
                 javax.swing.UIManager.getIcon("OptionPane.informationIcon"), PlainText.plain(detail),
                 e -> {
