@@ -114,5 +114,19 @@ class CataloguedServersTest {
     void onlyRustAnalyzerIsProbed() {
         assertThat(CataloguedServers.answers("gopls")).isTrue();
         assertThat(CataloguedServers.answers("pyright-langserver")).isTrue();
+        java.util.List<java.util.List<String>> asked = new java.util.ArrayList<>();
+        try {
+            LanguageServers.RustServer.resetProbeForTest();
+            LanguageServers.RustServer.versionProbe = command -> {
+                asked.add(command);
+                return false;
+            };
+            assertThat(CataloguedServers.answers("rust-analyzer")).as("a proxy without the component").isFalse();
+            assertThat(asked).containsExactly(java.util.List.of("rust-analyzer", "--version"));
+            LanguageServers.RustServer.versionProbe = command -> true;
+            assertThat(CataloguedServers.answers("rust-analyzer")).isTrue();
+        } finally {
+            LanguageServers.RustServer.resetProbeForTest();
+        }
     }
 }
