@@ -57,7 +57,7 @@ final class VsCodePicker {
         panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 4, 10));
         panel.add(scroll, BorderLayout.CENTER);
 
-        JButton go = new JButton(start);
+        JButton go = new JButton(org.nmox.studio.core.util.PlainText.plain(start));
         DialogDescriptor descriptor = new DialogDescriptor(panel, title, true,
                 new Object[] {go, DialogDescriptor.CANCEL_OPTION}, go,
                 DialogDescriptor.DEFAULT_ALIGN, null, null);

@@ -501,10 +501,10 @@ class VsCodeKeymapResolutionTest {
             // the editing gestures the product added (editor module, editing package).
             // Shift+Alt+A: Eclipse and NetBeans55 bind O-S-A, which is Alt+Shift+A
             // off macOS, so there the file rides macOS only
-            new Chord("AS-A", Where.EDITOR, "nmox-toggle-block-comment", "",
+            new Chord("SA-A", Where.EDITOR, "nmox-toggle-block-comment", "",
                     plus(on(EVERY_OS, "NetBeans", "Emacs", "Idea"), on(MAC_ONLY, "Eclipse", "NetBeans55"))),
             // VS Code's Linux chord for the same action, in a file the layer targets at Linux
-            new Chord("CS-A", Where.EDITOR, "nmox-toggle-block-comment", "", on(LINUX_ONLY, ALL_PROFILES)),
+            new Chord("SC-A", Where.EDITOR, "nmox-toggle-block-comment", "", on(LINUX_ONLY, ALL_PROFILES)),
             new Chord("A-Z", Where.EDITOR, "nmox-toggle-word-wrap", "", on(EVERY_OS, ALL_PROFILES)),
             // Cmd+L / Ctrl+L: select-identifier in NetBeans, goto in Eclipse,
             // word-match-next in NetBeans55, adjust-caret-center in Emacs off macOS
