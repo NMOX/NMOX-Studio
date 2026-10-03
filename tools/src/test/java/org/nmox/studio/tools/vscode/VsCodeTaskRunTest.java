@@ -571,6 +571,24 @@ class VsCodeTaskRunTest {
     }
 
     @Test
+    @DisplayName("a stop that lands while a task is being started stops that task the moment it is live")
+    void aStopDuringTheStartStopsTheTask() throws Exception {
+        assumePosix();
+        VsCodeTaskSearchProvider.spawner = (label, launch, dir) -> {
+            events.add("start " + label);
+            // the run's stop arrives after begin() looked and before the process is live
+            LiveRuns.live().stream().filter(r -> r.id().startsWith("vscode-task-chain:"))
+                    .forEach(r -> LiveRuns.stop(r.id()));
+            return realSpawner.spawn(label, launch, dir);
+        };
+        enter("after slow");
+        await("the run ends", () -> !chainIsLive());
+        await("the task started under the stop was stopped, not left to run its 30 seconds", () -> taskRuns().isEmpty());
+        assertThat(started()).containsExactly("slow");
+        assertThat(said()).last().isEqualTo("Task \"after slow\" was not run: the tasks before it were stopped.");
+    }
+
+    @Test
     @DisplayName("a stop that lands between two stages starts nothing more")
     void aStopBetweenStagesStartsNothing() throws Exception {
         java.util.concurrent.atomic.AtomicInteger stage = new java.util.concurrent.atomic.AtomicInteger();
