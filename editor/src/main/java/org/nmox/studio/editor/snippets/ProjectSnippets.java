@@ -154,6 +154,11 @@ public final class ProjectSnippets {
         }));
     }
 
+    /** Whether a read for {@code key}'s folder is queued or running: a test's window onto {@link #pending}. */
+    static boolean hasPending(String key) {
+        return PENDING.containsKey(key);
+    }
+
     /** Reads on the calling thread: disk. Tests call it directly; everything else goes through {@link #within}. */
     static Found read(File file) {
         File parent = file.getParentFile();

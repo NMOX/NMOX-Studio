@@ -201,6 +201,10 @@ class SnippetBoundsTest {
             return null;
         });
         try {
+            // what a completion query does on every keystroke while the lane is busy
+            ProjectSnippets.within(edited, 5);
+            ProjectSnippets.within(edited, 5);
+            assertThat(ProjectSnippets.hasPending(key)).as("within() queues through the one-per-folder door").isTrue();
             Future<ProjectSnippets.Found> first = ProjectSnippets.pending(key, edited);
             Future<ProjectSnippets.Found> second = ProjectSnippets.pending(key, edited);
             assertThat(second).isSameAs(first);
