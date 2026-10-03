@@ -160,6 +160,8 @@ class ServerTrustGrantTest {
                 .as("the click asks; what follows a yes is the listener's, the same for every door")
                 .contains("WorkspaceTrust.requestTrust(projectDir);")
                 .doesNotContain("setStatusText");
+        assertThat(src).as("the folder's name reaches the notice as one line of ordinary characters")
+                .contains("org.nmox.studio.core.util.PlainText.oneLine(projectDir.getName(), 80)");
         assertThat(src).as("a refusal records who waits, before deciding whether to speak")
                 .contains("WAITING.putIfAbsent(projectDir, binaryOf(command));");
     }

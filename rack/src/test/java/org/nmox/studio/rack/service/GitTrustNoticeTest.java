@@ -137,6 +137,8 @@ class GitTrustNoticeTest {
                 .as("added and removed with the component: a status bar rebuilt does not leave a listener behind")
                 .contains("WorkspaceTrust.removeGrantListener(onGrant);");
 
+        assertThat(src).as("the folder's name reaches the notice as one line of ordinary characters")
+                .contains("org.nmox.studio.core.util.PlainText.oneLine(root.getName(), 80)");
         int grant = src.indexOf("onGrant = dir -> RP.post(() -> {");
         assertThat(grant).as("a grant is acted on").isPositive();
         assertThat(src.substring(grant, src.indexOf("});", grant)))
