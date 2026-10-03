@@ -174,7 +174,12 @@ public final class CommandExecutor {
             LIVE.add(process);
             Process spawned = process;
             process.onExit().thenRun(() -> LIVE.remove(spawned));
-        } catch (IOException ex) {
+        } catch (IOException | RuntimeException ex) {
+            // RuntimeException too: ProcessBuilder refuses an environment
+            // name holding '=' or a NUL (and a NUL in a value) with an
+            // IllegalArgumentException, which once escaped this method —
+            // the caller's progress bar spun on and nothing was said. It is
+            // a launch that did not happen, and ends the way one does.
             String msg = friendlyLaunchFailure(command, ex);
             if (out != null) {
                 out.println(msg);
@@ -324,7 +329,13 @@ public final class CommandExecutor {
      * on: the usual cause is simply that the tool is not installed or
      * not on the PATH the IDE sees.
      */
-    static String friendlyLaunchFailure(List<String> command, IOException ex) {
+    static String friendlyLaunchFailure(List<String> command, Exception ex) {
+        if (ex instanceof RuntimeException) {
+            // never its message: the JDK's quotes the offending environment
+            // VALUE, and this line goes to the Output window and onto the bus
+            return "launch failed: the command or its environment cannot be handed to a process ("
+                    + ex.getClass().getSimpleName() + ")";
+        }
         String tool = command.isEmpty() ? "?" : command.get(0);
         String raw = String.valueOf(ex.getMessage());
         if (raw.contains("error=2") || raw.contains("No such file")) {

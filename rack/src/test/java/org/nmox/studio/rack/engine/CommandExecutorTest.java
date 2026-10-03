@@ -25,6 +25,22 @@ class CommandExecutorTest {
     }
 
     @Test
+    @DisplayName("an environment no process can take ends the run as a failed launch: exit -1, said, no throw, no value printed")
+    void anEnvironmentNoProcessCanTakeIsAFailedLaunch() throws Exception {
+        for (Map<String, String> env : List.of(Map.of("A=B", "x"), Map.of("X", "a\u0000secret-value"))) {
+            List<Integer> exits = new java.util.concurrent.CopyOnWriteArrayList<>();
+            List<String> lines = new java.util.concurrent.CopyOnWriteArrayList<>();
+            CommandExecutor.Handle h = CommandExecutor.run("bad-env", new File("."), env, List.of("true"),
+                    lines::add, exits::add);
+            assertThat(exits).as(env.keySet() + ": the caller hears its end, so its progress bar stops")
+                    .containsExactly(-1);
+            assertThat(h.isAlive()).isFalse();
+            assertThat(lines).as("and the Output window says so").singleElement().asString()
+                    .startsWith("launch failed:").doesNotContain("secret-value");
+        }
+    }
+
+    @Test
     @DisabledOnOs(OS.WINDOWS)
     @DisplayName("Children must get the non-interactive guard environment")
     void shouldInjectGuardEnvironment() throws Exception {
