@@ -24,9 +24,13 @@ class StandupWaitsForTrustTest {
         int standup = src.indexOf("private void showStandup()");
         assertThat(standup).isPositive();
         String body = src.substring(standup, src.indexOf("\n    }\n", standup));
-        int gate = body.indexOf("WorkspaceTrust.isTrusted(dir) ? null");
+        // 3.5.13: the question is about the REPOSITORY's root (gitMayRun), not the
+        // board's own folder: a trusted project inside an untrusted repository
+        // had run git log under that repository's config
+        int gate = body.indexOf("WorkspaceTrust.gitMayRun(dir) ? null");
         int spawn = body.indexOf("ProcessSupport.runBounded(");
-        assertThat(gate).as("the Standup asks whether the folder is trusted").isPositive();
+        assertThat(gate).as("the Standup asks whether git may run in this folder's repository").isPositive();
+        assertThat(body).as("and not whether the folder alone is trusted").doesNotContain("WorkspaceTrust.isTrusted(dir)");
         assertThat(spawn).as("before the one place it runs git").isGreaterThan(gate);
         assertThat(body.indexOf("ProcessSupport.runBounded(", spawn + 1)).as("the one place").isNegative();
         assertThat(body).as("and a refusal is an absent section, not an error").contains("if (r != null && r.exitCode() == 0)");
