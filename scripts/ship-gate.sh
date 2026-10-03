@@ -27,7 +27,12 @@ FAILS=0
 # merge below with nothing verified, and the tree-identity fast path
 # then called that head "green" and tagged it.
 GREEN=0
-for i in $(seq 1 60); do
+# 150 rounds of thirty seconds: three lanes take 25 to 30 minutes on a
+# quiet night and a queued runner adds to that, so sixty rounds (3.5.13
+# and before) ran out while the checks were still honestly pending — the
+# gate stopped by name, as it should, and had to be started twice for
+# 3.5.13 and for 3.6.0. The bound is still a bound.
+for i in $(seq 1 150); do
   STATE=$(gh pr checks $PR 2>/dev/null | /usr/bin/awk -F'	' '{print $2}' | sort -u | tr '\n' ' ')
   echo "checks: $STATE"
   case "$STATE" in
