@@ -69,7 +69,7 @@ public final class ToggleWordWrapAction extends AbstractAction implements Presen
             return;
         }
         WordWrap.Result result = WordWrap.toggle(mime, () -> doc.getProperty(WordWrap.KEY), prefs,
-                ToggleWordWrapAction::refreshEditors);
+                () -> refreshEditors(mime));
         String key = !result.took() ? "WordWrap_unchanged" : result.on() ? "WordWrap_on" : "WordWrap_off";
         status.accept(NbBundle.getMessage(ToggleWordWrapAction.class, key, languageName(mime)));
     }
@@ -80,11 +80,46 @@ public final class ToggleWordWrapAction extends AbstractAction implements Presen
      * {@code text-line-wrap} property, not to the preference behind it.
      */
     public static void refreshEditors() {
+        refreshEditors(null);
+    }
+
+    /**
+     * Tells the open editors that read {@code mime}'s setting to read it
+     * again, and no others: a poke makes an editor lay its text out again,
+     * on the event thread, so a toggle for TypeScript leaves the Markdown
+     * and CSS editors alone. Null tells every editor (a change to the
+     * all-languages setting).
+     */
+    static void refreshEditors(String mime) {
         for (JTextComponent editor : editors.get()) {
             Document doc = editor.getDocument();
-            if (doc != null && doc.getProperty(WordWrap.KEY) != null) {
+            if (doc != null && doc.getProperty(WordWrap.KEY) != null
+                    && (mime == null || readsFrom(ToggleBlockCommentAction.mimeOf(doc), mime))) {
                 doc.putProperty(WordWrap.KEY, "");
             }
+        }
+    }
+
+    /**
+     * Whether a document of {@code docMime} reads its wrap from
+     * {@code mime}'s preferences: its own, or one its mime path inherits
+     * from ({@code text/x-ant+xml} reads {@code text/xml}'s). A document
+     * whose language cannot be told is told anyway: a needless relayout
+     * costs less than an editor that shows the old setting.
+     */
+    static boolean readsFrom(String docMime, String mime) {
+        if (docMime == null || docMime.equals(mime)) {
+            return true;
+        }
+        try {
+            for (MimePath included : MimePath.parse(docMime).getIncludedPaths()) {
+                if (included.getPath().equals(mime)) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (IllegalArgumentException notAMimePath) {
+            return true;
         }
     }
 
