@@ -125,6 +125,27 @@ class DapDebugLauncherTest {
     }
 
     @Test
+    @DisplayName("a plain launch from a configuration asks trust on the configuration's workspace, not on the nearest manifest above the program")
+    void plainLaunchTrustsTheWorkspace(@TempDir Path tmp) throws Exception {
+        // a manifest ABOVE the workspace: the right-click's projectRoot walk would stop there
+        Files.writeString(tmp.resolve("package.json"), "{}");
+        Path workspace = Files.createDirectories(tmp.resolve("checkout"));
+        File js = Files.writeString(workspace.resolve("server.js"), "1").toFile();
+        assertThat(DapDebugAction.projectRoot(js)).as("the fixture: the walk would ask about the parent")
+                .isEqualTo(tmp.toFile());
+        List<File> trustRoots = new java.util.ArrayList<>();
+        DapDebugLauncher.PlainStart real = DapDebugLauncher.plainStart;
+        DapDebugLauncher.plainStart = (file, mime, workingDir, args, env, trustRoot) -> trustRoots.add(trustRoot);
+        try {
+            assertThat(new DapDebugLauncher().debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", js,
+                    workspace.toFile(), workspace.toFile(), List.of(), Map.of(), null, List.of()))).isTrue();
+        } finally {
+            DapDebugLauncher.plainStart = real;
+        }
+        assertThat(trustRoots).containsExactly(workspace.toFile());
+    }
+
+    @Test
     @DisplayName("an attach is to this machine or to nothing: the launcher refuses what the reader should already have refused")
     void attachOnlyToLoopback(@TempDir Path tmp) {
         DapDebugLauncher launcher = new DapDebugLauncher();

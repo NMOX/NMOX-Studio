@@ -66,6 +66,16 @@ public final class DapDebugLauncher implements DebugLauncher {
         return true;
     }
 
+    /** How a plain launch is started: file, MIME, working folder, args, env, and the folder trust is asked on. */
+    @FunctionalInterface
+    interface PlainStart {
+        void start(File file, String mime, File workingDir, java.util.List<String> args,
+                java.util.Map<String, String> env, File trustRoot);
+    }
+
+    /** The start of a plain launch, as a seam: a test proves which folder trust is asked on, spawning nothing. */
+    static volatile PlainStart plainStart = DapDebugAction::launch;
+
     /**
      * A launch that names its runtime. A plain one takes the door it always
      * had; a Node one may have no program (the runtime is the whole
@@ -80,7 +90,20 @@ public final class DapDebugLauncher implements DebugLauncher {
             return false;
         }
         if (launch.plain()) {
-            return debug(launch.program(), launch.workingDir(), launch.args(), launch.env());
+            File file = launch.program();
+            if (file == null || launch.workingDir() == null || launch.args() == null || launch.env() == null) {
+                return false;
+            }
+            String plainMime = mimeOf(file);
+            if (!DapDebugAction.supportsMime(plainMime) || !DapDebugAction.supportsWorkingDir(plainMime)) {
+                return false;
+            }
+            // trust is asked on the folder the configuration belongs to, as
+            // launchNode and launchPython ask it — not on the nearest manifest
+            // above the program, which can be a parent of the project (or
+            // the home folder) and is not the folder the user was shown
+            plainStart.start(file, plainMime, launch.workingDir(), launch.args(), launch.env(), launch.workspace());
+            return true;
         }
         String mime = launch.program() == null ? null : mimeOf(launch.program());
         switch (launch.language()) {
