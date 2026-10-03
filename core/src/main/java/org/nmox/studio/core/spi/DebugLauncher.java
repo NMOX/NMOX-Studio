@@ -143,11 +143,13 @@ public interface DebugLauncher {
      *                  127.0.0.1}, {@code ::1}); the caller has refused
      *                  anything else, and so does the launcher
      * @param port      the inspector's port
-     * @param workspace the folder the configuration belongs to
+     * @param workingDir the configuration's working folder ({@code cwd}), which the
+     *                  adapter resolves the program's sources against
+     * @param workspace the folder the configuration belongs to, the one trust is asked on
      * @return false, having attached to nothing, when this launcher cannot
      *         attach
      */
-    default boolean attachNode(String name, String address, int port, File workspace) {
+    default boolean attachNode(String name, String address, int port, File workingDir, File workspace) {
         return false;
     }
 

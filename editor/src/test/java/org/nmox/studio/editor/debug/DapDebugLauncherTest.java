@@ -102,7 +102,7 @@ class DapDebugLauncherTest {
                 List.of(), Map.of(), null, List.of("--inspect")))).isFalse();
         assertThat(bare.debug(new DebugLauncher.Launch(DebugLauncher.Language.NODE, "n", null, here, here,
                 List.of(), Map.of(), "npm", List.of("run", "dev")))).isFalse();
-        assertThat(bare.attachNode("a", "localhost", 9229, here)).isFalse();
+        assertThat(bare.attachNode("a", "localhost", 9229, here, here)).isFalse();
     }
 
     @Test
@@ -131,12 +131,13 @@ class DapDebugLauncherTest {
         File dir = tmp.toFile();
         // literal addresses only: a host NAME here would be looked up on the network the day this guard broke
         for (String address : new String[] {"10.0.0.5", "192.168.1.20", "0.0.0.0", "", "127.0.0.2", null}) {
-            assertThat(launcher.attachNode("a", address, 9229, dir)).as(String.valueOf(address)).isFalse();
+            assertThat(launcher.attachNode("a", address, 9229, dir, dir)).as(String.valueOf(address)).isFalse();
         }
-        assertThat(launcher.attachNode("a", "localhost", 0, dir)).isFalse();
-        assertThat(launcher.attachNode("a", "localhost", 65536, dir)).isFalse();
-        assertThat(launcher.attachNode("a", "localhost", 9229, null)).isFalse();
-        assertThat(launcher.attachNode(null, "localhost", 9229, dir)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 0, dir, dir)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 65536, dir, dir)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 9229, dir, null)).isFalse();
+        assertThat(launcher.attachNode("a", "localhost", 9229, null, dir)).isFalse();
+        assertThat(launcher.attachNode(null, "localhost", 9229, dir, dir)).isFalse();
 
         assertThat(DebugLauncher.isLoopback("localhost")).isTrue();
         assertThat(DebugLauncher.isLoopback("LOCALHOST")).isTrue();

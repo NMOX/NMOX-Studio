@@ -53,7 +53,8 @@ class VsCodeLaunchSearchProviderTest {
                   "program": "server.js", "preLaunchTask": "build" },
                 { "type": "chrome", "request": "launch", "name": "Launch Chrome",
                   "url": "http://localhost:8080", "webRoot": "${workspaceFolder}/web" },
-                { "type": "node", "request": "attach", "name": "Attach", "port": 9229 },
+                { "type": "node", "request": "attach", "name": "Attach", "port": 9229,
+                  "cwd": "${workspaceFolder}/web" },
                 { "type": "node", "request": "attach", "name": "Attach to the build box",
                   "port": 9229, "address": "10.0.0.5" },
               ],
@@ -111,8 +112,8 @@ class VsCodeLaunchSearchProviderTest {
         }
 
         @Override
-        public boolean attachNode(String name, String address, int port, File workspace) {
-            handed.add(new Object[] {"attach", name, address, port, workspace});
+        public boolean attachNode(String name, String address, int port, File workingDir, File workspace) {
+            handed.add(new Object[] {"attach", name, address, port, workspace, workingDir});
             return true;
         }
 
@@ -329,7 +330,7 @@ class VsCodeLaunchSearchProviderTest {
     }
 
     @Test
-    @DisplayName("Enter on a Node attach asks trust, then hands the debugger the address, the port and the project")
+    @DisplayName("Enter on a Node attach asks trust, then hands the debugger the address, the port, the project and the cwd")
     void enterAttaches() throws Exception {
         enter("Attach");
         assertThat(asked).containsExactly(project.toFile().getPath());
@@ -339,7 +340,10 @@ class VsCodeLaunchSearchProviderTest {
         assertThat(h[1]).isEqualTo("Attach");
         assertThat(h[2]).isEqualTo("localhost");
         assertThat(h[3]).isEqualTo(9229);
-        assertThat(((File) h[4]).getCanonicalFile()).isEqualTo(project.toFile().getCanonicalFile());
+        assertThat(((File) h[4]).getCanonicalFile()).as("trust and the session belong to the project")
+                .isEqualTo(project.toFile().getCanonicalFile());
+        assertThat(((File) h[5]).getCanonicalFile()).as("and the working folder is the one the configuration wrote")
+                .isEqualTo(project.resolve("web").toFile().getCanonicalFile());
         assertThat(said).containsExactly("Attaching the debugger for \"Attach\"…");
     }
 

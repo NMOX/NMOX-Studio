@@ -105,12 +105,12 @@ public final class DapDebugLauncher implements DebugLauncher {
     }
 
     @Override
-    public boolean attachNode(String name, String address, int port, File workspace) {
-        if (name == null || workspace == null || port < 1 || port > 65535
+    public boolean attachNode(String name, String address, int port, File workingDir, File workspace) {
+        if (name == null || workingDir == null || workspace == null || port < 1 || port > 65535
                 || !DebugLauncher.isLoopback(address)) {
             return false;
         }
-        DapDebugAction.attachNode(name, address, port, workspace);
+        DapDebugAction.attachNode(name, address, port, workingDir, workspace);
         return true;
     }
 

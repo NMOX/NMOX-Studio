@@ -149,13 +149,13 @@ public class DapDebugAction extends BaseAction {
      * listening is said on the status line, before any adapter is spawned,
      * rather than left to a session that opens and closes.
      */
-    static void attachNode(String name, String address, int port, File workspace) {
+    static void attachNode(String name, String address, int port, File workingDir, File workspace) {
         gated(() -> workspace, () -> {
             if (!listening(address, port)) {
                 throw new Spoken(org.openide.util.NbBundle.getMessage(DapDebugAction.class,
                         "DapDebugAction_nothingListening", address, Integer.toString(port)));
             }
-            debugNode(nodeAttachRequest(name, address, port, workspace), "Node: " + name, true);
+            debugNode(nodeAttachRequest(name, address, port, workingDir), "Node: " + name, true);
         });
     }
 

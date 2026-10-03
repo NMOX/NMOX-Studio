@@ -204,7 +204,7 @@ public class VsCodeLaunchSearchProvider implements SearchProvider {
                     config.name(), program.program(), program.cwd(), project,
                     program.args(), program.env(), program.runtime(), program.runtimeArgs()));
         } else if (resolved instanceof AttachNode node) {
-            started = debugger.attachNode(config.name(), node.address(), node.port(), project);
+            started = debugger.attachNode(config.name(), node.address(), node.port(), node.cwd(), project);
         } else {
             started = debugger.debugPage(((DebugPage) resolved).url(), ((DebugPage) resolved).webRoot());
         }
