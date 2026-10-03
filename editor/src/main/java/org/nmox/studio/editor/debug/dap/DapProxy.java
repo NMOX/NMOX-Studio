@@ -68,6 +68,13 @@ public final class DapProxy {
     /** onClosed fires exactly once, from whichever path gets there first. */
     private final AtomicBoolean adapterStopped = new AtomicBoolean();
     private volatile JSONObject childConfiguration;
+    /**
+     * The verb the first target asked to be started with: {@code launch}
+     * for a program the adapter started, {@code attach} for one it attached
+     * to. js-debug says which in its {@code startDebugging}, and the splice
+     * answers with the same word.
+     */
+    private volatile String childRequest = "launch";
     private final AtomicBoolean closed = new AtomicBoolean();
     /** Every extra target handed to the platform as its own session. */
     private final List<ChildRelay> relays = new CopyOnWriteArrayList<>();
@@ -296,6 +303,7 @@ public final class DapProxy {
         }
         respond(from, frame, true, null);
         childConfiguration = configuration;
+        childRequest = requestKind(frame);
         Socket child = dial(adapterPort);
         childSocket = child;
         pump("nmox-dap-child", child, this::onChildFrame);
@@ -533,7 +541,7 @@ public final class DapProxy {
     private void onChildDanceResponse(JSONObject response) throws IOException {
         if ("initialize".equals(response.optString("command"))) {
             JSONObject launch = new JSONObject()
-                    .put("type", "request").put("command", "launch")
+                    .put("type", "request").put("command", childRequest)
                     .put("arguments", childConfiguration);
             send(Link.CHILD, launch, PROXY);
         }

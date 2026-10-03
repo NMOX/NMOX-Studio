@@ -14,6 +14,7 @@ import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.lsp.client.debugger.api.DAPConfiguration;
+import org.nmox.studio.core.spi.DebugLauncher;
 import org.nmox.studio.editor.debug.dap.DapProxy;
 import org.nmox.studio.editor.debug.dap.JsDebugServer;
 import org.nmox.studio.core.process.ToolLocator;
@@ -107,35 +108,124 @@ public class DapDebugAction extends BaseAction {
         if (workingDir != null && !supportsWorkingDir(mime)) {
             return;
         }
+        gated(() -> projectRoot(file), () -> {
+            switch (mime) {
+                case "text/x-python" -> debugPython(file, workingDir, args, env, null);
+                case "text/x-go" -> debugGo(file);
+                case "text/javascript", "text/typescript" -> debugNode(
+                        nodeLaunchRequest(file, workingDir != null ? workingDir : projectRoot(file), args, env),
+                        "Node: " + file.getName(), false);
+                default -> throw new IllegalStateException(mime);
+            }
+        });
+    }
+
+    /**
+     * A Node launch as a {@code .vscode/launch.json} configuration describes
+     * one, runtime included ({@link DebugLauncher.Launch}): the program may
+     * be absent when the runtime is the whole command ({@code npm run dev}).
+     * Trust is asked on the folder the configuration belongs to — the
+     * runtime is a program the PROJECT chose — before anything is spawned.
+     */
+    static void launchNode(DebugLauncher.Launch launch) {
+        gated(launch::workspace, () -> debugNode(
+                nodeLaunchRequest(launch.name(), launch.program(), launch.workingDir(), launch.args(),
+                        launch.env(), launch.runtime(), launch.runtimeArgs(), launch.workspace()),
+                "Node: " + (launch.program() != null ? launch.program().getName() : launch.name()), false));
+    }
+
+    /** A Python launch with the interpreter its configuration names ({@code python}). */
+    static void launchPython(DebugLauncher.Launch launch) {
+        gated(launch::workspace, () -> debugPython(launch.program(), launch.workingDir(), launch.args(),
+                launch.env(), launch.runtime()));
+    }
+
+    /**
+     * Attaches to a Node process whose inspector is listening at {@code
+     * address}:{@code port} on this machine. Nothing of the project's is
+     * started — the adapter is this IDE's own — but the same question is
+     * asked first, on the folder the configuration came from: a debugger
+     * attached to a program runs what its user evaluates there. Nobody
+     * listening is said on the status line, before any adapter is spawned,
+     * rather than left to a session that opens and closes.
+     */
+    static void attachNode(String name, String address, int port, File workspace) {
+        gated(() -> workspace, () -> {
+            if (!listening(address, port)) {
+                throw new Spoken(org.openide.util.NbBundle.getMessage(DapDebugAction.class,
+                        "DapDebugAction_nothingListening", address, Integer.toString(port)));
+            }
+            debugNode(nodeAttachRequest(name, address, port, workspace), "Node: " + name, true);
+        });
+    }
+
+    /** What a gated launch does once trust is given. */
+    private interface Start {
+        void run() throws Exception;
+    }
+
+    /** A failure whose message is already a whole sentence in the reader's language. */
+    private static final class Spoken extends IOException {
+        private static final long serialVersionUID = 1L;
+
+        Spoken(String sentence) {
+            super(sentence);
+        }
+    }
+
+    /**
+     * The one lane every launch and attach rides: Workspace Trust on {@code
+     * trustRoot} FIRST, then {@code start}, off the EDT. Debugging runs the
+     * project's code — the same thing the rack gates before it fires a
+     * device — so the question is asked once per folder, on the same trust
+     * record the rack uses, and a "Keep Safe" answer stops everything before
+     * any adapter or debuggee is spawned. No adapter is started anywhere
+     * but inside a {@code gated} call ({@code DebugTrustGateTest}).
+     */
+    private static void gated(java.util.function.Supplier<File> trustRoot, Start start) {
         // a run that grows a second session shows the Sessions window by
         // itself (v2.159.0); registered here, once, so nothing touches the
         // debugger API before the first launch
         SessionsWindowOpener.install();
         RP.post(() -> {
             try {
-                // Debugging runs the project's code — the same thing the rack
-                // gates before it fires a device. Ask once per folder, on the
-                // same trust record the rack uses; a "Keep Safe" answer stops
-                // the launch before any adapter or debuggee is spawned.
-                if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(projectRoot(file))) {
+                if (!org.nmox.studio.rack.service.WorkspaceTrust.requestTrust(trustRoot.get())) {
                     StatusDisplayer.getDefault().setStatusText(
                             org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_notTrusted"));
                     return;
                 }
-                switch (mime) {
-                    case "text/x-python" -> debugPython(file, workingDir, args, env);
-                    case "text/x-go" -> debugGo(file);
-                    case "text/javascript", "text/typescript" -> debugNode(file, workingDir, args, env);
-                    default -> {
-                        return;
-                    }
-                }
+                start.run();
                 showOutput();
+            } catch (Spoken said) {
+                StatusDisplayer.getDefault().setStatusText(
+                        org.nmox.studio.core.util.PlainStatus.text(said.getMessage()));
             } catch (Exception ex) {
                 StatusDisplayer.getDefault().setStatusText(
                         org.openide.util.NbBundle.getMessage(DapDebugAction.class, "DapDebugAction_failed", ex.getMessage()));
             }
         });
+    }
+
+    /** Whether anything accepts a connection at {@code address}:{@code port}; a loopback question, bounded. */
+    public static boolean listening(String address, int port) {
+        InetAddress[] candidates;
+        try {
+            candidates = InetAddress.getAllByName(address);
+        } catch (java.net.UnknownHostException unknown) {
+            return false;
+        }
+        for (InetAddress candidate : candidates) {
+            if (!candidate.isLoopbackAddress()) {
+                continue;
+            }
+            try (Socket probe = new Socket()) {
+                probe.connect(new InetSocketAddress(candidate, port), 1_000);
+                return true;
+            } catch (IOException refused) {
+                // the next spelling of this machine, if there is one
+            }
+        }
+        return false;
     }
 
     /** The MIME types whose launch honours a caller-chosen working directory. */
@@ -146,9 +236,15 @@ public class DapDebugAction extends BaseAction {
         };
     }
 
-    /** debugpy's adapter speaks DAP on stdio: the clean case. */
-    private static void debugPython(File file, File workingDir, List<String> args, Map<String, String> env)
-            throws IOException {
+    /**
+     * debugpy's adapter speaks DAP on stdio: the clean case. {@code python}
+     * is the interpreter the PROGRAM runs under (a launch configuration's
+     * {@code python}), which debugpy takes in its launch request; the
+     * adapter itself stays the {@code python3} on the PATH, the one that has
+     * debugpy installed.
+     */
+    private static void debugPython(File file, File workingDir, List<String> args, Map<String, String> env,
+            String python) throws IOException {
         File cwd = workingDir != null ? workingDir : file.getParentFile();
         ProcessBuilder pb = new ProcessBuilder(ToolLocator.resolveCommand(
                 List.of("python3", "-m", "debugpy.adapter")));
@@ -161,13 +257,7 @@ public class DapDebugAction extends BaseAction {
         // not leave the spawned adapter running for the IDE's lifetime
         try {
             DAPConfiguration.create(adapter.getInputStream(), adapter.getOutputStream())
-                    .addConfiguration(withArgsAndEnv(Map.of(
-                            "type", "python",
-                            "request", "launch",
-                            "program", file.getAbsolutePath(),
-                            "cwd", cwd.getAbsolutePath(),
-                            "console", "internalConsole",
-                            "justMyCode", true), args, env))
+                    .addConfiguration(pythonLaunchRequest(file, cwd, args, env, python))
                     .setSessionName("Python: " + file.getName())
                     .launch();
         } catch (RuntimeException ex) {
@@ -223,30 +313,111 @@ public class DapDebugAction extends BaseAction {
      * DAPConfiguration come from the DapProxy that flattens the two, and
      * hands every further target (forked children, worker threads) to the
      * platform as a session of its own.
+     *
+     * <p>{@code request} is the whole js-debug request, a launch or an
+     * attach; {@code attach} says which verb the platform's client sends
+     * it with. An attach starts no program: when its session ends the
+     * adapter is stopped and the program it was attached to is not — it is
+     * no child of the adapter's, so the tree kill never reaches it.
      */
-    private static void debugNode(File file, File workingDir, List<String> args, Map<String, String> env)
+    private static void debugNode(Map<String, Object> request, String sessionName, boolean attach)
             throws IOException, InterruptedException {
         File serverJs = org.openide.modules.InstalledFileLocator.getDefault().locate(
                 "jsdebug/js-debug/src/dapDebugServer.js", "org.nmox.studio.editor", false);
         if (serverJs == null) {
             throw new IOException("bundled js-debug adapter missing from this installation");
         }
-        File root = workingDir != null ? workingDir : projectRoot(file);
         JsDebugServer server = JsDebugServer.start(serverJs);
         try {
             DapProxy proxy = DapProxy.start(server.port(), server::stop);
-            DAPConfiguration.create(proxy.clientInput(), proxy.clientOutput())
-                    .addConfiguration(nodeLaunchRequest(file, root, args, env))
-                            // auto-attach stays ON (js-debug's default): every
-                            // child process and worker the program starts
-                            // becomes a debug session of its own through the
-                            // proxy's child-session door (v2.156.0)
-                    .setSessionName("Node: " + file.getName())
-                    .launch();
+            // auto-attach stays ON (js-debug's default): every child
+            // process and worker the program starts becomes a debug session
+            // of its own through the proxy's child-session door (v2.156.0)
+            DAPConfiguration session = DAPConfiguration.create(proxy.clientInput(), proxy.clientOutput())
+                    .addConfiguration(request)
+                    .setSessionName(sessionName);
+            if (attach) {
+                session.attach();
+            } else {
+                session.launch();
+            }
         } catch (IOException | RuntimeException ex) {
             server.stop();
             throw ex;
         }
+    }
+
+    /**
+     * The js-debug request that attaches to a Node inspector already
+     * listening at {@code address}:{@code port}. Everything else is the
+     * adapter's default, which is VS Code's: the program is not resumed if
+     * it is waiting ({@code --inspect-brk}), and children it has already
+     * started are attached too.
+     */
+    public static Map<String, Object> nodeAttachRequest(String name, String address, int port, File cwd) {
+        Map<String, Object> out = new java.util.LinkedHashMap<>();
+        out.put("type", "pwa-node");
+        out.put("request", "attach");
+        out.put("name", name);
+        out.put("address", address);
+        out.put("port", port);
+        out.put("cwd", cwd.getAbsolutePath());
+        return out;
+    }
+
+    /** The debugpy launch request for {@code program}, run by {@code python} when one is named. */
+    public static Map<String, Object> pythonLaunchRequest(File program, File cwd, List<String> args,
+            Map<String, String> env, String python) {
+        Map<String, Object> out = withArgsAndEnv(Map.of(
+                "type", "python",
+                "request", "launch",
+                "program", program.getAbsolutePath(),
+                "cwd", cwd.getAbsolutePath(),
+                "console", "internalConsole",
+                "justMyCode", true), args, env);
+        if (python != null) {
+            out.put("python", python);
+        }
+        return out;
+    }
+
+    /**
+     * The js-debug launch request for a configuration that names its
+     * runtime. {@code runtimeExecutable} and {@code runtimeArgs} are
+     * js-debug's own fields and cross as they are: the command it starts is
+     * the runtime, its arguments, the program (when there is one) and the
+     * program's arguments. {@code program} is null when the runtime is the
+     * whole command.
+     *
+     * <p>{@code __workspaceFolder} is what VS Code itself sends with every
+     * request, and it is sent here only when a runtime is named: it is the
+     * folder under which js-debug looks in {@code node_modules/.bin} for a
+     * runtime it did not find on the PATH (read from the adapter's {@code
+     * resolveNodeModulesLocation}), which is how {@code "runtimeExecutable":
+     * "tsx"} starts a project's own tsx. A launch that names no runtime is
+     * the request it always was.
+     */
+    public static Map<String, Object> nodeLaunchRequest(String name, File program, File cwd, List<String> args,
+            Map<String, String> env, String runtime, List<String> runtimeArgs, File workspace) {
+        Map<String, Object> base = new java.util.LinkedHashMap<>();
+        base.put("type", "pwa-node");
+        base.put("request", "launch");
+        base.put("name", program != null ? program.getName() : name);
+        if (program != null) {
+            base.put("program", program.getAbsolutePath());
+        }
+        base.put("cwd", cwd.getAbsolutePath());
+        base.put("console", "internalConsole");
+        base.put("outputCapture", "std");
+        Map<String, Object> out = withArgsAndEnv(base, args, env);
+        if (runtime != null) {
+            out.put("runtimeExecutable", runtime);
+            out.put("__workspaceFolder", workspace.getAbsolutePath());
+        }
+        if (!runtimeArgs.isEmpty()) {
+            out.put("runtimeArgs", List.copyOf(runtimeArgs));
+        }
+        return out;
     }
 
     /**
@@ -265,14 +436,7 @@ public class DapDebugAction extends BaseAction {
      */
     public static Map<String, Object> nodeLaunchRequest(File program, File cwd, List<String> args,
             Map<String, String> env) {
-        return withArgsAndEnv(Map.of(
-                "type", "pwa-node",
-                "request", "launch",
-                "name", program.getName(),
-                "program", program.getAbsolutePath(),
-                "cwd", cwd.getAbsolutePath(),
-                "console", "internalConsole",
-                "outputCapture", "std"), args, env);
+        return nodeLaunchRequest(program.getName(), program, cwd, args, env, null, List.of(), cwd);
     }
 
     /**

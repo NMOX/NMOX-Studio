@@ -66,6 +66,54 @@ public final class DapDebugLauncher implements DebugLauncher {
         return true;
     }
 
+    /**
+     * A launch that names its runtime. A plain one takes the door it always
+     * had; a Node one may have no program (the runtime is the whole
+     * command); a Python one needs its program, and takes an interpreter
+     * but no interpreter arguments — debugpy's launch has a field for the
+     * first and this launcher has not been taught the second, so it answers
+     * false rather than start the program without them.
+     */
+    @Override
+    public boolean debug(Launch launch) {
+        if (launch == null) {
+            return false;
+        }
+        if (launch.plain()) {
+            return debug(launch.program(), launch.workingDir(), launch.args(), launch.env());
+        }
+        String mime = launch.program() == null ? null : mimeOf(launch.program());
+        switch (launch.language()) {
+            case NODE -> {
+                if (mime != null && !"text/javascript".equals(mime) && !"text/typescript".equals(mime)) {
+                    return false;
+                }
+                DapDebugAction.launchNode(launch);
+                return true;
+            }
+            case PYTHON -> {
+                if (!"text/x-python".equals(mime) || !launch.runtimeArgs().isEmpty()) {
+                    return false;
+                }
+                DapDebugAction.launchPython(launch);
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
+
+    @Override
+    public boolean attachNode(String name, String address, int port, File workspace) {
+        if (name == null || workspace == null || port < 1 || port > 65535
+                || !DebugLauncher.isLoopback(address)) {
+            return false;
+        }
+        DapDebugAction.attachNode(name, address, port, workspace);
+        return true;
+    }
+
     @Override
     public boolean debugPage(String url, File webRoot) {
         if (url == null || url.isBlank() || webRoot == null) {

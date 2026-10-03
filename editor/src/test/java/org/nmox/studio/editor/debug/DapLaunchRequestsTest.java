@@ -1,0 +1,106 @@
+package org.nmox.studio.editor.debug;
+
+import java.io.File;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.util.List;
+import java.util.Map;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * The requests the debug adapters are sent, as values: what a launch
+ * configuration's runtime, interpreter and attach become on the wire. The
+ * real js-debug is driven with these same requests in
+ * {@code RealJsDebugIntegrationTest}; this pins their shape where no node
+ * is needed.
+ */
+class DapLaunchRequestsTest {
+
+    private static final File PROGRAM = new File("/work/app/server.js");
+    private static final File CWD = new File("/work/app");
+    private static final File WORKSPACE = new File("/work");
+
+    @Test
+    @DisplayName("a launch that names no runtime is the request it always was: no runtime field, no workspace field")
+    void plainLaunchIsUnchanged() {
+        Map<String, Object> plain = DapDebugAction.nodeLaunchRequest(PROGRAM, CWD, List.of(), Map.of());
+        assertThat(plain).containsOnlyKeys("type", "request", "name", "program", "cwd", "console", "outputCapture")
+                .containsEntry("type", "pwa-node").containsEntry("request", "launch")
+                .containsEntry("name", "server.js")
+                .containsEntry("program", PROGRAM.getAbsolutePath())
+                .containsEntry("cwd", CWD.getAbsolutePath())
+                .containsEntry("outputCapture", "std");
+        assertThat(DapDebugAction.nodeLaunchRequest("cfg", PROGRAM, CWD, List.of("a"), Map.of("K", "v"),
+                null, List.of(), WORKSPACE))
+                .containsEntry("args", List.of("a")).containsEntry("env", Map.of("K", "v"))
+                .doesNotContainKeys("runtimeExecutable", "runtimeArgs", "__workspaceFolder");
+    }
+
+    @Test
+    @DisplayName("a runtime crosses as js-debug's own runtimeExecutable and runtimeArgs, with the workspace it is looked for under")
+    void runtimeCrosses() {
+        Map<String, Object> tsx = DapDebugAction.nodeLaunchRequest("cfg", PROGRAM, CWD, List.of(), Map.of(),
+                "tsx", List.of("--inspect-wait"), WORKSPACE);
+        assertThat(tsx).containsEntry("runtimeExecutable", "tsx")
+                .containsEntry("runtimeArgs", List.of("--inspect-wait"))
+                .containsEntry("__workspaceFolder", WORKSPACE.getAbsolutePath())
+                .containsEntry("program", PROGRAM.getAbsolutePath());
+
+        Map<String, Object> flags = DapDebugAction.nodeLaunchRequest("cfg", PROGRAM, CWD, List.of(), Map.of(),
+                null, List.of("--experimental-strip-types"), WORKSPACE);
+        assertThat(flags).containsEntry("runtimeArgs", List.of("--experimental-strip-types"))
+                .as("arguments to the default runtime name no runtime").doesNotContainKeys("runtimeExecutable",
+                        "__workspaceFolder");
+    }
+
+    @Test
+    @DisplayName("a runtime that is the whole command sends no program, and is named after its configuration")
+    void runtimeWithoutProgram() {
+        Map<String, Object> npm = DapDebugAction.nodeLaunchRequest("npm run dev", null, CWD, List.of(), Map.of(),
+                "npm", List.of("run", "dev"), WORKSPACE);
+        assertThat(npm).doesNotContainKey("program")
+                .containsEntry("name", "npm run dev")
+                .containsEntry("runtimeExecutable", "npm")
+                .containsEntry("runtimeArgs", List.of("run", "dev"));
+    }
+
+    @Test
+    @DisplayName("an attach names the address, the port and nothing that would start or resume a program")
+    void attachRequest() {
+        assertThat(DapDebugAction.nodeAttachRequest("Attach", "localhost", 9229, CWD))
+                .containsOnlyKeys("type", "request", "name", "address", "port", "cwd")
+                .containsEntry("type", "pwa-node").containsEntry("request", "attach")
+                .containsEntry("address", "localhost").containsEntry("port", 9229)
+                .containsEntry("cwd", CWD.getAbsolutePath());
+    }
+
+    @Test
+    @DisplayName("a Python launch carries its interpreter only when one is named")
+    void pythonInterpreter() {
+        File program = new File("/work/app/main.py");
+        assertThat(DapDebugAction.pythonLaunchRequest(program, CWD, List.of(), Map.of(), null))
+                .containsOnlyKeys("type", "request", "program", "cwd", "console", "justMyCode");
+        assertThat(DapDebugAction.pythonLaunchRequest(program, CWD, List.of("-v"), Map.of("K", "v"),
+                "/work/app/.venv/bin/python"))
+                .containsEntry("python", "/work/app/.venv/bin/python")
+                .containsEntry("args", List.of("-v")).containsEntry("env", Map.of("K", "v"));
+    }
+
+    @Test
+    @DisplayName("listening: true where a loopback port accepts, false where nothing does or the name is not this machine")
+    void listening() throws Exception {
+        int port;
+        try (ServerSocket open = new ServerSocket(0, 1, InetAddress.getLoopbackAddress())) {
+            port = open.getLocalPort();
+            assertThat(DapDebugAction.listening(InetAddress.getLoopbackAddress().getHostAddress(), port)).isTrue();
+        }
+        assertThat(DapDebugAction.listening(InetAddress.getLoopbackAddress().getHostAddress(), port))
+                .as("the listener is gone").isFalse();
+        assertThat(DapDebugAction.listening("192.0.2.1", port)).as("a literal address that is not this machine is never dialed")
+                .isFalse();
+    }
+}
