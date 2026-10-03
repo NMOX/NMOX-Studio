@@ -96,9 +96,10 @@ import org.nmox.studio.core.util.Containment;
  * process and nothing else: {@link Launch#shown} is the launch line with
  * both left as the file wrote them, and it is what the Output window's
  * header, the flight recorder and the Agent Port's run history read. A
- * refusal names a folder or a shell the same way, and an {@code npm}-type
- * task that would put a password into the script name its lane prints is
- * refused.
+ * refusal names a folder or a shell the same way. And a password is an
+ * argument, an environment value or part of a shell line — never a NAME:
+ * a task that uses one as its program, its shell, its folder or an npm
+ * script (each of which something prints) is refused.
  *
  * <p><b>What it reads.</b> The file comes through {@link BoundedReads}
  * (a clone brings it and a keystroke in Quick Search reads it), capped at
@@ -348,7 +349,7 @@ public final class VsCodeTasks {
         INPUT_INCOMPLETE,
         /** An input the user was asked for and did not answer (Cancel); detail = the id. */
         INPUT_UNANSWERED,
-        /** A password input in an {@code npm} task's script or folder, which its lane prints; detail = the variable. */
+        /** A password input where a name is printed (a program, a shell, a folder, an npm script); detail = the variable. */
         PASSWORD_SHOWN,
         /** {@code dependsOn} names a label the file does not define; detail = the label. */
         DEPENDENCY_MISSING,
@@ -769,6 +770,23 @@ public final class VsCodeTasks {
                 return problem;
             }
         }
+        // a password is for the process to read. Where it would be a NAME —
+        // the program a failed launch names, the shell, the folder, the
+        // script the npm lane prints — it would be printed, so it is refused
+        List<String> names = new ArrayList<>();
+        if (task.command() != null && "process".equals(task.type())) {
+            names.add(task.command().text());
+        }
+        names.add(task.cwd());
+        names.add(task.script());
+        names.add(task.path());
+        names.add(task.shell() == null ? null : task.shell().executable());
+        for (String name : names) {
+            String password = name == null ? null : passwordVariable(name, vars);
+            if (password != null) {
+                return new Refused(Reason.PASSWORD_SHOWN, password);
+            }
+        }
         UnaryOperator<String> sub = s -> substitute(s, project, env, vars, false);
         // the same text for a reader: a password and the selection as the file wrote them
         UnaryOperator<String> written = s -> substitute(s, project, env, vars, true);
@@ -776,13 +794,6 @@ public final class VsCodeTasks {
             case "npm" -> {
                 if (task.script() == null) {
                     return new Refused(Reason.NO_COMMAND, "");
-                }
-                // the npm lane prints "npm run <script>" and names its folder
-                for (String s : new String[] {task.script(), task.path()}) {
-                    String password = s == null ? null : passwordVariable(s, vars);
-                    if (password != null) {
-                        return new Refused(Reason.PASSWORD_SHOWN, password);
-                    }
                 }
                 String folder = task.path() == null ? null : sub.apply(task.path());
                 Object dir = workingDir(project, folder);

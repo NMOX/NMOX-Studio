@@ -62,6 +62,16 @@ class VsCodeTaskEditorTest {
     }
 
     @Test
+    @DisplayName("with no editor tab open the snapshot is no editor, from the event thread or any other")
+    void nothingOpen() throws Exception {
+        assertThat(VsCodeTaskEditor.snapshot()).as("off the event thread: read there and waited for")
+                .isEqualTo(EditorContext.NONE);
+        EditorContext[] onEdt = new EditorContext[1];
+        java.awt.EventQueue.invokeAndWait(() -> onEdt[0] = VsCodeTaskEditor.snapshot());
+        assertThat(onEdt[0]).isEqualTo(EditorContext.NONE);
+    }
+
+    @Test
     @DisplayName("the editor is the focused tab when it is an editor tab, else the editor area's selected tab")
     void whichTab() {
         TopComponent focused = new TopComponent();

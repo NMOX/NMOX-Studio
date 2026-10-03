@@ -278,24 +278,38 @@ class VsCodeTaskVariablesTest {
     }
 
     @Test
-    @DisplayName("a refusal names a folder as a reader may see it: a password in options.cwd is never in the sentence")
-    void refusalsDoNotCarryThePassword() {
+    @DisplayName("a refusal names a folder as a reader may see it: the selection in options.cwd is never in the sentence")
+    void refusalsDoNotCarryTheSelection() {
         TaskDef task = VsCodeTasks.parse("{\"tasks\":[{\"label\":\"t\",\"command\":\"make\","
-                + "\"options\":{\"cwd\":\"builds/${input:token}\"}}]}", Os.LINUX).get(0);
-        assertThat(resolve(task, answered(Map.of("token", "hunter2"), null)))
-                .isEqualTo(new Refused(Reason.CWD_MISSING, "builds/${input:token}"));
+                + "\"options\":{\"cwd\":\"builds/${selectedText}/${input:env}\"}}]}", Os.LINUX).get(0);
+        assertThat(resolve(task, answered(Map.of("env", "prod"), "private words")))
+                .isEqualTo(new Refused(Reason.CWD_MISSING, "builds/${selectedText}/prod"));
     }
 
     @Test
-    @DisplayName("an npm task that would put a password in the script name its lane prints is refused; any other input is handed over")
-    void npmAndPasswords() {
-        TaskDef secret = VsCodeTasks.parse(
-                "{\"tasks\":[{\"label\":\"n\",\"type\":\"npm\",\"script\":\"deploy:${input:token}\"}]}", Os.LINUX).get(0);
-        assertThat(resolve(secret, answered(Map.of("token", "hunter2"), null)))
-                .isEqualTo(new Refused(Reason.PASSWORD_SHOWN, "${input:token}"));
+    @DisplayName("a password is an argument, never a name: as the program, the shell, the folder or an npm script it is refused")
+    void passwordsAreNeverNames() {
+        Vars vars = answered(Map.of("token", "hunter2", "env", "prod"), null);
+        String[] named = {
+            "{\"label\":\"t\",\"type\":\"process\",\"command\":\"${input:token}\"}",
+            "{\"label\":\"t\",\"command\":\"make\",\"options\":{\"cwd\":\"builds/${input:token}\"}}",
+            "{\"label\":\"t\",\"type\":\"shell\",\"command\":\"make\",\"options\":{\"shell\":{\"executable\":\"/bin/${input:token}\"}}}",
+            "{\"label\":\"t\",\"type\":\"npm\",\"script\":\"deploy:${input:token}\"}",
+            "{\"label\":\"t\",\"type\":\"npm\",\"script\":\"deploy\",\"path\":\"${input:token}\"}"};
+        for (String json : named) {
+            TaskDef task = VsCodeTasks.parse("{\"tasks\":[" + json + "]}", Os.LINUX).get(0);
+            assertThat(resolve(task, vars)).as(json)
+                    .isEqualTo(new Refused(Reason.PASSWORD_SHOWN, "${input:token}"));
+        }
+        // on a shell LINE, in an argument, in the environment: that is what a password is for
+        TaskDef line = VsCodeTasks.parse("{\"tasks\":[{\"label\":\"t\",\"type\":\"shell\","
+                + "\"command\":\"deploy --token ${input:token}\"}]}", Os.LINUX).get(0);
+        Launch launch = (Launch) resolve(line, vars);
+        assertThat(launch.argv()).containsExactly("/bin/sh", "-c", "deploy --token hunter2");
+        assertThat(launch.shown()).isEqualTo("/bin/sh -c deploy --token ${input:token}");
+        // any other input may name what it likes
         TaskDef picked = VsCodeTasks.parse(
                 "{\"tasks\":[{\"label\":\"n\",\"type\":\"npm\",\"script\":\"deploy:${input:env}\"}]}", Os.LINUX).get(0);
-        assertThat(resolve(picked, answered(Map.of("env", "prod"), null)))
-                .isEqualTo(new NpmLaunch(project.toFile(), "deploy:prod"));
+        assertThat(resolve(picked, vars)).isEqualTo(new NpmLaunch(project.toFile(), "deploy:prod"));
     }
 }
