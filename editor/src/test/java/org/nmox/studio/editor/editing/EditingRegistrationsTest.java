@@ -88,6 +88,9 @@ class EditingRegistrationsTest {
         WHERE.put("vscode-block-comment-keybindings-linux.xml", Map.of(
                 "NetBeans", "OS_LINUX", "Emacs", "OS_LINUX", "Idea", "OS_LINUX",
                 "Eclipse", "OS_LINUX", "NetBeans55", "OS_LINUX"));
+        ACTIONS.add(ExpandLineSelectionAction.NAME);
+        BINDS.put("vscode-line-keybindings.xml", "D-L -> " + ExpandLineSelectionAction.NAME);
+        WHERE.put("vscode-line-keybindings.xml", Map.of("Idea", "", "Emacs", "OS_MAC"));
     }
 
     @Test

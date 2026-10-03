@@ -503,6 +503,10 @@ class VsCodeKeymapResolutionTest {
                     plus(on(EVERY_OS, "NetBeans", "Emacs", "Idea"), on(MAC_ONLY, "Eclipse", "NetBeans55"))),
             // VS Code's Linux chord for the same action, in a file the layer targets at Linux
             new Chord("CS-A", Where.EDITOR, "nmox-toggle-block-comment", "", on(LINUX_ONLY, ALL_PROFILES)),
+            // Cmd+L / Ctrl+L: select-identifier in NetBeans, goto in Eclipse,
+            // word-match-next in NetBeans55, adjust-caret-center in Emacs off macOS
+            new Chord("D-L", Where.EDITOR, "nmox-expand-line-selection", "",
+                    plus(on(EVERY_OS, "Idea"), on(MAC_ONLY, "Emacs"))),
             new Chord("S-F12", Where.GLOBAL,
                     "Actions/Refactoring/org-netbeans-modules-refactoring-api-ui-WhereUsedAction.instance", "",
                     on(EVERY_OS, "NetBeans", "Eclipse", "Idea")),

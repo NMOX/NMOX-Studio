@@ -761,6 +761,12 @@
                         <attr name="position" intvalue="9991"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
                     </file>
+                    <!-- macOS: Cmd+L = expand line selection; on Windows and Linux Ctrl+L is Emacs's own recenter -->
+                    <file name="vscode-line-keybindings.xml"
+                          url="vscode-line-keybindings.xml">
+                        <attr name="position" intvalue="9989"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -794,6 +800,11 @@
                           url="vscode-block-comment-keybindings-linux.xml">
                         <attr name="position" intvalue="9991"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Cmd+L (Ctrl+L) = expand line selection; Idea and (on macOS) Emacs leave the chord free -->
+                    <file name="vscode-line-keybindings.xml"
+                          url="vscode-line-keybindings.xml">
+                        <attr name="position" intvalue="9989"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">

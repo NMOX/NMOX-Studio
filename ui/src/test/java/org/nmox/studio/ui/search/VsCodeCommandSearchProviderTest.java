@@ -169,6 +169,14 @@ class VsCodeCommandSearchProviderTest {
     }
 
     @Test
+    @DisplayName("Expand Line Selection answers to VS Code's title, as an action of the focused editor's own kit")
+    void lineSelectionRow() {
+        assertThat(titles("expand line selection", ALL)).containsExactly("Expand Line Selection");
+        assertThat(row("Expand Line Selection").category()).isEqualTo(VsCodeCommandSearchProvider.EDITOR_KIT);
+        assertThat(row("Expand Line Selection").id()).isEqualTo("nmox-expand-line-selection");
+    }
+
+    @Test
     @DisplayName("an editor row that names one of the product's own kit actions names one the editor module registers")
     void ownKitActionsExist() throws Exception {
         // the platform's kit actions (format, goto) are its own; ours are named nmox-… and live in the editor

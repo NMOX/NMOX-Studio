@@ -140,6 +140,7 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             inEditor("Toggle Line Comment", "toggle-comment"),
             // the product's own kit actions, registered for every editor (editor module, editing package)
             inEditor("Toggle Block Comment", "nmox-toggle-block-comment"),
+            inEditor("Expand Line Selection", "nmox-expand-line-selection"),
             inEditor("Go to Line/Column...", "goto"),
             inEditor("Go to Definition", "goto-declaration"),
             inEditor("Delete Line", "remove-line"),
