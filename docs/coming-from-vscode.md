@@ -37,6 +37,8 @@ keyboard.
 | Go to line | ⌃G | **⌃G** | Ctrl+G | **Ctrl+G** |
 | Go back / forward | ⌃- / ⌃⇧- | **⌃- / ⌃⇧-** | Alt+← / Alt+→ | **Alt+← / Alt+→** |
 | Toggle line comment | ⌘/ | **⌘/** | Ctrl+/ | **Ctrl+/** |
+| Toggle block comment | ⇧⌥A | **⇧⌥A** | Shift+Alt+A (Ctrl+Shift+A on Linux) | **Shift+Alt+A** (and Ctrl+Shift+A on Linux) |
+| Toggle word wrap | ⌥Z | **⌥Z** — View ▸ Word Wrap | Alt+Z | **Alt+Z** |
 | Show suggestions | ⌃Space | **⌃Space** | Ctrl+Space | **Ctrl+Space** |
 | Add the next occurrence to the selection | ⌘D | **⌘D** or ⌘J | Ctrl+D | **Ctrl+D** or Ctrl+J |
 | Select every occurrence | ⇧⌘L | **⌃⇧⌘J** | Ctrl+Shift+L | **Ctrl+Alt+Shift+J** |
@@ -95,12 +97,13 @@ it keeps that meaning and the row says where VS Code's action lives.
 | ⌥↑ / ⌥↓ | Move Line Up / Down | Previous / next marked occurrence; moving the line is ⌃⇧↑ / ⌃⇧↓ |
 | ⇧⌥↑ / ⇧⌥↓ | Copy Line Up / Down | The same, as it always was |
 | ⇧⌘K | Delete Line | Next Matching Word (completes the word from the file); deleting the line is ⌘E |
-| ⌘L | Expand Line Selection | Select Identifier; selecting the line has no chord |
+| ⌘L | Expand Line Selection | Select Identifier, which keeps the chord in the default keymap; Expand Line Selection is in Quick Search under that name, and on ⌘L itself in the IntelliJ and Emacs keymap profiles, which leave the chord free |
 | ⇧⌘L | Select All Occurrences | Paste as Lines in the editor; selecting every occurrence is ⌃⇧⌘J |
 | ⌘/ | Toggle Line Comment | The same, as it always was |
-| ⇧⌥A | Toggle Block Comment | Nothing: there is no separate block-comment action, and ⌘/ toggles the comment |
+| ⇧⌥A | Toggle Block Comment | **The same:** wraps the selection, or the caret's line, in the language's block delimiters, and takes them off again; a selection that already holds a delimiter is refused rather than broken |
 | ⌘] | Indent Line | **The same:** Shift Line Right |
 | ⌘[ | Outdent Line | Match Brace, as it always was; outdenting is ⇧Tab or ⌃⇧← |
+| ⌥Z | Toggle Word Wrap | **The same:** View ▸ Word Wrap. It switches wrap for every editor of the file's language, not for one tab, and the choice is saved |
 | ⌘B | Toggle Sidebar | Go to Declaration; ⇧⌘↩ shows only the editor, ⇧Esc maximizes the window you are in |
 | ⌘J | Toggle Panel | Adds the next occurrence in the editor (as ⌘D does); the Output window is ⌘4 |
 | ⌘\ | Split Editor | Show Code Completion Popup in the editor; splitting the editor is ⌃⇧⌘V |
@@ -109,7 +112,7 @@ it keeps that meaning and the row says where VS Code's action lives.
 | ⌘G / ⇧⌘G | Find Next / Previous | The same, as it always was |
 | ⌥⌘F | Replace | **The same:** Replace, as ⌘R does |
 | ⇧⌘F | Find in Files | The same, as it always was: Find in Projects |
-| ⇧⌘O | Go to Symbol in Editor | Open Project; the file's symbols are in the Navigator (⌘7) |
+| ⇧⌘O | Go to Symbol in Editor | Open Project; the file's symbols are in Quick Search: ⌘I, then `@name` as in VS Code (Navigate ▸ Go to Symbol in This File… types the `@` for you), and as a tree in the Navigator (⌘7) |
 | ⌘T | Go to Symbol in Workspace | Transpose Letters in the editor; the project's symbols are ⌥⇧⌘O |
 | ⌃G | Go to Line | The same, as it always was |
 | ⌘K ⌘S | Keyboard Shortcuts | ⌘K is Previous Matching Word; the sheet is **Help ▸ Keyboard Shortcuts…** |
@@ -123,6 +126,25 @@ but the default, ⇧F12 in Emacs and NetBeans 5.5, ⌃- and ⌃⇧- in Emacs
 and IntelliJ, ⇧⌥F in IntelliJ. On Windows and Linux F12, ⇧F12 and F2
 work the same way; VS Code's other chords are different there, and the
 table above gives both.
+
+Toggle Block Comment and Toggle Word Wrap carry their VS Code chords on
+Windows and Linux too. Word Wrap is Alt+Z in every profile. Toggle Block
+Comment is Shift+Alt+A in the default, Emacs and IntelliJ profiles (the
+Eclipse and NetBeans 5.5 profiles keep their own Alt+Shift+A there), and
+on Linux it is also Ctrl+Shift+A, VS Code's chord on Linux, in all five.
+Expand Line Selection is Ctrl+L on Windows and Linux in the IntelliJ
+profile alone; in the Emacs profile Ctrl+L there is still Emacs's own
+recenter.
+
+A language with no block comment, Python for one, says so on the status
+line. In an HTML, Vue or Svelte file a `<script>` or `<style>` block is
+commented as its own language. With no selection the chord toggles the
+line; it does not look for a comment that merely surrounds the caret, so
+to remove a comment of several lines, select it.
+
+In Quick Search the file's symbols are the category **Symbols in This
+File**. Typing `@` alone lists them from the top of the file; `m name`
+(the letter, a space, then the name) searches that category and no other.
 
 
 ## From the terminal
