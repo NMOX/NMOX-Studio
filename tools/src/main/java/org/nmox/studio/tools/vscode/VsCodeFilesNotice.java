@@ -5,7 +5,6 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -25,9 +24,13 @@ import org.openide.windows.OnShowing;
  * (3.1.0). Tasks, launch configurations and formatting settings all work,
  * and nothing on screen said so: a switcher opening their repository had
  * no reason to type a task's name into Quick Search. The first time a
- * project with a {@code tasks.json}, a {@code launch.json} or a
- * {@code settings.json} is aimed, a balloon names what was found and
- * where it is; its click opens Quick Search.
+ * project with a {@code tasks.json}, a {@code launch.json}, a
+ * {@code settings.json} or an {@code extensions.json} is aimed, a balloon
+ * names what was found and where it is. Its click opens Quick Search —
+ * or, when the repository recommends extensions, the sheet that says
+ * what covers each one here ({@link RecommendedExtensionsAction}): the
+ * tasks are one chord away and the sentence names it, while "where are
+ * my extensions?" has no other door a newcomer would find.
  *
  * <p>Boot costs one listener. Aim events are coalesced ({@link #SETTLE_MS})
  * and the files are read on this class's own lane, never the EDT; the
@@ -49,13 +52,37 @@ public final class VsCodeFilesNotice implements Runnable {
     static volatile Supplier<Preferences> shownStore =
             () -> NbPreferences.forModule(VsCodeFilesNotice.class).node("vscodeFilesShown");
 
-    /** Where the notice goes: title and detail; a seam for tests. */
-    static volatile BiConsumer<String, String> sink = VsCodeFilesNotice::balloon;
+    /** Where the notice goes; a seam for tests. */
+    interface Sink {
 
-    /** What one project's .vscode folder holds that the IDE reads. */
-    record Found(int tasks, int configurations, boolean settings) {
+        /**
+         * @param extensionsOf the project whose extensions sheet the click
+         *                     opens, or null when the click opens Quick Search
+         */
+        void tell(String title, String detail, File extensionsOf);
+    }
+
+    static volatile Sink sink = VsCodeFilesNotice::balloon;
+
+    /** Puts the production balloon back; a test that swapped the sink calls this. */
+    static void resetSink() {
+        sink = VsCodeFilesNotice::balloon;
+    }
+
+    /**
+     * What one project's .vscode folder holds that the IDE reads.
+     * {@code extensions} is how many extensions its extensions.json
+     * recommends: the IDE installs none of them, and says what covers each.
+     */
+    record Found(int tasks, int configurations, boolean settings, int extensions) {
+
+        /** A folder with no extensions.json. */
+        Found(int tasks, int configurations, boolean settings) {
+            this(tasks, configurations, settings, 0);
+        }
+
         boolean nothing() {
-            return tasks == 0 && configurations == 0 && !settings;
+            return tasks == 0 && configurations == 0 && !settings && extensions == 0;
         }
     }
 
@@ -94,14 +121,16 @@ public final class VsCodeFilesNotice implements Runnable {
             return;
         }
         shown.put(key, dir.getAbsolutePath());
-        sink.accept(NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_title", dir.getName()), detail(found, Utilities.isMac()));
+        sink.tell(NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_title", dir.getName()),
+                detail(found, Utilities.isMac()), found.extensions() > 0 ? dir : null);
     }
 
     /** What {@code dir}'s .vscode folder holds that the IDE reads. */
     static Found found(File dir) {
         int tasks = VsCodeTasks.read(dir).size();
         int configurations = VsCodeLaunch.read(dir).size();
-        return new Found(tasks, configurations, setsIndentation(new File(new File(dir, ".vscode"), "settings.json")));
+        return new Found(tasks, configurations, setsIndentation(new File(new File(dir, ".vscode"), "settings.json")),
+                VsCodeExtensions.read(dir).total());
     }
 
     /** The settings the editor reads for indentation (editor.standards.VsCodeSettings). */
@@ -126,7 +155,10 @@ public final class VsCodeFilesNotice implements Runnable {
         }
     }
 
-    /** The balloon's sentences: where the tasks and configurations are, and that the settings apply. */
+    /**
+     * The balloon's sentences: where the tasks and configurations are, that
+     * the settings apply, and how many extensions are recommended.
+     */
     static String detail(Found found, boolean mac) {
         StringBuilder out = new StringBuilder();
         if (found.tasks() > 0 || found.configurations() > 0) {
@@ -138,6 +170,12 @@ public final class VsCodeFilesNotice implements Runnable {
             }
             out.append(NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_settings"));
         }
+        if (found.extensions() > 0) {
+            if (out.length() > 0) {
+                out.append(' ');
+            }
+            out.append(NbBundle.getMessage(VsCodeFilesNotice.class, "VsCodeFilesNotice_extensions", found.extensions()));
+        }
         return out.toString();
     }
 
@@ -146,12 +184,30 @@ public final class VsCodeFilesNotice implements Runnable {
         return UUID.nameUUIDFromBytes(dir.getAbsolutePath().getBytes(StandardCharsets.UTF_8)).toString();
     }
 
-    private static void balloon(String title, String detail) {
+    private static void balloon(String title, String detail, File extensionsOf) {
         // a folder's name is somebody else's text: guarded, like every sink
         // Swing could render as markup
         EventQueue.invokeLater(() -> NotificationDisplayer.getDefault().notify(PlainText.plain(title),
                 javax.swing.UIManager.getIcon("OptionPane.informationIcon"), PlainText.plain(detail),
-                e -> openQuickSearch()));
+                e -> {
+                    if (extensionsOf == null) {
+                        openQuickSearch();
+                    } else {
+                        openExtensions(extensionsOf);
+                    }
+                }));
+    }
+
+    /**
+     * The sheet for the project the notice was about. It is shown only if
+     * that project is still the one aimed when its file has been read: a
+     * balloon can be clicked long after the aim moved on.
+     */
+    private static void openExtensions(File dir) {
+        ProjectAim aim = ProjectAim.find();
+        if (aim != null) {
+            RecommendedExtensionsAction.show(dir, aim::projectDir);
+        }
     }
 
     private static void openQuickSearch() {
