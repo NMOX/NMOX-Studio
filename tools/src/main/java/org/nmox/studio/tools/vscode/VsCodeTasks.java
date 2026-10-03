@@ -39,8 +39,25 @@ import org.nmox.studio.core.util.Containment;
  * quoting}} object), {@code options.cwd} and {@code options.env}, the
  * file-level {@code options} as defaults, and the {@code osx} / {@code
  * linux} / {@code windows} override objects merged over the base — only
- * the running OS's. {@code group} and {@code isBackground} are read for
- * ranking and labelling only.
+ * the running OS's. {@code group} is read for ranking only, and {@code
+ * isBackground} only so that nothing is made to wait for a task that
+ * never finishes. The file's top-level {@code inputs[]} are read beside
+ * the tasks ({@link InputDef}), and each task's {@code dependsOn} /
+ * {@code dependsOrder} — the order they ask for is {@link
+ * VsCodeTaskPlan}'s to decide, not this class's.
+ *
+ * <p><b>Variables.</b> The project's own ({@code ${workspaceFolder}},
+ * {@code ${workspaceFolderBasename}}, {@code ${cwd}}, {@code ${/}},
+ * {@code ${env:NAME}}, {@code ${userHome}}); the editor's, from an
+ * {@link EditorContext} the provider read on the event thread at Enter
+ * ({@code ${file}} and its family, {@code ${lineNumber}}, {@code
+ * ${columnNumber}}, {@code ${selectedText}}), with the meanings of VS
+ * Code's Variables Reference — a path relative to the workspace folder is
+ * Node's {@code path.relative}, an extension is Node's {@code
+ * path.extname}; and {@code ${input:id}}, from the answers the user gave
+ * to the file's {@code promptString} and {@code pickString} inputs. Every
+ * value is substituted in ONE pass: a selection that contains
+ * {@code ${file}} stays the text it is.
  *
  * <p><b>Which shell a {@code shell} task runs in</b> is VS Code's own
  * answer (read from its {@code terminalTaskSystem.ts} and terminal-profile
@@ -57,17 +74,32 @@ import org.nmox.studio.core.util.Containment;
  * the default flag added if absent. See {@link #shellArgv}.
  *
  * <p><b>What is refused, out loud.</b> VS Code can supply values this IDE
- * cannot: {@code ${input:…}} asks the user through a VS Code prompt,
- * {@code ${file}} means VS Code's active editor, {@code ${config:…}} its
- * settings, {@code ${command:…}} an extension's command. A task using any
- * of them is listed and, on Enter, refused naming the variable — running
- * it with the variable blank would run a DIFFERENT command than the file
- * says. {@code dependsOn} likewise: running the task without the task it
- * depends on would run it in a state its author never tested, so it is
- * refused naming the dependency rather than silently skipped. A task type
- * contributed by an extension ({@code gulp}, {@code typescript}, …) is
- * refused naming the type. A working folder outside the project is refused
- * by {@link Containment}, the one home of that decision.
+ * cannot: {@code ${config:…}} its settings, {@code ${command:…}} and a
+ * {@code "type": "command"} input an extension's command. A task using
+ * one is listed and, on Enter, refused naming the variable — running it
+ * with the variable blank would run a DIFFERENT command than the file
+ * says. The same holds for a value that is not there to give: a
+ * {@code ${file}} with no file open in the editor (or a file that is not
+ * on disk), a {@code ${selectedText}} with nothing selected or more than
+ * {@link #MAX_SELECTED_TEXT} characters selected, an {@code ${input:id}}
+ * the file's {@code inputs} do not define, or define without the
+ * attribute VS Code requires. A task type contributed by an extension
+ * ({@code gulp}, {@code typescript}, …) is refused naming the type. A
+ * working folder outside the project is refused by {@link Containment},
+ * the one home of that decision — {@code ${file}} may name a file
+ * anywhere (the user can have any file open) and that is fine for an
+ * argument, but {@code "cwd": "${fileDirname}"} of a file outside the
+ * project is outside the project.
+ *
+ * <p><b>What is never shown.</b> A {@code "password": true} input's answer
+ * and the editor's selection are the user's own text. They reach the
+ * process and nothing else: {@link Launch#shown} is the launch line with
+ * both left as the file wrote them, and it is what the Output window's
+ * header, the flight recorder and the Agent Port's run history read. A
+ * refusal names a folder or a shell the same way. And a password is an
+ * argument, an environment value or part of a shell line — never a NAME:
+ * a task that uses one as its program, its shell, its folder or an npm
+ * script (each of which something prints) is refused.
  *
  * <p><b>What it reads.</b> The file comes through {@link BoundedReads}
  * (a clone brings it and a keystroke in Quick Search reads it), capped at
@@ -89,6 +121,18 @@ public final class VsCodeTasks {
 
     /** {@code ${…}}: the variable syntax. The body is everything up to the first '}'. */
     private static final Pattern VARIABLE = Pattern.compile("\\$\\{([^}]*)\\}");
+
+    /**
+     * The longest {@code ${selectedText}} a task is handed. A selection is
+     * an argument on a command line; one past this is a file, and the
+     * task is refused naming the variable rather than run with a part.
+     */
+    static final int MAX_SELECTED_TEXT = 10_000;
+
+    /** The variables that name the file open in the editor (a launch configuration's too: {@link VsCodeEditorVariables}). */
+    static final java.util.Set<String> FILE_VARIABLES = java.util.Set.of(
+            "file", "relativeFile", "relativeFileDirname", "fileBasename",
+            "fileBasenameNoExtension", "fileDirname", "fileDirnameBasename", "fileExtname");
 
     private VsCodeTasks() {
     }
@@ -122,16 +166,100 @@ public final class VsCodeTasks {
     record ShellOpt(String executable, List<String> args) {
     }
 
-    /** One task as the file declares it, after the running OS's override was merged. */
+    /**
+     * One task as the file declares it, after the running OS's override was
+     * merged. {@code dependsOn} holds the labels the task names; {@code
+     * sequence} is {@code "dependsOrder": "sequence"} (anything else is
+     * VS Code's default, parallel); {@code foreignDependency} is the first
+     * {@code dependsOn} entry written as a task-identifier OBJECT
+     * ({@code {"type": "npm", "script": "build"}}), as the file wrote it,
+     * or null — VS Code resolves that form against tasks its extensions
+     * detect, which this IDE has no list of.
+     */
     record TaskDef(String label, String type, Value command, List<Value> args,
             String cwd, Map<String, String> env, String script, String path,
-            List<String> dependsOn, String group, boolean background, ShellOpt shell) {
+            List<String> dependsOn, String group, boolean background, ShellOpt shell,
+            boolean sequence, String foreignDependency) {
+
+        /** A task whose dependencies are labels and run in parallel. */
+        TaskDef(String label, String type, Value command, List<Value> args,
+                String cwd, Map<String, String> env, String script, String path,
+                List<String> dependsOn, String group, boolean background, ShellOpt shell) {
+            this(label, type, command, args, cwd, env, script, path, dependsOn, group, background, shell,
+                    false, null);
+        }
 
         /** A task with no {@code options.shell}. */
         TaskDef(String label, String type, Value command, List<Value> args,
                 String cwd, Map<String, String> env, String script, String path,
                 List<String> dependsOn, String group, boolean background) {
             this(label, type, command, args, cwd, env, script, path, dependsOn, group, background, null);
+        }
+    }
+
+    /** One {@code pickString} option: its value, and the label VS Code shows before it (or null). */
+    record InputOption(String label, String value) {
+
+        /** What the list shows: VS Code's {@code label: value}, or the bare value. */
+        String display() {
+            return label == null || label.isEmpty() ? value : label + ": " + value;
+        }
+    }
+
+    /**
+     * One entry of the file's top-level {@code inputs[]}. {@code type} is as
+     * written ({@code promptString}, {@code pickString}, {@code command}, or
+     * anything else — the resolver refuses what it cannot ask). {@code
+     * problem} names the attribute VS Code requires and this entry lacks
+     * ({@code description}; for a {@code pickString} also {@code options},
+     * or an option's {@code value}), or is null.
+     */
+    record InputDef(String id, String type, String description, String defaultValue,
+            boolean password, List<InputOption> options, String problem) {
+
+        boolean prompt() {
+            return "promptString".equals(type);
+        }
+
+        boolean pick() {
+            return "pickString".equals(type);
+        }
+    }
+
+    /** What one {@code tasks.json} declares for the running OS: its tasks and its inputs by id. */
+    record TasksFile(List<TaskDef> tasks, Map<String, InputDef> inputs) {
+
+        static final TasksFile EMPTY = new TasksFile(List.of(), Map.of());
+    }
+
+    /**
+     * The editor at the moment Enter was pressed, read by the provider on
+     * the event thread: the file the active editor tab holds (null when no
+     * file is open there, or the file is not on disk), the caret's line
+     * and column counted from 1 (0 when there is no editor to have a
+     * caret), and the selection — null or empty when nothing is selected,
+     * and never more than {@link #MAX_SELECTED_TEXT} + 1 characters, which
+     * is all the resolver needs to refuse one that is too long.
+     */
+    record EditorContext(Path file, int line, int column, String selectedText) {
+
+        static final EditorContext NONE = new EditorContext(null, 0, 0, null);
+    }
+
+    /**
+     * Where the values a project cannot give come from: the editor, the
+     * user's home folder, the file's inputs and the answers to them.
+     * {@code answers} null means the questions have not been asked yet —
+     * a variable check then passes an input that is declared and askable;
+     * a map means they have, and an input with no answer in it refuses
+     * ({@link Reason#INPUT_UNANSWERED}).
+     */
+    record Vars(EditorContext editor, String userHome, Map<String, InputDef> inputs,
+            Map<String, String> answers) {
+
+        /** No editor, no inputs: what a task resolves against when it is asked about alone. */
+        static Vars none() {
+            return new Vars(EditorContext.NONE, System.getProperty("user.home", ""), Map.of(), Map.of());
         }
     }
 
@@ -161,27 +289,80 @@ public final class VsCodeTasks {
     }
 
     /** What pressing Enter on a task would do. */
-    sealed interface Resolved permits Launch, NpmLaunch, Refused {
+    sealed interface Resolved permits Launch, NpmLaunch, Aggregate, Refused {
     }
 
-    /** Spawn {@code argv} in {@code dir} with {@code env} added. */
-    record Launch(List<String> argv, File dir, Map<String, String> env) implements Resolved {
+    /**
+     * Spawn {@code argv} in {@code dir} with {@code env} added. {@code
+     * shown} is the launch line to print and record in place of the argv
+     * — the same line with a password input's answer and the editor's
+     * selection left as the file wrote them — or null when the argv
+     * carries neither and may be shown as it is.
+     */
+    record Launch(List<String> argv, File dir, Map<String, String> env, String shown) implements Resolved {
+
+        /** A launch whose argv may be shown as it is. */
+        Launch(List<String> argv, File dir, Map<String, String> env) {
+            this(argv, dir, env, null);
+        }
     }
 
     /** Hand {@code script} to the NPM Service lane in {@code dir}. */
     record NpmLaunch(File dir, String script) implements Resolved {
     }
 
-    /** Why a task cannot run here; {@code detail} is what the sentence names. */
-    record Refused(Reason reason, String detail) implements Resolved {
+    /**
+     * A task with {@code dependsOn} and no command of its own: VS Code's
+     * way of naming a group of tasks. Nothing of its own runs; it is done
+     * when the tasks it depends on are.
+     */
+    record Aggregate() implements Resolved {
+    }
+
+    /**
+     * Why a task cannot run here; {@code detail} is what the sentence
+     * names, {@code extra} a second name where the sentence needs one
+     * (else empty).
+     */
+    record Refused(Reason reason, String detail, String extra) implements Resolved {
+
+        Refused(Reason reason, String detail) {
+            this(reason, detail, "");
+        }
     }
 
     /** The refusals a task can meet, each rendered by the provider in the reader's language. */
     enum Reason {
         /** A {@code ${…}} only VS Code can fill; detail = the variable as written. */
         VARIABLE,
-        /** {@code dependsOn}; detail = the dependency labels. */
-        DEPENDS_ON,
+        /** A file or caret variable with no file open in the editor (or one not on disk); detail = the variable. */
+        NEEDS_FILE,
+        /** {@code ${selectedText}} with nothing selected; detail = the variable. */
+        NEEDS_SELECTION,
+        /** {@code ${selectedText}} over {@link #MAX_SELECTED_TEXT}; detail = the variable. */
+        SELECTION_TOO_LONG,
+        /** An {@code ${input:id}} the file's {@code inputs} do not define; detail = the id. */
+        INPUT_UNDEFINED,
+        /** An input of a type this IDE cannot ask ({@code command}, or one VS Code does not define); detail = the id, extra = the type. */
+        INPUT_TYPE,
+        /** An input without an attribute VS Code requires; detail = the id, extra = the attribute. */
+        INPUT_INCOMPLETE,
+        /** An input the user was asked for and did not answer (Cancel); detail = the id. */
+        INPUT_UNANSWERED,
+        /** A password input where a name is printed (a program, a shell, a folder, an npm script); detail = the variable. */
+        PASSWORD_SHOWN,
+        /** {@code dependsOn} names a label the file does not define; detail = the label. */
+        DEPENDENCY_MISSING,
+        /** {@code dependsOn} names a label the file defines more than once; detail = the label. */
+        DEPENDENCY_AMBIGUOUS,
+        /** {@code dependsOn} holds a task-identifier object; detail = the object as written. */
+        DEPENDENCY_OBJECT,
+        /** The task depends on itself; detail = the labels of the loop, in order. */
+        DEPENDENCY_CYCLE,
+        /** A background task something waits for; detail = the label of the task that waits. */
+        DEPENDENCY_BACKGROUND,
+        /** More tasks in one run than {@link VsCodeTaskPlan#MAX_TASKS}; detail = blank. */
+        CHAIN_TOO_LONG,
         /** {@code options.cwd} escapes the project; detail = the folder as written. */
         CWD_OUTSIDE,
         /** {@code options.cwd} names nothing on disk; detail = the folder as written. */
@@ -202,7 +383,7 @@ public final class VsCodeTasks {
 
     /* ------------------------------------------------------------------ reading */
 
-    private record Cached(long mtime, long size, List<TaskDef> tasks) {
+    private record Cached(long mtime, long size, TasksFile file) {
     }
 
     private static final Map<String, Cached> CACHE = new ConcurrentHashMap<>();
@@ -216,29 +397,38 @@ public final class VsCodeTasks {
     }
 
     static List<TaskDef> read(File project, Os os) {
+        return readFile(project, os).tasks();
+    }
+
+    /** {@link #read(File)} with the file's {@code inputs} beside its tasks. */
+    static TasksFile readFile(File project) {
+        return readFile(project, Os.current());
+    }
+
+    static TasksFile readFile(File project, Os os) {
         if (project == null) {
-            return List.of();
+            return TasksFile.EMPTY;
         }
         File file = new File(project, RELATIVE_PATH);
         if (!file.isFile()) {
-            return List.of();
+            return TasksFile.EMPTY;
         }
         long mtime = file.lastModified();
         long size = file.length();
         String key = file.getAbsolutePath() + "|" + os;
         Cached hit = CACHE.get(key);
         if (hit != null && hit.mtime() == mtime && hit.size() == size) {
-            return hit.tasks();
+            return hit.file();
         }
-        List<TaskDef> tasks;
+        TasksFile tasks;
         try {
-            tasks = parse(BoundedReads.read(file, MAX_BYTES), os);
+            tasks = parseFile(BoundedReads.read(file, MAX_BYTES), os);
         } catch (IOException | JSONException | IllegalArgumentException unreadable) {
             // cached as empty for this mtime, so the log line is written
             // once per version of the file rather than once per keystroke
             LOG.log(Level.INFO, "{0} lists no tasks: {1}",
                     new Object[] {file.getAbsolutePath(), unreadable.getMessage()});
-            tasks = List.of();
+            tasks = TasksFile.EMPTY;
         }
         CACHE.put(key, new Cached(mtime, size, tasks));
         return tasks;
@@ -246,12 +436,18 @@ public final class VsCodeTasks {
 
     /** The tasks in {@code text}; throws when it is not a JSON object once JSONC is stripped. */
     static List<TaskDef> parse(String text, Os os) {
+        return parseFile(text, os).tasks();
+    }
+
+    /** The tasks and inputs in {@code text}; throws when it is not a JSON object once JSONC is stripped. */
+    static TasksFile parseFile(String text, Os os) {
         JSONObject root = new JSONObject(stripJsonc(text));
         JSONObject globalOptions = mergeOptions(root.optJSONObject("options"),
                 osBlock(root, os) == null ? null : osBlock(root, os).optJSONObject("options"));
+        Map<String, InputDef> inputs = inputsOf(root.optJSONArray("inputs"));
         JSONArray array = root.optJSONArray("tasks");
         if (array == null) {
-            return List.of();
+            return new TasksFile(List.of(), inputs);
         }
         List<TaskDef> out = new ArrayList<>();
         for (int i = 0; i < array.length(); i++) {
@@ -290,9 +486,60 @@ public final class VsCodeTasks {
                     dependsOn(task.opt("dependsOn")),
                     group(task.opt("group")),
                     task.optBoolean("isBackground", false),
-                    shellOf(options)));
+                    shellOf(options),
+                    // VS Code's DependsOrder.fromString: "sequence", else parallel
+                    "sequence".equalsIgnoreCase(String.valueOf(task.opt("dependsOrder")).strip()),
+                    foreignDependency(task.opt("dependsOn"))));
         }
-        return List.copyOf(out);
+        return new TasksFile(List.copyOf(out), inputs);
+    }
+
+    /**
+     * The file's {@code inputs[]} by id. An entry without a string id is
+     * skipped (nothing could refer to it); of two with one id the later
+     * wins, as VS Code's lookup takes the last match.
+     */
+    private static Map<String, InputDef> inputsOf(JSONArray array) {
+        if (array == null) {
+            return Map.of();
+        }
+        Map<String, InputDef> out = new LinkedHashMap<>();
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject raw = array.optJSONObject(i);
+            if (raw == null || !(raw.opt("id") instanceof String id) || id.isEmpty()) {
+                continue;
+            }
+            String type = raw.opt("type") instanceof String t ? t : "";
+            String description = raw.opt("description") instanceof String d ? d : null;
+            String problem = description == null ? "description" : null;
+            List<InputOption> options = new ArrayList<>();
+            if ("pickString".equals(type)) {
+                JSONArray rawOptions = raw.optJSONArray("options");
+                if (rawOptions == null) {
+                    problem = problem == null ? "options" : problem;
+                } else {
+                    for (int o = 0; o < rawOptions.length(); o++) {
+                        Object option = rawOptions.opt(o);
+                        if (option instanceof String value) {
+                            options.add(new InputOption(null, value));
+                        } else if (option instanceof JSONObject obj && obj.opt("value") instanceof String value) {
+                            options.add(new InputOption(obj.opt("label") instanceof String l ? l : null, value));
+                        } else {
+                            problem = problem == null ? "value" : problem;
+                        }
+                    }
+                    if (options.isEmpty() && problem == null) {
+                        // an empty list is a question with no possible answer
+                        problem = "options";
+                    }
+                }
+            }
+            out.remove(id); // the later entry takes the earlier one's place AND position
+            out.put(id, new InputDef(id, type, description,
+                    raw.opt("default") instanceof String def ? def : null,
+                    Boolean.TRUE.equals(raw.opt("password")), List.copyOf(options), problem));
+        }
+        return Collections.unmodifiableMap(out);
     }
 
     private static JSONObject osBlock(JSONObject o, Os os) {
@@ -419,6 +666,7 @@ public final class VsCodeTasks {
         return o instanceof String s && !s.isBlank() ? s : null;
     }
 
+    /** The labels {@code dependsOn} names — a string, or the strings of an array — in the file's order. */
     private static List<String> dependsOn(Object o) {
         if (o instanceof String s && !s.isBlank()) {
             return List.of(s.strip());
@@ -426,19 +674,44 @@ public final class VsCodeTasks {
         List<String> out = new ArrayList<>();
         if (o instanceof JSONArray arr) {
             for (int i = 0; i < arr.length(); i++) {
-                Object d = arr.opt(i);
-                if (d instanceof String s && !s.isBlank()) {
+                if (arr.opt(i) instanceof String s && !s.isBlank()) {
                     out.add(s.strip());
-                } else if (d instanceof JSONObject obj) {
-                    // the { "type": "npm", "script": "build" } dependency form
-                    String named = obj.optString("label", obj.optString("script", "")).strip();
-                    if (!named.isEmpty()) {
-                        out.add(named);
-                    }
                 }
             }
         }
         return List.copyOf(out);
+    }
+
+    /** How much of a task-identifier object a refusal quotes. */
+    private static final int MAX_FOREIGN = 120;
+
+    /**
+     * The first {@code dependsOn} entry written as an object — VS Code's
+     * {@code {"type": "npm", "script": "build"}} task identifier — as JSON
+     * (keys in alphabetical order, clipped), or null when every entry is a
+     * label.
+     */
+    private static String foreignDependency(Object o) {
+        JSONObject foreign = null;
+        if (o instanceof JSONObject obj) {
+            foreign = obj;
+        } else if (o instanceof JSONArray arr) {
+            for (int i = 0; i < arr.length() && foreign == null; i++) {
+                foreign = arr.optJSONObject(i);
+            }
+        }
+        if (foreign == null) {
+            return null;
+        }
+        // org.json keeps no order; alphabetical is at least the same every time
+        StringBuilder text = new StringBuilder("{");
+        for (String key : new java.util.TreeSet<>(foreign.keySet())) {
+            text.append(text.length() > 1 ? ", " : "").append(JSONObject.quote(key)).append(": ")
+                    .append(JSONObject.valueToString(foreign.get(key)));
+        }
+        String written = text.append('}').toString();
+        return written.codePointCount(0, written.length()) <= MAX_FOREIGN ? written
+                : written.substring(0, written.offsetByCodePoints(0, MAX_FOREIGN)) + "\u2026";
     }
 
     /** {@code "build"}, or the {@code kind} of {@code {"kind": "build", "isDefault": true}}. */
@@ -471,13 +744,102 @@ public final class VsCodeTasks {
         return resolve(task, project, Host.of(os, env));
     }
 
-    /** {@link #resolve(TaskDef, File, Os, UnaryOperator)} against a whole {@link Host}. */
+    /**
+     * {@link #resolve(TaskDef, File, Host, Vars)} for a task asked about
+     * alone: no editor, no inputs. A task that needs either is refused
+     * naming the variable.
+     */
     static Resolved resolve(TaskDef task, File project, Host host) {
+        return resolve(task, project, host, Vars.none());
+    }
+
+    /**
+     * {@link #resolve(TaskDef, File, Os, UnaryOperator)} against a whole
+     * {@link Host}, with the editor's variables and the inputs' answers
+     * from {@code vars}. The task's {@code dependsOn} is NOT this
+     * method's: it answers for the one task, and {@link VsCodeTaskPlan}
+     * decides what runs before it.
+     */
+    static Resolved resolve(TaskDef task, File project, Host host, Vars vars) {
         UnaryOperator<String> env = host.env();
-        if (!task.dependsOn().isEmpty()) {
-            return new Refused(Reason.DEPENDS_ON, String.join(", ", task.dependsOn()));
-        }
         // every string the task would use, checked before anything is built
+        List<String> used = usedStrings(task);
+        for (String s : used) {
+            Refused problem = variableProblem(s, vars);
+            if (problem != null) {
+                return problem;
+            }
+        }
+        // a password is for the process to read. Where it would be a NAME —
+        // the program a failed launch names, the shell, the folder, the
+        // script the npm lane prints — it would be printed, so it is refused
+        List<String> names = new ArrayList<>();
+        if (task.command() != null && "process".equals(task.type())) {
+            names.add(task.command().text());
+        }
+        names.add(task.cwd());
+        names.add(task.script());
+        names.add(task.path());
+        names.add(task.shell() == null ? null : task.shell().executable());
+        for (String name : names) {
+            String wouldShow = name == null ? null : passwordVariable(name, vars);
+            if (wouldShow != null) {
+                return new Refused(Reason.PASSWORD_SHOWN, wouldShow);
+            }
+        }
+        UnaryOperator<String> sub = s -> substitute(s, project, env, vars, false);
+        // the same text for a reader: a password and the selection as the file wrote them
+        UnaryOperator<String> written = s -> substitute(s, project, env, vars, true);
+        switch (task.type()) {
+            case "npm" -> {
+                if (task.script() == null) {
+                    return new Refused(Reason.NO_COMMAND, "");
+                }
+                String folder = task.path() == null ? null : sub.apply(task.path());
+                Object dir = workingDir(project, folder);
+                if (dir instanceof Refused r) {
+                    return new Refused(r.reason(), written.apply(task.path()));
+                }
+                return new NpmLaunch((File) dir, sub.apply(task.script()));
+            }
+            case "shell", "process" -> {
+                if (task.command() == null || task.command().text().isBlank()) {
+                    // no command and something to wait for: VS Code's group of tasks
+                    return task.dependsOn().isEmpty() ? new Refused(Reason.NO_COMMAND, "") : new Aggregate();
+                }
+                Object dir = workingDir(project, task.cwd() == null ? null : sub.apply(task.cwd()));
+                if (dir instanceof Refused r) {
+                    return new Refused(r.reason(), written.apply(task.cwd()));
+                }
+                Map<String, String> environment = new LinkedHashMap<>();
+                task.env().forEach((k, v) -> environment.put(k, sub.apply(v)));
+                Object argv = argvOf(task, host, project, sub);
+                if (argv instanceof Refused r) {
+                    // a shell the file named is named back as the file (and a reader) may see it
+                    return task.shell() != null && task.shell().executable() != null
+                            ? new Refused(r.reason(), written.apply(task.shell().executable()))
+                            : r;
+                }
+                String shown = null;
+                if (used.stream().anyMatch(s -> sensitive(s, vars))) {
+                    Object readable = argvOf(task, host, project, written);
+                    @SuppressWarnings("unchecked")
+                    String line = readable instanceof List<?> ? String.join(" ", (List<String>) readable)
+                            : display(task);
+                    shown = line;
+                }
+                @SuppressWarnings("unchecked")
+                List<String> built = (List<String>) argv;
+                return new Launch(List.copyOf(built), (File) dir, Collections.unmodifiableMap(environment), shown);
+            }
+            default -> {
+                return new Refused(Reason.TYPE, task.type());
+            }
+        }
+    }
+
+    /** Every string of {@code task} a variable could sit in, in the order the file's reader meets them. */
+    static List<String> usedStrings(TaskDef task) {
         List<String> used = new ArrayList<>();
         if (task.command() != null) {
             used.add(task.command().text());
@@ -501,62 +863,24 @@ public final class VsCodeTasks {
                 used.addAll(task.shell().args());
             }
         }
-        for (String s : used) {
-            String unknown = unsupportedVariable(s);
-            if (unknown != null) {
-                return new Refused(Reason.VARIABLE, unknown);
-            }
+        return used;
+    }
+
+    /** The argv of a {@code shell} or {@code process} task with {@code sub} applied, or a {@link Refused}. */
+    private static Object argvOf(TaskDef task, Host host, File project, UnaryOperator<String> sub) {
+        String command = sub.apply(task.command().text());
+        List<String> args = new ArrayList<>();
+        for (Value a : task.args()) {
+            args.add(sub.apply(a.text()));
         }
-        UnaryOperator<String> sub = s -> substitute(s, project, env);
-        switch (task.type()) {
-            case "npm" -> {
-                if (task.script() == null) {
-                    return new Refused(Reason.NO_COMMAND, "");
-                }
-                String folder = task.path() == null ? null : sub.apply(task.path());
-                Object dir = workingDir(project, folder);
-                if (dir instanceof Refused r) {
-                    return r;
-                }
-                return new NpmLaunch((File) dir, sub.apply(task.script()));
-            }
-            case "shell", "process" -> {
-                if (task.command() == null || task.command().text().isBlank()) {
-                    return new Refused(Reason.NO_COMMAND, "");
-                }
-                Object dir = workingDir(project, task.cwd() == null ? null : sub.apply(task.cwd()));
-                if (dir instanceof Refused r) {
-                    return r;
-                }
-                Map<String, String> vars = new LinkedHashMap<>();
-                task.env().forEach((k, v) -> vars.put(k, sub.apply(v)));
-                String command = sub.apply(task.command().text());
-                List<String> args = new ArrayList<>();
-                for (Value a : task.args()) {
-                    args.add(sub.apply(a.text()));
-                }
-                List<String> argv;
-                if ("shell".equals(task.type())) {
-                    ShellOpt declared = task.shell() == null ? null : new ShellOpt(
-                            task.shell().executable() == null ? null : sub.apply(task.shell().executable()),
-                            task.shell().args() == null ? null
-                                    : task.shell().args().stream().map(sub).toList());
-                    Object shell = shellArgv(host, declared, project, command, args, task.args());
-                    if (shell instanceof Refused r) {
-                        return r;
-                    }
-                    @SuppressWarnings("unchecked")
-                    List<String> built = (List<String>) shell;
-                    argv = built;
-                } else {
-                    argv = processArgv(command, args);
-                }
-                return new Launch(List.copyOf(argv), (File) dir, Collections.unmodifiableMap(vars));
-            }
-            default -> {
-                return new Refused(Reason.TYPE, task.type());
-            }
+        if (!"shell".equals(task.type())) {
+            return processArgv(command, args);
         }
+        ShellOpt declared = task.shell() == null ? null : new ShellOpt(
+                task.shell().executable() == null ? null : sub.apply(task.shell().executable()),
+                task.shell().args() == null ? null
+                        : task.shell().args().stream().map(sub).toList());
+        return shellArgv(host, declared, project, command, args, task.args());
     }
 
     /** The first {@code ${…}} in {@code s} this IDE cannot supply, as written, or null. */
@@ -585,30 +909,239 @@ public final class VsCodeTasks {
     }
 
     /**
+     * Why the first variable in {@code s} that cannot be filled cannot be,
+     * or null when every one can: {@link #unsupportedVariable} widened by
+     * what {@code vars} can give — the editor's file, caret and selection,
+     * the user's home, and the file's inputs.
+     */
+    static Refused variableProblem(String s, Vars vars) {
+        Matcher m = VARIABLE.matcher(s);
+        while (m.find()) {
+            Refused problem = problemOf(m.group(1), m.group(), vars);
+            if (problem != null) {
+                return problem;
+            }
+        }
+        int open = s.indexOf("${");
+        if (open >= 0 && s.indexOf('}', open) < 0) {
+            return new Refused(Reason.VARIABLE, s.substring(open));
+        }
+        return null;
+    }
+
+    private static Refused problemOf(String name, String asWritten, Vars vars) {
+        if (supported(name) || "userHome".equals(name)) {
+            return null;
+        }
+        EditorContext editor = vars.editor();
+        if (FILE_VARIABLES.contains(name)) {
+            return editor.file() == null ? new Refused(Reason.NEEDS_FILE, asWritten) : null;
+        }
+        if ("lineNumber".equals(name) || "columnNumber".equals(name)) {
+            return editor.line() < 1 || editor.column() < 1 ? new Refused(Reason.NEEDS_FILE, asWritten) : null;
+        }
+        if ("selectedText".equals(name)) {
+            if (editor.line() < 1) {
+                return new Refused(Reason.NEEDS_FILE, asWritten);
+            }
+            String selected = editor.selectedText();
+            if (selected == null || selected.isEmpty()) {
+                // VS Code: "Make sure to have some text selected in the active editor."
+                return new Refused(Reason.NEEDS_SELECTION, asWritten);
+            }
+            return selected.length() > MAX_SELECTED_TEXT ? new Refused(Reason.SELECTION_TOO_LONG, asWritten) : null;
+        }
+        String id = inputId(name);
+        if (id != null) {
+            InputDef def = vars.inputs().get(id);
+            if (def == null) {
+                return new Refused(Reason.INPUT_UNDEFINED, id);
+            }
+            if (!def.prompt() && !def.pick()) {
+                return new Refused(Reason.INPUT_TYPE, id, def.type());
+            }
+            if (def.problem() != null) {
+                return new Refused(Reason.INPUT_INCOMPLETE, id, def.problem());
+            }
+            // no answer is never a blank: an input nobody answered refuses
+            return vars.answers() != null && vars.answers().get(id) == null
+                    ? new Refused(Reason.INPUT_UNANSWERED, id) : null;
+        }
+        return new Refused(Reason.VARIABLE, asWritten);
+    }
+
+    /** The id of an {@code input:id} variable name, or null when {@code name} is not one. */
+    private static String inputId(String name) {
+        return name.startsWith("input:") && name.length() > "input:".length()
+                ? name.substring("input:".length()) : null;
+    }
+
+    /** The ids of the {@code ${input:…}} variables in {@code s}, in order, each as often as it is written. */
+    static List<String> inputIds(String s) {
+        List<String> out = new ArrayList<>();
+        Matcher m = VARIABLE.matcher(s);
+        while (m.find()) {
+            String id = inputId(m.group(1));
+            if (id != null) {
+                out.add(id);
+            }
+        }
+        return out;
+    }
+
+    /** The first {@code ${input:…}} in {@code s} whose input is a password, as written, or null. */
+    private static String passwordVariable(String s, Vars vars) {
+        Matcher m = VARIABLE.matcher(s);
+        while (m.find()) {
+            if (passwordInput(m.group(1), vars)) {
+                return m.group();
+            }
+        }
+        return null;
+    }
+
+    private static boolean passwordInput(String name, Vars vars) {
+        String id = inputId(name);
+        InputDef def = id == null ? null : vars.inputs().get(id);
+        return def != null && def.password();
+    }
+
+    /** Whether {@code s} would carry text that is the user's own: a password's answer, or the selection. */
+    private static boolean sensitive(String s, Vars vars) {
+        Matcher m = VARIABLE.matcher(s);
+        while (m.find()) {
+            if ("selectedText".equals(m.group(1)) || passwordInput(m.group(1), vars)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Every supported variable replaced. {@code ${cwd}} is the project
      * folder: VS Code means "the directory VS Code started in", which for
      * a folder opened in it is that folder. {@code ${pathSeparator}} and
      * {@code ${/}} are the OS's file separator, as VS Code defines them.
      * An unset {@code ${env:NAME}} is the empty string, as in VS Code.
+     * The variables only an editor or the user can fill are NOT supported
+     * here (this is what {@code launch.json} resolves with); see {@link
+     * #substitute(String, File, UnaryOperator, Vars, boolean)}.
      */
     static String substitute(String s, File project, UnaryOperator<String> env) {
         Matcher m = VARIABLE.matcher(s);
         StringBuilder out = new StringBuilder();
         while (m.find()) {
+            m.appendReplacement(out, Matcher.quoteReplacement(projectValue(m.group(1), project, env)));
+        }
+        m.appendTail(out);
+        return out.toString();
+    }
+
+    private static String projectValue(String name, File project, UnaryOperator<String> env) {
+        return switch (name) {
+            case "workspaceFolder", "workspaceRoot", "cwd" -> project.getAbsolutePath();
+            case "workspaceFolderBasename" -> project.getName();
+            case "pathSeparator", "/" -> File.separator;
+            default -> {
+                String v = name.startsWith("env:") ? env.apply(name.substring(4)) : null;
+                yield v == null ? "" : v;
+            }
+        };
+    }
+
+    /**
+     * {@link #substitute(String, File, UnaryOperator)} with the editor's
+     * variables, {@code ${userHome}} and the inputs' answers from {@code
+     * vars} — in ONE pass, so a value is never read for variables again.
+     * Call it only on a string {@link #variableProblem} passed.
+     *
+     * @param forReader true leaves a password input and {@code
+     *        ${selectedText}} as the file wrote them: the text for a
+     *        header, a log or a refusal, never for the process
+     */
+    static String substitute(String s, File project, UnaryOperator<String> env, Vars vars, boolean forReader) {
+        Matcher m = VARIABLE.matcher(s);
+        StringBuilder out = new StringBuilder();
+        while (m.find()) {
             String name = m.group(1);
-            String value = switch (name) {
-                case "workspaceFolder", "workspaceRoot", "cwd" -> project.getAbsolutePath();
-                case "workspaceFolderBasename" -> project.getName();
-                case "pathSeparator", "/" -> File.separator;
-                default -> {
-                    String v = name.startsWith("env:") ? env.apply(name.substring(4)) : null;
-                    yield v == null ? "" : v;
-                }
-            };
+            String value;
+            if (forReader && ("selectedText".equals(name) || passwordInput(name, vars))) {
+                value = m.group();
+            } else if ("userHome".equals(name)) {
+                value = vars.userHome() == null ? "" : vars.userHome();
+            } else if (inputId(name) != null) {
+                String answer = vars.answers() == null ? null : vars.answers().get(inputId(name));
+                value = answer == null ? "" : answer;
+            } else {
+                String fromEditor = editorValue(name, project, vars.editor());
+                value = fromEditor != null ? fromEditor : projectValue(name, project, env);
+            }
             m.appendReplacement(out, Matcher.quoteReplacement(value));
         }
         m.appendTail(out);
         return out.toString();
+    }
+
+    /**
+     * The value of an editor variable as VS Code's Variables Reference
+     * defines it, or null when {@code name} is not one (or the editor has
+     * nothing to give — {@link #variableProblem} refuses that first).
+     */
+    static String editorValue(String name, File project, EditorContext editor) {
+        switch (name) {
+            case "lineNumber":
+                return editor.line() < 1 ? null : String.valueOf(editor.line());
+            case "columnNumber":
+                return editor.column() < 1 ? null : String.valueOf(editor.column());
+            case "selectedText":
+                return editor.selectedText();
+            default:
+                break;
+        }
+        if (!FILE_VARIABLES.contains(name) || editor.file() == null) {
+            return null;
+        }
+        Path file = editor.file().toAbsolutePath().normalize();
+        Path dir = file.getParent() == null ? file : file.getParent();
+        Path base = project.toPath().toAbsolutePath().normalize();
+        String basename = file.getFileName() == null ? "" : file.getFileName().toString();
+        return switch (name) {
+            case "file" -> file.toString();
+            case "relativeFile" -> relative(base, file);
+            case "relativeFileDirname" -> {
+                String relative = relative(base, dir);
+                yield relative.isEmpty() ? "." : relative;
+            }
+            case "fileBasename" -> basename;
+            case "fileBasenameNoExtension" -> basename.substring(0, basename.length() - extname(basename).length());
+            case "fileExtname" -> extname(basename);
+            case "fileDirname" -> dir.toString();
+            case "fileDirnameBasename" -> dir.getFileName() == null ? "" : dir.getFileName().toString();
+            default -> null;
+        };
+    }
+
+    /**
+     * Node's {@code path.relative(from, to)}: the way from {@code from} to
+     * {@code to}, with {@code ..} steps when {@code to} is not under it,
+     * and {@code to} itself when no way exists (two Windows drives).
+     */
+    static String relative(Path from, Path to) {
+        try {
+            return from.relativize(to).toString();
+        } catch (IllegalArgumentException differentRoots) {
+            return to.toString();
+        }
+    }
+
+    /**
+     * Node's {@code path.extname}: from the last dot of the name to its
+     * end, the dot included — and nothing for a name with no dot or whose
+     * only dot is its first character ({@code .bashrc} has no extension).
+     */
+    static String extname(String basename) {
+        int dot = basename.lastIndexOf('.');
+        return dot <= 0 ? "" : basename.substring(dot);
     }
 
     /**

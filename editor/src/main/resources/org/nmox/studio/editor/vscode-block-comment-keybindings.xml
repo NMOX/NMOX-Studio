@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    Toggle Block Comment on VS Code's chord: Shift+Opt+A on macOS,
+    Shift+Alt+A on Windows (and on Linux, beside VS Code's own Linux chord
+    in vscode-block-comment-keybindings-linux.xml).
+
+    Measured in the assembled cluster, editor and global keymaps, every
+    profile on every OS family: Alt+Shift+A is free everywhere except in
+    the Eclipse profile (toggle-rectangular-selection, O-S-A) and the
+    NetBeans 5.5 profile (select-element-previous, O-S-A) on Windows and
+    Linux, where O is Alt. On macOS O is Ctrl, so both leave it free
+    there. So this file rides NetBeans, Emacs and Idea on every OS, and
+    Eclipse and NetBeans55 on macOS only (their layer registrations carry
+    nbeditor-settings-targetOS=OS_MAC); a profile's own meaning of a chord
+    wins. No two-stroke binding starts with the chord.
+
+    An EDITOR binding on purpose: on macOS Opt+Shift+A also types a
+    character, and only a press the editor's own keymap consumed can have
+    that typed echo swallowed (editing/TypedEcho).
+-->
+<!--
+    The modifiers are written Shift first: the platform's keymap reader
+    logs a WARNING at every start for a key that BEGINS with A or C in
+    the default profile, and the order of the modifier letters means
+    nothing to the key itself.
+-->
+<bindings>
+    <bind actionName="nmox-toggle-block-comment" key="SA-A"/>
+</bindings>

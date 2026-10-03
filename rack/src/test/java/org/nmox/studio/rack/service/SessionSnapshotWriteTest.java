@@ -49,14 +49,24 @@ class SessionSnapshotWriteTest {
         }
     };
 
+    /**
+     * Held for the life of the test. The log manager keeps a logger only
+     * weakly, and RackService asks for its logger by name at each call: a
+     * collection between {@link #listen} and the write under test handed
+     * the write a NEW logger with no tap on it, and the test read "nothing
+     * was logged" (the Ubuntu lane of PR 848, once; the 3.5.5 lesson about
+     * EngineNotices, met from the test side).
+     */
+    private final Logger logger = Logger.getLogger(RackService.class.getName());
+
     @BeforeEach
     void listen() {
-        Logger.getLogger(RackService.class.getName()).addHandler(tap);
+        logger.addHandler(tap);
     }
 
     @AfterEach
     void stopListening() {
-        Logger.getLogger(RackService.class.getName()).removeHandler(tap);
+        logger.removeHandler(tap);
     }
 
     @Test

@@ -4,13 +4,20 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.spi.quicksearch.SearchProvider;
@@ -24,13 +31,20 @@ import org.nmox.studio.rack.devices.ServeUrls;
 import org.nmox.studio.rack.engine.CommandExecutor;
 import org.nmox.studio.rack.service.ServingRegistry;
 import org.nmox.studio.rack.service.WorkspaceTrust;
-import org.nmox.studio.tools.npm.NpmService;
+import org.nmox.studio.tools.npm.NpmLaneRun;
 import org.nmox.studio.tools.npm.search.NpmScriptSearchProvider;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Checked;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Outcome;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Prepared;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Ready;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Refusal;
+import org.nmox.studio.tools.vscode.VsCodeTaskPlan.Step;
+import org.nmox.studio.tools.vscode.VsCodeTasks.EditorContext;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Host;
+import org.nmox.studio.tools.vscode.VsCodeTasks.InputDef;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Launch;
 import org.nmox.studio.tools.vscode.VsCodeTasks.NpmLaunch;
 import org.nmox.studio.tools.vscode.VsCodeTasks.Refused;
-import org.nmox.studio.tools.vscode.VsCodeTasks.Resolved;
 import org.nmox.studio.tools.vscode.VsCodeTasks.TaskDef;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
@@ -61,11 +75,28 @@ import org.openide.util.RequestProcessor;
  * status line over a task that never ran); the lane's own ask is then
  * silent, because the folder is trusted.
  *
- * <p><b>Refusals speak.</b> A task that uses a variable only VS Code can
- * fill, depends on another task, names a working folder outside the
- * project, or has an extension's type, is still LISTED (so a user can see
- * we read their file) and on Enter says why on the status line, spawning
- * nothing and asking nothing.
+ * <p><b>One Enter, one run — which may be several tasks.</b> A task's
+ * {@code dependsOn} runs first, in the stages {@link VsCodeTaskPlan}
+ * decides; its {@code ${file}} family is read from the editor on the
+ * event thread at Enter ({@link VsCodeTaskEditor}); its {@code
+ * ${input:…}} questions are put before anything runs ({@link
+ * VsCodeTaskPrompts}), and Cancel on any of them runs nothing. The whole
+ * run is decided first — one refused task refuses all of it — then
+ * Workspace Trust is asked ONCE, then the questions, then stage by stage
+ * each task goes down the same path a lone task takes: {@link #launch}
+ * or the npm lane. A stage starts only when every task of the one before
+ * it exited zero; a task that fails, or that the user stops, ends the
+ * run there and the status line says which. While more than one task is
+ * to run, the run itself is in {@link LiveRuns}, so the toolbar ■ ends
+ * the chain and not just the task of the moment.
+ *
+ * <p><b>Refusals speak.</b> A task that uses a variable nothing here can
+ * fill, needs a file or a selection the editor does not have, depends on
+ * a task the file does not define (or on itself, or on a background
+ * task), names a working folder outside the project, or has an
+ * extension's type, is still LISTED (so a user can see we read their
+ * file) and on Enter says why on the status line, spawning nothing and
+ * asking nothing.
  */
 public class VsCodeTaskSearchProvider implements SearchProvider {
 
@@ -86,8 +117,12 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
     /** The spawn, as a seam: tests prove Enter hands over exactly the resolved argv, dir and env. */
     static volatile Spawner spawner = VsCodeTaskSearchProvider::launch;
 
-    /** An npm-type task's hand-off, as a seam; the default is the trust-gated NPM Service lane. */
-    static volatile BiConsumer<File, String> npmRunner = VsCodeTaskSearchProvider::runOnNpmLane;
+    /**
+     * An npm-type task's hand-off, as a seam: the trust-gated NPM Service
+     * lane, answering with the script's exit code ({@link
+     * NpmLaneRun#NOT_RUN} when the lane refused it and said why).
+     */
+    static volatile BiFunction<File, String, CompletableFuture<Integer>> npmRunner = NpmLaneRun::runScript;
 
     /** Where refusals and progress are said, as a seam. */
     static volatile Consumer<String> statusSink = VsCodeTaskSearchProvider::status;
@@ -95,10 +130,20 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
     /** The machine a task resolves against (OS, environment, shells), as a seam. */
     static volatile Host host = Host.system();
 
-    /** Starts one resolved task; completes with its exit code. */
+    /** The editor at Enter — its file, caret and selection — as a seam; the default reads it on the EDT. */
+    static volatile Supplier<EditorContext> editorProbe = VsCodeTaskEditor::snapshot;
+
+    /** One {@code ${input:…}} question put to the user, as a seam: (the task, the input) → the answer, empty for Cancel. */
+    static volatile BiFunction<String, InputDef, Optional<String>> asker = VsCodeTaskPrompts::ask;
+
+    /** How one task ended: its exit code (-1 when it did not start), and whether the user stopped it. */
+    record Exit(int code, boolean stopped) {
+    }
+
+    /** Starts one resolved task; completes with how it ended. */
     @FunctionalInterface
     interface Spawner {
-        CompletableFuture<Integer> spawn(String taskLabel, Launch launch, File project);
+        CompletableFuture<Exit> spawn(String taskLabel, Launch launch, File project);
     }
 
     /** One listed task: its definition, the project it belongs to, and the label shown. */
@@ -159,45 +204,290 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                         name, NpmScriptSearchProvider.escape(shown));
     }
 
-    /** Enter: everything — resolving, the trust question, the spawn — rides the lane, never the EDT. */
+    /**
+     * Enter: the editor is read here, where Enter arrives (the event
+     * thread); everything else — resolving, the trust question, the
+     * file's own questions, the spawn — rides the lane, never the EDT.
+     */
     static RequestProcessor.Task run(File project, TaskDef task) {
-        return RP.post(() -> execute(project, task));
+        return run(project, task, editorProbe.get());
     }
 
-    /** The body of Enter, on the lane: resolve, refuse out loud, or trust-gate then spawn. */
-    static void execute(File project, TaskDef task) {
-        Resolved resolved = VsCodeTasks.resolve(task, project, host);
-        if (resolved instanceof Refused refused) {
-            statusSink.accept(refusal(task.label(), refused));
+    /** {@link #run(File, TaskDef)} for a caller that read the editor itself, before its own dialog took the focus. */
+    static RequestProcessor.Task run(File project, TaskDef task, EditorContext editor) {
+        return RP.post(() -> execute(project, task, editor));
+    }
+
+    /**
+     * The body of Enter, on the lane: decide the whole run, refuse out
+     * loud, or trust-gate, ask, and start.
+     */
+    static void execute(File project, TaskDef task, EditorContext editor) {
+        executeThen(project, task, editor, null);
+    }
+
+    /** How a run made on a caller's behalf ended. */
+    enum RunEnd {
+        /** Every task started and exited zero. */
+        DONE,
+        /** A task could not be started or exited non-zero. */
+        FAILED,
+        /** The user stopped it (the toolbar ■, the run's own row or its Cancel). */
+        STOPPED,
+        /** Nothing was spawned: the task was refused out loud, or Keep Safe was answered. */
+        NOT_STARTED
+    }
+
+    /**
+     * {@link #execute} for a caller that waits for the task: a launch
+     * configuration's {@code preLaunchTask} (3.6.0). The same checks, the
+     * same refusals and the same trust question; {@code then} hears, on
+     * the lane, how the run ended — once, whichever way it ended. With a
+     * null {@code then} this IS Enter on the task, whose own exit nobody
+     * waits for.
+     */
+    static void executeThen(File project, TaskDef task, EditorContext editor, Consumer<RunEnd> then) {
+        Outcome outcome = VsCodeTaskPlan.check(task, VsCodeTasks.readFile(project), project, host,
+                editor, System.getProperty("user.home", ""));
+        if (outcome instanceof Refusal refusal) {
+            statusSink.accept(refusal(task.label(), refusal));
+            tell(then, RunEnd.NOT_STARTED);
             return;
         }
-        if (resolved instanceof NpmLaunch npm) {
-            // the NPM Service lane asks Workspace Trust itself (v1.103.0);
-            // asking the SAME folder here first means "Running …" is said
-            // only after a yes, and the lane's own ask is then silent
-            if (!trustCheck.test(npm.dir())) {
+        Checked checked = (Checked) outcome;
+        Prepared prepared;
+        if (checked.questions().isEmpty()) {
+            prepared = VsCodeTaskPlan.finish(checked, Map.of());
+            if (prepared instanceof Refusal refusal) {
+                statusSink.accept(refusal(task.label(), refusal));
+                tell(then, RunEnd.NOT_STARTED);
                 return;
             }
-            statusSink.accept(message("VsCodeTaskSearchProvider_running", task.label()));
-            npmRunner.accept(npm.dir(), npm.script());
-            return;
+            // Workspace Trust BEFORE the first spawn, once for the whole
+            // run: a task's command is the repository's own text. Keep
+            // Safe spawns nothing and says nothing more — the user just
+            // answered the question themselves.
+            for (File folder : trustFolders(project, (Ready) prepared)) {
+                if (!trustCheck.test(folder)) {
+                    tell(then, RunEnd.NOT_STARTED);
+                    return;
+                }
+            }
+        } else {
+            // the file's questions are the repository's own text too, and
+            // an answer may be a password: trust first, so a workspace
+            // nobody trusted never asks for one
+            if (!trustCheck.test(project)) {
+                tell(then, RunEnd.NOT_STARTED);
+                return;
+            }
+            Map<String, String> answers = new LinkedHashMap<>();
+            for (InputDef question : checked.questions()) {
+                Optional<String> answer = asker.apply(task.label(), question);
+                if (answer.isEmpty()) {
+                    break; // Cancel: finish() refuses, naming the question
+                }
+                answers.put(question.id(), answer.get());
+            }
+            prepared = VsCodeTaskPlan.finish(checked, answers);
+            if (prepared instanceof Refusal refusal) {
+                statusSink.accept(refusal(task.label(), refusal));
+                tell(then, RunEnd.NOT_STARTED);
+                return;
+            }
         }
-        Launch launch = (Launch) resolved;
-        // Workspace Trust BEFORE the spawn: the task's command is the
-        // repository's own text. Keep Safe spawns nothing and says nothing
-        // more — the user just answered the question themselves.
-        if (!trustCheck.test(project)) {
-            return;
+        new Chain(task.label(), project, (Ready) prepared, then).start();
+    }
+
+    private static void tell(Consumer<RunEnd> then, RunEnd end) {
+        if (then != null) {
+            then.accept(end);
         }
-        statusSink.accept(message("VsCodeTaskSearchProvider_running", task.label()));
-        spawner.spawn(task.label(), launch, project);
+    }
+
+    /**
+     * The folders Workspace Trust is asked about before a run: the one
+     * folder every task runs from when there is one (an npm-type task's
+     * own — the folder its lane will ask about, so the lane's ask is then
+     * silent), else the project, whose grant covers every folder in it.
+     */
+    static Set<File> trustFolders(File project, Ready ready) {
+        Set<File> folders = new LinkedHashSet<>();
+        for (List<Step> stage : ready.stages()) {
+            for (Step step : stage) {
+                if (step.resolved() instanceof NpmLaunch npm) {
+                    folders.add(npm.dir());
+                } else if (step.runs()) {
+                    folders.add(project);
+                }
+            }
+        }
+        return folders.size() <= 1 ? folders : Set.of(project);
+    }
+
+    /**
+     * A run under way: its stages, started one after another on the lane.
+     * The only place a task is started.
+     */
+    private static final class Chain {
+
+        private final String root;
+        private final File project;
+        private final List<List<Step>> stages;
+        /** The run's own entry among the live runs while it has more than one task to start, else null. */
+        private final String runId;
+        /** Set by the toolbar ■ (or the run's own row): no further stage starts. */
+        private final AtomicBoolean stopped = new AtomicBoolean();
+        /** Who waits for the whole run, the root task included; null when nobody does. */
+        private final Consumer<RunEnd> then;
+
+        Chain(String root, File project, Ready ready, Consumer<RunEnd> then) {
+            this.then = then;
+            this.root = root;
+            this.project = project;
+            this.stages = ready.stages();
+            // a run somebody waits for is a chain even with one task: the
+            // ■ must reach the waiter, or a task that exits zero on its
+            // TERM would be followed by what was waiting for it
+            this.runId = ready.running() > 1 || then != null
+                    ? "vscode-task-chain:" + project.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet()
+                    : null;
+        }
+
+        void start() {
+            if (runId != null) {
+                // the ■ stops every live run; this entry is how the CHAIN
+                // hears it — a task that exits zero on its TERM would
+                // otherwise hand over to the next stage
+                LiveRuns.add(new LiveRuns.Run(runId,
+                        message("VsCodeTaskSearchProvider_chain", root, project.getName()),
+                        () -> stopped.set(true)));
+            }
+            stage(0);
+        }
+
+        private void stage(int index) {
+            if (index >= stages.size()) {
+                end(RunEnd.DONE);
+                return;
+            }
+            List<Step> steps = stages.get(index);
+            List<CompletableFuture<Exit>> exits = new ArrayList<>();
+            for (Step step : steps) {
+                CompletableFuture<Exit> exit;
+                try {
+                    exit = begin(step);
+                } catch (RuntimeException failed) {
+                    exit = CompletableFuture.failedFuture(failed);
+                }
+                exits.add(exit.exceptionally(failed -> new Exit(-1, false)));
+            }
+            // the next stage is decided on the lane, never on a process's pump thread
+            CompletableFuture.allOf(exits.toArray(CompletableFuture[]::new))
+                    .whenCompleteAsync((done, never) -> after(index, steps, exits), RP);
+        }
+
+        private CompletableFuture<Exit> begin(Step step) {
+            String label = step.task().label();
+            if (step.resolved() instanceof Launch launch) {
+                statusSink.accept(message("VsCodeTaskSearchProvider_running", label));
+                return spawner.spawn(label, launch, project);
+            }
+            if (step.resolved() instanceof NpmLaunch npm) {
+                statusSink.accept(message("VsCodeTaskSearchProvider_running", label));
+                return npmRunner.apply(npm.dir(), npm.script()).thenApply(code -> new Exit(code, false));
+            }
+            return CompletableFuture.completedFuture(new Exit(0, false)); // a group: nothing of its own
+        }
+
+        private void after(int index, List<Step> steps, List<CompletableFuture<Exit>> exits) {
+            boolean last = index == stages.size() - 1;
+            if (last && then == null) {
+                end(RunEnd.DONE); // the task itself: nothing waits for it, and its own exit is in its Output tab
+                return;
+            }
+            String failed = null;
+            int code = 0;
+            boolean userStopped = stopped.get();
+            for (int i = 0; i < steps.size(); i++) {
+                Exit exit = exits.get(i).join();
+                userStopped |= exit.stopped();
+                if (exit.code() != 0 && failed == null) {
+                    failed = steps.get(i).task().label();
+                    code = exit.code();
+                }
+            }
+            if (userStopped) {
+                if (!last) {
+                    statusSink.accept(message("VsCodeTaskSearchProvider_chainStopped", root));
+                }
+                end(RunEnd.STOPPED);
+                return;
+            }
+            if (failed == null) {
+                if (last) {
+                    end(RunEnd.DONE);
+                } else {
+                    stage(index + 1);
+                }
+                return;
+            }
+            // the root task's own failure is the waiter's to say: it knows what was waiting
+            if (!last && code == -1) {
+                statusSink.accept(message("VsCodeTaskSearchProvider_chainNotStarted", root, failed));
+            } else if (!last && code != NpmLaneRun.NOT_RUN) {
+                // (NOT_RUN: the npm lane refused the script and said why itself)
+                statusSink.accept(message("VsCodeTaskSearchProvider_chainFailed", root, failed,
+                        String.valueOf(code)));
+            }
+            end(RunEnd.FAILED);
+        }
+
+        private void end(RunEnd how) {
+            if (runId != null) {
+                LiveRuns.remove(runId);
+            }
+            tell(then, how);
+        }
+    }
+
+    /** The sentence for a run that was refused: about the task itself, or naming the task it depends on first. */
+    static String refusal(String taskLabel, Refusal refusal) {
+        String why = refusal(refusal.task(), refusal.why());
+        return refusal.task().equals(taskLabel) ? why
+                : message("VsCodeTaskSearchProvider_refuseDependency", taskLabel, refusal.task()) + " " + why;
     }
 
     /** The refusal sentence for {@code refused}, in the reader's language. */
     static String refusal(String taskLabel, Refused refused) {
         return switch (refused.reason()) {
             case VARIABLE -> message("VsCodeTaskSearchProvider_refuseVariable", refused.detail());
-            case DEPENDS_ON -> message("VsCodeTaskSearchProvider_refuseDependsOn", taskLabel, refused.detail());
+            case NEEDS_FILE -> message("VsCodeTaskSearchProvider_refuseNeedsFile", taskLabel, refused.detail());
+            case NEEDS_SELECTION -> message("VsCodeTaskSearchProvider_refuseNeedsSelection",
+                    taskLabel, refused.detail());
+            case SELECTION_TOO_LONG -> message("VsCodeTaskSearchProvider_refuseSelectionTooLong",
+                    taskLabel, refused.detail(), VsCodeTasks.MAX_SELECTED_TEXT);
+            case INPUT_UNDEFINED -> message("VsCodeTaskSearchProvider_refuseInputUndefined",
+                    taskLabel, refused.detail());
+            case INPUT_TYPE -> message("VsCodeTaskSearchProvider_refuseInputType",
+                    taskLabel, refused.detail(), refused.extra().isEmpty() ? "?" : refused.extra());
+            case INPUT_INCOMPLETE -> message("VsCodeTaskSearchProvider_refuseInputIncomplete",
+                    taskLabel, refused.detail(), refused.extra());
+            case INPUT_UNANSWERED -> message("VsCodeTaskSearchProvider_cancelled", taskLabel, refused.detail());
+            case PASSWORD_SHOWN -> message("VsCodeTaskSearchProvider_refusePasswordShown",
+                    taskLabel, refused.detail());
+            case DEPENDENCY_MISSING -> message("VsCodeTaskSearchProvider_refuseDependencyMissing",
+                    taskLabel, refused.detail());
+            case DEPENDENCY_AMBIGUOUS -> message("VsCodeTaskSearchProvider_refuseDependencyAmbiguous",
+                    taskLabel, refused.detail());
+            case DEPENDENCY_OBJECT -> message("VsCodeTaskSearchProvider_refuseDependencyObject",
+                    taskLabel, refused.detail());
+            case DEPENDENCY_CYCLE -> message("VsCodeTaskSearchProvider_refuseDependencyCycle",
+                    taskLabel, refused.detail());
+            case DEPENDENCY_BACKGROUND -> message("VsCodeTaskSearchProvider_refuseDependencyBackground",
+                    taskLabel, refused.detail());
+            case CHAIN_TOO_LONG -> message("VsCodeTaskSearchProvider_refuseChainTooLong",
+                    taskLabel, VsCodeTaskPlan.MAX_TASKS);
             case CWD_OUTSIDE -> message("VsCodeTaskSearchProvider_refuseCwdOutside", taskLabel, refused.detail());
             case CWD_MISSING -> message("VsCodeTaskSearchProvider_refuseCwdMissing", taskLabel, refused.detail());
             case TYPE -> message("VsCodeTaskSearchProvider_refuseType", taskLabel, refused.detail());
@@ -216,12 +506,16 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
      * The spawn: the IDE Run lane's shape (WebProjectActionProvider.launch)
      * for a task — a progress bar whose Cancel is this run's stop, an Output
      * tab named for the task, the toolbar ■ through {@link LiveRuns}, and a
-     * printed local address announced until the process ends.
+     * printed local address announced until the process ends. The header
+     * of the Output tab and the line the flight recorder keeps are {@link
+     * Launch#shown} when the launch has one: the argv of a task that was
+     * handed a password, or the editor's selection, is for the process
+     * alone.
      */
-    static CompletableFuture<Integer> launch(String taskLabel, Launch launch, File project) {
+    static CompletableFuture<Exit> launch(String taskLabel, Launch launch, File project) {
         String label = taskLabel + " — " + project.getName();
         String runId = "vscode-task:" + project.getAbsolutePath() + "#" + RUN_SEQ.incrementAndGet();
-        CompletableFuture<Integer> done = new CompletableFuture<>();
+        CompletableFuture<Exit> done = new CompletableFuture<>();
         AtomicReference<String> announced = new AtomicReference<>();
         ProgressHandle ph = ProgressHandle.createHandle(label, () -> {
             LiveRuns.stop(runId);
@@ -230,6 +524,7 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
         ph.start();
         CommandExecutor.showOutput(label);
         CommandExecutor.Handle handle = CommandExecutor.run(label, launch.dir(), launch.env(), launch.argv(),
+                launch.shown(),
                 line -> {
                     // a printed local address IS a server (v2.69.16), registered
                     // only once the process has said so (v1.93.0)
@@ -251,15 +546,12 @@ public class VsCodeTaskSearchProvider implements SearchProvider {
                         // friendly reason in the Output tab; the status line points there
                         statusSink.accept(message("VsCodeTaskSearchProvider_failedToStart", taskLabel));
                     }
-                    done.complete(exit);
+                    // a stop through any surface — the ■, the row, this run's
+                    // Cancel — is the user's, whatever code the process left with
+                    done.complete(new Exit(exit, LiveRuns.wasStoppedByUser(runId)));
                 });
         LiveRuns.add(new LiveRuns.Run(runId, label, handle::kill));
         return done;
-    }
-
-    private static void runOnNpmLane(File dir, String script) {
-        NpmService npm = NpmService.getDefault();
-        npm.runScript(dir, script, npm.detectPackageManager(dir));
     }
 
     private static void status(String message) {

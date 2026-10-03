@@ -106,6 +106,31 @@ class DapProxyTest {
     }
 
     @Test
+    @DisplayName("a target the adapter ATTACHED to is spliced in with attach, the verb its startDebugging asks for")
+    void shouldSpliceAnAttachedTargetWithAttach() throws Exception {
+        // an attach session: the client's attach reaches the parent like any
+        // request before the splice, and js-debug then asks for the target
+        // with "request": "attach" — the answer must use the same word
+        client.request("attach", new JSONObject().put("port", 9229).put("address", "localhost"));
+        JSONObject onParent = adapter.parentReceived();
+        assertThat(onParent.getString("command")).isEqualTo("attach");
+        adapter.respondParent(onParent, new JSONObject());
+        client.awaitResponse("attach");
+        adapter.requestParent("startDebugging", new JSONObject()
+                .put("request", "attach")
+                .put("configuration", new JSONObject()
+                        .put("type", "pwa-node")
+                        .put("__pendingTargetId", "attached-1")));
+        adapter.parentReceived(); // proxy's success reply to startDebugging
+
+        adapter.respondChild(adapter.childReceived(), new JSONObject()); // initialize
+        JSONObject childAttach = adapter.childReceived();
+        assertThat(childAttach.getString("command")).isEqualTo("attach");
+        assertThat(childAttach.getJSONObject("arguments").getString("__pendingTargetId"))
+                .isEqualTo("attached-1");
+    }
+
+    @Test
     @DisplayName("after the splice, client requests route to the child and its events flow up")
     void shouldSpliceChildIntoSession() throws Exception {
         spliceChild();

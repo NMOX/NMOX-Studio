@@ -1073,10 +1073,15 @@ rather than a program keeps the button disabled — use Debug File on
 the file you mean. A repository that carries `.vscode/launch.json` has
 a third door: type a configuration's name into Quick Search and Enter
 starts that configuration's Node or Python `program` in its `cwd`, with
-its `args` and `env`, or opens a Chrome configuration's `url` with its
-`webRoot`; a configuration that sets `envFile`, `runtimeExecutable` or
-anything else the debugger cannot pass on is refused by name on the
-status line instead of started without it.
+its `args`, its `env` and `envFile` and the runtime it names
+(`runtimeExecutable` and `runtimeArgs`, so an `npm run dev` or a `tsx`
+configuration starts as written), attaches to a `node --inspect`
+process on this machine, or opens a Chrome configuration's `url` with
+its `webRoot`. `"program": "${file}"` is the file the editor shows, and
+a `preLaunchTask` naming a task of `.vscode/tasks.json` runs first: the
+debugger starts when the task has succeeded. A configuration that sets
+anything the debugger cannot pass on is refused by name on the status
+line instead of started without it.
 
 ![A JavaScript breakpoint hit: execution paused on line 18, the Node call stack, and live V8 variables](images/debug-javascript.png)
 
@@ -1925,12 +1930,14 @@ same way — *Run task: build — make all* — and Enter runs the task behind
 the same trust question, in the Output window and under the toolbar ■; a
 shell task runs in the shell VS Code would use (your `$SHELL`, a login
 shell on macOS; PowerShell on Windows) or the one its `options.shell`
-names; a task that needs a value only VS Code can supply, or depends on
-another task, says so on the status line instead of running. The
-repository's `.vscode/launch.json` lists its configurations beside them —
-*Debug: Launch Program — ${workspaceFolder}/server.js* — and Enter
-starts the breakpoint debugger on that configuration after the same
-trust question.
+names; the tasks it `dependsOn` run first, `${file}` is the file in the
+editor and an `${input:…}` question is asked before anything starts; a
+task that needs a value only VS Code can supply says so on the status
+line instead of running. The repository's `.vscode/launch.json` lists
+its configurations beside them — *Debug: Launch Program —
+${workspaceFolder}/server.js* — and Enter starts the breakpoint debugger
+on that configuration after the same trust question. Both lists are in
+the menus too: **Run ▸ Run Task…** and **Debug ▸ Start Debugging…**.
 
 **Find in Projects (⇧⌘F) searches your code, not what the repository
 ignores.** In a git repository it skips whatever the repository's own

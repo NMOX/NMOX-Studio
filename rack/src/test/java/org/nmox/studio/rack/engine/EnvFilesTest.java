@@ -60,4 +60,16 @@ class EnvFilesTest {
         Files.writeString(dir.resolve(".env"), "KEY=" + "x".repeat(300 * 1024));
         assertThat(EnvFiles.load(dir.toFile())).isEmpty();
     }
+
+    @Test
+    @DisplayName("parseLines is the same reader over lines somebody else read: what a file's line means has one home")
+    void linesMeanWhatTheFileMeans(@TempDir Path dir) throws Exception {
+        String text = "# c\nA=1\nexport B=\"two words\"\nC='x'\nNOT A KEY=nope\nD=a=b\nA=last wins\n";
+        Files.writeString(dir.resolve(".env"), text);
+        assertThat(EnvFiles.parseLines(text.lines().toList()))
+                .isEqualTo(EnvFiles.load(dir.toFile()))
+                .containsEntry("A", "last wins").containsEntry("B", "two words")
+                .containsEntry("C", "x").containsEntry("D", "a=b").hasSize(4);
+        assertThat(EnvFiles.parseLines(java.util.List.of())).isEmpty();
+    }
 }

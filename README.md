@@ -86,8 +86,11 @@ the exercises for real and offers a tutor when they fail. An 11-chain
 **Your VS Code habits come along.** ⇧⌘P, ⇧⌘E, ⇧⌘X, ⌃\` and ⌘D do what
 your hands expect; `nmox .` and `nmox src/app.js:42` work from a terminal;
 Quick Search answers to VS Code's command names; and your repository's
-`.vscode/tasks.json`, `launch.json` and `settings.json` are read as they
-are, with whatever cannot run as written refused by name
+`.vscode/tasks.json`, `launch.json`, `settings.json`, `extensions.json`
+and `*.code-snippets` are read as they are — tasks with their
+`dependsOn` and inputs, launch configurations with their `preLaunchTask`,
+your team's snippets in completion — with whatever cannot run as written
+refused by name
 ([coming from VS Code](docs/coming-from-vscode.md)).
 
 Built on the NetBeans Rich Client Platform, shipped through a gated

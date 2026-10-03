@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE bindings PUBLIC "-//NetBeans//DTD Editor KeyBindings settings 1.1//EN"
+                          "http://www.netbeans.org/dtds/EditorKeyBindings-1_1.dtd">
+<!--
+    Expand Line Selection on VS Code's chord, Cmd+L (Ctrl+L), where the
+    chord is free. In most profiles it is not, and a profile's own meaning
+    of a chord wins. Measured in the assembled cluster:
+
+      NetBeans    select-identifier, on every OS (the editor module)
+      Eclipse     goto, Eclipse's own Go to Line, on every OS
+      NetBeans55  word-match-next, on every OS
+      Emacs       adjust-caret-center (C-L) on Windows and Linux, where
+                  D is Ctrl; FREE on macOS, where D is Cmd
+      Idea        FREE on every OS
+
+    So this file rides the Idea profile on every OS and the Emacs profile
+    on macOS only (its layer registration carries
+    nbeditor-settings-targetOS=OS_MAC). Everywhere else the action is
+    reached from Quick Search by VS Code's title, Expand Line Selection.
+-->
+<bindings>
+    <bind actionName="nmox-expand-line-selection" key="D-L"/>
+</bindings>

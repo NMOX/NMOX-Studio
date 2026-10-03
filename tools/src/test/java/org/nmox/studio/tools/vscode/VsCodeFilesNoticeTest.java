@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.Preferences;
@@ -49,8 +48,9 @@ class VsCodeFilesNoticeTest {
     Path project;
 
     private final Supplier<Preferences> realStore = VsCodeFilesNotice.shownStore;
-    private final BiConsumer<String, String> realSink = VsCodeFilesNotice.sink;
     private final List<String[]> told = new ArrayList<>();
+    /** For each notice, the project whose extensions sheet its click opens; null for Quick Search. */
+    private final List<File> clickOpens = new ArrayList<>();
     private final Memory memory = new Memory();
 
     @BeforeEach
@@ -58,13 +58,16 @@ class VsCodeFilesNoticeTest {
         VsCodeTasks.clearCache();
         VsCodeLaunch.clearCache();
         VsCodeFilesNotice.shownStore = () -> memory;
-        VsCodeFilesNotice.sink = (title, detail) -> told.add(new String[] {title, detail});
+        VsCodeFilesNotice.sink = (title, detail, extensionsOf) -> {
+            told.add(new String[] {title, detail});
+            clickOpens.add(extensionsOf);
+        };
     }
 
     @AfterEach
     void restore() {
         VsCodeFilesNotice.shownStore = realStore;
-        VsCodeFilesNotice.sink = realSink;
+        VsCodeFilesNotice.resetSink();
     }
 
     private void vscode(String file, String json) throws Exception {
@@ -82,6 +85,51 @@ class VsCodeFilesNoticeTest {
         assertThat(told).hasSize(1);
         assertThat(told.get(0)[0]).contains(dir.getName());
         assertThat(told.get(0)[1]).contains("Quick Search").doesNotContain("settings.json");
+    }
+
+    @Test
+    @DisplayName("a repository that recommends extensions is told how many, and the click opens their sheet")
+    void extensionsAreNamedAndTheClickReachesThem() throws Exception {
+        vscode("extensions.json", "{\"recommendations\": [\"dbaeumer.vscode-eslint\", \"esbenp.prettier-vscode\"]}");
+        File dir = project.toFile();
+        VsCodeFilesNotice.check(dir, () -> dir);
+        assertThat(told).hasSize(1);
+        assertThat(told.get(0)[1]).as("the file is named, like settings.json in its sentence")
+                .contains(".vscode/extensions.json recommends 2 VS Code extensions").doesNotContain("Quick Search");
+        assertThat(clickOpens.get(0)).as("the click opens the sheet for the project the notice is about").isEqualTo(dir);
+    }
+
+    @Test
+    @DisplayName("one recommendation reads as one extension, beside the tasks sentence")
+    void oneExtensionBesideTasks() throws Exception {
+        vscode("tasks.json", "{\"version\":\"2.0.0\",\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        vscode("extensions.json", "// what we use\n{\"recommendations\": [\"golang.go\",],}");
+        File dir = project.toFile();
+        VsCodeFilesNotice.check(dir, () -> dir);
+        assertThat(told.get(0)[1]).contains("Quick Search").contains("1 VS Code extension:");
+        assertThat(clickOpens.get(0)).isEqualTo(dir);
+    }
+
+    @Test
+    @DisplayName("without recommendations the click still opens Quick Search")
+    void noExtensionsKeepsQuickSearch() throws Exception {
+        vscode("tasks.json", "{\"version\":\"2.0.0\",\"tasks\":[{\"label\":\"build\",\"type\":\"shell\",\"command\":\"make\"}]}");
+        vscode("extensions.json", "{\"recommendations\": []}");
+        File dir = project.toFile();
+        VsCodeFilesNotice.check(dir, () -> dir);
+        assertThat(told.get(0)[1]).doesNotContain("extension");
+        assertThat(clickOpens.get(0)).isNull();
+    }
+
+    @Test
+    @DisplayName("an extensions.json that recommends nothing, or does not parse, is not worth a notice")
+    void emptyOrBrokenExtensionsSayNothing() throws Exception {
+        vscode("extensions.json", "{\"unwantedRecommendations\": [\"ms-vscode.vscode-typescript-next\"]}");
+        File dir = project.toFile();
+        VsCodeFilesNotice.check(dir, () -> dir);
+        vscode("extensions.json", "{\"recommendations\": [");
+        VsCodeFilesNotice.check(dir, () -> dir);
+        assertThat(told).isEmpty();
     }
 
     @Test
@@ -119,6 +167,10 @@ class VsCodeFilesNoticeTest {
         VsCodeFilesNotice.Found both = new VsCodeFilesNotice.Found(1, 2, true);
         assertThat(VsCodeFilesNotice.detail(both, true)).contains("⇧⌘P").contains("settings.json");
         assertThat(VsCodeFilesNotice.detail(both, false)).contains("Ctrl+Shift+P");
+        assertThat(VsCodeFilesNotice.detail(both, true)).as("no extensions.json, no sentence about one")
+                .doesNotContain("extension");
+        assertThat(VsCodeFilesNotice.detail(new VsCodeFilesNotice.Found(1, 2, true, 12), true))
+                .contains("12 VS Code extensions");
     }
 
     @Test

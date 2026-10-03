@@ -65,11 +65,15 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("File: Save All", "System", "org.openide.actions.SaveAllAction"),
             cmd("Go to File...", "Tools", "org.netbeans.modules.jumpto.file.FileSearchAction"),
             cmd("Go to Symbol in Workspace...", "Edit", "org.netbeans.modules.jumpto.symbol.GoToSymbol"),
+            // opens Quick Search with @ typed: the file's symbols, as VS Code's palette does
+            cmd("Go to Symbol in Editor...", "Edit", "org.nmox.studio.editor.symbols.search.GoToSymbolInFileAction"),
             cmd("Search: Find in Files", "Edit", "org.netbeans.modules.search.FindInFilesAction"),
             cmd("Search: Replace in Files", "Edit", "org.netbeans.modules.search.ReplaceInFilesAction"),
             cmd("Preferences: Open Settings", "Window", "org.netbeans.modules.options.OptionsWindowAction"),
             cmd("Preferences: Open Keyboard Shortcuts", "Help", "org.nmox.studio.ui.shortcuts.KeyboardShortcutsAction"),
             cmd("Extensions: Install Extensions", "System", "org.netbeans.modules.autoupdate.ui.actions.PluginManagerAction"),
+            // what the repository's .vscode/extensions.json recommends, and what covers each here
+            cmd("Extensions: Show Recommended Extensions", "Tools", "org.nmox.studio.tools.vscode.RecommendedExtensionsAction"),
             cmd("View: Toggle Terminal", "Window", "org.nmox.studio.rack.projectstudio.ProjectTerminalAction"),
             // ^` brings an open terminal forward; "Create New" always starts one
             cmd("Terminal: Create New Terminal", "Window", "org.nmox.studio.rack.projectstudio.ProjectTerminalNewAction"),
@@ -81,6 +85,7 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("File: Copy Relative Path of Active File", "Edit", "org.nmox.studio.editor.share.CopyFilePathAction.Relative"),
             cmd("View: Toggle Minimap", "View", "org.nmox.studio.editor.minimap.ToggleMinimapAction"),
             cmd("View: Toggle Sticky Scroll", "View", "org.nmox.studio.editor.sticky.ToggleStickyScrollAction"),
+            cmd("View: Toggle Word Wrap", "View", "org.nmox.studio.editor.editing.ToggleWordWrapAction"),
             cmd("View: Close All Editors", "Window", "org.netbeans.core.windows.actions.CloseAllDocumentsAction"),
             cmd("View: Close Other Editors", "Window", "org.netbeans.core.windows.actions.CloseAllButThisAction"),
             cmd("Developer: Toggle Screencast Mode", "View", "org.nmox.studio.editor.present.ShowKeystrokesAction"),
@@ -136,6 +141,9 @@ public class VsCodeCommandSearchProvider implements SearchProvider {
             cmd("Help: Report Issue...", "Help", "org.nmox.studio.ui.report.ReportProblemAction"),
             inEditor("Format Document", "format"),
             inEditor("Toggle Line Comment", "toggle-comment"),
+            // the product's own kit actions, registered for every editor (editor module, editing package)
+            inEditor("Toggle Block Comment", "nmox-toggle-block-comment"),
+            inEditor("Expand Line Selection", "nmox-expand-line-selection"),
             inEditor("Go to Line/Column...", "goto"),
             inEditor("Go to Definition", "goto-declaration"),
             inEditor("Delete Line", "remove-line"),

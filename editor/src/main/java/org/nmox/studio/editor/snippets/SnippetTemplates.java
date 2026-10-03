@@ -1,0 +1,535 @@
+package org.nmox.studio.editor.snippets;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.nmox.studio.editor.snippets.SnippetBody.Node;
+import org.nmox.studio.editor.snippets.SnippetBody.Refused;
+import org.nmox.studio.editor.snippets.SnippetBody.TabStop;
+import org.nmox.studio.editor.snippets.SnippetBody.Text;
+import org.nmox.studio.editor.snippets.SnippetBody.Transform;
+import org.nmox.studio.editor.snippets.SnippetBody.Variable;
+
+/**
+ * A parsed VS Code snippet, translated into the platform's code-template
+ * language, which is what gives it tab stops, mirrors and one undo.
+ *
+ * <p><b>The target grammar</b>, read from the RELEASE310 bytecode of
+ * {@code ParametrizedTextParser} and {@code CodeTemplateParameterImpl}
+ * and then driven for real (see {@code SnippetEngineTest}):
+ * <ul>
+ * <li>in text, {@code $$} is a dollar and <code>$&#123;</code> opens a
+ *     parameter; a dollar before anything else is itself. So every dollar of a
+ *     body's literal text is written {@code $$}, and nothing else in
+ *     text needs escaping;</li>
+ * <li>a parameter is {@code ${name hint=value hint="va lue"}}; the
+ *     first of a name is the one typed into and later ones mirror it;
+ *     {@code default} is the text it starts with, {@code ordering} its
+ *     place in the Tab order, {@code editable=false} takes it out of
+ *     that order; {@code ${cursor}} is where the caret ends and
+ *     {@code ${no-indent}} tells the engine to leave the text as
+ *     written, which this translation needs because it has already
+ *     indented the body VS Code's way;</li>
+ * <li>inside a quoted hint a quote ends the value and a backslash
+ *     starts an escape, <b>and the engine's escape handling drops the
+ *     character after the escape</b> (measured:
+ *     {@code default="a\"bcd"} inserts {@code a"cd}). So a default
+ *     holding a quote or a backslash is NOT written into the template;
+ *     it travels beside it in {@link CodeTemplateText#values} and the
+ *     engine is handed it through its own
+ *     {@code CodeTemplateProcessor} door
+ *     ({@link SnippetTemplateProcessor}). Every other default is
+ *     written in place, where a dollar, a brace or a line break is an
+ *     ordinary character.</li>
+ * </ul>
+ *
+ * <p><b>What VS Code has and this engine has not</b>, and what is done
+ * about each:
+ * <ul>
+ * <li><i>Placeholders inside a placeholder's default</i>
+ *     ({@code ${1:foo ${2:bar}}}): the engine's parameters cannot nest.
+ *     The outer one is the tab stop, starting as {@code foo bar}; the
+ *     inner one is a stop of its own only where it also appears outside
+ *     ({@code … $2}), and then it starts as {@code bar}.</li>
+ * <li><i>Choices</i> ({@code ${1|one,two|}}): the engine has no list to
+ *     offer, so the first choice is the default and the rest are not
+ *     shown.</li>
+ * <li><i>A transform on a tab stop</i>
+ *     ({@code ${1/(.*)/${1:/upcase}/}}): written as a parameter that
+ *     cannot be typed into, recomputed from its source whenever the
+ *     source changes ({@link Live}); VS Code recomputes when the stop is
+ *     left, this recomputes as it is typed. A stop that appears ONLY
+ *     transformed has nothing to type into and refuses the snippet.</li>
+ * <li><i>{@code ${0:text}}</i>: the text is inserted and the caret
+ *     lands after it.</li>
+ * </ul>
+ *
+ * <p>Indentation is VS Code's: every line of the body's text after its
+ * first begins with the caret line's own leading whitespace, and each
+ * leading tab of a body line becomes the editor's indent unit. The
+ * values of variables are inserted as they are.
+ *
+ * <p>Pure: a function of the body and the {@link SnippetContext}.
+ */
+public final class SnippetTemplates {
+
+    /** The parameter that tells the engine not to re-indent what it inserts. */
+    static final String NO_INDENT = "${no-indent}";
+
+    private SnippetTemplates() {
+    }
+
+    /**
+     * A snippet as the code-template engine takes it.
+     *
+     * @param text the parametrized text, for {@code CodeTemplateManager.createTemporary}
+     * @param values parameter name to starting text, for the defaults the grammar cannot carry
+     * @param lives the parameters recomputed from another as it is typed
+     * @param plain the text the snippet inserts before anything is typed, for an editor the engine cannot drive
+     * @param plainCaret where in {@code plain} the caret ends
+     */
+    public record CodeTemplateText(String text, Map<String, String> values, List<Live> lives,
+            String plain, int plainCaret) {
+    }
+
+    /**
+     * The most characters one accepted snippet may insert. VS Code has
+     * no such bound; a repository's snippet file is somebody else's, and
+     * a body of a few hundred characters can name its placeholders or
+     * the caret's line so often that the text runs to millions, all of
+     * it built on the event thread when the snippet is accepted.
+     */
+    public static final int MAX_INSERTED_CHARS = 1_000_000;
+
+    /**
+     * Everything one translation may build, counted across every piece
+     * of text it makes (the template, the plain text, each placeholder's
+     * default as it is read): what bounds the memory of a body whose
+     * defaults name one another, before any one piece is past
+     * {@link #MAX_INSERTED_CHARS}.
+     */
+    static final long MAX_BUILT_CHARS = 8L * MAX_INSERTED_CHARS;
+
+    /**
+     * The most times one translation may step into a body's nodes while
+     * reading placeholder defaults. A body is at most
+     * {@link SnippetBody#MAX_NODES} nodes and each default is read once
+     * (for each of the four ways its first line can sit); only defaults
+     * that name one another in a ring are read again, and this is where
+     * that stops.
+     */
+    static final int MAX_STEPS = 1_000_000;
+
+    /**
+     * The snippet would insert more than {@link #MAX_INSERTED_CHARS}
+     * characters; the status line names this refusal, since it is the one
+     * the user can understand without the log.
+     */
+    public static final class TooLarge extends Refused {
+
+        private static final long serialVersionUID = 1L;
+
+        TooLarge() {
+            super("it would insert more than " + MAX_INSERTED_CHARS + " characters");
+        }
+    }
+
+    /**
+     * A parameter that is another one, transformed.
+     *
+     * @param source the parameter typed into
+     * @param target the parameter that shows it transformed
+     * @param transform how
+     */
+    public record Live(String source, String target, Transform transform) {
+    }
+
+    /**
+     * Translates {@code body} for the editor {@code ctx} describes.
+     *
+     * @throws Refused when a transform runs past its bounds on this
+     *         file's values, or a tab stop is only ever transformed;
+     *         nothing is inserted then
+     */
+    public static CodeTemplateText toCodeTemplate(SnippetBody body, SnippetContext ctx) throws Refused {
+        return toCodeTemplate(body, ctx, BUDGET_NANOS);
+    }
+
+    /**
+     * How long ALL the transforms of one translation may take together,
+     * in nanoseconds. Each transform has its own clock
+     * ({@link SnippetTransforms#BUDGET_NANOS}), and a body may hold
+     * hundreds of them, each stopping just short of it; this is what an
+     * accepted snippet can cost the event thread at the very most.
+     */
+    static final long BUDGET_NANOS = 250_000_000L;
+
+    /** {@link #toCodeTemplate(SnippetBody, SnippetContext)} with the transforms given {@code budgetNanos} between them. */
+    static CodeTemplateText toCodeTemplate(SnippetBody body, SnippetContext ctx, long budgetNanos) throws Refused {
+        Run run = new Run(ctx, budgetNanos);
+        List<Node> nodes = run.invent(body.nodes(), maxStop(body.nodes(), 0));
+        run.collectDefaults(nodes);
+        run.emit(nodes);
+        for (Live live : run.lives) {
+            int number = Integer.parseInt(live.source().substring(1));
+            if (!run.masters.contains(number)) {
+                throw new Refused("tab stop " + number
+                        + " is only written with a transform, so there is nothing to type into");
+            }
+        }
+        int caret = run.plainCaret < 0 ? run.plain.length() : run.plainCaret;
+        return new CodeTemplateText(NO_INDENT + run.template, Map.copyOf(run.values),
+                List.copyOf(run.lives), run.plain.toString(), caret);
+    }
+
+    private static int maxStop(List<Node> nodes, int max) {
+        for (Node n : nodes) {
+            if (n instanceof TabStop ts) {
+                max = Math.max(max, maxStop(ts.children(), Math.max(max, ts.number())));
+            } else if (n instanceof Variable v) {
+                max = Math.max(max, maxStop(v.children(), max));
+            }
+        }
+        return max;
+    }
+
+    /** Whether the template grammar carries {@code value} exactly inside a quoted hint. */
+    static boolean grammarCarries(String value) {
+        return value.indexOf('"') < 0 && value.indexOf('\\') < 0;
+    }
+
+    private static final class Run {
+
+        private final SnippetContext ctx;
+        private final Map<Integer, List<Node>> defaults = new HashMap<>();
+        private final Map<Integer, String> defaultText = new HashMap<>();
+        /** A stop's default as read at one kind of position, keyed (number, at start, after a break): each read once. */
+        private final Map<Long, String> flattened = new HashMap<>();
+        /** How many times a ring of defaults was cut short; a reading that cut one is not kept in {@link #flattened}. */
+        private int cuts;
+        private long built;
+        private int steps;
+        private final Map<String, Integer> invented = new LinkedHashMap<>();
+        private final Map<Integer, Integer> transformed = new HashMap<>();
+        private final Set<Integer> masters = new HashSet<>();
+        private final StringBuilder template = new StringBuilder();
+        private final StringBuilder plain = new StringBuilder();
+        private final Map<String, String> values = new LinkedHashMap<>();
+        private final List<Live> lives = new ArrayList<>();
+        private final long budgetNanos;
+        private final long deadline;
+        private int next;
+        private int plainCaret = -1;
+
+        Run(SnippetContext ctx, long budgetNanos) {
+            this.ctx = ctx;
+            this.budgetNanos = budgetNanos;
+            this.deadline = System.nanoTime() + budgetNanos;
+        }
+
+        /** One transform, on whatever is left of this translation's time. */
+        private String transform(Transform transform, String input) throws Refused {
+            long left = deadline - System.nanoTime();
+            if (left <= 0) {
+                throw new Refused("its transforms did not finish within "
+                        + (budgetNanos / 1_000_000L) + " ms between them");
+            }
+            return SnippetTransforms.apply(transform, input, Math.min(left, SnippetTransforms.BUDGET_NANOS));
+        }
+
+        /**
+         * VS Code's rule for a name it does not know: {@code ${foo}}
+         * becomes a placeholder holding {@code foo}, numbered after the
+         * body's own, and the same name twice is one placeholder twice.
+         * A name it does not know WITH a default stays a variable, which
+         * then inserts the default.
+         */
+        List<Node> invent(List<Node> nodes, int max) {
+            if (next == 0) {
+                next = max + 1;
+            }
+            List<Node> out = new ArrayList<>(nodes.size());
+            for (Node n : nodes) {
+                if (n instanceof Variable v) {
+                    if (v.children().isEmpty() && !SnippetVariables.known(v.name())) {
+                        Integer number = invented.get(v.name());
+                        if (number == null) {
+                            number = next++;
+                            invented.put(v.name(), number);
+                        }
+                        out.add(new TabStop(number, List.of(new Text(v.name())), List.of(), null));
+                    } else {
+                        out.add(new Variable(v.name(), invent(v.children(), max), v.transform()));
+                    }
+                } else if (n instanceof TabStop ts) {
+                    out.add(new TabStop(ts.number(), invent(ts.children(), max), ts.choices(), ts.transform()));
+                } else {
+                    out.add(n);
+                }
+            }
+            return out;
+        }
+
+        /** The first occurrence of a number that HAS a value gives every occurrence its value. */
+        void collectDefaults(List<Node> nodes) {
+            for (Node n : nodes) {
+                if (n instanceof TabStop ts) {
+                    if (ts.number() > 0 && !defaults.containsKey(ts.number())) {
+                        if (!ts.children().isEmpty()) {
+                            defaults.put(ts.number(), ts.children());
+                        } else if (!ts.choices().isEmpty()) {
+                            defaults.put(ts.number(), List.of(new Text(ts.choices().get(0))));
+                        }
+                    }
+                    collectDefaults(ts.children());
+                } else if (n instanceof Variable v) {
+                    collectDefaults(v.children());
+                }
+            }
+        }
+
+        private boolean atStart() {
+            return plain.length() == 0;
+        }
+
+        private boolean afterBreak() {
+            return plain.length() > 0 && plain.charAt(plain.length() - 1) == '\n';
+        }
+
+        void emit(List<Node> nodes) throws Refused {
+            for (Node n : nodes) {
+                if (n instanceof Text t) {
+                    literal(adjust(t.value(), atStart(), afterBreak()));
+                } else if (n instanceof Variable v) {
+                    String value = value(v);
+                    if (value != null) {
+                        literal(value);
+                    } else {
+                        emit(v.children());
+                    }
+                } else if (n instanceof TabStop ts) {
+                    emit(ts);
+                }
+            }
+        }
+
+        private void emit(TabStop ts) throws Refused {
+            int number = ts.number();
+            if (number == 0) {
+                if (!ts.children().isEmpty()) {
+                    literal(flat(ts.children(), atStart(), afterBreak(), new HashSet<>()));
+                }
+                if (plainCaret < 0) {
+                    plainCaret = plain.length();
+                    template.append("${cursor}");
+                }
+                return;
+            }
+            String start = defaultText(number);
+            String name = "t" + number;
+            if (ts.transform() != null) {
+                int nth = transformed.merge(number, 1, Integer::sum);
+                String target = name + "x" + nth;
+                String shown = transform(ts.transform(), start);
+                parameter(target, shown, " editable=false");
+                lives.add(new Live(name, target, ts.transform()));
+                plainText(shown);
+            } else if (masters.add(number)) {
+                parameter(name, start, " ordering=" + number);
+                plainText(start);
+            } else {
+                template.append("${").append(name).append('}');
+                plainText(start);
+            }
+        }
+
+        private String defaultText(int number) throws Refused {
+            String known = defaultText.get(number);
+            if (known == null) {
+                known = stopText(number, atStart(), afterBreak(), new HashSet<>());
+                defaultText.put(number, known);
+            }
+            return known;
+        }
+
+        private void parameter(String name, String start, String hints) throws Refused {
+            template.append("${").append(name);
+            if (grammarCarries(start)) {
+                template.append(" default=\"").append(start).append('"');
+            } else {
+                values.put(name, start);
+            }
+            template.append(hints).append('}');
+            spend(start.length() + name.length() + hints.length());
+        }
+
+        /** The plain text grown by one occurrence of a stop. */
+        private void plainText(String text) throws Refused {
+            plain.append(text);
+            spend(text.length());
+        }
+
+        /** Literal text: in the template every dollar is doubled, or the engine would read a parameter. */
+        private void literal(String text) throws Refused {
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == '$') {
+                    template.append('$');
+                }
+                template.append(c);
+            }
+            plain.append(text);
+            spend(2L * text.length());
+        }
+
+        /**
+         * Counts {@code chars} more built; refuses the snippet once what it
+         * inserts, or everything built for it, is past its bound. The one
+         * check for both: the template is the plain text with its dollars
+         * doubled and its parameters named, so it is bounded by the two.
+         */
+        private void spend(long chars) throws TooLarge {
+            built += chars;
+            if (plain.length() > MAX_INSERTED_CHARS || built > MAX_BUILT_CHARS) {
+                throw new TooLarge();
+            }
+        }
+
+        /** A variable's value, transformed when it carries a transform; null when it is not set. */
+        private String value(Variable v) throws Refused {
+            String raw = SnippetVariables.resolve(v.name(), ctx);
+            if (raw != null && raw.length() > SnippetVariables.MAX_VALUE_CHARS) {
+                throw new Refused("$" + v.name() + " holds " + raw.length() + " characters, over the "
+                        + SnippetVariables.MAX_VALUE_CHARS + " a snippet takes from a variable");
+            }
+            if (v.transform() != null) {
+                return transform(v.transform(), raw == null ? "" : raw);
+            }
+            return raw;
+        }
+
+        /** What a placeholder's default reads as: its text, with everything inside it at its own default. */
+        private String flat(List<Node> nodes, boolean atStart, boolean afterBreak, Set<Integer> visiting)
+                throws Refused {
+            StringBuilder b = new StringBuilder();
+            for (Node n : nodes) {
+                step();
+                boolean start = atStart && b.length() == 0;
+                boolean broke = b.length() == 0 ? afterBreak : b.charAt(b.length() - 1) == '\n';
+                String piece;
+                if (n instanceof Text t) {
+                    piece = adjust(t.value(), start, broke);
+                } else if (n instanceof Variable v) {
+                    String value = value(v);
+                    piece = value != null ? value : flat(v.children(), start, broke, visiting);
+                } else if (n instanceof TabStop ts) {
+                    piece = ts.number() == 0 ? flat(ts.children(), start, broke, visiting)
+                            : stopText(ts.number(), start, broke, visiting);
+                } else {
+                    continue;
+                }
+                b.append(piece);
+                spend(piece.length());
+            }
+            return b.toString();
+        }
+
+        /**
+         * Stop {@code number}'s default as it reads at a position, each
+         * read once for each kind of position: a default that names another
+         * stop four times, which names another four times, sixteen deep,
+         * is read sixteen times and not four billion. A stop inside its
+         * own default ({@code ${1:a ${1}}}) reads as nothing there rather
+         * than forever, and a reading cut short that way depends on where
+         * it began, so it is not kept.
+         */
+        private String stopText(int number, boolean start, boolean broke, Set<Integer> visiting) throws Refused {
+            long key = ((long) number << 2) | (start ? 2 : 0) | (broke ? 1 : 0);
+            String known = flattened.get(key);
+            if (known != null) {
+                return known;
+            }
+            if (!visiting.add(number)) {
+                cuts++;
+                return "";
+            }
+            try {
+                List<Node> inner = defaults.get(number);
+                int before = cuts;
+                String text = inner == null ? "" : flat(inner, start, broke, visiting);
+                if (cuts == before) {
+                    flattened.put(key, text);
+                }
+                return text;
+            } finally {
+                visiting.remove(number);
+            }
+        }
+
+        /** One step into a default; refuses a body whose defaults are read without end, or past the clock. */
+        private void step() throws Refused {
+            if (++steps > MAX_STEPS) {
+                throw new Refused("its placeholders name one another more than " + MAX_STEPS + " times over");
+            }
+            if ((steps & 0xFF) == 0 && System.nanoTime() - deadline > 0) {
+                throw new Refused("its placeholders were not read within "
+                        + (budgetNanos / 1_000_000L) + " ms");
+            }
+        }
+
+        /**
+         * VS Code's whitespace rule for one run of a body's text: each
+         * line after the first takes the caret line's indentation, and so
+         * does the first when the text before it ended a line; a line's
+         * leading tabs become the editor's unit. The very start of a
+         * snippet is only normalized, since it lands where the caret is.
+         */
+        private String adjust(String text, boolean atStart, boolean afterBreak) {
+            if (text.indexOf('\n') < 0 && text.indexOf('\t') < 0 && !afterBreak) {
+                return text;
+            }
+            StringBuilder out = new StringBuilder(text.length() + 16);
+            int from = 0;
+            boolean first = true;
+            while (true) {
+                int nl = text.indexOf('\n', from);
+                String line = nl < 0 ? text.substring(from) : text.substring(from, nl);
+                if (!first || afterBreak) {
+                    out.append(ctx.lineIndent()).append(normalize(line));
+                } else if (atStart) {
+                    out.append(normalize(line));
+                } else {
+                    out.append(line);
+                }
+                if (nl < 0) {
+                    return out.toString();
+                }
+                out.append('\n');
+                from = nl + 1;
+                first = false;
+            }
+        }
+
+        /** A line with each of its LEADING tabs as the editor's indent unit; a tab further in is a tab. */
+        private String normalize(String line) {
+            int i = 0;
+            StringBuilder lead = null;
+            while (i < line.length() && (line.charAt(i) == '\t' || line.charAt(i) == ' ')) {
+                if (line.charAt(i) == '\t') {
+                    if (lead == null) {
+                        lead = new StringBuilder(line.substring(0, i));
+                    }
+                    lead.append(ctx.indentUnit());
+                } else if (lead != null) {
+                    lead.append(' ');
+                }
+                i++;
+            }
+            return lead == null ? line : lead + line.substring(i);
+        }
+    }
+}

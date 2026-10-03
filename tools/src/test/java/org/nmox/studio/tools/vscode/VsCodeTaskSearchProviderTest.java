@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -48,11 +48,10 @@ class VsCodeTaskSearchProviderTest {
                 { "label": "test", "type": "process", "command": "cargo", "args": ["test", "--quiet"],
                   "options": { "cwd": "crates", "env": { "RUST_LOG": "${workspaceFolderBasename}" } },
                   "group": "test" },
-                { "label": "deploy", "type": "shell", "command": "./deploy.sh", "args": ["${input:env}"] },
-                { "label": "release", "type": "shell", "command": "make release", "dependsOn": ["build", "test"] },
+                { "label": "deploy", "type": "shell", "command": "./deploy.sh", "args": ["${config:deploy.env}"] },
+                { "label": "release", "type": "shell", "command": "make release", "dependsOn": ["build", "missing"] },
                 { "label": "npm: lint", "type": "npm", "script": "lint" },
               ],
-              "inputs": [ { "id": "env", "type": "pickString", "options": ["dev", "prod"] } ],
             }
             """;
 
@@ -61,7 +60,9 @@ class VsCodeTaskSearchProviderTest {
 
     private final Predicate<File> realTrust = VsCodeTaskSearchProvider.trustCheck;
     private final VsCodeTaskSearchProvider.Spawner realSpawner = VsCodeTaskSearchProvider.spawner;
-    private final BiConsumer<File, String> realNpm = VsCodeTaskSearchProvider.npmRunner;
+    private final BiFunction<File, String, CompletableFuture<Integer>> realNpm = VsCodeTaskSearchProvider.npmRunner;
+    private final java.util.function.Supplier<VsCodeTasks.EditorContext> realEditor = VsCodeTaskSearchProvider.editorProbe;
+    private final BiFunction<String, VsCodeTasks.InputDef, java.util.Optional<String>> realAsker = VsCodeTaskSearchProvider.asker;
     private final Consumer<String> realStatus = VsCodeTaskSearchProvider.statusSink;
     private final VsCodeTasks.Host realHost = VsCodeTaskSearchProvider.host;
 
@@ -78,11 +79,15 @@ class VsCodeTaskSearchProviderTest {
         VsCodeTaskSearchProvider.statusSink = said::add;
         VsCodeTaskSearchProvider.spawner = (label, launch, dir) -> {
             spawned.add(new Object[] {label, launch, dir});
-            return CompletableFuture.completedFuture(0);
+            return CompletableFuture.completedFuture(new VsCodeTaskSearchProvider.Exit(0, false));
         };
         VsCodeTaskSearchProvider.trustCheck = dir -> {
             asked.add(dir.getPath());
             return true;
+        };
+        VsCodeTaskSearchProvider.editorProbe = () -> VsCodeTasks.EditorContext.NONE;
+        VsCodeTaskSearchProvider.asker = (task, input) -> {
+            throw new AssertionError("no test here expects a question: " + input.id());
         };
     }
 
@@ -93,6 +98,8 @@ class VsCodeTaskSearchProviderTest {
         VsCodeTaskSearchProvider.npmRunner = realNpm;
         VsCodeTaskSearchProvider.statusSink = realStatus;
         VsCodeTaskSearchProvider.host = realHost;
+        VsCodeTaskSearchProvider.editorProbe = realEditor;
+        VsCodeTaskSearchProvider.asker = realAsker;
         LiveRuns.stopAll(); // a fixture killer has no process whose exit would remove it
         LiveRuns.clearForTest();
     }
@@ -184,8 +191,8 @@ class VsCodeTaskSearchProviderTest {
         enter("empty");
 
         assertThat(said).containsExactly(
-                "This task asks VS Code for ${input:env}; NMOX Studio cannot supply it.",
-                "Task \"release\" runs after build, test in VS Code; run that first.",
+                "This task asks VS Code for ${config:deploy.env}; NMOX Studio cannot supply it.",
+                "Task \"release\" depends on \"missing\", which tasks.json does not define; nothing was run.",
                 "Task \"up\" runs in .., outside the project; NMOX Studio will not run it there.",
                 "Task \"gone\" runs in missing, which does not exist.",
                 "Task \"g\" is a gulp task, which a VS Code extension provides; NMOX Studio cannot run it.",
@@ -202,6 +209,7 @@ class VsCodeTaskSearchProviderTest {
         VsCodeTaskSearchProvider.npmRunner = (d, s) -> {
             dir.set(d);
             script.set(s);
+            return CompletableFuture.completedFuture(0);
         };
         enter("npm: lint");
         assertThat(dir.get()).isEqualTo(project.toFile());
@@ -217,7 +225,10 @@ class VsCodeTaskSearchProviderTest {
     void npmTaskKeepSafeSaysNothing() {
         List<String> events = Collections.synchronizedList(new ArrayList<>());
         VsCodeTaskSearchProvider.statusSink = s -> events.add("said: " + s);
-        VsCodeTaskSearchProvider.npmRunner = (d, s) -> events.add("ran: " + s);
+        VsCodeTaskSearchProvider.npmRunner = (d, s) -> {
+            events.add("ran: " + s);
+            return CompletableFuture.completedFuture(0);
+        };
         VsCodeTaskSearchProvider.trustCheck = dir -> {
             events.add("asked");
             return false;
@@ -271,7 +282,8 @@ class VsCodeTaskSearchProviderTest {
         Launch launch = new Launch(List.of("/bin/sh", "-c",
                 "echo \"  Local:   http://localhost:45699/\"; while [ -e keepalive ]; do :; done"),
                 project.toFile(), Map.of("FROM_TASK", "1"));
-        CompletableFuture<Integer> exit = VsCodeTaskSearchProvider.launch("serve", launch, project.toFile());
+        CompletableFuture<VsCodeTaskSearchProvider.Exit> exit =
+                VsCodeTaskSearchProvider.launch("serve", launch, project.toFile());
 
         assertThat(poll(() -> ServingRegistry.getDefault().snapshot().stream()
                 .anyMatch(s -> s.url().equals("http://localhost:45699/")), 5_000))
@@ -282,7 +294,8 @@ class VsCodeTaskSearchProviderTest {
 
         LiveRuns.stopAll();
         Files.deleteIfExists(project.resolve("keepalive"));
-        exit.get(10, TimeUnit.SECONDS);
+        assertThat(exit.get(10, TimeUnit.SECONDS).stopped())
+                .as("a run the ■ ended says so, whatever code the process left with").isTrue();
         assertThat(poll(() -> ServingRegistry.getDefault().snapshot().stream()
                 .noneMatch(s -> s.url().equals("http://localhost:45699/")), 5_000))
                 .as("the serving died with the process").isTrue();
@@ -293,8 +306,9 @@ class VsCodeTaskSearchProviderTest {
     @DisplayName("a task whose program is not on PATH says so on the status line")
     void launchFailureSpeaks() throws Exception {
         Launch launch = new Launch(List.of("nmox-no-such-tool-" + System.nanoTime()), project.toFile(), Map.of());
-        int code = VsCodeTaskSearchProvider.launch("ghost", launch, project.toFile()).get(10, TimeUnit.SECONDS);
-        assertThat(code).isEqualTo(-1);
+        VsCodeTaskSearchProvider.Exit exit =
+                VsCodeTaskSearchProvider.launch("ghost", launch, project.toFile()).get(10, TimeUnit.SECONDS);
+        assertThat(exit).isEqualTo(new VsCodeTaskSearchProvider.Exit(-1, false));
         assertThat(said).containsExactly("Task \"ghost\" did not start — the Output window says why.");
         assertThat(LiveRuns.live()).noneMatch(r -> r.id().startsWith("vscode-task:"));
     }
@@ -308,16 +322,32 @@ class VsCodeTaskSearchProviderTest {
         String code = src.replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("//[^\n]*", "");
         assertThat(code).contains("trustCheck = dir -> WorkspaceTrust.requestTrust(dir)")
                 .contains("spawner = VsCodeTaskSearchProvider::launch");
-        int m = code.indexOf("static void execute(");
+        // Enter and a caller that waits (a preLaunchTask) are one body: execute() only delegates
+        int e = code.indexOf("static void execute(");
+        assertThat(code.substring(e, code.indexOf("\n    }\n", e))).contains("executeThen(project, task, editor, null)")
+                .doesNotContain("new Chain(");
+        assertThat(code.split("new Chain\\(", -1)).as("one place a run is started").hasSize(2);
+        int m = code.indexOf("static void executeThen(");
         String body = code.substring(m, code.indexOf("\n    }\n", m));
-        int refuse = body.indexOf("instanceof Refused");
-        int gate = body.indexOf("trustCheck.test(project)");
-        int spawn = body.indexOf("spawner.spawn(");
-        assertThat(refuse).isPositive();
-        assertThat(gate).as("the trust gate is present").isGreaterThan(refuse);
-        assertThat(spawn).as("the spawn comes after the gate").isGreaterThan(gate);
+        int start = body.indexOf("new Chain(");
+        assertThat(start).as("executeThen() starts the run").isPositive();
+        assertThat(body.substring(0, start)).as("and every way to that start passes the trust gate")
+                .contains("trustCheck.test(folder)").contains("trustCheck.test(project)");
+        assertThat(body.lastIndexOf("instanceof Refusal")).as("a refusal ends execute() before the start")
+                .isBetween(0, start);
+        assertThat(body.indexOf("trustCheck.test(project)"))
+                .as("where the file asks questions, trust is asked before them")
+                .isBetween(0, body.indexOf("asker.apply("));
+        // a task is started in one place only, and that place is the run execute() started
+        int chain = code.indexOf("private static final class Chain");
+        assertThat(chain).isGreaterThan(m);
+        for (String call : new String[] {"spawner.spawn(", "npmRunner.apply("}) {
+            assertThat(code.indexOf(call)).as(call + " is called inside Chain").isGreaterThan(chain);
+            assertThat(code.indexOf(call)).as(call + " is called once")
+                    .isEqualTo(code.lastIndexOf(call));
+        }
         assertThat(code).as("the lane posts execute(), so the EDT never waits on a dialog or a fork")
-                .contains("RP.post(() -> execute(project, task))");
+                .contains("RP.post(() -> execute(project, task, editor))");
     }
 
     @Test

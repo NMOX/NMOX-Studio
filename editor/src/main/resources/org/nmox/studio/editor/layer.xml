@@ -30,6 +30,24 @@
         </folder>
     </folder>
 
+    <!-- Quick Search into the file being edited: VS Code's Go to Symbol in
+         Editor. Position 220 sits right under VS Code's command titles
+         (210) and above the live servers (275); the QuickSearch folder's
+         categories, read from every module of the assembled cluster, hold
+         -1, 100, 200, 210, 275 to 279, 300 to 360 and 400.
+         The command is the platform's way to search this category alone:
+         a WORD and a space (CommandEvaluator's pattern is \w+ \s+ .+), so
+         it cannot be VS Code's "@". "m name" is that form (a, o, p, r, s
+         and t are taken); "@name" is understood by the provider itself. -->
+    <folder name="QuickSearch">
+        <folder name="FileSymbols">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.nmox.studio.editor.symbols.search.Bundle"/>
+            <attr name="position" intvalue="220"/>
+            <attr name="command" stringvalue="m"/>
+            <file name="org-nmox-studio-editor-symbols-search-FileSymbolSearchProvider.instance"/>
+        </folder>
+    </folder>
+
     <folder name="Editors">
         <!-- v2.59.0 the minimap: an East, non-scrollable side bar on EVERY
              editor (root folder). Same registration shape as the platform's
@@ -674,6 +692,22 @@
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
+                        <attr name="position" intvalue="9990"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -707,6 +741,23 @@
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; macOS only here: this profile binds Alt+Shift+A itself on Windows and Linux -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
+                        <attr name="position" intvalue="9990"/>
+                    </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
                         <attr name="position" intvalue="9999"/>
@@ -725,6 +776,28 @@
                     <file name="vscode-format-keybindings-mac.xml"
                           url="vscode-format-keybindings-mac.xml">
                         <attr name="position" intvalue="9993"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
+                        <attr name="position" intvalue="9990"/>
+                    </file>
+                    <!-- macOS: Cmd+L = expand line selection; on Windows and Linux Ctrl+L is Emacs's own recenter -->
+                    <file name="vscode-line-keybindings.xml"
+                          url="vscode-line-keybindings.xml">
+                        <attr name="position" intvalue="9989"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
                     </file>
                     <file name="nmox-keybindings.xml"
@@ -749,6 +822,27 @@
                           url="vscode-editing-keybindings-mac.xml">
                         <attr name="position" intvalue="9995"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; free here on every OS -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
+                        <attr name="position" intvalue="9990"/>
+                    </file>
+                    <!-- Cmd+L (Ctrl+L) = expand line selection; Idea and (on macOS) Emacs leave the chord free -->
+                    <file name="vscode-line-keybindings.xml"
+                          url="vscode-line-keybindings.xml">
+                        <attr name="position" intvalue="9989"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">
@@ -783,6 +877,23 @@
                           url="vscode-format-keybindings-mac.xml">
                         <attr name="position" intvalue="9993"/>
                         <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Shift+Opt+A (Shift+Alt+A) = toggle block comment; macOS only here: this profile binds Alt+Shift+A itself on Windows and Linux -->
+                    <file name="vscode-block-comment-keybindings.xml"
+                          url="vscode-block-comment-keybindings.xml">
+                        <attr name="position" intvalue="9992"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_MAC"/>
+                    </file>
+                    <!-- Linux: Ctrl+Shift+A = toggle block comment, VS Code's Linux chord; free there in all five -->
+                    <file name="vscode-block-comment-keybindings-linux.xml"
+                          url="vscode-block-comment-keybindings-linux.xml">
+                        <attr name="position" intvalue="9991"/>
+                        <attr name="nbeditor-settings-targetOS" stringvalue="OS_LINUX"/>
+                    </file>
+                    <!-- Opt+Z (Alt+Z) = toggle word wrap; free in all five on every OS -->
+                    <file name="vscode-word-wrap-keybindings-also-mac.xml"
+                          url="vscode-word-wrap-keybindings-also-mac.xml">
+                        <attr name="position" intvalue="9990"/>
                     </file>
                     <file name="nmox-keybindings.xml"
                           url="nmox-keybindings.xml">

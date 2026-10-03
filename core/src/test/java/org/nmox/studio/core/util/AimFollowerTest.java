@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.nmox.studio.core.spi.ProjectAim;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Node;
 import org.openide.nodes.Children;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,6 +97,21 @@ class AimFollowerTest {
         }
     }
 
+    /**
+     * The node every fake resolve returns, built once before any test
+     * waits. Built inside the resolver, the FIRST node of the JVM loaded
+     * the whole node system on the publisher's one-thread lane AFTER the
+     * test had recorded the resolve: on a cold Windows runner that held
+     * the lane for about fifteen seconds and the next three tests' waits
+     * ran out behind it (PR 848).
+     */
+    private static Node MARKER;
+
+    @org.junit.jupiter.api.BeforeAll
+    static void buildTheMarkerFirst() {
+        MARKER = new AbstractNode(Children.LEAF);
+    }
+
     /** Tiny poll loop — the publisher resolves on its own RP lane. */
     private static void await(java.util.function.BooleanSupplier cond) throws Exception {
         long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
@@ -115,7 +131,7 @@ class AimFollowerTest {
         // resolve to a marker node and record which dir was asked for
         f.publisherForTest().resolver = dir -> {
             published.add(dir);
-            return new AbstractNode(Children.LEAF);
+            return MARKER;
         };
         return f;
     }
@@ -241,7 +257,7 @@ class AimFollowerTest {
         }, () -> provider[0]);
         f.publisherForTest().resolver = dir -> {
             published.add(dir);
-            return new AbstractNode(Children.LEAF);
+            return MARKER;
         };
 
         f.showing();

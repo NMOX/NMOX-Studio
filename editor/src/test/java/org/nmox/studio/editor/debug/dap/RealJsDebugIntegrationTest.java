@@ -241,6 +241,235 @@ class RealJsDebugIntegrationTest {
         nb.awaitEvent("terminated");
     }
 
+    /* ------------------------------------------- what a launch.json can ask for */
+
+    /** A session opened and initialized, the way every test here begins. */
+    private Client open() throws Exception {
+        server = JsDebugServer.start(SERVER_JS);
+        proxy = DapProxy.start(server.port(), () -> { });
+        Client nb = new Client(proxy.clientInput(), proxy.clientOutput());
+        nb.request("initialize", new JSONObject()
+                .put("clientID", "test").put("adapterID", "test")
+                .put("pathFormat", "path")
+                .put("linesStartAt1", true).put("columnsStartAt1", true));
+        nb.awaitResponse("initialize");
+        return nb;
+    }
+
+    /**
+     * A project folder under this module's {@code target}, not a {@code
+     * @TempDir}: these launches run IN the folder (a runtime is looked for
+     * under it, {@code npm run} reads its package.json), and on Windows a
+     * process's working directory cannot be deleted while it lives — the
+     * reason every other test here keeps its cwd out of the temp dir.
+     */
+    private static Path workspace(String name) throws IOException {
+        return Files.createDirectories(Path.of("target", "real-jsdebug", name + "-" + System.nanoTime())
+                .toAbsolutePath()).toRealPath();
+    }
+
+    @Test
+    @DisplayName("runtimeArgs reach node itself, ahead of the program and its own args — the exact request, the real adapter")
+    void runtimeArgsReachTheRuntime(@TempDir Path dir) throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        Path probe = dir.resolve("probe.js");
+        Files.writeString(probe, """
+                console.log('EXEC=' + process.execArgv.join('|') + ' ARGS=' + process.argv.slice(2).join('|'));
+                """, StandardCharsets.UTF_8);
+
+        Client nb = open();
+        nb.request("launch", new JSONObject(org.nmox.studio.editor.debug.DapDebugAction.nodeLaunchRequest(
+                "probe", probe.toFile(), SERVER_JS.getParentFile(), List.of("after"), Map.of(),
+                null, List.of("--stack-trace-limit=7"), SERVER_JS.getParentFile())));
+        nb.awaitEvent("initialized");
+        nb.request("configurationDone", new JSONObject());
+
+        // the adapter adds flags of its own on a newer Node
+        // (--experimental-network-inspection on 24): the runtimeArgs are
+        // among the runtime's arguments, not necessarily the only ones
+        String out = nb.awaitOutput("EXEC=").getJSONObject("body").getString("output").strip();
+        String exec = out.substring("EXEC=".length(), out.indexOf(" ARGS="));
+        assertThat(exec.split("\\|")).contains("--stack-trace-limit=7");
+        assertThat(out).endsWith("ARGS=after");
+    }
+
+    @Test
+    @DisplayName("a runtime named without a path is found in the workspace's node_modules/.bin, as under VS Code")
+    void bareRuntimeIsFoundInNodeModulesBin() throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        assumeTrue(!org.openide.util.BaseUtilities.isWindows(), "the stand-in runtime is a shell script");
+        Path dir = workspace("bare-runtime");
+        Path runtime = Files.createDirectories(dir.resolve("node_modules/.bin")).resolve("nmox-standin-runtime");
+        Files.writeString(runtime, "#!/bin/sh\nNMOX_STANDIN=ran\nexport NMOX_STANDIN\nexec node \"$@\"\n", StandardCharsets.UTF_8);
+        assertThat(runtime.toFile().setExecutable(true)).isTrue();
+        Path probe = dir.resolve("probe.js");
+        Files.writeString(probe, "console.log('STANDIN=' + process.env.NMOX_STANDIN);\n", StandardCharsets.UTF_8);
+
+        Client nb = open();
+        nb.request("launch", new JSONObject(org.nmox.studio.editor.debug.DapDebugAction.nodeLaunchRequest(
+                "probe", probe.toFile(), dir.toFile(), List.of(), Map.of(),
+                "nmox-standin-runtime", List.of(), dir.toFile())));
+        nb.awaitEvent("initialized");
+        nb.request("configurationDone", new JSONObject());
+
+        assertThat(nb.awaitOutput("STANDIN=").getJSONObject("body").getString("output"))
+                .as("the program ran under the runtime the workspace carries, not under plain node")
+                .contains("STANDIN=ran");
+    }
+
+    @Test
+    @DisplayName("a runtime that is the whole command (npm run dev): the script it runs gets a session and hits its breakpoint")
+    void npmRunDevDebugsTheScriptItRuns() throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        assumeTrue(npmPresent(), "npm not installed");
+        Path dir = workspace("npm-run-dev");
+        Files.writeString(dir.resolve("package.json"),
+                "{\"name\":\"nmox-probe\",\"private\":true,\"scripts\":{\"dev\":\"node server.js\"}}\n",
+                StandardCharsets.UTF_8);
+        Path script = dir.resolve("server.js");
+        Files.writeString(script, """
+                const mode = process.env.NMOX_PROBE;
+                console.log('DEV=' + mode);
+                """, StandardCharsets.UTF_8);
+        List<Path> files = List.of(script);
+        Map<Path, Integer> lines = Map.of(script, 2);
+        BlockingQueue<String> hits = new LinkedBlockingQueue<>();
+
+        Client nb = open();
+        // no program: the runtime and its arguments are the command
+        nb.request("launch", new JSONObject(org.nmox.studio.editor.debug.DapDebugAction.nodeLaunchRequest(
+                "npm run dev", null, dir.toFile(), List.of(), Map.of("NMOX_PROBE", "yes"),
+                "npm", List.of("run", "dev"), dir.toFile())));
+        nb.awaitEvent("initialized");
+        nb.request("setBreakpoints", breakpoints(script, 2));
+        nb.awaitResponse("setBreakpoints");
+        nb.request("configurationDone", new JSONObject());
+
+        // npm itself is the first target — the flat session — and the script
+        // it starts is offered as a session of its own, like any child process
+        JSONObject offer = nb.awaitRequest("attachedChildSession");
+        nb.answer(offer);
+        assertThat(offer.getJSONObject("arguments").getJSONObject("config").getString("name")).contains("server.js");
+        new PlatformChildSession(offeredPort(offer), files, lines, hits);
+        assertThat(hits.poll(60, TimeUnit.SECONDS)).as("the script's breakpoint hit in its own session")
+                .isEqualTo(script.toAbsolutePath() + ":2");
+        assertThat(nb.awaitOutput("DEV=").getJSONObject("body").getString("output"))
+                .as("and the configuration's env reached it through npm").contains("DEV=yes");
+        nb.awaitEvent("terminated");
+    }
+
+    @Test
+    @DisplayName("attach: a node already running with its inspector open is attached to, stops at a breakpoint, and is left running")
+    void attachesToARunningNodeAndLeavesItRunning() throws Exception {
+        assumeTrue(nodePresent(), "node not installed");
+        Path dir = workspace("attach");
+        Path script = dir.resolve("loop.js");
+        Files.writeString(script, """
+                let n = 0;
+                setInterval(() => {
+                  n++;
+                  console.log('tick ' + n);
+                }, 200);
+                """, StandardCharsets.UTF_8);
+
+        // the user's own process: started before the debugger, by someone else
+        ProcessBuilder pb = ProcessSupport.builder(List.of("node", "--inspect-brk=0", script.toString()));
+        pb.directory(SERVER_JS.getParentFile());
+        pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
+        Process node = pb.start();
+        try {
+            int port = inspectorPort(node);
+            assertThat(org.nmox.studio.editor.debug.DapDebugAction.listening("localhost", port))
+                    .as("the question the launcher asks before it spawns an adapter").isTrue();
+
+            Client nb = open();
+            // the address the launcher hands over: the loopback that answered
+            nb.request("attach", new JSONObject(org.nmox.studio.editor.debug.DapDebugAction.nodeAttachRequest(
+                    "Attach", org.nmox.studio.editor.debug.DapDebugAction.answeringAddress("localhost", port),
+                    port, SERVER_JS.getParentFile())));
+            nb.awaitEvent("initialized");
+            nb.request("setBreakpoints", breakpoints(script, 4));
+            nb.awaitResponse("setBreakpoints");
+            nb.request("configurationDone", new JSONObject());
+
+            // an --inspect-brk process may first report its wait at the
+            // entry; whatever stops come before, the breakpoint's is the one
+            JSONObject stopped;
+            try {
+                stopped = nb.awaitEvent("stopped");
+            } catch (AssertionError none) {
+                // the macOS lane (Node 24.20) once saw the thread exit right after the
+                // breakpoint verified: say what became of the program, not only the frames
+                throw new AssertionError("no stop; program alive=" + node.isAlive()
+                        + (node.isAlive() ? "" : " exit=" + node.exitValue())
+                        + " stderr=" + NODE_STDERR, none);
+            }
+            while (!"breakpoint".equals(stopped.getJSONObject("body").optString("reason"))) {
+                nb.request("continue", new JSONObject().put("threadId", stopped.getJSONObject("body").getInt("threadId")));
+                stopped = nb.awaitEvent("stopped");
+            }
+            int threadId = stopped.getJSONObject("body").getInt("threadId");
+            nb.request("stackTrace", new JSONObject().put("threadId", threadId));
+            JSONObject top = nb.awaitResponse("stackTrace").getJSONObject("body")
+                    .getJSONArray("stackFrames").getJSONObject(0);
+            assertThat(top.getInt("line")).isEqualTo(4);
+            assertThat(ReportedPaths.of(top)).isEqualTo(script.toString());
+
+            // ending the session ends the SESSION: the program was the
+            // user's before the debugger came and is still theirs after
+            nb.request("disconnect", new JSONObject());
+            nb.awaitEvent("terminated");
+            proxy.close();
+            server.stop();
+            assertThat(node.isAlive()).as("an attached program outlives the debugger that attached to it").isTrue();
+        } finally {
+            ProcessSupport.killTreeAndWait(node, java.time.Duration.ofSeconds(5));
+        }
+    }
+
+    /** The port node's inspector chose ({@code --inspect-brk=0}), read from the line it prints on stderr. */
+    /** What the attached program printed on stderr, kept so a failure can say why the program went away. */
+    private static final List<String> NODE_STDERR = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    private static int inspectorPort(Process node) throws Exception {
+        NODE_STDERR.clear();
+        BlockingQueue<Integer> found = new LinkedBlockingQueue<>();
+        Thread reader = new Thread(() -> {
+            java.util.regex.Pattern listening = java.util.regex.Pattern.compile("ws://[^/]*:(\\d+)/");
+            try (java.io.BufferedReader err = new java.io.BufferedReader(new java.io.InputStreamReader(
+                    node.getErrorStream(), StandardCharsets.UTF_8))) {
+                String line;
+                // read to the end: a full stderr pipe would stall the program
+                while ((line = err.readLine()) != null) {
+                    if (NODE_STDERR.size() < 200) {
+                        NODE_STDERR.add(line);
+                    }
+                    java.util.regex.Matcher m = listening.matcher(line);
+                    if (m.find()) {
+                        found.add(Integer.parseInt(m.group(1)));
+                    }
+                }
+            } catch (IOException ended) {
+                // the process is gone
+            }
+        }, "test-node-stderr");
+        reader.setDaemon(true);
+        reader.start();
+        Integer port = found.poll(30, TimeUnit.SECONDS);
+        assertThat(port).as("node printed where its inspector listens").isNotNull();
+        return port;
+    }
+
+    private static boolean npmPresent() {
+        try {
+            return ProcessSupport.runBounded(
+                    java.util.List.of("npm", "--version"), null,
+                    java.time.Duration.ofSeconds(20)).ok();
+        } catch (IOException ex) {
+            return false;
+        }
+    }
+
     private static JSONObject breakpoints(Path file, int line) {
         return new JSONObject()
                 .put("source", new JSONObject().put("path", file.toAbsolutePath().toString()))

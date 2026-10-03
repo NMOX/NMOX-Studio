@@ -98,6 +98,15 @@ class KeymapProfileParityTest {
      * every profile but Idea. {@code vscode-editing-keybindings-mac.xml}
      * (Cmd+] and Opt+Cmd+F) is free everywhere, so it rides all five and is
      * held by the plain parity law.
+     *
+     * <p>The editing gestures the product added for VS Code hands, by the same
+     * measurement: {@code vscode-line-keybindings.xml} (Cmd+L, Expand Line
+     * Selection) in Idea and, on macOS, Emacs, the only profiles that leave
+     * the chord free. The other files of that family are registered in all
+     * five and are held by the plain parity law; where a profile carries a
+     * file on one OS only, its registration says so with the targetOS
+     * attribute, which {@code EditingRegistrationsTest} (editor module) pins
+     * and {@code VsCodeKeymapResolutionTest} resolves.
      */
     private static final Map<String, Set<String>> EDITOR_PROFILE_SCOPED = Map.of(
             "vscode-keybindings.xml|", Set.of("NetBeans", "Idea"),
@@ -105,7 +114,8 @@ class KeymapProfileParityTest {
             "ng-template-vscode-keybindings.xml|", Set.of("NetBeans", "Idea"),
             "vscode-f2-keybindings.xml|", Set.of("NetBeans"),
             "vscode-history-keybindings-mac.xml|", Set.of("NetBeans", "Eclipse", "NetBeans55"),
-            "vscode-format-keybindings-mac.xml|", Set.of("NetBeans", "Eclipse", "Emacs", "NetBeans55"));
+            "vscode-format-keybindings-mac.xml|", Set.of("NetBeans", "Eclipse", "Emacs", "NetBeans55"),
+            "vscode-line-keybindings.xml|", Set.of("Emacs", "Idea"));
 
     /** module dir -> its layer path, relative to the ui module's cwd. */
     private static final Map<String, String> KEYMAP_LAYERS = Map.of(
