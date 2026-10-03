@@ -506,15 +506,20 @@ public final class LanguageServers {
             // an untrusted repo's config is still the v1.102.0 RCE on
             // file-open. Same silent gate, same honest degradation:
             // untrusted workspaces get no lint diagnostics.
-            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
-                return null;
-            }
             // No eslint config, no server: every JS/TS project would
             // otherwise pay a node process for a linter it never
             // adopted (the global binary ships in the same package as
             // the JSON/HTML/CSS servers, so having it installed does
-            // not mean wanting eslint everywhere).
+            // not mean wanting eslint everywhere). Asked first (3.5.13):
+            // a project with no configuration has nothing waiting for
+            // trust, and one WITH a configuration is now among the
+            // waiters, so a grant starts its linter for the files
+            // already open, like every other server's.
             if (!hasEslintConfig(dir)) {
+                return null;
+            }
+            if (ServerTrust.refuses("vscode-eslint-language-server", dir)) {
+                ServerTrust.tookRefusal(); // spoken; nothing here goes on to report it missing
                 return null;
             }
             return launchNpm(lookup, "vscode-eslint-language-server", "--stdio");
@@ -581,10 +586,11 @@ public final class LanguageServers {
             if (dir == null) {
                 return null;
             }
-            if (!org.nmox.studio.rack.service.WorkspaceTrust.isTrusted(dir)) {
+            if (!hasStylelintConfig(dir)) {
                 return null;
             }
-            if (!hasStylelintConfig(dir)) {
+            if (ServerTrust.refuses("stylelint-lsp", dir)) {
+                ServerTrust.tookRefusal(); // spoken; a grant starts it (3.5.13)
                 return null;
             }
             return launchNpm(lookup, "stylelint-lsp", "--stdio");
@@ -946,8 +952,14 @@ public final class LanguageServers {
         @Override
         public LanguageServerDescription startServer(Lookup lookup) {
             LanguageServerDescription server = launchNpm(lookup, "intelephense", "--stdio");
-            return server != null ? server
-                    : launch(lookup, List.of("phpactor", "language-server"));
+            if (server != null) {
+                return server;
+            }
+            server = launch(lookup, List.of("phpactor", "language-server"));
+            // a refusal's answer is taken here: left on the thread it would be read
+            // by whichever launch came next and hide a server that is really missing
+            ServerTrust.tookRefusal();
+            return server;
         }
     }
 

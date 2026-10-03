@@ -24,7 +24,7 @@ class GitChipTest {
 
     @org.junit.jupiter.api.AfterEach
     void theRealQuestionAgain() {
-        GitChip.trusted = WorkspaceTrust::isTrusted;
+        GitChip.trusted = WorkspaceTrust::gitMayRun;
     }
 
     private Path repo(String name, String headContent) throws Exception {
@@ -220,7 +220,11 @@ class GitChipTest {
 
         int ask = strip.indexOf("private void askTrust()");
         String askBody = strip.substring(ask, strip.indexOf("\n        }\n", ask));
-        assertThat(askBody).contains("WorkspaceTrust.requestTrust(root)").contains("RP.post(this::refreshCount)");
+        assertThat(askBody).contains("WorkspaceTrust.requestTrust(root)");
+        int grant = strip.indexOf("onGrant = dir -> RP.post(() -> {");
+        assertThat(strip.substring(grant, strip.indexOf("});", grant)))
+                .as("the count after a yes is the grant listener's, for this door as for every other (3.5.13)")
+                .contains("refreshCount();");
         assertThat(strip).as("the tooltip says why there is no count")
                 .contains("waiting ? Bundle.GitStatusLine_chipTooltipWaiting(");
         assertThat(strip.split("saysWhyNot\\(\\);", -1).length - 1)

@@ -226,7 +226,7 @@ public class GitStatusLine implements StatusLineElementProvider {
                     org.openide.awt.NotificationDisplayer.getDefault().notify(
                             Bundle.GitStatusLine_trustNoticeTitle(),
                             javax.swing.UIManager.getIcon("OptionPane.informationIcon"),
-                            Bundle.GitStatusLine_trustNoticeDetail(root.getName()),
+                            Bundle.GitStatusLine_trustNoticeDetail(org.nmox.studio.core.util.PlainText.oneLine(root.getName(), 80)),
                             e -> click.run());
                 } catch (RuntimeException | LinkageError ignored) {
                     // notifications unavailable (tests, stripped platform): the chip's menu still asks
@@ -353,8 +353,10 @@ public class GitStatusLine implements StatusLineElementProvider {
         /** The menu's first row in an untrusted repository: the Workspace Trust question, then the count. */
         private void askTrust() {
             File root = chip.repoRoot();
-            if (root != null && WorkspaceTrust.requestTrust(root)) {
-                RP.post(this::refreshCount);
+            if (root != null) {
+                // a yes reaches onGrant, as a yes through any other door does:
+                // the count is taken there, once
+                WorkspaceTrust.requestTrust(root);
             }
         }
 

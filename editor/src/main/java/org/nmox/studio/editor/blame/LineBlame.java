@@ -70,7 +70,7 @@ public final class LineBlame {
     }
 
     /** Whether a repository's folder is trusted: the silent check. Swapped by tests. */
-    static java.util.function.Predicate<File> trusted = org.nmox.studio.rack.service.WorkspaceTrust::isTrusted;
+    static java.util.function.Predicate<File> trusted = org.nmox.studio.rack.service.WorkspaceTrust::gitMayRun;
 
     private final Runner runner;
     private final RequestProcessor lane;

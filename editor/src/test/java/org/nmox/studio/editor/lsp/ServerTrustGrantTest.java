@@ -149,9 +149,11 @@ class ServerTrustGrantTest {
     @Test
     @DisplayName("wiring: the grant is listened for, and the notification's click only asks")
     void wiring() throws Exception {
+        // comments stripped (3.5.13): a commented-out line is not wiring
         String src = java.nio.file.Files.readString(
                 Path.of("src/main/java/org/nmox/studio/editor/lsp/ServerTrust.java"),
-                java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n");
+                java.nio.charset.StandardCharsets.UTF_8).replace("\r\n", "\n")
+                .replaceAll("(?s)/\\*.*?\\*/", "").replaceAll("(?m)^\\s*//.*$", "");
         assertThat(src).contains("org.nmox.studio.rack.service.WorkspaceTrust.addGrantListener(ServerTrust::granted);");
         int ask = src.indexOf("private static void ask(File projectDir) {");
         assertThat(src.substring(ask, src.indexOf("\n    }\n", ask)))
@@ -160,5 +162,52 @@ class ServerTrustGrantTest {
                 .doesNotContain("setStatusText");
         assertThat(src).as("a refusal records who waits, before deciding whether to speak")
                 .contains("WAITING.putIfAbsent(projectDir, binaryOf(command));");
+    }
+
+    @Test
+    @DisplayName("a grant through Workspace Trust itself reaches the restart: the listener is really registered")
+    void aRealGrantReachesTheRestart(@TempDir Path project) throws Exception {
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest(); // the scratch store, never the developer's
+        File dir = project.toFile();
+        assertThat(ServerTrust.refuses("rust-analyzer", dir)).isTrue();
+        ServerTrust.tookRefusal();
+        assertThat(restarts).isZero();
+
+        org.nmox.studio.rack.service.WorkspaceTrust.trust(dir);
+
+        assertThat(restarts).as("no test called granted(): the trust store's own listener did").isEqualTo(1);
+        org.nmox.studio.rack.service.WorkspaceTrust.clearForTest();
+    }
+
+    @Test
+    @DisplayName("eslint and stylelint in an untrusted project are among the waiters: a grant starts them too")
+    void theLintersWait(@TempDir Path project) throws Exception {
+        File dir = project.toFile();
+        assertThat(ServerTrust.refuses("vscode-eslint-language-server", dir)).isTrue();
+        ServerTrust.tookRefusal();
+        assertThat(ServerTrust.granted(dir)).as("3.5.10 returned null before registering them").isTrue();
+        assertThat(restarts).isEqualTo(1);
+
+        assertThat(ServerTrust.refuses("stylelint-lsp", dir)).isTrue();
+        ServerTrust.tookRefusal();
+        assertThat(ServerTrust.granted(dir)).isTrue();
+        assertThat(restarts).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("a folder whose name holds a control character still gets its notice, and nothing is thrown at the caller")
+    void aHostileNameDoesNotThrow(@TempDir Path parent) throws Exception {
+        System.clearProperty("nmox.shots.dir"); // the notification IS under test here
+        File dir = java.nio.file.Files.createDirectories(parent.resolve("re\u0007po")).toFile();
+        org.assertj.core.api.Assertions.assertThatCode(() -> ServerTrust.refuses("rust-analyzer", dir))
+                .doesNotThrowAnyException();
+        ServerTrust.tookRefusal();
+    }
+
+    @Test
+    @DisplayName("the platform's method can be called from here, and says so: a miss would be answered false")
+    void thePlatformsMethodCanBeCalled() {
+        assertThat(ServerRestart.reopenEditorsInServers())
+                .as("no editor is open, so nothing starts; the call itself must go through").isTrue();
     }
 }

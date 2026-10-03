@@ -28,7 +28,7 @@ class BlameStatusLineTest {
         BlamePrefs.setEnabled(true);
         BlameStatusLine.gestureSeen = false;
         BlameStatusLine.GESTURE_WATCH.set(false);
-        LineBlame.trusted = org.nmox.studio.rack.service.WorkspaceTrust::isTrusted;
+        LineBlame.trusted = org.nmox.studio.rack.service.WorkspaceTrust::gitMayRun;
     }
 
     @org.junit.jupiter.api.BeforeEach

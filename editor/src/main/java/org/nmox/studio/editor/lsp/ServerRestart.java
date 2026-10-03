@@ -21,7 +21,7 @@ import org.openide.util.Lookup;
  *
  * <p>The class is not in a package the client exports, so it is reached
  * through the system class loader by name, the way {@code OutputFont} and
- * the git chip reach theirs. {@code ServerRestartSeamTest} fails the build
+ * the git chip reach theirs. {@code ServerTrustGrantTest} fails the build
  * when a platform bump moves or renames it; at run time a miss is reported
  * to the caller, which then says what the user has to do instead.
  */
