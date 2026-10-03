@@ -61,7 +61,11 @@ name.
   snippet's `scope` names. Accepting one inserts the body with its tab
   stops, mirrors, variables and `/regex/format/` transforms. A transform
   that cannot be run safely leaves the snippet out by name rather than
-  inserting half of it.
+  inserting half of it. Snippet files are read only for files inside the
+  repository that holds them, and a snippet that would insert more than
+  1,000,000 characters, or take more than 64K from the current line or the
+  selection, is not inserted and says so (a hostile review of the release
+  candidate built a 236-character body that ran the IDE out of memory).
 - **Editing gestures.** Toggle Block Comment (⇧⌥A; Shift+Alt+A, and
   Ctrl+Shift+A on Linux) for every language that has a block comment,
   refusing a range that already holds a delimiter rather than breaking
